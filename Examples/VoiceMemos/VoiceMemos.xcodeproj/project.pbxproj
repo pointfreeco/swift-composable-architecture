@@ -1,0 +1,537 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 52;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		DC5BDCB024589177009C65A3 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDCAF24589177009C65A3 /* SceneDelegate.swift */; };
+		DC5BDCB224589177009C65A3 /* VoiceMemos.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDCB124589177009C65A3 /* VoiceMemos.swift */; };
+		DC5BDCB424589178009C65A3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC5BDCB324589178009C65A3 /* Assets.xcassets */; };
+		DC5BDCC524589179009C65A3 /* VoiceMemosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDCC424589179009C65A3 /* VoiceMemosTests.swift */; };
+		DC5BDF2D24589263009C65A3 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC5BDF2C24589263009C65A3 /* ComposableArchitecture */; };
+		DC5BDF2F24589263009C65A3 /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DC5BDF2C24589263009C65A3 /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		DC5BDF3124589267009C65A3 /* ComposableArchitectureTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = DC5BDF3024589267009C65A3 /* ComposableArchitectureTestSupport */; };
+		DC5BDF3324589267009C65A3 /* ComposableArchitectureTestSupport in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DC5BDF3024589267009C65A3 /* ComposableArchitectureTestSupport */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		DC5BDF362458939C009C65A3 /* AudioRecorderClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDF352458939C009C65A3 /* AudioRecorderClient.swift */; };
+		DC5BDF3A245893C1009C65A3 /* LiveAudioRecorderClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDF39245893C1009C65A3 /* LiveAudioRecorderClient.swift */; };
+		DC5BDF3D245893E6009C65A3 /* AudioPlayerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDF3C245893E6009C65A3 /* AudioPlayerClient.swift */; };
+		DC5BDF3F24589406009C65A3 /* LiveAudioPlayerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDF3E24589406009C65A3 /* LiveAudioPlayerClient.swift */; };
+		DC94F0102458E09900082DE9 /* MockAudioPlayerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC94F00F2458E09900082DE9 /* MockAudioPlayerClient.swift */; };
+		DC94F0122458E0AA00082DE9 /* MockAudioRecorderClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC94F0112458E0AA00082DE9 /* MockAudioRecorderClient.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		DC5BDCC124589179009C65A3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DC5BDCA224589177009C65A3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DC5BDCA924589177009C65A3;
+			remoteInfo = VoiceMemos;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		DC5BDF2E24589263009C65A3 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				DC5BDF2F24589263009C65A3 /* ComposableArchitecture in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC5BDF3224589267009C65A3 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				DC5BDF3324589267009C65A3 /* ComposableArchitectureTestSupport in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		DC5BDCAA24589177009C65A3 /* VoiceMemos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VoiceMemos.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC5BDCAF24589177009C65A3 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		DC5BDCB124589177009C65A3 /* VoiceMemos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceMemos.swift; sourceTree = "<group>"; };
+		DC5BDCB324589178009C65A3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		DC5BDCBB24589178009C65A3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DC5BDCC024589179009C65A3 /* VoiceMemosTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VoiceMemosTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC5BDCC424589179009C65A3 /* VoiceMemosTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceMemosTests.swift; sourceTree = "<group>"; };
+		DC5BDF2A245891B7009C65A3 /* swift-composable-architecture */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "swift-composable-architecture"; path = ../..; sourceTree = "<group>"; };
+		DC5BDF352458939C009C65A3 /* AudioRecorderClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorderClient.swift; sourceTree = "<group>"; };
+		DC5BDF39245893C1009C65A3 /* LiveAudioRecorderClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveAudioRecorderClient.swift; sourceTree = "<group>"; };
+		DC5BDF3C245893E6009C65A3 /* AudioPlayerClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerClient.swift; sourceTree = "<group>"; };
+		DC5BDF3E24589406009C65A3 /* LiveAudioPlayerClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveAudioPlayerClient.swift; sourceTree = "<group>"; };
+		DC94F00F2458E09900082DE9 /* MockAudioPlayerClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAudioPlayerClient.swift; sourceTree = "<group>"; };
+		DC94F0112458E0AA00082DE9 /* MockAudioRecorderClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAudioRecorderClient.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		DC5BDCA724589177009C65A3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC5BDF2D24589263009C65A3 /* ComposableArchitecture in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC5BDCBD24589179009C65A3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC5BDF3124589267009C65A3 /* ComposableArchitectureTestSupport in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		DC5BDCA124589177009C65A3 = {
+			isa = PBXGroup;
+			children = (
+				DC5BDF2A245891B7009C65A3 /* swift-composable-architecture */,
+				DC5BDCAC24589177009C65A3 /* VoiceMemos */,
+				DC5BDCC324589179009C65A3 /* VoiceMemosTests */,
+				DC5BDCAB24589177009C65A3 /* Products */,
+				DC5BDF2B24589263009C65A3 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		DC5BDCAB24589177009C65A3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DC5BDCAA24589177009C65A3 /* VoiceMemos.app */,
+				DC5BDCC024589179009C65A3 /* VoiceMemosTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DC5BDCAC24589177009C65A3 /* VoiceMemos */ = {
+			isa = PBXGroup;
+			children = (
+				DC5BDCAF24589177009C65A3 /* SceneDelegate.swift */,
+				DC5BDCB124589177009C65A3 /* VoiceMemos.swift */,
+				DC5BDF3B245893DB009C65A3 /* AudioPlayerClient */,
+				DC5BDF3424589389009C65A3 /* AudioRecorderClient */,
+				DC5BDCB324589178009C65A3 /* Assets.xcassets */,
+				DC5BDCBB24589178009C65A3 /* Info.plist */,
+			);
+			path = VoiceMemos;
+			sourceTree = "<group>";
+		};
+		DC5BDCC324589179009C65A3 /* VoiceMemosTests */ = {
+			isa = PBXGroup;
+			children = (
+				DC5BDCC424589179009C65A3 /* VoiceMemosTests.swift */,
+			);
+			path = VoiceMemosTests;
+			sourceTree = "<group>";
+		};
+		DC5BDF2B24589263009C65A3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		DC5BDF3424589389009C65A3 /* AudioRecorderClient */ = {
+			isa = PBXGroup;
+			children = (
+				DC5BDF352458939C009C65A3 /* AudioRecorderClient.swift */,
+				DC5BDF39245893C1009C65A3 /* LiveAudioRecorderClient.swift */,
+				DC94F0112458E0AA00082DE9 /* MockAudioRecorderClient.swift */,
+			);
+			path = AudioRecorderClient;
+			sourceTree = "<group>";
+		};
+		DC5BDF3B245893DB009C65A3 /* AudioPlayerClient */ = {
+			isa = PBXGroup;
+			children = (
+				DC5BDF3C245893E6009C65A3 /* AudioPlayerClient.swift */,
+				DC5BDF3E24589406009C65A3 /* LiveAudioPlayerClient.swift */,
+				DC94F00F2458E09900082DE9 /* MockAudioPlayerClient.swift */,
+			);
+			path = AudioPlayerClient;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		DC5BDCA924589177009C65A3 /* VoiceMemos */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC5BDCC924589179009C65A3 /* Build configuration list for PBXNativeTarget "VoiceMemos" */;
+			buildPhases = (
+				DC5BDCA624589177009C65A3 /* Sources */,
+				DC5BDCA724589177009C65A3 /* Frameworks */,
+				DC5BDCA824589177009C65A3 /* Resources */,
+				DC5BDF2E24589263009C65A3 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = VoiceMemos;
+			packageProductDependencies = (
+				DC5BDF2C24589263009C65A3 /* ComposableArchitecture */,
+			);
+			productName = VoiceMemos;
+			productReference = DC5BDCAA24589177009C65A3 /* VoiceMemos.app */;
+			productType = "com.apple.product-type.application";
+		};
+		DC5BDCBF24589179009C65A3 /* VoiceMemosTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC5BDCCC24589179009C65A3 /* Build configuration list for PBXNativeTarget "VoiceMemosTests" */;
+			buildPhases = (
+				DC5BDCBC24589179009C65A3 /* Sources */,
+				DC5BDCBD24589179009C65A3 /* Frameworks */,
+				DC5BDCBE24589179009C65A3 /* Resources */,
+				DC5BDF3224589267009C65A3 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DC5BDCC224589179009C65A3 /* PBXTargetDependency */,
+			);
+			name = VoiceMemosTests;
+			packageProductDependencies = (
+				DC5BDF3024589267009C65A3 /* ComposableArchitectureTestSupport */,
+			);
+			productName = VoiceMemosTests;
+			productReference = DC5BDCC024589179009C65A3 /* VoiceMemosTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DC5BDCA224589177009C65A3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1140;
+				LastUpgradeCheck = 1140;
+				ORGANIZATIONNAME = "Point-Free";
+				TargetAttributes = {
+					DC5BDCA924589177009C65A3 = {
+						CreatedOnToolsVersion = 11.4.1;
+					};
+					DC5BDCBF24589179009C65A3 = {
+						CreatedOnToolsVersion = 11.4.1;
+						TestTargetID = DC5BDCA924589177009C65A3;
+					};
+				};
+			};
+			buildConfigurationList = DC5BDCA524589177009C65A3 /* Build configuration list for PBXProject "VoiceMemos" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = DC5BDCA124589177009C65A3;
+			productRefGroup = DC5BDCAB24589177009C65A3 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				DC5BDCA924589177009C65A3 /* VoiceMemos */,
+				DC5BDCBF24589179009C65A3 /* VoiceMemosTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		DC5BDCA824589177009C65A3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC5BDCB424589178009C65A3 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC5BDCBE24589179009C65A3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		DC5BDCA624589177009C65A3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC5BDF362458939C009C65A3 /* AudioRecorderClient.swift in Sources */,
+				DC94F0122458E0AA00082DE9 /* MockAudioRecorderClient.swift in Sources */,
+				DC5BDF3D245893E6009C65A3 /* AudioPlayerClient.swift in Sources */,
+				DC5BDF3A245893C1009C65A3 /* LiveAudioRecorderClient.swift in Sources */,
+				DC5BDF3F24589406009C65A3 /* LiveAudioPlayerClient.swift in Sources */,
+				DC94F0102458E09900082DE9 /* MockAudioPlayerClient.swift in Sources */,
+				DC5BDCB024589177009C65A3 /* SceneDelegate.swift in Sources */,
+				DC5BDCB224589177009C65A3 /* VoiceMemos.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC5BDCBC24589179009C65A3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC5BDCC524589179009C65A3 /* VoiceMemosTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		DC5BDCC224589179009C65A3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DC5BDCA924589177009C65A3 /* VoiceMemos */;
+			targetProxy = DC5BDCC124589179009C65A3 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		DC5BDCC724589179009C65A3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		DC5BDCC824589179009C65A3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		DC5BDCCA24589179009C65A3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = VoiceMemos/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.VoiceMemos;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DC5BDCCB24589179009C65A3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = VoiceMemos/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.VoiceMemos;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		DC5BDCCD24589179009C65A3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.VoiceMemosTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VoiceMemos.app/VoiceMemos";
+			};
+			name = Debug;
+		};
+		DC5BDCCE24589179009C65A3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.VoiceMemosTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VoiceMemos.app/VoiceMemos";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		DC5BDCA524589177009C65A3 /* Build configuration list for PBXProject "VoiceMemos" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC5BDCC724589179009C65A3 /* Debug */,
+				DC5BDCC824589179009C65A3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DC5BDCC924589179009C65A3 /* Build configuration list for PBXNativeTarget "VoiceMemos" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC5BDCCA24589179009C65A3 /* Debug */,
+				DC5BDCCB24589179009C65A3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DC5BDCCC24589179009C65A3 /* Build configuration list for PBXNativeTarget "VoiceMemosTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC5BDCCD24589179009C65A3 /* Debug */,
+				DC5BDCCE24589179009C65A3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DC5BDF2C24589263009C65A3 /* ComposableArchitecture */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ComposableArchitecture;
+		};
+		DC5BDF3024589267009C65A3 /* ComposableArchitectureTestSupport */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ComposableArchitectureTestSupport;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = DC5BDCA224589177009C65A3 /* Project object */;
+}

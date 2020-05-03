@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "swift-composable-architecture",
+        "repositoryURL": "http://github.com/stephencelis/swift-composable-architecture",
+        "state": {
+          "branch": "master",
+          "revision": "644a8f5d7c40522389ecd4631d53153aee62d717",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
