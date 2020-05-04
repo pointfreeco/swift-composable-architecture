@@ -43,7 +43,7 @@ extension CasePath where Value == Void {
 /// - Parameters:
 ///   - embed: An enum case initializer.
 ///   - root: A root enum value.
-/// - Returns: Values iff they can be extracted from the given enum case initializer and root enum, otherwise `nil`.
+/// - Returns: Values if they can be extracted from the given enum case initializer and root enum, otherwise `nil`.
 public func extract<Root, Value>(case embed: (Value) -> Root, from root: Root) -> Value? {
   func extractHelp(from root: Root) -> ([String?], Value)? {
     if let value = root as? Value {
