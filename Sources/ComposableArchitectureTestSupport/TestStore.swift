@@ -111,29 +111,14 @@ import XCTest
 ///         $0.results = ["Composable Architecture"]
 ///       }
 ///     )
-public final class TestStore<
-  State, LocalState: Equatable, Action: Equatable, LocalAction, Environment
-> {
+public final class TestStore<State, LocalState, Action: Equatable, LocalAction, Environment> {
   private var environment: Environment
   private let fromLocalAction: (LocalAction) -> Action
   private let reducer: Reducer<State, Action, Environment>
   private var state: State
   private let toLocalState: (State) -> LocalState
 
-  /// Initializes a test store from an initial state, a reducer, an initial environment, and
-  /// functions that scope the reducer's state and actions for its assertions.
-  ///
-  /// - Parameters:
-  ///   - initialState: The state to start the test from.
-  ///   - reducer: A reducer.
-  ///   - environment: The environment to start the test from.
-  ///   - toLocalState: A function that transforms the reducer's state into more local state. This
-  ///     state will be asserted against as it is mutated by the reducer.  Useful for testing view
-  ///     store state transformations.
-  ///   - fromLocalAction: A function that wraps a more local action in the reducer's action. Local
-  ///     actions can be "sent" to the store, while any reducer action may be received. Useful for
-  ///     testing view store action transformations.
-  public init(
+  private init(
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
     environment: Environment,
@@ -146,7 +131,31 @@ public final class TestStore<
     self.toLocalState = toLocalState
     self.fromLocalAction = fromLocalAction
   }
+}
 
+extension TestStore where State == LocalState, Action == LocalAction {
+  /// Initializes a test store from an initial state, a reducer, and an initial environment.
+  ///
+  /// - Parameters:
+  ///   - initialState: The state to start the test from.
+  ///   - reducer: A reducer.
+  ///   - environment: The environment to start the test from.
+  public convenience init(
+    initialState: State,
+    reducer: Reducer<State, Action, Environment>,
+    environment: Environment
+  ) {
+    self.init(
+      initialState: initialState,
+      reducer: reducer,
+      environment: environment,
+      state: { $0 },
+      action: { $0 }
+    )
+  }
+}
+
+extension TestStore where LocalState: Equatable {
   /// Asserts against a script of actions.
   public func assert(
     _ steps: Step...,
@@ -287,6 +296,29 @@ public final class TestStore<
       )
     }
   }
+}
+
+extension TestStore {
+  /// Scopes a reducer to assert against more local state and actions.
+  ///
+  ///   - toLocalState: A function that transforms the reducer's state into more local state. This
+  ///     state will be asserted against as it is mutated by the reducer. Useful for testing view
+  ///     store state transformations.
+  ///   - fromLocalAction: A function that wraps a more local action in the reducer's action. Local
+  ///     actions can be "sent" to the store, while any reducer action may be received. Useful for
+  ///     testing view store action transformations.
+  public func scope<S, A>(
+    state toLocalState: @escaping (LocalState) -> S,
+    action fromLocalAction: @escaping (A) -> LocalAction
+  ) -> TestStore<State, S, Action, A, Environment> {
+    .init(
+      initialState: self.state,
+      reducer: self.reducer,
+      environment: self.environment,
+      state: { toLocalState(self.toLocalState($0)) },
+      action: { self.fromLocalAction(fromLocalAction($0)) }
+    )
+  }
 
   /// A single step of a `TestStore` assertion.
   public struct Step {
@@ -368,27 +400,5 @@ public final class TestStore<
       case receive(Action, (inout LocalState) -> Void)
       case environment((inout Environment) -> Void)
     }
-  }
-}
-
-extension TestStore where State == LocalState, Action == LocalAction {
-  /// Initializes a test store from an initial state, a reducer, an initial environment.
-  ///
-  /// - Parameters:
-  ///   - initialState: The state to start the test from.
-  ///   - reducer: A reducer.
-  ///   - environment: The environment to start the test from.
-  public convenience init(
-    initialState: State,
-    reducer: Reducer<State, Action, Environment>,
-    environment: Environment
-  ) {
-    self.init(
-      initialState: initialState,
-      reducer: reducer,
-      environment: environment,
-      state: { $0 },
-      action: { $0 }
-    )
   }
 }

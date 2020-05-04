@@ -21,7 +21,7 @@ struct AnimationsEnvironment {}
 
 let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnvironment> {
   state, action, environment in
-  
+
   switch action {
   case let .tapped(point):
     state.circleCenter = point

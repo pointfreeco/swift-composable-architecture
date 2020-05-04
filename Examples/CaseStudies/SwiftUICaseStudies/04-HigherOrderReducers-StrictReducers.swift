@@ -51,7 +51,7 @@ let dieRollReducer = Reducer<DieRollState, DieRollAction, DieRollEnvironment>.st
     return { environment in
       Effect(value: .dieRolled(side: environment.rollDie()))
     }
-    
+
   case let .dieRolled(side):
     state.dieSide = side
     return { _ in .none }

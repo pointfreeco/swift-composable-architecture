@@ -22,10 +22,9 @@ class LoginSwiftUITests: XCTestCase {
           }
         ),
         mainQueue: .init(self.scheduler)
-      ),
-      state: \.view,
-      action: LoginAction.view
+      )
     )
+    .scope(state: \.view, action: LoginAction.view)
 
     store.assert(
       .send(.emailChanged("blob@pointfree.co")) {
@@ -61,10 +60,9 @@ class LoginSwiftUITests: XCTestCase {
           }
         ),
         mainQueue: .init(self.scheduler)
-      ),
-      state: \.view,
-      action: LoginAction.view
+      )
     )
+    .scope(state: \.view, action: LoginAction.view)
 
     store.assert(
       .send(.emailChanged("2fa@pointfree.co")) {
@@ -102,10 +100,9 @@ class LoginSwiftUITests: XCTestCase {
           login: { _ in Effect(error: .invalidUserPassword) }
         ),
         mainQueue: .init(self.scheduler)
-      ),
-      state: \.view,
-      action: LoginAction.view
+      )
     )
+    .scope(state: \.view, action: LoginAction.view)
 
     store.assert(
       .send(.emailChanged("blob")) {

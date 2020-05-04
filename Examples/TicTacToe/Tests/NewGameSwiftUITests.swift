@@ -8,10 +8,9 @@ class NewGameSwiftUITests: XCTestCase {
   let store = TestStore(
     initialState: NewGameState(),
     reducer: newGameReducer,
-    environment: NewGameEnvironment(),
-    state: \.view,
-    action: NewGameAction.view
+    environment: NewGameEnvironment()
   )
+  .scope(state: \.view, action: NewGameAction.view)
 
   func testNewGame() {
     self.store.assert(
