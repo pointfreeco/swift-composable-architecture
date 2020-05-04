@@ -354,23 +354,23 @@ The following people gave feedback on the library at its early stages and helped
 
 Paul Colton, Kaan Dedeoglu, Matt Diephouse, Josef Doležal, Eimantas, Matthew Johnson, George Kaimakas, Nikita Leonov, Christopher Liscio, Jeffrey Macko, Alejandro Martinez, Shai Mishali, Willis Plummer, Simon-Pierre Roy, Justin Price, Sven A. Schmidt, Kyle Sherman, Petr Sima, Jasdev Singh, Maxim Smirnov, Ryan Stone, Daniel Hollis Tavares, and all of the [Point-Free](https://www.pointfree.co) subscribers 😁.
 
-Special thanks to [Chris Liscio](http://twitter.com/liscio) who helped us work through many strange SwiftUI quirks and helped refine the final API.
+Special thanks to [Chris Liscio](https://twitter.com/liscio) who helped us work through many strange SwiftUI quirks and helped refine the final API.
 
 And thanks to [Shai Mishali](https://github.com/freak4pc) and the [CombineCommunity](https://github.com/CombineCommunity/CombineExt/) project, from which we took their implementation of `Publishers.Create`, which we use in `Effect` to help bridge delegate and callback-based APIs, making it much easier to interface with 3rd party frameworks.
 
 ## Other libraries
 
-The Composable Architecture was built on a foundation of ideas started by other libraries, in particular [Elm](https://elm-lang.org) and [Redux](http://redux.js.org).
+The Composable Architecture was built on a foundation of ideas started by other libraries, in particular [Elm](https://elm-lang.org) and [Redux](https://redux.js.org/).
 
 There are also many architecture libraries in the Swift and iOS community. Each one of these has their own set of priorities and trade-offs that differ from the Composable Architecture.
 
-* [RIBs](http://github.com/uber/RIBs)
+* [RIBs](https://github.com/uber/RIBs)
 * [ReSwift](https://github.com/ReSwift/ReSwift)
-* [Workflow](http://github.com/square/workflow)
+* [Workflow](https://github.com/square/workflow)
 * [ReactorKit](https://github.com/ReactorKit/ReactorKit)
 * [RxFeedback](https://github.com/NoTests/RxFeedback.swift)
-* [Mobius.swift](http://github.com/spotify/mobius.swift)
-* [ReactiveFeedback](http://github.com/babylonhealth/ReactiveFeedback)
+* [Mobius.swift](https://github.com/spotify/mobius.swift)
+* [ReactiveFeedback](https://github.com/babylonhealth/ReactiveFeedback)
 
 ## License
 
