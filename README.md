@@ -4,7 +4,7 @@
 [![CI](https://github.com/pointfreeco/swift-composable-architecture/workflows/CI/badge.svg)](https://actions-badge.atrox.dev/pointfreeco/swift-composable-architecture/goto)
 [![@pointfreeco](https://img.shields.io/badge/contact-@pointfreeco-5AA9E7.svg?style=flat)](https://twitter.com/pointfreeco)
 
-The Composable Architecture is a library for building applications in a consistent and understandable way, with composition, testing and ergonomics in mind. It can be used in SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, tvOS, and watchOS).
+The Composable Architecture is a library for building applications in a consistent and understandable way, with composition, testing, and ergonomics in mind. It can be used in SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, tvOS, and watchOS).
 
 ## What is the Composable Architecture?
 
@@ -306,17 +306,17 @@ That is the basics of building and testing a feature in the Composable Architect
 
     In other ways TCA is a little more lax than the other libraries. For example, Elm controls what kinds of effects can be created via the `Cmd` type, but TCA allows an escape hatch to any kind of effect since `Effect` conforms to the Combine `Publisher` protocol.
 
-    And then there are certain things that TCA prioritizes highly that are not points of focus for Redux, Elm or most other libraries. For example, composition is very important aspect of TCA, which is the process of breaking down large features into smaller units that can be glued together. This is accomplished with the `pullback` and `combine` operators on reducers, and it aids in handling complex features as well as modularization for better isolated code base and improved compile times.
+    And then there are certain things that TCA prioritizes highly that are not points of focus for Redux, Elm, or most other libraries. For example, composition is very important aspect of TCA, which is the process of breaking down large features into smaller units that can be glued together. This is accomplished with the `pullback` and `combine` operators on reducers, and it aids in handling complex features as well as modularization for a better-isolated code base and improved compile times.
   </details>
 
-* Why isn't `Store` thread safe? <br> Why isn't `send` queued? <br> Why isn't `send` run on the main thread?
+* Why isn't `Store` thread-safe? <br> Why isn't `send` queued? <br> Why isn't `send` run on the main thread?
   <details>
     <summary>Expand to see answer</summary>
-    When an action is sent to the `Store` a reducer is run on the current state, and this process cannot be done from multiple threads. A possible work around is to use a queue in `send`s implementation, but this introduces a few new complications:
+    When an action is sent to the `Store`, a reducer is run on the current state, and this process cannot be done from multiple threads. A possible work around is to use a queue in `send`s implementation, but this introduces a few new complications:
 
     1. If done simply with `DispatchQueue.main.async` you will incur a thread hop even when you are already on the main thread. This can lead to unexpected behavior in UIKit, where sometimes you are required to do work synchronously.
 
-    2. It is possible to create a scheduler that performs its work immediately when on the main thread and otherwise uses `DispatchQueue.main.async` (e.g. see ReactiveSwift's [`UISchduler`](https://github.com/ReactiveCocoa/ReactiveSwift/blob/f97db218c0236b0c6ef74d32adb3d578792969c0/Sources/Scheduler.swift)). This is a lot more complexity, and so should not be adopted without having a very good reason.
+    2. It is possible to create a scheduler that performs its work immediately when on the main thread and otherwise uses `DispatchQueue.main.async` (_e.g._ see ReactiveSwift's [`UISchduler`](https://github.com/ReactiveCocoa/ReactiveSwift/blob/f97db218c0236b0c6ef74d32adb3d578792969c0/Sources/Scheduler.swift)). This introduces a lot more complexity, and should probably not be adopted without having a very good reason.
 
     At the end of the day, we require `Store` to be used in much the same way that you interact with Apple's APIs. Just as `URLSession` delivers its results on a background thread, thus making you responsible for dispatching back to the main thread, the Composable Architecture makes you responsible for making sure to send actions on the main thread. If you are using an effect that may deliver its output on a non-main thread, you must explicitly perform `.receive(on:)` in order to force it back on the main thread.
 
