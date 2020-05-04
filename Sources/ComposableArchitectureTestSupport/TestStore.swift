@@ -299,8 +299,9 @@ extension TestStore where LocalState: Equatable {
 }
 
 extension TestStore {
-  /// Scopes a reducer to assert against more local state and actions.
+  /// Scopes a store to assert against more local state and actions.
   ///
+  /// - Parameters:
   ///   - toLocalState: A function that transforms the reducer's state into more local state. This
   ///     state will be asserted against as it is mutated by the reducer. Useful for testing view
   ///     store state transformations.
@@ -318,6 +319,17 @@ extension TestStore {
       state: { toLocalState(self.toLocalState($0)) },
       action: { self.fromLocalAction(fromLocalAction($0)) }
     )
+  }
+
+  /// Scopes a store to assert against more local state.
+  ///
+  /// - Parameter toLocalState: A function that transforms the reducer's state into more local
+  ///   state. This state will be asserted against as it is mutated by the reducer. Useful for
+  ///   testing view store state transformations.
+  public func scope<S>(
+    state toLocalState: @escaping (LocalState) -> S
+  ) -> TestStore<State, S, Action, LocalAction, Environment> {
+    self.scope(state: toLocalState, action: { $0 })
   }
 
   /// A single step of a `TestStore` assertion.
