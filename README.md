@@ -27,7 +27,7 @@ This library provides a few core tools that can be used to build applications of
 
 ## Learn More
 
-The Composable Architecture was designed over the course of many episodes on [Point-Free](https://www.pointfree.co), a video series exploring functional programming and the Swift, hosted by [Brandon Williams](https://twitter.com/mbrandonw) and [Stephen Celis](https://twitter.com/stephencelis).
+The Composable Architecture was designed over the course of many episodes on [Point-Free](https://www.pointfree.co), a video series exploring functional programming and the Swift language, hosted by [Brandon Williams](https://twitter.com/mbrandonw) and [Stephen Celis](https://twitter.com/stephencelis).
 
 To see all of the episodes, [click here](https://www.pointfree.co/collections/composable-architecture), and to see a tour of the library, [click here](https://www.pointfree.co/episodes/ep100-a-tour-of-the-composable-architecture-part-1).
 

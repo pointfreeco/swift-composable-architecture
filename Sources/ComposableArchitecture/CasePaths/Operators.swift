@@ -88,7 +88,7 @@ extension CasePath {
   ///
   /// - Parameters:
   ///   - lhs: A case path from a root to a value.
-  ///   - rhs: An embed function from an appended value
+  ///   - rhs: An embed function from an appended value.
   /// - Returns: A new case path from the first case path's root to the second embed function's value.
   public static func .. <AppendedValue>(
     lhs: CasePath,

@@ -79,7 +79,7 @@ public struct Reducer<State, Action, Environment> {
   /// global state, action and environment. It accomplishes this by providing 3 transformations to
   /// the method:
   ///
-  /// * A writeable key path that can get/set a piece of local state from the global state
+  /// * A writable key path that can get/set a piece of local state from the global state.
   /// * A case path that can extract/embed a local action into a global action.
   /// * A function that can transform the global environment into a local environment.
   ///
@@ -180,7 +180,7 @@ public struct Reducer<State, Action, Environment> {
   ///       )
   ///
   /// - Parameters:
-  ///   - toLocalState: A key path that can get/set an array of `State` elements inside
+  ///   - toLocalState: A key path that can get/set an array of `State` elements inside.
   ///     `GlobalState`.
   ///   - toLocalAction: A case path that can extract/embed `(Int, Action)` from `GlobalAction`.
   ///   - toLocalEnvironment: A function that transforms `GlobalEnvironment` into `Environment`.
