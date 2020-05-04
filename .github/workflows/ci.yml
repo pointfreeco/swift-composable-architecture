@@ -9,12 +9,20 @@ on:
       - '*'
 
 jobs:
-  test:
-    name: Test
+  library:
     runs-on: macOS-latest
     steps:
       - uses: actions/checkout@v2
       - name: Select Xcode 11.4
         run: sudo xcode-select -s /Applications/Xcode_11.4.app
       - name: Run tests
-        run: make test-all
+        run: make test-swift
+
+  examples:
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Select Xcode 11.4
+        run: sudo xcode-select -s /Applications/Xcode_11.4.app
+      - name: Run tests
+        run: make test-workspace
