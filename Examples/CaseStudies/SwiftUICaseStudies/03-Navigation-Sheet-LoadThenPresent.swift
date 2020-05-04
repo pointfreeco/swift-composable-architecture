@@ -45,7 +45,7 @@ let lazySheetReducer = Reducer<
       state.isActivityIndicatorVisible = false
       state.optionalCounter = CounterState()
       return .none
-      
+
     case .optionalCounter:
       return .none
     }

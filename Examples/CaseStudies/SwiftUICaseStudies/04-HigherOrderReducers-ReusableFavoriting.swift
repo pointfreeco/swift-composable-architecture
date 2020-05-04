@@ -80,7 +80,7 @@ extension Reducer {
         case let .response(.failure(error)):
           state.error = error
           return .none
-          
+
         case let .response(.success(isFavorite)):
           state.isFavorite = isFavorite
           return .none

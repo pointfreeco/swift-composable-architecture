@@ -42,7 +42,7 @@ let eagerSheetReducer = Reducer<
     case .setSheetIsPresentedDelayCompleted:
       state.optionalCounter = CounterState()
       return .none
-      
+
     case .optionalCounter:
       return .none
     }
