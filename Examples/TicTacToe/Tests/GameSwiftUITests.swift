@@ -11,10 +11,9 @@ class GameSwiftUITests: XCTestCase {
       xPlayerName: "Blob Sr."
     ),
     reducer: gameReducer,
-    environment: GameEnvironment(),
-    state: \.view,
-    action: { $0 }
+    environment: GameEnvironment()
   )
+  .scope(state: \.view, action: { $0 })
 
   func testFlow_Winner_Quit() {
     self.store.assert(
