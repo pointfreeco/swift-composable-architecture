@@ -89,7 +89,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   ///  If you need to deliver more than one value to the effect, you should use the `Effect`
   ///  initializer that accepts a `Subscriber` value.
   ///
-  /// - Parameter work: A closure that takes an `callback` as an argument which can be used to feed
+  /// - Parameter work: A closure that takes a `callback` as an argument which can be used to feed
   ///   it `Output` values.
   public static func future(
     work: @escaping (@escaping (Result<Output, Failure>) -> Void) -> Void
