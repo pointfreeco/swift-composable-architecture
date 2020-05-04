@@ -201,20 +201,20 @@ final class EffectCancellationTests: XCTestCase {
     ]
 
     let effect = Effect.merge(
-      (1...10_000).map { idx -> Effect<Int, Never> in
+      (1...1_000).map { idx -> Effect<Int, Never> in
         let id = idx % 10
 
         return Effect.merge(
           Just(idx)
             .delay(
-              for: .microseconds(Int.random(in: 1...1_000)), scheduler: queues.randomElement()!
+              for: .microseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
             )
             .eraseToEffect()
             .cancellable(id: id),
 
           Just(())
             .delay(
-              for: .microseconds(Int.random(in: 1...1_000)), scheduler: queues.randomElement()!
+              for: .microseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
             )
             .flatMap { Effect.cancel(id: id) }
             .eraseToEffect()
