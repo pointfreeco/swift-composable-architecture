@@ -306,10 +306,10 @@ That is the basics of building and testing a feature in the Composable Architect
 
     In other ways TCA is a little more lax than the other libraries. For example, Elm controls what kinds of effects can be created via the `Cmd` type, but TCA allows an escape hatch to any kind of effect since `Effect` conforms to the Combine `Publisher` protocol.
 
-    And then there are certain things that TCA prioritizes highly that are not points of focus for Redux, Elm or most other libraries. For example, composition is very important aspect of TCA, which is the process of breaking down large features into smaller units that can be glued together. This aids in handling complex features as well as modularization for better isolated code base and improved compile times.
+    And then there are certain things that TCA prioritizes highly that are not points of focus for Redux, Elm or most other libraries. For example, composition is very important aspect of TCA, which is the process of breaking down large features into smaller units that can be glued together. This is accomplished with the `pullback` and `combine` operators on reducers, and it aids in handling complex features as well as modularization for better isolated code base and improved compile times.
   </details>
 
-* Why isn't `Store` thread safe? Why isn't `send` queued? Why isn't `send` run on the main thread?
+* Why isn't `Store` thread safe? <br> Why isn't `send` queued? <br> Why isn't `send` run on the main thread?
   <details>
     <summary>Expand to see answer</summary>
     When an action is sent to the `Store` a reducer is run on the current state, and this process cannot be done from multiple threads. A possible work around is to use a queue in `send`s implementation, but this introduces a few new complications:
@@ -320,7 +320,21 @@ That is the basics of building and testing a feature in the Composable Architect
 
     At the end of the day, we require `Store` to be used in much the same way that you interact with Apple's APIs. Just as `URLSession` delivers its results on a background thread, thus making you responsible for dispatching back to the main thread, the Composable Architecture makes you responsible for making sure to send actions on the main thread. If you are using an effect that may deliver its output on a non-main thread, you must explicitly perform `.receive(on:)` in order to force it back on the main thread.
 
-    This approach makes the fewest number of assumptions about how effects are created and transformed, and prevents unnecessary thread hops and re-dispatching. It also provides some testing benefits. If your effects were not responsible for their own scheduling, then in tests all of the effects would run synchronously and immediately. You would not be able to test how multiple in-flight effects interleave with each other and affect the state of your application. However, by leaving scheduling out of the `Store` we get to test these aspects of our effects if we so desire, or we can ignore if we prefer. We have that flexiblity.
+    This approach makes the fewest number of assumptions about how effects are created and transformed, and prevents unnecessary thread hops and re-dispatching. It also provides some testing benefits. If your effects were not responsible for their own scheduling, then in tests all of the effects would run synchronously and immediately. You would not be able to test how multiple in-flight effects interleave with each other and affect the state of your application. However, by leaving scheduling out of the `Store` we get to test these aspects of our effects if we so desire, or we can ignore if we prefer. We have that flexibility.
+
+    However, if you are still not a fan of our choice, then never fear! The Composable Architecture is flexible enough to allow you to introduce this functionality yourself if you so desire. It is possible to create a higher-order reducer that can force all effects to deliver their output on the main thread, regardless of where the effect does its work:
+
+    ```swift
+    extension Reducer {
+      func receive<S: Scheduler>(on scheduler: S) -> Self {
+        Self { state, action, environment in
+          self(&state, action, environment)
+            .receive(on: scheduler)
+            .eraseToEffect()
+        }
+      }
+    }
+    ```
   </details>
 
 ## Installation
