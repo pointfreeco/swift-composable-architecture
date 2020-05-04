@@ -111,9 +111,7 @@ import XCTest
 ///         $0.results = ["Composable Architecture"]
 ///       }
 ///     )
-public final class TestStore<
-  State, LocalState: Equatable, Action: Equatable, LocalAction, Environment
-> {
+public final class TestStore<State, LocalState, Action: Equatable, LocalAction, Environment> {
   private var environment: Environment
   private let fromLocalAction: (LocalAction) -> Action
   private let reducer: Reducer<State, Action, Environment>
@@ -157,7 +155,7 @@ extension TestStore where State == LocalState, Action == LocalAction {
   }
 }
 
-extension TestStore {
+extension TestStore where LocalState: Equatable {
   /// Asserts against a script of actions.
   public func assert(
     _ steps: Step...,
@@ -298,7 +296,9 @@ extension TestStore {
       )
     }
   }
+}
 
+extension TestStore {
   /// Scopes a reducer to assert against more local state and actions.
   ///
   ///   - toLocalState: A function that transforms the reducer's state into more local state. This
