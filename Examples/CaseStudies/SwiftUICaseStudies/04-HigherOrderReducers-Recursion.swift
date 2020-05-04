@@ -57,7 +57,7 @@ let nestedReducer = Reducer<
   case let .remove(indexSet):
     state.children.remove(atOffsets: indexSet)
     return .none
-    
+
   case let .rename(name):
     state.description = name
     return .none
