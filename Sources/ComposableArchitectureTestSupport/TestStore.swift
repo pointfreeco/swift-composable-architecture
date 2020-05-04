@@ -327,8 +327,8 @@ extension TestStore {
   ///   state. This state will be asserted against as it is mutated by the reducer. Useful for
   ///   testing view store state transformations.
   public func scope<S>(
-    state toLocalState: @escaping (LocalState) -> S,
-  ) -> TestStore<State, S, Action, Action, Environment> {
+    state toLocalState: @escaping (LocalState) -> S
+  ) -> TestStore<State, S, Action, LocalAction, Environment> {
     self.scope(state: toLocalState, action: { $0 })
   }
 
