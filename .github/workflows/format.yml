@@ -3,8 +3,6 @@ name: Format
 on:
   pull_request:
     branch: 'master'
-    paths:
-      - '**.swift'
 
 jobs:
   swift_format:
