@@ -50,6 +50,42 @@ public struct Reducer<State, Action, Environment> {
     self.reducer = reducer
   }
 
+  /// Creates a reducer from a reducer function signature that does not take the environment as
+  /// input, but instead returns a function that gets access to the environment. This makes it
+  /// *impossible* to access the environment and invoke any effects directly in the reducer, which
+  /// should never be done.
+  ///
+  /// For example:
+  ///
+  ///     struct MyState { var count = 0, text = "" }
+  ///     enum MyAction { case buttonTapped, textChanged(String) }
+  ///     struct MyEnvironment { var analyticsClient: AnalyticsClient }
+  ///
+  ///     let myReducer = Reducer<MyState, MyAction, MyEnvironment>.strict { state, action in
+  ///       switch action {
+  ///       case .buttonTapped:
+  ///         state.count += 1
+  ///         return { environment in
+  ///           environment.analyticsClient.track("Button Tapped")
+  ///         }
+  ///
+  ///       case .textChanged(let text):
+  ///         state.text = text
+  ///         return .none
+  ///       }
+  ///     }
+  ///
+  /// - Parameter reducer: A function signature that takes state and action, and returns a
+  ///   function that takes an environment and returns an effect.
+  /// - Returns: A reducer.
+  public static func strict(
+    _ reducer: @escaping (inout State, Action) -> (Environment) -> Effect<Action, Never>
+  ) -> Reducer {
+    .init { state, action, environment in
+      reducer(&state, action)(environment)
+    }
+  }
+
   /// A reducer that performs no state mutations and returns no effects.
   public static var empty: Reducer {
     Self { _, _, _ in .none }

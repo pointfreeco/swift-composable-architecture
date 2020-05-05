@@ -27,6 +27,16 @@ final class ReducerTests: XCTestCase {
     XCTAssertEqual(state, 1)
   }
 
+  func testStrictReducer() {
+    let reducer = Reducer<Int, Void, Void>.strict { state, _ in state += 1
+      return { _ in .none }
+    }
+
+    var state = 0
+    _ = reducer.callAsFunction(&state, ())
+    XCTAssertEqual(state, 1)
+  }
+
   func testCombine_EffectsAreMerged() {
     typealias Scheduler = AnySchedulerOf<DispatchQueue>
     enum Action: Equatable {
