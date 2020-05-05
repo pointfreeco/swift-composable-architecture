@@ -171,8 +171,6 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///     )
   ///
   /// - Parameters:
-  ///   - get: A function to get the state for the binding from the view
-  ///     store's full state.
   ///   - localStateToViewAction: A function that transforms the binding's value
   ///     into an action that can be sent to the store.
   /// - Returns: A binding.
