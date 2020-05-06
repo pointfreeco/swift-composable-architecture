@@ -53,7 +53,7 @@ final class IdentifiedArrayTests: XCTestCase {
     var array: IdentifiedArray = [
       User(id: 3, name: "Blob Sr."),
       User(id: 2, name: "Blob Jr."),
-      User(id: 1, name: "Blob")
+      User(id: 1, name: "Blob"),
     ]
 
     array.remove(at: 1)
@@ -69,7 +69,7 @@ final class IdentifiedArrayTests: XCTestCase {
     var array: IdentifiedArray = [
       User(id: 3, name: "Blob Sr."),
       User(id: 2, name: "Blob Jr."),
-      User(id: 1, name: "Blob")
+      User(id: 1, name: "Blob"),
     ]
 
     array.removeAll(where: { $0.name.starts(with: "Blob ") })
@@ -85,7 +85,7 @@ final class IdentifiedArrayTests: XCTestCase {
     var array: IdentifiedArray = [
       User(id: 3, name: "Blob Sr."),
       User(id: 2, name: "Blob Jr."),
-      User(id: 1, name: "Blob")
+      User(id: 1, name: "Blob"),
     ]
 
     array.remove(atOffsets: [0, 2])
@@ -101,7 +101,7 @@ final class IdentifiedArrayTests: XCTestCase {
     var array: IdentifiedArray = [
       User(id: 3, name: "Blob Sr."),
       User(id: 2, name: "Blob Jr."),
-      User(id: 1, name: "Blob")
+      User(id: 1, name: "Blob"),
     ]
 
     array.move(fromOffsets: [0], toOffset: 2)
