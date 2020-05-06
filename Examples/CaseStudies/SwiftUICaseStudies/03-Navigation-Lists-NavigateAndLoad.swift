@@ -49,14 +49,14 @@ let eagerListNavigationReducer = Reducer<
 
     case .setNavigation(selection: .none):
       if let selection = state.selection, let count = selection.value?.count {
-        state.rows[selection.id]?.count = count
+        state.rows[id: selection.id]?.count = count
         state.selection = nil
       }
       return .cancel(id: CancelId())
 
     case .setNavigationSelectionDelayCompleted:
       guard let id = state.selection?.id else { return .none }
-      state.selection?.value = CounterState(count: state.rows[id]?.count ?? 0)
+      state.selection?.value = CounterState(count: state.rows[id: id]?.count ?? 0)
       return .none
     }
   },
