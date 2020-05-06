@@ -52,15 +52,15 @@ let lazyListNavigationReducer = Reducer<
 
     case .setNavigation(selection: .none):
       if let selection = state.selection {
-        state.rows[selection.id]?.count = selection.count
+        state.rows[id: selection.id]?.count = selection.count
         state.selection = nil
       }
       return .none
 
     case let .setNavigationSelectionDelayCompleted(id):
-      state.rows[id]?.isActivityIndicatorVisible = false
+      state.rows[id: id]?.isActivityIndicatorVisible = false
       state.selection = Identified(
-        CounterState(count: state.rows[id]?.count ?? 0),
+        CounterState(count: state.rows[id: id]?.count ?? 0),
         id: id
       )
       return .none
