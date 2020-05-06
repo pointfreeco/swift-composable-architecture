@@ -1,7 +1,6 @@
-PLATFORM_IOS = iOS Simulator,name=iPhone 11 Pro Max,OS=13.4
+PLATFORM_IOS = iOS Simulator,name=iPhone 11 Pro Max,OS=13.4.1
 PLATFORM_MACOS = macOS
 PLATFORM_TVOS = tvOS Simulator,name=Apple TV 4K (at 1080p),OS=13.4
-PLATFORM_WATCHOS = watchOS Simulator,name=Apple Watch Series 4 - 44mm,OS=6.2
 
 default: test-all
 
