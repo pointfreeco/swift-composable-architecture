@@ -15,7 +15,7 @@ jobs:
       matrix:
         xcode:
           - 11.3
-          - 11.4
+          - 11.4.1
     steps:
       - uses: actions/checkout@v2
       - name: Select Xcode ${{ matrix.xcode }}
@@ -27,7 +27,7 @@ jobs:
     runs-on: macOS-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Select Xcode 11.4
-        run: sudo xcode-select -s /Applications/Xcode_11.4.app
+      - name: Select Xcode 11.4.1
+        run: sudo xcode-select -s /Applications/Xcode_11.4.1.app
       - name: Run tests
         run: make test-workspace
