@@ -194,6 +194,17 @@ public struct Reducer<State, Action, Environment> {
       guard let (index, localAction) = toLocalAction.extract(from: globalAction) else {
         return .none
       }
+      // NB: This does not need to be a fatal error because of the index subscript that follows it.
+      assert(
+        index < globalState[keyPath: toLocalState].endIndex,
+        """
+        Index out of range. This can happen when a reducer that can remove the last element from \
+        an array is then combined with a "forEach" from that array. To avoid this and other \
+        index-related gotchas, consider using an "IdentifiedArray" of state instead. Or, combine \
+        your reducers so that the "forEach" comes before any reducer that can remove elements from \
+        its array.
+        """
+      )
       return self.reducer(
         &globalState[keyPath: toLocalState][index],
         localAction,
@@ -238,7 +249,7 @@ public struct Reducer<State, Action, Environment> {
       guard let (id, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
       return self.optional
         .reducer(
-          &globalState[keyPath: toLocalState][id],
+          &globalState[keyPath: toLocalState][id: id],
           localAction,
           toLocalEnvironment(globalEnvironment)
         )
