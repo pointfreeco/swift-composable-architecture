@@ -96,9 +96,9 @@ where ID: Hashable {
     get {
       self.dictionary[id]
     }
-    _modify {
-      yield &self.dictionary[id]
-      if self.dictionary[id] == nil {
+    set {
+      self.dictionary[id] = newValue
+      if newValue == nil {
         self.ids.removeAll(where: { $0 == id })
       }
     }
