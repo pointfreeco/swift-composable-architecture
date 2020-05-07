@@ -29,6 +29,7 @@ struct BindingBasicsState: Equatable {
 enum BindingBasicsAction {
   case sliderValueChanged(Double)
   case stepCountChanged(Int)
+  case stepCountTextChanged(Int?)
   case textChange(String)
   case toggleChange(isOn: Bool)
 }
@@ -44,9 +45,12 @@ let bindingBasicsReducer = Reducer<
     state.sliderValue = value
     return .none
 
-  case let .stepCountChanged(count):
+  case let .stepCountChanged(count), let .stepCountTextChanged(.some(count)):
     state.sliderValue = .minimum(state.sliderValue, Double(count))
     state.stepCount = count
+    return .none
+
+  case .stepCountTextChanged(.none):
     return .none
 
   case let .textChange(text):
@@ -92,6 +96,20 @@ struct BindingBasicsView: View {
           .disabled(viewStore.toggleIsOn)
 
           HStack {
+            TextField(
+              "Formatted max slider value",
+              value: viewStore.binding(
+                get: \.stepCount,
+                send: BindingBasicsAction.stepCountTextChanged
+              ),
+              formatter: numberFormatter
+            )
+            .disableAutocorrection(true)
+            .font(Font.body.monospacedDigit())
+            .foregroundColor(viewStore.toggleIsOn ? .gray : .primary)
+          }
+
+          HStack {
             Text("Slider value: \(Int(viewStore.sliderValue))")
               .font(Font.body.monospacedDigit())
             Slider(
@@ -110,17 +128,6 @@ struct BindingBasicsView: View {
   }
 }
 
-private func alternate(_ string: String) -> String {
-  string
-    .enumerated()
-    .map { idx, char in
-      idx.isMultiple(of: 2)
-        ? char.uppercased()
-        : char.lowercased()
-    }
-    .joined()
-}
-
 struct BindingBasicsView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
@@ -134,3 +141,16 @@ struct BindingBasicsView_Previews: PreviewProvider {
     }
   }
 }
+
+private func alternate(_ string: String) -> String {
+  string
+    .enumerated()
+    .map { idx, char in
+      idx.isMultiple(of: 2)
+        ? char.uppercased()
+        : char.lowercased()
+    }
+    .joined()
+}
+
+private let numberFormatter = NumberFormatter()
