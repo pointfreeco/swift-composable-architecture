@@ -1,5 +1,6 @@
 # The Composable Architecture
 
+[![Swift 5.2](https://img.shields.io/badge/swift-5.2-ED523F.svg?style=flat)](https://swift.org/download/)
 [![Swift 5.1](https://img.shields.io/badge/swift-5.1-ED523F.svg?style=flat)](https://swift.org/download/)
 [![CI](https://github.com/pointfreeco/swift-composable-architecture/workflows/CI/badge.svg)](https://actions-badge.atrox.dev/pointfreeco/swift-composable-architecture/goto)
 [![@pointfreeco](https://img.shields.io/badge/contact-@pointfreeco-5AA9E7.svg?style=flat)](https://twitter.com/pointfreeco)
