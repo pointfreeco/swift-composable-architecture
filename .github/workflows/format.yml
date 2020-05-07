@@ -1,9 +1,7 @@
 name: Format
 
 on:
-  pull_request:
-    types:
-      - closed
+  push:
     branches:
       - master
 
