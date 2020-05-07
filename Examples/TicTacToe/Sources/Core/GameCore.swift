@@ -87,14 +87,15 @@ extension Array where Element == [Player?] {
 
   func hasWin(_ player: Player) -> Bool {
     let winConditions = [
-      [0,1,2], [3,4,5], [6,7,8],
-      [0,3,6], [1,4,7], [2,5,8],
-      [0,4,8], [6,4,2]
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+      [0, 4, 8], [6, 4, 2],
     ]
 
     for condition in winConditions {
-      let matchCount = condition
-        .map { self[$0%3][$0/3] }
+      let matchCount =
+        condition
+        .map { self[$0 % 3][$0 / 3] }
         .filter { $0 == player }
         .count
 
