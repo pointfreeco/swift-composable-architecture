@@ -26,6 +26,16 @@ This library provides a few core tools that can be used to build applications of
 * **Ergonomics**
   <br> How to accomplish all of the above in a simple API with as few concepts and moving parts as possible.
 
+## Learn More
+
+The Composable Architecture was designed over the course of many episodes on [Point-Free](https://www.pointfree.co), a video series exploring functional programming and the Swift language, hosted by [Brandon Williams](https://twitter.com/mbrandonw) and [Stephen Celis](https://twitter.com/stephencelis).
+
+To see all of the episodes, [click here](https://www.pointfree.co/collections/composable-architecture), and to see a tour of the library, [click here](https://www.pointfree.co/episodes/ep100-a-tour-of-the-composable-architecture-part-1).
+
+<a href="https://www.pointfree.co/collections/composable-architecture">
+  <img alt="video poster image" src="https://i.vimeocdn.com/video/850265054.jpg" width="600">
+</a>
+
 ## Examples
 
 [![Screen shots of example applications](https://d3rccdn33rt8ze.cloudfront.net/composable-architecture/demo-applications.png)](./Examples)
@@ -44,16 +54,6 @@ This repo comes with _lots_ of examples to demonstrate how to solve common and c
 * [Tic-Tac-Toe](./Examples/TicTacToe)
 * [Todos](./Examples/Todos)
 * [Voice memos](./Examples/VoiceMemos)
-
-## Learn More
-
-The Composable Architecture was designed over the course of many episodes on [Point-Free](https://www.pointfree.co), a video series exploring functional programming and the Swift language, hosted by [Brandon Williams](https://twitter.com/mbrandonw) and [Stephen Celis](https://twitter.com/stephencelis).
-
-To see all of the episodes, [click here](https://www.pointfree.co/collections/composable-architecture), and to see a tour of the library, [click here](https://www.pointfree.co/episodes/ep100-a-tour-of-the-composable-architecture-part-1).
-
-<a href="https://www.pointfree.co/collections/composable-architecture">
-  <img alt="video poster image" src="https://i.vimeocdn.com/video/850265054.jpg" width="600">
-</a>
 
 ## Basic Usage
 
