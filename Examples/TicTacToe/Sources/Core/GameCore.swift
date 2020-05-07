@@ -106,8 +106,6 @@ extension Array where Element == [Player?] {
   }
 
   public var hasWinner: Bool {
-    get {
-      hasWin(.x) || hasWin(.o)
-    }
+    hasWin(.x) || hasWin(.o)
   }
 }
