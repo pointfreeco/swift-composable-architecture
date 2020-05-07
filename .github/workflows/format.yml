@@ -2,9 +2,10 @@ name: Format
 
 on:
   pull_request:
-    types: [closed]
-  branches:
-    - master
+    types:
+      - closed
+    branches:
+      - master
 
 jobs:
   swift_format:
