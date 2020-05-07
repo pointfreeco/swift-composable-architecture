@@ -40,7 +40,7 @@ To see all of the episodes, [click here](https://www.pointfree.co/collections/co
 
 This repo comes with _lots_ of examples to demonstrate how to solve common and complex problems with the Composable Architecture. Check out [this](./Examples) directory to see them all, including:
 
-[![Screen shots of example applications](https://d3rccdn33rt8ze.cloudfront.net/composable-architecture/demo-applications.png)](./Examples#readme)
+[![Screen shots of example applications](https://d3rccdn33rt8ze.cloudfront.net/composable-architecture/demo-applications.png)](./Examples)
 
 * [Case Studies](./Examples/CaseStudies)
   * Getting started
