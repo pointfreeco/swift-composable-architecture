@@ -69,7 +69,7 @@ class NewGameViewController: UIViewController {
 
     let playerOTextField = UITextField()
     playerOTextField.borderStyle = .roundedRect
-    playerOTextField.placeholder = "Blob Sr."
+    playerOTextField.placeholder = "Blob Jr."
     playerOTextField.setContentCompressionResistancePriority(.required, for: .horizontal)
     playerOTextField.addTarget(
       self, action: #selector(playerOTextChanged(sender:)), for: .editingChanged)
