@@ -85,26 +85,27 @@ extension Array where Element == [Player?] {
     self.allSatisfy { row in row.allSatisfy { $0 != nil } }
   }
 
-  public var hasWinner: Bool {
-    // First row
-    if self[0][0] != nil && self[0][0] == self[0][1] && self[0][1] == self[0][2] { return true }
-    // Second row
-    if self[1][0] != nil && self[1][0] == self[1][1] && self[1][1] == self[1][2] { return true }
-    // Third row
-    if self[2][0] != nil && self[2][0] == self[2][1] && self[2][1] == self[2][2] { return true }
+  func hasWin(_ player: Player) -> Bool {
+    let winConditions = [
+      [0,1,2], [3,4,5], [6,7,8],
+      [0,3,6], [1,4,7], [2,5,8],
+      [0,4,8], [6,4,2]
+    ]
 
-    // First column
-    if self[0][0] != nil && self[0][0] == self[1][0] && self[1][0] == self[2][0] { return true }
-    // Second column
-    if self[0][1] != nil && self[0][1] == self[1][1] && self[1][1] == self[2][1] { return true }
-    // Third column
-    if self[0][2] != nil && self[0][2] == self[1][2] && self[1][2] == self[2][2] { return true }
+    for condition in winConditions {
+      let matchCount = condition
+        .map { self[$0%3][$0/3] }
+        .filter { $0 == player }
+        .count
 
-    // First diagonal
-    if self[0][0] != nil && self[0][0] == self[1][1] && self[1][1] == self[2][2] { return true }
-    // Second diagonal
-    if self[2][0] != nil && self[2][0] == self[1][1] && self[1][1] == self[0][2] { return true }
-
+      if matchCount == 3 {
+        return true
+      }
+    }
     return false
+  }
+
+  public var hasWinner: Bool {
+    hasWin(.x) || hasWin(.o)
   }
 }
