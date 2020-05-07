@@ -1,13 +1,17 @@
 name: Format
 
 on:
-  push:
-    branch: 'master'
+  pull_request:
+    types:
+      - closed
+    branches:
+      - master
 
 jobs:
   swift_format:
     name: swift-format
     runs-on: macOS-latest
+    if: github.event.pull_request.merged == 'true'
     steps:
       - uses: actions/checkout@v2
       - name: Install
