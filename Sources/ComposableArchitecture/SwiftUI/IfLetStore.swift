@@ -1,8 +1,9 @@
 import SwiftUI
 
 /// A view that safely unwraps a store of optional state in order to show one of two views.
-/// When the underlying state is non-`nil`, the `then` closure will be performed with a `Store`
-/// that holds onto non-optional state, and otherwise the `else` closure will be performed.
+///
+/// When the underlying state is non-`nil`, the `then` closure will be performed with a `Store` that
+/// holds onto non-optional state, and otherwise the `else` closure will be performed.
 ///
 /// This is useful for deciding between two views to show depending on an optional piece of state:
 ///
@@ -59,11 +60,8 @@ where IfContent: View, ElseContent: View {
       if let state = viewStore.state {
         return
           ViewBuilder.buildEither(first: self.ifContent(self.store.scope(state: { $0 ?? state })))
-          as _ConditionalContent<IfContent, ElseContent>
       } else {
-        return
-          ViewBuilder.buildEither(second: self.elseContent())
-          as _ConditionalContent<IfContent, ElseContent>
+        return ViewBuilder.buildEither(second: self.elseContent())
       }
     }
   }

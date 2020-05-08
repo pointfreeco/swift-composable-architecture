@@ -179,6 +179,15 @@ public final class Store<State, Action> {
     }
   }
 
+  public var stateless: Store<Void, Action> {
+    self.scope(state: { _ in () })
+  }
+
+  public var actionless: Store<State, Never> {
+    func absurd<A>(_ never: Never) -> A {}
+    return self.scope(state: { $0 }, action: absurd)
+  }
+
   private init(
     initialState: State,
     reducer: @escaping (inout State, Action) -> Effect<Action, Never>

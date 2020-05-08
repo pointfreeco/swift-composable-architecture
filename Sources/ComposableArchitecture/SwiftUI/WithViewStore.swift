@@ -76,6 +76,21 @@ extension WithViewStore where State: Equatable {
   }
 }
 
+extension WithViewStore where State == Void {
+  /// Initializes a structure that transforms a store into an observable view store in order to
+  /// compute views from equatable store state.
+  ///
+  /// - Parameters:
+  ///   - store: A store of equatable state.
+  ///   - content: A function that can generate content from a view store.
+  public init(
+    _ store: Store<State, Action>,
+    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.init(store, removeDuplicates: ==, content: content)
+  }
+}
+
 extension WithViewStore: DynamicViewContent where State: Collection, Content: DynamicViewContent {
   public typealias Data = State
 
