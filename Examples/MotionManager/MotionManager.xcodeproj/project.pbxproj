@@ -10,8 +10,6 @@
 		5A405A2E244F410F002D4C76 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A405A2D244F410F002D4C76 /* SceneDelegate.swift */; };
 		5A405A30244F410F002D4C76 /* MotionManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A405A2F244F410F002D4C76 /* MotionManagerView.swift */; };
 		5A405A32244F4110002D4C76 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5A405A31244F4110002D4C76 /* Assets.xcassets */; };
-		5A405A35244F4110002D4C76 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5A405A34244F4110002D4C76 /* Preview Assets.xcassets */; };
-		5A405A38244F4110002D4C76 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5A405A36244F4110002D4C76 /* LaunchScreen.storyboard */; };
 		5A89A1FA244F43DC00EF81FA /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = 5A89A1F9244F43DC00EF81FA /* ComposableArchitecture */; };
 		5A89A1FB244F43DC00EF81FA /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 5A89A1F9244F43DC00EF81FA /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		5A89A1FE244F441700EF81FA /* Client.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A89A1FD244F441700EF81FA /* Client.swift */; };
@@ -63,8 +61,6 @@
 		5A405A2D244F410F002D4C76 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		5A405A2F244F410F002D4C76 /* MotionManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionManagerView.swift; sourceTree = "<group>"; };
 		5A405A31244F4110002D4C76 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		5A405A34244F4110002D4C76 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		5A405A37244F4110002D4C76 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5A405A39244F4110002D4C76 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5A89A1FD244F441700EF81FA /* Client.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Client.swift; sourceTree = "<group>"; };
 		CA0F931C244FE3F000E85985 /* MotionManagerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MotionManagerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -122,18 +118,8 @@
 				5A405A2F244F410F002D4C76 /* MotionManagerView.swift */,
 				5A405A2D244F410F002D4C76 /* SceneDelegate.swift */,
 				5A405A31244F4110002D4C76 /* Assets.xcassets */,
-				5A405A36244F4110002D4C76 /* LaunchScreen.storyboard */,
-				5A405A33244F4110002D4C76 /* Preview Content */,
 			);
 			path = MotionManager;
-			sourceTree = "<group>";
-		};
-		5A405A33244F4110002D4C76 /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				5A405A34244F4110002D4C76 /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
 			sourceTree = "<group>";
 		};
 		5A89A1F8244F43DC00EF81FA /* Frameworks */ = {
@@ -252,8 +238,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5A405A38244F4110002D4C76 /* LaunchScreen.storyboard in Resources */,
-				5A405A35244F4110002D4C76 /* Preview Assets.xcassets in Resources */,
 				5A405A32244F4110002D4C76 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -298,17 +282,6 @@
 			targetProxy = CA0F9321244FE3F000E85985 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
-
-/* Begin PBXVariantGroup section */
-		5A405A36244F4110002D4C76 /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				5A405A37244F4110002D4C76 /* Base */,
-			);
-			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		5A405A3A244F4110002D4C76 /* Debug */ = {
@@ -430,7 +403,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_ASSET_PATHS = "\"MotionManager/Preview Content\"";
 				DEVELOPMENT_TEAM = A42K5AU657;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = MotionManager/Info.plist;
@@ -450,7 +422,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_ASSET_PATHS = "\"MotionManager/Preview Content\"";
 				DEVELOPMENT_TEAM = A42K5AU657;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = MotionManager/Info.plist;

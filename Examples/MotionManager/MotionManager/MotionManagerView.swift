@@ -65,9 +65,7 @@ struct AppView: View {
       VStack {
         Spacer(minLength: 100)
 
-        ZStack {
-          plot(buffer: viewStore.z, scale: 40)
-        }
+        plot(buffer: viewStore.z, scale: 40)
 
         Button(action: { viewStore.send(.recordingButtonTapped) }) {
           HStack {
@@ -117,15 +115,39 @@ func plot(buffer: [Double], scale: Double) -> Path {
 
 struct AppView_Previews: PreviewProvider {
   static var previews: some View {
-    AppView(
+    // Since MotionManager isn't usable in SwiftUI previews or simulators we create one that just
+    // sends a bunch of data on some sine curves.
+    var isStarted = false
+    let mockMotionClient = MotionClient(
+      create: { id in
+        Effect.timer(
+          id: id,
+          every: 0.01,
+          on: DispatchQueue.main
+        )
+          .filter { _ in isStarted }
+          .map { time in
+            let t = Double(time.dispatchTime.uptimeNanoseconds) / 500_000_000.0
+            return .motionUpdate(
+              .init(
+                gravity: .init(x: sin(2 * t), y: -cos(-2 * t), z: sin(3 * t)),
+                userAcceleration: .init(x: -cos(-3 * t), y: sin(2 * t), z: -cos(t))
+              )
+            )
+        }
+        .eraseToEffect()
+    },
+      startDeviceMotionUpdates: { _ in .fireAndForget { isStarted = true } },
+      stopDeviceMotionUpdates: { _ in .fireAndForget { isStarted = false } }
+    )
+
+    return AppView(
       store: Store(
         initialState: AppState(
-          isRecording: false,
-          z: (1...350)
-            .map { sin(Double($0) / 10) }
+          z: (1...350).map { 2 * sin(Double($0) / 10) }
         ),
         reducer: appReducer,
-        environment: .init(motionClient: .live)
+        environment: .init(motionClient: mockMotionClient)
       )
     )
   }
