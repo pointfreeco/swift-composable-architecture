@@ -92,7 +92,7 @@ class LazyNavigationViewController: UIViewController {
       .store(in: &self.cancellables)
 
     self.store
-      .scope(state: \.optionalCounter, action: LazyNavigationAction.optionalCounter)
+      .scope(state: { $0.optionalCounter }, action: LazyNavigationAction.optionalCounter)
       .ifLet(
         then: { [weak self] store in
           self?.navigationController?.pushViewController(

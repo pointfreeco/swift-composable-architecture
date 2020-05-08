@@ -18,7 +18,7 @@ public struct GameView: View {
 
   public var body: some View {
     GeometryReader { proxy in
-      WithViewStore(self.store.scope(state: \.view)) { viewStore in
+      WithViewStore(self.store.scope(state: { $0.view })) { viewStore in
         VStack(spacing: 0.0) {
           VStack {
             Text(viewStore.title)

@@ -214,7 +214,7 @@ struct DownloadComponent<ID: Equatable>: View {
         }
       }
       .alert(
-        item: viewStore.binding(get: \.alert, send: .alert(.dismiss))
+        item: viewStore.binding(get: { $0.alert }, send: .alert(.dismiss))
       ) { alert in
         Alert(
           title: Text(alert.title),

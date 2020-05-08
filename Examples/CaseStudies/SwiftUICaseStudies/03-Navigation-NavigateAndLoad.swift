@@ -66,12 +66,12 @@ struct EagerNavigationView: View {
           NavigationLink(
             destination: IfLetStore(
               self.store.scope(
-                state: \.optionalCounter, action: EagerNavigationAction.optionalCounter),
+                state: { $0.optionalCounter }, action: EagerNavigationAction.optionalCounter),
               then: CounterView.init(store:),
               else: ActivityIndicator()
             ),
             isActive: viewStore.binding(
-              get: \.isNavigationActive,
+              get: { $0.isNavigationActive },
               send: EagerNavigationAction.setNavigation(isActive:)
             )
           ) {

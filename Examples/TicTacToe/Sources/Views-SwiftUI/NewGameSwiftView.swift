@@ -28,13 +28,13 @@ public struct NewGameView: View {
   }
 
   public var body: some View {
-    WithViewStore(self.store.scope(state: \.view, action: NewGameAction.view)) { viewStore in
+    WithViewStore(self.store.scope(state: { $0.view }, action: NewGameAction.view)) { viewStore in
       VStack {
         Form {
           Section(header: Text("X Player Name")) {
             TextField(
               "Blob Sr.",
-              text: viewStore.binding(get: \.xPlayerName, send: ViewAction.xPlayerNameChanged)
+              text: viewStore.binding(get: { $0.xPlayerName }, send: ViewAction.xPlayerNameChanged)
             )
             .autocapitalization(.words)
             .disableAutocorrection(true)
@@ -43,7 +43,7 @@ public struct NewGameView: View {
           Section(header: Text("O Player Name")) {
             TextField(
               "Blob Jr.",
-              text: viewStore.binding(get: \.oPlayerName, send: ViewAction.oPlayerNameChanged)
+              text: viewStore.binding(get: { $0.oPlayerName }, send: ViewAction.oPlayerNameChanged)
             )
             .autocapitalization(.words)
             .disableAutocorrection(true)
@@ -52,11 +52,11 @@ public struct NewGameView: View {
           Section {
             NavigationLink(
               destination: IfLetStore(
-                self.store.scope(state: \.game, action: NewGameAction.game),
+                self.store.scope(state: { $0.game }, action: NewGameAction.game),
                 then: GameView.init(store:)
               ),
               isActive: viewStore.binding(
-                get: \.isGameActive,
+                get: { $0.isGameActive },
                 send: { $0 ? .letsPlayButtonTapped : .gameDismissed }
               )
             ) {

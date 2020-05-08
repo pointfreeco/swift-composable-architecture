@@ -24,7 +24,7 @@ class TwoFactorSwiftUITests: XCTestCase {
         mainQueue: AnyScheduler(self.scheduler)
       )
     )
-    .scope(state: \.view, action: TwoFactorAction.view)
+    .scope(state: { $0.view }, action: TwoFactorAction.view)
 
     store.assert(
       .environment {
@@ -74,7 +74,7 @@ class TwoFactorSwiftUITests: XCTestCase {
         mainQueue: AnyScheduler(self.scheduler)
       )
     )
-    .scope(state: \.view, action: TwoFactorAction.view)
+    .scope(state: { $0.view }, action: TwoFactorAction.view)
 
     store.assert(
       .send(.codeChanged("1234")) {
