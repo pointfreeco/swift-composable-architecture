@@ -166,8 +166,8 @@ extension TestStore where LocalState: Equatable {
 
     var cancellables: [AnyCancellable] = []
 
-    func runReducer(state: inout State, action: Action) {
-      let effect = self.reducer.callAsFunction(&state, action, self.environment)
+    func runReducer(action: Action) {
+      let effect = self.reducer.callAsFunction(&self.state, action, self.environment)
       var isComplete = false
       var cancellable: AnyCancellable?
       cancellable = effect.sink(
@@ -201,7 +201,7 @@ extension TestStore where LocalState: Equatable {
             file: step.file, line: step.line
           )
         }
-        runReducer(state: &self.state, action: self.fromLocalAction(action))
+        runReducer(action: self.fromLocalAction(action))
         update(&expectedState)
 
       case let .receive(expectedAction, update):
@@ -229,7 +229,7 @@ extension TestStore where LocalState: Equatable {
             line: step.line
           )
         }
-        runReducer(state: &self.state, action: receivedAction)
+        runReducer(action: receivedAction)
         update(&expectedState)
 
       case let .environment(work):
