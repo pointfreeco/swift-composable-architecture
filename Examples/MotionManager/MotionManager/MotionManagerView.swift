@@ -136,11 +136,7 @@ struct AppView_Previews: PreviewProvider {
     var isStarted = false
     let mockMotionClient = MotionClient(
       create: { id in
-        Effect.timer(
-          id: id,
-          every: 0.01,
-          on: DispatchQueue.main
-        )
+        Effect.timer(id: id, every: 0.01, on: DispatchQueue.main)
           .filter { _ in isStarted }
           .map { time in
             let t = Double(time.dispatchTime.uptimeNanoseconds) / 500_000_000.0
