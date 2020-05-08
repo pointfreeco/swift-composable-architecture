@@ -2,6 +2,18 @@ import ComposableArchitecture
 import CoreMotion
 import SwiftUI
 
+private let readMe = """
+This demonstrates how to work with the MotionManager API from Apple's Motion framework.
+
+Unfortunately the Motion APIs are not available in SwiftUI previews or simulators. However, \
+thanks to how the Composable Architecture models its dependencies and effects, it is trivial \
+to substitute a mock MotionClient into the SwiftUI preview so that we can still play around with \
+its basic functionality.
+
+Here we are creating a mock MotionClient that simulates motion data by running a timer that emits \
+sinusoidal values.
+"""
+
 struct AppState: Equatable {
   var alertTitle: String?
   var isRecording = false
@@ -63,12 +75,7 @@ struct AppView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       VStack {
-        Text("""
-This demonstrates how to work with the MotionManager API from Apple's Motion framework.
-
-Unfortunately the Motion APIs are not available in SwiftUI previews or simulators. However, thanks to how the Composable Architecture models its dependencies and effects, it is trivial to substitute a mock MotionClient into the SwiftUI preview so that we can still play around with its basic functionality.
-"""
-        )
+        Text(readMe)
           .multilineTextAlignment(.leading)
           .layoutPriority(1)
 
