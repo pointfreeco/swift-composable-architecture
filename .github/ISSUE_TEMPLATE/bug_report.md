@@ -8,23 +8,26 @@ assignees: ''
 ---
 
 **Describe the bug**
-A clear and concise description of what the bug is.
+Give a clear and concise description of what the bug is.
 
 **To Reproduce**
+Zip up a project that reproduces the behavior and attach it by dragging it here.
+
 ```swift
-// Code to reproduce the behavior:
+// And/or enter code that reproduces the behavior here.
 
 ```
 
 **Expected behavior**
-A clear and concise description of what you expected to happen.
+Give a clear and concise description of what you expected to happen.
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
 **Environment**
- - OS: [e.g. iOS]
- - Version [e.g. 13]
+ - Xcode [e.g. 11.4.1]
+ - Swift [e.g. 5.2.2]
+ - OS (if applicable): [e.g. iOS 13]
 
 **Additional context**
-Add any other context about the problem here.
+Add any more context about the problem here.
