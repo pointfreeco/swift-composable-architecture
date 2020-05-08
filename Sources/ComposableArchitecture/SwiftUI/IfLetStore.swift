@@ -59,11 +59,11 @@ where IfContent: View, ElseContent: View {
       if let state = viewStore.state {
         return
           ViewBuilder.buildEither(first: self.ifContent(self.store.scope(state: { $0 ?? state })))
-            as _ConditionalContent<IfContent, ElseContent>
+          as _ConditionalContent<IfContent, ElseContent>
       } else {
         return
           ViewBuilder.buildEither(second: self.elseContent())
-            as _ConditionalContent<IfContent, ElseContent>
+          as _ConditionalContent<IfContent, ElseContent>
       }
     }
   }
