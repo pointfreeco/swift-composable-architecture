@@ -55,17 +55,15 @@ where IfContent: View, ElseContent: View {
     WithViewStore(
       self.store,
       removeDuplicates: { ($0 != nil) == ($1 != nil) }
-    ) { viewStore in
-      Group<_ConditionalContent<IfContent, ElseContent>> {
-        if let state = viewStore.state {
-          return ViewBuilder.buildEither(
-            first: self.ifContent(
-              self.store.scope(state: { $0 ?? state })
-            )
-          )
-        } else {
-          return ViewBuilder.buildEither(second: self.elseContent())
-        }
+    ) { viewStore -> _ConditionalContent<IfContent, ElseContent> in
+      if let state = viewStore.state {
+        return
+          ViewBuilder.buildEither(first: self.ifContent(self.store.scope(state: { $0 ?? state })))
+            as _ConditionalContent<IfContent, ElseContent>
+      } else {
+        return
+          ViewBuilder.buildEither(second: self.elseContent())
+            as _ConditionalContent<IfContent, ElseContent>
       }
     }
   }
