@@ -63,6 +63,15 @@ struct AppView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       VStack {
+        Text("""
+This demonstrates how to work with the MotionManager API from Apple's Motion framework.
+
+Unfortunately the Motion APIs are not available in SwiftUI previews or simulators. However, thanks to how the Composable Architecture models its dependencies and effects, it is trivial to substitute a mock MotionClient into the SwiftUI preview so that we can still play around with its basic functionality.
+"""
+        )
+          .multilineTextAlignment(.leading)
+          .layoutPriority(1)
+
         Spacer(minLength: 100)
 
         plot(buffer: viewStore.z, scale: 40)
@@ -130,7 +139,7 @@ struct AppView_Previews: PreviewProvider {
             let t = Double(time.dispatchTime.uptimeNanoseconds) / 500_000_000.0
             return .motionUpdate(
               .init(
-                gravity: .init(x: sin(2 * t), y: -cos(-2 * t), z: sin(3 * t)),
+                gravity: .init(x: sin(2 * t), y: -cos(-t), z: sin(3 * t)),
                 userAcceleration: .init(x: -cos(-3 * t), y: sin(2 * t), z: -cos(t))
               )
             )
@@ -144,7 +153,9 @@ struct AppView_Previews: PreviewProvider {
     return AppView(
       store: Store(
         initialState: AppState(
-          z: (1...350).map { 2 * sin(Double($0) / 10) }
+          z: (1...350).map {
+            2 * sin(Double($0) / 20) + cos(Double($0) / 8)
+          }
         ),
         reducer: appReducer,
         environment: .init(motionClient: mockMotionClient)
