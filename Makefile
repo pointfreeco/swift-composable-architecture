@@ -14,46 +14,57 @@ test-swift:
 
 test-workspace:
 	xcodebuild test \
+		-workspace ./Examples/ComposableArchitecture.xcworkspace \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_IOS)" \
 		-quiet
 	xcodebuild test \
+		-workspace ./Examples/ComposableArchitecture.xcworkspace \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_MACOS)" \
 		-quiet
 	xcodebuild test \
+		-workspace ./Examples/ComposableArchitecture.xcworkspace \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_TVOS)" \
 		-quiet
 	xcodebuild test \
+		-workspace ./Examples/ComposableArchitecture.xcworkspace \
 		-scheme "CaseStudies (SwiftUI)" \
 		-destination platform="$(PLATFORM_IOS)" \
 		-quiet
 	xcodebuild test \
+		-workspace ./Examples/ComposableArchitecture.xcworkspace \
 		-scheme "CaseStudies (UIKit)" \
 		-destination platform="$(PLATFORM_IOS)" \
 		-quiet
 	xcodebuild test \
+		-workspace ./Examples/ComposableArchitecture.xcworkspace \
 		-scheme MotionManager \
 		-destination platform="$(PLATFORM_IOS)" \
 		-quiet
 	xcodebuild test \
+		-workspace ./Examples/ComposableArchitecture.xcworkspace \
 		-scheme Search \
 		-destination platform="$(PLATFORM_IOS)" \
 		-quiet
 	xcodebuild test \
+		-workspace ./Examples/ComposableArchitecture.xcworkspace \
 		-scheme SpeechRecognition \
 		-destination platform="$(PLATFORM_IOS)" \
 		-quiet
 	xcodebuild test \
+		-workspace ./Examples/ComposableArchitecture.xcworkspace \
 		-scheme TicTacToe \
 		-destination platform="$(PLATFORM_IOS)" \
 		-quiet
 	xcodebuild test \
+		-workspace ./Examples/ComposableArchitecture.xcworkspace \
 		-scheme Todos \
 		-destination platform="$(PLATFORM_IOS)" \
 		-quiet
 	xcodebuild test \
+		-workspace ./Examples/ComposableArchitecture.xcworkspace \
 		-scheme VoiceMemos \
 		-destination platform="$(PLATFORM_IOS)" \
 		-quiet
