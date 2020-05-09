@@ -6,7 +6,6 @@ import Foundation
 struct Location: Decodable, Equatable {
   var id: Int
   var title: String
-
 }
 
 struct LocationWeather: Decodable, Equatable {

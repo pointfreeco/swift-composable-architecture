@@ -178,6 +178,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				DCFC51462466F42900A0B8CF /* PBXTargetDependency */,
 			);
 			name = VoiceMemos;
 			packageProductDependencies = (
@@ -297,6 +298,10 @@
 			target = DC5BDCA924589177009C65A3 /* VoiceMemos */;
 			targetProxy = DC5BDCC124589179009C65A3 /* PBXContainerItemProxy */;
 		};
+		DCFC51462466F42900A0B8CF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = DCFC51452466F42900A0B8CF /* ComposableArchitecture */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -350,7 +355,6 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.3;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -404,7 +408,6 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -456,7 +459,6 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -476,7 +478,6 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -530,6 +531,10 @@
 		DC5BDF3024589267009C65A3 /* ComposableArchitectureTestSupport */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitectureTestSupport;
+		};
+		DCFC51452466F42900A0B8CF /* ComposableArchitecture */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ComposableArchitecture;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

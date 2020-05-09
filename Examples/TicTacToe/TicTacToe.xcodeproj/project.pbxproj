@@ -1157,7 +1157,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF4CE242D0BA900E4639F /* PBXTargetDependency */,
 				CA0A5778242AA3A900BA537D /* PBXTargetDependency */,
 			);
 			name = TicTacToeTests;
@@ -1251,7 +1250,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF4DE242D0C0100E4639F /* PBXTargetDependency */,
 				DC919475242013DC00A5BE1F /* PBXTargetDependency */,
 			);
 			name = LoginCoreTests;
@@ -1299,7 +1297,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF4E8242D0C2800E4639F /* PBXTargetDependency */,
 				DC9194BD2420142700A5BE1F /* PBXTargetDependency */,
 			);
 			name = LoginSwiftUITests;
@@ -1347,7 +1344,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF4F2242D0C5A00E4639F /* PBXTargetDependency */,
 				DC9194DF2420144700A5BE1F /* PBXTargetDependency */,
 			);
 			name = TwoFactorCoreTests;
@@ -1395,7 +1391,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF506242D0CAC00E4639F /* PBXTargetDependency */,
 				DC91950324201A7900A5BE1F /* PBXTargetDependency */,
 			);
 			name = NewGameCoreTests;
@@ -1443,7 +1438,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF510242D0CD400E4639F /* PBXTargetDependency */,
 				DC91952524201A8100A5BE1F /* PBXTargetDependency */,
 			);
 			name = NewGameSwiftUITests;
@@ -1489,7 +1483,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF51A242D0CF600E4639F /* PBXTargetDependency */,
 				DC91954724201A8700A5BE1F /* PBXTargetDependency */,
 			);
 			name = GameCoreTests;
@@ -1536,7 +1529,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF526242D0D1B00E4639F /* PBXTargetDependency */,
 				DC91956924201A8E00A5BE1F /* PBXTargetDependency */,
 			);
 			name = GameSwiftUITests;
@@ -1583,7 +1575,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF4FC242D0C8800E4639F /* PBXTargetDependency */,
 				DCAF10D3242027D400483288 /* PBXTargetDependency */,
 			);
 			name = TwoFactorSwiftUITests;
@@ -1632,7 +1623,6 @@
 			);
 			dependencies = (
 				DCAF10F7242028DF00483288 /* PBXTargetDependency */,
-				DCEAF4C1242D091300E4639F /* PBXTargetDependency */,
 			);
 			name = AppCoreTests;
 			packageProductDependencies = (
@@ -2360,17 +2350,9 @@
 			isa = PBXTargetDependency;
 			productRef = DCEAF4BB242D08FC00E4639F /* ComposableArchitecture */;
 		};
-		DCEAF4C1242D091300E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF4C0242D091300E4639F /* ComposableArchitectureTestSupport */;
-		};
 		DCEAF4C6242D092700E4639F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			productRef = DCEAF4C5242D092700E4639F /* ComposableArchitecture */;
-		};
-		DCEAF4CE242D0BA900E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF4CD242D0BA900E4639F /* ComposableArchitectureTestSupport */;
 		};
 		DCEAF4D4242D0BBE00E4639F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -2380,65 +2362,33 @@
 			isa = PBXTargetDependency;
 			productRef = DCEAF4D8242D0BE500E4639F /* ComposableArchitecture */;
 		};
-		DCEAF4DE242D0C0100E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF4DD242D0C0100E4639F /* ComposableArchitectureTestSupport */;
-		};
 		DCEAF4E3242D0C1100E4639F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			productRef = DCEAF4E2242D0C1100E4639F /* ComposableArchitecture */;
-		};
-		DCEAF4E8242D0C2800E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF4E7242D0C2800E4639F /* ComposableArchitectureTestSupport */;
 		};
 		DCEAF4ED242D0C3D00E4639F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			productRef = DCEAF4EC242D0C3D00E4639F /* ComposableArchitecture */;
 		};
-		DCEAF4F2242D0C5A00E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF4F1242D0C5A00E4639F /* ComposableArchitectureTestSupport */;
-		};
 		DCEAF4F7242D0C7A00E4639F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			productRef = DCEAF4F6242D0C7A00E4639F /* ComposableArchitecture */;
-		};
-		DCEAF4FC242D0C8800E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF4FB242D0C8800E4639F /* ComposableArchitectureTestSupport */;
 		};
 		DCEAF501242D0C9900E4639F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			productRef = DCEAF500242D0C9900E4639F /* ComposableArchitecture */;
 		};
-		DCEAF506242D0CAC00E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF505242D0CAC00E4639F /* ComposableArchitectureTestSupport */;
-		};
 		DCEAF50B242D0CBE00E4639F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			productRef = DCEAF50A242D0CBE00E4639F /* ComposableArchitecture */;
-		};
-		DCEAF510242D0CD400E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF50F242D0CD400E4639F /* ComposableArchitectureTestSupport */;
 		};
 		DCEAF515242D0CE500E4639F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			productRef = DCEAF514242D0CE500E4639F /* ComposableArchitecture */;
 		};
-		DCEAF51A242D0CF600E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF519242D0CF600E4639F /* ComposableArchitectureTestSupport */;
-		};
 		DCEAF51F242D0D0600E4639F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			productRef = DCEAF51E242D0D0600E4639F /* ComposableArchitecture */;
-		};
-		DCEAF526242D0D1B00E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF525242D0D1B00E4639F /* ComposableArchitectureTestSupport */;
 		};
 		DCEAF52B242D0D2D00E4639F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -2502,7 +2452,6 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2522,7 +2471,6 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2586,7 +2534,6 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.3;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -2640,7 +2587,6 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -3869,10 +3815,6 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
 		};
-		DCEAF4C0242D091300E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
 		DCEAF4C2242D091900E4639F /* ComposableArchitectureTestSupport */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitectureTestSupport;
@@ -3884,10 +3826,6 @@
 		DCEAF4CA242D093100E4639F /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
-		};
-		DCEAF4CD242D0BA900E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
 		};
 		DCEAF4CF242D0BB500E4639F /* ComposableArchitectureTestSupport */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -3909,10 +3847,6 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
 		};
-		DCEAF4DD242D0C0100E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
 		DCEAF4DF242D0C0500E4639F /* ComposableArchitectureTestSupport */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitectureTestSupport;
@@ -3924,10 +3858,6 @@
 		DCEAF4E4242D0C1500E4639F /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
-		};
-		DCEAF4E7242D0C2800E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
 		};
 		DCEAF4E9242D0C2B00E4639F /* ComposableArchitectureTestSupport */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -3941,10 +3871,6 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
 		};
-		DCEAF4F1242D0C5A00E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
 		DCEAF4F3242D0C5F00E4639F /* ComposableArchitectureTestSupport */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitectureTestSupport;
@@ -3956,10 +3882,6 @@
 		DCEAF4F8242D0C7D00E4639F /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
-		};
-		DCEAF4FB242D0C8800E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
 		};
 		DCEAF4FD242D0C8D00E4639F /* ComposableArchitectureTestSupport */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -3973,10 +3895,6 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
 		};
-		DCEAF505242D0CAC00E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
 		DCEAF507242D0CB300E4639F /* ComposableArchitectureTestSupport */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitectureTestSupport;
@@ -3988,10 +3906,6 @@
 		DCEAF50C242D0CC700E4639F /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
-		};
-		DCEAF50F242D0CD400E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
 		};
 		DCEAF511242D0CDC00E4639F /* ComposableArchitectureTestSupport */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -4005,10 +3919,6 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
 		};
-		DCEAF519242D0CF600E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
 		DCEAF51B242D0CFB00E4639F /* ComposableArchitectureTestSupport */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitectureTestSupport;
@@ -4020,10 +3930,6 @@
 		DCEAF520242D0D0C00E4639F /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
-		};
-		DCEAF525242D0D1B00E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
 		};
 		DCEAF527242D0D1F00E4639F /* ComposableArchitectureTestSupport */ = {
 			isa = XCSwiftPackageProductDependency;
