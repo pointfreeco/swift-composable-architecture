@@ -436,18 +436,20 @@
   private typealias XCTCurrentTestCase = @convention(c) () -> AnyObject
   private typealias XCTFailureHandler = @convention(c) (
     AnyObject, Bool, UnsafePointer<CChar>, UInt, String, String?
-    ) -> Void
+  ) -> Void
 
   private let _XCTest = NSClassFromString("XCTest")
     .flatMap(Bundle.init(for:))
     .flatMap({ $0.executablePath })
     .flatMap({ dlopen($0, RTLD_NOW) })
 
-  private let _XCTFailureHandler = _XCTest
+  private let _XCTFailureHandler =
+    _XCTest
     .flatMap { dlsym($0, "_XCTFailureHandler") }
     .map({ unsafeBitCast($0, to: XCTFailureHandler.self) })
 
-  private let _XCTCurrentTestCase = _XCTest
+  private let _XCTCurrentTestCase =
+    _XCTest
     .flatMap { dlsym($0, "_XCTCurrentTestCase") }
     .map({ unsafeBitCast($0, to: XCTCurrentTestCase.self) })
 
