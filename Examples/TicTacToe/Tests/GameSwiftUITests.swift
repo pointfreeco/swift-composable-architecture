@@ -1,4 +1,4 @@
-import ComposableArchitectureTestSupport
+import ComposableArchitecture
 import GameCore
 import XCTest
 

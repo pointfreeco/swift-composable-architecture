@@ -15,37 +15,48 @@ test-swift:
 test-workspace:
 	xcodebuild test \
 		-scheme ComposableArchitecture \
-		-destination platform="$(PLATFORM_IOS)"
+		-destination platform="$(PLATFORM_IOS)" \
+		-quiet
 	xcodebuild test \
 		-scheme ComposableArchitecture \
-		-destination platform="$(PLATFORM_MACOS)"
+		-destination platform="$(PLATFORM_MACOS)" \
+		-quiet
 	xcodebuild test \
 		-scheme ComposableArchitecture \
-		-destination platform="$(PLATFORM_TVOS)"
+		-destination platform="$(PLATFORM_TVOS)" \
+		-quiet
 	xcodebuild test \
 		-scheme "CaseStudies (SwiftUI)" \
-		-destination platform="$(PLATFORM_IOS)"
+		-destination platform="$(PLATFORM_IOS)" \
+		-quiet
 	xcodebuild test \
 		-scheme "CaseStudies (UIKit)" \
-		-destination platform="$(PLATFORM_IOS)"
+		-destination platform="$(PLATFORM_IOS)" \
+		-quiet
 	xcodebuild test \
 		-scheme MotionManager \
-		-destination platform="$(PLATFORM_IOS)"
+		-destination platform="$(PLATFORM_IOS)" \
+		-quiet
 	xcodebuild test \
 		-scheme Search \
-		-destination platform="$(PLATFORM_IOS)"
+		-destination platform="$(PLATFORM_IOS)" \
+		-quiet
 	xcodebuild test \
 		-scheme SpeechRecognition \
-		-destination platform="$(PLATFORM_IOS)"
+		-destination platform="$(PLATFORM_IOS)" \
+		-quiet
 	xcodebuild test \
 		-scheme TicTacToe \
-		-destination platform="$(PLATFORM_IOS)"
+		-destination platform="$(PLATFORM_IOS)" \
+		-quiet
 	xcodebuild test \
 		-scheme Todos \
-		-destination platform="$(PLATFORM_IOS)"
+		-destination platform="$(PLATFORM_IOS)" \
+		-quiet
 	xcodebuild test \
 		-scheme VoiceMemos \
-		-destination platform="$(PLATFORM_IOS)"
+		-destination platform="$(PLATFORM_IOS)" \
+		-quiet
 
 format:
 	swift format --in-place --recursive .
