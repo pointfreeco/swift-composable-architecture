@@ -1,7 +1,5 @@
 import Combine
-import XCTest
-
-@testable import ComposableArchitecture
+import Foundation
 
 /// A testable runtime for a reducer.
 ///
@@ -191,7 +189,7 @@ extension TestStore where LocalState: Equatable {
       switch step.type {
       case let .send(action, update):
         if !receivedActions.isEmpty {
-          XCTFail(
+          _XCTFail(
             """
             Must handle \(receivedActions.count) received \
             action\(receivedActions.count == 1 ? "" : "s") before sending an action: …
@@ -206,7 +204,7 @@ extension TestStore where LocalState: Equatable {
 
       case let .receive(expectedAction, update):
         guard !receivedActions.isEmpty else {
-          XCTFail(
+          _XCTFail(
             """
             Expected to receive an action, but received none.
             """,
@@ -221,7 +219,7 @@ extension TestStore where LocalState: Equatable {
             debugDiff(expectedAction, receivedAction)
             .map { ": …\n\n\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
             ?? ""
-          XCTFail(
+          _XCTFail(
             """
             Received unexpected action\(diff)
             """,
@@ -234,7 +232,7 @@ extension TestStore where LocalState: Equatable {
 
       case let .environment(work):
         if !receivedActions.isEmpty {
-          XCTFail(
+          _XCTFail(
             """
             Must handle \(receivedActions.count) received \
             action\(receivedActions.count == 1 ? "" : "s") before performing this work: …
@@ -254,7 +252,7 @@ extension TestStore where LocalState: Equatable {
           debugDiff(expectedState, actualState)
           .map { ": …\n\n\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
           ?? ""
-        XCTFail(
+        _XCTFail(
           """
           State change does not match expectation\(diff)
           """,
@@ -265,7 +263,7 @@ extension TestStore where LocalState: Equatable {
     }
 
     if !receivedActions.isEmpty {
-      XCTFail(
+      _XCTFail(
         """
         Received \(receivedActions.count) unexpected \
         action\(receivedActions.count == 1 ? "" : "s"): …
@@ -277,7 +275,7 @@ extension TestStore where LocalState: Equatable {
       )
     }
     if !cancellables.isEmpty {
-      XCTFail(
+      _XCTFail(
         """
         Some effects are still running. All effects must complete by the end of the assertion.
 
@@ -413,4 +411,25 @@ extension TestStore {
       case environment((inout Environment) -> Void)
     }
   }
+}
+
+private func _XCTFail(_ message: String = "", file: StaticString = #file, line: UInt = #line) {
+  guard
+    let _XCTest = NSClassFromString("XCTest")
+      .flatMap(Bundle.init(for:))
+      .flatMap({ $0.executablePath })
+      .flatMap({ dlopen($0, RTLD_NOW) })
+    else { return }
+
+  guard
+    let _XCTFailureHandler = dlsym(_XCTest, "_XCTFailureHandler")
+      .map({ unsafeBitCast($0, to: XCTFailureHandler.self) })
+    else { return }
+
+  guard
+    let _XCTCurrentTestCase = dlsym(_XCTest, "_XCTCurrentTestCase")
+      .map({ unsafeBitCast($0, to: XCTCurrentTestCase.self) })
+    else { return }
+
+  _XCTFailureHandler(_XCTCurrentTestCase(), true, "\(file)", line, message, nil)
 }

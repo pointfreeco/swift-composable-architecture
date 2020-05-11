@@ -24,6 +24,8 @@
 		CAF7FD82245C83B40081E4C3 /* IfLetSubscript.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF7FD81245C83B40081E4C3 /* IfLetSubscript.swift */; };
 		DC07231724465D1E003A8B65 /* 02-Effects-TimersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC07231624465D1E003A8B65 /* 02-Effects-TimersTests.swift */; };
 		DC072322244663B1003A8B65 /* 03-Navigation-Sheet-LoadThenPresent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC072321244663B1003A8B65 /* 03-Navigation-Sheet-LoadThenPresent.swift */; };
+		DC13940E2469E25C00EE1157 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC13940D2469E25C00EE1157 /* ComposableArchitecture */; };
+		DC1394102469E27300EE1157 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC13940F2469E27300EE1157 /* ComposableArchitecture */; };
 		DC25DC5F2450F13200082E81 /* IfLetStoreController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC25DC5E2450F13200082E81 /* IfLetStoreController.swift */; };
 		DC25DC612450F2B000082E81 /* LoadThenNavigate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC25DC602450F2B000082E81 /* LoadThenNavigate.swift */; };
 		DC25DC642450F2DF00082E81 /* ActivityIndicatorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC25DC632450F2DF00082E81 /* ActivityIndicatorViewController.swift */; };
@@ -34,10 +36,6 @@
 		DC4C6EB32450DD380066A05D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC4C6EB22450DD380066A05D /* Preview Assets.xcassets */; };
 		DC4C6EB62450DD380066A05D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DC4C6EB42450DD380066A05D /* LaunchScreen.storyboard */; };
 		DC4C6EC12450DD390066A05D /* UIKitCaseStudiesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4C6EC02450DD390066A05D /* UIKitCaseStudiesTests.swift */; };
-		DC4C6ECC2450E0B30066A05D /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC4C6ECB2450E0B30066A05D /* ComposableArchitecture */; };
-		DC4C6ECE2450E0B30066A05D /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DC4C6ECB2450E0B30066A05D /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DC4C6ED22450E0BA0066A05D /* ComposableArchitectureTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = DC4C6ED12450E0BA0066A05D /* ComposableArchitectureTestSupport */; };
-		DC4C6ED42450E0BA0066A05D /* ComposableArchitectureTestSupport in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DC4C6ED12450E0BA0066A05D /* ComposableArchitectureTestSupport */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		DC4C6ED62450E1050066A05D /* CounterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4C6ED52450E1050066A05D /* CounterViewController.swift */; };
 		DC4C6ED82450E4570066A05D /* UIViewRepresented.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4C6ED72450E4570066A05D /* UIViewRepresented.swift */; };
 		DC4C6EDA2450E6050066A05D /* NavigateAndLoad.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4C6ED92450E6050066A05D /* NavigateAndLoad.swift */; };
@@ -47,10 +45,6 @@
 		DC89C41924460F95006900B9 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C41824460F95006900B9 /* SceneDelegate.swift */; };
 		DC89C41B24460F95006900B9 /* 00-RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C41A24460F95006900B9 /* 00-RootView.swift */; };
 		DC89C41D24460F96006900B9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC89C41C24460F96006900B9 /* Assets.xcassets */; };
-		DC89C43C2446106D006900B9 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC89C43B2446106D006900B9 /* ComposableArchitecture */; };
-		DC89C43E2446106D006900B9 /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DC89C43B2446106D006900B9 /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DC89C44024461077006900B9 /* ComposableArchitectureTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = DC89C43F24461077006900B9 /* ComposableArchitectureTestSupport */; };
-		DC89C44224461077006900B9 /* ComposableArchitectureTestSupport in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DC89C43F24461077006900B9 /* ComposableArchitectureTestSupport */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		DC89C4442446111B006900B9 /* 01-GettingStarted-Counter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C4432446111B006900B9 /* 01-GettingStarted-Counter.swift */; };
 		DC89C44724461431006900B9 /* ActivityIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C44624461431006900B9 /* ActivityIndicator.swift */; };
 		DC89C449244618D5006900B9 /* 03-Navigation-LoadThenNavigate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C448244618D5006900B9 /* 03-Navigation-LoadThenNavigate.swift */; };
@@ -92,7 +86,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DC4C6ECE2450E0B30066A05D /* ComposableArchitecture in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -103,7 +96,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DC4C6ED42450E0BA0066A05D /* ComposableArchitectureTestSupport in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -114,7 +106,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DC89C43E2446106D006900B9 /* ComposableArchitecture in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -125,7 +116,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DC89C44224461077006900B9 /* ComposableArchitectureTestSupport in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -200,7 +190,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC4C6ECC2450E0B30066A05D /* ComposableArchitecture in Frameworks */,
+				DC1394102469E27300EE1157 /* ComposableArchitecture in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -208,7 +198,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC4C6ED22450E0BA0066A05D /* ComposableArchitectureTestSupport in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -216,7 +205,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC89C43C2446106D006900B9 /* ComposableArchitecture in Frameworks */,
+				DC13940E2469E25C00EE1157 /* ComposableArchitecture in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -224,7 +213,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC89C44024461077006900B9 /* ComposableArchitectureTestSupport in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -392,11 +380,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				DC4C6ECA2450E0AF0066A05D /* PBXTargetDependency */,
 			);
 			name = UIKitCaseStudies;
 			packageProductDependencies = (
-				DC4C6ECB2450E0B30066A05D /* ComposableArchitecture */,
+				DC13940F2469E27300EE1157 /* ComposableArchitecture */,
 			);
 			productName = UIKitCaseStudies;
 			productReference = DC4C6EA72450DD380066A05D /* UIKitCaseStudies.app */;
@@ -414,12 +401,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				DC4C6ED02450E0B70066A05D /* PBXTargetDependency */,
 				DC4C6EBE2450DD390066A05D /* PBXTargetDependency */,
 			);
 			name = UIKitCaseStudiesTests;
 			packageProductDependencies = (
-				DC4C6ED12450E0BA0066A05D /* ComposableArchitectureTestSupport */,
 			);
 			productName = UIKitCaseStudiesTests;
 			productReference = DC4C6EBC2450DD390066A05D /* UIKitCaseStudiesTests.xctest */;
@@ -440,7 +425,7 @@
 			);
 			name = SwiftUICaseStudies;
 			packageProductDependencies = (
-				DC89C43B2446106D006900B9 /* ComposableArchitecture */,
+				DC13940D2469E25C00EE1157 /* ComposableArchitecture */,
 			);
 			productName = CaseStudies;
 			productReference = DC89C41324460F95006900B9 /* SwiftUICaseStudies.app */;
@@ -459,11 +444,9 @@
 			);
 			dependencies = (
 				DC89C42B24460F96006900B9 /* PBXTargetDependency */,
-				DCC68EE52448A2650037F998 /* PBXTargetDependency */,
 			);
 			name = SwiftUICaseStudiesTests;
 			packageProductDependencies = (
-				DC89C43F24461077006900B9 /* ComposableArchitectureTestSupport */,
 			);
 			productName = CaseStudiesTests;
 			productReference = DC89C42924460F96006900B9 /* SwiftUICaseStudiesTests.xctest */;
@@ -635,22 +618,10 @@
 			target = DC4C6EA62450DD380066A05D /* UIKitCaseStudies */;
 			targetProxy = DC4C6EBD2450DD390066A05D /* PBXContainerItemProxy */;
 		};
-		DC4C6ECA2450E0AF0066A05D /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DC4C6EC92450E0AF0066A05D /* ComposableArchitecture */;
-		};
-		DC4C6ED02450E0B70066A05D /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DC4C6ECF2450E0B70066A05D /* ComposableArchitectureTestSupport */;
-		};
 		DC89C42B24460F96006900B9 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = DC89C41224460F95006900B9 /* SwiftUICaseStudies */;
 			targetProxy = DC89C42A24460F96006900B9 /* PBXContainerItemProxy */;
-		};
-		DCC68EE52448A2650037F998 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCC68EE42448A2650037F998 /* ComposableArchitectureTestSupport */;
 		};
 /* End PBXTargetDependency section */
 
@@ -987,33 +958,13 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		DC4C6EC92450E0AF0066A05D /* ComposableArchitecture */ = {
+		DC13940D2469E25C00EE1157 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
 		};
-		DC4C6ECB2450E0B30066A05D /* ComposableArchitecture */ = {
+		DC13940F2469E27300EE1157 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
-		};
-		DC4C6ECF2450E0B70066A05D /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DC4C6ED12450E0BA0066A05D /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DC89C43B2446106D006900B9 /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DC89C43F24461077006900B9 /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DCC68EE42448A2650037F998 /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

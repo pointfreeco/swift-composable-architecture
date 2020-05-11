@@ -13,30 +13,16 @@ let package = Package(
   products: [
     .library(
       name: "ComposableArchitecture",
-      type: .dynamic,
       targets: ["ComposableArchitecture"]
-    ),
-    .library(
-      name: "ComposableArchitectureTestSupport",
-      type: .dynamic,
-      targets: ["ComposableArchitectureTestSupport"]
     ),
   ],
   targets: [
     .target(
       name: "ComposableArchitecture",
-      dependencies: [
-      ]
+      dependencies: []
     ),
     .testTarget(
       name: "ComposableArchitectureTests",
-      dependencies: [
-        "ComposableArchitecture",
-        "ComposableArchitectureTestSupport",
-      ]
-    ),
-    .target(
-      name: "ComposableArchitectureTestSupport",
       dependencies: [
         "ComposableArchitecture",
       ]

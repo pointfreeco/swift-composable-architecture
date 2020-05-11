@@ -10,15 +10,12 @@
 		5A405A2E244F410F002D4C76 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A405A2D244F410F002D4C76 /* SceneDelegate.swift */; };
 		5A405A30244F410F002D4C76 /* MotionManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A405A2F244F410F002D4C76 /* MotionManagerView.swift */; };
 		5A405A32244F4110002D4C76 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5A405A31244F4110002D4C76 /* Assets.xcassets */; };
-		5A89A1FA244F43DC00EF81FA /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = 5A89A1F9244F43DC00EF81FA /* ComposableArchitecture */; };
-		5A89A1FB244F43DC00EF81FA /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 5A89A1F9244F43DC00EF81FA /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		5A89A1FE244F441700EF81FA /* Client.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A89A1FD244F441700EF81FA /* Client.swift */; };
 		CA0F931F244FE3F000E85985 /* MotionManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0F931E244FE3F000E85985 /* MotionManagerTests.swift */; };
-		CA0F9327244FE4EF00E85985 /* ComposableArchitectureTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = CA0F9326244FE4EF00E85985 /* ComposableArchitectureTestSupport */; };
-		CA0F9329244FE4EF00E85985 /* ComposableArchitectureTestSupport in Embed Frameworks */ = {isa = PBXBuildFile; productRef = CA0F9326244FE4EF00E85985 /* ComposableArchitectureTestSupport */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		CA6AC253244FE92100C71CB3 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6AC252244FE92100C71CB3 /* Models.swift */; };
 		CA6AC255244FE92E00C71CB3 /* Live.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6AC254244FE92E00C71CB3 /* Live.swift */; };
 		CA6AC257244FE98300C71CB3 /* Mock.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6AC256244FE98300C71CB3 /* Mock.swift */; };
+		DC1394122469E2E100EE1157 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC1394112469E2E100EE1157 /* ComposableArchitecture */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,7 +35,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				5A89A1FB244F43DC00EF81FA /* ComposableArchitecture in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -49,7 +45,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				CA0F9329244FE4EF00E85985 /* ComposableArchitectureTestSupport in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -76,7 +71,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5A89A1FA244F43DC00EF81FA /* ComposableArchitecture in Frameworks */,
+				DC1394122469E2E100EE1157 /* ComposableArchitecture in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,7 +79,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CA0F9327244FE4EF00E85985 /* ComposableArchitectureTestSupport in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -167,7 +161,7 @@
 			);
 			name = MotionManager;
 			packageProductDependencies = (
-				5A89A1F9244F43DC00EF81FA /* ComposableArchitecture */,
+				DC1394112469E2E100EE1157 /* ComposableArchitecture */,
 			);
 			productName = MotionManager;
 			productReference = 5A405A28244F410F002D4C76 /* MotionManager.app */;
@@ -189,7 +183,6 @@
 			);
 			name = MotionManagerTests;
 			packageProductDependencies = (
-				CA0F9326244FE4EF00E85985 /* ComposableArchitectureTestSupport */,
 			);
 			productName = MotionManagerTests;
 			productReference = CA0F931C244FE3F000E85985 /* MotionManagerTests.xctest */;
@@ -507,13 +500,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		5A89A1F9244F43DC00EF81FA /* ComposableArchitecture */ = {
+		DC1394112469E2E100EE1157 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
-		};
-		CA0F9326244FE4EF00E85985 /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

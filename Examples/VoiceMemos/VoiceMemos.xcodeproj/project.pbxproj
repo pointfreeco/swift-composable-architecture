@@ -7,14 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DC1394342469E59600EE1157 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC1394332469E59600EE1157 /* ComposableArchitecture */; };
 		DC5BDCB024589177009C65A3 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDCAF24589177009C65A3 /* SceneDelegate.swift */; };
 		DC5BDCB224589177009C65A3 /* VoiceMemos.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDCB124589177009C65A3 /* VoiceMemos.swift */; };
 		DC5BDCB424589178009C65A3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC5BDCB324589178009C65A3 /* Assets.xcassets */; };
 		DC5BDCC524589179009C65A3 /* VoiceMemosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDCC424589179009C65A3 /* VoiceMemosTests.swift */; };
-		DC5BDF2D24589263009C65A3 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC5BDF2C24589263009C65A3 /* ComposableArchitecture */; };
-		DC5BDF2F24589263009C65A3 /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DC5BDF2C24589263009C65A3 /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DC5BDF3124589267009C65A3 /* ComposableArchitectureTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = DC5BDF3024589267009C65A3 /* ComposableArchitectureTestSupport */; };
-		DC5BDF3324589267009C65A3 /* ComposableArchitectureTestSupport in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DC5BDF3024589267009C65A3 /* ComposableArchitectureTestSupport */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		DC5BDF362458939C009C65A3 /* AudioRecorderClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDF352458939C009C65A3 /* AudioRecorderClient.swift */; };
 		DC5BDF3A245893C1009C65A3 /* LiveAudioRecorderClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDF39245893C1009C65A3 /* LiveAudioRecorderClient.swift */; };
 		DC5BDF3D245893E6009C65A3 /* AudioPlayerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDF3C245893E6009C65A3 /* AudioPlayerClient.swift */; };
@@ -40,7 +37,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DC5BDF2F24589263009C65A3 /* ComposableArchitecture in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -51,7 +47,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DC5BDF3324589267009C65A3 /* ComposableArchitectureTestSupport in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -80,7 +75,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC5BDF2D24589263009C65A3 /* ComposableArchitecture in Frameworks */,
+				DC1394342469E59600EE1157 /* ComposableArchitecture in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -88,7 +83,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC5BDF3124589267009C65A3 /* ComposableArchitectureTestSupport in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -181,7 +175,7 @@
 			);
 			name = VoiceMemos;
 			packageProductDependencies = (
-				DC5BDF2C24589263009C65A3 /* ComposableArchitecture */,
+				DC1394332469E59600EE1157 /* ComposableArchitecture */,
 			);
 			productName = VoiceMemos;
 			productReference = DC5BDCAA24589177009C65A3 /* VoiceMemos.app */;
@@ -203,7 +197,6 @@
 			);
 			name = VoiceMemosTests;
 			packageProductDependencies = (
-				DC5BDF3024589267009C65A3 /* ComposableArchitectureTestSupport */,
 			);
 			productName = VoiceMemosTests;
 			productReference = DC5BDCC024589179009C65A3 /* VoiceMemosTests.xctest */;
@@ -523,13 +516,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		DC5BDF2C24589263009C65A3 /* ComposableArchitecture */ = {
+		DC1394332469E59600EE1157 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
-		};
-		DC5BDF3024589267009C65A3 /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

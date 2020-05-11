@@ -11,14 +11,11 @@
 		CA2332122447ACFA00B818EB /* SpeechRecognition.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA2332112447ACFA00B818EB /* SpeechRecognition.swift */; };
 		CA2332142447ACFB00B818EB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA2332132447ACFB00B818EB /* Assets.xcassets */; };
 		CA2332252447ACFC00B818EB /* SpeechRecognitionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA2332242447ACFC00B818EB /* SpeechRecognitionTests.swift */; };
-		CA2332342447AE1000B818EB /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = CA2332332447AE1000B818EB /* ComposableArchitecture */; };
-		CA2332362447AE1000B818EB /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = CA2332332447AE1000B818EB /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		CA23323A2447AE1700B818EB /* ComposableArchitectureTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = CA2332392447AE1700B818EB /* ComposableArchitectureTestSupport */; };
-		CA23323C2447AE1700B818EB /* ComposableArchitectureTestSupport in Embed Frameworks */ = {isa = PBXBuildFile; productRef = CA2332392447AE1700B818EB /* ComposableArchitectureTestSupport */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		CACC04222447C66C000C5725 /* Client.swift in Sources */ = {isa = PBXBuildFile; fileRef = CACC04212447C66C000C5725 /* Client.swift */; };
 		CACC04242447D96D000C5725 /* Live.swift in Sources */ = {isa = PBXBuildFile; fileRef = CACC04232447D96D000C5725 /* Live.swift */; };
 		CACC04272447DBAF000C5725 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = CACC04262447DBAF000C5725 /* Models.swift */; };
 		CACC04292447DF0B000C5725 /* Mock.swift in Sources */ = {isa = PBXBuildFile; fileRef = CACC04282447DF0B000C5725 /* Mock.swift */; };
+		DC1394162469E34200EE1157 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC1394152469E34200EE1157 /* ComposableArchitecture */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,7 +35,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				CA2332362447AE1000B818EB /* ComposableArchitecture in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -49,7 +45,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				CA23323C2447AE1700B818EB /* ComposableArchitectureTestSupport in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -76,7 +71,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CA2332342447AE1000B818EB /* ComposableArchitecture in Frameworks */,
+				DC1394162469E34200EE1157 /* ComposableArchitecture in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,7 +79,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CA23323A2447AE1700B818EB /* ComposableArchitectureTestSupport in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -164,11 +158,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				CA2332312447AE0C00B818EB /* PBXTargetDependency */,
 			);
 			name = SpeechRecognition;
 			packageProductDependencies = (
-				CA2332332447AE1000B818EB /* ComposableArchitecture */,
+				DC1394152469E34200EE1157 /* ComposableArchitecture */,
 			);
 			productName = SpeechRecognition;
 			productReference = CA23320A2447ACFA00B818EB /* SpeechRecognition.app */;
@@ -186,12 +179,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				CA2332382447AE1500B818EB /* PBXTargetDependency */,
 				CA2332222447ACFC00B818EB /* PBXTargetDependency */,
 			);
 			name = SpeechRecognitionTests;
 			packageProductDependencies = (
-				CA2332392447AE1700B818EB /* ComposableArchitectureTestSupport */,
 			);
 			productName = SpeechRecognitionTests;
 			productReference = CA2332202447ACFC00B818EB /* SpeechRecognitionTests.xctest */;
@@ -282,14 +273,6 @@
 			isa = PBXTargetDependency;
 			target = CA2332092447ACFA00B818EB /* SpeechRecognition */;
 			targetProxy = CA2332212447ACFC00B818EB /* PBXContainerItemProxy */;
-		};
-		CA2332312447AE0C00B818EB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = CA2332302447AE0C00B818EB /* ComposableArchitecture */;
-		};
-		CA2332382447AE1500B818EB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = CA2332372447AE1500B818EB /* ComposableArchitectureTestSupport */;
 		};
 /* End PBXTargetDependency section */
 
@@ -517,21 +500,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		CA2332302447AE0C00B818EB /* ComposableArchitecture */ = {
+		DC1394152469E34200EE1157 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
-		};
-		CA2332332447AE1000B818EB /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		CA2332372447AE1500B818EB /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		CA2332392447AE1700B818EB /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

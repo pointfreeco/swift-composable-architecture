@@ -59,6 +59,6 @@ test-workspace:
 		-quiet
 
 format:
-	swift format --in-place --recursive .
+	swift format --ignore-unparsable-files --in-place --recursive .
 
 .PHONY: format

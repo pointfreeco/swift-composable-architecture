@@ -1,5 +1,5 @@
 import Combine
-import ComposableArchitectureTestSupport
+import ComposableArchitecture
 import CoreMotion
 import XCTest
 

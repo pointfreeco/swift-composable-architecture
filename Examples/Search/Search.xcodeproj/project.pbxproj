@@ -13,10 +13,7 @@
 		CA86E49F24253C2500357AD9 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA86E49E24253C2500357AD9 /* SearchView.swift */; };
 		CA86E4A124253C2700357AD9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA86E4A024253C2700357AD9 /* Assets.xcassets */; };
 		CA86E4B224253C2700357AD9 /* SearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA86E4B124253C2700357AD9 /* SearchTests.swift */; };
-		DC85B4AB242D07B4009784B0 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC85B4AA242D07B4009784B0 /* ComposableArchitecture */; };
-		DC85B4AC242D07B4009784B0 /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DC85B4AA242D07B4009784B0 /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DC85B4B0242D07BA009784B0 /* ComposableArchitectureTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = DC85B4AF242D07BA009784B0 /* ComposableArchitectureTestSupport */; };
-		DC85B4B1242D07BA009784B0 /* ComposableArchitectureTestSupport in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DC85B4AF242D07BA009784B0 /* ComposableArchitectureTestSupport */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		DC1394142469E30800EE1157 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC1394132469E30800EE1157 /* ComposableArchitecture */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,7 +33,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DC85B4AC242D07B4009784B0 /* ComposableArchitecture in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -47,7 +43,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DC85B4B1242D07BA009784B0 /* ComposableArchitectureTestSupport in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -72,7 +67,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC85B4AB242D07B4009784B0 /* ComposableArchitecture in Frameworks */,
+				DC1394142469E30800EE1157 /* ComposableArchitecture in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -80,7 +75,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC85B4B0242D07BA009784B0 /* ComposableArchitectureTestSupport in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -150,11 +144,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				DC85B4A9242D07B1009784B0 /* PBXTargetDependency */,
 			);
 			name = Search;
 			packageProductDependencies = (
-				DC85B4AA242D07B4009784B0 /* ComposableArchitecture */,
+				DC1394132469E30800EE1157 /* ComposableArchitecture */,
 			);
 			productName = Search;
 			productReference = CA86E49724253C2500357AD9 /* Search.app */;
@@ -172,12 +165,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				DC85B4AE242D07B7009784B0 /* PBXTargetDependency */,
 				CA86E4AF24253C2700357AD9 /* PBXTargetDependency */,
 			);
 			name = SearchTests;
 			packageProductDependencies = (
-				DC85B4AF242D07BA009784B0 /* ComposableArchitectureTestSupport */,
 			);
 			productName = SearchTests;
 			productReference = CA86E4AD24253C2700357AD9 /* SearchTests.xctest */;
@@ -268,14 +259,6 @@
 			isa = PBXTargetDependency;
 			target = CA86E49624253C2500357AD9 /* Search */;
 			targetProxy = CA86E4AE24253C2700357AD9 /* PBXContainerItemProxy */;
-		};
-		DC85B4A9242D07B1009784B0 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DC85B4A8242D07B1009784B0 /* ComposableArchitecture */;
-		};
-		DC85B4AE242D07B7009784B0 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DC85B4AD242D07B7009784B0 /* ComposableArchitectureTestSupport */;
 		};
 /* End PBXTargetDependency section */
 
@@ -503,21 +486,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		DC85B4A8242D07B1009784B0 /* ComposableArchitecture */ = {
+		DC1394132469E30800EE1157 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
-		};
-		DC85B4AA242D07B4009784B0 /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DC85B4AD242D07B7009784B0 /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DC85B4AF242D07BA009784B0 /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
