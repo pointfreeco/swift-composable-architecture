@@ -99,7 +99,8 @@ struct EffectsCancellationView: View {
           }
         ) {
           Stepper(
-            value: viewStore.binding(get: { $0.count }, send: EffectsCancellationAction.stepperChanged)
+            value: viewStore.binding(
+              get: { $0.count }, send: EffectsCancellationAction.stepperChanged)
           ) {
             Text("\(viewStore.count)")
           }

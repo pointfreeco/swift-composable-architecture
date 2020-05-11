@@ -77,13 +77,16 @@ struct BindingBasicsView: View {
           }
           .disabled(viewStore.toggleIsOn)
 
-          Toggle(isOn: viewStore.binding(get: { $0.toggleIsOn }, send: BindingBasicsAction.toggleChange))
+          Toggle(
+            isOn: viewStore.binding(get: { $0.toggleIsOn }, send: BindingBasicsAction.toggleChange)
+          )
           {
             Text("Disable other controls")
           }
 
           Stepper(
-            value: viewStore.binding(get: { $0.stepCount }, send: BindingBasicsAction.stepCountChanged),
+            value: viewStore.binding(
+              get: { $0.stepCount }, send: BindingBasicsAction.stepCountChanged),
             in: 0...100
           ) {
             Text("Max slider value: \(viewStore.stepCount)")

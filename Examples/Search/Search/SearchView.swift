@@ -101,7 +101,8 @@ struct SearchView: View {
             Image(systemName: "magnifyingglass")
             TextField(
               "New York, San Francisco, ...",
-              text: viewStore.binding(get: { $0.searchQuery }, send: SearchAction.searchQueryChanged)
+              text: viewStore.binding(
+                get: { $0.searchQuery }, send: SearchAction.searchQueryChanged)
             )
             .textFieldStyle(RoundedBorderTextFieldStyle())
             .autocapitalization(.none)

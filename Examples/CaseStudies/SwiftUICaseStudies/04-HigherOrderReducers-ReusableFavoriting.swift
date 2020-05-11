@@ -139,7 +139,8 @@ struct EpisodeView: View {
 
         Spacer()
 
-        FavoriteButton(store: self.store.scope(state: { $0.favorite }, action: EpisodeAction.favorite))
+        FavoriteButton(
+          store: self.store.scope(state: { $0.favorite }, action: EpisodeAction.favorite))
       }
     }
   }
