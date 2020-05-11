@@ -374,6 +374,7 @@ There are also many architecture libraries in the Swift and iOS community. Each 
 * [RxFeedback](https://github.com/NoTests/RxFeedback.swift)
 * [Mobius.swift](https://github.com/spotify/mobius.swift)
 * [ReactiveFeedback](https://github.com/babylonhealth/ReactiveFeedback)
+* [Reactor](https://github.com/ReactorSwift/Reactor)
 
 ## License
 
