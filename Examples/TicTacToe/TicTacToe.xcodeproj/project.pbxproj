@@ -10,19 +10,73 @@
 		CA0A5766242AA3A800BA537D /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0A5765242AA3A800BA537D /* SceneDelegate.swift */; };
 		CA0A576A242AA3A900BA537D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA0A5769242AA3A900BA537D /* Assets.xcassets */; };
 		CA0A577B242AA3A900BA537D /* TicTacToeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0A577A242AA3A900BA537D /* TicTacToeTests.swift */; };
-		CA0A578B242AA49400BA537D /* AppCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF10EC242028DE00483288 /* AppCore.framework */; };
-		CA0A5790242AA49D00BA537D /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
-		CA0A5791242AA4A100BA537D /* LiveAuthenticationClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC9194482420130D00A5BE1F /* LiveAuthenticationClient.framework */; };
-		CA0A5796242AA58100BA537D /* LoginSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC9194B22420142600A5BE1F /* LoginSwiftUI.framework */; };
-		CA0A5799242AA59400BA537D /* NewGameSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC91951A24201A8100A5BE1F /* NewGameSwiftUI.framework */; };
 		CA0A579F242AA7F800BA537D /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0A579E242AA7F800BA537D /* RootView.swift */; };
-		CA0A57A2242AA86600BA537D /* AppSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF110E242028E600483288 /* AppSwiftUI.framework */; };
 		CA0A57A5242ABA7400BA537D /* AppViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA841EB12420492A0093C098 /* AppViewController.swift */; };
 		CA0A57A6242ABA7400BA537D /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA841EA02420471C0093C098 /* LoginViewController.swift */; };
 		CA0A57A7242ABA7400BA537D /* NewGameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA841EB524212DB50093C098 /* NewGameViewController.swift */; };
 		CA0A57A8242ABA7400BA537D /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA841EB92421594D0093C098 /* GameViewController.swift */; };
 		CA0A57A9242ABA7400BA537D /* TwoFactorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA841EB724214C4D0093C098 /* TwoFactorViewController.swift */; };
 		DC09A282242023D1007E2F27 /* LiveAuthenticationClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC09A281242023D1007E2F27 /* LiveAuthenticationClient.swift */; };
+		DC13941D2469E40B00EE1157 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC13941C2469E40B00EE1157 /* ComposableArchitecture */; };
+		DC13941E2469E42A00EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
+		DC1394212469E44B00EE1157 /* AuthenticationClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC919425242012D200A5BE1F /* AuthenticationClient.framework */; };
+		DC1394222469E45C00EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
+		DC1394252469E47E00EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
+		DC1394262469E48D00EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
+		DC1394272469E51300EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
+		DC1394282469E52800EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
+		DC1394292469E52F00EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
+		DC13942A2469E53500EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
+		DC13942B2469E53A00EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
+		DC13942C2469E53F00EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
+		DC13942D2469E54700EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
+		DC13942E2469E54C00EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
+		DC13942F2469E55200EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
+		DC1394302469E55900EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
+		DC13943B2469F0BF00EE1157 /* AppCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF10EC242028DE00483288 /* AppCore.framework */; };
+		DC13943C2469F0BF00EE1157 /* AppSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF110E242028E600483288 /* AppSwiftUI.framework */; };
+		DC13943D2469F0BF00EE1157 /* AuthenticationClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC919425242012D200A5BE1F /* AuthenticationClient.framework */; };
+		DC13943E2469F0BF00EE1157 /* GameCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC91953C24201A8700A5BE1F /* GameCore.framework */; };
+		DC13943F2469F0BF00EE1157 /* GameSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC91955E24201A8D00A5BE1F /* GameSwiftUI.framework */; };
+		DC1394402469F0BF00EE1157 /* LiveAuthenticationClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC9194482420130D00A5BE1F /* LiveAuthenticationClient.framework */; };
+		DC1394412469F0BF00EE1157 /* LoginCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC91946A242013DB00A5BE1F /* LoginCore.framework */; };
+		DC1394422469F0BF00EE1157 /* LoginSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC9194B22420142600A5BE1F /* LoginSwiftUI.framework */; };
+		DC1394432469F0BF00EE1157 /* NewGameCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC9194F824201A7800A5BE1F /* NewGameCore.framework */; };
+		DC1394442469F0BF00EE1157 /* NewGameSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC91951A24201A8100A5BE1F /* NewGameSwiftUI.framework */; };
+		DC1394452469F0BF00EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
+		DC1394462469F0BF00EE1157 /* TwoFactorCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC9194D42420144700A5BE1F /* TwoFactorCore.framework */; };
+		DC1394472469F0BF00EE1157 /* TwoFactorSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF10C8242027D400483288 /* TwoFactorSwiftUI.framework */; };
+		DC1394482469F0FD00EE1157 /* AuthenticationClient.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DC919425242012D200A5BE1F /* AuthenticationClient.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DC1394492469F0FD00EE1157 /* LiveAuthenticationClient.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DC9194482420130D00A5BE1F /* LiveAuthenticationClient.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DC13944A2469F0FD00EE1157 /* LoginCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DC91946A242013DB00A5BE1F /* LoginCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DC13944B2469F0FD00EE1157 /* LoginSwiftUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DC9194B22420142600A5BE1F /* LoginSwiftUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DC13944C2469F0FD00EE1157 /* TwoFactorCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DC9194D42420144700A5BE1F /* TwoFactorCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DC13944D2469F0FD00EE1157 /* NewGameCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DC9194F824201A7800A5BE1F /* NewGameCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DC13944E2469F0FD00EE1157 /* NewGameSwiftUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DC91951A24201A8100A5BE1F /* NewGameSwiftUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DC13944F2469F0FD00EE1157 /* GameCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DC91953C24201A8700A5BE1F /* GameCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DC1394502469F0FD00EE1157 /* GameSwiftUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DC91955E24201A8D00A5BE1F /* GameSwiftUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DC1394512469F0FD00EE1157 /* TwoFactorSwiftUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF10C8242027D400483288 /* TwoFactorSwiftUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DC1394522469F0FD00EE1157 /* AppCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF10EC242028DE00483288 /* AppCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DC1394532469F0FD00EE1157 /* AppSwiftUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF110E242028E600483288 /* AppSwiftUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DC1394542469F0FD00EE1157 /* TicTacToeCommon.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DC1394572469F1F400EE1157 /* LoginSwiftUI.framework in Resources */ = {isa = PBXBuildFile; fileRef = DC9194B22420142600A5BE1F /* LoginSwiftUI.framework */; };
+		DC1394582469F1F400EE1157 /* NewGameSwiftUI.framework in Resources */ = {isa = PBXBuildFile; fileRef = DC91951A24201A8100A5BE1F /* NewGameSwiftUI.framework */; };
+		DC1394592469F1FC00EE1157 /* TwoFactorCore.framework in Resources */ = {isa = PBXBuildFile; fileRef = DC9194D42420144700A5BE1F /* TwoFactorCore.framework */; };
+		DC13945A2469F20600EE1157 /* LoginCore.framework in Resources */ = {isa = PBXBuildFile; fileRef = DC91946A242013DB00A5BE1F /* LoginCore.framework */; };
+		DC13945B2469F20600EE1157 /* TwoFactorSwiftUI.framework in Resources */ = {isa = PBXBuildFile; fileRef = DCAF10C8242027D400483288 /* TwoFactorSwiftUI.framework */; };
+		DC13945C2469F21600EE1157 /* AuthenticationClient.framework in Resources */ = {isa = PBXBuildFile; fileRef = DC919425242012D200A5BE1F /* AuthenticationClient.framework */; };
+		DC13945D2469F21600EE1157 /* TicTacToeCommon.framework in Resources */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
+		DC13945E2469F22300EE1157 /* TwoFactorCore.framework in Resources */ = {isa = PBXBuildFile; fileRef = DC9194D42420144700A5BE1F /* TwoFactorCore.framework */; };
+		DC13945F2469F22D00EE1157 /* GameCore.framework in Resources */ = {isa = PBXBuildFile; fileRef = DC91953C24201A8700A5BE1F /* GameCore.framework */; };
+		DC1394602469F22D00EE1157 /* TicTacToeCommon.framework in Resources */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
+		DC1394612469F23A00EE1157 /* NewGameCore.framework in Resources */ = {isa = PBXBuildFile; fileRef = DC9194F824201A7800A5BE1F /* NewGameCore.framework */; };
+		DC1394622469F23A00EE1157 /* GameSwiftUI.framework in Resources */ = {isa = PBXBuildFile; fileRef = DC91955E24201A8D00A5BE1F /* GameSwiftUI.framework */; };
+		DC1394632469F24400EE1157 /* TicTacToeCommon.framework in Resources */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
+		DC1394642469F24C00EE1157 /* GameCore.framework in Resources */ = {isa = PBXBuildFile; fileRef = DC91953C24201A8700A5BE1F /* GameCore.framework */; };
+		DC1394652469F24C00EE1157 /* TicTacToeCommon.framework in Resources */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
+		DC1394662469F25300EE1157 /* TicTacToeCommon.framework in Resources */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
+		DC1394672469F25D00EE1157 /* AuthenticationClient.framework in Resources */ = {isa = PBXBuildFile; fileRef = DC919425242012D200A5BE1F /* AuthenticationClient.framework */; };
+		DC1394682469F25D00EE1157 /* TicTacToeCommon.framework in Resources */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
 		DC919473242013DC00A5BE1F /* LoginCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC91946A242013DB00A5BE1F /* LoginCore.framework */; };
 		DC91947A242013DC00A5BE1F /* LoginCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC919479242013DC00A5BE1F /* LoginCoreTests.swift */; };
 		DC9194BB2420142700A5BE1F /* LoginSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC9194B22420142600A5BE1F /* LoginSwiftUI.framework */; };
@@ -68,54 +122,6 @@
 		DCAF11E5242034D200483288 /* NewGameSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC91951A24201A8100A5BE1F /* NewGameSwiftUI.framework */; };
 		DCAF11E8242034DA00483288 /* LoginSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC9194B22420142600A5BE1F /* LoginSwiftUI.framework */; };
 		DCAF11EB2420352B00483288 /* GameSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC91955E24201A8D00A5BE1F /* GameSwiftUI.framework */; };
-		DCEAF4BE242D090200E4639F /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4BD242D090200E4639F /* ComposableArchitecture */; };
-		DCEAF4BF242D090200E4639F /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4BD242D090200E4639F /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF4C3242D091900E4639F /* ComposableArchitectureTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4C2242D091900E4639F /* ComposableArchitectureTestSupport */; };
-		DCEAF4C4242D091900E4639F /* ComposableArchitectureTestSupport in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4C2242D091900E4639F /* ComposableArchitectureTestSupport */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF4CB242D093100E4639F /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4CA242D093100E4639F /* ComposableArchitecture */; };
-		DCEAF4CC242D093100E4639F /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4CA242D093100E4639F /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF4D0242D0BB500E4639F /* ComposableArchitectureTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4CF242D0BB500E4639F /* ComposableArchitectureTestSupport */; };
-		DCEAF4D2242D0BB500E4639F /* ComposableArchitectureTestSupport in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4CF242D0BB500E4639F /* ComposableArchitectureTestSupport */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF4D6242D0BC400E4639F /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4D5242D0BC400E4639F /* ComposableArchitecture */; };
-		DCEAF4D7242D0BC400E4639F /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4D5242D0BC400E4639F /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF4DB242D0BED00E4639F /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4DA242D0BED00E4639F /* ComposableArchitecture */; };
-		DCEAF4DC242D0BED00E4639F /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4DA242D0BED00E4639F /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF4E0242D0C0500E4639F /* ComposableArchitectureTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4DF242D0C0500E4639F /* ComposableArchitectureTestSupport */; };
-		DCEAF4E1242D0C0500E4639F /* ComposableArchitectureTestSupport in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4DF242D0C0500E4639F /* ComposableArchitectureTestSupport */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF4E5242D0C1500E4639F /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4E4242D0C1500E4639F /* ComposableArchitecture */; };
-		DCEAF4E6242D0C1500E4639F /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4E4242D0C1500E4639F /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF4EA242D0C2B00E4639F /* ComposableArchitectureTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4E9242D0C2B00E4639F /* ComposableArchitectureTestSupport */; };
-		DCEAF4EB242D0C2B00E4639F /* ComposableArchitectureTestSupport in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4E9242D0C2B00E4639F /* ComposableArchitectureTestSupport */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF4EF242D0C4600E4639F /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4EE242D0C4600E4639F /* ComposableArchitecture */; };
-		DCEAF4F0242D0C4600E4639F /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4EE242D0C4600E4639F /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF4F4242D0C5F00E4639F /* ComposableArchitectureTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4F3242D0C5F00E4639F /* ComposableArchitectureTestSupport */; };
-		DCEAF4F5242D0C5F00E4639F /* ComposableArchitectureTestSupport in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4F3242D0C5F00E4639F /* ComposableArchitectureTestSupport */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF4F9242D0C7D00E4639F /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4F8242D0C7D00E4639F /* ComposableArchitecture */; };
-		DCEAF4FA242D0C7D00E4639F /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4F8242D0C7D00E4639F /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF4FE242D0C8D00E4639F /* ComposableArchitectureTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4FD242D0C8D00E4639F /* ComposableArchitectureTestSupport */; };
-		DCEAF4FF242D0C8D00E4639F /* ComposableArchitectureTestSupport in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF4FD242D0C8D00E4639F /* ComposableArchitectureTestSupport */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF503242D0C9F00E4639F /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF502242D0C9F00E4639F /* ComposableArchitecture */; };
-		DCEAF504242D0C9F00E4639F /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF502242D0C9F00E4639F /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF508242D0CB300E4639F /* ComposableArchitectureTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF507242D0CB300E4639F /* ComposableArchitectureTestSupport */; };
-		DCEAF509242D0CB300E4639F /* ComposableArchitectureTestSupport in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF507242D0CB300E4639F /* ComposableArchitectureTestSupport */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF50D242D0CC700E4639F /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF50C242D0CC700E4639F /* ComposableArchitecture */; };
-		DCEAF50E242D0CC700E4639F /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF50C242D0CC700E4639F /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF512242D0CDC00E4639F /* ComposableArchitectureTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF511242D0CDC00E4639F /* ComposableArchitectureTestSupport */; };
-		DCEAF513242D0CDC00E4639F /* ComposableArchitectureTestSupport in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF511242D0CDC00E4639F /* ComposableArchitectureTestSupport */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF517242D0CEE00E4639F /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF516242D0CEE00E4639F /* ComposableArchitecture */; };
-		DCEAF518242D0CEE00E4639F /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF516242D0CEE00E4639F /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF51C242D0CFB00E4639F /* ComposableArchitectureTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF51B242D0CFB00E4639F /* ComposableArchitectureTestSupport */; };
-		DCEAF51D242D0CFB00E4639F /* ComposableArchitectureTestSupport in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF51B242D0CFB00E4639F /* ComposableArchitectureTestSupport */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF521242D0D0C00E4639F /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF520242D0D0C00E4639F /* ComposableArchitecture */; };
-		DCEAF522242D0D0C00E4639F /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF520242D0D0C00E4639F /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF528242D0D1F00E4639F /* ComposableArchitectureTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF527242D0D1F00E4639F /* ComposableArchitectureTestSupport */; };
-		DCEAF529242D0D1F00E4639F /* ComposableArchitectureTestSupport in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF527242D0D1F00E4639F /* ComposableArchitectureTestSupport */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF52D242D0D3000E4639F /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF52C242D0D3000E4639F /* ComposableArchitecture */; };
-		DCEAF52E242D0D3000E4639F /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF52C242D0D3000E4639F /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF532242D0D4700E4639F /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF531242D0D4700E4639F /* ComposableArchitecture */; };
-		DCEAF533242D0D4700E4639F /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF531242D0D4700E4639F /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DCEAF537242D0D5C00E4639F /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF536242D0D5C00E4639F /* ComposableArchitecture */; };
-		DCEAF538242D0D5C00E4639F /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DCEAF536242D0D5C00E4639F /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		DCF775202423A55D00795AF1 /* TwoFactorSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF10C8242027D400483288 /* TwoFactorSwiftUI.framework */; };
 /* End PBXBuildFile section */
 
@@ -175,6 +181,20 @@
 			proxyType = 1;
 			remoteGlobalIDString = DC919424242012D200A5BE1F;
 			remoteInfo = AuthenticationClient;
+		};
+		DC13941F2469E43300EE1157 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DC9193EE2420104100A5BE1F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DCAF11302420293300483288;
+			remoteInfo = TicTacToeCommon;
+		};
+		DC1394232469E47A00EE1157 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DC9193EE2420104100A5BE1F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DCAF11302420293300483288;
+			remoteInfo = TicTacToeCommon;
 		};
 		DC919474242013DC00A5BE1F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -349,11 +369,23 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		CA0A578E242AA49700BA537D /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
+			buildActionMask = 12;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF4CC242D093100E4639F /* ComposableArchitecture in Embed Frameworks */,
+				DC1394522469F0FD00EE1157 /* AppCore.framework in Embed Frameworks */,
+				DC1394532469F0FD00EE1157 /* AppSwiftUI.framework in Embed Frameworks */,
+				DC1394482469F0FD00EE1157 /* AuthenticationClient.framework in Embed Frameworks */,
+				DC13944F2469F0FD00EE1157 /* GameCore.framework in Embed Frameworks */,
+				DC1394502469F0FD00EE1157 /* GameSwiftUI.framework in Embed Frameworks */,
+				DC1394492469F0FD00EE1157 /* LiveAuthenticationClient.framework in Embed Frameworks */,
+				DC13944A2469F0FD00EE1157 /* LoginCore.framework in Embed Frameworks */,
+				DC13944B2469F0FD00EE1157 /* LoginSwiftUI.framework in Embed Frameworks */,
+				DC13944D2469F0FD00EE1157 /* NewGameCore.framework in Embed Frameworks */,
+				DC13944E2469F0FD00EE1157 /* NewGameSwiftUI.framework in Embed Frameworks */,
+				DC1394542469F0FD00EE1157 /* TicTacToeCommon.framework in Embed Frameworks */,
+				DC13944C2469F0FD00EE1157 /* TwoFactorCore.framework in Embed Frameworks */,
+				DC1394512469F0FD00EE1157 /* TwoFactorSwiftUI.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -364,7 +396,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF52E242D0D3000E4639F /* ComposableArchitecture in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -375,7 +406,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF4F0242D0C4600E4639F /* ComposableArchitecture in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -386,7 +416,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF538242D0D5C00E4639F /* ComposableArchitecture in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -397,7 +426,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF533242D0D4700E4639F /* ComposableArchitecture in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -408,7 +436,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF4FA242D0C7D00E4639F /* ComposableArchitecture in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -419,7 +446,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF4DC242D0BED00E4639F /* ComposableArchitecture in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -430,7 +456,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF4E6242D0C1500E4639F /* ComposableArchitecture in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -441,7 +466,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF518242D0CEE00E4639F /* ComposableArchitecture in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -452,7 +476,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF522242D0D0C00E4639F /* ComposableArchitecture in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -463,7 +486,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF504242D0C9F00E4639F /* ComposableArchitecture in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -474,18 +496,16 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF50E242D0CC700E4639F /* ComposableArchitecture in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		DCAF11D5242033E700483288 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
+			buildActionMask = 12;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF4BF242D090200E4639F /* ComposableArchitecture in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -496,7 +516,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF4D7242D0BC400E4639F /* ComposableArchitecture in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -507,7 +526,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF4C4242D091900E4639F /* ComposableArchitectureTestSupport in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -518,7 +536,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF4E1242D0C0500E4639F /* ComposableArchitectureTestSupport in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -529,7 +546,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF4F5242D0C5F00E4639F /* ComposableArchitectureTestSupport in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -540,7 +556,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF509242D0CB300E4639F /* ComposableArchitectureTestSupport in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -551,7 +566,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF51D242D0CFB00E4639F /* ComposableArchitectureTestSupport in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -562,7 +576,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF529242D0D1F00E4639F /* ComposableArchitectureTestSupport in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -573,7 +586,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF4D2242D0BB500E4639F /* ComposableArchitectureTestSupport in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -584,7 +596,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF513242D0CDC00E4639F /* ComposableArchitectureTestSupport in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -595,7 +606,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF4FF242D0C8D00E4639F /* ComposableArchitectureTestSupport in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -606,7 +616,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DCEAF4EB242D0C2B00E4639F /* ComposableArchitectureTestSupport in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -679,13 +688,19 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CA0A578B242AA49400BA537D /* AppCore.framework in Frameworks */,
-				CA0A57A2242AA86600BA537D /* AppSwiftUI.framework in Frameworks */,
-				DCEAF4CB242D093100E4639F /* ComposableArchitecture in Frameworks */,
-				CA0A5791242AA4A100BA537D /* LiveAuthenticationClient.framework in Frameworks */,
-				CA0A5796242AA58100BA537D /* LoginSwiftUI.framework in Frameworks */,
-				CA0A5799242AA59400BA537D /* NewGameSwiftUI.framework in Frameworks */,
-				CA0A5790242AA49D00BA537D /* TicTacToeCommon.framework in Frameworks */,
+				DC13943B2469F0BF00EE1157 /* AppCore.framework in Frameworks */,
+				DC13943C2469F0BF00EE1157 /* AppSwiftUI.framework in Frameworks */,
+				DC13943D2469F0BF00EE1157 /* AuthenticationClient.framework in Frameworks */,
+				DC13943E2469F0BF00EE1157 /* GameCore.framework in Frameworks */,
+				DC13943F2469F0BF00EE1157 /* GameSwiftUI.framework in Frameworks */,
+				DC1394402469F0BF00EE1157 /* LiveAuthenticationClient.framework in Frameworks */,
+				DC1394412469F0BF00EE1157 /* LoginCore.framework in Frameworks */,
+				DC1394422469F0BF00EE1157 /* LoginSwiftUI.framework in Frameworks */,
+				DC1394432469F0BF00EE1157 /* NewGameCore.framework in Frameworks */,
+				DC1394442469F0BF00EE1157 /* NewGameSwiftUI.framework in Frameworks */,
+				DC1394452469F0BF00EE1157 /* TicTacToeCommon.framework in Frameworks */,
+				DC1394462469F0BF00EE1157 /* TwoFactorCore.framework in Frameworks */,
+				DC1394472469F0BF00EE1157 /* TwoFactorSwiftUI.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -693,7 +708,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCEAF4D0242D0BB500E4639F /* ComposableArchitectureTestSupport in Frameworks */,
+				DC1394302469E55900EE1157 /* TicTacToeCommon.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -701,7 +716,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCEAF52D242D0D3000E4639F /* ComposableArchitecture in Frameworks */,
+				DC13941E2469E42A00EE1157 /* TicTacToeCommon.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -709,7 +724,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCEAF532242D0D4700E4639F /* ComposableArchitecture in Frameworks */,
+				DC1394212469E44B00EE1157 /* AuthenticationClient.framework in Frameworks */,
+				DC1394222469E45C00EE1157 /* TicTacToeCommon.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -717,7 +733,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCEAF4DB242D0BED00E4639F /* ComposableArchitecture in Frameworks */,
 				DCAF118024202D3C00483288 /* TwoFactorCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -727,7 +742,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC919473242013DC00A5BE1F /* LoginCore.framework in Frameworks */,
-				DCEAF4E0242D0C0500E4639F /* ComposableArchitectureTestSupport in Frameworks */,
+				DC13942E2469E54C00EE1157 /* TicTacToeCommon.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -735,7 +750,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCEAF4E5242D0C1500E4639F /* ComposableArchitecture in Frameworks */,
 				DCAF118F24202DCB00483288 /* LoginCore.framework in Frameworks */,
 				DCF775202423A55D00795AF1 /* TwoFactorSwiftUI.framework in Frameworks */,
 			);
@@ -745,8 +759,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCEAF4EA242D0C2B00E4639F /* ComposableArchitectureTestSupport in Frameworks */,
 				DC9194BB2420142700A5BE1F /* LoginSwiftUI.framework in Frameworks */,
+				DC13942D2469E54700EE1157 /* TicTacToeCommon.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -755,7 +769,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				DCAF115D24202A5700483288 /* AuthenticationClient.framework in Frameworks */,
-				DCEAF4EF242D0C4600E4639F /* ComposableArchitecture in Frameworks */,
 				DCAF115E24202A5C00483288 /* TicTacToeCommon.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -764,7 +777,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCEAF4F4242D0C5F00E4639F /* ComposableArchitectureTestSupport in Frameworks */,
+				DC13942C2469E53F00EE1157 /* TicTacToeCommon.framework in Frameworks */,
 				DC9194DD2420144700A5BE1F /* TwoFactorCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -773,7 +786,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCEAF503242D0C9F00E4639F /* ComposableArchitecture in Frameworks */,
 				DCAF11B22420305200483288 /* GameCore.framework in Frameworks */,
 				DCAF11BE242031ED00483288 /* TicTacToeCommon.framework in Frameworks */,
 			);
@@ -783,8 +795,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCEAF508242D0CB300E4639F /* ComposableArchitectureTestSupport in Frameworks */,
 				DC91950124201A7900A5BE1F /* NewGameCore.framework in Frameworks */,
+				DC13942A2469E53500EE1157 /* TicTacToeCommon.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -792,7 +804,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCEAF50D242D0CC700E4639F /* ComposableArchitecture in Frameworks */,
 				DCAF11EB2420352B00483288 /* GameSwiftUI.framework in Frameworks */,
 				DCAF11BB2420312800483288 /* NewGameCore.framework in Frameworks */,
 			);
@@ -802,8 +813,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCEAF512242D0CDC00E4639F /* ComposableArchitectureTestSupport in Frameworks */,
 				DC91952324201A8100A5BE1F /* NewGameSwiftUI.framework in Frameworks */,
+				DC1394292469E52F00EE1157 /* TicTacToeCommon.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -811,7 +822,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCEAF517242D0CEE00E4639F /* ComposableArchitecture in Frameworks */,
+				DC1394252469E47E00EE1157 /* TicTacToeCommon.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -819,8 +830,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCEAF51C242D0CFB00E4639F /* ComposableArchitectureTestSupport in Frameworks */,
 				DC91954524201A8700A5BE1F /* GameCore.framework in Frameworks */,
+				DC1394272469E51300EE1157 /* TicTacToeCommon.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -828,8 +839,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCEAF521242D0D0C00E4639F /* ComposableArchitecture in Frameworks */,
 				DCAF11A524202F9700483288 /* GameCore.framework in Frameworks */,
+				DC1394262469E48D00EE1157 /* TicTacToeCommon.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -837,8 +848,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCEAF528242D0D1F00E4639F /* ComposableArchitectureTestSupport in Frameworks */,
 				DC91956724201A8E00A5BE1F /* GameSwiftUI.framework in Frameworks */,
+				DC1394282469E52800EE1157 /* TicTacToeCommon.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -846,7 +857,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCEAF4F9242D0C7D00E4639F /* ComposableArchitecture in Frameworks */,
 				DCAF116124202B1000483288 /* TwoFactorCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -855,8 +865,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCEAF4FE242D0C8D00E4639F /* ComposableArchitectureTestSupport in Frameworks */,
 				DCAF10D1242027D400483288 /* TwoFactorSwiftUI.framework in Frameworks */,
+				DC13942B2469E53A00EE1157 /* TicTacToeCommon.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -864,7 +874,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCEAF4BE242D090200E4639F /* ComposableArchitecture in Frameworks */,
 				DCAF11D8242033F000483288 /* LoginCore.framework in Frameworks */,
 				DCAF11D7242033EB00483288 /* NewGameCore.framework in Frameworks */,
 			);
@@ -875,7 +884,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DCAF10F5242028DF00483288 /* AppCore.framework in Frameworks */,
-				DCEAF4C3242D091900E4639F /* ComposableArchitectureTestSupport in Frameworks */,
+				DC13942F2469E55200EE1157 /* TicTacToeCommon.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -883,7 +892,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCEAF4D6242D0BC400E4639F /* ComposableArchitecture in Frameworks */,
 				DCAF11E8242034DA00483288 /* LoginSwiftUI.framework in Frameworks */,
 				DCAF11E5242034D200483288 /* NewGameSwiftUI.framework in Frameworks */,
 			);
@@ -893,7 +901,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCEAF537242D0D5C00E4639F /* ComposableArchitecture in Frameworks */,
+				DC13941D2469E40B00EE1157 /* ComposableArchitecture in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -968,6 +976,13 @@
 			path = Sources;
 			sourceTree = "<group>";
 		};
+		DC1394192469E3AE00EE1157 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		DC9193ED2420104100A5BE1F = {
 			isa = PBXGroup;
 			children = (
@@ -977,6 +992,7 @@
 				DC9193F72420104100A5BE1F /* Products */,
 				CA6AC25C2450FDB800C71CB3 /* Sources */,
 				CA6AC25B2450FBB700C71CB3 /* Tests */,
+				DC1394192469E3AE00EE1157 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -1131,7 +1147,6 @@
 			dependencies = (
 				CA0A578A242AA48E00BA537D /* PBXTargetDependency */,
 				CA0A57A1242AA83F00BA537D /* PBXTargetDependency */,
-				DCEAF4C6242D092700E4639F /* PBXTargetDependency */,
 				CA0A5788242AA48A00BA537D /* PBXTargetDependency */,
 				CA0A5795242AA56A00BA537D /* PBXTargetDependency */,
 				CA0A5798242AA59100BA537D /* PBXTargetDependency */,
@@ -1139,7 +1154,6 @@
 			);
 			name = TicTacToe;
 			packageProductDependencies = (
-				DCEAF4CA242D093100E4639F /* ComposableArchitecture */,
 			);
 			productName = TicTacToe;
 			productReference = CA0A5761242AA3A800BA537D /* TicTacToe.app */;
@@ -1157,12 +1171,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF4CE242D0BA900E4639F /* PBXTargetDependency */,
 				CA0A5778242AA3A900BA537D /* PBXTargetDependency */,
 			);
 			name = TicTacToeTests;
 			packageProductDependencies = (
-				DCEAF4CF242D0BB500E4639F /* ComposableArchitectureTestSupport */,
 			);
 			productName = TicTacToeTests;
 			productReference = CA0A5776242AA3A900BA537D /* TicTacToeTests.xctest */;
@@ -1181,11 +1193,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF52B242D0D2D00E4639F /* PBXTargetDependency */,
+				DC1394202469E43300EE1157 /* PBXTargetDependency */,
 			);
 			name = AuthenticationClient;
 			packageProductDependencies = (
-				DCEAF52C242D0D3000E4639F /* ComposableArchitecture */,
 			);
 			productName = AuthenticationClient;
 			productReference = DC919425242012D200A5BE1F /* AuthenticationClient.framework */;
@@ -1205,11 +1216,9 @@
 			);
 			dependencies = (
 				DC09A27F242022F0007E2F27 /* PBXTargetDependency */,
-				DCEAF530242D0D3C00E4639F /* PBXTargetDependency */,
 			);
 			name = LiveAuthenticationClient;
 			packageProductDependencies = (
-				DCEAF531242D0D4700E4639F /* ComposableArchitecture */,
 			);
 			productName = LiveAuthenticationClient;
 			productReference = DC9194482420130D00A5BE1F /* LiveAuthenticationClient.framework */;
@@ -1228,12 +1237,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF4D9242D0BE500E4639F /* PBXTargetDependency */,
 				DCAF117F24202D3700483288 /* PBXTargetDependency */,
 			);
 			name = LoginCore;
 			packageProductDependencies = (
-				DCEAF4DA242D0BED00E4639F /* ComposableArchitecture */,
 			);
 			productName = LoginCore;
 			productReference = DC91946A242013DB00A5BE1F /* LoginCore.framework */;
@@ -1251,12 +1258,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF4DE242D0C0100E4639F /* PBXTargetDependency */,
 				DC919475242013DC00A5BE1F /* PBXTargetDependency */,
 			);
 			name = LoginCoreTests;
 			packageProductDependencies = (
-				DCEAF4DF242D0C0500E4639F /* ComposableArchitectureTestSupport */,
 			);
 			productName = LoginCoreTests;
 			productReference = DC919472242013DB00A5BE1F /* LoginCoreTests.xctest */;
@@ -1275,13 +1280,11 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF4E3242D0C1100E4639F /* PBXTargetDependency */,
 				DCAF118E24202DC800483288 /* PBXTargetDependency */,
 				DCF7751F2423A55400795AF1 /* PBXTargetDependency */,
 			);
 			name = LoginSwiftUI;
 			packageProductDependencies = (
-				DCEAF4E4242D0C1500E4639F /* ComposableArchitecture */,
 			);
 			productName = LoginSwiftUI;
 			productReference = DC9194B22420142600A5BE1F /* LoginSwiftUI.framework */;
@@ -1299,12 +1302,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF4E8242D0C2800E4639F /* PBXTargetDependency */,
 				DC9194BD2420142700A5BE1F /* PBXTargetDependency */,
 			);
 			name = LoginSwiftUITests;
 			packageProductDependencies = (
-				DCEAF4E9242D0C2B00E4639F /* ComposableArchitectureTestSupport */,
 			);
 			productName = LoginSwiftUITests;
 			productReference = DC9194BA2420142700A5BE1F /* LoginSwiftUITests.xctest */;
@@ -1324,12 +1325,10 @@
 			);
 			dependencies = (
 				DCAF115A24202A4200483288 /* PBXTargetDependency */,
-				DCEAF4ED242D0C3D00E4639F /* PBXTargetDependency */,
 				DCAF115C24202A5100483288 /* PBXTargetDependency */,
 			);
 			name = TwoFactorCore;
 			packageProductDependencies = (
-				DCEAF4EE242D0C4600E4639F /* ComposableArchitecture */,
 			);
 			productName = TwoFactorCore;
 			productReference = DC9194D42420144700A5BE1F /* TwoFactorCore.framework */;
@@ -1347,12 +1346,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF4F2242D0C5A00E4639F /* PBXTargetDependency */,
 				DC9194DF2420144700A5BE1F /* PBXTargetDependency */,
 			);
 			name = TwoFactorCoreTests;
 			packageProductDependencies = (
-				DCEAF4F3242D0C5F00E4639F /* ComposableArchitectureTestSupport */,
 			);
 			productName = TwoFactorCoreTests;
 			productReference = DC9194DC2420144700A5BE1F /* TwoFactorCoreTests.xctest */;
@@ -1371,13 +1368,11 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF501242D0C9900E4639F /* PBXTargetDependency */,
 				DCAF11B12420304F00483288 /* PBXTargetDependency */,
 				DCAF11BD242031E700483288 /* PBXTargetDependency */,
 			);
 			name = NewGameCore;
 			packageProductDependencies = (
-				DCEAF502242D0C9F00E4639F /* ComposableArchitecture */,
 			);
 			productName = NewGameCore;
 			productReference = DC9194F824201A7800A5BE1F /* NewGameCore.framework */;
@@ -1395,12 +1390,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF506242D0CAC00E4639F /* PBXTargetDependency */,
 				DC91950324201A7900A5BE1F /* PBXTargetDependency */,
 			);
 			name = NewGameCoreTests;
 			packageProductDependencies = (
-				DCEAF507242D0CB300E4639F /* ComposableArchitectureTestSupport */,
 			);
 			productName = NewGameCoreTests;
 			productReference = DC91950024201A7900A5BE1F /* NewGameCoreTests.xctest */;
@@ -1419,13 +1412,11 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF50B242D0CBE00E4639F /* PBXTargetDependency */,
 				DCAF11EA2420352200483288 /* PBXTargetDependency */,
 				DCAF11BA2420312000483288 /* PBXTargetDependency */,
 			);
 			name = NewGameSwiftUI;
 			packageProductDependencies = (
-				DCEAF50C242D0CC700E4639F /* ComposableArchitecture */,
 			);
 			productName = NewGameSwiftUI;
 			productReference = DC91951A24201A8100A5BE1F /* NewGameSwiftUI.framework */;
@@ -1443,12 +1434,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF510242D0CD400E4639F /* PBXTargetDependency */,
 				DC91952524201A8100A5BE1F /* PBXTargetDependency */,
 			);
 			name = NewGameSwiftUITests;
 			packageProductDependencies = (
-				DCEAF511242D0CDC00E4639F /* ComposableArchitectureTestSupport */,
 			);
 			productName = NewGameSwiftUITests;
 			productReference = DC91952224201A8100A5BE1F /* NewGameSwiftUITests.xctest */;
@@ -1467,11 +1456,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF515242D0CE500E4639F /* PBXTargetDependency */,
+				DC1394242469E47A00EE1157 /* PBXTargetDependency */,
 			);
 			name = GameCore;
 			packageProductDependencies = (
-				DCEAF516242D0CEE00E4639F /* ComposableArchitecture */,
 			);
 			productName = GameCore;
 			productReference = DC91953C24201A8700A5BE1F /* GameCore.framework */;
@@ -1489,12 +1477,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF51A242D0CF600E4639F /* PBXTargetDependency */,
 				DC91954724201A8700A5BE1F /* PBXTargetDependency */,
 			);
 			name = GameCoreTests;
 			packageProductDependencies = (
-				DCEAF51B242D0CFB00E4639F /* ComposableArchitectureTestSupport */,
 			);
 			productName = GameCoreTests;
 			productReference = DC91954424201A8700A5BE1F /* GameCoreTests.xctest */;
@@ -1513,12 +1499,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF51F242D0D0600E4639F /* PBXTargetDependency */,
 				DCAF11A424202F9400483288 /* PBXTargetDependency */,
 			);
 			name = GameSwiftUI;
 			packageProductDependencies = (
-				DCEAF520242D0D0C00E4639F /* ComposableArchitecture */,
 			);
 			productName = GameSwiftUI;
 			productReference = DC91955E24201A8D00A5BE1F /* GameSwiftUI.framework */;
@@ -1536,12 +1520,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF526242D0D1B00E4639F /* PBXTargetDependency */,
 				DC91956924201A8E00A5BE1F /* PBXTargetDependency */,
 			);
 			name = GameSwiftUITests;
 			packageProductDependencies = (
-				DCEAF527242D0D1F00E4639F /* ComposableArchitectureTestSupport */,
 			);
 			productName = GameSwiftUITests;
 			productReference = DC91956624201A8E00A5BE1F /* GameSwiftUITests.xctest */;
@@ -1560,12 +1542,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF4F7242D0C7A00E4639F /* PBXTargetDependency */,
 				DCAF116024202B0C00483288 /* PBXTargetDependency */,
 			);
 			name = TwoFactorSwiftUI;
 			packageProductDependencies = (
-				DCEAF4F8242D0C7D00E4639F /* ComposableArchitecture */,
 			);
 			productName = TwoFactorSwiftUI;
 			productReference = DCAF10C8242027D400483288 /* TwoFactorSwiftUI.framework */;
@@ -1583,12 +1563,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF4FC242D0C8800E4639F /* PBXTargetDependency */,
 				DCAF10D3242027D400483288 /* PBXTargetDependency */,
 			);
 			name = TwoFactorSwiftUITests;
 			packageProductDependencies = (
-				DCEAF4FD242D0C8D00E4639F /* ComposableArchitectureTestSupport */,
 			);
 			productName = TwoFactorSwiftUITests;
 			productReference = DCAF10D0242027D400483288 /* TwoFactorSwiftUITests.xctest */;
@@ -1607,13 +1585,11 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF4BC242D08FC00E4639F /* PBXTargetDependency */,
 				DCAF11DA242033F500483288 /* PBXTargetDependency */,
 				DCAF11D0242033D800483288 /* PBXTargetDependency */,
 			);
 			name = AppCore;
 			packageProductDependencies = (
-				DCEAF4BD242D090200E4639F /* ComposableArchitecture */,
 			);
 			productName = AppCore;
 			productReference = DCAF10EC242028DE00483288 /* AppCore.framework */;
@@ -1632,11 +1608,9 @@
 			);
 			dependencies = (
 				DCAF10F7242028DF00483288 /* PBXTargetDependency */,
-				DCEAF4C1242D091300E4639F /* PBXTargetDependency */,
 			);
 			name = AppCoreTests;
 			packageProductDependencies = (
-				DCEAF4C2242D091900E4639F /* ComposableArchitectureTestSupport */,
 			);
 			productName = AppCoreTests;
 			productReference = DCAF10F4242028DE00483288 /* AppCoreTests.xctest */;
@@ -1655,13 +1629,11 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF4D4242D0BBE00E4639F /* PBXTargetDependency */,
 				DCAF11E7242034D600483288 /* PBXTargetDependency */,
 				DCAF11E4242034CD00483288 /* PBXTargetDependency */,
 			);
 			name = AppSwiftUI;
 			packageProductDependencies = (
-				DCEAF4D5242D0BC400E4639F /* ComposableArchitecture */,
 			);
 			productName = AppSwiftUI;
 			productReference = DCAF110E242028E600483288 /* AppSwiftUI.framework */;
@@ -1680,11 +1652,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				DCEAF535242D0D5600E4639F /* PBXTargetDependency */,
 			);
 			name = TicTacToeCommon;
 			packageProductDependencies = (
-				DCEAF536242D0D5C00E4639F /* ComposableArchitecture */,
+				DC13941C2469E40B00EE1157 /* ComposableArchitecture */,
 			);
 			productName = TicTacToeCommon;
 			productReference = DCAF11312420293300483288 /* TicTacToeCommon.framework */;
@@ -1846,6 +1817,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC1394662469F25300EE1157 /* TicTacToeCommon.framework in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1853,6 +1825,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC1394672469F25D00EE1157 /* AuthenticationClient.framework in Resources */,
+				DC1394682469F25D00EE1157 /* TicTacToeCommon.framework in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1860,6 +1834,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC1394592469F1FC00EE1157 /* TwoFactorCore.framework in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1874,6 +1849,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC13945A2469F20600EE1157 /* LoginCore.framework in Resources */,
+				DC13945B2469F20600EE1157 /* TwoFactorSwiftUI.framework in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1888,6 +1865,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC13945C2469F21600EE1157 /* AuthenticationClient.framework in Resources */,
+				DC13945D2469F21600EE1157 /* TicTacToeCommon.framework in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1902,6 +1881,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC13945F2469F22D00EE1157 /* GameCore.framework in Resources */,
+				DC1394602469F22D00EE1157 /* TicTacToeCommon.framework in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1916,6 +1897,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC1394622469F23A00EE1157 /* GameSwiftUI.framework in Resources */,
+				DC1394612469F23A00EE1157 /* NewGameCore.framework in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1930,6 +1913,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC1394632469F24400EE1157 /* TicTacToeCommon.framework in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1944,6 +1928,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC1394642469F24C00EE1157 /* GameCore.framework in Resources */,
+				DC1394652469F24C00EE1157 /* TicTacToeCommon.framework in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1958,6 +1944,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC13945E2469F22300EE1157 /* TwoFactorCore.framework in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1986,6 +1973,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC1394572469F1F400EE1157 /* LoginSwiftUI.framework in Resources */,
+				DC1394582469F1F400EE1157 /* NewGameSwiftUI.framework in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2241,6 +2230,16 @@
 			target = DC919424242012D200A5BE1F /* AuthenticationClient */;
 			targetProxy = DC09A27E242022F0007E2F27 /* PBXContainerItemProxy */;
 		};
+		DC1394202469E43300EE1157 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DCAF11302420293300483288 /* TicTacToeCommon */;
+			targetProxy = DC13941F2469E43300EE1157 /* PBXContainerItemProxy */;
+		};
+		DC1394242469E47A00EE1157 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DCAF11302420293300483288 /* TicTacToeCommon */;
+			targetProxy = DC1394232469E47A00EE1157 /* PBXContainerItemProxy */;
+		};
 		DC919475242013DC00A5BE1F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = DC919469242013DB00A5BE1F /* LoginCore */;
@@ -2356,102 +2355,6 @@
 			target = DC91955D24201A8D00A5BE1F /* GameSwiftUI */;
 			targetProxy = DCAF11E92420352200483288 /* PBXContainerItemProxy */;
 		};
-		DCEAF4BC242D08FC00E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF4BB242D08FC00E4639F /* ComposableArchitecture */;
-		};
-		DCEAF4C1242D091300E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF4C0242D091300E4639F /* ComposableArchitectureTestSupport */;
-		};
-		DCEAF4C6242D092700E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF4C5242D092700E4639F /* ComposableArchitecture */;
-		};
-		DCEAF4CE242D0BA900E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF4CD242D0BA900E4639F /* ComposableArchitectureTestSupport */;
-		};
-		DCEAF4D4242D0BBE00E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF4D3242D0BBE00E4639F /* ComposableArchitecture */;
-		};
-		DCEAF4D9242D0BE500E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF4D8242D0BE500E4639F /* ComposableArchitecture */;
-		};
-		DCEAF4DE242D0C0100E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF4DD242D0C0100E4639F /* ComposableArchitectureTestSupport */;
-		};
-		DCEAF4E3242D0C1100E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF4E2242D0C1100E4639F /* ComposableArchitecture */;
-		};
-		DCEAF4E8242D0C2800E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF4E7242D0C2800E4639F /* ComposableArchitectureTestSupport */;
-		};
-		DCEAF4ED242D0C3D00E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF4EC242D0C3D00E4639F /* ComposableArchitecture */;
-		};
-		DCEAF4F2242D0C5A00E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF4F1242D0C5A00E4639F /* ComposableArchitectureTestSupport */;
-		};
-		DCEAF4F7242D0C7A00E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF4F6242D0C7A00E4639F /* ComposableArchitecture */;
-		};
-		DCEAF4FC242D0C8800E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF4FB242D0C8800E4639F /* ComposableArchitectureTestSupport */;
-		};
-		DCEAF501242D0C9900E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF500242D0C9900E4639F /* ComposableArchitecture */;
-		};
-		DCEAF506242D0CAC00E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF505242D0CAC00E4639F /* ComposableArchitectureTestSupport */;
-		};
-		DCEAF50B242D0CBE00E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF50A242D0CBE00E4639F /* ComposableArchitecture */;
-		};
-		DCEAF510242D0CD400E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF50F242D0CD400E4639F /* ComposableArchitectureTestSupport */;
-		};
-		DCEAF515242D0CE500E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF514242D0CE500E4639F /* ComposableArchitecture */;
-		};
-		DCEAF51A242D0CF600E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF519242D0CF600E4639F /* ComposableArchitectureTestSupport */;
-		};
-		DCEAF51F242D0D0600E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF51E242D0D0600E4639F /* ComposableArchitecture */;
-		};
-		DCEAF526242D0D1B00E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF525242D0D1B00E4639F /* ComposableArchitectureTestSupport */;
-		};
-		DCEAF52B242D0D2D00E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF52A242D0D2D00E4639F /* ComposableArchitecture */;
-		};
-		DCEAF530242D0D3C00E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF52F242D0D3C00E4639F /* ComposableArchitecture */;
-		};
-		DCEAF535242D0D5600E4639F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DCEAF534242D0D5600E4639F /* ComposableArchitecture */;
-		};
 		DCF7751F2423A55400795AF1 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = DCAF10C7242027D400483288 /* TwoFactorSwiftUI */;
@@ -2502,6 +2405,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2522,6 +2426,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2660,6 +2565,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2687,6 +2593,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2713,6 +2620,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2740,6 +2648,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2766,6 +2675,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2793,6 +2703,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2814,6 +2725,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2831,6 +2743,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2852,6 +2765,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2877,6 +2791,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2898,6 +2813,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2915,6 +2831,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2937,6 +2854,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2964,6 +2882,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2985,6 +2904,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3002,6 +2922,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3024,6 +2945,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3051,6 +2973,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3072,6 +2995,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3089,6 +3013,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3110,6 +3035,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3135,6 +3061,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3156,6 +3083,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3173,6 +3101,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3195,6 +3124,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3222,6 +3152,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3243,6 +3174,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3260,6 +3192,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3281,6 +3214,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3306,6 +3240,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3327,6 +3262,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3344,6 +3280,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3366,6 +3303,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3393,6 +3331,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3414,6 +3353,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3431,6 +3371,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3453,6 +3394,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3480,6 +3422,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3501,6 +3444,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3518,6 +3462,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3539,6 +3484,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3564,6 +3510,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3589,6 +3536,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3614,6 +3562,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3861,195 +3810,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		DCEAF4BB242D08FC00E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF4BD242D090200E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF4C0242D091300E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DCEAF4C2242D091900E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DCEAF4C5242D092700E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF4CA242D093100E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF4CD242D0BA900E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DCEAF4CF242D0BB500E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DCEAF4D3242D0BBE00E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF4D5242D0BC400E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF4D8242D0BE500E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF4DA242D0BED00E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF4DD242D0C0100E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DCEAF4DF242D0C0500E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DCEAF4E2242D0C1100E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF4E4242D0C1500E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF4E7242D0C2800E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DCEAF4E9242D0C2B00E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DCEAF4EC242D0C3D00E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF4EE242D0C4600E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF4F1242D0C5A00E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DCEAF4F3242D0C5F00E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DCEAF4F6242D0C7A00E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF4F8242D0C7D00E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF4FB242D0C8800E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DCEAF4FD242D0C8D00E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DCEAF500242D0C9900E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF502242D0C9F00E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF505242D0CAC00E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DCEAF507242D0CB300E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DCEAF50A242D0CBE00E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF50C242D0CC700E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF50F242D0CD400E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DCEAF511242D0CDC00E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DCEAF514242D0CE500E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF516242D0CEE00E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF519242D0CF600E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DCEAF51B242D0CFB00E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DCEAF51E242D0D0600E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF520242D0D0C00E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF525242D0D1B00E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DCEAF527242D0D1F00E4639F /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DCEAF52A242D0D2D00E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF52C242D0D3000E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF52F242D0D3C00E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF531242D0D4700E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF534242D0D5600E4639F /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DCEAF536242D0D5C00E4639F /* ComposableArchitecture */ = {
+		DC13941C2469E40B00EE1157 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
 		};

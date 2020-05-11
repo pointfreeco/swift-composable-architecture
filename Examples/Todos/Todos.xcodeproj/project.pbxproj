@@ -7,10 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		DC85B445242D029B009784B0 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC85B444242D029B009784B0 /* ComposableArchitecture */; };
-		DC85B446242D029B009784B0 /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DC85B444242D029B009784B0 /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		DC85B44A242D02A6009784B0 /* ComposableArchitectureTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = DC85B449242D02A6009784B0 /* ComposableArchitectureTestSupport */; };
-		DC85B44B242D02A6009784B0 /* ComposableArchitectureTestSupport in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DC85B449242D02A6009784B0 /* ComposableArchitectureTestSupport */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		DC1394322469E57000EE1157 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC1394312469E57000EE1157 /* ComposableArchitecture */; };
 		DCBCB77624290F6C00DE1F59 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCBCB77524290F6C00DE1F59 /* SceneDelegate.swift */; };
 		DCBCB77A24290F6D00DE1F59 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DCBCB77924290F6D00DE1F59 /* Assets.xcassets */; };
 		DCBCB78B24290F6D00DE1F59 /* TodosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCBCB78A24290F6D00DE1F59 /* TodosTests.swift */; };
@@ -34,7 +31,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DC85B446242D029B009784B0 /* ComposableArchitecture in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -45,7 +41,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DC85B44B242D02A6009784B0 /* ComposableArchitectureTestSupport in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -68,7 +63,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC85B445242D029B009784B0 /* ComposableArchitecture in Frameworks */,
+				DC1394322469E57000EE1157 /* ComposableArchitecture in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -76,7 +71,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC85B44A242D02A6009784B0 /* ComposableArchitectureTestSupport in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -144,11 +138,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				DC85B443242D0299009784B0 /* PBXTargetDependency */,
 			);
 			name = Todos;
 			packageProductDependencies = (
-				DC85B444242D029B009784B0 /* ComposableArchitecture */,
+				DC1394312469E57000EE1157 /* ComposableArchitecture */,
 			);
 			productName = Todos;
 			productReference = DCBCB77024290F6C00DE1F59 /* Todos.app */;
@@ -166,12 +159,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				DC85B448242D02A4009784B0 /* PBXTargetDependency */,
 				DCBCB78824290F6D00DE1F59 /* PBXTargetDependency */,
 			);
 			name = TodosTests;
 			packageProductDependencies = (
-				DC85B449242D02A6009784B0 /* ComposableArchitectureTestSupport */,
 			);
 			productName = TodosTests;
 			productReference = DCBCB78624290F6D00DE1F59 /* TodosTests.xctest */;
@@ -256,14 +247,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		DC85B443242D0299009784B0 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DC85B442242D0299009784B0 /* ComposableArchitecture */;
-		};
-		DC85B448242D02A4009784B0 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = DC85B447242D02A4009784B0 /* ComposableArchitectureTestSupport */;
-		};
 		DCBCB78824290F6D00DE1F59 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = DCBCB76F24290F6C00DE1F59 /* Todos */;
@@ -495,21 +478,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		DC85B442242D0299009784B0 /* ComposableArchitecture */ = {
+		DC1394312469E57000EE1157 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
-		};
-		DC85B444242D029B009784B0 /* ComposableArchitecture */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitecture;
-		};
-		DC85B447242D02A4009784B0 /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
-		};
-		DC85B449242D02A6009784B0 /* ComposableArchitectureTestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ComposableArchitectureTestSupport;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

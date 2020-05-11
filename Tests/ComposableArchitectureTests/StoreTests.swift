@@ -1,5 +1,4 @@
 import Combine
-import ComposableArchitectureTestSupport
 import XCTest
 
 @testable import ComposableArchitecture

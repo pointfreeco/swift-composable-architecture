@@ -1,6 +1,5 @@
 import AuthenticationClient
 import ComposableArchitecture
-import ComposableArchitectureTestSupport
 import TicTacToeCommon
 import TwoFactorCore
 import XCTest
