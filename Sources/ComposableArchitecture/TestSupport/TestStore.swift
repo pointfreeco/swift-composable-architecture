@@ -418,18 +418,21 @@ private func _XCTFail(_ message: String = "", file: StaticString = #file, line: 
     let _XCTest = NSClassFromString("XCTest")
       .flatMap(Bundle.init(for:))
       .flatMap({ $0.executablePath })
-      .flatMap({ dlopen($0, RTLD_NOW) })
-    else { return }
-
-  guard
+      .flatMap({ dlopen($0, RTLD_NOW) }),
     let _XCTFailureHandler = dlsym(_XCTest, "_XCTFailureHandler")
-      .map({ unsafeBitCast($0, to: XCTFailureHandler.self) })
-    else { return }
-
-  guard
+      .map({ unsafeBitCast($0, to: XCTFailureHandler.self) }),
     let _XCTCurrentTestCase = dlsym(_XCTest, "_XCTCurrentTestCase")
       .map({ unsafeBitCast($0, to: XCTCurrentTestCase.self) })
-    else { return }
+    else {
+      assertionFailure(
+        """
+        Couldn't load XCTest. Are you driving a test store in application code?"
+        """,
+        file: file,
+        line: line
+      )
+      return
+  }
 
   _XCTFailureHandler(_XCTCurrentTestCase(), true, "\(file)", line, message, nil)
 }
