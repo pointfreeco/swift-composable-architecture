@@ -413,6 +413,7 @@ extension TestStore {
   }
 }
 
+// NB: Dynamically load XCTest to prevent leaking its symbols into our library code.
 private func _XCTFail(_ message: String = "", file: StaticString = #file, line: UInt = #line) {
   typealias XCTCurrentTestCase = @convention(c) () -> AnyObject
   typealias XCTFailureHandler = @convention(c) (
