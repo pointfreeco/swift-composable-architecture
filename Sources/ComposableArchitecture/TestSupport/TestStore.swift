@@ -414,24 +414,29 @@ extension TestStore {
 }
 
 private func _XCTFail(_ message: String = "", file: StaticString = #file, line: UInt = #line) {
+  typealias XCTCurrentTestCase = @convention(c) () -> AnyObject
+  typealias XCTFailureHandler = @convention(c) (
+    AnyObject, Bool, UnsafePointer<CChar>, UInt, String, String?
+  ) -> Void
+
   guard
-    let _XCTest = NSClassFromString("XCTest")
+    let XCTest = NSClassFromString("XCTest")
       .flatMap(Bundle.init(for:))
       .flatMap({ $0.executablePath })
       .flatMap({ dlopen($0, RTLD_NOW) }),
-    let _XCTFailureHandler = dlsym(_XCTest, "_XCTFailureHandler")
+    let _XCTFailureHandler = dlsym(XCTest, "_XCTFailureHandler")
       .map({ unsafeBitCast($0, to: XCTFailureHandler.self) }),
-    let _XCTCurrentTestCase = dlsym(_XCTest, "_XCTCurrentTestCase")
+    let _XCTCurrentTestCase = dlsym(XCTest, "_XCTCurrentTestCase")
       .map({ unsafeBitCast($0, to: XCTCurrentTestCase.self) })
-    else {
-      assertionFailure(
-        """
-        Couldn't load XCTest. Are you driving a test store in application code?"
-        """,
-        file: file,
-        line: line
-      )
-      return
+  else {
+    assertionFailure(
+      """
+      Couldn't load XCTest. Are you driving a test store in application code?"
+      """,
+      file: file,
+      line: line
+    )
+    return
   }
 
   _XCTFailureHandler(_XCTCurrentTestCase(), true, "\(file)", line, message, nil)
