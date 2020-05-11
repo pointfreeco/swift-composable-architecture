@@ -432,7 +432,7 @@ private func _XCTFail(_ message: String = "", file: StaticString = #file, line: 
   else {
     assertionFailure(
       """
-      Couldn't load XCTest. Are you driving a test store in application code?"
+      Couldn't load XCTest. Are you using a test store in application code?"
       """,
       file: file,
       line: line
