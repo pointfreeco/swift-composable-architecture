@@ -26,7 +26,7 @@ class NewGameViewController: UIViewController {
 
   init(store: Store<NewGameState, NewGameAction>) {
     self.store = store
-    self.viewStore = ViewStore(store.scope(state: \.view, action: NewGameAction.view))
+    self.viewStore = ViewStore(store.scope(state: { $0.view }, action: NewGameAction.view))
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -116,7 +116,7 @@ class NewGameViewController: UIViewController {
       .store(in: &self.cancellables)
 
     self.store
-      .scope(state: \.game, action: NewGameAction.game)
+      .scope(state: { $0.game }, action: NewGameAction.game)
       .ifLet(
         then: { [weak self] gameStore in
           self?.navigationController?.pushViewController(

@@ -52,7 +52,7 @@ let nestedReducer = Reducer<
     return .none
 
   case let .node(index, action):
-    return self(&state.children[index], action, environment)
+    return self.callAsFunction(&state.children[index], action, environment)
 
   case let .remove(indexSet):
     state.children.remove(atOffsets: indexSet)
@@ -69,18 +69,18 @@ struct NestedView: View {
   let store: Store<NestedState, NestedAction>
 
   var body: some View {
-    WithViewStore(self.store.scope(state: \.description)) { viewStore in
+    WithViewStore(self.store.scope(state: { $0.description })) { viewStore in
       Form {
         Section(header: Text(template: readMe, .caption)) {
 
           ForEachStore(
-            self.store.scope(state: \.children, action: NestedAction.node(index:action:))
+            self.store.scope(state: { $0.children }, action: NestedAction.node(index:action:))
           ) { childStore in
             WithViewStore(childStore) { childViewStore in
               HStack {
                 TextField(
                   "Untitled",
-                  text: childViewStore.binding(get: \.description, send: NestedAction.rename)
+                  text: childViewStore.binding(get: { $0.description }, send: NestedAction.rename)
                 )
 
                 Spacer()

@@ -68,12 +68,12 @@ struct EagerSheetView: View {
       }
       .sheet(
         isPresented: viewStore.binding(
-          get: \.isSheetPresented,
+          get: { $0.isSheetPresented },
           send: EagerSheetAction.setSheet(isPresented:)
         )
       ) {
         IfLetStore(
-          self.store.scope(state: \.optionalCounter, action: EagerSheetAction.optionalCounter),
+          self.store.scope(state: { $0.optionalCounter }, action: EagerSheetAction.optionalCounter),
           then: CounterView.init(store:),
           else: ActivityIndicator()
         )

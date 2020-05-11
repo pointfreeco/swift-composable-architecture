@@ -26,7 +26,7 @@ public struct TwoFactorView: View {
   }
 
   public var body: some View {
-    WithViewStore(self.store.scope(state: \.view, action: TwoFactorAction.view)) { viewStore in
+    WithViewStore(self.store.scope(state: { $0.view }, action: TwoFactorAction.view)) { viewStore in
       Form {
         Section(
           header: Text(#"To confirm the second factor enter "1234" into the form."#)
@@ -37,7 +37,7 @@ public struct TwoFactorView: View {
         Section(header: Text("Code")) {
           TextField(
             "1234",
-            text: viewStore.binding(get: \.code, send: ViewAction.codeChanged)
+            text: viewStore.binding(get: { $0.code }, send: ViewAction.codeChanged)
           )
           .keyboardType(.numberPad)
         }
@@ -58,7 +58,7 @@ public struct TwoFactorView: View {
       .disabled(viewStore.isFormDisabled)
       .navigationBarTitle("Two Factor Confirmation")
       .alert(
-        item: viewStore.binding(get: \.alertData, send: .alertDismissed)
+        item: viewStore.binding(get: { $0.alertData }, send: .alertDismissed)
       ) { alertData in
         Alert(title: Text(alertData.title))
       }

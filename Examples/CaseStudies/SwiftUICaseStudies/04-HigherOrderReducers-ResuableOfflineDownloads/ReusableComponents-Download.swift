@@ -181,7 +181,7 @@ struct CitiesView: View {
         header: Text(readMe)
       ) {
         ForEachStore(
-          self.store.scope(state: \.cityMaps, action: MapAppAction.cityMaps(index:action:))
+          self.store.scope(state: { $0.cityMaps }, action: MapAppAction.cityMaps(index:action:))
         ) { cityMapStore in
           CityMapRowView(store: cityMapStore)
             .buttonStyle(BorderlessButtonStyle())

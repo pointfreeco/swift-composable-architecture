@@ -13,7 +13,7 @@ class GameSwiftUITests: XCTestCase {
     reducer: gameReducer,
     environment: GameEnvironment()
   )
-  .scope(state: \.view)
+  .scope(state: { $0.view })
 
   func testFlow_Winner_Quit() {
     self.store.assert(

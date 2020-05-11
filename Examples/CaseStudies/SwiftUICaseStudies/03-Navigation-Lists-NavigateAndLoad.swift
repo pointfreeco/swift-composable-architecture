@@ -78,13 +78,13 @@ struct EagerListNavigationView: View {
             NavigationLink(
               destination: IfLetStore(
                 self.store.scope(
-                  state: \.selection?.value, action: EagerListNavigationAction.counter),
+                  state: { $0.selection?.value }, action: EagerListNavigationAction.counter),
                 then: CounterView.init(store:),
                 else: ActivityIndicator()
               ),
               tag: row.id,
               selection: viewStore.binding(
-                get: \.selection?.id,
+                get: { $0.selection?.id },
                 send: EagerListNavigationAction.setNavigation(selection:)
               )
             ) {

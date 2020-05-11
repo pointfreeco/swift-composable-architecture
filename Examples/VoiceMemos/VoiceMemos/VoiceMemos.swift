@@ -284,7 +284,7 @@ struct VoiceMemosView: View {
           List {
             ForEachStore(
               self.store.scope(
-                state: \.voiceMemos, action: VoiceMemosAction.voiceMemo(index:action:)
+                state: { $0.voiceMemos }, action: VoiceMemosAction.voiceMemo(index:action:)
               ),
               id: \.url,
               content: VoiceMemoView.init(store:)
@@ -368,7 +368,7 @@ struct VoiceMemoView: View {
         HStack {
           TextField(
             "Untitled, \(dateFormatter.string(from: self.viewStore.date))",
-            text: self.viewStore.binding(get: \.title, send: VoiceMemoAction.titleTextFieldChanged)
+            text: self.viewStore.binding(get: { $0.title }, send: VoiceMemoAction.titleTextFieldChanged)
           )
 
           Spacer()
