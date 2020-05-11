@@ -8,6 +8,9 @@ class VoiceMemosTests: XCTestCase {
   let scheduler = DispatchQueue.testScheduler
 
   func testRecordMemoHappyPath() {
+    // NB: Combine's concatenation behavior is different in 13.3
+    guard #available(iOS 13.4, *) else { return }
+
     let audioRecorderSubject = PassthroughSubject<
       AudioRecorderClient.Action, AudioRecorderClient.Failure
     >()
