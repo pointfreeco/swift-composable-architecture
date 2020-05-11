@@ -47,7 +47,7 @@ struct AnimationsView: View {
               .offset(
                 x: circleCenterViewStore.x - proxy.size.width / 2,
                 y: circleCenterViewStore.y - proxy.size.height / 2
-            )
+              )
           }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
