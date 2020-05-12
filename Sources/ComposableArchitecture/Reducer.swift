@@ -167,7 +167,7 @@ public struct Reducer<State, Action, Environment> {
   ///   store on non-optional state.
   /// - See also: `Store.ifLet`, a UIKit helper for doing imperative work with a store on optional
   ///   state.
-  @available(*, deprecated, message: "Use pullback with OptionalPath(\.localState) instead")
+  @available(*, deprecated, message: "Use pullback with OptionalPath(\\.localState) instead")
   public var optional: Reducer<State?, Action, Environment> {
     self.pullback(state: OptionalPath(\.self), action: \.self, environment: { $0 })
   }
