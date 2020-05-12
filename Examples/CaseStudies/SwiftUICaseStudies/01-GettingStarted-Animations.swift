@@ -2,12 +2,18 @@ import ComposableArchitecture
 import SwiftUI
 
 private let readMe = """
-  This screen demonstrates how changes to application state can drive animations. If you wrap your \
-  `viewStore.send` in a `withAnimations` block, then any changes made to state after sending that \
-  action will be animated. If you derive a binding from your view store, you can use its \
-  `animation` method to animate an action.
+  This screen demonstrates how changes to application state can drive animations. Because the \
+  `Store` processes actions sent to it synchronously you can typically perform animations \
+  in the Composable Architecture just as you would in regular SwiftUI.
 
-  Try it out by tapping anywhere on the screen to move the dot. You can also drag it around the screen.
+  To animate the changes made to state when an action is sent to the store you only need to wrap \
+  instances of `viewStore.send` in a `withAnimations` block. For example, when sending an action \
+  to the store when a button is tapped.
+
+  To animate changes made to state through a binding, use the `.animation` method on `Binding`.
+
+  Try it out by tapping or dragging anywhere on the screen to move the dot, and by flipping the \
+  toggle at the bottom of the screen.
   """
 
 struct AnimationsState: Equatable {
