@@ -86,8 +86,8 @@ public let loginReducer = Reducer<LoginState, LoginAction, LoginEnvironment> {
 
 public let loginFeatureReducer = Reducer.combine(
   loginReducer,
-  twoFactorReducer.optional.pullback(
-    state: \.twoFactor,
+  twoFactorReducer.pullback(
+    state: OptionalPath(\.twoFactor),
     action: /LoginAction.twoFactor,
     environment: {
       TwoFactorEnvironment(

@@ -47,8 +47,8 @@ let eagerSheetReducer = Reducer<
       return .none
     }
   },
-  counterReducer.optional.pullback(
-    state: \.optionalCounter,
+  counterReducer.pullback(
+    state: OptionalPath(\.optionalCounter),
     action: /EagerSheetAction.optionalCounter,
     environment: { _ in CounterEnvironment() }
   )

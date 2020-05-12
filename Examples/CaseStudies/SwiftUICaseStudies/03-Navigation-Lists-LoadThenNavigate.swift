@@ -66,8 +66,8 @@ let lazyListNavigationReducer = Reducer<
       return .none
     }
   },
-  counterReducer.optional.pullback(
-    state: \.selection[ifLet: \.value],
+  counterReducer.pullback(
+    state: OptionalPath(\.selection).appending(path: \.value),
     action: /LazyListNavigationAction.counter,
     environment: { _ in CounterEnvironment() }
   )

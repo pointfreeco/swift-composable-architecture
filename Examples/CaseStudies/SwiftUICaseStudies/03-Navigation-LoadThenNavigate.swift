@@ -50,8 +50,8 @@ let lazyNavigationReducer = Reducer<
       return .none
     }
   },
-  counterReducer.optional.pullback(
-    state: \.optionalCounter,
+  counterReducer.pullback(
+    state: OptionalPath(\.optionalCounter),
     action: /LazyNavigationAction.optionalCounter,
     environment: { _ in CounterEnvironment() }
   )

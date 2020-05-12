@@ -49,8 +49,8 @@ let eagerNavigationReducer = Reducer<
       return .none
     }
   },
-  counterReducer.optional.pullback(
-    state: \.optionalCounter,
+  counterReducer.pullback(
+    state: OptionalPath(\.optionalCounter),
     action: /EagerNavigationAction.optionalCounter,
     environment: { _ in CounterEnvironment() }
   )

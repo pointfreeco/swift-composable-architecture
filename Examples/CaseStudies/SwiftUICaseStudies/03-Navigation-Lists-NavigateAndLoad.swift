@@ -60,8 +60,8 @@ let eagerListNavigationReducer = Reducer<
       return .none
     }
   },
-  counterReducer.optional.optional.pullback(
-    state: \.selection[ifLet: \.value],
+  counterReducer.pullback(
+    state: OptionalPath(\.selection).appending(path: \.value),
     action: /EagerListNavigationAction.counter,
     environment: { _ in CounterEnvironment() }
   )

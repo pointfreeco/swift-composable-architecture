@@ -50,8 +50,8 @@ let lazySheetReducer = Reducer<
       return .none
     }
   },
-  counterReducer.optional.pullback(
-    state: \.optionalCounter,
+  counterReducer.pullback(
+    state: OptionalPath(\.optionalCounter),
     action: /LazySheetAction.optionalCounter,
     environment: { _ in CounterEnvironment() }
   )

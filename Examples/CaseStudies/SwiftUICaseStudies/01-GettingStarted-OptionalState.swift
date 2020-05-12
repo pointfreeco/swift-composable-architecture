@@ -38,8 +38,8 @@ let optionalBasicsReducer = Reducer<
       return .none
     }
   },
-  counterReducer.optional.pullback(
-    state: \.optionalCounter,
+  counterReducer.pullback(
+    state: OptionalPath(\.optionalCounter),
     action: /OptionalBasicsAction.optionalCounter,
     environment: { _ in CounterEnvironment() }
   )
