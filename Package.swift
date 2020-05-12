@@ -16,10 +16,15 @@ let package = Package(
       targets: ["ComposableArchitecture"]
     ),
   ],
+  dependencies: [
+    .package(url: "https://www.github.com/pointfreeco/swift-case-paths", from: "0.1.0")
+  ],
   targets: [
     .target(
       name: "ComposableArchitecture",
-      dependencies: []
+      dependencies: [
+      .byName(name: "CasePaths")
+      ]
     ),
     .testTarget(
       name: "ComposableArchitectureTests",
