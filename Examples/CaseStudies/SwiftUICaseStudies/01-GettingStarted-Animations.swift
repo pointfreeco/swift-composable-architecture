@@ -75,10 +75,7 @@ struct AnimationsView: View {
           Toggle(
             "Big mode",
             isOn: viewStore
-              .binding(
-                get: \.isCircleScaled,
-                send: AnimationsAction.circleScaleToggleChanged
-              )
+              .binding(get: \.isCircleScaled, send: AnimationsAction.circleScaleToggleChanged)
               .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.1))
           )
             .padding()
