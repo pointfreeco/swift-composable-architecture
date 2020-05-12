@@ -9,7 +9,7 @@ final class IdentifiedArrayTests: XCTestCase {
       var name: String
     }
 
-    var array: IdentifiedArray = [User(id: 1, name: "Blob")]
+    let array: IdentifiedArray = [User(id: 1, name: "Blob")]
 
     XCTAssertEqual(array[id: 1], .some(User(id: 1, name: "Blob")))
   }
