@@ -351,6 +351,10 @@ You can add ComposableArchitecture to an Xcode project by adding it as a package
   2. Enter "https://github.com/pointfreeco/swift-composable-architecture" into the package repository URL text field
   3. Add **ComposableArchitecture** to your application, or, if you modularize your application, add it to a common, shared framework
 
+## Help
+
+If you want to discuss the Composable Architecture or have a question about how to use it to solve a particular problem, ask around on [its Swift forum](https://forums.swift.org/c/related-projects/swift-composable-architecture).
+
 ## Credits and Thanks
 
 The following people gave feedback on the library at its early stages and helped make the library what it is today:
@@ -361,7 +365,7 @@ Special thanks to [Chris Liscio](https://twitter.com/liscio) who helped us work 
 
 And thanks to [Shai Mishali](https://github.com/freak4pc) and the [CombineCommunity](https://github.com/CombineCommunity/CombineExt/) project, from which we took their implementation of `Publishers.Create`, which we use in `Effect` to help bridge delegate and callback-based APIs, making it much easier to interface with 3rd party frameworks.
 
-## Other libraries
+## Other Libraries
 
 The Composable Architecture was built on a foundation of ideas started by other libraries, in particular [Elm](https://elm-lang.org) and [Redux](https://redux.js.org/).
 
