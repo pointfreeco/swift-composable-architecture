@@ -147,13 +147,13 @@ extension WritableKeyPath {
 }
 
 extension OptionalPath where Root == Value {
-  static var `self`: OptionalPath {
+  public static var `self`: OptionalPath {
     .init(.self)
   }
 }
 
 extension OptionalPath where Root == Value? {
-  static var some: OptionalPath {
+  public static var some: OptionalPath {
     .init(/Optional.some)
   }
 }
