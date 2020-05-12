@@ -92,15 +92,19 @@ where ID: Hashable {
     }
   }
 
+  /// Direct access to an element by its identifier.
+  ///
+  /// - Parameter id: The identifier of element to access. Must be a valid identifier for an element
+  ///   of the array and will _not_ insert elements that are not already in the array, or remove
+  ///   elements when passed `nil`. Use `insert(_:at:)` and `remove(id:)` to insert and remove
+  ///   elements.
+  /// - Returns: The element.
   public subscript(id id: ID) -> Element? {
     get {
       self.dictionary[id]
     }
-    set {
-      self.dictionary[id] = newValue
-      if newValue == nil {
-        self.ids.removeAll(where: { $0 == id })
-      }
+    _modify {
+      yield &self.dictionary[id]
     }
   }
 
@@ -118,14 +122,22 @@ where ID: Hashable {
     }
   }
 
+  /// Removes and returns the element with the specified identifier.
+  ///
+  /// - Parameter id: The identifier of the element to remove.
+  /// - Returns: The removed element.
+  @discardableResult
+  public mutating func remove(id: ID) -> Element {
+    let element = self.dictionary[id]
+    assert(element != nil, "Unexpectedly found nil while removing an identified element.")
+    self.dictionary[id] = nil
+    self.ids.removeAll(where: { $0 == id })
+    return element!
+  }
+
   @discardableResult
   public mutating func remove(at position: Int) -> Element {
-    let id = self.ids.remove(at: position)
-    let element = self.dictionary[id]!
-    if !self.ids.contains(id) {
-      self.dictionary[id] = nil
-    }
-    return element
+    self.remove(id: self.ids.remove(at: position))
   }
 
   public mutating func removeAll(where shouldBeRemoved: (Element) throws -> Bool) rethrows {
