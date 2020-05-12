@@ -61,7 +61,7 @@ struct AnimationsView: View {
               .offset(
                 x: viewStore.circleCenter.x - proxy.size.width / 2,
                 y: viewStore.circleCenter.y - proxy.size.height / 2
-            )
+              )
           }
           .frame(maxWidth: .infinity, maxHeight: .infinity)
           .background(Color.white)
@@ -74,11 +74,12 @@ struct AnimationsView: View {
           )
           Toggle(
             "Big mode",
-            isOn: viewStore
+            isOn:
+              viewStore
               .binding(get: \.isCircleScaled, send: AnimationsAction.circleScaleToggleChanged)
               .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.1))
           )
-            .padding()
+          .padding()
         }
       }
     }
