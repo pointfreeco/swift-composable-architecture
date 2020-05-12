@@ -12,8 +12,17 @@ final class IdentifiedArrayTests: XCTestCase {
     var array: IdentifiedArray = [User(id: 1, name: "Blob")]
 
     XCTAssertEqual(array[id: 1], .some(User(id: 1, name: "Blob")))
+  }
 
-    array[id: 1] = nil
+  func testRemoveId() {
+    struct User: Equatable, Identifiable {
+      let id: Int
+      var name: String
+    }
+
+    var array: IdentifiedArray = [User(id: 1, name: "Blob")]
+
+    XCTAssertEqual(array.remove(id: 1), User(id: 1, name: "Blob"))
     XCTAssertEqual(array, [])
   }
 
