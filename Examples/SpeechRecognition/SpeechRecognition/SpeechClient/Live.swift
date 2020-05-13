@@ -17,7 +17,7 @@ extension SpeechClient {
       }
     },
     recognitionTask: { id, request in
-      Effect.async { subscriber in
+      Effect.run { subscriber in
         let cancellable = AnyCancellable {
           dependencies[id]?.cancel()
           dependencies[id] = nil

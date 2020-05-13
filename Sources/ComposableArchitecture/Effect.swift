@@ -140,7 +140,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   /// sending the current status immediately, and then if the current status is `notDetermined` it
   /// can request authorization, and once a status is received it can send that back to the effect:
   ///
-  ///     Effect.async { subscriber in
+  ///     Effect.run { subscriber in
   ///       subscriber.send(MPMediaLibrary.authorizationStatus())
   ///
   ///       guard MPMediaLibrary.authorizationStatus() == .notDetermined else {
@@ -158,13 +158,20 @@ public struct Effect<Output, Failure: Error>: Publisher {
   ///       }
   ///     }
   ///
-  /// - Parameter run: A closure that accepts a `Subscriber` value and returns a cancellable. When
+  /// - Parameter work: A closure that accepts a `Subscriber` value and returns a cancellable. When
   ///   the `Effect` is completed, the cancellable will be used to clean up any
   ///   resources created when the effect was started.
-  public static func async(
-    _ run: @escaping (Effect.Subscriber<Output, Failure>) -> Cancellable
+  public static func run(
+    _ work: @escaping (Effect.Subscriber<Output, Failure>) -> Cancellable
   ) -> Self {
-    AnyPublisher.create(run).eraseToEffect()
+    AnyPublisher.create(work).eraseToEffect()
+  }
+
+  @available(*, deprecated, renamed: "run")
+  public static func async(
+    _ work: @escaping (Effect.Subscriber<Output, Failure>) -> Cancellable
+  ) -> Self {
+    self.run(work)
   }
 
   /// Concatenates a variadic list of effects together into a single effect, which runs the effects
@@ -243,7 +250,7 @@ extension Effect where Failure == Swift.Error {
   ///
   /// For example, to load a user from some JSON on the disk, one can wrap that work in an effect:
   ///
-  ///     Effect<User, Error>.sync {
+  ///     Effect<User, Error>.catching {
   ///       let fileUrl = URL(
   ///         fileURLWithPath: NSSearchPathForDirectoriesInDomains(
   ///           .documentDirectory, .userDomainMask, true
@@ -257,8 +264,13 @@ extension Effect where Failure == Swift.Error {
   ///
   /// - Parameter work: A closure encapsulating some work to execute in the real world.
   /// - Returns: An effect.
-  public static func sync(_ work: @escaping () throws -> Output) -> Self {
+  public static func catching(_ work: @escaping () throws -> Output) -> Self {
     .future { $0(Result { try work() }) }
+  }
+
+  @available(*, deprecated, renamed: "catching")
+  public static func sync(_ work: @escaping () throws -> Output) -> Self {
+    self.catching(work)
   }
 }
 
