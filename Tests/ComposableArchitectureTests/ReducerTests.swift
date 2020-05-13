@@ -87,7 +87,7 @@ final class ReducerTests: XCTestCase {
       return Effect.fireAndForget { mainEffectExecuted = true }
         .eraseToEffect()
     }
-    .combine(childReducer)
+    .combined(with: childReducer)
 
     let store = TestStore(
       initialState: 0,

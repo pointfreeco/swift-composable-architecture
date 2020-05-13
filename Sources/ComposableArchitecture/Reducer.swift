@@ -78,9 +78,9 @@ public struct Reducer<State, Action, Environment> {
   /// Combines a reducer with another given reducer by running each one on the state, and
   /// concatenating both of their effects.
   ///
-  /// - Parameter reducers: Another reducer.
+  /// - Parameter other: Another reducer.
   /// - Returns: A single reducer.
-  public func combine(_ other: Reducer) -> Reducer {
+  public func combined(with other: Reducer) -> Reducer {
     Reducer.combine(self, other)
   }
 
