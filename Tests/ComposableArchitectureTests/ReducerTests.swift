@@ -73,7 +73,7 @@ final class ReducerTests: XCTestCase {
     enum Action: Equatable {
       case increment
     }
-    
+
     var childEffectExecuted = false
     let childReducer = Reducer<Int, Action, Void> { state, _, _ in
       state += 1
@@ -100,7 +100,7 @@ final class ReducerTests: XCTestCase {
         $0 = 2
       }
     )
-    
+
     XCTAssertTrue(childEffectExecuted)
     XCTAssertTrue(mainEffectExecuted)
   }
