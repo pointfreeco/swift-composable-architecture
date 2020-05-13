@@ -23,7 +23,7 @@ let package = Package(
     .target(
       name: "ComposableArchitecture",
       dependencies: [
-      .byName(name: "CasePaths")
+        "CasePaths"
       ]
     ),
     .testTarget(
