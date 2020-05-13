@@ -167,12 +167,10 @@ struct EpisodesEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
-let episodesReducer = Reducer<EpisodesState, EpisodesAction, EpisodesEnvironment>.combine(
-  episodeReducer.forEach(
-    state: \EpisodesState.episodes,
-    action: /EpisodesAction.episode(index:action:),
-    environment: { EpisodeEnvironment(favorite: $0.favorite, mainQueue: $0.mainQueue) }
-  )
+let episodesReducer: Reducer<EpisodesState, EpisodesAction, EpisodesEnvironment> = episodeReducer.forEach(
+  state: \EpisodesState.episodes,
+  action: /EpisodesAction.episode(index:action:),
+  environment: { EpisodeEnvironment(favorite: $0.favorite, mainQueue: $0.mainQueue) }
 )
 
 struct EpisodesView: View {
