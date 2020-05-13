@@ -61,4 +61,4 @@ test-workspace:
 format:
 	swift format --in-place --recursive .
 
-.PHONY: format
+.PHONY: format test-all test-swift test-workspace
