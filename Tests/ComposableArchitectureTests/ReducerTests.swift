@@ -69,6 +69,42 @@ final class ReducerTests: XCTestCase {
     )
   }
 
+  func testCombine() {
+    enum Action: Equatable {
+      case increment
+    }
+    
+    var childEffectExecuted = false
+    let childReducer = Reducer<Int, Action, Void> { state, _, _ in
+      state += 1
+      return Effect.fireAndForget { childEffectExecuted = true }
+        .eraseToEffect()
+    }
+
+    var mainEffectExecuted = false
+    let mainReducer = Reducer<Int, Action, Void> { state, _, _ in
+      state += 1
+      return Effect.fireAndForget { mainEffectExecuted = true }
+        .eraseToEffect()
+    }
+    .combined(with: childReducer)
+
+    let store = TestStore(
+      initialState: 0,
+      reducer: mainReducer,
+      environment: ()
+    )
+
+    store.assert(
+      .send(.increment) {
+        $0 = 2
+      }
+    )
+    
+    XCTAssertTrue(childEffectExecuted)
+    XCTAssertTrue(mainEffectExecuted)
+  }
+
   func testPrint() {
     struct Unit: Equatable {}
     struct State: Equatable { var count = 0 }

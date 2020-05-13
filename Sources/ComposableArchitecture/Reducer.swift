@@ -75,6 +75,15 @@ public struct Reducer<State, Action, Environment> {
     }
   }
 
+  /// Combines a reducer with another given reducer by running each one on the state, and
+  /// concatenating both of their effects.
+  ///
+  /// - Parameter other: Another reducer.
+  /// - Returns: A single reducer.
+  public func combined(with other: Reducer) -> Reducer {
+    Reducer.combine(self, other)
+  }
+
   /// Transforms a reducer that works on local state, action and environment into one that works on
   /// global state, action and environment. It accomplishes this by providing 3 transformations to
   /// the method:
