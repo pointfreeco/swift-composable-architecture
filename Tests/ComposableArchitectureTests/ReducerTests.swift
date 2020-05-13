@@ -12,17 +12,7 @@ final class ReducerTests: XCTestCase {
     }
 
     var state = 0
-    _ = reducer.callAsFunction(&state, (), ())
-    XCTAssertEqual(state, 1)
-  }
-
-  func testSimpleReducer() {
-    let reducer = Reducer<Int, Void, Void> { state, _, _ in state += 1
-      return .none
-    }
-
-    var state = 0
-    _ = reducer.callAsFunction(&state, ())
+    _ = reducer.run(&state, (), ())
     XCTAssertEqual(state, 1)
   }
 

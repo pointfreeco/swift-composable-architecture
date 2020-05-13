@@ -27,7 +27,7 @@ public final class Store<State, Action> {
   ) {
     self.init(
       initialState: initialState,
-      reducer: { reducer.callAsFunction(&$0, $1, environment) }
+      reducer: { reducer.run(&$0, $1, environment) }
     )
   }
 

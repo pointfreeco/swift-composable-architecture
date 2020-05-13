@@ -166,7 +166,7 @@
       var cancellables: [AnyCancellable] = []
 
       func runReducer(action: Action) {
-        let effect = self.reducer.callAsFunction(&self.state, action, self.environment)
+        let effect = self.reducer.run(&self.state, action, self.environment)
         var isComplete = false
         var cancellable: AnyCancellable?
         cancellable = effect.sink(

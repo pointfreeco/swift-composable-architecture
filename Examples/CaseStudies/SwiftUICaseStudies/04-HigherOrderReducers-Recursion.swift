@@ -52,7 +52,7 @@ let nestedReducer = Reducer<
     return .none
 
   case let .node(index, action):
-    return self.callAsFunction(&state.children[index], action, environment)
+    return self.run(&state.children[index], action, environment)
 
   case let .remove(indexSet):
     state.children.remove(atOffsets: indexSet)
