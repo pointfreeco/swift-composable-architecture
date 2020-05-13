@@ -2,7 +2,7 @@
 
 [![Swift 5.2](https://img.shields.io/badge/swift-5.2-ED523F.svg?style=flat)](https://swift.org/download/)
 [![Swift 5.1](https://img.shields.io/badge/swift-5.1-ED523F.svg?style=flat)](https://swift.org/download/)
-[![CI](https://github.com/pointfreeco/swift-composable-architecture/workflows/CI/badge.svg)](https://actions-badge.atrox.dev/pointfreeco/swift-composable-architecture/goto)
+[![CI](https://github.com/pointfreeco/swift-composable-architecture/workflows/CI/badge.svg)](https://github.com/pointfreeco/swift-composable-architecture/actions?query=workflow%3ACI)
 [![@pointfreeco](https://img.shields.io/badge/contact-@pointfreeco-5AA9E7.svg?style=flat)](https://twitter.com/pointfreeco)
 
 The Composable Architecture is a library for building applications in a consistent and understandable way, with composition, testing, and ergonomics in mind. It can be used in SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, tvOS, and watchOS).
@@ -349,7 +349,7 @@ You can add ComposableArchitecture to an Xcode project by adding it as a package
 
   1. From the **File** menu, select **Swift Packages › Add Package Dependency…**
   2. Enter "https://github.com/pointfreeco/swift-composable-architecture" into the package repository URL text field
-  3. Add **ComposableArchitecture** to your application, or, if you modularize your application, add it to a common, shared framework
+  3. Add **ComposableArchitecture** to your application, or, if you modularize your application, add it to a common, shared framework. For an example of the latter, check out the [Tic-Tac-Toe](./Examples/TicTacToe) example application, which has been modularized and consumes the static library in this fashion.
 
 ## Help
 
