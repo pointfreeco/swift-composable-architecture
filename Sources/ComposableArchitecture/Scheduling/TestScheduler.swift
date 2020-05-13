@@ -55,8 +55,8 @@ where SchedulerTimeType: Strideable, SchedulerTimeType.Stride: SchedulerTimeInte
   public func schedule(
     after date: SchedulerTimeType,
     interval: SchedulerTimeType.Stride,
-    tolerance: SchedulerTimeType.Stride,
-    options: SchedulerOptions?,
+    tolerance _: SchedulerTimeType.Stride,
+    options _: SchedulerOptions?,
     _ action: @escaping () -> Void
   ) -> Cancellable {
 
@@ -78,14 +78,14 @@ where SchedulerTimeType: Strideable, SchedulerTimeType.Stride: SchedulerTimeInte
 
   public func schedule(
     after date: SchedulerTimeType,
-    tolerance: SchedulerTimeType.Stride,
-    options: SchedulerOptions?,
+    tolerance _: SchedulerTimeType.Stride,
+    options _: SchedulerOptions?,
     _ action: @escaping () -> Void
   ) {
     self.scheduled.append((UUID(), date, action))
   }
 
-  public func schedule(options: SchedulerOptions?, _ action: @escaping () -> Void) {
+  public func schedule(options _: SchedulerOptions?, _ action: @escaping () -> Void) {
     self.scheduled.append((UUID(), self.now, action))
   }
 }
