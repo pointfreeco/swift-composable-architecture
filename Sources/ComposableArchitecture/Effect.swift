@@ -167,13 +167,6 @@ public struct Effect<Output, Failure: Error>: Publisher {
     AnyPublisher.create(work).eraseToEffect()
   }
 
-  @available(*, deprecated, renamed: "run")
-  public static func async(
-    _ work: @escaping (Effect.Subscriber<Output, Failure>) -> Cancellable
-  ) -> Self {
-    self.run(work)
-  }
-
   /// Concatenates a variadic list of effects together into a single effect, which runs the effects
   /// one after the other.
   ///
@@ -266,11 +259,6 @@ extension Effect where Failure == Swift.Error {
   /// - Returns: An effect.
   public static func catching(_ work: @escaping () throws -> Output) -> Self {
     .future { $0(Result { try work() }) }
-  }
-
-  @available(*, deprecated, renamed: "catching")
-  public static func sync(_ work: @escaping () throws -> Output) -> Self {
-    self.catching(work)
   }
 }
 
