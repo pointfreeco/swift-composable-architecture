@@ -63,7 +63,9 @@ final class ComposableArchitectureTests: XCTestCase {
   }
 
   func testSimultaneousWorkOrdering() {
-    let testScheduler = TestScheduler<DispatchQueue.SchedulerTimeType, DispatchQueue.SchedulerOptions>(
+    let testScheduler = TestScheduler<
+      DispatchQueue.SchedulerTimeType, DispatchQueue.SchedulerOptions
+    >(
       now: .init(.init(uptimeNanoseconds: 1))
     )
 
