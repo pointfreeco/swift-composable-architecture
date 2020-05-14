@@ -303,7 +303,7 @@ That is the basics of building and testing a feature in the Composable Architect
 * How does the Composable Architecture compare to Elm, Redux, and others?
   <details>
     <summary>Expand to see answer</summary>
-    The Composable Architecture (TCA) is built on a foundation of ideas popularized by Elm and React, but made to feel at home in the Swift language and on Apple's platforms.
+    The Composable Architecture (TCA) is built on a foundation of ideas popularized by Elm and Redux, but made to feel at home in the Swift language and on Apple's platforms.
 
     In some ways TCA is a little more opinionated than the other libraries. For example, Redux is not prescriptive with how one executes side effects, but TCA requires all side effects to be modeled in the `Effect` type and returned from the reducer.
 
