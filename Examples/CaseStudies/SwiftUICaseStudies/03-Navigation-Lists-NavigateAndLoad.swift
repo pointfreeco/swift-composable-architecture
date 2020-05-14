@@ -60,11 +60,15 @@ let eagerListNavigationReducer = Reducer<
       return .none
     }
   },
-  counterReducer.optional.optional.pullback(
-    state: \.selection[ifLet: \.value],
-    action: /EagerListNavigationAction.counter,
-    environment: { _ in CounterEnvironment() }
-  )
+  counterReducer
+    .optional
+    .pullback(state: \Identified.value, action: .self, environment: { $0 })
+    .optional
+    .pullback(
+      state: \EagerListNavigationState.selection,
+      action: /EagerListNavigationAction.counter,
+      environment: { _ in CounterEnvironment() }
+    )
 )
 
 struct EagerListNavigationView: View {

@@ -66,11 +66,14 @@ let lazyListNavigationReducer = Reducer<
       return .none
     }
   },
-  counterReducer.optional.pullback(
-    state: \.selection[ifLet: \.value],
-    action: /LazyListNavigationAction.counter,
-    environment: { _ in CounterEnvironment() }
-  )
+  counterReducer
+    .pullback(state: \Identified.value, action: .self, environment: { $0 })
+    .optional
+    .pullback(
+      state: \LazyListNavigationState.selection,
+      action: /LazyListNavigationAction.counter,
+      environment: { _ in CounterEnvironment() }
+    )
 )
 
 struct LazyListNavigationView: View {
