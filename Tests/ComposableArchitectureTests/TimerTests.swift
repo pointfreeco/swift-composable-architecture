@@ -103,8 +103,8 @@ final class TimerTests: XCTestCase {
 
     scheduler.run()
 
-    XCTAssertEqual(count2, 14)
-    XCTAssertEqual(count3, 9)
+    XCTAssertEqual(count2, 15)
+    XCTAssertEqual(count3, 10)
   }
 
   func testTimerCompletion() {
