@@ -22,7 +22,7 @@ import SwiftUI
 ///        ),
 ///        isActive: viewStore.binding(
 ///          get: \.isGameActive,
-///          send: { $0 ? .startButtonTapped : .detailDisissed }
+///          send: { $0 ? .startButtonTapped : .detailDismissed }
 ///        )
 ///      ) {
 ///        Text("Start!")
