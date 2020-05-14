@@ -5,10 +5,10 @@ import Foundation
 public final class TestScheduler<SchedulerTimeType, SchedulerOptions>: Scheduler
 where SchedulerTimeType: Strideable, SchedulerTimeType.Stride: SchedulerTimeIntervalConvertible {
 
-  private var lastId = 0
+  private var lastId: UInt = 0
   public let minimumTolerance: SchedulerTimeType.Stride = .zero
   public private(set) var now: SchedulerTimeType
-  private var scheduled: [(id: Int, date: SchedulerTimeType, action: () -> Void)] = []
+  private var scheduled: [(id: UInt, date: SchedulerTimeType, action: () -> Void)] = []
 
   /// Creates a test scheduler with the given date.
   ///
@@ -86,7 +86,7 @@ where SchedulerTimeType: Strideable, SchedulerTimeType.Stride: SchedulerTimeInte
     self.scheduled.append((self.nextId(), self.now, action))
   }
 
-  private func nextId() -> Int {
+  private func nextId() -> UInt {
     self.lastId += 1
     return self.lastId
   }
