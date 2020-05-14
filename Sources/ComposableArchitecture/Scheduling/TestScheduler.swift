@@ -49,11 +49,6 @@ where SchedulerTimeType: Strideable, SchedulerTimeType.Stride: SchedulerTimeInte
     }
   }
 
-  func nextId() -> Int {
-    self.lastId += 1
-    return self.lastId
-  }
-
   public func schedule(
     after date: SchedulerTimeType,
     interval: SchedulerTimeType.Stride,
@@ -89,6 +84,11 @@ where SchedulerTimeType: Strideable, SchedulerTimeType.Stride: SchedulerTimeInte
 
   public func schedule(options _: SchedulerOptions?, _ action: @escaping () -> Void) {
     self.scheduled.append((self.nextId(), self.now, action))
+  }
+
+  private func nextId() -> Int {
+    self.lastId += 1
+    return self.lastId
   }
 }
 
