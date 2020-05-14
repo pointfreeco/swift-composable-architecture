@@ -114,4 +114,22 @@ final class SchedulerTests: XCTestCase {
       """
     )
   }
+
+  func testTwoIntervalOrdering() {
+    let testScheduler = DispatchQueue.testScheduler
+
+    var values: [Int] = []
+
+    testScheduler.schedule(after: testScheduler.now, interval: 2) { values.append(1) }
+      .store(in: &self.cancellables)
+
+    testScheduler.schedule(after: testScheduler.now, interval: 1) { values.append(42) }
+      .store(in: &self.cancellables)
+
+    XCTAssertEqual(values, [])
+    testScheduler.advance()
+    XCTAssertEqual(values, [1, 42])
+    testScheduler.advance(by: 2)
+    XCTAssertEqual(values, [1, 42, 42, 1, 42])
+  }
 }
