@@ -39,14 +39,16 @@ public struct WithViewStore<State, Action, Content>: View where Content: View {
   }
 
   public var body: some View {
-    if let prefix = self.prefix {
-      print(
-        """
-        \(prefix.isEmpty ? "" : "\(prefix): ")\
-        Evaluating WithViewStore<\(State.self), \(Action.self), ...>.body
-        """
-      )
-    }
+    #if DEBUG
+      if let prefix = self.prefix {
+        print(
+          """
+          \(prefix.isEmpty ? "" : "\(prefix): ")\
+          Evaluating WithViewStore<\(State.self), \(Action.self), ...>.body
+          """
+        )
+      }
+    #endif
     return self.content(self.viewStore)
   }
 
