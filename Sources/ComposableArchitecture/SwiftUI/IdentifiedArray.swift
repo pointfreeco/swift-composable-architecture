@@ -93,8 +93,8 @@ where ID: Hashable {
   ///
   /// - Parameter id: The identifier of element to access. Must be a valid identifier for an element
   ///   of the array and will _not_ insert elements that are not already in the array, or remove
-  ///   elements when passed `nil`. Use `insert(_:at:)` and `remove(id:)` to insert and remove
-  ///   elements.
+  ///   elements when passed `nil`. Use `append` or `insert(_:at:)` to insert elements. Use
+  ///   `remove(id:)` to remove an element by its identifier.
   /// - Returns: The element.
   #if DEBUG
     public subscript(id id: ID, file: StaticString = #file, line: UInt = #line) -> Element? {
