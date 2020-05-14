@@ -97,7 +97,7 @@ where ID: Hashable {
   ///   `remove(id:)` to remove an element by its identifier.
   /// - Returns: The element.
   #if DEBUG
-    public subscript(id id: ID, file: StaticString = #file, line: UInt = #line) -> Element? {
+    public subscript(id id: ID) -> Element? {
       get { self.dictionary[id] }
       set {
         if newValue != nil && self.dictionary[id] == nil {
@@ -107,9 +107,7 @@ where ID: Hashable {
 
             If you are trying to insert an element into the array, use the "append" or "insert" \
             methods.
-            """,
-            file: file,
-            line: line
+            """
           )
         }
         if newValue == nil {
@@ -118,9 +116,7 @@ where ID: Hashable {
             Can't update element with identifier \(id) with nil.
 
             If you are trying to remove an element from the array, use the "remove(id:) method."
-            """,
-            file: file,
-            line: line
+            """
           )
         }
         self.dictionary[id] = newValue
