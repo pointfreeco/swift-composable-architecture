@@ -47,7 +47,7 @@ where ID: Hashable {
   /// A raw array of the underlying elements.
   public var elements: [Element] { Array(self) }
 
-  // TODO: Support multiple elements with the same identifier but different data
+  // TODO: Support multiple elements with the same identifier but different data.
   private var dictionary: [ID: Element]
 
   /// Initializes an identified array with a sequence of elements and a key
@@ -84,29 +84,51 @@ where ID: Hashable {
   }
 
   public subscript(position: Int) -> Element {
-    get {
-      self.dictionary[self.ids[position]]!
-    }
-    _modify {
-      yield &self.dictionary[self.ids[position]]!
-    }
+    // NB: `_read` crashes Xcode Preview compilation.
+    get { self.dictionary[self.ids[position]]! }
+    _modify { yield &self.dictionary[self.ids[position]]! }
   }
 
   /// Direct access to an element by its identifier.
   ///
   /// - Parameter id: The identifier of element to access. Must be a valid identifier for an element
   ///   of the array and will _not_ insert elements that are not already in the array, or remove
-  ///   elements when passed `nil`. Use `insert(_:at:)` and `remove(id:)` to insert and remove
-  ///   elements.
+  ///   elements when passed `nil`. Use `append` or `insert(_:at:)` to insert elements. Use
+  ///   `remove(id:)` to remove an element by its identifier.
   /// - Returns: The element.
-  public subscript(id id: ID) -> Element? {
-    get {
-      self.dictionary[id]
+  #if DEBUG
+    public subscript(id id: ID) -> Element? {
+      get { self.dictionary[id] }
+      set {
+        if newValue != nil && self.dictionary[id] == nil {
+          fatalError(
+            """
+            Can't update element with identifier \(id) because no such element exists in the array.
+
+            If you are trying to insert an element into the array, use the "append" or "insert" \
+            methods.
+            """
+          )
+        }
+        if newValue == nil {
+          fatalError(
+            """
+            Can't update element with identifier \(id) with nil.
+
+            If you are trying to remove an element from the array, use the "remove(id:) method."
+            """
+          )
+        }
+        self.dictionary[id] = newValue
+      }
     }
-    _modify {
-      yield &self.dictionary[id]
+  #else
+    public subscript(id id: ID) -> Element? {
+      // NB: `_read` crashes Xcode Preview compilation.
+      get { self.dictionary[id] }
+      _modify { yield &self.dictionary[id] }
     }
-  }
+  #endif
 
   public mutating func insert(_ newElement: Element, at i: Int) {
     let id = newElement[keyPath: self.id]
