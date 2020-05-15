@@ -43,6 +43,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
 }
 
 struct AnimationsView: View {
+  @Environment(\.colorScheme) var colorScheme
   let store: Store<AnimationsState, AnimationsAction>
 
   var body: some View {
@@ -64,6 +65,7 @@ struct AnimationsView: View {
               )
           }
           .frame(maxWidth: .infinity, maxHeight: .infinity)
+          .background(self.colorScheme == .dark ? Color.black : Color.white)
           .simultaneousGesture(
             DragGesture(minimumDistance: 0).onChanged { gesture in
               withAnimation(.interactiveSpring(response: 0.25, dampingFraction: 0.1)) {
@@ -87,12 +89,27 @@ struct AnimationsView: View {
 
 struct AnimationsView_Previews: PreviewProvider {
   static var previews: some View {
-    AnimationsView(
-      store: Store(
-        initialState: AnimationsState(circleCenter: CGPoint(x: 50, y: 50)),
-        reducer: animationsReducer,
-        environment: AnimationsEnvironment()
-      )
-    )
+    Group {
+      NavigationView {
+        AnimationsView(
+          store: Store(
+            initialState: AnimationsState(circleCenter: CGPoint(x: 50, y: 50)),
+            reducer: animationsReducer,
+            environment: AnimationsEnvironment()
+          )
+        )
+      }
+
+      NavigationView {
+        AnimationsView(
+          store: Store(
+            initialState: AnimationsState(circleCenter: CGPoint(x: 50, y: 50)),
+            reducer: animationsReducer,
+            environment: AnimationsEnvironment()
+          )
+        )
+      }
+      .environment(\.colorScheme, .dark)
+    }
   }
 }
