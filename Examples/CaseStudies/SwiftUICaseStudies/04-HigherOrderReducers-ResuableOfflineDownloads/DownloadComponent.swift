@@ -181,10 +181,6 @@ let nevermindButton = DownloadAlert.Button(
 struct DownloadComponent<ID: Equatable>: View {
   let store: Store<DownloadComponentState<ID>, DownloadComponentAction>
 
-  init(store: Store<DownloadComponentState<ID>, DownloadComponentAction>) {
-    self.store = store
-  }
-
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Button(action: { viewStore.send(.buttonTapped) }) {
