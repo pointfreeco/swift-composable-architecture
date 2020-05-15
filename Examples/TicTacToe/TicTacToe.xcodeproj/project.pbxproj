@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		CA0A5766242AA3A800BA537D /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0A5765242AA3A800BA537D /* SceneDelegate.swift */; };
 		CA0A576A242AA3A900BA537D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA0A5769242AA3A900BA537D /* Assets.xcassets */; };
-		CA0A577B242AA3A900BA537D /* TicTacToeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0A577A242AA3A900BA537D /* TicTacToeTests.swift */; };
 		CA0A579F242AA7F800BA537D /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0A579E242AA7F800BA537D /* RootView.swift */; };
 		CA0A57A5242ABA7400BA537D /* AppViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA841EB12420492A0093C098 /* AppViewController.swift */; };
 		CA0A57A6242ABA7400BA537D /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA841EA02420471C0093C098 /* LoginViewController.swift */; };
@@ -28,11 +27,8 @@
 		DC1394292469E52F00EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
 		DC13942A2469E53500EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
 		DC13942B2469E53A00EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
-		DC13942C2469E53F00EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
 		DC13942D2469E54700EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
 		DC13942E2469E54C00EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
-		DC13942F2469E55200EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
-		DC1394302469E55900EE1157 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
 		DC13943B2469F0BF00EE1157 /* AppCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF10EC242028DE00483288 /* AppCore.framework */; };
 		DC13943C2469F0BF00EE1157 /* AppSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF110E242028E600483288 /* AppSwiftUI.framework */; };
 		DC13943D2469F0BF00EE1157 /* AuthenticationClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC919425242012D200A5BE1F /* AuthenticationClient.framework */; };
@@ -80,8 +76,6 @@
 		DC919473242013DC00A5BE1F /* LoginCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC91946A242013DB00A5BE1F /* LoginCore.framework */; };
 		DC91947A242013DC00A5BE1F /* LoginCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC919479242013DC00A5BE1F /* LoginCoreTests.swift */; };
 		DC9194BB2420142700A5BE1F /* LoginSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC9194B22420142600A5BE1F /* LoginSwiftUI.framework */; };
-		DC9194DD2420144700A5BE1F /* TwoFactorCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC9194D42420144700A5BE1F /* TwoFactorCore.framework */; };
-		DC9194E42420144700A5BE1F /* TwoFactorCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9194E32420144700A5BE1F /* TwoFactorCoreTests.swift */; };
 		DC91950124201A7900A5BE1F /* NewGameCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC9194F824201A7800A5BE1F /* NewGameCore.framework */; };
 		DC91950824201A7900A5BE1F /* NewGameCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC91950724201A7900A5BE1F /* NewGameCoreTests.swift */; };
 		DC91952324201A8100A5BE1F /* NewGameSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC91951A24201A8100A5BE1F /* NewGameSwiftUI.framework */; };
@@ -94,8 +88,6 @@
 		DC9195A324201B3B00A5BE1F /* LoginSwiftUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9195A124201B3B00A5BE1F /* LoginSwiftUITests.swift */; };
 		DCAF10D1242027D400483288 /* TwoFactorSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF10C8242027D400483288 /* TwoFactorSwiftUI.framework */; };
 		DCAF10D8242027D400483288 /* TwoFactorSwiftUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAF10D7242027D400483288 /* TwoFactorSwiftUITests.swift */; };
-		DCAF10F5242028DF00483288 /* AppCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF10EC242028DE00483288 /* AppCore.framework */; };
-		DCAF10FC242028DF00483288 /* AppCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAF10FB242028DF00483288 /* AppCoreTests.swift */; };
 		DCAF114E2420294700483288 /* AlertData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAF10E52420285A00483288 /* AlertData.swift */; };
 		DCAF1152242029EE00483288 /* TwoFactorSwiftView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAF1151242029EE00483288 /* TwoFactorSwiftView.swift */; };
 		DCAF115D24202A5700483288 /* AuthenticationClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC919425242012D200A5BE1F /* AuthenticationClient.framework */; };
@@ -126,13 +118,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		CA0A5777242AA3A900BA537D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = DC9193EE2420104100A5BE1F /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = CA0A5760242AA3A800BA537D;
-			remoteInfo = TicTacToe;
-		};
 		CA0A5785242AA48100BA537D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = DC9193EE2420104100A5BE1F /* Project object */;
@@ -210,13 +195,6 @@
 			remoteGlobalIDString = DC9194B12420142600A5BE1F;
 			remoteInfo = LoginSwiftUI;
 		};
-		DC9194DE2420144700A5BE1F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = DC9193EE2420104100A5BE1F /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = DC9194D32420144700A5BE1F;
-			remoteInfo = TwoFactorCore;
-		};
 		DC91950224201A7900A5BE1F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = DC9193EE2420104100A5BE1F /* Project object */;
@@ -251,13 +229,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = DCAF10C7242027D400483288;
 			remoteInfo = TwoFactorSwiftUI;
-		};
-		DCAF10F6242028DF00483288 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = DC9193EE2420104100A5BE1F /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = DCAF10EB242028DE00483288;
-			remoteInfo = AppCore;
 		};
 		DCAF115924202A4200483288 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -520,27 +491,7 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		DCAF11FE2420398B00483288 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		DCAF1204242039A500483288 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		DCAF120A242039B900483288 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
@@ -571,16 +522,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		DCAF121F24216E3300483288 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		DCEAF4D1242D0BB500E4639F /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
@@ -627,8 +568,6 @@
 		CA0A5765242AA3A800BA537D /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		CA0A5769242AA3A900BA537D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CA0A5771242AA3A900BA537D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		CA0A5776242AA3A900BA537D /* TicTacToeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TicTacToeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		CA0A577A242AA3A900BA537D /* TicTacToeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TicTacToeTests.swift; sourceTree = "<group>"; };
 		CA0A579E242AA7F800BA537D /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		CA841EA02420471C0093C098 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		CA841EB12420492A0093C098 /* AppViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppViewController.swift; sourceTree = "<group>"; };
@@ -644,8 +583,6 @@
 		DC9194B22420142600A5BE1F /* LoginSwiftUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = LoginSwiftUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC9194BA2420142700A5BE1F /* LoginSwiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LoginSwiftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC9194D42420144700A5BE1F /* TwoFactorCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TwoFactorCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		DC9194DC2420144700A5BE1F /* TwoFactorCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TwoFactorCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		DC9194E32420144700A5BE1F /* TwoFactorCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwoFactorCoreTests.swift; sourceTree = "<group>"; };
 		DC9194F824201A7800A5BE1F /* NewGameCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NewGameCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC91950024201A7900A5BE1F /* NewGameCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NewGameCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC91950724201A7900A5BE1F /* NewGameCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewGameCoreTests.swift; sourceTree = "<group>"; };
@@ -665,8 +602,6 @@
 		DCAF10D7242027D400483288 /* TwoFactorSwiftUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwoFactorSwiftUITests.swift; sourceTree = "<group>"; };
 		DCAF10E52420285A00483288 /* AlertData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertData.swift; sourceTree = "<group>"; };
 		DCAF10EC242028DE00483288 /* AppCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AppCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		DCAF10F4242028DE00483288 /* AppCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		DCAF10FB242028DF00483288 /* AppCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoreTests.swift; sourceTree = "<group>"; };
 		DCAF110E242028E600483288 /* AppSwiftUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AppSwiftUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCAF11312420293300483288 /* TicTacToeCommon.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TicTacToeCommon.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCAF1151242029EE00483288 /* TwoFactorSwiftView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwoFactorSwiftView.swift; sourceTree = "<group>"; };
@@ -701,14 +636,6 @@
 				DC1394452469F0BF00EE1157 /* TicTacToeCommon.framework in Frameworks */,
 				DC1394462469F0BF00EE1157 /* TwoFactorCore.framework in Frameworks */,
 				DC1394472469F0BF00EE1157 /* TwoFactorSwiftUI.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		CA0A5773242AA3A900BA537D /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				DC1394302469E55900EE1157 /* TicTacToeCommon.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -770,15 +697,6 @@
 			files = (
 				DCAF115D24202A5700483288 /* AuthenticationClient.framework in Frameworks */,
 				DCAF115E24202A5C00483288 /* TicTacToeCommon.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		DC9194D92420144700A5BE1F /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				DC13942C2469E53F00EE1157 /* TicTacToeCommon.framework in Frameworks */,
-				DC9194DD2420144700A5BE1F /* TwoFactorCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -879,15 +797,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		DCAF10F1242028DE00483288 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				DCAF10F5242028DF00483288 /* AppCore.framework in Frameworks */,
-				DC13942F2469E55200EE1157 /* TicTacToeCommon.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		DCAF110B242028E600483288 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -949,10 +858,7 @@
 		CA6AC25B2450FBB700C71CB3 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				CA0A577A242AA3A900BA537D /* TicTacToeTests.swift */,
-				DC9194E32420144700A5BE1F /* TwoFactorCoreTests.swift */,
 				DCAF10D7242027D400483288 /* TwoFactorSwiftUITests.swift */,
-				DCAF10FB242028DF00483288 /* AppCoreTests.swift */,
 				DC91954B24201A8700A5BE1F /* GameCoreTests.swift */,
 				DC91956D24201A8E00A5BE1F /* GameSwiftUITests.swift */,
 				DC919479242013DC00A5BE1F /* LoginCoreTests.swift */,
@@ -1006,7 +912,6 @@
 				DC9194B22420142600A5BE1F /* LoginSwiftUI.framework */,
 				DC9194BA2420142700A5BE1F /* LoginSwiftUITests.xctest */,
 				DC9194D42420144700A5BE1F /* TwoFactorCore.framework */,
-				DC9194DC2420144700A5BE1F /* TwoFactorCoreTests.xctest */,
 				DC9194F824201A7800A5BE1F /* NewGameCore.framework */,
 				DC91950024201A7900A5BE1F /* NewGameCoreTests.xctest */,
 				DC91951A24201A8100A5BE1F /* NewGameSwiftUI.framework */,
@@ -1018,11 +923,9 @@
 				DCAF10C8242027D400483288 /* TwoFactorSwiftUI.framework */,
 				DCAF10D0242027D400483288 /* TwoFactorSwiftUITests.xctest */,
 				DCAF10EC242028DE00483288 /* AppCore.framework */,
-				DCAF10F4242028DE00483288 /* AppCoreTests.xctest */,
 				DCAF110E242028E600483288 /* AppSwiftUI.framework */,
 				DCAF11312420293300483288 /* TicTacToeCommon.framework */,
 				CA0A5761242AA3A800BA537D /* TicTacToe.app */,
-				CA0A5776242AA3A900BA537D /* TicTacToeTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1158,27 +1061,6 @@
 			productName = TicTacToe;
 			productReference = CA0A5761242AA3A800BA537D /* TicTacToe.app */;
 			productType = "com.apple.product-type.application";
-		};
-		CA0A5775242AA3A900BA537D /* TicTacToeTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = CA0A5782242AA3A900BA537D /* Build configuration list for PBXNativeTarget "TicTacToeTests" */;
-			buildPhases = (
-				CA0A5772242AA3A900BA537D /* Sources */,
-				CA0A5773242AA3A900BA537D /* Frameworks */,
-				CA0A5774242AA3A900BA537D /* Resources */,
-				DCEAF4D1242D0BB500E4639F /* Embed Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				CA0A5778242AA3A900BA537D /* PBXTargetDependency */,
-			);
-			name = TicTacToeTests;
-			packageProductDependencies = (
-			);
-			productName = TicTacToeTests;
-			productReference = CA0A5776242AA3A900BA537D /* TicTacToeTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		DC919424242012D200A5BE1F /* AuthenticationClient */ = {
 			isa = PBXNativeTarget;
@@ -1333,27 +1215,6 @@
 			productName = TwoFactorCore;
 			productReference = DC9194D42420144700A5BE1F /* TwoFactorCore.framework */;
 			productType = "com.apple.product-type.framework";
-		};
-		DC9194DB2420144700A5BE1F /* TwoFactorCoreTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = DC9194EE2420144700A5BE1F /* Build configuration list for PBXNativeTarget "TwoFactorCoreTests" */;
-			buildPhases = (
-				DC9194D82420144700A5BE1F /* Sources */,
-				DC9194D92420144700A5BE1F /* Frameworks */,
-				DC9194DA2420144700A5BE1F /* Resources */,
-				DCAF120A242039B900483288 /* Embed Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				DC9194DF2420144700A5BE1F /* PBXTargetDependency */,
-			);
-			name = TwoFactorCoreTests;
-			packageProductDependencies = (
-			);
-			productName = TwoFactorCoreTests;
-			productReference = DC9194DC2420144700A5BE1F /* TwoFactorCoreTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		DC9194F724201A7800A5BE1F /* NewGameCore */ = {
 			isa = PBXNativeTarget;
@@ -1595,27 +1456,6 @@
 			productReference = DCAF10EC242028DE00483288 /* AppCore.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		DCAF10F3242028DE00483288 /* AppCoreTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = DCAF1106242028DF00483288 /* Build configuration list for PBXNativeTarget "AppCoreTests" */;
-			buildPhases = (
-				DCAF10F0242028DE00483288 /* Sources */,
-				DCAF10F1242028DE00483288 /* Frameworks */,
-				DCAF10F2242028DE00483288 /* Resources */,
-				DCAF11FE2420398B00483288 /* Embed Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				DCAF10F7242028DF00483288 /* PBXTargetDependency */,
-			);
-			name = AppCoreTests;
-			packageProductDependencies = (
-			);
-			productName = AppCoreTests;
-			productReference = DCAF10F4242028DE00483288 /* AppCoreTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 		DCAF110D242028E600483288 /* AppSwiftUI */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = DCAF1125242028E600483288 /* Build configuration list for PBXNativeTarget "AppSwiftUI" */;
@@ -1674,10 +1514,6 @@
 					CA0A5760242AA3A800BA537D = {
 						CreatedOnToolsVersion = 11.4;
 					};
-					CA0A5775242AA3A900BA537D = {
-						CreatedOnToolsVersion = 11.4;
-						TestTargetID = CA0A5760242AA3A800BA537D;
-					};
 					DC919424242012D200A5BE1F = {
 						CreatedOnToolsVersion = 11.4;
 						LastSwiftMigration = 1140;
@@ -1702,9 +1538,6 @@
 					DC9194D32420144700A5BE1F = {
 						CreatedOnToolsVersion = 11.4;
 						LastSwiftMigration = 1140;
-					};
-					DC9194DB2420144700A5BE1F = {
-						CreatedOnToolsVersion = 11.4;
 					};
 					DC9194F724201A7800A5BE1F = {
 						CreatedOnToolsVersion = 11.4;
@@ -1743,9 +1576,6 @@
 						CreatedOnToolsVersion = 11.4;
 						LastSwiftMigration = 1140;
 					};
-					DCAF10F3242028DE00483288 = {
-						CreatedOnToolsVersion = 11.4;
-					};
 					DCAF110D242028E600483288 = {
 						CreatedOnToolsVersion = 11.4;
 					};
@@ -1770,16 +1600,13 @@
 			projectRoot = "";
 			targets = (
 				CA0A5760242AA3A800BA537D /* TicTacToe */,
-				CA0A5775242AA3A900BA537D /* TicTacToeTests */,
 				DCAF10EB242028DE00483288 /* AppCore */,
-				DCAF10F3242028DE00483288 /* AppCoreTests */,
 				DCAF110D242028E600483288 /* AppSwiftUI */,
 				DC919469242013DB00A5BE1F /* LoginCore */,
 				DC919471242013DB00A5BE1F /* LoginCoreTests */,
 				DC9194B12420142600A5BE1F /* LoginSwiftUI */,
 				DC9194B92420142700A5BE1F /* LoginSwiftUITests */,
 				DC9194D32420144700A5BE1F /* TwoFactorCore */,
-				DC9194DB2420144700A5BE1F /* TwoFactorCoreTests */,
 				DCAF10C7242027D400483288 /* TwoFactorSwiftUI */,
 				DCAF10CF242027D400483288 /* TwoFactorSwiftUITests */,
 				DC9194F724201A7800A5BE1F /* NewGameCore */,
@@ -1803,13 +1630,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				CA0A576A242AA3A900BA537D /* Assets.xcassets in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		CA0A5774242AA3A900BA537D /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1867,13 +1687,6 @@
 			files = (
 				DC13945C2469F21600EE1157 /* AuthenticationClient.framework in Resources */,
 				DC13945D2469F21600EE1157 /* TicTacToeCommon.framework in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		DC9194DA2420144700A5BE1F /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1962,13 +1775,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		DCAF10F2242028DE00483288 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		DCAF110C242028E600483288 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1999,14 +1805,6 @@
 				CA0A57A9242ABA7400BA537D /* TwoFactorViewController.swift in Sources */,
 				CA0A57A8242ABA7400BA537D /* GameViewController.swift in Sources */,
 				CA0A579F242AA7F800BA537D /* RootView.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		CA0A5772242AA3A900BA537D /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				CA0A577B242AA3A900BA537D /* TicTacToeTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2063,14 +1861,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				DCAF11C0242032F000483288 /* TwoFactorCore.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		DC9194D82420144700A5BE1F /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				DC9194E42420144700A5BE1F /* TwoFactorCoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2162,14 +1952,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		DCAF10F0242028DE00483288 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				DCAF10FC242028DF00483288 /* AppCoreTests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		DCAF110A242028E600483288 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2190,11 +1972,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		CA0A5778242AA3A900BA537D /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = CA0A5760242AA3A800BA537D /* TicTacToe */;
-			targetProxy = CA0A5777242AA3A900BA537D /* PBXContainerItemProxy */;
-		};
 		CA0A5786242AA48100BA537D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = DCAF11302420293300483288 /* TicTacToeCommon */;
@@ -2250,11 +2027,6 @@
 			target = DC9194B12420142600A5BE1F /* LoginSwiftUI */;
 			targetProxy = DC9194BC2420142700A5BE1F /* PBXContainerItemProxy */;
 		};
-		DC9194DF2420144700A5BE1F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = DC9194D32420144700A5BE1F /* TwoFactorCore */;
-			targetProxy = DC9194DE2420144700A5BE1F /* PBXContainerItemProxy */;
-		};
 		DC91950324201A7900A5BE1F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = DC9194F724201A7800A5BE1F /* NewGameCore */;
@@ -2279,11 +2051,6 @@
 			isa = PBXTargetDependency;
 			target = DCAF10C7242027D400483288 /* TwoFactorSwiftUI */;
 			targetProxy = DCAF10D2242027D400483288 /* PBXContainerItemProxy */;
-		};
-		DCAF10F7242028DF00483288 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = DCAF10EB242028DE00483288 /* AppCore */;
-			targetProxy = DCAF10F6242028DF00483288 /* PBXContainerItemProxy */;
 		};
 		DCAF115A24202A4200483288 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -2396,46 +2163,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		CA0A577F242AA3A900BA537D /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.TicTacToeTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TicTacToe.app/TicTacToe";
-			};
-			name = Debug;
-		};
-		CA0A5780242AA3A900BA537D /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.TicTacToeTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TicTacToe.app/TicTacToe";
 			};
 			name = Release;
 		};
@@ -2892,42 +2619,6 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
-			};
-			name = Release;
-		};
-		DC9194EF2420144700A5BE1F /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.TwoFactorCoreTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		DC9194F02420144700A5BE1F /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.TwoFactorCoreTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -3435,42 +3126,6 @@
 			};
 			name = Release;
 		};
-		DCAF1107242028DF00483288 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.AppCoreTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		DCAF1108242028DF00483288 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.AppCoreTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
 		DCAF1126242028E600483288 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -3587,15 +3242,6 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CA0A5782242AA3A900BA537D /* Build configuration list for PBXNativeTarget "TicTacToeTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				CA0A577F242AA3A900BA537D /* Debug */,
-				CA0A5780242AA3A900BA537D /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		DC9193F12420104100A5BE1F /* Build configuration list for PBXProject "TicTacToe" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -3664,15 +3310,6 @@
 			buildConfigurations = (
 				DC9194EC2420144700A5BE1F /* Debug */,
 				DC9194ED2420144700A5BE1F /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		DC9194EE2420144700A5BE1F /* Build configuration list for PBXNativeTarget "TwoFactorCoreTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				DC9194EF2420144700A5BE1F /* Debug */,
-				DC9194F02420144700A5BE1F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -3772,15 +3409,6 @@
 			buildConfigurations = (
 				DCAF1104242028DF00483288 /* Debug */,
 				DCAF1105242028DF00483288 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		DCAF1106242028DF00483288 /* Build configuration list for PBXNativeTarget "AppCoreTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				DCAF1107242028DF00483288 /* Debug */,
-				DCAF1108242028DF00483288 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
