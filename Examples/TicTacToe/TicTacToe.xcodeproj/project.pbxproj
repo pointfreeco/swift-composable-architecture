@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		CA0A5766242AA3A800BA537D /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0A5765242AA3A800BA537D /* SceneDelegate.swift */; };
 		CA0A576A242AA3A900BA537D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA0A5769242AA3A900BA537D /* Assets.xcassets */; };
-		CA0A577B242AA3A900BA537D /* TicTacToeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0A577A242AA3A900BA537D /* TicTacToeTests.swift */; };
 		CA0A579F242AA7F800BA537D /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0A579E242AA7F800BA537D /* RootView.swift */; };
 		CA0A57A5242ABA7400BA537D /* AppViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA841EB12420492A0093C098 /* AppViewController.swift */; };
 		CA0A57A6242ABA7400BA537D /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA841EA02420471C0093C098 /* LoginViewController.swift */; };
@@ -81,7 +80,6 @@
 		DC91947A242013DC00A5BE1F /* LoginCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC919479242013DC00A5BE1F /* LoginCoreTests.swift */; };
 		DC9194BB2420142700A5BE1F /* LoginSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC9194B22420142600A5BE1F /* LoginSwiftUI.framework */; };
 		DC9194DD2420144700A5BE1F /* TwoFactorCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC9194D42420144700A5BE1F /* TwoFactorCore.framework */; };
-		DC9194E42420144700A5BE1F /* TwoFactorCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9194E32420144700A5BE1F /* TwoFactorCoreTests.swift */; };
 		DC91950124201A7900A5BE1F /* NewGameCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC9194F824201A7800A5BE1F /* NewGameCore.framework */; };
 		DC91950824201A7900A5BE1F /* NewGameCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC91950724201A7900A5BE1F /* NewGameCoreTests.swift */; };
 		DC91952324201A8100A5BE1F /* NewGameSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC91951A24201A8100A5BE1F /* NewGameSwiftUI.framework */; };
@@ -95,7 +93,6 @@
 		DCAF10D1242027D400483288 /* TwoFactorSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF10C8242027D400483288 /* TwoFactorSwiftUI.framework */; };
 		DCAF10D8242027D400483288 /* TwoFactorSwiftUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAF10D7242027D400483288 /* TwoFactorSwiftUITests.swift */; };
 		DCAF10F5242028DF00483288 /* AppCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF10EC242028DE00483288 /* AppCore.framework */; };
-		DCAF10FC242028DF00483288 /* AppCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAF10FB242028DF00483288 /* AppCoreTests.swift */; };
 		DCAF114E2420294700483288 /* AlertData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAF10E52420285A00483288 /* AlertData.swift */; };
 		DCAF1152242029EE00483288 /* TwoFactorSwiftView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAF1151242029EE00483288 /* TwoFactorSwiftView.swift */; };
 		DCAF115D24202A5700483288 /* AuthenticationClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC919425242012D200A5BE1F /* AuthenticationClient.framework */; };
@@ -628,7 +625,6 @@
 		CA0A5769242AA3A900BA537D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CA0A5771242AA3A900BA537D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CA0A5776242AA3A900BA537D /* TicTacToeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TicTacToeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		CA0A577A242AA3A900BA537D /* TicTacToeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TicTacToeTests.swift; sourceTree = "<group>"; };
 		CA0A579E242AA7F800BA537D /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		CA841EA02420471C0093C098 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		CA841EB12420492A0093C098 /* AppViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppViewController.swift; sourceTree = "<group>"; };
@@ -645,7 +641,6 @@
 		DC9194BA2420142700A5BE1F /* LoginSwiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LoginSwiftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC9194D42420144700A5BE1F /* TwoFactorCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TwoFactorCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC9194DC2420144700A5BE1F /* TwoFactorCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TwoFactorCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		DC9194E32420144700A5BE1F /* TwoFactorCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwoFactorCoreTests.swift; sourceTree = "<group>"; };
 		DC9194F824201A7800A5BE1F /* NewGameCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NewGameCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC91950024201A7900A5BE1F /* NewGameCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NewGameCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC91950724201A7900A5BE1F /* NewGameCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewGameCoreTests.swift; sourceTree = "<group>"; };
@@ -666,7 +661,6 @@
 		DCAF10E52420285A00483288 /* AlertData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertData.swift; sourceTree = "<group>"; };
 		DCAF10EC242028DE00483288 /* AppCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AppCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCAF10F4242028DE00483288 /* AppCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		DCAF10FB242028DF00483288 /* AppCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoreTests.swift; sourceTree = "<group>"; };
 		DCAF110E242028E600483288 /* AppSwiftUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AppSwiftUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCAF11312420293300483288 /* TicTacToeCommon.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TicTacToeCommon.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCAF1151242029EE00483288 /* TwoFactorSwiftView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwoFactorSwiftView.swift; sourceTree = "<group>"; };
@@ -949,10 +943,7 @@
 		CA6AC25B2450FBB700C71CB3 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				CA0A577A242AA3A900BA537D /* TicTacToeTests.swift */,
-				DC9194E32420144700A5BE1F /* TwoFactorCoreTests.swift */,
 				DCAF10D7242027D400483288 /* TwoFactorSwiftUITests.swift */,
-				DCAF10FB242028DF00483288 /* AppCoreTests.swift */,
 				DC91954B24201A8700A5BE1F /* GameCoreTests.swift */,
 				DC91956D24201A8E00A5BE1F /* GameSwiftUITests.swift */,
 				DC919479242013DC00A5BE1F /* LoginCoreTests.swift */,
@@ -2006,7 +1997,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CA0A577B242AA3A900BA537D /* TicTacToeTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2070,7 +2060,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC9194E42420144700A5BE1F /* TwoFactorCoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2166,7 +2155,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCAF10FC242028DF00483288 /* AppCoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

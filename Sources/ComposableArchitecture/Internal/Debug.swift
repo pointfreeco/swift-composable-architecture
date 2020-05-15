@@ -245,6 +245,7 @@ extension URL: CustomDebugOutputConvertible {
   }
 }
 
+#if DEBUG
 #if canImport(CoreLocation)
   import CoreLocation
   extension CLAuthorizationStatus: CustomDebugOutputConvertible {
@@ -285,4 +286,5 @@ extension URL: CustomDebugOutputConvertible {
       }
     }
   }
+#endif
 #endif
