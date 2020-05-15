@@ -90,7 +90,6 @@ struct AnimationsView: View {
 struct AnimationsView_Previews: PreviewProvider {
   static var previews: some View {
     Group {
-
       NavigationView {
         AnimationsView(
           store: Store(
