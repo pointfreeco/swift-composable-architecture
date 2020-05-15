@@ -258,7 +258,24 @@ extension Effect where Failure == Swift.Error {
   /// - Parameter work: A closure encapsulating some work to execute in the real world.
   /// - Returns: An effect.
   public static func catching(_ work: @escaping () throws -> Output) -> Self {
-    .future { $0(Result { try work() }) }
+    .future({ $0(Result { try work() }) })
+  }
+
+  /// A `throw`ing variant of `Effect.future(_:)`. It creates an effect that can supply a single
+  /// value asynchronously in the future.
+  ///
+  /// - Parameter catching: A possibly throwing closure that takes a `callback` as an argument which
+  ///   can be used to feed it `Result<Output, Failure>` values.
+  public static func future(
+    catching attemptToFulfill: @escaping (@escaping (Result<Output, Error>) -> Void) throws -> Void
+  ) -> Effect {
+    Deferred {
+      Future { callback in
+        do { try attemptToFulfill { result in callback(result) } }
+        catch { callback(.failure(error)) }
+      }
+    }
+    .eraseToEffect()
   }
 }
 
