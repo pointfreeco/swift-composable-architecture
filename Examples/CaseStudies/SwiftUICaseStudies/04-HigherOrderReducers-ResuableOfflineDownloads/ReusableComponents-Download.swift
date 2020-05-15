@@ -82,10 +82,6 @@ let cityMapReducer = Reducer<CityMapState, CityMapAction, CityMapEnvironment> {
 struct CityMapRowView: View {
   let store: Store<CityMapState, CityMapAction>
 
-  init(store: Store<CityMapState, CityMapAction>) {
-    self.store = store
-  }
-
   var body: some View {
     WithViewStore(self.store) { viewStore in
       HStack {

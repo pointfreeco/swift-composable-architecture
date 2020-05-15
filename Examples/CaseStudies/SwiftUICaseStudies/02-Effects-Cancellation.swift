@@ -85,10 +85,6 @@ let effectsCancellationReducer = Reducer<
 struct EffectsCancellationView: View {
   let store: Store<EffectsCancellationState, EffectsCancellationAction>
 
-  init(store: Store<EffectsCancellationState, EffectsCancellationAction>) {
-    self.store = store
-  }
-
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
