@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BC853F69246E7D2400971FD3 /* Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC853F68246E7D2400971FD3 /* Debug.swift */; };
 		CA2332102447ACFA00B818EB /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA23320F2447ACFA00B818EB /* SceneDelegate.swift */; };
 		CA2332122447ACFA00B818EB /* SpeechRecognition.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA2332112447ACFA00B818EB /* SpeechRecognition.swift */; };
 		CA2332142447ACFB00B818EB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA2332132447ACFB00B818EB /* Assets.xcassets */; };
@@ -52,6 +53,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		BC853F68246E7D2400971FD3 /* Debug.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Debug.swift; sourceTree = "<group>"; };
 		CA23320A2447ACFA00B818EB /* SpeechRecognition.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpeechRecognition.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CA23320F2447ACFA00B818EB /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		CA2332112447ACFA00B818EB /* SpeechRecognition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognition.swift; sourceTree = "<group>"; };
@@ -136,6 +138,7 @@
 			isa = PBXGroup;
 			children = (
 				CACC04212447C66C000C5725 /* Client.swift */,
+				BC853F68246E7D2400971FD3 /* Debug.swift */,
 				CACC04232447D96D000C5725 /* Live.swift */,
 				CACC04282447DF0B000C5725 /* Mock.swift */,
 				CACC04262447DBAF000C5725 /* Models.swift */,
@@ -254,6 +257,7 @@
 				CA2332102447ACFA00B818EB /* SceneDelegate.swift in Sources */,
 				CA2332122447ACFA00B818EB /* SpeechRecognition.swift in Sources */,
 				CACC04222447C66C000C5725 /* Client.swift in Sources */,
+				BC853F69246E7D2400971FD3 /* Debug.swift in Sources */,
 				CACC04272447DBAF000C5725 /* Models.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
