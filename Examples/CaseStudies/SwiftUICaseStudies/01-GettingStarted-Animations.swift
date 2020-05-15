@@ -64,7 +64,6 @@ struct AnimationsView: View {
               )
           }
           .frame(maxWidth: .infinity, maxHeight: .infinity)
-          .background(Color.white)
           .simultaneousGesture(
             DragGesture(minimumDistance: 0).onChanged { gesture in
               withAnimation(.interactiveSpring(response: 0.25, dampingFraction: 0.1)) {
