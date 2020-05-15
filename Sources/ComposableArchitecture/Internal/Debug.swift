@@ -246,45 +246,45 @@ extension URL: CustomDebugOutputConvertible {
 }
 
 #if DEBUG
-#if canImport(CoreLocation)
-  import CoreLocation
-  extension CLAuthorizationStatus: CustomDebugOutputConvertible {
-    public var debugOutput: String {
-      switch self {
-      case .notDetermined:
-        return "notDetermined"
-      case .restricted:
-        return "restricted"
-      case .denied:
-        return "denied"
-      case .authorizedAlways:
-        return "authorizedAlways"
-      case .authorizedWhenInUse:
-        return "authorizedWhenInUse"
-      @unknown default:
-        return "unknown"
+  #if canImport(CoreLocation)
+    import CoreLocation
+    extension CLAuthorizationStatus: CustomDebugOutputConvertible {
+      public var debugOutput: String {
+        switch self {
+        case .notDetermined:
+          return "notDetermined"
+        case .restricted:
+          return "restricted"
+        case .denied:
+          return "denied"
+        case .authorizedAlways:
+          return "authorizedAlways"
+        case .authorizedWhenInUse:
+          return "authorizedWhenInUse"
+        @unknown default:
+          return "unknown"
+        }
       }
     }
-  }
-#endif
+  #endif
 
-#if canImport(Speech)
-  import Speech
-  extension SFSpeechRecognizerAuthorizationStatus: CustomDebugOutputConvertible {
-    public var debugOutput: String {
-      switch self {
-      case .notDetermined:
-        return "notDetermined"
-      case .denied:
-        return "denied"
-      case .restricted:
-        return "restricted"
-      case .authorized:
-        return "authorized"
-      @unknown default:
-        return "unknown"
+  #if canImport(Speech)
+    import Speech
+    extension SFSpeechRecognizerAuthorizationStatus: CustomDebugOutputConvertible {
+      public var debugOutput: String {
+        switch self {
+        case .notDetermined:
+          return "notDetermined"
+        case .denied:
+          return "denied"
+        case .restricted:
+          return "restricted"
+        case .authorized:
+          return "authorized"
+        @unknown default:
+          return "unknown"
+        }
       }
     }
-  }
-#endif
+  #endif
 #endif
