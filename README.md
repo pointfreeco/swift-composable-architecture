@@ -72,7 +72,7 @@ As a basic example, consider a UI that shows a number along with "+" and "−" b
 The state of this feature would consist of an integer for the current count, as well as an optional string that represents the title of the alert we want to show (optional because `nil` represents not showing an alert):
 
 ```swift
-struct AppState {
+struct AppState: Equatable {
   var count = 0
   var numberFactAlert: String?
 }
@@ -218,7 +218,7 @@ It is also straightforward to have a UIKit controller driven off of this store. 
             )
           )
           self?.present(alertController, animated: true, completion: nil)
-        })
+        }
         .store(in: &self.cancellables)
     }
 
