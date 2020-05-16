@@ -4,6 +4,8 @@ import XCTest
 @testable import ComposableArchitecture
 
 final class EffectThrottleTests: XCTestCase {
+  struct CancelToken: Hashable {}
+
   var cancellables: Set<AnyCancellable> = []
   let scheduler = DispatchQueue.testScheduler
 
@@ -12,8 +14,6 @@ final class EffectThrottleTests: XCTestCase {
     var effectRuns = 0
 
     func runThrottledEffect(value: Int) {
-      struct CancelToken: Hashable {}
-
       Deferred { () -> Just<Int> in
         effectRuns += 1
         return Just(value)
@@ -60,8 +60,6 @@ final class EffectThrottleTests: XCTestCase {
     var effectRuns = 0
 
     func runThrottledEffect(value: Int) {
-      struct CancelToken: Hashable {}
-
       Deferred { () -> Just<Int> in
         effectRuns += 1
         return Just(value)
@@ -110,8 +108,6 @@ final class EffectThrottleTests: XCTestCase {
     var effectRuns = 0
 
     func runThrottledEffect(value: Int) {
-      struct CancelToken: Hashable {}
-
       Deferred { () -> Just<Int> in
         effectRuns += 1
         return Just(value)

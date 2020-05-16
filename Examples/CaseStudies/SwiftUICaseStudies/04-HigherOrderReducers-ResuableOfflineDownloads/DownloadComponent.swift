@@ -64,6 +64,7 @@ enum DownloadComponentAction: Equatable {
   case alert(AlertAction)
   case buttonTapped
   case downloadClient(Result<DownloadClient.Action, DownloadClient.Error>)
+  case throttledProgressReceived(Double)
 
   enum AlertAction: Equatable {
     case cancelButtonTapped
@@ -118,7 +119,7 @@ extension Reducer {
             state.mode = .startingToDownload
             return environment.downloadClient
               .download(state.id, state.url)
-              .throttle(for: 1, scheduler: environment.mainQueue, latest: true)
+              .receive(on: environment.mainQueue)
               .catchToEffect()
               .map(DownloadComponentAction.downloadClient)
 
@@ -133,13 +134,22 @@ extension Reducer {
           return .cancel(id: ThrottleId(id: state.id))
 
         case let .downloadClient(.success(.updateProgress(progress))):
-          state.mode = .downloading(progress: progress)
-          return .none
+          return Effect(value: .throttledProgressReceived(progress))
+            .throttle(
+              id: ThrottleId(id: state.id),
+              for: 1,
+              scheduler: environment.mainQueue,
+              latest: true
+            )
 
         case .downloadClient(.failure):
           state.mode = .notDownloaded
           state.alert = nil
           return .cancel(id: ThrottleId(id: state.id))
+
+        case let .throttledProgressReceived(progress):
+          state.mode = .downloading(progress: progress)
+          return .none
         }
       }
       .pullback(state: state, action: action, environment: environment),

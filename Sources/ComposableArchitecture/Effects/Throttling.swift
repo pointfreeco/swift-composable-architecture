@@ -1,5 +1,5 @@
 import Combine
-import Dispatch
+import Foundation
 
 extension Effect {
   /// Turns an effect into one that can be throttled.
@@ -13,27 +13,33 @@ extension Effect {
   ///     `false`, the publisher emits the first element received during the interval.
   /// - Returns: An effect that emits either the most-recent or first element received during the
   ///   specified interval.
-  func throttle<S>(
+  public func throttle<S>(
     id: AnyHashable,
     for interval: S.SchedulerTimeType.Stride,
     scheduler: S,
     latest: Bool
   ) -> Effect where S: Scheduler {
-    self.flatMap { value -> AnyPublisher<Output, Failure> in
-      guard let throttleTime = throttleTimes[id] as! S.SchedulerTimeType? else {
-        throttleTimes[id] = scheduler.now
-        throttleValues[id] = nil
+
+    let throttleId =
+      (scheduler as? AnySchedulerOf<S>)
+      .map { Throttle(id: id, schedulerId: ObjectIdentifier($0.scheduler as AnyObject)) }
+      ?? id
+
+    let effect = self.flatMap { value -> AnyPublisher<Output, Failure> in
+      throttlesLock.lock()
+      defer { throttlesLock.unlock() }
+
+      guard
+        let throttleTime = throttleTimes[throttleId] as! S.SchedulerTimeType?,
+        throttleTime.distance(to: scheduler.now) < interval
+      else {
+        throttleTimes[throttleId] = scheduler.now
+        throttleValues[throttleId] = nil
         return Just(value).setFailureType(to: Failure.self).eraseToAnyPublisher()
       }
 
-      guard throttleTime.distance(to: scheduler.now) < interval else {
-        throttleTimes[id] = scheduler.now
-        throttleValues[id] = nil
-        return Just(value).setFailureType(to: Failure.self).eraseToAnyPublisher()
-      }
-
-      let value = latest ? value : (throttleValues[id] as! Output? ?? value)
-      throttleValues[id] = value
+      let value = latest ? value : (throttleValues[throttleId] as! Output? ?? value)
+      throttleValues[throttleId] = value
 
       return Just(value)
         .delay(
@@ -43,9 +49,17 @@ extension Effect {
         .eraseToAnyPublisher()
     }
     .eraseToEffect()
-    .cancellable(id: id, cancelInFlight: true)
+    .cancellable(id: throttleId, cancelInFlight: true)
+
+    return id == throttleId ? effect : effect.cancellable(id: id)
   }
 }
 
-var throttleTimes: [AnyHashable: Any] = [:]
-var throttleValues: [AnyHashable: Any] = [:]
+private struct Throttle: Hashable {
+  let id: AnyHashable
+  let schedulerId: ObjectIdentifier
+}
+
+private var throttlesLock = NSRecursiveLock()
+private var throttleTimes: [AnyHashable: Any] = [:]
+private var throttleValues: [AnyHashable: Any] = [:]

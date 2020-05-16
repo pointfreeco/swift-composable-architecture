@@ -41,7 +41,8 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 
       .do { self.downloadSubject.send(.updateProgress(0.2)) },
       .do { self.scheduler.advance() },
-      .receive(.downloadClient(.success(.updateProgress(0.2)))) {
+      .receive(.downloadClient(.success(.updateProgress(0.2)))),
+      .receive(.throttledProgressReceived(0.2)) {
         $0.mode = .downloading(progress: 0.2)
       },
 
@@ -78,16 +79,22 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 
       .do { self.downloadSubject.send(.updateProgress(0.5)) },
       .do { self.scheduler.advance() },
-      .receive(.downloadClient(.success(.updateProgress(0.5)))) {
+      .receive(.downloadClient(.success(.updateProgress(0.5)))),
+      .receive(DownloadComponentAction.throttledProgressReceived(0.5)) {
         $0.mode = .downloading(progress: 0.5)
       },
 
       .do { self.downloadSubject.send(.updateProgress(0.6)) },
       .do { self.scheduler.advance(by: 0.5) },
+      .receive(.downloadClient(.success(.updateProgress(0.6)))),
 
       .do { self.downloadSubject.send(.updateProgress(0.7)) },
       .do { self.scheduler.advance(by: 0.5) },
-      .receive(.downloadClient(.success(.updateProgress(0.7)))) {
+      .receive(.downloadClient(.success(.updateProgress(0.7)))),
+//      .receive(.throttledProgressReceived(0.6)) {
+//        $0.mode = .downloading(progress: 0.6)
+//      },
+      .receive(.throttledProgressReceived(0.7)) {
         $0.mode = .downloading(progress: 0.7)
       },
 

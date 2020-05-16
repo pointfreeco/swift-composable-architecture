@@ -8,6 +8,7 @@ where
   SchedulerTimeType.Stride: SchedulerTimeIntervalConvertible
 {
 
+  let scheduler: Any
   private let _minimumTolerance: () -> SchedulerTimeType.Stride
   private let _now: () -> SchedulerTimeType
   private let _scheduleAfterIntervalToleranceSchedulerOptionsAction:
@@ -32,8 +33,6 @@ where
 
   /// This scheduler’s definition of the current moment in time.
   public var now: SchedulerTimeType { self._now() }
-
-  let scheduler: Any
 
   /// Creates a type-erasing scheduler to wrap the provided scheduler.
   ///
