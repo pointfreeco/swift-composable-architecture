@@ -50,7 +50,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
     self.init(Just(value).setFailureType(to: Failure.self))
   }
 
-  /// Initializes an effect that immediately failues with the error passed in.
+  /// Initializes an effect that immediately fails with the error passed in.
   ///
   /// - Parameter error: The error that is immediately emitted by the effect.
   public init(error: Failure) {
