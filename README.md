@@ -218,7 +218,7 @@ It is also straightforward to have a UIKit controller driven off of this store. 
             )
           )
           self?.present(alertController, animated: true, completion: nil)
-        })
+        }
         .store(in: &self.cancellables)
     }
 
