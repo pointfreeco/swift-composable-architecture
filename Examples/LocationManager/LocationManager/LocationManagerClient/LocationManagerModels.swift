@@ -2,8 +2,6 @@ import CoreLocation
 import MapKit
 
 struct Location: Equatable {
-  let rawValue: CLLocation?
-
   var altitude: CLLocationDistance
   var coordinate: CLLocationCoordinate2D
   var course: CLLocationDirection
@@ -27,7 +25,6 @@ struct Location: Equatable {
     timestamp: Date,
     verticalAccuracy: CLLocationAccuracy
   ) {
-    self.rawValue = nil
     self.altitude = altitude
     self.coordinate = coordinate
     self.course = course
@@ -63,8 +60,6 @@ struct Location: Equatable {
 
 extension Location {
   init(rawValue: CLLocation) {
-    self.rawValue = rawValue
-
     self.altitude = rawValue.altitude
     self.coordinate = rawValue.coordinate
     self.course = rawValue.course
