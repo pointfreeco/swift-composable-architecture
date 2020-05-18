@@ -17,9 +17,9 @@ struct MapView: UIViewRepresentable {
   let pointsOfInterest: [PointOfInterest]
   @Binding var region: CoordinateRegion?
 
-  func makeUIView(context: Context) -> MKMapView{
+  func makeUIView(context: Context) -> MKMapView {
     let mapView = MKMapView(frame: .zero)
-    mapView.showsUserLocation = true;
+    mapView.showsUserLocation = true
     return mapView
   }
 
@@ -37,7 +37,7 @@ struct MapView: UIViewRepresentable {
   }
 
   func makeCoordinator() -> MapViewCoordinator {
-      MapViewCoordinator(self)
+    MapViewCoordinator(self)
   }
 }
 

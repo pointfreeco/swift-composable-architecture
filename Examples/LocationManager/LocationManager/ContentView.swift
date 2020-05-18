@@ -3,12 +3,12 @@ import MapKit
 import SwiftUI
 
 private let readMe = #"""
-This application demonstrates how to work with CLLocationManager for getting the user's current \
-location, and MKLocalSearch for searching points of interest on the map.
+  This application demonstrates how to work with CLLocationManager for getting the user's current \
+  location, and MKLocalSearch for searching points of interest on the map.
 
-Zoom into any part of the map and tap a category to search for points of interest nearby. The \
-markers are also updated live if you drag the map around.
-"""#
+  Zoom into any part of the map and tap a category to search for points of interest nearby. The \
+  markers are also updated live if you drag the map around.
+  """#
 
 struct PointOfInterest: Equatable {
   let coordinate: CLLocationCoordinate2D
@@ -28,7 +28,7 @@ struct AppState: Equatable {
     .museum,
     .nightlife,
     .park,
-    .restaurant
+    .restaurant,
   ]
 }
 
@@ -37,7 +37,7 @@ enum AppAction: Equatable {
   case currentLocationButtonTapped
   case dismissAlertButtonTapped
   case localSearchResponse(Result<LocalSearchResponse, LocalSearchError>)
-  case locationManager(LocationManagerAction)
+  case locationManager(LocationManagerClient.Action)
   case onAppear
   case updateRegion(CoordinateRegion?)
 }
@@ -127,7 +127,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     guard
       let category = state.pointOfInterestCategory,
       let region = state.region?.asMKCoordinateRegion
-      else { return .none }
+    else { return .none }
 
     let request = MKLocalSearch.Request()
     request.pointOfInterestFilter = MKPointOfInterestFilter(including: [category])
@@ -139,16 +139,18 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
   }
 }
 .combined(
-  with: locationManagerReducer
+  with:
+    locationManagerReducer
     .pullback(state: \.self, action: /AppAction.locationManager, environment: { $0 })
 )
-  .debug()
+.debug()
 
-let locationManagerReducer = Reducer<AppState, LocationManagerAction, AppEnvironment> { state, action, environment in
+let locationManagerReducer = Reducer<AppState, LocationManagerClient.Action, AppEnvironment> {
+  state, action, environment in
   switch action {
 
   case .didChangeAuthorization(.authorizedAlways),
-       .didChangeAuthorization(.authorizedWhenInUse):
+    .didChangeAuthorization(.authorizedWhenInUse):
     if state.isRequestingLocation {
       return environment.locationManager
         .requestLocation(id: LocationManagerId())
@@ -159,6 +161,7 @@ let locationManagerReducer = Reducer<AppState, LocationManagerAction, AppEnviron
   case .didChangeAuthorization(.denied):
     if state.isRequestingLocation {
       state.alert = "Location makes this app better. Please consider giving us access."
+      state.isRequestingLocation = false
     }
     return .none
 
@@ -172,9 +175,8 @@ let locationManagerReducer = Reducer<AppState, LocationManagerAction, AppEnviron
     return .none
 
   case .didChangeAuthorization,
-       .didCreate,
-       .didFailWithError,
-       .didVisit:
+    .didCreate,
+    .didFailWithError:
     return .none
   }
 }
@@ -189,8 +191,7 @@ struct ContentView: View {
             .padding([.bottom])
         ) {
           NavigationLink(
-            destination:
-            AppView(
+            destination: AppView(
               store: Store(
                 initialState: AppState(),
                 reducer: appReducer,
@@ -221,7 +222,7 @@ struct AppView: View {
           pointsOfInterest: viewStore.pointsOfInterest,
           region: viewStore.binding(get: \.region, send: AppAction.updateRegion)
         )
-          .edgesIgnoringSafeArea([.all])
+        .edgesIgnoringSafeArea([.all])
 
         VStack(alignment: .trailing) {
           Spacer()
@@ -381,7 +382,7 @@ struct ContentView_Previews: PreviewProvider {
           )
         )
       )
-        .environment(\.colorScheme, .dark)
+      .environment(\.colorScheme, .dark)
     }
   }
 }

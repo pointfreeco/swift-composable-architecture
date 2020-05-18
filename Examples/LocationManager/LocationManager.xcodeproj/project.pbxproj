@@ -12,13 +12,13 @@
 		CA17CC1324720BBB00BDDF11 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA17CC1224720BBB00BDDF11 /* Assets.xcassets */; };
 		CA17CC2424720BBB00BDDF11 /* LocationManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CC2324720BBB00BDDF11 /* LocationManagerTests.swift */; };
 		CA17CC3924720BEB00BDDF11 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = CA17CC3824720BEB00BDDF11 /* ComposableArchitecture */; };
-		CA17CC502472177400BDDF11 /* ModelsLocationManagerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CC462472177300BDDF11 /* ModelsLocationManagerClient.swift */; };
+		CA17CC502472177400BDDF11 /* LocationManagerModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CC462472177300BDDF11 /* LocationManagerModels.swift */; };
 		CA17CC512472177400BDDF11 /* MockLocationManagerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CC472472177300BDDF11 /* MockLocationManagerClient.swift */; };
 		CA17CC522472177400BDDF11 /* LocationManagerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CC482472177300BDDF11 /* LocationManagerClient.swift */; };
 		CA17CC532472177400BDDF11 /* LiveLocationManagerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CC492472177300BDDF11 /* LiveLocationManagerClient.swift */; };
 		CA17CC542472177400BDDF11 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CC4A2472177300BDDF11 /* MapView.swift */; };
 		CA17CC552472177400BDDF11 /* LocalSearchClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CC4C2472177400BDDF11 /* LocalSearchClient.swift */; };
-		CA17CC562472177400BDDF11 /* LocalSearchClientModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CC4D2472177400BDDF11 /* LocalSearchClientModels.swift */; };
+		CA17CC562472177400BDDF11 /* LocalSearchModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CC4D2472177400BDDF11 /* LocalSearchModels.swift */; };
 		CA17CC572472177400BDDF11 /* LiveLocalSearchClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CC4E2472177400BDDF11 /* LiveLocalSearchClient.swift */; };
 		CA17CC582472177400BDDF11 /* MockLocalSearchClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CC4F2472177400BDDF11 /* MockLocalSearchClient.swift */; };
 /* End PBXBuildFile section */
@@ -42,13 +42,13 @@
 		CA17CC1F24720BBB00BDDF11 /* LocationManagerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LocationManagerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CA17CC2324720BBB00BDDF11 /* LocationManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManagerTests.swift; sourceTree = "<group>"; };
 		CA17CC2524720BBB00BDDF11 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		CA17CC462472177300BDDF11 /* ModelsLocationManagerClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelsLocationManagerClient.swift; sourceTree = "<group>"; };
+		CA17CC462472177300BDDF11 /* LocationManagerModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationManagerModels.swift; sourceTree = "<group>"; };
 		CA17CC472472177300BDDF11 /* MockLocationManagerClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockLocationManagerClient.swift; sourceTree = "<group>"; };
 		CA17CC482472177300BDDF11 /* LocationManagerClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationManagerClient.swift; sourceTree = "<group>"; };
 		CA17CC492472177300BDDF11 /* LiveLocationManagerClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LiveLocationManagerClient.swift; sourceTree = "<group>"; };
 		CA17CC4A2472177300BDDF11 /* MapView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		CA17CC4C2472177400BDDF11 /* LocalSearchClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalSearchClient.swift; sourceTree = "<group>"; };
-		CA17CC4D2472177400BDDF11 /* LocalSearchClientModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalSearchClientModels.swift; sourceTree = "<group>"; };
+		CA17CC4D2472177400BDDF11 /* LocalSearchModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalSearchModels.swift; sourceTree = "<group>"; };
 		CA17CC4E2472177400BDDF11 /* LiveLocalSearchClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LiveLocalSearchClient.swift; sourceTree = "<group>"; };
 		CA17CC4F2472177400BDDF11 /* MockLocalSearchClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockLocalSearchClient.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -124,10 +124,10 @@
 		CA17CC452472177300BDDF11 /* LocationManagerClient */ = {
 			isa = PBXGroup;
 			children = (
-				CA17CC462472177300BDDF11 /* ModelsLocationManagerClient.swift */,
-				CA17CC472472177300BDDF11 /* MockLocationManagerClient.swift */,
-				CA17CC482472177300BDDF11 /* LocationManagerClient.swift */,
 				CA17CC492472177300BDDF11 /* LiveLocationManagerClient.swift */,
+				CA17CC482472177300BDDF11 /* LocationManagerClient.swift */,
+				CA17CC462472177300BDDF11 /* LocationManagerModels.swift */,
+				CA17CC472472177300BDDF11 /* MockLocationManagerClient.swift */,
 			);
 			path = LocationManagerClient;
 			sourceTree = "<group>";
@@ -136,7 +136,7 @@
 			isa = PBXGroup;
 			children = (
 				CA17CC4C2472177400BDDF11 /* LocalSearchClient.swift */,
-				CA17CC4D2472177400BDDF11 /* LocalSearchClientModels.swift */,
+				CA17CC4D2472177400BDDF11 /* LocalSearchModels.swift */,
 				CA17CC4E2472177400BDDF11 /* LiveLocalSearchClient.swift */,
 				CA17CC4F2472177400BDDF11 /* MockLocalSearchClient.swift */,
 			);
@@ -249,9 +249,9 @@
 				CA17CC0F24720BBA00BDDF11 /* SceneDelegate.swift in Sources */,
 				CA17CC552472177400BDDF11 /* LocalSearchClient.swift in Sources */,
 				CA17CC1124720BBA00BDDF11 /* ContentView.swift in Sources */,
-				CA17CC562472177400BDDF11 /* LocalSearchClientModels.swift in Sources */,
+				CA17CC562472177400BDDF11 /* LocalSearchModels.swift in Sources */,
 				CA17CC522472177400BDDF11 /* LocationManagerClient.swift in Sources */,
-				CA17CC502472177400BDDF11 /* ModelsLocationManagerClient.swift in Sources */,
+				CA17CC502472177400BDDF11 /* LocationManagerModels.swift in Sources */,
 				CA17CC512472177400BDDF11 /* MockLocationManagerClient.swift in Sources */,
 				CA17CC582472177400BDDF11 /* MockLocalSearchClient.swift in Sources */,
 				CA17CC572472177400BDDF11 /* LiveLocalSearchClient.swift in Sources */,

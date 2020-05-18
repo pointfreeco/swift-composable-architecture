@@ -3,7 +3,7 @@ import ComposableArchitecture
 import MapKit
 
 extension LocalSearchClient {
-  public static let live = LocalSearchClient(
+  static let live = LocalSearchClient(
     search: { request in
       Effect.future { callback in
         MKLocalSearch(request: request).start { response, error in
@@ -26,5 +26,5 @@ extension LocalSearchClient {
           }
         }
       }
-  })
+    })
 }

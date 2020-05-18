@@ -2,17 +2,15 @@ import Combine
 import ComposableArchitecture
 import CoreLocation
 
-public struct LocationManagerClient {
-  public var authorizationStatus: () -> CLAuthorizationStatus
-  var create: (_ id: AnyHashable) -> Effect<LocationManagerAction, Never>
+struct LocationManagerClient {
+  var authorizationStatus: () -> CLAuthorizationStatus
+  var create: (_ id: AnyHashable) -> Effect<Action, Never>
   var destroy: (AnyHashable) -> Effect<Never, Never>
-  public var locationServicesEnabled: () -> Bool
+  var locationServicesEnabled: () -> Bool
   var requestLocation: (AnyHashable) -> Effect<Never, Never>
   var requestAlwaysAuthorization: (AnyHashable) -> Effect<Never, Never>
   var requestWhenInUseAuthorization: (AnyHashable) -> Effect<Never, Never>
-  var startMonitoringVisits: (AnyHashable) -> Effect<Never, Never>
   var startUpdatingLocation: (AnyHashable) -> Effect<Never, Never>
-  var stopMonitoringVisits: (AnyHashable) -> Effect<Never, Never>
   var stopUpdatingLocation: (AnyHashable) -> Effect<Never, Never>
   var update:
     (
@@ -25,45 +23,37 @@ public struct LocationManagerClient {
       _ showsBackgroundLocationIndicator: Bool?
     ) -> Effect<Never, Never>
 
-  public func create(
+  func create(
     id: AnyHashable
-  ) -> Effect<LocationManagerAction, Never> {
+  ) -> Effect<Action, Never> {
     self.create(id)
   }
 
-  public func destroy(id: AnyHashable) -> Effect<Never, Never> {
+  func destroy(id: AnyHashable) -> Effect<Never, Never> {
     self.destroy(id)
   }
 
-  public func requestLocation(id: AnyHashable) -> Effect<Never, Never> {
+  func requestLocation(id: AnyHashable) -> Effect<Never, Never> {
     self.requestLocation(id)
   }
 
-  public func requestAlwaysAuthorization(id: AnyHashable) -> Effect<Never, Never> {
+  func requestAlwaysAuthorization(id: AnyHashable) -> Effect<Never, Never> {
     self.requestAlwaysAuthorization(id)
   }
 
-  public func requestWhenInUseAuthorization(id: AnyHashable) -> Effect<Never, Never> {
+  func requestWhenInUseAuthorization(id: AnyHashable) -> Effect<Never, Never> {
     self.requestWhenInUseAuthorization(id)
   }
 
-  public func startMonitoringVisits(id: AnyHashable) -> Effect<Never, Never> {
-    self.startMonitoringVisits(id)
-  }
-
-  public func startUpdatingLocation(id: AnyHashable) -> Effect<Never, Never> {
+  func startUpdatingLocation(id: AnyHashable) -> Effect<Never, Never> {
     self.startUpdatingLocation(id)
   }
 
-  public func stopMonitoringVisits(id: AnyHashable) -> Effect<Never, Never> {
-    self.stopMonitoringVisits(id)
-  }
-
-  public func stopUpdatingLocation(id: AnyHashable) -> Effect<Never, Never> {
+  func stopUpdatingLocation(id: AnyHashable) -> Effect<Never, Never> {
     self.stopUpdatingLocation(id)
   }
 
-  public func update(
+  func update(
     id: AnyHashable,
     activityType: CLActivityType? = nil,
     allowsBackgroundLocationUpdates: Bool? = nil,
@@ -81,5 +71,16 @@ public struct LocationManagerClient {
       pausesLocationUpdatesAutomatically,
       showsBackgroundLocationIndicator
     )
+  }
+
+  enum Action: Equatable {
+    case didChangeAuthorization(CLAuthorizationStatus)
+    case didCreate(locationServicesEnabled: Bool, authorizationStatus: CLAuthorizationStatus)
+    case didFailWithError(Error)
+    case didUpdateLocations([Location])
+  }
+
+  struct Error: Swift.Error, Equatable {
+    init() {}
   }
 }
