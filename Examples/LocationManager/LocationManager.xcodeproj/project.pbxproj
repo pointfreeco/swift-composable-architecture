@@ -133,9 +133,9 @@
 		CA17CC4B2472177400BDDF11 /* LocalSearchClient */ = {
 			isa = PBXGroup;
 			children = (
+				CA17CC4E2472177400BDDF11 /* LiveLocalSearchClient.swift */,
 				CA17CC4C2472177400BDDF11 /* LocalSearchClient.swift */,
 				CA17CC4D2472177400BDDF11 /* LocalSearchModels.swift */,
-				CA17CC4E2472177400BDDF11 /* LiveLocalSearchClient.swift */,
 				CA17CC4F2472177400BDDF11 /* MockLocalSearchClient.swift */,
 			);
 			path = LocalSearchClient;

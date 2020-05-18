@@ -16,24 +16,9 @@ extension LocationManagerClient {
     requestLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
       fatalError("requestLocation is unimplemented in the mock.")
     },
-    requestAlwaysAuthorization: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
-      fatalError()
-    },
     requestWhenInUseAuthorization: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
       fatalError("requestWhenInUseAuthorization is unimplemented in the mock")
-    },
-    startUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
-    stopUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
-    update:
-      @escaping (
-        _ id: AnyHashable,
-        _ activityType: CLActivityType?,
-        _ allowsBackgroundLocationUpdates: Bool?,
-        _ desiredAccuracy: CLLocationAccuracy?,
-        _ distanceFilter: CLLocationDistance?,
-        _ pausesLocationUpdatesAutomatically: Bool?,
-        _ showsBackgroundLocationIndicator: Bool?
-      ) -> Effect<Never, Never> = { _, _, _, _, _, _, _ in fatalError() }
+    }
   ) -> Self {
     Self(
       authorizationStatus: authorizationStatus,
@@ -41,11 +26,7 @@ extension LocationManagerClient {
       destroy: destroy,
       locationServicesEnabled: locationServicesEnabled,
       requestLocation: requestLocation,
-      requestAlwaysAuthorization: requestAlwaysAuthorization,
-      requestWhenInUseAuthorization: requestWhenInUseAuthorization,
-      startUpdatingLocation: startUpdatingLocation,
-      stopUpdatingLocation: stopUpdatingLocation,
-      update: update
+      requestWhenInUseAuthorization: requestWhenInUseAuthorization
     )
   }
 }

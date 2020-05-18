@@ -19,10 +19,10 @@ extension LocalSearchClient {
             )
 
           case (_, .some):
-            callback(.failure(LocalSearchError()))
+            callback(.failure(LocalSearchClient.Error()))
 
           case (.none, .none):
-            fatalError()
+            fatalError("It should not be possible that response and error are both nil.")
           }
         }
       }

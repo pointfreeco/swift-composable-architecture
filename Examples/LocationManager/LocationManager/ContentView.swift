@@ -36,7 +36,7 @@ enum AppAction: Equatable {
   case categoryButtonTapped(MKPointOfInterestCategory)
   case currentLocationButtonTapped
   case dismissAlertButtonTapped
-  case localSearchResponse(Result<LocalSearchResponse, LocalSearchError>)
+  case localSearchResponse(Result<LocalSearchResponse, LocalSearchClient.Error>)
   case locationManager(LocationManagerClient.Action)
   case onAppear
   case updateRegion(CoordinateRegion?)

@@ -205,7 +205,3 @@ struct MapItem: Equatable {
       && lhs.rawValue?.url == rhs.rawValue?.url
   }
 }
-
-struct LocalSearchError: Error, Equatable {
-  init() {}
-}

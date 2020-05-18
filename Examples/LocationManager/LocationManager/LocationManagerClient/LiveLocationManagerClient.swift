@@ -33,54 +33,14 @@ extension LocationManagerClient {
       }
     },
     destroy: { id in
-      .fireAndForget {
-        dependencies[id] = nil
-      }
+      .fireAndForget { dependencies[id] = nil }
     },
-    locationServicesEnabled: {
-      CLLocationManager.locationServicesEnabled()
-    },
+    locationServicesEnabled: CLLocationManager.locationServicesEnabled,
     requestLocation: { id in
-      .fireAndForget {
-        dependencies[id]?.locationManager.requestLocation()
-      }
-    },
-    requestAlwaysAuthorization: { id in
-      .fireAndForget { dependencies[id]?.locationManager.requestAlwaysAuthorization() }
+      .fireAndForget { dependencies[id]?.locationManager.requestLocation() }
     },
     requestWhenInUseAuthorization: { id in
       .fireAndForget { dependencies[id]?.locationManager.requestWhenInUseAuthorization() }
-    },
-    startUpdatingLocation: { id in
-      .fireAndForget { dependencies[id]?.locationManager.startUpdatingLocation() }
-    },
-    stopUpdatingLocation: { id in
-      .fireAndForget { dependencies[id]?.locationManager.stopUpdatingLocation() }
-    },
-    update: {
-      id, activityType, allowsBackgroundLocationUpdates, desiredAccuracy, distanceFilter,
-      pausesLocationUpdatesAutomatically, showsBackgroundLocationIndicator in
-      .fireAndForget {
-        guard let manager = dependencies[id]?.locationManager else { return }
-        if let pausesLocationUpdatesAutomatically = pausesLocationUpdatesAutomatically {
-          manager.pausesLocationUpdatesAutomatically = pausesLocationUpdatesAutomatically
-        }
-        if let allowsBackgroundLocationUpdates = allowsBackgroundLocationUpdates {
-          manager.allowsBackgroundLocationUpdates = allowsBackgroundLocationUpdates
-        }
-        if let showsBackgroundLocationIndicator = showsBackgroundLocationIndicator {
-          manager.showsBackgroundLocationIndicator = showsBackgroundLocationIndicator
-        }
-        if let distanceFilter = distanceFilter {
-          manager.distanceFilter = distanceFilter
-        }
-        if let desiredAccuracy = desiredAccuracy {
-          manager.desiredAccuracy = desiredAccuracy
-        }
-        if let activityType = activityType {
-          manager.activityType = activityType
-        }
-      }
     })
 }
 
