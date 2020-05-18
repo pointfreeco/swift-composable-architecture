@@ -49,6 +49,7 @@ struct AppEnvironment {
 }
 
 private struct LocationManagerId: Hashable {}
+private struct CancelSearchId: Hashable {}
 
 let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
   switch action {
@@ -56,7 +57,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     guard category != state.pointOfInterestCategory else {
       state.pointOfInterestCategory = nil
       state.pointsOfInterest = []
-      return .none
+      return .cancel(id: CancelSearchId())
     }
 
     state.pointOfInterestCategory = category
@@ -70,6 +71,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
       .search(request)
       .catchToEffect()
       .map(AppAction.localSearchResponse)
+      .cancellable(id: CancelSearchId(), cancelInFlight: true)
 
   case .currentLocationButtonTapped:
     guard environment.locationManager.locationServicesEnabled() else {
@@ -141,6 +143,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
       .search(request)
       .catchToEffect()
       .map(AppAction.localSearchResponse)
+      .cancellable(id: CancelSearchId(), cancelInFlight: true)
   }
 }
 .combined(
