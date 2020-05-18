@@ -5,6 +5,13 @@ struct LocalSearchResponse: Equatable {
   var boundingRegion: MKCoordinateRegion
 
   init(
+    response: MKLocalSearch.Response
+  ) {
+    self.mapItems = response.mapItems.map(MapItem.init(rawValue:))
+    self.boundingRegion = response.boundingRegion
+  }
+
+  init(
     mapItems: [MapItem],
     boundingRegion: MKCoordinateRegion
   ) {
@@ -18,6 +25,80 @@ struct LocalSearchResponse: Equatable {
       && lhs.boundingRegion.center.longitude == rhs.boundingRegion.center.longitude
       && lhs.boundingRegion.span.latitudeDelta == rhs.boundingRegion.span.latitudeDelta
       && lhs.boundingRegion.span.longitudeDelta == rhs.boundingRegion.span.longitudeDelta
+  }
+}
+
+struct MapItem: Equatable {
+  let rawValue: MKMapItem?
+
+  var isCurrentLocation: Bool
+  var name: String?
+  var phoneNumber: String?
+  var placemark: Placemark
+  var pointOfInterestCategory: MKPointOfInterestCategory?
+  var timeZone: TimeZone?
+  var url: URL?
+
+  init(rawValue: MKMapItem) {
+    self.rawValue = rawValue
+
+    self.isCurrentLocation = rawValue.isCurrentLocation
+    self.name = rawValue.name
+    self.placemark = Placemark(rawValue: rawValue.placemark)
+    self.phoneNumber = rawValue.phoneNumber
+    self.pointOfInterestCategory = rawValue.pointOfInterestCategory
+    self.timeZone = rawValue.timeZone
+    self.url = rawValue.url
+  }
+
+  init(
+    isCurrentLocation: Bool = false,
+    name: String? = nil,
+    phoneNumber: String? = nil,
+    placemark: Placemark,
+    pointOfInterestCategory: MKPointOfInterestCategory? = nil,
+    timeZone: TimeZone? = nil,
+    url: URL? = nil
+  ) {
+    self.rawValue = nil
+
+    self.isCurrentLocation = isCurrentLocation
+    self.name = name
+    self.phoneNumber = phoneNumber
+    self.placemark = placemark
+    self.pointOfInterestCategory = pointOfInterestCategory
+    self.timeZone = timeZone
+    self.url = url
+  }
+
+  static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.rawValue?.isCurrentLocation == rhs.rawValue?.isCurrentLocation
+      && lhs.rawValue?.name == rhs.rawValue?.name
+      && lhs.rawValue?.phoneNumber == rhs.rawValue?.phoneNumber
+      && lhs.rawValue?.placemark.coordinate.latitude == rhs.rawValue?.placemark.coordinate.latitude
+      && lhs.rawValue?.placemark.coordinate.longitude
+        == rhs.rawValue?.placemark.coordinate.longitude
+      && lhs.rawValue?.placemark.countryCode == rhs.rawValue?.placemark.countryCode
+      && lhs.rawValue?.placemark.region == rhs.rawValue?.placemark.region
+      && lhs.placemark.subtitle == rhs.placemark.subtitle
+      && lhs.rawValue?.placemark.title == rhs.rawValue?.placemark.title
+      && lhs.rawValue?.placemark.name == rhs.rawValue?.placemark.name
+      && lhs.rawValue?.placemark.thoroughfare == lhs.rawValue?.placemark.thoroughfare
+      && lhs.rawValue?.placemark.subThoroughfare == lhs.rawValue?.placemark.subThoroughfare
+      && lhs.rawValue?.placemark.locality == lhs.rawValue?.placemark.locality
+      && lhs.rawValue?.placemark.subLocality == lhs.rawValue?.placemark.subLocality
+      && lhs.rawValue?.placemark.administrativeArea == lhs.rawValue?.placemark.administrativeArea
+      && lhs.rawValue?.placemark.subAdministrativeArea
+        == lhs.rawValue?.placemark.subAdministrativeArea
+      && lhs.rawValue?.placemark.postalCode == lhs.rawValue?.placemark.postalCode
+      && lhs.rawValue?.placemark.isoCountryCode == lhs.rawValue?.placemark.isoCountryCode
+      && lhs.rawValue?.placemark.country == lhs.rawValue?.placemark.country
+      && lhs.rawValue?.placemark.inlandWater == lhs.rawValue?.placemark.inlandWater
+      && lhs.rawValue?.placemark.ocean == lhs.rawValue?.placemark.ocean
+      && lhs.rawValue?.placemark.areasOfInterest == lhs.rawValue?.placemark.areasOfInterest
+      && lhs.rawValue?.pointOfInterestCategory == rhs.rawValue?.pointOfInterestCategory
+      && lhs.rawValue?.timeZone == rhs.rawValue?.timeZone
+      && lhs.rawValue?.url == rhs.rawValue?.url
   }
 }
 
@@ -129,79 +210,5 @@ struct Placemark: Equatable {
       && lhs.inlandWater == lhs.inlandWater
       && lhs.ocean == lhs.ocean
       && lhs.areasOfInterest == lhs.areasOfInterest
-  }
-}
-
-struct MapItem: Equatable {
-  let rawValue: MKMapItem?
-
-  var isCurrentLocation: Bool
-  var name: String?
-  var phoneNumber: String?
-  var placemark: Placemark
-  var pointOfInterestCategory: MKPointOfInterestCategory?
-  var timeZone: TimeZone?
-  var url: URL?
-
-  init(rawValue: MKMapItem) {
-    self.rawValue = rawValue
-
-    self.isCurrentLocation = rawValue.isCurrentLocation
-    self.name = rawValue.name
-    self.placemark = Placemark(rawValue: rawValue.placemark)
-    self.phoneNumber = rawValue.phoneNumber
-    self.pointOfInterestCategory = rawValue.pointOfInterestCategory
-    self.timeZone = rawValue.timeZone
-    self.url = rawValue.url
-  }
-
-  init(
-    isCurrentLocation: Bool = false,
-    name: String? = nil,
-    phoneNumber: String? = nil,
-    placemark: Placemark,
-    pointOfInterestCategory: MKPointOfInterestCategory? = nil,
-    timeZone: TimeZone? = nil,
-    url: URL? = nil
-  ) {
-    self.rawValue = nil
-
-    self.isCurrentLocation = isCurrentLocation
-    self.name = name
-    self.phoneNumber = phoneNumber
-    self.placemark = placemark
-    self.pointOfInterestCategory = pointOfInterestCategory
-    self.timeZone = timeZone
-    self.url = url
-  }
-
-  static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.rawValue?.isCurrentLocation == rhs.rawValue?.isCurrentLocation
-      && lhs.rawValue?.name == rhs.rawValue?.name
-      && lhs.rawValue?.phoneNumber == rhs.rawValue?.phoneNumber
-      && lhs.rawValue?.placemark.coordinate.latitude == rhs.rawValue?.placemark.coordinate.latitude
-      && lhs.rawValue?.placemark.coordinate.longitude
-        == rhs.rawValue?.placemark.coordinate.longitude
-      && lhs.rawValue?.placemark.countryCode == rhs.rawValue?.placemark.countryCode
-      && lhs.rawValue?.placemark.region == rhs.rawValue?.placemark.region
-      && lhs.placemark.subtitle == rhs.placemark.subtitle
-      && lhs.rawValue?.placemark.title == rhs.rawValue?.placemark.title
-      && lhs.rawValue?.placemark.name == rhs.rawValue?.placemark.name
-      && lhs.rawValue?.placemark.thoroughfare == lhs.rawValue?.placemark.thoroughfare
-      && lhs.rawValue?.placemark.subThoroughfare == lhs.rawValue?.placemark.subThoroughfare
-      && lhs.rawValue?.placemark.locality == lhs.rawValue?.placemark.locality
-      && lhs.rawValue?.placemark.subLocality == lhs.rawValue?.placemark.subLocality
-      && lhs.rawValue?.placemark.administrativeArea == lhs.rawValue?.placemark.administrativeArea
-      && lhs.rawValue?.placemark.subAdministrativeArea
-        == lhs.rawValue?.placemark.subAdministrativeArea
-      && lhs.rawValue?.placemark.postalCode == lhs.rawValue?.placemark.postalCode
-      && lhs.rawValue?.placemark.isoCountryCode == lhs.rawValue?.placemark.isoCountryCode
-      && lhs.rawValue?.placemark.country == lhs.rawValue?.placemark.country
-      && lhs.rawValue?.placemark.inlandWater == lhs.rawValue?.placemark.inlandWater
-      && lhs.rawValue?.placemark.ocean == lhs.rawValue?.placemark.ocean
-      && lhs.rawValue?.placemark.areasOfInterest == lhs.rawValue?.placemark.areasOfInterest
-      && lhs.rawValue?.pointOfInterestCategory == rhs.rawValue?.pointOfInterestCategory
-      && lhs.rawValue?.timeZone == rhs.rawValue?.timeZone
-      && lhs.rawValue?.url == rhs.rawValue?.url
   }
 }

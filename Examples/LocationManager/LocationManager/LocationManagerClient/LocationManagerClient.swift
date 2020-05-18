@@ -20,22 +20,4 @@ struct LocationManagerClient {
   struct Error: Swift.Error, Equatable {
     init() {}
   }
-
-  func create(
-    id: AnyHashable
-  ) -> Effect<Action, Never> {
-    self.create(id)
-  }
-
-  func destroy(id: AnyHashable) -> Effect<Never, Never> {
-    self.destroy(id)
-  }
-
-  func requestLocation(id: AnyHashable) -> Effect<Never, Never> {
-    self.requestLocation(id)
-  }
-
-  func requestWhenInUseAuthorization(id: AnyHashable) -> Effect<Never, Never> {
-    self.requestWhenInUseAuthorization(id)
-  }
 }

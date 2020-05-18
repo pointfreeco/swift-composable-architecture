@@ -47,7 +47,7 @@ class LocationManagerTests: XCTestCase {
 
       // Tap on the button to request current location
       .send(.currentLocationButtonTapped) {
-        $0.isRequestingLocation = true
+        $0.isRequestingCurrentLocation = true
       },
       .do {
         XCTAssertTrue(didRequestInUseAuthorization)
@@ -67,7 +67,7 @@ class LocationManagerTests: XCTestCase {
         locationManagerSubject.send(.didUpdateLocations([currentLocation]))
       },
       .receive(.locationManager(.didUpdateLocations([currentLocation]))) {
-        $0.isRequestingLocation = false
+        $0.isRequestingCurrentLocation = false
         $0.region = CoordinateRegion(
           center: CLLocationCoordinate2D(latitude: 10, longitude: 20),
           span: MKCoordinateSpan.init(latitudeDelta: 0.05, longitudeDelta: 0.05)
@@ -104,7 +104,7 @@ class LocationManagerTests: XCTestCase {
       .send(.onAppear),
 
       .send(.currentLocationButtonTapped) {
-        $0.isRequestingLocation = true
+        $0.isRequestingCurrentLocation = true
       },
       .do {
         XCTAssertTrue(didRequestInUseAuthorization)
@@ -116,7 +116,7 @@ class LocationManagerTests: XCTestCase {
       },
       .receive(.locationManager(.didChangeAuthorization(.denied))) {
         $0.alert = "Location makes this app better. Please consider giving us access."
-        $0.isRequestingLocation = false
+        $0.isRequestingCurrentLocation = false
       },
 
       .do {

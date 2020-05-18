@@ -4,9 +4,7 @@ import CoreLocation
 
 extension LocationManagerClient {
   static let live = LocationManagerClient(
-    authorizationStatus: {
-      CLLocationManager.authorizationStatus()
-    },
+    authorizationStatus: CLLocationManager.authorizationStatus,
     create: { id in
       Effect.run { callback in
         let manager = CLLocationManager()

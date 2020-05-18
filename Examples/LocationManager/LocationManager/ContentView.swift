@@ -1,14 +1,15 @@
+import Combine
 import ComposableArchitecture
 import MapKit
 import SwiftUI
 
-private let readMe = #"""
+private let readMe = """
   This application demonstrates how to work with CLLocationManager for getting the user's current \
   location, and MKLocalSearch for searching points of interest on the map.
 
   Zoom into any part of the map and tap a category to search for points of interest nearby. The \
   markers are also updated live if you drag the map around.
-  """#
+  """
 
 struct PointOfInterest: Equatable {
   let coordinate: CLLocationCoordinate2D
@@ -18,7 +19,7 @@ struct PointOfInterest: Equatable {
 
 struct AppState: Equatable {
   var alert: String?
-  var isRequestingLocation = false
+  var isRequestingCurrentLocation = false
   var pointOfInterestCategory: MKPointOfInterestCategory?
   var pointsOfInterest: [PointOfInterest] = []
   var region: CoordinateRegion?
@@ -78,9 +79,9 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
     switch environment.locationManager.authorizationStatus() {
     case .notDetermined:
-      state.isRequestingLocation = true
+      state.isRequestingCurrentLocation = true
       return environment.locationManager
-        .requestWhenInUseAuthorization(id: LocationManagerId())
+        .requestWhenInUseAuthorization(LocationManagerId())
         .fireAndForget()
 
     case .restricted:
@@ -93,7 +94,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
     case .authorizedAlways, .authorizedWhenInUse:
       return environment.locationManager
-        .requestLocation(id: LocationManagerId())
+        .requestLocation(LocationManagerId())
         .fireAndForget()
 
     @unknown default:
@@ -122,7 +123,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     return .none
 
   case .onAppear:
-    return environment.locationManager.create(id: LocationManagerId())
+    return environment.locationManager.create(LocationManagerId())
       .map(AppAction.locationManager)
 
   case let .updateRegion(region):
@@ -155,22 +156,22 @@ let locationManagerReducer = Reducer<AppState, LocationManagerClient.Action, App
   switch action {
   case .didChangeAuthorization(.authorizedAlways),
     .didChangeAuthorization(.authorizedWhenInUse):
-    if state.isRequestingLocation {
+    if state.isRequestingCurrentLocation {
       return environment.locationManager
-        .requestLocation(id: LocationManagerId())
+        .requestLocation(LocationManagerId())
         .fireAndForget()
     }
     return .none
 
   case .didChangeAuthorization(.denied):
-    if state.isRequestingLocation {
+    if state.isRequestingCurrentLocation {
       state.alert = "Location makes this app better. Please consider giving us access."
-      state.isRequestingLocation = false
+      state.isRequestingCurrentLocation = false
     }
     return .none
 
   case let .didUpdateLocations(locations):
-    state.isRequestingLocation = false
+    state.isRequestingCurrentLocation = false
     guard let location = locations.first else { return .none }
     state.region = CoordinateRegion(
       center: location.coordinate,
@@ -194,7 +195,7 @@ struct AppView: View {
       ZStack {
         MapView(
           pointsOfInterest: viewStore.pointsOfInterest,
-          region: viewStore.binding(get: \.region, send: AppAction.updateRegion)
+          region: viewStore.binding(get: { $0.region }, send: AppAction.updateRegion)
         )
         .edgesIgnoringSafeArea([.all])
 
@@ -214,12 +215,13 @@ struct AppView: View {
           ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 16) {
               ForEach(AppState.pointOfInterestCategories, id: \.rawValue) { category in
-                CategoryButtonView(
-                  category: category,
-                  selectedCategory: viewStore.pointOfInterestCategory
-                ) {
-                  viewStore.send(.categoryButtonTapped(category))
-                }
+                Button(category.displayName) { viewStore.send(.categoryButtonTapped(category)) }
+                  .padding([.all], 16)
+                  .background(
+                    category == viewStore.pointOfInterestCategory ? Color.blue : Color.secondary
+                )
+                  .foregroundColor(.white)
+                  .cornerRadius(8)
               }
             }
             .padding([.leading, .trailing])
@@ -236,61 +238,6 @@ struct AppView: View {
         Alert(title: Text(alert.title))
       }
       .onAppear { viewStore.send(.onAppear) }
-    }
-  }
-}
-
-struct CategoryButtonView: View {
-  let category: MKPointOfInterestCategory
-  @Environment(\.colorScheme) var colorScheme
-  let selectedCategory: MKPointOfInterestCategory?
-  let action: () -> Void
-
-  init(
-    category: MKPointOfInterestCategory,
-    selectedCategory: MKPointOfInterestCategory?,
-    action: @escaping () -> Void
-  ) {
-    self.category = category
-    self.selectedCategory = selectedCategory
-    self.action = action
-  }
-
-  var body: some View {
-    Button(self.category.displayName, action: self.action)
-      .padding([.all], 16)
-      .background(self.backgroundColor)
-      .foregroundColor(self.foregroundColor)
-      .cornerRadius(8)
-  }
-
-  var backgroundColor: Color {
-    switch (self.colorScheme, self.category == self.selectedCategory) {
-    case (.dark, true):
-      return Color.blue
-    case (.dark, false):
-      return Color.secondary
-    case (.light, true):
-      return Color.blue
-    case (.light, false):
-      return Color.secondary
-    default:
-      return Color.white
-    }
-  }
-
-  var foregroundColor: Color? {
-    switch (self.colorScheme, self.category == self.selectedCategory) {
-    case (.dark, true):
-      return Color.white
-    case (.dark, false):
-      return Color.white
-    case (.light, true):
-      return Color.white
-    case (.light, false):
-      return Color.white
-    default:
-      return nil
     }
   }
 }
@@ -358,31 +305,48 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
   static var previews: some View {
-    Group {
+
+    let mockLocation = Location(
+      altitude: 0,
+      coordinate: CLLocationCoordinate2D(latitude: 40.6501, longitude: -73.94958),
+      course: 0,
+      courseAccuracy: 0,
+      floor: nil,
+      horizontalAccuracy: 0,
+      speed: 0,
+      speedAccuracy: 0,
+      timestamp: Date(timeIntervalSince1970: 1_234_567_890),
+      verticalAccuracy: 0
+    )
+    let locationManagerSubject = PassthroughSubject<LocationManagerClient.Action, Never>()
+    let locationManager = LocationManagerClient.mock(
+      authorizationStatus: { .authorizedAlways },
+      create: { _ in locationManagerSubject.eraseToEffect() },
+      locationServicesEnabled: { true },
+      requestLocation: { _ in
+        .fireAndForget { locationManagerSubject.send(.didUpdateLocations([mockLocation])) }
+    },
+      requestWhenInUseAuthorization: { _ in .fireAndForget { } }
+    )
+
+    let appView = AppView(
+      store: Store(
+        initialState: AppState(),
+        reducer: appReducer,
+        environment: AppEnvironment(
+          localSearch: .live,
+          locationManager: locationManager
+        )
+      )
+    )
+
+    return Group {
       ContentView()
 
-      AppView(
-        store: Store(
-          initialState: AppState(),
-          reducer: appReducer,
-          environment: AppEnvironment(
-            localSearch: .live,
-            locationManager: .live
-          )
-        )
-      )
+      appView
 
-      AppView(
-        store: Store(
-          initialState: AppState(),
-          reducer: appReducer,
-          environment: AppEnvironment(
-            localSearch: .live,
-            locationManager: .live
-          )
-        )
-      )
-      .environment(\.colorScheme, .dark)
+      appView
+        .environment(\.colorScheme, .dark)
     }
   }
 }

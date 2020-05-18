@@ -9,14 +9,7 @@ extension LocalSearchClient {
         MKLocalSearch(request: request).start { response, error in
           switch (response, error) {
           case let (.some(response), _):
-            callback(
-              .success(
-                LocalSearchResponse(
-                  mapItems: response.mapItems.map(MapItem.init(rawValue:)),
-                  boundingRegion: response.boundingRegion
-                )
-              )
-            )
+            callback(.success(LocalSearchResponse(response: response)))
 
           case (_, .some):
             callback(.failure(LocalSearchClient.Error()))
