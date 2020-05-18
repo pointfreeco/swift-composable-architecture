@@ -41,7 +41,6 @@
 		CA17CC1A24720BBB00BDDF11 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CA17CC1F24720BBB00BDDF11 /* LocationManagerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LocationManagerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CA17CC2324720BBB00BDDF11 /* LocationManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManagerTests.swift; sourceTree = "<group>"; };
-		CA17CC2524720BBB00BDDF11 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CA17CC462472177300BDDF11 /* LocationManagerModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationManagerModels.swift; sourceTree = "<group>"; };
 		CA17CC472472177300BDDF11 /* MockLocationManagerClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockLocationManagerClient.swift; sourceTree = "<group>"; };
 		CA17CC482472177300BDDF11 /* LocationManagerClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationManagerClient.swift; sourceTree = "<group>"; };
@@ -109,7 +108,6 @@
 			isa = PBXGroup;
 			children = (
 				CA17CC2324720BBB00BDDF11 /* LocationManagerTests.swift */,
-				CA17CC2524720BBB00BDDF11 /* Info.plist */,
 			);
 			path = LocationManagerTests;
 			sourceTree = "<group>";
@@ -434,7 +432,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = LocationManagerTests/Info.plist;
+				INFOPLIST_FILE = LocationManager/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -455,7 +453,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = LocationManagerTests/Info.plist;
+				INFOPLIST_FILE = LocationManager/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
