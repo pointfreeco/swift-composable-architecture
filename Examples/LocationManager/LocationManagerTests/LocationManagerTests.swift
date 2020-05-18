@@ -136,8 +136,8 @@ class LocationManagerTests: XCTestCase {
       url: nil
     )
     let localSearchResponse = LocalSearchResponse(
-      mapItems: [mapItem],
-      boundingRegion: MKCoordinateRegion()
+      boundingRegion: MKCoordinateRegion(),
+      mapItems: [mapItem]
     )
 
     let store = TestStore(
@@ -178,8 +178,8 @@ class LocationManagerTests: XCTestCase {
       url: nil
     )
     let localSearchResponse = LocalSearchResponse(
-      mapItems: [mapItem],
-      boundingRegion: MKCoordinateRegion()
+      boundingRegion: MKCoordinateRegion(),
+      mapItems: [mapItem]
     )
 
     let store = TestStore(
