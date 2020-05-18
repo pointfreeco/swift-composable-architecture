@@ -15,6 +15,10 @@ let package = Package(
       name: "ComposableArchitecture",
       targets: ["ComposableArchitecture"]
     ),
+    .library(
+      name: "ComposableLocationManager",
+      targets: ["ComposableLocationManager"]
+    ),
   ],
   dependencies: [
     .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.1.1")
@@ -30,6 +34,12 @@ let package = Package(
       name: "ComposableArchitectureTests",
       dependencies: [
         "ComposableArchitecture",
+      ]
+    ),
+    .target(
+      name: "ComposableLocationManager",
+      dependencies: [
+        "ComposableArchitecture"
       ]
     ),
   ]
