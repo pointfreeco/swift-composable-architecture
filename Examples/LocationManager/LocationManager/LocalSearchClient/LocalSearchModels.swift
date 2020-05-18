@@ -179,24 +179,24 @@ struct Placemark: Equatable {
   }
 
   static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.coordinate.latitude == rhs.coordinate.latitude
-      && lhs.coordinate.longitude == rhs.coordinate.longitude
-      && lhs.countryCode == rhs.countryCode
-      && lhs.region == rhs.region
-      && lhs.subtitle == rhs.subtitle
-      && lhs.title == rhs.title
-      && lhs.name == rhs.name
-      && lhs.thoroughfare == lhs.thoroughfare
-      && lhs.subThoroughfare == lhs.subThoroughfare
-      && lhs.locality == lhs.locality
-      && lhs.subLocality == lhs.subLocality
-      && lhs.administrativeArea == lhs.administrativeArea
-      && lhs.subAdministrativeArea == lhs.subAdministrativeArea
-      && lhs.postalCode == lhs.postalCode
-      && lhs.isoCountryCode == lhs.isoCountryCode
-      && lhs.country == lhs.country
-      && lhs.inlandWater == lhs.inlandWater
-      && lhs.ocean == lhs.ocean
+    lhs.administrativeArea == lhs.administrativeArea
       && lhs.areasOfInterest == lhs.areasOfInterest
+      && lhs.coordinate.latitude == rhs.coordinate.latitude
+      && lhs.coordinate.longitude == rhs.coordinate.longitude
+      && lhs.country == lhs.country
+      && lhs.countryCode == rhs.countryCode
+      && lhs.inlandWater == lhs.inlandWater
+      && lhs.isoCountryCode == lhs.isoCountryCode
+      && lhs.locality == lhs.locality
+      && lhs.name == rhs.name
+      && lhs.ocean == lhs.ocean
+      && lhs.postalCode == lhs.postalCode
+      && lhs.region == rhs.region
+      && lhs.subAdministrativeArea == lhs.subAdministrativeArea
+      && lhs.subLocality == lhs.subLocality
+      && lhs.subThoroughfare == lhs.subThoroughfare
+      && lhs.subtitle == rhs.subtitle
+      && lhs.thoroughfare == lhs.thoroughfare
+      && lhs.title == rhs.title
   }
 }
