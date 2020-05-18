@@ -107,7 +107,7 @@ final class ReducerTests: XCTestCase {
       state.count += 1
       return .none
     }
-    .debug(prefix: "[prefix]") { _ in
+    .debug("[prefix]") { _ in
       DebugEnvironment(
         printer: {
           logs.append($0)

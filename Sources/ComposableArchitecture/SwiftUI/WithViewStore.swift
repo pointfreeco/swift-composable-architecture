@@ -56,7 +56,7 @@ public struct WithViewStore<State, Action, Content>: View where Content: View {
   ///
   /// - Parameter prefix: A string with which to prefix all debug messages.
   /// - Returns: A structure that prints debug messages for all computations.
-  public func debug(prefix: String = "") -> Self {
+  public func debug(_ prefix: String = "") -> Self {
     var view = self
     view.prefix = prefix
     return view

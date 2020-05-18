@@ -34,7 +34,7 @@ extension Reducer {
   ///     function and a background queue.
   /// - Returns: A reducer that prints debug messages for all received actions.
   public func debugActions(
-    prefix: String = "",
+    _ prefix: String = "",
     environment toDebugEnvironment: @escaping (Environment) -> DebugEnvironment = { _ in
       DebugEnvironment()
     }
