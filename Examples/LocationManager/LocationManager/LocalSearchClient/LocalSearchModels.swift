@@ -1,30 +1,30 @@
 import MapKit
 
 struct LocalSearchResponse: Equatable {
-  var mapItems: [MapItem]
   var boundingRegion: MKCoordinateRegion
+  var mapItems: [MapItem]
 
   init(
     response: MKLocalSearch.Response
   ) {
-    self.mapItems = response.mapItems.map(MapItem.init(rawValue:))
     self.boundingRegion = response.boundingRegion
+    self.mapItems = response.mapItems.map(MapItem.init(rawValue:))
   }
 
   init(
-    mapItems: [MapItem],
-    boundingRegion: MKCoordinateRegion
+    boundingRegion: MKCoordinateRegion,
+    mapItems: [MapItem]
   ) {
-    self.mapItems = mapItems
     self.boundingRegion = boundingRegion
+    self.mapItems = mapItems
   }
 
   static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.mapItems == rhs.mapItems
-      && lhs.boundingRegion.center.latitude == rhs.boundingRegion.center.latitude
+    lhs.boundingRegion.center.latitude == rhs.boundingRegion.center.latitude
       && lhs.boundingRegion.center.longitude == rhs.boundingRegion.center.longitude
       && lhs.boundingRegion.span.latitudeDelta == rhs.boundingRegion.span.latitudeDelta
       && lhs.boundingRegion.span.longitudeDelta == rhs.boundingRegion.span.longitudeDelta
+      && lhs.mapItems == rhs.mapItems
   }
 }
 
