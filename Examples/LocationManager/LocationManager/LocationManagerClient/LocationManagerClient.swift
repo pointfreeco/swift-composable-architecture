@@ -17,7 +17,5 @@ struct LocationManagerClient {
     case didUpdateLocations([Location])
   }
 
-  struct Error: Swift.Error, Equatable {
-    init() {}
-  }
+  struct Error: Swift.Error, Equatable {}
 }
