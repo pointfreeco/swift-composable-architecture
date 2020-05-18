@@ -29,8 +29,6 @@ struct LocalSearchResponse: Equatable {
 }
 
 struct MapItem: Equatable {
-  let rawValue: MKMapItem?
-
   var isCurrentLocation: Bool
   var name: String?
   var phoneNumber: String?
@@ -40,8 +38,6 @@ struct MapItem: Equatable {
   var url: URL?
 
   init(rawValue: MKMapItem) {
-    self.rawValue = rawValue
-
     self.isCurrentLocation = rawValue.isCurrentLocation
     self.name = rawValue.name
     self.placemark = Placemark(rawValue: rawValue.placemark)
@@ -60,8 +56,6 @@ struct MapItem: Equatable {
     timeZone: TimeZone? = nil,
     url: URL? = nil
   ) {
-    self.rawValue = nil
-
     self.isCurrentLocation = isCurrentLocation
     self.name = name
     self.phoneNumber = phoneNumber
@@ -72,39 +66,37 @@ struct MapItem: Equatable {
   }
 
   static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.rawValue?.isCurrentLocation == rhs.rawValue?.isCurrentLocation
-      && lhs.rawValue?.name == rhs.rawValue?.name
-      && lhs.rawValue?.phoneNumber == rhs.rawValue?.phoneNumber
-      && lhs.rawValue?.placemark.coordinate.latitude == rhs.rawValue?.placemark.coordinate.latitude
-      && lhs.rawValue?.placemark.coordinate.longitude
-        == rhs.rawValue?.placemark.coordinate.longitude
-      && lhs.rawValue?.placemark.countryCode == rhs.rawValue?.placemark.countryCode
-      && lhs.rawValue?.placemark.region == rhs.rawValue?.placemark.region
+    lhs.isCurrentLocation == rhs.isCurrentLocation
+      && lhs.name == rhs.name
+      && lhs.phoneNumber == rhs.phoneNumber
+      && lhs.placemark.coordinate.latitude == rhs.placemark.coordinate.latitude
+      && lhs.placemark.coordinate.longitude
+        == rhs.placemark.coordinate.longitude
+      && lhs.placemark.countryCode == rhs.placemark.countryCode
+      && lhs.placemark.region == rhs.placemark.region
       && lhs.placemark.subtitle == rhs.placemark.subtitle
-      && lhs.rawValue?.placemark.title == rhs.rawValue?.placemark.title
-      && lhs.rawValue?.placemark.name == rhs.rawValue?.placemark.name
-      && lhs.rawValue?.placemark.thoroughfare == lhs.rawValue?.placemark.thoroughfare
-      && lhs.rawValue?.placemark.subThoroughfare == lhs.rawValue?.placemark.subThoroughfare
-      && lhs.rawValue?.placemark.locality == lhs.rawValue?.placemark.locality
-      && lhs.rawValue?.placemark.subLocality == lhs.rawValue?.placemark.subLocality
-      && lhs.rawValue?.placemark.administrativeArea == lhs.rawValue?.placemark.administrativeArea
-      && lhs.rawValue?.placemark.subAdministrativeArea
-        == lhs.rawValue?.placemark.subAdministrativeArea
-      && lhs.rawValue?.placemark.postalCode == lhs.rawValue?.placemark.postalCode
-      && lhs.rawValue?.placemark.isoCountryCode == lhs.rawValue?.placemark.isoCountryCode
-      && lhs.rawValue?.placemark.country == lhs.rawValue?.placemark.country
-      && lhs.rawValue?.placemark.inlandWater == lhs.rawValue?.placemark.inlandWater
-      && lhs.rawValue?.placemark.ocean == lhs.rawValue?.placemark.ocean
-      && lhs.rawValue?.placemark.areasOfInterest == lhs.rawValue?.placemark.areasOfInterest
-      && lhs.rawValue?.pointOfInterestCategory == rhs.rawValue?.pointOfInterestCategory
-      && lhs.rawValue?.timeZone == rhs.rawValue?.timeZone
-      && lhs.rawValue?.url == rhs.rawValue?.url
+      && lhs.placemark.title == rhs.placemark.title
+      && lhs.placemark.name == rhs.placemark.name
+      && lhs.placemark.thoroughfare == rhs.placemark.thoroughfare
+      && lhs.placemark.subThoroughfare == rhs.placemark.subThoroughfare
+      && lhs.placemark.locality == rhs.placemark.locality
+      && lhs.placemark.subLocality == rhs.placemark.subLocality
+      && lhs.placemark.administrativeArea == rhs.placemark.administrativeArea
+      && lhs.placemark.subAdministrativeArea
+        == lhs.placemark.subAdministrativeArea
+      && lhs.placemark.postalCode == rhs.placemark.postalCode
+      && lhs.placemark.isoCountryCode == rhs.placemark.isoCountryCode
+      && lhs.placemark.country == rhs.placemark.country
+      && lhs.placemark.inlandWater == rhs.placemark.inlandWater
+      && lhs.placemark.ocean == rhs.placemark.ocean
+      && lhs.placemark.areasOfInterest == rhs.placemark.areasOfInterest
+      && lhs.pointOfInterestCategory == rhs.pointOfInterestCategory
+      && lhs.timeZone == rhs.timeZone
+      && lhs.url == rhs.url
   }
 }
 
 struct Placemark: Equatable {
-  let rawValue: MKPlacemark?
-
   var administrativeArea: String?
   var areasOfInterest: [String]?
   var coordinate: CLLocationCoordinate2D
@@ -125,8 +117,6 @@ struct Placemark: Equatable {
   var title: String?
 
   init(rawValue: MKPlacemark) {
-    self.rawValue = rawValue
-
     self.administrativeArea = rawValue.administrativeArea
     self.areasOfInterest = rawValue.areasOfInterest
     self.coordinate = rawValue.coordinate
@@ -168,8 +158,6 @@ struct Placemark: Equatable {
     thoroughfare: String? = nil,
     title: String? = nil
   ) {
-    self.rawValue = nil
-
     self.administrativeArea = administrativeArea
     self.areasOfInterest = areasOfInterest
     self.coordinate = coordinate
