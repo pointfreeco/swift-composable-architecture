@@ -14,12 +14,12 @@ extension Reducer {
   ///     function and a background queue.
   /// - Returns: A reducer that prints debug messages for all received actions.
   public func debug(
-    prefix: String = "",
+    _ prefix: String = "",
     environment toDebugEnvironment: @escaping (Environment) -> DebugEnvironment = { _ in
       DebugEnvironment()
     }
   ) -> Reducer {
-    self.debug(prefix: prefix, state: { $0 }, action: .self, environment: toDebugEnvironment)
+    self.debug(prefix, state: { $0 }, action: .self, environment: toDebugEnvironment)
   }
 
   /// Prints debug messages describing all received actions.
@@ -34,12 +34,12 @@ extension Reducer {
   ///     function and a background queue.
   /// - Returns: A reducer that prints debug messages for all received actions.
   public func debugActions(
-    prefix: String = "",
+    _ prefix: String = "",
     environment toDebugEnvironment: @escaping (Environment) -> DebugEnvironment = { _ in
       DebugEnvironment()
     }
   ) -> Reducer {
-    self.debug(prefix: prefix, state: { _ in () }, action: .self, environment: toDebugEnvironment)
+    self.debug(prefix, state: { _ in () }, action: .self, environment: toDebugEnvironment)
   }
 
   /// Prints debug messages describing all received local actions and local state mutations.
@@ -56,7 +56,7 @@ extension Reducer {
   ///     function and a background queue.
   /// - Returns: A reducer that prints debug messages for all received actions.
   public func debug<LocalState, LocalAction>(
-    prefix: String = "",
+    _ prefix: String = "",
     state toLocalState: @escaping (State) -> LocalState,
     action toLocalAction: CasePath<Action, LocalAction>,
     environment toDebugEnvironment: @escaping (Environment) -> DebugEnvironment = { _ in
