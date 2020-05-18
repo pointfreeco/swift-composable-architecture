@@ -222,7 +222,7 @@ struct LocationManagerView: View {
                   .padding([.all], 16)
                   .background(
                     category == viewStore.pointOfInterestCategory ? Color.blue : Color.secondary
-                )
+                  )
                   .foregroundColor(.white)
                   .cornerRadius(8)
               }
@@ -330,8 +330,8 @@ struct ContentView_Previews: PreviewProvider {
       locationServicesEnabled: { true },
       requestLocation: { _ in
         .fireAndForget { locationManagerSubject.send(.didUpdateLocations([mockLocation])) }
-    },
-      requestWhenInUseAuthorization: { _ in .fireAndForget { } }
+      },
+      requestWhenInUseAuthorization: { _ in .fireAndForget {} }
     )
 
     let appView = LocationManagerView(
