@@ -82,16 +82,20 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
       return environment.locationManager
         .requestWhenInUseAuthorization(id: LocationManagerId())
         .fireAndForget()
+
     case .restricted:
       state.alert = "Please give us access to your location in settings."
       return .none
+
     case .denied:
       state.alert = "Please give us access to your location in settings."
       return .none
+
     case .authorizedAlways, .authorizedWhenInUse:
       return environment.locationManager
         .requestLocation(id: LocationManagerId())
         .fireAndForget()
+
     @unknown default:
       return .none
     }
@@ -147,8 +151,8 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
 let locationManagerReducer = Reducer<AppState, LocationManagerClient.Action, AppEnvironment> {
   state, action, environment in
-  switch action {
 
+  switch action {
   case .didChangeAuthorization(.authorizedAlways),
     .didChangeAuthorization(.authorizedWhenInUse):
     if state.isRequestingLocation {
@@ -178,36 +182,6 @@ let locationManagerReducer = Reducer<AppState, LocationManagerClient.Action, App
     .didCreate,
     .didFailWithError:
     return .none
-  }
-}
-
-struct ContentView: View {
-  var body: some View {
-    NavigationView {
-      Form {
-        Section(
-          header: Text(readMe)
-            .font(.body)
-            .padding([.bottom])
-        ) {
-          NavigationLink(
-            destination: AppView(
-              store: Store(
-                initialState: AppState(),
-                reducer: appReducer,
-                environment: AppEnvironment(
-                  localSearch: .live,
-                  locationManager: .live
-                )
-              )
-            )
-          ) {
-            Text("Go to demo")
-          }
-        }
-      }
-      .navigationBarTitle("Location Manager")
-    }
   }
 }
 
@@ -353,6 +327,32 @@ extension PointOfInterest {
       && lhs.coordinate.longitude == rhs.coordinate.longitude
       && lhs.subtitle == rhs.subtitle
       && lhs.title == rhs.title
+  }
+}
+
+struct ContentView: View {
+  var body: some View {
+    NavigationView {
+      Form {
+        Section(
+          header: Text(readMe)
+            .font(.body)
+            .padding([.bottom])
+        ) {
+          NavigationLink(
+            "Go to demo",
+            destination: AppView(
+              store: Store(
+                initialState: AppState(),
+                reducer: appReducer,
+                environment: AppEnvironment(localSearch: .live, locationManager: .live)
+              )
+            )
+          )
+        }
+      }
+      .navigationBarTitle("Location Manager")
+    }
   }
 }
 

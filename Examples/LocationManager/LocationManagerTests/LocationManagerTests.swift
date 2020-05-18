@@ -38,7 +38,7 @@ class LocationManagerTests: XCTestCase {
       horizontalAccuracy: 0,
       speed: 0,
       speedAccuracy: 0,
-      timestamp: Date(timeIntervalSince1970: 1234567890),
+      timestamp: Date(timeIntervalSince1970: 1_234_567_890),
       verticalAccuracy: 0
     )
 
@@ -191,7 +191,7 @@ class LocationManagerTests: XCTestCase {
         localSearch: .mock(
           search: { request in
             return .result { .success(localSearchResponse) }
-        }),
+          }),
         locationManager: .mock()
       )
     )
