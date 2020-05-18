@@ -186,7 +186,7 @@ let locationManagerReducer = Reducer<AppState, LocationManagerClient.Action, App
   }
 }
 
-struct AppView: View {
+struct LocationManagerView: View {
   @Environment(\.colorScheme) var colorScheme
   let store: Store<AppState, AppAction>
 
@@ -288,7 +288,7 @@ struct ContentView: View {
         ) {
           NavigationLink(
             "Go to demo",
-            destination: AppView(
+            destination: LocationManagerView(
               store: Store(
                 initialState: AppState(),
                 reducer: appReducer,
@@ -305,7 +305,9 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
   static var previews: some View {
-
+    // NB: CLLocationManager mostly does not work in SwiftUI previews, so we provide a mock
+    //     client that has all authorization allowed and mocks the device's current location
+    //     to Brooklyn, NY.
     let mockLocation = Location(
       altitude: 0,
       coordinate: CLLocationCoordinate2D(latitude: 40.6501, longitude: -73.94958),
@@ -329,7 +331,7 @@ struct ContentView_Previews: PreviewProvider {
       requestWhenInUseAuthorization: { _ in .fireAndForget { } }
     )
 
-    let appView = AppView(
+    let appView = LocationManagerView(
       store: Store(
         initialState: AppState(),
         reducer: appReducer,
@@ -342,9 +344,7 @@ struct ContentView_Previews: PreviewProvider {
 
     return Group {
       ContentView()
-
       appView
-
       appView
         .environment(\.colorScheme, .dark)
     }

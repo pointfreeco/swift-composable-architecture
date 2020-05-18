@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		CA17CC0F24720BBA00BDDF11 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CC0E24720BBA00BDDF11 /* SceneDelegate.swift */; };
-		CA17CC1124720BBA00BDDF11 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CC1024720BBA00BDDF11 /* ContentView.swift */; };
+		CA17CC1124720BBA00BDDF11 /* LocationManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CC1024720BBA00BDDF11 /* LocationManagerView.swift */; };
 		CA17CC1324720BBB00BDDF11 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA17CC1224720BBB00BDDF11 /* Assets.xcassets */; };
 		CA17CC2424720BBB00BDDF11 /* LocationManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CC2324720BBB00BDDF11 /* LocationManagerTests.swift */; };
 		CA17CC3924720BEB00BDDF11 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = CA17CC3824720BEB00BDDF11 /* ComposableArchitecture */; };
@@ -36,7 +36,7 @@
 /* Begin PBXFileReference section */
 		CA17CC0924720BBA00BDDF11 /* LocationManager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LocationManager.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CA17CC0E24720BBA00BDDF11 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		CA17CC1024720BBA00BDDF11 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		CA17CC1024720BBA00BDDF11 /* LocationManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManagerView.swift; sourceTree = "<group>"; };
 		CA17CC1224720BBB00BDDF11 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CA17CC1A24720BBB00BDDF11 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CA17CC1F24720BBB00BDDF11 /* LocationManagerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LocationManagerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -94,7 +94,7 @@
 			isa = PBXGroup;
 			children = (
 				CA17CC1A24720BBB00BDDF11 /* Info.plist */,
-				CA17CC1024720BBA00BDDF11 /* ContentView.swift */,
+				CA17CC1024720BBA00BDDF11 /* LocationManagerView.swift */,
 				CA17CC4A2472177300BDDF11 /* MapView.swift */,
 				CA17CC0E24720BBA00BDDF11 /* SceneDelegate.swift */,
 				CA17CC1224720BBB00BDDF11 /* Assets.xcassets */,
@@ -246,7 +246,7 @@
 				CA17CC542472177400BDDF11 /* MapView.swift in Sources */,
 				CA17CC0F24720BBA00BDDF11 /* SceneDelegate.swift in Sources */,
 				CA17CC552472177400BDDF11 /* LocalSearchClient.swift in Sources */,
-				CA17CC1124720BBA00BDDF11 /* ContentView.swift in Sources */,
+				CA17CC1124720BBA00BDDF11 /* LocationManagerView.swift in Sources */,
 				CA17CC562472177400BDDF11 /* LocalSearchModels.swift in Sources */,
 				CA17CC522472177400BDDF11 /* LocationManagerClient.swift in Sources */,
 				CA17CC502472177400BDDF11 /* LocationManagerModels.swift in Sources */,
