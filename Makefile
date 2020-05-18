@@ -38,6 +38,10 @@ test-workspace:
 		-destination platform="$(PLATFORM_IOS)" \
 		-quiet
 	xcodebuild test \
+		-scheme LocationManager \
+		-destination platform="$(PLATFORM_IOS)" \
+		-quiet
+	xcodebuild test \
 		-scheme Search \
 		-destination platform="$(PLATFORM_IOS)" \
 		-quiet
