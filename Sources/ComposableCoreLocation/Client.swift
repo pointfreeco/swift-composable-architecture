@@ -74,7 +74,6 @@ import CoreLocation
 ///
 public struct LocationManagerClient {
 
-  // TODO: rename to DelegateAction?
   public enum Action: Equatable {
     case didChangeAuthorization(CLAuthorizationStatus)
 
