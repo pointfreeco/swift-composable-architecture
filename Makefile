@@ -13,18 +13,18 @@ test-swift:
 		--parallel
 
 test-workspace:
-	xcodebuild test \
-		-scheme ComposableArchitecture \
-		-destination platform="$(PLATFORM_IOS)" \
-		-quiet
-	xcodebuild test \
-		-scheme ComposableArchitecture \
-		-destination platform="$(PLATFORM_MACOS)" \
-		-quiet
-	xcodebuild test \
-		-scheme ComposableArchitecture \
-		-destination platform="$(PLATFORM_TVOS)" \
-		-quiet
+# 	xcodebuild test \
+# 		-scheme ComposableArchitecture \
+# 		-destination platform="$(PLATFORM_IOS)" \
+# 		-quiet
+# 	xcodebuild test \
+# 		-scheme ComposableArchitecture \
+# 		-destination platform="$(PLATFORM_MACOS)" \
+# 		-quiet
+# 	xcodebuild test \
+# 		-scheme ComposableArchitecture \
+# 		-destination platform="$(PLATFORM_TVOS)" \
+# 		-quiet
 
 	xcodebuild test \
 		-scheme ComposableCoreLocation \

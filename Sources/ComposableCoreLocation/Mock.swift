@@ -1,3 +1,4 @@
+#if DEBUG
 import CoreLocation
 import ComposableArchitecture
 
@@ -179,3 +180,4 @@ extension LocationManagerClient {
     )
   }
 }
+#endif

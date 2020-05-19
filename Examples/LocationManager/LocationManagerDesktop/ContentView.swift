@@ -79,10 +79,10 @@ struct ContentView_Previews: PreviewProvider {
       authorizationStatus: { .authorizedAlways },
       create: { _ in locationManagerSubject.eraseToEffect() },
       locationServicesEnabled: { true },
+      requestAlwaysAuthorization: { _ in .fireAndForget {} },
       requestLocation: { _ in
         .fireAndForget { locationManagerSubject.send(.didUpdateLocations([mockLocation])) }
-      },
-      requestAlwaysAuthorization: { _ in .fireAndForget {} }
+      }
     )
 
     let appView = LocationManagerView(

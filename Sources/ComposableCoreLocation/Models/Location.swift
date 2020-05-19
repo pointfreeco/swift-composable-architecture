@@ -1,5 +1,7 @@
 import CoreLocation
 
+/// A value type wrapper for `CLLocation`. This type is necessary so taht we can do equality checks
+/// and write tests against its values.
 public struct Location: Equatable {
   public let rawValue: CLLocation?
 

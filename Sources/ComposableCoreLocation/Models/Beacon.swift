@@ -1,6 +1,10 @@
 import CoreLocation
 
-#if os(iOS) || targetEnvironment(macCatalyst)
+/// A value type wrapper for `CLBeacon`. This type is necessary so taht we can do equality checks
+/// and write tests against its values.
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 public struct Beacon: Equatable {
   public let rawValue: CLBeacon?
 
@@ -53,4 +57,3 @@ public struct Beacon: Equatable {
       && lhs.uuid == rhs.uuid
   }
 }
-#endif
