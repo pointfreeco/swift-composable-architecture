@@ -10,4 +10,4 @@ The core logic of the application is written a single time, and powers both view
 * A thin wrapper around the `MKLocalSearch` API that allows us to search for points of interest on the map.
 * A wrapper around `MKMapView` to make it usable from SwiftUI.
 
-Interaction with CoreLocation's `CLLocationManager` API is done via the `ComposableCoreLocation` library that comes with the Composable Architecture. It gives you an `Effect`-friendly interface to all of `CLLocationManager`'s APIs, making it easy to use its features from a reducer _and_ making it easy to test logic that depends on its `CLLocationManager`'s functionality.
+Interaction with CoreLocation's `CLLocationManager` API is done via the [`ComposableCoreLocation`](../../Sources/ComposableCoreLocation) library that comes with the Composable Architecture. It gives you an `Effect`-friendly interface to all of `CLLocationManager`'s APIs, making it easy to use its features from a reducer _and_ making it easy to test logic that depends on its `CLLocationManager`'s functionality.
