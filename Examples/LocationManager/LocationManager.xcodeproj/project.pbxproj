@@ -15,6 +15,7 @@
 		CA17CC542472177400BDDF11 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CC4A2472177300BDDF11 /* MapView.swift */; };
 		CA17CCB42474574200BDDF11 /* LocalSearchClient in Frameworks */ = {isa = PBXBuildFile; productRef = CA17CCB32474574200BDDF11 /* LocalSearchClient */; };
 		CA17CCB62474582000BDDF11 /* ComposableCoreLocation in Frameworks */ = {isa = PBXBuildFile; productRef = CA17CCB52474582000BDDF11 /* ComposableCoreLocation */; };
+		CA17CCB8247459E600BDDF11 /* Core in Frameworks */ = {isa = PBXBuildFile; productRef = CA17CCB7247459E600BDDF11 /* Core */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +46,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CA17CCB62474582000BDDF11 /* ComposableCoreLocation in Frameworks */,
+				CA17CCB8247459E600BDDF11 /* Core in Frameworks */,
 				CA17CC3924720BEB00BDDF11 /* ComposableArchitecture in Frameworks */,
 				CA17CCB42474574200BDDF11 /* LocalSearchClient in Frameworks */,
 			);
@@ -127,6 +129,7 @@
 				CA17CC3824720BEB00BDDF11 /* ComposableArchitecture */,
 				CA17CCB32474574200BDDF11 /* LocalSearchClient */,
 				CA17CCB52474582000BDDF11 /* ComposableCoreLocation */,
+				CA17CCB7247459E600BDDF11 /* Core */,
 			);
 			productName = LocationManager;
 			productReference = CA17CC0924720BBA00BDDF11 /* LocationManager.app */;
@@ -472,6 +475,10 @@
 		CA17CCB52474582000BDDF11 /* ComposableCoreLocation */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableCoreLocation;
+		};
+		CA17CCB7247459E600BDDF11 /* Core */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Core;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

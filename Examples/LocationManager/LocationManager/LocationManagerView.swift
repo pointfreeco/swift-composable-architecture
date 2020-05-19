@@ -1,6 +1,7 @@
 import Combine
 import ComposableArchitecture
 import ComposableCoreLocation
+import Core
 import LocalSearchClient
 import MapKit
 import SwiftUI
@@ -12,182 +13,6 @@ private let readMe = """
   Zoom into any part of the map and tap a category to search for points of interest nearby. The \
   markers are also updated live if you drag the map around.
   """
-
-struct PointOfInterest: Equatable {
-  let coordinate: CLLocationCoordinate2D
-  let subtitle: String?
-  let title: String?
-}
-
-struct AppState: Equatable {
-  var alert: String?
-  var isRequestingCurrentLocation = false
-  var pointOfInterestCategory: MKPointOfInterestCategory?
-  var pointsOfInterest: [PointOfInterest] = []
-  var region: CoordinateRegion?
-
-  static let pointOfInterestCategories: [MKPointOfInterestCategory] = [
-    .cafe,
-    .museum,
-    .nightlife,
-    .park,
-    .restaurant,
-  ]
-}
-
-enum AppAction: Equatable {
-  case categoryButtonTapped(MKPointOfInterestCategory)
-  case currentLocationButtonTapped
-  case dismissAlertButtonTapped
-  case localSearchResponse(Result<LocalSearchResponse, LocalSearchClient.Error>)
-  case locationManager(LocationManagerClient.Action)
-  case onAppear
-  case updateRegion(CoordinateRegion?)
-}
-
-struct AppEnvironment {
-  var localSearch: LocalSearchClient
-  var locationManager: LocationManagerClient
-}
-
-private struct LocationManagerId: Hashable {}
-private struct CancelSearchId: Hashable {}
-
-let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
-  switch action {
-  case let .categoryButtonTapped(category):
-    guard category != state.pointOfInterestCategory else {
-      state.pointOfInterestCategory = nil
-      state.pointsOfInterest = []
-      return .cancel(id: CancelSearchId())
-    }
-
-    state.pointOfInterestCategory = category
-
-    let request = MKLocalSearch.Request()
-    request.pointOfInterestFilter = MKPointOfInterestFilter(including: [category])
-    if let region = state.region?.asMKCoordinateRegion {
-      request.region = region
-    }
-    return environment.localSearch
-      .search(request)
-      .catchToEffect()
-      .map(AppAction.localSearchResponse)
-      .cancellable(id: CancelSearchId(), cancelInFlight: true)
-
-  case .currentLocationButtonTapped:
-    guard environment.locationManager.locationServicesEnabled() else {
-      state.alert = "Location services are turned off."
-      return .none
-    }
-
-    switch environment.locationManager.authorizationStatus() {
-    case .notDetermined:
-      state.isRequestingCurrentLocation = true
-      return environment.locationManager
-        .requestWhenInUseAuthorization(id: LocationManagerId())
-        .fireAndForget()
-
-    case .restricted:
-      state.alert = "Please give us access to your location in settings."
-      return .none
-
-    case .denied:
-      state.alert = "Please give us access to your location in settings."
-      return .none
-
-    case .authorizedAlways, .authorizedWhenInUse:
-      return environment.locationManager
-        .requestLocation(id: LocationManagerId())
-        .fireAndForget()
-
-    @unknown default:
-      return .none
-    }
-
-  case .dismissAlertButtonTapped:
-    state.alert = nil
-    return .none
-
-  case let .localSearchResponse(.success(response)):
-    state.pointsOfInterest = response.mapItems.map { item in
-      PointOfInterest(
-        coordinate: item.placemark.coordinate,
-        subtitle: item.placemark.subtitle,
-        title: item.name
-      )
-    }
-    return .none
-
-  case .localSearchResponse(.failure):
-    state.alert = "Could not perform search. Please try again."
-    return .none
-
-  case .locationManager:
-    return .none
-
-  case .onAppear:
-    return environment.locationManager.create(id: LocationManagerId())
-      .map(AppAction.locationManager)
-
-  case let .updateRegion(region):
-    state.region = region
-
-    guard
-      let category = state.pointOfInterestCategory,
-      let region = state.region?.asMKCoordinateRegion
-    else { return .none }
-
-    let request = MKLocalSearch.Request()
-    request.pointOfInterestFilter = MKPointOfInterestFilter(including: [category])
-    request.region = region
-    return environment.localSearch
-      .search(request)
-      .catchToEffect()
-      .map(AppAction.localSearchResponse)
-      .cancellable(id: CancelSearchId(), cancelInFlight: true)
-  }
-}
-.combined(
-  with:
-    locationManagerReducer
-    .pullback(state: \.self, action: /AppAction.locationManager, environment: { $0 })
-)
-.debug()
-
-let locationManagerReducer = Reducer<AppState, LocationManagerClient.Action, AppEnvironment> {
-  state, action, environment in
-
-  switch action {
-  case .didChangeAuthorization(.authorizedAlways),
-    .didChangeAuthorization(.authorizedWhenInUse):
-    if state.isRequestingCurrentLocation {
-      return environment.locationManager
-        .requestLocation(id: LocationManagerId())
-        .fireAndForget()
-    }
-    return .none
-
-  case .didChangeAuthorization(.denied):
-    if state.isRequestingCurrentLocation {
-      state.alert = "Location makes this app better. Please consider giving us access."
-      state.isRequestingCurrentLocation = false
-    }
-    return .none
-
-  case let .didUpdateLocations(locations):
-    state.isRequestingCurrentLocation = false
-    guard let location = locations.first else { return .none }
-    state.region = CoordinateRegion(
-      center: location.coordinate,
-      span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-    )
-    return .none
-
-  default:
-    return .none
-  }
-}
 
 struct LocationManagerView: View {
   @Environment(\.colorScheme) var colorScheme
@@ -267,16 +92,6 @@ extension MKPointOfInterestCategory {
     default:
       return "N/A"
     }
-  }
-}
-
-extension PointOfInterest {
-  // NB: CLLocationCoordinate2D doesn't conform to Equatable
-  static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.coordinate.latitude == rhs.coordinate.latitude
-      && lhs.coordinate.longitude == rhs.coordinate.longitude
-      && lhs.subtitle == rhs.subtitle
-      && lhs.title == rhs.title
   }
 }
 

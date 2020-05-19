@@ -1,3 +1,4 @@
+import Core
 import LocalSearchClient
 import MapKit
 import SwiftUI
