@@ -94,11 +94,9 @@ extension LocationManagerClient {
           )
         }
         #endif
-        #if os(iOS) || targetEnvironment(macCatalyst)
         delegate.didUpdateLocations = {
           callback.send(.didUpdateLocations($0.map(Location.init(rawValue:))))
         }
-        #endif
         #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
         delegate.monitoringDidFailForRegionWithError = { region, error in
           callback.send(.monitoringDidFail(region: region.map(Region.init(rawValue:)), error: Error()))

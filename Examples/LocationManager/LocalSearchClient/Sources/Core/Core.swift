@@ -106,9 +106,15 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, ac
     switch environment.locationManager.authorizationStatus() {
     case .notDetermined:
       state.isRequestingCurrentLocation = true
+      #if os(macOS)
+      return environment.locationManager
+        .requestAlwaysAuthorization(id: LocationManagerId())
+        .fireAndForget()
+      #else
       return environment.locationManager
         .requestWhenInUseAuthorization(id: LocationManagerId())
         .fireAndForget()
+      #endif
 
     case .restricted:
       state.alert = "Please give us access to your location in settings."
