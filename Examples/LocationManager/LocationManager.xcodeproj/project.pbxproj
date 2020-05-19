@@ -29,8 +29,8 @@
 		CA7494862474A4F100B13019 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7494702474A4F100B13019 /* Models.swift */; };
 		CA7494872474A4F100B13019 /* Live.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7494712474A4F100B13019 /* Live.swift */; };
 		CA7494882474A4F100B13019 /* Live.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7494712474A4F100B13019 /* Live.swift */; };
-		CA7494892474A4F100B13019 /* LocationManagerCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7494722474A4F100B13019 /* LocationManagerCore.swift */; };
-		CA74948A2474A4F100B13019 /* LocationManagerCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7494722474A4F100B13019 /* LocationManagerCore.swift */; };
+		CA7494892474A4F100B13019 /* AppCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7494722474A4F100B13019 /* AppCore.swift */; };
+		CA74948A2474A4F100B13019 /* AppCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7494722474A4F100B13019 /* AppCore.swift */; };
 		CA7494A02474A5C800B13019 /* CommonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA74949F2474A5C800B13019 /* CommonTests.swift */; };
 		CA7494AF2474A65B00B13019 /* CommonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA74949F2474A5C800B13019 /* CommonTests.swift */; };
 		DCBBE4A624747E1700DF4AC4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DCBBE4A424747DCF00DF4AC4 /* Main.storyboard */; };
@@ -71,7 +71,7 @@
 		CA74946F2474A4F100B13019 /* Client.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Client.swift; sourceTree = "<group>"; };
 		CA7494702474A4F100B13019 /* Models.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		CA7494712474A4F100B13019 /* Live.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Live.swift; sourceTree = "<group>"; };
-		CA7494722474A4F100B13019 /* LocationManagerCore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationManagerCore.swift; sourceTree = "<group>"; };
+		CA7494722474A4F100B13019 /* AppCore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppCore.swift; sourceTree = "<group>"; };
 		CA7494952474A59000B13019 /* LocationManagerMobileTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LocationManagerMobileTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CA74949F2474A5C800B13019 /* CommonTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommonTests.swift; sourceTree = "<group>"; };
 		CA7494A52474A65400B13019 /* LocationManagerDesktopTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LocationManagerDesktopTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -171,8 +171,8 @@
 		CA74946A2474A4F100B13019 /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				CA7494722474A4F100B13019 /* AppCore.swift */,
 				CA74946C2474A4F100B13019 /* Helpers.swift */,
-				CA7494722474A4F100B13019 /* LocationManagerCore.swift */,
 				CA74946B2474A4F100B13019 /* MapView.swift */,
 				CA74946D2474A4F100B13019 /* LocalSearchClient */,
 			);
@@ -365,7 +365,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CA7494892474A4F100B13019 /* LocationManagerCore.swift in Sources */,
+				CA7494892474A4F100B13019 /* AppCore.swift in Sources */,
 				CA17CC0F24720BBA00BDDF11 /* SceneDelegate.swift in Sources */,
 				CA7494812474A4F100B13019 /* Mock.swift in Sources */,
 				CA7494832474A4F100B13019 /* Client.swift in Sources */,
@@ -381,7 +381,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CA74948A2474A4F100B13019 /* LocationManagerCore.swift in Sources */,
+				CA74948A2474A4F100B13019 /* AppCore.swift in Sources */,
 				CA17CCC224745B1000BDDF11 /* LocationManagerView.swift in Sources */,
 				CA7494822474A4F100B13019 /* Mock.swift in Sources */,
 				CA7494842474A4F100B13019 /* Client.swift in Sources */,
