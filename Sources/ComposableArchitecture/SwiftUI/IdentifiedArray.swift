@@ -123,13 +123,6 @@ where ID: Hashable {
       }
     }
   #else
-    /// Direct access to an element by its identifier.
-    ///
-    /// - Parameter id: The identifier of element to access. Must be a valid identifier for an
-    ///   element of the array and will _not_ insert elements that are not already in the array, or
-    ///   remove elements when passed `nil`. Use `append` or `insert(_:at:)` to insert elements. Use
-    ///   `remove(id:)` to remove an element by its identifier.
-    /// - Returns: The element.
     public subscript(id id: ID) -> Element? {
       // NB: `_read` crashes Xcode Preview compilation.
       get { self.dictionary[id] }
