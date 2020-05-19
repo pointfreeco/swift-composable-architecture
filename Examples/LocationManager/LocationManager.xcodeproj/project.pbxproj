@@ -31,12 +31,6 @@
 		CA7494882474A4F100B13019 /* Live.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7494712474A4F100B13019 /* Live.swift */; };
 		CA7494892474A4F100B13019 /* LocationManagerCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7494722474A4F100B13019 /* LocationManagerCore.swift */; };
 		CA74948A2474A4F100B13019 /* LocationManagerCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7494722474A4F100B13019 /* LocationManagerCore.swift */; };
-		CA74948B2474A4F100B13019 /* package.xcworkspace in Resources */ = {isa = PBXBuildFile; fileRef = CA7494752474A4F100B13019 /* package.xcworkspace */; };
-		CA74948C2474A4F100B13019 /* package.xcworkspace in Resources */ = {isa = PBXBuildFile; fileRef = CA7494752474A4F100B13019 /* package.xcworkspace */; };
-		CA74948D2474A4F100B13019 /* xcschememanagement.plist in Resources */ = {isa = PBXBuildFile; fileRef = CA7494792474A4F100B13019 /* xcschememanagement.plist */; };
-		CA74948E2474A4F100B13019 /* xcschememanagement.plist in Resources */ = {isa = PBXBuildFile; fileRef = CA7494792474A4F100B13019 /* xcschememanagement.plist */; };
-		CA74948F2474A4F100B13019 /* LocationManagerCore.xcscheme in Resources */ = {isa = PBXBuildFile; fileRef = CA74947C2474A4F100B13019 /* LocationManagerCore.xcscheme */; };
-		CA7494902474A4F100B13019 /* LocationManagerCore.xcscheme in Resources */ = {isa = PBXBuildFile; fileRef = CA74947C2474A4F100B13019 /* LocationManagerCore.xcscheme */; };
 		CA7494A02474A5C800B13019 /* CommonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA74949F2474A5C800B13019 /* CommonTests.swift */; };
 		CA7494AF2474A65B00B13019 /* CommonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA74949F2474A5C800B13019 /* CommonTests.swift */; };
 		DCBBE4A624747E1700DF4AC4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DCBBE4A424747DCF00DF4AC4 /* Main.storyboard */; };
@@ -78,9 +72,6 @@
 		CA7494702474A4F100B13019 /* Models.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		CA7494712474A4F100B13019 /* Live.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Live.swift; sourceTree = "<group>"; };
 		CA7494722474A4F100B13019 /* LocationManagerCore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationManagerCore.swift; sourceTree = "<group>"; };
-		CA7494752474A4F100B13019 /* package.xcworkspace */ = {isa = PBXFileReference; lastKnownFileType = wrapper.workspace; path = package.xcworkspace; sourceTree = "<group>"; };
-		CA7494792474A4F100B13019 /* xcschememanagement.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = xcschememanagement.plist; sourceTree = "<group>"; };
-		CA74947C2474A4F100B13019 /* LocationManagerCore.xcscheme */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = LocationManagerCore.xcscheme; sourceTree = "<group>"; };
 		CA7494952474A59000B13019 /* LocationManagerMobileTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LocationManagerMobileTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CA74949F2474A5C800B13019 /* CommonTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommonTests.swift; sourceTree = "<group>"; };
 		CA7494A52474A65400B13019 /* LocationManagerDesktopTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LocationManagerDesktopTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -180,11 +171,10 @@
 		CA74946A2474A4F100B13019 /* Common */ = {
 			isa = PBXGroup;
 			children = (
-				CA74946B2474A4F100B13019 /* MapView.swift */,
 				CA74946C2474A4F100B13019 /* Helpers.swift */,
-				CA74946D2474A4F100B13019 /* LocalSearchClient */,
 				CA7494722474A4F100B13019 /* LocationManagerCore.swift */,
-				CA7494732474A4F100B13019 /* .swiftpm */,
+				CA74946B2474A4F100B13019 /* MapView.swift */,
+				CA74946D2474A4F100B13019 /* LocalSearchClient */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -198,64 +188,6 @@
 				CA7494712474A4F100B13019 /* Live.swift */,
 			);
 			path = LocalSearchClient;
-			sourceTree = "<group>";
-		};
-		CA7494732474A4F100B13019 /* .swiftpm */ = {
-			isa = PBXGroup;
-			children = (
-				CA7494742474A4F100B13019 /* xcode */,
-			);
-			path = .swiftpm;
-			sourceTree = "<group>";
-		};
-		CA7494742474A4F100B13019 /* xcode */ = {
-			isa = PBXGroup;
-			children = (
-				CA7494752474A4F100B13019 /* package.xcworkspace */,
-				CA7494762474A4F100B13019 /* xcuserdata */,
-				CA74947A2474A4F100B13019 /* xcshareddata */,
-			);
-			path = xcode;
-			sourceTree = "<group>";
-		};
-		CA7494762474A4F100B13019 /* xcuserdata */ = {
-			isa = PBXGroup;
-			children = (
-				CA7494772474A4F100B13019 /* brandon.xcuserdatad */,
-			);
-			path = xcuserdata;
-			sourceTree = "<group>";
-		};
-		CA7494772474A4F100B13019 /* brandon.xcuserdatad */ = {
-			isa = PBXGroup;
-			children = (
-				CA7494782474A4F100B13019 /* xcschemes */,
-			);
-			path = brandon.xcuserdatad;
-			sourceTree = "<group>";
-		};
-		CA7494782474A4F100B13019 /* xcschemes */ = {
-			isa = PBXGroup;
-			children = (
-				CA7494792474A4F100B13019 /* xcschememanagement.plist */,
-			);
-			path = xcschemes;
-			sourceTree = "<group>";
-		};
-		CA74947A2474A4F100B13019 /* xcshareddata */ = {
-			isa = PBXGroup;
-			children = (
-				CA74947B2474A4F100B13019 /* xcschemes */,
-			);
-			path = xcshareddata;
-			sourceTree = "<group>";
-		};
-		CA74947B2474A4F100B13019 /* xcschemes */ = {
-			isa = PBXGroup;
-			children = (
-				CA74947C2474A4F100B13019 /* LocationManagerCore.xcscheme */,
-			);
-			path = xcschemes;
 			sourceTree = "<group>";
 		};
 		CA7494962474A59000B13019 /* CommonTests */ = {
@@ -399,10 +331,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CA74948D2474A4F100B13019 /* xcschememanagement.plist in Resources */,
 				CA17CC1324720BBB00BDDF11 /* Assets.xcassets in Resources */,
-				CA74948B2474A4F100B13019 /* package.xcworkspace in Resources */,
-				CA74948F2474A4F100B13019 /* LocationManagerCore.xcscheme in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -410,11 +339,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CA7494902474A4F100B13019 /* LocationManagerCore.xcscheme in Resources */,
-				CA74948C2474A4F100B13019 /* package.xcworkspace in Resources */,
 				DCBBE4A624747E1700DF4AC4 /* Main.storyboard in Resources */,
 				CA17CCC424745B1000BDDF11 /* Assets.xcassets in Resources */,
-				CA74948E2474A4F100B13019 /* xcschememanagement.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
