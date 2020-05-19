@@ -383,7 +383,7 @@ final class DebugTests: XCTestCase {
       debugOutput(foo),
       """
       Foo(
-        foo: Foo()
+        foo: Foo(↩︎)
       )
       """
     )
