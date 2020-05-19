@@ -14,17 +14,15 @@
 		CA17CC3924720BEB00BDDF11 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = CA17CC3824720BEB00BDDF11 /* ComposableArchitecture */; };
 		CA17CCB42474574200BDDF11 /* LocalSearchClient in Frameworks */ = {isa = PBXBuildFile; productRef = CA17CCB32474574200BDDF11 /* LocalSearchClient */; };
 		CA17CCB62474582000BDDF11 /* ComposableCoreLocation in Frameworks */ = {isa = PBXBuildFile; productRef = CA17CCB52474582000BDDF11 /* ComposableCoreLocation */; };
-		CA17CCB8247459E600BDDF11 /* Core in Frameworks */ = {isa = PBXBuildFile; productRef = CA17CCB7247459E600BDDF11 /* Core */; };
 		CA17CCC024745B1000BDDF11 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CCBF24745B1000BDDF11 /* AppDelegate.swift */; };
 		CA17CCC224745B1000BDDF11 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CCC124745B1000BDDF11 /* ContentView.swift */; };
 		CA17CCC424745B1000BDDF11 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA17CCC324745B1000BDDF11 /* Assets.xcassets */; };
-		CA17CCC724745B1000BDDF11 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA17CCC624745B1000BDDF11 /* Preview Assets.xcassets */; };
-		CA17CCCA24745B1000BDDF11 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CA17CCC824745B1000BDDF11 /* Main.storyboard */; };
 		CA17CCD624745B1000BDDF11 /* LocationManagerDesktopTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CCD524745B1000BDDF11 /* LocationManagerDesktopTests.swift */; };
-		CA17CCDF24745B1A00BDDF11 /* Core in Frameworks */ = {isa = PBXBuildFile; productRef = CA17CCDE24745B1A00BDDF11 /* Core */; };
 		CA17CCE124745B1A00BDDF11 /* LocalSearchClient in Frameworks */ = {isa = PBXBuildFile; productRef = CA17CCE024745B1A00BDDF11 /* LocalSearchClient */; };
 		CA17CCE324745B1A00BDDF11 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = CA17CCE224745B1A00BDDF11 /* ComposableArchitecture */; };
 		CA17CCE524745B1A00BDDF11 /* ComposableCoreLocation in Frameworks */ = {isa = PBXBuildFile; productRef = CA17CCE424745B1A00BDDF11 /* ComposableCoreLocation */; };
+		CA749466247462B200B13019 /* LocationManagerCore in Frameworks */ = {isa = PBXBuildFile; productRef = CA749465247462B200B13019 /* LocationManagerCore */; };
+		CA7494682474631200B13019 /* LocationManagerCore in Frameworks */ = {isa = PBXBuildFile; productRef = CA7494672474631200B13019 /* LocationManagerCore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,8 +55,6 @@
 		CA17CCBF24745B1000BDDF11 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CA17CCC124745B1000BDDF11 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		CA17CCC324745B1000BDDF11 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		CA17CCC624745B1000BDDF11 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		CA17CCC924745B1000BDDF11 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		CA17CCCB24745B1000BDDF11 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CA17CCCC24745B1000BDDF11 /* LocationManagerDesktop.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LocationManagerDesktop.entitlements; sourceTree = "<group>"; };
 		CA17CCD124745B1000BDDF11 /* LocationManagerDesktopTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LocationManagerDesktopTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -71,8 +67,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CA7494682474631200B13019 /* LocationManagerCore in Frameworks */,
 				CA17CCB62474582000BDDF11 /* ComposableCoreLocation in Frameworks */,
-				CA17CCB8247459E600BDDF11 /* Core in Frameworks */,
 				CA17CC3924720BEB00BDDF11 /* ComposableArchitecture in Frameworks */,
 				CA17CCB42474574200BDDF11 /* LocalSearchClient in Frameworks */,
 			);
@@ -89,7 +85,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CA17CCDF24745B1A00BDDF11 /* Core in Frameworks */,
+				CA749466247462B200B13019 /* LocationManagerCore in Frameworks */,
 				CA17CCE524745B1A00BDDF11 /* ComposableCoreLocation in Frameworks */,
 				CA17CCE124745B1A00BDDF11 /* LocalSearchClient in Frameworks */,
 				CA17CCE324745B1A00BDDF11 /* ComposableArchitecture in Frameworks */,
@@ -164,18 +160,8 @@
 				CA17CCBF24745B1000BDDF11 /* AppDelegate.swift */,
 				CA17CCC124745B1000BDDF11 /* ContentView.swift */,
 				CA17CCC324745B1000BDDF11 /* Assets.xcassets */,
-				CA17CCC824745B1000BDDF11 /* Main.storyboard */,
-				CA17CCC524745B1000BDDF11 /* Preview Content */,
 			);
 			path = LocationManagerDesktop;
-			sourceTree = "<group>";
-		};
-		CA17CCC524745B1000BDDF11 /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				CA17CCC624745B1000BDDF11 /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
 			sourceTree = "<group>";
 		};
 		CA17CCD424745B1000BDDF11 /* LocationManagerDesktopTests */ = {
@@ -207,7 +193,7 @@
 				CA17CC3824720BEB00BDDF11 /* ComposableArchitecture */,
 				CA17CCB32474574200BDDF11 /* LocalSearchClient */,
 				CA17CCB52474582000BDDF11 /* ComposableCoreLocation */,
-				CA17CCB7247459E600BDDF11 /* Core */,
+				CA7494672474631200B13019 /* LocationManagerCore */,
 			);
 			productName = LocationManager;
 			productReference = CA17CC0924720BBA00BDDF11 /* LocationManagerMobile.app */;
@@ -245,10 +231,10 @@
 			);
 			name = LocationManagerDesktop;
 			packageProductDependencies = (
-				CA17CCDE24745B1A00BDDF11 /* Core */,
 				CA17CCE024745B1A00BDDF11 /* LocalSearchClient */,
 				CA17CCE224745B1A00BDDF11 /* ComposableArchitecture */,
 				CA17CCE424745B1A00BDDF11 /* ComposableCoreLocation */,
+				CA749465247462B200B13019 /* LocationManagerCore */,
 			);
 			productName = LocationManagerDesktop;
 			productReference = CA17CCBD24745B1000BDDF11 /* LocationManagerDesktop.app */;
@@ -339,8 +325,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CA17CCCA24745B1000BDDF11 /* Main.storyboard in Resources */,
-				CA17CCC724745B1000BDDF11 /* Preview Assets.xcassets in Resources */,
 				CA17CCC424745B1000BDDF11 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -403,17 +387,6 @@
 			targetProxy = CA17CCD224745B1000BDDF11 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
-
-/* Begin PBXVariantGroup section */
-		CA17CCC824745B1000BDDF11 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				CA17CCC924745B1000BDDF11 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		CA17CC2624720BBB00BDDF11 /* Debug */ = {
@@ -615,7 +588,6 @@
 				CODE_SIGN_ENTITLEMENTS = LocationManagerDesktop/LocationManagerDesktop.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_ASSET_PATHS = "\"LocationManagerDesktop/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = LocationManagerDesktop/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -637,7 +609,6 @@
 				CODE_SIGN_ENTITLEMENTS = LocationManagerDesktop/LocationManagerDesktop.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_ASSET_PATHS = "\"LocationManagerDesktop/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = LocationManagerDesktop/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -759,14 +730,6 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableCoreLocation;
 		};
-		CA17CCB7247459E600BDDF11 /* Core */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Core;
-		};
-		CA17CCDE24745B1A00BDDF11 /* Core */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Core;
-		};
 		CA17CCE024745B1A00BDDF11 /* LocalSearchClient */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = LocalSearchClient;
@@ -778,6 +741,14 @@
 		CA17CCE424745B1A00BDDF11 /* ComposableCoreLocation */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableCoreLocation;
+		};
+		CA749465247462B200B13019 /* LocationManagerCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LocationManagerCore;
+		};
+		CA7494672474631200B13019 /* LocationManagerCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LocationManagerCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -1,5 +1,5 @@
 import Cocoa
-import Core
+import LocationManagerCore
 import ComposableArchitecture
 import SwiftUI
 

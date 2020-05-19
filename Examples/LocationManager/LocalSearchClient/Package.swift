@@ -15,8 +15,8 @@ let package = Package(
       name: "LocalSearchClient",
       targets: ["LocalSearchClient"]),
     .library(
-      name: "Core",
-      targets: ["Core"]),
+      name: "LocationManagerCore",
+      targets: ["LocationManagerCore"]),
   ],
   dependencies: [
     .package(path: "../../../")
@@ -26,10 +26,10 @@ let package = Package(
       name: "LocalSearchClient",
       dependencies: ["ComposableArchitecture"]),
     .target(
-      name: "Core",
+      name: "LocationManagerCore",
       dependencies: ["ComposableArchitecture", "ComposableCoreLocation", "LocalSearchClient"]),
     .testTarget(
-      name: "CoreTests",
-      dependencies: ["Core"]),
+      name: "LocationManagerCoreTests",
+      dependencies: ["LocationManagerCore"]),
   ]
 )

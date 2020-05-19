@@ -1,7 +1,7 @@
 import Combine
 import ComposableArchitecture
 import ComposableCoreLocation
-import Core
+import LocationManagerCore
 import LocalSearchClient
 import MapKit
 import SwiftUI
@@ -66,31 +66,6 @@ struct LocationManagerView: View {
         Alert(title: Text(alert.title))
       }
       .onAppear { viewStore.send(.onAppear) }
-    }
-  }
-}
-
-struct AppAlert: Identifiable {
-  var title: String
-
-  var id: String { self.title }
-}
-
-extension MKPointOfInterestCategory {
-  fileprivate var displayName: String {
-    switch self {
-    case .cafe:
-      return "Cafe"
-    case .museum:
-      return "Museum"
-    case .nightlife:
-      return "Nightlife"
-    case .park:
-      return "Park"
-    case .restaurant:
-      return "Restaurant"
-    default:
-      return "N/A"
     }
   }
 }
