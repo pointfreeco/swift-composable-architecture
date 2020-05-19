@@ -1,7 +1,9 @@
 import Combine
 import SwiftUI
 
-/// A `ViewStore` is an object that can observe state changes and send actions from a SwiftUI view.
+/// A `ViewStore` is an object that can observe state changes and send actions. They are most
+/// commonly used in views, such as SwiftUI views, UIView or UIViewController, but they can be
+/// used anywhere it makes sense to observe state and send actions.
 ///
 /// In SwiftUI applications, a `ViewStore` is accessed most commonly using the `WithViewStore` view.
 /// It can be initialized with a store and a closure that is handed a view store and must return a
