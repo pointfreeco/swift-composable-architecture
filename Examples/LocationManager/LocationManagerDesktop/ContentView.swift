@@ -58,39 +58,13 @@ struct LocationManagerView: View {
 
 struct ContentView_Previews: PreviewProvider {
   static var previews: some View {
-    // NB: CLLocationManager mostly does not work in SwiftUI previews, so we provide a mock
-    //     client that has all authorization allowed and mocks the device's current location
-    //     to Brooklyn, NY.
-    let mockLocation = Location(
-      altitude: 0,
-      coordinate: CLLocationCoordinate2D(latitude: 40.6501, longitude: -73.94958),
-      course: 0,
-      courseAccuracy: 0,
-      floor: nil,
-      horizontalAccuracy: 0,
-      speed: 0,
-      speedAccuracy: 0,
-      timestamp: Date(timeIntervalSince1970: 1_234_567_890),
-      verticalAccuracy: 0
-    )
-    let locationManagerSubject = PassthroughSubject<LocationManagerClient.Action, Never>()
-    let locationManager = LocationManagerClient.mock(
-      authorizationStatus: { .authorizedAlways },
-      create: { _ in locationManagerSubject.eraseToEffect() },
-      locationServicesEnabled: { true },
-      requestAlwaysAuthorization: { _ in .fireAndForget {} },
-      requestLocation: { _ in
-        .fireAndForget { locationManagerSubject.send(.didUpdateLocations([mockLocation])) }
-      }
-    )
-
     let appView = LocationManagerView(
       store: Store(
         initialState: AppState(),
         reducer: appReducer,
         environment: AppEnvironment(
           localSearch: .live,
-          locationManager: locationManager
+          locationManager: .live
         )
       )
     )
