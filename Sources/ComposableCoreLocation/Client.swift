@@ -39,7 +39,7 @@ public struct LocationManagerClient {
     case didUpdateHeading(newHeading: Heading)
     #endif
     case didUpdateLocations([Location])
-    #if os(iOS)
+    #if os(macOS)
     case didUpdateTo(newLocation: Location, oldLocation: Location)
     #endif
     #if os(iOS) || targetEnvironment(macCatalyst)

@@ -50,18 +50,47 @@ extension LocationManagerClient {
         }
         #endif
         #if os(iOS) || targetEnvironment(macCatalyst)
-        delegate.didUpdateLocations = {
-          callback.send(.didUpdateLocations($0.map(Location.init(rawValue:))))
-        }
-        #endif
-        #if os(iOS) || targetEnvironment(macCatalyst)
         delegate.didRangeBeaconsSatisfyingConstraint = { beacons, constraint in
           callback.send(
             .didRange(beacons: beacons.map(Beacon.init(rawValue:)), beaconConstraint: constraint)
           )
         }
         #endif
-        // TODO: rest of delegate methods
+        #if os(iOS) || targetEnvironment(macCatalyst)
+        delegate.didResumeLocationUpdates = {
+          callback.send(.didResumeLocationUpdates)
+        }
+        #endif
+        #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+        delegate.didStartMonitoringForRegion = { region in
+          callback.send(.didStartMonitoring(region: Region(rawValue: region)))
+        }
+        #endif
+        #if os(iOS) || os(watchOS) || targetEnvironment(macCatalyst)
+        delegate.didUpdateHeading = { heading in
+          callback.send(.didUpdateHeading(newHeading: Heading(rawValue: heading)))
+        }
+        #endif
+        #if os(macOS)
+        delegate.didUpdateToLocationFromLocation = { newLocation, oldLocation in
+          callback.send(
+            .didUpdateTo(
+              newLocation: Location(rawValue: newLocation),
+              oldLocation: Location(rawValue: oldLocation)
+            )
+          )
+        }
+        #endif
+        #if os(iOS) || targetEnvironment(macCatalyst)
+        delegate.didUpdateLocations = {
+          callback.send(.didUpdateLocations($0.map(Location.init(rawValue:))))
+        }
+        #endif
+        #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+        delegate.monitoringDidFailForRegionWithError = { region, error in
+          callback.send(.monitoringDidFail(region: region.map(Region.init(rawValue:)), error: Error()))
+        }
+        #endif
         #if os(iOS) || targetEnvironment(macCatalyst)
         delegate.didVisit = { visit in
           callback.send(.didVisit(Visit(visit: visit)))
