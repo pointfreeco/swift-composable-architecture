@@ -9,7 +9,11 @@
     /// implementations for all of the endpoints that you expect your test to need access to.
     ///
     /// This allows you to test an even deeper property of your features: that they use only
-    /// the location manager endpoints that you specify and nothing else.
+    /// the location manager endpoints that you specify and nothing else. This can be useful
+    /// as a measurement of just how complex a particular test is. Tests that need to stub
+    /// many endpoints are in some sense more complicated than tests that only need to stub a
+    /// few endpoints. It's not necessarily a bad thing to stub many endpoints, sometimes it's
+    /// needed.
     ///
     /// As an example, to create a mock client that simulates a location manager that has already
     /// authorized access to location, and when a location is requested it immediately responds
