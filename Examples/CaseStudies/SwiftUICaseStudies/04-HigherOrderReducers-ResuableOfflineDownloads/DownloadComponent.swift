@@ -130,7 +130,7 @@ extension Reducer {
         case .downloadClient(.success(.response)):
           state.mode = .downloaded
           state.alert = nil
-          return .cancel(id: ThrottleId(id: state.id))
+          return .none
 
         case let .downloadClient(.success(.updateProgress(progress))):
           state.mode = .downloading(progress: progress)
@@ -139,17 +139,13 @@ extension Reducer {
         case .downloadClient(.failure):
           state.mode = .notDownloaded
           state.alert = nil
-          return .cancel(id: ThrottleId(id: state.id))
+          return .none
         }
       }
       .pullback(state: state, action: action, environment: environment),
       self
     )
   }
-}
-
-private struct ThrottleId<ID>: Hashable where ID: Hashable {
-  var id: ID
 }
 
 private let deleteAlert = DownloadAlert(
