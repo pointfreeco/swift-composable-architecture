@@ -119,9 +119,7 @@ struct ContentView_Previews: PreviewProvider {
       locationServicesEnabled: { true },
       requestLocation: { _ in
         .fireAndForget { locationManagerSubject.send(.didUpdateLocations([mockLocation])) }
-      },
-      requestWhenInUseAuthorization: { _ in .fireAndForget {} }
-    )
+      })
 
     let appView = LocationManagerView(
       store: Store(
