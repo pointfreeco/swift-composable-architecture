@@ -46,7 +46,7 @@ public struct Beacon: Equatable {
     self.timestamp = timestamp
     self.uuid = uuid
   }
-  
+
   public static func == (lhs: Self, rhs: Self) -> Bool {
     return lhs.accuracy == rhs.accuracy
       && lhs.major == rhs.major

@@ -3,9 +3,9 @@ import ComposableArchitecture
 import ComposableCoreLocation
 import CoreLocation
 import LocalSearchClient
+import LocationManagerCore
 import MapKit
 import XCTest
-import LocationManagerCore
 
 class LocationManagerTests: XCTestCase {
   func testRequestLocation_Allow() {
@@ -14,39 +14,39 @@ class LocationManagerTests: XCTestCase {
     let locationManagerSubject = PassthroughSubject<LocationManagerClient.Action, Never>()
 
     #if os(iOS)
-    let store = TestStore(
-      initialState: AppState(),
-      reducer: appReducer,
-      environment: AppEnvironment(
-        localSearch: .mock(),
-        locationManager: .mock(
-          authorizationStatus: { .notDetermined },
-          create: { _ in locationManagerSubject.eraseToEffect() },
-          locationServicesEnabled: { true },
-          requestLocation: { _ in .fireAndForget { didRequestLocation = true } },
-          requestWhenInUseAuthorization: { _ in
-            .fireAndForget { didRequestInUseAuthorization = true }
-          }
+      let store = TestStore(
+        initialState: AppState(),
+        reducer: appReducer,
+        environment: AppEnvironment(
+          localSearch: .mock(),
+          locationManager: .mock(
+            authorizationStatus: { .notDetermined },
+            create: { _ in locationManagerSubject.eraseToEffect() },
+            locationServicesEnabled: { true },
+            requestLocation: { _ in .fireAndForget { didRequestLocation = true } },
+            requestWhenInUseAuthorization: { _ in
+              .fireAndForget { didRequestInUseAuthorization = true }
+            }
+          )
         )
       )
-    )
     #elseif os(macOS)
-    let store = TestStore(
-      initialState: AppState(),
-      reducer: appReducer,
-      environment: AppEnvironment(
-        localSearch: .mock(),
-        locationManager: .mock(
-          authorizationStatus: { .notDetermined },
-          create: { _ in locationManagerSubject.eraseToEffect() },
-          locationServicesEnabled: { true },
-          requestAlwaysAuthorization: { _ in
-            .fireAndForget { didRequestInUseAuthorization = true }
-          },
-          requestLocation: { _ in .fireAndForget { didRequestLocation = true } }
+      let store = TestStore(
+        initialState: AppState(),
+        reducer: appReducer,
+        environment: AppEnvironment(
+          localSearch: .mock(),
+          locationManager: .mock(
+            authorizationStatus: { .notDetermined },
+            create: { _ in locationManagerSubject.eraseToEffect() },
+            locationServicesEnabled: { true },
+            requestAlwaysAuthorization: { _ in
+              .fireAndForget { didRequestInUseAuthorization = true }
+            },
+            requestLocation: { _ in .fireAndForget { didRequestLocation = true } }
+          )
         )
       )
-    )
     #endif
 
     let currentLocation = Location(
@@ -105,37 +105,37 @@ class LocationManagerTests: XCTestCase {
     let locationManagerSubject = PassthroughSubject<LocationManagerClient.Action, Never>()
 
     #if os(iOS)
-    let store = TestStore(
-      initialState: AppState(),
-      reducer: appReducer,
-      environment: AppEnvironment(
-        localSearch: .mock(),
-        locationManager: .mock(
-          authorizationStatus: { .notDetermined },
-          create: { _ in locationManagerSubject.eraseToEffect() },
-          locationServicesEnabled: { true },
-          requestWhenInUseAuthorization: { _ in
-            .fireAndForget { didRequestInUseAuthorization = true }
-          }
+      let store = TestStore(
+        initialState: AppState(),
+        reducer: appReducer,
+        environment: AppEnvironment(
+          localSearch: .mock(),
+          locationManager: .mock(
+            authorizationStatus: { .notDetermined },
+            create: { _ in locationManagerSubject.eraseToEffect() },
+            locationServicesEnabled: { true },
+            requestWhenInUseAuthorization: { _ in
+              .fireAndForget { didRequestInUseAuthorization = true }
+            }
+          )
         )
       )
-    )
     #elseif os(macOS)
-    let store = TestStore(
-      initialState: AppState(),
-      reducer: appReducer,
-      environment: AppEnvironment(
-        localSearch: .mock(),
-        locationManager: .mock(
-          authorizationStatus: { .notDetermined },
-          create: { _ in locationManagerSubject.eraseToEffect() },
-          locationServicesEnabled: { true },
-          requestAlwaysAuthorization: { _ in
-            .fireAndForget { didRequestInUseAuthorization = true }
-          }
+      let store = TestStore(
+        initialState: AppState(),
+        reducer: appReducer,
+        environment: AppEnvironment(
+          localSearch: .mock(),
+          locationManager: .mock(
+            authorizationStatus: { .notDetermined },
+            create: { _ in locationManagerSubject.eraseToEffect() },
+            locationServicesEnabled: { true },
+            requestAlwaysAuthorization: { _ in
+              .fireAndForget { didRequestInUseAuthorization = true }
+            }
+          )
         )
       )
-    )
     #endif
 
     store.assert(

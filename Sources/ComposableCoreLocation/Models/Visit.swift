@@ -30,14 +30,14 @@ public struct Visit: Equatable {
     horizontalAccuracy: CLLocationAccuracy
   ) {
     self.rawValue = nil
-    
+
     self.arrivalDate = arrivalDate
     self.coordinate = coordinate
     self.departureDate = departureDate
     self.horizontalAccuracy = horizontalAccuracy
   }
 
-  public static func ==(lhs: Self, rhs: Self) -> Bool {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.arrivalDate == rhs.arrivalDate
       && lhs.coordinate.latitude == rhs.coordinate.latitude
       && lhs.coordinate.longitude == rhs.coordinate.longitude

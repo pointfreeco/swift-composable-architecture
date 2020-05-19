@@ -3,9 +3,9 @@ import MapKit
 import SwiftUI
 
 #if os(macOS)
-public typealias ViewRepresentable = NSViewRepresentable
+  public typealias ViewRepresentable = NSViewRepresentable
 #elseif os(iOS)
-public typealias ViewRepresentable = UIViewRepresentable
+  public typealias ViewRepresentable = UIViewRepresentable
 #endif
 
 public struct MapView: ViewRepresentable {
@@ -21,23 +21,23 @@ public struct MapView: ViewRepresentable {
   }
 
   #if os(macOS)
-  public func makeNSView(context: Context) -> MKMapView {
-    self.makeView(context: context)
-  }
+    public func makeNSView(context: Context) -> MKMapView {
+      self.makeView(context: context)
+    }
   #elseif os(iOS)
-  public func makeUIView(context: Context) -> MKMapView {
-    self.makeView(context: context)
-  }
+    public func makeUIView(context: Context) -> MKMapView {
+      self.makeView(context: context)
+    }
   #endif
 
   #if os(macOS)
-  public func updateNSView(_ mapView: MKMapView, context: NSViewRepresentableContext<MapView>) {
-    self.updateView(mapView: mapView, delegate: context.coordinator)
-  }
+    public func updateNSView(_ mapView: MKMapView, context: NSViewRepresentableContext<MapView>) {
+      self.updateView(mapView: mapView, delegate: context.coordinator)
+    }
   #elseif os(iOS)
-  public func updateUIView(_ mapView: MKMapView, context: Context) {
-    self.updateView(mapView: mapView, delegate: context.coordinator)
-  }
+    public func updateUIView(_ mapView: MKMapView, context: Context) {
+      self.updateView(mapView: mapView, delegate: context.coordinator)
+    }
   #endif
 
   public func makeCoordinator() -> MapViewCoordinator {

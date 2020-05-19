@@ -1,8 +1,8 @@
 import Combine
 import ComposableArchitecture
 import ComposableCoreLocation
-import LocationManagerCore
 import LocalSearchClient
+import LocationManagerCore
 import MapKit
 import SwiftUI
 
@@ -17,7 +17,7 @@ struct LocationManagerView: View {
           pointsOfInterest: viewStore.pointsOfInterest,
           region: viewStore.binding(get: { $0.region }, send: AppAction.updateRegion)
         )
-          .edgesIgnoringSafeArea([.all])
+        .edgesIgnoringSafeArea([.all])
 
         VStack(alignment: .center) {
           Spacer()

@@ -1,8 +1,8 @@
 import Combine
 import ComposableArchitecture
 import ComposableCoreLocation
-import LocationManagerCore
 import LocalSearchClient
+import LocationManagerCore
 import MapKit
 import SwiftUI
 

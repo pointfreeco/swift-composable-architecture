@@ -105,10 +105,6 @@ public struct LocationManagerClient {
     @available(watchOS, unavailable)
     case didPauseLocationUpdates
 
-    #if os(iOS) || targetEnvironment(macCatalyst)
-    case didRange(beacons: [Beacon], beaconConstraint: CLBeaconIdentityConstraint)
-    #endif
-
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     case didResumeLocationUpdates
@@ -122,7 +118,7 @@ public struct LocationManagerClient {
     case didUpdateHeading(newHeading: Heading)
 
     case didUpdateLocations([Location])
-    
+
     @available(macCatalyst, deprecated: 13)
     @available(tvOS, unavailable)
     case didUpdateTo(newLocation: Location, oldLocation: Location)
@@ -150,7 +146,8 @@ public struct LocationManagerClient {
 
   @available(macOS, unavailable)
   @available(tvOS, unavailable)
-  var dismissHeadingCalibrationDisplay: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+  var dismissHeadingCalibrationDisplay: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError()
+  }
 
   @available(macOS, unavailable)
   @available(tvOS, unavailable)
@@ -178,7 +175,7 @@ public struct LocationManagerClient {
 
   @available(tvOS, unavailable)
   var requestAlwaysAuthorization: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
-  
+
   var requestLocation: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
 
   @available(macOS, unavailable)
@@ -190,11 +187,15 @@ public struct LocationManagerClient {
 
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
-  var startMonitoringForRegion: (AnyHashable, Region) -> Effect<Never, Never> = { _, _ in fatalError() }
+  var startMonitoringForRegion: (AnyHashable, Region) -> Effect<Never, Never> = { _, _ in
+    fatalError()
+  }
 
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
-  var startMonitoringSignificantLocationChanges: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+  var startMonitoringSignificantLocationChanges: (AnyHashable) -> Effect<Never, Never> = { _ in
+    fatalError()
+  }
 
   @available(macOS, unavailable)
   @available(tvOS, unavailable)
@@ -206,11 +207,15 @@ public struct LocationManagerClient {
 
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
-  var stopMonitoringForRegion: (AnyHashable, Region) -> Effect<Never, Never> = { _, _ in fatalError() }
+  var stopMonitoringForRegion: (AnyHashable, Region) -> Effect<Never, Never> = { _, _ in
+    fatalError()
+  }
 
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
-  var stopMonitoringSignificantLocationChanges: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+  var stopMonitoringSignificantLocationChanges: (AnyHashable) -> Effect<Never, Never> = { _ in
+    fatalError()
+  }
 
   @available(macOS, unavailable)
   @available(tvOS, unavailable)
@@ -378,22 +383,26 @@ extension LocationManagerClient {
     public static func == (lhs: Self, rhs: Self) -> Bool {
       var isEqual = true
       #if os(iOS) || targetEnvironment(macCatalyst) || os(watchOS)
-      isEqual = isEqual
-        && lhs.activityType == rhs.activityType
-        && lhs.allowsBackgroundLocationUpdates == rhs.allowsBackgroundLocationUpdates
+        isEqual =
+          isEqual
+          && lhs.activityType == rhs.activityType
+          && lhs.allowsBackgroundLocationUpdates == rhs.allowsBackgroundLocationUpdates
       #endif
-      isEqual = isEqual
+      isEqual =
+        isEqual
         && lhs.desiredAccuracy == rhs.desiredAccuracy
         && lhs.distanceFilter == rhs.distanceFilter
       #if os(iOS) || targetEnvironment(macCatalyst) || os(watchOS)
-      isEqual = isEqual
-        && lhs.headingFilter == rhs.headingFilter
-        && lhs.headingOrientation == rhs.headingOrientation
+        isEqual =
+          isEqual
+          && lhs.headingFilter == rhs.headingFilter
+          && lhs.headingOrientation == rhs.headingOrientation
       #endif
       #if os(iOS) || targetEnvironment(macCatalyst)
-      isEqual = isEqual
-        && lhs.pausesLocationUpdatesAutomatically == rhs.pausesLocationUpdatesAutomatically
-        && lhs.showsBackgroundLocationIndicator == rhs.showsBackgroundLocationIndicator
+        isEqual =
+          isEqual
+          && lhs.pausesLocationUpdatesAutomatically == rhs.pausesLocationUpdatesAutomatically
+          && lhs.showsBackgroundLocationIndicator == rhs.showsBackgroundLocationIndicator
       #endif
       return isEqual
     }

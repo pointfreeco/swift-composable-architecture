@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import ComposableCoreLocation
-import MapKit
 import LocalSearchClient
+import MapKit
 
 public struct PointOfInterest: Equatable {
   public let coordinate: CLLocationCoordinate2D
@@ -107,13 +107,13 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, ac
     case .notDetermined:
       state.isRequestingCurrentLocation = true
       #if os(macOS)
-      return environment.locationManager
-        .requestAlwaysAuthorization(id: LocationManagerId())
-        .fireAndForget()
+        return environment.locationManager
+          .requestAlwaysAuthorization(id: LocationManagerId())
+          .fireAndForget()
       #else
-      return environment.locationManager
-        .requestWhenInUseAuthorization(id: LocationManagerId())
-        .fireAndForget()
+        return environment.locationManager
+          .requestWhenInUseAuthorization(id: LocationManagerId())
+          .fireAndForget()
       #endif
 
     case .restricted:
@@ -183,7 +183,8 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, ac
 )
 .debug()
 
-private let locationManagerReducer = Reducer<AppState, LocationManagerClient.Action, AppEnvironment> {
+private let locationManagerReducer = Reducer<AppState, LocationManagerClient.Action, AppEnvironment>
+{
   state, action, environment in
 
   switch action {
