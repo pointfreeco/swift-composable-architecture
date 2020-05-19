@@ -373,6 +373,22 @@ final class DebugTests: XCTestCase {
     )
   }
 
+  func testRecursiveOutput() {
+    class Foo {
+      var foo: Foo?
+    }
+    let foo = Foo()
+    foo.foo = foo
+    XCTAssertEqual(
+      debugOutput(foo),
+      """
+      Foo(
+        foo: Foo(↩︎)
+      )
+      """
+    )
+  }
+
   func testEffectOutput() {
     //    XCTAssertEqual(
     //      Effect<Int, Never>(value: 42)

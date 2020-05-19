@@ -161,6 +161,15 @@
       file: StaticString = #file,
       line: UInt = #line
     ) {
+      assert(steps, file: file, line: line)
+    }
+
+    /// Asserts against an array of actions.
+    public func assert(
+      _ steps: [Step],
+      file: StaticString = #file,
+      line: UInt = #line
+    ) {
       var receivedActions: [Action] = []
 
       var cancellables: [AnyCancellable] = []

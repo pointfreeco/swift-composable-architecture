@@ -89,14 +89,14 @@ where ID: Hashable {
     _modify { yield &self.dictionary[self.ids[position]]! }
   }
 
-  /// Direct access to an element by its identifier.
-  ///
-  /// - Parameter id: The identifier of element to access. Must be a valid identifier for an element
-  ///   of the array and will _not_ insert elements that are not already in the array, or remove
-  ///   elements when passed `nil`. Use `append` or `insert(_:at:)` to insert elements. Use
-  ///   `remove(id:)` to remove an element by its identifier.
-  /// - Returns: The element.
   #if DEBUG
+    /// Direct access to an element by its identifier.
+    ///
+    /// - Parameter id: The identifier of element to access. Must be a valid identifier for an
+    ///   element of the array and will _not_ insert elements that are not already in the array, or
+    ///   remove elements when passed `nil`. Use `append` or `insert(_:at:)` to insert elements. Use
+    ///   `remove(id:)` to remove an element by its identifier.
+    /// - Returns: The element.
     public subscript(id id: ID) -> Element? {
       get { self.dictionary[id] }
       set {
