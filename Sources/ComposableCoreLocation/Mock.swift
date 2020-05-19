@@ -2,7 +2,9 @@ import CoreLocation
 import ComposableArchitecture
 
 extension LocationManagerClient {
-  #if os(iOS) || targetEnvironment(macCatalyst)
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
   public static func mock(
     authorizationStatus: @escaping () -> CLAuthorizationStatus = { fatalError() },
     create: @escaping (_ id: AnyHashable) -> Effect<Action, Never> = { _ in fatalError() },
@@ -15,8 +17,8 @@ extension LocationManagerClient {
     locationServicesEnabled: @escaping () -> Bool = { fatalError() },
     maximumRegionMonitoringDistance: @escaping (AnyHashable) -> CLLocationDistance = { _ in fatalError() },
     monitoredRegions: @escaping (AnyHashable) -> Set<Region> = { _ in fatalError() },
-    requestLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
     requestAlwaysAuthorization: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
+    requestLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
     requestWhenInUseAuthorization: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
     significantLocationChangeMonitoringAvailable: @escaping () -> Bool = {  fatalError() },
     startMonitoringSignificantLocationChanges: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
@@ -43,8 +45,8 @@ extension LocationManagerClient {
       locationServicesEnabled: locationServicesEnabled,
       maximumRegionMonitoringDistance: maximumRegionMonitoringDistance,
       monitoredRegions: monitoredRegions,
-      requestLocation: requestLocation,
       requestAlwaysAuthorization: requestAlwaysAuthorization,
+      requestLocation: requestLocation,
       requestWhenInUseAuthorization: requestWhenInUseAuthorization,
       significantLocationChangeMonitoringAvailable: significantLocationChangeMonitoringAvailable,
       startMonitoringForRegion: startMonitoringForRegion,
@@ -60,7 +62,11 @@ extension LocationManagerClient {
       update: update
     )
   }
-  #elseif os(watchOS)
+
+  @available(iOS, unavailable)
+  @available(macCatalyst, unavailable)
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
   public static func mock(
     authorizationStatus: @escaping () -> CLAuthorizationStatus = { fatalError() },
     create: @escaping (_ id: AnyHashable) -> Effect<Action, Never> = { _ in fatalError() },
@@ -70,8 +76,8 @@ extension LocationManagerClient {
     headingAvailable: @escaping () -> Bool = { fatalError() },
     location: @escaping (AnyHashable) -> Location = { _ in fatalError() },
     locationServicesEnabled: @escaping () -> Bool = { fatalError() },
-    requestLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
     requestAlwaysAuthorization: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
+    requestLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
     requestWhenInUseAuthorization: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
     startUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
     startUpdatingHeading: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
@@ -88,8 +94,8 @@ extension LocationManagerClient {
       headingAvailable: headingAvailable,
       location: location,
       locationServicesEnabled: locationServicesEnabled,
-      requestLocation: requestLocation,
       requestAlwaysAuthorization: requestAlwaysAuthorization,
+      requestLocation: requestLocation,
       requestWhenInUseAuthorization: requestWhenInUseAuthorization,
       startUpdatingLocation: startUpdatingLocation,
       startUpdatingHeading: startUpdatingHeading,
@@ -98,7 +104,11 @@ extension LocationManagerClient {
       update: update
     )
   }
-  #elseif os(tvOS)
+
+  @available(iOS, unavailable)
+  @available(macCatalyst, unavailable)
+  @available(macOS, unavailable)
+  @available(watchOS, unavailable)
   public static func mock(
     authorizationStatus: @escaping () -> CLAuthorizationStatus = { fatalError() },
     create: @escaping (_ id: AnyHashable) -> Effect<Action, Never> = { _ in fatalError() },
@@ -122,7 +132,11 @@ extension LocationManagerClient {
       update: update
     )
   }
-  #elseif os(macOS)
+
+  @available(iOS, unavailable)
+  @available(macCatalyst, unavailable)
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
   public static func mock(
     authorizationStatus: @escaping () -> CLAuthorizationStatus = { fatalError() },
     create: @escaping (_ id: AnyHashable) -> Effect<Action, Never> = { _ in fatalError() },
@@ -132,16 +146,14 @@ extension LocationManagerClient {
     locationServicesEnabled: @escaping () -> Bool = { fatalError() },
     maximumRegionMonitoringDistance: @escaping (AnyHashable) -> CLLocationDistance = { _ in fatalError() },
     monitoredRegions: @escaping (AnyHashable) -> Set<Region> = { _ in fatalError() },
-    requestLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
     requestAlwaysAuthorization: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
+    requestLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
     significantLocationChangeMonitoringAvailable: @escaping () -> Bool = { fatalError() },
     startMonitoringForRegion: @escaping (AnyHashable, Region) -> Effect<Never, Never> = { _, _ in fatalError() },
     startMonitoringSignificantLocationChanges: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
     startUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
     stopMonitoringForRegion: @escaping (AnyHashable, Region) -> Effect<Never, Never> = { _, _ in fatalError() },
     stopMonitoringSignificantLocationChanges: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
-    startUpdatingHeading: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
-    stopUpdatingHeading: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
     stopUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
     update: @escaping (_ id: AnyHashable, _ properties: Properties) -> Effect<Never, Never> = { _, _ in fatalError() }
   ) -> Self {
@@ -154,19 +166,16 @@ extension LocationManagerClient {
       locationServicesEnabled: locationServicesEnabled,
       maximumRegionMonitoringDistance: maximumRegionMonitoringDistance,
       monitoredRegions: monitoredRegions,
-      requestLocation: requestLocation,
       requestAlwaysAuthorization: requestAlwaysAuthorization,
+      requestLocation: requestLocation,
       significantLocationChangeMonitoringAvailable: significantLocationChangeMonitoringAvailable,
       startMonitoringForRegion: startMonitoringForRegion,
       startMonitoringSignificantLocationChanges: startMonitoringSignificantLocationChanges,
       startUpdatingLocation: startUpdatingLocation,
       stopMonitoringForRegion: stopMonitoringForRegion,
       stopMonitoringSignificantLocationChanges: stopMonitoringSignificantLocationChanges,
-      startUpdatingHeading: startUpdatingHeading,
-      stopUpdatingHeading: stopUpdatingHeading,
       stopUpdatingLocation: stopUpdatingLocation,
       update: update
     )
   }
-  #endif
 }

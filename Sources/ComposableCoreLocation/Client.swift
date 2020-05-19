@@ -77,47 +77,64 @@ public struct LocationManagerClient {
   // TODO: rename to DelegateAction?
   public enum Action: Equatable {
     case didChangeAuthorization(CLAuthorizationStatus)
-    #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     case didDetermineState(CLRegionState, region: Region)
-    #endif
-    #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     case didEnterRegion(Region)
-    #endif
-    #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     case didExitRegion(Region)
-    #endif
-    #if os(iOS) || targetEnvironment(macCatalyst)
+
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     case didFailRanging(beaconConstraint: CLBeaconIdentityConstraint, error: Error)
-    #endif
+
     case didFailWithError(Error)
-    #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     case didFinishDeferredUpdatesWithError(Error)
-    #endif
-    #if os(iOS) || targetEnvironment(macCatalyst)
+
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     case didPauseLocationUpdates
-    #endif
+
     #if os(iOS) || targetEnvironment(macCatalyst)
     case didRange(beacons: [Beacon], beaconConstraint: CLBeaconIdentityConstraint)
     #endif
-    #if os(iOS) || targetEnvironment(macCatalyst)
+
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     case didResumeLocationUpdates
-    #endif
-    #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     case didStartMonitoring(region: Region)
-    #endif
-    #if os(iOS) || os(watchOS) || targetEnvironment(macCatalyst)
+
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
     case didUpdateHeading(newHeading: Heading)
-    #endif
+
     case didUpdateLocations([Location])
-    #if os(macOS)
+    
+    @available(macCatalyst, deprecated: 13)
+    @available(tvOS, unavailable)
     case didUpdateTo(newLocation: Location, oldLocation: Location)
-    #endif
-    #if os(iOS) || targetEnvironment(macCatalyst)
+
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     case didVisit(Visit)
-    #endif
-    #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     case monitoringDidFail(region: Region?, error: Error)
-    #endif
   }
 
   public struct Error: Swift.Error, Equatable {
@@ -125,118 +142,137 @@ public struct LocationManagerClient {
     public init() {}
   }
 
-  public var authorizationStatus: () -> CLAuthorizationStatus
-  var create: (_ id: AnyHashable) -> Effect<Action, Never>
-  var destroy: (AnyHashable) -> Effect<Never, Never>
-  #if os(iOS) || os(watchOS) || targetEnvironment(macCatalyst)
-  var dismissHeadingCalibrationDisplay: (AnyHashable) -> Effect<Never, Never>
-  #endif
-  #if os(iOS) || os(watchOS) || targetEnvironment(macCatalyst)
-  var heading: (AnyHashable) -> Heading?
-  #endif
-  #if os(iOS) || os(macOS) || os(watchOS) || targetEnvironment(macCatalyst)
-  public var headingAvailable: () -> Bool
-  #endif
-  #if os(iOS) || targetEnvironment(macCatalyst)
-  public var isRangingAvailable: () -> Bool
-  #endif
-  var location: (AnyHashable) -> Location
-  public var locationServicesEnabled: () -> Bool
-  #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
-  var maximumRegionMonitoringDistance: (AnyHashable) -> CLLocationDistance
-  #endif
-  #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
-  var monitoredRegions: (AnyHashable) -> Set<Region>
-  #endif
-  var requestLocation: (AnyHashable) -> Effect<Never, Never>
-  #if os(iOS) || os(macOS) || os(watchOS) || targetEnvironment(macCatalyst)
-  var requestAlwaysAuthorization: (AnyHashable) -> Effect<Never, Never>
-  #endif
-  #if os(iOS) || os(tvOS) || os(watchOS) || targetEnvironment(macCatalyst)
-  var requestWhenInUseAuthorization: (AnyHashable) -> Effect<Never, Never>
-  #endif
-  #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
-  public var significantLocationChangeMonitoringAvailable: () -> Bool
-  #endif
-  #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
-  var startMonitoringForRegion: (AnyHashable, Region) -> Effect<Never, Never>
-  #endif
-  #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
-  var startMonitoringSignificantLocationChanges: (AnyHashable) -> Effect<Never, Never>
-  #endif
-  #if os(iOS) || targetEnvironment(macCatalyst)
-  var startMonitoringVisits: (AnyHashable) -> Effect<Never, Never>
-  #endif
-  #if os(iOS) || os(macOS) || os(watchOS) || targetEnvironment(macCatalyst)
-  var startUpdatingLocation: (AnyHashable) -> Effect<Never, Never>
-  #endif
-  #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
-  var stopMonitoringForRegion: (AnyHashable, Region) -> Effect<Never, Never>
-  #endif
-  #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
-  var stopMonitoringSignificantLocationChanges: (AnyHashable) -> Effect<Never, Never>
-  #endif
-  #if os(iOS) || targetEnvironment(macCatalyst)
-  var stopMonitoringVisits: (AnyHashable) -> Effect<Never, Never>
-  #endif
-  #if os(iOS) || os(macOS) || os(watchOS) || targetEnvironment(macCatalyst)
-  var startUpdatingHeading: (AnyHashable) -> Effect<Never, Never>
-  #endif
-  #if os(iOS) || os(macOS) || os(watchOS) || targetEnvironment(macCatalyst)
-  var stopUpdatingHeading: (AnyHashable) -> Effect<Never, Never>
-  #endif
-  var stopUpdatingLocation: (AnyHashable) -> Effect<Never, Never>
-  var update: (_ id: AnyHashable, _ properties: Properties) -> Effect<Never, Never>
+  public var authorizationStatus: () -> CLAuthorizationStatus = { fatalError() }
+
+  var create: (AnyHashable) -> Effect<Action, Never> = { _ in fatalError() }
+
+  var destroy: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
+  var dismissHeadingCalibrationDisplay: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
+  var heading: (AnyHashable) -> Heading? = { _ in fatalError() }
+
+  @available(tvOS, unavailable)
+  public var headingAvailable: () -> Bool = { fatalError() }
+
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
+  public var isRangingAvailable: () -> Bool = { fatalError() }
+
+  var location: (AnyHashable) -> Location = { _ in fatalError() }
+
+  public var locationServicesEnabled: () -> Bool = { fatalError() }
+
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
+  var maximumRegionMonitoringDistance: (AnyHashable) -> CLLocationDistance = { _ in fatalError() }
+
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
+  var monitoredRegions: (AnyHashable) -> Set<Region> = { _ in fatalError() }
+
+  @available(tvOS, unavailable)
+  var requestAlwaysAuthorization: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+  
+  var requestLocation: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+
+  @available(macOS, unavailable)
+  var requestWhenInUseAuthorization: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
+  public var significantLocationChangeMonitoringAvailable: () -> Bool = { fatalError() }
+
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
+  var startMonitoringForRegion: (AnyHashable, Region) -> Effect<Never, Never> = { _, _ in fatalError() }
+
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
+  var startMonitoringSignificantLocationChanges: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
+  var startMonitoringVisits: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+
+  @available(tvOS, unavailable)
+  var startUpdatingLocation: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
+  var stopMonitoringForRegion: (AnyHashable, Region) -> Effect<Never, Never> = { _, _ in fatalError() }
+
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
+  var stopMonitoringSignificantLocationChanges: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
+  var stopMonitoringVisits: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
+  var startUpdatingHeading: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
+  var stopUpdatingHeading: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+
+  var stopUpdatingLocation: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+
+  var update: (AnyHashable, Properties) -> Effect<Never, Never> = { _, _ in fatalError() }
 
   // TODO: finish public methods
 
-  public func create(id: AnyHashable) -> Effect<Action, Never> {
-    self.create(id)
-  }
+  public func create(id: AnyHashable) -> Effect<Action, Never> { self.create(id) }
 
-  public func destroy(id: AnyHashable) -> Effect<Never, Never> {
-    self.destroy(id)
-  }
+  public func destroy(id: AnyHashable) -> Effect<Never, Never> { self.destroy(id) }
 
-  public func requestLocation(id: AnyHashable) -> Effect<Never, Never> {
-    self.requestLocation(id)
-  }
+  public func requestLocation(id: AnyHashable) -> Effect<Never, Never> { self.requestLocation(id) }
 
-  #if os(iOS) || os(macOS) || os(watchOS) || targetEnvironment(macCatalyst)
+  @available(tvOS, unavailable)
   public func requestAlwaysAuthorization(id: AnyHashable) -> Effect<Never, Never> {
     self.requestAlwaysAuthorization(id)
   }
-  #endif
 
-  #if os(iOS) || os(tvOS) || os(watchOS) || targetEnvironment(macCatalyst)
+  @available(macOS, unavailable)
   public func requestWhenInUseAuthorization(id: AnyHashable) -> Effect<Never, Never> {
     self.requestWhenInUseAuthorization(id)
   }
-  #endif
 
-  #if os(iOS) || targetEnvironment(macCatalyst)
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
   public func startMonitoringVisits(id: AnyHashable) -> Effect<Never, Never> {
     self.startMonitoringVisits(id)
   }
-  #endif
 
-  #if os(iOS) || os(macOS) || os(watchOS) || targetEnvironment(macCatalyst)
+  @available(tvOS, unavailable)
   public func startUpdatingLocation(id: AnyHashable) -> Effect<Never, Never> {
     self.startUpdatingLocation(id)
   }
-  #endif
 
-  #if os(iOS) || targetEnvironment(macCatalyst)
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
   public func stopMonitoringVisits(id: AnyHashable) -> Effect<Never, Never> {
     self.stopMonitoringVisits(id)
   }
-  #endif
 
   public func stopUpdatingLocation(id: AnyHashable) -> Effect<Never, Never> {
     self.stopUpdatingLocation(id)
   }
 
-  #if os(iOS) || targetEnvironment(macCatalyst)
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
   public func update(
     id: AnyHashable,
     activityType: CLActivityType? = nil,
@@ -262,7 +298,10 @@ public struct LocationManagerClient {
       )
     )
   }
-  #elseif os(macOS) || os(tvOS)
+
+  @available(iOS, unavailable)
+  @available(macCatalyst, unavailable)
+  @available(watchOS, unavailable)
   public func update(
     id: AnyHashable,
     desiredAccuracy: CLLocationAccuracy? = nil,
@@ -276,7 +315,11 @@ public struct LocationManagerClient {
       )
     )
   }
-  #elseif os(watchOS)
+
+  @available(iOS, unavailable)
+  @available(macCatalyst, unavailable)
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
   public func update(
     id: AnyHashable,
     activityType: CLActivityType? = nil,
@@ -298,105 +341,75 @@ public struct LocationManagerClient {
       )
     )
   }
-  #endif
-}
-
-extension LocationManagerClient {
-  init() {
-    self.authorizationStatus = { fatalError() }
-    self.create = { _ in fatalError() }
-    self.destroy = { _ in fatalError() }
-    #if os(iOS) || os(watchOS) || targetEnvironment(macCatalyst)
-    self.dismissHeadingCalibrationDisplay = { _ in fatalError() }
-    #endif
-    #if os(iOS) || os(watchOS) || targetEnvironment(macCatalyst)
-    self.heading = { _ in fatalError() }
-    #endif
-    #if os(iOS) || os(macOS) || os(watchOS) || targetEnvironment(macCatalyst)
-    self.headingAvailable = { fatalError() }
-    #endif
-    #if os(iOS) || targetEnvironment(macCatalyst)
-    self.isRangingAvailable = { fatalError() }
-    #endif
-    self.location = { _ in fatalError() }
-    self.locationServicesEnabled = { fatalError() }
-    #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
-    self.maximumRegionMonitoringDistance = { _ in fatalError() }
-    #endif
-    #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
-    self.monitoredRegions = { _ in fatalError() }
-    #endif
-    self.requestLocation = { _ in fatalError() }
-    #if os(iOS) || os(macOS) || os(watchOS) || targetEnvironment(macCatalyst)
-    self.requestAlwaysAuthorization = { _ in fatalError() }
-    #endif
-    #if os(iOS) || os(tvOS) || os(watchOS) || targetEnvironment(macCatalyst)
-    self.requestWhenInUseAuthorization = { _ in fatalError() }
-    #endif
-    #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
-    self.significantLocationChangeMonitoringAvailable = { fatalError() }
-    #endif
-    #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
-    self.startMonitoringForRegion = { _, _ in fatalError() }
-    #endif
-    #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
-    self.startMonitoringSignificantLocationChanges = { _ in fatalError() }
-    #endif
-    #if os(iOS) || targetEnvironment(macCatalyst)
-    self.startMonitoringVisits = { _ in fatalError() }
-    #endif
-    #if os(iOS) || os(macOS) || os(watchOS) || targetEnvironment(macCatalyst)
-    self.startUpdatingLocation = { _ in fatalError() }
-    #endif
-    #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
-    self.stopMonitoringForRegion = { _, _ in fatalError() }
-    #endif
-    #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
-    self.stopMonitoringSignificantLocationChanges = { _ in fatalError() }
-    #endif
-    #if os(iOS) || targetEnvironment(macCatalyst)
-    self.stopMonitoringVisits = { _ in fatalError() }
-    #endif
-    #if os(iOS) || os(macOS) || os(watchOS) || targetEnvironment(macCatalyst)
-    self.startUpdatingHeading = { _ in fatalError() }
-    #endif
-    #if os(iOS) || os(macOS) || os(watchOS) || targetEnvironment(macCatalyst)
-    self.stopUpdatingHeading = { _ in fatalError() }
-    #endif
-    self.stopUpdatingLocation = { _ in fatalError() }
-    self.update = { _, _ in fatalError() }
-  }
 }
 
 extension LocationManagerClient {
   public struct Properties: Equatable {
-    #if os(iOS) || os(watchOS) || targetEnvironment(macCatalyst)
-    let activityType: CLActivityType?
-    let allowsBackgroundLocationUpdates: Bool?
-    #endif
-    #if os(iOS) || os(macOS) || os(tvOS) || os(watchOS) || targetEnvironment(macCatalyst)
-    let desiredAccuracy: CLLocationAccuracy?
-    let distanceFilter: CLLocationDistance?
-    #if os(iOS) || os(watchOS) || targetEnvironment(macCatalyst)
-    var headingFilter: CLLocationDegrees?
-    var headingOrientation: CLDeviceOrientation?
-    #endif
-    #endif
-    #if os(iOS) || targetEnvironment(macCatalyst)
-    let pausesLocationUpdatesAutomatically: Bool?
-    let showsBackgroundLocationIndicator: Bool?
-    #endif
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    var activityType: CLActivityType? = nil
 
-    #if os(iOS) || targetEnvironment(macCatalyst)
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    var allowsBackgroundLocationUpdates: Bool? = nil
+
+    var desiredAccuracy: CLLocationAccuracy? = nil
+
+    var distanceFilter: CLLocationDistance? = nil
+
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    var headingFilter: CLLocationDegrees? = nil
+
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    var headingOrientation: CLDeviceOrientation? = nil
+
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    var pausesLocationUpdatesAutomatically: Bool? = nil
+
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    var showsBackgroundLocationIndicator: Bool? = nil
+
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+      var isEqual = true
+      #if os(iOS) || targetEnvironment(macCatalyst) || os(watchOS)
+      isEqual = isEqual
+        && lhs.activityType == rhs.activityType
+        && lhs.allowsBackgroundLocationUpdates == rhs.allowsBackgroundLocationUpdates
+      #endif
+      isEqual = isEqual
+        && lhs.desiredAccuracy == rhs.desiredAccuracy
+        && lhs.distanceFilter == rhs.distanceFilter
+      #if os(iOS) || targetEnvironment(macCatalyst) || os(watchOS)
+      isEqual = isEqual
+        && lhs.headingFilter == rhs.headingFilter
+        && lhs.headingOrientation == rhs.headingOrientation
+      #endif
+      #if os(iOS) || targetEnvironment(macCatalyst)
+      isEqual = isEqual
+        && lhs.pausesLocationUpdatesAutomatically == rhs.pausesLocationUpdatesAutomatically
+        && lhs.showsBackgroundLocationIndicator == rhs.showsBackgroundLocationIndicator
+      #endif
+      return isEqual
+    }
+
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     public init(
-      activityType: CLActivityType?,
-      allowsBackgroundLocationUpdates: Bool?,
-      desiredAccuracy: CLLocationAccuracy?,
-      distanceFilter: CLLocationDistance?,
-      headingFilter: CLLocationDegrees?,
-      headingOrientation: CLDeviceOrientation?,
-      pausesLocationUpdatesAutomatically: Bool?,
-      showsBackgroundLocationIndicator: Bool?
+      activityType: CLActivityType? = nil,
+      allowsBackgroundLocationUpdates: Bool? = nil,
+      desiredAccuracy: CLLocationAccuracy? = nil,
+      distanceFilter: CLLocationDistance? = nil,
+      headingFilter: CLLocationDegrees? = nil,
+      headingOrientation: CLDeviceOrientation? = nil,
+      pausesLocationUpdatesAutomatically: Bool? = nil,
+      showsBackgroundLocationIndicator: Bool? = nil
     ) {
       self.activityType = activityType
       self.allowsBackgroundLocationUpdates = allowsBackgroundLocationUpdates
@@ -407,22 +420,29 @@ extension LocationManagerClient {
       self.pausesLocationUpdatesAutomatically = pausesLocationUpdatesAutomatically
       self.showsBackgroundLocationIndicator = showsBackgroundLocationIndicator
     }
-    #elseif os(macOS) || os(tvOS)
+
+    @available(iOS, unavailable)
+    @available(macCatalyst, unavailable)
+    @available(watchOS, unavailable)
     public init(
-      desiredAccuracy: CLLocationAccuracy?,
-      distanceFilter: CLLocationDistance?
+      desiredAccuracy: CLLocationAccuracy? = nil,
+      distanceFilter: CLLocationDistance? = nil
     ) {
       self.desiredAccuracy = desiredAccuracy
       self.distanceFilter = distanceFilter
     }
-    #elseif os(watchOS)
+
+    @available(iOS, unavailable)
+    @available(macCatalyst, unavailable)
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
     public init(
-      activityType: CLActivityType?,
-      allowsBackgroundLocationUpdates: Bool?,
-      desiredAccuracy: CLLocationAccuracy?,
-      distanceFilter: CLLocationDistance?,
-      headingFilter: CLLocationDegrees?,
-      headingOrientation: CLDeviceOrientation?
+      activityType: CLActivityType? = nil,
+      allowsBackgroundLocationUpdates: Bool? = nil,
+      desiredAccuracy: CLLocationAccuracy? = nil,
+      distanceFilter: CLLocationDistance? = nil,
+      headingFilter: CLLocationDegrees? = nil,
+      headingOrientation: CLDeviceOrientation? = nil
     ) {
       self.activityType = activityType
       self.allowsBackgroundLocationUpdates = allowsBackgroundLocationUpdates
@@ -431,6 +451,5 @@ extension LocationManagerClient {
       self.headingFilter = headingFilter
       self.headingOrientation = headingOrientation
     }
-    #endif
   }
 }

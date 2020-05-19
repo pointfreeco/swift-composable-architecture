@@ -1,6 +1,8 @@
 import CoreLocation
 
-#if os(iOS) || os(macOS) || os(watchOS) || targetEnvironment(macCatalyst)
+@available(iOS 3, macCatalyst 13, watchOS 2, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
 public struct Heading: Equatable {
   public let rawValue: CLHeading?
 
@@ -54,4 +56,3 @@ public struct Heading: Equatable {
       && lhs.z == rhs.z
   }
 }
-#endif

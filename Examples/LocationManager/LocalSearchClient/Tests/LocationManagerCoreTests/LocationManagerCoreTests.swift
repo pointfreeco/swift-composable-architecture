@@ -7,13 +7,13 @@ import MapKit
 import XCTest
 import LocationManagerCore
 
-#if os(iOS)
 class LocationManagerTests: XCTestCase {
   func testRequestLocation_Allow() {
     var didRequestInUseAuthorization = false
     var didRequestLocation = false
     let locationManagerSubject = PassthroughSubject<LocationManagerClient.Action, Never>()
 
+    #if os(iOS)
     let store = TestStore(
       initialState: AppState(),
       reducer: appReducer,
@@ -30,6 +30,24 @@ class LocationManagerTests: XCTestCase {
         )
       )
     )
+    #elseif os(macOS)
+    let store = TestStore(
+      initialState: AppState(),
+      reducer: appReducer,
+      environment: AppEnvironment(
+        localSearch: .mock(),
+        locationManager: .mock(
+          authorizationStatus: { .notDetermined },
+          create: { _ in locationManagerSubject.eraseToEffect() },
+          locationServicesEnabled: { true },
+          requestAlwaysAuthorization: { _ in
+            .fireAndForget { didRequestInUseAuthorization = true }
+          },
+          requestLocation: { _ in .fireAndForget { didRequestLocation = true } }
+        )
+      )
+    )
+    #endif
 
     let currentLocation = Location(
       altitude: 0,
@@ -86,6 +104,7 @@ class LocationManagerTests: XCTestCase {
     var didRequestInUseAuthorization = false
     let locationManagerSubject = PassthroughSubject<LocationManagerClient.Action, Never>()
 
+    #if os(iOS)
     let store = TestStore(
       initialState: AppState(),
       reducer: appReducer,
@@ -101,6 +120,23 @@ class LocationManagerTests: XCTestCase {
         )
       )
     )
+    #elseif os(macOS)
+    let store = TestStore(
+      initialState: AppState(),
+      reducer: appReducer,
+      environment: AppEnvironment(
+        localSearch: .mock(),
+        locationManager: .mock(
+          authorizationStatus: { .notDetermined },
+          create: { _ in locationManagerSubject.eraseToEffect() },
+          locationServicesEnabled: { true },
+          requestAlwaysAuthorization: { _ in
+            .fireAndForget { didRequestInUseAuthorization = true }
+          }
+        )
+      )
+    )
+    #endif
 
     store.assert(
       .send(.onAppear),
@@ -219,4 +255,3 @@ class LocationManagerTests: XCTestCase {
     )
   }
 }
-#endif

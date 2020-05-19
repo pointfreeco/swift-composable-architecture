@@ -1,6 +1,9 @@
 import CoreLocation
 
-#if os(iOS) || targetEnvironment(macCatalyst)
+@available(iOS 8, macCatalyst 13, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 public struct Visit: Equatable {
   public let rawValue: CLVisit?
 
@@ -40,4 +43,3 @@ public struct Visit: Equatable {
       && lhs.horizontalAccuracy == rhs.horizontalAccuracy
   }
 }
-#endif
