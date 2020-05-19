@@ -45,12 +45,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		CA17CC0924720BBA00BDDF11 /* LocationManager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LocationManager.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CA17CC0924720BBA00BDDF11 /* LocationManagerMobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LocationManagerMobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CA17CC0E24720BBA00BDDF11 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		CA17CC1024720BBA00BDDF11 /* LocationManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManagerView.swift; sourceTree = "<group>"; };
 		CA17CC1224720BBB00BDDF11 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CA17CC1A24720BBB00BDDF11 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		CA17CC1F24720BBB00BDDF11 /* LocationManagerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LocationManagerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CA17CC1F24720BBB00BDDF11 /* LocationManagerMobileTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LocationManagerMobileTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CA17CC2324720BBB00BDDF11 /* LocationManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManagerTests.swift; sourceTree = "<group>"; };
 		CA17CCB22474572700BDDF11 /* LocalSearchClient */ = {isa = PBXFileReference; lastKnownFileType = text; path = LocalSearchClient; sourceTree = SOURCE_ROOT; };
 		CA17CCBD24745B1000BDDF11 /* LocationManagerDesktop.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LocationManagerDesktop.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -109,8 +109,9 @@
 		CA17CC0024720BBA00BDDF11 = {
 			isa = PBXGroup;
 			children = (
-				CA17CC0B24720BBA00BDDF11 /* LocationManager */,
-				CA17CC2224720BBB00BDDF11 /* LocationManagerTests */,
+				CA17CCB22474572700BDDF11 /* LocalSearchClient */,
+				CA17CC0B24720BBA00BDDF11 /* LocationManagerMobile */,
+				CA17CC2224720BBB00BDDF11 /* LocationManagerMobileTests */,
 				CA17CCBE24745B1000BDDF11 /* LocationManagerDesktop */,
 				CA17CCD424745B1000BDDF11 /* LocationManagerDesktopTests */,
 				CA17CC0A24720BBA00BDDF11 /* Products */,
@@ -121,32 +122,31 @@
 		CA17CC0A24720BBA00BDDF11 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				CA17CC0924720BBA00BDDF11 /* LocationManager.app */,
-				CA17CC1F24720BBB00BDDF11 /* LocationManagerTests.xctest */,
+				CA17CC0924720BBA00BDDF11 /* LocationManagerMobile.app */,
+				CA17CC1F24720BBB00BDDF11 /* LocationManagerMobileTests.xctest */,
 				CA17CCBD24745B1000BDDF11 /* LocationManagerDesktop.app */,
 				CA17CCD124745B1000BDDF11 /* LocationManagerDesktopTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		CA17CC0B24720BBA00BDDF11 /* LocationManager */ = {
+		CA17CC0B24720BBA00BDDF11 /* LocationManagerMobile */ = {
 			isa = PBXGroup;
 			children = (
-				CA17CCB22474572700BDDF11 /* LocalSearchClient */,
 				CA17CC1A24720BBB00BDDF11 /* Info.plist */,
 				CA17CC1024720BBA00BDDF11 /* LocationManagerView.swift */,
 				CA17CC0E24720BBA00BDDF11 /* SceneDelegate.swift */,
 				CA17CC1224720BBB00BDDF11 /* Assets.xcassets */,
 			);
-			path = LocationManager;
+			path = LocationManagerMobile;
 			sourceTree = "<group>";
 		};
-		CA17CC2224720BBB00BDDF11 /* LocationManagerTests */ = {
+		CA17CC2224720BBB00BDDF11 /* LocationManagerMobileTests */ = {
 			isa = PBXGroup;
 			children = (
 				CA17CC2324720BBB00BDDF11 /* LocationManagerTests.swift */,
 			);
-			path = LocationManagerTests;
+			path = LocationManagerMobileTests;
 			sourceTree = "<group>";
 		};
 		CA17CC3724720BEB00BDDF11 /* Frameworks */ = {
@@ -190,9 +190,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		CA17CC0824720BBA00BDDF11 /* LocationManager */ = {
+		CA17CC0824720BBA00BDDF11 /* LocationManagerMobile */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CA17CC2824720BBB00BDDF11 /* Build configuration list for PBXNativeTarget "LocationManager" */;
+			buildConfigurationList = CA17CC2824720BBB00BDDF11 /* Build configuration list for PBXNativeTarget "LocationManagerMobile" */;
 			buildPhases = (
 				CA17CC0524720BBA00BDDF11 /* Sources */,
 				CA17CC0624720BBA00BDDF11 /* Frameworks */,
@@ -202,7 +202,7 @@
 			);
 			dependencies = (
 			);
-			name = LocationManager;
+			name = LocationManagerMobile;
 			packageProductDependencies = (
 				CA17CC3824720BEB00BDDF11 /* ComposableArchitecture */,
 				CA17CCB32474574200BDDF11 /* LocalSearchClient */,
@@ -210,12 +210,12 @@
 				CA17CCB7247459E600BDDF11 /* Core */,
 			);
 			productName = LocationManager;
-			productReference = CA17CC0924720BBA00BDDF11 /* LocationManager.app */;
+			productReference = CA17CC0924720BBA00BDDF11 /* LocationManagerMobile.app */;
 			productType = "com.apple.product-type.application";
 		};
-		CA17CC1E24720BBB00BDDF11 /* LocationManagerTests */ = {
+		CA17CC1E24720BBB00BDDF11 /* LocationManagerMobileTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CA17CC2B24720BBB00BDDF11 /* Build configuration list for PBXNativeTarget "LocationManagerTests" */;
+			buildConfigurationList = CA17CC2B24720BBB00BDDF11 /* Build configuration list for PBXNativeTarget "LocationManagerMobileTests" */;
 			buildPhases = (
 				CA17CC1B24720BBB00BDDF11 /* Sources */,
 				CA17CC1C24720BBB00BDDF11 /* Frameworks */,
@@ -226,9 +226,9 @@
 			dependencies = (
 				CA17CC2124720BBB00BDDF11 /* PBXTargetDependency */,
 			);
-			name = LocationManagerTests;
+			name = LocationManagerMobileTests;
 			productName = LocationManagerTests;
-			productReference = CA17CC1F24720BBB00BDDF11 /* LocationManagerTests.xctest */;
+			productReference = CA17CC1F24720BBB00BDDF11 /* LocationManagerMobileTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		CA17CCBC24745B1000BDDF11 /* LocationManagerDesktop */ = {
@@ -311,8 +311,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				CA17CC0824720BBA00BDDF11 /* LocationManager */,
-				CA17CC1E24720BBB00BDDF11 /* LocationManagerTests */,
+				CA17CC0824720BBA00BDDF11 /* LocationManagerMobile */,
+				CA17CC1E24720BBB00BDDF11 /* LocationManagerMobileTests */,
 				CA17CCBC24745B1000BDDF11 /* LocationManagerDesktop */,
 				CA17CCD024745B1000BDDF11 /* LocationManagerDesktopTests */,
 			);
@@ -394,7 +394,7 @@
 /* Begin PBXTargetDependency section */
 		CA17CC2124720BBB00BDDF11 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = CA17CC0824720BBA00BDDF11 /* LocationManager */;
+			target = CA17CC0824720BBA00BDDF11 /* LocationManagerMobile */;
 			targetProxy = CA17CC2024720BBB00BDDF11 /* PBXContainerItemProxy */;
 		};
 		CA17CCD324745B1000BDDF11 /* PBXTargetDependency */ = {
@@ -536,7 +536,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = LocationManager/Info.plist;
+				INFOPLIST_FILE = LocationManagerMobile/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -554,7 +554,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = LocationManager/Info.plist;
+				INFOPLIST_FILE = LocationManagerMobile/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -572,7 +572,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = LocationManager/Info.plist;
+				INFOPLIST_FILE = LocationManagerMobile/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -593,7 +593,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = LocationManager/Info.plist;
+				INFOPLIST_FILE = LocationManagerMobile/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -708,7 +708,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CA17CC2824720BBB00BDDF11 /* Build configuration list for PBXNativeTarget "LocationManager" */ = {
+		CA17CC2824720BBB00BDDF11 /* Build configuration list for PBXNativeTarget "LocationManagerMobile" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CA17CC2924720BBB00BDDF11 /* Debug */,
@@ -717,7 +717,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CA17CC2B24720BBB00BDDF11 /* Build configuration list for PBXNativeTarget "LocationManagerTests" */ = {
+		CA17CC2B24720BBB00BDDF11 /* Build configuration list for PBXNativeTarget "LocationManagerMobileTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CA17CC2C24720BBB00BDDF11 /* Debug */,

@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "CA17CC0824720BBA00BDDF11"
-               BuildableName = "LocationManager.app"
-               BlueprintName = "LocationManager"
+               BuildableName = "LocationManagerMobile.app"
+               BlueprintName = "LocationManagerMobile"
                ReferencedContainer = "container:LocationManager.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -33,8 +33,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "CA17CC1E24720BBB00BDDF11"
-               BuildableName = "LocationManagerTests.xctest"
-               BlueprintName = "LocationManagerTests"
+               BuildableName = "LocationManagerMobileTests.xctest"
+               BlueprintName = "LocationManagerMobileTests"
                ReferencedContainer = "container:LocationManager.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -55,8 +55,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "CA17CC0824720BBA00BDDF11"
-            BuildableName = "LocationManager.app"
-            BlueprintName = "LocationManager"
+            BuildableName = "LocationManagerMobile.app"
+            BlueprintName = "LocationManagerMobile"
             ReferencedContainer = "container:LocationManager.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -72,8 +72,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "CA17CC0824720BBA00BDDF11"
-            BuildableName = "LocationManager.app"
-            BlueprintName = "LocationManager"
+            BuildableName = "LocationManagerMobile.app"
+            BlueprintName = "LocationManagerMobile"
             ReferencedContainer = "container:LocationManager.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
