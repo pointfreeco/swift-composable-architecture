@@ -3,11 +3,13 @@ import ComposableArchitecture
 import CoreLocation
 
 extension LocationManagerClient {
-  public static let live = LocationManagerClient(
-    authorizationStatus: {
-      CLLocationManager.authorizationStatus()
-  },
-    create: { id in
+
+  public static let live: LocationManagerClient = { () -> LocationManagerClient in
+    var client = LocationManagerClient()
+
+    client.authorizationStatus = CLLocationManager.authorizationStatus
+
+    client.create = { id in
       Effect.run { callback in
         let manager = CLLocationManager()
         var delegate = LocationManagerDelegate()
@@ -20,7 +22,7 @@ extension LocationManagerClient {
         delegate.didUpdateLocations = {
           callback.send(.didUpdateLocations($0.map(Location.init(rawValue:))))
         }
-        #if !os(macOS)
+        #if os(iOS) || targetEnvironment(macCatalyst)
         delegate.didVisit = { visit in
           callback.send(.didVisit(Visit(visit: visit)))
         }
@@ -36,63 +38,95 @@ extension LocationManagerClient {
           dependencies[id] = nil
         }
       }
-  },
-    destroy: { id in
+    }
+
+    client.destroy = { id in
       .fireAndForget {
         dependencies[id] = nil
       }
-  },
-    locationServicesEnabled: {
-      CLLocationManager.locationServicesEnabled()
-  },
-    requestLocation: { id in
-      .fireAndForget {
-        dependencies[id]?.locationManager.requestLocation()
-      }
-  },
-    requestAlwaysAuthorization: { id in
+    }
+
+    client.locationServicesEnabled = CLLocationManager.locationServicesEnabled
+
+    client.requestLocation = { id in
+      .fireAndForget { dependencies[id]?.locationManager.requestLocation() }
+    }
+
+    #if os(iOS) || os(macOS) || os(watchOS) || targetEnvironment(macCatalyst)
+    client.requestAlwaysAuthorization = { id in
       .fireAndForget { dependencies[id]?.locationManager.requestAlwaysAuthorization() }
-  },
-    requestWhenInUseAuthorization: { id in
+    }
+    #endif
+
+    #if os(iOS) || os(tvOS) || os(watchOS) || targetEnvironment(macCatalyst)
+    client.requestWhenInUseAuthorization = { id in
       .fireAndForget { dependencies[id]?.locationManager.requestWhenInUseAuthorization() }
-  },
-    startMonitoringVisits: { id in
+    }
+    #endif
+
+    #if os(iOS) || targetEnvironment(macCatalyst)
+    client.startMonitoringVisits = { id in
       .fireAndForget { dependencies[id]?.locationManager.startMonitoringVisits() }
-  },
-    startUpdatingLocation: { id in
+    }
+    #endif
+
+    #if os(iOS) || os(macOS) || os(watchOS) || targetEnvironment(macCatalyst)
+    client.startUpdatingLocation = { id in
       .fireAndForget { dependencies[id]?.locationManager.startUpdatingLocation() }
-  },
-    stopMonitoringVisits: { id in
+    }
+    #endif
+
+    #if os(iOS) || targetEnvironment(macCatalyst)
+    client.stopMonitoringVisits = { id in
       .fireAndForget { dependencies[id]?.locationManager.stopMonitoringVisits() }
-  },
-    stopUpdatingLocation: { id in
+    }
+    #endif
+
+    client.stopUpdatingLocation = { id in
       .fireAndForget { dependencies[id]?.locationManager.stopUpdatingLocation() }
-  },
-    update: {
-      id, activityType, allowsBackgroundLocationUpdates, desiredAccuracy, distanceFilter,
-      pausesLocationUpdatesAutomatically, showsBackgroundLocationIndicator in
+    }
+
+    client.update = { id, properties in
       .fireAndForget {
         guard let manager = dependencies[id]?.locationManager else { return }
-        if let pausesLocationUpdatesAutomatically = pausesLocationUpdatesAutomatically {
-          manager.pausesLocationUpdatesAutomatically = pausesLocationUpdatesAutomatically
-        }
-        if let allowsBackgroundLocationUpdates = allowsBackgroundLocationUpdates {
-          manager.allowsBackgroundLocationUpdates = allowsBackgroundLocationUpdates
-        }
-        if let showsBackgroundLocationIndicator = showsBackgroundLocationIndicator {
-          manager.showsBackgroundLocationIndicator = showsBackgroundLocationIndicator
-        }
-        if let distanceFilter = distanceFilter {
-          manager.distanceFilter = distanceFilter
-        }
-        if let desiredAccuracy = desiredAccuracy {
-          manager.desiredAccuracy = desiredAccuracy
-        }
-        if let activityType = activityType {
+
+        #if os(iOS) || os(watchOS) || targetEnvironment(macCatalyst)
+        if let activityType = properties.activityType {
           manager.activityType = activityType
         }
+        if let allowsBackgroundLocationUpdates = properties.allowsBackgroundLocationUpdates {
+          manager.allowsBackgroundLocationUpdates = allowsBackgroundLocationUpdates
+        }
+        #endif
+        #if os(iOS) || os(macOS) || os(tvOS) || os(watchOS) || targetEnvironment(macCatalyst)
+        if let desiredAccuracy = properties.desiredAccuracy {
+          manager.desiredAccuracy = desiredAccuracy
+        }
+        if let distanceFilter = properties.distanceFilter {
+          manager.distanceFilter = distanceFilter
+        }
+        #endif
+        #if os(iOS) || os(watchOS) || targetEnvironment(macCatalyst)
+        if let headingFilter = properties.headingFilter {
+          manager.headingFilter = headingFilter
+        }
+        if let headingOrientation = properties.headingOrientation {
+          manager.headingOrientation = headingOrientation
+        }
+        #endif
+        #if os(iOS) || targetEnvironment(macCatalyst)
+        if let pausesLocationUpdatesAutomatically = properties.pausesLocationUpdatesAutomatically {
+          manager.pausesLocationUpdatesAutomatically = pausesLocationUpdatesAutomatically
+        }
+        if let showsBackgroundLocationIndicator = properties.showsBackgroundLocationIndicator {
+          manager.showsBackgroundLocationIndicator = showsBackgroundLocationIndicator
+        }
+        #endif
       }
-  })
+    }
+
+    return client
+  }()
 }
 
 private struct Dependencies {
@@ -106,7 +140,7 @@ private class LocationManagerDelegate: NSObject, CLLocationManagerDelegate {
   var didChangeAuthorization: (CLAuthorizationStatus) -> Void = { _ in }
   var didFailWithError: (Error) -> Void = { _ in }
   var didUpdateLocations: ([CLLocation]) -> Void = { _ in }
-  #if !os(macOS)
+  #if os(iOS) || targetEnvironment(macCatalyst)
   var didVisit: (CLVisit) -> Void = { _ in }
   #endif
 
@@ -124,7 +158,7 @@ private class LocationManagerDelegate: NSObject, CLLocationManagerDelegate {
     self.didUpdateLocations(locations)
   }
 
-  #if !os(macOS)
+  #if os(iOS) || targetEnvironment(macCatalyst)
   func locationManager(_ manager: CLLocationManager, didVisit visit: CLVisit) {
     self.didVisit(visit)
   }

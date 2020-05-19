@@ -15,9 +15,9 @@ let package = Package(
       name: "ComposableArchitecture",
       targets: ["ComposableArchitecture"]
     ),
-    .library(
-      name: "ComposableLocationManager",
-      targets: ["ComposableLocationManager"]
+    .library( 
+      name: "ComposableCoreLocation",
+      targets: ["ComposableCoreLocation"]
     ),
   ],
   dependencies: [
@@ -37,7 +37,7 @@ let package = Package(
       ]
     ),
     .target(
-      name: "ComposableLocationManager",
+      name: "ComposableCoreLocation",
       dependencies: [
         "ComposableArchitecture"
       ]
