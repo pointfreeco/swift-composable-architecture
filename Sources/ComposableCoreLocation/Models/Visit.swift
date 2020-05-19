@@ -1,6 +1,6 @@
 import CoreLocation
 
-/// A value type wrapper for `CLVisit`. This type is necessary so taht we can do equality checks
+/// A value type wrapper for `CLVisit`. This type is necessary so that we can do equality checks
 /// and write tests against its values.
 @available(iOS 8, macCatalyst 13, *)
 @available(macOS, unavailable)

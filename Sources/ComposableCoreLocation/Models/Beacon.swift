@@ -1,6 +1,6 @@
 import CoreLocation
 
-/// A value type wrapper for `CLBeacon`. This type is necessary so taht we can do equality checks
+/// A value type wrapper for `CLBeacon`. This type is necessary so that we can do equality checks
 /// and write tests against its values.
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
