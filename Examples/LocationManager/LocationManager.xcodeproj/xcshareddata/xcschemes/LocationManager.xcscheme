@@ -32,10 +32,10 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "CA17CC1E24720BBB00BDDF11"
-               BuildableName = "LocationManagerMobileTests.xctest"
-               BlueprintName = "LocationManagerMobileTests"
-               ReferencedContainer = "container:LocationManager.xcodeproj">
+               BlueprintIdentifier = "LocationManagerCoreTests"
+               BuildableName = "LocationManagerCoreTests"
+               BlueprintName = "LocationManagerCoreTests"
+               ReferencedContainer = "container:LocalSearchClient">
             </BuildableReference>
          </TestableReference>
       </Testables>

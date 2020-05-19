@@ -2,7 +2,6 @@ import Combine
 import ComposableArchitecture
 import ComposableCoreLocation
 import CoreLocation
-import LocalSearchClient
 import LocationManagerCore
 import MapKit
 import XCTest

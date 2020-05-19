@@ -11,12 +11,10 @@
 		CA17CC1124720BBA00BDDF11 /* LocationManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CC1024720BBA00BDDF11 /* LocationManagerView.swift */; };
 		CA17CC1324720BBB00BDDF11 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA17CC1224720BBB00BDDF11 /* Assets.xcassets */; };
 		CA17CC3924720BEB00BDDF11 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = CA17CC3824720BEB00BDDF11 /* ComposableArchitecture */; };
-		CA17CCB42474574200BDDF11 /* LocalSearchClient in Frameworks */ = {isa = PBXBuildFile; productRef = CA17CCB32474574200BDDF11 /* LocalSearchClient */; };
 		CA17CCB62474582000BDDF11 /* ComposableCoreLocation in Frameworks */ = {isa = PBXBuildFile; productRef = CA17CCB52474582000BDDF11 /* ComposableCoreLocation */; };
 		CA17CCC024745B1000BDDF11 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CCBF24745B1000BDDF11 /* AppDelegate.swift */; };
 		CA17CCC224745B1000BDDF11 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA17CCC124745B1000BDDF11 /* ContentView.swift */; };
 		CA17CCC424745B1000BDDF11 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA17CCC324745B1000BDDF11 /* Assets.xcassets */; };
-		CA17CCE124745B1A00BDDF11 /* LocalSearchClient in Frameworks */ = {isa = PBXBuildFile; productRef = CA17CCE024745B1A00BDDF11 /* LocalSearchClient */; };
 		CA17CCE324745B1A00BDDF11 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = CA17CCE224745B1A00BDDF11 /* ComposableArchitecture */; };
 		CA17CCE524745B1A00BDDF11 /* ComposableCoreLocation in Frameworks */ = {isa = PBXBuildFile; productRef = CA17CCE424745B1A00BDDF11 /* ComposableCoreLocation */; };
 		CA749466247462B200B13019 /* LocationManagerCore in Frameworks */ = {isa = PBXBuildFile; productRef = CA749465247462B200B13019 /* LocationManagerCore */; };
@@ -48,7 +46,6 @@
 				CA7494682474631200B13019 /* LocationManagerCore in Frameworks */,
 				CA17CCB62474582000BDDF11 /* ComposableCoreLocation in Frameworks */,
 				CA17CC3924720BEB00BDDF11 /* ComposableArchitecture in Frameworks */,
-				CA17CCB42474574200BDDF11 /* LocalSearchClient in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -58,7 +55,6 @@
 			files = (
 				CA749466247462B200B13019 /* LocationManagerCore in Frameworks */,
 				CA17CCE524745B1A00BDDF11 /* ComposableCoreLocation in Frameworks */,
-				CA17CCE124745B1A00BDDF11 /* LocalSearchClient in Frameworks */,
 				CA17CCE324745B1A00BDDF11 /* ComposableArchitecture in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -135,7 +131,6 @@
 			name = LocationManagerMobile;
 			packageProductDependencies = (
 				CA17CC3824720BEB00BDDF11 /* ComposableArchitecture */,
-				CA17CCB32474574200BDDF11 /* LocalSearchClient */,
 				CA17CCB52474582000BDDF11 /* ComposableCoreLocation */,
 				CA7494672474631200B13019 /* LocationManagerCore */,
 			);
@@ -157,7 +152,6 @@
 			);
 			name = LocationManagerDesktop;
 			packageProductDependencies = (
-				CA17CCE024745B1A00BDDF11 /* LocalSearchClient */,
 				CA17CCE224745B1A00BDDF11 /* ComposableArchitecture */,
 				CA17CCE424745B1A00BDDF11 /* ComposableCoreLocation */,
 				CA749465247462B200B13019 /* LocationManagerCore */,
@@ -485,17 +479,9 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
 		};
-		CA17CCB32474574200BDDF11 /* LocalSearchClient */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = LocalSearchClient;
-		};
 		CA17CCB52474582000BDDF11 /* ComposableCoreLocation */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableCoreLocation;
-		};
-		CA17CCE024745B1A00BDDF11 /* LocalSearchClient */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = LocalSearchClient;
 		};
 		CA17CCE224745B1A00BDDF11 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;

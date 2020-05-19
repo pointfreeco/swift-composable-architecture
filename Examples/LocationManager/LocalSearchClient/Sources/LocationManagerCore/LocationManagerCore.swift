@@ -1,6 +1,5 @@
 import ComposableArchitecture
 import ComposableCoreLocation
-import LocalSearchClient
 import MapKit
 
 public struct PointOfInterest: Equatable {
