@@ -28,13 +28,13 @@
 		CA17CC1024720BBA00BDDF11 /* LocationManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManagerView.swift; sourceTree = "<group>"; };
 		CA17CC1224720BBB00BDDF11 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CA17CC1A24720BBB00BDDF11 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		CA17CCB22474572700BDDF11 /* LocalSearchClient */ = {isa = PBXFileReference; lastKnownFileType = text; path = LocalSearchClient; sourceTree = SOURCE_ROOT; };
 		CA17CCBD24745B1000BDDF11 /* LocationManagerDesktop.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LocationManagerDesktop.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CA17CCBF24745B1000BDDF11 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CA17CCC124745B1000BDDF11 /* LocationManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManagerView.swift; sourceTree = "<group>"; };
 		CA17CCC324745B1000BDDF11 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CA17CCCB24745B1000BDDF11 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CA17CCCC24745B1000BDDF11 /* LocationManagerDesktop.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LocationManagerDesktop.entitlements; sourceTree = "<group>"; };
+		CA7494692474A07300B13019 /* Common */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Common; sourceTree = "<group>"; };
 		DCBBE4A524747DCF00DF4AC4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -65,7 +65,7 @@
 		CA17CC0024720BBA00BDDF11 = {
 			isa = PBXGroup;
 			children = (
-				CA17CCB22474572700BDDF11 /* LocalSearchClient */,
+				CA7494692474A07300B13019 /* Common */,
 				CA17CC3724720BEB00BDDF11 /* Frameworks */,
 				CA17CCBE24745B1000BDDF11 /* LocationManagerDesktop */,
 				CA17CC0B24720BBA00BDDF11 /* LocationManagerMobile */,
