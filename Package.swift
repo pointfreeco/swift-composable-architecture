@@ -15,7 +15,7 @@ let package = Package(
       name: "ComposableArchitecture",
       targets: ["ComposableArchitecture"]
     ),
-    .library( 
+    .library(
       name: "ComposableCoreLocation",
       targets: ["ComposableCoreLocation"]
     ),
@@ -40,6 +40,12 @@ let package = Package(
       name: "ComposableCoreLocation",
       dependencies: [
         "ComposableArchitecture"
+      ]
+    ),
+    .testTarget(
+      name: "ComposableCoreLocationTests",
+      dependencies: [
+        "ComposableCoreLocation",
       ]
     ),
   ]

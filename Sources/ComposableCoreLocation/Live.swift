@@ -16,12 +16,52 @@ extension LocationManagerClient {
         delegate.didChangeAuthorization =  {
           callback.send(.didChangeAuthorization($0))
         }
-        delegate.didFailWithError = { _ in
-          callback.send(.didFailWithError(LocationManagerError()))
+        #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+        delegate.didDetermineStateForRegion = { state, region in
+          callback.send(.didDetermineState(state, region: Region(rawValue: region)))
         }
+        #endif
+        #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+        delegate.didEnterRegion = { region in
+          callback.send(.didEnterRegion(Region(rawValue: region)))
+        }
+        #endif
+        #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+        delegate.didExitRegion = { region in
+          callback.send(.didExitRegion(Region(rawValue: region)))
+        }
+        #endif
+        #if os(iOS) || targetEnvironment(macCatalyst)
+        delegate.didFailRangingForConstraintWithError = { constraint, error in
+          callback.send(.didFailRanging(beaconConstraint: constraint, error: Error()))
+        }
+        #endif
+        delegate.didFailWithError = { _ in
+          callback.send(.didFailWithError(Error()))
+        }
+        #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+        delegate.didFinishDeferredUpdatesWithError = { error in
+          callback.send(.didFinishDeferredUpdatesWithError(Error()))
+        }
+        #endif
+        #if os(iOS) || targetEnvironment(macCatalyst)
+        delegate.didPauseLocationUpdates = {
+          callback.send(.didPauseLocationUpdates)
+        }
+        #endif
+        #if os(iOS) || targetEnvironment(macCatalyst)
         delegate.didUpdateLocations = {
           callback.send(.didUpdateLocations($0.map(Location.init(rawValue:))))
         }
+        #endif
+        #if os(iOS) || targetEnvironment(macCatalyst)
+        delegate.didRangeBeaconsSatisfyingConstraint = { beacons, constraint in
+          callback.send(
+            .didRange(beacons: beacons.map(Beacon.init(rawValue:)), beaconConstraint: constraint)
+          )
+        }
+        #endif
+        // TODO: rest of delegate methods
         #if os(iOS) || targetEnvironment(macCatalyst)
         delegate.didVisit = { visit in
           callback.send(.didVisit(Visit(visit: visit)))
@@ -137,16 +177,48 @@ private struct Dependencies {
 private var dependencies: [AnyHashable: Dependencies] = [:]
 
 private class LocationManagerDelegate: NSObject, CLLocationManagerDelegate {
-  var didChangeAuthorization: (CLAuthorizationStatus) -> Void = { _ in }
-  var didFailWithError: (Error) -> Void = { _ in }
-  var didUpdateLocations: ([CLLocation]) -> Void = { _ in }
-  #if os(iOS) || targetEnvironment(macCatalyst)
-  var didVisit: (CLVisit) -> Void = { _ in }
+  var didChangeAuthorization: (CLAuthorizationStatus) -> Void = { _ in fatalError() }
+  #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+  var didDetermineStateForRegion: (CLRegionState, CLRegion) -> Void = { _, _ in fatalError() }
   #endif
-
-  func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-    self.didFailWithError(error)
-  }
+  #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+  var didEnterRegion: (CLRegion) -> Void = { _ in fatalError() }
+  #endif
+  #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+  var didExitRegion: (CLRegion) -> Void = { _ in fatalError() }
+  #endif
+  #if os(iOS) || targetEnvironment(macCatalyst)
+  var didFailRangingForConstraintWithError: (CLBeaconIdentityConstraint, Error) -> Void = { _, _ in fatalError() }
+  #endif
+  var didFailWithError: (Error) -> Void = { _ in fatalError() }
+  #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+  var didFinishDeferredUpdatesWithError: (Error?) -> Void = { _ in fatalError() }
+  #endif
+  #if os(iOS) || targetEnvironment(macCatalyst)
+  var didPauseLocationUpdates: () -> Void = { fatalError() }
+  #endif
+  #if os(iOS) || targetEnvironment(macCatalyst)
+  var didRangeBeaconsSatisfyingConstraint: ([CLBeacon], CLBeaconIdentityConstraint) -> Void = { _, _ in fatalError() }
+  #endif
+  #if os(iOS) || targetEnvironment(macCatalyst)
+  var didResumeLocationUpdates: () -> Void = { fatalError() }
+  #endif
+  #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+  var didStartMonitoringForRegion: (CLRegion) -> Void = { _ in fatalError() }
+  #endif
+  #if os(iOS) || os(watchOS) || targetEnvironment(macCatalyst)
+  var didUpdateHeading: (CLHeading) -> Void = { _ in fatalError() }
+  #endif
+  var didUpdateLocations: ([CLLocation]) -> Void = { _ in fatalError() }
+  #if os(macOS)
+  var didUpdateToLocationFromLocation: (CLLocation, CLLocation) -> Void = { _, _ in fatalError() }
+  #endif
+  #if os(iOS) || targetEnvironment(macCatalyst)
+  var didVisit: (CLVisit) -> Void = { _ in fatalError() }
+  #endif
+  #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+  var monitoringDidFailForRegionWithError: (CLRegion?, Error) -> Void = { _, _ in fatalError() }
+  #endif
 
   func locationManager(
     _ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus
@@ -154,9 +226,85 @@ private class LocationManagerDelegate: NSObject, CLLocationManagerDelegate {
     self.didChangeAuthorization(status)
   }
 
+  func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+    self.didFailWithError(error)
+  }
+
   func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
     self.didUpdateLocations(locations)
   }
+
+  #if os(macOS)
+  func locationManager(_ manager: CLLocationManager, didUpdateTo newLocation: CLLocation, from oldLocation: CLLocation) {
+    self.didUpdateToLocationFromLocation(newLocation, oldLocation)
+  }
+  #endif
+
+  #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+  func locationManager(_ manager: CLLocationManager, didFinishDeferredUpdatesWithError error: Error?) {
+    self.didFinishDeferredUpdatesWithError(error)
+  }
+  #endif
+
+  #if os(iOS) || targetEnvironment(macCatalyst)
+  func locationManagerDidPauseLocationUpdates(_ manager: CLLocationManager) {
+    self.didPauseLocationUpdates()
+  }
+  #endif
+
+  #if os(iOS) || targetEnvironment(macCatalyst)
+  func locationManagerDidResumeLocationUpdates(_ manager: CLLocationManager) {
+    self.didResumeLocationUpdates()
+  }
+  #endif
+
+  #if os(iOS) || os(watchOS) || targetEnvironment(macCatalyst)
+  func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
+    self.didUpdateHeading(newHeading)
+  }
+  #endif
+
+  #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+  func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
+    self.didEnterRegion(region)
+  }
+  #endif
+
+  #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+  func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
+    self.didExitRegion(region)
+  }
+  #endif
+
+  #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+  func locationManager(_ manager: CLLocationManager, didDetermineState state: CLRegionState, for region: CLRegion) {
+    self.didDetermineStateForRegion(state, region)
+  }
+  #endif
+
+  #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+  func locationManager(_ manager: CLLocationManager, monitoringDidFailFor region: CLRegion?, withError error: Error) {
+    self.monitoringDidFailForRegionWithError(region, error)
+  }
+  #endif
+
+  #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+  func locationManager(_ manager: CLLocationManager, didStartMonitoringFor region: CLRegion) {
+    self.didStartMonitoringForRegion(region)
+  }
+  #endif
+
+  #if os(iOS) || targetEnvironment(macCatalyst)
+  func locationManager(_ manager: CLLocationManager, didRange beacons: [CLBeacon], satisfying beaconConstraint: CLBeaconIdentityConstraint) {
+    self.didRangeBeaconsSatisfyingConstraint(beacons, beaconConstraint)
+  }
+  #endif
+
+  #if os(iOS) || targetEnvironment(macCatalyst)
+  func locationManager(_ manager: CLLocationManager, didFailRangingFor beaconConstraint: CLBeaconIdentityConstraint, error: Error) {
+    self.didFailRangingForConstraintWithError(beaconConstraint, error)
+  }
+  #endif
 
   #if os(iOS) || targetEnvironment(macCatalyst)
   func locationManager(_ manager: CLLocationManager, didVisit visit: CLVisit) {

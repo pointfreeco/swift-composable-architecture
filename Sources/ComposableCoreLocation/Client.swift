@@ -3,8 +3,59 @@ import ComposableArchitecture
 import CoreLocation
 
 public struct LocationManagerClient {
+
+  public enum Action: Equatable {
+    case didChangeAuthorization(CLAuthorizationStatus)
+    case didCreate(locationServicesEnabled: Bool, authorizationStatus: CLAuthorizationStatus)
+    #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+    case didDetermineState(CLRegionState, region: Region)
+    #endif
+    #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+    case didEnterRegion(Region)
+    #endif
+    #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+    case didExitRegion(Region)
+    #endif
+    #if os(iOS) || targetEnvironment(macCatalyst)
+    case didFailRanging(beaconConstraint: CLBeaconIdentityConstraint, error: Error)
+    #endif
+    case didFailWithError(Error)
+    #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+    case didFinishDeferredUpdatesWithError(Error)
+    #endif
+    #if os(iOS) || targetEnvironment(macCatalyst)
+    case didPauseLocationUpdates
+    #endif
+    #if os(iOS) || targetEnvironment(macCatalyst)
+    case didRange(beacons: [Beacon], beaconConstraint: CLBeaconIdentityConstraint)
+    #endif
+    #if os(iOS) || targetEnvironment(macCatalyst)
+    case didResumeLocationUpdates
+    #endif
+    #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+    case didStartMonitoring(region: Region)
+    #endif
+    #if os(iOS) || os(watchOS) || targetEnvironment(macCatalyst)
+    case didUpdateHeading(newHeading: Heading)
+    #endif
+    case didUpdateLocations([Location])
+    #if os(iOS)
+    case didUpdateTo(newLocation: Location, oldLocation: Location)
+    #endif
+    #if os(iOS) || targetEnvironment(macCatalyst)
+    case didVisit(Visit)
+    #endif
+    #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+    case monitoringDidFail(region: Region?, error: Error)
+    #endif
+  }
+
+  public struct Error: Swift.Error, Equatable {
+    public init() {}
+  }
+
   public var authorizationStatus: () -> CLAuthorizationStatus
-  var create: (_ id: AnyHashable) -> Effect<LocationManagerAction, Never>
+  var create: (_ id: AnyHashable) -> Effect<Action, Never>
   var destroy: (AnyHashable) -> Effect<Never, Never>
   #if os(iOS) || os(watchOS) || targetEnvironment(macCatalyst)
   var dismissHeadingCalibrationDisplay: (AnyHashable) -> Effect<Never, Never>
@@ -66,9 +117,7 @@ public struct LocationManagerClient {
   var stopUpdatingLocation: (AnyHashable) -> Effect<Never, Never>
   var update: (_ id: AnyHashable, _ properties: Properties) -> Effect<Never, Never>
 
-  public func create(
-    id: AnyHashable
-  ) -> Effect<LocationManagerAction, Never> {
+  public func create(id: AnyHashable) -> Effect<Action, Never> {
     self.create(id)
   }
 
