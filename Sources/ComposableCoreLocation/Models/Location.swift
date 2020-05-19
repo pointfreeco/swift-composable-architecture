@@ -14,7 +14,7 @@ public struct Location: Equatable {
   public var timestamp: Date
   public var verticalAccuracy: CLLocationAccuracy
 
-  init(
+  public init(
     altitude: CLLocationDistance,
     coordinate: CLLocationCoordinate2D,
     course: CLLocationDirection,

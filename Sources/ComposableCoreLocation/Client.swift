@@ -2,11 +2,81 @@ import Combine
 import ComposableArchitecture
 import CoreLocation
 
+/// A wrapper around CoreLocation's `CLLocationManager` that exposes its functionality through
+/// effects and actions, making it easy to use with the Composable Architecture and easy to test.
+///
+/// Typically one uses the `.live` implementation of this client when running your app in the
+/// simulator or on device:
+///
+///     let store = Store(
+///       initialState: AppState(),
+///       reducer: appReducer,
+///       environment: AppEnvironment(
+///         locationManager: LocationManagerClient.live
+///       )
+///     )
+///
+///  In your application's actions you must make room for all of the delegate actions that the
+///  location manager can send:
+///
+///      enum AppAction {
+///        case locationManager(LocationManagerClient.Action)
+///        // Other actions...
+///      }
+///
+///  In the reducer you create a location manager by returning the `.create` effect from an
+///  action, say for example, an `.onAppear` action:
+///
+///     let appReducer = AppReducer<AppState, AppAction, AppEnvironment> {
+///       state, action, environment in
+///
+///       // A unique identifier for our location manager, just in case we want to use more than
+///       // one in your application.
+///       struct LocationManagerId: Hashable {}
+///
+///       switch action {
+///       case .onAppear:
+///         // Create the location manager
+///         return environment.locationManager.create(id: LocationManagerId())
+///           .map(AppAction.locationManager)
+///
+///       // Tap into which ever `CLLocationManagerDelegate` methods you are interested in
+///       case .locationManager(.didChangeAuthorization(.authorizedAlways)),
+///            .locationManager(.didChangeAuthorization(.authorizedWhenInUse)):
+///         // Do something when user authorization location access
+///
+///       case .locationManager(.didChangeAuthorization(.denied)),
+///            .locationManager(.didChangeAuthorization(.restricted)):
+///         // Do something when user denies location access
+///
+///       case let .locationManager(.didUpdateLocations(locations)):
+///         // Do something with user's current location.
+///       }
+///     }
+///
+///  And finally, one can use the `.mock` implementation in tests:
+///
+///     let store = TestStore(
+///       initialState: AppState(),
+///       reducer: appReducer,
+///       environment: AppEnvironment(
+///         locationManager: LocationManagerClient.mock(
+///           // override any manager endpoints used by your test, e.g.
+///           authorizationStatus: { .authorizedAlways }
+///         )
+///       )
+///     )
+///
+/// It is also helpful to use `LocationManagerClient.mock` in SwiftUI previews. Most of the
+/// features of `CLLocationManager` do not work in SwiftUI previews, and so by using
+/// the `.mock` version you can access a little more functionality without needing to run
+/// your application in a simulator or device.
+///
 public struct LocationManagerClient {
 
+  // TODO: rename to DelegateAction?
   public enum Action: Equatable {
     case didChangeAuthorization(CLAuthorizationStatus)
-    case didCreate(locationServicesEnabled: Bool, authorizationStatus: CLAuthorizationStatus)
     #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
     case didDetermineState(CLRegionState, region: Region)
     #endif
@@ -118,6 +188,8 @@ public struct LocationManagerClient {
   var stopUpdatingLocation: (AnyHashable) -> Effect<Never, Never>
   var update: (_ id: AnyHashable, _ properties: Properties) -> Effect<Never, Never>
 
+  // TODO: finish public methods
+
   public func create(id: AnyHashable) -> Effect<Action, Never> {
     self.create(id)
   }
@@ -165,7 +237,7 @@ public struct LocationManagerClient {
   }
 
   #if os(iOS) || targetEnvironment(macCatalyst)
-  public func __update(
+  public func update(
     id: AnyHashable,
     activityType: CLActivityType? = nil,
     allowsBackgroundLocationUpdates: Bool? = nil,
@@ -205,7 +277,7 @@ public struct LocationManagerClient {
     )
   }
   #elseif os(watchOS)
-  public func __update(
+  public func update(
     id: AnyHashable,
     activityType: CLActivityType? = nil,
     allowsBackgroundLocationUpdates: Bool? = nil,

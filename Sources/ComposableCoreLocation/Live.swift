@@ -4,6 +4,19 @@ import CoreLocation
 
 extension LocationManagerClient {
 
+  /// The live implementation of the `LocationManagerClient` interface. This implementation is
+  /// capable of creating real `CLLocationManager` instances, listening to its delegate methods,
+  /// and invoking its methods. You will typically use this when building for the simulator
+  /// or device:
+  ///
+  ///     let store = Store(
+  ///       initialState: AppState(),
+  ///       reducer: appReducer,
+  ///       environment: AppEnvironment(
+  ///         locationManager: LocationManagerClient.live
+  ///       )
+  ///     )
+  ///
   public static let live: LocationManagerClient = { () -> LocationManagerClient in
     var client = LocationManagerClient()
 

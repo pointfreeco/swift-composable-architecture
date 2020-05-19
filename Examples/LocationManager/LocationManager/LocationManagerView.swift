@@ -1,5 +1,6 @@
 import Combine
 import ComposableArchitecture
+import ComposableCoreLocation
 import MapKit
 import SwiftUI
 
@@ -83,7 +84,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     case .notDetermined:
       state.isRequestingCurrentLocation = true
       return environment.locationManager
-        .requestWhenInUseAuthorization(LocationManagerId())
+        .requestWhenInUseAuthorization(id: LocationManagerId())
         .fireAndForget()
 
     case .restricted:
@@ -96,7 +97,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
     case .authorizedAlways, .authorizedWhenInUse:
       return environment.locationManager
-        .requestLocation(LocationManagerId())
+        .requestLocation(id: LocationManagerId())
         .fireAndForget()
 
     @unknown default:
@@ -125,7 +126,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     return .none
 
   case .onAppear:
-    return environment.locationManager.create(LocationManagerId())
+    return environment.locationManager.create(id: LocationManagerId())
       .map(AppAction.locationManager)
 
   case let .updateRegion(region):
@@ -161,7 +162,7 @@ let locationManagerReducer = Reducer<AppState, LocationManagerClient.Action, App
     .didChangeAuthorization(.authorizedWhenInUse):
     if state.isRequestingCurrentLocation {
       return environment.locationManager
-        .requestLocation(LocationManagerId())
+        .requestLocation(id: LocationManagerId())
         .fireAndForget()
     }
     return .none
@@ -182,9 +183,7 @@ let locationManagerReducer = Reducer<AppState, LocationManagerClient.Action, App
     )
     return .none
 
-  case .didChangeAuthorization,
-    .didCreate,
-    .didFailWithError:
+  default:
     return .none
   }
 }

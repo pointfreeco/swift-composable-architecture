@@ -1,5 +1,6 @@
 import Combine
 import ComposableArchitecture
+import ComposableCoreLocation
 import CoreLocation
 import MapKit
 import XCTest
