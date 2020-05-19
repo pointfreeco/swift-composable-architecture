@@ -83,7 +83,7 @@ struct MapItem: Equatable {
       && lhs.placemark.subLocality == rhs.placemark.subLocality
       && lhs.placemark.administrativeArea == rhs.placemark.administrativeArea
       && lhs.placemark.subAdministrativeArea
-        == lhs.placemark.subAdministrativeArea
+        == rhs.placemark.subAdministrativeArea
       && lhs.placemark.postalCode == rhs.placemark.postalCode
       && lhs.placemark.isoCountryCode == rhs.placemark.isoCountryCode
       && lhs.placemark.country == rhs.placemark.country
@@ -179,24 +179,24 @@ struct Placemark: Equatable {
   }
 
   static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.administrativeArea == lhs.administrativeArea
-      && lhs.areasOfInterest == lhs.areasOfInterest
+    lhs.administrativeArea == rhs.administrativeArea
+      && lhs.areasOfInterest == rhs.areasOfInterest
       && lhs.coordinate.latitude == rhs.coordinate.latitude
       && lhs.coordinate.longitude == rhs.coordinate.longitude
-      && lhs.country == lhs.country
+      && lhs.country == rhs.country
       && lhs.countryCode == rhs.countryCode
-      && lhs.inlandWater == lhs.inlandWater
-      && lhs.isoCountryCode == lhs.isoCountryCode
-      && lhs.locality == lhs.locality
+      && lhs.inlandWater == rhs.inlandWater
+      && lhs.isoCountryCode == rhs.isoCountryCode
+      && lhs.locality == rhs.locality
       && lhs.name == rhs.name
-      && lhs.ocean == lhs.ocean
-      && lhs.postalCode == lhs.postalCode
+      && lhs.ocean == rhs.ocean
+      && lhs.postalCode == rhs.postalCode
       && lhs.region == rhs.region
-      && lhs.subAdministrativeArea == lhs.subAdministrativeArea
-      && lhs.subLocality == lhs.subLocality
-      && lhs.subThoroughfare == lhs.subThoroughfare
+      && lhs.subAdministrativeArea == rhs.subAdministrativeArea
+      && lhs.subLocality == rhs.subLocality
+      && lhs.subThoroughfare == rhs.subThoroughfare
       && lhs.subtitle == rhs.subtitle
-      && lhs.thoroughfare == lhs.thoroughfare
+      && lhs.thoroughfare == rhs.thoroughfare
       && lhs.title == rhs.title
   }
 }
