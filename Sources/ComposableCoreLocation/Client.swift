@@ -51,6 +51,7 @@ public struct LocationManagerClient {
   }
 
   public struct Error: Swift.Error, Equatable {
+    // TODO: hold onto NSError?
     public init() {}
   }
 
@@ -296,7 +297,7 @@ extension LocationManagerClient {
 }
 
 extension LocationManagerClient {
-  public struct Properties {
+  public struct Properties: Equatable {
     #if os(iOS) || os(watchOS) || targetEnvironment(macCatalyst)
     let activityType: CLActivityType?
     let allowsBackgroundLocationUpdates: Bool?
