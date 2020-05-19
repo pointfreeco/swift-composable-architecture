@@ -1,6 +1,5 @@
 import Cocoa
 import ComposableArchitecture
-import LocationManagerCore
 import SwiftUI
 
 @NSApplicationMain

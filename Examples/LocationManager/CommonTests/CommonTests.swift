@@ -2,7 +2,11 @@ import Combine
 import ComposableArchitecture
 import ComposableCoreLocation
 import CoreLocation
-import LocationManagerCore
+#if os(iOS)
+import LocationManagerMobile
+#elseif os(macOS)
+import LocationManagerDesktop
+#endif
 import MapKit
 import XCTest
 

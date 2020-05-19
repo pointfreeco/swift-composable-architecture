@@ -178,7 +178,7 @@ public struct Placemark: Equatable {
     self.title = title
   }
 
-  static func == (lhs: Self, rhs: Self) -> Bool {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.administrativeArea == rhs.administrativeArea
       && lhs.areasOfInterest == rhs.areasOfInterest
       && lhs.coordinate.latitude == rhs.coordinate.latitude
