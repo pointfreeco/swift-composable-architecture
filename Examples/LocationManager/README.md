@@ -2,7 +2,7 @@
 
 <img width="1326" alt="image" src="https://user-images.githubusercontent.com/135203/82385999-478b5f00-99e8-11ea-852e-7e2a3cfd238e.png">
 
-This application demonstrates how to build a simple application for both iOS and macOS using CoreLocation and MapKit. It displays a map and allows you to search for points of interest on the map by category (e.g. cafe, museum, etc). You can also center the map on your current location, if you give allow access.
+This application demonstrates how to build a simple application for both iOS and macOS using CoreLocation and MapKit. It displays a map and allows you to search for points of interest on the map by category (e.g. cafe, museum, etc). You can also center the map on your current location, if you allow access.
 
 The core logic of the application is written a single time, and powers both views. All of the code shared between the iOS and macOS apps is in the `Common` Swift package. It has:
 
