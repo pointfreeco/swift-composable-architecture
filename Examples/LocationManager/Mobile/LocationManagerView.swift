@@ -100,16 +100,7 @@ struct ContentView_Previews: PreviewProvider {
     //     manager that has all authorization allowed and mocks the device's current location
     //     to Brooklyn, NY.
     let mockLocation = Location(
-      altitude: 0,
-      coordinate: CLLocationCoordinate2D(latitude: 40.6501, longitude: -73.94958),
-      course: 0,
-      courseAccuracy: 0,
-      floor: nil,
-      horizontalAccuracy: 0,
-      speed: 0,
-      speedAccuracy: 0,
-      timestamp: Date(timeIntervalSince1970: 1_234_567_890),
-      verticalAccuracy: 0
+      coordinate: CLLocationCoordinate2D(latitude: 40.6501, longitude: -73.94958)
     )
     let locationManagerSubject = PassthroughSubject<LocationManager.Action, Never>()
     let locationManager = LocationManager.mock(
