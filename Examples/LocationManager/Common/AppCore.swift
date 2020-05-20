@@ -2,7 +2,7 @@ import ComposableArchitecture
 import ComposableCoreLocation
 import MapKit
 
-public struct PointOfInterest: Equatable {
+public struct PointOfInterest: Equatable, Hashable {
   public let coordinate: CLLocationCoordinate2D
   public let subtitle: String?
   public let title: String?
@@ -224,5 +224,12 @@ extension PointOfInterest {
       && lhs.coordinate.longitude == rhs.coordinate.longitude
       && lhs.subtitle == rhs.subtitle
       && lhs.title == rhs.title
+  }
+
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(coordinate.latitude)
+    hasher.combine(coordinate.longitude)
+    hasher.combine(title)
+    hasher.combine(subtitle)
   }
 }
