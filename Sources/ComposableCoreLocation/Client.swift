@@ -184,6 +184,8 @@ public struct LocationManagerClient {
   @available(macOS, unavailable)
   var requestWhenInUseAuthorization: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
 
+  var set: (AnyHashable, Properties) -> Effect<Never, Never> = { _, _ in fatalError() }
+
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
   public var significantLocationChangeMonitoringAvailable: () -> Bool = { fatalError() }
@@ -204,6 +206,10 @@ public struct LocationManagerClient {
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
   var startMonitoringVisits: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
+  var startUpdatingHeading: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
 
   @available(tvOS, unavailable)
   var startUpdatingLocation: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
@@ -227,17 +233,9 @@ public struct LocationManagerClient {
 
   @available(macOS, unavailable)
   @available(tvOS, unavailable)
-  var startUpdatingHeading: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
-
-  @available(macOS, unavailable)
-  @available(tvOS, unavailable)
   var stopUpdatingHeading: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
 
   var stopUpdatingLocation: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
-
-  var update: (AnyHashable, Properties) -> Effect<Never, Never> = { _, _ in fatalError() }
-
-  // TODO: finish public methods
 
   public func create(id: AnyHashable) -> Effect<Action, Never> { self.create(id) }
 
@@ -277,6 +275,77 @@ public struct LocationManagerClient {
     self.requestWhenInUseAuthorization(id)
   }
 
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
+  public func set(
+    id: AnyHashable,
+    activityType: CLActivityType? = nil,
+    allowsBackgroundLocationUpdates: Bool? = nil,
+    desiredAccuracy: CLLocationAccuracy? = nil,
+    distanceFilter: CLLocationDistance? = nil,
+    headingFilter: CLLocationDegrees? = nil,
+    headingOrientation: CLDeviceOrientation? = nil,
+    pausesLocationUpdatesAutomatically: Bool? = nil,
+    showsBackgroundLocationIndicator: Bool? = nil
+  ) -> Effect<Never, Never> {
+    self.set(
+      id,
+      Properties(
+        activityType: activityType,
+        allowsBackgroundLocationUpdates: allowsBackgroundLocationUpdates,
+        desiredAccuracy: desiredAccuracy,
+        distanceFilter: distanceFilter,
+        headingFilter: headingFilter,
+        headingOrientation: headingOrientation,
+        pausesLocationUpdatesAutomatically: pausesLocationUpdatesAutomatically,
+        showsBackgroundLocationIndicator: showsBackgroundLocationIndicator
+      )
+    )
+  }
+
+  @available(iOS, unavailable)
+  @available(macCatalyst, unavailable)
+  @available(watchOS, unavailable)
+  public func set(
+    id: AnyHashable,
+    desiredAccuracy: CLLocationAccuracy? = nil,
+    distanceFilter: CLLocationDistance? = nil
+  ) -> Effect<Never, Never> {
+    self.set(
+      id,
+      Properties(
+        desiredAccuracy: desiredAccuracy,
+        distanceFilter: distanceFilter
+      )
+    )
+  }
+
+  @available(iOS, unavailable)
+  @available(macCatalyst, unavailable)
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
+  public func set(
+    id: AnyHashable,
+    activityType: CLActivityType? = nil,
+    allowsBackgroundLocationUpdates: Bool? = nil,
+    desiredAccuracy: CLLocationAccuracy? = nil,
+    distanceFilter: CLLocationDistance? = nil,
+    headingFilter: CLLocationDegrees? = nil,
+    headingOrientation: CLDeviceOrientation? = nil
+  ) -> Effect<Never, Never> {
+    self.set(
+      id,
+      Properties(
+        activityType: activityType,
+        allowsBackgroundLocationUpdates: allowsBackgroundLocationUpdates,
+        desiredAccuracy: desiredAccuracy,
+        distanceFilter: distanceFilter,
+        headingFilter: headingFilter,
+        headingOrientation: headingOrientation
+      )
+    )
+  }
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
   public func startMonitoringForRegion(id: AnyHashable, region: Region) -> Effect<Never, Never> {
@@ -334,78 +403,6 @@ public struct LocationManagerClient {
 
   public func stopUpdatingLocation(id: AnyHashable) -> Effect<Never, Never> {
     self.stopUpdatingLocation(id)
-  }
-
-  @available(macOS, unavailable)
-  @available(tvOS, unavailable)
-  @available(watchOS, unavailable)
-  public func update(
-    id: AnyHashable,
-    activityType: CLActivityType? = nil,
-    allowsBackgroundLocationUpdates: Bool? = nil,
-    desiredAccuracy: CLLocationAccuracy? = nil,
-    distanceFilter: CLLocationDistance? = nil,
-    headingFilter: CLLocationDegrees? = nil,
-    headingOrientation: CLDeviceOrientation? = nil,
-    pausesLocationUpdatesAutomatically: Bool? = nil,
-    showsBackgroundLocationIndicator: Bool? = nil
-  ) -> Effect<Never, Never> {
-    self.update(
-      id,
-      Properties(
-        activityType: activityType,
-        allowsBackgroundLocationUpdates: allowsBackgroundLocationUpdates,
-        desiredAccuracy: desiredAccuracy,
-        distanceFilter: distanceFilter,
-        headingFilter: headingFilter,
-        headingOrientation: headingOrientation,
-        pausesLocationUpdatesAutomatically: pausesLocationUpdatesAutomatically,
-        showsBackgroundLocationIndicator: showsBackgroundLocationIndicator
-      )
-    )
-  }
-
-  @available(iOS, unavailable)
-  @available(macCatalyst, unavailable)
-  @available(watchOS, unavailable)
-  public func update(
-    id: AnyHashable,
-    desiredAccuracy: CLLocationAccuracy? = nil,
-    distanceFilter: CLLocationDistance? = nil
-  ) -> Effect<Never, Never> {
-    self.update(
-      id,
-      Properties(
-        desiredAccuracy: desiredAccuracy,
-        distanceFilter: distanceFilter
-      )
-    )
-  }
-
-  @available(iOS, unavailable)
-  @available(macCatalyst, unavailable)
-  @available(macOS, unavailable)
-  @available(tvOS, unavailable)
-  public func update(
-    id: AnyHashable,
-    activityType: CLActivityType? = nil,
-    allowsBackgroundLocationUpdates: Bool? = nil,
-    desiredAccuracy: CLLocationAccuracy? = nil,
-    distanceFilter: CLLocationDistance? = nil,
-    headingFilter: CLLocationDegrees? = nil,
-    headingOrientation: CLDeviceOrientation? = nil
-  ) -> Effect<Never, Never> {
-    self.update(
-      id,
-      Properties(
-        activityType: activityType,
-        allowsBackgroundLocationUpdates: allowsBackgroundLocationUpdates,
-        desiredAccuracy: desiredAccuracy,
-        distanceFilter: distanceFilter,
-        headingFilter: headingFilter,
-        headingOrientation: headingOrientation
-      )
-    )
   }
 }
 

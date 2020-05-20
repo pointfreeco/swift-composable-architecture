@@ -138,29 +138,7 @@ extension LocationManagerClient {
       }
     #endif
 
-    #if os(iOS) || targetEnvironment(macCatalyst)
-      client.startMonitoringVisits = { id in
-        .fireAndForget { dependencies[id]?.locationManager.startMonitoringVisits() }
-      }
-    #endif
-
-    #if os(iOS) || os(macOS) || os(watchOS) || targetEnvironment(macCatalyst)
-      client.startUpdatingLocation = { id in
-        .fireAndForget { dependencies[id]?.locationManager.startUpdatingLocation() }
-      }
-    #endif
-
-    #if os(iOS) || targetEnvironment(macCatalyst)
-      client.stopMonitoringVisits = { id in
-        .fireAndForget { dependencies[id]?.locationManager.stopMonitoringVisits() }
-      }
-    #endif
-
-    client.stopUpdatingLocation = { id in
-      .fireAndForget { dependencies[id]?.locationManager.stopUpdatingLocation() }
-    }
-
-    client.update = { id, properties in
+    client.set = { id, properties in
       .fireAndForget {
         guard let manager = dependencies[id]?.locationManager else { return }
 
@@ -198,6 +176,28 @@ extension LocationManagerClient {
           }
         #endif
       }
+    }
+    
+    #if os(iOS) || targetEnvironment(macCatalyst)
+      client.startMonitoringVisits = { id in
+        .fireAndForget { dependencies[id]?.locationManager.startMonitoringVisits() }
+      }
+    #endif
+
+    #if os(iOS) || os(macOS) || os(watchOS) || targetEnvironment(macCatalyst)
+      client.startUpdatingLocation = { id in
+        .fireAndForget { dependencies[id]?.locationManager.startUpdatingLocation() }
+      }
+    #endif
+
+    #if os(iOS) || targetEnvironment(macCatalyst)
+      client.stopMonitoringVisits = { id in
+        .fireAndForget { dependencies[id]?.locationManager.stopMonitoringVisits() }
+      }
+    #endif
+
+    client.stopUpdatingLocation = { id in
+      .fireAndForget { dependencies[id]?.locationManager.stopUpdatingLocation() }
     }
 
     return client

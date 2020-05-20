@@ -66,6 +66,9 @@
       requestWhenInUseAuthorization: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
         fatalError()
       },
+      set: @escaping (_ id: AnyHashable, _ properties: Properties) -> Effect<Never, Never> = {
+        _, _ in fatalError()
+      },
       significantLocationChangeMonitoringAvailable: @escaping () -> Bool = { fatalError() },
       startMonitoringSignificantLocationChanges: @escaping (AnyHashable) -> Effect<Never, Never> = {
         _ in fatalError()
@@ -86,10 +89,7 @@
       stopMonitoringVisits: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
       startUpdatingHeading: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
       stopUpdatingHeading: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
-      stopUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
-      update: @escaping (_ id: AnyHashable, _ properties: Properties) -> Effect<Never, Never> = {
-        _, _ in fatalError()
-      }
+      stopUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
     ) -> Self {
       Self(
         authorizationStatus: authorizationStatus,
@@ -106,18 +106,18 @@
         requestAlwaysAuthorization: requestAlwaysAuthorization,
         requestLocation: requestLocation,
         requestWhenInUseAuthorization: requestWhenInUseAuthorization,
+        set: set,
         significantLocationChangeMonitoringAvailable: significantLocationChangeMonitoringAvailable,
         startMonitoringForRegion: startMonitoringForRegion,
         startMonitoringSignificantLocationChanges: startMonitoringSignificantLocationChanges,
         startMonitoringVisits: startMonitoringVisits,
+        startUpdatingHeading: startUpdatingHeading,
         startUpdatingLocation: startUpdatingLocation,
         stopMonitoringForRegion: stopMonitoringForRegion,
         stopMonitoringSignificantLocationChanges: stopMonitoringSignificantLocationChanges,
         stopMonitoringVisits: stopMonitoringVisits,
-        startUpdatingHeading: startUpdatingHeading,
         stopUpdatingHeading: stopUpdatingHeading,
-        stopUpdatingLocation: stopUpdatingLocation,
-        update: update
+        stopUpdatingLocation: stopUpdatingLocation
       )
     }
 
@@ -143,14 +143,14 @@
       requestWhenInUseAuthorization: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
         fatalError()
       },
-      startUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError()
+      set: @escaping (_ id: AnyHashable, _ properties: Properties) -> Effect<Never, Never> = {
+        _, _ in fatalError()
       },
       startUpdatingHeading: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
+      startUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError()
+      },
       stopUpdatingHeading: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
-      stopUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
-      update: @escaping (_ id: AnyHashable, _ properties: Properties) -> Effect<Never, Never> = {
-        _, _ in fatalError()
-      }
+      stopUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
     ) -> Self {
       Self(
         authorizationStatus: authorizationStatus,
@@ -164,11 +164,11 @@
         requestAlwaysAuthorization: requestAlwaysAuthorization,
         requestLocation: requestLocation,
         requestWhenInUseAuthorization: requestWhenInUseAuthorization,
-        startUpdatingLocation: startUpdatingLocation,
+        set: set,
         startUpdatingHeading: startUpdatingHeading,
+        startUpdatingLocation: startUpdatingLocation,
         stopUpdatingHeading: stopUpdatingHeading,
-        stopUpdatingLocation: stopUpdatingLocation,
-        update: update
+        stopUpdatingLocation: stopUpdatingLocation
       )
     }
 
@@ -186,10 +186,10 @@
       requestWhenInUseAuthorization: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
         fatalError()
       },
-      stopUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
-      update: @escaping (_ id: AnyHashable, _ properties: Properties) -> Effect<Never, Never> = {
+      set: @escaping (_ id: AnyHashable, _ properties: Properties) -> Effect<Never, Never> = {
         _, _ in fatalError()
-      }
+      },
+      stopUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
     ) -> Self {
       Self(
         authorizationStatus: authorizationStatus,
@@ -199,8 +199,8 @@
         locationServicesEnabled: locationServicesEnabled,
         requestLocation: requestLocation,
         requestWhenInUseAuthorization: requestWhenInUseAuthorization,
-        stopUpdatingLocation: stopUpdatingLocation,
-        update: update
+        set: set,
+        stopUpdatingLocation: stopUpdatingLocation
       )
     }
 
@@ -223,6 +223,9 @@
         fatalError()
       },
       requestLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
+      set: @escaping (_ id: AnyHashable, _ properties: Properties) -> Effect<Never, Never> = {
+        _, _ in fatalError()
+      },
       significantLocationChangeMonitoringAvailable: @escaping () -> Bool = { fatalError() },
       startMonitoringForRegion: @escaping (AnyHashable, Region) -> Effect<Never, Never> = { _, _ in
         fatalError()
@@ -238,10 +241,7 @@
       stopMonitoringSignificantLocationChanges: @escaping (AnyHashable) -> Effect<Never, Never> = {
         _ in fatalError()
       },
-      stopUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
-      update: @escaping (_ id: AnyHashable, _ properties: Properties) -> Effect<Never, Never> = {
-        _, _ in fatalError()
-      }
+      stopUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
     ) -> Self {
       Self(
         authorizationStatus: authorizationStatus,
@@ -254,14 +254,14 @@
         monitoredRegions: monitoredRegions,
         requestAlwaysAuthorization: requestAlwaysAuthorization,
         requestLocation: requestLocation,
+        set: set,
         significantLocationChangeMonitoringAvailable: significantLocationChangeMonitoringAvailable,
         startMonitoringForRegion: startMonitoringForRegion,
         startMonitoringSignificantLocationChanges: startMonitoringSignificantLocationChanges,
         startUpdatingLocation: startUpdatingLocation,
         stopMonitoringForRegion: stopMonitoringForRegion,
         stopMonitoringSignificantLocationChanges: stopMonitoringSignificantLocationChanges,
-        stopUpdatingLocation: stopUpdatingLocation,
-        update: update
+        stopUpdatingLocation: stopUpdatingLocation
       )
     }
   }
