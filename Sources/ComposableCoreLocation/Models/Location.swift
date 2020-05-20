@@ -53,7 +53,7 @@ public struct Location: Equatable {
     self.horizontalAccuracy = horizontalAccuracy
     self.speed = speed
     if #available(iOS 13.4, OSX 10.15.4, macCatalyst 13.4, tvOS 13.4, watchOS 6.2, *) {
-      self.speedAccuracy = speedAccuracy
+      self._speedAccuracy = speedAccuracy
     } else {
       self._speedAccuracy = 0
     }
