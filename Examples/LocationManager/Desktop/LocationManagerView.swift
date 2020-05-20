@@ -23,6 +23,13 @@ struct LocationManagerView: View {
           HStack(spacing: 16) {
             ForEach(AppState.pointOfInterestCategories, id: \.rawValue) { category in
               Button(category.displayName) { viewStore.send(.categoryButtonTapped(category)) }
+                .buttonStyle(PlainButtonStyle())
+                .padding([.all], 12)
+                .background(
+                  category == viewStore.pointOfInterestCategory ? Color.blue : Color.secondary
+              )
+                .foregroundColor(.white)
+                .cornerRadius(8)
             }
 
             Spacer()
