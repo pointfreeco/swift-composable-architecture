@@ -496,7 +496,7 @@ extension LocationManagerClient {
     @available(macOS, unavailable)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
-    init(
+    public init(
       activityType: CLActivityType? = nil,
       allowsBackgroundLocationUpdates: Bool? = nil,
       desiredAccuracy: CLLocationAccuracy? = nil,
@@ -519,7 +519,7 @@ extension LocationManagerClient {
     @available(iOS, unavailable)
     @available(macCatalyst, unavailable)
     @available(watchOS, unavailable)
-    init(
+    public init(
       desiredAccuracy: CLLocationAccuracy? = nil,
       distanceFilter: CLLocationDistance? = nil
     ) {
@@ -531,7 +531,7 @@ extension LocationManagerClient {
     @available(macCatalyst, unavailable)
     @available(macOS, unavailable)
     @available(tvOS, unavailable)
-    init(
+    public init(
       activityType: CLActivityType? = nil,
       allowsBackgroundLocationUpdates: Bool? = nil,
       desiredAccuracy: CLLocationAccuracy? = nil,
