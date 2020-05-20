@@ -53,7 +53,11 @@ public struct Location: Equatable {
     self.timestamp = rawValue.timestamp
     self.verticalAccuracy = rawValue.verticalAccuracy
     #if compiler(>=5.2)
-      self.courseAccuracy = rawValue.courseAccuracy
+      if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
+        self.courseAccuracy = rawValue.courseAccuracy
+      } else {
+        self.courseAccuracy = 0
+      }
       self.speedAccuracy = rawValue.speedAccuracy
     #else
       self.courseAccuracy = 0
