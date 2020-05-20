@@ -18,13 +18,7 @@ public struct Location: Equatable {
   public var floor: CLFloor?
   public var horizontalAccuracy: CLLocationAccuracy
   public var speed: CLLocationSpeed
-
-  @available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *)
-  public var speedAccuracy: CLLocationDirectionAccuracy {
-    get { _speedAccuracy } set { _speedAccuracy = newValue }
-  }
-  private var _speedAccuracy: Double
-
+  public var speedAccuracy: CLLocationSpeedAccuracy
   public var timestamp: Date
   public var verticalAccuracy: CLLocationAccuracy
 
@@ -49,7 +43,7 @@ public struct Location: Equatable {
     self.floor = floor
     self.horizontalAccuracy = horizontalAccuracy
     self.speed = speed
-    self._speedAccuracy = speedAccuracy
+    self.speedAccuracy = speedAccuracy
     self.timestamp = timestamp
     self.verticalAccuracy = verticalAccuracy
   }
@@ -61,6 +55,7 @@ public struct Location: Equatable {
     floor: CLFloor?,
     horizontalAccuracy: CLLocationAccuracy,
     speed: CLLocationSpeed,
+    speedAccuracy: CLLocationSpeedAccuracy,
     timestamp: Date,
     verticalAccuracy: CLLocationAccuracy
   ) {
@@ -72,7 +67,7 @@ public struct Location: Equatable {
     self.floor = floor
     self.horizontalAccuracy = horizontalAccuracy
     self.speed = speed
-    self._speedAccuracy = 0
+    self.speedAccuracy = speedAccuracy
     self.timestamp = timestamp
     self.verticalAccuracy = verticalAccuracy
   }
