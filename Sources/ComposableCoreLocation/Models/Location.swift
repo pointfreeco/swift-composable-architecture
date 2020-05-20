@@ -10,7 +10,7 @@ public struct Location: Equatable {
   public var course: CLLocationDirection
 
   @available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *)
-  public var courseAccuracy: CLLocationDirectionAccuracy {
+  public var courseAccuracy: Double {
     get { _courseAccuracy } set { _courseAccuracy = newValue }
   }
   private var _courseAccuracy: Double
@@ -18,7 +18,13 @@ public struct Location: Equatable {
   public var floor: CLFloor?
   public var horizontalAccuracy: CLLocationAccuracy
   public var speed: CLLocationSpeed
-  public var speedAccuracy: CLLocationSpeedAccuracy
+
+  @available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *)
+  public var speedAccuracy: Double {
+    get { _speedAccuracy } set { _speedAccuracy = newValue }
+  }
+  private var _speedAccuracy: Double
+
   public var timestamp: Date
   public var verticalAccuracy: CLLocationAccuracy
 
@@ -27,11 +33,11 @@ public struct Location: Equatable {
     altitude: CLLocationDistance,
     coordinate: CLLocationCoordinate2D,
     course: CLLocationDirection,
-    courseAccuracy: CLLocationDirectionAccuracy,
+    courseAccuracy: Double,
     floor: CLFloor?,
     horizontalAccuracy: CLLocationAccuracy,
     speed: CLLocationSpeed,
-    speedAccuracy: CLLocationSpeedAccuracy,
+    speedAccuracy: Double,
     timestamp: Date,
     verticalAccuracy: CLLocationAccuracy
   ) {
@@ -43,7 +49,7 @@ public struct Location: Equatable {
     self.floor = floor
     self.horizontalAccuracy = horizontalAccuracy
     self.speed = speed
-    self.speedAccuracy = speedAccuracy
+    self._speedAccuracy = speedAccuracy
     self.timestamp = timestamp
     self.verticalAccuracy = verticalAccuracy
   }
@@ -55,7 +61,6 @@ public struct Location: Equatable {
     floor: CLFloor?,
     horizontalAccuracy: CLLocationAccuracy,
     speed: CLLocationSpeed,
-    speedAccuracy: CLLocationSpeedAccuracy,
     timestamp: Date,
     verticalAccuracy: CLLocationAccuracy
   ) {
@@ -67,7 +72,7 @@ public struct Location: Equatable {
     self.floor = floor
     self.horizontalAccuracy = horizontalAccuracy
     self.speed = speed
-    self.speedAccuracy = speedAccuracy
+    self._speedAccuracy = 0
     self.timestamp = timestamp
     self.verticalAccuracy = verticalAccuracy
   }
