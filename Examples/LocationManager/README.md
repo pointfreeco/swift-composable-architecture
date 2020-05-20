@@ -1,6 +1,6 @@
 # Location Manager
 
-<img width="1326" alt="image" src="https://user-images.githubusercontent.com/135203/82385999-478b5f00-99e8-11ea-852e-7e2a3cfd238e.png">
+<img width="1290" alt="image" src="https://user-images.githubusercontent.com/135203/82390225-0187c880-99f3-11ea-8ae7-e33f6993f89d.png">
 
 This application demonstrates how to build a simple application for both iOS and macOS using CoreLocation and MapKit. It displays a map and allows you to search for points of interest on the map by category (e.g. cafe, museum, etc). You can also center the map on your current location, if you allow access.
 
