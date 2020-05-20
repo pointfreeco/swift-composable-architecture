@@ -61,7 +61,7 @@ import CoreLocation
 ///
 /// With that initial set up we will now get all of `CLLocationManagerDelegate`'s methods delivered
 /// to our reducer via actions. To handle a particular delegate action we simply need to destructure
-/// it inside the `.locationManager` case we added to our `AppAction`. For example, one we get
+/// it inside the `.locationManager` case we added to our `AppAction`. For example, once we get
 /// location authorization from the user we could request their current location:
 ///
 ///     case .locationManager(.didChangeAuthorization(.authorizedAlways)),
@@ -647,17 +647,4 @@ extension LocationManagerClient {
       self.headingOrientation = headingOrientation
     }
   }
-}
-
-public func _unimplemented(
-  _ function: StaticString, file: StaticString = #file, line: UInt = #line
-) -> Never {
-  fatalError(
-    """
-    \(function) was called but is not implemented. Provide an implementation to \
-    "LocationManagerClient.mock".
-    """,
-    file: file,
-    line: line
-  )
 }

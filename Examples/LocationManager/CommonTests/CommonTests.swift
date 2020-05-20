@@ -24,13 +24,13 @@ class LocationManagerTests: XCTestCase {
         environment: AppEnvironment(
           localSearch: .mock(),
           locationManager: .mock(
-            authorizationStatus: { .notDetermined },
-            create: { _ in locationManagerSubject.eraseToEffect() },
-            locationServicesEnabled: { true },
-            requestLocation: { _ in .fireAndForget { didRequestLocation = true } },
-            requestWhenInUseAuthorization: { _ in
-              .fireAndForget { didRequestInUseAuthorization = true }
-            }
+//            authorizationStatus: { .notDetermined },
+//            create: { _ in locationManagerSubject.eraseToEffect() },
+//            locationServicesEnabled: { true },
+//            requestLocation: { _ in .fireAndForget { didRequestLocation = true } },
+//            requestWhenInUseAuthorization: { _ in
+//              .fireAndForget { didRequestInUseAuthorization = true }
+//            }
           )
         )
       )
