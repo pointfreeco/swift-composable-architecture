@@ -46,15 +46,15 @@ extension LocationManagerClient {
         #endif
         #if os(iOS) || targetEnvironment(macCatalyst)
           delegate.didFailRangingForConstraintWithError = { constraint, error in
-            callback.send(.didFailRanging(beaconConstraint: constraint, error: Error()))
+            callback.send(.didFailRanging(beaconConstraint: constraint, error: Error(error)))
           }
         #endif
-        delegate.didFailWithError = { _ in
-          callback.send(.didFailWithError(Error()))
+        delegate.didFailWithError = { error in
+          callback.send(.didFailWithError(Error(error)))
         }
         #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
           delegate.didFinishDeferredUpdatesWithError = { error in
-            callback.send(.didFinishDeferredUpdatesWithError(Error()))
+            callback.send(.didFinishDeferredUpdatesWithError(error.map(Error.init)))
           }
         #endif
         #if os(iOS) || targetEnvironment(macCatalyst)
@@ -93,7 +93,7 @@ extension LocationManagerClient {
         #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
           delegate.monitoringDidFailForRegionWithError = { region, error in
             callback.send(
-              .monitoringDidFail(region: region.map(Region.init(rawValue:)), error: Error()))
+              .monitoringDidFail(region: region.map(Region.init(rawValue:)), error: Error(error)))
           }
         #endif
         #if os(iOS) || targetEnvironment(macCatalyst)

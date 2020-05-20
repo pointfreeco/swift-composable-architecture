@@ -98,7 +98,7 @@ public struct LocationManagerClient {
 
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
-    case didFinishDeferredUpdatesWithError(Error)
+    case didFinishDeferredUpdatesWithError(Error?)
 
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
@@ -133,8 +133,11 @@ public struct LocationManagerClient {
   }
 
   public struct Error: Swift.Error, Equatable {
-    // TODO: hold onto NSError?
-    public init() {}
+    public let error: NSError
+
+    public init(_ error: Swift.Error) {
+      self.error = error as NSError
+    }
   }
 
   public var authorizationStatus: () -> CLAuthorizationStatus = { fatalError() }
@@ -145,7 +148,8 @@ public struct LocationManagerClient {
 
   @available(macOS, unavailable)
   @available(tvOS, unavailable)
-  var dismissHeadingCalibrationDisplay: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError()
+  var dismissHeadingCalibrationDisplay: (AnyHashable) -> Effect<Never, Never> = { _ in
+    fatalError()
   }
 
   @available(macOS, unavailable)
@@ -238,6 +242,12 @@ public struct LocationManagerClient {
   public func create(id: AnyHashable) -> Effect<Action, Never> { self.create(id) }
 
   public func destroy(id: AnyHashable) -> Effect<Never, Never> { self.destroy(id) }
+
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
+  public func dismissHeadingCalibrationDisplay(id: AnyHashable) -> Effect<Never, Never> {
+    self.dismissHeadingCalibrationDisplay(id)
+  }
 
   public func requestLocation(id: AnyHashable) -> Effect<Never, Never> { self.requestLocation(id) }
 
