@@ -7,6 +7,17 @@
 
 The Composable Architecture is a library for building applications in a consistent and understandable way, with composition, testing, and ergonomics in mind. It can be used in SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, tvOS, and watchOS).
 
+* [What is the Composable Architecture?](#what-is-the-composable-architecture)
+* [Learn more](#learn-more)
+* [Examples](#examples)
+* [Basic usage](#basic-usage)
+* [Supplemental libraries](#supplementary-libraries)
+* [FAQ](#faq)
+* [Installation](#installation)
+* [Help](#help)
+* [Credits and thanks](#credits-and-thanks)
+* [Other libraries](#other-libraries)
+
 ## What is the Composable Architecture?
 
 This library provides a few core tools that can be used to build applications of varying purpose and complexity. It provides compelling stories that you can follow to solve many problems you encounter day-to-day when building applications, such as:
@@ -30,7 +41,7 @@ This library provides a few core tools that can be used to build applications of
 
 The Composable Architecture was designed over the course of many episodes on [Point-Free](https://www.pointfree.co), a video series exploring functional programming and the Swift language, hosted by [Brandon Williams](https://twitter.com/mbrandonw) and [Stephen Celis](https://twitter.com/stephencelis).
 
-You can watch all of the episodes [here](https://www.pointfree.co/collections/composable-architecture), as well as a dedicated, multipart tour of the architecture from scratch: [part 1](https://www.pointfree.co/episodes/ep100-a-tour-of-the-composable-architecture-part-1) and [part 2](https://www.pointfree.co/episodes/ep101-a-tour-of-the-composable-architecture-part-2).
+You can watch all of the episodes [here](https://www.pointfree.co/collections/composable-architecture), as well as a dedicated, multipart tour of the architecture from scratch: [part 1](https://www.pointfree.co/episodes/ep100-a-tour-of-the-composable-architecture-part-1), [part 2](https://www.pointfree.co/episodes/ep101-a-tour-of-the-composable-architecture-part-2) and [part 3](https://www.pointfree.co/episodes/ep102-a-tour-of-the-composable-architecture-part-3).
 
 <a href="https://www.pointfree.co/collections/composable-architecture">
   <img alt="video poster image" src="https://i.vimeocdn.com/video/850265054.jpg" width="600">
@@ -369,7 +380,7 @@ You can add ComposableArchitecture to an Xcode project by adding it as a package
 
 If you want to discuss the Composable Architecture or have a question about how to use it to solve a particular problem, ask around on [its Swift forum](https://forums.swift.org/c/related-projects/swift-composable-architecture).
 
-## Credits and Thanks
+## Credits and thanks
 
 The following people gave feedback on the library at its early stages and helped make the library what it is today:
 
@@ -379,7 +390,7 @@ Special thanks to [Chris Liscio](https://twitter.com/liscio) who helped us work 
 
 And thanks to [Shai Mishali](https://github.com/freak4pc) and the [CombineCommunity](https://github.com/CombineCommunity/CombineExt/) project, from which we took their implementation of `Publishers.Create`, which we use in `Effect` to help bridge delegate and callback-based APIs, making it much easier to interface with 3rd party frameworks.
 
-## Other Libraries
+## Other libraries
 
 The Composable Architecture was built on a foundation of ideas started by other libraries, in particular [Elm](https://elm-lang.org) and [Redux](https://redux.js.org/).
 
