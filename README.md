@@ -380,7 +380,7 @@ There are also many architecture libraries in the Swift and iOS community. Each 
 * [ReactorKit](https://github.com/ReactorKit/ReactorKit)
 * [RxFeedback](https://github.com/NoTests/RxFeedback.swift)
 * [Mobius.swift](https://github.com/spotify/mobius.swift)
-* [ReactiveFeedback](https://github.com/babylonhealth/ReactiveFeedback)
+* [Loop](https://github.com/ReactiveCocoa/Loop) (previously know as ReactiveFeedback)
 
 ## License
 
