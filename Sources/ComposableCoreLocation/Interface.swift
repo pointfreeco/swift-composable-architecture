@@ -486,7 +486,7 @@ public struct LocationManager {
       )
     )
   }
-  
+
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
   public func startMonitoringForRegion(id: AnyHashable, region: Region) -> Effect<Never, Never> {

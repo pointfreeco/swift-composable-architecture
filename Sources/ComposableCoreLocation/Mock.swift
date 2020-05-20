@@ -43,8 +43,12 @@
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     public static func mock(
-      authorizationStatus: @escaping () -> CLAuthorizationStatus = { _unimplemented("authorizationStatus") },
-      create: @escaping (_ id: AnyHashable) -> Effect<Action, Never> = { _ in _unimplemented("create") },
+      authorizationStatus: @escaping () -> CLAuthorizationStatus = {
+        _unimplemented("authorizationStatus")
+      },
+      create: @escaping (_ id: AnyHashable) -> Effect<Action, Never> = { _ in
+        _unimplemented("create")
+      },
       destroy: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("destroy") },
       dismissHeadingCalibrationDisplay: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
         _unimplemented("dismissHeadingCalibrationDisplay")
@@ -57,27 +61,35 @@
       maximumRegionMonitoringDistance: @escaping (AnyHashable) -> CLLocationDistance = { _ in
         _unimplemented("maximumRegionMonitoringDistance")
       },
-      monitoredRegions: @escaping (AnyHashable) -> Set<Region> = { _ in _unimplemented("monitoredRegions") },
+      monitoredRegions: @escaping (AnyHashable) -> Set<Region> = { _ in
+        _unimplemented("monitoredRegions")
+      },
       requestAlwaysAuthorization: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
         _unimplemented("requestAlwaysAuthorization")
       },
-      requestLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("requestLocation") },
+      requestLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
+        _unimplemented("requestLocation")
+      },
       requestWhenInUseAuthorization: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
         _unimplemented("requestWhenInUseAuthorization")
       },
       set: @escaping (_ id: AnyHashable, _ properties: Properties) -> Effect<Never, Never> = {
         _, _ in _unimplemented("set")
       },
-      significantLocationChangeMonitoringAvailable: @escaping () -> Bool = { _unimplemented("significantLocationChangeMonitoringAvailable") },
+      significantLocationChangeMonitoringAvailable: @escaping () -> Bool = {
+        _unimplemented("significantLocationChangeMonitoringAvailable")
+      },
       startMonitoringSignificantLocationChanges: @escaping (AnyHashable) -> Effect<Never, Never> = {
         _ in _unimplemented("startMonitoringSignificantLocationChanges")
       },
       startMonitoringForRegion: @escaping (AnyHashable, Region) -> Effect<Never, Never> = { _, _ in
         _unimplemented("startMonitoringForRegion")
       },
-      startMonitoringVisits: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("startMonitoringVisits")
+      startMonitoringVisits: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
+        _unimplemented("startMonitoringVisits")
       },
-      startUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("startUpdatingLocation")
+      startUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
+        _unimplemented("startUpdatingLocation")
       },
       stopMonitoringSignificantLocationChanges: @escaping (AnyHashable) -> Effect<Never, Never> = {
         _ in _unimplemented("stopMonitoringSignificantLocationChanges")
@@ -85,10 +97,18 @@
       stopMonitoringForRegion: @escaping (AnyHashable, Region) -> Effect<Never, Never> = { _, _ in
         _unimplemented("stopMonitoringForRegion")
       },
-      stopMonitoringVisits: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("stopMonitoringVisits") },
-      startUpdatingHeading: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("startUpdatingHeading") },
-      stopUpdatingHeading: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("stopUpdatingHeading") },
-      stopUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("stopUpdatingLocation") }
+      stopMonitoringVisits: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
+        _unimplemented("stopMonitoringVisits")
+      },
+      startUpdatingHeading: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
+        _unimplemented("startUpdatingHeading")
+      },
+      stopUpdatingHeading: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
+        _unimplemented("stopUpdatingHeading")
+      },
+      stopUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
+        _unimplemented("stopUpdatingLocation")
+      }
     ) -> Self {
       Self(
         authorizationStatus: authorizationStatus,
@@ -125,8 +145,12 @@
     @available(macOS, unavailable)
     @available(tvOS, unavailable)
     public static func mock(
-      authorizationStatus: @escaping () -> CLAuthorizationStatus = { _unimplemented("authorizationStatus") },
-      create: @escaping (_ id: AnyHashable) -> Effect<Action, Never> = { _ in _unimplemented("create") },
+      authorizationStatus: @escaping () -> CLAuthorizationStatus = {
+        _unimplemented("authorizationStatus")
+      },
+      create: @escaping (_ id: AnyHashable) -> Effect<Action, Never> = { _ in
+        _unimplemented("create")
+      },
       destroy: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("destroy") },
       dismissHeadingCalibrationDisplay: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
         _unimplemented("dismissHeadingCalibrationDisplay")
@@ -138,18 +162,27 @@
       requestAlwaysAuthorization: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
         _unimplemented("requestAlwaysAuthorization")
       },
-      requestLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("requestLocation") },
+      requestLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
+        _unimplemented("requestLocation")
+      },
       requestWhenInUseAuthorization: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
         _unimplemented("requestWhenInUseAuthorization")
       },
       set: @escaping (_ id: AnyHashable, _ properties: Properties) -> Effect<Never, Never> = {
         _, _ in _unimplemented("set")
       },
-      startUpdatingHeading: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("startUpdatingHeading") },
-      startUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("startUpdatingLocation")
+      startUpdatingHeading: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
+        _unimplemented("startUpdatingHeading")
       },
-      stopUpdatingHeading: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("stopUpdatingHeading") },
-      stopUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("stopUpdatingLocation") }
+      startUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
+        _unimplemented("startUpdatingLocation")
+      },
+      stopUpdatingHeading: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
+        _unimplemented("stopUpdatingHeading")
+      },
+      stopUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
+        _unimplemented("stopUpdatingLocation")
+      }
     ) -> Self {
       Self(
         authorizationStatus: authorizationStatus,
@@ -176,19 +209,27 @@
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     public static func mock(
-      authorizationStatus: @escaping () -> CLAuthorizationStatus = { _unimplemented("authorizationStatus") },
-      create: @escaping (_ id: AnyHashable) -> Effect<Action, Never> = { _ in _unimplemented("create") },
+      authorizationStatus: @escaping () -> CLAuthorizationStatus = {
+        _unimplemented("authorizationStatus")
+      },
+      create: @escaping (_ id: AnyHashable) -> Effect<Action, Never> = { _ in
+        _unimplemented("create")
+      },
       destroy: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("destroy") },
       location: @escaping (AnyHashable) -> Location = { _ in _unimplemented("location") },
       locationServicesEnabled: @escaping () -> Bool = { _unimplemented("locationServicesEnabled") },
-      requestLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("requestLocation") },
+      requestLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
+        _unimplemented("requestLocation")
+      },
       requestWhenInUseAuthorization: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
         _unimplemented("requestWhenInUseAuthorization")
       },
       set: @escaping (_ id: AnyHashable, _ properties: Properties) -> Effect<Never, Never> = {
         _, _ in _unimplemented("set")
       },
-      stopUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("stopUpdatingLocation") }
+      stopUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
+        _unimplemented("stopUpdatingLocation")
+      }
     ) -> Self {
       Self(
         authorizationStatus: authorizationStatus,
@@ -208,8 +249,12 @@
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     public static func mock(
-      authorizationStatus: @escaping () -> CLAuthorizationStatus = { _unimplemented("authorizationStatus") },
-      create: @escaping (_ id: AnyHashable) -> Effect<Action, Never> = { _ in _unimplemented("create") },
+      authorizationStatus: @escaping () -> CLAuthorizationStatus = {
+        _unimplemented("authorizationStatus")
+      },
+      create: @escaping (_ id: AnyHashable) -> Effect<Action, Never> = { _ in
+        _unimplemented("create")
+      },
       destroy: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("destroy") },
       headingAvailable: @escaping () -> Bool = { _unimplemented("headingAvailable") },
       location: @escaping (AnyHashable) -> Location = { _ in _unimplemented("location") },
@@ -217,22 +262,29 @@
       maximumRegionMonitoringDistance: @escaping (AnyHashable) -> CLLocationDistance = { _ in
         _unimplemented("maximumRegionMonitoringDistance")
       },
-      monitoredRegions: @escaping (AnyHashable) -> Set<Region> = { _ in _unimplemented("monitoredRegions") },
+      monitoredRegions: @escaping (AnyHashable) -> Set<Region> = { _ in
+        _unimplemented("monitoredRegions")
+      },
       requestAlwaysAuthorization: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
         _unimplemented("requestAlwaysAuthorization")
       },
-      requestLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("requestLocation") },
+      requestLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
+        _unimplemented("requestLocation")
+      },
       set: @escaping (_ id: AnyHashable, _ properties: Properties) -> Effect<Never, Never> = {
         _, _ in _unimplemented("set")
       },
-      significantLocationChangeMonitoringAvailable: @escaping () -> Bool = { _unimplemented("significantLocationChangeMonitoringAvailable") },
+      significantLocationChangeMonitoringAvailable: @escaping () -> Bool = {
+        _unimplemented("significantLocationChangeMonitoringAvailable")
+      },
       startMonitoringForRegion: @escaping (AnyHashable, Region) -> Effect<Never, Never> = { _, _ in
         _unimplemented("startMonitoringForRegion")
       },
       startMonitoringSignificantLocationChanges: @escaping (AnyHashable) -> Effect<Never, Never> = {
         _ in _unimplemented("startMonitoringSignificantLocationChanges")
       },
-      startUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("startUpdatingLocation")
+      startUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
+        _unimplemented("startUpdatingLocation")
       },
       stopMonitoringForRegion: @escaping (AnyHashable, Region) -> Effect<Never, Never> = { _, _ in
         _unimplemented("stopMonitoringForRegion")
@@ -240,7 +292,9 @@
       stopMonitoringSignificantLocationChanges: @escaping (AnyHashable) -> Effect<Never, Never> = {
         _ in _unimplemented("stopMonitoringSignificantLocationChanges")
       },
-      stopUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("stopUpdatingLocation") }
+      stopUpdatingLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
+        _unimplemented("stopUpdatingLocation")
+      }
     ) -> Self {
       Self(
         authorizationStatus: authorizationStatus,

@@ -176,7 +176,7 @@ extension LocationManager {
         #endif
       }
     }
-    
+
     #if os(iOS) || targetEnvironment(macCatalyst)
       manager.startMonitoringVisits = { id in
         .fireAndForget { dependencies[id]?.locationManager.startMonitoringVisits() }
