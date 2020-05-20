@@ -57,11 +57,9 @@ class LocationManagerTests: XCTestCase {
       altitude: 0,
       coordinate: CLLocationCoordinate2D(latitude: 10, longitude: 20),
       course: 0,
-      courseAccuracy: 0,
       floor: nil,
       horizontalAccuracy: 0,
       speed: 0,
-      speedAccuracy: 0,
       timestamp: Date(timeIntervalSince1970: 1_234_567_890),
       verticalAccuracy: 0
     )
