@@ -18,11 +18,11 @@ import CoreLocation
 ///     }
 ///
 /// The `LocationManager.Action` enum holds a case for each delegate method of
-/// `CLLocationManagerDelegate`, such as `didUpdateLocations`, `didEnterRegion`, `didUpdateHeading`
+/// `CLLocationManagerDelegate`, such as `didUpdateLocations`, `didEnterRegion`, `didUpdateHeading`,
 /// and more.
 ///
-/// Next we add `LocationManager`, which is the wrapper type around `CLLocationManager` that
-/// the library provides, to the application's environment of dependencies:
+/// Next we add a `LocationManager`, which is a wrapper around `CLLocationManager` that the library
+/// provides, to the application's environment of dependencies:
 ///
 ///     struct AppEnvironment {
 ///       var locationManager: LocationManager
@@ -31,7 +31,7 @@ import CoreLocation
 ///       ...
 ///     }
 ///
-/// Next, we create a location manager and request authorization from our application's reducer by
+/// Then, we create a location manager and request authorization from our application's reducer by
 /// returning an effect from an action to kick things off. One good choice for such an action is the
 /// `onAppear` of your view. You must also provide a unique identifier to associate with the
 /// location manager you create since it is possible to have multiple managers running at once.
@@ -40,7 +40,7 @@ import CoreLocation
 ///       state, action, environment in
 ///
 ///       // A unique identifier for our location manager, just in case we want to use
-///       // more than one in your application.
+///       // more than one in our application.
 ///       struct LocationManagerId: Hashable {}
 ///
 ///       switch action {
@@ -59,8 +59,8 @@ import CoreLocation
 ///       }
 ///     }
 ///
-/// With that initial set up we will now get all of `CLLocationManagerDelegate`'s methods delivered
-/// to our reducer via actions. To handle a particular delegate action we simply need to destructure
+/// With that initial setup we will now get all of `CLLocationManagerDelegate`'s delegate methods
+/// delivered to our reducer via actions. To handle a particular delegate action we can destructure
 /// it inside the `.locationManager` case we added to our `AppAction`. For example, once we get
 /// location authorization from the user we could request their current location:
 ///
@@ -71,8 +71,8 @@ import CoreLocation
 ///         .requestLocation(id: LocationManagerId())
 ///         .fireAndForget()
 ///
-/// And if the user denies location access we can show an alert telling them that we need access to
-/// be able to do anything in the app:
+/// If the user denies location access we can show an alert telling them that we need access to be
+/// able to do anything in the app:
 ///
 ///     case .locationManager(.didChangeAuthorization(.denied)),
 ///          .locationManager(.didChangeAuthorization(.restricted)):
@@ -82,26 +82,22 @@ import CoreLocation
 ///         """
 ///       return .none
 ///
-/// And we'll be notified of the user's location being obtained by handling the `.didUpdateLocations`
+/// Otherwise, we'll be notified of the user's location by handling the `.didUpdateLocations`
 /// action:
 ///
 ///     case let .locationManager(.didUpdateLocations(locations)):
 ///       // Do something cool with user's current location.
 ///       ...
 ///
-/// And once you have handled all the `CLLocationManagerDelegate` actions you care about, you can
-/// ignore the rest:
+/// Once you have handled all the `CLLocationManagerDelegate` actions you care about, you can ignore
+/// the rest:
 ///
 ///     case .locationManager:
 ///       return .none
 ///
-/// Accessing any functionality on the location manager is done by returning effects from the reducer.
-/// For example, if you want to request the user's current location when they tap a button, then you
-/// can do the following:
-///
 /// And finally, when creating the `Store` to power your application you will supply the "live"
-/// implementation of the `LocationManager`, which is to say an instance that actually
-/// holds onto a `CLLocationManager` on the inside and interacts with it directly:
+/// implementation of the `LocationManager`, which is an instance that holds onto a
+/// `CLLocationManager` on the inside and interacts with it directly:
 ///
 ///     let store = Store(
 ///       initialState: AppState(),
@@ -112,20 +108,20 @@ import CoreLocation
 ///       )
 ///     )
 ///
-/// That is enough to implement a basic application that interacts with Core Location.
+/// This is enough to implement a basic application that interacts with Core Location.
 ///
-/// The true power of building your application this way and interfacing with Core Location this
-/// way is the ability to test how your application interacts with Core Location. It starts by
-/// creating a `TestStore` whose environment contains the `.mock` version of the
-/// `LocationManager`. The `.mock` function allows you to create a fully controlled
-/// version of the manager that does not interact with a `CLLocationManager` at all. Instead,
-/// you override whichever endpoints your feature needs to supply deterministic functionality.
+/// The true power of building your application and interfacing with Core Location in this way is
+/// the ability to _test_ how your application interacts with Core Location. It starts by creating
+/// a `TestStore` whose environment contains a `.mock` version of the `LocationManager`. The
+/// `.mock` function allows you to create a fully controlled version of the location manager that
+/// does not interact with `CLLocationManager` at all. Instead, you override whichever endpoints
+/// your feature needs to supply deterministic functionality.
 ///
-/// For example, to test the flow of asking for location authorization, being denied, and showing
-///   an alert we need to override the `create` endpoint and the `requestWhenInUseAuthorization`
-///   endpoint. The `create` endpoint needs to return an effect that emits the delegate actions,
-/// which we can control via a publish subject. And the `requestWhenInUseAuthorization` endpoint
-/// is a fire-and-forget effect, but we can make assertions that it was called how we expect.
+/// For example, to test the flow of asking for location authorization, being denied, and showing an
+/// alert, we need to override the `create` and `requestWhenInUseAuthorization` endpoints. The
+/// `create` endpoint needs to return an effect that emits the delegate actions, which we can
+/// control via a publish subject. And the `requestWhenInUseAuthorization` endpoint is a
+/// fire-and-forget effect, but we can make assertions that it was called how we expect.
 ///
 ///     var didRequestInUseAuthorization = false
 ///     let locationManagerSubject = PassthroughSubject<LocationManager.Action, Never>()
@@ -143,9 +139,9 @@ import CoreLocation
 ///     )
 ///
 /// Then we can write an assertion that simulates a sequence of user steps and location manager
-/// delegate actions, and we assert on how state mutates and how effects are received. For
-/// example, we can have the user come to the screen, have the location authorization request
-/// denied, and then assert that an effect was received which caused the alert to show:
+/// delegate actions, and we can assert against how state mutates and how effects are received. For
+/// example, we can have the user come to the screen, deny the location authorization request, and
+/// then assert that an effect was received which caused the alert to show:
 ///
 ///     store.assert(
 ///       .send(.onAppear),
@@ -157,7 +153,9 @@ import CoreLocation
 ///
 ///       // We receive the authorization change delegate action from the effect
 ///       .receive(.locationManager(.didChangeAuthorization(.denied))) {
-///         $0.alert = "Please give location access so that we can show you some cool stuff."
+///         $0.alert = """
+///           Please give location access so that we can show you some cool stuff.
+///           """
 ///       },
 ///
 ///       // Store assertions require all effects to be completed, so we complete
@@ -167,13 +165,16 @@ import CoreLocation
 ///       }
 ///     )
 ///
-/// And this is only the tip of the iceberg. We can further test what happens when we are given
-/// authorization by the user and the request for their location returns a specific location
-/// that we control, and even what happens when the request for their location fails. It is very
-/// easy to write these tests, and allows us to test deep, subtle properties of our application.
+/// And this is only the tip of the iceberg. We can further test what happens when we are granted
+/// authorization by the user and the request for their location returns a specific location that we
+/// control, and even what happens when the request for their location fails. It is very easy to
+/// write these tests, and we can test deep, subtle properties of our application.
 ///
 public struct LocationManager {
 
+  /// Actions that correspond to `CLLocationManagerDelegate` methods.
+  ///
+  /// See `CLLocationManagerDelegate` for more information.
   public enum Action: Equatable {
     case didChangeAuthorization(CLAuthorizationStatus)
 
@@ -361,10 +362,18 @@ public struct LocationManager {
     _unimplemented("stopUpdatingLocation")
   }
 
+  /// Creates a `CLLocationManager` for the given identifier.
+  ///
+  /// - Parameter id: A unique identifier for the underlying `CLLocationManager`.
+  /// - Returns: An effect of `LocationManager.Action`s.
   public func create(id: AnyHashable) -> Effect<Action, Never> {
     self.create(id)
   }
 
+  /// Tears a `CLLocationManager` down for the given identifier.
+  ///
+  /// - Parameter id: A unique identifier for the underlying `CLLocationManager`.
+  /// - Returns: A fire-and-forget effect.
   public func destroy(id: AnyHashable) -> Effect<Never, Never> {
     self.destroy(id)
   }
@@ -403,6 +412,7 @@ public struct LocationManager {
     self.requestWhenInUseAuthorization(id)
   }
 
+  /// Updates the given properties of a uniquely identified `CLLocationManager`.
   @available(macOS, unavailable)
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
@@ -432,6 +442,7 @@ public struct LocationManager {
     )
   }
 
+  /// Updates the given properties of a uniquely identified `CLLocationManager`.
   @available(iOS, unavailable)
   @available(macCatalyst, unavailable)
   @available(watchOS, unavailable)
@@ -449,6 +460,7 @@ public struct LocationManager {
     )
   }
 
+  /// Updates the given properties of a uniquely identified `CLLocationManager`.
   @available(iOS, unavailable)
   @available(macCatalyst, unavailable)
   @available(macOS, unavailable)
@@ -474,6 +486,7 @@ public struct LocationManager {
       )
     )
   }
+  
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
   public func startMonitoringForRegion(id: AnyHashable, region: Region) -> Effect<Never, Never> {
