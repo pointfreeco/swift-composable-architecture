@@ -249,16 +249,44 @@ public struct LocationManagerClient {
     self.dismissHeadingCalibrationDisplay(id)
   }
 
-  public func requestLocation(id: AnyHashable) -> Effect<Never, Never> { self.requestLocation(id) }
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
+  public func heading(id: AnyHashable) -> Heading? { self.heading(id) }
+
+  public func location(id: AnyHashable) -> Location { self.location(id) }
+
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
+  public func maximumRegionMonitoringDistance(id: AnyHashable) -> CLLocationDistance {
+    self.maximumRegionMonitoringDistance(id)
+  }
+
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
+  public func monitoredRegions(id: AnyHashable) -> Set<Region> { self.monitoredRegions(id) }
 
   @available(tvOS, unavailable)
   public func requestAlwaysAuthorization(id: AnyHashable) -> Effect<Never, Never> {
     self.requestAlwaysAuthorization(id)
   }
 
+  public func requestLocation(id: AnyHashable) -> Effect<Never, Never> { self.requestLocation(id) }
+
   @available(macOS, unavailable)
   public func requestWhenInUseAuthorization(id: AnyHashable) -> Effect<Never, Never> {
     self.requestWhenInUseAuthorization(id)
+  }
+
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
+  public func startMonitoringForRegion(id: AnyHashable, region: Region) -> Effect<Never, Never> {
+    self.startMonitoringForRegion(id, region)
+  }
+
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
+  public func startMonitoringSignificantLocationChanges(id: AnyHashable) -> Effect<Never, Never> {
+    self.startMonitoringSignificantLocationChanges(id)
   }
 
   @available(macOS, unavailable)
@@ -268,9 +296,27 @@ public struct LocationManagerClient {
     self.startMonitoringVisits(id)
   }
 
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
+  public func startUpdatingHeading(id: AnyHashable) -> Effect<Never, Never> {
+    self.startUpdatingHeading(id)
+  }
+
   @available(tvOS, unavailable)
   public func startUpdatingLocation(id: AnyHashable) -> Effect<Never, Never> {
     self.startUpdatingLocation(id)
+  }
+
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
+  public func stopMonitoringForRegion(id: AnyHashable, region: Region) -> Effect<Never, Never> {
+    self.stopMonitoringForRegion(id, region)
+  }
+
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
+  public func stopMonitoringSignificantLocationChanges(id: AnyHashable) -> Effect<Never, Never> {
+    self.stopMonitoringSignificantLocationChanges(id)
   }
 
   @available(macOS, unavailable)
@@ -278,6 +324,12 @@ public struct LocationManagerClient {
   @available(watchOS, unavailable)
   public func stopMonitoringVisits(id: AnyHashable) -> Effect<Never, Never> {
     self.stopMonitoringVisits(id)
+  }
+
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
+  public func stopUpdatingHeading(id: AnyHashable) -> Effect<Never, Never> {
+    self.stopUpdatingHeading(id)
   }
 
   public func stopUpdatingLocation(id: AnyHashable) -> Effect<Never, Never> {
