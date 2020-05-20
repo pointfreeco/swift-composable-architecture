@@ -2,13 +2,14 @@ import Combine
 import ComposableArchitecture
 import ComposableCoreLocation
 import CoreLocation
-#if os(iOS)
-import LocationManagerMobile
-#elseif os(macOS)
-import LocationManagerDesktop
-#endif
 import MapKit
 import XCTest
+
+#if os(iOS)
+  import LocationManagerMobile
+#elseif os(macOS)
+  import LocationManagerDesktop
+#endif
 
 class LocationManagerTests: XCTestCase {
   func testRequestLocation_Allow() {

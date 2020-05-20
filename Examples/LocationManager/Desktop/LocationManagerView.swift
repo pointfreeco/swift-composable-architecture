@@ -27,7 +27,7 @@ struct LocationManagerView: View {
                 .padding([.all], 12)
                 .background(
                   category == viewStore.pointOfInterestCategory ? Color.blue : Color.secondary
-              )
+                )
                 .foregroundColor(.white)
                 .cornerRadius(8)
             }
