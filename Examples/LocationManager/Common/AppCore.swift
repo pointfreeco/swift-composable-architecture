@@ -53,18 +53,18 @@ public enum AppAction: Equatable {
   case currentLocationButtonTapped
   case dismissAlertButtonTapped
   case localSearchResponse(Result<LocalSearchResponse, LocalSearchClient.Error>)
-  case locationManager(LocationManagerClient.Action)
+  case locationManager(LocationManager.Action)
   case onAppear
   case updateRegion(CoordinateRegion?)
 }
 
 public struct AppEnvironment {
   public var localSearch: LocalSearchClient
-  public var locationManager: LocationManagerClient
+  public var locationManager: LocationManager
 
   public init(
     localSearch: LocalSearchClient,
-    locationManager: LocationManagerClient
+    locationManager: LocationManager
   ) {
     self.localSearch = localSearch
     self.locationManager = locationManager
@@ -182,7 +182,7 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, ac
 )
 .debug()
 
-private let locationManagerReducer = Reducer<AppState, LocationManagerClient.Action, AppEnvironment>
+private let locationManagerReducer = Reducer<AppState, LocationManager.Action, AppEnvironment>
 {
   state, action, environment in
 

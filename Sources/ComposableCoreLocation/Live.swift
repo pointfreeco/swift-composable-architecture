@@ -2,9 +2,9 @@ import Combine
 import ComposableArchitecture
 import CoreLocation
 
-extension LocationManagerClient {
+extension LocationManager {
 
-  /// The live implementation of the `LocationManagerClient` interface. This implementation is
+  /// The live implementation of the `LocationManager` interface. This implementation is
   /// capable of creating real `CLLocationManager` instances, listening to its delegate methods,
   /// and invoking its methods. You will typically use this when building for the simulator
   /// or device:
@@ -13,12 +13,12 @@ extension LocationManagerClient {
   ///       initialState: AppState(),
   ///       reducer: appReducer,
   ///       environment: AppEnvironment(
-  ///         locationManager: LocationManagerClient.live
+  ///         locationManager: LocationManager.live
   ///       )
   ///     )
   ///
-  public static let live: LocationManagerClient = { () -> LocationManagerClient in
-    var client = LocationManagerClient()
+  public static let live: LocationManager = { () -> LocationManager in
+    var client = LocationManager()
 
     client.authorizationStatus = CLLocationManager.authorizationStatus
 

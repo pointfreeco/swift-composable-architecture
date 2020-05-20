@@ -12,7 +12,7 @@ import CoreLocation
 ///       initialState: AppState(),
 ///       reducer: appReducer,
 ///       environment: AppEnvironment(
-///         locationManager: LocationManagerClient.live
+///         locationManager: LocationManager.live
 ///       )
 ///     )
 ///
@@ -20,18 +20,18 @@ import CoreLocation
 ///  location manager can send:
 ///
 ///      enum AppAction {
-///        case locationManager(LocationManagerClient.Action)
+///        case locationManager(LocationManager.Action)
 ///        // Other actions...
 ///      }
 ///
-///  In the reducer you create a location manager by returning the `.create` effect from an
-///  action, say for example, an `.onAppear` action:
+///  In the reducer you create a location manager by returning the `.create` effect from an action,
+///  say for example, an `.onAppear` action:
 ///
 ///     let appReducer = AppReducer<AppState, AppAction, AppEnvironment> {
 ///       state, action, environment in
 ///
-///       // A unique identifier for our location manager, just in case we want to use more than
-///       // one in your application.
+///       // A unique identifier for our location manager, just in case we want to use more than one
+///       // in your application.
 ///       struct LocationManagerId: Hashable {}
 ///
 ///       switch action {
@@ -60,19 +60,18 @@ import CoreLocation
 ///       initialState: AppState(),
 ///       reducer: appReducer,
 ///       environment: AppEnvironment(
-///         locationManager: LocationManagerClient.mock(
+///         locationManager: LocationManager.mock(
 ///           // override any manager endpoints used by your test, e.g.
 ///           authorizationStatus: { .authorizedAlways }
 ///         )
 ///       )
 ///     )
 ///
-/// It is also helpful to use `LocationManagerClient.mock` in SwiftUI previews. Most of the
-/// features of `CLLocationManager` do not work in SwiftUI previews, and so by using
-/// the `.mock` version you can access a little more functionality without needing to run
-/// your application in a simulator or device.
-///
-public struct LocationManagerClient {
+/// It is also helpful to use `LocationManager.mock` in SwiftUI previews. Most of the features of
+/// `CLLocationManager` do not work in SwiftUI previews, and so by using the `.mock` version you can
+/// access a little more functionality without needing to run your application in a simulator or
+/// device.
+public struct LocationManager {
 
   public enum Action: Equatable {
     case didChangeAuthorization(CLAuthorizationStatus)
@@ -434,7 +433,7 @@ public struct LocationManagerClient {
   }
 }
 
-extension LocationManagerClient {
+extension LocationManager {
   public struct Properties: Equatable {
     @available(macOS, unavailable)
     @available(tvOS, unavailable)
@@ -555,7 +554,7 @@ public func _unimplemented(
   fatalError(
     """
     \(function) was called but is not implemented. Provide an implementation to \
-    "LocationManagerClient.mock".
+    "LocationManager.mock".
     """,
     file: file,
     line: line

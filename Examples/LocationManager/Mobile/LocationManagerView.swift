@@ -111,8 +111,8 @@ struct ContentView_Previews: PreviewProvider {
       timestamp: Date(timeIntervalSince1970: 1_234_567_890),
       verticalAccuracy: 0
     )
-    let locationManagerSubject = PassthroughSubject<LocationManagerClient.Action, Never>()
-    let locationManager = LocationManagerClient.mock(
+    let locationManagerSubject = PassthroughSubject<LocationManager.Action, Never>()
+    let locationManager = LocationManager.mock(
       authorizationStatus: { .authorizedAlways },
       create: { _ in locationManagerSubject.eraseToEffect() },
       locationServicesEnabled: { true },

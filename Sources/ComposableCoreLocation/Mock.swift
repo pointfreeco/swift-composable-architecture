@@ -2,8 +2,8 @@
   import CoreLocation
   import ComposableArchitecture
 
-  extension LocationManagerClient {
-    /// The mock implementation of the `LocationManagerClient` interface. By default this
+  extension LocationManager {
+    /// The mock implementation of the `LocationManager` interface. By default this
     /// implementation stubs all of its endpoints as functions that immediately `fatalError`.
     /// So, to construct a mock you will invoke the `.mock` static method, and provide
     /// implementations for all of the endpoints that you expect your test to need access to.
@@ -21,7 +21,7 @@
     ///
     ///     // Send actions to this subject to simulate the location manager's delegate methods
     ///     // being called.
-    ///     let locationManagerSubject = PassthroughSubject<LocationManagerClient.Action, Never>()
+    ///     let locationManagerSubject = PassthroughSubject<LocationManager.Action, Never>()
     ///
     ///     // The mock location we want the client to say we are located at
     ///     let mockLocation = Location(
@@ -29,7 +29,7 @@
     ///       // A whole bunch of other properties have been omitted.
     ///     )
     ///
-    ///     let client = LocationManagerClient.mock(
+    ///     let client = LocationManager.mock(
     ///       // Override any CLLocationManager endpoints your test invokes:
     ///
     ///       authorizationStatus: { .authorizedAlways },
