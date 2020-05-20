@@ -1,17 +1,17 @@
 import MapKit
 
-struct LocalSearchResponse: Equatable {
-  var boundingRegion: MKCoordinateRegion
-  var mapItems: [MapItem]
+public struct LocalSearchResponse: Equatable {
+  public var boundingRegion: MKCoordinateRegion
+  public var mapItems: [MapItem]
 
-  init(
+  public init(
     response: MKLocalSearch.Response
   ) {
     self.boundingRegion = response.boundingRegion
     self.mapItems = response.mapItems.map(MapItem.init(rawValue:))
   }
 
-  init(
+  public init(
     boundingRegion: MKCoordinateRegion,
     mapItems: [MapItem]
   ) {
@@ -19,7 +19,7 @@ struct LocalSearchResponse: Equatable {
     self.mapItems = mapItems
   }
 
-  static func == (lhs: Self, rhs: Self) -> Bool {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.boundingRegion.center.latitude == rhs.boundingRegion.center.latitude
       && lhs.boundingRegion.center.longitude == rhs.boundingRegion.center.longitude
       && lhs.boundingRegion.span.latitudeDelta == rhs.boundingRegion.span.latitudeDelta
@@ -28,16 +28,16 @@ struct LocalSearchResponse: Equatable {
   }
 }
 
-struct MapItem: Equatable {
-  var isCurrentLocation: Bool
-  var name: String?
-  var phoneNumber: String?
-  var placemark: Placemark
-  var pointOfInterestCategory: MKPointOfInterestCategory?
-  var timeZone: TimeZone?
-  var url: URL?
+public struct MapItem: Equatable {
+  public var isCurrentLocation: Bool
+  public var name: String?
+  public var phoneNumber: String?
+  public var placemark: Placemark
+  public var pointOfInterestCategory: MKPointOfInterestCategory?
+  public var timeZone: TimeZone?
+  public var url: URL?
 
-  init(rawValue: MKMapItem) {
+  public init(rawValue: MKMapItem) {
     self.isCurrentLocation = rawValue.isCurrentLocation
     self.name = rawValue.name
     self.placemark = Placemark(rawValue: rawValue.placemark)
@@ -47,7 +47,7 @@ struct MapItem: Equatable {
     self.url = rawValue.url
   }
 
-  init(
+  public init(
     isCurrentLocation: Bool = false,
     name: String? = nil,
     phoneNumber: String? = nil,
@@ -65,7 +65,7 @@ struct MapItem: Equatable {
     self.url = url
   }
 
-  static func == (lhs: Self, rhs: Self) -> Bool {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.isCurrentLocation == rhs.isCurrentLocation
       && lhs.name == rhs.name
       && lhs.phoneNumber == rhs.phoneNumber
@@ -96,27 +96,27 @@ struct MapItem: Equatable {
   }
 }
 
-struct Placemark: Equatable {
-  var administrativeArea: String?
-  var areasOfInterest: [String]?
-  var coordinate: CLLocationCoordinate2D
-  var country: String?
-  var countryCode: String?
-  var inlandWater: String?
-  var isoCountryCode: String?
-  var locality: String?
-  var name: String?
-  var ocean: String?
-  var postalCode: String?
-  var region: CLRegion?
-  var subAdministrativeArea: String?
-  var subLocality: String?
-  var subThoroughfare: String?
-  var subtitle: String?
-  var thoroughfare: String?
-  var title: String?
+public struct Placemark: Equatable {
+  public var administrativeArea: String?
+  public var areasOfInterest: [String]?
+  public var coordinate: CLLocationCoordinate2D
+  public var country: String?
+  public var countryCode: String?
+  public var inlandWater: String?
+  public var isoCountryCode: String?
+  public var locality: String?
+  public var name: String?
+  public var ocean: String?
+  public var postalCode: String?
+  public var region: CLRegion?
+  public var subAdministrativeArea: String?
+  public var subLocality: String?
+  public var subThoroughfare: String?
+  public var subtitle: String?
+  public var thoroughfare: String?
+  public var title: String?
 
-  init(rawValue: MKPlacemark) {
+  public init(rawValue: MKPlacemark) {
     self.administrativeArea = rawValue.administrativeArea
     self.areasOfInterest = rawValue.areasOfInterest
     self.coordinate = rawValue.coordinate
@@ -138,7 +138,7 @@ struct Placemark: Equatable {
     self.title = rawValue.responds(to: #selector(getter:MKPlacemark.title)) ? rawValue.title : nil
   }
 
-  init(
+  public init(
     administrativeArea: String? = nil,
     areasOfInterest: [String]? = nil,
     coordinate: CLLocationCoordinate2D = .init(),
@@ -178,7 +178,7 @@ struct Placemark: Equatable {
     self.title = title
   }
 
-  static func == (lhs: Self, rhs: Self) -> Bool {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.administrativeArea == rhs.administrativeArea
       && lhs.areasOfInterest == rhs.areasOfInterest
       && lhs.coordinate.latitude == rhs.coordinate.latitude
@@ -198,5 +198,34 @@ struct Placemark: Equatable {
       && lhs.subtitle == rhs.subtitle
       && lhs.thoroughfare == rhs.thoroughfare
       && lhs.title == rhs.title
+  }
+}
+
+public struct CoordinateRegion: Equatable {
+  public var center: CLLocationCoordinate2D
+  public var span: MKCoordinateSpan
+
+  public init(
+    center: CLLocationCoordinate2D,
+    span: MKCoordinateSpan
+  ) {
+    self.center = center
+    self.span = span
+  }
+
+  public init(coordinateRegion: MKCoordinateRegion) {
+    self.center = coordinateRegion.center
+    self.span = coordinateRegion.span
+  }
+
+  public var asMKCoordinateRegion: MKCoordinateRegion {
+    .init(center: self.center, span: self.span)
+  }
+
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.center.latitude == rhs.center.latitude
+      && lhs.center.longitude == rhs.center.longitude
+      && lhs.span.latitudeDelta == rhs.span.latitudeDelta
+      && lhs.span.longitudeDelta == rhs.span.longitudeDelta
   }
 }

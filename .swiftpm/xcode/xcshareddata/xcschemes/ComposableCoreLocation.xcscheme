@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "CA17CC0824720BBA00BDDF11"
-               BuildableName = "LocationManager.app"
-               BlueprintName = "LocationManager"
-               ReferencedContainer = "container:LocationManager.xcodeproj">
+               BlueprintIdentifier = "ComposableCoreLocation"
+               BuildableName = "ComposableCoreLocation"
+               BlueprintName = "ComposableCoreLocation"
+               ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -32,10 +32,10 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "CA17CC1E24720BBB00BDDF11"
-               BuildableName = "LocationManagerTests.xctest"
-               BlueprintName = "LocationManagerTests"
-               ReferencedContainer = "container:LocationManager.xcodeproj">
+               BlueprintIdentifier = "ComposableCoreLocationTests"
+               BuildableName = "ComposableCoreLocationTests"
+               BlueprintName = "ComposableCoreLocationTests"
+               ReferencedContainer = "container:">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -50,16 +50,6 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "CA17CC0824720BBA00BDDF11"
-            BuildableName = "LocationManager.app"
-            BlueprintName = "LocationManager"
-            ReferencedContainer = "container:LocationManager.xcodeproj">
-         </BuildableReference>
-      </BuildableProductRunnable>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -67,16 +57,15 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "CA17CC0824720BBA00BDDF11"
-            BuildableName = "LocationManager.app"
-            BlueprintName = "LocationManager"
-            ReferencedContainer = "container:LocationManager.xcodeproj">
+            BlueprintIdentifier = "ComposableCoreLocation"
+            BuildableName = "ComposableCoreLocation"
+            BlueprintName = "ComposableCoreLocation"
+            ReferencedContainer = "container:">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
