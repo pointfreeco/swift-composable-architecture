@@ -50,12 +50,12 @@ test-workspace:
 		-destination platform="$(PLATFORM_IOS)" \
 		-quiet
 	xcodebuild test \
-		-scheme LocationManagerMobile \
-		-destination platform="$(PLATFORM_IOS)" \
-		-quiet
-	xcodebuild test \
 		-scheme LocationManagerDesktop \
 		-destination platform="$(PLATFORM_MACOS)" \
+		-quiet
+	xcodebuild test \
+		-scheme LocationManagerMobile \
+		-destination platform="$(PLATFORM_IOS)" \
 		-quiet
 	xcodebuild test \
 		-scheme Search \
