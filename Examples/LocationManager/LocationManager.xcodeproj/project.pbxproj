@@ -75,6 +75,7 @@
 		CA7494952474A59000B13019 /* LocationManagerMobileTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LocationManagerMobileTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CA74949F2474A5C800B13019 /* CommonTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommonTests.swift; sourceTree = "<group>"; };
 		CA7494A52474A65400B13019 /* LocationManagerDesktopTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LocationManagerDesktopTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CA7494BE2474C14E00B13019 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DCBBE4A524747DCF00DF4AC4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -193,6 +194,7 @@
 		CA7494962474A59000B13019 /* CommonTests */ = {
 			isa = PBXGroup;
 			children = (
+				CA7494BE2474C14E00B13019 /* Info.plist */,
 				CA74949F2474A5C800B13019 /* CommonTests.swift */,
 			);
 			path = CommonTests;
@@ -672,7 +674,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = Desktop/Info.plist;
+				INFOPLIST_FILE = CommonTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -693,7 +695,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = Desktop/Info.plist;
+				INFOPLIST_FILE = CommonTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
