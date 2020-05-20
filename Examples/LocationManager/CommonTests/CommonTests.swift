@@ -15,7 +15,7 @@ class LocationManagerTests: XCTestCase {
   func testRequestLocation_Allow() {
     var didRequestInUseAuthorization = false
     var didRequestLocation = false
-    let locationManagerSubject = PassthroughSubject<LocationManagerClient.Action, Never>()
+    let locationManagerSubject = PassthroughSubject<LocationManager.Action, Never>()
 
     #if os(iOS)
       let store = TestStore(
@@ -106,7 +106,7 @@ class LocationManagerTests: XCTestCase {
 
   func testRequestLocation_Deny() {
     var didRequestInUseAuthorization = false
-    let locationManagerSubject = PassthroughSubject<LocationManagerClient.Action, Never>()
+    let locationManagerSubject = PassthroughSubject<LocationManager.Action, Never>()
 
     #if os(iOS)
       let store = TestStore(

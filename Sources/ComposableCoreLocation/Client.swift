@@ -172,7 +172,7 @@ import CoreLocation
 /// that we control, and even what happens when the request for their location fails. It is very
 /// easy to write these tests, and allows us to test deep, subtle properties of our application.
 ///
-public struct LocationManagerClient {
+public struct LocationManager {
 
   public enum Action: Equatable {
     case didChangeAuthorization(CLAuthorizationStatus)
@@ -534,7 +534,7 @@ public struct LocationManagerClient {
   }
 }
 
-extension LocationManagerClient {
+extension LocationManager {
   public struct Properties: Equatable {
     @available(macOS, unavailable)
     @available(tvOS, unavailable)
@@ -647,4 +647,17 @@ extension LocationManagerClient {
       self.headingOrientation = headingOrientation
     }
   }
+}
+
+public func _unimplemented(
+  _ function: StaticString, file: StaticString = #file, line: UInt = #line
+) -> Never {
+  fatalError(
+    """
+    \(function) was called but is not implemented. Provide an implementation to \
+    "LocationManager.mock".
+    """,
+    file: file,
+    line: line
+  )
 }
