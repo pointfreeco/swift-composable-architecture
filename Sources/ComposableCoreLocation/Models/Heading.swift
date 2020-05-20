@@ -49,7 +49,7 @@ public struct Heading: Equatable {
   }
 
   public static func == (lhs: Self, rhs: Self) -> Bool {
-    return lhs.headingAccuracy == rhs.headingAccuracy
+    lhs.headingAccuracy == rhs.headingAccuracy
       && lhs.magneticHeading == rhs.magneticHeading
       && lhs.timestamp == rhs.timestamp
       && lhs.trueHeading == rhs.trueHeading

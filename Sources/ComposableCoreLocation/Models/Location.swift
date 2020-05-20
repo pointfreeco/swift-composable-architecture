@@ -62,25 +62,16 @@ public struct Location: Equatable {
   }
 
   public static func == (lhs: Self, rhs: Self) -> Bool {
-    var equals =
-      lhs.altitude == rhs.altitude
+    lhs.altitude == rhs.altitude
       && lhs.coordinate.latitude == rhs.coordinate.latitude
       && lhs.coordinate.longitude == rhs.coordinate.longitude
       && lhs.course == rhs.course
+      && lhs.courseAccuracy == rhs.courseAccuracy
       && lhs.floor == rhs.floor
       && lhs.horizontalAccuracy == rhs.horizontalAccuracy
       && lhs.speed == rhs.speed
+      && lhs.speedAccuracy == rhs.speedAccuracy
       && lhs.timestamp == rhs.timestamp
       && lhs.verticalAccuracy == rhs.verticalAccuracy
-
-    if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
-      equals = equals && lhs.courseAccuracy == rhs.courseAccuracy
-    }
-
-    if #available(iOS 10, macCatalyst 13, macOS 10.15, tvOS 10, watchOS 3, *) {
-      equals = equals && lhs.speedAccuracy == rhs.speedAccuracy
-    }
-
-    return equals
   }
 }
