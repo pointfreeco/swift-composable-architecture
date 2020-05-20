@@ -5,72 +5,172 @@ import CoreLocation
 /// A wrapper around CoreLocation's `CLLocationManager` that exposes its functionality through
 /// effects and actions, making it easy to use with the Composable Architecture and easy to test.
 ///
-/// Typically one uses the `.live` implementation of this client when running your app in the
-/// simulator or on device:
+/// To use it, one begins by adding an action to your domain that represents all of the actions the
+/// manager can emit via the `CLLocationManagerDelegate` methods:
+///
+///     import ComposableCoreLocation
+///
+///     enum AppAction {
+///       case locationManager(LocationManagerClient.Action)
+///
+///       // Your domain's other actions:
+///       ...
+///     }
+/// The `LocationManagerClient.Action` enum holds a case for each delegate method of
+/// `CLLocationManagerDelegate`, such as `didUpdateLocations`, `didEnterRegion`, `didUpdateHeading`
+/// and more.
+///
+/// Next we add `LocationManagerClient`, which is the wrapper type around `CLLocationManager` that
+/// the library provides, to the application's environment of dependencies:
+///
+///     struct AppEnvironment {
+///       var locationManager: LocationManagerClient
+///
+///       // Your domain's other dependencies:
+///       ...
+///     }
+///
+/// Next, we create a location manager and request authorization from our application's reducer by
+/// returning an effect from an action to kick things off. One good choice for such an action is the
+/// `onAppear` of your view. Also you must provide a unique identifier to associate with the
+/// location manager you create since it is possible to have multiple managers running at once if
+/// that's what you need.
+///
+///     let appReducer = AppReducer<AppState, AppAction, AppEnvironment> {
+///       state, action, environment in
+///
+///       // A unique identifier for our location manager, just in case we want to use
+///       // more than one in your application.
+///       struct LocationManagerId: Hashable {}
+///
+///       switch action {
+///       case .onAppear:
+///         return .merge(
+///           environment.locationManager
+///             .create(id: LocationManagerId())
+///             .map(AppAction.locationManager),
+///
+///           environment.locationManager
+///             .requestWhenInUseAuthorization(id: LocationManagerId())
+///             .fireAndForget()
+///           )
+///
+///       ...
+///       }
+///     }
+///
+/// With that initial set up we will now get all of `CLLocationManagerDelegate`'s methods delivered
+/// to our reducer via actions. To handle a particular delegate action we simply need to destructure
+/// it inside the `.locationManager` case we added to our `AppAction`. For example, one we get
+/// location authorization from the user we could request their current location:
+///
+///     case .locationManager(.didChangeAuthorization(.authorizedAlways)),
+///          .locationManager(.didChangeAuthorization(.authorizedWhenInUse)):
+///
+///       return environment.locationManager
+///         .requestLocation(id: LocationManagerId())
+///         .fireAndForget()
+///
+/// And if the user denies location access we can show an alert telling them that we need access to
+/// be able to do anything in the app:
+///
+///     case .locationManager(.didChangeAuthorization(.denied)),
+///          .locationManager(.didChangeAuthorization(.restricted)):
+///
+///       state.alert = """
+///         Please give location access so that we can show you some cool stuff.
+///         """
+///       return .none
+///
+/// And we'll be notified of the user's location being obtained by handling the `.didUpdateLocations`
+/// action:
+///
+///     case let .locationManager(.didUpdateLocations(locations)):
+///       // Do something cool with user's current location.
+///       ...
+///
+/// And once you have handled all the `CLLocationManagerDelegate` actions you care about, you can
+/// ignore the rest:
+///
+///     case .locationManager:
+///       return .none
+///
+/// Accessing any functionality on the location manager is done by returning effects from the reducer.
+/// For example, if you want to request the user's current location when they tap a button, then you
+/// can do the following:
+///
+/// And finally, when creating the `Store` to power your application you will supply the "live"
+/// implementation of the `LocationManagerClient`, which is to say a client instance that actually
+/// holds onto a `CLLocationManager` on the inside and interacts with it directly:
 ///
 ///     let store = Store(
 ///       initialState: AppState(),
 ///       reducer: appReducer,
 ///       environment: AppEnvironment(
-///         locationManager: LocationManagerClient.live
+///         locationManager: .live,
+///         // And your other dependencies...
 ///       )
 ///     )
 ///
-///  In your application's actions you must make room for all of the delegate actions that the
-///  location manager can send:
+/// That is enough to implement a basic application that interacts with CoreLocation.
 ///
-///      enum AppAction {
-///        case locationManager(LocationManagerClient.Action)
-///        // Other actions...
-///      }
+/// The true power of building your application this way and interfacing with CoreLocation this
+/// way is the ability to test how your application interacts with CoreLocation. It starts by
+/// creating a `TestStore` whose environment contains the `.mock` version of the
+/// `LocationManagerClient`. The `.mock` function allows you to create a fully controlled
+/// version of the client that does not interact with a `CLLocationManager` at all. Instead,
+/// you override whichever endpoints your feature needs to supply deterministic functionality.
 ///
-///  In the reducer you create a location manager by returning the `.create` effect from an
-///  action, say for example, an `.onAppear` action:
+/// For example, to test the flow of asking for location authorization, being denied, and showing
+///   an alert we need to override the `create` endpoint and the `requestWhenInUseAuthorization`
+///   endpoint. The `create` endpoint needs to return an effect that emits the delegate actions,
+/// which we can control via a publish subject. And the `requestWhenInUseAuthorization` endpoint
+/// is a fire-and-forget effect, but we can make assertions that it was called how we expect.
 ///
-///     let appReducer = AppReducer<AppState, AppAction, AppEnvironment> {
-///       state, action, environment in
-///
-///       // A unique identifier for our location manager, just in case we want to use more than
-///       // one in your application.
-///       struct LocationManagerId: Hashable {}
-///
-///       switch action {
-///       case .onAppear:
-///         // Create the location manager
-///         return environment.locationManager.create(id: LocationManagerId())
-///           .map(AppAction.locationManager)
-///
-///       // Tap into which ever `CLLocationManagerDelegate` methods you are interested in
-///       case .locationManager(.didChangeAuthorization(.authorizedAlways)),
-///            .locationManager(.didChangeAuthorization(.authorizedWhenInUse)):
-///         // Do something when user authorization location access
-///
-///       case .locationManager(.didChangeAuthorization(.denied)),
-///            .locationManager(.didChangeAuthorization(.restricted)):
-///         // Do something when user denies location access
-///
-///       case let .locationManager(.didUpdateLocations(locations)):
-///         // Do something with user's current location.
-///       }
-///     }
-///
-///  And finally, one can use the `.mock` implementation in tests:
+///     var didRequestInUseAuthorization = false
+///     let locationManagerSubject = PassthroughSubject<LocationManagerClient.Action, Never>()
 ///
 ///     let store = TestStore(
 ///       initialState: AppState(),
 ///       reducer: appReducer,
 ///       environment: AppEnvironment(
-///         locationManager: LocationManagerClient.mock(
-///           // override any manager endpoints used by your test, e.g.
-///           authorizationStatus: { .authorizedAlways }
-///         )
+///         locationManager: .mock(
+///           create: { _ in locationManagerSubject.eraseToEffect() },
+///           requestWhenInUseAuthorization: { _ in
+///             .fireAndForget { didRequestInUseAuthorization = true }
+///         })
 ///       )
 ///     )
 ///
-/// It is also helpful to use `LocationManagerClient.mock` in SwiftUI previews. Most of the
-/// features of `CLLocationManager` do not work in SwiftUI previews, and so by using
-/// the `.mock` version you can access a little more functionality without needing to run
-/// your application in a simulator or device.
+/// Then we can write an assertion that simulates a sequence of user steps and location manager
+/// delegate actions, and we assert on how state mutates and how effects are received. For
+/// example, we can have the user come to the screen, have the location authorization request
+/// denied, and then assert that an effect was received which caused the alert to show:
+///
+///     store.assert(
+///       .send(.onAppear),
+///
+///       // Simulate the user denying location access
+///       .do {
+///         locationManagerSubject.send(.didChangeAuthorization(.denied))
+///       },
+///
+///       // We receive the authorization change delegate action from the effect
+///       .receive(.locationManager(.didChangeAuthorization(.denied))) {
+///         $0.alert = "Please give location access so that we can show you some cool stuff."
+///       },
+///
+///       // Store assertions require all effects to be completed, so we complete
+///       // the subject manually.
+///       .do {
+///         locationManagerSubject.send(completion: .finished)
+///       }
+///     )
+///
+/// And this is only the tip of the iceberg. We can further test what happens when we are given
+/// authorization by the user and the request for their location returns a specific location
+/// that we control, and even what happens when the request for their location fails. It is very
+/// easy to write these tests, and allows us to test deep, subtle properties of our application.
 ///
 public struct LocationManagerClient {
 
