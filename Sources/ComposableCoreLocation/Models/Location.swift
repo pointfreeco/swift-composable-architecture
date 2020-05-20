@@ -19,7 +19,7 @@ public struct Location: Equatable {
   public var horizontalAccuracy: CLLocationAccuracy
   public var speed: CLLocationSpeed
 
-  @available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *)
+  @available(iOS 10, macCatalyst 13, macOS 10.15, tvOS 10, watchOS 3, *)
   public var speedAccuracy: Double {
     get { _speedAccuracy } set { _speedAccuracy = newValue }
   }
@@ -46,6 +46,31 @@ public struct Location: Equatable {
     self.coordinate = coordinate
     self.course = course
     self._courseAccuracy = courseAccuracy
+    self.floor = floor
+    self.horizontalAccuracy = horizontalAccuracy
+    self.speed = speed
+    self._speedAccuracy = speedAccuracy
+    self.timestamp = timestamp
+    self.verticalAccuracy = verticalAccuracy
+  }
+
+  @available(iOS 10, macCatalyst 13, macOS 10.15, tvOS 10, watchOS 3, *)
+  public init(
+    altitude: CLLocationDistance,
+    coordinate: CLLocationCoordinate2D,
+    course: CLLocationDirection,
+    floor: CLFloor?,
+    horizontalAccuracy: CLLocationAccuracy,
+    speed: CLLocationSpeed,
+    speedAccuracy: Double,
+    timestamp: Date,
+    verticalAccuracy: CLLocationAccuracy
+  ) {
+    self.rawValue = nil
+    self.altitude = altitude
+    self.coordinate = coordinate
+    self.course = course
+    self._courseAccuracy = 0
     self.floor = floor
     self.horizontalAccuracy = horizontalAccuracy
     self.speed = speed
@@ -83,16 +108,24 @@ public struct Location: Equatable {
     self.altitude = rawValue.altitude
     self.coordinate = rawValue.coordinate
     self.course = rawValue.course
-    if #available(iOS 13.4, OSX 10.15.4, macCatalyst 13.4, tvOS 13.4, watchOS 6.2, *) {
-      self._courseAccuracy = rawValue.courseAccuracy
+    if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
+      #if swift(>=5.2)
+        self._courseAccuracy = rawValue.courseAccuracy
+      #else
+        self._courseAccuracy = 0
+      #endif
     } else {
       self._courseAccuracy = 0
     }
     self.floor = rawValue.floor
     self.horizontalAccuracy = rawValue.horizontalAccuracy
     self.speed = rawValue.speed
-    if #available(iOS 13.4, OSX 10.15.4, macCatalyst 13.4, tvOS 13.4, watchOS 6.2, *) {
-      self._speedAccuracy = rawValue.speedAccuracy
+    if #available(iOS 10, macCatalyst 13, macOS 10.15, tvOS 10, watchOS 3, *) {
+      #if swift(>=5.2)
+        self._speedAccuracy = rawValue.speedAccuracy
+      #else
+        self._speedAccuracy = 0
+      #endif
     } else {
       self._speedAccuracy = 0
     }
@@ -112,11 +145,11 @@ public struct Location: Equatable {
       && lhs.timestamp == rhs.timestamp
       && lhs.verticalAccuracy == rhs.verticalAccuracy
 
-    if #available(iOS 13.4, OSX 10.15.4, macCatalyst 13.4, tvOS 13.4, watchOS 6.2, *) {
+    if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
       equals = equals && lhs.courseAccuracy == rhs.courseAccuracy
     }
 
-    if #available(iOS 13.4, OSX 10.15.4, macCatalyst 13.4, tvOS 13.4, watchOS 6.2, *) {
+    if #available(iOS 10, macCatalyst 13, macOS 10.15, tvOS 10, watchOS 3, *) {
       equals = equals && lhs.speedAccuracy == rhs.speedAccuracy
     }
 
