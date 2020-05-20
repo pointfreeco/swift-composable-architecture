@@ -100,7 +100,7 @@ import CoreLocation
 /// can do the following:
 ///
 /// And finally, when creating the `Store` to power your application you will supply the "live"
-/// implementation of the `LocationManager`, which is to say a client instance that actually
+/// implementation of the `LocationManager`, which is to say an instance that actually
 /// holds onto a `CLLocationManager` on the inside and interacts with it directly:
 ///
 ///     let store = Store(
@@ -118,7 +118,7 @@ import CoreLocation
 /// way is the ability to test how your application interacts with CoreLocation. It starts by
 /// creating a `TestStore` whose environment contains the `.mock` version of the
 /// `LocationManager`. The `.mock` function allows you to create a fully controlled
-/// version of the client that does not interact with a `CLLocationManager` at all. Instead,
+/// version of the manager that does not interact with a `CLLocationManager` at all. Instead,
 /// you override whichever endpoints your feature needs to supply deterministic functionality.
 ///
 /// For example, to test the flow of asking for location authorization, being denied, and showing

@@ -14,7 +14,7 @@
     /// are in some sense more complicated than tests that only need to stub a few endpoints. It's
     /// not necessarily a bad thing to stub many endpoints. Sometimes it's needed.
     ///
-    /// As an example, to create a mock client that simulates a location manager that has already
+    /// As an example, to create a mock manager that simulates a location manager that has already
     /// authorized access to location, and when a location is requested it immediately responds
     /// with a mock location we can do something like this:
     ///
@@ -22,13 +22,13 @@
     ///     // being called.
     ///     let locationManagerSubject = PassthroughSubject<LocationManager.Action, Never>()
     ///
-    ///     // The mock location we want the client to say we are located at
+    ///     // The mock location we want the manager to say we are located at
     ///     let mockLocation = Location(
     ///       coordinate: CLLocationCoordinate2D(latitude: 40.6501, longitude: -73.94958),
     ///       // A whole bunch of other properties have been omitted.
     ///     )
     ///
-    ///     let client = LocationManager.mock(
+    ///     let manager = LocationManager.mock(
     ///       // Override any CLLocationManager endpoints your test invokes:
     ///
     ///       authorizationStatus: { .authorizedAlways },

@@ -97,7 +97,7 @@ struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
   static var previews: some View {
     // NB: CLLocationManager mostly does not work in SwiftUI previews, so we provide a mock
-    //     client that has all authorization allowed and mocks the device's current location
+    //     manager that has all authorization allowed and mocks the device's current location
     //     to Brooklyn, NY.
     let mockLocation = Location(
       altitude: 0,

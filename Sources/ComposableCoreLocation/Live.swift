@@ -17,11 +17,11 @@ extension LocationManager {
   ///     )
   ///
   public static let live: LocationManager = { () -> LocationManager in
-    var client = LocationManager()
+    var manager = LocationManager()
 
-    client.authorizationStatus = CLLocationManager.authorizationStatus
+    manager.authorizationStatus = CLLocationManager.authorizationStatus
 
-    client.create = { id in
+    manager.create = { id in
       Effect.run { callback in
         let manager = CLLocationManager()
         var delegate = LocationManagerDelegate()
@@ -113,31 +113,31 @@ extension LocationManager {
       }
     }
 
-    client.destroy = { id in
+    manager.destroy = { id in
       .fireAndForget {
         dependencies[id] = nil
       }
     }
 
-    client.locationServicesEnabled = CLLocationManager.locationServicesEnabled
+    manager.locationServicesEnabled = CLLocationManager.locationServicesEnabled
 
-    client.requestLocation = { id in
+    manager.requestLocation = { id in
       .fireAndForget { dependencies[id]?.locationManager.requestLocation() }
     }
 
     #if os(iOS) || os(macOS) || os(watchOS) || targetEnvironment(macCatalyst)
-      client.requestAlwaysAuthorization = { id in
+      manager.requestAlwaysAuthorization = { id in
         .fireAndForget { dependencies[id]?.locationManager.requestAlwaysAuthorization() }
       }
     #endif
 
     #if os(iOS) || os(tvOS) || os(watchOS) || targetEnvironment(macCatalyst)
-      client.requestWhenInUseAuthorization = { id in
+      manager.requestWhenInUseAuthorization = { id in
         .fireAndForget { dependencies[id]?.locationManager.requestWhenInUseAuthorization() }
       }
     #endif
 
-    client.set = { id, properties in
+    manager.set = { id, properties in
       .fireAndForget {
         guard let manager = dependencies[id]?.locationManager else { return }
 
@@ -178,28 +178,28 @@ extension LocationManager {
     }
     
     #if os(iOS) || targetEnvironment(macCatalyst)
-      client.startMonitoringVisits = { id in
+      manager.startMonitoringVisits = { id in
         .fireAndForget { dependencies[id]?.locationManager.startMonitoringVisits() }
       }
     #endif
 
     #if os(iOS) || os(macOS) || os(watchOS) || targetEnvironment(macCatalyst)
-      client.startUpdatingLocation = { id in
+      manager.startUpdatingLocation = { id in
         .fireAndForget { dependencies[id]?.locationManager.startUpdatingLocation() }
       }
     #endif
 
     #if os(iOS) || targetEnvironment(macCatalyst)
-      client.stopMonitoringVisits = { id in
+      manager.stopMonitoringVisits = { id in
         .fireAndForget { dependencies[id]?.locationManager.stopMonitoringVisits() }
       }
     #endif
 
-    client.stopUpdatingLocation = { id in
+    manager.stopUpdatingLocation = { id in
       .fireAndForget { dependencies[id]?.locationManager.stopUpdatingLocation() }
     }
 
-    return client
+    return manager
   }()
 }
 
