@@ -262,11 +262,11 @@ public struct LocationManagerClient {
   }
 
   public func create(id: AnyHashable) -> Effect<Action, Never> {
-    _unimplemented("create")
+    self.create(id)
   }
 
   public func destroy(id: AnyHashable) -> Effect<Never, Never> {
-    _unimplemented("destroy")
+    self.destroy(id)
   }
 
   @available(macOS, unavailable)
