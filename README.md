@@ -375,7 +375,7 @@ The Composable Architecture was built on a foundation of ideas started by other 
 There are also many architecture libraries in the Swift and iOS community. Each one of these has their own set of priorities and trade-offs that differ from the Composable Architecture.
 
 * [RIBs](https://github.com/uber/RIBs)
-* [Loop](https://github.com/ReactiveCocoa/Loop) (previously know as ReactiveFeedback)
+* [Loop](https://github.com/ReactiveCocoa/Loop)
 * [ReSwift](https://github.com/ReSwift/ReSwift)
 * [Workflow](https://github.com/square/workflow)
 * [ReactorKit](https://github.com/ReactorKit/ReactorKit)
