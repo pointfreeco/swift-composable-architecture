@@ -55,13 +55,15 @@ public struct MapView: ViewRepresentable {
       mapView.setRegion(region.asMKCoordinateRegion, animated: true)
     }
 
-    let currentlyDisplayedPOIs = mapView.annotations.compactMap { $0 as? PointOfInterestAnnotation }.map { $0.pointOfInterest }
-    
+    let currentlyDisplayedPOIs = mapView.annotations.compactMap { $0 as? PointOfInterestAnnotation }
+      .map { $0.pointOfInterest }
+
     let addedPOIs = Set(pointsOfInterest).subtracting(currentlyDisplayedPOIs)
     let removedPOIs = Set(currentlyDisplayedPOIs).subtracting(pointsOfInterest)
 
     let addedAnnotations = addedPOIs.map(PointOfInterestAnnotation.init(pointOfInterest:))
-    let removedAnnotations = mapView.annotations.compactMap { $0 as? PointOfInterestAnnotation }.filter { removedPOIs.contains($0.pointOfInterest) }
+    let removedAnnotations = mapView.annotations.compactMap { $0 as? PointOfInterestAnnotation }
+      .filter { removedPOIs.contains($0.pointOfInterest) }
 
     mapView.removeAnnotations(removedAnnotations)
     mapView.addAnnotations(addedAnnotations)
