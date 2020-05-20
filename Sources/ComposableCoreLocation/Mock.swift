@@ -3,17 +3,16 @@
   import ComposableArchitecture
 
   extension LocationManager {
-    /// The mock implementation of the `LocationManager` interface. By default this
-    /// implementation stubs all of its endpoints as functions that immediately `fatalError`.
-    /// So, to construct a mock you will invoke the `.mock` static method, and provide
-    /// implementations for all of the endpoints that you expect your test to need access to.
+    /// The mock implementation of the `LocationManager` interface. By default this implementation
+    /// stubs all of its endpoints as functions that immediately `fatalError`. So, to construct a
+    /// mock you will invoke the `.mock` static method, and provide implementations for all of the
+    /// endpoints that you expect your test to need access to.
     ///
-    /// This allows you to test an even deeper property of your features: that they use only
-    /// the location manager endpoints that you specify and nothing else. This can be useful
-    /// as a measurement of just how complex a particular test is. Tests that need to stub
-    /// many endpoints are in some sense more complicated than tests that only need to stub a
-    /// few endpoints. It's not necessarily a bad thing to stub many endpoints, sometimes it's
-    /// needed.
+    /// This allows you to test an even deeper property of your features: that they use only the
+    /// location manager endpoints that you specify and nothing else. This can be useful as a
+    /// measurement of just how complex a particular test is. Tests that need to stub many endpoints
+    /// are in some sense more complicated than tests that only need to stub a few endpoints. It's
+    /// not necessarily a bad thing to stub many endpoints. Sometimes it's needed.
     ///
     /// As an example, to create a mock client that simulates a location manager that has already
     /// authorized access to location, and when a location is requested it immediately responds

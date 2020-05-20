@@ -71,6 +71,7 @@ import CoreLocation
 /// `CLLocationManager` do not work in SwiftUI previews, and so by using the `.mock` version you can
 /// access a little more functionality without needing to run your application in a simulator or
 /// device.
+///
 public struct LocationManager {
 
   public enum Action: Equatable {
