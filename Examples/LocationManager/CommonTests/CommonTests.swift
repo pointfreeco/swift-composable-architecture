@@ -108,39 +108,20 @@ class LocationManagerTests: XCTestCase {
     var didRequestInUseAuthorization = false
     let locationManagerSubject = PassthroughSubject<LocationManagerClient.Action, Never>()
 
-    #if os(iOS)
-      let store = TestStore(
-        initialState: AppState(),
-        reducer: appReducer,
-        environment: AppEnvironment(
-          localSearch: .mock(),
-          locationManager: .mock(
-            authorizationStatus: { .notDetermined },
-            create: { _ in locationManagerSubject.eraseToEffect() },
-            locationServicesEnabled: { true },
-            requestWhenInUseAuthorization: { _ in
-              .fireAndForget { didRequestInUseAuthorization = true }
-            }
-          )
-        )
+    let store = TestStore(
+      initialState: AppState(),
+      reducer: appReducer,
+      environment: AppEnvironment(
+        localSearch: .mock(),
+        locationManager: .mock(
+          authorizationStatus: { .notDetermined },
+          create: { _ in locationManagerSubject.eraseToEffect() },
+          locationServicesEnabled: { true },
+          requestWhenInUseAuthorization: { _ in
+            .fireAndForget { didRequestInUseAuthorization = true }
+        })
       )
-    #elseif os(macOS)
-      let store = TestStore(
-        initialState: AppState(),
-        reducer: appReducer,
-        environment: AppEnvironment(
-          localSearch: .mock(),
-          locationManager: .mock(
-            authorizationStatus: { .notDetermined },
-            create: { _ in locationManagerSubject.eraseToEffect() },
-            locationServicesEnabled: { true },
-            requestAlwaysAuthorization: { _ in
-              .fireAndForget { didRequestInUseAuthorization = true }
-            }
-          )
-        )
-      )
-    #endif
+    )
 
     store.assert(
       .send(.onAppear),
