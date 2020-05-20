@@ -2,7 +2,7 @@ import Combine
 import ComposableArchitecture
 import CoreLocation
 
-/// A wrapper around CoreLocation's `CLLocationManager` that exposes its functionality through
+/// A wrapper around Core Location's `CLLocationManager` that exposes its functionality through
 /// effects and actions, making it easy to use with the Composable Architecture and easy to test.
 ///
 /// To use it, one begins by adding an action to your domain that represents all of the actions the
@@ -16,6 +16,7 @@ import CoreLocation
 ///       // Your domain's other actions:
 ///       ...
 ///     }
+///
 /// The `LocationManager.Action` enum holds a case for each delegate method of
 /// `CLLocationManagerDelegate`, such as `didUpdateLocations`, `didEnterRegion`, `didUpdateHeading`
 /// and more.
@@ -32,9 +33,8 @@ import CoreLocation
 ///
 /// Next, we create a location manager and request authorization from our application's reducer by
 /// returning an effect from an action to kick things off. One good choice for such an action is the
-/// `onAppear` of your view. Also you must provide a unique identifier to associate with the
-/// location manager you create since it is possible to have multiple managers running at once if
-/// that's what you need.
+/// `onAppear` of your view. You must also provide a unique identifier to associate with the
+/// location manager you create since it is possible to have multiple managers running at once.
 ///
 ///     let appReducer = AppReducer<AppState, AppAction, AppEnvironment> {
 ///       state, action, environment in
@@ -112,10 +112,10 @@ import CoreLocation
 ///       )
 ///     )
 ///
-/// That is enough to implement a basic application that interacts with CoreLocation.
+/// That is enough to implement a basic application that interacts with Core Location.
 ///
-/// The true power of building your application this way and interfacing with CoreLocation this
-/// way is the ability to test how your application interacts with CoreLocation. It starts by
+/// The true power of building your application this way and interfacing with Core Location this
+/// way is the ability to test how your application interacts with Core Location. It starts by
 /// creating a `TestStore` whose environment contains the `.mock` version of the
 /// `LocationManager`. The `.mock` function allows you to create a fully controlled
 /// version of the manager that does not interact with a `CLLocationManager` at all. Instead,
