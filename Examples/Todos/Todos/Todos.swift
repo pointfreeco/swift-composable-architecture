@@ -181,6 +181,7 @@ struct AppView: View {
           viewStore.binding(get: { $0.editMode }, send: AppAction.editModeChanged)
         )
       }
+      .navigationViewStyle(StackNavigationViewStyle())
     }
   }
 }

@@ -339,6 +339,7 @@ struct VoiceMemosView: View {
         }
         .navigationBarTitle("Voice memos")
       }
+      .navigationViewStyle(StackNavigationViewStyle())
     }
   }
 }

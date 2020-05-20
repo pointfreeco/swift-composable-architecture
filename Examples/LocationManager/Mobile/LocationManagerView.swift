@@ -91,6 +91,7 @@ struct ContentView: View {
       }
       .navigationBarTitle("Location Manager")
     }
+    .navigationViewStyle(StackNavigationViewStyle())
   }
 }
 

@@ -30,7 +30,7 @@ public struct Region: Hashable {
   }
 
   public static func == (lhs: Self, rhs: Self) -> Bool {
-    return lhs.identifier == rhs.identifier
+    lhs.identifier == rhs.identifier
       && lhs.notifyOnEntry == rhs.notifyOnEntry
       && lhs.notifyOnExit == rhs.notifyOnExit
   }
