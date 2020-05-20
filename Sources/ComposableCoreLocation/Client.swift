@@ -140,106 +140,134 @@ public struct LocationManagerClient {
     }
   }
 
-  public var authorizationStatus: () -> CLAuthorizationStatus = { fatalError() }
+  public var authorizationStatus: () -> CLAuthorizationStatus = {
+    _unimplemented("authorizationStatus")
+  }
 
-  var create: (AnyHashable) -> Effect<Action, Never> = { _ in fatalError() }
+  var create: (AnyHashable) -> Effect<Action, Never> = { _ in _unimplemented("create") }
 
-  var destroy: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+  var destroy: (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("destroy") }
 
   @available(macOS, unavailable)
   @available(tvOS, unavailable)
   var dismissHeadingCalibrationDisplay: (AnyHashable) -> Effect<Never, Never> = { _ in
-    fatalError()
+    _unimplemented("dismissHeadingCalibrationDisplay")
   }
 
   @available(macOS, unavailable)
   @available(tvOS, unavailable)
-  var heading: (AnyHashable) -> Heading? = { _ in fatalError() }
+  var heading: (AnyHashable) -> Heading? = { _ in _unimplemented("heading") }
 
   @available(tvOS, unavailable)
-  public var headingAvailable: () -> Bool = { fatalError() }
+  public var headingAvailable: () -> Bool = { _unimplemented("headingAvailable") }
 
   @available(macOS, unavailable)
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
-  public var isRangingAvailable: () -> Bool = { fatalError() }
+  public var isRangingAvailable: () -> Bool = { _unimplemented("isRangingAvailable") }
 
-  var location: (AnyHashable) -> Location = { _ in fatalError() }
+  var location: (AnyHashable) -> Location = { _ in _unimplemented("location") }
 
-  public var locationServicesEnabled: () -> Bool = { fatalError() }
-
-  @available(tvOS, unavailable)
-  @available(watchOS, unavailable)
-  var maximumRegionMonitoringDistance: (AnyHashable) -> CLLocationDistance = { _ in fatalError() }
+  public var locationServicesEnabled: () -> Bool = { _unimplemented("locationServicesEnabled") }
 
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
-  var monitoredRegions: (AnyHashable) -> Set<Region> = { _ in fatalError() }
+  var maximumRegionMonitoringDistance: (AnyHashable) -> CLLocationDistance = { _ in
+    _unimplemented("maximumRegionMonitoringDistance")
+  }
 
   @available(tvOS, unavailable)
-  var requestAlwaysAuthorization: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+  @available(watchOS, unavailable)
+  var monitoredRegions: (AnyHashable) -> Set<Region> = { _ in _unimplemented("monitoredRegions") }
 
-  var requestLocation: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+  @available(tvOS, unavailable)
+  var requestAlwaysAuthorization: (AnyHashable) -> Effect<Never, Never> = { _ in
+    _unimplemented("requestAlwaysAuthorization")
+  }
+
+  var requestLocation: (AnyHashable) -> Effect<Never, Never> = { _ in
+    _unimplemented("requestLocation")
+  }
 
   @available(macOS, unavailable)
-  var requestWhenInUseAuthorization: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+  var requestWhenInUseAuthorization: (AnyHashable) -> Effect<Never, Never> = { _ in
+    _unimplemented("requestWhenInUseAuthorization")
+  }
 
-  var set: (AnyHashable, Properties) -> Effect<Never, Never> = { _, _ in fatalError() }
+  var set: (AnyHashable, Properties) -> Effect<Never, Never> = { _, _ in _unimplemented("set") }
 
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
-  public var significantLocationChangeMonitoringAvailable: () -> Bool = { fatalError() }
+  public var significantLocationChangeMonitoringAvailable: () -> Bool = {
+    _unimplemented("significantLocationChangeMonitoringAvailable")
+  }
 
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
   var startMonitoringForRegion: (AnyHashable, Region) -> Effect<Never, Never> = { _, _ in
-    fatalError()
+    _unimplemented("startMonitoringForRegion")
   }
 
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
   var startMonitoringSignificantLocationChanges: (AnyHashable) -> Effect<Never, Never> = { _ in
-    fatalError()
+    _unimplemented("startMonitoringSignificantLocationChanges")
   }
 
   @available(macOS, unavailable)
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
-  var startMonitoringVisits: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+  var startMonitoringVisits: (AnyHashable) -> Effect<Never, Never> = { _ in
+    _unimplemented("startMonitoringVisits")
+  }
 
   @available(macOS, unavailable)
   @available(tvOS, unavailable)
-  var startUpdatingHeading: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+  var startUpdatingHeading: (AnyHashable) -> Effect<Never, Never> = { _ in
+    _unimplemented("startUpdatingHeading")
+  }
 
   @available(tvOS, unavailable)
-  var startUpdatingLocation: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+  var startUpdatingLocation: (AnyHashable) -> Effect<Never, Never> = { _ in
+    _unimplemented("startUpdatingLocation")
+  }
 
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
   var stopMonitoringForRegion: (AnyHashable, Region) -> Effect<Never, Never> = { _, _ in
-    fatalError()
+    _unimplemented("stopMonitoringForRegion")
   }
 
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
   var stopMonitoringSignificantLocationChanges: (AnyHashable) -> Effect<Never, Never> = { _ in
-    fatalError()
+    _unimplemented("stopMonitoringSignificantLocationChanges")
   }
 
   @available(macOS, unavailable)
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
-  var stopMonitoringVisits: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+  var stopMonitoringVisits: (AnyHashable) -> Effect<Never, Never> = { _ in
+    _unimplemented("stopMonitoringVisits")
+  }
 
   @available(macOS, unavailable)
   @available(tvOS, unavailable)
-  var stopUpdatingHeading: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+  var stopUpdatingHeading: (AnyHashable) -> Effect<Never, Never> = { _ in
+    _unimplemented("stopUpdatingHeading")
+  }
 
-  var stopUpdatingLocation: (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() }
+  var stopUpdatingLocation: (AnyHashable) -> Effect<Never, Never> = { _ in
+    _unimplemented("stopUpdatingLocation")
+  }
 
-  public func create(id: AnyHashable) -> Effect<Action, Never> { self.create(id) }
+  public func create(id: AnyHashable) -> Effect<Action, Never> {
+    _unimplemented("create")
+  }
 
-  public func destroy(id: AnyHashable) -> Effect<Never, Never> { self.destroy(id) }
+  public func destroy(id: AnyHashable) -> Effect<Never, Never> {
+    _unimplemented("destroy")
+  }
 
   @available(macOS, unavailable)
   @available(tvOS, unavailable)
@@ -519,4 +547,17 @@ extension LocationManagerClient {
       self.headingOrientation = headingOrientation
     }
   }
+}
+
+public func _unimplemented(
+  _ function: StaticString, file: StaticString = #file, line: UInt = #line
+) -> Never {
+  fatalError(
+    """
+    \(function) was called but is not implemented. Provide an implementation to \
+    "LocationManagerClient.mock".
+    """,
+    file: file,
+    line: line
+  )
 }
