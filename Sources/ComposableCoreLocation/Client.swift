@@ -11,20 +11,20 @@ import CoreLocation
 ///     import ComposableCoreLocation
 ///
 ///     enum AppAction {
-///       case locationManager(LocationManagerClient.Action)
+///       case locationManager(LocationManager.Action)
 ///
 ///       // Your domain's other actions:
 ///       ...
 ///     }
-/// The `LocationManagerClient.Action` enum holds a case for each delegate method of
+/// The `LocationManager.Action` enum holds a case for each delegate method of
 /// `CLLocationManagerDelegate`, such as `didUpdateLocations`, `didEnterRegion`, `didUpdateHeading`
 /// and more.
 ///
-/// Next we add `LocationManagerClient`, which is the wrapper type around `CLLocationManager` that
+/// Next we add `LocationManager`, which is the wrapper type around `CLLocationManager` that
 /// the library provides, to the application's environment of dependencies:
 ///
 ///     struct AppEnvironment {
-///       var locationManager: LocationManagerClient
+///       var locationManager: LocationManager
 ///
 ///       // Your domain's other dependencies:
 ///       ...
@@ -100,7 +100,7 @@ import CoreLocation
 /// can do the following:
 ///
 /// And finally, when creating the `Store` to power your application you will supply the "live"
-/// implementation of the `LocationManagerClient`, which is to say a client instance that actually
+/// implementation of the `LocationManager`, which is to say a client instance that actually
 /// holds onto a `CLLocationManager` on the inside and interacts with it directly:
 ///
 ///     let store = Store(
@@ -117,7 +117,7 @@ import CoreLocation
 /// The true power of building your application this way and interfacing with CoreLocation this
 /// way is the ability to test how your application interacts with CoreLocation. It starts by
 /// creating a `TestStore` whose environment contains the `.mock` version of the
-/// `LocationManagerClient`. The `.mock` function allows you to create a fully controlled
+/// `LocationManager`. The `.mock` function allows you to create a fully controlled
 /// version of the client that does not interact with a `CLLocationManager` at all. Instead,
 /// you override whichever endpoints your feature needs to supply deterministic functionality.
 ///
@@ -128,7 +128,7 @@ import CoreLocation
 /// is a fire-and-forget effect, but we can make assertions that it was called how we expect.
 ///
 ///     var didRequestInUseAuthorization = false
-///     let locationManagerSubject = PassthroughSubject<LocationManagerClient.Action, Never>()
+///     let locationManagerSubject = PassthroughSubject<LocationManager.Action, Never>()
 ///
 ///     let store = TestStore(
 ///       initialState: AppState(),
@@ -647,17 +647,4 @@ extension LocationManager {
       self.headingOrientation = headingOrientation
     }
   }
-}
-
-public func _unimplemented(
-  _ function: StaticString, file: StaticString = #file, line: UInt = #line
-) -> Never {
-  fatalError(
-    """
-    \(function) was called but is not implemented. Provide an implementation to \
-    "LocationManager.mock".
-    """,
-    file: file,
-    line: line
-  )
 }

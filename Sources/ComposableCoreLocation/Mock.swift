@@ -271,8 +271,8 @@ public func _unimplemented(
 ) -> Never {
   fatalError(
     """
-    LocationManager.\(function) was called but is not implemented. Provide an implementation to \
-    "LocationManagerClient.mock".
+    `\(function)` was called but is not implemented. Be sure to provide an implementation for
+    this endpoint when creating the mock.
     """,
     file: file,
     line: line
