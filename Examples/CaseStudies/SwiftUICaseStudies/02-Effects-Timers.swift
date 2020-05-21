@@ -43,9 +43,8 @@ let timersReducer = Reducer<TimersState, TimersAction, TimersEnvironment> {
       : Effect.cancel(id: TimerId())
   }
 }
-.signpost(osLog: OSLog(subsystem: "co.pointfree.demo", category: "Demo"))
-
-import os.signpost
+.signpost()
+.debug()
 
 
 // MARK: - Timer feature view

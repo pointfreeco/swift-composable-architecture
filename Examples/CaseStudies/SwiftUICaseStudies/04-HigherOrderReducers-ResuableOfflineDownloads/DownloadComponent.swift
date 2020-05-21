@@ -145,10 +145,9 @@ extension Reducer {
       .pullback(state: state, action: action, environment: environment),
       self
     )
-    .signpost(osLog: OSLog(subsystem: "co.pointfree.demo", category: "Demo"))
+    .signpost()
   }
 }
-import os.signpost
 
 let log = OSLog(
     subsystem: "co.pointfree.demo",
