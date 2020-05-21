@@ -85,16 +85,26 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, ac
 
     state.pointOfInterestCategory = category
 
-    let request = MKLocalSearch.Request()
-    request.pointOfInterestFilter = MKPointOfInterestFilter(including: [category])
-    if let region = state.region?.asMKCoordinateRegion {
-      request.region = region
+
+      let region = state.region?.asMKCoordinateRegion
+    return Effect.result {
+      let request = MKLocalSearch.Request()
+      request.pointOfInterestFilter = MKPointOfInterestFilter(including: [category])
+      if let region = region {
+        request.region = region
+      }
+      return .success(request)
     }
-    return environment.localSearch
+    .subscribe(on: DispatchQueue.global())
+    .flatMap { request in
+
+      environment.localSearch
       .search(request)
       .catchToEffect()
       .map(AppAction.localSearchResponse)
       .cancellable(id: CancelSearchId(), cancelInFlight: true)
+    }
+    .eraseToEffect()
 
   case .currentLocationButtonTapped:
     guard environment.locationManager.locationServicesEnabled() else {
@@ -181,6 +191,14 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, ac
     .pullback(state: \.self, action: /AppAction.locationManager, environment: { $0 })
 )
 .debug()
+  .signpost(environment: { _ in SignpostEnvironment(osLog: log) })
+
+import os.signpost
+
+let log = OSLog(
+    subsystem: "co.pointfree.demo",
+    category: "Demo"
+)
 
 private let locationManagerReducer = Reducer<AppState, LocationManager.Action, AppEnvironment>
 {

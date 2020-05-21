@@ -84,7 +84,7 @@ extension Reducer {
     action: CasePath<Action, DownloadComponentAction>,
     environment: @escaping (Environment) -> DownloadComponentEnvironment
   ) -> Reducer {
-    .combine(
+    Reducer.combine(
       Reducer<DownloadComponentState<ID>, DownloadComponentAction, DownloadComponentEnvironment> {
         state, action, environment in
         switch action {
@@ -145,8 +145,15 @@ extension Reducer {
       .pullback(state: state, action: action, environment: environment),
       self
     )
+    .signpost(environment: { _ in SignpostEnvironment(osLog: log) })
   }
 }
+import os.signpost
+
+let log = OSLog(
+    subsystem: "co.pointfree.demo",
+    category: "Demo"
+)
 
 private let deleteAlert = DownloadAlert(
   primaryButton: .init(

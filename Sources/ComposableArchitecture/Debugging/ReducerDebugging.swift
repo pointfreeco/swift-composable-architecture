@@ -118,3 +118,48 @@ private let _queue = DispatchQueue(
   label: "co.pointfree.ComposableArchitecture.DebugEnvironment",
   qos: .background
 )
+
+
+import os.signpost
+
+public struct SignpostEnvironment {
+  public var osLog: OSLog
+
+  public init(osLog: OSLog) {
+    self.osLog = osLog
+  }
+}
+
+extension Reducer {
+  public func signpost(
+    environment toSignpostEnvironment: @escaping (Environment) -> SignpostEnvironment
+  ) -> Self {
+    return Self { state, action, environment in
+      let signpostEnvironment = toSignpostEnvironment(environment)
+
+      os_signpost(.begin, log: signpostEnvironment.osLog, name: "Received Action", "%s", debugCaseOutput(action))
+      let effects = self.callAsFunction(&state, action, environment)
+      os_signpost(.end, log: signpostEnvironment.osLog, name: "Received Action")
+
+      return effects
+    }
+  }
+}
+
+func debugCaseOutput(_ value: Any) -> String {
+  let mirror = Mirror(reflecting: value)
+  return mirror.children.map { label, value in
+    let childOutput = debugCaseOutput(value)
+    switch mirror.displayStyle {
+    case .enum:
+      return ".\(label!)\(childOutput.isEmpty ? "" : "(\(childOutput))")"
+    default:
+      return childOutput.isEmpty
+        ? (label.map { "\($0):" } ?? "")
+        : "\(label.map { "\($0): " } ?? "")\(debugCaseOutput(value))"
+    }
+//    let childOutput = debugCaseOutput(value)
+//    return "\(label.map { ".\($0)" } ?? "")\(childOutput.isEmpty ? "" : "(\(childOutput))")"
+  }
+  .joined(separator: ", ")
+}
