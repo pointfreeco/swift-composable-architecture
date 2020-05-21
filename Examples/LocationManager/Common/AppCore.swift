@@ -55,6 +55,7 @@ public enum AppAction: Equatable {
   case localSearchResponse(Result<LocalSearchResponse, LocalSearchClient.Error>)
   case locationManager(LocationManager.Action)
   case onAppear
+  case onDisappear
   case updateRegion(CoordinateRegion?)
 }
 
@@ -166,6 +167,10 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, ac
   case .onAppear:
     return environment.locationManager.create(id: LocationManagerId())
       .map(AppAction.locationManager)
+      .cancellable(id: LocationManagerId())
+
+  case .onDisappear:
+    return .cancel(id: LocationManagerId())
 
   case let .updateRegion(region):
     state.region = region
@@ -190,15 +195,10 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, ac
     locationManagerReducer
     .pullback(state: \.self, action: /AppAction.locationManager, environment: { $0 })
 )
-.debug()
-  .signpost(environment: { _ in SignpostEnvironment(osLog: log) })
+  .debug()
+  .signpost()
 
 import os.signpost
-
-let log = OSLog(
-    subsystem: "co.pointfree.demo",
-    category: "Demo"
-)
 
 private let locationManagerReducer = Reducer<AppState, LocationManager.Action, AppEnvironment>
 {

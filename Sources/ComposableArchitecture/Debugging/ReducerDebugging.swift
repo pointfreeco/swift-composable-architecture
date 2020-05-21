@@ -1,6 +1,5 @@
 import CasePaths
 import Dispatch
-import os.signpost
 
 extension Reducer {
   /// Prints debug messages describing all received actions and state mutations.
@@ -119,51 +118,3 @@ private let _queue = DispatchQueue(
   label: "co.pointfree.ComposableArchitecture.DebugEnvironment",
   qos: .background
 )
-
-/// An environment for sign-posted reducers.
-public struct SignpostEnvironment {
-  public var osLog: OSLog
-
-  public init(osLog: OSLog) {
-    self.osLog = osLog
-  }
-}
-
-extension Reducer {
-  public func signpost(
-    environment toSignpostEnvironment: @escaping (Environment) -> SignpostEnvironment
-  ) -> Self {
-    return Self { state, action, environment in
-      let signpostEnvironment = toSignpostEnvironment(environment)
-      if signpostEnvironment.osLog.signpostsEnabled {
-        os_signpost(.begin, log: signpostEnvironment.osLog, name: "Received Action", "%s", debugCaseOutput(action))
-      }
-      let effects = self.callAsFunction(&state, action, environment)
-      if signpostEnvironment.osLog.signpostsEnabled {
-        os_signpost(.end, log: signpostEnvironment.osLog, name: "Received Action")
-      }
-      return effects
-    }
-  }
-}
-
-private func debugCaseOutput(_ value: Any) -> String {
-  let mirror = Mirror(reflecting: value)
-  switch mirror.displayStyle {
-  case .enum:
-    guard let child = mirror.children.first else {
-      let childOutput = "\(value)"
-      return childOutput == "\(type(of: value))" ? "" : ".\(childOutput)"
-    }
-    let childOutput = debugCaseOutput(child.value)
-    return ".\(child.label ?? "")\(childOutput.isEmpty ? "" : "(\(childOutput))")"
-  case .tuple:
-    return mirror.children.map { label, value in
-      let childOutput = debugCaseOutput(value)
-      return "\(label.map { "\($0):" } ?? "")\(childOutput.isEmpty ? "" : " \(childOutput)")"
-    }
-    .joined(separator: ", ")
-  default:
-    return ""
-  }
-}

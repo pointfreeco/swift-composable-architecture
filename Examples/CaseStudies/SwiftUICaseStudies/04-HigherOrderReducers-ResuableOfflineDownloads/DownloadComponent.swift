@@ -145,7 +145,7 @@ extension Reducer {
       .pullback(state: state, action: action, environment: environment),
       self
     )
-    .signpost(environment: { _ in SignpostEnvironment(osLog: log) })
+    .signpost(osLog: OSLog(subsystem: "co.pointfree.demo", category: "Demo"))
   }
 }
 import os.signpost

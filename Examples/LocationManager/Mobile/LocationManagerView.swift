@@ -64,6 +64,7 @@ struct LocationManagerView: View {
         Alert(title: Text(alert.title))
       }
       .onAppear { viewStore.send(.onAppear) }
+      .onDisappear { viewStore.send(.onDisappear) }
     }
   }
 }
