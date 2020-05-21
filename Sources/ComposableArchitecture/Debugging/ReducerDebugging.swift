@@ -135,11 +135,13 @@ extension Reducer {
   ) -> Self {
     return Self { state, action, environment in
       let signpostEnvironment = toSignpostEnvironment(environment)
-
-      os_signpost(.begin, log: signpostEnvironment.osLog, name: "Received Action", "%s", debugCaseOutput(action))
+      if signpostEnvironment.osLog.signpostsEnabled {
+        os_signpost(.begin, log: signpostEnvironment.osLog, name: "Received Action", "%s", debugCaseOutput(action))
+      }
       let effects = self.callAsFunction(&state, action, environment)
-      os_signpost(.end, log: signpostEnvironment.osLog, name: "Received Action")
-
+      if signpostEnvironment.osLog.signpostsEnabled {
+        os_signpost(.end, log: signpostEnvironment.osLog, name: "Received Action")
+      }
       return effects
     }
   }
