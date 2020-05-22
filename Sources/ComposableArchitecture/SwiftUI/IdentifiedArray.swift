@@ -237,6 +237,20 @@ where Element: Identifiable, ID == Element.ID {
   public init() {
     self.init([], id: \.id)
   }
+
+  public mutating func replaceSubrange<C, R>(_ subrange: R, with newElements: C) where C : Collection, R : RangeExpression, Self.Element == C.Element, Self.Index == R.Bound {
+    let replacingIds = self.ids[subrange]
+    let newIds = newElements.map(\.id)
+    ids.replaceSubrange(subrange, with: newIds)
+
+    for element in newElements {
+      self.dictionary[element.id] = element
+    }
+
+    for id in replacingIds where !self.ids.contains(id) {
+      self.dictionary[id] = nil
+    }
+  }
 }
 
 /// A convenience type to specify an `IdentifiedArray` by an identifiable element.

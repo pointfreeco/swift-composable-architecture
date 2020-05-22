@@ -119,4 +119,28 @@ final class IdentifiedArrayTests: XCTestCase {
       [User(id: 2, name: "Blob Jr."), User(id: 3, name: "Blob Sr."), User(id: 1, name: "Blob")]
     )
   }
+
+  func testReplaceSubrange() {
+    struct User: Equatable, Identifiable {
+      let id: Int
+      var name: String
+    }
+
+    var array: IdentifiedArray = [
+      User(id: 3, name: "Blob Sr."),
+      User(id: 2, name: "Blob Jr."),
+      User(id: 1, name: "Blob"),
+      User(id: 2, name: "Blob Jr."),
+    ]
+
+    array.replaceSubrange(0...1, with: [
+      User(id: 4, name: "Flob IV"),
+      User(id: 5, name: "Flob V")
+    ])
+
+    XCTAssertEqual(
+      array,
+      [User(id: 4, name: "Flob IV"), User(id: 5, name: "Flob V"), User(id: 1, name: "Blob"), User(id: 2, name: "Blob Jr.")]
+    )
+  }
 }
