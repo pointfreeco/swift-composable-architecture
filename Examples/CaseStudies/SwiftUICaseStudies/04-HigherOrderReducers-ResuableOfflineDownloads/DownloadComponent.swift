@@ -84,7 +84,7 @@ extension Reducer {
     action: CasePath<Action, DownloadComponentAction>,
     environment: @escaping (Environment) -> DownloadComponentEnvironment
   ) -> Reducer {
-    Reducer.combine(
+    .combine(
       Reducer<DownloadComponentState<ID>, DownloadComponentAction, DownloadComponentEnvironment> {
         state, action, environment in
         switch action {
