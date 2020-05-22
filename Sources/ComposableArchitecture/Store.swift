@@ -145,8 +145,6 @@ public final class Store<State, Action> {
   }
 
   func send(_ action: Action) {
-    let previousState = self.log.isEnabled(type: .default) ? self.state : nil
-
     if self.log.signpostsEnabled == true {
       os_signpost(.begin, log: log, name: "Send Action", "%s", debugCaseOutput(action))
     }
@@ -197,24 +195,6 @@ public final class Store<State, Action> {
 
     if self.log.signpostsEnabled {
       os_signpost(.end, log: log, name: "Send Action")
-    }
-    if let previousState = previousState, self.log.isEnabled(type: .default) {
-      debugLoggingQueue.async {
-        os_log(
-          .default,
-          log: self.log,
-          """
-          Received action: %s
-
-          %s
-
-          %s
-          """,
-          debugCaseOutput(action),
-          debugOutput(action).indent(by: 2),
-          debugDiff(previousState, self.state).map { "\($0)\n" } ?? "  (No state changes)"
-        )
-      }
     }
   }
 

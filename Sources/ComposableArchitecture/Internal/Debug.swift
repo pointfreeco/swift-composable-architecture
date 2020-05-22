@@ -146,7 +146,12 @@ func debugOutput(_ value: Any, indent: Int = 0) -> String {
 
 func debugDiff<T>(_ before: T, _ after: T, printer: (T) -> String = { debugOutput($0) }) -> String?
 {
-  diff(printer(before), printer(after))
+//  let beforestr = printer(before)
+//  let afterstr = printer(after)
+//  print(beforestr)
+//  print(afterstr)
+//  print(afterstr == beforestr)
+  return diff(printer(before), printer(after))
 }
 
 extension String {

@@ -157,10 +157,10 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, ac
   case .onAppear:
     return environment.locationManager.create(id: LocationManagerId())
       .map(AppAction.locationManager)
-      .cancellable(id: LocationManagerId())
 
   case .onDisappear:
-    return .cancel(id: LocationManagerId())
+    return environment.locationManager.destroy(id: LocationManagerId())
+      .fireAndForget()
 
   case let .updateRegion(region):
     state.region = region

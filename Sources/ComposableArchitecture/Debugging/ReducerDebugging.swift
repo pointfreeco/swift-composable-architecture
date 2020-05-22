@@ -1,5 +1,6 @@
 import CasePaths
 import Dispatch
+import os.signpost
 
 extension Reducer {
   /// Prints debug messages describing all received actions and state mutations.
@@ -110,11 +111,11 @@ public struct DebugEnvironment {
   public init(
     printer: @escaping (String) -> Void = { print($0) }
   ) {
-    self.init(printer: printer, queue: debugLoggingQueue)
+    self.init(printer: printer, queue: _queue)
   }
 }
 
-let debugLoggingQueue = DispatchQueue(
+private let _queue = DispatchQueue(
   label: "co.pointfree.ComposableArchitecture.DebugEnvironment",
   qos: .background
 )
