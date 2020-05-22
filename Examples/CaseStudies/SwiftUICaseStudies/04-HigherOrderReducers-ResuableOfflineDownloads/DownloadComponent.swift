@@ -145,14 +145,8 @@ extension Reducer {
       .pullback(state: state, action: action, environment: environment),
       self
     )
-    .signpost()
   }
 }
-
-let log = OSLog(
-    subsystem: "co.pointfree.demo",
-    category: "Demo"
-)
 
 private let deleteAlert = DownloadAlert(
   primaryButton: .init(

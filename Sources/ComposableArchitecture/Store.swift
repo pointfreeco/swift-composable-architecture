@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import os.signpost
 
 /// A store represents the runtime that powers the application. It is the object that you will pass
 /// around to views that need to interact with the application.
@@ -10,6 +11,7 @@ public final class Store<State, Action> {
   @Published private(set) var state: State
   var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
+  private let log: OSLog
   private var parentCancellable: AnyCancellable?
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   private var synchronousActionsToSend: [Action] = []
@@ -27,7 +29,11 @@ public final class Store<State, Action> {
   ) {
     self.init(
       initialState: initialState,
-      reducer: { reducer.run(&$0, $1, environment) }
+      reducer: { reducer.run(&$0, $1, environment) },
+      log: OSLog(
+        subsystem: "co.pointfree.composable-architecture",
+        category: "Composable Architecture"
+      )
     )
   }
 
@@ -136,6 +142,15 @@ public final class Store<State, Action> {
   }
 
   func send(_ action: Action) {
+    if self.log.signpostsEnabled == true {
+      os_signpost(.begin, log: log, name: "Action", "%s", debugCaseOutput(action))
+    }
+    defer {
+      if self.log.signpostsEnabled {
+        os_signpost(.end, log: log, name: "Action")
+      }
+    }
+
     if self.isSending {
       assertionFailure(
         """
@@ -154,18 +169,20 @@ public final class Store<State, Action> {
     let uuid = UUID()
 
     var isProcessingEffects = true
-    let effectCancellable = effect.sink(
-      receiveCompletion: { [weak self] _ in
-        didComplete = true
-        self?.effectCancellables[uuid] = nil
-      },
-      receiveValue: { [weak self] action in
-        if isProcessingEffects {
-          self?.synchronousActionsToSend.append(action)
-        } else {
-          self?.send(action)
+    let effectCancellable = effect
+      .effectSignpost(log: self.log, action: action)
+      .sink(
+        receiveCompletion: { [weak self] _ in
+          didComplete = true
+          self?.effectCancellables[uuid] = nil
+        },
+        receiveValue: { [weak self] action in
+          if isProcessingEffects {
+            self?.synchronousActionsToSend.append(action)
+          } else {
+            self?.send(action)
+          }
         }
-      }
     )
     isProcessingEffects = false
 
@@ -192,10 +209,12 @@ public final class Store<State, Action> {
 
   private init(
     initialState: State,
-    reducer: @escaping (inout State, Action) -> Effect<Action, Never>
+    reducer: @escaping (inout State, Action) -> Effect<Action, Never>,
+    log: OSLog = .disabled
   ) {
     self.reducer = reducer
     self.state = initialState
+    self.log = log
   }
 }
 

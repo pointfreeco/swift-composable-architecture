@@ -1,60 +1,64 @@
+import Combine
 import os.signpost
 
 extension Reducer {
   public func signpost(
     _ prefix: String = "",
-    logger: OSLog = OSLog(subsystem: "co.composable-architecture", category: "Reducer Instrumentation")
+    log: OSLog = OSLog(subsystem: "co.composable-architecture", category: "Reducer Instrumentation")
   ) -> Self {
     let prefix = prefix.isEmpty ? "" : "\(prefix): "
 
     return Self { state, action, environment in
-      if logger.signpostsEnabled {
-        os_signpost(.begin, log: logger, name: "Action", "%s%s", prefix, debugCaseOutput(action))
+      if log.signpostsEnabled {
+        os_signpost(.begin, log: log, name: "Action", "%s%s", prefix, debugCaseOutput(action))
       }
       let effects = self.callAsFunction(&state, action, environment)
-      if logger.signpostsEnabled {
-        os_signpost(.end, log: logger, name: "Action")
+      if log.signpostsEnabled {
+        os_signpost(.end, log: log, name: "Action")
       }
       return effects
-        .signpost(prefix, action: action, logger: logger)
+        .effectSignpost(log: log, action: action)
+        .eraseToEffect()
     }
   }
 }
 
-extension Effect {
-  public func signpost(
-    _ prefix: String,
-    action: Output,
-    logger: OSLog = OSLog(subsystem: "co.composable-architecture", category: "Reducer Instrumentation")
-  ) -> Effect {
-    guard logger.signpostsEnabled else { return self }
+extension Publisher {
+  func effectSignpost(
+    log: OSLog,
+    action: Output
+  ) -> Publishers.HandleEvents<Self> {
+    guard log.signpostsEnabled else { return self.handleEvents() }
+    let actionOutput = debugCaseOutput(action)
+    let sid = OSSignpostID(log: log)
 
-    let sid = OSSignpostID(log: logger)
-    let caseOutput = debugCaseOutput(action)
-
-    return self.handleEvents(
-      receiveSubscription: { _ in
-        os_signpost(.begin, log: logger, name: "Effect", signpostID: sid, "%sStarted from %s", prefix, caseOutput)
-    },
-      receiveOutput: { value in
-        os_signpost(.event, log: logger, name: "Effect Output", "%s Output from %s", prefix, caseOutput)
-    },
-      receiveCompletion: { completion in
-        switch completion {
-        case .failure:
-          os_signpost(.end, log: logger, name: "Effect", signpostID: sid, "Failed")
-        case .finished:
-          os_signpost(.end, log: logger, name: "Effect", signpostID: sid, "Finished")
-        }
-    },
-      receiveCancel: {
-        os_signpost(.end, log: logger, name: "Effect", signpostID: sid, "Cancelled")
-    })
-    .eraseToEffect()
+    return self
+      .handleEvents(
+        receiveSubscription: { _ in
+          guard log.signpostsEnabled else { return }
+          os_signpost(.begin, log: log, name: "Effect", signpostID: sid, "Started from %s", actionOutput)
+      },
+        receiveOutput: { value in
+          guard log.signpostsEnabled else { return }
+          os_signpost(.event, log: log, name: "Effect Output", "Output from %s", actionOutput)
+      },
+        receiveCompletion: { completion in
+          guard log.signpostsEnabled else { return }
+          switch completion {
+          case .failure:
+            os_signpost(.end, log: log, name: "Effect", signpostID: sid, "Failed")
+          case .finished:
+            os_signpost(.end, log: log, name: "Effect", signpostID: sid, "Finished")
+          }
+      },
+        receiveCancel: {
+          guard log.signpostsEnabled else { return }
+          os_signpost(.end, log: log, name: "Effect", signpostID: sid, "Cancelled")
+      })
   }
 }
 
-private func debugCaseOutput(_ value: Any) -> String {
+func debugCaseOutput(_ value: Any) -> String {
   let mirror = Mirror(reflecting: value)
   switch mirror.displayStyle {
   case .enum:
