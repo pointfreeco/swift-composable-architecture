@@ -240,7 +240,7 @@ where Element: Identifiable, ID == Element.ID {
 
   public mutating func replaceSubrange<C, R>(_ subrange: R, with newElements: C) where C : Collection, R : RangeExpression, Self.Element == C.Element, Self.Index == R.Bound {
     let replacingIds = self.ids[subrange]
-    let newIds = newElements.map(\.id)
+    let newIds = newElements.map { $0.id }
     ids.replaceSubrange(subrange, with: newIds)
 
     for element in newElements {
