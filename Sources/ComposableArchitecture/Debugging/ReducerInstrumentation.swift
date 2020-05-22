@@ -30,7 +30,7 @@ extension Reducer {
       if log.signpostsEnabled {
         os_signpost(.begin, log: log, name: "Action", "%s%s", prefix, debugCaseOutput(action))
       }
-      let effects = self.callAsFunction(&state, action, environment)
+      let effects = self.run(&state, action, environment)
       if log.signpostsEnabled {
         os_signpost(.end, log: log, name: "Action")
       }
