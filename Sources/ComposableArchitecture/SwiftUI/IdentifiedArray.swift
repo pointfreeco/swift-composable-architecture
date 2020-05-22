@@ -184,6 +184,12 @@ where ID: Hashable {
   public mutating func move(fromOffsets source: IndexSet, toOffset destination: Int) {
     self.ids.move(fromOffsets: source, toOffset: destination)
   }
+
+  public mutating func sort(by areInIncreasingOrder: (Element, Element) throws -> Bool) rethrows {
+    try self.ids.sort {
+      try areInIncreasingOrder(self.dictionary[$0]!, self.dictionary[$1]!)
+    }
+  }
 }
 
 extension IdentifiedArray: CustomDebugStringConvertible {
@@ -219,6 +225,12 @@ extension IdentifiedArray: Encodable where Element: Encodable {
 extension IdentifiedArray: Equatable where Element: Equatable {}
 
 extension IdentifiedArray: Hashable where Element: Hashable {}
+
+extension IdentifiedArray where Element: Comparable {
+  public mutating func sort() {
+    sort(by: <)
+  }
+}
 
 extension IdentifiedArray: ExpressibleByArrayLiteral where Element: Identifiable, ID == Element.ID {
   public init(arrayLiteral elements: Element...) {
