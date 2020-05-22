@@ -1,6 +1,6 @@
 import Combine
 import Foundation
-import os.signpost
+import os
 
 /// A store represents the runtime that powers the application. It is the object that you will pass
 /// around to views that need to interact with the application.
@@ -27,15 +27,16 @@ public final class Store<State, Action> {
   public convenience init<Environment>(
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
-    environment: Environment
+    environment: Environment,
+    log: OSLog = OSLog(
+      subsystem: "co.pointfree.composable-architecture",
+      category: "Composable Architecture"
+    )
   ) {
     self.init(
       initialState: initialState,
       reducer: { reducer.run(&$0, $1, environment) },
-      log: OSLog(
-        subsystem: "co.pointfree.composable-architecture",
-        category: "Composable Architecture"
-      )
+      log: log
     )
   }
 
@@ -144,13 +145,10 @@ public final class Store<State, Action> {
   }
 
   func send(_ action: Action) {
+    let previousState = self.log.isEnabled(type: .default) ? self.state : nil
+
     if self.log.signpostsEnabled == true {
       os_signpost(.begin, log: log, name: "Send Action", "%s", debugCaseOutput(action))
-    }
-    defer {
-      if self.log.signpostsEnabled {
-        os_signpost(.end, log: log, name: "Send Action")
-      }
     }
 
     if self.isSending {
@@ -195,6 +193,28 @@ public final class Store<State, Action> {
     while !self.synchronousActionsToSend.isEmpty {
       let action = self.synchronousActionsToSend.removeFirst()
       self.send(action)
+    }
+
+    if self.log.signpostsEnabled {
+      os_signpost(.end, log: log, name: "Send Action")
+    }
+    if let previousState = previousState, self.log.isEnabled(type: .default) {
+      debugLoggingQueue.async {
+        os_log(
+          .default,
+          log: self.log,
+          """
+          Received action: %s
+
+          %s
+
+          %s
+          """,
+          debugCaseOutput(action),
+          debugOutput(action).indent(by: 2),
+          debugDiff(previousState, self.state).map { "\($0)\n" } ?? "  (No state changes)"
+        )
+      }
     }
   }
 

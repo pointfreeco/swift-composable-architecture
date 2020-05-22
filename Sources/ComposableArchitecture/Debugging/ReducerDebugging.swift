@@ -110,11 +110,11 @@ public struct DebugEnvironment {
   public init(
     printer: @escaping (String) -> Void = { print($0) }
   ) {
-    self.init(printer: printer, queue: _queue)
+    self.init(printer: printer, queue: debugLoggingQueue)
   }
 }
 
-private let _queue = DispatchQueue(
+let debugLoggingQueue = DispatchQueue(
   label: "co.pointfree.ComposableArchitecture.DebugEnvironment",
   qos: .background
 )
