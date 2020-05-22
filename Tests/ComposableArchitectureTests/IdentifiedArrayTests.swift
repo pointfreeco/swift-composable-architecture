@@ -138,7 +138,8 @@ final class IdentifiedArrayTests: XCTestCase {
       with: [
         User(id: 4, name: "Flob IV"),
         User(id: 5, name: "Flob V"),
-      ])
+      ]
+    )
 
     XCTAssertEqual(
       array,
