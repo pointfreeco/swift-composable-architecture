@@ -149,4 +149,50 @@ final class IdentifiedArrayTests: XCTestCase {
       ]
     )
   }
+
+  struct ComparableValue: Comparable, Identifiable {
+    let id: Int
+    let value: Int
+
+    static func < (lhs: ComparableValue, rhs: ComparableValue) -> Bool {
+      return lhs.value < rhs.value
+    }
+  }
+
+  func testSortBy() {
+    var array: IdentifiedArray = [
+      ComparableValue(id: 1, value: 100),
+      ComparableValue(id: 2, value: 50),
+      ComparableValue(id: 3, value: 75),
+    ]
+
+    array.sort { $0.value < $1.value }
+
+    XCTAssertEqual([2, 3, 1], array.ids)
+    XCTAssertEqual(
+      [
+        ComparableValue(id: 2, value: 50),
+        ComparableValue(id: 3, value: 75),
+        ComparableValue(id: 1, value: 100),
+      ], array)
+  }
+
+  func testSort() {
+    var array: IdentifiedArray = [
+      ComparableValue(id: 1, value: 100),
+      ComparableValue(id: 2, value: 50),
+      ComparableValue(id: 3, value: 75),
+    ]
+
+    array.sort()
+
+    XCTAssertEqual([2, 3, 1], array.ids)
+    XCTAssertEqual(
+      [
+        ComparableValue(id: 2, value: 50),
+        ComparableValue(id: 3, value: 75),
+        ComparableValue(id: 1, value: 100),
+      ], array)
+
+  }
 }
