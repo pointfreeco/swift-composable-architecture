@@ -238,7 +238,8 @@ where Element: Identifiable, ID == Element.ID {
     self.init([], id: \.id)
   }
 
-  public mutating func replaceSubrange<C, R>(_ subrange: R, with newElements: C) where C : Collection, R : RangeExpression, Element == C.Element, Index == R.Bound {
+  public mutating func replaceSubrange<C, R>(_ subrange: R, with newElements: C)
+  where C: Collection, R: RangeExpression, Element == C.Element, Index == R.Bound {
     let replacingIds = self.ids[subrange]
     let newIds = newElements.map { $0.id }
     ids.replaceSubrange(subrange, with: newIds)
