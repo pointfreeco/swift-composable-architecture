@@ -7,6 +7,8 @@ import os.signpost
 ///
 /// You will typically construct a single one of these at the root of your application, and then use
 /// the `scope` method to derive more focused stores that can be passed to subviews.
+
+// TODO: docs for signpost?
 public final class Store<State, Action> {
   @Published private(set) var state: State
   var effectCancellables: [UUID: AnyCancellable] = [:]
@@ -143,11 +145,11 @@ public final class Store<State, Action> {
 
   func send(_ action: Action) {
     if self.log.signpostsEnabled == true {
-      os_signpost(.begin, log: log, name: "Action", "%s", debugCaseOutput(action))
+      os_signpost(.begin, log: log, name: "Send Action", "%s", debugCaseOutput(action))
     }
     defer {
       if self.log.signpostsEnabled {
-        os_signpost(.end, log: log, name: "Action")
+        os_signpost(.end, log: log, name: "Send Action")
       }
     }
 

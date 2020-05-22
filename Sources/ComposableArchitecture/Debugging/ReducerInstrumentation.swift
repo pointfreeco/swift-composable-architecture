@@ -2,9 +2,17 @@ import Combine
 import os.signpost
 
 extension Reducer {
+  /// Instruments the reducer with signpost. Each invocation of the reducer will be measured by
+  /// an interval, and the lifecycle of its effects will be measured with interval and event
+  /// signposts.
+  ///
+  /// - Parameters:
+  ///   - prefix: A string to print at the beginning of the formatted message for the signpost.
+  ///   - log: An optional `OSLog` to use for signposts.
+  /// - Returns: A reducer that has been enhanced with instrumentation.
   public func signpost(
     _ prefix: String = "",
-    log: OSLog = OSLog(subsystem: "co.composable-architecture", category: "Reducer Instrumentation")
+    log: OSLog = OSLog(subsystem: "co.pointfree.composable-architecture", category: "Reducer Instrumentation")
   ) -> Self {
     let prefix = prefix.isEmpty ? "" : "\(prefix): "
 
@@ -36,7 +44,7 @@ extension Publisher {
       .handleEvents(
         receiveSubscription: { _ in
           guard log.signpostsEnabled else { return }
-          os_signpost(.begin, log: log, name: "Effect", signpostID: sid, "Started from %s", actionOutput)
+          os_signpost(.begin, log: log, name: "Effect Started", signpostID: sid, "From %s", actionOutput)
       },
         receiveOutput: { value in
           guard log.signpostsEnabled else { return }
@@ -46,14 +54,14 @@ extension Publisher {
           guard log.signpostsEnabled else { return }
           switch completion {
           case .failure:
-            os_signpost(.end, log: log, name: "Effect", signpostID: sid, "Failed")
+            os_signpost(.end, log: log, name: "Effect Started", signpostID: sid, "Failed")
           case .finished:
-            os_signpost(.end, log: log, name: "Effect", signpostID: sid, "Finished")
+            os_signpost(.end, log: log, name: "Effect Started", signpostID: sid, "Finished")
           }
       },
         receiveCancel: {
           guard log.signpostsEnabled else { return }
-          os_signpost(.end, log: log, name: "Effect", signpostID: sid, "Cancelled")
+          os_signpost(.end, log: log, name: "Effect Started", signpostID: sid, "Cancelled")
       })
   }
 }
