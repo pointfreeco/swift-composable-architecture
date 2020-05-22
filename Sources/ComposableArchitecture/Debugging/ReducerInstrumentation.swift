@@ -6,6 +6,16 @@ extension Reducer {
   /// an interval, and the lifecycle of its effects will be measured with interval and event
   /// signposts.
   ///
+  /// To use, build your app for instruments (⌘I), create a blank instrument, and then use the +
+  /// icon in the top right to add the signpost instrument. Start recording your app (button in the
+  /// top left) and then you should see timing information for every action sent to the store
+  /// and every effect executed.
+  ///
+  /// The effect instrumentation can be particularly useful for inspecting the lifecycle of long
+  /// living effects. For example, if you start an effect (e.g. a location manager) in `onAppear`
+  /// and forget to tear down the effect in `onDisappear`, it will clearly show in instruments
+  /// that the effect was never completed.
+  ///
   /// - Parameters:
   ///   - prefix: A string to print at the beginning of the formatted message for the signpost.
   ///   - log: An optional `OSLog` to use for signposts.
