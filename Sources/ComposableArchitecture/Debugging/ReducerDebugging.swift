@@ -1,6 +1,5 @@
 import CasePaths
 import Dispatch
-import os.signpost
 
 extension Reducer {
   /// Prints debug messages describing all received actions and state mutations.
