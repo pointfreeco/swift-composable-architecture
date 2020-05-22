@@ -77,8 +77,9 @@ let cityMapReducer = Reducer<CityMapState, CityMapAction, CityMapEnvironment> {
       downloadClient: $0.downloadClient,
       mainQueue: $0.mainQueue
     )
-  })
-  .signpost()
+  }
+)
+.signpost()
 
 struct CityMapRowView: View {
   let store: Store<CityMapState, CityMapAction>

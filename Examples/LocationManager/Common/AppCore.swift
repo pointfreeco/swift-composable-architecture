@@ -185,8 +185,8 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, ac
     locationManagerReducer
     .pullback(state: \.self, action: /AppAction.locationManager, environment: { $0 })
 )
-  .debug()
-  .signpost("LocationManager")
+.signpost()
+.debug()
 
 private let locationManagerReducer = Reducer<AppState, LocationManager.Action, AppEnvironment>
 {

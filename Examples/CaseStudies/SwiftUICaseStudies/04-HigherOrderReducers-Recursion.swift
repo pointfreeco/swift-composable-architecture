@@ -146,19 +146,19 @@ extension NestedState {
 }
 
 #if DEBUG
-struct NestedView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      NestedView(
-        store: Store(
-          initialState: .mock,
-          reducer: nestedReducer,
-          environment: NestedEnvironment(
-            uuid: UUID.init
+  struct NestedView_Previews: PreviewProvider {
+    static var previews: some View {
+      NavigationView {
+        NestedView(
+          store: Store(
+            initialState: .mock,
+            reducer: nestedReducer,
+            environment: NestedEnvironment(
+              uuid: UUID.init
+            )
           )
         )
-      )
+      }
     }
   }
-}
 #endif

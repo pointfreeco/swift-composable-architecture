@@ -1,6 +1,8 @@
 import Combine
 import os.signpost
 
+public let _zeroWidthSpace = "​"
+
 extension Reducer {
   /// Instruments the reducer with signpost. Each invocation of the reducer will be measured by
   /// an interval, and the lifecycle of its effects will be measured with interval and event
@@ -21,10 +23,15 @@ extension Reducer {
   ///   - log: An optional `OSLog` to use for signposts.
   /// - Returns: A reducer that has been enhanced with instrumentation.
   public func signpost(
-    _ prefix: String = "",
-    log: OSLog = OSLog(subsystem: "co.pointfree.composable-architecture", category: "Reducer Instrumentation")
+    _ prefix: String = _zeroWidthSpace,
+    log: OSLog = OSLog(
+      subsystem: "co.pointfree.composable-architecture",
+      category: "Reducer Instrumentation"
+    )
   ) -> Self {
-    let prefix = prefix.isEmpty ? "" : "\(prefix): "
+    guard log.signpostsEnabled else { return self }
+
+    let prefix = prefix == _zeroWidthSpace ? _zeroWidthSpace : "\(prefix): "
 
     return Self { state, action, environment in
       if log.signpostsEnabled {
@@ -34,8 +41,9 @@ extension Reducer {
       if log.signpostsEnabled {
         os_signpost(.end, log: log, name: "Action")
       }
-      return effects
-        .effectSignpost(log: log, action: action)
+      return
+        effects
+        .effectSignpost(prefix, log: log, action: action)
         .eraseToEffect()
     }
   }
@@ -43,6 +51,7 @@ extension Reducer {
 
 extension Publisher {
   func effectSignpost(
+    _ prefix: String,
     log: OSLog,
     action: Output
   ) -> Publishers.HandleEvents<Self> {
@@ -50,29 +59,33 @@ extension Publisher {
     let actionOutput = debugCaseOutput(action)
     let sid = OSSignpostID(log: log)
 
-    return self
+    return
+      self
       .handleEvents(
         receiveSubscription: { _ in
           guard log.signpostsEnabled else { return }
-          os_signpost(.begin, log: log, name: "Effect Started", signpostID: sid, "From %s", actionOutput)
-      },
+          os_signpost(
+            .begin, log: log, name: "Effect", signpostID: sid, "%sStarted from %s", prefix,
+            actionOutput)
+        },
         receiveOutput: { value in
           guard log.signpostsEnabled else { return }
-          os_signpost(.event, log: log, name: "Effect Output", "Output from %s", actionOutput)
-      },
+          os_signpost(
+            .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput)
+        },
         receiveCompletion: { completion in
           guard log.signpostsEnabled else { return }
           switch completion {
           case .failure:
-            os_signpost(.end, log: log, name: "Effect Started", signpostID: sid, "Failed")
+            os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sFailed", prefix)
           case .finished:
-            os_signpost(.end, log: log, name: "Effect Started", signpostID: sid, "Finished")
+            os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sFinished", prefix)
           }
-      },
+        },
         receiveCancel: {
           guard log.signpostsEnabled else { return }
-          os_signpost(.end, log: log, name: "Effect Started", signpostID: sid, "Cancelled")
-      })
+          os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sCancelled", prefix)
+        })
   }
 }
 

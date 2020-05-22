@@ -46,7 +46,6 @@ let timersReducer = Reducer<TimersState, TimersAction, TimersEnvironment> {
 .signpost()
 .debug()
 
-
 // MARK: - Timer feature view
 
 struct TimersView: View {

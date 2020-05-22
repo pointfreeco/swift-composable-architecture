@@ -9,14 +9,14 @@ extension SpeechClient {
         dependencies[id]?.cancel()
         dependencies[id] = nil
       }
-  },
+    },
     finishTask: { id in
       .fireAndForget {
         dependencies[id]?.finish()
         dependencies[id]?.subscriber.send(completion: .finished)
         dependencies[id] = nil
       }
-  },
+    },
     recognitionTask: { id, request in
       Effect.run { subscriber in
         let cancellable = AnyCancellable {
