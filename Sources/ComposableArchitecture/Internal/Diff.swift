@@ -71,9 +71,7 @@ func diff(_ first: String, _ second: String) -> String? {
     first.split(separator: "\n", omittingEmptySubsequences: false)[...],
     second.split(separator: "\n", omittingEmptySubsequences: false)[...]
   )
-
   if differences.count == 1, case .both = differences[0].which { return nil }
-
   var string = differences.reduce(into: "") { string, diff in
     diff.elements.forEach { line in
       string += "\(diff.which.prefix) \(line)\n"
