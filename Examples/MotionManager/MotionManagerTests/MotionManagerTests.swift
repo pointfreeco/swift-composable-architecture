@@ -1,23 +1,22 @@
 import Combine
 import ComposableArchitecture
+import ComposableCoreMotion
 import CoreMotion
 import XCTest
 
-@testable import MotionManager
+@testable import MotionManagerDemo
 
 class MotionManagerTests: XCTestCase {
   func testExample() {
-    let motionSubject = PassthroughSubject<MotionClient.Action, MotionClient.Error>()
-    var motionUpdatesStarted = false
+    let motionSubject = PassthroughSubject<DeviceMotion, MotionManager.Error>()
 
     let store = TestStore(
       initialState: .init(),
       reducer: appReducer,
       environment: .init(
-        motionClient: .mock(
-          create: { _ in motionSubject.eraseToEffect() },
-          startDeviceMotionUpdates: { _ in .fireAndForget { motionUpdatesStarted = true } },
-          stopDeviceMotionUpdates: { _ in
+        motionManager: .mock(
+          startDeviceMotionUpdates: { _, _ in motionSubject.eraseToEffect() },
+          stopDeviceMotionUpdates: {
             .fireAndForget { motionSubject.send(completion: .finished) }
           }
         )
@@ -25,7 +24,12 @@ class MotionManagerTests: XCTestCase {
     )
 
     let deviceMotion = DeviceMotion(
+      attitude: .init(quaternion: .init(x: 1, y: 0, z: 0, w: 0)),
       gravity: CMAcceleration(x: 1, y: 2, z: 3),
+      heading: 0,
+      magneticField: .init(field: .init(x: 0, y: 0, z: 0), accuracy: .high),
+      rotationRate: .init(x: 0, y: 0, z: 0),
+      timestamp: 0,
       userAcceleration: CMAcceleration(x: 4, y: 5, z: 6)
     )
 
@@ -33,10 +37,9 @@ class MotionManagerTests: XCTestCase {
       .send(.onAppear),
       .send(.recordingButtonTapped) {
         $0.isRecording = true
-        XCTAssertTrue(motionUpdatesStarted)
       },
-      .do { motionSubject.send(.motionUpdate(deviceMotion)) },
-      .receive(.motionClient(.success(.motionUpdate(deviceMotion)))) {
+      .do { motionSubject.send(deviceMotion) },
+      .receive(.motionUpdate(.success(deviceMotion))) {
         $0.z = [32]
       },
       .send(.recordingButtonTapped) {
