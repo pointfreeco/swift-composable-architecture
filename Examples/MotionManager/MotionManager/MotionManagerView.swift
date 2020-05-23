@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import ComposableCoreMotion
 import CoreMotion
 import SwiftUI
 
@@ -22,13 +23,14 @@ struct AppState: Equatable {
 
 enum AppAction: Equatable {
   case alertDismissed
-  case motionClient(Result<MotionClient.Action, MotionClient.Error>)
+//  case motionClient(Result<MotionClient.Action, MotionClient.Error>)
+  case motionUpdate(Result<DeviceMotion, MotionManager.Error>)
   case onAppear
   case recordingButtonTapped
 }
 
 struct AppEnvironment {
-  var motionClient: MotionClient
+  var motionManager: MotionManager
 }
 
 let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
@@ -39,13 +41,13 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     state.alertTitle = nil
     return .none
 
-  case .motionClient(.failure):
+  case .motionUpdate(.failure):
     state.alertTitle =
       "We encountered a problem with the motion manager. Make sure you run this demo on a real device, not the simulator."
     state.isRecording = false
     return .none
 
-  case let .motionClient(.success(.motionUpdate(motion))):
+  case let .motionUpdate(.success(motion)):
     state.z.append(
       motion.gravity.x * motion.userAcceleration.x
         + motion.gravity.y * motion.userAcceleration.y
@@ -55,16 +57,15 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     return .none
 
   case .onAppear:
-    return environment.motionClient.create(id: MotionClientId())
-      .catchToEffect()
-      .map(AppAction.motionClient)
+    return .none
 
   case .recordingButtonTapped:
     state.isRecording.toggle()
     return state.isRecording
-      ? environment.motionClient.startDeviceMotionUpdates(id: MotionClientId())
-        .fireAndForget()
-      : environment.motionClient.stopDeviceMotionUpdates(id: MotionClientId())
+      ? environment.motionManager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: .main)
+        .catchToEffect()
+        .map(AppAction.motionUpdate)
+      : environment.motionManager.stopDeviceMotionUpdates()
         .fireAndForget()
   }
 }
@@ -134,24 +135,30 @@ struct AppView_Previews: PreviewProvider {
     // Since MotionManager isn't usable in SwiftUI previews or simulators we create one that just
     // sends a bunch of data on some sine curves.
     var isStarted = false
-    let mockMotionClient = MotionClient(
-      create: { id in
-        Effect.timer(id: id, every: 0.01, on: DispatchQueue.main)
+    let mockMotionManager = MotionManager.mock(
+      startDeviceMotionUpdates: { _, _ in
+        isStarted = true
+        return Timer.publish(every: 0.01, on: .main, in: .default)
+          .autoconnect()
           .filter { _ in isStarted }
-          .map { time in
-            let t = Double(time.dispatchTime.uptimeNanoseconds) / 500_000_000.0
-            return .motionUpdate(
-              .init(
-                gravity: .init(x: sin(2 * t), y: -cos(-t), z: sin(3 * t)),
-                userAcceleration: .init(x: -cos(-3 * t), y: sin(2 * t), z: -cos(t))
-              )
+          .map { $0.timeIntervalSince1970 * 2 }
+          .map { t in
+            DeviceMotion(
+              attitude: .init(quaternion: .init(x: 1, y: 0, z: 0, w: 0)),
+              gravity: .init(x: sin(2 * t), y: -cos(-t), z: sin(3 * t)),
+              heading: 0,
+              magneticField: .init(field: .init(x: 0, y: 0, z: 0), accuracy: .high),
+              rotationRate: CMRotationRate.init(x: 0, y: 0, z: 0),
+              timestamp: Date().timeIntervalSince1970,
+              userAcceleration: .init(x: -cos(-3 * t), y: sin(2 * t), z: -cos(t))
             )
-          }
-          .eraseToEffect()
-      },
-      startDeviceMotionUpdates: { _ in .fireAndForget { isStarted = true } },
-      stopDeviceMotionUpdates: { _ in .fireAndForget { isStarted = false } }
-    )
+        }
+        .setFailureType(to: MotionManager.Error.self)
+        .eraseToEffect()
+    },
+      stopDeviceMotionUpdates: {
+        .fireAndForget { isStarted = false }
+    })
 
     return AppView(
       store: Store(
@@ -161,7 +168,7 @@ struct AppView_Previews: PreviewProvider {
           }
         ),
         reducer: appReducer,
-        environment: .init(motionClient: mockMotionClient)
+        environment: .init(motionManager: mockMotionManager)
       )
     )
   }

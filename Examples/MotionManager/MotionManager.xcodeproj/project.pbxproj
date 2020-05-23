@@ -11,6 +11,7 @@
 		5A405A30244F410F002D4C76 /* MotionManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A405A2F244F410F002D4C76 /* MotionManagerView.swift */; };
 		5A405A32244F4110002D4C76 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5A405A31244F4110002D4C76 /* Assets.xcassets */; };
 		5A89A1FE244F441700EF81FA /* Client.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A89A1FD244F441700EF81FA /* Client.swift */; };
+		CA01F8932479B2FF004C5C0D /* ComposableCoreMotion in Frameworks */ = {isa = PBXBuildFile; productRef = CA01F8922479B2FF004C5C0D /* ComposableCoreMotion */; };
 		CA0F931F244FE3F000E85985 /* MotionManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0F931E244FE3F000E85985 /* MotionManagerTests.swift */; };
 		CA6AC253244FE92100C71CB3 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6AC252244FE92100C71CB3 /* Models.swift */; };
 		CA6AC255244FE92E00C71CB3 /* Live.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6AC254244FE92E00C71CB3 /* Live.swift */; };
@@ -72,6 +73,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CA01F8932479B2FF004C5C0D /* ComposableCoreMotion in Frameworks */,
 				DC1394122469E2E100EE1157 /* ComposableArchitecture in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -164,6 +166,7 @@
 			name = MotionManager;
 			packageProductDependencies = (
 				DC1394112469E2E100EE1157 /* ComposableArchitecture */,
+				CA01F8922479B2FF004C5C0D /* ComposableCoreMotion */,
 			);
 			productName = MotionManager;
 			productReference = 5A405A28244F410F002D4C76 /* MotionManager.app */;
@@ -404,6 +407,7 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.MotionManager;
+				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)Demo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -423,6 +427,7 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.MotionManager;
+				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)Demo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -500,6 +505,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		CA01F8922479B2FF004C5C0D /* ComposableCoreMotion */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ComposableCoreMotion;
+		};
 		DC1394112469E2E100EE1157 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
