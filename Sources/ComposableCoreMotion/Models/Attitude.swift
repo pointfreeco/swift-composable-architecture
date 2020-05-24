@@ -11,8 +11,12 @@ public struct Attitude: Equatable {
     self.quaternion = quaternion
   }
 
+  mutating func multiply(byInverseOf attitude: Attitude) {
+    self.quaternion = self.quaternion.multiplied(by: attitude.quaternion.inverse)
+  }
+
   public var rotationMatrix: CMRotationMatrix {
-    var q: CMQuaternion { self.quaternion }
+    let q = self.quaternion
 
     let s = 1 / (
       self.quaternion.w * self.quaternion.w
@@ -39,7 +43,7 @@ public struct Attitude: Equatable {
   }
 
   public var roll: Double {
-    var q: CMQuaternion { self.quaternion }
+    let q = self.quaternion
     return atan2(
       2 * (q.w * q.x + q.y * q.z),
       1 - 2 * (q.x * q.x + q.y * q.y)
@@ -47,7 +51,7 @@ public struct Attitude: Equatable {
   }
 
   public var pitch: Double {
-    var q: CMQuaternion { self.quaternion }
+    let q = self.quaternion
     let p = 2 * (q.w * q.y - q.z * q.x)
     return p > 1 ? Double.pi / 2
       : p < -1 ? -Double.pi / 2
@@ -55,7 +59,7 @@ public struct Attitude: Equatable {
   }
 
   public var yaw: Double {
-    var q: CMQuaternion { self.quaternion }
+    let q = self.quaternion
     return atan2(
       2 * (q.w * q.z + q.x * q.y),
       1 - 2 * (q.y * q.y + q.z * q.z)
@@ -67,5 +71,26 @@ public struct Attitude: Equatable {
       && lhs.quaternion.x == rhs.quaternion.x
       && lhs.quaternion.y == rhs.quaternion.y
       && lhs.quaternion.z == rhs.quaternion.z
+  }
+}
+
+extension CMQuaternion {
+  fileprivate var inverse: CMQuaternion {
+    let invSumOfSquares = 1 / (self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w)
+    return CMQuaternion(
+      x: -self.x * invSumOfSquares,
+      y: -self.y * invSumOfSquares,
+      z: -self.z * invSumOfSquares,
+      w: self.w * invSumOfSquares
+    )
+  }
+
+  fileprivate func multiplied(by other: Self) -> Self {
+    var result = self
+    result.w = self.w * other.w - self.x * other.x - self.y * other.y - self.z * other.z
+    result.x = self.w * other.x + self.x * other.w + self.y * other.z - self.z * other.y
+    result.y = self.w * other.y - self.x * other.z + self.y * other.w + self.z * other.x
+    result.z = self.w * other.z + self.x * other.y - self.y * other.x + self.z * other.w
+    return result
   }
 }
