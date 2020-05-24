@@ -74,30 +74,30 @@ public struct MotionManager {
     self.stopMagnetometerUpdates = stopMagnetometerUpdates
   }
 
-  var accelerometerData: () -> AccelerometerData?
-  var attitudeReferenceFrame: () -> CMAttitudeReferenceFrame
-  var availableAttitudeReferenceFrames: () -> CMAttitudeReferenceFrame
-  var deviceMotion: () -> DeviceMotion?
-  var gyroData: () -> GyroData?
-  var isAccelerometerActive: () -> Bool
-  var isAccelerometerAvailable: () -> Bool
-  var isDeviceMotionActive: () -> Bool
-  var isDeviceMotionAvailable: () -> Bool
-  var isGyroActive: () -> Bool
-  var isGyroAvailable: () -> Bool
-  var isMagnetometerActive: () -> Bool
-  var isMagnetometerAvailable: () -> Bool
-  var magnetometerData: () -> MagnetometerData?
+  public var accelerometerData: () -> AccelerometerData?
+  public var attitudeReferenceFrame: () -> CMAttitudeReferenceFrame
+  public var availableAttitudeReferenceFrames: () -> CMAttitudeReferenceFrame
+  public var deviceMotion: () -> DeviceMotion?
+  public var gyroData: () -> GyroData?
+  public var isAccelerometerActive: () -> Bool
+  public var isAccelerometerAvailable: () -> Bool
+  public var isDeviceMotionActive: () -> Bool
+  public var isDeviceMotionAvailable: () -> Bool
+  public var isGyroActive: () -> Bool
+  public var isGyroAvailable: () -> Bool
+  public var isMagnetometerActive: () -> Bool
+  public var isMagnetometerAvailable: () -> Bool
+  public var magnetometerData: () -> MagnetometerData?
   var set: (Properties) -> Effect<Never, Never>
   var startAccelerometerUpdates: (OperationQueue) -> Effect<AccelerometerData, Error>
   var startDeviceMotionUpdates:
     (CMAttitudeReferenceFrame, OperationQueue) -> Effect<DeviceMotion, Error>
   var startGyroUpdates: (OperationQueue) -> Effect<GyroData, Error>
   var startMagnetometerUpdates: (OperationQueue) -> Effect<MagnetometerData, Error>
-  var stopAccelerometerUpdates: () -> Effect<Never, Never>
+  public var stopAccelerometerUpdates: () -> Effect<Never, Never>
   public var stopDeviceMotionUpdates: () -> Effect<Never, Never>
-  var stopGyroUpdates: () -> Effect<Never, Never>
-  var stopMagnetometerUpdates: () -> Effect<Never, Never>
+  public var stopGyroUpdates: () -> Effect<Never, Never>
+  public var stopMagnetometerUpdates: () -> Effect<Never, Never>
 
   public struct Properties {
     public var accelerometerUpdateInterval: TimeInterval?

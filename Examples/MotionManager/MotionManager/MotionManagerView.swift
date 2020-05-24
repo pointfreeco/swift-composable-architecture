@@ -11,21 +11,26 @@ private let readMe = """
   to substitute a mock MotionClient into the SwiftUI preview so that we can still play around with \
   its basic functionality.
 
-  Here we are creating a mock MotionClient that simulates motion data by running a timer that emits \
-  sinusoidal values.
+  Here we are creating a mock MotionClient that simulates motion data by running a timer that \
+  emits sinusoidal values.
   """
 
 struct AppState: Equatable {
   var alertTitle: String?
+  var facingDirection: Direction?
+  var initialAttitude: Attitude?
   var isRecording = false
   var z: [Double] = []
+
+  enum Direction {
+    case backward
+    case forward
+  }
 }
 
 enum AppAction: Equatable {
   case alertDismissed
-//  case motionClient(Result<MotionClient.Action, MotionClient.Error>)
   case motionUpdate(Result<DeviceMotion, MotionManager.Error>)
-  case onAppear
   case recordingButtonTapped
 }
 
@@ -42,33 +47,50 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     return .none
 
   case .motionUpdate(.failure):
-    state.alertTitle =
-      "We encountered a problem with the motion manager. Make sure you run this demo on a real device, not the simulator."
+    state.alertTitle = """
+      We encountered a problem with the motion manager. Make sure you run this demo on a real \
+      device, not the simulator.
+      """
     state.isRecording = false
     return .none
 
   case let .motionUpdate(.success(motion)):
+    state.initialAttitude = state.initialAttitude
+      ?? environment.motionManager.deviceMotion()?.attitude
+
+    if let initialAttitude = state.initialAttitude {
+      let newAttitude = motion.attitude.multiply(byInverseOf: initialAttitude)
+      if abs(newAttitude.yaw) < Double.pi / 2 {
+        state.facingDirection = .forward
+      } else {
+        state.facingDirection = .backward
+      }
+    }
+
     state.z.append(
       motion.gravity.x * motion.userAcceleration.x
         + motion.gravity.y * motion.userAcceleration.y
         + motion.gravity.z * motion.userAcceleration.z
     )
     state.z.removeFirst(max(0, state.z.count - 350))
-    return .none
 
-  case .onAppear:
     return .none
 
   case .recordingButtonTapped:
     state.isRecording.toggle()
-    return state.isRecording
-      ? environment.motionManager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: .main)
+    if state.isRecording {
+      return environment.motionManager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: .main)
         .catchToEffect()
         .map(AppAction.motionUpdate)
-      : environment.motionManager.stopDeviceMotionUpdates()
+    } else {
+      state.initialAttitude = nil
+      state.facingDirection = nil
+      return environment.motionManager.stopDeviceMotionUpdates()
         .fireAndForget()
+    }
   }
 }
+.debug()
 
 struct AppView: View {
   let store: Store<AppState, AppAction>
@@ -100,7 +122,7 @@ struct AppView: View {
         }
       }
       .padding()
-      .onAppear { viewStore.send(.onAppear) }
+      .background(viewStore.facingDirection == .backward ? Color.green : Color.clear)
       .alert(
         item: viewStore.binding(
           get: { $0.alertTitle.map(AppAlert.init(title:)) },

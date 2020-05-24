@@ -11,8 +11,8 @@ public struct Attitude: Equatable {
     self.quaternion = quaternion
   }
 
-  mutating func multiply(byInverseOf attitude: Attitude) {
-    self.quaternion = self.quaternion.multiplied(by: attitude.quaternion.inverse)
+  public func multiply(byInverseOf attitude: Self) -> Self {
+    .init(quaternion: self.quaternion.multiplied(by: attitude.quaternion.inverse))
   }
 
   public var rotationMatrix: CMRotationMatrix {
