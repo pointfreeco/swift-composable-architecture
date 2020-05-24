@@ -8,13 +8,13 @@ public struct MotionManager {
   public struct Error: Swift.Error, Equatable {
     public var rawValue: CMError
 
-    public init(cmError: CMError) {
-      self.rawValue = cmError
-    }
-
     public init(_ error: Swift.Error) {
       self.rawValue = CMError(UInt32((error as NSError).code))
     }
+  }
+
+  public func set(properties: Properties) -> Effect<Never, Never> {
+    self.set(properties)
   }
 
   public func startDeviceMotionUpdates(

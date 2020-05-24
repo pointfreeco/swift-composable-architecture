@@ -79,7 +79,8 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
   case .recordingButtonTapped:
     state.isRecording.toggle()
     if state.isRecording {
-      return environment.motionManager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: .main)
+      return environment.motionManager
+        .startDeviceMotionUpdates(using: .xArbitraryZVertical, to: .main)
         .catchToEffect()
         .map(AppAction.motionUpdate)
     } else {
@@ -90,7 +91,6 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     }
   }
 }
-.debug()
 
 struct AppView: View {
   let store: Store<AppState, AppAction>
@@ -158,6 +158,7 @@ struct AppView_Previews: PreviewProvider {
     // sends a bunch of data on some sine curves.
     var isStarted = false
     let mockMotionManager = MotionManager.mock(
+      deviceMotion: { nil },
       startDeviceMotionUpdates: { _, _ in
         isStarted = true
         return Timer.publish(every: 0.01, on: .main, in: .default)
