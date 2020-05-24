@@ -13,15 +13,101 @@ public struct MotionManager {
     }
   }
 
+  public var accelerometerData: AccelerometerData? {
+    self._accelerometerData()
+  }
+
+  public var attitudeReferenceFrame: CMAttitudeReferenceFrame {
+    self._attitudeReferenceFrame()
+  }
+
+  public var availableAttitudeReferenceFrames: CMAttitudeReferenceFrame {
+    self._availableAttitudeReferenceFrames()
+  }
+
+  public var deviceMotion: DeviceMotion? {
+    self._deviceMotion()
+  }
+
+  public var gyroData: GyroData? {
+    self._gyroData()
+  }
+
+  public var isAccelerometerActive: Bool {
+    self._isAccelerometerActive()
+  }
+
+  public var isAccelerometerAvailable: Bool {
+    self._isAccelerometerAvailable()
+  }
+
+  public var isDeviceMotionActive: Bool {
+    self._isDeviceMotionActive()
+  }
+
+  public var isDeviceMotionAvailable: Bool {
+    self._isDeviceMotionAvailable()
+  }
+
+  public var isGyroActive: Bool {
+    self._isGyroActive()
+  }
+
+  public var isGyroAvailable: Bool {
+    self._isGyroAvailable()
+  }
+
+  public var isMagnetometerActive: Bool {
+    self._isMagnetometerActive()
+  }
+
+  public var isMagnetometerAvailable: Bool {
+    self._isMagnetometerAvailable()
+  }
+
+  public var magnetometerData: MagnetometerData? {
+    self._magnetometerData()
+  }
+
   public func set(properties: Properties) -> Effect<Never, Never> {
-    self.set(properties)
+    self._set(properties)
+  }
+
+  public func startAccelerometerUpdates(
+    to queue: OperationQueue
+  ) -> Effect<AccelerometerData, Error> {
+    self._startAccelerometerUpdates(queue)
   }
 
   public func startDeviceMotionUpdates(
     using referenceFrame: CMAttitudeReferenceFrame,
     to queue: OperationQueue
     ) -> Effect<DeviceMotion, Error> {
-    self.startDeviceMotionUpdates(referenceFrame, queue)
+    self._startDeviceMotionUpdates(referenceFrame, queue)
+  }
+
+  public func startGyroUpdates(to queue: OperationQueue) -> Effect<GyroData, Error> {
+    self._startGyroUpdates(queue)
+  }
+
+  public func startMagnetometerUpdates(to queue: OperationQueue) -> Effect<MagnetometerData, Error> {
+    self._startMagnetometerUpdates(queue)
+  }
+
+  public func stopAccelerometerUpdates() -> Effect<Never, Never> {
+    self._stopAccelerometerUpdates()
+  }
+
+  public func stopDeviceMotionUpdates() -> Effect<Never, Never> {
+    self._stopDeviceMotionUpdates()
+  }
+
+  public func stopGyroUpdates() -> Effect<Never, Never> {
+    self._stopGyroUpdates()
+  }
+
+  public func stopMagnetometerUpdates() -> Effect<Never, Never> {
+    self._stopMagnetometerUpdates()
   }
 
   public init(
@@ -49,55 +135,30 @@ public struct MotionManager {
     stopGyroUpdates: @escaping () -> Effect<Never, Never>,
     stopMagnetometerUpdates: @escaping () -> Effect<Never, Never>
   ) {
-    self.accelerometerData = accelerometerData
-    self.attitudeReferenceFrame = attitudeReferenceFrame
-    self.availableAttitudeReferenceFrames = availableAttitudeReferenceFrames
-    self.deviceMotion = deviceMotion
-    self.gyroData = gyroData
-    self.isAccelerometerActive = isAccelerometerActive
-    self.isAccelerometerAvailable = isAccelerometerAvailable
-    self.isDeviceMotionActive = isDeviceMotionActive
-    self.isDeviceMotionAvailable = isDeviceMotionAvailable
-    self.isGyroActive = isGyroActive
-    self.isGyroAvailable = isGyroAvailable
-    self.isMagnetometerActive = isMagnetometerActive
-    self.isMagnetometerAvailable = isMagnetometerAvailable
-    self.magnetometerData = magnetometerData
-    self.set = set
-    self.startAccelerometerUpdates = startAccelerometerUpdates
-    self.startDeviceMotionUpdates = startDeviceMotionUpdates
-    self.startGyroUpdates = startGyroUpdates
-    self.startMagnetometerUpdates = startMagnetometerUpdates
-    self.stopAccelerometerUpdates = stopAccelerometerUpdates
-    self.stopDeviceMotionUpdates = stopDeviceMotionUpdates
-    self.stopGyroUpdates = stopGyroUpdates
-    self.stopMagnetometerUpdates = stopMagnetometerUpdates
+    self._accelerometerData = accelerometerData
+    self._attitudeReferenceFrame = attitudeReferenceFrame
+    self._availableAttitudeReferenceFrames = availableAttitudeReferenceFrames
+    self._deviceMotion = deviceMotion
+    self._gyroData = gyroData
+    self._isAccelerometerActive = isAccelerometerActive
+    self._isAccelerometerAvailable = isAccelerometerAvailable
+    self._isDeviceMotionActive = isDeviceMotionActive
+    self._isDeviceMotionAvailable = isDeviceMotionAvailable
+    self._isGyroActive = isGyroActive
+    self._isGyroAvailable = isGyroAvailable
+    self._isMagnetometerActive = isMagnetometerActive
+    self._isMagnetometerAvailable = isMagnetometerAvailable
+    self._magnetometerData = magnetometerData
+    self._set = set
+    self._startAccelerometerUpdates = startAccelerometerUpdates
+    self._startDeviceMotionUpdates = startDeviceMotionUpdates
+    self._startGyroUpdates = startGyroUpdates
+    self._startMagnetometerUpdates = startMagnetometerUpdates
+    self._stopAccelerometerUpdates = stopAccelerometerUpdates
+    self._stopDeviceMotionUpdates = stopDeviceMotionUpdates
+    self._stopGyroUpdates = stopGyroUpdates
+    self._stopMagnetometerUpdates = stopMagnetometerUpdates
   }
-
-  public var accelerometerData: () -> AccelerometerData?
-  public var attitudeReferenceFrame: () -> CMAttitudeReferenceFrame
-  public var availableAttitudeReferenceFrames: () -> CMAttitudeReferenceFrame
-  public var deviceMotion: () -> DeviceMotion?
-  public var gyroData: () -> GyroData?
-  public var isAccelerometerActive: () -> Bool
-  public var isAccelerometerAvailable: () -> Bool
-  public var isDeviceMotionActive: () -> Bool
-  public var isDeviceMotionAvailable: () -> Bool
-  public var isGyroActive: () -> Bool
-  public var isGyroAvailable: () -> Bool
-  public var isMagnetometerActive: () -> Bool
-  public var isMagnetometerAvailable: () -> Bool
-  public var magnetometerData: () -> MagnetometerData?
-  var set: (Properties) -> Effect<Never, Never>
-  var startAccelerometerUpdates: (OperationQueue) -> Effect<AccelerometerData, Error>
-  var startDeviceMotionUpdates:
-    (CMAttitudeReferenceFrame, OperationQueue) -> Effect<DeviceMotion, Error>
-  var startGyroUpdates: (OperationQueue) -> Effect<GyroData, Error>
-  var startMagnetometerUpdates: (OperationQueue) -> Effect<MagnetometerData, Error>
-  public var stopAccelerometerUpdates: () -> Effect<Never, Never>
-  public var stopDeviceMotionUpdates: () -> Effect<Never, Never>
-  public var stopGyroUpdates: () -> Effect<Never, Never>
-  public var stopMagnetometerUpdates: () -> Effect<Never, Never>
 
   public struct Properties {
     public var accelerometerUpdateInterval: TimeInterval?
@@ -120,4 +181,29 @@ public struct MotionManager {
       self.showsDeviceMovementDisplay = showsDeviceMovementDisplay
     }
   }
+
+  var _accelerometerData: () -> AccelerometerData?
+  var _attitudeReferenceFrame: () -> CMAttitudeReferenceFrame
+  var _availableAttitudeReferenceFrames: () -> CMAttitudeReferenceFrame
+  var _deviceMotion: () -> DeviceMotion?
+  var _gyroData: () -> GyroData?
+  var _isAccelerometerActive: () -> Bool
+  var _isAccelerometerAvailable: () -> Bool
+  var _isDeviceMotionActive: () -> Bool
+  var _isDeviceMotionAvailable: () -> Bool
+  var _isGyroActive: () -> Bool
+  var _isGyroAvailable: () -> Bool
+  var _isMagnetometerActive: () -> Bool
+  var _isMagnetometerAvailable: () -> Bool
+  var _magnetometerData: () -> MagnetometerData?
+  var _set: (Properties) -> Effect<Never, Never>
+  var _startAccelerometerUpdates: (OperationQueue) -> Effect<AccelerometerData, Error>
+  var _startDeviceMotionUpdates:
+    (CMAttitudeReferenceFrame, OperationQueue) -> Effect<DeviceMotion, Error>
+  var _startGyroUpdates: (OperationQueue) -> Effect<GyroData, Error>
+  var _startMagnetometerUpdates: (OperationQueue) -> Effect<MagnetometerData, Error>
+  var _stopAccelerometerUpdates: () -> Effect<Never, Never>
+  var _stopDeviceMotionUpdates: () -> Effect<Never, Never>
+  var _stopGyroUpdates: () -> Effect<Never, Never>
+  var _stopMagnetometerUpdates: () -> Effect<Never, Never>
 }

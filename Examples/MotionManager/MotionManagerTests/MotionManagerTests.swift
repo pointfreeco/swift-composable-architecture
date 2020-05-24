@@ -15,6 +15,7 @@ class MotionManagerTests: XCTestCase {
       reducer: appReducer,
       environment: .init(
         motionManager: .mock(
+          deviceMotion: { nil },
           startDeviceMotionUpdates: { _, _ in motionSubject.eraseToEffect() },
           stopDeviceMotionUpdates: {
             .fireAndForget { motionSubject.send(completion: .finished) }
@@ -34,7 +35,6 @@ class MotionManagerTests: XCTestCase {
     )
 
     store.assert(
-      .send(.onAppear),
       .send(.recordingButtonTapped) {
         $0.isRecording = true
       },

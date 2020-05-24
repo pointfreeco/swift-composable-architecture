@@ -56,7 +56,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
   case let .motionUpdate(.success(motion)):
     state.initialAttitude = state.initialAttitude
-      ?? environment.motionManager.deviceMotion()?.attitude
+      ?? environment.motionManager.deviceMotion?.attitude
 
     if let initialAttitude = state.initialAttitude {
       let newAttitude = motion.attitude.multiply(byInverseOf: initialAttitude)
