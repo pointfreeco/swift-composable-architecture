@@ -3,8 +3,6 @@ import ComposableArchitecture
 import SwiftUI
 
 struct RootView: View {
-  @State var id = UUID()
-
   var body: some View {
     NavigationView {
       Form {
@@ -308,12 +306,13 @@ struct RootView: View {
       .navigationBarTitle("Case Studies")
       .onAppear { self.id = UUID() }
 
-      // NB: This is a hack to force the root view to re-compute itself each time it appears so that
-      //     each demo is provided with a fresh store each time it is run.
       Text("\(self.id)")
     }
     .navigationViewStyle(StackNavigationViewStyle())
   }
+  // NB: This is a hack to force the root view to re-compute itself each time it appears so that
+  //     each demo is provided a fresh store each time.
+  @State var id = UUID()
 }
 
 struct RootView_Previews: PreviewProvider {
