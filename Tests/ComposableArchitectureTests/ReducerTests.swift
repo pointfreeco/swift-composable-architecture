@@ -147,7 +147,7 @@ final class ReducerTests: XCTestCase {
           Action.noop
           (No state changes)
 
-        """#
+        """#,
       ]
     )
   }
