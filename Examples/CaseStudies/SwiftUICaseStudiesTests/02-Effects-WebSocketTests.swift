@@ -17,7 +17,6 @@ class WebSocketTests: XCTestCase {
       environment: WebSocketEnvironment(
         mainQueue: self.scheduler.eraseToAnyScheduler(),
         webSocketClient: .mock(
-          cancel: { _, _, _ in .fireAndForget { socketSubject.send(completion: .finished) } },
           open: { _, _, _ in socketSubject.eraseToEffect() },
           receive: { _ in receiveSubject.eraseToEffect() },
           sendPing: { _ in .none }
@@ -58,7 +57,6 @@ class WebSocketTests: XCTestCase {
       environment: WebSocketEnvironment(
         mainQueue: self.scheduler.eraseToAnyScheduler(),
         webSocketClient: .mock(
-          cancel: { _, _, _ in .fireAndForget { socketSubject.send(completion: .finished) } },
           open: { _, _, _ in socketSubject.eraseToEffect() },
           receive: { _ in .none },
           sendPing: { _ in pingSubject.eraseToEffect() }
@@ -76,11 +74,6 @@ class WebSocketTests: XCTestCase {
       .receive(.webSocket(.didOpenWithProtocol(nil))) {
         $0.connectivityState = .connected
       },
-
-      .do { pingSubject.send(nil) },
-      .do { self.scheduler.advance(by: .seconds(5)) },
-      .do { self.scheduler.advance(by: .seconds(5)) },
-      .receive(.pingResponse(nil)),
 
       .do { pingSubject.send(nil) },
       .do { self.scheduler.advance(by: .seconds(5)) },
