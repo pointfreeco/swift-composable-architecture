@@ -129,6 +129,7 @@ struct WebScoketView: View {
     WithViewStore(self.store) { viewStore in
       VStack(alignment: .leading) {
         Text(template: readMe, .body)
+          .padding([.bottom])
 
         HStack {
           TextField(
