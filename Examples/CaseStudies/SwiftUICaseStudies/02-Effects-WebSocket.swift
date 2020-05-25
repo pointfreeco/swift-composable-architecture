@@ -11,6 +11,7 @@ private let readMe = """
   """
 
 struct WebSocketState: Equatable {
+  var alert: String?
   var connectivityState = ConnectivityState.disconnected
   var messageToSend = ""
   var receivedMessages = ""
@@ -22,11 +23,12 @@ struct WebSocketState: Equatable {
   }
 }
 
-enum WebSocketAction {
+enum WebSocketAction: Equatable {
+  case alertDismissed
   case connectButtonTapped
   case messageToSendChanged(String)
   case pingResponse(NSError?)
-  case receivedSocketMessage(Result<URLSessionWebSocketTask.Message, NSError>)
+  case receivedSocketMessage(Result<WebSocketClient.Message, NSError>)
   case sendButtonTapped
   case sendResponse(NSError?)
   case webSocket(WebSocketClient.Action)
@@ -41,61 +43,60 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
   state, action, environment in
   struct WebSocketId: Hashable {}
 
+  var receiveSocketMessageEffect: Effect<WebSocketAction, Never> {
+    environment.webSocketClient
+      .receive(WebSocketId())
+      .receive(on: environment.mainQueue)
+      .catchToEffect()
+      .map(WebSocketAction.receivedSocketMessage)
+      .cancellable(id: WebSocketId())
+  }
+  var sendPingEffect: Effect<WebSocketAction, Never> {
+    environment.webSocketClient
+      .sendPing(WebSocketId())
+      .delay(for: 10, scheduler: environment.mainQueue)
+      .map(WebSocketAction.pingResponse)
+      .eraseToEffect()
+      .cancellable(id: WebSocketId())
+  }
+
   switch action {
+  case .alertDismissed:
+    state.alert = nil
+    return .none
   case .connectButtonTapped:
-    defer { state.connectivityState = .connecting }
     switch state.connectivityState {
+    case .connected, .connecting:
+      state.connectivityState = .disconnected
+      return .cancel(id: WebSocketId())
 
-    case .connected:
-      return environment.webSocketClient.cancel(WebSocketId(), .normalClosure, nil)
-        .fireAndForget()
-    case .connecting:
-      return .none
     case .disconnected:
-      return .merge(
-        environment.webSocketClient.open(
-          WebSocketId(),
-          URL(string: "wss://echo.websocket.org")!,
-          []
-        )
-          .receive(on: environment.mainQueue)
-          .map(WebSocketAction.webSocket)
-          .eraseToEffect(),
-
-        environment.webSocketClient.receive(WebSocketId())
-          .receive(on: environment.mainQueue)
-          .catchToEffect()
-          .map(WebSocketAction.receivedSocketMessage),
-
-        environment.webSocketClient.sendPing(WebSocketId())
-          .delay(for: 10, scheduler: environment.mainQueue)
-          .map(WebSocketAction.pingResponse)
-          .eraseToEffect()
-      )
+      state.connectivityState = .connecting
+      return environment.webSocketClient
+        .open(WebSocketId(), URL(string: "wss://echo.websocket.org")!, [])
+        .receive(on: environment.mainQueue)
+        .map(WebSocketAction.webSocket)
+        .eraseToEffect()
+        .cancellable(id: WebSocketId())
     }
 
   case let .messageToSendChanged(message):
     state.messageToSend = message
     return .none
 
-  case let .pingResponse(error):
-    return environment.webSocketClient.sendPing(WebSocketId())
-      .delay(for: 10, scheduler: environment.mainQueue)
-      .map(WebSocketAction.pingResponse)
-      .eraseToEffect()
+  case .pingResponse:
+    // Ping the socket again in 10 seconds
+    return sendPingEffect
 
   case let .receivedSocketMessage(.success(.string(string))):
-    state.receivedMessages += "\(string)\n"
-    return environment.webSocketClient.receive(WebSocketId())
-      .receive(on: environment.mainQueue)
-      .catchToEffect()
-      .map(WebSocketAction.receivedSocketMessage)
+    state.receivedMessages += "\n\(string)"
+    
+    // Immediately ask for the next socket message
+    return receiveSocketMessageEffect
 
   case .receivedSocketMessage(.success):
-    return environment.webSocketClient.receive(WebSocketId())
-      .receive(on: environment.mainQueue)
-      .catchToEffect()
-      .map(WebSocketAction.receivedSocketMessage)
+    // Immediately ask for the next socket message
+    return receiveSocketMessageEffect
 
   case .receivedSocketMessage(.failure):
     return .none
@@ -111,13 +112,22 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
   case .sendResponse:
     return .none
 
+  case let .webSocket(.didClose(code, _)):
+    state.connectivityState = .disconnected
+    return .cancel(id: WebSocketId())
+
+  case .webSocket(.didBecomeInvalidWithError),
+       .webSocket(.didCompleteWithError):
+    state.connectivityState = .disconnected
+    state.alert = "Disconnected from socket for some reason. Try again."
+    return .cancel(id: WebSocketId())
+
   case .webSocket(.didOpenWithProtocol):
     state.connectivityState = .connected
-    return .none
-
-  case .webSocket(.didClose):
-    state.connectivityState = .disconnected
-    return .none
+    return .merge(
+      receiveSocketMessageEffect,
+      sendPingEffect
+    )
   }
 }
 .debug()
@@ -159,36 +169,89 @@ struct WebScoketView: View {
         Text(viewStore.receivedMessages)
       }
       .padding()
+      .alert(
+        item: viewStore.binding(
+          get: { $0.alert.map(WebSocketAlert.init(title:)) },
+          send: .alertDismissed
+        )
+      ) { alert in
+        Alert(title: Text(alert.title))
+      }
       .navigationBarTitle("Web Socket")
     }
   }
+}
+
+struct WebSocketAlert: Identifiable {
+  var title: String
+
+  var id: String { self.title }
 }
 
 // MARK: - WebSocketClient
 
 struct WebSocketClient {
   enum Action: Equatable {
-    case didOpenWithProtocol(String?)
+    case didBecomeInvalidWithError(NSError?)
     case didClose(code: URLSessionWebSocketTask.CloseCode, reason: Data?)
+    case didCompleteWithError(NSError?)
+    case didOpenWithProtocol(String?)
   }
 
+  enum Message: Equatable {
+    case data(Data)
+    case string(String)
+
+    init(_ message: URLSessionWebSocketTask.Message) {
+      switch message {
+      case let .data(data):
+        self = .data(data)
+      case let .string(string):
+        self = .string(string)
+      }
+    }
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+      switch (lhs, rhs) {
+      case let (.data(lhs), .data(rhs)):
+        return lhs == rhs
+      case  let (.string(lhs), .string(rhs)):
+        return lhs == rhs
+      case (.data, _), (.string, _):
+        return false
+      }
+    }
+  }
+
+  var cancel: (AnyHashable, URLSessionWebSocketTask.CloseCode, Data?) -> Effect<Never, Never>
   var open: (AnyHashable, URL, [String]) -> Effect<Action, Never>
+  var receive: (AnyHashable) -> Effect<Message, NSError>
   var send: (AnyHashable, URLSessionWebSocketTask.Message) -> Effect<NSError?, Never>
   var sendPing: (AnyHashable) -> Effect<NSError?, Never>
-  var receive: (AnyHashable) -> Effect<URLSessionWebSocketTask.Message, NSError>
-  var cancel: (AnyHashable, URLSessionWebSocketTask.CloseCode, Data?) -> Effect<Never, Never>
 }
 
 extension WebSocketClient {
   static let live = WebSocketClient(
+    cancel: { id, closeCode, reason in
+      .fireAndForget {
+        dependencies[id]?.task.cancel(with: closeCode, reason: reason)
+        dependencies[id] = nil
+      }
+  },
     open: { id, url, protocols in
       Effect.run { subscriber in
         let delegate = WebSocketDelegate(
-          didOpenWithProtocol: {
-            subscriber.send(.didOpenWithProtocol($0))
+          didBecomeInvalidWithError: {
+            subscriber.send(.didBecomeInvalidWithError($0 as NSError?))
         },
           didClose: {
             subscriber.send(.didClose(code: $0, reason: $1))
+        },
+          didCompleteWithError: {
+            subscriber.send(.didCompleteWithError($0 as NSError?))
+        },
+          didOpenWithProtocol: {
+            subscriber.send(.didOpenWithProtocol($0))
         })
         let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
         let task = session.webSocketTask(with: url, protocols: protocols)
@@ -197,6 +260,17 @@ extension WebSocketClient {
         return AnyCancellable {
           task.cancel(with: .normalClosure, reason: nil)
           dependencies[id] = nil
+        }
+      }
+  },
+    receive: { id in
+      .future { callback in
+        dependencies[id]?.task.receive { result in
+          callback(
+            result
+              .map(Message.init)
+              .mapError { $0 as NSError }
+          )
         }
       }
   },
@@ -213,19 +287,6 @@ extension WebSocketClient {
           callback(.success(error as NSError?))
         }
       }
-  },
-    receive: { id in
-      .future { callback in
-        dependencies[id]?.task.receive { result in
-          callback(result.mapError { $0 as NSError })
-        }
-      }
-  },
-    cancel: { id, closeCode, reason in
-      .fireAndForget {
-        dependencies[id]?.task.cancel(with: closeCode, reason: reason)
-        dependencies[id] = nil
-      }
   })
 }
 
@@ -236,14 +297,20 @@ private struct Dependencies {
 }
 
 class WebSocketDelegate: NSObject, URLSessionWebSocketDelegate {
-  let didOpenWithProtocol: (String?) -> Void
+  let didBecomeInvalidWithError: (Error?) -> Void
   let didClose: (URLSessionWebSocketTask.CloseCode, Data?) -> Void
+  let didCompleteWithError: (Error?) -> Void
+  let didOpenWithProtocol: (String?) -> Void
 
   init(
-    didOpenWithProtocol: @escaping (String?) -> Void,
-    didClose: @escaping (URLSessionWebSocketTask.CloseCode, Data?) -> Void
+    didBecomeInvalidWithError: @escaping (Error?) -> Void,
+    didClose: @escaping (URLSessionWebSocketTask.CloseCode, Data?) -> Void,
+    didCompleteWithError: @escaping (Error?) -> Void,
+    didOpenWithProtocol: @escaping (String?) -> Void
   ) {
+    self.didBecomeInvalidWithError = didBecomeInvalidWithError
     self.didOpenWithProtocol = didOpenWithProtocol
+    self.didCompleteWithError = didCompleteWithError
     self.didClose = didClose
   }
 
@@ -262,6 +329,14 @@ class WebSocketDelegate: NSObject, URLSessionWebSocketDelegate {
     reason: Data?
   ) {
     self.didClose(closeCode, reason)
+  }
+
+  func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+    self.didCompleteWithError(error)
+  }
+
+  func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
+    self.didBecomeInvalidWithError(error)
   }
 }
 
