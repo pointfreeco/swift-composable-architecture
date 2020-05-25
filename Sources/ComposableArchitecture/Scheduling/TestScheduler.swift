@@ -21,7 +21,7 @@ where SchedulerTimeType: Strideable, SchedulerTimeType.Stride: SchedulerTimeInte
   ///
   /// - Parameter stride: A stride.
   public func advance(by stride: SchedulerTimeType.Stride = .zero) {
-    self.scheduled.sort { $0.date < $1.date || ($0.date == $1.date && $0.id < $1.id) }
+    self.scheduled.sort { ($0.date, $0.id) < ($1.date, $1.id) }
 
     guard
       let nextDate = self.scheduled.first?.date,
