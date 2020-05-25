@@ -4,7 +4,7 @@ import Dispatch
 extension Reducer {
   /// Prints debug messages describing all received actions and state mutations.
   ///
-  /// Printing is only done in DEBUG builds.
+  /// Printing is only done in debug (`#if DEBUG`) builds.
   ///
   /// - Parameters:
   ///   - prefix: A string with which to prefix all debug messages.
@@ -24,7 +24,7 @@ extension Reducer {
 
   /// Prints debug messages describing all received actions.
   ///
-  /// Printing is only done in DEBUG builds.
+  /// Printing is only done in debug (`#if DEBUG`) builds.
   ///
   /// - Parameters:
   ///   - prefix: A string with which to prefix all debug messages.
