@@ -19,28 +19,87 @@ class WebSocketTests: XCTestCase {
         webSocketClient: .mock(
           open: { _, _, _ in socketSubject.eraseToEffect() },
           receive: { _ in receiveSubject.eraseToEffect() },
+          send: { _, _ in Effect(value: nil) },
           sendPing: { _ in .none }
         )
       )
     )
 
     testStore.assert(
+      // Connect to the socket
       .send(.connectButtonTapped) {
         $0.connectivityState = .connecting
       },
-
       .do { socketSubject.send(.didOpenWithProtocol(nil)) },
       .do { self.scheduler.advance() },
       .receive(.webSocket(.didOpenWithProtocol(nil))) {
         $0.connectivityState = .connected
       },
 
+      // Send a message
+      .send(.messageToSendChanged("Hi")) {
+        $0.messageToSend = "Hi"
+      },
+      .send(.sendButtonTapped) {
+        $0.messageToSend = ""
+      },
+      .receive(.sendResponse(nil)),
+
+      // Receive a message
       .do { receiveSubject.send(.string("Hi")) },
       .do { self.scheduler.advance() },
       .receive(.receivedSocketMessage(.success(.string("Hi")))) {
         $0.receivedMessages = "\nHi"
       },
 
+      // Disconnect from the socket
+      .send(.connectButtonTapped) {
+        $0.connectivityState = .disconnected
+      }
+    )
+  }
+
+  func testWebSocketSendFailure() {
+    let socketSubject = PassthroughSubject<WebSocketClient.Action, Never>()
+    let receiveSubject = PassthroughSubject<WebSocketClient.Message, NSError>()
+
+    let testStore = TestStore(
+      initialState: .init(),
+      reducer: webSocketReducer,
+      environment: WebSocketEnvironment(
+        mainQueue: self.scheduler.eraseToAnyScheduler(),
+        webSocketClient: .mock(
+          open: { _, _, _ in socketSubject.eraseToEffect() },
+          receive: { _ in receiveSubject.eraseToEffect() },
+          send: { _, _ in Effect(value: NSError(domain: "", code: 1)) },
+          sendPing: { _ in .none }
+        )
+      )
+    )
+
+    testStore.assert(
+      // Connect to the socket
+      .send(.connectButtonTapped) {
+        $0.connectivityState = .connecting
+      },
+      .do { socketSubject.send(.didOpenWithProtocol(nil)) },
+      .do { self.scheduler.advance() },
+      .receive(.webSocket(.didOpenWithProtocol(nil))) {
+        $0.connectivityState = .connected
+      },
+
+      // Send a message
+      .send(.messageToSendChanged("Hi")) {
+        $0.messageToSend = "Hi"
+      },
+      .send(.sendButtonTapped) {
+        $0.messageToSend = ""
+      },
+      .receive(.sendResponse(NSError(domain: "", code: 1))) {
+        $0.alert = "Could not send socket message. Try again."
+      },
+
+      // Disconnect from the socket
       .send(.connectButtonTapped) {
         $0.connectivityState = .disconnected
       }
@@ -85,7 +144,6 @@ class WebSocketTests: XCTestCase {
       }
     )
   }
-
 
   func testWebSocketConnectError() {
     let socketSubject = PassthroughSubject<WebSocketClient.Action, Never>()

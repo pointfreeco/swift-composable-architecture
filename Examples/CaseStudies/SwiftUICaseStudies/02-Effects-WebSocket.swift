@@ -109,7 +109,10 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
       .eraseToEffect()
       .map(WebSocketAction.sendResponse)
 
-  case .sendResponse:
+  case let .sendResponse(error):
+    if error != nil {
+      state.alert = "Could not send socket message. Try again."
+    }
     return .none
 
   case let .webSocket(.didClose(code, _)):
