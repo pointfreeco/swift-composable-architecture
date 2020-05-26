@@ -4,22 +4,24 @@ import CoreMotion
 
 extension MotionManager {
   public static let live = MotionManager(
-    accelerometerData: { manager.accelerometerData.map(AccelerometerData.init) },
-    attitudeReferenceFrame: { manager.attitudeReferenceFrame },
+    accelerometerData: { id in managers[id]?.accelerometerData.map(AccelerometerData.init) },
+    attitudeReferenceFrame: { id in managers[id]?.attitudeReferenceFrame ?? .init() },
     availableAttitudeReferenceFrames: { CMMotionManager.availableAttitudeReferenceFrames() },
-    deviceMotion: { manager.deviceMotion.map(DeviceMotion.init) },
-    gyroData: { manager.gyroData.map(GyroData.init) },
-    isAccelerometerActive: { manager.isAccelerometerActive },
-    isAccelerometerAvailable: { manager.isAccelerometerAvailable },
-    isDeviceMotionActive: { manager.isDeviceMotionActive },
-    isDeviceMotionAvailable: { manager.isDeviceMotionAvailable },
-    isGyroActive: { manager.isGyroActive },
-    isGyroAvailable: { manager.isGyroAvailable },
-    isMagnetometerActive: { manager.isDeviceMotionActive },
-    isMagnetometerAvailable: { manager.isMagnetometerAvailable },
-    magnetometerData: { manager.magnetometerData.map(MagnetometerData.init) },
-    set: { properties in
+    deviceMotion: { id in managers[id]?.deviceMotion.map(DeviceMotion.init) },
+    gyroData: { id in managers[id]?.gyroData.map(GyroData.init) },
+    isAccelerometerActive: { id in managers[id]?.isAccelerometerActive ?? false },
+    isAccelerometerAvailable: { id in managers[id]?.isAccelerometerAvailable ?? false },
+    isDeviceMotionActive: { id in managers[id]?.isDeviceMotionActive ?? false },
+    isDeviceMotionAvailable: { id in managers[id]?.isDeviceMotionAvailable ?? false },
+    isGyroActive: { id in managers[id]?.isGyroActive ?? false },
+    isGyroAvailable: { id in managers[id]?.isGyroAvailable ?? false },
+    isMagnetometerActive: { id in managers[id]?.isDeviceMotionActive ?? false },
+    isMagnetometerAvailable: { id in managers[id]?.isMagnetometerAvailable ?? false },
+    magnetometerData: { id in managers[id]?.magnetometerData.map(MagnetometerData.init) },
+    set: { id, properties in
       .fireAndForget {
+        guard let manager = managers[id] else { return }
+
         if let accelerometerUpdateInterval = properties.accelerometerUpdateInterval {
           manager.accelerometerUpdateInterval = accelerometerUpdateInterval
         }
@@ -37,8 +39,10 @@ extension MotionManager {
         }
       }
   },
-    startAccelerometerUpdates: { queue in
-      Effect.run { subscriber in
+    startAccelerometerUpdates: { id, queue in
+      return Effect.run { subscriber in
+        guard let manager = managers[id] else { return AnyCancellable {} }
+
         accelerometerUpdatesSubscriber?.send(completion: .finished)
         accelerometerUpdatesSubscriber = subscriber
         manager.startAccelerometerUpdates(to: queue) { data, error in
@@ -53,8 +57,10 @@ extension MotionManager {
         }
       }
   },
-    startDeviceMotionUpdates: { frame, queue in
-      Effect.run { subscriber in
+    startDeviceMotionUpdates: { id, frame, queue in
+      return Effect.run { subscriber in
+        guard let manager = managers[id] else { return AnyCancellable {} }
+
         deviceMotionUpdatesSubscriber?.send(completion: .finished)
         deviceMotionUpdatesSubscriber = subscriber
         manager.startDeviceMotionUpdates(using: frame, to: queue) { data, error in
@@ -69,8 +75,10 @@ extension MotionManager {
         }
       }
   },
-    startGyroUpdates: { queue in
-      Effect.run { subscriber in
+    startGyroUpdates: { id, queue in
+      return Effect.run { subscriber in
+        guard let manager = managers[id] else { return AnyCancellable {} }
+
         deviceGyroUpdatesSubscriber?.send(completion: .finished)
         deviceGyroUpdatesSubscriber = subscriber
         manager.startGyroUpdates(to: queue) { data, error in
@@ -85,8 +93,10 @@ extension MotionManager {
         }
       }
   },
-    startMagnetometerUpdates: { queue in
-      Effect.run { subscriber in
+    startMagnetometerUpdates: { id, queue in
+      return Effect.run { subscriber in
+        guard let manager = managers[id] else { return AnyCancellable {} }
+
         deviceMagnetometerUpdatesSubscriber?.send(completion: .finished)
         deviceMagnetometerUpdatesSubscriber = subscriber
         manager.startMagnetometerUpdates(to: queue) { data, error in
@@ -101,26 +111,30 @@ extension MotionManager {
         }
       }
   },
-    stopAccelerometerUpdates: {
+    stopAccelerometerUpdates: { id in
       .fireAndForget {
+        guard let manager = managers[id] else { return }
         manager.stopAccelerometerUpdates()
         accelerometerUpdatesSubscriber?.send(completion: .finished)
       }
   },
-    stopDeviceMotionUpdates: {
+    stopDeviceMotionUpdates: { id in
       .fireAndForget {
+        guard let manager = managers[id] else { return }
         manager.stopDeviceMotionUpdates()
         deviceMotionUpdatesSubscriber?.send(completion: .finished)
       }
   },
-    stopGyroUpdates: {
+    stopGyroUpdates: { id in
       .fireAndForget {
+        guard let manager = managers[id] else { return }
         manager.stopGyroUpdates()
         deviceGyroUpdatesSubscriber?.send(completion: .finished)
       }
   },
-    stopMagnetometerUpdates: {
+    stopMagnetometerUpdates: { id in
       .fireAndForget {
+        guard let manager = managers[id] else { return }
         manager.stopMagnetometerUpdates()
         deviceMagnetometerUpdatesSubscriber?.send(completion: .finished)
       }
@@ -133,8 +147,4 @@ private var deviceMotionUpdatesSubscriber: Effect<DeviceMotion, MotionManager.Er
 private var deviceGyroUpdatesSubscriber: Effect<GyroData, MotionManager.Error>.Subscriber<GyroData, MotionManager.Error>?
 private var deviceMagnetometerUpdatesSubscriber: Effect<MagnetometerData, MotionManager.Error>.Subscriber<MagnetometerData, MotionManager.Error>?
 
-private var manager: CMMotionManager {
-  _manager = _manager ?? CMMotionManager()
-  return _manager!
-}
-private var _manager: CMMotionManager?
+var managers: [AnyHashable: CMMotionManager] = [:]

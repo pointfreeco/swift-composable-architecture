@@ -13,127 +13,135 @@ public struct MotionManager {
     }
   }
 
-  public var accelerometerData: AccelerometerData? {
-    self._accelerometerData()
+  public func accelerometerData(id: AnyHashable) -> AccelerometerData? {
+    self._accelerometerData(id)
   }
 
-  public var attitudeReferenceFrame: CMAttitudeReferenceFrame {
-    self._attitudeReferenceFrame()
+  public func attitudeReferenceFrame(id: AnyHashable) -> CMAttitudeReferenceFrame {
+    self._attitudeReferenceFrame(id)
   }
 
-  public var availableAttitudeReferenceFrames: CMAttitudeReferenceFrame {
+  public func availableAttitudeReferenceFrames() -> CMAttitudeReferenceFrame {
     self._availableAttitudeReferenceFrames()
   }
 
-  public var deviceMotion: DeviceMotion? {
-    self._deviceMotion()
+  public func deviceMotion(id: AnyHashable) -> DeviceMotion? {
+    self._deviceMotion(id)
   }
 
-  public var gyroData: GyroData? {
-    self._gyroData()
+  public func gyroData(id: AnyHashable) -> GyroData? {
+    self._gyroData(id)
   }
 
-  public var isAccelerometerActive: Bool {
-    self._isAccelerometerActive()
+  public func isAccelerometerActive(id: AnyHashable) -> Bool {
+    self._isAccelerometerActive(id)
   }
 
-  public var isAccelerometerAvailable: Bool {
-    self._isAccelerometerAvailable()
+  public func isAccelerometerAvailable(id: AnyHashable) -> Bool {
+    self._isAccelerometerAvailable(id)
   }
 
-  public var isDeviceMotionActive: Bool {
-    self._isDeviceMotionActive()
+  public func isDeviceMotionActive(id: AnyHashable) -> Bool {
+    self._isDeviceMotionActive(id)
   }
 
-  public var isDeviceMotionAvailable: Bool {
-    self._isDeviceMotionAvailable()
+  public func isDeviceMotionAvailable(id: AnyHashable) -> Bool {
+    self._isDeviceMotionAvailable(id)
   }
 
-  public var isGyroActive: Bool {
-    self._isGyroActive()
+  public func isGyroActive(id: AnyHashable) -> Bool {
+    self._isGyroActive(id)
   }
 
-  public var isGyroAvailable: Bool {
-    self._isGyroAvailable()
+  public func isGyroAvailable(id: AnyHashable) -> Bool {
+    self._isGyroAvailable(id)
   }
 
-  public var isMagnetometerActive: Bool {
-    self._isMagnetometerActive()
+  public func isMagnetometerActive(id: AnyHashable) -> Bool {
+    self._isMagnetometerActive(id)
   }
 
-  public var isMagnetometerAvailable: Bool {
-    self._isMagnetometerAvailable()
+  public func isMagnetometerAvailable(id: AnyHashable) -> Bool {
+    self._isMagnetometerAvailable(id)
   }
 
-  public var magnetometerData: MagnetometerData? {
-    self._magnetometerData()
+  public func magnetometerData(id: AnyHashable) -> MagnetometerData? {
+    self._magnetometerData(id)
   }
 
-  public func set(properties: Properties) -> Effect<Never, Never> {
-    self._set(properties)
+  public func set(id: AnyHashable, properties: Properties) -> Effect<Never, Never> {
+    self._set(id, properties)
   }
 
   public func startAccelerometerUpdates(
-    to queue: OperationQueue
+    id: AnyHashable,
+    to queue: OperationQueue = .main
   ) -> Effect<AccelerometerData, Error> {
-    self._startAccelerometerUpdates(queue)
+    self._startAccelerometerUpdates(id, queue)
   }
 
   public func startDeviceMotionUpdates(
+    id: AnyHashable,
     using referenceFrame: CMAttitudeReferenceFrame,
-    to queue: OperationQueue
+    to queue: OperationQueue = .main
     ) -> Effect<DeviceMotion, Error> {
-    self._startDeviceMotionUpdates(referenceFrame, queue)
+    self._startDeviceMotionUpdates(id, referenceFrame, queue)
   }
 
-  public func startGyroUpdates(to queue: OperationQueue) -> Effect<GyroData, Error> {
-    self._startGyroUpdates(queue)
+  public func startGyroUpdates(
+    id: AnyHashable,
+    to queue: OperationQueue = .main
+  ) -> Effect<GyroData, Error> {
+    self._startGyroUpdates(id, queue)
   }
 
-  public func startMagnetometerUpdates(to queue: OperationQueue) -> Effect<MagnetometerData, Error> {
-    self._startMagnetometerUpdates(queue)
+  public func startMagnetometerUpdates(
+    id: AnyHashable,
+    to queue: OperationQueue = .main
+  ) -> Effect<MagnetometerData, Error> {
+    self._startMagnetometerUpdates(id, queue)
   }
 
-  public func stopAccelerometerUpdates() -> Effect<Never, Never> {
-    self._stopAccelerometerUpdates()
+  public func stopAccelerometerUpdates(id: AnyHashable) -> Effect<Never, Never> {
+    self._stopAccelerometerUpdates(id)
   }
 
-  public func stopDeviceMotionUpdates() -> Effect<Never, Never> {
-    self._stopDeviceMotionUpdates()
+  public func stopDeviceMotionUpdates(id: AnyHashable) -> Effect<Never, Never> {
+    self._stopDeviceMotionUpdates(id)
   }
 
-  public func stopGyroUpdates() -> Effect<Never, Never> {
-    self._stopGyroUpdates()
+  public func stopGyroUpdates(id: AnyHashable) -> Effect<Never, Never> {
+    self._stopGyroUpdates(id)
   }
 
-  public func stopMagnetometerUpdates() -> Effect<Never, Never> {
-    self._stopMagnetometerUpdates()
+  public func stopMagnetometerUpdates(id: AnyHashable) -> Effect<Never, Never> {
+    self._stopMagnetometerUpdates(id)
   }
 
   public init(
-    accelerometerData: @escaping () -> AccelerometerData?,
-    attitudeReferenceFrame: @escaping () -> CMAttitudeReferenceFrame,
+    accelerometerData: @escaping (AnyHashable) -> AccelerometerData?,
+    attitudeReferenceFrame: @escaping (AnyHashable) -> CMAttitudeReferenceFrame,
     availableAttitudeReferenceFrames: @escaping () -> CMAttitudeReferenceFrame,
-    deviceMotion: @escaping () -> DeviceMotion?,
-    gyroData: @escaping () -> GyroData?,
-    isAccelerometerActive: @escaping () -> Bool,
-    isAccelerometerAvailable: @escaping () -> Bool,
-    isDeviceMotionActive: @escaping () -> Bool,
-    isDeviceMotionAvailable: @escaping () -> Bool,
-    isGyroActive: @escaping () -> Bool,
-    isGyroAvailable: @escaping () -> Bool,
-    isMagnetometerActive: @escaping () -> Bool,
-    isMagnetometerAvailable: @escaping () -> Bool,
-    magnetometerData: @escaping () -> MagnetometerData?,
-    set: @escaping (MotionManager.Properties) -> Effect<Never, Never>,
-    startAccelerometerUpdates: @escaping (OperationQueue) -> Effect<AccelerometerData, Error>,
-    startDeviceMotionUpdates: @escaping (CMAttitudeReferenceFrame, OperationQueue) -> Effect<DeviceMotion, Error>,
-    startGyroUpdates: @escaping (OperationQueue) -> Effect<GyroData, Error>,
-    startMagnetometerUpdates: @escaping (OperationQueue) -> Effect<MagnetometerData, Error>,
-    stopAccelerometerUpdates: @escaping () -> Effect<Never, Never>,
-    stopDeviceMotionUpdates: @escaping () -> Effect<Never, Never>,
-    stopGyroUpdates: @escaping () -> Effect<Never, Never>,
-    stopMagnetometerUpdates: @escaping () -> Effect<Never, Never>
+    deviceMotion: @escaping (AnyHashable) -> DeviceMotion?,
+    gyroData: @escaping (AnyHashable) -> GyroData?,
+    isAccelerometerActive: @escaping (AnyHashable) -> Bool,
+    isAccelerometerAvailable: @escaping (AnyHashable) -> Bool,
+    isDeviceMotionActive: @escaping (AnyHashable) -> Bool,
+    isDeviceMotionAvailable: @escaping (AnyHashable) -> Bool,
+    isGyroActive: @escaping (AnyHashable) -> Bool,
+    isGyroAvailable: @escaping (AnyHashable) -> Bool,
+    isMagnetometerActive: @escaping (AnyHashable) -> Bool,
+    isMagnetometerAvailable: @escaping (AnyHashable) -> Bool,
+    magnetometerData: @escaping (AnyHashable) -> MagnetometerData?,
+    set: @escaping (AnyHashable, MotionManager.Properties) -> Effect<Never, Never>,
+    startAccelerometerUpdates: @escaping (AnyHashable, OperationQueue) -> Effect<AccelerometerData, Error>,
+    startDeviceMotionUpdates: @escaping (AnyHashable, CMAttitudeReferenceFrame, OperationQueue) -> Effect<DeviceMotion, Error>,
+    startGyroUpdates: @escaping (AnyHashable, OperationQueue) -> Effect<GyroData, Error>,
+    startMagnetometerUpdates: @escaping (AnyHashable, OperationQueue) -> Effect<MagnetometerData, Error>,
+    stopAccelerometerUpdates: @escaping (AnyHashable) -> Effect<Never, Never>,
+    stopDeviceMotionUpdates: @escaping (AnyHashable) -> Effect<Never, Never>,
+    stopGyroUpdates: @escaping (AnyHashable) -> Effect<Never, Never>,
+    stopMagnetometerUpdates: @escaping (AnyHashable) -> Effect<Never, Never>
   ) {
     self._accelerometerData = accelerometerData
     self._attitudeReferenceFrame = attitudeReferenceFrame
@@ -182,28 +190,28 @@ public struct MotionManager {
     }
   }
 
-  var _accelerometerData: () -> AccelerometerData?
-  var _attitudeReferenceFrame: () -> CMAttitudeReferenceFrame
+  var _accelerometerData: (AnyHashable) -> AccelerometerData?
+  var _attitudeReferenceFrame: (AnyHashable) -> CMAttitudeReferenceFrame
   var _availableAttitudeReferenceFrames: () -> CMAttitudeReferenceFrame
-  var _deviceMotion: () -> DeviceMotion?
-  var _gyroData: () -> GyroData?
-  var _isAccelerometerActive: () -> Bool
-  var _isAccelerometerAvailable: () -> Bool
-  var _isDeviceMotionActive: () -> Bool
-  var _isDeviceMotionAvailable: () -> Bool
-  var _isGyroActive: () -> Bool
-  var _isGyroAvailable: () -> Bool
-  var _isMagnetometerActive: () -> Bool
-  var _isMagnetometerAvailable: () -> Bool
-  var _magnetometerData: () -> MagnetometerData?
-  var _set: (Properties) -> Effect<Never, Never>
-  var _startAccelerometerUpdates: (OperationQueue) -> Effect<AccelerometerData, Error>
+  var _deviceMotion: (AnyHashable) -> DeviceMotion?
+  var _gyroData: (AnyHashable) -> GyroData?
+  var _isAccelerometerActive: (AnyHashable) -> Bool
+  var _isAccelerometerAvailable: (AnyHashable) -> Bool
+  var _isDeviceMotionActive: (AnyHashable) -> Bool
+  var _isDeviceMotionAvailable: (AnyHashable) -> Bool
+  var _isGyroActive: (AnyHashable) -> Bool
+  var _isGyroAvailable: (AnyHashable) -> Bool
+  var _isMagnetometerActive: (AnyHashable) -> Bool
+  var _isMagnetometerAvailable: (AnyHashable) -> Bool
+  var _magnetometerData: (AnyHashable) -> MagnetometerData?
+  var _set: (AnyHashable, Properties) -> Effect<Never, Never>
+  var _startAccelerometerUpdates: (AnyHashable, OperationQueue) -> Effect<AccelerometerData, Error>
   var _startDeviceMotionUpdates:
-    (CMAttitudeReferenceFrame, OperationQueue) -> Effect<DeviceMotion, Error>
-  var _startGyroUpdates: (OperationQueue) -> Effect<GyroData, Error>
-  var _startMagnetometerUpdates: (OperationQueue) -> Effect<MagnetometerData, Error>
-  var _stopAccelerometerUpdates: () -> Effect<Never, Never>
-  var _stopDeviceMotionUpdates: () -> Effect<Never, Never>
-  var _stopGyroUpdates: () -> Effect<Never, Never>
-  var _stopMagnetometerUpdates: () -> Effect<Never, Never>
+    (AnyHashable, CMAttitudeReferenceFrame, OperationQueue) -> Effect<DeviceMotion, Error>
+  var _startGyroUpdates: (AnyHashable, OperationQueue) -> Effect<GyroData, Error>
+  var _startMagnetometerUpdates: (AnyHashable, OperationQueue) -> Effect<MagnetometerData, Error>
+  var _stopAccelerometerUpdates: (AnyHashable) -> Effect<Never, Never>
+  var _stopDeviceMotionUpdates: (AnyHashable) -> Effect<Never, Never>
+  var _stopGyroUpdates: (AnyHashable) -> Effect<Never, Never>
+  var _stopMagnetometerUpdates: (AnyHashable) -> Effect<Never, Never>
 }

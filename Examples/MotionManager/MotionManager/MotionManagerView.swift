@@ -56,7 +56,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
   case let .motionUpdate(.success(motion)):
     state.initialAttitude = state.initialAttitude
-      ?? environment.motionManager.deviceMotion?.attitude
+      ?? environment.motionManager.deviceMotion(id: MotionClientId())?.attitude
 
     if let initialAttitude = state.initialAttitude {
       let newAttitude = motion.attitude.multiply(byInverseOf: initialAttitude)
@@ -80,13 +80,13 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     state.isRecording.toggle()
     if state.isRecording {
       return environment.motionManager
-        .startDeviceMotionUpdates(using: .xArbitraryZVertical, to: .main)
+        .startDeviceMotionUpdates(id: MotionClientId(), using: .xArbitraryZVertical, to: .main)
         .catchToEffect()
         .map(AppAction.motionUpdate)
     } else {
       state.initialAttitude = nil
       state.facingDirection = nil
-      return environment.motionManager.stopDeviceMotionUpdates()
+      return environment.motionManager.stopDeviceMotionUpdates(id: MotionClientId())
         .fireAndForget()
     }
   }
@@ -158,8 +158,8 @@ struct AppView_Previews: PreviewProvider {
     // sends a bunch of data on some sine curves.
     var isStarted = false
     let mockMotionManager = MotionManager.mock(
-      deviceMotion: { nil },
-      startDeviceMotionUpdates: { _, _ in
+      deviceMotion: { _ in nil },
+      startDeviceMotionUpdates: { _, _, _ in
         isStarted = true
         return Timer.publish(every: 0.01, on: .main, in: .default)
           .autoconnect()
@@ -179,7 +179,7 @@ struct AppView_Previews: PreviewProvider {
         .setFailureType(to: MotionManager.Error.self)
         .eraseToEffect()
     },
-      stopDeviceMotionUpdates: {
+      stopDeviceMotionUpdates: { _ in 
         .fireAndForget { isStarted = false }
     })
 

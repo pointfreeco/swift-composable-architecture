@@ -15,9 +15,9 @@ class MotionManagerTests: XCTestCase {
       reducer: appReducer,
       environment: .init(
         motionManager: .mock(
-          deviceMotion: { nil },
-          startDeviceMotionUpdates: { _, _ in motionSubject.eraseToEffect() },
-          stopDeviceMotionUpdates: {
+          deviceMotion: { _ in nil },
+          startDeviceMotionUpdates: { _, _, _ in motionSubject.eraseToEffect() },
+          stopDeviceMotionUpdates: { _ in 
             .fireAndForget { motionSubject.send(completion: .finished) }
           }
         )
