@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		36DBEC47247BFFFD00AF9C80 /* 04-HigherOrderReducers-FailureToast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBEC46247BFFFD00AF9C80 /* 04-HigherOrderReducers-FailureToast.swift */; };
 		CA0C51FB245389CC00A04EAB /* 04-HigherOrderReducers-ResuableOfflineDownloadsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0C51FA245389CC00A04EAB /* 04-HigherOrderReducers-ResuableOfflineDownloadsTests.swift */; };
 		CA25E5D224463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA25E5D124463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift */; };
 		CA27C0B7245780CE00CB1E59 /* 03-Effects-SystemEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA27C0B6245780CE00CB1E59 /* 03-Effects-SystemEnvironment.swift */; };
@@ -122,6 +123,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		36DBEC46247BFFFD00AF9C80 /* 04-HigherOrderReducers-FailureToast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-FailureToast.swift"; sourceTree = "<group>"; };
 		CA0C51FA245389CC00A04EAB /* 04-HigherOrderReducers-ResuableOfflineDownloadsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-ResuableOfflineDownloadsTests.swift"; sourceTree = "<group>"; };
 		CA25E5D124463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Bindings-Basics.swift"; sourceTree = "<group>"; };
 		CA27C0B6245780CE00CB1E59 /* 03-Effects-SystemEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Effects-SystemEnvironment.swift"; sourceTree = "<group>"; };
@@ -323,6 +325,7 @@
 				DCE63B70245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift */,
 				DCC68EE22447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift */,
 				DC2E370C24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift */,
+				36DBEC46247BFFFD00AF9C80 /* 04-HigherOrderReducers-FailureToast.swift */,
 				DC89C41824460F95006900B9 /* SceneDelegate.swift */,
 				DC89C41C24460F96006900B9 /* Assets.xcassets */,
 				CA6AC25F2451131C00C71CB3 /* 04-HigherOrderReducers-ResuableOfflineDownloads */,
@@ -572,6 +575,7 @@
 				CAA9ADC624465C810003A984 /* 02-Effects-Cancellation.swift in Sources */,
 				DC2E370D24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift in Sources */,
 				DC9EB4172450CBD2005F413B /* UIViewRepresented.swift in Sources */,
+				36DBEC47247BFFFD00AF9C80 /* 04-HigherOrderReducers-FailureToast.swift in Sources */,
 				DC89C41924460F95006900B9 /* SceneDelegate.swift in Sources */,
 				CA6AC2652451135C00C71CB3 /* CircularProgressView.swift in Sources */,
 				CA6AC2642451135C00C71CB3 /* ReusableComponents-Download.swift in Sources */,

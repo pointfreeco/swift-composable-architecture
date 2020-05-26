@@ -301,6 +301,24 @@ struct RootView: View {
               )
             )
           )
+
+          NavigationLink(
+            "Toast on all failures",
+            destination: DataView(
+              store: Store(
+                initialState: AppState(),
+                reducer: Reducer<AppState, AppAction, AppEnvironment>.errorHandling(appReducer),
+                environment: AppEnvironment(
+                  mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+                  loadData: {
+                    Fail(error: AppError.api)
+                      .delay(for: 1, scheduler: DispatchQueue.main)
+                      .eraseToEffect()
+                  }
+                )
+              )
+            )
+          )
         }
       }
       .navigationBarTitle("Case Studies")
