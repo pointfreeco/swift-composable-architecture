@@ -4,7 +4,7 @@ import Dispatch
 extension Reducer {
   /// Prints debug messages describing all received actions and state mutations.
   ///
-  /// Printing is only done in DEBUG builds.
+  /// Printing is only done in debug (`#if DEBUG`) builds.
   ///
   /// - Parameters:
   ///   - prefix: A string with which to prefix all debug messages.
@@ -24,7 +24,7 @@ extension Reducer {
 
   /// Prints debug messages describing all received actions.
   ///
-  /// Printing is only done in DEBUG builds.
+  /// Printing is only done in debug (`#if DEBUG`) builds.
   ///
   /// - Parameters:
   ///   - prefix: A string with which to prefix all debug messages.
@@ -75,7 +75,7 @@ extension Reducer {
             debugEnvironment.queue.async {
               let actionOutput = debugOutput(localAction).indent(by: 2)
               let stateOutput =
-                debugDiff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)"
+                debugDiff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
               debugEnvironment.printer(
                 """
                 \(prefix.isEmpty ? "" : "\(prefix): ")received action:
