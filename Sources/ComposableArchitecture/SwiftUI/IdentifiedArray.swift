@@ -184,6 +184,12 @@ where ID: Hashable {
   public mutating func move(fromOffsets source: IndexSet, toOffset destination: Int) {
     self.ids.move(fromOffsets: source, toOffset: destination)
   }
+
+  public mutating func sort(by areInIncreasingOrder: (Element, Element) throws -> Bool) rethrows {
+    try self.ids.sort {
+      try areInIncreasingOrder(self.dictionary[$0]!, self.dictionary[$1]!)
+    }
+  }
 }
 
 extension IdentifiedArray: CustomDebugStringConvertible {
@@ -220,6 +226,12 @@ extension IdentifiedArray: Equatable where Element: Equatable {}
 
 extension IdentifiedArray: Hashable where Element: Hashable {}
 
+extension IdentifiedArray where Element: Comparable {
+  public mutating func sort() {
+    sort(by: <)
+  }
+}
+
 extension IdentifiedArray: ExpressibleByArrayLiteral where Element: Identifiable, ID == Element.ID {
   public init(arrayLiteral elements: Element...) {
     self.init(elements)
@@ -236,6 +248,21 @@ extension IdentifiedArray: RangeReplaceableCollection
 where Element: Identifiable, ID == Element.ID {
   public init() {
     self.init([], id: \.id)
+  }
+
+  public mutating func replaceSubrange<C, R>(_ subrange: R, with newElements: C)
+  where C: Collection, R: RangeExpression, Element == C.Element, Index == R.Bound {
+    let replacingIds = self.ids[subrange]
+    let newIds = newElements.map { $0.id }
+    ids.replaceSubrange(subrange, with: newIds)
+
+    for element in newElements {
+      self.dictionary[element.id] = element
+    }
+
+    for id in replacingIds where !self.ids.contains(id) {
+      self.dictionary[id] = nil
+    }
   }
 }
 

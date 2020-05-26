@@ -119,4 +119,80 @@ final class IdentifiedArrayTests: XCTestCase {
       [User(id: 2, name: "Blob Jr."), User(id: 3, name: "Blob Sr."), User(id: 1, name: "Blob")]
     )
   }
+
+  func testReplaceSubrange() {
+    struct User: Equatable, Identifiable {
+      let id: Int
+      var name: String
+    }
+
+    var array: IdentifiedArray = [
+      User(id: 3, name: "Blob Sr."),
+      User(id: 2, name: "Blob Jr."),
+      User(id: 1, name: "Blob"),
+      User(id: 2, name: "Blob Jr."),
+    ]
+
+    array.replaceSubrange(
+      0...1,
+      with: [
+        User(id: 4, name: "Flob IV"),
+        User(id: 5, name: "Flob V"),
+      ]
+    )
+
+    XCTAssertEqual(
+      array,
+      [
+        User(id: 4, name: "Flob IV"), User(id: 5, name: "Flob V"), User(id: 1, name: "Blob"),
+        User(id: 2, name: "Blob Jr."),
+      ]
+    )
+  }
+
+  struct ComparableValue: Comparable, Identifiable {
+    let id: Int
+    let value: Int
+
+    static func < (lhs: ComparableValue, rhs: ComparableValue) -> Bool {
+      return lhs.value < rhs.value
+    }
+  }
+
+  func testSortBy() {
+    var array: IdentifiedArray = [
+      ComparableValue(id: 1, value: 100),
+      ComparableValue(id: 2, value: 50),
+      ComparableValue(id: 3, value: 75),
+    ]
+
+    array.sort { $0.value < $1.value }
+
+    XCTAssertEqual([2, 3, 1], array.ids)
+    XCTAssertEqual(
+      [
+        ComparableValue(id: 2, value: 50),
+        ComparableValue(id: 3, value: 75),
+        ComparableValue(id: 1, value: 100),
+      ], array)
+  }
+
+  func testSort() {
+    var array: IdentifiedArray = [
+      ComparableValue(id: 1, value: 100),
+      ComparableValue(id: 2, value: 50),
+      ComparableValue(id: 3, value: 75),
+    ]
+
+    array.sort()
+
+    XCTAssertEqual([2, 3, 1], array.ids)
+    XCTAssertEqual(
+      [
+        ComparableValue(id: 2, value: 50),
+        ComparableValue(id: 3, value: 75),
+        ComparableValue(id: 1, value: 100),
+      ], array)
+
+  }
 }
