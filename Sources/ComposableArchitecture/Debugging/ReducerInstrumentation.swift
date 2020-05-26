@@ -65,25 +65,21 @@ extension Publisher where Failure == Never {
       self
       .handleEvents(
         receiveSubscription: { _ in
-          guard log.signpostsEnabled else { return }
           os_signpost(
             .begin, log: log, name: "Effect", signpostID: sid, "%sStarted from %s", prefix,
             actionOutput)
         },
         receiveOutput: { value in
-          guard log.signpostsEnabled else { return }
           os_signpost(
             .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput)
         },
         receiveCompletion: { completion in
-          guard log.signpostsEnabled else { return }
           switch completion {
           case .finished:
             os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sFinished", prefix)
           }
         },
         receiveCancel: {
-          guard log.signpostsEnabled else { return }
           os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sCancelled", prefix)
         })
   }
