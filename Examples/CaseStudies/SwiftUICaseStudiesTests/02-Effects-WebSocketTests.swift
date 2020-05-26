@@ -16,7 +16,7 @@ class WebSocketTests: XCTestCase {
       reducer: webSocketReducer,
       environment: WebSocketEnvironment(
         mainQueue: self.scheduler.eraseToAnyScheduler(),
-        webSocketClient: .mock(
+        webSocket: .mock(
           open: { _, _, _ in socketSubject.eraseToEffect() },
           receive: { _ in receiveSubject.eraseToEffect() },
           send: { _, _ in Effect(value: nil) },
@@ -68,7 +68,7 @@ class WebSocketTests: XCTestCase {
       reducer: webSocketReducer,
       environment: WebSocketEnvironment(
         mainQueue: self.scheduler.eraseToAnyScheduler(),
-        webSocketClient: .mock(
+        webSocket: .mock(
           open: { _, _, _ in socketSubject.eraseToEffect() },
           receive: { _ in receiveSubject.eraseToEffect() },
           send: { _, _ in Effect(value: NSError(domain: "", code: 1)) },
@@ -115,7 +115,7 @@ class WebSocketTests: XCTestCase {
       reducer: webSocketReducer,
       environment: WebSocketEnvironment(
         mainQueue: self.scheduler.eraseToAnyScheduler(),
-        webSocketClient: .mock(
+        webSocket: .mock(
           open: { _, _, _ in socketSubject.eraseToEffect() },
           receive: { _ in .none },
           sendPing: { _ in pingSubject.eraseToEffect() }
@@ -153,7 +153,7 @@ class WebSocketTests: XCTestCase {
       reducer: webSocketReducer,
       environment: WebSocketEnvironment(
         mainQueue: self.scheduler.eraseToAnyScheduler(),
-        webSocketClient: .mock(
+        webSocket: .mock(
           cancel: { _, _, _ in .fireAndForget { socketSubject.send(completion: .finished) } },
           open: { _, _, _ in socketSubject.eraseToEffect() },
           receive: { _ in .none },

@@ -351,7 +351,7 @@ struct WebSocketView_Previews: PreviewProvider {
           reducer: webSocketReducer,
           environment: WebSocketEnvironment(
             mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
-            webSocketClient: .live
+            webSocket: .live
           )
         )
       )
