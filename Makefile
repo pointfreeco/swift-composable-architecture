@@ -79,6 +79,6 @@ test-workspace:
 		-quiet
 
 format:
-	swift format --in-place --recursive Sources/. Tests/.
+	swift format --in-place --recursive Examples/. Sources/. Tests/.
 
 .PHONY: format test-all test-swift test-workspace
