@@ -36,7 +36,7 @@ enum WebSocketAction: Equatable {
 
 struct WebSocketEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
-  var webSocketClient: WebSocketClient
+  var webSocket: WebSocketClient
 }
 
 let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnvironment> {
@@ -44,16 +44,14 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
   struct WebSocketId: Hashable {}
 
   var receiveSocketMessageEffect: Effect<WebSocketAction, Never> {
-    environment.webSocketClient
-      .receive(WebSocketId())
+    environment.webSocket.receive(WebSocketId())
       .receive(on: environment.mainQueue)
       .catchToEffect()
       .map(WebSocketAction.receivedSocketMessage)
       .cancellable(id: WebSocketId())
   }
   var sendPingEffect: Effect<WebSocketAction, Never> {
-    environment.webSocketClient
-      .sendPing(WebSocketId())
+    environment.webSocket.sendPing(WebSocketId())
       .delay(for: 10, scheduler: environment.mainQueue)
       .map(WebSocketAction.pingResponse)
       .eraseToEffect()
@@ -72,8 +70,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
 
     case .disconnected:
       state.connectivityState = .connecting
-      return environment.webSocketClient
-        .open(WebSocketId(), URL(string: "wss://echo.websocket.org")!, [])
+      return environment.webSocket.open(WebSocketId(), URL(string: "wss://echo.websocket.org")!, [])
         .receive(on: environment.mainQueue)
         .map(WebSocketAction.webSocket)
         .eraseToEffect()
@@ -105,7 +102,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
     let messageToSend = state.messageToSend
     state.messageToSend = ""
 
-    return environment.webSocketClient.send(WebSocketId(), .string(messageToSend))
+    return environment.webSocket.send(WebSocketId(), .string(messageToSend))
       .eraseToEffect()
       .map(WebSocketAction.sendResponse)
 
