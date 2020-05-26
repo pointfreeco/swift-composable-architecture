@@ -45,9 +45,18 @@ extension Effect {
         .store(in: &cancellationCancellables[id, default: []])
       }
 
+      func cleanUp() {
+        cancellablesLock.sync {
+          guard !isCancelling.contains(id) else { return }
+          isCancelling.insert(id)
+          defer { isCancelling.remove(id) }
+          cancellationCancellables[id] = nil
+        }
+      }
+
       return subject.handleEvents(
-        receiveCompletion: { _ in cancellablesLock.sync { cancellationCancellables[id] = nil } },
-        receiveCancel: { cancellablesLock.sync { cancellationCancellables[id] = nil } }
+        receiveCompletion: { _ in cleanUp() },
+        receiveCancel: cleanUp
       )
     }
     .eraseToEffect()

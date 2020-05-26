@@ -223,11 +223,7 @@ final class EffectCancellationTests: XCTestCase {
 
     let expectation = self.expectation(description: "wait")
     effect
-      .sink(receiveCompletion: { _ in
-        print("completed")
-        expectation.fulfill()
-
-      }, receiveValue: { _ in })
+      .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
       .store(in: &self.cancellables)
     self.wait(for: [expectation], timeout: 999)
 
@@ -250,13 +246,14 @@ final class EffectCancellationTests: XCTestCase {
     cancellables.removeAll()
 
     XCTAssertEqual([:], cancellationCancellables)
-    XCTAssertEqual([], isCancelling)
   }
 }
 
 func resetCancellables() {
-  for (id, _) in cancellationCancellables {
-    cancellationCancellables[id] = []
+  cancellablesLock.sync {
+    for (id, _) in cancellationCancellables {
+      cancellationCancellables[id] = []
+    }
+    cancellationCancellables = [:]
   }
-  cancellationCancellables = [:]
 }
