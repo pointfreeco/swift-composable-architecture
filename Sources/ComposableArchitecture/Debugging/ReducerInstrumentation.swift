@@ -1,17 +1,15 @@
 import Combine
 import os.signpost
 
-public let _zeroWidthSpace = "​"
-
 extension Reducer {
-  /// Instruments the reducer with signpost. Each invocation of the reducer will be measured by
-  /// an interval, and the lifecycle of its effects will be measured with interval and event
-  /// signposts.
+  /// Instruments the reducer with [signpost](https://developer.apple.com/documentation/os/logging/recording_performance_data).
+  /// Each invocation of the reducer will be measured by an interval, and the lifecycle of its
+  /// effects will be measured with interval and event signposts.
   ///
   /// To use, build your app for instruments (⌘I), create a blank instrument, and then use the +
-  /// icon in the top right to add the signpost instrument. Start recording your app (button in the
-  /// top left) and then you should see timing information for every action sent to the store
-  /// and every effect executed.
+  /// icon in the top right to add the signpost instrument. Start recording your app (red button
+  /// in the top left) and then you should see timing information for every action sent to the
+  /// store and every effect executed.
   ///
   /// The effect instrumentation can be particularly useful for inspecting the lifecycle of long
   /// living effects. For example, if you start an effect (e.g. a location manager) in `onAppear`
@@ -31,7 +29,7 @@ extension Reducer {
   ) -> Self {
     guard log.signpostsEnabled else { return self }
 
-    let prefix = prefix == _zeroWidthSpace ? _zeroWidthSpace : "\(prefix): "
+    let prefix = prefix == _zeroWidthSpace ? _zeroWidthSpace : "[\(prefix)] "
 
     return Self { state, action, environment in
       if log.signpostsEnabled {
@@ -89,7 +87,9 @@ extension Publisher {
   }
 }
 
-func debugCaseOutput(_ value: Any) -> String {
+public let _zeroWidthSpace = "​"
+
+private func debugCaseOutput(_ value: Any) -> String {
   let mirror = Mirror(reflecting: value)
   switch mirror.displayStyle {
   case .enum:
