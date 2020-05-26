@@ -47,7 +47,7 @@ extension Reducer {
   }
 }
 
-extension Publisher {
+extension Publisher where Failure == Never {
   func effectSignpost(
     _ prefix: String,
     log: OSLog,
@@ -74,8 +74,6 @@ extension Publisher {
         receiveCompletion: { completion in
           guard log.signpostsEnabled else { return }
           switch completion {
-          case .failure:
-            os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sFailed", prefix)
           case .finished:
             os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sFinished", prefix)
           }
