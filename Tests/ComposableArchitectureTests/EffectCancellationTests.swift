@@ -223,17 +223,40 @@ final class EffectCancellationTests: XCTestCase {
 
     let expectation = self.expectation(description: "wait")
     effect
-      .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
+      .sink(receiveCompletion: { _ in
+        print("completed")
+        expectation.fulfill()
+
+      }, receiveValue: { _ in })
       .store(in: &self.cancellables)
     self.wait(for: [expectation], timeout: 999)
 
     XCTAssertTrue(cancellationCancellables.isEmpty)
   }
+
+  func testNestedCancels() {
+    var effect = Empty<Void, Never>(completeImmediately: false)
+      .eraseToEffect()
+      .cancellable(id: 1)
+
+    for _ in 1 ... .random(in: 1...1_000) {
+      effect = effect.cancellable(id: 1)
+    }
+
+    effect
+      .sink(receiveValue: { _ in })
+      .store(in: &cancellables)
+
+    cancellables.removeAll()
+
+    XCTAssertEqual([:], cancellationCancellables)
+    XCTAssertEqual([], isCancelling)
+  }
 }
 
 func resetCancellables() {
   for (id, _) in cancellationCancellables {
-    cancellationCancellables[id] = [:]
+    cancellationCancellables[id] = []
   }
   cancellationCancellables = [:]
 }
