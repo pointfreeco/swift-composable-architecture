@@ -14,7 +14,7 @@ struct WebSocketState: Equatable {
   var alert: String?
   var connectivityState = ConnectivityState.disconnected
   var messageToSend = ""
-  var receivedMessages = ""
+  var receivedMessages: [String] = []
 
   enum ConnectivityState: String {
     case connected
@@ -86,8 +86,8 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
     return sendPingEffect
 
   case let .receivedSocketMessage(.success(.string(string))):
-    state.receivedMessages += "\n\(string)"
-    
+    state.receivedMessages.append(string)
+
     // Immediately ask for the next socket message
     return receiveSocketMessageEffect
 
@@ -117,7 +117,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
     return .cancel(id: WebSocketId())
 
   case .webSocket(.didBecomeInvalidWithError),
-       .webSocket(.didCompleteWithError):
+    .webSocket(.didCompleteWithError):
     state.connectivityState = .disconnected
     state.alert = "Disconnected from socket for some reason. Try again."
     return .cancel(id: WebSocketId())
@@ -144,15 +144,18 @@ struct WebScoketView: View {
         HStack {
           TextField(
             "Message to send",
-            text: viewStore.binding(get: \.messageToSend, send: WebSocketAction.messageToSendChanged)
+            text: viewStore.binding(
+              get: \.messageToSend, send: WebSocketAction.messageToSendChanged)
           )
 
           Button(
-            viewStore.connectivityState == .connected ? "Disconnect"
-              : viewStore.connectivityState == .disconnected ? "Connect"
-              : "Connecting..."
+            viewStore.connectivityState == .connected
+              ? "Disconnect"
+              : viewStore.connectivityState == .disconnected
+                ? "Connect"
+                : "Connecting..."
           ) {
-                viewStore.send(.connectButtonTapped)
+            viewStore.send(.connectButtonTapped)
           }
         }
 
@@ -166,7 +169,7 @@ struct WebScoketView: View {
           .foregroundColor(.secondary)
         Text("Received messages:")
           .foregroundColor(.secondary)
-        Text(viewStore.receivedMessages)
+        Text(viewStore.receivedMessages.joined(separator: "\n"))
       }
       .padding()
       .alert(
@@ -215,7 +218,7 @@ struct WebSocketClient {
       switch (lhs, rhs) {
       case let (.data(lhs), .data(rhs)):
         return lhs == rhs
-      case  let (.string(lhs), .string(rhs)):
+      case let (.string(lhs), .string(rhs)):
         return lhs == rhs
       case (.data, _), (.string, _):
         return false
@@ -237,22 +240,22 @@ extension WebSocketClient {
         dependencies[id]?.task.cancel(with: closeCode, reason: reason)
         dependencies[id] = nil
       }
-  },
+    },
     open: { id, url, protocols in
       Effect.run { subscriber in
         let delegate = WebSocketDelegate(
           didBecomeInvalidWithError: {
             subscriber.send(.didBecomeInvalidWithError($0 as NSError?))
-        },
+          },
           didClose: {
             subscriber.send(.didClose(code: $0, reason: $1))
-        },
+          },
           didCompleteWithError: {
             subscriber.send(.didCompleteWithError($0 as NSError?))
-        },
+          },
           didOpenWithProtocol: {
             subscriber.send(.didOpenWithProtocol($0))
-        })
+          })
         let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
         let task = session.webSocketTask(with: url, protocols: protocols)
         task.resume()
@@ -262,7 +265,7 @@ extension WebSocketClient {
           dependencies[id] = nil
         }
       }
-  },
+    },
     receive: { id in
       .future { callback in
         dependencies[id]?.task.receive { result in
@@ -273,21 +276,21 @@ extension WebSocketClient {
           )
         }
       }
-  },
+    },
     send: { id, message in
       .future { callback in
         dependencies[id]?.task.send(message) { error in
           callback(.success(error as NSError?))
         }
       }
-  },
+    },
     sendPing: { id in
       .future { callback in
         dependencies[id]?.task.sendPing { error in
           callback(.success(error as NSError?))
         }
       }
-  })
+    })
 }
 
 private var dependencies: [AnyHashable: Dependencies] = [:]
@@ -347,7 +350,7 @@ struct WebSocketView_Previews: PreviewProvider {
     NavigationView {
       WebScoketView(
         store: Store(
-          initialState: .init(receivedMessages: "Echo"),
+          initialState: .init(receivedMessages: ["Echo"]),
           reducer: webSocketReducer,
           environment: WebSocketEnvironment(
             mainQueue: DispatchQueue.main.eraseToAnyScheduler(),

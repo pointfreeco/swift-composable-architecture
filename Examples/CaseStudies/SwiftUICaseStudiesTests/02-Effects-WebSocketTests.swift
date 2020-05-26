@@ -49,7 +49,7 @@ class WebSocketTests: XCTestCase {
       .do { receiveSubject.send(.string("Hi")) },
       .do { self.scheduler.advance() },
       .receive(.receivedSocketMessage(.success(.string("Hi")))) {
-        $0.receivedMessages = "\nHi"
+        $0.receivedMessages = ["Hi"]
       },
 
       // Disconnect from the socket
@@ -178,10 +178,16 @@ class WebSocketTests: XCTestCase {
 
 extension WebSocketClient {
   static func mock(
-    cancel: @escaping (AnyHashable, URLSessionWebSocketTask.CloseCode, Data?) -> Effect<Never, Never> = { _, _, _ in fatalError() },
-    open: @escaping (AnyHashable, URL, [String]) -> Effect<Action, Never> = { _, _, _ in fatalError() },
+    cancel: @escaping (AnyHashable, URLSessionWebSocketTask.CloseCode, Data?) -> Effect<
+      Never, Never
+    > = { _, _, _ in fatalError() },
+    open: @escaping (AnyHashable, URL, [String]) -> Effect<Action, Never> = { _, _, _ in
+      fatalError()
+    },
     receive: @escaping (AnyHashable) -> Effect<Message, NSError> = { _ in fatalError() },
-    send: @escaping (AnyHashable, URLSessionWebSocketTask.Message) -> Effect<NSError?, Never> = { _, _ in fatalError() },
+    send: @escaping (AnyHashable, URLSessionWebSocketTask.Message) -> Effect<NSError?, Never> = {
+      _, _ in fatalError()
+    },
     sendPing: @escaping (AnyHashable) -> Effect<NSError?, Never> = { _in in fatalError() }
   ) -> Self {
     Self(
