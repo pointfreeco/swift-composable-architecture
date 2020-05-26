@@ -38,7 +38,7 @@ extension MotionManager {
           manager.showsDeviceMovementDisplay = showsDeviceMovementDisplay
         }
       }
-  },
+    },
     startAccelerometerUpdates: { id, queue in
       return Effect.run { subscriber in
         guard let manager = managers[id] else { return AnyCancellable {} }
@@ -56,7 +56,7 @@ extension MotionManager {
           manager.stopAccelerometerUpdates()
         }
       }
-  },
+    },
     startDeviceMotionUpdates: { id, frame, queue in
       return Effect.run { subscriber in
         guard let manager = managers[id] else { return AnyCancellable {} }
@@ -74,7 +74,7 @@ extension MotionManager {
           manager.stopDeviceMotionUpdates()
         }
       }
-  },
+    },
     startGyroUpdates: { id, queue in
       return Effect.run { subscriber in
         guard let manager = managers[id] else { return AnyCancellable {} }
@@ -92,7 +92,7 @@ extension MotionManager {
           manager.stopGyroUpdates()
         }
       }
-  },
+    },
     startMagnetometerUpdates: { id, queue in
       return Effect.run { subscriber in
         guard let manager = managers[id] else { return AnyCancellable {} }
@@ -110,41 +110,45 @@ extension MotionManager {
           manager.stopMagnetometerUpdates()
         }
       }
-  },
+    },
     stopAccelerometerUpdates: { id in
       .fireAndForget {
         guard let manager = managers[id] else { return }
         manager.stopAccelerometerUpdates()
         accelerometerUpdatesSubscriber?.send(completion: .finished)
       }
-  },
+    },
     stopDeviceMotionUpdates: { id in
       .fireAndForget {
         guard let manager = managers[id] else { return }
         manager.stopDeviceMotionUpdates()
         deviceMotionUpdatesSubscriber?.send(completion: .finished)
       }
-  },
+    },
     stopGyroUpdates: { id in
       .fireAndForget {
         guard let manager = managers[id] else { return }
         manager.stopGyroUpdates()
         deviceGyroUpdatesSubscriber?.send(completion: .finished)
       }
-  },
+    },
     stopMagnetometerUpdates: { id in
       .fireAndForget {
         guard let manager = managers[id] else { return }
         manager.stopMagnetometerUpdates()
         deviceMagnetometerUpdatesSubscriber?.send(completion: .finished)
       }
-  })
+    })
 }
 
 // TODO: store these by id?
-private var accelerometerUpdatesSubscriber: Effect<AccelerometerData, MotionManager.Error>.Subscriber<AccelerometerData, MotionManager.Error>?
-private var deviceMotionUpdatesSubscriber: Effect<DeviceMotion, MotionManager.Error>.Subscriber<DeviceMotion, MotionManager.Error>?
-private var deviceGyroUpdatesSubscriber: Effect<GyroData, MotionManager.Error>.Subscriber<GyroData, MotionManager.Error>?
-private var deviceMagnetometerUpdatesSubscriber: Effect<MagnetometerData, MotionManager.Error>.Subscriber<MagnetometerData, MotionManager.Error>?
+private var accelerometerUpdatesSubscriber:
+  Effect<AccelerometerData, MotionManager.Error>.Subscriber<AccelerometerData, MotionManager.Error>?
+private var deviceMotionUpdatesSubscriber:
+  Effect<DeviceMotion, MotionManager.Error>.Subscriber<DeviceMotion, MotionManager.Error>?
+private var deviceGyroUpdatesSubscriber:
+  Effect<GyroData, MotionManager.Error>.Subscriber<GyroData, MotionManager.Error>?
+private var deviceMagnetometerUpdatesSubscriber:
+  Effect<MagnetometerData, MotionManager.Error>.Subscriber<MagnetometerData, MotionManager.Error>?
 
 var managers: [AnyHashable: CMMotionManager] = [:]

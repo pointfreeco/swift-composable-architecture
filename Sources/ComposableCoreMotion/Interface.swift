@@ -84,7 +84,7 @@ public struct MotionManager {
     id: AnyHashable,
     using referenceFrame: CMAttitudeReferenceFrame,
     to queue: OperationQueue = .main
-    ) -> Effect<DeviceMotion, Error> {
+  ) -> Effect<DeviceMotion, Error> {
     self._startDeviceMotionUpdates(id, referenceFrame, queue)
   }
 
@@ -134,10 +134,15 @@ public struct MotionManager {
     isMagnetometerAvailable: @escaping (AnyHashable) -> Bool,
     magnetometerData: @escaping (AnyHashable) -> MagnetometerData?,
     set: @escaping (AnyHashable, MotionManager.Properties) -> Effect<Never, Never>,
-    startAccelerometerUpdates: @escaping (AnyHashable, OperationQueue) -> Effect<AccelerometerData, Error>,
-    startDeviceMotionUpdates: @escaping (AnyHashable, CMAttitudeReferenceFrame, OperationQueue) -> Effect<DeviceMotion, Error>,
+    startAccelerometerUpdates: @escaping (AnyHashable, OperationQueue) -> Effect<
+      AccelerometerData, Error
+    >,
+    startDeviceMotionUpdates: @escaping (AnyHashable, CMAttitudeReferenceFrame, OperationQueue) ->
+      Effect<DeviceMotion, Error>,
     startGyroUpdates: @escaping (AnyHashable, OperationQueue) -> Effect<GyroData, Error>,
-    startMagnetometerUpdates: @escaping (AnyHashable, OperationQueue) -> Effect<MagnetometerData, Error>,
+    startMagnetometerUpdates: @escaping (AnyHashable, OperationQueue) -> Effect<
+      MagnetometerData, Error
+    >,
     stopAccelerometerUpdates: @escaping (AnyHashable) -> Effect<Never, Never>,
     stopDeviceMotionUpdates: @escaping (AnyHashable) -> Effect<Never, Never>,
     stopGyroUpdates: @escaping (AnyHashable) -> Effect<Never, Never>,

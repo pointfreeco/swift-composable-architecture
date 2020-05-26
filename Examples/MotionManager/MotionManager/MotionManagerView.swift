@@ -55,7 +55,8 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     return .none
 
   case let .motionUpdate(.success(motion)):
-    state.initialAttitude = state.initialAttitude
+    state.initialAttitude =
+      state.initialAttitude
       ?? environment.motionManager.deviceMotion(id: MotionClientId())?.attitude
 
     if let initialAttitude = state.initialAttitude {
@@ -175,13 +176,13 @@ struct AppView_Previews: PreviewProvider {
               timestamp: Date().timeIntervalSince1970,
               userAcceleration: .init(x: -cos(-3 * t), y: sin(2 * t), z: -cos(t))
             )
-        }
-        .setFailureType(to: MotionManager.Error.self)
-        .eraseToEffect()
-    },
-      stopDeviceMotionUpdates: { _ in 
+          }
+          .setFailureType(to: MotionManager.Error.self)
+          .eraseToEffect()
+      },
+      stopDeviceMotionUpdates: { _ in
         .fireAndForget { isStarted = false }
-    })
+      })
 
     return AppView(
       store: Store(

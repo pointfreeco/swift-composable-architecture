@@ -18,12 +18,12 @@ public struct Attitude: Equatable {
   public var rotationMatrix: CMRotationMatrix {
     let q = self.quaternion
 
-    let s = 1 / (
-      self.quaternion.w * self.quaternion.w
+    let s =
+      1
+      / (self.quaternion.w * self.quaternion.w
         + self.quaternion.x * self.quaternion.x
         + self.quaternion.y * self.quaternion.y
-        + self.quaternion.z * self.quaternion.z
-    )
+        + self.quaternion.z * self.quaternion.z)
 
     var matrix = CMRotationMatrix()
 
@@ -53,9 +53,11 @@ public struct Attitude: Equatable {
   public var pitch: Double {
     let q = self.quaternion
     let p = 2 * (q.w * q.y - q.z * q.x)
-    return p > 1 ? Double.pi / 2
-      : p < -1 ? -Double.pi / 2
-      : asin(p)
+    return p > 1
+      ? Double.pi / 2
+      : p < -1
+        ? -Double.pi / 2
+        : asin(p)
   }
 
   public var yaw: Double {
@@ -76,7 +78,8 @@ public struct Attitude: Equatable {
 
 extension CMQuaternion {
   fileprivate var inverse: CMQuaternion {
-    let invSumOfSquares = 1 / (self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w)
+    let invSumOfSquares =
+      1 / (self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w)
     return CMQuaternion(
       x: -self.x * invSumOfSquares,
       y: -self.y * invSumOfSquares,

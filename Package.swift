@@ -21,9 +21,9 @@ let package = Package(
   targets: [
     .target(name: "ComposableArchitecture", dependencies: ["CasePaths"]),
     .testTarget(name: "ComposableArchitectureTests", dependencies: ["ComposableArchitecture"]),
-    .target(name: "ComposableCoreLocation",dependencies: ["ComposableArchitecture"]),
+    .target(name: "ComposableCoreLocation", dependencies: ["ComposableArchitecture"]),
     .testTarget(name: "ComposableCoreLocationTests", dependencies: ["ComposableCoreLocation"]),
-    .target(name: "ComposableCoreMotion",dependencies: ["ComposableArchitecture"]),
+    .target(name: "ComposableCoreMotion", dependencies: ["ComposableArchitecture"]),
     .testTarget(name: "ComposableCoreMotionTests", dependencies: ["ComposableCoreMotion"]),
   ]
 )

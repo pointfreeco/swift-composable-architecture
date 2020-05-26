@@ -17,7 +17,7 @@ class MotionManagerTests: XCTestCase {
         motionManager: .mock(
           deviceMotion: { _ in nil },
           startDeviceMotionUpdates: { _, _, _ in motionSubject.eraseToEffect() },
-          stopDeviceMotionUpdates: { _ in 
+          stopDeviceMotionUpdates: { _ in
             .fireAndForget { motionSubject.send(completion: .finished) }
           }
         )

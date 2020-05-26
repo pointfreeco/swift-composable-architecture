@@ -18,7 +18,7 @@ public struct DeviceMotion: Equatable {
     self.timestamp = deviceMotion.timestamp
     self.userAcceleration = deviceMotion.userAcceleration
   }
-  
+
   public init(
     attitude: Attitude,
     gravity: CMAcceleration,
