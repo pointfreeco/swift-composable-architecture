@@ -29,40 +29,34 @@ extension Effect {
   public func cancellable(id: AnyHashable, cancelInFlight: Bool = false) -> Effect {
     return Deferred { () -> Publishers.HandleEvents<PassthroughSubject<Output, Failure>> in
       let subject = PassthroughSubject<Output, Failure>()
-      let uuid = UUID()
-
-      var isCleaningUp = false
 
       cancellablesLock.sync {
         if cancelInFlight {
-          cancellationCancellables[id]?.forEach { _, cancellable in cancellable.cancel() }
+          cancellationCancellables[id]?.forEach { cancellable in cancellable.cancel() }
           cancellationCancellables[id] = nil
         }
 
         let cancellable = self.subscribe(subject)
 
-        cancellationCancellables[id] = cancellationCancellables[id] ?? [:]
-        cancellationCancellables[id]?[uuid] = AnyCancellable {
+        AnyCancellable {
           cancellable.cancel()
-          if !isCleaningUp {
-            subject.send(completion: .finished)
-          }
+          subject.send(completion: .finished)
         }
+        .store(in: &cancellationCancellables[id, default: []])
       }
 
-      func cleanup() {
-        isCleaningUp = true
+      func cleanUp() {
         cancellablesLock.sync {
-          cancellationCancellables[id]?[uuid] = nil
-          if cancellationCancellables[id]?.isEmpty == true {
-            cancellationCancellables[id] = nil
-          }
+          guard !isCancelling.contains(id) else { return }
+          isCancelling.insert(id)
+          defer { isCancelling.remove(id) }
+          cancellationCancellables[id] = nil
         }
       }
 
       return subject.handleEvents(
-        receiveCompletion: { _ in cleanup() },
-        receiveCancel: cleanup
+        receiveCompletion: { _ in cleanUp() },
+        receiveCancel: cleanUp
       )
     }
     .eraseToEffect()
@@ -76,12 +70,13 @@ extension Effect {
   public static func cancel(id: AnyHashable) -> Effect {
     .fireAndForget {
       cancellablesLock.sync {
-        cancellationCancellables[id]?.forEach { _, cancellable in cancellable.cancel() }
+        cancellationCancellables[id]?.forEach { cancellable in cancellable.cancel() }
         cancellationCancellables[id] = nil
       }
     }
   }
 }
 
-var cancellationCancellables: [AnyHashable: [UUID: AnyCancellable]] = [:]
+var cancellationCancellables: [AnyHashable: Set<AnyCancellable>] = [:]
 let cancellablesLock = NSRecursiveLock()
+var isCancelling: Set<AnyHashable> = []
