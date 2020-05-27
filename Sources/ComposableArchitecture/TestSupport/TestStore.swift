@@ -196,8 +196,8 @@
       for step in steps {
         var expectedState = toLocalState(state)
 
-        switch step.type {
-        case let .send(action, update):
+        switch step {
+        case let .send(action, _, _, update):
           if !receivedActions.isEmpty {
             _XCTFail(
               """
@@ -212,7 +212,7 @@
           runReducer(action: self.fromLocalAction(action))
           update(&expectedState)
 
-        case let .receive(expectedAction, update):
+        case let .receive(expectedAction, _, _, update):
           guard !receivedActions.isEmpty else {
             _XCTFail(
               """
@@ -240,7 +240,7 @@
           runReducer(action: receivedAction)
           update(&expectedState)
 
-        case let .environment(work):
+        case let .environment(_, _, work):
           if !receivedActions.isEmpty {
             _XCTFail(
               """
@@ -341,21 +341,7 @@
     }
 
     /// A single step of a `TestStore` assertion.
-    public struct Step {
-      fileprivate let type: StepType
-      fileprivate let file: StaticString
-      fileprivate let line: UInt
-
-      private init(
-        _ type: StepType,
-        file: StaticString = #file,
-        line: UInt = #line
-      ) {
-        self.type = type
-        self.file = file
-        self.line = line
-      }
-
+    public enum Step {
       /// A step that describes an action sent to a store and asserts against how the store's state
       /// is expected to change.
       ///
@@ -364,14 +350,12 @@
       ///   - update: A function that describes how the test store's state is expected to change.
       /// - Returns: A step that describes an action sent to a store and asserts against how the
       ///   store's state is expected to change.
-      public static func send(
+      case send(
         _ action: LocalAction,
         file: StaticString = #file,
         line: UInt = #line,
-        _ update: @escaping (inout LocalState) -> Void = { _ in }
-      ) -> Step {
-        Step(.send(action, update), file: file, line: line)
-      }
+        _ update: (inout LocalState) -> Void = { _ in }
+      )
 
       /// A step that describes an action received by an effect and asserts against how the store's
       /// state is expected to change.
@@ -381,27 +365,23 @@
       ///   - update: A function that describes how the test store's state is expected to change.
       /// - Returns: A step that describes an action received by an effect and asserts against how
       ///   the store's state is expected to change.
-      public static func receive(
+      case receive(
         _ action: Action,
         file: StaticString = #file,
         line: UInt = #line,
-        _ update: @escaping (inout LocalState) -> Void = { _ in }
-      ) -> Step {
-        Step(.receive(action, update), file: file, line: line)
-      }
+        _ update: (inout LocalState) -> Void = { _ in }
+      )
 
       /// A step that updates a test store's environment.
       ///
       /// - Parameter update: A function that updates the test store's environment for subsequent
       ///   steps.
       /// - Returns: A step that updates a test store's environment.
-      public static func environment(
+      case environment(
         file: StaticString = #file,
         line: UInt = #line,
-        _ update: @escaping (inout Environment) -> Void
-      ) -> Step {
-        Step(.environment(update), file: file, line: line)
-      }
+        update: (inout Environment) -> Void
+      )
 
       /// A step that captures some work to be done between assertions
       ///
@@ -415,10 +395,22 @@
         self.environment(file: file, line: line) { _ in work() }
       }
 
-      fileprivate enum StepType {
-        case send(LocalAction, (inout LocalState) -> Void)
-        case receive(Action, (inout LocalState) -> Void)
-        case environment((inout Environment) -> Void)
+      var file: StaticString {
+        switch  self {
+        case let .environment(file, _, _),
+             let .receive(_, file, _, _),
+             let .send(_, file, _, _):
+          return file
+        }
+      }
+
+      var line: UInt {
+        switch  self {
+        case let .environment(_, line, _),
+             let .receive(_, _, line, _),
+             let .send(_, _, line, _):
+          return line
+        }
       }
     }
   }
