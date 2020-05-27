@@ -162,7 +162,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   ///   the `Effect` is completed, the cancellable will be used to clean up any resources created
   ///   when the effect was started.
   public static func run(
-    _ work: @escaping (Effect.Subscriber<Output, Failure>) -> Cancellable
+    _ work: @escaping (Effect.Subscriber) -> Cancellable
   ) -> Self {
     AnyPublisher.create(work).eraseToEffect()
   }

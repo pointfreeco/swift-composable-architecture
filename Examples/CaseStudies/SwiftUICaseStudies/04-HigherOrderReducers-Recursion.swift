@@ -104,61 +104,61 @@ struct NestedView: View {
   }
 }
 
-#if DEBUG
-  extension NestedState {
-    static let mock = NestedState(
-      children: [
-        NestedState(
-          children: [
-            NestedState(
-              children: [],
-              id: UUID(),
-              description: ""
-            ),
-          ],
-          id: UUID(),
-          description: "Bar"
-        ),
-        NestedState(
-          children: [
-            NestedState(
-              children: [],
-              id: UUID(),
-              description: "Fizz"
-            ),
-            NestedState(
-              children: [],
-              id: UUID(),
-              description: "Buzz"
-            ),
-          ],
-          id: UUID(),
-          description: "Baz"
-        ),
-        NestedState(
-          children: [],
-          id: UUID(),
-          description: ""
-        ),
-      ],
-      id: UUID(),
-      description: "Foo"
-    )
-  }
-#endif
+extension NestedState {
+  static let mock = NestedState(
+    children: [
+      NestedState(
+        children: [
+          NestedState(
+            children: [],
+            id: UUID(),
+            description: ""
+          ),
+        ],
+        id: UUID(),
+        description: "Bar"
+      ),
+      NestedState(
+        children: [
+          NestedState(
+            children: [],
+            id: UUID(),
+            description: "Fizz"
+          ),
+          NestedState(
+            children: [],
+            id: UUID(),
+            description: "Buzz"
+          ),
+        ],
+        id: UUID(),
+        description: "Baz"
+      ),
+      NestedState(
+        children: [],
+        id: UUID(),
+        description: ""
+      ),
+    ],
+    id: UUID(),
+    description: "Foo"
+  )
+}
 
-struct NestedView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      NestedView(
-        store: Store(
-          initialState: .mock,
-          reducer: nestedReducer,
-          environment: NestedEnvironment(
-            uuid: UUID.init
+#if DEBUG
+  struct NestedView_Previews: PreviewProvider {
+    static var previews: some View {
+      NavigationView {
+        NestedView(
+          store: Store(
+            initialState: .mock,
+            reducer: nestedReducer,
+            environment: NestedEnvironment(
+              uuid: UUID.init
+            )
           )
         )
-      )
+      }
     }
   }
-}
+#endif

@@ -104,12 +104,12 @@ private class DemandBuffer<S: Subscriber> {
 }
 
 extension AnyPublisher {
-  init(_ callback: @escaping (Effect<Output, Failure>.Subscriber<Output, Failure>) -> Cancellable) {
+  init(_ callback: @escaping (Effect<Output, Failure>.Subscriber) -> Cancellable) {
     self = Publishers.Create(callback: callback).eraseToAnyPublisher()
   }
 
   static func create(
-    _ factory: @escaping (Effect<Output, Failure>.Subscriber<Output, Failure>) -> Cancellable
+    _ factory: @escaping (Effect<Output, Failure>.Subscriber) -> Cancellable
   ) -> AnyPublisher<Output, Failure> {
     AnyPublisher(factory)
   }
@@ -117,9 +117,9 @@ extension AnyPublisher {
 
 extension Publishers {
   class Create<Output, Failure: Swift.Error>: Publisher {
-    private let callback: (Effect<Output, Failure>.Subscriber<Output, Failure>) -> Cancellable
+    private let callback: (Effect<Output, Failure>.Subscriber) -> Cancellable
 
-    init(callback: @escaping (Effect<Output, Failure>.Subscriber<Output, Failure>) -> Cancellable) {
+    init(callback: @escaping (Effect<Output, Failure>.Subscriber) -> Cancellable) {
       self.callback = callback
     }
 
@@ -136,7 +136,7 @@ extension Publishers.Create {
     private var cancellable: Cancellable?
 
     init(
-      callback: @escaping (Effect<Output, Failure>.Subscriber<Output, Failure>) -> Cancellable,
+      callback: @escaping (Effect<Output, Failure>.Subscriber) -> Cancellable,
       downstream: Downstream
     ) {
       self.buffer = DemandBuffer(subscriber: downstream)
@@ -168,20 +168,20 @@ extension Publishers.Create.Subscription: CustomStringConvertible {
 }
 
 extension Effect {
-  public struct Subscriber<Input, Failure: Error> {
-    private let _send: (Input) -> Void
+  public struct Subscriber {
+    private let _send: (Output) -> Void
     private let _complete: (Subscribers.Completion<Failure>) -> Void
 
     init(
-      send: @escaping (Input) -> Void,
+      send: @escaping (Output) -> Void,
       complete: @escaping (Subscribers.Completion<Failure>) -> Void
     ) {
       self._send = send
       self._complete = complete
     }
 
-    public func send(_ input: Input) {
-      self._send(input)
+    public func send(_ value: Output) {
+      self._send(value)
     }
 
     public func send(completion: Subscribers.Completion<Failure>) {
