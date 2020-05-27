@@ -346,6 +346,7 @@ The Composable Architecture comes with a number of tools to aid in debugging.
     ```
 
 * `reducer.signpost()` instruments a reducer with signposts so that you can gain insight into how long actions take to execute, and when effects are running.
+
     <img src="https://s3.amazonaws.com/pointfreeco-production/point-free-pointers/0044-signposts-cover.jpg" width="600">
 
 ## Supplementary libraries
