@@ -229,11 +229,32 @@ final class EffectCancellationTests: XCTestCase {
 
     XCTAssertTrue(cancellationCancellables.isEmpty)
   }
+
+  func testNestedCancels() {
+    var effect = Empty<Void, Never>(completeImmediately: false)
+      .eraseToEffect()
+      .cancellable(id: 1)
+
+    for _ in 1 ... .random(in: 1...1_000) {
+      effect = effect.cancellable(id: 1)
+    }
+
+    effect
+      .sink(receiveValue: { _ in })
+      .store(in: &cancellables)
+
+    cancellables.removeAll()
+
+    XCTAssertEqual([:], cancellationCancellables)
+    XCTAssertEqual([], isCancelling)
+  }
 }
 
 func resetCancellables() {
-  for (id, _) in cancellationCancellables {
-    cancellationCancellables[id] = [:]
+  cancellablesLock.sync {
+    for (id, _) in cancellationCancellables {
+      cancellationCancellables[id] = []
+    }
+    cancellationCancellables = [:]
   }
-  cancellationCancellables = [:]
 }
