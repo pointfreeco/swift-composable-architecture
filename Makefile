@@ -81,4 +81,18 @@ test-workspace:
 format:
 	swift format --in-place --recursive .
 
+docs:
+	rm -rf Documentation
+	swift-doc generate Sources/ComposableArchitecture/ \
+		--module-name ComposableArchitecture \
+		--output Documentation/ComposableArchitecture \
+		--format=html \
+		--base-url $(BASE_URL)/ComposableArchitecture
+	swift-doc generate Sources/ComposableCoreLocation/ \
+		--module-name ComposableCoreLocation \
+		--output Documentation/ComposableCoreLocation \
+		--format=html \
+		--base-url $(BASE_URL)/ComposableCoreLocation
+
+
 .PHONY: format test-all test-swift test-workspace

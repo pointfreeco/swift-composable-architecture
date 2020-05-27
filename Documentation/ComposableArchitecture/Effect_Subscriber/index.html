@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComposableArchitecture - Effect.Subscriber</title>
+    <link rel="stylesheet" type="text/css" href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture/all.css" media="all" />
+</head>
+<body>
+    <header>
+        <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture">
+            <strong>
+                ComposableArchitecture
+            </strong>
+            <span>Documentation</span>
+        </a>
+        <sup>Beta</sup>
+    </header>
+
+    <!--
+    <form class="search">
+        <input type="search" placeholder="Search" />
+    </form>
+    -->
+
+    <nav>
+        <div class="wrapper">
+            <h2>On This Page</h2>
+            <ol><li><a href="#relationships">Relationships</a><ul><li><a href="#relationships">Member Of</a></li></ul></li><li><a href="#initializers">Initializers</a><ul><li class="initializer"><a href="#effect.subscriber.init(send:complete:)">init(send:​complete:​)</a></li></ul></li><li><a href="#properties">Properties</a><ul><li class="property"><a href="#effect.subscriber._send">_send</a></li><li class="property"><a href="#effect.subscriber._complete">_complete</a></li></ul></li><li><a href="#methods">Methods</a><ul><li class="method"><a href="#effect.subscriber.send(_:)">send(_:​)</a></li><li class="method"><a href="#effect.subscriber.send(completion:)">send(completion:​)</a></li></ul></li></ol>
+        </div>
+    </nav>
+
+    <main>
+        <article>
+            <h1>
+    <small>Structure</small>
+    <code class="name">Effect.​Subscriber</code>
+</h1>
+
+<html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">struct</span> <span class="type">Subscriber</span>&lt;<span class="variable">Input</span>, <span class="variable">Failure</span>: <span class="type">Error</span>&gt;</code></pre></body></html>
+<section id="relationships">
+    <h2 hidden>Relationships</h2>
+        
+        <h3>Member Of</h3>
+<dl>
+    <dt class="structure"><code><a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture/Effect">Effect</a></code></dt>
+<dd><p>The <code>Effect</code> type encapsulates a unit of work that can be run in the outside world, and can feed
+data back to the <code>Store</code>. It is the perfect place to do side effects, such as network requests,
+saving/loading from disk, creating timers, interacting with dependencies, and more.</p>
+</dd>
+</dl>
+</section>
+    <section id="initializers">
+        <h2>Initializers</h2>
+
+        <div role="article" class="structure" id="effect.subscriber.init(send:complete:)">
+    <h3>
+        <code>init(send:​complete:​)</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">init</span>(<span class="variable">send</span>: <span class="attribute">@</span><span class="attribute">escaping</span> (<span class="type">Input</span>) -&gt; <span class="type">Void</span>, <span class="variable">complete</span>: <span class="attribute">@</span><span class="attribute">escaping</span> (<span class="type">Subscribers</span>.<span class="type">Completion</span>&lt;<span class="type">Failure</span>&gt;) -&gt; <span class="type">Void</span>)</code></pre></body></html>
+</div>
+    </section>
+    <section id="properties">
+        <h2>Properties</h2>
+
+        <div role="article" class="structure" id="effect.subscriber._send">
+    <h3>
+        <code>_send</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">let</span> <span class="variable">_send</span>: (<span class="type">Input</span>) -&gt; <span class="type">Void</span></code></pre></body></html>
+</div>
+<div role="article" class="structure" id="effect.subscriber._complete">
+    <h3>
+        <code>_complete</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">let</span> <span class="variable">_complete</span>: (<span class="type">Subscribers</span>.<span class="type">Completion</span>&lt;<span class="type">Failure</span>&gt;) -&gt; <span class="type">Void</span></code></pre></body></html>
+</div>
+    </section>
+    <section id="methods">
+        <h2>Methods</h2>
+
+        <div role="article" class="structure" id="effect.subscriber.send(_:)">
+    <h3>
+        <code>send(_:​)</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">func</span> <span class="function">send</span>(<span class="keyword">_</span> <span class="variable">input</span>: <span class="type">Input</span>)</code></pre></body></html>
+</div>
+<div role="article" class="structure" id="effect.subscriber.send(completion:)">
+    <h3>
+        <code>send(completion:​)</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">func</span> <span class="function">send</span>(<span class="variable">completion</span>: <span class="type">Subscribers</span>.<span class="type">Completion</span>&lt;<span class="type">Failure</span>&gt;)</code></pre></body></html>
+</div>
+    </section>
+
+
+
+        </article>
+    </main>
+
+    <footer>
+        <p>
+    Generated on <time datetime="2020-05-27T09:38:57-0700">May 27, 2020</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-beta.2</span>.
+</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComposableArchitecture - IdentifiedArray</title>
+    <link rel="stylesheet" type="text/css" href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture/all.css" media="all" />
+</head>
+<body>
+    <header>
+        <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture">
+            <strong>
+                ComposableArchitecture
+            </strong>
+            <span>Documentation</span>
+        </a>
+        <sup>Beta</sup>
+    </header>
+
+    <!--
+    <form class="search">
+        <input type="search" placeholder="Search" />
+    </form>
+    -->
+
+    <nav>
+        <div class="wrapper">
+            <h2>On This Page</h2>
+            <ol><li><a href="#relationships">Relationships</a><ul><li><a href="#relationships">Conforms To</a></li></ul></li><li><a href="#initializers">Initializers</a><ul><li class="initializer"><a href="#identifiedarray.init(_:id:)">init(_:​id:​)</a></li><li class="initializer"><a href="#identifiedarray.init(id:)">init(id:​)</a></li></ul></li><li><a href="#properties">Properties</a><ul><li class="property"><a href="#identifiedarray.id">id</a></li><li class="property"><a href="#identifiedarray.ids">ids</a></li><li class="property"><a href="#identifiedarray.elements">elements</a></li><li class="property"><a href="#identifiedarray.dictionary">dictionary</a></li><li class="property"><a href="#identifiedarray.startindex">start​Index</a></li><li class="property"><a href="#identifiedarray.endindex">end​Index</a></li><li class="property"><a href="#identifiedarray.debugdescription">debug​Description</a></li><li class="property"><a href="#identifiedarray.custommirror">custom​Mirror</a></li><li class="property"><a href="#identifiedarray.description">description</a></li></ul></li><li><a href="#methods">Methods</a><ul><li class="method"><a href="#identifiedarray.index(after:)">index(after:​)</a></li><li class="method"><a href="#identifiedarray.index(before:)">index(before:​)</a></li><li class="method"><a href="#identifiedarray.insert(_:at:)">insert(_:​at:​)</a></li><li class="method"><a href="#identifiedarray.insert(contentsof:at:)">insert(contents​Of:​at:​)</a></li><li class="method"><a href="#identifiedarray.remove(id:)">remove(id:​)</a></li><li class="method"><a href="#identifiedarray.remove(at:)">remove(at:​)</a></li><li class="method"><a href="#identifiedarray.removeall(where:)">remove​All(where:​)</a></li><li class="method"><a href="#identifiedarray.remove(atoffsets:)">remove(at​Offsets:​)</a></li><li class="method"><a href="#identifiedarray.move(fromoffsets:tooffset:)">move(from​Offsets:​to​Offset:​)</a></li><li class="method"><a href="#identifiedarray.sort(by:)">sort(by:​)</a></li></ul></li></ol>
+        </div>
+    </nav>
+
+    <main>
+        <article>
+            <h1>
+    <small>Structure</small>
+    <code class="name">Identified​Array</code>
+</h1>
+
+<html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">struct</span> <span class="type">IdentifiedArray</span>&lt;<span class="variable">ID</span>, <span class="variable">Element</span>&gt;: <span class="type">MutableCollection</span>, <span class="type">RandomAccessCollection</span> <span class="keyword">where</span> <span class="type">ID</span>: <span class="type">Hashable</span></code></pre></body></html>
+<div class="summary" role="doc-abstract">
+    <p>An array of elements that can be identified by a given key path.</p>
+
+</div>
+<div class="discussion">
+    <p>A useful container of state that is intended to interface with <code>SwiftUI.ForEach</code>. For example,
+your application may model a counter in an identifiable fashion:</p>
+
+<html><body><pre class="highlight"><code><span class="keyword">struct</span> <span class="type">CounterState</span>: <span class="type">Identifiable</span> {
+  <span class="keyword">let</span> <span class="variable">id</span>: <span class="type">UUID</span>
+  <span class="keyword">var</span> <span class="variable">count</span> = <span class="number literal">0</span>
+}
+<span class="keyword">enum</span> <span class="type">CounterAction</span> { <span class="keyword">case</span> <span class="variable">incr</span>, <span class="variable">decr</span> }
+<span class="keyword">let</span> <span class="variable">counterReducer</span> = <span class="variable">Reducer</span>&lt;<span class="type">CounterState</span>, <span class="type">CounterAction</span>, <span class="type">Void</span>&gt; { ... }
+</code></pre></body></html>
+<p>This domain can be pulled back to a larger domain with the <code>forEach</code> method:</p>
+
+<html><body><pre class="highlight"><code><span class="keyword">struct</span> <span class="type">AppState</span> { <span class="keyword">var</span> <span class="variable">counters</span> = <span class="variable">IdentifiedArray</span>&lt;<span class="type">Int</span>&gt;(<span class="variable">id</span>: \.<span class="keyword">self</span>) }
+<span class="keyword">enum</span> <span class="type">AppAction</span> { <span class="keyword">case</span> <span class="variable">counter</span>(<span class="variable">id</span>: <span class="type">UUID</span>, <span class="variable">action</span>: <span class="type">CounterAction</span>) }
+<span class="keyword">let</span> <span class="variable">appReducer</span> = <span class="variable">counterReducer</span>.<span class="type">forEach</span>(
+  <span class="variable">state</span>: \<span class="variable">AppState</span>.<span class="type">counters</span>,
+  <span class="variable">action</span>: /<span class="variable">AppAction</span>.<span class="type">counter</span>(<span class="variable">id</span>:<span class="type">action</span>:),
+  <span class="variable">environment</span>: { <span class="variable">$0</span> }
+)
+</code></pre></body></html>
+<p>And then SwiftUI can work with this array of identified elements in a list view:</p>
+
+<html><body><pre class="highlight"><code><span class="keyword">struct</span> <span class="type">AppView</span>: <span class="type">View</span> {
+  <span class="keyword">let</span> <span class="variable">store</span>: <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture/Store"><span class="type">Store</span></a>&lt;<span class="type">AppState</span>, <span class="type">AppAction</span>&gt;
+
+  <span class="keyword">var</span> <span class="variable">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+    <span class="variable">List</span> {
+      <span class="variable">ForEachStore</span>(
+        <span class="keyword">self</span>.<span class="type">store</span>.<span class="type">scope</span>(<span class="variable">state</span>: \.<span class="type">counters</span>, <span class="variable">action</span>: <span class="type">AppAction</span>.<span class="type">counter</span>(<span class="variable">id</span>:<span class="type">action</span>))
+        <span class="variable">content</span>: <span class="type">CounterView</span>.<span class="type">init</span>(<span class="variable">store</span>:)
+      )
+    }
+  }
+}
+</code></pre></body></html>
+</div>
+<section id="relationships">
+    <h2 hidden>Relationships</h2>
+        <figure>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.44.0 (20200408.0750)
+ -->
+<!-- Pages: 1 -->
+<svg width="1431pt" height="293pt"
+ viewBox="0.00 0.00 1431.01 293.16" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 289.16)">
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-289.16 1427.01,-289.16 1427.01,4 -4,4"/>
+<!-- IdentifiedArray -->
+<g id="node1" class="node structure current">
+<title>IdentifiedArray</title>
+<g id="a_node1"><a xlink:href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture/IdentifiedArray" xlink:title="IdentifiedArray">
+<path fill="none" stroke="black" stroke-width="3" d="M815.82,-163.25C815.82,-163.25 623.82,-163.25 623.82,-163.25 617.82,-163.25 611.82,-157.25 611.82,-151.25 611.82,-151.25 611.82,-139.25 611.82,-139.25 611.82,-133.25 617.82,-127.25 623.82,-127.25 623.82,-127.25 815.82,-127.25 815.82,-127.25 821.82,-127.25 827.82,-133.25 827.82,-139.25 827.82,-139.25 827.82,-151.25 827.82,-151.25 827.82,-157.25 821.82,-163.25 815.82,-163.25"/>
+<text text-anchor="middle" x="719.82" y="-141.55" font-family="Menlo" font-size="14.00">IdentifiedArray</text>
+</a>
+</g>
+</g>
+<!-- CustomDebugStringConvertible -->
+<g id="node2" class="node unknown">
+<title>CustomDebugStringConvertible</title>
+<path fill="none" stroke="black" d="M1383.77,-218.84C1383.77,-218.84 1159.77,-218.84 1159.77,-218.84 1153.77,-218.84 1147.77,-212.84 1147.77,-206.84 1147.77,-206.84 1147.77,-194.84 1147.77,-194.84 1147.77,-188.84 1153.77,-182.84 1159.77,-182.84 1159.77,-182.84 1383.77,-182.84 1383.77,-182.84 1389.77,-182.84 1395.77,-188.84 1395.77,-194.84 1395.77,-194.84 1395.77,-206.84 1395.77,-206.84 1395.77,-212.84 1389.77,-218.84 1383.77,-218.84"/>
+<text text-anchor="middle" x="1271.77" y="-197.14" font-family="Menlo" font-size="14.00">CustomDebugStringConvertible</text>
+</g>
+<!-- IdentifiedArray&#45;&gt;CustomDebugStringConvertible -->
+<g id="edge9" class="edge conformsTo">
+<title>IdentifiedArray&#45;&gt;CustomDebugStringConvertible</title>
+<path fill="none" stroke="black" d="M827.88,-156.14C916.54,-165.07 1042.5,-177.75 1137.61,-187.33"/>
+<polygon fill="black" stroke="black" points="1137.28,-190.82 1147.59,-188.34 1137.99,-183.85 1137.28,-190.82"/>
+</g>
+<!-- RangeReplaceableCollection -->
+<g id="node3" class="node unknown">
+<title>RangeReplaceableCollection</title>
+<path fill="none" stroke="black" d="M775.32,-36C775.32,-36 568.32,-36 568.32,-36 562.32,-36 556.32,-30 556.32,-24 556.32,-24 556.32,-12 556.32,-12 556.32,-6 562.32,0 568.32,0 568.32,0 775.32,0 775.32,0 781.32,0 787.32,-6 787.32,-12 787.32,-12 787.32,-24 787.32,-24 787.32,-30 781.32,-36 775.32,-36"/>
+<text text-anchor="middle" x="671.82" y="-14.3" font-family="Menlo" font-size="14.00">RangeReplaceableCollection</text>
+</g>
+<!-- IdentifiedArray&#45;&gt;RangeReplaceableCollection -->
+<g id="edge3" class="edge conformsTo">
+<title>IdentifiedArray&#45;&gt;RangeReplaceableCollection</title>
+<path fill="none" stroke="black" d="M712.94,-127.02C704.92,-105.76 691.58,-70.39 682.27,-45.72"/>
+<polygon fill="black" stroke="black" points="685.48,-44.32 678.68,-36.2 678.93,-46.79 685.48,-44.32"/>
+</g>
+<!-- CustomStringConvertible -->
+<g id="node4" class="node unknown">
+<title>CustomStringConvertible</title>
+<path fill="none" stroke="black" d="M307.84,-235.77C307.84,-235.77 115.84,-235.77 115.84,-235.77 109.84,-235.77 103.84,-229.77 103.84,-223.77 103.84,-223.77 103.84,-211.77 103.84,-211.77 103.84,-205.77 109.84,-199.77 115.84,-199.77 115.84,-199.77 307.84,-199.77 307.84,-199.77 313.84,-199.77 319.84,-205.77 319.84,-211.77 319.84,-211.77 319.84,-223.77 319.84,-223.77 319.84,-229.77 313.84,-235.77 307.84,-235.77"/>
+<text text-anchor="middle" x="211.84" y="-214.07" font-family="Menlo" font-size="14.00">CustomStringConvertible</text>
+</g>
+<!-- IdentifiedArray&#45;&gt;CustomStringConvertible -->
+<g id="edge2" class="edge conformsTo">
+<title>IdentifiedArray&#45;&gt;CustomStringConvertible</title>
+<path fill="none" stroke="black" d="M611.78,-160.68C529.11,-172.48 415.23,-188.74 330.12,-200.89"/>
+<polygon fill="black" stroke="black" points="329.56,-197.43 320.15,-202.31 330.55,-204.36 329.56,-197.43"/>
+</g>
+<!-- Encodable -->
+<g id="node5" class="node unknown">
+<title>Encodable</title>
+<path fill="none" stroke="black" d="M1066.8,-280.13C1066.8,-280.13 874.8,-280.13 874.8,-280.13 868.8,-280.13 862.8,-274.13 862.8,-268.13 862.8,-268.13 862.8,-256.13 862.8,-256.13 862.8,-250.13 868.8,-244.13 874.8,-244.13 874.8,-244.13 1066.8,-244.13 1066.8,-244.13 1072.8,-244.13 1078.8,-250.13 1078.8,-256.13 1078.8,-256.13 1078.8,-268.13 1078.8,-268.13 1078.8,-274.13 1072.8,-280.13 1066.8,-280.13"/>
+<text text-anchor="middle" x="970.8" y="-258.43" font-family="Menlo" font-size="14.00">Encodable</text>
+</g>
+<!-- IdentifiedArray&#45;&gt;Encodable -->
+<g id="edge5" class="edge conformsTo">
+<title>IdentifiedArray&#45;&gt;Encodable</title>
+<path fill="none" stroke="black" d="M758.48,-163.26C802.7,-183.85 875.12,-217.58 922.88,-239.81"/>
+<polygon fill="black" stroke="black" points="921.54,-243.05 932.09,-244.1 924.5,-236.71 921.54,-243.05"/>
+</g>
+<!-- MutableCollection -->
+<g id="node6" class="node unknown">
+<title>MutableCollection</title>
+<path fill="none" stroke="black" d="M649.75,-285.16C649.75,-285.16 457.75,-285.16 457.75,-285.16 451.75,-285.16 445.75,-279.16 445.75,-273.16 445.75,-273.16 445.75,-261.16 445.75,-261.16 445.75,-255.16 451.75,-249.16 457.75,-249.16 457.75,-249.16 649.75,-249.16 649.75,-249.16 655.75,-249.16 661.75,-255.16 661.75,-261.16 661.75,-261.16 661.75,-273.16 661.75,-273.16 661.75,-279.16 655.75,-285.16 649.75,-285.16"/>
+<text text-anchor="middle" x="553.75" y="-263.46" font-family="Menlo" font-size="14.00">MutableCollection</text>
+</g>
+<!-- IdentifiedArray&#45;&gt;MutableCollection -->
+<g id="edge8" class="edge conformsTo">
+<title>IdentifiedArray&#45;&gt;MutableCollection</title>
+<path fill="none" stroke="black" d="M694.96,-163.5C666.13,-184.66 618.52,-219.61 586.65,-243.01"/>
+<polygon fill="black" stroke="black" points="584.5,-240.25 578.51,-248.98 588.64,-245.89 584.5,-240.25"/>
+</g>
+<!-- CustomReflectable -->
+<g id="node7" class="node unknown">
+<title>CustomReflectable</title>
+<path fill="none" stroke="black" d="M204,-150.74C204,-150.74 12,-150.74 12,-150.74 6,-150.74 0,-144.74 0,-138.74 0,-138.74 0,-126.74 0,-126.74 0,-120.74 6,-114.74 12,-114.74 12,-114.74 204,-114.74 204,-114.74 210,-114.74 216,-120.74 216,-126.74 216,-126.74 216,-138.74 216,-138.74 216,-144.74 210,-150.74 204,-150.74"/>
+<text text-anchor="middle" x="108" y="-129.04" font-family="Menlo" font-size="14.00">CustomReflectable</text>
+</g>
+<!-- IdentifiedArray&#45;&gt;CustomReflectable -->
+<g id="edge6" class="edge conformsTo">
+<title>IdentifiedArray&#45;&gt;CustomReflectable</title>
+<path fill="none" stroke="black" d="M611.49,-143.04C503.41,-140.83 337.8,-137.44 226.33,-135.16"/>
+<polygon fill="black" stroke="black" points="226.12,-131.65 216.05,-134.95 225.98,-138.65 226.12,-131.65"/>
+</g>
+<!-- RandomAccessCollection -->
+<g id="node8" class="node unknown">
+<title>RandomAccessCollection</title>
+<path fill="none" stroke="black" d="M1411.01,-132.01C1411.01,-132.01 1219.01,-132.01 1219.01,-132.01 1213.01,-132.01 1207.01,-126.01 1207.01,-120.01 1207.01,-120.01 1207.01,-108.01 1207.01,-108.01 1207.01,-102.01 1213.01,-96.01 1219.01,-96.01 1219.01,-96.01 1411.01,-96.01 1411.01,-96.01 1417.01,-96.01 1423.01,-102.01 1423.01,-108.01 1423.01,-108.01 1423.01,-120.01 1423.01,-120.01 1423.01,-126.01 1417.01,-132.01 1411.01,-132.01"/>
+<text text-anchor="middle" x="1315.01" y="-110.31" font-family="Menlo" font-size="14.00">RandomAccessCollection</text>
+</g>
+<!-- IdentifiedArray&#45;&gt;RandomAccessCollection -->
+<g id="edge7" class="edge conformsTo">
+<title>IdentifiedArray&#45;&gt;RandomAccessCollection</title>
+<path fill="none" stroke="black" d="M827.95,-139.58C932.09,-134.11 1089.22,-125.86 1196.66,-120.23"/>
+<polygon fill="black" stroke="black" points="1197.1,-123.71 1206.9,-119.69 1196.73,-116.72 1197.1,-123.71"/>
+</g>
+<!-- ExpressibleByArrayLiteral -->
+<g id="node9" class="node unknown">
+<title>ExpressibleByArrayLiteral</title>
+<path fill="none" stroke="black" d="M390.53,-72.54C390.53,-72.54 191.53,-72.54 191.53,-72.54 185.53,-72.54 179.53,-66.54 179.53,-60.54 179.53,-60.54 179.53,-48.54 179.53,-48.54 179.53,-42.54 185.53,-36.54 191.53,-36.54 191.53,-36.54 390.53,-36.54 390.53,-36.54 396.53,-36.54 402.53,-42.54 402.53,-48.54 402.53,-48.54 402.53,-60.54 402.53,-60.54 402.53,-66.54 396.53,-72.54 390.53,-72.54"/>
+<text text-anchor="middle" x="291.03" y="-50.84" font-family="Menlo" font-size="14.00">ExpressibleByArrayLiteral</text>
+</g>
+<!-- IdentifiedArray&#45;&gt;ExpressibleByArrayLiteral -->
+<g id="edge1" class="edge conformsTo">
+<title>IdentifiedArray&#45;&gt;ExpressibleByArrayLiteral</title>
+<path fill="none" stroke="black" d="M634.59,-127.22C562.95,-112.07 460.63,-90.42 386.3,-74.7"/>
+<polygon fill="black" stroke="black" points="386.97,-71.26 376.47,-72.62 385.52,-78.11 386.97,-71.26"/>
+</g>
+<!-- Decodable -->
+<g id="node10" class="node unknown">
+<title>Decodable</title>
+<path fill="none" stroke="black" d="M1173.73,-59.85C1173.73,-59.85 981.73,-59.85 981.73,-59.85 975.73,-59.85 969.73,-53.85 969.73,-47.85 969.73,-47.85 969.73,-35.85 969.73,-35.85 969.73,-29.85 975.73,-23.85 981.73,-23.85 981.73,-23.85 1173.73,-23.85 1173.73,-23.85 1179.73,-23.85 1185.73,-29.85 1185.73,-35.85 1185.73,-35.85 1185.73,-47.85 1185.73,-47.85 1185.73,-53.85 1179.73,-59.85 1173.73,-59.85"/>
+<text text-anchor="middle" x="1077.73" y="-38.15" font-family="Menlo" font-size="14.00">Decodable</text>
+</g>
+<!-- IdentifiedArray&#45;&gt;Decodable -->
+<g id="edge4" class="edge conformsTo">
+<title>IdentifiedArray&#45;&gt;Decodable</title>
+<path fill="none" stroke="black" d="M782.16,-127.24C844.36,-109.27 939.85,-81.69 1005.36,-62.76"/>
+<polygon fill="black" stroke="black" points="1006.56,-66.05 1015.2,-59.92 1004.62,-59.33 1006.56,-66.05"/>
+</g>
+</g>
+</svg>
+
+
+    <figcaption hidden>Inheritance graph for IdentifiedArray.</figcaption>
+</figure>
+        <h3>Conforms To</h3>
+<dl>
+    <dt class="unknown"><code>CustomDebugStringConvertible</code></dt>
+<dt class="unknown"><code>CustomReflectable</code></dt>
+<dt class="unknown"><code>CustomStringConvertible</code></dt>
+<dt class="unknown"><code>Decodable</code></dt>
+<dt class="unknown"><code>Encodable</code></dt>
+<dt class="unknown"><code>ExpressibleByArrayLiteral</code></dt>
+<dt class="unknown"><code>MutableCollection</code></dt>
+<dt class="unknown"><code>RandomAccessCollection</code></dt>
+<dt class="unknown"><code>RangeReplaceableCollection</code></dt>
+</dl>
+</section>
+    <section id="initializers">
+        <h2>Initializers</h2>
+
+        <div role="article" class="structure" id="identifiedarray.init(_:id:)">
+    <h3>
+        <code>init(_:​id:​)</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">init</span>&lt;<span class="variable">S</span>&gt;(<span class="keyword">_</span> <span class="variable">elements</span>: <span class="type">S</span>, <span class="variable">id</span>: <span class="type">KeyPath</span>&lt;<span class="type">Element</span>, <span class="type">ID</span>&gt;) <span class="keyword">where</span> <span class="type">S</span>: <span class="type">Sequence</span>, <span class="type">S</span>.<span class="type">Element</span> == <span class="type">Element</span></code></pre></body></html>
+<div class="summary" role="doc-abstract">
+    <p>Initializes an identified array with a sequence of elements and a key
+path to an element's identifier.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>elements</th>
+    <td><code class="type">S</code></td></td>
+    <td><ul>
+<li>elements: A sequence of elements.</li>
+</ul>
+</td>
+</tr>
+<tr>
+    <th>id</th>
+    <td><code class="type">Key​Path&lt;Element, ID&gt;</code></td></td>
+    <td><ul>
+<li>id: A key path to a value that identifies an element.</li>
+</ul>
+</td>
+</tr>
+  </tbody>
+</table>
+</div>
+<div role="article" class="structure" id="identifiedarray.init(id:)">
+    <h3>
+        <code>init(id:​)</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">init</span>(<span class="variable">id</span>: <span class="type">KeyPath</span>&lt;<span class="type">Element</span>, <span class="type">ID</span>&gt;)</code></pre></body></html>
+<div class="summary" role="doc-abstract">
+    <p>Initializes an empty identified array with a key path to an element's
+identifier.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>id</th>
+    <td><code class="type">Key​Path&lt;Element, ID&gt;</code></td></td>
+    <td><ul>
+<li>id: A key path to a value that identifies an element.</li>
+</ul>
+</td>
+</tr>
+  </tbody>
+</table>
+</div>
+    </section>
+    <section id="properties">
+        <h2>Properties</h2>
+
+        <div role="article" class="structure" id="identifiedarray.id">
+    <h3>
+        <code>id</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">let</span> <span class="variable">id</span>: <span class="type">KeyPath</span>&lt;<span class="type">Element</span>, <span class="type">ID</span>&gt;</code></pre></body></html>
+<div class="summary" role="doc-abstract">
+    <p>A key path to a value that identifies an element.</p>
+
+</div>
+</div>
+<div role="article" class="structure" id="identifiedarray.ids">
+    <h3>
+        <code>ids</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">ids</span>: [<span class="type">ID</span>]</code></pre></body></html>
+<div class="summary" role="doc-abstract">
+    <p>A raw array of each element's identifier.</p>
+
+</div>
+</div>
+<div role="article" class="structure" id="identifiedarray.elements">
+    <h3>
+        <code>elements</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">elements</span>: [<span class="type">Element</span>]</code></pre></body></html>
+<div class="summary" role="doc-abstract">
+    <p>A raw array of the underlying elements.</p>
+
+</div>
+</div>
+<div role="article" class="structure" id="identifiedarray.dictionary">
+    <h3>
+        <code>dictionary</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">dictionary</span>: [<span class="type">ID</span>: <span class="type">Element</span>]</code></pre></body></html>
+</div>
+<div role="article" class="structure" id="identifiedarray.startindex">
+    <h3>
+        <code>start​Index</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">startIndex</span>: <span class="type">Int</span></code></pre></body></html>
+</div>
+<div role="article" class="structure" id="identifiedarray.endindex">
+    <h3>
+        <code>end​Index</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">endIndex</span>: <span class="type">Int</span></code></pre></body></html>
+</div>
+<div role="article" class="structure" id="identifiedarray.debugdescription">
+    <h3>
+        <code>debug​Description</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">debugDescription</span>: <span class="type">String</span></code></pre></body></html>
+</div>
+<div role="article" class="structure" id="identifiedarray.custommirror">
+    <h3>
+        <code>custom​Mirror</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">customMirror</span>: <span class="type">Mirror</span></code></pre></body></html>
+</div>
+<div role="article" class="structure" id="identifiedarray.description">
+    <h3>
+        <code>description</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">description</span>: <span class="type">String</span></code></pre></body></html>
+</div>
+    </section>
+    <section id="methods">
+        <h2>Methods</h2>
+
+        <div role="article" class="structure" id="identifiedarray.index(after:)">
+    <h3>
+        <code>index(after:​)</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">func</span> <span class="function">index</span>(<span class="variable">after</span> <span class="variable">i</span>: <span class="type">Int</span>) -&gt; <span class="type">Int</span></code></pre></body></html>
+</div>
+<div role="article" class="structure" id="identifiedarray.index(before:)">
+    <h3>
+        <code>index(before:​)</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">func</span> <span class="function">index</span>(<span class="variable">before</span> <span class="variable">i</span>: <span class="type">Int</span>) -&gt; <span class="type">Int</span></code></pre></body></html>
+</div>
+<div role="article" class="structure" id="identifiedarray.insert(_:at:)">
+    <h3>
+        <code>insert(_:​at:​)</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="attribute">mutating</span> <span class="keyword">func</span> <span class="function">insert</span>(<span class="keyword">_</span> <span class="variable">newElement</span>: <span class="type">Element</span>, <span class="variable">at</span> <span class="variable">i</span>: <span class="type">Int</span>)</code></pre></body></html>
+</div>
+<div role="article" class="structure" id="identifiedarray.insert(contentsof:at:)">
+    <h3>
+        <code>insert(contents​Of:​at:​)</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="attribute">mutating</span> <span class="keyword">func</span> <span class="function">insert</span>&lt;<span class="variable">C</span>&gt;(<span class="variable">contentsOf</span> <span class="variable">newElements</span>: <span class="type">C</span>, <span class="variable">at</span> <span class="variable">i</span>: <span class="type">Int</span>) <span class="keyword">where</span> <span class="type">C</span>: <span class="type">Collection</span>, <span class="type">Element</span> == <span class="type">C</span>.<span class="type">Element</span></code></pre></body></html>
+</div>
+<div role="article" class="structure" id="identifiedarray.remove(id:)">
+    <h3>
+        <code>remove(id:​)</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="attribute">@</span><span class="attribute">discardableResult</span> <span class="keyword">public</span> <span class="attribute">mutating</span> <span class="keyword">func</span> <span class="function">remove</span>(<span class="variable">id</span>: <span class="type">ID</span>) -&gt; <span class="type">Element</span></code></pre></body></html>
+<div class="summary" role="doc-abstract">
+    <p>Removes and returns the element with the specified identifier.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>id</th>
+    <td><code class="type">ID</code></td></td>
+    <td><ul>
+<li>id: The identifier of the element to remove.</li>
+</ul>
+</td>
+</tr>
+  </tbody>
+</table>
+  <h4>Returns</h4>
+  <p>The removed element.</p>
+
+</div>
+<div role="article" class="structure" id="identifiedarray.remove(at:)">
+    <h3>
+        <code>remove(at:​)</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="attribute">@</span><span class="attribute">discardableResult</span> <span class="keyword">public</span> <span class="attribute">mutating</span> <span class="keyword">func</span> <span class="function">remove</span>(<span class="variable">at</span> <span class="variable">position</span>: <span class="type">Int</span>) -&gt; <span class="type">Element</span></code></pre></body></html>
+</div>
+<div role="article" class="structure" id="identifiedarray.removeall(where:)">
+    <h3>
+        <code>remove​All(where:​)</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="attribute">mutating</span> <span class="keyword">func</span> <span class="function">removeAll</span>(<span class="variable">where</span> <span class="variable">shouldBeRemoved</span>: (<span class="type">Element</span>) <span class="keyword">throws</span> -&gt; <span class="type">Bool</span>) <span class="keyword">rethrows</span></code></pre></body></html>
+</div>
+<div role="article" class="structure" id="identifiedarray.remove(atoffsets:)">
+    <h3>
+        <code>remove(at​Offsets:​)</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="attribute">mutating</span> <span class="keyword">func</span> <span class="function">remove</span>(<span class="variable">atOffsets</span> <span class="variable">offsets</span>: <span class="type">IndexSet</span>)</code></pre></body></html>
+</div>
+<div role="article" class="structure" id="identifiedarray.move(fromoffsets:tooffset:)">
+    <h3>
+        <code>move(from​Offsets:​to​Offset:​)</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="attribute">mutating</span> <span class="keyword">func</span> <span class="function">move</span>(<span class="variable">fromOffsets</span> <span class="variable">source</span>: <span class="type">IndexSet</span>, <span class="variable">toOffset</span> <span class="variable">destination</span>: <span class="type">Int</span>)</code></pre></body></html>
+</div>
+<div role="article" class="structure" id="identifiedarray.sort(by:)">
+    <h3>
+        <code>sort(by:​)</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="attribute">mutating</span> <span class="keyword">func</span> <span class="function">sort</span>(<span class="variable">by</span> <span class="variable">areInIncreasingOrder</span>: (<span class="type">Element</span>, <span class="type">Element</span>) <span class="keyword">throws</span> -&gt; <span class="type">Bool</span>) <span class="keyword">rethrows</span></code></pre></body></html>
+</div>
+    </section>
+
+
+
+        </article>
+    </main>
+
+    <footer>
+        <p>
+    Generated on <time datetime="2020-05-27T09:38:58-0700">May 27, 2020</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-beta.2</span>.
+</p>
+    </footer>
+</body>
+</html>
