@@ -93,7 +93,7 @@ struct AppState: Equatable {
 Next we have the actions in the feature. There are the obvious actions, such as tapping the decrement button, increment button, or fact button. But there are also some slightly non-obvious ones, such as the action of the user dismissing the alert, and the action that occurs when we receive a response from the fact API request:
 
 ```swift
-enum AppAction {
+enum AppAction: Equatable {
   case factAlertDismissed
   case decrementButtonTapped
   case incrementButtonTapped
@@ -101,7 +101,7 @@ enum AppAction {
   case numberFactResponse(Result<String, ApiError>)
 }
 
-struct ApiError: Error {}
+struct ApiError: Error, Equatable {}
 ```
 
 Next we model the environment of dependencies this feature needs to do its job. In particular, to fetch a number fact we need to construct an `Effect` value that encapsulates the network request. So that dependency is a function from `Int` to `Effect<String, ApiError>`, where `String` represents the response from the request. Further, the effect will typically do its work on a background thread (as is the case with `URLSession`), and so we need a way to receive the effect's values on the main queue. We do this via a main queue scheduler, which is a dependency that is important to control so that we can write tests. We must use an `AnyScheduler` so that we can use a live `DispatchQueue` in production and a test scheduler in tests.
@@ -264,6 +264,8 @@ let appView = AppView(
 
 And that is enough to get something on the screen to play around with. It's definitely a few more steps than if you were to do this in a vanilla SwiftUI way, but there are a few benefits. It gives us a consistent manner to apply state mutations, instead of scattering logic in some observable objects and in various action closures of UI components. It also gives us a concise way of expressing side effects. And we can immediately test this logic, including the effects, without doing much additional work.
 
+### Testing
+
 To test, you first create a `TestStore` with the same information that you would to create a regular `Store`, except this time we can supply test-friendly dependencies. In particular, we use a test scheduler instead of the live `DispatchQueue.main` scheduler because that allows us to control when work is executed, and we don't have to artificially wait for queues to catch up.
 
 ```swift
@@ -309,6 +311,43 @@ store.assert(
 ```
 
 That is the basics of building and testing a feature in the Composable Architecture. There are _a lot_ more things to be explored, such as composition, modularity, adaptability, and complex effects. The [Examples](./Examples) directory has a bunch of projects to explore to see more advanced usages.
+
+### Debugging
+
+The Composable Architecture comes with a number of tools to aid in debugging.
+
+* `reducer.debug()` enhances a reducer with debug-printing that describes every action the reducer receives and every mutation it makes to state.
+
+    ``` diff
+    received action:
+      AppAction.todoCheckboxTapped(
+        index: 0
+      )
+      AppState(
+        todos: [
+          Todo(
+    -       isComplete: false,
+    +       isComplete: true,
+            description: "Milk",
+            id: 5834811A-83B4-4E5E-BCD3-8A38F6BDCA90
+          ),
+          Todo(
+            isComplete: false,
+            description: "Eggs",
+            id: AB3C7921-8262-4412-AA93-9DC5575C1107
+          ),
+          Todo(
+            isComplete: true,
+            description: "Hand Soap",
+            id: 06E94D88-D726-42EF-BA8B-7B4478179D19
+          ),
+        ]
+      )
+    ```
+
+* `reducer.signpost()` instruments a reducer with signposts so that you can gain insight into how long actions take to execute, and when effects are running.
+
+    <img src="https://s3.amazonaws.com/pointfreeco-production/point-free-pointers/0044-signposts-cover.jpg" width="600">
 
 ## Supplementary libraries
 
