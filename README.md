@@ -326,7 +326,7 @@ The Composable Architecture comes with a number of tools to aid in debugging.
       AppState(
         todos: [
           Todo(
-    −       isComplete: false,
+    -       isComplete: false,
     +       isComplete: true,
             description: "Milk",
             id: 5834811A-83B4-4E5E-BCD3-8A38F6BDCA90
