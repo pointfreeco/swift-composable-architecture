@@ -54,18 +54,10 @@ struct AnimationsView: View {
             Text(template: readMe, .body)
               .padding()
 
-            Circle()
-              .fill(Color.white)
-              .blendMode(.difference)
-              .frame(width: 50, height: 50)
-              .scaleEffect(viewStore.isCircleScaled ? 2 : 1)
-              .offset(
-                x: viewStore.circleCenter.x - proxy.size.width / 2,
-                y: viewStore.circleCenter.y - proxy.size.height / 2
-              )
+            self.circle(proxy: proxy, viewStore: viewStore)
           }
           .frame(maxWidth: .infinity, maxHeight: .infinity)
-          .background(self.colorScheme == .dark ? Color.black : Color.white)
+          .background(self.backgroundColor)
           .simultaneousGesture(
             DragGesture(minimumDistance: 0).onChanged { gesture in
               withAnimation(.interactiveSpring(response: 0.25, dampingFraction: 0.1)) {
@@ -84,6 +76,25 @@ struct AnimationsView: View {
         }
       }
     }
+  }
+
+  var backgroundColor: Color {
+    self.colorScheme == .dark ? .black : .white
+  }
+
+  func circle(
+    proxy: GeometryProxy,
+    viewStore: ViewStore<AnimationsState, AnimationsAction>
+  ) -> some View {
+    Circle()
+      .fill(Color.white)
+      .blendMode(.difference)
+      .frame(width: 50, height: 50)
+      .scaleEffect(viewStore.isCircleScaled ? 2 : 1)
+      .offset(
+        x: viewStore.circleCenter.x - proxy.size.width / 2,
+        y: viewStore.circleCenter.y - proxy.size.height / 2
+      )
   }
 }
 
