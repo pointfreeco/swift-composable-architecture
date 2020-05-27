@@ -403,6 +403,7 @@ There are also many architecture libraries in the Swift and iOS community. Each 
 * [ReactorKit](https://github.com/ReactorKit/ReactorKit)
 * [RxFeedback](https://github.com/NoTests/RxFeedback.swift)
 * [Mobius.swift](https://github.com/spotify/mobius.swift)
+* [ArchitectureKit](https://github.com/RPallas92/PromisedArchitectureKit)
 
 ## License
 
