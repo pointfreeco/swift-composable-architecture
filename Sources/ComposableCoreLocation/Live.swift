@@ -22,63 +22,63 @@ extension LocationManager {
     manager.authorizationStatus = CLLocationManager.authorizationStatus
 
     manager.create = { id in
-      Effect.run { callback in
+      Effect.run { subscriber in
         let manager = CLLocationManager()
         var delegate = LocationManagerDelegate()
         delegate.didChangeAuthorization = {
-          callback.send(.didChangeAuthorization($0))
+          subscriber.send(.didChangeAuthorization($0))
         }
         #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
           delegate.didDetermineStateForRegion = { state, region in
-            callback.send(.didDetermineState(state, region: Region(rawValue: region)))
+            subscriber.send(.didDetermineState(state, region: Region(rawValue: region)))
           }
         #endif
         #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
           delegate.didEnterRegion = { region in
-            callback.send(.didEnterRegion(Region(rawValue: region)))
+            subscriber.send(.didEnterRegion(Region(rawValue: region)))
           }
         #endif
         #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
           delegate.didExitRegion = { region in
-            callback.send(.didExitRegion(Region(rawValue: region)))
+            subscriber.send(.didExitRegion(Region(rawValue: region)))
           }
         #endif
         #if os(iOS) || targetEnvironment(macCatalyst)
           delegate.didFailRangingForConstraintWithError = { constraint, error in
-            callback.send(.didFailRanging(beaconConstraint: constraint, error: Error(error)))
+            subscriber.send(.didFailRanging(beaconConstraint: constraint, error: Error(error)))
           }
         #endif
         delegate.didFailWithError = { error in
-          callback.send(.didFailWithError(Error(error)))
+          subscriber.send(.didFailWithError(Error(error)))
         }
         #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
           delegate.didFinishDeferredUpdatesWithError = { error in
-            callback.send(.didFinishDeferredUpdatesWithError(error.map(Error.init)))
+            subscriber.send(.didFinishDeferredUpdatesWithError(error.map(Error.init)))
           }
         #endif
         #if os(iOS) || targetEnvironment(macCatalyst)
           delegate.didPauseLocationUpdates = {
-            callback.send(.didPauseLocationUpdates)
+            subscriber.send(.didPauseLocationUpdates)
           }
         #endif
         #if os(iOS) || targetEnvironment(macCatalyst)
           delegate.didResumeLocationUpdates = {
-            callback.send(.didResumeLocationUpdates)
+            subscriber.send(.didResumeLocationUpdates)
           }
         #endif
         #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
           delegate.didStartMonitoringForRegion = { region in
-            callback.send(.didStartMonitoring(region: Region(rawValue: region)))
+            subscriber.send(.didStartMonitoring(region: Region(rawValue: region)))
           }
         #endif
         #if os(iOS) || os(watchOS) || targetEnvironment(macCatalyst)
           delegate.didUpdateHeading = { heading in
-            callback.send(.didUpdateHeading(newHeading: Heading(rawValue: heading)))
+            subscriber.send(.didUpdateHeading(newHeading: Heading(rawValue: heading)))
           }
         #endif
         #if os(macOS)
           delegate.didUpdateToLocationFromLocation = { newLocation, oldLocation in
-            callback.send(
+            subscriber.send(
               .didUpdateTo(
                 newLocation: Location(rawValue: newLocation),
                 oldLocation: Location(rawValue: oldLocation)
@@ -87,24 +87,25 @@ extension LocationManager {
           }
         #endif
         delegate.didUpdateLocations = {
-          callback.send(.didUpdateLocations($0.map(Location.init(rawValue:))))
+          subscriber.send(.didUpdateLocations($0.map(Location.init(rawValue:))))
         }
         #if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
           delegate.monitoringDidFailForRegionWithError = { region, error in
-            callback.send(
+            subscriber.send(
               .monitoringDidFail(region: region.map(Region.init(rawValue:)), error: Error(error)))
           }
         #endif
         #if os(iOS) || targetEnvironment(macCatalyst)
           delegate.didVisit = { visit in
-            callback.send(.didVisit(Visit(visit: visit)))
+            subscriber.send(.didVisit(Visit(visit: visit)))
           }
         #endif
         manager.delegate = delegate
 
         dependencies[id] = Dependencies(
-          locationManager: manager,
-          locationManagerDelegate: delegate
+          delegate: delegate,
+          manager: manager,
+          subscriber: subscriber
         )
 
         return AnyCancellable {
@@ -115,6 +116,7 @@ extension LocationManager {
 
     manager.destroy = { id in
       .fireAndForget {
+        dependencies[id]?.subscriber.send(completion: .finished)
         dependencies[id] = nil
       }
     }
@@ -122,24 +124,24 @@ extension LocationManager {
     manager.locationServicesEnabled = CLLocationManager.locationServicesEnabled
 
     manager.requestLocation = { id in
-      .fireAndForget { dependencies[id]?.locationManager.requestLocation() }
+      .fireAndForget { dependencies[id]?.manager.requestLocation() }
     }
 
     #if os(iOS) || os(macOS) || os(watchOS) || targetEnvironment(macCatalyst)
       manager.requestAlwaysAuthorization = { id in
-        .fireAndForget { dependencies[id]?.locationManager.requestAlwaysAuthorization() }
+        .fireAndForget { dependencies[id]?.manager.requestAlwaysAuthorization() }
       }
     #endif
 
     #if os(iOS) || os(tvOS) || os(watchOS) || targetEnvironment(macCatalyst)
       manager.requestWhenInUseAuthorization = { id in
-        .fireAndForget { dependencies[id]?.locationManager.requestWhenInUseAuthorization() }
+        .fireAndForget { dependencies[id]?.manager.requestWhenInUseAuthorization() }
       }
     #endif
 
     manager.set = { id, properties in
       .fireAndForget {
-        guard let manager = dependencies[id]?.locationManager else { return }
+        guard let manager = dependencies[id]?.manager else { return }
 
         #if os(iOS) || os(watchOS) || targetEnvironment(macCatalyst)
           if let activityType = properties.activityType {
@@ -179,24 +181,24 @@ extension LocationManager {
 
     #if os(iOS) || targetEnvironment(macCatalyst)
       manager.startMonitoringVisits = { id in
-        .fireAndForget { dependencies[id]?.locationManager.startMonitoringVisits() }
+        .fireAndForget { dependencies[id]?.manager.startMonitoringVisits() }
       }
     #endif
 
     #if os(iOS) || os(macOS) || os(watchOS) || targetEnvironment(macCatalyst)
       manager.startUpdatingLocation = { id in
-        .fireAndForget { dependencies[id]?.locationManager.startUpdatingLocation() }
+        .fireAndForget { dependencies[id]?.manager.startUpdatingLocation() }
       }
     #endif
 
     #if os(iOS) || targetEnvironment(macCatalyst)
       manager.stopMonitoringVisits = { id in
-        .fireAndForget { dependencies[id]?.locationManager.stopMonitoringVisits() }
+        .fireAndForget { dependencies[id]?.manager.stopMonitoringVisits() }
       }
     #endif
 
     manager.stopUpdatingLocation = { id in
-      .fireAndForget { dependencies[id]?.locationManager.stopUpdatingLocation() }
+      .fireAndForget { dependencies[id]?.manager.stopUpdatingLocation() }
     }
 
     return manager
@@ -204,8 +206,9 @@ extension LocationManager {
 }
 
 private struct Dependencies {
-  let locationManager: CLLocationManager
-  let locationManagerDelegate: LocationManagerDelegate
+  let delegate: LocationManagerDelegate
+  let manager: CLLocationManager
+  let subscriber: Effect<LocationManager.Action, Never>.Subscriber
 }
 
 private var dependencies: [AnyHashable: Dependencies] = [:]
