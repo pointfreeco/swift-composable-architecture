@@ -1,5 +1,6 @@
 import Combine
 import ComposableArchitecture
+import os.signpost
 import XCTest
 
 final class ReducerTests: XCTestCase {
@@ -95,7 +96,7 @@ final class ReducerTests: XCTestCase {
     XCTAssertTrue(mainEffectExecuted)
   }
 
-  func testPrint() {
+  func testDebug() {
     enum Action: Equatable { case incr, noop }
     struct State: Equatable { var count = 0 }
 
@@ -150,5 +151,27 @@ final class ReducerTests: XCTestCase {
         """#,
       ]
     )
+  }
+
+  func testDefaultSignpost() {
+    let reducer = Reducer<Int, Void, Void>.empty.signpost(log: .default)
+    var n = 0
+    let effect = reducer.run(&n, (), ())
+    let expectation = self.expectation(description: "effect")
+    effect
+      .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
+      .store(in: &self.cancellables)
+    self.wait(for: [expectation], timeout: 0.1)
+  }
+
+  func testDisabledSignpost() {
+    let reducer = Reducer<Int, Void, Void>.empty.signpost(log: .disabled)
+    var n = 0
+    let effect = reducer.run(&n, (), ())
+    let expectation = self.expectation(description: "effect")
+    effect
+      .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
+      .store(in: &self.cancellables)
+    self.wait(for: [expectation], timeout: 0.1)
   }
 }
