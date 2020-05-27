@@ -60,7 +60,6 @@ extension Publisher where Failure == Never {
     log: OSLog,
     actionOutput: String
   ) -> Publishers.HandleEvents<Self> {
-    guard log.signpostsEnabled else { return self.handleEvents() }
     let sid = OSSignpostID(log: log)
 
     return
