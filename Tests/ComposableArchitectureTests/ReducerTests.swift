@@ -1,7 +1,7 @@
 import Combine
 import ComposableArchitecture
-import os.signpost
 import XCTest
+import os.signpost
 
 final class ReducerTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
