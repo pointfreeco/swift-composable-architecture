@@ -65,7 +65,7 @@ struct AnimationsView: View {
               )
           }
           .frame(maxWidth: .infinity, maxHeight: .infinity)
-          .background(self.colorScheme == .dark ? Color.black : Color.white)
+          .background(self.colorScheme == .dark ? Color.black : .white)
           .simultaneousGesture(
             DragGesture(minimumDistance: 0).onChanged { gesture in
               withAnimation(.interactiveSpring(response: 0.25, dampingFraction: 0.1)) {
@@ -77,7 +77,7 @@ struct AnimationsView: View {
             "Big mode",
             isOn:
               viewStore
-              .binding(get: \.isCircleScaled, send: AnimationsAction.circleScaleToggleChanged)
+              .binding(get: { $0.isCircleScaled }, send: AnimationsAction.circleScaleToggleChanged)
               .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.1))
           )
           .padding()
