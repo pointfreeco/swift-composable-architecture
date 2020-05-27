@@ -35,7 +35,10 @@ extension Effect {
       else {
         throttleTimes[throttleId] = scheduler.now
         throttleValues[throttleId] = nil
-        return Just(value).setFailureType(to: Failure.self).eraseToAnyPublisher()
+        return Just(value)
+          .receive(on: scheduler)
+          .setFailureType(to: Failure.self)
+          .eraseToAnyPublisher()
       }
 
       let value = latest ? value : (throttleValues[throttleId] as! Output? ?? value)
