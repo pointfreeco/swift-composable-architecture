@@ -46,6 +46,20 @@ an action, and describes what <code>Effect</code>s should be executed later by t
 <div class="discussion">
     <p>Reducers have 3 generics:</p>
 
+<ul>
+<li>
+<p><code>State</code>: A type that holds the current state of the application</p>
+</li>
+<li>
+<p><code>Action</code>: A type that holds all possible actions that cause the state of the application to
+change.</p>
+</li>
+<li>
+<p><code>Environment</code>: A type that holds all dependencies needed in order to produce <code>Effect</code>s, such
+as API clients, analytics clients, random number generators, etc.</p>
+</li>
+</ul>
+
 <aside class="note">
     <p>The thread on which effects output is important. An effect's output is immediately sent back into the store, and <code>Store</code> is not thread safe. This means all effects must receive values on the same thread, <strong>and</strong> if the <code>Store</code> is being used to drive UI then all output must be on the main thread. You can use the <code>Publisher</code> method <code>receive(on:)</code> for make the effect output its values on the thread of your choice.</p>
 
@@ -55,7 +69,7 @@ an action, and describes what <code>Effect</code>s should be executed later by t
     <section id="initializers">
         <h2>Initializers</h2>
 
-        <div role="article" class="structure" id="reducer.init(_:)">
+        <div role="article" class="initializer" id="reducer.init(_:)">
     <h3>
         <code>init(_:​)</code>
     </h3>
@@ -115,13 +129,13 @@ no effect needs to be executed, a <code>.none</code> effect can be returned.</p>
     <section id="properties">
         <h2>Properties</h2>
 
-        <div role="article" class="structure" id="reducer.reducer">
+        <div role="article" class="variable" id="reducer.reducer">
     <h3>
         <code>reducer</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">let</span> <span class="variable">reducer</span>: (<span class="keyword">inout</span> <span class="type">State</span>, <span class="type">Action</span>, <span class="type">Environment</span>) -&gt; <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture/Effect"><span class="type">Effect</span></a>&lt;<span class="type">Action</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="reducer.empty">
+<div role="article" class="variable" id="reducer.empty">
     <h3>
         <code>empty</code>
     </h3>
@@ -131,7 +145,7 @@ no effect needs to be executed, a <code>.none</code> effect can be returned.</p>
 
 </div>
 </div>
-<div role="article" class="structure" id="reducer.optional">
+<div role="article" class="variable" id="reducer.optional">
     <h3>
         <code>optional</code>
     </h3>
@@ -161,13 +175,24 @@ into a reducer on a global domain that contains an optional local domain:</p>
     <span class="variable">environment</span>: { <span class="variable">ModalEnvironment</span>(<span class="variable">mainQueue</span>: <span class="variable">$0</span>.<span class="type">mainQueue</span>) }
   )
 </code></pre></body></html>
+<ul>
+<li>
+<p>See also: <code>IfLetStore</code>, a SwiftUI helper for transforming a store on optional state into a
+store on non-optional state.</p>
+</li>
+<li>
+<p>See also: <code>Store.ifLet</code>, a UIKit helper for doing imperative work with a store on optional
+state.</p>
+</li>
+</ul>
+
 </div>
 </div>
     </section>
     <section id="methods">
         <h2>Methods</h2>
 
-        <div role="article" class="structure" id="reducer.debug(_:environment:)">
+        <div role="article" class="function" id="reducer.debug(_:environment:)">
     <h3>
         <code>debug(_:​environment:​)</code>
     </h3>
@@ -215,7 +240,7 @@ into a reducer on a global domain that contains an optional local domain:</p>
   <p>A reducer that prints debug messages for all received actions.</p>
 
 </div>
-<div role="article" class="structure" id="reducer.debugactions(_:environment:)">
+<div role="article" class="function" id="reducer.debugactions(_:environment:)">
     <h3>
         <code>debug​Actions(_:​environment:​)</code>
     </h3>
@@ -263,7 +288,7 @@ into a reducer on a global domain that contains an optional local domain:</p>
   <p>A reducer that prints debug messages for all received actions.</p>
 
 </div>
-<div role="article" class="structure" id="reducer.debug(_:state:action:environment:)">
+<div role="article" class="function" id="reducer.debug(_:state:action:environment:)">
     <h3>
         <code>debug(_:​state:​action:​environment:​)</code>
     </h3>
@@ -327,7 +352,7 @@ into a reducer on a global domain that contains an optional local domain:</p>
   <p>A reducer that prints debug messages for all received actions.</p>
 
 </div>
-<div role="article" class="structure" id="reducer.signpost(_:log:)">
+<div role="article" class="function" id="reducer.signpost(_:log:)">
     <h3>
         <code>signpost(_:​log:​)</code>
     </h3>
@@ -387,7 +412,7 @@ effect never completed.</p>
   <p>A reducer that has been enhanced with instrumentation.</p>
 
 </div>
-<div role="article" class="structure" id="reducer.debug(prefix:environment:)">
+<div role="article" class="function" id="reducer.debug(prefix:environment:)">
     <h3>
         <code>debug(prefix:​environment:​)</code>
     </h3>
@@ -395,7 +420,7 @@ effect never completed.</p>
       <span class="variable">DebugEnvironment</span>()
     }) -&gt; <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture/Reducer"><span class="type">Reducer</span></a></code></pre></body></html>
 </div>
-<div role="article" class="structure" id="reducer.debugactions(prefix:environment:)">
+<div role="article" class="function" id="reducer.debugactions(prefix:environment:)">
     <h3>
         <code>debug​Actions(prefix:​environment:​)</code>
     </h3>
@@ -403,7 +428,7 @@ effect never completed.</p>
       <span class="variable">DebugEnvironment</span>()
     }) -&gt; <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture/Reducer"><span class="type">Reducer</span></a></code></pre></body></html>
 </div>
-<div role="article" class="structure" id="reducer.debug(prefix:state:action:environment:)">
+<div role="article" class="function" id="reducer.debug(prefix:state:action:environment:)">
     <h3>
         <code>debug(prefix:​state:​action:​environment:​)</code>
     </h3>
@@ -411,7 +436,7 @@ effect never completed.</p>
       <span class="variable">DebugEnvironment</span>()
     }) -&gt; <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture/Reducer"><span class="type">Reducer</span></a></code></pre></body></html>
 </div>
-<div role="article" class="structure" id="reducer.combine(_:)">
+<div role="article" class="function" id="reducer.combine(_:)">
     <h3>
         <code>combine(_:​)</code>
     </h3>
@@ -446,7 +471,7 @@ all of the effects.</p>
   <p>A single reducer.</p>
 
 </div>
-<div role="article" class="structure" id="reducer.combine(_:)">
+<div role="article" class="function" id="reducer.combine(_:)">
     <h3>
         <code>combine(_:​)</code>
     </h3>
@@ -481,7 +506,7 @@ concatenating all of the effects.</p>
   <p>A single reducer.</p>
 
 </div>
-<div role="article" class="structure" id="reducer.combined(with:)">
+<div role="article" class="function" id="reducer.combined(with:)">
     <h3>
         <code>combined(with:​)</code>
     </h3>
@@ -516,7 +541,7 @@ and concatenating their effects.</p>
   <p>A single reducer.</p>
 
 </div>
-<div role="article" class="structure" id="reducer.pullback(state:action:environment:)">
+<div role="article" class="function" id="reducer.pullback(state:action:environment:)">
     <h3>
         <code>pullback(state:​action:​environment:​)</code>
     </h3>
@@ -528,7 +553,19 @@ the method:</p>
 
 </div>
 <div class="discussion">
-    <p>This operation is important for breaking down large reducers into small ones. When used with
+    <ul>
+<li>
+<p>A writable key path that can get/set a piece of local state from the global state.</p>
+</li>
+<li>
+<p>A case path that can extract/embed a local action into a global action.</p>
+</li>
+<li>
+<p>A function that can transform the global environment into a local environment.</p>
+</li>
+</ul>
+
+<p>This operation is important for breaking down large reducers into small ones. When used with
 the <code>combine</code> operator you can define many reducers that work on small pieces of domain, and
 then <em>pull them back</em> and <em>combine</em> them into one big reducer that works on a large domain.</p>
 
@@ -593,7 +630,7 @@ then <em>pull them back</em> and <em>combine</em> them into one big reducer that
   <p>A reducer that works on <code>GlobalState</code>, <code>GlobalAction</code>, <code>GlobalEnvironment</code>.</p>
 
 </div>
-<div role="article" class="structure" id="reducer.foreach(state:action:environment:)">
+<div role="article" class="function" id="reducer.foreach(state:action:environment:)">
     <h3>
         <code>for​Each(state:​action:​environment:​)</code>
     </h3>
@@ -662,7 +699,7 @@ on a collection of elements.</p>
   <p>A reducer that works on <code>GlobalState</code>, <code>GlobalAction</code>, <code>GlobalEnvironment</code>.</p>
 
 </div>
-<div role="article" class="structure" id="reducer.foreach(state:action:environment:)">
+<div role="article" class="function" id="reducer.foreach(state:action:environment:)">
     <h3>
         <code>for​Each(state:​action:​environment:​)</code>
     </h3>
@@ -731,7 +768,7 @@ on an identified array of elements.</p>
   <p>A reducer that works on <code>GlobalState</code>, <code>GlobalAction</code>, <code>GlobalEnvironment</code>.</p>
 
 </div>
-<div role="article" class="structure" id="reducer.foreach(state:action:environment:)">
+<div role="article" class="function" id="reducer.foreach(state:action:environment:)">
     <h3>
         <code>for​Each(state:​action:​environment:​)</code>
     </h3>
@@ -782,7 +819,7 @@ on a dictionary of element values.</p>
   <p>A reducer that works on <code>GlobalState</code>, <code>GlobalAction</code>, <code>GlobalEnvironment</code>.</p>
 
 </div>
-<div role="article" class="structure" id="reducer.run(_:_:_:)">
+<div role="article" class="function" id="reducer.run(_:_:_:)">
     <h3>
         <code>run(_:​_:​_:​)</code>
     </h3>
@@ -832,7 +869,7 @@ on a dictionary of element values.</p>
   <p>An effect that can emit zero or more actions.</p>
 
 </div>
-<div role="article" class="structure" id="reducer.callasfunction(_:_:_:)">
+<div role="article" class="function" id="reducer.callasfunction(_:_:_:)">
     <h3>
         <code>call​AsFunction(_:​_:​_:​)</code>
     </h3>
@@ -847,7 +884,7 @@ on a dictionary of element values.</p>
 
     <footer>
         <p>
-    Generated on <time datetime="2020-05-27T11:24:20-0700">May 27, 2020</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-beta.2</span>.
+    Generated on <time datetime="2020-05-27T14:05:54-0700">May 27, 2020</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-beta.3</span>.
 </p>
     </footer>
 </body>

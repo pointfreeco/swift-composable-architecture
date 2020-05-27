@@ -81,14 +81,16 @@ test-workspace:
 format:
 	swift format --in-place --recursive .
 
+SWIFT_DOC = /Users/brandon/projects/github/swift-doc/.build/x86_64-apple-macosx/release/swift-doc
+
 docs:
 	rm -rf Documentation
-	swift-doc generate Sources/ComposableArchitecture/ \
+	$(SWIFT_DOC) generate Sources/ComposableArchitecture/ \
 		--module-name ComposableArchitecture \
 		--output Documentation/ComposableArchitecture \
 		--format=html \
 		--base-url $(BASE_URL)/ComposableArchitecture
-	swift-doc generate Sources/ComposableCoreLocation/ \
+	$(SWIFT_DOC) generate Sources/ComposableCoreLocation/ \
 		--module-name ComposableCoreLocation \
 		--output Documentation/ComposableCoreLocation \
 		--format=html \

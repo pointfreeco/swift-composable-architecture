@@ -52,7 +52,7 @@ the <code>scope</code> method to derive more focused stores that can be passed t
     <section id="initializers">
         <h2>Initializers</h2>
 
-        <div role="article" class="class" id="store.init(initialstate:reducer:environment:)">
+        <div role="article" class="initializer" id="store.init(initialstate:reducer:environment:)">
     <h3>
         <code>init(initial​State:​reducer:​environment:​)</code>
     </h3>
@@ -99,7 +99,7 @@ the <code>scope</code> method to derive more focused stores that can be passed t
   </tbody>
 </table>
 </div>
-<div role="article" class="class" id="store.init(initialstate:reducer:)">
+<div role="article" class="initializer" id="store.init(initialstate:reducer:)">
     <h3>
         <code>init(initial​State:​reducer:​)</code>
     </h3>
@@ -109,43 +109,43 @@ the <code>scope</code> method to derive more focused stores that can be passed t
     <section id="properties">
         <h2>Properties</h2>
 
-        <div role="article" class="class" id="store.state">
+        <div role="article" class="variable" id="store.state">
     <h3>
         <code>state</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">state</span>: <span class="type">State</span></code></pre></body></html>
 </div>
-<div role="article" class="class" id="store.effectcancellables">
+<div role="article" class="variable" id="store.effectcancellables">
     <h3>
         <code>effect​Cancellables</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">effectCancellables</span>: [<span class="type">UUID</span>: <span class="type">AnyCancellable</span>]</code></pre></body></html>
 </div>
-<div role="article" class="class" id="store.issending">
+<div role="article" class="variable" id="store.issending">
     <h3>
         <code>is​Sending</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">isSending</span></code></pre></body></html>
 </div>
-<div role="article" class="class" id="store.parentcancellable">
+<div role="article" class="variable" id="store.parentcancellable">
     <h3>
         <code>parent​Cancellable</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">parentCancellable</span>: <span class="type">AnyCancellable</span>?</code></pre></body></html>
 </div>
-<div role="article" class="class" id="store.reducer">
+<div role="article" class="variable" id="store.reducer">
     <h3>
         <code>reducer</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">let</span> <span class="variable">reducer</span>: (<span class="keyword">inout</span> <span class="type">State</span>, <span class="type">Action</span>) -&gt; <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture/Effect"><span class="type">Effect</span></a>&lt;<span class="type">Action</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="class" id="store.synchronousactionstosend">
+<div role="article" class="variable" id="store.synchronousactionstosend">
     <h3>
         <code>synchronous​Actions​ToSend</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">synchronousActionsToSend</span>: [<span class="type">Action</span>]</code></pre></body></html>
 </div>
-<div role="article" class="class" id="store.stateless">
+<div role="article" class="variable" id="store.stateless">
     <h3>
         <code>stateless</code>
     </h3>
@@ -155,7 +155,7 @@ the <code>scope</code> method to derive more focused stores that can be passed t
 
 </div>
 </div>
-<div role="article" class="class" id="store.actionless">
+<div role="article" class="variable" id="store.actionless">
     <h3>
         <code>actionless</code>
     </h3>
@@ -169,7 +169,7 @@ the <code>scope</code> method to derive more focused stores that can be passed t
     <section id="methods">
         <h2>Methods</h2>
 
-        <div role="article" class="class" id="store.scope(state:action:)">
+        <div role="article" class="function" id="store.scope(state:action:)">
     <h3>
         <code>scope(state:​action:​)</code>
     </h3>
@@ -231,7 +231,7 @@ example:</p>
   <p>A new store with its domain (state and action) transformed.</p>
 
 </div>
-<div role="article" class="class" id="store.scope(state:)">
+<div role="article" class="function" id="store.scope(state:)">
     <h3>
         <code>scope(state:​)</code>
     </h3>
@@ -265,7 +265,7 @@ example:</p>
   <p>A new store with its domain (state and action) transformed.</p>
 
 </div>
-<div role="article" class="class" id="store.scope(state:action:)">
+<div role="article" class="function" id="store.scope(state:action:)">
     <h3>
         <code>scope(state:​action:​)</code>
     </h3>
@@ -307,7 +307,7 @@ example:</p>
   <p>A publisher of stores with its domain (state and action) transformed.</p>
 
 </div>
-<div role="article" class="class" id="store.scope(state:)">
+<div role="article" class="function" id="store.scope(state:)">
     <h3>
         <code>scope(state:​)</code>
     </h3>
@@ -341,13 +341,13 @@ example:</p>
   <p>A publisher of stores with its domain (state and action) transformed.</p>
 
 </div>
-<div role="article" class="class" id="store.send(_:)">
+<div role="article" class="function" id="store.send(_:)">
     <h3>
         <code>send(_:​)</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">func</span> <span class="function">send</span>(<span class="keyword">_</span> <span class="variable">action</span>: <span class="type">Action</span>)</code></pre></body></html>
 </div>
-<div role="article" class="class" id="store.iflet(then:else:)">
+<div role="article" class="function" id="store.iflet(then:else:)">
     <h3>
         <code>if​Let(then:​else:​)</code>
     </h3>
@@ -421,7 +421,7 @@ whose domain has been scoped to just that feature:</p>
   <p>A cancellable associated with the underlying subscription.</p>
 
 </div>
-<div role="article" class="class" id="store.iflet(then:)">
+<div role="article" class="function" id="store.iflet(then:)">
     <h3>
         <code>if​Let(then:​)</code>
     </h3>
@@ -465,7 +465,7 @@ case.</p>
 
     <footer>
         <p>
-    Generated on <time datetime="2020-05-27T11:24:20-0700">May 27, 2020</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-beta.2</span>.
+    Generated on <time datetime="2020-05-27T14:05:54-0700">May 27, 2020</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-beta.3</span>.
 </p>
     </footer>
 </body>

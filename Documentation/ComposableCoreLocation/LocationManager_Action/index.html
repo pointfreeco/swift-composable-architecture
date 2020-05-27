@@ -101,91 +101,91 @@ effects and actions, making it easy to use with the Composable Architecture and 
     <section id="enumeration cases">
         <h2>Enumeration Cases</h2>
 
-        <div role="article" class="enumeration" id="locationmanager.action.didchangeauthorization">
+        <div role="article" class="case" id="locationmanager.action.didchangeauthorization">
     <h3>
         <code>did​Change​Authorization</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">case</span> <span class="variable">didChangeAuthorization</span>(: <span class="type">CLAuthorizationStatus</span>)</code></pre></body></html>
 </div>
-<div role="article" class="enumeration" id="locationmanager.action.diddeterminestate">
+<div role="article" class="case" id="locationmanager.action.diddeterminestate">
     <h3>
         <code>did​Determine​State</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">case</span> <span class="variable">didDetermineState</span>(: <span class="type">CLRegionState</span>, <span class="variable">region</span>: <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableCoreLocation/Region"><span class="type">Region</span></a>)</code></pre></body></html>
 </div>
-<div role="article" class="enumeration" id="locationmanager.action.didenterregion">
+<div role="article" class="case" id="locationmanager.action.didenterregion">
     <h3>
         <code>did​Enter​Region</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">case</span> <span class="variable">didEnterRegion</span>(: <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableCoreLocation/Region"><span class="type">Region</span></a>)</code></pre></body></html>
 </div>
-<div role="article" class="enumeration" id="locationmanager.action.didexitregion">
+<div role="article" class="case" id="locationmanager.action.didexitregion">
     <h3>
         <code>did​Exit​Region</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">case</span> <span class="variable">didExitRegion</span>(: <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableCoreLocation/Region"><span class="type">Region</span></a>)</code></pre></body></html>
 </div>
-<div role="article" class="enumeration" id="locationmanager.action.didfailranging">
+<div role="article" class="case" id="locationmanager.action.didfailranging">
     <h3>
         <code>did​Fail​Ranging</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">case</span> <span class="variable">didFailRanging</span>(<span class="variable">beaconConstraint</span>: <span class="type">CLBeaconIdentityConstraint</span>, <span class="variable">error</span>: <span class="type">Error</span>)</code></pre></body></html>
 </div>
-<div role="article" class="enumeration" id="locationmanager.action.didfailwitherror">
+<div role="article" class="case" id="locationmanager.action.didfailwitherror">
     <h3>
         <code>did​Fail​With​Error</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">case</span> <span class="variable">didFailWithError</span>(: <span class="type">Error</span>)</code></pre></body></html>
 </div>
-<div role="article" class="enumeration" id="locationmanager.action.didfinishdeferredupdateswitherror">
+<div role="article" class="case" id="locationmanager.action.didfinishdeferredupdateswitherror">
     <h3>
         <code>did​Finish​Deferred​Updates​With​Error</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">case</span> <span class="variable">didFinishDeferredUpdatesWithError</span>(: <span class="type">Error</span>?)</code></pre></body></html>
 </div>
-<div role="article" class="enumeration" id="locationmanager.action.didpauselocationupdates">
+<div role="article" class="case" id="locationmanager.action.didpauselocationupdates">
     <h3>
         <code>did​Pause​Location​Updates</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">case</span> <span class="variable">didPauseLocationUpdates</span></code></pre></body></html>
 </div>
-<div role="article" class="enumeration" id="locationmanager.action.didresumelocationupdates">
+<div role="article" class="case" id="locationmanager.action.didresumelocationupdates">
     <h3>
         <code>did​Resume​Location​Updates</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">case</span> <span class="variable">didResumeLocationUpdates</span></code></pre></body></html>
 </div>
-<div role="article" class="enumeration" id="locationmanager.action.didstartmonitoring">
+<div role="article" class="case" id="locationmanager.action.didstartmonitoring">
     <h3>
         <code>did​Start​Monitoring</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">case</span> <span class="variable">didStartMonitoring</span>(<span class="variable">region</span>: <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableCoreLocation/Region"><span class="type">Region</span></a>)</code></pre></body></html>
 </div>
-<div role="article" class="enumeration" id="locationmanager.action.didupdateheading">
+<div role="article" class="case" id="locationmanager.action.didupdateheading">
     <h3>
         <code>did​Update​Heading</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">case</span> <span class="variable">didUpdateHeading</span>(<span class="variable">newHeading</span>: <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableCoreLocation/Heading"><span class="type">Heading</span></a>)</code></pre></body></html>
 </div>
-<div role="article" class="enumeration" id="locationmanager.action.didupdatelocations">
+<div role="article" class="case" id="locationmanager.action.didupdatelocations">
     <h3>
         <code>did​Update​Locations</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">case</span> <span class="variable">didUpdateLocations</span>(: [<a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableCoreLocation/Location"><span class="type">Location</span></a>])</code></pre></body></html>
 </div>
-<div role="article" class="enumeration" id="locationmanager.action.didupdateto">
+<div role="article" class="case" id="locationmanager.action.didupdateto">
     <h3>
         <code>did​Update​To</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">case</span> <span class="variable">didUpdateTo</span>(<span class="variable">newLocation</span>: <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableCoreLocation/Location"><span class="type">Location</span></a>, <span class="variable">oldLocation</span>: <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableCoreLocation/Location"><span class="type">Location</span></a>)</code></pre></body></html>
 </div>
-<div role="article" class="enumeration" id="locationmanager.action.didvisit">
+<div role="article" class="case" id="locationmanager.action.didvisit">
     <h3>
         <code>did​Visit</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">case</span> <span class="variable">didVisit</span>(: <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableCoreLocation/Visit"><span class="type">Visit</span></a>)</code></pre></body></html>
 </div>
-<div role="article" class="enumeration" id="locationmanager.action.monitoringdidfail">
+<div role="article" class="case" id="locationmanager.action.monitoringdidfail">
     <h3>
         <code>monitoring​Did​Fail</code>
     </h3>
@@ -200,7 +200,7 @@ effects and actions, making it easy to use with the Composable Architecture and 
 
     <footer>
         <p>
-    Generated on <time datetime="2020-05-27T11:24:21-0700">May 27, 2020</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-beta.2</span>.
+    Generated on <time datetime="2020-05-27T14:05:56-0700">May 27, 2020</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-beta.3</span>.
 </p>
     </footer>
 </body>

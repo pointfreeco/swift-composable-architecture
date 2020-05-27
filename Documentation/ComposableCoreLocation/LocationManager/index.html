@@ -227,163 +227,163 @@ write these tests, and we can test deep, subtle properties of our application.</
     <section id="properties">
         <h2>Properties</h2>
 
-        <div role="article" class="structure" id="locationmanager.authorizationstatus">
+        <div role="article" class="variable" id="locationmanager.authorizationstatus">
     <h3>
         <code>authorization​Status</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">authorizationStatus</span>: () -&gt; <span class="type">CLAuthorizationStatus</span></code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.create">
+<div role="article" class="variable" id="locationmanager.create">
     <h3>
         <code>create</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">create</span>: (<span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Action</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.destroy">
+<div role="article" class="variable" id="locationmanager.destroy">
     <h3>
         <code>destroy</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">destroy</span>: (<span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.dismissheadingcalibrationdisplay">
+<div role="article" class="variable" id="locationmanager.dismissheadingcalibrationdisplay">
     <h3>
         <code>dismiss​Heading​Calibration​Display</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">dismissHeadingCalibrationDisplay</span>: (<span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.heading">
+<div role="article" class="variable" id="locationmanager.heading">
     <h3>
         <code>heading</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">heading</span>: (<span class="type">AnyHashable</span>) -&gt; <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableCoreLocation/Heading"><span class="type">Heading</span></a>?</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.headingavailable">
+<div role="article" class="variable" id="locationmanager.headingavailable">
     <h3>
         <code>heading​Available</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">headingAvailable</span>: () -&gt; <span class="type">Bool</span></code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.israngingavailable">
+<div role="article" class="variable" id="locationmanager.israngingavailable">
     <h3>
         <code>is​Ranging​Available</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">isRangingAvailable</span>: () -&gt; <span class="type">Bool</span></code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.location">
+<div role="article" class="variable" id="locationmanager.location">
     <h3>
         <code>location</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">location</span>: (<span class="type">AnyHashable</span>) -&gt; <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableCoreLocation/Location"><span class="type">Location</span></a></code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.locationservicesenabled">
+<div role="article" class="variable" id="locationmanager.locationservicesenabled">
     <h3>
         <code>location​Services​Enabled</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">locationServicesEnabled</span>: () -&gt; <span class="type">Bool</span></code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.maximumregionmonitoringdistance">
+<div role="article" class="variable" id="locationmanager.maximumregionmonitoringdistance">
     <h3>
         <code>maximum​Region​Monitoring​Distance</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">maximumRegionMonitoringDistance</span>: (<span class="type">AnyHashable</span>) -&gt; <span class="type">CLLocationDistance</span></code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.monitoredregions">
+<div role="article" class="variable" id="locationmanager.monitoredregions">
     <h3>
         <code>monitored​Regions</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">monitoredRegions</span>: (<span class="type">AnyHashable</span>) -&gt; <span class="type">Set</span>&lt;<a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableCoreLocation/Region"><span class="type">Region</span></a>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.requestalwaysauthorization">
+<div role="article" class="variable" id="locationmanager.requestalwaysauthorization">
     <h3>
         <code>request​Always​Authorization</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">requestAlwaysAuthorization</span>: (<span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.requestlocation">
+<div role="article" class="variable" id="locationmanager.requestlocation">
     <h3>
         <code>request​Location</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">requestLocation</span>: (<span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.requestwheninuseauthorization">
+<div role="article" class="variable" id="locationmanager.requestwheninuseauthorization">
     <h3>
         <code>request​When​InUse​Authorization</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">requestWhenInUseAuthorization</span>: (<span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.set">
+<div role="article" class="variable" id="locationmanager.set">
     <h3>
         <code>set</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">set</span>: (<span class="type">AnyHashable</span>, <span class="type">Properties</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.significantlocationchangemonitoringavailable">
+<div role="article" class="variable" id="locationmanager.significantlocationchangemonitoringavailable">
     <h3>
         <code>significant​Location​Change​Monitoring​Available</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">significantLocationChangeMonitoringAvailable</span>: () -&gt; <span class="type">Bool</span></code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.startmonitoringforregion">
+<div role="article" class="variable" id="locationmanager.startmonitoringforregion">
     <h3>
         <code>start​Monitoring​For​Region</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">startMonitoringForRegion</span>: (<span class="type">AnyHashable</span>, <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableCoreLocation/Region"><span class="type">Region</span></a>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.startmonitoringsignificantlocationchanges">
+<div role="article" class="variable" id="locationmanager.startmonitoringsignificantlocationchanges">
     <h3>
         <code>start​Monitoring​Significant​Location​Changes</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">startMonitoringSignificantLocationChanges</span>: (<span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.startmonitoringvisits">
+<div role="article" class="variable" id="locationmanager.startmonitoringvisits">
     <h3>
         <code>start​Monitoring​Visits</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">startMonitoringVisits</span>: (<span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.startupdatingheading">
+<div role="article" class="variable" id="locationmanager.startupdatingheading">
     <h3>
         <code>start​Updating​Heading</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">startUpdatingHeading</span>: (<span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.startupdatinglocation">
+<div role="article" class="variable" id="locationmanager.startupdatinglocation">
     <h3>
         <code>start​Updating​Location</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">startUpdatingLocation</span>: (<span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.stopmonitoringforregion">
+<div role="article" class="variable" id="locationmanager.stopmonitoringforregion">
     <h3>
         <code>stop​Monitoring​For​Region</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">stopMonitoringForRegion</span>: (<span class="type">AnyHashable</span>, <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableCoreLocation/Region"><span class="type">Region</span></a>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.stopmonitoringsignificantlocationchanges">
+<div role="article" class="variable" id="locationmanager.stopmonitoringsignificantlocationchanges">
     <h3>
         <code>stop​Monitoring​Significant​Location​Changes</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">stopMonitoringSignificantLocationChanges</span>: (<span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.stopmonitoringvisits">
+<div role="article" class="variable" id="locationmanager.stopmonitoringvisits">
     <h3>
         <code>stop​Monitoring​Visits</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">stopMonitoringVisits</span>: (<span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.stopupdatingheading">
+<div role="article" class="variable" id="locationmanager.stopupdatingheading">
     <h3>
         <code>stop​Updating​Heading</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">stopUpdatingHeading</span>: (<span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.stopupdatinglocation">
+<div role="article" class="variable" id="locationmanager.stopupdatinglocation">
     <h3>
         <code>stop​Updating​Location</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">stopUpdatingLocation</span>: (<span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.live">
+<div role="article" class="variable" id="locationmanager.live">
     <h3>
         <code>live</code>
     </h3>
@@ -409,7 +409,7 @@ its methods. You will typically use this when building for the simulator or devi
     <section id="methods">
         <h2>Methods</h2>
 
-        <div role="article" class="structure" id="locationmanager.create(id:)">
+        <div role="article" class="function" id="locationmanager.create(id:)">
     <h3>
         <code>create(id:​)</code>
     </h3>
@@ -443,7 +443,7 @@ its methods. You will typically use this when building for the simulator or devi
   <p>An effect of <code>LocationManager.Action</code>s.</p>
 
 </div>
-<div role="article" class="structure" id="locationmanager.destroy(id:)">
+<div role="article" class="function" id="locationmanager.destroy(id:)">
     <h3>
         <code>destroy(id:​)</code>
     </h3>
@@ -477,55 +477,55 @@ its methods. You will typically use this when building for the simulator or devi
   <p>A fire-and-forget effect.</p>
 
 </div>
-<div role="article" class="structure" id="locationmanager.dismissheadingcalibrationdisplay(id:)">
+<div role="article" class="function" id="locationmanager.dismissheadingcalibrationdisplay(id:)">
     <h3>
         <code>dismiss​Heading​Calibration​Display(id:​)</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">macOS</span>, <span class="variable">unavailable</span>) <span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">tvOS</span>, <span class="variable">unavailable</span>) <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">dismissHeadingCalibrationDisplay</span>(<span class="variable">id</span>: <span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.heading(id:)">
+<div role="article" class="function" id="locationmanager.heading(id:)">
     <h3>
         <code>heading(id:​)</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">macOS</span>, <span class="variable">unavailable</span>) <span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">tvOS</span>, <span class="variable">unavailable</span>) <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">heading</span>(<span class="variable">id</span>: <span class="type">AnyHashable</span>) -&gt; <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableCoreLocation/Heading"><span class="type">Heading</span></a>?</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.location(id:)">
+<div role="article" class="function" id="locationmanager.location(id:)">
     <h3>
         <code>location(id:​)</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">func</span> <span class="function">location</span>(<span class="variable">id</span>: <span class="type">AnyHashable</span>) -&gt; <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableCoreLocation/Location"><span class="type">Location</span></a></code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.maximumregionmonitoringdistance(id:)">
+<div role="article" class="function" id="locationmanager.maximumregionmonitoringdistance(id:)">
     <h3>
         <code>maximum​Region​Monitoring​Distance(id:​)</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">tvOS</span>, <span class="variable">unavailable</span>) <span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">watchOS</span>, <span class="variable">unavailable</span>) <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">maximumRegionMonitoringDistance</span>(<span class="variable">id</span>: <span class="type">AnyHashable</span>) -&gt; <span class="type">CLLocationDistance</span></code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.monitoredregions(id:)">
+<div role="article" class="function" id="locationmanager.monitoredregions(id:)">
     <h3>
         <code>monitored​Regions(id:​)</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">tvOS</span>, <span class="variable">unavailable</span>) <span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">watchOS</span>, <span class="variable">unavailable</span>) <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">monitoredRegions</span>(<span class="variable">id</span>: <span class="type">AnyHashable</span>) -&gt; <span class="type">Set</span>&lt;<a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableCoreLocation/Region"><span class="type">Region</span></a>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.requestalwaysauthorization(id:)">
+<div role="article" class="function" id="locationmanager.requestalwaysauthorization(id:)">
     <h3>
         <code>request​Always​Authorization(id:​)</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">tvOS</span>, <span class="variable">unavailable</span>) <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">requestAlwaysAuthorization</span>(<span class="variable">id</span>: <span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.requestlocation(id:)">
+<div role="article" class="function" id="locationmanager.requestlocation(id:)">
     <h3>
         <code>request​Location(id:​)</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">func</span> <span class="function">requestLocation</span>(<span class="variable">id</span>: <span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.requestwheninuseauthorization(id:)">
+<div role="article" class="function" id="locationmanager.requestwheninuseauthorization(id:)">
     <h3>
         <code>request​When​InUse​Authorization(id:​)</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">macOS</span>, <span class="variable">unavailable</span>) <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">requestWhenInUseAuthorization</span>(<span class="variable">id</span>: <span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.set(id:activitytype:allowsbackgroundlocationupdates:desiredaccuracy:distancefilter:headingfilter:headingorientation:pauseslocationupdatesautomatically:showsbackgroundlocationindicator:)">
+<div role="article" class="function" id="locationmanager.set(id:activitytype:allowsbackgroundlocationupdates:desiredaccuracy:distancefilter:headingfilter:headingorientation:pauseslocationupdatesautomatically:showsbackgroundlocationindicator:)">
     <h3>
         <code>set(id:​activity​Type:​allows​Background​Location​Updates:​desired​Accuracy:​distance​Filter:​heading​Filter:​heading​Orientation:​pauses​Location​Updates​Automatically:​shows​Background​Location​Indicator:​)</code>
     </h3>
@@ -535,7 +535,7 @@ its methods. You will typically use this when building for the simulator or devi
 
 </div>
 </div>
-<div role="article" class="structure" id="locationmanager.set(id:desiredaccuracy:distancefilter:)">
+<div role="article" class="function" id="locationmanager.set(id:desiredaccuracy:distancefilter:)">
     <h3>
         <code>set(id:​desired​Accuracy:​distance​Filter:​)</code>
     </h3>
@@ -545,7 +545,7 @@ its methods. You will typically use this when building for the simulator or devi
 
 </div>
 </div>
-<div role="article" class="structure" id="locationmanager.set(id:activitytype:allowsbackgroundlocationupdates:desiredaccuracy:distancefilter:headingfilter:headingorientation:)">
+<div role="article" class="function" id="locationmanager.set(id:activitytype:allowsbackgroundlocationupdates:desiredaccuracy:distancefilter:headingfilter:headingorientation:)">
     <h3>
         <code>set(id:​activity​Type:​allows​Background​Location​Updates:​desired​Accuracy:​distance​Filter:​heading​Filter:​heading​Orientation:​)</code>
     </h3>
@@ -555,67 +555,67 @@ its methods. You will typically use this when building for the simulator or devi
 
 </div>
 </div>
-<div role="article" class="structure" id="locationmanager.startmonitoringforregion(id:region:)">
+<div role="article" class="function" id="locationmanager.startmonitoringforregion(id:region:)">
     <h3>
         <code>start​Monitoring​For​Region(id:​region:​)</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">tvOS</span>, <span class="variable">unavailable</span>) <span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">watchOS</span>, <span class="variable">unavailable</span>) <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">startMonitoringForRegion</span>(<span class="variable">id</span>: <span class="type">AnyHashable</span>, <span class="variable">region</span>: <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableCoreLocation/Region"><span class="type">Region</span></a>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.startmonitoringsignificantlocationchanges(id:)">
+<div role="article" class="function" id="locationmanager.startmonitoringsignificantlocationchanges(id:)">
     <h3>
         <code>start​Monitoring​Significant​Location​Changes(id:​)</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">tvOS</span>, <span class="variable">unavailable</span>) <span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">watchOS</span>, <span class="variable">unavailable</span>) <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">startMonitoringSignificantLocationChanges</span>(<span class="variable">id</span>: <span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.startmonitoringvisits(id:)">
+<div role="article" class="function" id="locationmanager.startmonitoringvisits(id:)">
     <h3>
         <code>start​Monitoring​Visits(id:​)</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">macOS</span>, <span class="variable">unavailable</span>) <span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">tvOS</span>, <span class="variable">unavailable</span>) <span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">watchOS</span>, <span class="variable">unavailable</span>) <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">startMonitoringVisits</span>(<span class="variable">id</span>: <span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.startupdatingheading(id:)">
+<div role="article" class="function" id="locationmanager.startupdatingheading(id:)">
     <h3>
         <code>start​Updating​Heading(id:​)</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">macOS</span>, <span class="variable">unavailable</span>) <span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">tvOS</span>, <span class="variable">unavailable</span>) <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">startUpdatingHeading</span>(<span class="variable">id</span>: <span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.startupdatinglocation(id:)">
+<div role="article" class="function" id="locationmanager.startupdatinglocation(id:)">
     <h3>
         <code>start​Updating​Location(id:​)</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">tvOS</span>, <span class="variable">unavailable</span>) <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">startUpdatingLocation</span>(<span class="variable">id</span>: <span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.stopmonitoringforregion(id:region:)">
+<div role="article" class="function" id="locationmanager.stopmonitoringforregion(id:region:)">
     <h3>
         <code>stop​Monitoring​For​Region(id:​region:​)</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">tvOS</span>, <span class="variable">unavailable</span>) <span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">watchOS</span>, <span class="variable">unavailable</span>) <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">stopMonitoringForRegion</span>(<span class="variable">id</span>: <span class="type">AnyHashable</span>, <span class="variable">region</span>: <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableCoreLocation/Region"><span class="type">Region</span></a>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.stopmonitoringsignificantlocationchanges(id:)">
+<div role="article" class="function" id="locationmanager.stopmonitoringsignificantlocationchanges(id:)">
     <h3>
         <code>stop​Monitoring​Significant​Location​Changes(id:​)</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">tvOS</span>, <span class="variable">unavailable</span>) <span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">watchOS</span>, <span class="variable">unavailable</span>) <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">stopMonitoringSignificantLocationChanges</span>(<span class="variable">id</span>: <span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.stopmonitoringvisits(id:)">
+<div role="article" class="function" id="locationmanager.stopmonitoringvisits(id:)">
     <h3>
         <code>stop​Monitoring​Visits(id:​)</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">macOS</span>, <span class="variable">unavailable</span>) <span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">tvOS</span>, <span class="variable">unavailable</span>) <span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">watchOS</span>, <span class="variable">unavailable</span>) <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">stopMonitoringVisits</span>(<span class="variable">id</span>: <span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.stopupdatingheading(id:)">
+<div role="article" class="function" id="locationmanager.stopupdatingheading(id:)">
     <h3>
         <code>stop​Updating​Heading(id:​)</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">macOS</span>, <span class="variable">unavailable</span>) <span class="attribute">@</span><span class="attribute">available</span>(<span class="variable">tvOS</span>, <span class="variable">unavailable</span>) <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">stopUpdatingHeading</span>(<span class="variable">id</span>: <span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.stopupdatinglocation(id:)">
+<div role="article" class="function" id="locationmanager.stopupdatinglocation(id:)">
     <h3>
         <code>stop​Updating​Location(id:​)</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">func</span> <span class="function">stopUpdatingLocation</span>(<span class="variable">id</span>: <span class="type">AnyHashable</span>) -&gt; <span class="type">Effect</span>&lt;<span class="type">Never</span>, <span class="type">Never</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.mock(authorizationstatus:create:destroy:dismissheadingcalibrationdisplay:heading:headingavailable:israngingavailable:location:locationservicesenabled:maximumregionmonitoringdistance:monitoredregions:requestalwaysauthorization:requestlocation:requestwheninuseauthorization:set:significantlocationchangemonitoringavailable:startmonitoringsignificantlocationchanges:startmonitoringforregion:startmonitoringvisits:startupdatinglocation:stopmonitoringsignificantlocationchanges:stopmonitoringforregion:stopmonitoringvisits:startupdatingheading:stopupdatingheading:stopupdatinglocation:)">
+<div role="article" class="function" id="locationmanager.mock(authorizationstatus:create:destroy:dismissheadingcalibrationdisplay:heading:headingavailable:israngingavailable:location:locationservicesenabled:maximumregionmonitoringdistance:monitoredregions:requestalwaysauthorization:requestlocation:requestwheninuseauthorization:set:significantlocationchangemonitoringavailable:startmonitoringsignificantlocationchanges:startmonitoringforregion:startmonitoringvisits:startupdatinglocation:stopmonitoringsignificantlocationchanges:stopmonitoringforregion:stopmonitoringvisits:startupdatingheading:stopupdatingheading:stopupdatinglocation:)">
     <h3>
         <code>mock(authorization​Status:​create:​destroy:​dismiss​Heading​Calibration​Display:​heading:​heading​Available:​is​Ranging​Available:​location:​location​Services​Enabled:​maximum​Region​Monitoring​Distance:​monitored​Regions:​request​Always​Authorization:​request​Location:​request​When​InUse​Authorization:​set:​significant​Location​Change​Monitoring​Available:​start​Monitoring​Significant​Location​Changes:​start​Monitoring​For​Region:​start​Monitoring​Visits:​start​Updating​Location:​stop​Monitoring​Significant​Location​Changes:​stop​Monitoring​For​Region:​stop​Monitoring​Visits:​start​Updating​Heading:​stop​Updating​Heading:​stop​Updating​Location:​)</code>
     </h3>
@@ -701,7 +701,7 @@ with a mock location we can do something like this:</p>
 </code></pre></body></html>
 </div>
 </div>
-<div role="article" class="structure" id="locationmanager.mock(authorizationstatus:create:destroy:dismissheadingcalibrationdisplay:heading:headingavailable:location:locationservicesenabled:requestalwaysauthorization:requestlocation:requestwheninuseauthorization:set:startupdatingheading:startupdatinglocation:stopupdatingheading:stopupdatinglocation:)">
+<div role="article" class="function" id="locationmanager.mock(authorizationstatus:create:destroy:dismissheadingcalibrationdisplay:heading:headingavailable:location:locationservicesenabled:requestalwaysauthorization:requestlocation:requestwheninuseauthorization:set:startupdatingheading:startupdatinglocation:stopupdatingheading:stopupdatinglocation:)">
     <h3>
         <code>mock(authorization​Status:​create:​destroy:​dismiss​Heading​Calibration​Display:​heading:​heading​Available:​location:​location​Services​Enabled:​request​Always​Authorization:​request​Location:​request​When​InUse​Authorization:​set:​start​Updating​Heading:​start​Updating​Location:​stop​Updating​Heading:​stop​Updating​Location:​)</code>
     </h3>
@@ -729,7 +729,7 @@ with a mock location we can do something like this:</p>
         <span class="variable">_unimplemented</span>(<span class="string literal">"</span><span class="string literal">stopUpdatingLocation</span><span class="string literal">"</span>)
       }) -&gt; <span class="keyword">Self</span></code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.mock(authorizationstatus:create:destroy:location:locationservicesenabled:requestlocation:requestwheninuseauthorization:set:stopupdatinglocation:)">
+<div role="article" class="function" id="locationmanager.mock(authorizationstatus:create:destroy:location:locationservicesenabled:requestlocation:requestwheninuseauthorization:set:stopupdatinglocation:)">
     <h3>
         <code>mock(authorization​Status:​create:​destroy:​location:​location​Services​Enabled:​request​Location:​request​When​InUse​Authorization:​set:​stop​Updating​Location:​)</code>
     </h3>
@@ -747,7 +747,7 @@ with a mock location we can do something like this:</p>
         <span class="variable">_unimplemented</span>(<span class="string literal">"</span><span class="string literal">stopUpdatingLocation</span><span class="string literal">"</span>)
       }) -&gt; <span class="keyword">Self</span></code></pre></body></html>
 </div>
-<div role="article" class="structure" id="locationmanager.mock(authorizationstatus:create:destroy:headingavailable:location:locationservicesenabled:maximumregionmonitoringdistance:monitoredregions:requestalwaysauthorization:requestlocation:set:significantlocationchangemonitoringavailable:startmonitoringforregion:startmonitoringsignificantlocationchanges:startupdatinglocation:stopmonitoringforregion:stopmonitoringsignificantlocationchanges:stopupdatinglocation:)">
+<div role="article" class="function" id="locationmanager.mock(authorizationstatus:create:destroy:headingavailable:location:locationservicesenabled:maximumregionmonitoringdistance:monitoredregions:requestalwaysauthorization:requestlocation:set:significantlocationchangemonitoringavailable:startmonitoringforregion:startmonitoringsignificantlocationchanges:startupdatinglocation:stopmonitoringforregion:stopmonitoringsignificantlocationchanges:stopupdatinglocation:)">
     <h3>
         <code>mock(authorization​Status:​create:​destroy:​heading​Available:​location:​location​Services​Enabled:​maximum​Region​Monitoring​Distance:​monitored​Regions:​request​Always​Authorization:​request​Location:​set:​significant​Location​Change​Monitoring​Available:​start​Monitoring​For​Region:​start​Monitoring​Significant​Location​Changes:​start​Updating​Location:​stop​Monitoring​For​Region:​stop​Monitoring​Significant​Location​Changes:​stop​Updating​Location:​)</code>
     </h3>
@@ -790,7 +790,7 @@ with a mock location we can do something like this:</p>
 
     <footer>
         <p>
-    Generated on <time datetime="2020-05-27T11:24:21-0700">May 27, 2020</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-beta.2</span>.
+    Generated on <time datetime="2020-05-27T14:05:56-0700">May 27, 2020</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-beta.3</span>.
 </p>
     </footer>
 </body>

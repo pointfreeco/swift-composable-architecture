@@ -47,6 +47,22 @@ store state.</p>
     <p>Due to a bug in SwiftUI, there are times that use of this view can interfere with some core
 views provided by SwiftUI. The known problematic views are:</p>
 
+<ul>
+<li>
+<p>If a <code>GeometryReader</code> is used inside a <code>WithViewStore</code> it will not receive state updates
+correctly. To work around you either need to reorder the views so that <code>GeometryReader</code>
+wraps the <code>WithViewStore</code>, or, if that is not possible, then you must hold onto an explicit
+<code>@ObservedObject var viewStore: ViewStore&lt;State, Action&gt;</code> in your view in lieu of using
+this helper (see <a href="https://gist.github.com/mbrandonw/cc5da3d487bcf7c4f21c27019a440d18">here</a>).</p>
+</li>
+<li>
+<p>If you create a <code>Stepper</code> via the <code>Stepper.init(onIncrement:onDecrement:label:)</code> initializer
+inside a <code>WithViewStore</code> it will behave erratically. To work around you should use the
+initializer that takes a binding (see
+<a href="https://gist.github.com/mbrandonw/dee2ceac2c316a1619cfdf1dc7945f66">here</a>).</p>
+</li>
+</ul>
+
 </div>
 <section id="relationships">
     <h2 hidden>Relationships</h2>
@@ -77,7 +93,7 @@ views provided by SwiftUI. The known problematic views are:</p>
 <text text-anchor="middle" x="207" y="-14.3" font-family="Menlo" font-size="14.00">View</text>
 </g>
 <!-- WithViewStore&#45;&gt;View -->
-<g id="edge2" class="edge conformsTo">
+<g id="edge1" class="edge conformsTo">
 <title>WithViewStore&#45;&gt;View</title>
 <path fill="none" stroke="black" d="M377.25,-71.97C345.4,-62.06 305.08,-49.51 271.67,-39.12"/>
 <polygon fill="black" stroke="black" points="272.59,-35.74 262,-36.11 270.51,-42.42 272.59,-35.74"/>
@@ -89,7 +105,7 @@ views provided by SwiftUI. The known problematic views are:</p>
 <text text-anchor="middle" x="657" y="-14.3" font-family="Menlo" font-size="14.00">DynamicViewContent</text>
 </g>
 <!-- WithViewStore&#45;&gt;DynamicViewContent -->
-<g id="edge1" class="edge conformsTo">
+<g id="edge2" class="edge conformsTo">
 <title>WithViewStore&#45;&gt;DynamicViewContent</title>
 <path fill="none" stroke="black" d="M486.75,-71.97C518.6,-62.06 558.92,-49.51 592.33,-39.12"/>
 <polygon fill="black" stroke="black" points="593.49,-42.42 602,-36.11 591.41,-35.74 593.49,-42.42"/>
@@ -109,7 +125,7 @@ views provided by SwiftUI. The known problematic views are:</p>
     <section id="initializers">
         <h2>Initializers</h2>
 
-        <div role="article" class="structure" id="withviewstore.init(_:removeduplicates:content:)">
+        <div role="article" class="initializer" id="withviewstore.init(_:removeduplicates:content:)">
     <h3>
         <code>init(_:​remove​Duplicates:​content:​)</code>
     </h3>
@@ -161,25 +177,25 @@ compute views from store state.</p>
     <section id="properties">
         <h2>Properties</h2>
 
-        <div role="article" class="structure" id="withviewstore.content">
+        <div role="article" class="variable" id="withviewstore.content">
     <h3>
         <code>content</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">let</span> <span class="variable">content</span>: (<a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture/ViewStore"><span class="type">ViewStore</span></a>&lt;<span class="type">State</span>, <span class="type">Action</span>&gt;) -&gt; <span class="type">Content</span></code></pre></body></html>
 </div>
-<div role="article" class="structure" id="withviewstore.prefix">
+<div role="article" class="variable" id="withviewstore.prefix">
     <h3>
         <code>prefix</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">prefix</span>: <span class="type">String</span>?</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="withviewstore.viewstore">
+<div role="article" class="variable" id="withviewstore.viewstore">
     <h3>
         <code>view​Store</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">viewStore</span>: <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture/ViewStore"><span class="type">ViewStore</span></a>&lt;<span class="type">State</span>, <span class="type">Action</span>&gt;</code></pre></body></html>
 </div>
-<div role="article" class="structure" id="withviewstore.body">
+<div role="article" class="variable" id="withviewstore.body">
     <h3>
         <code>body</code>
     </h3>
@@ -189,13 +205,13 @@ compute views from store state.</p>
     <section id="methods">
         <h2>Methods</h2>
 
-        <div role="article" class="structure" id="withviewstore.debug(prefix:)">
+        <div role="article" class="function" id="withviewstore.debug(prefix:)">
     <h3>
         <code>debug(prefix:​)</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="attribute">@</span><span class="attribute">available</span>(*, <span class="variable">deprecated</span>, <span class="variable">renamed</span>: <span class="string literal">"debug(_:)"</span>) <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">debug</span>(<span class="variable">prefix</span>: <span class="type">String</span>) -&gt; <span class="keyword">Self</span></code></pre></body></html>
 </div>
-<div role="article" class="structure" id="withviewstore.debug(_:)">
+<div role="article" class="function" id="withviewstore.debug(_:)">
     <h3>
         <code>debug(_:​)</code>
     </h3>
@@ -238,7 +254,7 @@ compute views from store state.</p>
 
     <footer>
         <p>
-    Generated on <time datetime="2020-05-27T11:24:20-0700">May 27, 2020</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-beta.2</span>.
+    Generated on <time datetime="2020-05-27T14:05:55-0700">May 27, 2020</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-beta.3</span>.
 </p>
     </footer>
 </body>
