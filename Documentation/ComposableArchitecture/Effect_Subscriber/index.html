@@ -37,7 +37,7 @@
     <code class="name">Effect.​Subscriber</code>
 </h1>
 
-<html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">struct</span> <span class="type">Subscriber</span>&lt;<span class="variable">Input</span>, <span class="variable">Failure</span>: <span class="type">Error</span>&gt;</code></pre></body></html>
+<html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">struct</span> <span class="type">Subscriber</span></code></pre></body></html>
 <section id="relationships">
     <h2 hidden>Relationships</h2>
         
@@ -57,7 +57,7 @@ saving/loading from disk, creating timers, interacting with dependencies, and mo
     <h3>
         <code>init(send:​complete:​)</code>
     </h3>
-    <html><body><pre class="highlight"><code><span class="keyword">init</span>(<span class="variable">send</span>: <span class="attribute">@</span><span class="attribute">escaping</span> (<span class="type">Input</span>) -&gt; <span class="type">Void</span>, <span class="variable">complete</span>: <span class="attribute">@</span><span class="attribute">escaping</span> (<span class="type">Subscribers</span>.<span class="type">Completion</span>&lt;<span class="type">Failure</span>&gt;) -&gt; <span class="type">Void</span>)</code></pre></body></html>
+    <html><body><pre class="highlight"><code><span class="keyword">init</span>(<span class="variable">send</span>: <span class="attribute">@</span><span class="attribute">escaping</span> (<span class="type">Output</span>) -&gt; <span class="type">Void</span>, <span class="variable">complete</span>: <span class="attribute">@</span><span class="attribute">escaping</span> (<span class="type">Subscribers</span>.<span class="type">Completion</span>&lt;<span class="type">Failure</span>&gt;) -&gt; <span class="type">Void</span>)</code></pre></body></html>
 </div>
     </section>
     <section id="properties">
@@ -67,7 +67,7 @@ saving/loading from disk, creating timers, interacting with dependencies, and mo
     <h3>
         <code>_send</code>
     </h3>
-    <html><body><pre class="highlight"><code><span class="keyword">let</span> <span class="variable">_send</span>: (<span class="type">Input</span>) -&gt; <span class="type">Void</span></code></pre></body></html>
+    <html><body><pre class="highlight"><code><span class="keyword">let</span> <span class="variable">_send</span>: (<span class="type">Output</span>) -&gt; <span class="type">Void</span></code></pre></body></html>
 </div>
 <div role="article" class="structure" id="effect.subscriber._complete">
     <h3>
@@ -83,7 +83,7 @@ saving/loading from disk, creating timers, interacting with dependencies, and mo
     <h3>
         <code>send(_:​)</code>
     </h3>
-    <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">func</span> <span class="function">send</span>(<span class="keyword">_</span> <span class="variable">input</span>: <span class="type">Input</span>)</code></pre></body></html>
+    <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">func</span> <span class="function">send</span>(<span class="keyword">_</span> <span class="variable">value</span>: <span class="type">Output</span>)</code></pre></body></html>
 </div>
 <div role="article" class="structure" id="effect.subscriber.send(completion:)">
     <h3>
@@ -100,7 +100,7 @@ saving/loading from disk, creating timers, interacting with dependencies, and mo
 
     <footer>
         <p>
-    Generated on <time datetime="2020-05-27T09:38:57-0700">May 27, 2020</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-beta.2</span>.
+    Generated on <time datetime="2020-05-27T11:24:20-0700">May 27, 2020</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-beta.2</span>.
 </p>
     </footer>
 </body>

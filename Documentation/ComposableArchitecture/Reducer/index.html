@@ -26,7 +26,7 @@
     <nav>
         <div class="wrapper">
             <h2>On This Page</h2>
-            <ol><li><a href="#initializers">Initializers</a><ul><li class="initializer"><a href="#reducer.init(_:)">init(_:​)</a></li></ul></li><li><a href="#properties">Properties</a><ul><li class="property"><a href="#reducer.reducer">reducer</a></li><li class="property"><a href="#reducer.empty">empty</a></li><li class="property"><a href="#reducer.optional">optional</a></li></ul></li><li><a href="#methods">Methods</a><ul><li class="method"><a href="#reducer.debug(_:environment:)">debug(_:​environment:​)</a></li><li class="method"><a href="#reducer.debugactions(_:environment:)">debug​Actions(_:​environment:​)</a></li><li class="method"><a href="#reducer.debug(_:state:action:environment:)">debug(_:​state:​action:​environment:​)</a></li><li class="method"><a href="#reducer.debug(prefix:environment:)">debug(prefix:​environment:​)</a></li><li class="method"><a href="#reducer.debugactions(prefix:environment:)">debug​Actions(prefix:​environment:​)</a></li><li class="method"><a href="#reducer.debug(prefix:state:action:environment:)">debug(prefix:​state:​action:​environment:​)</a></li><li class="method"><a href="#reducer.combine(_:)">combine(_:​)</a></li><li class="method"><a href="#reducer.combine(_:)">combine(_:​)</a></li><li class="method"><a href="#reducer.combined(with:)">combined(with:​)</a></li><li class="method"><a href="#reducer.pullback(state:action:environment:)">pullback(state:​action:​environment:​)</a></li><li class="method"><a href="#reducer.foreach(state:action:environment:)">for​Each(state:​action:​environment:​)</a></li><li class="method"><a href="#reducer.foreach(state:action:environment:)">for​Each(state:​action:​environment:​)</a></li><li class="method"><a href="#reducer.foreach(state:action:environment:)">for​Each(state:​action:​environment:​)</a></li><li class="method"><a href="#reducer.run(_:_:_:)">run(_:​_:​_:​)</a></li><li class="method"><a href="#reducer.callasfunction(_:_:_:)">call​AsFunction(_:​_:​_:​)</a></li></ul></li></ol>
+            <ol><li><a href="#initializers">Initializers</a><ul><li class="initializer"><a href="#reducer.init(_:)">init(_:​)</a></li></ul></li><li><a href="#properties">Properties</a><ul><li class="property"><a href="#reducer.reducer">reducer</a></li><li class="property"><a href="#reducer.empty">empty</a></li><li class="property"><a href="#reducer.optional">optional</a></li></ul></li><li><a href="#methods">Methods</a><ul><li class="method"><a href="#reducer.debug(_:environment:)">debug(_:​environment:​)</a></li><li class="method"><a href="#reducer.debugactions(_:environment:)">debug​Actions(_:​environment:​)</a></li><li class="method"><a href="#reducer.debug(_:state:action:environment:)">debug(_:​state:​action:​environment:​)</a></li><li class="method"><a href="#reducer.signpost(_:log:)">signpost(_:​log:​)</a></li><li class="method"><a href="#reducer.debug(prefix:environment:)">debug(prefix:​environment:​)</a></li><li class="method"><a href="#reducer.debugactions(prefix:environment:)">debug​Actions(prefix:​environment:​)</a></li><li class="method"><a href="#reducer.debug(prefix:state:action:environment:)">debug(prefix:​state:​action:​environment:​)</a></li><li class="method"><a href="#reducer.combine(_:)">combine(_:​)</a></li><li class="method"><a href="#reducer.combine(_:)">combine(_:​)</a></li><li class="method"><a href="#reducer.combined(with:)">combined(with:​)</a></li><li class="method"><a href="#reducer.pullback(state:action:environment:)">pullback(state:​action:​environment:​)</a></li><li class="method"><a href="#reducer.foreach(state:action:environment:)">for​Each(state:​action:​environment:​)</a></li><li class="method"><a href="#reducer.foreach(state:action:environment:)">for​Each(state:​action:​environment:​)</a></li><li class="method"><a href="#reducer.foreach(state:action:environment:)">for​Each(state:​action:​environment:​)</a></li><li class="method"><a href="#reducer.run(_:_:_:)">run(_:​_:​_:​)</a></li><li class="method"><a href="#reducer.callasfunction(_:_:_:)">call​AsFunction(_:​_:​_:​)</a></li></ul></li></ol>
         </div>
     </nav>
 
@@ -325,6 +325,66 @@ into a reducer on a global domain that contains an optional local domain:</p>
 </table>
   <h4>Returns</h4>
   <p>A reducer that prints debug messages for all received actions.</p>
+
+</div>
+<div role="article" class="structure" id="reducer.signpost(_:log:)">
+    <h3>
+        <code>signpost(_:​log:​)</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">func</span> <span class="function">signpost</span>(<span class="keyword">_</span> <span class="variable">prefix</span>: <span class="type">String</span> = <span class="string literal">"</span><span class="string literal"/><span class="string literal">"</span>, <span class="variable">log</span>: <span class="type">OSLog</span> = <span class="variable">OSLog</span>(
+      <span class="variable">subsystem</span>: <span class="string literal">"</span><span class="string literal">co.pointfree.composable-architecture</span><span class="string literal">"</span>,
+      <span class="variable">category</span>: <span class="string literal">"</span><span class="string literal">Reducer Instrumentation</span><span class="string literal">"</span>
+    )) -&gt; <span class="keyword">Self</span></code></pre></body></html>
+<div class="summary" role="doc-abstract">
+    <p>Instruments the reducer with
+<a href="https://developer.apple.com/documentation/os/logging/recording_performance_data">signposts</a>.
+Each invocation of the reducer will be measured by an interval, and the lifecycle of its
+effects will be measured with interval and event signposts.</p>
+
+</div>
+<div class="discussion">
+    <p>To use, build your app for Instruments (⌘I), create a blank instrument, and then use the &quot;+&quot;
+icon at top right to add the signpost instrument. Start recording your app (red button at top
+left) and then you should see timing information for every action sent to the store and every
+effect executed.</p>
+
+<p>Effect instrumentation can be particularly useful for inspecting the lifecycle of long-living
+effects. For example, if you start an effect (e.g. a location manager) in <code>onAppear</code> and
+forget to tear down the effect in <code>onDisappear</code>, it will clearly show in Instruments that the
+effect never completed.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>prefix</th>
+    <td><code class="type">String</code></td></td>
+    <td><ul>
+<li>prefix: A string to print at the beginning of the formatted message for the signpost.</li>
+</ul>
+</td>
+</tr>
+<tr>
+    <th>log</th>
+    <td><code class="type">OSLog</code></td></td>
+    <td><ul>
+<li>log: An <code>OSLog</code> to use for signposts.</li>
+</ul>
+</td>
+</tr>
+  </tbody>
+</table>
+  <h4>Returns</h4>
+  <p>A reducer that has been enhanced with instrumentation.</p>
 
 </div>
 <div role="article" class="structure" id="reducer.debug(prefix:environment:)">
@@ -787,7 +847,7 @@ on a dictionary of element values.</p>
 
     <footer>
         <p>
-    Generated on <time datetime="2020-05-27T09:38:57-0700">May 27, 2020</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-beta.2</span>.
+    Generated on <time datetime="2020-05-27T11:24:20-0700">May 27, 2020</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-beta.2</span>.
 </p>
     </footer>
 </body>

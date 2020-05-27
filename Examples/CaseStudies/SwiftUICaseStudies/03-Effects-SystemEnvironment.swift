@@ -181,6 +181,12 @@ struct SystemEnvironment<Environment> {
     set { self.environment[keyPath: keyPath] = newValue }
   }
 
+  subscript<Dependency>(
+    dynamicMember keyPath: KeyPath<Environment, Dependency>
+  ) -> SystemEnvironment<Dependency> {
+    self.map { $0[keyPath: keyPath] }
+  }
+
   /// Creates a live system environment with the wrapped environment provided.
   ///
   /// - Parameter environment: An environment to be wrapped in the system environment.
