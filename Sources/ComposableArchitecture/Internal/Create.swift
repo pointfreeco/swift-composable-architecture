@@ -104,7 +104,7 @@ private class DemandBuffer<S: Subscriber> {
 }
 
 extension AnyPublisher {
-  init(_ callback: @escaping (Effect<Output, Failure>.Subscriber) -> Cancellable) {
+  private init(_ callback: @escaping (Effect<Output, Failure>.Subscriber) -> Cancellable) {
     self = Publishers.Create(callback: callback).eraseToAnyPublisher()
   }
 
@@ -116,7 +116,7 @@ extension AnyPublisher {
 }
 
 extension Publishers {
-  class Create<Output, Failure: Swift.Error>: Publisher {
+  fileprivate class Create<Output, Failure: Swift.Error>: Publisher {
     private let callback: (Effect<Output, Failure>.Subscriber) -> Cancellable
 
     init(callback: @escaping (Effect<Output, Failure>.Subscriber) -> Cancellable) {
