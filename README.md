@@ -13,6 +13,7 @@ The Composable Architecture is a library for building applications in a consiste
 * [Basic usage](#basic-usage)
 * [Supplemental libraries](#supplementary-libraries)
 * [FAQ](#faq)
+* [Requirements](#requirements)
 * [Installation](#installation)
 * [Help](#help)
 * [Credits and thanks](#credits-and-thanks)
@@ -404,6 +405,10 @@ If you are interested in contributing a wrapper library for a framework that we 
 
     You would probably still want something like a `UIScheduler` so that you don't needlessly perform thread hops.
   </details>
+  
+## Requirements
+
+The Composable Architecture depends on the Combine framework, so it requires minimum deployment targets of iOS 13, macOS 10.15, Mac Catalyst 13, tvOS 13, and watchOS 6. If your application must support older OSes, there is [a ReactiveSwift fork](https://github.com/trading-point/swift-composable-architecture) that you can adopt!
 
 ## Installation
 
