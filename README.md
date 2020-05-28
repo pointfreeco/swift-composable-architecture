@@ -408,7 +408,7 @@ If you are interested in contributing a wrapper library for a framework that we 
   
 ## Requirements
 
-ComposableArchitecture depends on Combine so it requires minimum deployment targets of iOS 13, macOS 10.15, Mac Catalyst 13, tvOS 13, and watchOS 6. If your application must support older OSes, consider adopting [the ReactiveSwift fork](https://github.com/trading-point/swift-composable-architecture).
+The Composable Architecture depends on the Combine framework, so it requires minimum deployment targets of iOS 13, macOS 10.15, Mac Catalyst 13, tvOS 13, and watchOS 6. If your application must support older OSes, there is [a ReactiveSwift fork](https://github.com/trading-point/swift-composable-architecture) that you can adopt!
 
 ## Installation
 
