@@ -52,7 +52,7 @@ let nestedReducer = Reducer<
     return .none
 
   case let .node(index, action):
-    return self(&state.children[index], action, environment)
+    return self.run(&state.children[index], action, environment)
 
   case let .remove(indexSet):
     state.children.remove(atOffsets: indexSet)
@@ -69,18 +69,18 @@ struct NestedView: View {
   let store: Store<NestedState, NestedAction>
 
   var body: some View {
-    WithViewStore(self.store.scope(state: \.description)) { viewStore in
+    WithViewStore(self.store.scope(state: { $0.description })) { viewStore in
       Form {
         Section(header: Text(template: readMe, .caption)) {
 
           ForEachStore(
-            self.store.scope(state: \.children, action: NestedAction.node(index:action:))
+            self.store.scope(state: { $0.children }, action: NestedAction.node(index:action:))
           ) { childStore in
             WithViewStore(childStore) { childViewStore in
               HStack {
                 TextField(
                   "Untitled",
-                  text: childViewStore.binding(get: \.description, send: NestedAction.rename)
+                  text: childViewStore.binding(get: { $0.description }, send: NestedAction.rename)
                 )
 
                 Spacer()
@@ -104,61 +104,61 @@ struct NestedView: View {
   }
 }
 
-#if DEBUG
-  extension NestedState {
-    static let mock = NestedState(
-      children: [
-        NestedState(
-          children: [
-            NestedState(
-              children: [],
-              id: UUID(),
-              description: ""
-            ),
-          ],
-          id: UUID(),
-          description: "Bar"
-        ),
-        NestedState(
-          children: [
-            NestedState(
-              children: [],
-              id: UUID(),
-              description: "Fizz"
-            ),
-            NestedState(
-              children: [],
-              id: UUID(),
-              description: "Buzz"
-            ),
-          ],
-          id: UUID(),
-          description: "Baz"
-        ),
-        NestedState(
-          children: [],
-          id: UUID(),
-          description: ""
-        ),
-      ],
-      id: UUID(),
-      description: "Foo"
-    )
-  }
-#endif
+extension NestedState {
+  static let mock = NestedState(
+    children: [
+      NestedState(
+        children: [
+          NestedState(
+            children: [],
+            id: UUID(),
+            description: ""
+          ),
+        ],
+        id: UUID(),
+        description: "Bar"
+      ),
+      NestedState(
+        children: [
+          NestedState(
+            children: [],
+            id: UUID(),
+            description: "Fizz"
+          ),
+          NestedState(
+            children: [],
+            id: UUID(),
+            description: "Buzz"
+          ),
+        ],
+        id: UUID(),
+        description: "Baz"
+      ),
+      NestedState(
+        children: [],
+        id: UUID(),
+        description: ""
+      ),
+    ],
+    id: UUID(),
+    description: "Foo"
+  )
+}
 
-struct NestedView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      NestedView(
-        store: Store(
-          initialState: .mock,
-          reducer: nestedReducer,
-          environment: NestedEnvironment(
-            uuid: UUID.init
+#if DEBUG
+  struct NestedView_Previews: PreviewProvider {
+    static var previews: some View {
+      NavigationView {
+        NestedView(
+          store: Store(
+            initialState: .mock,
+            reducer: nestedReducer,
+            environment: NestedEnvironment(
+              uuid: UUID.init
+            )
           )
         )
-      )
+      }
     }
   }
-}
+#endif

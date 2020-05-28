@@ -1,8 +1,9 @@
 name: Format
 
 on:
-  pull_request:
-    branch: 'master'
+  push:
+    branches:
+      - master
 
 jobs:
   swift_format:
@@ -14,7 +15,7 @@ jobs:
         run: brew install swift-format
       - name: Format
         run: make format
-      - uses: stefanzweifel/git-auto-commit-action@v4.1.6
+      - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Run swift-format
           branch: 'master'

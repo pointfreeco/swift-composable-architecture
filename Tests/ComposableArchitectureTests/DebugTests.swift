@@ -1,5 +1,4 @@
 import Combine
-import ComposableArchitectureTestSupport
 import XCTest
 
 @testable import ComposableArchitecture
@@ -369,6 +368,22 @@ final class DebugTests: XCTestCase {
             ),
           ]
         )
+      )
+      """
+    )
+  }
+
+  func testRecursiveOutput() {
+    class Foo {
+      var foo: Foo?
+    }
+    let foo = Foo()
+    foo.foo = foo
+    XCTAssertEqual(
+      debugOutput(foo),
+      """
+      Foo(
+        foo: Foo(↩︎)
       )
       """
     )

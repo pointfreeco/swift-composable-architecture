@@ -77,12 +77,12 @@ struct LazySheetView: View {
       }
       .sheet(
         isPresented: viewStore.binding(
-          get: \.isSheetPresented,
+          get: { $0.isSheetPresented },
           send: LazySheetAction.setSheet(isPresented:)
         )
       ) {
         IfLetStore(
-          self.store.scope(state: \.optionalCounter, action: LazySheetAction.optionalCounter),
+          self.store.scope(state: { $0.optionalCounter }, action: LazySheetAction.optionalCounter),
           then: CounterView.init(store:)
         )
       }

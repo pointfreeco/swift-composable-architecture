@@ -130,7 +130,7 @@ extension Reducer {
         case .downloadClient(.success(.response)):
           state.mode = .downloaded
           state.alert = nil
-          return .cancel(id: ThrottleId(id: state.id))
+          return .none
 
         case let .downloadClient(.success(.updateProgress(progress))):
           state.mode = .downloading(progress: progress)
@@ -139,17 +139,13 @@ extension Reducer {
         case .downloadClient(.failure):
           state.mode = .notDownloaded
           state.alert = nil
-          return .cancel(id: ThrottleId(id: state.id))
+          return .none
         }
       }
       .pullback(state: state, action: action, environment: environment),
       self
     )
   }
-}
-
-private struct ThrottleId<ID>: Hashable where ID: Hashable {
-  var id: ID
 }
 
 private let deleteAlert = DownloadAlert(
@@ -181,10 +177,6 @@ let nevermindButton = DownloadAlert.Button(
 struct DownloadComponent<ID: Equatable>: View {
   let store: Store<DownloadComponentState<ID>, DownloadComponentAction>
 
-  init(store: Store<DownloadComponentState<ID>, DownloadComponentAction>) {
-    self.store = store
-  }
-
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Button(action: { viewStore.send(.buttonTapped) }) {
@@ -214,7 +206,7 @@ struct DownloadComponent<ID: Equatable>: View {
         }
       }
       .alert(
-        item: viewStore.binding(get: \.alert, send: .alert(.dismiss))
+        item: viewStore.binding(get: { $0.alert }, send: .alert(.dismiss))
       ) { alert in
         Alert(
           title: Text(alert.title),

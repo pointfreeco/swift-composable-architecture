@@ -49,22 +49,26 @@ let eagerListNavigationReducer = Reducer<
 
     case .setNavigation(selection: .none):
       if let selection = state.selection, let count = selection.value?.count {
-        state.rows[selection.id]?.count = count
-        state.selection = nil
+        state.rows[id: selection.id]?.count = count
       }
+      state.selection = nil
       return .cancel(id: CancelId())
 
     case .setNavigationSelectionDelayCompleted:
       guard let id = state.selection?.id else { return .none }
-      state.selection?.value = CounterState(count: state.rows[id]?.count ?? 0)
+      state.selection?.value = CounterState(count: state.rows[id: id]?.count ?? 0)
       return .none
     }
   },
-  counterReducer.optional.optional.pullback(
-    state: \.selection[ifLet: \.value],
-    action: /EagerListNavigationAction.counter,
-    environment: { _ in CounterEnvironment() }
-  )
+  counterReducer
+    .optional
+    .pullback(state: \Identified.value, action: .self, environment: { $0 })
+    .optional
+    .pullback(
+      state: \EagerListNavigationState.selection,
+      action: /EagerListNavigationAction.counter,
+      environment: { _ in CounterEnvironment() }
+    )
 )
 
 struct EagerListNavigationView: View {
@@ -78,13 +82,13 @@ struct EagerListNavigationView: View {
             NavigationLink(
               destination: IfLetStore(
                 self.store.scope(
-                  state: \.selection?.value, action: EagerListNavigationAction.counter),
+                  state: { $0.selection?.value }, action: EagerListNavigationAction.counter),
                 then: CounterView.init(store:),
                 else: ActivityIndicator()
               ),
               tag: row.id,
               selection: viewStore.binding(
-                get: \.selection?.id,
+                get: { $0.selection?.id },
                 send: EagerListNavigationAction.setNavigation(selection:)
               )
             ) {

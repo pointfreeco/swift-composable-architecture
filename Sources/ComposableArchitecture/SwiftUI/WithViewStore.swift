@@ -39,14 +39,16 @@ public struct WithViewStore<State, Action, Content>: View where Content: View {
   }
 
   public var body: some View {
-    if let prefix = self.prefix {
-      print(
-        """
-        \(prefix.isEmpty ? "" : "\(prefix): ")\
-        Evaluating WithViewStore<\(State.self), \(Action.self), ...>.body
-        """
-      )
-    }
+    #if DEBUG
+      if let prefix = self.prefix {
+        print(
+          """
+          \(prefix.isEmpty ? "" : "\(prefix): ")\
+          Evaluating WithViewStore<\(State.self), \(Action.self), ...>.body
+          """
+        )
+      }
+    #endif
     return self.content(self.viewStore)
   }
 
@@ -54,7 +56,7 @@ public struct WithViewStore<State, Action, Content>: View where Content: View {
   ///
   /// - Parameter prefix: A string with which to prefix all debug messages.
   /// - Returns: A structure that prints debug messages for all computations.
-  public func debug(prefix: String = "") -> Self {
+  public func debug(_ prefix: String = "") -> Self {
     var view = self
     view.prefix = prefix
     return view
@@ -62,6 +64,21 @@ public struct WithViewStore<State, Action, Content>: View where Content: View {
 }
 
 extension WithViewStore where State: Equatable {
+  /// Initializes a structure that transforms a store into an observable view store in order to
+  /// compute views from equatable store state.
+  ///
+  /// - Parameters:
+  ///   - store: A store of equatable state.
+  ///   - content: A function that can generate content from a view store.
+  public init(
+    _ store: Store<State, Action>,
+    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.init(store, removeDuplicates: ==, content: content)
+  }
+}
+
+extension WithViewStore where State == Void {
   /// Initializes a structure that transforms a store into an observable view store in order to
   /// compute views from equatable store state.
   ///

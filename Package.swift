@@ -13,32 +13,39 @@ let package = Package(
   products: [
     .library(
       name: "ComposableArchitecture",
-      type: .dynamic,
       targets: ["ComposableArchitecture"]
     ),
     .library(
-      name: "ComposableArchitectureTestSupport",
-      type: .dynamic,
-      targets: ["ComposableArchitectureTestSupport"]
+      name: "ComposableCoreLocation",
+      targets: ["ComposableCoreLocation"]
     ),
+  ],
+  dependencies: [
+    .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.1.1")
   ],
   targets: [
     .target(
       name: "ComposableArchitecture",
       dependencies: [
+        "CasePaths"
       ]
     ),
     .testTarget(
       name: "ComposableArchitectureTests",
       dependencies: [
         "ComposableArchitecture",
-        "ComposableArchitectureTestSupport",
       ]
     ),
     .target(
-      name: "ComposableArchitectureTestSupport",
+      name: "ComposableCoreLocation",
       dependencies: [
-        "ComposableArchitecture",
+        "ComposableArchitecture"
+      ]
+    ),
+    .testTarget(
+      name: "ComposableCoreLocationTests",
+      dependencies: [
+        "ComposableCoreLocation",
       ]
     ),
   ]

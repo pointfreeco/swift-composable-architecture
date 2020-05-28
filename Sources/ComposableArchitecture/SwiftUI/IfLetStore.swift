@@ -1,8 +1,9 @@
 import SwiftUI
 
 /// A view that safely unwraps a store of optional state in order to show one of two views.
-/// When the underlying state is non-`nil`, the `then` closure will be performed with a `Store`
-/// that holds onto non-optional state, and otherwise the `else` closure will be performed.
+///
+/// When the underlying state is non-`nil`, the `then` closure will be performed with a `Store` that
+/// holds onto non-optional state, and otherwise the `else` closure will be performed.
 ///
 /// This is useful for deciding between two views to show depending on an optional piece of state:
 ///
@@ -21,7 +22,7 @@ import SwiftUI
 ///        ),
 ///        isActive: viewStore.binding(
 ///          get: \.isGameActive,
-///          send: { $0 ? .startButtonTapped : .detailDisissed }
+///          send: { $0 ? .startButtonTapped : .detailDismissed }
 ///        )
 ///      ) {
 ///        Text("Start!")
@@ -55,17 +56,12 @@ where IfContent: View, ElseContent: View {
     WithViewStore(
       self.store,
       removeDuplicates: { ($0 != nil) == ($1 != nil) }
-    ) { viewStore in
-      Group<_ConditionalContent<IfContent, ElseContent>> {
-        if let state = viewStore.state {
-          return ViewBuilder.buildEither(
-            first: self.ifContent(
-              self.store.scope(state: { $0 ?? state })
-            )
-          )
-        } else {
-          return ViewBuilder.buildEither(second: self.elseContent())
-        }
+    ) { viewStore -> _ConditionalContent<IfContent, ElseContent> in
+      if let state = viewStore.state {
+        return
+          ViewBuilder.buildEither(first: self.ifContent(self.store.scope(state: { $0 ?? state })))
+      } else {
+        return ViewBuilder.buildEither(second: self.elseContent())
       }
     }
   }

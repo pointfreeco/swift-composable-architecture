@@ -105,7 +105,7 @@ where Data: Collection, ID: Hashable, Content: View {
         ForEach(viewStore.state, id: viewStore.id) { element in
           content(
             store.scope(
-              state: { $0[element[keyPath: viewStore.id]] ?? element },
+              state: { $0[id: element[keyPath: viewStore.id]] ?? element },
               action: { (element[keyPath: viewStore.id], $0) }
             )
           )

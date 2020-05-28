@@ -67,11 +67,11 @@ struct LazyNavigationView: View {
           NavigationLink(
             destination: IfLetStore(
               self.store.scope(
-                state: \.optionalCounter, action: LazyNavigationAction.optionalCounter),
+                state: { $0.optionalCounter }, action: LazyNavigationAction.optionalCounter),
               then: CounterView.init(store:)
             ),
             isActive: viewStore.binding(
-              get: \.isNavigationActive,
+              get: { $0.isNavigationActive },
               send: LazyNavigationAction.setNavigation(isActive:)
             )
           ) {

@@ -34,6 +34,8 @@ let lazyListNavigationReducer = Reducer<
   LazyListNavigationState, LazyListNavigationAction, LazyListNavigationEnvironment
 >.combine(
   Reducer { state, action, environment in
+    struct CancelId: Hashable {}
+
     switch action {
     case .counter:
       return .none
@@ -43,8 +45,6 @@ let lazyListNavigationReducer = Reducer<
         state.rows[index].isActivityIndicatorVisible = state.rows[index].id == id
       }
 
-      struct CancelId: Hashable {}
-
       return Effect(value: .setNavigationSelectionDelayCompleted(id))
         .delay(for: 1, scheduler: environment.mainQueue)
         .eraseToEffect()
@@ -52,25 +52,28 @@ let lazyListNavigationReducer = Reducer<
 
     case .setNavigation(selection: .none):
       if let selection = state.selection {
-        state.rows[selection.id]?.count = selection.count
-        state.selection = nil
+        state.rows[id: selection.id]?.count = selection.count
       }
-      return .none
+      state.selection = nil
+      return .cancel(id: CancelId())
 
     case let .setNavigationSelectionDelayCompleted(id):
-      state.rows[id]?.isActivityIndicatorVisible = false
+      state.rows[id: id]?.isActivityIndicatorVisible = false
       state.selection = Identified(
-        CounterState(count: state.rows[id]?.count ?? 0),
+        CounterState(count: state.rows[id: id]?.count ?? 0),
         id: id
       )
       return .none
     }
   },
-  counterReducer.optional.pullback(
-    state: \.selection[ifLet: \.value],
-    action: /LazyListNavigationAction.counter,
-    environment: { _ in CounterEnvironment() }
-  )
+  counterReducer
+    .pullback(state: \Identified.value, action: .self, environment: { $0 })
+    .optional
+    .pullback(
+      state: \LazyListNavigationState.selection,
+      action: /LazyListNavigationAction.counter,
+      environment: { _ in CounterEnvironment() }
+    )
 )
 
 struct LazyListNavigationView: View {
@@ -84,12 +87,12 @@ struct LazyListNavigationView: View {
             NavigationLink(
               destination: IfLetStore(
                 self.store.scope(
-                  state: \.selection?.value, action: LazyListNavigationAction.counter),
+                  state: { $0.selection?.value }, action: LazyListNavigationAction.counter),
                 then: CounterView.init(store:)
               ),
               tag: row.id,
               selection: viewStore.binding(
-                get: \.selection?.id,
+                get: { $0.selection?.id },
                 send: LazyListNavigationAction.setNavigation(selection:)
               )
             ) {

@@ -1,7 +1,6 @@
 import AuthenticationClient
 import Combine
 import ComposableArchitecture
-import ComposableArchitectureTestSupport
 import LoginCore
 import TicTacToeCommon
 import XCTest
@@ -24,7 +23,7 @@ class LoginSwiftUITests: XCTestCase {
         mainQueue: .init(self.scheduler)
       )
     )
-    .scope(state: \.view, action: LoginAction.view)
+    .scope(state: { $0.view }, action: LoginAction.view)
 
     store.assert(
       .send(.emailChanged("blob@pointfree.co")) {
@@ -62,7 +61,7 @@ class LoginSwiftUITests: XCTestCase {
         mainQueue: .init(self.scheduler)
       )
     )
-    .scope(state: \.view, action: LoginAction.view)
+    .scope(state: { $0.view }, action: LoginAction.view)
 
     store.assert(
       .send(.emailChanged("2fa@pointfree.co")) {
@@ -102,7 +101,7 @@ class LoginSwiftUITests: XCTestCase {
         mainQueue: .init(self.scheduler)
       )
     )
-    .scope(state: \.view, action: LoginAction.view)
+    .scope(state: { $0.view }, action: LoginAction.view)
 
     store.assert(
       .send(.emailChanged("blob")) {

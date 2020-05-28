@@ -32,7 +32,7 @@ public struct LoginView: View {
   }
 
   public var body: some View {
-    WithViewStore(self.store.scope(state: \.view, action: LoginAction.view)) { viewStore in
+    WithViewStore(self.store.scope(state: { $0.view }, action: LoginAction.view)) { viewStore in
       VStack {
         Form {
           Section(
@@ -48,7 +48,7 @@ public struct LoginView: View {
           Section(header: Text("Email")) {
             TextField(
               "blob@pointfree.co",
-              text: viewStore.binding(get: \.email, send: ViewAction.emailChanged)
+              text: viewStore.binding(get: { $0.email }, send: ViewAction.emailChanged)
             )
             .autocapitalization(.none)
             .keyboardType(.emailAddress)
@@ -57,17 +57,17 @@ public struct LoginView: View {
           Section(header: Text("Password")) {
             SecureField(
               "••••••••",
-              text: viewStore.binding(get: \.password, send: ViewAction.passwordChanged)
+              text: viewStore.binding(get: { $0.password }, send: ViewAction.passwordChanged)
             )
           }
           Section {
             NavigationLink(
               destination: IfLetStore(
-                self.store.scope(state: \.twoFactor, action: LoginAction.twoFactor),
+                self.store.scope(state: { $0.twoFactor }, action: LoginAction.twoFactor),
                 then: TwoFactorView.init(store:)
               ),
               isActive: viewStore.binding(
-                get: \.isTwoFactorActive,
+                get: { $0.isTwoFactorActive },
                 send: { $0 ? .loginButtonTapped : .twoFactorDismissed }
               )
             ) {
@@ -86,7 +86,7 @@ public struct LoginView: View {
       // NB: This is necessary to clear the bar items from the game.
       .navigationBarItems(trailing: EmptyView())
       .alert(
-        item: viewStore.binding(get: \.alertData, send: .alertDismissed)
+        item: viewStore.binding(get: { $0.alertData }, send: .alertDismissed)
       ) { alertData in
         Alert(title: Text(alertData.title))
       }

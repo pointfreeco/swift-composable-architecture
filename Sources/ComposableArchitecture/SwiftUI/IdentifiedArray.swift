@@ -47,7 +47,7 @@ where ID: Hashable {
   /// A raw array of the underlying elements.
   public var elements: [Element] { Array(self) }
 
-  // TODO: Support multiple elements with the same identifier but different data
+  // TODO: Support multiple elements with the same identifier but different data.
   private var dictionary: [ID: Element]
 
   /// Initializes an identified array with a sequence of elements and a key
@@ -84,22 +84,51 @@ where ID: Hashable {
   }
 
   public subscript(position: Int) -> Element {
-    get {
-      self.dictionary[self.ids[position]]!
-    }
-    _modify {
-      yield &self.dictionary[self.ids[position]]!
-    }
+    // NB: `_read` crashes Xcode Preview compilation.
+    get { self.dictionary[self.ids[position]]! }
+    _modify { yield &self.dictionary[self.ids[position]]! }
   }
 
-  public subscript(id: ID) -> Element? {
-    get {
-      self.dictionary[id]
+  #if DEBUG
+    /// Direct access to an element by its identifier.
+    ///
+    /// - Parameter id: The identifier of element to access. Must be a valid identifier for an
+    ///   element of the array and will _not_ insert elements that are not already in the array, or
+    ///   remove elements when passed `nil`. Use `append` or `insert(_:at:)` to insert elements. Use
+    ///   `remove(id:)` to remove an element by its identifier.
+    /// - Returns: The element.
+    public subscript(id id: ID) -> Element? {
+      get { self.dictionary[id] }
+      set {
+        if newValue != nil && self.dictionary[id] == nil {
+          fatalError(
+            """
+            Can't update element with identifier \(id) because no such element exists in the array.
+
+            If you are trying to insert an element into the array, use the "append" or "insert" \
+            methods.
+            """
+          )
+        }
+        if newValue == nil {
+          fatalError(
+            """
+            Can't update element with identifier \(id) with nil.
+
+            If you are trying to remove an element from the array, use the "remove(id:) method."
+            """
+          )
+        }
+        self.dictionary[id] = newValue
+      }
     }
-    _modify {
-      yield &self.dictionary[id]
+  #else
+    public subscript(id id: ID) -> Element? {
+      // NB: `_read` crashes Xcode Preview compilation.
+      get { self.dictionary[id] }
+      _modify { yield &self.dictionary[id] }
     }
-  }
+  #endif
 
   public mutating func insert(_ newElement: Element, at i: Int) {
     let id = newElement[keyPath: self.id]
@@ -115,13 +144,22 @@ where ID: Hashable {
     }
   }
 
+  /// Removes and returns the element with the specified identifier.
+  ///
+  /// - Parameter id: The identifier of the element to remove.
+  /// - Returns: The removed element.
+  @discardableResult
+  public mutating func remove(id: ID) -> Element {
+    let element = self.dictionary[id]
+    assert(element != nil, "Unexpectedly found nil while removing an identified element.")
+    self.dictionary[id] = nil
+    self.ids.removeAll(where: { $0 == id })
+    return element!
+  }
+
+  @discardableResult
   public mutating func remove(at position: Int) -> Element {
-    let id = self.ids.remove(at: position)
-    let element = self.dictionary[id]!
-    if !self.ids.contains(id) {
-      self.dictionary[id] = nil
-    }
-    return element
+    self.remove(id: self.ids.remove(at: position))
   }
 
   public mutating func removeAll(where shouldBeRemoved: (Element) throws -> Bool) rethrows {
@@ -138,13 +176,19 @@ where ID: Hashable {
   }
 
   public mutating func remove(atOffsets offsets: IndexSet) {
-    for offset in offsets {
+    for offset in offsets.reversed() {
       _ = self.remove(at: offset)
     }
   }
 
   public mutating func move(fromOffsets source: IndexSet, toOffset destination: Int) {
     self.ids.move(fromOffsets: source, toOffset: destination)
+  }
+
+  public mutating func sort(by areInIncreasingOrder: (Element, Element) throws -> Bool) rethrows {
+    try self.ids.sort {
+      try areInIncreasingOrder(self.dictionary[$0]!, self.dictionary[$1]!)
+    }
   }
 }
 
@@ -182,6 +226,12 @@ extension IdentifiedArray: Equatable where Element: Equatable {}
 
 extension IdentifiedArray: Hashable where Element: Hashable {}
 
+extension IdentifiedArray where Element: Comparable {
+  public mutating func sort() {
+    sort(by: <)
+  }
+}
+
 extension IdentifiedArray: ExpressibleByArrayLiteral where Element: Identifiable, ID == Element.ID {
   public init(arrayLiteral elements: Element...) {
     self.init(elements)
@@ -198,6 +248,21 @@ extension IdentifiedArray: RangeReplaceableCollection
 where Element: Identifiable, ID == Element.ID {
   public init() {
     self.init([], id: \.id)
+  }
+
+  public mutating func replaceSubrange<C, R>(_ subrange: R, with newElements: C)
+  where C: Collection, R: RangeExpression, Element == C.Element, Index == R.Bound {
+    let replacingIds = self.ids[subrange]
+    let newIds = newElements.map { $0.id }
+    ids.replaceSubrange(subrange, with: newIds)
+
+    for element in newElements {
+      self.dictionary[element.id] = element
+    }
+
+    for id in replacingIds where !self.ids.contains(id) {
+      self.dictionary[id] = nil
+    }
   }
 }
 

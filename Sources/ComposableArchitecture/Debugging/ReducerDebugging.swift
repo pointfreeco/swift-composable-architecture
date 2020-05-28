@@ -1,9 +1,10 @@
+import CasePaths
 import Dispatch
 
 extension Reducer {
   /// Prints debug messages describing all received actions and state mutations.
   ///
-  /// Printing is only done in DEBUG builds.
+  /// Printing is only done in debug (`#if DEBUG`) builds.
   ///
   /// - Parameters:
   ///   - prefix: A string with which to prefix all debug messages.
@@ -13,17 +14,17 @@ extension Reducer {
   ///     function and a background queue.
   /// - Returns: A reducer that prints debug messages for all received actions.
   public func debug(
-    prefix: String = "",
+    _ prefix: String = "",
     environment toDebugEnvironment: @escaping (Environment) -> DebugEnvironment = { _ in
       DebugEnvironment()
     }
   ) -> Reducer {
-    self.debug(prefix: prefix, state: { $0 }, action: .self, environment: toDebugEnvironment)
+    self.debug(prefix, state: { $0 }, action: .self, environment: toDebugEnvironment)
   }
 
   /// Prints debug messages describing all received actions.
   ///
-  /// Printing is only done in DEBUG builds.
+  /// Printing is only done in debug (`#if DEBUG`) builds.
   ///
   /// - Parameters:
   ///   - prefix: A string with which to prefix all debug messages.
@@ -33,12 +34,12 @@ extension Reducer {
   ///     function and a background queue.
   /// - Returns: A reducer that prints debug messages for all received actions.
   public func debugActions(
-    prefix: String = "",
+    _ prefix: String = "",
     environment toDebugEnvironment: @escaping (Environment) -> DebugEnvironment = { _ in
       DebugEnvironment()
     }
   ) -> Reducer {
-    self.debug(prefix: prefix, state: { _ in () }, action: .self, environment: toDebugEnvironment)
+    self.debug(prefix, state: { _ in () }, action: .self, environment: toDebugEnvironment)
   }
 
   /// Prints debug messages describing all received local actions and local state mutations.
@@ -55,7 +56,7 @@ extension Reducer {
   ///     function and a background queue.
   /// - Returns: A reducer that prints debug messages for all received actions.
   public func debug<LocalState, LocalAction>(
-    prefix: String = "",
+    _ prefix: String = "",
     state toLocalState: @escaping (State) -> LocalState,
     action toLocalAction: CasePath<Action, LocalAction>,
     environment toDebugEnvironment: @escaping (Environment) -> DebugEnvironment = { _ in
@@ -65,7 +66,7 @@ extension Reducer {
     #if DEBUG
       return .init { state, action, environment in
         let previousState = toLocalState(state)
-        let effects = self.callAsFunction(&state, action, environment)
+        let effects = self.run(&state, action, environment)
         guard let localAction = toLocalAction.extract(from: action) else { return effects }
         let nextState = toLocalState(state)
         let debugEnvironment = toDebugEnvironment(environment)
@@ -74,7 +75,7 @@ extension Reducer {
             debugEnvironment.queue.async {
               let actionOutput = debugOutput(localAction).indent(by: 2)
               let stateOutput =
-                debugDiff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)"
+                debugDiff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
               debugEnvironment.printer(
                 """
                 \(prefix.isEmpty ? "" : "\(prefix): ")received action:
@@ -88,7 +89,7 @@ extension Reducer {
         )
       }
     #else
-      return .empty
+      return self
     #endif
   }
 }

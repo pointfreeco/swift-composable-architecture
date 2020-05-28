@@ -13,11 +13,12 @@ extension SpeechClient {
     finishTask: { id in
       .fireAndForget {
         dependencies[id]?.finish()
+        dependencies[id]?.subscriber.send(completion: .finished)
         dependencies[id] = nil
       }
     },
     recognitionTask: { id, request in
-      Effect.async { subscriber in
+      Effect.run { subscriber in
         let cancellable = AnyCancellable {
           dependencies[id]?.cancel()
           dependencies[id] = nil
@@ -58,7 +59,8 @@ extension SpeechClient {
           inputNode: inputNode,
           recognitionTask: recognitionTask,
           speechRecognizer: speechRecognizer,
-          speechRecognizerDelegate: speechRecognizerDelegate
+          speechRecognizerDelegate: speechRecognizerDelegate,
+          subscriber: subscriber
         )
 
         inputNode.installTap(
@@ -79,6 +81,7 @@ extension SpeechClient {
 
         return cancellable
       }
+      .cancellable(id: id)
     },
     requestAuthorization: {
       .future { callback in
@@ -96,6 +99,7 @@ private struct SpeechDependencies {
   let recognitionTask: SFSpeechRecognitionTask
   let speechRecognizer: SFSpeechRecognizer
   let speechRecognizerDelegate: SpeechRecognizerDelegate
+  let subscriber: Effect<SpeechClient.Action, SpeechClient.Error>.Subscriber
 
   func finish() {
     self.audioEngine.stop()

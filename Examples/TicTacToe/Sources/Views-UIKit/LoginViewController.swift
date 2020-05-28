@@ -31,7 +31,7 @@ class LoginViewController: UIViewController {
 
   init(store: Store<LoginState, LoginAction>) {
     self.store = store
-    self.viewStore = ViewStore(store.scope(state: \.view, action: LoginAction.view))
+    self.viewStore = ViewStore(store.scope(state: { $0.view }, action: LoginAction.view))
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -149,7 +149,7 @@ class LoginViewController: UIViewController {
       .store(in: &self.cancellables)
 
     self.store
-      .scope(state: \.twoFactor, action: LoginAction.twoFactor)
+      .scope(state: { $0.twoFactor }, action: LoginAction.twoFactor)
       .ifLet(
         then: { [weak self] twoFactorStore in
           self?.navigationController?.pushViewController(

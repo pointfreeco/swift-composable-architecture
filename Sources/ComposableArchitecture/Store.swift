@@ -27,7 +27,7 @@ public final class Store<State, Action> {
   ) {
     self.init(
       initialState: initialState,
-      reducer: { reducer.callAsFunction(&$0, $1, environment) }
+      reducer: { reducer.run(&$0, $1, environment) }
     )
   }
 
@@ -177,6 +177,17 @@ public final class Store<State, Action> {
       let action = self.synchronousActionsToSend.removeFirst()
       self.send(action)
     }
+  }
+
+  /// Returns a "stateless" store by erasing state to `Void`.
+  public var stateless: Store<Void, Action> {
+    self.scope(state: { _ in () })
+  }
+
+  /// Returns an "actionless" store by erasing action to `Never`.
+  public var actionless: Store<State, Never> {
+    func absurd<A>(_ never: Never) -> A {}
+    return self.scope(state: { $0 }, action: absurd)
   }
 
   private init(
