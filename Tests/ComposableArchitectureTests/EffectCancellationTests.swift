@@ -6,7 +6,7 @@ import XCTest
 final class EffectCancellationTests: XCTestCase {
   struct CancelToken: Hashable {}
   var cancellables: Set<AnyCancellable> = []
-  
+
   override func tearDown() {
     super.tearDown()
     self.cancellables.removeAll()
@@ -244,4 +244,3 @@ final class EffectCancellationTests: XCTestCase {
     XCTAssertEqual([], isCancelling)
   }
 }
-
