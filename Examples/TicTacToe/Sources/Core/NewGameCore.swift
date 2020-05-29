@@ -58,10 +58,10 @@ public let newGameReducer = Reducer<NewGameState, NewGameAction, NewGameEnvironm
 }
 
 public let newGameFeatureReducer = Reducer.combine(
-  newGameReducer,
   gameReducer.optional.pullback(
     state: \.game,
     action: /NewGameAction.game,
     environment: { _ in GameEnvironment() }
-  )
+  ),
+  newGameReducer
 )
