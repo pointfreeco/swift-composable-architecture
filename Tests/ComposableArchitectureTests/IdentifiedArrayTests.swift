@@ -195,4 +195,10 @@ final class IdentifiedArrayTests: XCTestCase {
       ], array)
 
   }
+
+    func testReferenceToMissing() {
+        var array = IdentifiedArray<Int, Int>([1], id: \.self)
+        func takesReference(_ item: inout Int?) { }
+        takesReference(&array[id: 3])
+    }
 }

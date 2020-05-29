@@ -110,7 +110,7 @@ where ID: Hashable {
             """
           )
         }
-        if newValue == nil {
+        if newValue == nil, self.dictionary[id] != nil {
           fatalError(
             """
             Can't update element with identifier \(id) with nil.
