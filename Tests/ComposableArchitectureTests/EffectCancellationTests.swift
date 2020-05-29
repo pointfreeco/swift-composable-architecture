@@ -4,15 +4,15 @@ import XCTest
 @testable import ComposableArchitecture
 
 final class EffectCancellationTests: XCTestCase {
+  struct CancelToken: Hashable {}
   var cancellables: Set<AnyCancellable> = []
   
   override func tearDown() {
     super.tearDown()
-    cancellables.removeAll()
+    cancellables = []
   }
 
   func testCancellation() {
-    struct CancelToken: Hashable {}
     var values: [Int] = []
 
     let subject = PassthroughSubject<Int, Never>()
@@ -38,7 +38,6 @@ final class EffectCancellationTests: XCTestCase {
   }
 
   func testCancelInFlight() {
-    struct CancelToken: Hashable {}
     var values: [Int] = []
 
     let subject = PassthroughSubject<Int, Never>()
@@ -65,7 +64,6 @@ final class EffectCancellationTests: XCTestCase {
   }
 
   func testCancellationAfterDelay() {
-    struct CancelToken: Hashable {}
     var value: Int?
 
     Just(1)
@@ -90,7 +88,6 @@ final class EffectCancellationTests: XCTestCase {
 
   func testCancellationAfterDelay_WithTestScheduler() {
     let scheduler = DispatchQueue.testScheduler
-    struct CancelToken: Hashable {}
     var value: Int?
 
     Just(1)
@@ -139,7 +136,6 @@ final class EffectCancellationTests: XCTestCase {
   }
 
   func testDoubleCancellation() {
-    struct CancelToken: Hashable {}
     var values: [Int] = []
 
     let subject = PassthroughSubject<Int, Never>()
@@ -164,7 +160,6 @@ final class EffectCancellationTests: XCTestCase {
   }
 
   func testCompleteBeforeCancellation() {
-    struct CancelToken: Hashable {}
     var values: [Int] = []
 
     let subject = PassthroughSubject<Int, Never>()
