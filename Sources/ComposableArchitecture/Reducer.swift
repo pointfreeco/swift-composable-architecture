@@ -165,7 +165,25 @@ public struct Reducer<State, Action, Environment> {
   ///   state.
   public var optional: Reducer<State?, Action, Environment> {
     .init { state, action, environment in
-      guard state != nil else { return .none }
+      guard state != nil else {
+        assertionFailure(
+          """
+          "\(debugCaseOutput(action))" was received by an optional reducer when its state was \
+          "nil". This can happen for a few reasons:
+
+          * The optional reducer was combined with another reducer that ran and set \
+          "\(State.self)" to "nil" when it handled the same action. Combine the optional reducer \
+          before this reducer to ensure the optional reducer can handle its case.
+
+          * This action was sent to the store while state was "nil". Make sure that actions for \
+          this reducer can only be sent to a view store when state is non-"nil".
+
+          * An effect returned this action while state was "nil". Make sure that effects for this \
+          optional reducer are canceled when optional state is set to "nil".
+          """
+        )
+        return .none
+      }
       return self.reducer(&state!, action, environment)
     }
   }

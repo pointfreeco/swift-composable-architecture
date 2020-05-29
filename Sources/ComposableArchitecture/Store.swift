@@ -148,9 +148,9 @@ public final class Store<State, Action> {
         the effect directly.
 
         * The store has been sent actions from multiple threads. The `send` method is not \
-        thread-safe, and should only ever be used from a single thread (typically the main thread). 
-        Instead of calling `send` from multiple threads you should use effects to process expensive \
-        computations on background threads so that it can be fed back into the store.
+        thread-safe, and should only ever be used from a single thread (typically the main \
+        thread). Instead of calling `send` from multiple threads you should use effects to process \
+        expensive computations on background threads so that it can be fed back into the store.
         """
       )
     }

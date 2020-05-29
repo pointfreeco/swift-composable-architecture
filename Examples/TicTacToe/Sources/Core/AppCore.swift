@@ -30,6 +30,21 @@ public struct AppEnvironment {
 }
 
 public let appReducer: Reducer<AppState, AppAction, AppEnvironment> = Reducer.combine(
+  loginFeatureReducer.optional.pullback(
+    state: \.login,
+    action: /AppAction.login,
+    environment: {
+      LoginEnvironment(
+        authenticationClient: $0.authenticationClient,
+        mainQueue: $0.mainQueue
+      )
+    }
+  ),
+  newGameFeatureReducer.optional.pullback(
+    state: \.newGame,
+    action: /AppAction.newGame,
+    environment: { _ in NewGameEnvironment() }
+  ),
   Reducer { state, action, _ in
     switch action {
     case let .login(.twoFactor(.twoFactorResponse(.success(response)))),
@@ -49,20 +64,5 @@ public let appReducer: Reducer<AppState, AppAction, AppEnvironment> = Reducer.co
     case .newGame:
       return .none
     }
-  },
-  loginFeatureReducer.optional.pullback(
-    state: \.login,
-    action: /AppAction.login,
-    environment: {
-      LoginEnvironment(
-        authenticationClient: $0.authenticationClient,
-        mainQueue: $0.mainQueue
-      )
-    }
-  ),
-  newGameFeatureReducer.optional.pullback(
-    state: \.newGame,
-    action: /AppAction.newGame,
-    environment: { _ in NewGameEnvironment() }
-  )
+  }
 )
