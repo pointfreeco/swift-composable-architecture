@@ -9,7 +9,7 @@ final class EffectCancellationTests: XCTestCase {
   
   override func tearDown() {
     super.tearDown()
-    cancellables = []
+    self.cancellables.removeAll()
   }
 
   func testCancellation() {
