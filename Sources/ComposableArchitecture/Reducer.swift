@@ -267,6 +267,54 @@ public struct Reducer<State, Action, Environment> {
     }
   }
 
+  /// A version of `pullback` that transforms a reducer that works on an element into one that _optionally_
+  /// works on an identified array of elements.
+  ///
+  /// If the `ID` is not present in the `IdentifiedArray`, the action is silently discarded, similar to the
+  /// `optional` higher-order reducer.
+  ///
+  ///     // Global domain that holds a collection of local domains:
+  ///     struct AppState { var todos: IdentifiedArrayOf<Todo> }
+  ///     struct AppAction { case todo(id: Todo.ID, action: TodoAction) }
+  ///     struct AppEnvironment { var mainQueue: AnySchedulerOf<DispatchQueue> }
+  ///
+  ///     // A reducer that works on a local domain:
+  ///     let todoReducer = Reducer<Todo, TodoAction, TodoEnvironment> { ... }
+  ///
+  ///     // Pullback the local todo reducer so that it works on all of the app domain:
+  ///     let appReducer: Reducer<AppState, AppAction, AppEnvironment> =
+  ///       todoReducer.forEachIfPresent(
+  ///         state: \.todos,
+  ///         action: /AppAction.todo(id:action:),
+  ///         environment: { _ in TodoEnvironment() }
+  ///       )
+  ///
+  /// - Parameters:
+  ///   - toLocalState: A key path that can get/set a collection of `State` elements inside
+  ///     `GlobalState`.
+  ///   - toLocalAction: A case path that can extract/embed `(Collection.Index, Action)` from
+  ///     `GlobalAction`.
+  ///   - toLocalEnvironment: A function that transforms `GlobalEnvironment` into `Environment`.
+  /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
+  public func forEachIfPresent<GlobalState, GlobalAction, GlobalEnvironment, ID>(
+    state toLocalState: WritableKeyPath<GlobalState, IdentifiedArray<ID, State>>,
+    action toLocalAction: CasePath<GlobalAction, (ID, Action)>,
+    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+    .init { globalState, globalAction, globalEnvironment in
+      guard let (id, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
+      guard globalState[keyPath: toLocalState][id: id] != nil else { return .none }
+
+      return self
+        .reducer(
+          &globalState[keyPath: toLocalState][id: id]!,
+          localAction,
+          toLocalEnvironment(globalEnvironment)
+        )
+        .map { toLocalAction.embed((id, $0)) }
+    }
+  }
+
   /// A version of `pullback` that transforms a reducer that works on an element into one that works
   /// on a dictionary of element values.
   ///
