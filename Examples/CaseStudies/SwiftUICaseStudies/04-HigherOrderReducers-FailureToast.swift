@@ -22,8 +22,49 @@ enum AppError: Error, LocalizedError {
 }
 
 struct AppState: Equatable {
-  var toastStatus: ToastStatus = .hiding
+  var toastState = ToastState()
   var data: [String] = []
+}
+
+enum AppAction {
+  case toastAction(ToastAction)
+  case loadData
+  case didLoadData([String])
+}
+
+struct AppEnvironment {
+  var mainQueue: AnySchedulerOf<DispatchQueue>
+  var loadData: () -> Effect<[String], Error>
+}
+
+let appReducer: (inout AppState, AppAction, AppEnvironment) -> Effect<AppAction, Error> = { state, action, environment in
+  switch action {
+  case .toastAction:
+    return .none
+
+  case .loadData:
+    return environment.loadData().map(AppAction.didLoadData)
+
+  case .didLoadData(let data):
+    state.data = data
+    return .none
+  }
+}
+
+extension Reducer {
+  static func errorHandling(
+    _ reducer: @escaping (inout AppState, AppAction, AppEnvironment) -> Effect<AppAction, Error>
+  ) -> Reducer<AppState, AppAction, AppEnvironment> {
+    Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
+      reducer(&state, action, environment)
+        .catch { Just(.toastAction(.show($0.localizedDescription))) }
+        .eraseToEffect()
+    }
+  }
+}
+
+struct ToastState: Equatable {
+  var status: ToastStatus = .hiding
 }
 
 enum ToastStatus: Equatable {
@@ -45,61 +86,39 @@ enum ToastStatus: Equatable {
   }
 }
 
-enum AppAction {
-  case showToast(String)
-  case hideToast
-  case loadData
-  case didLoadData([String])
+enum ToastAction {
+  case show(String)
+  case hide
 }
 
-struct AppEnvironment {
+struct ToastEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
-  var loadData: () -> Effect<[String], Error>
 }
 
-let appReducer: (inout AppState, AppAction, AppEnvironment) -> Effect<AppAction, Error> = { state, action, environment in
+let toastReducer = Reducer<ToastState, ToastAction, ToastEnvironment> { state, action, environment in
   switch action {
-  case .showToast(let text):
-    state.toastStatus = .showing(text)
+  case .show(let text):
+    state.status = .showing(text)
     return .none
 
-  case .hideToast:
-    state.toastStatus = .hiding
+  case .hide:
+    state.status = .hiding
     return .none
-
-  case .loadData:
-    return environment.loadData().map(AppAction.didLoadData)
-
-  case .didLoadData(let data):
-    state.data = data
-    return .none
-  }
-}
-
-extension Reducer {
-  static func errorHandling(
-    _ reducer: @escaping (inout AppState, AppAction, AppEnvironment) -> Effect<AppAction, Error>
-  ) -> Reducer<AppState, AppAction, AppEnvironment> {
-    Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
-      reducer(&state, action, environment)
-        .catch { Just(.showToast($0.localizedDescription)) }
-        .eraseToEffect()
-    }
   }
 }
 
 struct ToastView: View {
-  let store: Store<AppState, AppAction>
+  let store: Store<ToastState, ToastAction>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
-      if viewStore.toastStatus.isShowing {
-        Text(viewStore.toastStatus.text)
+      if viewStore.status.isShowing {
+        Text(viewStore.status.text)
           .padding()
           .foregroundColor(.white)
           .background(Color.gray.opacity(0.8))
           .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3) { viewStore.send(.hideToast) }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) { viewStore.send(.hide) }
           }
       }
     }
@@ -118,19 +137,33 @@ struct DataView: View {
             ForEach(viewStore.state.data, id: \.self) { Text($0) }
           }
         }
-        ToastView(store: self.store)
+        ToastView(
+          store: self.store.scope(
+            state: { $0.toastState },
+            action: AppAction.toastAction
+          )
+        )
       }
       .navigationBarTitle("Failure Toast")
     }
   }
 }
 
+let combinedReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
+  .errorHandling(appReducer),
+  toastReducer.pullback(
+    state: \AppState.toastState,
+    action: /AppAction.toastAction,
+    environment: { _ in ToastEnvironment(mainQueue: DispatchQueue.main.eraseToAnyScheduler()) }
+  )
+)
+
 struct ToastView_Previews: PreviewProvider {
   static var previews: some View {
     DataView(
       store: Store(
         initialState: AppState(),
-        reducer: Reducer<AppState, AppAction, AppEnvironment>.errorHandling(appReducer),
+        reducer: combinedReducer,
         environment: AppEnvironment(
           mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
           loadData: {
