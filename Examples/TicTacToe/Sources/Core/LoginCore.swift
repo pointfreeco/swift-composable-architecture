@@ -85,7 +85,6 @@ public let loginReducer = Reducer<LoginState, LoginAction, LoginEnvironment> {
 }
 
 public let loginFeatureReducer = Reducer.combine(
-  loginReducer,
   twoFactorReducer.optional.pullback(
     state: \.twoFactor,
     action: /LoginAction.twoFactor,
@@ -95,5 +94,6 @@ public let loginFeatureReducer = Reducer.combine(
         mainQueue: $0.mainQueue
       )
     }
-  )
+  ),
+  loginReducer
 )
