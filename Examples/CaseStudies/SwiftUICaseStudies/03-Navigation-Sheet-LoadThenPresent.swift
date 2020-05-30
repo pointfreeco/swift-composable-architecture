@@ -29,6 +29,11 @@ struct LazySheetEnvironment {
 let lazySheetReducer = Reducer<
   LazySheetState, LazySheetAction, LazySheetEnvironment
 >.combine(
+  counterReducer.optional.pullback(
+    state: \.optionalCounter,
+    action: /LazySheetAction.optionalCounter,
+    environment: { _ in CounterEnvironment() }
+  ),
   Reducer { state, action, environment in
     switch action {
     case .setSheet(isPresented: true):
@@ -49,12 +54,7 @@ let lazySheetReducer = Reducer<
     case .optionalCounter:
       return .none
     }
-  },
-  counterReducer.optional.pullback(
-    state: \.optionalCounter,
-    action: /LazySheetAction.optionalCounter,
-    environment: { _ in CounterEnvironment() }
-  )
+  }
 )
 
 struct LazySheetView: View {

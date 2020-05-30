@@ -26,6 +26,11 @@ struct OptionalBasicsEnvironment {}
 let optionalBasicsReducer = Reducer<
   OptionalBasicsState, OptionalBasicsAction, OptionalBasicsEnvironment
 >.combine(
+  counterReducer.optional.pullback(
+    state: \.optionalCounter,
+    action: /OptionalBasicsAction.optionalCounter,
+    environment: { _ in CounterEnvironment() }
+  ),
   Reducer { state, action, environment in
     switch action {
     case .toggleCounterButtonTapped:
@@ -37,12 +42,7 @@ let optionalBasicsReducer = Reducer<
     case .optionalCounter:
       return .none
     }
-  },
-  counterReducer.optional.pullback(
-    state: \.optionalCounter,
-    action: /OptionalBasicsAction.optionalCounter,
-    environment: { _ in CounterEnvironment() }
-  )
+  }
 )
 
 struct OptionalBasicsView: View {

@@ -29,6 +29,11 @@ struct LazyNavigationEnvironment {
 let lazyNavigationReducer = Reducer<
   LazyNavigationState, LazyNavigationAction, LazyNavigationEnvironment
 >.combine(
+  counterReducer.optional.pullback(
+    state: \.optionalCounter,
+    action: /LazyNavigationAction.optionalCounter,
+    environment: { _ in CounterEnvironment() }
+  ),
   Reducer { state, action, environment in
     switch action {
     case .setNavigation(isActive: true):
@@ -49,12 +54,7 @@ let lazyNavigationReducer = Reducer<
     case .optionalCounter:
       return .none
     }
-  },
-  counterReducer.optional.pullback(
-    state: \.optionalCounter,
-    action: /LazyNavigationAction.optionalCounter,
-    environment: { _ in CounterEnvironment() }
-  )
+  }
 )
 
 struct LazyNavigationView: View {

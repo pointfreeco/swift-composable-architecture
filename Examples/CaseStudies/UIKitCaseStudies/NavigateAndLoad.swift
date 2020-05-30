@@ -21,6 +21,11 @@ struct EagerNavigationEnvironment {
 let eagerNavigationReducer = Reducer<
   EagerNavigationState, EagerNavigationAction, EagerNavigationEnvironment
 >.combine(
+  counterReducer.optional.pullback(
+    state: \.optionalCounter,
+    action: /EagerNavigationAction.optionalCounter,
+    environment: { _ in CounterEnvironment() }
+  ),
   Reducer { state, action, environment in
     switch action {
     case .setNavigation(isActive: true):
@@ -38,12 +43,7 @@ let eagerNavigationReducer = Reducer<
     case .optionalCounter:
       return .none
     }
-  },
-  counterReducer.optional.pullback(
-    state: \.optionalCounter,
-    action: /EagerNavigationAction.optionalCounter,
-    environment: { _ in CounterEnvironment() }
-  )
+  }
 )
 
 class EagerNavigationViewController: UIViewController {

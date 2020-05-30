@@ -26,6 +26,11 @@ struct EagerSheetEnvironment {
 let eagerSheetReducer = Reducer<
   EagerSheetState, EagerSheetAction, EagerSheetEnvironment
 >.combine(
+  counterReducer.optional.pullback(
+    state: \.optionalCounter,
+    action: /EagerSheetAction.optionalCounter,
+    environment: { _ in CounterEnvironment() }
+  ),
   Reducer { state, action, environment in
     switch action {
     case .setSheet(isPresented: true):
@@ -46,12 +51,7 @@ let eagerSheetReducer = Reducer<
     case .optionalCounter:
       return .none
     }
-  },
-  counterReducer.optional.pullback(
-    state: \.optionalCounter,
-    action: /EagerSheetAction.optionalCounter,
-    environment: { _ in CounterEnvironment() }
-  )
+  }
 )
 
 struct EagerSheetView: View {
