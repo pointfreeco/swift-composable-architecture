@@ -217,7 +217,7 @@ public struct StorePublisher<State>: Publisher {
 
   public func receive<S>(subscriber: S)
   where S: Subscriber, Failure == S.Failure, Output == S.Input {
-    self.upstream.receive(subscriber: subscriber)
+    self.upstream.subscribe(subscriber)
   }
 
   init<P>(_ upstream: P) where P: Publisher, Failure == P.Failure, Output == P.Output {
