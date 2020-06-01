@@ -136,9 +136,14 @@ public final class Store<State, Action> {
   }
 
   func send(_ action: Action) {
-    if self.isSending {
-      assertionFailure(
-        """
+    self.synchronousActionsToSend.append(action)
+    
+    while !self.synchronousActionsToSend.isEmpty {
+      let action = self.synchronousActionsToSend.removeFirst()
+      
+      if self.isSending {
+        assertionFailure(
+          """
         The store was sent an action while it was already processing another action. This can \
         happen for a few reasons:
 
@@ -152,38 +157,34 @@ public final class Store<State, Action> {
         Instead of calling `send` from multiple threads you should use effects to process expensive \
         computations on background threads so that it can be fed back into the store.
         """
-      )
-    }
-    self.isSending = true
-    let effect = self.reducer(&self.state, action)
-    self.isSending = false
-
-    var didComplete = false
-    let uuid = UUID()
-
-    var isProcessingEffects = true
-    let effectCancellable = effect.sink(
-      receiveCompletion: { [weak self] _ in
-        didComplete = true
-        self?.effectCancellables[uuid] = nil
-      },
-      receiveValue: { [weak self] action in
-        if isProcessingEffects {
-          self?.synchronousActionsToSend.append(action)
-        } else {
-          self?.send(action)
-        }
+        )
       }
-    )
-    isProcessingEffects = false
-
-    if !didComplete {
-      self.effectCancellables[uuid] = effectCancellable
-    }
-
-    while !self.synchronousActionsToSend.isEmpty {
-      let action = self.synchronousActionsToSend.removeFirst()
-      self.send(action)
+      self.isSending = true
+      let effect = self.reducer(&self.state, action)
+      self.isSending = false
+      
+      var didComplete = false
+      let uuid = UUID()
+      
+      var isProcessingEffects = true
+      let effectCancellable = effect.sink(
+        receiveCompletion: { [weak self] _ in
+          didComplete = true
+          self?.effectCancellables[uuid] = nil
+        },
+        receiveValue: { [weak self] action in
+          if isProcessingEffects {
+            self?.synchronousActionsToSend.append(action)
+          } else {
+            self?.send(action)
+          }
+        }
+      )
+      isProcessingEffects = false
+      
+      if !didComplete {
+        self.effectCancellables[uuid] = effectCancellable
+      }
     }
   }
 
