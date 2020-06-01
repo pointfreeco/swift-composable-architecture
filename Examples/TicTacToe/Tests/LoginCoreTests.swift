@@ -11,7 +11,7 @@ class LoginCoreTests: XCTestCase {
   func testFlow_Success_TwoFactor_Integration() {
     let store = TestStore(
       initialState: LoginState(),
-      reducer: loginFeatureReducer,
+      reducer: loginReducer,
       environment: LoginEnvironment(
         authenticationClient: .mock(
           login: { _ in

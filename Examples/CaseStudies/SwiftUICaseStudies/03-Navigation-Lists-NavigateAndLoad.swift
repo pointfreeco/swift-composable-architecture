@@ -28,48 +28,48 @@ struct EagerListNavigationEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
-let eagerListNavigationReducer = Reducer<
-  EagerListNavigationState, EagerListNavigationAction, EagerListNavigationEnvironment
->.combine(
-  Reducer { state, action, environment in
+let eagerListNavigationReducer = counterReducer
+  .optional
+  .pullback(state: \Identified.value, action: .self, environment: { $0 })
+  .optional
+  .pullback(
+    state: \EagerListNavigationState.selection,
+    action: /EagerListNavigationAction.counter,
+    environment: { _ in CounterEnvironment() }
+  )
+  .combined(
+    with: Reducer<
+      EagerListNavigationState, EagerListNavigationAction, EagerListNavigationEnvironment
+    > { state, action, environment in
 
-    struct CancelId: Hashable {}
+      struct CancelId: Hashable {}
 
-    switch action {
-    case .counter:
-      return .none
+      switch action {
+      case .counter:
+        return .none
 
-    case let .setNavigation(selection: .some(id)):
-      state.selection = Identified(nil, id: id)
+      case let .setNavigation(selection: .some(id)):
+        state.selection = Identified(nil, id: id)
 
-      return Effect(value: .setNavigationSelectionDelayCompleted)
-        .delay(for: 1, scheduler: environment.mainQueue)
-        .eraseToEffect()
-        .cancellable(id: CancelId())
+        return Effect(value: .setNavigationSelectionDelayCompleted)
+          .delay(for: 1, scheduler: environment.mainQueue)
+          .eraseToEffect()
+          .cancellable(id: CancelId())
 
-    case .setNavigation(selection: .none):
-      if let selection = state.selection, let count = selection.value?.count {
-        state.rows[id: selection.id]?.count = count
+      case .setNavigation(selection: .none):
+        if let selection = state.selection, let count = selection.value?.count {
+          state.rows[id: selection.id]?.count = count
+        }
+        state.selection = nil
+        return .cancel(id: CancelId())
+
+      case .setNavigationSelectionDelayCompleted:
+        guard let id = state.selection?.id else { return .none }
+        state.selection?.value = CounterState(count: state.rows[id: id]?.count ?? 0)
+        return .none
       }
-      state.selection = nil
-      return .cancel(id: CancelId())
-
-    case .setNavigationSelectionDelayCompleted:
-      guard let id = state.selection?.id else { return .none }
-      state.selection?.value = CounterState(count: state.rows[id: id]?.count ?? 0)
-      return .none
     }
-  },
-  counterReducer
-    .optional
-    .pullback(state: \Identified.value, action: .self, environment: { $0 })
-    .optional
-    .pullback(
-      state: \EagerListNavigationState.selection,
-      action: /EagerListNavigationAction.counter,
-      environment: { _ in CounterEnvironment() }
-    )
-)
+  )
 
 struct EagerListNavigationView: View {
   let store: Store<EagerListNavigationState, EagerListNavigationAction>

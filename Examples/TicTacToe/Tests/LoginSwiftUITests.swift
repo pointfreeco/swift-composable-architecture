@@ -13,7 +13,7 @@ class LoginSwiftUITests: XCTestCase {
   func testFlow_Success() {
     let store = TestStore(
       initialState: LoginState(),
-      reducer: loginFeatureReducer,
+      reducer: loginReducer,
       environment: LoginEnvironment(
         authenticationClient: .mock(
           login: { _ in
@@ -51,7 +51,7 @@ class LoginSwiftUITests: XCTestCase {
   func testFlow_Success_TwoFactor() {
     let store = TestStore(
       initialState: LoginState(),
-      reducer: loginFeatureReducer,
+      reducer: loginReducer,
       environment: LoginEnvironment(
         authenticationClient: .mock(
           login: { _ in
@@ -93,7 +93,7 @@ class LoginSwiftUITests: XCTestCase {
   func testFlow_Failure() {
     let store = TestStore(
       initialState: LoginState(),
-      reducer: loginFeatureReducer,
+      reducer: loginReducer,
       environment: LoginEnvironment(
         authenticationClient: .mock(
           login: { _ in Effect(error: .invalidUserPassword) }

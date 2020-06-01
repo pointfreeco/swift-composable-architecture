@@ -23,27 +23,29 @@ enum OptionalBasicsAction: Equatable {
 
 struct OptionalBasicsEnvironment {}
 
-let optionalBasicsReducer = Reducer<
-  OptionalBasicsState, OptionalBasicsAction, OptionalBasicsEnvironment
->.combine(
-  counterReducer.optional.pullback(
+let optionalBasicsReducer = counterReducer
+  .optional
+  .pullback(
     state: \.optionalCounter,
     action: /OptionalBasicsAction.optionalCounter,
     environment: { _ in CounterEnvironment() }
-  ),
-  Reducer { state, action, environment in
-    switch action {
-    case .toggleCounterButtonTapped:
-      state.optionalCounter =
-        state.optionalCounter == nil
-        ? CounterState()
-        : nil
-      return .none
-    case .optionalCounter:
-      return .none
+  )
+  .combined(
+    with: Reducer<
+      OptionalBasicsState, OptionalBasicsAction, OptionalBasicsEnvironment
+    > { state, action, environment in
+      switch action {
+      case .toggleCounterButtonTapped:
+        state.optionalCounter =
+          state.optionalCounter == nil
+          ? CounterState()
+          : nil
+        return .none
+      case .optionalCounter:
+        return .none
+      }
     }
-  }
-)
+  )
 
 struct OptionalBasicsView: View {
   let store: Store<OptionalBasicsState, OptionalBasicsAction>
