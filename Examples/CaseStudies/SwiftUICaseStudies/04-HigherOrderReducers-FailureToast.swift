@@ -45,11 +45,7 @@ enum ToastAction {
   case hide
 }
 
-struct ToastEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
-
-let toastReducer = Reducer<ToastState, ToastAction, ToastEnvironment> { state, action, environment in
+let toastReducer = Reducer<ToastState, ToastAction, Void> { state, action, _ in
   switch action {
   case .show(let text):
     state.status = .showing(text)
@@ -112,7 +108,6 @@ enum AppAction {
 }
 
 struct AppEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
   var loadData: () -> Effect<[String], Error>
 }
 
@@ -159,7 +154,7 @@ let combinedFailureToastReducer = Reducer<AppState, AppAction, AppEnvironment>.c
   toastReducer.pullback(
     state: \AppState.toastState,
     action: /AppAction.toastAction,
-    environment: { _ in ToastEnvironment(mainQueue: DispatchQueue.main.eraseToAnyScheduler()) }
+    environment: { _ in () }
   )
 )
 
@@ -170,7 +165,6 @@ struct ToastView_Previews: PreviewProvider {
         initialState: AppState(),
         reducer: combinedFailureToastReducer,
         environment: AppEnvironment(
-          mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
           loadData: {
             Fail(error: AppError.api)
               .delay(for: 1, scheduler: DispatchQueue.main)

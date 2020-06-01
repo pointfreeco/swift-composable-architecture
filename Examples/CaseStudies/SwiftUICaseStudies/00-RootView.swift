@@ -309,7 +309,6 @@ struct RootView: View {
                 initialState: AppState(),
                 reducer: combinedFailureToastReducer,
                 environment: AppEnvironment(
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
                   loadData: {
                     Fail(error: AppError.api)
                       .delay(for: 1, scheduler: DispatchQueue.main)
