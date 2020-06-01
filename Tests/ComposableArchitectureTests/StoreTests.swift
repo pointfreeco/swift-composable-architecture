@@ -216,7 +216,7 @@ final class StoreTests: XCTestCase {
 
     XCTAssertEqual(values, [1, 2, 3, 4])
   }
-  
+
   func testLotsOfSynchronousActions() {
     enum Action { case incr, noop }
     let reducer = Reducer<Int, Action, ()> { state, action, _ in
@@ -228,7 +228,7 @@ final class StoreTests: XCTestCase {
         return .none
       }
     }
-    
+
     let store = Store(initialState: 0, reducer: reducer, environment: ())
     store.send(.incr)
     XCTAssertEqual(ViewStore(store).state, 100_000)
