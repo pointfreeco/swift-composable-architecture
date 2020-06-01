@@ -304,10 +304,10 @@ struct RootView: View {
 
           NavigationLink(
             "Toast on all failures",
-            destination: DataView(
+            destination: AppView(
               store: Store(
                 initialState: AppState(),
-                reducer: Reducer<AppState, AppAction, AppEnvironment>.errorHandling(appReducer),
+                reducer: combinedFailureToastReducer,
                 environment: AppEnvironment(
                   mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
                   loadData: {

@@ -15,53 +15,7 @@ private let readMe = """
   Tapping the "Load Data" button will fail after one second and show a toast.
   """
 
-enum AppError: Error, LocalizedError {
-  case api
-
-  var errorDescription: String? { "Whoops! There was a server error." }
-}
-
-struct AppState: Equatable {
-  var toastState = ToastState()
-  var data: [String] = []
-}
-
-enum AppAction {
-  case toastAction(ToastAction)
-  case loadData
-  case didLoadData([String])
-}
-
-struct AppEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-  var loadData: () -> Effect<[String], Error>
-}
-
-let appReducer: (inout AppState, AppAction, AppEnvironment) -> Effect<AppAction, Error> = { state, action, environment in
-  switch action {
-  case .toastAction:
-    return .none
-
-  case .loadData:
-    return environment.loadData().map(AppAction.didLoadData)
-
-  case .didLoadData(let data):
-    state.data = data
-    return .none
-  }
-}
-
-extension Reducer {
-  static func errorHandling(
-    _ reducer: @escaping (inout AppState, AppAction, AppEnvironment) -> Effect<AppAction, Error>
-  ) -> Reducer<AppState, AppAction, AppEnvironment> {
-    Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
-      reducer(&state, action, environment)
-        .catch { Just(.toastAction(.show($0.localizedDescription))) }
-        .eraseToEffect()
-    }
-  }
-}
+// MARK: - Failure Toast Domain
 
 struct ToastState: Equatable {
   var status: ToastStatus = .hiding
@@ -107,6 +61,19 @@ let toastReducer = Reducer<ToastState, ToastAction, ToastEnvironment> { state, a
   }
 }
 
+extension Reducer {
+  // The higher order reducer
+  static func errorHandling(
+    _ reducer: @escaping (inout AppState, AppAction, AppEnvironment) -> Effect<AppAction, Error>
+  ) -> Reducer<AppState, AppAction, AppEnvironment> {
+    Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
+      reducer(&state, action, environment)
+        .catch { Just(.toastAction(.show($0.localizedDescription))) }
+        .eraseToEffect()
+    }
+  }
+}
+
 struct ToastView: View {
   let store: Store<ToastState, ToastAction>
 
@@ -125,7 +92,45 @@ struct ToastView: View {
   }
 }
 
-struct DataView: View {
+// MARK - Feature Domain
+
+enum AppError: Error, LocalizedError {
+  case api
+
+  var errorDescription: String? { "Whoops! There was a server error." }
+}
+
+struct AppState: Equatable {
+  var toastState = ToastState()
+  var data: [String] = []
+}
+
+enum AppAction {
+  case toastAction(ToastAction)
+  case loadData
+  case didLoadData([String])
+}
+
+struct AppEnvironment {
+  var mainQueue: AnySchedulerOf<DispatchQueue>
+  var loadData: () -> Effect<[String], Error>
+}
+
+let appReducer: (inout AppState, AppAction, AppEnvironment) -> Effect<AppAction, Error> = { state, action, environment in
+  switch action {
+  case .toastAction:
+    return .none
+
+  case .loadData:
+    return environment.loadData().map(AppAction.didLoadData)
+
+  case .didLoadData(let data):
+    state.data = data
+    return .none
+  }
+}
+
+struct AppView: View {
   let store: Store<AppState, AppAction>
 
   var body: some View {
@@ -149,7 +154,7 @@ struct DataView: View {
   }
 }
 
-let combinedReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
+let combinedFailureToastReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
   .errorHandling(appReducer),
   toastReducer.pullback(
     state: \AppState.toastState,
@@ -160,10 +165,10 @@ let combinedReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
 
 struct ToastView_Previews: PreviewProvider {
   static var previews: some View {
-    DataView(
+    AppView(
       store: Store(
         initialState: AppState(),
-        reducer: combinedReducer,
+        reducer: combinedFailureToastReducer,
         environment: AppEnvironment(
           mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
           loadData: {
