@@ -37,7 +37,9 @@ where SchedulerTimeType: Strideable, SchedulerTimeType.Stride: SchedulerTimeInte
 
     while let (id, _, date, action) = self.scheduled.first, date == nextDate {
       action()
-      self.scheduled.removeAll(where: { $0.id == id })
+      if let idx = self.scheduled.firstIndex(where: { $0.id == id }) {
+        self.scheduled.remove(at: idx)
+      }
     }
 
     self.advance(by: stride - delta)
