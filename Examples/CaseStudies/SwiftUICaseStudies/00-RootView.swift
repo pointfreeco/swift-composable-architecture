@@ -301,6 +301,23 @@ struct RootView: View {
               )
             )
           )
+
+          NavigationLink(
+            "Loading UI for long-running actions",
+            destination: AppView(
+              store: Store(
+                initialState: AppState(),
+                reducer: combinedLoadingReducer,
+                environment: AppEnvironment(
+                  loadData: {
+                    Just(["some data"])
+                      .delay(for: 1, scheduler: DispatchQueue.main)
+                      .eraseToEffect()
+                  }
+                )
+              )
+            )
+          )
         }
       }
       .navigationBarTitle("Case Studies")
