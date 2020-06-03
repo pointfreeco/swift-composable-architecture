@@ -136,54 +136,55 @@ public final class Store<State, Action> {
   }
 
   func send(_ action: Action) {
-    if self.isSending {
-      assertionFailure(
-        """
-        The store was sent an action while it was already processing another action. This can \
-        happen for a few reasons:
-
-        * The store was sent an action recursively. This can occur when you run an effect directly \
-        in the reducer, rather than returning it from the reducer. Check the stack (⌘7) to find \
-        frames corresponding to one of your reducers. That code should be refactored to not invoke \
-        the effect directly.
-
-        * The store has been sent actions from multiple threads. The `send` method is not \
-        thread-safe, and should only ever be used from a single thread (typically the main \
-        thread). Instead of calling `send` from multiple threads you should use effects to process \
-        expensive computations on background threads so that it can be fed back into the store.
-        """
-      )
-    }
-    self.isSending = true
-    let effect = self.reducer(&self.state, action)
-    self.isSending = false
-
-    var didComplete = false
-    let uuid = UUID()
-
-    var isProcessingEffects = true
-    let effectCancellable = effect.sink(
-      receiveCompletion: { [weak self] _ in
-        didComplete = true
-        self?.effectCancellables[uuid] = nil
-      },
-      receiveValue: { [weak self] action in
-        if isProcessingEffects {
-          self?.synchronousActionsToSend.append(action)
-        } else {
-          self?.send(action)
-        }
-      }
-    )
-    isProcessingEffects = false
-
-    if !didComplete {
-      self.effectCancellables[uuid] = effectCancellable
-    }
+    self.synchronousActionsToSend.append(action)
 
     while !self.synchronousActionsToSend.isEmpty {
       let action = self.synchronousActionsToSend.removeFirst()
-      self.send(action)
+
+      if self.isSending {
+        assertionFailure(
+          """
+          The store was sent an action while it was already processing another action. This can \
+          happen for a few reasons:
+
+          * The store was sent an action recursively. This can occur when you run an effect directly \
+          in the reducer, rather than returning it from the reducer. Check the stack (⌘7) to find \
+          frames corresponding to one of your reducers. That code should be refactored to not invoke \
+          the effect directly.
+
+          * The store has been sent actions from multiple threads. The `send` method is not \
+          thread-safe, and should only ever be used from a single thread (typically the main thread). 
+          Instead of calling `send` from multiple threads you should use effects to process expensive \
+          computations on background threads so that it can be fed back into the store.
+          """
+        )
+      }
+      self.isSending = true
+      let effect = self.reducer(&self.state, action)
+      self.isSending = false
+
+      var didComplete = false
+      let uuid = UUID()
+
+      var isProcessingEffects = true
+      let effectCancellable = effect.sink(
+        receiveCompletion: { [weak self] _ in
+          didComplete = true
+          self?.effectCancellables[uuid] = nil
+        },
+        receiveValue: { [weak self] action in
+          if isProcessingEffects {
+            self?.synchronousActionsToSend.append(action)
+          } else {
+            self?.send(action)
+          }
+        }
+      )
+      isProcessingEffects = false
+
+      if !didComplete {
+        self.effectCancellables[uuid] = effectCancellable
+      }
     }
   }
 
@@ -217,7 +218,7 @@ public struct StorePublisher<State>: Publisher {
 
   public func receive<S>(subscriber: S)
   where S: Subscriber, Failure == S.Failure, Output == S.Input {
-    self.upstream.receive(subscriber: subscriber)
+    self.upstream.subscribe(subscriber)
   }
 
   init<P>(_ upstream: P) where P: Publisher, Failure == P.Failure, Output == P.Output {
