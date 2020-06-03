@@ -22,25 +22,26 @@ where SchedulerTimeType: Strideable, SchedulerTimeType.Stride: SchedulerTimeInte
   ///
   /// - Parameter stride: A stride.
   public func advance(by stride: SchedulerTimeType.Stride = .zero) {
-    self.scheduled.sort { ($0.date, $0.sequence) < ($1.date, $1.sequence) }
+    let finalDate = self.now.advanced(by: stride)
 
-    guard
-      let nextDate = self.scheduled.first?.date,
-      self.now.advanced(by: stride) >= nextDate
-    else {
-      self.now = self.now.advanced(by: stride)
-      return
+    while self.now <= finalDate {
+      self.scheduled.sort { ($0.date, $0.sequence) < ($1.date, $1.sequence) }
+
+      guard
+        let nextDate = self.scheduled.first?.date,
+        finalDate >= nextDate
+      else {
+        self.now = finalDate
+        return
+      }
+
+      self.now = nextDate
+
+      while let (_, date, action) = self.scheduled.first, date == nextDate {
+        self.scheduled.removeFirst()
+        action()
+      }
     }
-
-    let delta = self.now.distance(to: nextDate)
-    self.now = nextDate
-
-    while let (_, date, action) = self.scheduled.first, date == nextDate {
-      self.scheduled.removeFirst()
-      action()
-    }
-
-    self.advance(by: stride - delta)
   }
 
   /// Runs the scheduler until it has no scheduled items left.
