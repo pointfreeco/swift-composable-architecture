@@ -241,7 +241,6 @@ final class EffectCancellationTests: XCTestCase {
     cancellables.removeAll()
 
     XCTAssertEqual([:], cancellationCancellables)
-    XCTAssertEqual([], isCancelling)
   }
 
   func testSharedId() {
