@@ -36,17 +36,20 @@ extension Reducer {
     let prefix = prefix.isEmpty ? zeroWidthSpace : "[\(prefix)] "
 
     return Self { state, action, environment in
+      var actionOutput: String!
       if log.signpostsEnabled {
-        os_signpost(.begin, log: log, name: "Action", "%s%s", prefix, debugCaseOutput(action))
+        actionOutput = debugCaseOutput(action)
+        os_signpost(.begin, log: log, name: "Action", "%s%s", prefix, actionOutput)
       }
       let effects = self.run(&state, action, environment)
       if log.signpostsEnabled {
         os_signpost(.end, log: log, name: "Action")
+        return
+          effects
+          .effectSignpost(prefix, log: log, actionOutput: actionOutput)
+          .eraseToEffect()
       }
-      return
-        effects
-        .effectSignpost(prefix, log: log, action: action)
-        .eraseToEffect()
+      return effects
     }
   }
 }
@@ -55,10 +58,8 @@ extension Publisher where Failure == Never {
   func effectSignpost(
     _ prefix: String,
     log: OSLog,
-    action: Output
+    actionOutput: String
   ) -> Publishers.HandleEvents<Self> {
-    guard log.signpostsEnabled else { return self.handleEvents() }
-    let actionOutput = debugCaseOutput(action)
     let sid = OSSignpostID(log: log)
 
     return

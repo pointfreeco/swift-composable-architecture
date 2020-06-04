@@ -132,4 +132,31 @@ final class SchedulerTests: XCTestCase {
     testScheduler.advance(by: 2)
     XCTAssertEqual(values, [1, 42, 42, 1, 42])
   }
+
+  func testDebounceReceiveOn() {
+    let scheduler = DispatchQueue.testScheduler
+
+    let subject = PassthroughSubject<Void, Never>()
+
+    var count = 0
+    subject
+      .debounce(for: 1, scheduler: scheduler)
+      .receive(on: scheduler)
+      .sink { count += 1 }
+      .store(in: &self.cancellables)
+
+    XCTAssertEqual(count, 0)
+
+    subject.send()
+    XCTAssertEqual(count, 0)
+
+    scheduler.advance(by: 1)
+    XCTAssertEqual(count, 1)
+
+    scheduler.advance(by: 1)
+    XCTAssertEqual(count, 1)
+
+    scheduler.run()
+    XCTAssertEqual(count, 1)
+  }
 }

@@ -6,16 +6,15 @@ import XCTest
 
 class SearchTests: XCTestCase {
   let scheduler = DispatchQueue.testScheduler
-  lazy var environment = SearchEnvironment(
-    weatherClient: .unimplemented,
-    mainQueue: AnyScheduler(self.scheduler)
-  )
 
   func testSearchAndClearQuery() {
     let store = TestStore(
       initialState: .init(),
       reducer: searchReducer,
-      environment: self.environment
+      environment: SearchEnvironment(
+        weatherClient: .mock(),
+        mainQueue: self.scheduler.eraseToAnyScheduler()
+      )
     )
 
     store.assert(
@@ -40,7 +39,10 @@ class SearchTests: XCTestCase {
     let store = TestStore(
       initialState: .init(),
       reducer: searchReducer,
-      environment: self.environment
+      environment: SearchEnvironment(
+        weatherClient: .mock(),
+        mainQueue: self.scheduler.eraseToAnyScheduler()
+      )
     )
 
     store.assert(
@@ -59,13 +61,13 @@ class SearchTests: XCTestCase {
     let store = TestStore(
       initialState: .init(),
       reducer: searchReducer,
-      environment: self.environment
+      environment: SearchEnvironment(
+        weatherClient: .mock(searchLocation: { _ in Effect(value: mockLocations) }),
+        mainQueue: self.scheduler.eraseToAnyScheduler()
+      )
     )
 
     store.assert(
-      .environment {
-        $0.weatherClient.searchLocation = { _ in Effect(value: mockLocations) }
-      },
       .send(.searchQueryChanged("S")) {
         $0.searchQuery = "S"
       },
@@ -87,13 +89,13 @@ class SearchTests: XCTestCase {
     let store = TestStore(
       initialState: .init(locations: mockLocations + [specialLocation]),
       reducer: searchReducer,
-      environment: self.environment
+      environment: SearchEnvironment(
+        weatherClient: .mock(weather: { _ in Effect(value: specialLocationWeather) }),
+        mainQueue: self.scheduler.eraseToAnyScheduler()
+      )
     )
 
     store.assert(
-      .environment {
-        $0.weatherClient.weather = { _ in Effect(value: specialLocationWeather) }
-      },
       .send(.locationTapped(specialLocation)) {
         $0.locationWeatherRequestInFlight = specialLocation
       },
@@ -115,13 +117,13 @@ class SearchTests: XCTestCase {
     let store = TestStore(
       initialState: .init(locations: mockLocations + [specialLocation]),
       reducer: searchReducer,
-      environment: self.environment
+      environment: SearchEnvironment(
+        weatherClient: .mock(weather: { _ in Effect(value: specialLocationWeather) }),
+        mainQueue: self.scheduler.eraseToAnyScheduler()
+      )
     )
 
     store.assert(
-      .environment {
-        $0.weatherClient.weather = { _ in Effect(value: specialLocationWeather) }
-      },
       .send(.locationTapped(mockLocations.first!)) {
         $0.locationWeatherRequestInFlight = mockLocations.first!
       },
@@ -140,13 +142,13 @@ class SearchTests: XCTestCase {
     let store = TestStore(
       initialState: .init(locations: mockLocations),
       reducer: searchReducer,
-      environment: self.environment
+      environment: SearchEnvironment(
+        weatherClient: .mock(weather: { _ in Fail(error: .init()).eraseToEffect() }),
+        mainQueue: self.scheduler.eraseToAnyScheduler()
+      )
     )
 
     store.assert(
-      .environment {
-        $0.weatherClient.weather = { _ in Fail(error: .init()).eraseToEffect() }
-      },
       .send(.locationTapped(mockLocations.first!)) {
         $0.locationWeatherRequestInFlight = mockLocations.first!
       },
