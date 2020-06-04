@@ -126,7 +126,7 @@ final class TimerTests: XCTestCase {
     scheduler.advance(by: 1)
     XCTAssertEqual(count, 3)
 
-//    scheduler.run()
-//    XCTAssertEqual(count, 3)
+    scheduler.run()
+    XCTAssertEqual(count, 3)
   }
 }
