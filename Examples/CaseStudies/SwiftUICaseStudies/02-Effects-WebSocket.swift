@@ -62,6 +62,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
   case .alertDismissed:
     state.alert = nil
     return .none
+
   case .connectButtonTapped:
     switch state.connectivityState {
     case .connected, .connecting:
@@ -205,12 +206,14 @@ struct WebSocketClient {
     case data(Data)
     case string(String)
 
-    init(_ message: URLSessionWebSocketTask.Message) {
+    init?(_ message: URLSessionWebSocketTask.Message) {
       switch message {
       case let .data(data):
         self = .data(data)
       case let .string(string):
         self = .string(string)
+      @unknown default:
+        return nil
       }
     }
 
@@ -271,11 +274,14 @@ extension WebSocketClient {
     receive: { id in
       .future { callback in
         dependencies[id]?.task.receive { result in
-          callback(
-            result
-              .map(Message.init)
-              .mapError { $0 as NSError }
-          )
+          switch result.map(Message.init) {
+          case let .success(.some(message)):
+            callback(.success(message))
+          case .success(.none):
+            callback(.failure(NSError.init(domain: "co.pointfree", code: 1)))
+          case let .failure(error):
+            callback(.failure(error as NSError))
+          }
         }
       }
     },
