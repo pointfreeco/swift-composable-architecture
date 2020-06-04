@@ -26,7 +26,7 @@
     <nav>
         <div class="wrapper">
             <h2>On This Page</h2>
-            <ol><li><a href="#relationships">Relationships</a><ul><li><a href="#relationships">Conforms To</a></li></ul></li><li><a href="#initializers">Initializers</a><ul><li class="initializer"><a href="#testscheduler.init(now:)">init(now:​)</a></li></ul></li><li><a href="#properties">Properties</a><ul><li class="property"><a href="#testscheduler.lastid">last​Id</a></li><li class="property"><a href="#testscheduler.minimumtolerance">minimum​Tolerance</a></li><li class="property"><a href="#testscheduler.now">now</a></li><li class="property"><a href="#testscheduler.scheduled">scheduled</a></li></ul></li><li><a href="#methods">Methods</a><ul><li class="method"><a href="#testscheduler.advance(by:)">advance(by:​)</a></li><li class="method"><a href="#testscheduler.run()">run()</a></li><li class="method"><a href="#testscheduler.schedule(after:interval:tolerance:options:_:)">schedule(after:​interval:​tolerance:​options:​_:​)</a></li><li class="method"><a href="#testscheduler.schedule(after:tolerance:options:_:)">schedule(after:​tolerance:​options:​_:​)</a></li><li class="method"><a href="#testscheduler.schedule(options:_:)">schedule(options:​_:​)</a></li><li class="method"><a href="#testscheduler.nextid()">next​Id()</a></li></ul></li></ol>
+            <ol><li><a href="#relationships">Relationships</a><ul><li><a href="#relationships">Conforms To</a></li></ul></li><li><a href="#initializers">Initializers</a><ul><li class="initializer"><a href="#testscheduler.init(now:)">init(now:​)</a></li></ul></li><li><a href="#properties">Properties</a><ul><li class="property"><a href="#testscheduler.lastsequence">last​Sequence</a></li><li class="property"><a href="#testscheduler.minimumtolerance">minimum​Tolerance</a></li><li class="property"><a href="#testscheduler.now">now</a></li><li class="property"><a href="#testscheduler.scheduled">scheduled</a></li></ul></li><li><a href="#methods">Methods</a><ul><li class="method"><a href="#testscheduler.advance(by:)">advance(by:​)</a></li><li class="method"><a href="#testscheduler.run()">run()</a></li><li class="method"><a href="#testscheduler.schedule(after:interval:tolerance:options:_:)">schedule(after:​interval:​tolerance:​options:​_:​)</a></li><li class="method"><a href="#testscheduler.schedule(after:tolerance:options:_:)">schedule(after:​tolerance:​options:​_:​)</a></li><li class="method"><a href="#testscheduler.schedule(options:_:)">schedule(options:​_:​)</a></li><li class="method"><a href="#testscheduler.nextsequence()">next​Sequence()</a></li></ul></li></ol>
         </div>
     </nav>
 
@@ -125,11 +125,11 @@
     <section id="properties">
         <h2>Properties</h2>
 
-        <div role="article" class="variable" id="testscheduler.lastid">
+        <div role="article" class="variable" id="testscheduler.lastsequence">
     <h3>
-        <code>last​Id</code>
+        <code>last​Sequence</code>
     </h3>
-    <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">lastId</span>: <span class="type">UInt</span></code></pre></body></html>
+    <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">lastSequence</span>: <span class="type">UInt</span></code></pre></body></html>
 </div>
 <div role="article" class="variable" id="testscheduler.minimumtolerance">
     <h3>
@@ -147,7 +147,7 @@
     <h3>
         <code>scheduled</code>
     </h3>
-    <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">scheduled</span>: [(<span class="variable">id</span>: <span class="type">UInt</span>, <span class="variable">date</span>: <span class="type">SchedulerTimeType</span>, <span class="variable">action</span>: () -&gt; <span class="type">Void</span>)]</code></pre></body></html>
+    <html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">scheduled</span>: [(<span class="variable">sequence</span>: <span class="type">UInt</span>, <span class="variable">date</span>: <span class="type">SchedulerTimeType</span>, <span class="variable">action</span>: () -&gt; <span class="type">Void</span>)]</code></pre></body></html>
 </div>
     </section>
     <section id="methods">
@@ -212,11 +212,11 @@
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">func</span> <span class="function">schedule</span>(<span class="variable">options</span> <span class="keyword">_</span>: <span class="type">SchedulerOptions</span>?, <span class="keyword">_</span> <span class="variable">action</span>: <span class="attribute">@</span><span class="attribute">escaping</span> () -&gt; <span class="type">Void</span>)</code></pre></body></html>
 </div>
-<div role="article" class="function" id="testscheduler.nextid()">
+<div role="article" class="function" id="testscheduler.nextsequence()">
     <h3>
-        <code>next​Id()</code>
+        <code>next​Sequence()</code>
     </h3>
-    <html><body><pre class="highlight"><code><span class="keyword">private</span> <span class="keyword">func</span> <span class="function">nextId</span>() -&gt; <span class="type">UInt</span></code></pre></body></html>
+    <html><body><pre class="highlight"><code><span class="keyword">private</span> <span class="keyword">func</span> <span class="function">nextSequence</span>() -&gt; <span class="type">UInt</span></code></pre></body></html>
 </div>
     </section>
 
@@ -227,7 +227,7 @@
 
     <footer>
         <p>
-    Generated on <time datetime="2020-05-27T14:05:55-0700">May 27, 2020</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-beta.3</span>.
+    Generated on <time datetime="2020-06-03T20:34:10-0700">June 3, 2020</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-beta.3</span>.
 </p>
     </footer>
 </body>

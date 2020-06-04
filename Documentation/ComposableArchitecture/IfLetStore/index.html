@@ -26,7 +26,7 @@
     <nav>
         <div class="wrapper">
             <h2>On This Page</h2>
-            <ol><li><a href="#relationships">Relationships</a><ul><li><a href="#relationships">Conforms To</a></li></ul></li><li><a href="#initializers">Initializers</a><ul><li class="initializer"><a href="#ifletstore.init(_:then:else:)">init(_:​then:​else:​)</a></li></ul></li><li><a href="#properties">Properties</a><ul><li class="property"><a href="#ifletstore.store">store</a></li><li class="property"><a href="#ifletstore.ifcontent">if​Content</a></li><li class="property"><a href="#ifletstore.elsecontent">else​Content</a></li><li class="property"><a href="#ifletstore.body">body</a></li></ul></li></ol>
+            <ol><li><a href="#relationships">Relationships</a><ul><li><a href="#relationships">Conforms To</a></li></ul></li><li><a href="#initializers">Initializers</a><ul><li class="initializer"><a href="#ifletstore.init(_:then:else:)">init(_:​then:​else:​)</a></li><li class="initializer"><a href="#ifletstore.init(_:then:)">init(_:​then:​)</a></li></ul></li><li><a href="#properties">Properties</a><ul><li class="property"><a href="#ifletstore.content">content</a></li><li class="property"><a href="#ifletstore.store">store</a></li><li class="property"><a href="#ifletstore.body">body</a></li></ul></li></ol>
         </div>
     </nav>
 
@@ -37,7 +37,7 @@
     <code class="name">IfLet​Store</code>
 </h1>
 
-<html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">struct</span> <span class="type">IfLetStore</span>&lt;<span class="variable">State</span>, <span class="variable">Action</span>, <span class="variable">IfContent</span>, <span class="variable">ElseContent</span>&gt;: <span class="type">View</span> <span class="keyword">where</span> <span class="type">IfContent</span>: <span class="type">View</span>, <span class="type">ElseContent</span>: <span class="type">View</span></code></pre></body></html>
+<html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">struct</span> <span class="type">IfLetStore</span>&lt;<span class="variable">State</span>, <span class="variable">Action</span>, <span class="variable">Content</span>&gt;: <span class="type">View</span> <span class="keyword">where</span> <span class="type">Content</span>: <span class="type">View</span></code></pre></body></html>
 <div class="summary" role="doc-abstract">
     <p>A view that safely unwraps a store of optional state in order to show one of two views.</p>
 
@@ -122,10 +122,10 @@ holds onto non-optional state, and otherwise the <code>else</code> closure will 
     <h3>
         <code>init(_:​then:​else:​)</code>
     </h3>
-    <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">init</span>(<span class="keyword">_</span> <span class="variable">store</span>: <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture/Store"><span class="type">Store</span></a>&lt;<span class="type">State</span>?, <span class="type">Action</span>&gt;, <span class="variable">then</span> <span class="variable">ifContent</span>: <span class="attribute">@</span><span class="attribute">escaping</span> (<a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture/Store"><span class="type">Store</span></a>&lt;<span class="type">State</span>, <span class="type">Action</span>&gt;) -&gt; <span class="type">IfContent</span>, <span class="variable">else</span> <span class="variable">elseContent</span>: <span class="attribute">@</span><span class="attribute">escaping</span> <span class="attribute">@</span><span class="attribute">autoclosure</span> () -&gt; <span class="type">ElseContent</span>)</code></pre></body></html>
+    <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">init</span>&lt;<span class="variable">IfContent</span>, <span class="variable">ElseContent</span>&gt;(<span class="keyword">_</span> <span class="variable">store</span>: <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture/Store"><span class="type">Store</span></a>&lt;<span class="type">State</span>?, <span class="type">Action</span>&gt;, <span class="variable">then</span> <span class="variable">ifContent</span>: <span class="attribute">@</span><span class="attribute">escaping</span> (<a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture/Store"><span class="type">Store</span></a>&lt;<span class="type">State</span>, <span class="type">Action</span>&gt;) -&gt; <span class="type">IfContent</span>, <span class="variable">else</span> <span class="variable">elseContent</span>: <span class="attribute">@</span><span class="attribute">escaping</span> <span class="attribute">@</span><span class="attribute">autoclosure</span> () -&gt; <span class="type">ElseContent</span>) <span class="keyword">where</span> <span class="type">Content</span> == <span class="type">_ConditionalContent</span>&lt;<span class="type">IfContent</span>, <span class="type">ElseContent</span>&gt;</code></pre></body></html>
 <div class="summary" role="doc-abstract">
-    <p>Initializes an <code>IfLetStore</code> view when you have views you want to show for the case that state
-is non-<code>nil</code> <em>and</em> the case that it is <code>nil</code>.</p>
+    <p>Initializes an <code>IfLetStore</code> view that computes content depending on if a store of optional
+state is <code>nil</code> or non-<code>nil</code>.</p>
 
 </div>
 <h4>Parameters</h4>
@@ -166,27 +166,61 @@ is non-<code>nil</code> <em>and</em> the case that it is <code>nil</code>.</p>
   </tbody>
 </table>
 </div>
+<div role="article" class="initializer" id="ifletstore.init(_:then:)">
+    <h3>
+        <code>init(_:​then:​)</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">public</span> <span class="keyword">init</span>&lt;<span class="variable">IfContent</span>&gt;(<span class="keyword">_</span> <span class="variable">store</span>: <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture/Store"><span class="type">Store</span></a>&lt;<span class="type">State</span>?, <span class="type">Action</span>&gt;, <span class="variable">then</span> <span class="variable">ifContent</span>: <span class="attribute">@</span><span class="attribute">escaping</span> (<a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture/Store"><span class="type">Store</span></a>&lt;<span class="type">State</span>, <span class="type">Action</span>&gt;) -&gt; <span class="type">IfContent</span>) <span class="keyword">where</span> <span class="type">Content</span> == <span class="type">IfContent</span>?</code></pre></body></html>
+<div class="summary" role="doc-abstract">
+    <p>Initializes an <code>IfLetStore</code> view that computes content depending on if a store of optional
+state is <code>nil</code> or non-<code>nil</code>.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>store</th>
+    <td><code class="type">Store&lt;State?, Action&gt;</code></td></td>
+    <td><ul>
+<li>store: A store of optional state.</li>
+</ul>
+</td>
+</tr>
+<tr>
+    <th>if​Content</th>
+    <td><code class="type">@escaping (Store&lt;State, Action&gt;) -&gt; IfContent</code></td></td>
+    <td><ul>
+<li>ifContent: A function that is given a store of non-optional state and returns a view that is visible only when the optional state is non-<code>nil</code>.</li>
+</ul>
+</td>
+</tr>
+  </tbody>
+</table>
+</div>
     </section>
     <section id="properties">
         <h2>Properties</h2>
 
-        <div role="article" class="variable" id="ifletstore.store">
+        <div role="article" class="variable" id="ifletstore.content">
+    <h3>
+        <code>content</code>
+    </h3>
+    <html><body><pre class="highlight"><code><span class="keyword">let</span> <span class="variable">content</span>: (<a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture/ViewStore"><span class="type">ViewStore</span></a>&lt;<span class="type">State</span>?, <span class="type">Action</span>&gt;) -&gt; <span class="type">Content</span></code></pre></body></html>
+</div>
+<div role="article" class="variable" id="ifletstore.store">
     <h3>
         <code>store</code>
     </h3>
     <html><body><pre class="highlight"><code><span class="keyword">let</span> <span class="variable">store</span>: <a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture/Store"><span class="type">Store</span></a>&lt;<span class="type">State</span>?, <span class="type">Action</span>&gt;</code></pre></body></html>
-</div>
-<div role="article" class="variable" id="ifletstore.ifcontent">
-    <h3>
-        <code>if​Content</code>
-    </h3>
-    <html><body><pre class="highlight"><code><span class="keyword">let</span> <span class="variable">ifContent</span>: (<a href="/Users/brandon/projects/swift-composable-architecture/Documentation/ComposableArchitecture/Store"><span class="type">Store</span></a>&lt;<span class="type">State</span>, <span class="type">Action</span>&gt;) -&gt; <span class="type">IfContent</span></code></pre></body></html>
-</div>
-<div role="article" class="variable" id="ifletstore.elsecontent">
-    <h3>
-        <code>else​Content</code>
-    </h3>
-    <html><body><pre class="highlight"><code><span class="keyword">let</span> <span class="variable">elseContent</span>: () -&gt; <span class="type">ElseContent</span></code></pre></body></html>
 </div>
 <div role="article" class="variable" id="ifletstore.body">
     <h3>
@@ -203,7 +237,7 @@ is non-<code>nil</code> <em>and</em> the case that it is <code>nil</code>.</p>
 
     <footer>
         <p>
-    Generated on <time datetime="2020-05-27T14:05:55-0700">May 27, 2020</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-beta.3</span>.
+    Generated on <time datetime="2020-06-03T20:34:10-0700">June 3, 2020</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-beta.3</span>.
 </p>
     </footer>
 </body>
