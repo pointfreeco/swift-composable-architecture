@@ -170,14 +170,14 @@ public struct Reducer<State, Action, Environment> {
           """
           "\(debugCaseOutput(action))" was received by an optional reducer when its state was \
           "nil". This can happen for a few reasons:
+          
+          * The optional reducer was combined with or run from another reducer that set \
+          "\(State.self)" to "nil" before the optional reducer ran. Combine or run optional \
+          reducers before reducers that can set their state to "nil". This ensures that optional \
+          reducers can handle their actions while their state is still non-"nil".
 
-          * The optional reducer was combined with another reducer that set "\(State.self)" to \
-          "nil" when it handled this action. Combine optional reducers before reducers that can \
-          set their state to "nil". This ensures that optional reducers can handle their actions \
-          while their state is still non-"nil".
-
-          * An active effect emitted this action while state was "nil". Make sure that effects for this \
-          optional reducer are canceled when optional state is set to "nil".
+          * An active effect emitted this action while state was "nil". Make sure that effects for \
+          this optional reducer are canceled when optional state is set to "nil".
 
           * This action was sent to the store while state was "nil". Make sure that actions for \
           this reducer can only be sent to a view store when state is non-"nil". In SwiftUI \
@@ -231,10 +231,10 @@ public struct Reducer<State, Action, Environment> {
         "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at index \(index) \
         when state contained no element at this index. This can happen for a few reasons:
 
-        * The "forEach" reducer was combined with another reducer that removed an element from \
-        state when it handled this action. Combine index-based "forEach" reducers before reducers \
-        that can move or remove elements from their state. This ensures that "forEach" reducers \
-        can handle their actions for their state at the intended index.
+        * The "forEach" reducer was combined with or run from another reducer that removed an \
+        element from state when it handled this action. Combine or run index-based "forEach" \
+        reducers before reducers that can move or remove elements from their state. This ensures \
+        that "forEach" reducers can handle their actions for their state at the intended index.
 
         * An active effect emitted this action while state contained no element at this index. Make sure \
         that effects for this "forEach" reducer are canceled whenever elements are moved or \
