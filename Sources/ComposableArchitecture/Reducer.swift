@@ -170,7 +170,7 @@ public struct Reducer<State, Action, Environment> {
           """
           "\(debugCaseOutput(action))" was received by an optional reducer when its state was \
           "nil". This can happen for a few reasons:
-          
+
           * The optional reducer was combined with or run from another reducer that set \
           "\(State.self)" to "nil" before the optional reducer ran. Combine or run optional \
           reducers before reducers that can set their state to "nil". This ensures that optional \
@@ -240,7 +240,7 @@ public struct Reducer<State, Action, Environment> {
         that effects for this "forEach" reducer are canceled whenever elements are moved or \
         removed from state. If your "forEach" reducer returns any long-living effects, you should \
         use the identifier-based "forEach", instead.
-        
+
         * This action was sent to the store while state contained no element at this index. Make \
         sure that actions for this reducer can only be sent to a view store when state contains an \
         element at this index. In SwiftUI applications, use `ForEachStore`.
