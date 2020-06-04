@@ -2,6 +2,19 @@ import Combine
 import Foundation
 
 extension Effect {
+  /// An effect that will cancel any currently in-flight effect with the given identifier.
+  ///
+  /// - Parameter id: An effect identifier.
+  /// - Returns: A new effect that will cancel any currently in-flight effect with the given
+  ///   identifier.
+  public static func cancel(id: AnyHashable) -> Effect {
+    return .fireAndForget {
+      cancellablesLock.sync {
+        cancellationCancellables[id]?.forEach { $0.cancel() }
+      }
+    }
+  }
+
   /// Turns an effect into one that is capable of being canceled.
   ///
   /// To turn an effect into a cancellable one you must provide an identifier, which is used in
@@ -27,56 +40,38 @@ extension Effect {
   ///     canceled before starting this new one.
   /// - Returns: A new effect that is capable of being canceled by an identifier.
   public func cancellable(id: AnyHashable, cancelInFlight: Bool = false) -> Effect {
-    return Deferred { () -> Publishers.HandleEvents<PassthroughSubject<Output, Failure>> in
+    let effect = Deferred { () -> Publishers.HandleEvents<PassthroughSubject<Output, Failure>> in
       let subject = PassthroughSubject<Output, Failure>()
+      let cancellable = self.subscribe(subject)
 
-      cancellablesLock.sync {
-        if cancelInFlight {
-          cancellationCancellables[id]?.forEach { cancellable in cancellable.cancel() }
-          cancellationCancellables[id] = nil
-        }
-
-        let cancellable = self.subscribe(subject)
-
-        AnyCancellable {
+      var cancellationCancellable: AnyCancellable!
+      cancellationCancellable = AnyCancellable {
+        subject.send(completion: .finished)
+        cancellablesLock.sync {
           cancellable.cancel()
-          subject.send(completion: .finished)
+          cancellationCancellables[id]?.remove(cancellationCancellable)
+          if cancellationCancellables[id]?.isEmpty == .some(true) {
+            cancellationCancellables[id] = nil
+          }
         }
-        .store(in: &cancellationCancellables[id, default: []])
       }
 
-      func cleanUp() {
-        cancellablesLock.sync {
-          guard !isCancelling.contains(id) else { return }
-          isCancelling.insert(id)
-          defer { isCancelling.remove(id) }
-          cancellationCancellables[id] = nil
-        }
+      cancellablesLock.sync {
+        cancellationCancellables[id, default: []].insert(
+          cancellationCancellable
+        )
       }
 
       return subject.handleEvents(
-        receiveCompletion: { _ in cleanUp() },
-        receiveCancel: cleanUp
+        receiveCompletion: { _ in cancellationCancellable.cancel() },
+        receiveCancel: cancellationCancellable.cancel
       )
     }
     .eraseToEffect()
-  }
 
-  /// An effect that will cancel any currently in-flight effect with the given identifier.
-  ///
-  /// - Parameter id: An effect identifier.
-  /// - Returns: A new effect that will cancel any currently in-flight effect with the given
-  ///   identifier.
-  public static func cancel(id: AnyHashable) -> Effect {
-    .fireAndForget {
-      cancellablesLock.sync {
-        cancellationCancellables[id]?.forEach { cancellable in cancellable.cancel() }
-        cancellationCancellables[id] = nil
-      }
-    }
+    return cancelInFlight ? .concatenate(.cancel(id: id), effect) : effect
   }
 }
 
 var cancellationCancellables: [AnyHashable: Set<AnyCancellable>] = [:]
 let cancellablesLock = NSRecursiveLock()
-var isCancelling: Set<AnyHashable> = []
