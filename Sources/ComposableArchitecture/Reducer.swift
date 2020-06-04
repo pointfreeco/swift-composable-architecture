@@ -268,8 +268,9 @@ public struct Reducer<State, Action, Environment> {
         from its IdentifiedArray.
         """
       )
-        
-      return self
+
+      return
+        self
         .reducer(
           &globalState[keyPath: toLocalState][id: id]!,
           localAction,

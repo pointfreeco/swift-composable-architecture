@@ -37,7 +37,7 @@ extension Effect {
       var cancellationCancellable: AnyCancellable!
       cancellationCancellable = AnyCancellable {
         cancellablesLock.sync {
-        subject.send(completion: .finished)
+          subject.send(completion: .finished)
           cancellable.cancel()
           cancellationCancellables[id]?.remove(cancellationCancellable)
           if cancellationCancellables[id]?.isEmpty == .some(true) {
