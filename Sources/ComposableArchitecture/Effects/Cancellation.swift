@@ -28,13 +28,16 @@ extension Effect {
   /// - Returns: A new effect that is capable of being canceled by an identifier.
   public func cancellable(id: AnyHashable, cancelInFlight: Bool = false) -> Effect {
     let effect = Deferred { () -> Publishers.HandleEvents<PassthroughSubject<Output, Failure>> in
+      cancellablesLock.lock()
+      defer { cancellablesLock.unlock() }
+
       let subject = PassthroughSubject<Output, Failure>()
       let cancellable = self.subscribe(subject)
 
       var cancellationCancellable: AnyCancellable!
       cancellationCancellable = AnyCancellable {
-        subject.send(completion: .finished)
         cancellablesLock.sync {
+        subject.send(completion: .finished)
           cancellable.cancel()
           cancellationCancellables[id]?.remove(cancellationCancellable)
           if cancellationCancellables[id]?.isEmpty == .some(true) {
@@ -43,11 +46,9 @@ extension Effect {
         }
       }
 
-      cancellablesLock.sync {
-        cancellationCancellables[id, default: []].insert(
-          cancellationCancellable
-        )
-      }
+      cancellationCancellables[id, default: []].insert(
+        cancellationCancellable
+      )
 
       return subject.handleEvents(
         receiveCompletion: { _ in cancellationCancellable.cancel() },
