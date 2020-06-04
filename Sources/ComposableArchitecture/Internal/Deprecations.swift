@@ -48,7 +48,7 @@ extension WithViewStore {
 extension Effect {
   @available(*, deprecated, renamed: "run")
   public static func async(
-    _ work: @escaping (Effect.Subscriber<Output, Failure>) -> Cancellable
+    _ work: @escaping (Effect.Subscriber) -> Cancellable
   ) -> Self {
     self.run(work)
   }

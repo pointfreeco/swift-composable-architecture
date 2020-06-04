@@ -40,7 +40,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   public func receive<S>(
     subscriber: S
   ) where S: Combine.Subscriber, Failure == S.Failure, Output == S.Input {
-    self.upstream.receive(subscriber: subscriber)
+    self.upstream.subscribe(subscriber)
   }
 
   /// Initializes an effect that immediately emits the value passed in.
@@ -162,7 +162,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   ///   the `Effect` is completed, the cancellable will be used to clean up any resources created
   ///   when the effect was started.
   public static func run(
-    _ work: @escaping (Effect.Subscriber<Output, Failure>) -> Cancellable
+    _ work: @escaping (Effect.Subscriber) -> Cancellable
   ) -> Self {
     AnyPublisher.create(work).eraseToEffect()
   }
