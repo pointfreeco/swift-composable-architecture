@@ -29,6 +29,7 @@ extension Effect {
   public func cancellable(id: AnyHashable, cancelInFlight: Bool = false) -> Effect {
     return Deferred { () -> Publishers.HandleEvents<PassthroughSubject<Output, Failure>> in
       let subject = PassthroughSubject<Output, Failure>()
+      var wrappedCancellable: AnyCancellable!
 
       cancellablesLock.sync {
         if cancelInFlight {
@@ -38,11 +39,11 @@ extension Effect {
 
         let cancellable = self.subscribe(subject)
 
-        AnyCancellable {
+        wrappedCancellable = AnyCancellable {
           cancellable.cancel()
           subject.send(completion: .finished)
         }
-        .store(in: &cancellationCancellables[id, default: []])
+        wrappedCancellable.store(in: &cancellationCancellables[id, default: []])
       }
 
       func cleanUp() {
@@ -50,7 +51,8 @@ extension Effect {
           guard !isCancelling.contains(id) else { return }
           isCancelling.insert(id)
           defer { isCancelling.remove(id) }
-          cancellationCancellables[id] = nil
+//          cancellationCancellables[id] = nil
+          cancellationCancellables[id]?.remove(wrappedCancellable)
         }
       }
 

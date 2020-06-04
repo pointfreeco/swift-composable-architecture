@@ -74,7 +74,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
         .receive(on: environment.mainQueue)
         .map(WebSocketAction.webSocket)
         .eraseToEffect()
-//        .cancellable(id: WebSocketId())
+        .cancellable(id: WebSocketId())
     }
 
   case let .messageToSendChanged(message):
@@ -238,6 +238,7 @@ extension WebSocketClient {
     cancel: { id, closeCode, reason in
       .fireAndForget {
         dependencies[id]?.task.cancel(with: closeCode, reason: reason)
+        dependencies[id]?.subscriber.send(completion: .finished)
         dependencies[id] = nil
       }
     },
@@ -262,6 +263,7 @@ extension WebSocketClient {
         dependencies[id] = Dependencies(delegate: delegate, subscriber: subscriber, task: task)
         return AnyCancellable {
           task.cancel(with: .normalClosure, reason: nil)
+          dependencies[id]?.subscriber.send(completion: .finished)
           dependencies[id] = nil
         }
       }
