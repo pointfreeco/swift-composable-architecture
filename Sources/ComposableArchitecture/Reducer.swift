@@ -170,7 +170,7 @@ public struct Reducer<State, Action, Environment> {
           """
           "\(debugCaseOutput(action))" was received by an optional reducer when its state was \
           "nil". This can happen for a few reasons:
-          
+
           * The optional reducer was combined with or run from another reducer that set \
           "\(State.self)" to "nil" before the optional reducer ran. Combine or run optional \
           reducers before reducers that can set their state to "nil". This ensures that optional \
