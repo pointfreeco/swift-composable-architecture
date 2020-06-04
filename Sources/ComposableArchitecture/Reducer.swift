@@ -176,12 +176,12 @@ public struct Reducer<State, Action, Environment> {
           set their state to "nil". This ensures that optional reducers can handle their actions \
           while their state is still non-"nil".
 
+          * An active effect emitted this action while state was "nil". Make sure that effects for this \
+          optional reducer are canceled when optional state is set to "nil".
+
           * This action was sent to the store while state was "nil". Make sure that actions for \
           this reducer can only be sent to a view store when state is non-"nil". In SwiftUI \
           applications, use "IfLetStore".
-
-          * An effect returned this action while state was "nil". Make sure that effects for this \
-          optional reducer are canceled when optional state is set to "nil".
           """
         )
         return .none
