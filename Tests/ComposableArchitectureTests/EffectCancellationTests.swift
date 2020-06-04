@@ -226,10 +226,13 @@ final class EffectCancellationTests: XCTestCase {
   }
 
   func testNestedCancels() {
-    let effect = Empty<Void, Never>(completeImmediately: false)
+    var effect = Empty<Void, Never>(completeImmediately: false)
       .eraseToEffect()
       .cancellable(id: 1)
-      .cancellable(id: 1)
+
+    for _ in 1 ... .random(in: 1...1_000) {
+      effect = effect.cancellable(id: 1)
+    }
 
     effect
       .sink(receiveValue: { _ in })
@@ -282,33 +285,5 @@ final class EffectCancellationTests: XCTestCase {
     XCTAssertEqual(expectedOutput, [])
     scheduler.advance(by: 1)
     XCTAssertEqual(expectedOutput, [])
-  }
-
-  func testSharedId() {
-    let scheduler = DispatchQueue.testScheduler
-
-    let effect1 = Just(1)
-      .delay(for: 1, scheduler: scheduler)
-      .eraseToEffect()
-      .cancellable(id: "id")
-
-    let effect2 = Just(2)
-      .delay(for: 2, scheduler: scheduler)
-      .eraseToEffect()
-      .cancellable(id: "id")
-
-    var expectedOutput: [Int] = []
-    effect1
-      .sink { expectedOutput.append($0) }
-      .store(in: &cancellables)
-    effect2
-      .sink { expectedOutput.append($0) }
-      .store(in: &cancellables)
-
-    XCTAssertEqual(expectedOutput, [])
-    scheduler.advance(by: 1)
-    XCTAssertEqual(expectedOutput, [1])
-    scheduler.advance(by: 1)
-    XCTAssertEqual(expectedOutput, [1, 2])
   }
 }
