@@ -2,19 +2,6 @@ import Combine
 import Foundation
 
 extension Effect {
-  /// An effect that will cancel any currently in-flight effect with the given identifier.
-  ///
-  /// - Parameter id: An effect identifier.
-  /// - Returns: A new effect that will cancel any currently in-flight effect with the given
-  ///   identifier.
-  public static func cancel(id: AnyHashable) -> Effect {
-    return .fireAndForget {
-      cancellablesLock.sync {
-        cancellationCancellables[id]?.forEach { $0.cancel() }
-      }
-    }
-  }
-
   /// Turns an effect into one that is capable of being canceled.
   ///
   /// To turn an effect into a cancellable one you must provide an identifier, which is used in
@@ -70,6 +57,19 @@ extension Effect {
     .eraseToEffect()
 
     return cancelInFlight ? .concatenate(.cancel(id: id), effect) : effect
+  }
+
+  /// An effect that will cancel any currently in-flight effect with the given identifier.
+  ///
+  /// - Parameter id: An effect identifier.
+  /// - Returns: A new effect that will cancel any currently in-flight effect with the given
+  ///   identifier.
+  public static func cancel(id: AnyHashable) -> Effect {
+    return .fireAndForget {
+      cancellablesLock.sync {
+        cancellationCancellables[id]?.forEach { $0.cancel() }
+      }
+    }
   }
 }
 
