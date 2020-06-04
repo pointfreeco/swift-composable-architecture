@@ -257,9 +257,21 @@ public struct Reducer<State, Action, Environment> {
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
     .init { globalState, globalAction, globalEnvironment in
       guard let (id, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
-      return self.optional
+
+      // This does not need to be a fatal error because of the unwrap that follows it.
+      assert(
+        globalState[keyPath: toLocalState][id: id] != nil,
+        """
+        Id not present in IdentifiedArray. This can happen when a reducer that can remove \
+        elements is then combined with a "forEach" from that array. To avoid this, combine \
+        your reducers so that the "forEach" comes before any reducer that can remove elements \
+        from its IdentifiedArray.
+        """
+      )
+        
+      return self
         .reducer(
-          &globalState[keyPath: toLocalState][id: id],
+          &globalState[keyPath: toLocalState][id: id]!,
           localAction,
           toLocalEnvironment(globalEnvironment)
         )
