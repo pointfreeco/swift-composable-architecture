@@ -270,4 +270,20 @@ final class EffectCancellationTests: XCTestCase {
     scheduler.advance(by: 1)
     XCTAssertEqual(expectedOutput, [1, 2])
   }
+
+  func testImmediateCancellation() {
+    let scheduler = DispatchQueue.testScheduler
+
+    var expectedOutput: [Int] = []
+    // Don't hold onto cancellable so that it is deallocated immediately.
+    _ = Deferred { Just(1) }
+      .delay(for: 1, scheduler: scheduler)
+      .eraseToEffect()
+      .cancellable(id: "id")
+      .sink { expectedOutput.append($0) }
+
+    XCTAssertEqual(expectedOutput, [])
+    scheduler.advance(by: 1)
+    XCTAssertEqual(expectedOutput, [])
+  }
 }
