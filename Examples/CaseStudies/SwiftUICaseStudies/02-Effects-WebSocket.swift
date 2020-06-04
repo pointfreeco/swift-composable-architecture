@@ -44,14 +44,14 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
   struct WebSocketId: Hashable {}
 
   var receiveSocketMessageEffect: Effect<WebSocketAction, Never> {
-    environment.webSocket.receive(WebSocketId())
+    return environment.webSocket.receive(WebSocketId())
       .receive(on: environment.mainQueue)
       .catchToEffect()
       .map(WebSocketAction.receivedSocketMessage)
       .cancellable(id: WebSocketId())
   }
   var sendPingEffect: Effect<WebSocketAction, Never> {
-    environment.webSocket.sendPing(WebSocketId())
+    return environment.webSocket.sendPing(WebSocketId())
       .delay(for: 10, scheduler: environment.mainQueue)
       .map(WebSocketAction.pingResponse)
       .eraseToEffect()
