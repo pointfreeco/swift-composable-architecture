@@ -236,14 +236,14 @@ public struct Reducer<State, Action, Environment> {
         that can move or remove elements from their state. This ensures that "forEach" reducers \
         can handle their actions for their state at the intended index.
 
-        * This action was sent to the store while state contained no element at this index. Make \
-        sure that actions for this reducer can only be sent to a view store when state contains an \
-        element at this index. In SwiftUI applications, use `ForEachStore`.
-
-        * An effect returned this action while state contained no element at this index. Make sure \
+        * An active effect emitted this action while state contained no element at this index. Make sure \
         that effects for this "forEach" reducer are canceled whenever elements are moved or \
         removed from state. If your "forEach" reducer returns any long-living effects, you should \
         use the identifier-based "forEach", instead.
+        
+        * This action was sent to the store while state contained no element at this index. Make \
+        sure that actions for this reducer can only be sent to a view store when state contains an \
+        element at this index. In SwiftUI applications, use `ForEachStore`.
         """
       )
       return self.reducer(
