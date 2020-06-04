@@ -243,4 +243,32 @@ final class EffectCancellationTests: XCTestCase {
     XCTAssertEqual([:], cancellationCancellables)
     XCTAssertEqual([], isCancelling)
   }
+
+  func testSharedId() {
+    let scheduler = DispatchQueue.testScheduler
+
+    let effect1 = Just(1)
+      .delay(for: 1, scheduler: scheduler)
+      .eraseToEffect()
+      .cancellable(id: "id")
+
+    let effect2 = Just(2)
+      .delay(for: 2, scheduler: scheduler)
+      .eraseToEffect()
+      .cancellable(id: "id")
+
+    var expectedOutput: [Int] = []
+    effect1
+      .sink { expectedOutput.append($0) }
+      .store(in: &cancellables)
+    effect2
+      .sink { expectedOutput.append($0) }
+      .store(in: &cancellables)
+
+    XCTAssertEqual(expectedOutput, [])
+    scheduler.advance(by: 1)
+    XCTAssertEqual(expectedOutput, [1])
+    scheduler.advance(by: 1)
+    XCTAssertEqual(expectedOutput, [1, 2])
+  }
 }
