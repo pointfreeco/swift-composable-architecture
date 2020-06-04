@@ -74,7 +74,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
         .receive(on: environment.mainQueue)
         .map(WebSocketAction.webSocket)
         .eraseToEffect()
-        .cancellable(id: WebSocketId())
+//        .cancellable(id: WebSocketId())
     }
 
   case let .messageToSendChanged(message):
@@ -259,7 +259,7 @@ extension WebSocketClient {
         let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
         let task = session.webSocketTask(with: url, protocols: protocols)
         task.resume()
-        dependencies[id] = Dependencies(task: task, delegate: delegate)
+        dependencies[id] = Dependencies(delegate: delegate, subscriber: subscriber, task: task)
         return AnyCancellable {
           task.cancel(with: .normalClosure, reason: nil)
           dependencies[id] = nil
@@ -295,8 +295,9 @@ extension WebSocketClient {
 
 private var dependencies: [AnyHashable: Dependencies] = [:]
 private struct Dependencies {
-  let task: URLSessionWebSocketTask
   let delegate: URLSessionWebSocketDelegate
+  let subscriber: Effect<WebSocketClient.Action, Never>.Subscriber
+  let task: URLSessionWebSocketTask
 }
 
 class WebSocketDelegate: NSObject, URLSessionWebSocketDelegate {
