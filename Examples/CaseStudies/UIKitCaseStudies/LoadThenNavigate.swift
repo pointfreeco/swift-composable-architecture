@@ -18,33 +18,35 @@ struct LazyNavigationEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
-let lazyNavigationReducer = Reducer<
-  LazyNavigationState, LazyNavigationAction, LazyNavigationEnvironment
->.combine(
-  Reducer { state, action, environment in
-    switch action {
-    case .setNavigation(isActive: true):
-      state.isActivityIndicatorHidden = false
-      return Effect(value: .setNavigationIsActiveDelayCompleted)
-        .delay(for: 1, scheduler: environment.mainQueue)
-        .eraseToEffect()
-    case .setNavigation(isActive: false):
-      state.optionalCounter = nil
-      return .none
-    case .setNavigationIsActiveDelayCompleted:
-      state.isActivityIndicatorHidden = true
-      state.optionalCounter = CounterState()
-      return .none
-    case .optionalCounter:
-      return .none
-    }
-  },
-  counterReducer.optional.pullback(
+let lazyNavigationReducer = counterReducer
+  .optional
+  .pullback(
     state: \.optionalCounter,
     action: /LazyNavigationAction.optionalCounter,
     environment: { _ in CounterEnvironment() }
   )
-)
+  .combined(
+    with: Reducer<
+      LazyNavigationState, LazyNavigationAction, LazyNavigationEnvironment
+    > { state, action, environment in
+      switch action {
+      case .setNavigation(isActive: true):
+        state.isActivityIndicatorHidden = false
+        return Effect(value: .setNavigationIsActiveDelayCompleted)
+          .delay(for: 1, scheduler: environment.mainQueue)
+          .eraseToEffect()
+      case .setNavigation(isActive: false):
+        state.optionalCounter = nil
+        return .none
+      case .setNavigationIsActiveDelayCompleted:
+        state.isActivityIndicatorHidden = true
+        state.optionalCounter = CounterState()
+        return .none
+      case .optionalCounter:
+        return .none
+      }
+    }
+  )
 
 class LazyNavigationViewController: UIViewController {
   var cancellables: [AnyCancellable] = []

@@ -165,7 +165,27 @@ public struct Reducer<State, Action, Environment> {
   ///   state.
   public var optional: Reducer<State?, Action, Environment> {
     .init { state, action, environment in
-      guard state != nil else { return .none }
+      guard state != nil else {
+        assertionFailure(
+          """
+          "\(debugCaseOutput(action))" was received by an optional reducer when its state was \
+          "nil". This can happen for a few reasons:
+          
+          * The optional reducer was combined with or run from another reducer that set \
+          "\(State.self)" to "nil" before the optional reducer ran. Combine or run optional \
+          reducers before reducers that can set their state to "nil". This ensures that optional \
+          reducers can handle their actions while their state is still non-"nil".
+
+          * An active effect emitted this action while state was "nil". Make sure that effects for \
+          this optional reducer are canceled when optional state is set to "nil".
+
+          * This action was sent to the store while state was "nil". Make sure that actions for \
+          this reducer can only be sent to a view store when state is non-"nil". In SwiftUI \
+          applications, use "IfLetStore".
+          """
+        )
+        return .none
+      }
       return self.reducer(&state!, action, environment)
     }
   }
@@ -208,11 +228,22 @@ public struct Reducer<State, Action, Environment> {
       assert(
         index < globalState[keyPath: toLocalState].endIndex,
         """
-        Index out of range. This can happen when a reducer that can remove the last element from \
-        an array is then combined with a "forEach" from that array. To avoid this and other \
-        index-related gotchas, consider using an "IdentifiedArray" of state instead. Or, combine \
-        your reducers so that the "forEach" comes before any reducer that can remove elements from \
-        its array.
+        "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at index \(index) \
+        when state contained no element at this index. This can happen for a few reasons:
+
+        * The "forEach" reducer was combined with or run from another reducer that removed an \
+        element from state when it handled this action. Combine or run index-based "forEach" \
+        reducers before reducers that can move or remove elements from their state. This ensures \
+        that "forEach" reducers can handle their actions for their state at the intended index.
+
+        * An active effect emitted this action while state contained no element at this index. Make sure \
+        that effects for this "forEach" reducer are canceled whenever elements are moved or \
+        removed from state. If your "forEach" reducer returns any long-living effects, you should \
+        use the identifier-based "forEach", instead.
+        
+        * This action was sent to the store while state contained no element at this index. Make \
+        sure that actions for this reducer can only be sent to a view store when state contains an \
+        element at this index. In SwiftUI applications, use `ForEachStore`.
         """
       )
       return self.reducer(
