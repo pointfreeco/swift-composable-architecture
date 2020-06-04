@@ -195,7 +195,7 @@ final class EffectCancellationTests: XCTestCase {
     ]
 
     let effect = Effect.merge(
-      (1...10_000).map { idx -> Effect<Int, Never> in
+      (1...1_000).map { idx -> Effect<Int, Never> in
         let id = idx % 10
 
         return Effect.merge(
