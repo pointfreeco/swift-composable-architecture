@@ -59,13 +59,13 @@ extension Reducer {
   ) -> Reducer<AppState, AppAction, AppEnvironment> {
     Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
       if action.shouldShowLoadingUI {
-        return reducer(&state, action, environment)
+        return reducer.run(&state, action, environment)
           .prepend(.loadingAction(.show))
           .append(.loadingAction(.hide))
           .eraseToEffect()
       }
 
-      return reducer(&state, action, environment)
+      return reducer.run(&state, action, environment)
     }
   }
 }
