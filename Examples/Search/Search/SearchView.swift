@@ -195,7 +195,43 @@ struct SearchView_Previews: PreviewProvider {
       initialState: SearchState(),
       reducer: searchReducer,
       environment: SearchEnvironment(
-        weatherClient: .mock,
+        weatherClient: WeatherClient(
+          searchLocation: { _ in
+            Effect(value: [
+              Location(id: 1, title: "Brooklyn"),
+              Location(id: 2, title: "Los Angeles"),
+              Location(id: 3, title: "San Francisco"),
+            ])
+          },
+          weather: { id in
+            Effect(
+              value: LocationWeather(
+                consolidatedWeather: [
+                  .init(
+                    applicableDate: Date(timeIntervalSince1970: 0),
+                    maxTemp: 90,
+                    minTemp: 70,
+                    theTemp: 80,
+                    weatherStateName: "Clear"
+                  ),
+                  .init(
+                    applicableDate: Date(timeIntervalSince1970: 86_400),
+                    maxTemp: 70,
+                    minTemp: 50,
+                    theTemp: 60,
+                    weatherStateName: "Rain"
+                  ),
+                  .init(
+                    applicableDate: Date(timeIntervalSince1970: 172_800),
+                    maxTemp: 100,
+                    minTemp: 80,
+                    theTemp: 90,
+                    weatherStateName: "Cloudy"
+                  ),
+                ],
+                id: id
+              ))
+          }),
         mainQueue: DispatchQueue.main.eraseToAnyScheduler()
       )
     )

@@ -30,51 +30,56 @@ struct LazyListNavigationEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
-let lazyListNavigationReducer = Reducer<
-  LazyListNavigationState, LazyListNavigationAction, LazyListNavigationEnvironment
->.combine(
-  Reducer { state, action, environment in
-    struct CancelId: Hashable {}
-
-    switch action {
-    case .counter:
-      return .none
-
-    case let .setNavigation(selection: .some(id)):
-      for index in state.rows.indices {
-        state.rows[index].isActivityIndicatorVisible = state.rows[index].id == id
-      }
-
-      return Effect(value: .setNavigationSelectionDelayCompleted(id))
-        .delay(for: 1, scheduler: environment.mainQueue)
-        .eraseToEffect()
-        .cancellable(id: CancelId(), cancelInFlight: true)
-
-    case .setNavigation(selection: .none):
-      if let selection = state.selection {
-        state.rows[id: selection.id]?.count = selection.count
-      }
-      state.selection = nil
-      return .cancel(id: CancelId())
-
-    case let .setNavigationSelectionDelayCompleted(id):
-      state.rows[id: id]?.isActivityIndicatorVisible = false
-      state.selection = Identified(
-        CounterState(count: state.rows[id: id]?.count ?? 0),
-        id: id
-      )
-      return .none
-    }
-  },
+let lazyListNavigationReducer =
   counterReducer
-    .pullback(state: \Identified.value, action: .self, environment: { $0 })
-    .optional
-    .pullback(
-      state: \LazyListNavigationState.selection,
-      action: /LazyListNavigationAction.counter,
-      environment: { _ in CounterEnvironment() }
-    )
-)
+  .pullback(
+    state: \Identified.value,
+    action: .self,
+    environment: { $0 }
+  )
+  .optional
+  .pullback(
+    state: \LazyListNavigationState.selection,
+    action: /LazyListNavigationAction.counter,
+    environment: { _ in CounterEnvironment() }
+  )
+  .combined(
+    with: Reducer<
+      LazyListNavigationState, LazyListNavigationAction, LazyListNavigationEnvironment
+    > { state, action, environment in
+      struct CancelId: Hashable {}
+
+      switch action {
+      case .counter:
+        return .none
+
+      case let .setNavigation(selection: .some(id)):
+        for index in state.rows.indices {
+          state.rows[index].isActivityIndicatorVisible = state.rows[index].id == id
+        }
+
+        return Effect(value: .setNavigationSelectionDelayCompleted(id))
+          .delay(for: 1, scheduler: environment.mainQueue)
+          .eraseToEffect()
+          .cancellable(id: CancelId(), cancelInFlight: true)
+
+      case .setNavigation(selection: .none):
+        if let selection = state.selection {
+          state.rows[id: selection.id]?.count = selection.count
+        }
+        state.selection = nil
+        return .cancel(id: CancelId())
+
+      case let .setNavigationSelectionDelayCompleted(id):
+        state.rows[id: id]?.isActivityIndicatorVisible = false
+        state.selection = Identified(
+          CounterState(count: state.rows[id: id]?.count ?? 0),
+          id: id
+        )
+        return .none
+      }
+    }
+  )
 
 struct LazyListNavigationView: View {
   let store: Store<LazyListNavigationState, LazyListNavigationAction>

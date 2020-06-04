@@ -64,6 +64,7 @@ struct LocationManagerView: View {
         Alert(title: Text(alert.title))
       }
       .onAppear { viewStore.send(.onAppear) }
+      .onDisappear { viewStore.send(.onDisappear) }
     }
   }
 }
@@ -95,39 +96,41 @@ struct ContentView: View {
   }
 }
 
-struct ContentView_Previews: PreviewProvider {
-  static var previews: some View {
-    // NB: CLLocationManager mostly does not work in SwiftUI previews, so we provide a mock
-    //     manager that has all authorization allowed and mocks the device's current location
-    //     to Brooklyn, NY.
-    let mockLocation = Location(
-      coordinate: CLLocationCoordinate2D(latitude: 40.6501, longitude: -73.94958)
-    )
-    let locationManagerSubject = PassthroughSubject<LocationManager.Action, Never>()
-    let locationManager = LocationManager.mock(
-      authorizationStatus: { .authorizedAlways },
-      create: { _ in locationManagerSubject.eraseToEffect() },
-      locationServicesEnabled: { true },
-      requestLocation: { _ in
-        .fireAndForget { locationManagerSubject.send(.didUpdateLocations([mockLocation])) }
-      })
+#if DEBUG
+  struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+      // NB: CLLocationManager mostly does not work in SwiftUI previews, so we provide a mock
+      //     manager that has all authorization allowed and mocks the device's current location
+      //     to Brooklyn, NY.
+      let mockLocation = Location(
+        coordinate: CLLocationCoordinate2D(latitude: 40.6501, longitude: -73.94958)
+      )
+      let locationManagerSubject = PassthroughSubject<LocationManager.Action, Never>()
+      let locationManager = LocationManager.mock(
+        authorizationStatus: { .authorizedAlways },
+        create: { _ in locationManagerSubject.eraseToEffect() },
+        locationServicesEnabled: { true },
+        requestLocation: { _ in
+          .fireAndForget { locationManagerSubject.send(.didUpdateLocations([mockLocation])) }
+        })
 
-    let appView = LocationManagerView(
-      store: Store(
-        initialState: AppState(),
-        reducer: appReducer,
-        environment: AppEnvironment(
-          localSearch: .live,
-          locationManager: locationManager
+      let appView = LocationManagerView(
+        store: Store(
+          initialState: AppState(),
+          reducer: appReducer,
+          environment: AppEnvironment(
+            localSearch: .live,
+            locationManager: locationManager
+          )
         )
       )
-    )
 
-    return Group {
-      ContentView()
-      appView
-      appView
-        .environment(\.colorScheme, .dark)
+      return Group {
+        ContentView()
+        appView
+        appView
+          .environment(\.colorScheme, .dark)
+      }
     }
   }
-}
+#endif
