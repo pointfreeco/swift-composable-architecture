@@ -116,7 +116,7 @@ final class EffectCancellationTests: XCTestCase {
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
-    XCTAssertEqual([:], cancellablesLock.sync { cancellationCancellables })
+    XCTAssertEqual([:], cancellationCancellables)
   }
 
   func testCancellablesCleanUp_OnCancel() {
@@ -132,7 +132,7 @@ final class EffectCancellationTests: XCTestCase {
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
-    XCTAssertEqual([:], cancellablesLock.sync { cancellationCancellables })
+    XCTAssertEqual([:], cancellationCancellables)
   }
 
   func testDoubleCancellation() {
