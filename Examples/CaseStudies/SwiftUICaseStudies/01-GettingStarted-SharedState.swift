@@ -123,7 +123,7 @@ let sharedStateProfileReducer = Reducer<
   }
 }
 
-let sharedStateReducer: Reducer<SharedState, SharedStateAction, Void> = .combine(
+let sharedStateReducer = Reducer<SharedState, SharedStateAction, Void>.combine(
   sharedStateCounterReducer.pullback(
     state: \SharedState.counter,
     action: /SharedStateAction.counter,

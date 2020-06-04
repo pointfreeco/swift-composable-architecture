@@ -147,15 +147,16 @@ public final class Store<State, Action> {
           The store was sent an action while it was already processing another action. This can \
           happen for a few reasons:
 
-          * The store was sent an action recursively. This can occur when you run an effect directly \
-          in the reducer, rather than returning it from the reducer. Check the stack (⌘7) to find \
-          frames corresponding to one of your reducers. That code should be refactored to not invoke \
-          the effect directly.
+          * The store was sent an action recursively. This can occur when you run an effect \
+          directly in the reducer, rather than returning it from the reducer. Check the stack (⌘7) \
+          to find frames corresponding to one of your reducers. That code should be refactored to \
+          not invoke the effect directly.
 
           * The store has been sent actions from multiple threads. The `send` method is not \
-          thread-safe, and should only ever be used from a single thread (typically the main thread). 
-          Instead of calling `send` from multiple threads you should use effects to process expensive \
-          computations on background threads so that it can be fed back into the store.
+          thread-safe, and should only ever be used from a single thread (typically the main \
+          thread). Instead of calling `send` from multiple threads you should use effects to \
+          process expensive computations on background threads so that it can be fed back into the \
+          store.
           """
         )
       }
