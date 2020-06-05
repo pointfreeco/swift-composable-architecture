@@ -117,10 +117,12 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
     state.connectivityState = .disconnected
     return .cancel(id: WebSocketId())
 
-  case .webSocket(.didBecomeInvalidWithError),
-    .webSocket(.didCompleteWithError):
+  case let .webSocket(.didBecomeInvalidWithError(error)),
+    let .webSocket(.didCompleteWithError(error)):
     state.connectivityState = .disconnected
-    state.alert = "Disconnected from socket for some reason. Try again."
+    if error != nil {
+      state.alert = "Disconnected from socket for some reason. Try again."
+    }
     return .cancel(id: WebSocketId())
 
   case .webSocket(.didOpenWithProtocol):
