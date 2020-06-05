@@ -135,7 +135,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
 }
 .debug()
 
-struct WebScoketView: View {
+struct WebSocketView: View {
   let store: Store<WebSocketState, WebSocketAction>
 
   var body: some View {
@@ -359,7 +359,7 @@ class WebSocketDelegate: NSObject, URLSessionWebSocketDelegate {
 struct WebSocketView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
-      WebScoketView(
+      WebSocketView(
         store: Store(
           initialState: .init(receivedMessages: ["Echo"]),
           reducer: webSocketReducer,

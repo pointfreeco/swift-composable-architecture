@@ -141,7 +141,7 @@ struct RootView: View {
 
           NavigationLink(
             "Web socket",
-            destination: WebScoketView(
+            destination: WebSocketView(
               store: Store(
                 initialState: .init(),
                 reducer: webSocketReducer,
