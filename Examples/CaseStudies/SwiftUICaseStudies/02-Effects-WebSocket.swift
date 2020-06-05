@@ -148,7 +148,7 @@ struct WebSocketView: View {
           TextField(
             "Message to send",
             text: viewStore.binding(
-              get: \.messageToSend, send: WebSocketAction.messageToSendChanged)
+              get: { $0.messageToSend }, send: WebSocketAction.messageToSendChanged)
           )
 
           Button(
