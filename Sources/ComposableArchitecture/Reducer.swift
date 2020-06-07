@@ -229,21 +229,23 @@ public struct Reducer<State, Action, Environment> {
         index < globalState[keyPath: toLocalState].endIndex,
         """
         "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at index \(index) \
-        when state contained no element at this index. This can happen for a few reasons:
+        when its state contained no element at this index. This is considered an application logic \
+        error, and can happen for a few reasons:
 
-        * The "forEach" reducer was combined with or run from another reducer that removed an \
-        element from state when it handled this action. Combine or run index-based "forEach" \
-        reducers before reducers that can move or remove elements from their state. This ensures \
-        that "forEach" reducers can handle their actions for their state at the intended index.
+        * This "forEach" reducer was combined with or run from another reducer that removed the \
+        element at this index when it handled this action. To fix this make sure that this \
+        "forEach" reducer is run before any other reducers that can move or remove elements from \
+        state. This ensures that "forEach" reducers can handle their actions for the element at \
+        the intended index.
 
-        * An active effect emitted this action while state contained no element at this index. Make sure \
-        that effects for this "forEach" reducer are canceled whenever elements are moved or \
-        removed from state. If your "forEach" reducer returns any long-living effects, you should \
-        use the identifier-based "forEach", instead.
+        * An in-flight effect emitted this action while state contained no element at this index. \
+        To fix this make sure that effects for this "forEach" reducer are canceled whenever \
+        elements are moved or removed from its state. If your "forEach" reducer returns any \
+        long-living effects, you should use the identifier-based "forEach", instead.
 
-        * This action was sent to the store while state contained no element at this index. Make \
-        sure that actions for this reducer can only be sent to a view store when state contains an \
-        element at this index. In SwiftUI applications, use `ForEachStore`.
+        * This action was sent to the store while its state contained no element at this index. \
+        To fix this make sure that actions for this reducer can only be sent to a view store when \
+        its state contains an element at this index. In SwiftUI applications, use `ForEachStore`.
         """
       )
       return self.reducer(
@@ -293,10 +295,24 @@ public struct Reducer<State, Action, Environment> {
       assert(
         globalState[keyPath: toLocalState][id: id] != nil,
         """
-        Id not present in IdentifiedArray. This can happen when a reducer that can remove \
-        elements is then combined with a "forEach" from that array. To avoid this, combine \
-        your reducers so that the "forEach" comes before any reducer that can remove elements \
-        from its IdentifiedArray.
+        "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at id \(id) \
+        when its state contained no element at this id. This is considered an application logic \
+        error, and can happen for a few reasons:
+
+        * This "forEach" reducer was combined with or run from another reducer that removed the \
+        element at this id when it handled this action. To fix this make sure that this \
+        "forEach" reducer is run before any other reducers that can move or remove elements from \
+        state. This ensures that "forEach" reducers can handle their actions for the element at \
+        the intended id.
+
+        * An in-flight effect emitted this action while state contained no element at this id. \
+        To fix this make sure that effects for this "forEach" reducer are canceled whenever \
+        elements are moved or removed from its state. If your "forEach" reducer returns any \
+        long-living effects, you should use the identifier-based "forEach", instead.
+
+        * This action was sent to the store while its state contained no element at this id. \
+        To fix this make sure that actions for this reducer can only be sent to a view store when \
+        its state contains an element at this id. In SwiftUI applications, use `ForEachStore`.
         """
       )
 
@@ -327,13 +343,35 @@ public struct Reducer<State, Action, Environment> {
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
     .init { globalState, globalAction, globalEnvironment in
       guard let (key, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
-      return self.optional
-        .reducer(
-          &globalState[keyPath: toLocalState][key],
-          localAction,
-          toLocalEnvironment(globalEnvironment)
-        )
-        .map { toLocalAction.embed((key, $0)) }
+
+      assert(
+        globalState[keyPath: toLocalState][key] != nil,
+        """
+        "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at key \(key) \
+        when its state contained no element at this key. This is considered an application logic \
+        error, and can happen for a few reasons:
+
+        * This "forEach" reducer was combined with or run from another reducer that removed the \
+        element at this key when it handled this action. To fix this make sure that this \
+        "forEach" reducer is run before any other reducers that can move or remove elements from \
+        state. This ensures that "forEach" reducers can handle their actions for the element at \
+        the intended key.
+
+        * An in-flight effect emitted this action while state contained no element at this key. \
+        To fix this make sure that effects for this "forEach" reducer are canceled whenever \
+        elements are moved or removed from its state.
+
+        * This action was sent to the store while its state contained no element at this key. \
+        To fix this make sure that actions for this reducer can only be sent to a view store
+        when its state contains an element at this key.
+        """
+      )
+      return self.reducer(
+        &globalState[keyPath: toLocalState][key]!,
+        localAction,
+        toLocalEnvironment(globalEnvironment)
+      )
+      .map { toLocalAction.embed((key, $0)) }
     }
   }
 
