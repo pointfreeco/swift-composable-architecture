@@ -4,9 +4,72 @@ import CoreLocation
 /// and write tests against its values.
 
 @dynamicMemberLookup
-public struct Location: Equatable {
+public struct Location {
   public let rawValue: CLLocation
 
+  public init(
+    altitude: CLLocationDistance = 0,
+    coordinate: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 0, longitude: 0),
+    course: CLLocationDirection = 0,
+    horizontalAccuracy: CLLocationAccuracy = 0,
+    speed: CLLocationSpeed = 0,
+    timestamp: Date = Date(),
+    verticalAccuracy: CLLocationAccuracy = 0
+  ) {
+    self.rawValue = CLLocation(
+      coordinate: coordinate,
+      altitude: altitude,
+      horizontalAccuracy: horizontalAccuracy,
+      verticalAccuracy: verticalAccuracy,
+      course: course,
+      speed: speed,
+      timestamp: timestamp
+    )
+  }
+
+  public init(rawValue: CLLocation) {
+    self.rawValue = rawValue
+  }
+
+  public subscript<T>(dynamicMember keyPath: KeyPath<CLLocation, T>) -> T {
+    self.rawValue[keyPath: keyPath]
+  }
+}
+
+extension Location: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    let speedAccuracyIsEqual: Bool
+    let courseAccuracyIsEqual: Bool
+
+    #if compiler(>=5.2)
+    if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
+      courseAccuracyIsEqual = lhs.courseAccuracy == rhs.courseAccuracy
+    } else {
+      courseAccuracyIsEqual = true
+    }
+    speedAccuracyIsEqual = lhs.speedAccuracy == rhs.speedAccuracy
+    #else
+    speedAccuracyIsEqual = true
+    courseAccuracyIsEqual = true
+    #endif
+
+    return lhs.altitude == rhs.altitude
+      && lhs.coordinate.latitude == rhs.coordinate.latitude
+      && lhs.coordinate.longitude == rhs.coordinate.longitude
+      && lhs.course == rhs.course
+      && lhs.floor == rhs.floor
+      && lhs.horizontalAccuracy == rhs.horizontalAccuracy
+      && lhs.speed == rhs.speed
+      && lhs.timestamp == rhs.timestamp
+      && lhs.verticalAccuracy == rhs.verticalAccuracy
+      && speedAccuracyIsEqual
+      && courseAccuracyIsEqual
+  }
+
+}
+
+#if compiler(>=5.2)
+extension Location {
   public init(
     altitude: CLLocationDistance = 0,
     coordinate: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 0, longitude: 0),
@@ -42,36 +105,8 @@ public struct Location: Equatable {
       )
     }
   }
-
-  public init(rawValue: CLLocation) {
-    self.rawValue = rawValue
-  }
-
-  public static func == (lhs: Self, rhs: Self) -> Bool {
-    let courseAccuracyIsEqual: Bool
-    if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
-      courseAccuracyIsEqual = lhs.courseAccuracy == rhs.courseAccuracy
-    } else {
-      courseAccuracyIsEqual = true
-    }
-
-    return lhs.altitude == rhs.altitude
-      && lhs.coordinate.latitude == rhs.coordinate.latitude
-      && lhs.coordinate.longitude == rhs.coordinate.longitude
-      && lhs.course == rhs.course
-      && lhs.floor == rhs.floor
-      && lhs.horizontalAccuracy == rhs.horizontalAccuracy
-      && lhs.speed == rhs.speed
-      && lhs.speedAccuracy == rhs.speedAccuracy
-      && lhs.timestamp == rhs.timestamp
-      && lhs.verticalAccuracy == rhs.verticalAccuracy
-      && courseAccuracyIsEqual
-  }
-
-  public subscript<T>(dynamicMember keyPath: KeyPath<CLLocation, T>) -> T {
-    self.rawValue[keyPath: keyPath]
-  }
 }
+#endif
 
 extension Location: Codable {
   public init(from decoder: Decoder) throws {
@@ -80,24 +115,49 @@ extension Location: Codable {
     let latitude = try values.decode(CLLocationDegrees.self, forKey: .latitude)
     let longitude = try values.decode(CLLocationDegrees.self, forKey: .longitude)
     let course = try values.decode(CLLocationDirection.self, forKey: .course)
-    let courseAccuracy = try values.decode(Double.self, forKey: .courseAccuracy)
     let horizontalAccuracy = try values.decode(Double.self, forKey: .horizontalAccuracy)
     let speed = try values.decode(CLLocationSpeed.self, forKey: .speed)
-    let speedAccuracy = try values.decode(Double.self, forKey: .speedAccuracy)
     let timestamp = try values.decode(Date.self, forKey: .timestamp)
     let verticalAccuracy = try values.decode(CLLocationAccuracy.self, forKey: .verticalAccuracy)
 
-    self.init(
-      altitude: altitude,
-      coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
-      course: course,
-      courseAccuracy: courseAccuracy,
-      horizontalAccuracy: horizontalAccuracy,
-      speed: speed,
-      speedAccuracy: speedAccuracy,
-      timestamp: timestamp,
-      verticalAccuracy: verticalAccuracy
-    )
+    #if compiler(>=5.2)
+      if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
+        let courseAccuracy = try values.decode(Double.self, forKey: .courseAccuracy)
+        let speedAccuracy = try values.decode(Double.self, forKey: .speedAccuracy)
+
+        self.init(
+          altitude: altitude,
+          coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
+          course: course,
+          courseAccuracy: courseAccuracy,
+          horizontalAccuracy: horizontalAccuracy,
+          speed: speed,
+          speedAccuracy: speedAccuracy,
+          timestamp: timestamp,
+          verticalAccuracy: verticalAccuracy
+        )
+      } else {
+        self.init(
+          altitude: altitude,
+          coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
+          course: course,
+          horizontalAccuracy: horizontalAccuracy,
+          speed: speed,
+          timestamp: timestamp,
+          verticalAccuracy: verticalAccuracy
+        )
+    }
+    #else
+      self.init(
+        altitude: altitude,
+        coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
+        course: course,
+        horizontalAccuracy: horizontalAccuracy,
+        speed: speed,
+        timestamp: timestamp,
+        verticalAccuracy: verticalAccuracy
+      )
+    #endif
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -108,13 +168,15 @@ extension Location: Codable {
     try container.encode(rawValue.course, forKey: .course)
     try container.encode(rawValue.horizontalAccuracy, forKey: .horizontalAccuracy)
     try container.encode(rawValue.speed, forKey: .speed)
-    try container.encode(rawValue.speedAccuracy, forKey: .speedAccuracy)
     try container.encode(rawValue.timestamp, forKey: .timestamp)
     try container.encode(rawValue.verticalAccuracy, forKey: .verticalAccuracy)
 
-    if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
-      try container.encode(rawValue.courseAccuracy, forKey: .courseAccuracy)
-    }
+    #if compiler(>=5.2)
+      if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
+        try container.encode(rawValue.courseAccuracy, forKey: .courseAccuracy)
+      }
+      try container.encode(rawValue.speedAccuracy, forKey: .speedAccuracy)
+    #endif
   }
 
   private enum CodingKeys: String, CodingKey {
