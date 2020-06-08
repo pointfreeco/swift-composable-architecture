@@ -8,31 +8,31 @@ private let readMe = """
   state and fires off an effect that will load this state a second later.
   """
 
-struct EagerSheetState: Equatable {
+struct PresentAndLoadState: Equatable {
   var optionalCounter: CounterState?
   var isSheetPresented = false
 }
 
-enum EagerSheetAction {
+enum PresentAndLoadAction {
   case optionalCounter(CounterAction)
   case setSheet(isPresented: Bool)
   case setSheetIsPresentedDelayCompleted
 }
 
-struct EagerSheetEnvironment {
+struct PresentAndLoadEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
-let eagerSheetReducer = counterReducer
+let presentAndLoadReducer = counterReducer
   .optional
   .pullback(
     state: \.optionalCounter,
-    action: /EagerSheetAction.optionalCounter,
+    action: /PresentAndLoadAction.optionalCounter,
     environment: { _ in CounterEnvironment() }
   )
   .combined(
     with: Reducer<
-      EagerSheetState, EagerSheetAction, EagerSheetEnvironment
+      PresentAndLoadState, PresentAndLoadAction, PresentAndLoadEnvironment
     > { state, action, environment in
       switch action {
       case .setSheet(isPresented: true):
@@ -56,8 +56,8 @@ let eagerSheetReducer = counterReducer
     }
   )
 
-struct EagerSheetView: View {
-  let store: Store<EagerSheetState, EagerSheetAction>
+struct PresentAndLoadView: View {
+  let store: Store<PresentAndLoadState, PresentAndLoadAction>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -71,11 +71,12 @@ struct EagerSheetView: View {
       .sheet(
         isPresented: viewStore.binding(
           get: { $0.isSheetPresented },
-          send: EagerSheetAction.setSheet(isPresented:)
+          send: PresentAndLoadAction.setSheet(isPresented:)
         )
       ) {
         IfLetStore(
-          self.store.scope(state: { $0.optionalCounter }, action: EagerSheetAction.optionalCounter),
+          self.store.scope(
+            state: { $0.optionalCounter }, action: PresentAndLoadAction.optionalCounter),
           then: CounterView.init(store:),
           else: ActivityIndicator()
         )
@@ -85,14 +86,14 @@ struct EagerSheetView: View {
   }
 }
 
-struct EagerSheetView_Previews: PreviewProvider {
+struct PresentAndLoadView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
-      EagerSheetView(
+      PresentAndLoadView(
         store: Store(
-          initialState: EagerSheetState(),
-          reducer: eagerSheetReducer,
-          environment: EagerSheetEnvironment(
+          initialState: PresentAndLoadState(),
+          reducer: presentAndLoadReducer,
+          environment: PresentAndLoadEnvironment(
             mainQueue: DispatchQueue.main.eraseToAnyScheduler()
           )
         )
