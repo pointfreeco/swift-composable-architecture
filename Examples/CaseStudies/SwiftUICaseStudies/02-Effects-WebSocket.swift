@@ -308,7 +308,7 @@ private struct Dependencies {
   let task: URLSessionWebSocketTask
 }
 
-class WebSocketDelegate: NSObject, URLSessionWebSocketDelegate {
+private class WebSocketDelegate: NSObject, URLSessionWebSocketDelegate {
   let didBecomeInvalidWithError: (Error?) -> Void
   let didClose: (URLSessionWebSocketTask.CloseCode, Data?) -> Void
   let didCompleteWithError: (Error?) -> Void
