@@ -42,15 +42,15 @@ extension Location: Equatable {
     let courseAccuracyIsEqual: Bool
 
     #if compiler(>=5.2)
-    if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
-      courseAccuracyIsEqual = lhs.courseAccuracy == rhs.courseAccuracy
-    } else {
-      courseAccuracyIsEqual = true
-    }
-    speedAccuracyIsEqual = lhs.speedAccuracy == rhs.speedAccuracy
+      if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
+        courseAccuracyIsEqual = lhs.courseAccuracy == rhs.courseAccuracy
+      } else {
+        courseAccuracyIsEqual = true
+      }
+      speedAccuracyIsEqual = lhs.speedAccuracy == rhs.speedAccuracy
     #else
-    speedAccuracyIsEqual = true
-    courseAccuracyIsEqual = true
+      speedAccuracyIsEqual = true
+      courseAccuracyIsEqual = true
     #endif
 
     return lhs.altitude == rhs.altitude
@@ -69,43 +69,43 @@ extension Location: Equatable {
 }
 
 #if compiler(>=5.2)
-extension Location {
-  public init(
-    altitude: CLLocationDistance = 0,
-    coordinate: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 0, longitude: 0),
-    course: CLLocationDirection = 0,
-    courseAccuracy: Double = 0,
-    horizontalAccuracy: CLLocationAccuracy = 0,
-    speed: CLLocationSpeed = 0,
-    speedAccuracy: Double = 0,
-    timestamp: Date = Date(),
-    verticalAccuracy: CLLocationAccuracy = 0
-  ) {
-    if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
-      self.rawValue = CLLocation(
-        coordinate: coordinate,
-        altitude: altitude,
-        horizontalAccuracy: horizontalAccuracy,
-        verticalAccuracy: verticalAccuracy,
-        course: course,
-        courseAccuracy: courseAccuracy,
-        speed: speed,
-        speedAccuracy: speedAccuracy,
-        timestamp: timestamp
-      )
-    } else {
-      self.rawValue = CLLocation(
-        coordinate: coordinate,
-        altitude: altitude,
-        horizontalAccuracy: horizontalAccuracy,
-        verticalAccuracy: verticalAccuracy,
-        course: course,
-        speed: speed,
-        timestamp: timestamp
-      )
+  extension Location {
+    public init(
+      altitude: CLLocationDistance = 0,
+      coordinate: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 0, longitude: 0),
+      course: CLLocationDirection = 0,
+      courseAccuracy: Double = 0,
+      horizontalAccuracy: CLLocationAccuracy = 0,
+      speed: CLLocationSpeed = 0,
+      speedAccuracy: Double = 0,
+      timestamp: Date = Date(),
+      verticalAccuracy: CLLocationAccuracy = 0
+    ) {
+      if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
+        self.rawValue = CLLocation(
+          coordinate: coordinate,
+          altitude: altitude,
+          horizontalAccuracy: horizontalAccuracy,
+          verticalAccuracy: verticalAccuracy,
+          course: course,
+          courseAccuracy: courseAccuracy,
+          speed: speed,
+          speedAccuracy: speedAccuracy,
+          timestamp: timestamp
+        )
+      } else {
+        self.rawValue = CLLocation(
+          coordinate: coordinate,
+          altitude: altitude,
+          horizontalAccuracy: horizontalAccuracy,
+          verticalAccuracy: verticalAccuracy,
+          course: course,
+          speed: speed,
+          timestamp: timestamp
+        )
+      }
     }
   }
-}
 #endif
 
 extension Location: Codable {
@@ -146,7 +146,7 @@ extension Location: Codable {
           timestamp: timestamp,
           verticalAccuracy: verticalAccuracy
         )
-    }
+      }
     #else
       self.init(
         altitude: altitude,

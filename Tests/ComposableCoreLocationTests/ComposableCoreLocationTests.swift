@@ -32,7 +32,7 @@ class ComposableCoreLocationTests: XCTestCase {
           timestamp: Date.init(timeIntervalSince1970: 0),
           verticalAccuracy: 6
         )
-    }
+      }
     #else
       value = Location(
         altitude: 50,
@@ -77,48 +77,48 @@ class ComposableCoreLocationTests: XCTestCase {
   }
 
   #if compiler(>=5.2)
-  func testLocationEquatable_5_2() {
-    if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
-      let a = Location(
-        altitude: 1,
-        coordinate: CLLocationCoordinate2D(latitude: 1, longitude: 1),
-        course: 1,
-        courseAccuracy: 1,
-        horizontalAccuracy: 1,
-        speed: 1,
-        speedAccuracy: 1,
-        timestamp: Date.init(timeIntervalSince1970: 0),
-        verticalAccuracy: 1
-      )
+    func testLocationEquatable_5_2() {
+      if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
+        let a = Location(
+          altitude: 1,
+          coordinate: CLLocationCoordinate2D(latitude: 1, longitude: 1),
+          course: 1,
+          courseAccuracy: 1,
+          horizontalAccuracy: 1,
+          speed: 1,
+          speedAccuracy: 1,
+          timestamp: Date.init(timeIntervalSince1970: 0),
+          verticalAccuracy: 1
+        )
 
-      let b = Location(
-        altitude: 1,
-        coordinate: CLLocationCoordinate2D(latitude: 1, longitude: 1),
-        course: 1,
-        courseAccuracy: 1,
-        horizontalAccuracy: 1,
-        speed: 1,
-        speedAccuracy: 2,
-        timestamp: Date.init(timeIntervalSince1970: 0),
-        verticalAccuracy: 1
-      )
+        let b = Location(
+          altitude: 1,
+          coordinate: CLLocationCoordinate2D(latitude: 1, longitude: 1),
+          course: 1,
+          courseAccuracy: 1,
+          horizontalAccuracy: 1,
+          speed: 1,
+          speedAccuracy: 2,
+          timestamp: Date.init(timeIntervalSince1970: 0),
+          verticalAccuracy: 1
+        )
 
-      let c = Location(
-        altitude: 1,
-        coordinate: CLLocationCoordinate2D(latitude: 1, longitude: 1),
-        course: 1,
-        courseAccuracy: 2,
-        horizontalAccuracy: 1,
-        speed: 1,
-        speedAccuracy: 1,
-        timestamp: Date.init(timeIntervalSince1970: 0),
-        verticalAccuracy: 1
-      )
+        let c = Location(
+          altitude: 1,
+          coordinate: CLLocationCoordinate2D(latitude: 1, longitude: 1),
+          course: 1,
+          courseAccuracy: 2,
+          horizontalAccuracy: 1,
+          speed: 1,
+          speedAccuracy: 1,
+          timestamp: Date.init(timeIntervalSince1970: 0),
+          verticalAccuracy: 1
+        )
 
-      XCTAssertTrue(a == a)
-      XCTAssertFalse(a == b)
-      XCTAssertFalse(a == c)
+        XCTAssertTrue(a == a)
+        XCTAssertFalse(a == b)
+        XCTAssertFalse(a == c)
+      }
     }
-  }
   #endif
 }
