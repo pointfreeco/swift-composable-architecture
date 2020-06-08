@@ -152,9 +152,11 @@ struct WebSocketView: View {
           )
 
           Button(
-            viewStore.connectivityState == .connected ? "Disconnect"
-              : viewStore.connectivityState == .disconnected ? "Connect"
-              : "Connecting..."
+            viewStore.connectivityState == .connected
+              ? "Disconnect"
+              : viewStore.connectivityState == .disconnected
+                ? "Connect"
+                : "Connecting..."
           ) {
             viewStore.send(.connectButtonTapped)
           }
