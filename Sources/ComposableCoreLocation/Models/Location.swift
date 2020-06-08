@@ -2,80 +2,193 @@ import CoreLocation
 
 /// A value type wrapper for `CLLocation`. This type is necessary so that we can do equality checks
 /// and write tests against its values.
-public struct Location: Equatable {
-  public let rawValue: CLLocation?
 
-  public var altitude: CLLocationDistance
-  public var coordinate: CLLocationCoordinate2D
-  public var course: CLLocationDirection
-  public var courseAccuracy: Double
-  public var floor: CLFloor?
-  public var horizontalAccuracy: CLLocationAccuracy
-  public var speed: CLLocationSpeed
-  public var speedAccuracy: Double
-  public var timestamp: Date
-  public var verticalAccuracy: CLLocationAccuracy
+@dynamicMemberLookup
+public struct Location {
+  public let rawValue: CLLocation
 
   public init(
     altitude: CLLocationDistance = 0,
     coordinate: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 0, longitude: 0),
     course: CLLocationDirection = 0,
+    horizontalAccuracy: CLLocationAccuracy = 0,
+    speed: CLLocationSpeed = 0,
+    timestamp: Date = Date(),
+    verticalAccuracy: CLLocationAccuracy = 0
+  ) {
+    self.rawValue = CLLocation(
+      coordinate: coordinate,
+      altitude: altitude,
+      horizontalAccuracy: horizontalAccuracy,
+      verticalAccuracy: verticalAccuracy,
+      course: course,
+      speed: speed,
+      timestamp: timestamp
+    )
+  }
+
+  public init(rawValue: CLLocation) {
+    self.rawValue = rawValue
+  }
+
+  public subscript<T>(dynamicMember keyPath: KeyPath<CLLocation, T>) -> T {
+    self.rawValue[keyPath: keyPath]
+  }
+}
+
+extension Location: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    let speedAccuracyIsEqual: Bool
+    let courseAccuracyIsEqual: Bool
+
+    #if compiler(>=5.2)
+    if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
+      courseAccuracyIsEqual = lhs.courseAccuracy == rhs.courseAccuracy
+    } else {
+      courseAccuracyIsEqual = true
+    }
+    speedAccuracyIsEqual = lhs.speedAccuracy == rhs.speedAccuracy
+    #else
+    speedAccuracyIsEqual = true
+    courseAccuracyIsEqual = true
+    #endif
+
+    return lhs.altitude == rhs.altitude
+      && lhs.coordinate.latitude == rhs.coordinate.latitude
+      && lhs.coordinate.longitude == rhs.coordinate.longitude
+      && lhs.course == rhs.course
+      && lhs.floor == rhs.floor
+      && lhs.horizontalAccuracy == rhs.horizontalAccuracy
+      && lhs.speed == rhs.speed
+      && lhs.timestamp == rhs.timestamp
+      && lhs.verticalAccuracy == rhs.verticalAccuracy
+      && speedAccuracyIsEqual
+      && courseAccuracyIsEqual
+  }
+
+}
+
+#if compiler(>=5.2)
+extension Location {
+  public init(
+    altitude: CLLocationDistance = 0,
+    coordinate: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 0, longitude: 0),
+    course: CLLocationDirection = 0,
     courseAccuracy: Double = 0,
-    floor: CLFloor? = nil,
     horizontalAccuracy: CLLocationAccuracy = 0,
     speed: CLLocationSpeed = 0,
     speedAccuracy: Double = 0,
     timestamp: Date = Date(),
     verticalAccuracy: CLLocationAccuracy = 0
   ) {
-    self.rawValue = nil
-    self.altitude = altitude
-    self.coordinate = coordinate
-    self.course = course
-    self.courseAccuracy = courseAccuracy
-    self.floor = floor
-    self.horizontalAccuracy = horizontalAccuracy
-    self.speed = speed
-    self.speedAccuracy = speedAccuracy
-    self.timestamp = timestamp
-    self.verticalAccuracy = verticalAccuracy
+    if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
+      self.rawValue = CLLocation(
+        coordinate: coordinate,
+        altitude: altitude,
+        horizontalAccuracy: horizontalAccuracy,
+        verticalAccuracy: verticalAccuracy,
+        course: course,
+        courseAccuracy: courseAccuracy,
+        speed: speed,
+        speedAccuracy: speedAccuracy,
+        timestamp: timestamp
+      )
+    } else {
+      self.rawValue = CLLocation(
+        coordinate: coordinate,
+        altitude: altitude,
+        horizontalAccuracy: horizontalAccuracy,
+        verticalAccuracy: verticalAccuracy,
+        course: course,
+        speed: speed,
+        timestamp: timestamp
+      )
+    }
   }
+}
+#endif
 
-  public init(rawValue: CLLocation) {
-    self.rawValue = rawValue
+extension Location: Codable {
+  public init(from decoder: Decoder) throws {
+    let values = try decoder.container(keyedBy: CodingKeys.self)
+    let altitude = try values.decode(CLLocationDistance.self, forKey: .altitude)
+    let latitude = try values.decode(CLLocationDegrees.self, forKey: .latitude)
+    let longitude = try values.decode(CLLocationDegrees.self, forKey: .longitude)
+    let course = try values.decode(CLLocationDirection.self, forKey: .course)
+    let horizontalAccuracy = try values.decode(Double.self, forKey: .horizontalAccuracy)
+    let speed = try values.decode(CLLocationSpeed.self, forKey: .speed)
+    let timestamp = try values.decode(Date.self, forKey: .timestamp)
+    let verticalAccuracy = try values.decode(CLLocationAccuracy.self, forKey: .verticalAccuracy)
 
-    self.altitude = rawValue.altitude
-    self.coordinate = rawValue.coordinate
-    self.course = rawValue.course
-    self.floor = rawValue.floor
-    self.horizontalAccuracy = rawValue.horizontalAccuracy
-    self.speed = rawValue.speed
-    self.timestamp = rawValue.timestamp
-    self.verticalAccuracy = rawValue.verticalAccuracy
     #if compiler(>=5.2)
       if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
-        self.courseAccuracy = rawValue.courseAccuracy
+        let courseAccuracy = try values.decode(Double.self, forKey: .courseAccuracy)
+        let speedAccuracy = try values.decode(Double.self, forKey: .speedAccuracy)
+
+        self.init(
+          altitude: altitude,
+          coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
+          course: course,
+          courseAccuracy: courseAccuracy,
+          horizontalAccuracy: horizontalAccuracy,
+          speed: speed,
+          speedAccuracy: speedAccuracy,
+          timestamp: timestamp,
+          verticalAccuracy: verticalAccuracy
+        )
       } else {
-        self.courseAccuracy = 0
-      }
-      self.speedAccuracy = rawValue.speedAccuracy
+        self.init(
+          altitude: altitude,
+          coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
+          course: course,
+          horizontalAccuracy: horizontalAccuracy,
+          speed: speed,
+          timestamp: timestamp,
+          verticalAccuracy: verticalAccuracy
+        )
+    }
     #else
-      self.courseAccuracy = 0
-      self.speedAccuracy = 0
+      self.init(
+        altitude: altitude,
+        coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
+        course: course,
+        horizontalAccuracy: horizontalAccuracy,
+        speed: speed,
+        timestamp: timestamp,
+        verticalAccuracy: verticalAccuracy
+      )
     #endif
   }
 
-  public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.altitude == rhs.altitude
-      && lhs.coordinate.latitude == rhs.coordinate.latitude
-      && lhs.coordinate.longitude == rhs.coordinate.longitude
-      && lhs.course == rhs.course
-      && lhs.courseAccuracy == rhs.courseAccuracy
-      && lhs.floor == rhs.floor
-      && lhs.horizontalAccuracy == rhs.horizontalAccuracy
-      && lhs.speed == rhs.speed
-      && lhs.speedAccuracy == rhs.speedAccuracy
-      && lhs.timestamp == rhs.timestamp
-      && lhs.verticalAccuracy == rhs.verticalAccuracy
+  public func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(rawValue.altitude, forKey: .altitude)
+    try container.encode(rawValue.coordinate.latitude, forKey: .latitude)
+    try container.encode(rawValue.coordinate.longitude, forKey: .longitude)
+    try container.encode(rawValue.course, forKey: .course)
+    try container.encode(rawValue.horizontalAccuracy, forKey: .horizontalAccuracy)
+    try container.encode(rawValue.speed, forKey: .speed)
+    try container.encode(rawValue.timestamp, forKey: .timestamp)
+    try container.encode(rawValue.verticalAccuracy, forKey: .verticalAccuracy)
+
+    #if compiler(>=5.2)
+      if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
+        try container.encode(rawValue.courseAccuracy, forKey: .courseAccuracy)
+      }
+      try container.encode(rawValue.speedAccuracy, forKey: .speedAccuracy)
+    #endif
+  }
+
+  private enum CodingKeys: String, CodingKey {
+    case latitude
+    case longitude
+    case altitude
+    case course
+    case courseAccuracy
+    case horizontalAccuracy
+    case speed
+    case speedAccuracy
+    case timestamp
+    case verticalAccuracy
   }
 }
