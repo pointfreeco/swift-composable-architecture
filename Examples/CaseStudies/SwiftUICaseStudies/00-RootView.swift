@@ -138,6 +138,20 @@ struct RootView: View {
               )
             )
           )
+
+          NavigationLink(
+            "Web socket",
+            destination: WebSocketView(
+              store: Store(
+                initialState: .init(),
+                reducer: webSocketReducer,
+                environment: WebSocketEnvironment(
+                  mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+                  webSocket: .live
+                )
+              )
+            )
+          )
         }
 
         Section(header: Text("Navigation")) {
