@@ -9,33 +9,33 @@ private let readMe = """
   depends on this data.
   """
 
-struct LazySheetState: Equatable {
+struct LoadThenPresentState: Equatable {
   var optionalCounter: CounterState?
   var isActivityIndicatorVisible = false
 
   var isSheetPresented: Bool { self.optionalCounter != nil }
 }
 
-enum LazySheetAction {
+enum LoadThenPresentAction {
   case optionalCounter(CounterAction)
   case setSheet(isPresented: Bool)
   case setSheetIsPresentedDelayCompleted
 }
 
-struct LazySheetEnvironment {
+struct LoadThenPresentEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
-let lazySheetReducer = counterReducer
+let loadThenPresentReducer = counterReducer
   .optional
   .pullback(
     state: \.optionalCounter,
-    action: /LazySheetAction.optionalCounter,
+    action: /LoadThenPresentAction.optionalCounter,
     environment: { _ in CounterEnvironment() }
   )
   .combined(
     with: Reducer<
-      LazySheetState, LazySheetAction, LazySheetEnvironment
+      LoadThenPresentState, LoadThenPresentAction, LoadThenPresentEnvironment
     > { state, action, environment in
       switch action {
       case .setSheet(isPresented: true):
@@ -59,8 +59,8 @@ let lazySheetReducer = counterReducer
     }
   )
 
-struct LazySheetView: View {
-  let store: Store<LazySheetState, LazySheetAction>
+struct LoadThenPresentView: View {
+  let store: Store<LoadThenPresentState, LoadThenPresentAction>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -80,11 +80,12 @@ struct LazySheetView: View {
       .sheet(
         isPresented: viewStore.binding(
           get: { $0.isSheetPresented },
-          send: LazySheetAction.setSheet(isPresented:)
+          send: LoadThenPresentAction.setSheet(isPresented:)
         )
       ) {
         IfLetStore(
-          self.store.scope(state: { $0.optionalCounter }, action: LazySheetAction.optionalCounter),
+          self.store.scope(
+            state: { $0.optionalCounter }, action: LoadThenPresentAction.optionalCounter),
           then: CounterView.init(store:)
         )
       }
@@ -93,14 +94,14 @@ struct LazySheetView: View {
   }
 }
 
-struct LazySheetView_Previews: PreviewProvider {
+struct LoadThenPresentView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
-      LazySheetView(
+      LoadThenPresentView(
         store: Store(
-          initialState: LazySheetState(),
-          reducer: lazySheetReducer,
-          environment: LazySheetEnvironment(
+          initialState: LoadThenPresentState(),
+          reducer: loadThenPresentReducer,
+          environment: LoadThenPresentEnvironment(
             mainQueue: DispatchQueue.main.eraseToAnyScheduler()
           )
         )

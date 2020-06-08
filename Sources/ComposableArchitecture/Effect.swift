@@ -188,7 +188,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
 
     return
       effects
-      .suffix(effects.count - 1)
+      .dropFirst()
       .reduce(into: first) { effects, effect in
         effects = effects.append(effect).eraseToEffect()
       }
