@@ -43,8 +43,8 @@ extension MotionManager {
       return Effect.run { subscriber in
         guard let manager = managers[id] else { return AnyCancellable {} }
 
-        accelerometerUpdatesSubscriber?.send(completion: .finished)
-        accelerometerUpdatesSubscriber = subscriber
+        accelerometerUpdatesSubscribers[id]?.send(completion: .finished)
+        accelerometerUpdatesSubscribers[id] = subscriber
         manager.startAccelerometerUpdates(to: queue) { data, error in
           if let data = data {
             subscriber.send(.init(data))
@@ -61,8 +61,8 @@ extension MotionManager {
       return Effect.run { subscriber in
         guard let manager = managers[id] else { return AnyCancellable {} }
 
-        deviceMotionUpdatesSubscriber?.send(completion: .finished)
-        deviceMotionUpdatesSubscriber = subscriber
+        deviceMotionUpdatesSubscribers[id]?.send(completion: .finished)
+        deviceMotionUpdatesSubscribers[id] = subscriber
         manager.startDeviceMotionUpdates(using: frame, to: queue) { data, error in
           if let data = data {
             subscriber.send(.init(data))
@@ -79,8 +79,8 @@ extension MotionManager {
       return Effect.run { subscriber in
         guard let manager = managers[id] else { return AnyCancellable {} }
 
-        deviceGyroUpdatesSubscriber?.send(completion: .finished)
-        deviceGyroUpdatesSubscriber = subscriber
+        deviceGyroUpdatesSubscribers[id]?.send(completion: .finished)
+        deviceGyroUpdatesSubscribers[id] = subscriber
         manager.startGyroUpdates(to: queue) { data, error in
           if let data = data {
             subscriber.send(.init(data))
@@ -97,8 +97,8 @@ extension MotionManager {
       return Effect.run { subscriber in
         guard let manager = managers[id] else { return AnyCancellable {} }
 
-        deviceMagnetometerUpdatesSubscriber?.send(completion: .finished)
-        deviceMagnetometerUpdatesSubscriber = subscriber
+        deviceMagnetometerUpdatesSubscribers[id]?.send(completion: .finished)
+        deviceMagnetometerUpdatesSubscribers[id] = subscriber
         manager.startMagnetometerUpdates(to: queue) { data, error in
           if let data = data {
             subscriber.send(.init(data))
@@ -115,40 +115,37 @@ extension MotionManager {
       .fireAndForget {
         guard let manager = managers[id] else { return }
         manager.stopAccelerometerUpdates()
-        accelerometerUpdatesSubscriber?.send(completion: .finished)
+        accelerometerUpdatesSubscribers[id]?.send(completion: .finished)
       }
     },
     stopDeviceMotionUpdates: { id in
       .fireAndForget {
         guard let manager = managers[id] else { return }
         manager.stopDeviceMotionUpdates()
-        deviceMotionUpdatesSubscriber?.send(completion: .finished)
+        deviceMotionUpdatesSubscribers[id]?.send(completion: .finished)
       }
     },
     stopGyroUpdates: { id in
       .fireAndForget {
         guard let manager = managers[id] else { return }
         manager.stopGyroUpdates()
-        deviceGyroUpdatesSubscriber?.send(completion: .finished)
+        deviceGyroUpdatesSubscribers[id]?.send(completion: .finished)
       }
     },
     stopMagnetometerUpdates: { id in
       .fireAndForget {
         guard let manager = managers[id] else { return }
         manager.stopMagnetometerUpdates()
-        deviceMagnetometerUpdatesSubscriber?.send(completion: .finished)
+        deviceMagnetometerUpdatesSubscribers[id]?.send(completion: .finished)
       }
     })
 }
 
-// TODO: store these by id?
-private var accelerometerUpdatesSubscriber:
-  Effect<AccelerometerData, MotionManager.Error>.Subscriber<AccelerometerData, MotionManager.Error>?
-private var deviceMotionUpdatesSubscriber:
-  Effect<DeviceMotion, MotionManager.Error>.Subscriber<DeviceMotion, MotionManager.Error>?
-private var deviceGyroUpdatesSubscriber:
-  Effect<GyroData, MotionManager.Error>.Subscriber<GyroData, MotionManager.Error>?
-private var deviceMagnetometerUpdatesSubscriber:
-  Effect<MagnetometerData, MotionManager.Error>.Subscriber<MagnetometerData, MotionManager.Error>?
-
-var managers: [AnyHashable: CMMotionManager] = [:]
+private var accelerometerUpdatesSubscribers: [AnyHashable: Effect<AccelerometerData, MotionManager.Error>.Subscriber] = [:]
+private var deviceMotionUpdatesSubscribers:
+  [AnyHashable: Effect<DeviceMotion, MotionManager.Error>.Subscriber] = [:]
+private var deviceGyroUpdatesSubscribers:
+  [AnyHashable: Effect<GyroData, MotionManager.Error>.Subscriber] = [:]
+private var deviceMagnetometerUpdatesSubscribers:
+  [AnyHashable: Effect<MagnetometerData, MotionManager.Error>.Subscriber] = [:]
+private var managers: [AnyHashable: CMMotionManager] = [:]
