@@ -239,8 +239,7 @@ private class LocationManagerDelegate: NSObject, CLLocationManagerDelegate {
       _ manager: CLLocationManager, didRange beacons: [CLBeacon],
       satisfying beaconConstraint: CLBeaconIdentityConstraint
     ) {
-      subscriber.send(.didRangeBeacons(beacons.map(Beacon.init(rawValue:)),
-                                        satisfyingConstraint: beaconConstraint))
+      subscriber.send(.didRangeBeacons(beacons.map(Beacon.init(rawValue:)), satisfyingConstraint: beaconConstraint))
     }
   #endif
 
