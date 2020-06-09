@@ -224,7 +224,8 @@ private class LocationManagerDelegate: NSObject, CLLocationManagerDelegate {
       _ manager: CLLocationManager, monitoringDidFailFor region: CLRegion?, withError error: Error
     ) {
       subscriber.send(
-        .monitoringDidFail(region: region.map(Region.init(rawValue:)), error: LocationManager.Error(error)))
+        .monitoringDidFail(
+          region: region.map(Region.init(rawValue:)), error: LocationManager.Error(error)))
     }
   #endif
 
@@ -239,7 +240,9 @@ private class LocationManagerDelegate: NSObject, CLLocationManagerDelegate {
       _ manager: CLLocationManager, didRange beacons: [CLBeacon],
       satisfying beaconConstraint: CLBeaconIdentityConstraint
     ) {
-      subscriber.send(.didRangeBeacons(beacons.map(Beacon.init(rawValue:)), satisfyingConstraint: beaconConstraint))
+      subscriber.send(
+        .didRangeBeacons(
+          beacons.map(Beacon.init(rawValue:)), satisfyingConstraint: beaconConstraint))
     }
   #endif
 
@@ -248,7 +251,8 @@ private class LocationManagerDelegate: NSObject, CLLocationManagerDelegate {
       _ manager: CLLocationManager, didFailRangingFor beaconConstraint: CLBeaconIdentityConstraint,
       error: Error
     ) {
-      subscriber.send(.didFailRanging(beaconConstraint: beaconConstraint, error: LocationManager.Error(error)))
+      subscriber.send(
+        .didFailRanging(beaconConstraint: beaconConstraint, error: LocationManager.Error(error)))
     }
   #endif
 
