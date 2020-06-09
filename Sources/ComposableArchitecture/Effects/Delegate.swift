@@ -23,12 +23,16 @@ import Foundation
 ///   // etc...
 /// }
 /// ```
-
-protocol EffectDelegate: AnyObject {
+///
+/// Once this is done, you just have to call
+/// ```
+/// Effect.from(delegate:)
+/// ```
+///  to create an effect for your delegate that can feed values to your store.
+public protocol EffectDelegate: AnyObject {
   associatedtype Output
-  associatedtype Failure: Error
 
-  var subscriber: Effect<Output, Failure>.Subscriber? { get set }
+  var subscriber: Effect<Output, Never>.Subscriber? { get set }
 }
 
 extension Effect {
@@ -39,13 +43,35 @@ extension Effect {
   ///   - delegate: The delegate to build an effect from.
   ///   - onCancel: An optional closure to provide any cleanup behavior you wish when the effect is cancelled.
   /// - Returns: A new `Effect` that will send values for any of the given delegate's callbacks.
-  static func from<Delegate: EffectDelegate>(
-    delegate: Delegate,
-    onCancel: () -> Void = {}
+  public static func fromDelegate<Delegate: EffectDelegate>(
+    _ delegate: Delegate,
+    onCancel: @escaping () -> Void = {}
   ) -> Effect<Output, Failure>
-    where Delegate.Output == Effect.Output, Delegate.Failure == Effect.Failure
+    where Effect.Output == Delegate.Output, Effect.Failure == Never
   {
     Effect.run { subscriber in
+      delegate.subscriber = subscriber
+      return AnyCancellable {
+        delegate.subscriber = nil
+        onCancel()
+      }
+    }
+  }
+
+  /// Creates an effect from the given `EffectDelegate`, which (given that the `EffectDelegate` implementation is written correctly) will emit values whenever the delegate's methods are called.
+  ///
+  /// - Parameters:
+  ///   - onCreate: A closure that must return the delegate you wish to create an effect from.
+  ///   - onCancel: An optional closure to provide any cleanup behavior you wish when the effect is cancelled.
+  /// - Returns: A new `Effect` that will send values for any of the given delegate's callbacks.
+  public static func fromDelegate<Delegate: EffectDelegate>(
+    onCreate createDelegate: @escaping (Effect<Delegate.Output, Never>.Subscriber) -> Delegate,
+    onCancel: @escaping () -> Void = {}
+  ) -> Effect<Output, Failure>
+    where Effect.Output == Delegate.Output, Effect.Failure == Never
+  {
+    Effect.run { subscriber in
+      let delegate = createDelegate(subscriber)
       delegate.subscriber = subscriber
       return AnyCancellable {
         delegate.subscriber = nil
