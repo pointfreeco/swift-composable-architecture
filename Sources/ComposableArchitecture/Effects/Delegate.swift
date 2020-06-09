@@ -24,9 +24,9 @@ import Foundation
 /// }
 /// ```
 ///
-/// Once this is done, you just have to call
+/// Once this is done, you just have to call:
 /// ```
-/// Effect.from(delegate:)
+/// Effect.fromDelegate(_:)
 /// ```
 ///  to create an effect for your delegate that can feed values to your store.
 public protocol EffectDelegate: AnyObject {
