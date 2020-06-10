@@ -1,4 +1,5 @@
-import Combine
+import Dispatch
+import RxSwift
 
 extension Effect {
   /// Turns an effect into one that can be debounced.
@@ -22,15 +23,13 @@ extension Effect {
   ///   - scheduler: The scheduler you want to deliver the debounced output to.
   ///   - options: Scheduler options that customize the effect's delivery of elements.
   /// - Returns: An effect that publishes events only after a specified time elapses.
-  public func debounce<S: Scheduler>(
+  public func debounce(
     id: AnyHashable,
-    for dueTime: S.SchedulerTimeType.Stride,
-    scheduler: S,
-    options: S.SchedulerOptions? = nil
+    for dueTime: RxTimeInterval,
+    scheduler: SchedulerType
   ) -> Effect {
-    Just(())
-      .setFailureType(to: Failure.self)
-      .delay(for: dueTime, scheduler: scheduler, options: options)
+    Observable.just(())
+      .delay(dueTime, scheduler: scheduler)
       .flatMap { self }
       .eraseToEffect()
       .cancellable(id: id, cancelInFlight: true)

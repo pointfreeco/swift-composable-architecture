@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
   name: "swift-composable-architecture",
   platforms: [
-    .iOS(.v13),
+    .iOS(.v12),
     .macOS(.v10_15),
     .tvOS(.v13),
     .watchOS(.v6),
@@ -14,20 +14,17 @@ let package = Package(
     .library(
       name: "ComposableArchitecture",
       targets: ["ComposableArchitecture"]
-    ),
-    .library(
-      name: "ComposableCoreLocation",
-      targets: ["ComposableCoreLocation"]
-    ),
+    )
   ],
   dependencies: [
-    .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.1.1")
+    .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.1.1"),
+    .package(url: "https://github.com/ReactiveX/RxSwift.git", from: "5.0.0")
   ],
   targets: [
     .target(
       name: "ComposableArchitecture",
       dependencies: [
-        "CasePaths"
+        "CasePaths", "RxSwift", "RxCocoa"
       ]
     ),
     .testTarget(
@@ -35,18 +32,6 @@ let package = Package(
       dependencies: [
         "ComposableArchitecture",
       ]
-    ),
-    .target(
-      name: "ComposableCoreLocation",
-      dependencies: [
-        "ComposableArchitecture"
-      ]
-    ),
-    .testTarget(
-      name: "ComposableCoreLocationTests",
-      dependencies: [
-        "ComposableCoreLocation",
-      ]
-    ),
+    )
   ]
 )

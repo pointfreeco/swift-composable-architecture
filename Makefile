@@ -26,18 +26,6 @@ test-workspace:
 		-destination platform="$(PLATFORM_TVOS)" \
 		-quiet
 	xcodebuild test \
-		-scheme ComposableCoreLocation \
-		-destination platform="$(PLATFORM_IOS)" \
-		-quiet
-	xcodebuild test \
-		-scheme ComposableCoreLocation \
-		-destination platform="$(PLATFORM_MACOS)" \
-		-quiet
-	xcodebuild test \
-		-scheme ComposableCoreLocation \
-		-destination platform="$(PLATFORM_TVOS)" \
-		-quiet
-	xcodebuild test \
 		-scheme "CaseStudies (SwiftUI)" \
 		-destination platform="$(PLATFORM_IOS)" \
 		-quiet

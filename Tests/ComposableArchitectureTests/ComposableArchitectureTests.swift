@@ -1,4 +1,4 @@
-import Combine
+import RxSwift
 import ComposableArchitecture
 import XCTest
 
@@ -84,8 +84,8 @@ final class ComposableArchitectureTests: XCTestCase {
 
   func testLongLivingEffects() {
     typealias Environment = (
-      startEffect: Effect<Void, Never>,
-      stopEffect: Effect<Never, Never>
+      startEffect: Effect<Void>,
+      stopEffect: Effect<Never>
     )
 
     enum Action { case end, incr, start }

@@ -1,4 +1,4 @@
-import Combine
+import RxSwift
 import Foundation
 
 extension Effect {
@@ -27,32 +27,34 @@ extension Effect {
   ///     canceled before starting this new one.
   /// - Returns: A new effect that is capable of being canceled by an identifier.
   public func cancellable(id: AnyHashable, cancelInFlight: Bool = false) -> Effect {
-    let effect = Deferred { () -> Publishers.HandleEvents<PassthroughSubject<Output, Failure>> in
+    let effect = Observable.deferred { () -> Observable<Output> in
       cancellablesLock.lock()
       defer { cancellablesLock.unlock() }
 
-      let subject = PassthroughSubject<Output, Failure>()
-      let cancellable = self.subscribe(subject)
+      let subject = PublishSubject<Output>()
+      let disposable = self.subscribe(subject)
 
-      var cancellationCancellable: AnyCancellable!
-      cancellationCancellable = AnyCancellable {
+      var disposeKey: CompositeDisposable.DisposeKey!
+      var cancellationCancellable: Disposable!
+
+      cancellationCancellable = Disposables.create {
         cancellablesLock.sync {
-          subject.send(completion: .finished)
-          cancellable.cancel()
-          cancellationCancellables[id]?.remove(cancellationCancellable)
-          if cancellationCancellables[id]?.isEmpty == .some(true) {
+          subject.onCompleted()
+          disposable.dispose()
+          cancellationCancellables[id]?.remove(for: disposeKey)
+          if cancellationCancellables[id]?.count == 0 {
             cancellationCancellables[id] = nil
           }
         }
       }
 
-      cancellationCancellables[id, default: []].insert(
+      disposeKey = cancellationCancellables[id, default: CompositeDisposable()].insert(
         cancellationCancellable
       )
 
-      return subject.handleEvents(
-        receiveCompletion: { _ in cancellationCancellable.cancel() },
-        receiveCancel: cancellationCancellable.cancel
+      return subject.do(
+        onCompleted: { cancellationCancellable.dispose() },
+        onDispose: { cancellationCancellable.dispose() }
       )
     }
     .eraseToEffect()
@@ -68,11 +70,11 @@ extension Effect {
   public static func cancel(id: AnyHashable) -> Effect {
     return .fireAndForget {
       cancellablesLock.sync {
-        cancellationCancellables[id]?.forEach { $0.cancel() }
+        cancellationCancellables[id]?.dispose()
       }
     }
   }
 }
 
-var cancellationCancellables: [AnyHashable: Set<AnyCancellable>] = [:]
+var cancellationCancellables: [AnyHashable: CompositeDisposable] = [:]
 let cancellablesLock = NSRecursiveLock()

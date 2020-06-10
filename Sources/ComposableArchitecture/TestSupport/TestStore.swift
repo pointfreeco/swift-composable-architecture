@@ -1,5 +1,5 @@
 #if DEBUG
-  import Combine
+  import RxSwift
   import Foundation
 
   /// A testable runtime for a reducer.
@@ -171,26 +171,31 @@
       line: UInt = #line
     ) {
       var receivedActions: [Action] = []
-
-      var cancellables: [AnyCancellable] = []
+      var effectDisposables = CompositeDisposable()
 
       func runReducer(action: Action) {
-        let effect = self.reducer.run(&self.state, action, self.environment)
-        var isComplete = false
-        var cancellable: AnyCancellable?
-        cancellable = effect.sink(
-          receiveCompletion: { _ in
-            isComplete = true
-            guard let cancellable = cancellable else { return }
-            cancellables.removeAll(where: { $0 == cancellable })
-          },
-          receiveValue: {
-            receivedActions.append($0)
+          let effect = reducer.callAsFunction(&self.state, action, self.environment)
+
+          var effectDisposable: Disposable?
+          var effectDisposableKey: CompositeDisposable.DisposeKey?
+          var isComplete = false
+
+          let cleanupDisposables = {
+              isComplete = true
+              guard let effectDisposableKey = effectDisposableKey else { return }
+              effectDisposables.remove(for: effectDisposableKey)
           }
-        )
-        if !isComplete, let cancellable = cancellable {
-          cancellables.append(cancellable)
-        }
+
+          effectDisposable = effect.subscribe(
+              onNext: { receivedActions.append($0) },
+              onError: { _ in cleanupDisposables() },
+              onCompleted: cleanupDisposables,
+              onDisposed: nil
+          )
+
+          if !isComplete, let effectDisposable = effectDisposable {
+              effectDisposableKey = effectDisposables.insert(effectDisposable)
+          }
       }
 
       for step in steps {
@@ -284,7 +289,7 @@
           line: line
         )
       }
-      if !cancellables.isEmpty {
+      if effectDisposables.count != 0 {
         _XCTFail(
           """
           Some effects are still running. All effects must complete by the end of the assertion.

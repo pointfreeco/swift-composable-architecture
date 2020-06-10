@@ -1,4 +1,4 @@
-import Combine
+import RxSwift
 import os.signpost
 
 extension Reducer {
@@ -54,35 +54,33 @@ extension Reducer {
   }
 }
 
-extension Publisher where Failure == Never {
+extension ObservableType {
   func effectSignpost(
     _ prefix: String,
     log: OSLog,
     actionOutput: String
-  ) -> Publishers.HandleEvents<Self> {
+  ) -> Observable<Element> {
     let sid = OSSignpostID(log: log)
 
     return
       self
-      .handleEvents(
-        receiveSubscription: { _ in
-          os_signpost(
-            .begin, log: log, name: "Effect", signpostID: sid, "%sStarted from %s", prefix,
-            actionOutput)
-        },
-        receiveOutput: { value in
-          os_signpost(
-            .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput)
-        },
-        receiveCompletion: { completion in
-          switch completion {
-          case .finished:
+        .do(
+          onNext: { _ in
+            os_signpost(
+              .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput)
+          },
+          onCompleted: {
             os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sFinished", prefix)
+          },
+          onSubscribe: {
+            os_signpost(
+              .begin, log: log, name: "Effect", signpostID: sid, "%sStarted from %s", prefix,
+              actionOutput)
+          },
+          onDispose: {
+            os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sCancelled", prefix)
           }
-        },
-        receiveCancel: {
-          os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sCancelled", prefix)
-        })
+      )
   }
 }
 
