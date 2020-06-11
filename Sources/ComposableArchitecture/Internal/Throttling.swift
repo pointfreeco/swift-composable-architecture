@@ -27,7 +27,7 @@ extension Effect {
         return Observable.just(value)
       }
 
-      guard let timeInterval = interval.timeInterval, throttleTime.timeIntervalSince(scheduler.now) < timeInterval else {
+      guard scheduler.now.timeIntervalSince1970 - throttleTime.timeIntervalSince1970 < interval.timeInterval else {
         throttleTimes[id] = scheduler.now
         throttleValues[id] = nil
         return Observable.just(value)
@@ -37,10 +37,7 @@ extension Effect {
       throttleValues[id] = value
 
       return Observable.just(value)
-        .delay(
-            .milliseconds(Int(scheduler.now.timeIntervalSince(throttleTime.addingTimeInterval(timeInterval)) * 1000.0)),
-            scheduler: scheduler
-        )
+        .delay(.seconds(throttleTime.addingTimeInterval(interval.timeInterval).timeIntervalSince1970 - scheduler.now.timeIntervalSince1970), scheduler: scheduler)
     }
     .eraseToEffect()
     .cancellable(id: id, cancelInFlight: true)
@@ -51,20 +48,26 @@ var throttleTimes: [AnyHashable: Any] = [:]
 var throttleValues: [AnyHashable: Any] = [:]
 
 extension DispatchTimeInterval {
-    var timeInterval: TimeInterval? {
-        switch self {
-        case .seconds(let value):
-            return TimeInterval(value)
-        case .milliseconds(let value):
-            return TimeInterval(value) * 0.001
-        case .microseconds(let value):
-            return TimeInterval(value) * 0.000001
-        case .nanoseconds(let value):
-           return TimeInterval(value) * 0.000000001
-        case .never:
-            return nil
-        @unknown default:
-            return nil
-        }
+  var timeInterval: TimeInterval {
+    switch self {
+    case let .seconds(s):
+      return TimeInterval(s)
+    case let .milliseconds(ms):
+      return TimeInterval(TimeInterval(ms) / 1000.0)
+    case let .microseconds(us):
+      return TimeInterval(Int64(us) * Int64(NSEC_PER_USEC)) / TimeInterval(NSEC_PER_SEC)
+    case let .nanoseconds(ns):
+      return TimeInterval(ns) / TimeInterval(NSEC_PER_SEC)
+    case .never:
+      return .infinity
+    @unknown default:
+      fatalError()
     }
+  }
+
+  static func seconds(_ interval: TimeInterval) -> DispatchTimeInterval {
+    let delay = Double(NSEC_PER_SEC) * interval
+    return DispatchTimeInterval.nanoseconds(Int(delay))
+  }
 }
+

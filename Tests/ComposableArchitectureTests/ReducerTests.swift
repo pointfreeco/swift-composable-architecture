@@ -1,10 +1,11 @@
-import RxSwift
 import ComposableArchitecture
+import RxSwift
+import RxTest
 import XCTest
 import os.signpost
 
 final class ReducerTests: XCTestCase {
-  var cancellables: Set<AnyCancellable> = []
+  var disposeBag = DisposeBag()
 
   func testCallableAsFunction() {
     let reducer = Reducer<Int, Void, Void> { state, _, _ in
@@ -18,32 +19,31 @@ final class ReducerTests: XCTestCase {
   }
 
   func testCombine_EffectsAreMerged() {
-    typealias Scheduler = AnySchedulerOf<DispatchQueue>
     enum Action: Equatable {
       case increment
     }
 
     var fastValue: Int?
-    let fastReducer = Reducer<Int, Action, Scheduler> { state, _, scheduler in
+    let fastReducer = Reducer<Int, Action, SchedulerType> { state, _, scheduler in
       state += 1
       return Effect.fireAndForget { fastValue = 42 }
-        .delay(for: 1, scheduler: scheduler)
+        .delay(.seconds(1), scheduler: scheduler)
         .eraseToEffect()
     }
 
     var slowValue: Int?
-    let slowReducer = Reducer<Int, Action, Scheduler> { state, _, scheduler in
+    let slowReducer = Reducer<Int, Action, SchedulerType> { state, _, scheduler in
       state += 1
       return Effect.fireAndForget { slowValue = 1729 }
-        .delay(for: 2, scheduler: scheduler)
+        .delay(.seconds(2), scheduler: scheduler)
         .eraseToEffect()
     }
 
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = TestScheduler.default()
     let store = TestStore(
       initialState: 0,
       reducer: .combine(fastReducer, slowReducer),
-      environment: scheduler.eraseToAnyScheduler()
+      environment: scheduler
     )
 
     store.assert(
@@ -159,8 +159,8 @@ final class ReducerTests: XCTestCase {
     let effect = reducer.run(&n, (), ())
     let expectation = self.expectation(description: "effect")
     effect
-      .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
-      .store(in: &self.cancellables)
+      .subscribe(onCompleted: { expectation.fulfill() })
+      .disposed(by: disposeBag)
     self.wait(for: [expectation], timeout: 0.1)
   }
 
@@ -170,8 +170,8 @@ final class ReducerTests: XCTestCase {
     let effect = reducer.run(&n, (), ())
     let expectation = self.expectation(description: "effect")
     effect
-      .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
-      .store(in: &self.cancellables)
+      .subscribe(onCompleted: { expectation.fulfill() })
+      .disposed(by: disposeBag)
     self.wait(for: [expectation], timeout: 0.1)
   }
 }

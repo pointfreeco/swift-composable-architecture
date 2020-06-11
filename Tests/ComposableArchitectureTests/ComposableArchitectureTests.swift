@@ -1,9 +1,10 @@
-import RxSwift
 import ComposableArchitecture
 import XCTest
+import RxSwift
+import RxTest
 
 final class ComposableArchitectureTests: XCTestCase {
-  var cancellables: Set<AnyCancellable> = []
+  var disposeBag = DisposeBag()
 
   func testScheduling() {
     enum CounterAction: Equatable {
@@ -12,19 +13,19 @@ final class ComposableArchitectureTests: XCTestCase {
       case squareNow
     }
 
-    let counterReducer = Reducer<Int, CounterAction, AnySchedulerOf<DispatchQueue>> {
+    let counterReducer = Reducer<Int, CounterAction, SchedulerType> {
       state, action, scheduler in
       switch action {
       case .incrAndSquareLater:
         return .merge(
           Effect(value: .incrNow)
-            .delay(for: 2, scheduler: scheduler)
+            .delay(.seconds(2), scheduler: scheduler)
             .eraseToEffect(),
           Effect(value: .squareNow)
-            .delay(for: 1, scheduler: scheduler)
+            .delay(.seconds(1), scheduler: scheduler)
             .eraseToEffect(),
           Effect(value: .squareNow)
-            .delay(for: 2, scheduler: scheduler)
+            .delay(.seconds(2), scheduler: scheduler)
             .eraseToEffect()
         )
       case .incrNow:
@@ -36,12 +37,12 @@ final class ComposableArchitectureTests: XCTestCase {
       }
     }
 
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = TestScheduler.default()
 
     let store = TestStore(
       initialState: 2,
       reducer: counterReducer,
-      environment: scheduler.eraseToAnyScheduler()
+      environment: scheduler
     )
 
     store.assert(
@@ -60,26 +61,6 @@ final class ComposableArchitectureTests: XCTestCase {
       .receive(.incrNow) { $0 = 626 },
       .receive(.squareNow) { $0 = 391876 }
     )
-  }
-
-  func testSimultaneousWorkOrdering() {
-    let testScheduler = TestScheduler<
-      DispatchQueue.SchedulerTimeType, DispatchQueue.SchedulerOptions
-    >(
-      now: .init(.init(uptimeNanoseconds: 1))
-    )
-
-    var values: [Int] = []
-    testScheduler.schedule(after: testScheduler.now, interval: 1) { values.append(1) }
-      .store(in: &self.cancellables)
-    testScheduler.schedule(after: testScheduler.now, interval: 2) { values.append(42) }
-      .store(in: &self.cancellables)
-
-    XCTAssertEqual(values, [])
-    testScheduler.advance()
-    XCTAssertEqual(values, [1, 42])
-    testScheduler.advance(by: 2)
-    XCTAssertEqual(values, [1, 42, 1, 1, 42])
   }
 
   func testLongLivingEffects() {
@@ -102,21 +83,21 @@ final class ComposableArchitectureTests: XCTestCase {
       }
     }
 
-    let subject = PassthroughSubject<Void, Never>()
+    let subject = PublishSubject<Void>()
 
     let store = TestStore(
       initialState: 0,
       reducer: reducer,
       environment: (
         startEffect: subject.eraseToEffect(),
-        stopEffect: .fireAndForget { subject.send(completion: .finished) }
+        stopEffect: .fireAndForget { subject.onCompleted() }
       )
     )
 
     store.assert(
       .send(.start),
       .send(.incr) { $0 = 1 },
-      .do { subject.send() },
+      .do { subject.onNext(()) },
       .receive(.incr) { $0 = 2 },
       .send(.end)
     )
@@ -130,8 +111,8 @@ final class ComposableArchitectureTests: XCTestCase {
     }
 
     struct Environment {
-      let fetch: (Int) -> Effect<Int, Never>
-      let mainQueue: AnySchedulerOf<DispatchQueue>
+      let fetch: (Int) -> Effect<Int>
+      let mainQueue: SchedulerType
     }
 
     let reducer = Reducer<Int, Action, Environment> { state, action, environment in
@@ -144,7 +125,7 @@ final class ComposableArchitectureTests: XCTestCase {
       case .incr:
         state += 1
         return environment.fetch(state)
-          .receive(on: environment.mainQueue)
+          .observeOn(environment.mainQueue)
           .map(Action.response)
           .eraseToEffect()
           .cancellable(id: CancelId())
@@ -155,14 +136,14 @@ final class ComposableArchitectureTests: XCTestCase {
       }
     }
 
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = TestScheduler.default()
 
     let store = TestStore(
       initialState: 0,
       reducer: reducer,
       environment: Environment(
         fetch: { value in Effect(value: value * value) },
-        mainQueue: scheduler.eraseToAnyScheduler()
+        mainQueue: scheduler
       )
     )
 

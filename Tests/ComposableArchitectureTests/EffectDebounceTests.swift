@@ -1,21 +1,22 @@
-import RxSwift
 import ComposableArchitecture
 import XCTest
+import RxSwift
+import RxTest
 
 final class EffectDebounceTests: XCTestCase {
-  var cancellables: Set<AnyCancellable> = []
+  var disposeBag = DisposeBag()
 
   func testDebounce() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = TestScheduler.default()
     var values: [Int] = []
 
     func runDebouncedEffect(value: Int) {
       struct CancelToken: Hashable {}
-      Just(value)
+        Observable.just(value)
         .eraseToEffect()
-        .debounce(id: CancelToken(), for: 1, scheduler: scheduler)
-        .sink { values.append($0) }
-        .store(in: &self.cancellables)
+        .debounce(id: CancelToken(), for: .seconds(1), scheduler: scheduler)
+        .subscribe(onNext: { values.append($0) })
+        .disposed(by: disposeBag)
     }
 
     runDebouncedEffect(value: 1)
@@ -51,21 +52,21 @@ final class EffectDebounceTests: XCTestCase {
   }
 
   func testDebounceIsLazy() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = TestScheduler.default()
     var values: [Int] = []
     var effectRuns = 0
 
     func runDebouncedEffect(value: Int) {
       struct CancelToken: Hashable {}
 
-      Deferred { () -> Just<Int> in
+      Observable.deferred { () -> Observable<Int> in
         effectRuns += 1
-        return Just(value)
+        return Observable.just(value)
       }
       .eraseToEffect()
-      .debounce(id: CancelToken(), for: 1, scheduler: scheduler)
-      .sink { values.append($0) }
-      .store(in: &self.cancellables)
+      .debounce(id: CancelToken(), for: .seconds(1), scheduler: scheduler)
+      .subscribe(onNext: { values.append($0) })
+      .disposed(by: disposeBag)
     }
 
     runDebouncedEffect(value: 1)

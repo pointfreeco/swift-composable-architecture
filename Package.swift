@@ -30,7 +30,7 @@ let package = Package(
     .testTarget(
       name: "ComposableArchitectureTests",
       dependencies: [
-        "ComposableArchitecture",
+        "ComposableArchitecture", "RxTest"
       ]
     )
   ]

@@ -12,7 +12,7 @@ public final class Store<State, Action> {
   private var synchronousActionsToSend: [Action] = []
   private var isSending = false
   private var parentDisposable: Disposable?
-  private var effectDisposables = CompositeDisposable()
+  var effectDisposables = CompositeDisposable()
   private let reducer: (inout State, Action) -> Effect<Action>
 
   private var stateRelay: BehaviorRelay<State>
@@ -188,6 +188,9 @@ public final class Store<State, Action> {
           } else {
             self?.send(action)
           }
+        },
+        onError: { err in
+            assertionFailure("Error during effect handling: \(err.localizedDescription)")
         },
         onCompleted: { [weak self] in
           didComplete = true

@@ -1,18 +1,20 @@
-import RxSwift
+//import RxSwift
 import ComposableArchitecture
+import RxSwift
+import RxTest
 import XCTest
 
 final class TimerTests: XCTestCase {
-  var cancellables: Set<AnyCancellable> = []
+  var disposeBag = DisposeBag()
 
   func testTimer() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = TestScheduler.default()
 
     var count = 0
 
-    Effect.timer(id: 1, every: .seconds(1), on: scheduler)
-      .sink { _ in count += 1 }
-      .store(in: &self.cancellables)
+    Effect<Int>.timer(id: 1, every: .seconds(1), on: scheduler)
+      .subscribe(onNext: { _ in count += 1 })
+      .disposed(by: disposeBag)
 
     scheduler.advance(by: 1)
     XCTAssertEqual(count, 1)
@@ -28,21 +30,21 @@ final class TimerTests: XCTestCase {
   }
 
   func testInterleavingTimer() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = TestScheduler.default()
 
     var count2 = 0
     var count3 = 0
 
     Effect.merge(
-      Effect.timer(id: 1, every: .seconds(2), on: scheduler)
-        .handleEvents(receiveOutput: { _ in count2 += 1 })
+      Effect<Int>.timer(id: 1, every: .seconds(2), on: scheduler)
+        .do(onNext: { _ in count2 += 1 })
         .eraseToEffect(),
-      Effect.timer(id: 2, every: .seconds(3), on: scheduler)
-        .handleEvents(receiveOutput: { _ in count3 += 1 })
+      Effect<Int>.timer(id: 2, every: .seconds(3), on: scheduler)
+        .do(onNext: { _ in count3 += 1 })
         .eraseToEffect()
     )
-    .sink { _ in }
-    .store(in: &self.cancellables)
+    .subscribe(onNext: { _ in })
+    .disposed(by: disposeBag)
 
     scheduler.advance(by: 1)
     XCTAssertEqual(count2, 0)
@@ -59,7 +61,7 @@ final class TimerTests: XCTestCase {
   }
 
   func testTimerCancellation() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = TestScheduler.default()
 
     var count2 = 0
     var count3 = 0
@@ -67,19 +69,19 @@ final class TimerTests: XCTestCase {
     struct CancelToken: Hashable {}
 
     Effect.merge(
-      Effect.timer(id: CancelToken(), every: .seconds(2), on: scheduler)
-        .handleEvents(receiveOutput: { _ in count2 += 1 })
+      Effect<Int>.timer(id: CancelToken(), every: .seconds(2), on: scheduler)
+        .do(onNext: { _ in count2 += 1 })
         .eraseToEffect(),
-      Effect.timer(id: CancelToken(), every: .seconds(3), on: scheduler)
-        .handleEvents(receiveOutput: { _ in count3 += 1 })
+      Effect<Int>.timer(id: CancelToken(), every: .seconds(3), on: scheduler)
+        .do(onNext: { _ in count3 += 1 })
         .eraseToEffect(),
-      Just(())
-        .delay(for: 30, scheduler: scheduler)
+      Observable.just(())
+        .delay(.seconds(31), scheduler: scheduler)
         .flatMap { Effect.cancel(id: CancelToken()) }
         .eraseToEffect()
     )
-    .sink { _ in }
-    .store(in: &self.cancellables)
+    .subscribe(onNext: { _ in })
+    .disposed(by: disposeBag)
 
     scheduler.advance(by: 1)
 
@@ -108,14 +110,14 @@ final class TimerTests: XCTestCase {
   }
 
   func testTimerCompletion() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = TestScheduler.default()
 
     var count = 0
 
-    Effect.timer(id: 1, every: .seconds(1), on: scheduler)
-      .prefix(3)
-      .sink { _ in count += 1 }
-      .store(in: &self.cancellables)
+    Effect<Int>.timer(id: 1, every: .seconds(1), on: scheduler)
+      .take(3)
+      .subscribe(onNext: { _ in count += 1 })
+      .disposed(by: disposeBag)
 
     scheduler.advance(by: 1)
     XCTAssertEqual(count, 1)

@@ -188,7 +188,10 @@
 
           effectDisposable = effect.subscribe(
               onNext: { receivedActions.append($0) },
-              onError: { _ in cleanupDisposables() },
+              onError: { err in
+                _XCTFail("Error during effect handling: \(err.localizedDescription)")
+                cleanupDisposables()
+              },
               onCompleted: cleanupDisposables,
               onDisposed: nil
           )
