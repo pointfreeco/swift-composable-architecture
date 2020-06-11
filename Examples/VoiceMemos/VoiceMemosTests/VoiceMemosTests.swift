@@ -287,6 +287,42 @@ class VoiceMemosTests: XCTestCase {
       }
     )
   }
+
+  func testDeleteMemoWhilePlaying() {
+    let store = TestStore(
+      initialState: VoiceMemosState(
+        voiceMemos: [
+          VoiceMemo(
+            date: Date(timeIntervalSinceNow: 0),
+            duration: 10,
+            mode: .notPlaying,
+            title: "",
+            url: URL(string: "https://www.pointfree.co/functions")!
+          ),
+        ]
+      ),
+      reducer: voiceMemosReducer,
+      environment: .mock(
+        audioPlayerClient: .mock(
+          play: { id, url in .future { _ in } }
+        ),
+        mainQueue: self.scheduler.eraseToAnyScheduler()
+      )
+    )
+
+    store.assert([
+      .send(.voiceMemo(index: 0, action: .playButtonTapped)) {
+        $0.voiceMemos[0].mode = .playing(progress: 0)
+      },
+      .send(.deleteVoiceMemo(IndexSet(integer: 0))) {
+        $0.voiceMemos = []
+      },
+
+      // Uncomment these lines to reproduce the crash:
+      // .do { self.scheduler.advance(by: .milliseconds(500)) },
+      // .receive(.voiceMemo(index: 0, action: .timerUpdated(0.5)))
+    ])
+  }
 }
 
 extension VoiceMemosEnvironment {
