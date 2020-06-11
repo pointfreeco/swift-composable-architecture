@@ -101,6 +101,8 @@ final class ReducerTests: XCTestCase {
     struct State: Equatable { var count = 0 }
 
     var logs: [String] = []
+    let logsExpectation = self.expectation(description: "logs")
+    logsExpectation.expectedFulfillmentCount = 2
 
     let reducer = Reducer<State, Action, Void> { state, action, _ in
       switch action {
@@ -115,6 +117,7 @@ final class ReducerTests: XCTestCase {
       DebugEnvironment(
         printer: {
           logs.append($0)
+          logsExpectation.fulfill()
         }
       )
     }
@@ -129,7 +132,7 @@ final class ReducerTests: XCTestCase {
       .send(.noop)
     )
 
-    _ = XCTWaiter.wait(for: [self.expectation(description: "wait")], timeout: 0.1)
+    self.wait(for: [logsExpectation], timeout: 2)
 
     XCTAssertEqual(
       logs,
