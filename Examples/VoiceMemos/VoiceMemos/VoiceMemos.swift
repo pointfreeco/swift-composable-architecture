@@ -28,7 +28,7 @@ struct VoiceMemo: Equatable {
 enum VoiceMemoAction: Equatable {
   case audioPlayerClient(Result<AudioPlayerClient.Action, AudioPlayerClient.Failure>)
   case playButtonTapped
-  case remove
+  case delete
   case timerUpdated(TimeInterval)
   case titleTextFieldChanged(String)
 }
@@ -47,6 +47,12 @@ let voiceMemoReducer = Reducer<VoiceMemo, VoiceMemoAction, VoiceMemoEnvironment>
   case .audioPlayerClient(.success(.didFinishPlaying)), .audioPlayerClient(.failure):
     memo.mode = .notPlaying
     return .cancel(id: TimerId())
+
+  case .delete:
+    return .merge(
+      .cancel(id: PlayerId()),
+      .cancel(id: TimerId())
+    )
 
   case .playButtonTapped:
     switch memo.mode {
@@ -78,12 +84,6 @@ let voiceMemoReducer = Reducer<VoiceMemo, VoiceMemoAction, VoiceMemoEnvironment>
           .fireAndForget()
       )
     }
-
-  case .remove:
-    return .merge(
-      .cancel(id: PlayerId()),
-      .cancel(id: TimerId())
-    )
 
   case let .timerUpdated(time):
     switch memo.mode {
@@ -265,14 +265,14 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       state.alertMessage = "Voice memo playback failed."
       return .none
 
+    case let .voiceMemo(index: index, action: .delete):
+      state.voiceMemos.remove(at: index)
+      return .none
+
     case let .voiceMemo(index: index, action: .playButtonTapped):
       for idx in state.voiceMemos.indices where idx != index {
         state.voiceMemos[idx].mode = .notPlaying
       }
-      return .none
-
-    case let .voiceMemo(index: index, action: .remove):
-      state.voiceMemos.remove(at: index)
       return .none
 
     case .voiceMemo:
@@ -298,7 +298,7 @@ struct VoiceMemosView: View {
             )
             .onDelete { indexSet in
               for index in indexSet {
-                viewStore.send(.voiceMemo(index: index, action: .remove))
+                viewStore.send(.voiceMemo(index: index, action: .delete))
               }
             }
           }
