@@ -28,6 +28,7 @@ struct VoiceMemo: Equatable {
 enum VoiceMemoAction: Equatable {
   case audioPlayerClient(Result<AudioPlayerClient.Action, AudioPlayerClient.Failure>)
   case playButtonTapped
+  case remove
   case timerUpdated(TimeInterval)
   case titleTextFieldChanged(String)
 }
@@ -56,7 +57,8 @@ let voiceMemoReducer = Reducer<VoiceMemo, VoiceMemoAction, VoiceMemoEnvironment>
         environment.audioPlayerClient
           .play(PlayerId(), memo.url)
           .catchToEffect()
-          .map(VoiceMemoAction.audioPlayerClient),
+          .map(VoiceMemoAction.audioPlayerClient)
+          .cancellable(id: PlayerId()),
 
         Effect.timer(id: TimerId(), every: 0.5, on: environment.mainQueue)
           .map {
@@ -76,6 +78,12 @@ let voiceMemoReducer = Reducer<VoiceMemo, VoiceMemoAction, VoiceMemoEnvironment>
           .fireAndForget()
       )
     }
+
+  case .remove:
+    return .merge(
+      .cancel(id: PlayerId()),
+      .cancel(id: TimerId())
+    )
 
   case let .timerUpdated(time):
     switch memo.mode {
@@ -121,7 +129,6 @@ enum VoiceMemosAction: Equatable {
   case alertDismissed
   case audioRecorderClient(Result<AudioRecorderClient.Action, AudioRecorderClient.Failure>)
   case currentRecordingTimerUpdated
-  case deleteVoiceMemo(IndexSet)
   case finalRecordingTime(TimeInterval)
   case openSettingsButtonTapped
   case recordButtonTapped
@@ -140,6 +147,12 @@ struct VoiceMemosEnvironment {
 }
 
 let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnvironment>.combine(
+  voiceMemoReducer.forEach(
+    state: \.voiceMemos,
+    action: /VoiceMemosAction.voiceMemo(index:action:),
+    environment: {
+      VoiceMemoEnvironment(audioPlayerClient: $0.audioPlayerClient, mainQueue: $0.mainQueue)
+  }),
   .init { state, action, environment in
     struct RecorderId: Hashable {}
     struct RecorderTimerId: Hashable {}
@@ -194,10 +207,6 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
 
     case .currentRecordingTimerUpdated:
       state.currentRecording?.duration += 1
-      return .none
-
-    case let .deleteVoiceMemo(indexSet):
-      state.voiceMemos.remove(atOffsets: indexSet)
       return .none
 
     case let .finalRecordingTime(duration):
@@ -262,16 +271,14 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       }
       return .none
 
+    case let .voiceMemo(index: index, action: .remove):
+      state.voiceMemos.remove(at: index)
+      return .none
+
     case .voiceMemo:
       return .none
     }
-  },
-  voiceMemoReducer.forEach(
-    state: \.voiceMemos,
-    action: /VoiceMemosAction.voiceMemo(index:action:),
-    environment: {
-      VoiceMemoEnvironment(audioPlayerClient: $0.audioPlayerClient, mainQueue: $0.mainQueue)
-    })
+  }
 )
 
 struct VoiceMemosView: View {
@@ -289,7 +296,11 @@ struct VoiceMemosView: View {
               id: \.url,
               content: VoiceMemoView.init(store:)
             )
-            .onDelete { viewStore.send(.deleteVoiceMemo($0)) }
+            .onDelete { indexSet in
+              for index in indexSet {
+                viewStore.send(.voiceMemo(index: index, action: .remove))
+              }
+            }
           }
           VStack {
             ZStack {

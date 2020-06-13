@@ -281,8 +281,7 @@ class VoiceMemosTests: XCTestCase {
     )
 
     store.assert(
-      .send(.deleteVoiceMemo(IndexSet(integer: 1))),
-      .send(.deleteVoiceMemo(IndexSet(integer: 0))) {
+      .send(.voiceMemo(index: 0, action: .remove)) {
         $0.voiceMemos = []
       }
     )
@@ -314,7 +313,7 @@ class VoiceMemosTests: XCTestCase {
       .send(.voiceMemo(index: 0, action: .playButtonTapped)) {
         $0.voiceMemos[0].mode = .playing(progress: 0)
       },
-      .send(.deleteVoiceMemo(IndexSet(integer: 0))) {
+      .send(.voiceMemo(index: 0, action: .remove)) {
         $0.voiceMemos = []
       },
 
