@@ -309,18 +309,15 @@ class VoiceMemosTests: XCTestCase {
       )
     )
 
-    store.assert([
+    store.assert(
       .send(.voiceMemo(index: 0, action: .playButtonTapped)) {
         $0.voiceMemos[0].mode = .playing(progress: 0)
       },
       .send(.voiceMemo(index: 0, action: .remove)) {
         $0.voiceMemos = []
       },
-
-      // Uncomment these lines to reproduce the crash:
-      // .do { self.scheduler.advance(by: .milliseconds(500)) },
-      // .receive(.voiceMemo(index: 0, action: .timerUpdated(0.5)))
-    ])
+      .do { self.scheduler.run() }
+    )
   }
 }
 
