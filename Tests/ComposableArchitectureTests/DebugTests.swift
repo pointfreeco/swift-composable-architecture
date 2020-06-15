@@ -832,4 +832,29 @@ final class DebugTests: XCTestCase {
       """
     )
   }
+
+  func testDebugCaseOutput() {
+    enum Action {
+      case screenA(ScreenA)
+
+      enum ScreenA {
+        case row(index: Int, action: RowAction)
+
+        enum RowAction {
+          case tapped
+          case textChanged(query: String)
+        }
+      }
+    }
+
+    XCTAssertEqual(
+      debugCaseOutput(Action.screenA(.row(index: 1, action: .tapped))),
+      ".screenA(.row(index:, action: .tapped))"
+    )
+
+    XCTAssertEqual(
+      debugCaseOutput(Action.screenA(.row(index: 1, action: .textChanged(query: "Hi")))),
+      ".screenA(.row(index:, action: .textChanged(query:)))"
+    )
+  }
 }
