@@ -4,9 +4,21 @@ import Dispatch
 /// Determines how the string description of an action should be printed when using the `.debug()`
 /// higher-order reducer.
 public enum ActionFormat {
-  /// asdf
+  /// Prints the action in a single line by only specifying the labels of the associated values:
+  ///
+  ///     Action.screenA(.row(index:, action: .textChanged(query:)))
   case labelsOnly
-  /// asdfadsf
+  /// Prints the action in a multiline, pretty-printed format, including all the labels of
+  /// any associated values, as well as the data held in the associated values:
+  ///
+  ///     Action.screenA(
+  ///       ScreenA.row(
+  ///         index: 1,
+  ///         action: RowAction.textChanged(
+  ///           query: "Hi"
+  ///         )
+  ///       )
+  ///     )
   case prettyPrint
 }
 
