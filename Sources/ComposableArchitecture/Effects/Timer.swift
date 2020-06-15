@@ -36,6 +36,7 @@ extension Effect where Failure == Never {
   ) -> Effect where S: Scheduler, S.SchedulerTimeType == Output {
 
     Publishers.Timer(every: interval, tolerance: tolerance, scheduler: scheduler, options: options)
+      .autoconnect()
       .setFailureType(to: Failure.self)
       .eraseToEffect()
       .cancellable(id: id)
