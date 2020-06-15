@@ -109,10 +109,12 @@ extension Reducer {
         return .concatenate(
           .fireAndForget {
             debugEnvironment.queue.async {
-              let actionOutput = actionFormat == .prettyPrint
+              let actionOutput =
+                actionFormat == .prettyPrint
                 ? debugOutput(localAction).indent(by: 2)
                 : debugCaseOutput(localAction).indent(by: 2)
-              let stateOutput = LocalState.self == Void.self
+              let stateOutput =
+                LocalState.self == Void.self
                 ? ""
                 : debugDiff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
               debugEnvironment.printer(

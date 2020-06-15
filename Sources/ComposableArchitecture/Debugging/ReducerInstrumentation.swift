@@ -100,7 +100,8 @@ func debugCaseOutput(_ value: Any) -> String {
     case .tuple:
       return mirror.children.map { label, value in
         let childOutput = debugCaseOutputHelp(value)
-        return "\(label.map { isUnlabeledArgument($0) ? "_:" : "\($0):" } ?? "")\(childOutput.isEmpty ? "" : " \(childOutput)")"
+        return
+          "\(label.map { isUnlabeledArgument($0) ? "_:" : "\($0):" } ?? "")\(childOutput.isEmpty ? "" : " \(childOutput)")"
       }
       .joined(separator: ", ")
     default:
