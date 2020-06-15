@@ -56,7 +56,7 @@ public struct Reducer<State, Action, Environment> {
     Self { _, _, _ in .none }
   }
 
-  /// Combines many reducers into a single one by running each one on the state, and concatenating
+  /// Combines many reducers into a single one by running each one on the state, and merging
   /// all of the effects.
   ///
   /// - Parameter reducers: A list of reducers.
@@ -66,7 +66,7 @@ public struct Reducer<State, Action, Environment> {
   }
 
   /// Combines an array of reducers into a single one by running each one on the state, and
-  /// concatenating all of the effects.
+  /// merging all of the effects.
   ///
   /// - Parameter reducers: An array of reducers.
   /// - Returns: A single reducer.
@@ -77,7 +77,7 @@ public struct Reducer<State, Action, Environment> {
   }
 
   /// Combines the current reducer with another given reducer by running each one on the state,
-  /// and concatenating their effects.
+  /// and merging their effects.
   ///
   /// - Parameter other: Another reducer.
   /// - Returns: A single reducer.
