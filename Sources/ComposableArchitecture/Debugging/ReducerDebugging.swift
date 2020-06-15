@@ -96,8 +96,9 @@ extension Reducer {
               let actionOutput = actionFormat == .prettyPrint
                 ? debugOutput(localAction).indent(by: 2)
                 : debugCaseOutput(localAction).indent(by: 2)
-              let stateOutput =
-                debugDiff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
+              let stateOutput = LocalState.self == Void.self
+                ? ""
+                : debugDiff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
               debugEnvironment.printer(
                 """
                 \(prefix.isEmpty ? "" : "\(prefix): ")received action:

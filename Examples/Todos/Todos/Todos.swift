@@ -131,7 +131,8 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     environment: { _ in TodoEnvironment() }
   )
 )
-.debug()
+
+.debugActions(actionFormat: .labelsOnly)
 
 struct AppView: View {
   struct ViewState: Equatable {
