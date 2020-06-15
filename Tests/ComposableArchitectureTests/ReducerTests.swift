@@ -157,6 +157,56 @@ final class ReducerTests: XCTestCase {
     )
   }
 
+  func testDebug_ActionFormat_OnlyLabels() {
+    enum Action: Equatable { case incr(Bool) }
+    struct State: Equatable { var count = 0 }
+
+    var logs: [String] = []
+    let logsExpectation = self.expectation(description: "logs")
+
+    let reducer = Reducer<State, Action, Void> { state, action, _ in
+      switch action {
+      case let .incr(bool):
+        state.count += bool ? 1 : 0
+        return .none
+      }
+    }
+    .debug("[prefix]", actionFormat: .labelsOnly) { _ in
+      DebugEnvironment(
+        printer: {
+          logs.append($0)
+          logsExpectation.fulfill()
+        }
+      )
+    }
+
+    let viewStore = ViewStore(
+      Store(
+        initialState: State(),
+        reducer: reducer,
+        environment: ()
+      )
+    )
+    viewStore.send(.incr(true))
+
+    self.wait(for: [logsExpectation], timeout: 2)
+
+    XCTAssertEqual(
+      logs,
+      [
+        #"""
+        [prefix]: received action:
+          Action.incr
+          State(
+        −   count: 0
+        +   count: 1
+          )
+
+        """#,
+      ]
+    )
+  }
+
   func testDefaultSignpost() {
     let reducer = Reducer<Int, Void, Void>.empty.signpost(log: .default)
     var n = 0
