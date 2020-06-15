@@ -1,4 +1,5 @@
 import Combine
+import CombineSchedulers
 import XCTest
 
 @testable import ComposableArchitecture
