@@ -851,12 +851,12 @@ final class DebugTests: XCTestCase {
 
     XCTAssertEqual(
       debugCaseOutput(Action.action1(true, label: "Blob")),
-      "Action.action(_:, label:)"
+      "Action.action1(_:, label:)"
     )
 
     XCTAssertEqual(
       debugCaseOutput(Action.action2(true, 1, "Blob")),
-      "Action.action(_:, _:, _:)"
+      "Action.action2(_:, _:, _:)"
     )
 
     XCTAssertEqual(
