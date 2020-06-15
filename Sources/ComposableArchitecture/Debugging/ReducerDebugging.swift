@@ -1,8 +1,12 @@
 import CasePaths
 import Dispatch
 
+/// Determines how the string description of an action should be printed when using the `.debug()`
+/// higher-order reducer.
 public enum ActionFormat {
+  /// asdf
   case labelsOnly
+  /// asdfadsf
   case prettyPrint
 }
 
