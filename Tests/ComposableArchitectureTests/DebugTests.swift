@@ -835,6 +835,8 @@ final class DebugTests: XCTestCase {
 
   func testDebugCaseOutput() {
     enum Action {
+      case action1(Bool, label: String)
+      case action2(Bool, Int, String)
       case screenA(ScreenA)
 
       enum ScreenA {
@@ -848,13 +850,23 @@ final class DebugTests: XCTestCase {
     }
 
     XCTAssertEqual(
+      debugCaseOutput(Action.action1(true, label: "Blob")),
+      "Action.action(_:, label:)"
+    )
+
+    XCTAssertEqual(
+      debugCaseOutput(Action.action2(true, 1, "Blob")),
+      "Action.action(_:, _:, _:)"
+    )
+
+    XCTAssertEqual(
       debugCaseOutput(Action.screenA(.row(index: 1, action: .tapped))),
-      ".screenA(.row(index:, action: .tapped))"
+      "Action.screenA(.row(index:, action: .tapped))"
     )
 
     XCTAssertEqual(
       debugCaseOutput(Action.screenA(.row(index: 1, action: .textChanged(query: "Hi")))),
-      ".screenA(.row(index:, action: .textChanged(query:)))"
+      "Action.screenA(.row(index:, action: .textChanged(query:)))"
     )
   }
 }
