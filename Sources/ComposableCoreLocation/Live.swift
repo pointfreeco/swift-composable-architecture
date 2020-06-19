@@ -126,6 +126,14 @@ extension LocationManager {
       .fireAndForget { dependencies[id]?.manager.stopUpdatingLocation() }
     }
 
+    manager.startUpdatingHeading = { id in
+      .fireAndForget { dependencies[id]?.manager.startUpdatingHeading() }
+    }
+    
+    manager.stopUpdatingHeading = { id in
+        .fireAndForget { dependencies[id]?.manager.stopUpdatingHeading() }
+    }
+    
     return manager
   }()
 }
