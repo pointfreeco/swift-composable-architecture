@@ -126,14 +126,17 @@ extension LocationManager {
       .fireAndForget { dependencies[id]?.manager.stopUpdatingLocation() }
     }
 
+    #if os(iOS)
     manager.startUpdatingHeading = { id in
       .fireAndForget { dependencies[id]?.manager.startUpdatingHeading() }
     }
+    #endif
     
+    #if os(iOS)
     manager.stopUpdatingHeading = { id in
         .fireAndForget { dependencies[id]?.manager.stopUpdatingHeading() }
     }
-    
+     #endif
     return manager
   }()
 }

@@ -4,7 +4,7 @@
 //
 //  Created by Joe Blau on 6/19/20.
 //
-
+#if os(iOS)
 import CoreMotion
 
 public struct Acceleration: Equatable {
@@ -47,3 +47,4 @@ extension CMAcceleration: Equatable {
         && lhs.z == rhs.z
     }
 }
+#endif

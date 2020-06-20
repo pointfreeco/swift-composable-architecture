@@ -1,3 +1,4 @@
+#if os(iOS)
 import Combine
 import ComposableArchitecture
 import CoreMotion
@@ -51,3 +52,4 @@ private struct Dependencies {
 }
 
 private var dependencies: [AnyHashable: Dependencies] = [:]
+#endif

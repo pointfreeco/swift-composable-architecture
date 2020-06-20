@@ -61,5 +61,11 @@ let package = Package(
         "ComposableArchitecture"
       ]
     ),
+    .testTarget(
+      name: "ComposableCoreMotionTests",
+      dependencies: [
+        "ComposableCoreMotion",
+      ]
+    ),
   ]
 )

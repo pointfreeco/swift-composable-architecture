@@ -359,6 +359,7 @@ public struct LocationManager {
 
   @available(macOS, unavailable)
   @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
   var stopUpdatingHeading: (AnyHashable) -> Effect<Never, Never> = { _ in
     _unimplemented("stopUpdatingHeading")
   }

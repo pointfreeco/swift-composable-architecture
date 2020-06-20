@@ -1,3 +1,4 @@
+#if os(iOS)
 import Combine
 import ComposableArchitecture
 import CoreMotion
@@ -63,12 +64,13 @@ extension MotionManager {
         
         public static func == (lhs: Self, rhs: Self) -> Bool {
           var isEqual = true
-          #if os(iOS) || targetEnvironment(macCatalyst)
             isEqual =
               isEqual
               && lhs.acceleartion == rhs.acceleartion
-          #endif
+          
           return isEqual
         }
     }
 }
+
+#endif
