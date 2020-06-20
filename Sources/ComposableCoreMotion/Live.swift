@@ -79,7 +79,7 @@ extension MotionManager {
           if let data = data {
             subscriber.send(.init(data))
           } else if let error = error {
-            subscriber.send(completion: .failure(.init(error)))
+            subscriber.send(completion: .failure(error))
           }
         }
         return AnyCancellable {
@@ -98,7 +98,7 @@ extension MotionManager {
           if let data = data {
             subscriber.send(.init(data))
           } else if let error = error {
-            subscriber.send(completion: .failure(.init(error)))
+            subscriber.send(completion: .failure(error))
           }
         }
         return AnyCancellable {
@@ -117,7 +117,7 @@ extension MotionManager {
           if let data = data {
             subscriber.send(.init(data))
           } else if let error = error {
-            subscriber.send(completion: .failure(.init(error)))
+            subscriber.send(completion: .failure(error))
           }
         }
         return AnyCancellable {
@@ -136,7 +136,7 @@ extension MotionManager {
           if let data = data {
             subscriber.send(.init(data))
           } else if let error = error {
-            subscriber.send(completion: .failure(.init(error)))
+            subscriber.send(completion: .failure(error))
           }
         }
         return AnyCancellable {
@@ -179,13 +179,13 @@ extension MotionManager {
 }
 
 private var accelerometerUpdatesSubscribers:
-  [AnyHashable: Effect<AccelerometerData, MotionManager.Error>.Subscriber] = [:]
+  [AnyHashable: Effect<AccelerometerData, Error>.Subscriber] = [:]
 private var deviceMotionUpdatesSubscribers:
-  [AnyHashable: Effect<DeviceMotion, MotionManager.Error>.Subscriber] = [:]
+  [AnyHashable: Effect<DeviceMotion, Error>.Subscriber] = [:]
 private var deviceGyroUpdatesSubscribers:
-  [AnyHashable: Effect<GyroData, MotionManager.Error>.Subscriber] = [:]
+  [AnyHashable: Effect<GyroData, Error>.Subscriber] = [:]
 private var deviceMagnetometerUpdatesSubscribers:
-  [AnyHashable: Effect<MagnetometerData, MotionManager.Error>.Subscriber] = [:]
+  [AnyHashable: Effect<MagnetometerData, Error>.Subscriber] = [:]
 private var managers: [AnyHashable: CMMotionManager] = [:]
 
 private func requireMotionManager(id: AnyHashable) -> CMMotionManager? {

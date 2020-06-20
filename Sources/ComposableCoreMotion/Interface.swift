@@ -5,14 +5,6 @@ import CoreMotion
 @available(macCatalyst 13.0, *)
 @available(watchOS 2.0, *)
 public struct MotionManager {
-  public struct Error: Swift.Error, Equatable {
-    public var rawValue: CMError
-
-    public init(_ error: Swift.Error) {
-      self.rawValue = CMError(UInt32((error as NSError).code))
-    }
-  }
-
   public func accelerometerData(id: AnyHashable) -> AccelerometerData? {
     self._accelerometerData(id)
   }

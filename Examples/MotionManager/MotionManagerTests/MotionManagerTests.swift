@@ -8,7 +8,7 @@ import XCTest
 
 class MotionManagerTests: XCTestCase {
   func testExample() {
-    let motionSubject = PassthroughSubject<DeviceMotion, MotionManager.Error>()
+    let motionSubject = PassthroughSubject<DeviceMotion, Error>()
 
     let store = TestStore(
       initialState: .init(),

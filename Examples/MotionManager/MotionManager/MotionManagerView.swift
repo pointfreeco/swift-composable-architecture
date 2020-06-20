@@ -32,7 +32,7 @@ struct AppState: Equatable {
 
 enum AppAction: Equatable {
   case alertDismissed
-  case motionUpdate(Result<DeviceMotion, MotionManager.Error>)
+  case motionUpdate(Result<DeviceMotion, NSError>)
   case recordingButtonTapped
 }
 
@@ -84,6 +84,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     if state.isRecording {
       return environment.motionManager
         .startDeviceMotionUpdates(id: MotionClientId(), using: .xArbitraryZVertical, to: .main)
+        .mapError { $0 as NSError }
         .catchToEffect()
         .map(AppAction.motionUpdate)
     } else {
@@ -179,7 +180,7 @@ struct AppView_Previews: PreviewProvider {
               userAcceleration: .init(x: -cos(-3 * t), y: sin(2 * t), z: -cos(t))
             )
           }
-          .setFailureType(to: MotionManager.Error.self)
+          .setFailureType(to: Error.self)
           .eraseToEffect()
       },
       stopDeviceMotionUpdates: { _ in
