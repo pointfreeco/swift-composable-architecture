@@ -141,7 +141,8 @@ extension MotionManager {
     })
 }
 
-private var accelerometerUpdatesSubscribers: [AnyHashable: Effect<AccelerometerData, MotionManager.Error>.Subscriber] = [:]
+private var accelerometerUpdatesSubscribers:
+  [AnyHashable: Effect<AccelerometerData, MotionManager.Error>.Subscriber] = [:]
 private var deviceMotionUpdatesSubscribers:
   [AnyHashable: Effect<DeviceMotion, MotionManager.Error>.Subscriber] = [:]
 private var deviceGyroUpdatesSubscribers:
