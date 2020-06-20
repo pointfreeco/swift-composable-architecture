@@ -7,6 +7,7 @@ public struct MotionManager {
     
     public enum Action: Equatable {
         case didUpdateAcceleration(CMAcceleration)
+        case didUpdateDeviceMotion(CMDeviceMotion)
     }
 
     public struct Error: Swift.Error, Equatable {
@@ -29,6 +30,14 @@ public struct MotionManager {
         _unimplemented("stopAccelerometerUpdates")
     }
     
+    var startDeviceMotionUpdates: (AnyHashable) -> Effect<Never, Never> = { _  in
+        _unimplemented("startDeviceMotionUpdates")
+    }
+    
+    var stopDeviceMotionUpdates: (AnyHashable) -> Effect<Never, Never> = { _ in
+        _unimplemented("stopDeviceMotionUpdates")
+    }
+    
     /// Creates a `CMMotionManager` for the given identifier.
     ///
     /// - Parameter id: A unique identifier for the underlying `CMMotionManager`.
@@ -44,7 +53,11 @@ public struct MotionManager {
     public func destroy(id: AnyHashable) -> Effect<Never, Never> {
       self.destroy(id)
     }
-    
+        
+    public var deviceMotionUpdateInterval: () -> TimeInterval = {
+        _unimplemented("deviceMotionUpdateInterval")
+    }
+
     public func startAccelerometerUpdates(id: AnyHashable) -> Effect<Never, Never> {
         self.startAccelerometerUpdates(id)
     }
@@ -52,21 +65,50 @@ public struct MotionManager {
     public func stopAccelerometerUpdates(id: AnyHashable) -> Effect<Never, Never> {
         self.stopAccelerometerUpdates(id)
     }
+    
+    
+    public func startDeviceMotionUpdates(id: AnyHashable) -> Effect<Never, Never> {
+        self.startDeviceMotionUpdates(id)
+    }
+
+    public func stopDeviceMotionUpdates(id: AnyHashable) -> Effect<Never, Never> {
+        self.stopDeviceMotionUpdates(id)
+    }
+    
+    var set: (AnyHashable, Properties) -> Effect<Never, Never> = { _, _ in _unimplemented("set") }
+        
+    public func set(
+      id: AnyHashable,
+      deviceMotionUpdateInterval: TimeInterval? = nil
+    ) -> Effect<Never, Never> {
+      self.set(
+        id,
+        Properties(
+          deviceMotionUpdateInterval: deviceMotionUpdateInterval
+        )
+      )
+    }
 }
 
 
 
 extension MotionManager {
-    public struct Properties: Equatable {
-        var acceleartion: CMAcceleration? = nil
+    public struct Properties: Equatable {        
+        var deviceMotionUpdateInterval: TimeInterval? = nil
         
         public static func == (lhs: Self, rhs: Self) -> Bool {
           var isEqual = true
             isEqual =
               isEqual
-              && lhs.acceleartion == rhs.acceleartion
-          
+                && lhs.deviceMotionUpdateInterval == rhs.deviceMotionUpdateInterval
+
           return isEqual
+        }
+        
+        public init(
+          deviceMotionUpdateInterval: TimeInterval? = nil
+        ) {
+          self.deviceMotionUpdateInterval = deviceMotionUpdateInterval
         }
     }
 }

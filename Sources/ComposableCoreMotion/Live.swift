@@ -8,10 +8,14 @@ extension MotionManager {
     public static let live: MotionManager = { () -> MotionManager in
         var manager = MotionManager()
         
+        manager.deviceMotionUpdateInterval = {
+            CMMotionManager().deviceMotionUpdateInterval
+        }
         
         manager.create = { id in
             Effect.run { subscriber in
                 let manager = CMMotionManager()
+                
                 
                 dependencies[id] = Dependencies(
                     manager: manager,
@@ -32,6 +36,17 @@ extension MotionManager {
             }
         }
         
+        manager.set = { id, properties in
+          .fireAndForget {
+            guard let manager = dependencies[id]?.manager else { return }
+            
+            if let deviceMotionUpdateInterval = properties.deviceMotionUpdateInterval {
+                manager.deviceMotionUpdateInterval = deviceMotionUpdateInterval
+            }
+            
+            }
+        }
+        
         manager.startAccelerometerUpdates = { id in
             .fireAndForget {
                 guard let dependency = dependencies[id] else { return }
@@ -43,13 +58,28 @@ extension MotionManager {
                     })
             }
         }
-        
+    
         manager.stopAccelerometerUpdates = { id in
             .fireAndForget {
                 dependencies[id]?.manager.stopAccelerometerUpdates()
             }
         }
+    
+        manager.startDeviceMotionUpdates = { id in
+            .fireAndForget {
+                guard let dependency = dependencies[id] else { return }
+                dependency.manager.startDeviceMotionUpdates(to: dependency.queue, withHandler: { (data, error) in
+                    guard let data = data else { return }
+                    dependency.subscriber.send(.didUpdateDeviceMotion(data))
+                })
+            }
+        }
         
+        manager.stopDeviceMotionUpdates = { id in
+            .fireAndForget {
+                dependencies[id]?.manager.stopDeviceMotionUpdates()
+            }
+        }
         return manager
     }()
 }
