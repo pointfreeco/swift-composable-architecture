@@ -1,6 +1,27 @@
 import CasePaths
 import Dispatch
 
+/// Determines how the string description of an action should be printed when using the `.debug()`
+/// higher-order reducer.
+public enum ActionFormat {
+  /// Prints the action in a single line by only specifying the labels of the associated values:
+  ///
+  ///     Action.screenA(.row(index:, action: .textChanged(query:)))
+  case labelsOnly
+  /// Prints the action in a multiline, pretty-printed format, including all the labels of
+  /// any associated values, as well as the data held in the associated values:
+  ///
+  ///     Action.screenA(
+  ///       ScreenA.row(
+  ///         index: 1,
+  ///         action: RowAction.textChanged(
+  ///           query: "Hi"
+  ///         )
+  ///       )
+  ///     )
+  case prettyPrint
+}
+
 extension Reducer {
   /// Prints debug messages describing all received actions and state mutations.
   ///
@@ -15,11 +36,18 @@ extension Reducer {
   /// - Returns: A reducer that prints debug messages for all received actions.
   public func debug(
     _ prefix: String = "",
+    actionFormat: ActionFormat = .prettyPrint,
     environment toDebugEnvironment: @escaping (Environment) -> DebugEnvironment = { _ in
       DebugEnvironment()
     }
   ) -> Reducer {
-    self.debug(prefix, state: { $0 }, action: .self, environment: toDebugEnvironment)
+    self.debug(
+      prefix,
+      state: { $0 },
+      action: .self,
+      actionFormat: actionFormat,
+      environment: toDebugEnvironment
+    )
   }
 
   /// Prints debug messages describing all received actions.
@@ -35,11 +63,18 @@ extension Reducer {
   /// - Returns: A reducer that prints debug messages for all received actions.
   public func debugActions(
     _ prefix: String = "",
+    actionFormat: ActionFormat = .prettyPrint,
     environment toDebugEnvironment: @escaping (Environment) -> DebugEnvironment = { _ in
       DebugEnvironment()
     }
   ) -> Reducer {
-    self.debug(prefix, state: { _ in () }, action: .self, environment: toDebugEnvironment)
+    self.debug(
+      prefix,
+      state: { _ in () },
+      action: .self,
+      actionFormat: actionFormat,
+      environment: toDebugEnvironment
+    )
   }
 
   /// Prints debug messages describing all received local actions and local state mutations.
@@ -59,6 +94,7 @@ extension Reducer {
     _ prefix: String = "",
     state toLocalState: @escaping (State) -> LocalState,
     action toLocalAction: CasePath<Action, LocalAction>,
+    actionFormat: ActionFormat = .prettyPrint,
     environment toDebugEnvironment: @escaping (Environment) -> DebugEnvironment = { _ in
       DebugEnvironment()
     }
@@ -73,9 +109,14 @@ extension Reducer {
         return .concatenate(
           .fireAndForget {
             debugEnvironment.queue.async {
-              let actionOutput = debugOutput(localAction).indent(by: 2)
+              let actionOutput =
+                actionFormat == .prettyPrint
+                ? debugOutput(localAction).indent(by: 2)
+                : debugCaseOutput(localAction).indent(by: 2)
               let stateOutput =
-                debugDiff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
+                LocalState.self == Void.self
+                ? ""
+                : debugDiff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
               debugEnvironment.printer(
                 """
                 \(prefix.isEmpty ? "" : "\(prefix): ")received action:

@@ -138,16 +138,30 @@ struct RootView: View {
               )
             )
           )
+
+          NavigationLink(
+            "Web socket",
+            destination: WebSocketView(
+              store: Store(
+                initialState: .init(),
+                reducer: webSocketReducer,
+                environment: WebSocketEnvironment(
+                  mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+                  webSocket: .live
+                )
+              )
+            )
+          )
         }
 
         Section(header: Text("Navigation")) {
           NavigationLink(
             "Navigate and load data",
-            destination: EagerNavigationView(
+            destination: NavigateAndLoadView(
               store: Store(
-                initialState: EagerNavigationState(),
-                reducer: eagerNavigationReducer,
-                environment: EagerNavigationEnvironment(
+                initialState: NavigateAndLoadState(),
+                reducer: navigateAndLoadReducer,
+                environment: NavigateAndLoadEnvironment(
                   mainQueue: DispatchQueue.main.eraseToAnyScheduler()
                 )
               )
@@ -156,11 +170,11 @@ struct RootView: View {
 
           NavigationLink(
             "Load data then navigate",
-            destination: LazyNavigationView(
+            destination: LoadThenNavigateView(
               store: Store(
-                initialState: LazyNavigationState(),
-                reducer: lazyNavigationReducer,
-                environment: LazyNavigationEnvironment(
+                initialState: LoadThenNavigateState(),
+                reducer: loadThenNavigateReducer,
+                environment: LoadThenNavigateEnvironment(
                   mainQueue: DispatchQueue.main.eraseToAnyScheduler()
                 )
               )
@@ -169,17 +183,17 @@ struct RootView: View {
 
           NavigationLink(
             "Lists: Navigate and load data",
-            destination: EagerListNavigationView(
+            destination: NavigateAndLoadListView(
               store: Store(
-                initialState: EagerListNavigationState(
+                initialState: NavigateAndLoadListState(
                   rows: [
                     .init(count: 1, id: UUID()),
                     .init(count: 42, id: UUID()),
                     .init(count: 100, id: UUID()),
                   ]
                 ),
-                reducer: eagerListNavigationReducer,
-                environment: EagerListNavigationEnvironment(
+                reducer: navigateAndLoadListReducer,
+                environment: NavigateAndLoadListEnvironment(
                   mainQueue: DispatchQueue.main.eraseToAnyScheduler()
                 )
               )
@@ -188,17 +202,17 @@ struct RootView: View {
 
           NavigationLink(
             "Lists: Load data then navigate",
-            destination: LazyListNavigationView(
+            destination: LoadThenNavigateListView(
               store: Store(
-                initialState: LazyListNavigationState(
+                initialState: LoadThenNavigateListState(
                   rows: [
                     .init(count: 1, id: UUID()),
                     .init(count: 42, id: UUID()),
                     .init(count: 100, id: UUID()),
                   ]
                 ),
-                reducer: lazyListNavigationReducer,
-                environment: LazyListNavigationEnvironment(
+                reducer: loadThenNavigateListReducer,
+                environment: LoadThenNavigateListEnvironment(
                   mainQueue: DispatchQueue.main.eraseToAnyScheduler()
                 )
               )
@@ -207,11 +221,11 @@ struct RootView: View {
 
           NavigationLink(
             "Sheets: Present and load data",
-            destination: EagerSheetView(
+            destination: PresentAndLoadView(
               store: Store(
-                initialState: EagerSheetState(),
-                reducer: eagerSheetReducer,
-                environment: EagerSheetEnvironment(
+                initialState: PresentAndLoadState(),
+                reducer: presentAndLoadReducer,
+                environment: PresentAndLoadEnvironment(
                   mainQueue: DispatchQueue.main.eraseToAnyScheduler()
                 )
               )
@@ -220,11 +234,11 @@ struct RootView: View {
 
           NavigationLink(
             "Sheets: Load data then present",
-            destination: LazySheetView(
+            destination: LoadThenPresentView(
               store: Store(
-                initialState: LazySheetState(),
-                reducer: lazySheetReducer,
-                environment: LazySheetEnvironment(
+                initialState: LoadThenPresentState(),
+                reducer: loadThenPresentReducer,
+                environment: LoadThenPresentEnvironment(
                   mainQueue: DispatchQueue.main.eraseToAnyScheduler()
                 )
               )

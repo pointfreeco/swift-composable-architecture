@@ -281,10 +281,42 @@ class VoiceMemosTests: XCTestCase {
     )
 
     store.assert(
-      .send(.deleteVoiceMemo(IndexSet(integer: 1))),
-      .send(.deleteVoiceMemo(IndexSet(integer: 0))) {
+      .send(.voiceMemo(index: 0, action: .delete)) {
         $0.voiceMemos = []
       }
+    )
+  }
+
+  func testDeleteMemoWhilePlaying() {
+    let store = TestStore(
+      initialState: VoiceMemosState(
+        voiceMemos: [
+          VoiceMemo(
+            date: Date(timeIntervalSinceNow: 0),
+            duration: 10,
+            mode: .notPlaying,
+            title: "",
+            url: URL(string: "https://www.pointfree.co/functions")!
+          ),
+        ]
+      ),
+      reducer: voiceMemosReducer,
+      environment: .mock(
+        audioPlayerClient: .mock(
+          play: { id, url in .future { _ in } }
+        ),
+        mainQueue: self.scheduler.eraseToAnyScheduler()
+      )
+    )
+
+    store.assert(
+      .send(.voiceMemo(index: 0, action: .playButtonTapped)) {
+        $0.voiceMemos[0].mode = .playing(progress: 0)
+      },
+      .send(.voiceMemo(index: 0, action: .delete)) {
+        $0.voiceMemos = []
+      },
+      .do { self.scheduler.run() }
     )
   }
 }

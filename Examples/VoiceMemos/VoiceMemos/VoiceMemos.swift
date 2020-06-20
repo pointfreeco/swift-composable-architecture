@@ -2,96 +2,6 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
-struct VoiceMemo: Equatable {
-  var date: Date
-  var duration: TimeInterval
-  var mode = Mode.notPlaying
-  var title = ""
-  var url: URL
-
-  enum Mode: Equatable {
-    case notPlaying
-    case playing(progress: Double)
-
-    var isPlaying: Bool {
-      if case .playing = self { return true }
-      return false
-    }
-
-    var progress: Double? {
-      if case let .playing(progress) = self { return progress }
-      return nil
-    }
-  }
-}
-
-enum VoiceMemoAction: Equatable {
-  case audioPlayerClient(Result<AudioPlayerClient.Action, AudioPlayerClient.Failure>)
-  case playButtonTapped
-  case timerUpdated(TimeInterval)
-  case titleTextFieldChanged(String)
-}
-
-struct VoiceMemoEnvironment {
-  var audioPlayerClient: AudioPlayerClient
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
-
-let voiceMemoReducer = Reducer<VoiceMemo, VoiceMemoAction, VoiceMemoEnvironment> {
-  memo, action, environment in
-  struct PlayerId: Hashable {}
-  struct TimerId: Hashable {}
-
-  switch action {
-  case .audioPlayerClient(.success(.didFinishPlaying)), .audioPlayerClient(.failure):
-    memo.mode = .notPlaying
-    return .cancel(id: TimerId())
-
-  case .playButtonTapped:
-    switch memo.mode {
-    case .notPlaying:
-      memo.mode = .playing(progress: 0)
-      let start = environment.mainQueue.now
-      return .merge(
-        environment.audioPlayerClient
-          .play(PlayerId(), memo.url)
-          .catchToEffect()
-          .map(VoiceMemoAction.audioPlayerClient),
-
-        Effect.timer(id: TimerId(), every: 0.5, on: environment.mainQueue)
-          .map {
-            .timerUpdated(
-              TimeInterval($0.dispatchTime.uptimeNanoseconds - start.dispatchTime.uptimeNanoseconds)
-                / TimeInterval(NSEC_PER_SEC)
-            )
-          }
-      )
-
-    case .playing:
-      memo.mode = .notPlaying
-      return .concatenate(
-        .cancel(id: TimerId()),
-        environment.audioPlayerClient
-          .stop(PlayerId())
-          .fireAndForget()
-      )
-    }
-
-  case let .timerUpdated(time):
-    switch memo.mode {
-    case .notPlaying:
-      break
-    case let .playing(progress: progress):
-      memo.mode = .playing(progress: time / memo.duration)
-    }
-    return .none
-
-  case let .titleTextFieldChanged(text):
-    memo.title = text
-    return .none
-  }
-}
-
 struct VoiceMemosState: Equatable {
   var alertMessage: String?
   var audioRecorderPermission = RecorderPermission.undetermined
@@ -121,7 +31,6 @@ enum VoiceMemosAction: Equatable {
   case alertDismissed
   case audioRecorderClient(Result<AudioRecorderClient.Action, AudioRecorderClient.Failure>)
   case currentRecordingTimerUpdated
-  case deleteVoiceMemo(IndexSet)
   case finalRecordingTime(TimeInterval)
   case openSettingsButtonTapped
   case recordButtonTapped
@@ -140,6 +49,12 @@ struct VoiceMemosEnvironment {
 }
 
 let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnvironment>.combine(
+  voiceMemoReducer.forEach(
+    state: \.voiceMemos,
+    action: /VoiceMemosAction.voiceMemo(index:action:),
+    environment: {
+      VoiceMemoEnvironment(audioPlayerClient: $0.audioPlayerClient, mainQueue: $0.mainQueue)
+  }),
   .init { state, action, environment in
     struct RecorderId: Hashable {}
     struct RecorderTimerId: Hashable {}
@@ -194,10 +109,6 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
 
     case .currentRecordingTimerUpdated:
       state.currentRecording?.duration += 1
-      return .none
-
-    case let .deleteVoiceMemo(indexSet):
-      state.voiceMemos.remove(atOffsets: indexSet)
       return .none
 
     case let .finalRecordingTime(duration):
@@ -256,6 +167,10 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       state.alertMessage = "Voice memo playback failed."
       return .none
 
+    case let .voiceMemo(index: index, action: .delete):
+      state.voiceMemos.remove(at: index)
+      return .none
+
     case let .voiceMemo(index: index, action: .playButtonTapped):
       for idx in state.voiceMemos.indices where idx != index {
         state.voiceMemos[idx].mode = .notPlaying
@@ -265,13 +180,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
     case .voiceMemo:
       return .none
     }
-  },
-  voiceMemoReducer.forEach(
-    state: \.voiceMemos,
-    action: /VoiceMemosAction.voiceMemo(index:action:),
-    environment: {
-      VoiceMemoEnvironment(audioPlayerClient: $0.audioPlayerClient, mainQueue: $0.mainQueue)
-    })
+  }
 )
 
 struct VoiceMemosView: View {
@@ -289,7 +198,11 @@ struct VoiceMemosView: View {
               id: \.url,
               content: VoiceMemoView.init(store:)
             )
-            .onDelete { viewStore.send(.deleteVoiceMemo($0)) }
+            .onDelete { indexSet in
+              for index in indexSet {
+                viewStore.send(.voiceMemo(index: index, action: .delete))
+              }
+            }
           }
           VStack {
             ZStack {
@@ -343,80 +256,6 @@ struct VoiceMemosView: View {
     }
   }
 }
-
-struct VoiceMemoView: View {
-  // NB: We are using an explicit `ObservedObject` for the view store here instead of
-  // `WithViewStore` due to a SwiftUI bug where `GeometryReader`s inside `WithViewStore` will
-  // not properly update.
-  //
-  // Feedback filed: https://gist.github.com/mbrandonw/cc5da3d487bcf7c4f21c27019a440d18
-  @ObservedObject var viewStore: ViewStore<VoiceMemo, VoiceMemoAction>
-
-  init(store: Store<VoiceMemo, VoiceMemoAction>) {
-    self.viewStore = ViewStore(store)
-  }
-
-  var body: some View {
-    GeometryReader { proxy in
-      ZStack(alignment: .leading) {
-        if self.viewStore.mode.isPlaying {
-          Rectangle()
-            .foregroundColor(Color(white: 0.9))
-            .frame(width: proxy.size.width * CGFloat(self.viewStore.mode.progress ?? 0))
-            .animation(.linear(duration: 0.5))
-        }
-
-        HStack {
-          TextField(
-            "Untitled, \(dateFormatter.string(from: self.viewStore.date))",
-            text: self.viewStore.binding(
-              get: { $0.title }, send: VoiceMemoAction.titleTextFieldChanged)
-          )
-
-          Spacer()
-
-          dateComponentsFormatter.string(from: self.currentTime).map {
-            Text($0)
-              .font(Font.footnote.monospacedDigit())
-              .foregroundColor(.gray)
-          }
-
-          Button(action: { self.viewStore.send(.playButtonTapped) }) {
-            Image(systemName: self.viewStore.mode.isPlaying ? "stop.circle" : "play.circle")
-              .font(Font.system(size: 22))
-          }
-        }
-        .padding([.leading, .trailing])
-      }
-    }
-    .buttonStyle(BorderlessButtonStyle())
-    .listRowBackground(self.viewStore.mode.isPlaying ? Color(white: 0.97) : .clear)
-    .listRowInsets(EdgeInsets())
-  }
-
-  var currentTime: TimeInterval {
-    self.viewStore.mode.progress.map { $0 * self.viewStore.duration } ?? self.viewStore.duration
-  }
-}
-
-private struct AlertData: Identifiable {
-  var message: String
-  var id: String { self.message }
-}
-
-private let dateFormatter: DateFormatter = {
-  let formatter = DateFormatter()
-  formatter.dateStyle = .short
-  formatter.timeStyle = .medium
-  return formatter
-}()
-
-private let dateComponentsFormatter: DateComponentsFormatter = {
-  let formatter = DateComponentsFormatter()
-  formatter.allowedUnits = [.minute, .second]
-  formatter.zeroFormattingBehavior = .pad
-  return formatter
-}()
 
 struct VoiceMemos_Previews: PreviewProvider {
   static var previews: some View {

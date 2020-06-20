@@ -231,6 +231,11 @@ public struct LocationManager {
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     case monitoringDidFail(region: Region?, error: Error)
+
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    case didRangeBeacons([Beacon], satisfyingConstraint: CLBeaconIdentityConstraint)
   }
 
   public struct Error: Swift.Error, Equatable {

@@ -9,33 +9,33 @@ private let readMe = """
   that depends on this data.
   """
 
-struct LazyNavigationState: Equatable {
+struct LoadThenNavigateState: Equatable {
   var optionalCounter: CounterState?
   var isActivityIndicatorVisible = false
 
   var isNavigationActive: Bool { self.optionalCounter != nil }
 }
 
-enum LazyNavigationAction: Equatable {
+enum LoadThenNavigateAction: Equatable {
   case optionalCounter(CounterAction)
   case setNavigation(isActive: Bool)
   case setNavigationIsActiveDelayCompleted
 }
 
-struct LazyNavigationEnvironment {
+struct LoadThenNavigateEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
-let lazyNavigationReducer = counterReducer
+let loadThenNavigateReducer = counterReducer
   .optional
   .pullback(
     state: \.optionalCounter,
-    action: /LazyNavigationAction.optionalCounter,
+    action: /LoadThenNavigateAction.optionalCounter,
     environment: { _ in CounterEnvironment() }
   )
   .combined(
     with: Reducer<
-      LazyNavigationState, LazyNavigationAction, LazyNavigationEnvironment
+      LoadThenNavigateState, LoadThenNavigateAction, LoadThenNavigateEnvironment
     > { state, action, environment in
       switch action {
       case .setNavigation(isActive: true):
@@ -59,8 +59,8 @@ let lazyNavigationReducer = counterReducer
     }
   )
 
-struct LazyNavigationView: View {
-  let store: Store<LazyNavigationState, LazyNavigationAction>
+struct LoadThenNavigateView: View {
+  let store: Store<LoadThenNavigateState, LoadThenNavigateAction>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -69,12 +69,12 @@ struct LazyNavigationView: View {
           NavigationLink(
             destination: IfLetStore(
               self.store.scope(
-                state: { $0.optionalCounter }, action: LazyNavigationAction.optionalCounter),
+                state: { $0.optionalCounter }, action: LoadThenNavigateAction.optionalCounter),
               then: CounterView.init(store:)
             ),
             isActive: viewStore.binding(
               get: { $0.isNavigationActive },
-              send: LazyNavigationAction.setNavigation(isActive:)
+              send: LoadThenNavigateAction.setNavigation(isActive:)
             )
           ) {
             HStack {
@@ -92,14 +92,14 @@ struct LazyNavigationView: View {
   }
 }
 
-struct LazyNavigationView_Previews: PreviewProvider {
+struct LoadThenNavigateView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
-      LazyNavigationView(
+      LoadThenNavigateView(
         store: Store(
-          initialState: LazyNavigationState(),
-          reducer: lazyNavigationReducer,
-          environment: LazyNavigationEnvironment(
+          initialState: LoadThenNavigateState(),
+          reducer: loadThenNavigateReducer,
+          environment: LoadThenNavigateEnvironment(
             mainQueue: DispatchQueue.main.eraseToAnyScheduler()
           )
         )

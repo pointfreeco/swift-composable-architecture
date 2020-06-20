@@ -144,8 +144,10 @@ public final class Store<State, Action> {
       if self.isSending {
         assertionFailure(
           """
-          The store was sent an action while it was already processing another action. This can \
-          happen for a few reasons:
+          The store was sent the action \(debugCaseOutput(action)) while it was already 
+          processing another action.
+
+          This can happen for a few reasons:
 
           * The store was sent an action recursively. This can occur when you run an effect \
           directly in the reducer, rather than returning it from the reducer. Check the stack (⌘7) \

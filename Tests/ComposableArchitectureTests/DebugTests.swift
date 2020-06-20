@@ -832,4 +832,105 @@ final class DebugTests: XCTestCase {
       """
     )
   }
+
+  func testDebugCaseOutput() {
+    enum Action {
+      case action1(Bool, label: String)
+      case action2(Bool, Int, String)
+      case screenA(ScreenA)
+
+      enum ScreenA {
+        case row(index: Int, action: RowAction)
+
+        enum RowAction {
+          case tapped
+          case textChanged(query: String)
+        }
+      }
+    }
+
+    XCTAssertEqual(
+      debugCaseOutput(Action.action1(true, label: "Blob")),
+      "Action.action1(_:, label:)"
+    )
+
+    XCTAssertEqual(
+      debugCaseOutput(Action.action2(true, 1, "Blob")),
+      "Action.action2(_:, _:, _:)"
+    )
+
+    XCTAssertEqual(
+      debugCaseOutput(Action.screenA(.row(index: 1, action: .tapped))),
+      "Action.screenA(.row(index:, action: .tapped))"
+    )
+
+    XCTAssertEqual(
+      debugCaseOutput(Action.screenA(.row(index: 1, action: .textChanged(query: "Hi")))),
+      "Action.screenA(.row(index:, action: .textChanged(query:)))"
+    )
+  }
+
+  func testDebugOutput() {
+    enum Action {
+      case action1(Bool, label: String)
+      case action2(Bool, Int, String)
+      case screenA(ScreenA)
+
+      enum ScreenA {
+        case row(index: Int, action: RowAction)
+
+        enum RowAction {
+          case tapped
+          case textChanged(query: String)
+        }
+      }
+    }
+
+    XCTAssertEqual(
+      debugOutput(Action.action1(true, label: "Blob")),
+      """
+      Action.action1(
+        true,
+        label: "Blob"
+      )
+      """
+    )
+
+    XCTAssertEqual(
+      debugOutput(Action.action2(true, 1, "Blob")),
+      """
+      Action.action2(
+        true,
+        1,
+        "Blob"
+      )
+      """
+    )
+
+    XCTAssertEqual(
+      debugOutput(Action.screenA(.row(index: 1, action: .tapped))),
+      """
+      Action.screenA(
+        ScreenA.row(
+          index: 1,
+          action: RowAction.tapped
+        )
+      )
+      """
+    )
+
+    XCTAssertEqual(
+      debugOutput(Action.screenA(.row(index: 1, action: .textChanged(query: "Hi")))),
+      """
+      Action.screenA(
+        ScreenA.row(
+          index: 1,
+          action: RowAction.textChanged(
+            query: "Hi"
+          )
+        )
+      )
+      """
+    )
+  }
 }

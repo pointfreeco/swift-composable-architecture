@@ -8,7 +8,7 @@ private let readMe = """
   and fires off an effect that will load this state a second later.
   """
 
-struct EagerListNavigationState: Equatable {
+struct NavigateAndLoadListState: Equatable {
   var rows: IdentifiedArrayOf<Row> = []
   var selection: Identified<Row.ID, CounterState?>?
 
@@ -18,28 +18,28 @@ struct EagerListNavigationState: Equatable {
   }
 }
 
-enum EagerListNavigationAction: Equatable {
+enum NavigateAndLoadListAction: Equatable {
   case counter(CounterAction)
   case setNavigation(selection: UUID?)
   case setNavigationSelectionDelayCompleted
 }
 
-struct EagerListNavigationEnvironment {
+struct NavigateAndLoadListEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
-let eagerListNavigationReducer = counterReducer
+let navigateAndLoadListReducer = counterReducer
   .optional
   .pullback(state: \Identified.value, action: .self, environment: { $0 })
   .optional
   .pullback(
-    state: \EagerListNavigationState.selection,
-    action: /EagerListNavigationAction.counter,
+    state: \NavigateAndLoadListState.selection,
+    action: /NavigateAndLoadListAction.counter,
     environment: { _ in CounterEnvironment() }
   )
   .combined(
     with: Reducer<
-      EagerListNavigationState, EagerListNavigationAction, EagerListNavigationEnvironment
+      NavigateAndLoadListState, NavigateAndLoadListAction, NavigateAndLoadListEnvironment
     > { state, action, environment in
 
       struct CancelId: Hashable {}
@@ -71,8 +71,8 @@ let eagerListNavigationReducer = counterReducer
     }
   )
 
-struct EagerListNavigationView: View {
-  let store: Store<EagerListNavigationState, EagerListNavigationAction>
+struct NavigateAndLoadListView: View {
+  let store: Store<NavigateAndLoadListState, NavigateAndLoadListAction>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -82,14 +82,14 @@ struct EagerListNavigationView: View {
             NavigationLink(
               destination: IfLetStore(
                 self.store.scope(
-                  state: { $0.selection?.value }, action: EagerListNavigationAction.counter),
+                  state: { $0.selection?.value }, action: NavigateAndLoadListAction.counter),
                 then: CounterView.init(store:),
                 else: ActivityIndicator()
               ),
               tag: row.id,
               selection: viewStore.binding(
                 get: { $0.selection?.id },
-                send: EagerListNavigationAction.setNavigation(selection:)
+                send: NavigateAndLoadListAction.setNavigation(selection:)
               )
             ) {
               Text("Load optional counter that starts from \(row.count)")
@@ -102,20 +102,20 @@ struct EagerListNavigationView: View {
   }
 }
 
-struct EagerListNavigationView_Previews: PreviewProvider {
+struct NavigateAndLoadListView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
-      EagerListNavigationView(
+      NavigateAndLoadListView(
         store: Store(
-          initialState: EagerListNavigationState(
+          initialState: NavigateAndLoadListState(
             rows: [
               .init(count: 1, id: UUID()),
               .init(count: 42, id: UUID()),
               .init(count: 100, id: UUID()),
             ]
           ),
-          reducer: eagerListNavigationReducer,
-          environment: EagerListNavigationEnvironment(
+          reducer: navigateAndLoadListReducer,
+          environment: NavigateAndLoadListEnvironment(
             mainQueue: DispatchQueue.main.eraseToAnyScheduler()
           )
         )
