@@ -2,42 +2,42 @@ import ComposableArchitecture
 import SwiftUI
 
 struct DownloadComponentState<ID: Equatable>: Equatable {
-  var alert: DownloadAlert?
+  var alert: AlertState<DownloadComponentAction> = .dismissed // DownloadAlert?
   let id: ID
   var mode: Mode
   let url: URL
 }
 
-struct DownloadAlert: Equatable, Identifiable {
-  var primaryButton: Button
-  var secondaryButton: Button
-  var title: String
-
-  var id: String { self.title }
-
-  struct Button: Equatable {
-    var action: DownloadComponentAction
-    var label: String
-    var type: `Type`
-
-    enum `Type` {
-      case cancel
-      case `default`
-      case destructive
-    }
-
-    func toSwiftUI(action: @escaping (DownloadComponentAction) -> Void) -> Alert.Button {
-      switch self.type {
-      case .cancel:
-        return .cancel(Text(self.label)) { action(self.action) }
-      case .default:
-        return .default(Text(self.label)) { action(self.action) }
-      case .destructive:
-        return .destructive(Text(self.label)) { action(self.action) }
-      }
-    }
-  }
-}
+//struct DownloadAlert: Equatable, Identifiable {
+//  var primaryButton: Button
+//  var secondaryButton: Button
+//  var title: String
+//
+//  var id: String { self.title }
+//
+//  struct Button: Equatable {
+//    var action: DownloadComponentAction
+//    var label: String
+//    var type: `Type`
+//
+//    enum `Type` {
+//      case cancel
+//      case `default`
+//      case destructive
+//    }
+//
+//    func toSwiftUI(action: @escaping (DownloadComponentAction) -> Void) -> Alert.Button {
+//      switch self.type {
+//      case .cancel:
+//        return .cancel(Text(self.label)) { action(self.action) }
+//      case .default:
+//        return .default(Text(self.label)) { action(self.action) }
+//      case .destructive:
+//        return .destructive(Text(self.label)) { action(self.action) }
+//      }
+//    }
+//  }
+//}
 
 enum Mode: Equatable {
   case downloaded
@@ -90,18 +90,18 @@ extension Reducer {
         switch action {
         case .alert(.cancelButtonTapped):
           state.mode = .notDownloaded
-          state.alert = nil
+          state.alert = .dismissed
           return environment.downloadClient.cancel(state.id)
             .fireAndForget()
 
         case .alert(.deleteButtonTapped):
-          state.alert = nil
+          state.alert = .dismissed
           state.mode = .notDownloaded
           return .none
 
         case .alert(.nevermindButtonTapped),
           .alert(.dismiss):
-          state.alert = nil
+          state.alert = .dismissed
           return .none
 
         case .buttonTapped:
@@ -129,7 +129,7 @@ extension Reducer {
 
         case .downloadClient(.success(.response)):
           state.mode = .downloaded
-          state.alert = nil
+          state.alert = .dismissed
           return .none
 
         case let .downloadClient(.success(.updateProgress(progress))):
@@ -138,7 +138,7 @@ extension Reducer {
 
         case .downloadClient(.failure):
           state.mode = .notDownloaded
-          state.alert = nil
+          state.alert = .dismissed
           return .none
         }
       }
@@ -148,27 +148,33 @@ extension Reducer {
   }
 }
 
-private let deleteAlert = DownloadAlert(
-  primaryButton: .init(
-    action: .alert(.deleteButtonTapped),
-    label: "Delete",
-    type: .destructive
-  ),
-  secondaryButton: nevermindButton,
-  title: "Do you want to delete this map from your offline storage?"
+private let deleteAlert = AlertState.show(
+  .init(
+    message: nil,
+    primaryButton: .init(
+      action: .alert(.deleteButtonTapped),
+      label: "Delete",
+      type: .destructive
+    ),
+    secondaryButton: nevermindButton,
+    title: "Do you want to delete this map from your offline storage?"
+  )
 )
 
-private let cancelAlert = DownloadAlert(
-  primaryButton: .init(
-    action: .alert(.cancelButtonTapped),
-    label: "Cancel",
-    type: .destructive
-  ),
-  secondaryButton: nevermindButton,
-  title: "Do you want to cancel downloading this map?"
+private let cancelAlert = AlertState.show(
+  .init(
+    message: nil,
+    primaryButton: .init(
+      action: .alert(.cancelButtonTapped),
+      label: "Cancel",
+      type: .destructive
+    ),
+    secondaryButton: nevermindButton,
+    title: "Do you want to cancel downloading this map?"
+  )
 )
 
-let nevermindButton = DownloadAlert.Button(
+let nevermindButton = AlertState<DownloadComponentAction>.Alert.Button(
   action: .alert(.nevermindButtonTapped),
   label: "Nevermind",
   type: .default
@@ -178,7 +184,10 @@ struct DownloadComponent<ID: Equatable>: View {
   let store: Store<DownloadComponentState<ID>, DownloadComponentAction>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+
+    let tmp = ViewStore(self.store).binding(get: { $0.alert }, send: DownloadComponentAction.alert)
+
+    return WithViewStore(self.store) { viewStore in
       Button(action: { viewStore.send(.buttonTapped) }) {
         if viewStore.mode == .downloaded {
           Image(systemName: "checkmark.circle")
@@ -205,15 +214,18 @@ struct DownloadComponent<ID: Equatable>: View {
           }
         }
       }
-      .alert(
-        item: viewStore.binding(get: { $0.alert }, send: .alert(.dismiss))
-      ) { alert in
-        Alert(
-          title: Text(alert.title),
-          primaryButton: alert.primaryButton.toSwiftUI(action: viewStore.send),
-          secondaryButton: alert.secondaryButton.toSwiftUI(action: viewStore.send)
-        )
-      }
+//    ._alert(item: <#T##Binding<AlertState<Hashable>>#>, send: <#T##(Hashable) -> Void#>, content: <#T##(AlertState<Hashable>.Alert) -> View#>)
+
+//      ._alert(
+//        item: viewStore.binding(get: { $0.alert }, send: { $0 })
+//      ) { alert in
+//        alert.toSwiftUI(send: viewStore.send)
+////        Alert(
+////          title: Text(alert.title),
+////          primaryButton: alert.primaryButton.toSwiftUI(action: viewStore.send),
+////          secondaryButton: alert.secondaryButton.toSwiftUI(action: viewStore.send)
+////        )
+//      }
     }
   }
 }
