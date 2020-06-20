@@ -7,6 +7,14 @@ public struct MotionManager {
     public enum Action: Equatable {
         case didUpdateAcceleration(CMAcceleration)
     }
+
+    public struct Error: Swift.Error, Equatable {
+      public let error: NSError
+
+      public init(_ error: Swift.Error) {
+        self.error = error as NSError
+      }
+    }
     
     var create: (AnyHashable) -> Effect<Action, Never> = { _ in _unimplemented("create") }
 
@@ -36,7 +44,7 @@ public struct MotionManager {
       self.destroy(id)
     }
     
-    public  func startAccelerometerUpdates(id: AnyHashable,
+    public func startAccelerometerUpdates(id: AnyHashable,
                                            to: OperationQueue,
                                            withHandler: @escaping CMAccelerometerHandler) -> Effect<Never, Never> {
         self.startAccelerometerUpdates(id, to, withHandler)
