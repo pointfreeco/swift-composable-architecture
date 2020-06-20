@@ -8,13 +8,15 @@ extension MotionManager {
     public static let live: MotionManager = { () -> MotionManager in
         var manager = MotionManager()
         
+        
         manager.create = { id in
             Effect.run { subscriber in
                 let manager = CMMotionManager()
                 
                 dependencies[id] = Dependencies(
                     manager: manager,
-                    subscriber: subscriber
+                    subscriber: subscriber,
+                    queue: OperationQueue.main
                 )
                 
                 return AnyCancellable {
@@ -30,12 +32,18 @@ extension MotionManager {
             }
         }
         
-        manager.startAccelerometerUpdates = { id, to, withHandler in
+        manager.startAccelerometerUpdates = { id in
             .fireAndForget {
-                dependencies[id]?.manager.startAccelerometerUpdates(to: to, withHandler: withHandler)
+                guard let dependency = dependencies[id] else { return }
+                dependency.manager
+                    .startAccelerometerUpdates(to: dependency.queue,
+                                               withHandler: { (data, error) in
+                                                guard let acceleration = data?.acceleration else { return }
+                                                dependency.subscriber.send(.didUpdateAcceleration(acceleration))
+                    })
             }
         }
-
+        
         manager.stopAccelerometerUpdates = { id in
             .fireAndForget {
                 dependencies[id]?.manager.stopAccelerometerUpdates()
@@ -47,8 +55,9 @@ extension MotionManager {
 }
 
 private struct Dependencies {
-  let manager: CMMotionManager
-  let subscriber: Effect<MotionManager.Action, Never>.Subscriber
+    let manager: CMMotionManager
+    let subscriber: Effect<MotionManager.Action, Never>.Subscriber
+    let queue: OperationQueue
 }
 
 private var dependencies: [AnyHashable: Dependencies] = [:]

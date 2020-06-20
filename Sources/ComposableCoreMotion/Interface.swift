@@ -21,7 +21,7 @@ public struct MotionManager {
 
     var destroy: (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("destroy") }
 
-    var startAccelerometerUpdates: (AnyHashable, OperationQueue, @escaping CMAccelerometerHandler) -> Effect<Never, Never> = { _,_,_  in
+    var startAccelerometerUpdates: (AnyHashable) -> Effect<Never, Never> = { _  in
         _unimplemented("startAccelerometerUpdates")
     }
     
@@ -45,10 +45,8 @@ public struct MotionManager {
       self.destroy(id)
     }
     
-    public func startAccelerometerUpdates(id: AnyHashable,
-                                           to: OperationQueue,
-                                           withHandler: @escaping CMAccelerometerHandler) -> Effect<Never, Never> {
-        self.startAccelerometerUpdates(id, to, withHandler)
+    public func startAccelerometerUpdates(id: AnyHashable) -> Effect<Never, Never> {
+        self.startAccelerometerUpdates(id)
     }
 
     public func stopAccelerometerUpdates(id: AnyHashable) -> Effect<Never, Never> {
