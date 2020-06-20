@@ -6,13 +6,15 @@ import SwiftUI
 private let readMe = """
   This demonstrates how to work with the MotionManager API from Apple's Motion framework.
 
-  Unfortunately the Motion APIs are not available in SwiftUI previews or simulators. However, \
-  thanks to how the Composable Architecture models its dependencies and effects, it is trivial \
-  to substitute a mock MotionClient into the SwiftUI preview so that we can still play around with \
-  its basic functionality.
+  The Motion APIs are not available in SwiftUI previews or simulators. However, thanks to how \
+  the Composable Architecture models its dependencies and effects, it is trivial to substitute \
+  a mock MotionClient into the SwiftUI preview so that we can still play around with its basic \
+  functionality.
 
-  Here we are creating a mock MotionClient that simulates motion data by running a timer that \
-  emits sinusoidal values.
+  We also have the background of the screen change colors depending on if the screen is facing \
+  you or facing away. We do this by computing how much the device's attitude has changed from \
+  the moment you started recording, and then checking the device yaw to see which way it is \
+  facing.
   """
 
 struct AppState: Equatable {
