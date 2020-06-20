@@ -4,23 +4,52 @@ import CoreMotion
 
 extension MotionManager {
   public static let live = MotionManager(
-    accelerometerData: { id in managers[id]?.accelerometerData.map(AccelerometerData.init) },
-    attitudeReferenceFrame: { id in managers[id]?.attitudeReferenceFrame ?? .init() },
-    availableAttitudeReferenceFrames: { CMMotionManager.availableAttitudeReferenceFrames() },
-    deviceMotion: { id in managers[id]?.deviceMotion.map(DeviceMotion.init) },
-    gyroData: { id in managers[id]?.gyroData.map(GyroData.init) },
-    isAccelerometerActive: { id in managers[id]?.isAccelerometerActive ?? false },
-    isAccelerometerAvailable: { id in managers[id]?.isAccelerometerAvailable ?? false },
-    isDeviceMotionActive: { id in managers[id]?.isDeviceMotionActive ?? false },
-    isDeviceMotionAvailable: { id in managers[id]?.isDeviceMotionAvailable ?? false },
-    isGyroActive: { id in managers[id]?.isGyroActive ?? false },
-    isGyroAvailable: { id in managers[id]?.isGyroAvailable ?? false },
-    isMagnetometerActive: { id in managers[id]?.isDeviceMotionActive ?? false },
-    isMagnetometerAvailable: { id in managers[id]?.isMagnetometerAvailable ?? false },
-    magnetometerData: { id in managers[id]?.magnetometerData.map(MagnetometerData.init) },
+    accelerometerData: { id in
+      requireMotionManager(id: id)?.accelerometerData.map(AccelerometerData.init)
+  },
+    attitudeReferenceFrame: { id in
+      requireMotionManager(id: id)?.attitudeReferenceFrame ?? .init()
+  },
+    availableAttitudeReferenceFrames: {
+      CMMotionManager.availableAttitudeReferenceFrames()
+  },
+    deviceMotion: { id in
+      requireMotionManager(id: id)?.deviceMotion.map(DeviceMotion.init)
+  },
+    gyroData: { id in
+      requireMotionManager(id: id)?.gyroData.map(GyroData.init)
+  },
+    isAccelerometerActive: { id in
+      requireMotionManager(id: id)?.isAccelerometerActive ?? false
+  },
+    isAccelerometerAvailable: { id in
+      requireMotionManager(id: id)?.isAccelerometerAvailable ?? false
+  },
+    isDeviceMotionActive: { id in
+      requireMotionManager(id: id)?.isDeviceMotionActive ?? false
+  },
+    isDeviceMotionAvailable: { id in
+      requireMotionManager(id: id)?.isDeviceMotionAvailable ?? false
+  },
+    isGyroActive: { id in
+      requireMotionManager(id: id)?.isGyroActive ?? false
+  },
+    isGyroAvailable: { id in
+      requireMotionManager(id: id)?.isGyroAvailable ?? false
+  },
+    isMagnetometerActive: { id in
+      requireMotionManager(id: id)?.isDeviceMotionActive ?? false
+  },
+    isMagnetometerAvailable: { id in
+      requireMotionManager(id: id)?.isMagnetometerAvailable ?? false
+  },
+    magnetometerData: { id in
+      requireMotionManager(id: id)?.magnetometerData.map(MagnetometerData.init)
+  },
     set: { id, properties in
       .fireAndForget {
-        guard let manager = managers[id] else { return }
+        guard let manager = managers[id]
+          else { couldNotFindMotionManager(id: id); return }
 
         if let accelerometerUpdateInterval = properties.accelerometerUpdateInterval {
           manager.accelerometerUpdateInterval = accelerometerUpdateInterval
@@ -41,7 +70,8 @@ extension MotionManager {
     },
     startAccelerometerUpdates: { id, queue in
       return Effect.run { subscriber in
-        guard let manager = managers[id] else { return AnyCancellable {} }
+        guard let manager = managers[id]
+          else { couldNotFindMotionManager(id: id); return AnyCancellable { } }
 
         accelerometerUpdatesSubscribers[id]?.send(completion: .finished)
         accelerometerUpdatesSubscribers[id] = subscriber
@@ -59,7 +89,8 @@ extension MotionManager {
     },
     startDeviceMotionUpdates: { id, frame, queue in
       return Effect.run { subscriber in
-        guard let manager = managers[id] else { return AnyCancellable {} }
+        guard let manager = managers[id]
+          else { couldNotFindMotionManager(id: id); return AnyCancellable { } }
 
         deviceMotionUpdatesSubscribers[id]?.send(completion: .finished)
         deviceMotionUpdatesSubscribers[id] = subscriber
@@ -77,7 +108,8 @@ extension MotionManager {
     },
     startGyroUpdates: { id, queue in
       return Effect.run { subscriber in
-        guard let manager = managers[id] else { return AnyCancellable {} }
+        guard let manager = managers[id]
+          else { couldNotFindMotionManager(id: id); return AnyCancellable { } }
 
         deviceGyroUpdatesSubscribers[id]?.send(completion: .finished)
         deviceGyroUpdatesSubscribers[id] = subscriber
@@ -95,7 +127,8 @@ extension MotionManager {
     },
     startMagnetometerUpdates: { id, queue in
       return Effect.run { subscriber in
-        guard let manager = managers[id] else { return AnyCancellable {} }
+        guard let manager = managers[id]
+          else { couldNotFindMotionManager(id: id); return AnyCancellable { } }
 
         deviceMagnetometerUpdatesSubscribers[id]?.send(completion: .finished)
         deviceMagnetometerUpdatesSubscribers[id] = subscriber
@@ -113,28 +146,32 @@ extension MotionManager {
     },
     stopAccelerometerUpdates: { id in
       .fireAndForget {
-        guard let manager = managers[id] else { return }
+        guard let manager = managers[id]
+          else { couldNotFindMotionManager(id: id); return }
         manager.stopAccelerometerUpdates()
         accelerometerUpdatesSubscribers[id]?.send(completion: .finished)
       }
     },
     stopDeviceMotionUpdates: { id in
       .fireAndForget {
-        guard let manager = managers[id] else { return }
+        guard let manager = managers[id]
+          else { couldNotFindMotionManager(id: id); return }
         manager.stopDeviceMotionUpdates()
         deviceMotionUpdatesSubscribers[id]?.send(completion: .finished)
       }
     },
     stopGyroUpdates: { id in
       .fireAndForget {
-        guard let manager = managers[id] else { return }
+        guard let manager = managers[id]
+          else { couldNotFindMotionManager(id: id); return }
         manager.stopGyroUpdates()
         deviceGyroUpdatesSubscribers[id]?.send(completion: .finished)
       }
     },
     stopMagnetometerUpdates: { id in
       .fireAndForget {
-        guard let manager = managers[id] else { return }
+        guard let manager = managers[id]
+          else { couldNotFindMotionManager(id: id); return }
         manager.stopMagnetometerUpdates()
         deviceMagnetometerUpdatesSubscribers[id]?.send(completion: .finished)
       }
@@ -150,3 +187,19 @@ private var deviceGyroUpdatesSubscribers:
 private var deviceMagnetometerUpdatesSubscribers:
   [AnyHashable: Effect<MagnetometerData, MotionManager.Error>.Subscriber] = [:]
 private var managers: [AnyHashable: CMMotionManager] = [:]
+
+private func requireMotionManager(id: AnyHashable) -> CMMotionManager? {
+  if managers[id] == nil {
+    couldNotFindMotionManager(id: id)
+  }
+  return managers[id]
+}
+
+private func couldNotFindMotionManager(id: Any) {
+  assertionFailure("""
+    A motion manager could not be found with the id \(id). This is considered a programmer error.
+    You should not invoke methods on a motion manager before it has been created or after it
+    has been destroyed. Refactor your code to make sure there is a motion manager created by the
+    time you invoke this endpoint.
+    """)
+}
