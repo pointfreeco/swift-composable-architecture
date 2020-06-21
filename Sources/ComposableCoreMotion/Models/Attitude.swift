@@ -11,10 +11,12 @@ public struct Attitude: Equatable {
     self.quaternion = quaternion
   }
 
+  @inlinable
   public func multiply(byInverseOf attitude: Self) -> Self {
     .init(quaternion: self.quaternion.multiplied(by: attitude.quaternion.inverse))
   }
 
+  @inlinable
   public var rotationMatrix: CMRotationMatrix {
     let q = self.quaternion
 
@@ -42,6 +44,7 @@ public struct Attitude: Equatable {
     return matrix
   }
 
+  @inlinable
   public var roll: Double {
     let q = self.quaternion
     return atan2(
@@ -50,6 +53,7 @@ public struct Attitude: Equatable {
     )
   }
 
+  @inlinable
   public var pitch: Double {
     let q = self.quaternion
     let p = 2 * (q.w * q.y - q.z * q.x)
@@ -60,6 +64,7 @@ public struct Attitude: Equatable {
         : asin(p)
   }
 
+  @inlinable
   public var yaw: Double {
     let q = self.quaternion
     return atan2(
@@ -77,7 +82,8 @@ public struct Attitude: Equatable {
 }
 
 extension CMQuaternion {
-  fileprivate var inverse: CMQuaternion {
+  @usableFromInline
+  var inverse: CMQuaternion {
     let invSumOfSquares =
       1 / (self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w)
     return CMQuaternion(
@@ -88,7 +94,8 @@ extension CMQuaternion {
     )
   }
 
-  fileprivate func multiplied(by other: Self) -> Self {
+  @usableFromInline
+  func multiplied(by other: Self) -> Self {
     var result = self
     result.w = self.w * other.w - self.x * other.x - self.y * other.y - self.z * other.z
     result.x = self.w * other.x + self.x * other.w + self.y * other.z - self.z * other.y
