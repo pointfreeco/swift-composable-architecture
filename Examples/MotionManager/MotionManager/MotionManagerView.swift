@@ -81,7 +81,9 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
   case .recordingButtonTapped:
     state.isRecording.toggle()
-    if state.isRecording {
+
+    switch state.isRecording {
+    case true:
       return .concatenate(
         environment.motionManager
           .create(id: MotionClientId())
@@ -93,7 +95,8 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
           .catchToEffect()
           .map(AppAction.motionUpdate)
       )
-    } else {
+
+    case false:
       state.initialAttitude = nil
       state.facingDirection = nil
       return .concatenate(
