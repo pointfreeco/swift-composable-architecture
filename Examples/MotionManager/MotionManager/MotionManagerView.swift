@@ -82,16 +82,29 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
   case .recordingButtonTapped:
     state.isRecording.toggle()
     if state.isRecording {
-      return environment.motionManager
-        .startDeviceMotionUpdates(id: MotionClientId(), using: .xArbitraryZVertical, to: .main)
-        .mapError { $0 as NSError }
-        .catchToEffect()
-        .map(AppAction.motionUpdate)
+      return .concatenate(
+        environment.motionManager
+          .create(id: MotionClientId())
+          .fireAndForget(),
+
+        environment.motionManager
+          .startDeviceMotionUpdates(id: MotionClientId(), using: .xArbitraryZVertical, to: .main)
+          .mapError { $0 as NSError }
+          .catchToEffect()
+          .map(AppAction.motionUpdate)
+      )
     } else {
       state.initialAttitude = nil
       state.facingDirection = nil
-      return environment.motionManager.stopDeviceMotionUpdates(id: MotionClientId())
-        .fireAndForget()
+      return .concatenate(
+        environment.motionManager
+          .stopDeviceMotionUpdates(id: MotionClientId())
+          .fireAndForget(),
+
+        environment.motionManager
+          .destroy(id: MotionClientId())
+          .fireAndForget()
+      )
     }
   }
 }
@@ -162,6 +175,8 @@ struct AppView_Previews: PreviewProvider {
     // sends a bunch of data on some sine curves.
     var isStarted = false
     let mockMotionManager = MotionManager.mock(
+      create: { _ in .fireAndForget { } },
+      destroy: { _ in .fireAndForget { } },
       deviceMotion: { _ in nil },
       startDeviceMotionUpdates: { _, _, _ in
         isStarted = true

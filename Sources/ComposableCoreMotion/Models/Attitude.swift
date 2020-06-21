@@ -1,5 +1,8 @@
 import CoreMotion
 
+/// The device’s orientation relative to a known frame of reference at a point in time.
+///
+/// See the documentation for `CMAttitude` for more info.
 public struct Attitude: Equatable {
   public var quaternion: CMQuaternion
 

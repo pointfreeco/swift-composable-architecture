@@ -10,11 +10,15 @@ class MotionManagerTests: XCTestCase {
   func testExample() {
     let motionSubject = PassthroughSubject<DeviceMotion, Error>()
 
+    var motionManagerIsLive = false
+
     let store = TestStore(
       initialState: .init(),
       reducer: appReducer,
       environment: .init(
         motionManager: .mock(
+          create: { _ in .fireAndForget { motionManagerIsLive = true } },
+          destroy: { _ in .fireAndForget { motionManagerIsLive = false } },
           deviceMotion: { _ in nil },
           startDeviceMotionUpdates: { _, _, _ in motionSubject.eraseToEffect() },
           stopDeviceMotionUpdates: { _ in
@@ -37,6 +41,7 @@ class MotionManagerTests: XCTestCase {
     store.assert(
       .send(.recordingButtonTapped) {
         $0.isRecording = true
+        XCTAssertEqual(motionManagerIsLive, true)
       },
       .do { motionSubject.send(deviceMotion) },
       .receive(.motionUpdate(.success(deviceMotion))) {
@@ -44,6 +49,7 @@ class MotionManagerTests: XCTestCase {
       },
       .send(.recordingButtonTapped) {
         $0.isRecording = false
+        XCTAssertEqual(motionManagerIsLive, false)
       }
     )
   }

@@ -1,5 +1,8 @@
 import CoreMotion
 
+/// Encapsulated measurements of the attitude, rotation rate, and acceleration of a device.
+///
+/// See the documentation for `CMDeviceMotion` for more info.
 public struct DeviceMotion: Equatable {
   public var attitude: Attitude
   public var gravity: CMAcceleration

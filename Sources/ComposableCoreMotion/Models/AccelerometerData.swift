@@ -1,5 +1,8 @@
 import CoreMotion
 
+/// A data sample from the device's three accelerometers.
+///
+/// See the documentation for `CMAccelerometerData` for more info.
 public struct AccelerometerData: Equatable {
   var acceleration: CMAcceleration
 

@@ -11,6 +11,8 @@ extension MotionManager {
     availableAttitudeReferenceFrames: @escaping () -> CMAttitudeReferenceFrame = {
       _unimplemented("availableAttitudeReferenceFrames")
     },
+    create: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("create") },
+    destroy: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("destroy") },
     deviceMotion: @escaping (AnyHashable) -> DeviceMotion? = { _ in _unimplemented("deviceMotion")
     },
     gyroData: @escaping (AnyHashable) -> GyroData? = { _ in _unimplemented("gyroData") },
@@ -68,6 +70,8 @@ extension MotionManager {
       accelerometerData: accelerometerData,
       attitudeReferenceFrame: attitudeReferenceFrame,
       availableAttitudeReferenceFrames: availableAttitudeReferenceFrames,
+      create: create,
+      destroy: destroy,
       deviceMotion: deviceMotion,
       gyroData: gyroData,
       isAccelerometerActive: isAccelerometerActive,

@@ -13,6 +13,24 @@ extension MotionManager {
     availableAttitudeReferenceFrames: {
       CMMotionManager.availableAttitudeReferenceFrames()
   },
+    create: { id in
+      .fireAndForget {
+        if managers[id] != nil {
+          assertionFailure("""
+            You are attempting to create a motion manager with the id \(id), but there is already
+            a running manager with that id. This is considered a programmer error since you may
+            be accidentally overwriting an existing manager without knowning.
+
+            To fix you should either destroy the existing manager before creating a new one, or
+            you should not try creating a new one before this one is destroyed.
+            """)
+        }
+        managers[id] = CMMotionManager()
+      }
+  },
+    destroy: { id in
+      .fireAndForget { managers[id] = nil }
+  },
     deviceMotion: { id in
       requireMotionManager(id: id)?.deviceMotion.map(DeviceMotion.init)
   },
@@ -72,8 +90,9 @@ extension MotionManager {
       return Effect.run { subscriber in
         guard let manager = managers[id]
           else { couldNotFindMotionManager(id: id); return AnyCancellable { } }
+        guard accelerometerUpdatesSubscribers[id] == nil
+          else { return AnyCancellable { } }
 
-        accelerometerUpdatesSubscribers[id]?.send(completion: .finished)
         accelerometerUpdatesSubscribers[id] = subscriber
         manager.startAccelerometerUpdates(to: queue) { data, error in
           if let data = data {
@@ -91,8 +110,9 @@ extension MotionManager {
       return Effect.run { subscriber in
         guard let manager = managers[id]
           else { couldNotFindMotionManager(id: id); return AnyCancellable { } }
+        guard deviceMotionUpdatesSubscribers[id] == nil
+          else { return AnyCancellable { } }
 
-        deviceMotionUpdatesSubscribers[id]?.send(completion: .finished)
         deviceMotionUpdatesSubscribers[id] = subscriber
         manager.startDeviceMotionUpdates(using: frame, to: queue) { data, error in
           if let data = data {
@@ -110,8 +130,9 @@ extension MotionManager {
       return Effect.run { subscriber in
         guard let manager = managers[id]
           else { couldNotFindMotionManager(id: id); return AnyCancellable { } }
+        guard deviceGyroUpdatesSubscribers[id] == nil
+          else { return AnyCancellable { } }
 
-        deviceGyroUpdatesSubscribers[id]?.send(completion: .finished)
         deviceGyroUpdatesSubscribers[id] = subscriber
         manager.startGyroUpdates(to: queue) { data, error in
           if let data = data {
@@ -129,8 +150,9 @@ extension MotionManager {
       return Effect.run { subscriber in
         guard let manager = managers[id]
           else { couldNotFindMotionManager(id: id); return AnyCancellable { } }
+        guard deviceMagnetometerUpdatesSubscribers[id] == nil
+          else { return AnyCancellable { } }
 
-        deviceMagnetometerUpdatesSubscribers[id]?.send(completion: .finished)
         deviceMagnetometerUpdatesSubscribers[id] = subscriber
         manager.startMagnetometerUpdates(to: queue) { data, error in
           if let data = data {
