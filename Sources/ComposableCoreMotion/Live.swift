@@ -2,6 +2,11 @@ import Combine
 import ComposableArchitecture
 import CoreMotion
 
+@available(iOS 4.0, *)
+@available(macCatalyst 13.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS 2.0, *)
 extension MotionManager {
   public static let live = MotionManager(
     accelerometerData: { id in
@@ -235,8 +240,19 @@ private var deviceMotionUpdatesSubscribers: [AnyHashable: Effect<DeviceMotion, E
 private var deviceGyroUpdatesSubscribers: [AnyHashable: Effect<GyroData, Error>.Subscriber] = [:]
 private var deviceMagnetometerUpdatesSubscribers:
   [AnyHashable: Effect<MagnetometerData, Error>.Subscriber] = [:]
+
+@available(iOS 4.0, *)
+@available(macCatalyst 13.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS 2.0, *)
 private var managers: [AnyHashable: CMMotionManager] = [:]
 
+@available(iOS 4.0, *)
+@available(macCatalyst 13.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS 2.0, *)
 private func requireMotionManager(id: AnyHashable) -> CMMotionManager? {
   if managers[id] == nil {
     couldNotFindMotionManager(id: id)
