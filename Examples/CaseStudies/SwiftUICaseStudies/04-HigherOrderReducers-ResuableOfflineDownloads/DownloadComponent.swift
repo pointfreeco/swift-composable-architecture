@@ -60,7 +60,7 @@ enum Mode: Equatable {
   }
 }
 
-enum DownloadComponentAction: Equatable {
+enum DownloadComponentAction: Equatable, Hashable {
   case alert(AlertAction)
   case buttonTapped
   case downloadClient(Result<DownloadClient.Action, DownloadClient.Error>)
@@ -185,7 +185,8 @@ struct DownloadComponent<ID: Equatable>: View {
 
   var body: some View {
 
-    let tmp = ViewStore(self.store).binding(get: { $0.alert }, send: DownloadComponentAction.alert)
+    let tmp: Binding<AlertState<DownloadComponentAction>> = ViewStore(self.store)
+      .binding(get: { $0.alert }, send: .alert(.dismiss))
 
     return WithViewStore(self.store) { viewStore in
       Button(action: { viewStore.send(.buttonTapped) }) {
@@ -214,6 +215,15 @@ struct DownloadComponent<ID: Equatable>: View {
           }
         }
       }
+
+      ._alert(
+        item: viewStore.binding(get: { $0.alert }, send: .alert(.dismiss)),
+        send: viewStore.send
+      ) { alert in
+        alert
+      }
+
+
 //    ._alert(item: <#T##Binding<AlertState<Hashable>>#>, send: <#T##(Hashable) -> Void#>, content: <#T##(AlertState<Hashable>.Alert) -> View#>)
 
 //      ._alert(

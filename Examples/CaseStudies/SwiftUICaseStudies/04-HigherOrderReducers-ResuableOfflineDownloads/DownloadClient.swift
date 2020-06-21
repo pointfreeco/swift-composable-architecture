@@ -6,9 +6,9 @@ struct DownloadClient {
   var cancel: (AnyHashable) -> Effect<Never, Never>
   var download: (AnyHashable, URL) -> Effect<Action, Error>
 
-  struct Error: Swift.Error, Equatable {}
+  struct Error: Swift.Error, Equatable, Hashable {}
 
-  enum Action: Equatable {
+  enum Action: Equatable, Hashable {
     case response(Data)
     case updateProgress(Double)
   }
