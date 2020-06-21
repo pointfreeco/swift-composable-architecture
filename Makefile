@@ -35,12 +35,6 @@ test-workspace:
 		-scheme ComposableCoreMotion \
 		-destination platform="$(PLATFORM_IOS)"
 	xcodebuild test \
-		-scheme ComposableCoreMotion \
-		-destination platform="$(PLATFORM_MACOS)"
-	xcodebuild test \
-		-scheme ComposableCoreMotion \
-		-destination platform="$(PLATFORM_TVOS)"
-	xcodebuild test \
 		-scheme "CaseStudies (SwiftUI)" \
 		-destination platform="$(PLATFORM_IOS)"
 	xcodebuild test \
