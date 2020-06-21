@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// A data type that describes the state of an alert that can be shown to the user.
-public enum AlertState<Action: Hashable>: Hashable {
+public enum AlertState<Action> {
   case dismissed
   case show(Alert)
 
@@ -12,9 +12,9 @@ public enum AlertState<Action: Hashable>: Hashable {
     public var title: String
 
     public init(
-      message: String?,
+      message: String? = nil,
       primaryButton: Button,
-      secondaryButton: Button?,
+      secondaryButton: Button? = nil,
       title: String
     ) {
       self.message = message
@@ -47,6 +47,9 @@ public enum AlertState<Action: Hashable>: Hashable {
   }
 }
 
+extension AlertState: Equatable where Action: Equatable {}
+extension AlertState: Hashable where Action: Hashable {}
+extension AlertState.Alert: Equatable where Action: Equatable {}
 extension AlertState.Alert: Hashable where Action: Hashable {}
 extension AlertState.Alert.Button: Equatable where Action: Equatable {}
 extension AlertState.Alert.Button: Hashable where Action: Hashable {}

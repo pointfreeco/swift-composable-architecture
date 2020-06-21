@@ -119,7 +119,6 @@ extension Reducer {
 
 private let deleteAlert = AlertState.show(
   .init(
-    message: nil,
     primaryButton: .init(
       action: .deleteButtonTapped,
       label: "Delete",
@@ -132,7 +131,6 @@ private let deleteAlert = AlertState.show(
 
 private let cancelAlert = AlertState.show(
   .init(
-    message: nil,
     primaryButton: .init(
       action: .cancelButtonTapped,
       label: "Cancel",
