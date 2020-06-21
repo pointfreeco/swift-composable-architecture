@@ -13,6 +13,7 @@ test-swift:
 		--parallel
 
 test-workspace:
+	instruments -s devices
 	xcodebuild test \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_IOS)"
