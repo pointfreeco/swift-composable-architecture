@@ -2,7 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 struct DownloadComponentState<ID: Equatable>: Equatable {
-  var alert: AlertState<DownloadComponentAction> = .dismissed
+  var alert: AlertState<DownloadComponentAction.AlertAction> = .dismissed
   let id: ID
   var mode: Mode
   let url: URL
@@ -29,12 +29,12 @@ enum Mode: Equatable {
   }
 }
 
-enum DownloadComponentAction: Equatable, Hashable {
+enum DownloadComponentAction: Equatable {
   case alert(AlertAction)
   case buttonTapped
   case downloadClient(Result<DownloadClient.Action, DownloadClient.Error>)
 
-  enum AlertAction: Equatable {
+  enum AlertAction: Equatable, Hashable {
     case cancelButtonTapped
     case deleteButtonTapped
     case dismiss
@@ -121,7 +121,7 @@ private let deleteAlert = AlertState.show(
   .init(
     message: nil,
     primaryButton: .init(
-      action: .alert(.deleteButtonTapped),
+      action: .deleteButtonTapped,
       label: "Delete",
       type: .destructive
     ),
@@ -134,7 +134,7 @@ private let cancelAlert = AlertState.show(
   .init(
     message: nil,
     primaryButton: .init(
-      action: .alert(.cancelButtonTapped),
+      action: .cancelButtonTapped,
       label: "Cancel",
       type: .destructive
     ),
@@ -143,8 +143,8 @@ private let cancelAlert = AlertState.show(
   )
 )
 
-let nevermindButton = AlertState<DownloadComponentAction>.Alert.Button(
-  action: .alert(.nevermindButtonTapped),
+let nevermindButton = AlertState<DownloadComponentAction.AlertAction>.Alert.Button(
+  action: .nevermindButtonTapped,
   label: "Nevermind",
   type: .default
 )
@@ -182,8 +182,8 @@ struct DownloadComponent<ID: Equatable>: View {
       }
       .alert(
         viewStore.alert,
-        send: viewStore.send,
-        dismissal: .alert(.dismiss)
+        send: { viewStore.send(.alert($0)) },
+        dismissal: .dismiss
       )
     }
   }
