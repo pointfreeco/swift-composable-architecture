@@ -2,42 +2,11 @@ import ComposableArchitecture
 import SwiftUI
 
 struct DownloadComponentState<ID: Equatable>: Equatable {
-  var alert: AlertState<DownloadComponentAction> = .dismissed // DownloadAlert?
+  var alert: AlertState<DownloadComponentAction> = .dismissed
   let id: ID
   var mode: Mode
   let url: URL
 }
-
-//struct DownloadAlert: Equatable, Identifiable {
-//  var primaryButton: Button
-//  var secondaryButton: Button
-//  var title: String
-//
-//  var id: String { self.title }
-//
-//  struct Button: Equatable {
-//    var action: DownloadComponentAction
-//    var label: String
-//    var type: `Type`
-//
-//    enum `Type` {
-//      case cancel
-//      case `default`
-//      case destructive
-//    }
-//
-//    func toSwiftUI(action: @escaping (DownloadComponentAction) -> Void) -> Alert.Button {
-//      switch self.type {
-//      case .cancel:
-//        return .cancel(Text(self.label)) { action(self.action) }
-//      case .default:
-//        return .default(Text(self.label)) { action(self.action) }
-//      case .destructive:
-//        return .destructive(Text(self.label)) { action(self.action) }
-//      }
-//    }
-//  }
-//}
 
 enum Mode: Equatable {
   case downloaded
@@ -184,11 +153,7 @@ struct DownloadComponent<ID: Equatable>: View {
   let store: Store<DownloadComponentState<ID>, DownloadComponentAction>
 
   var body: some View {
-
-    let tmp: Binding<AlertState<DownloadComponentAction>> = ViewStore(self.store)
-      .binding(get: { $0.alert }, send: .alert(.dismiss))
-
-    return WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store) { viewStore in
       Button(action: { viewStore.send(.buttonTapped) }) {
         if viewStore.mode == .downloaded {
           Image(systemName: "checkmark.circle")
@@ -215,27 +180,11 @@ struct DownloadComponent<ID: Equatable>: View {
           }
         }
       }
-
-      ._alert(
-        item: viewStore.binding(get: { $0.alert }, send: .alert(.dismiss)),
-        send: viewStore.send
-      ) { alert in
-        alert
-      }
-
-
-//    ._alert(item: <#T##Binding<AlertState<Hashable>>#>, send: <#T##(Hashable) -> Void#>, content: <#T##(AlertState<Hashable>.Alert) -> View#>)
-
-//      ._alert(
-//        item: viewStore.binding(get: { $0.alert }, send: { $0 })
-//      ) { alert in
-//        alert.toSwiftUI(send: viewStore.send)
-////        Alert(
-////          title: Text(alert.title),
-////          primaryButton: alert.primaryButton.toSwiftUI(action: viewStore.send),
-////          secondaryButton: alert.secondaryButton.toSwiftUI(action: viewStore.send)
-////        )
-//      }
+      .alert(
+        viewStore.alert,
+        send: viewStore.send,
+        dismissal: .alert(.dismiss)
+      )
     }
   }
 }
