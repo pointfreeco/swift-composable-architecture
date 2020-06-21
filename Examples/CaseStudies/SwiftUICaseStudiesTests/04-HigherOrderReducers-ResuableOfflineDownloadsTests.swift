@@ -20,7 +20,6 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   func testDownloadFlow() {
     let store = TestStore(
       initialState: DownloadComponentState(
-        alert: nil,
         id: 1,
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
@@ -57,7 +56,6 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   func testDownloadThrottling() {
     let store = TestStore(
       initialState: DownloadComponentState(
-        alert: nil,
         id: 1,
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
@@ -99,7 +97,6 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   func testCancelDownloadFlow() {
     let store = TestStore(
       initialState: DownloadComponentState(
-        alert: nil,
         id: 1,
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
@@ -120,19 +117,25 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       },
 
       .send(.buttonTapped) {
-        $0.alert = DownloadAlert(
-          primaryButton: .init(
-            action: .alert(.cancelButtonTapped), label: "Cancel", type: .destructive
-          ),
-          secondaryButton: .init(
-            action: .alert(.nevermindButtonTapped), label: "Nevermind", type: .default
-          ),
-          title: "Do you want to cancel downloading this map?"
+        $0.alert = .show(
+          .init(
+            primaryButton: .init(
+              action: .cancelButtonTapped,
+              label: "Cancel",
+              type: .destructive
+            ),
+            secondaryButton: .init(
+              action: .nevermindButtonTapped,
+              label: "Nevermind",
+              type: .default
+            ),
+            title: "Do you want to cancel downloading this map?"
+          )
         )
       },
 
       .send(.alert(.cancelButtonTapped)) {
-        $0.alert = nil
+        $0.alert = .dismissed
         $0.mode = .notDownloaded
       },
 
@@ -143,7 +146,6 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   func testDownloadFinishesWhileTryingToCancel() {
     let store = TestStore(
       initialState: DownloadComponentState(
-        alert: nil,
         id: 1,
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
@@ -164,14 +166,20 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       },
 
       .send(.buttonTapped) {
-        $0.alert = DownloadAlert(
-          primaryButton: .init(
-            action: .alert(.cancelButtonTapped), label: "Cancel", type: .destructive
-          ),
-          secondaryButton: .init(
-            action: .alert(.nevermindButtonTapped), label: "Nevermind", type: .default
-          ),
-          title: "Do you want to cancel downloading this map?"
+        $0.alert = .show(
+          .init(
+            primaryButton: .init(
+              action: .cancelButtonTapped,
+              label: "Cancel",
+              type: .destructive
+            ),
+            secondaryButton: .init(
+              action: .nevermindButtonTapped,
+              label: "Nevermind",
+              type: .default
+            ),
+            title: "Do you want to cancel downloading this map?"
+          )
         )
       },
 
@@ -179,7 +187,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       .do { self.downloadSubject.send(completion: .finished) },
       .do { self.scheduler.advance(by: 1) },
       .receive(.downloadClient(.success(.response(Data())))) {
-        $0.alert = nil
+        $0.alert = .dismissed
         $0.mode = .downloaded
       }
     )
@@ -188,7 +196,6 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   func testDeleteDownloadFlow() {
     let store = TestStore(
       initialState: DownloadComponentState(
-        alert: nil,
         id: 1,
         mode: .downloaded,
         url: URL(string: "https://www.pointfree.co")!
@@ -205,19 +212,25 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 
     store.assert(
       .send(.buttonTapped) {
-        $0.alert = DownloadAlert(
-          primaryButton: .init(
-            action: .alert(.deleteButtonTapped), label: "Delete", type: .destructive
-          ),
-          secondaryButton: .init(
-            action: .alert(.nevermindButtonTapped), label: "Nevermind", type: .default
-          ),
-          title: "Do you want to delete this map from your offline storage?"
+        $0.alert = .show(
+          .init(
+            primaryButton: .init(
+              action: .deleteButtonTapped,
+              label: "Delete",
+              type: .destructive
+            ),
+            secondaryButton: .init(
+              action: .nevermindButtonTapped,
+              label: "Nevermind",
+              type: .default
+            ),
+            title: "Do you want to delete this map from your offline storage?"
+          )
         )
       },
 
       .send(.alert(.deleteButtonTapped)) {
-        $0.alert = nil
+        $0.alert = .dismissed
         $0.mode = .notDownloaded
       }
     )

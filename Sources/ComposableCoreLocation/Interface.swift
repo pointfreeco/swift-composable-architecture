@@ -175,7 +175,7 @@ public struct LocationManager {
   /// Actions that correspond to `CLLocationManagerDelegate` methods.
   ///
   /// See `CLLocationManagerDelegate` for more information.
-  public enum Action: Equatable, Hashable {
+  public enum Action: Equatable {
     case didChangeAuthorization(CLAuthorizationStatus)
 
     @available(tvOS, unavailable)
