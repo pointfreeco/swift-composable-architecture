@@ -23,11 +23,11 @@ extension MotionManager {
         if managers[id] != nil {
           assertionFailure(
             """
-            You are attempting to create a motion manager with the id \(id), but there is already
-            a running manager with that id. This is considered a programmer error since you may
-            be accidentally overwriting an existing manager without knowning.
+            You are attempting to create a motion manager with the id \(id), but there is already \
+            a running manager with that id. This is considered a programmer error since you may \
+            be accidentally overwriting an existing manager without knowing.
 
-            To fix you should either destroy the existing manager before creating a new one, or
+            To fix you should either destroy the existing manager before creating a new one, or \
             you should not try creating a new one before this one is destroyed.
             """)
         }
@@ -267,9 +267,9 @@ private func requireMotionManager(id: AnyHashable) -> CMMotionManager? {
 private func couldNotFindMotionManager(id: Any) {
   assertionFailure(
     """
-    A motion manager could not be found with the id \(id). This is considered a programmer error.
-    You should not invoke methods on a motion manager before it has been created or after it
-    has been destroyed. Refactor your code to make sure there is a motion manager created by the
+    A motion manager could not be found with the id \(id). This is considered a programmer error. \
+    You should not invoke methods on a motion manager before it has been created or after it \
+    has been destroyed. Refactor your code to make sure there is a motion manager created by the \
     time you invoke this endpoint.
     """)
 }
