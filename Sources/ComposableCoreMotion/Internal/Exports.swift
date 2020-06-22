@@ -1,2 +1,2 @@
 @_exported import ComposableArchitecture
-@_exported import CoreLocation
+@_exported import CoreMotion

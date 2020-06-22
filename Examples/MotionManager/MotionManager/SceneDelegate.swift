@@ -16,7 +16,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         store: Store(
           initialState: AppState(),
           reducer: appReducer,
-          environment: .init(motionClient: .live)
+          environment: .init(motionManager: .live)
         )
       )
     )

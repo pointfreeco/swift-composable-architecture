@@ -19,6 +19,10 @@ let package = Package(
       name: "ComposableCoreLocation",
       targets: ["ComposableCoreLocation"]
     ),
+    .library(
+      name: "ComposableCoreMotion",
+      targets: ["ComposableCoreMotion"]
+    ),
   ],
   dependencies: [
     .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.1.0"),
@@ -49,6 +53,18 @@ let package = Package(
       name: "ComposableCoreLocationTests",
       dependencies: [
         "ComposableCoreLocation",
+      ]
+    ),
+    .target(
+      name: "ComposableCoreMotion",
+      dependencies: [
+        "ComposableArchitecture"
+      ]
+    ),
+    .testTarget(
+      name: "ComposableCoreMotionTests",
+      dependencies: [
+        "ComposableCoreMotion"
       ]
     ),
   ]

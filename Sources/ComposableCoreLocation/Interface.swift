@@ -36,7 +36,7 @@ import CoreLocation
 /// `onAppear` of your view. You must also provide a unique identifier to associate with the
 /// location manager you create since it is possible to have multiple managers running at once.
 ///
-///     let appReducer = AppReducer<AppState, AppAction, AppEnvironment> {
+///     let appReducer = Reducer<AppState, AppAction, AppEnvironment> {
 ///       state, action, environment in
 ///
 ///       // A unique identifier for our location manager, just in case we want to use

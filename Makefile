@@ -13,6 +13,7 @@ test-swift:
 		--parallel
 
 test-workspace:
+	instruments -s devices
 	xcodebuild test \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_IOS)"
@@ -31,6 +32,9 @@ test-workspace:
 	xcodebuild test \
 		-scheme ComposableCoreLocation \
 		-destination platform="$(PLATFORM_TVOS)"
+	xcodebuild test \
+		-scheme ComposableCoreMotion \
+		-destination platform="$(PLATFORM_IOS)"
 	xcodebuild test \
 		-scheme "CaseStudies (SwiftUI)" \
 		-destination platform="$(PLATFORM_IOS)"

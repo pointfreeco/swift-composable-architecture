@@ -1,71 +1,114 @@
 import ComposableArchitecture
+import ComposableCoreMotion
 import CoreMotion
 import SwiftUI
 
 private let readMe = """
   This demonstrates how to work with the MotionManager API from Apple's Motion framework.
 
-  Unfortunately the Motion APIs are not available in SwiftUI previews or simulators. However, \
-  thanks to how the Composable Architecture models its dependencies and effects, it is trivial \
-  to substitute a mock MotionClient into the SwiftUI preview so that we can still play around with \
-  its basic functionality.
+  The Motion APIs are not available in SwiftUI previews or simulators. However, thanks to how \
+  the Composable Architecture models its dependencies and effects, it is trivial to substitute \
+  a mock MotionManager into the SwiftUI preview so that we can still play around with its basic \
+  functionality.
 
-  Here we are creating a mock MotionClient that simulates motion data by running a timer that emits \
-  sinusoidal values.
+  We also have the background of the screen change colors depending on if the screen is facing \
+  you or facing away. We do this by computing how much the device's attitude has changed from \
+  the moment you started recording, and then checking the device yaw to see which way it is \
+  facing.
   """
 
 struct AppState: Equatable {
   var alertTitle: String?
+  var facingDirection: Direction?
+  var initialAttitude: Attitude?
   var isRecording = false
   var z: [Double] = []
+
+  enum Direction {
+    case backward
+    case forward
+  }
 }
 
 enum AppAction: Equatable {
   case alertDismissed
-  case motionClient(Result<MotionClient.Action, MotionClient.Error>)
-  case onAppear
+  case motionUpdate(Result<DeviceMotion, NSError>)
   case recordingButtonTapped
 }
 
 struct AppEnvironment {
-  var motionClient: MotionClient
+  var motionManager: MotionManager
 }
 
 let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
-  struct MotionClientId: Hashable {}
+  struct MotionManagerId: Hashable {}
 
   switch action {
   case .alertDismissed:
     state.alertTitle = nil
     return .none
 
-  case .motionClient(.failure):
-    state.alertTitle =
-      "We encountered a problem with the motion manager. Make sure you run this demo on a real device, not the simulator."
+  case .motionUpdate(.failure):
+    state.alertTitle = """
+      We encountered a problem with the motion manager. Make sure you run this demo on a real \
+      device, not the simulator.
+      """
     state.isRecording = false
     return .none
 
-  case let .motionClient(.success(.motionUpdate(motion))):
+  case let .motionUpdate(.success(motion)):
+    state.initialAttitude =
+      state.initialAttitude
+      ?? environment.motionManager.deviceMotion(id: MotionManagerId())?.attitude
+
+    if let initialAttitude = state.initialAttitude {
+      let newAttitude = motion.attitude.multiply(byInverseOf: initialAttitude)
+      if abs(newAttitude.yaw) < Double.pi / 2 {
+        state.facingDirection = .forward
+      } else {
+        state.facingDirection = .backward
+      }
+    }
+
     state.z.append(
       motion.gravity.x * motion.userAcceleration.x
         + motion.gravity.y * motion.userAcceleration.y
         + motion.gravity.z * motion.userAcceleration.z
     )
     state.z.removeFirst(max(0, state.z.count - 350))
-    return .none
 
-  case .onAppear:
-    return environment.motionClient.create(id: MotionClientId())
-      .catchToEffect()
-      .map(AppAction.motionClient)
+    return .none
 
   case .recordingButtonTapped:
     state.isRecording.toggle()
-    return state.isRecording
-      ? environment.motionClient.startDeviceMotionUpdates(id: MotionClientId())
-        .fireAndForget()
-      : environment.motionClient.stopDeviceMotionUpdates(id: MotionClientId())
-        .fireAndForget()
+
+    switch state.isRecording {
+    case true:
+      return .concatenate(
+        environment.motionManager
+          .create(id: MotionManagerId())
+          .fireAndForget(),
+
+        environment.motionManager
+          .startDeviceMotionUpdates(id: MotionManagerId(), using: .xArbitraryZVertical, to: .main)
+          .mapError { $0 as NSError }
+          .catchToEffect()
+          .map(AppAction.motionUpdate)
+      )
+
+    case false:
+      state.initialAttitude = nil
+      state.facingDirection = nil
+      return .concatenate(
+        environment.motionManager
+          .stopDeviceMotionUpdates(id: MotionManagerId())
+          .fireAndForget(),
+
+        environment.motionManager
+          .destroy(id: MotionManagerId())
+          .fireAndForget()
+      )
+    }
   }
 }
 
@@ -99,7 +142,7 @@ struct AppView: View {
         }
       }
       .padding()
-      .onAppear { viewStore.send(.onAppear) }
+      .background(viewStore.facingDirection == .backward ? Color.green : Color.clear)
       .alert(
         item: viewStore.binding(
           get: { $0.alertTitle.map(AppAlert.init(title:)) },
@@ -134,25 +177,33 @@ struct AppView_Previews: PreviewProvider {
     // Since MotionManager isn't usable in SwiftUI previews or simulators we create one that just
     // sends a bunch of data on some sine curves.
     var isStarted = false
-    let mockMotionClient = MotionClient(
-      create: { id in
-        Effect.timer(id: id, every: 0.01, on: DispatchQueue.main)
+    let mockMotionManager = MotionManager.mock(
+      create: { _ in .fireAndForget { } },
+      destroy: { _ in .fireAndForget { } },
+      deviceMotion: { _ in nil },
+      startDeviceMotionUpdates: { _, _, _ in
+        isStarted = true
+        return Timer.publish(every: 0.01, on: .main, in: .default)
+          .autoconnect()
           .filter { _ in isStarted }
-          .map { time in
-            let t = Double(time.dispatchTime.uptimeNanoseconds) / 500_000_000.0
-            return .motionUpdate(
-              .init(
-                gravity: .init(x: sin(2 * t), y: -cos(-t), z: sin(3 * t)),
-                userAcceleration: .init(x: -cos(-3 * t), y: sin(2 * t), z: -cos(t))
-              )
+          .map { $0.timeIntervalSince1970 * 2 }
+          .map { t in
+            DeviceMotion(
+              attitude: .init(quaternion: .init(x: 1, y: 0, z: 0, w: 0)),
+              gravity: .init(x: sin(2 * t), y: -cos(-t), z: sin(3 * t)),
+              heading: 0,
+              magneticField: .init(field: .init(x: 0, y: 0, z: 0), accuracy: .high),
+              rotationRate: CMRotationRate.init(x: 0, y: 0, z: 0),
+              timestamp: Date().timeIntervalSince1970,
+              userAcceleration: .init(x: -cos(-3 * t), y: sin(2 * t), z: -cos(t))
             )
-        }
-        .setFailureType(to: MotionClient.Error.self)
-        .eraseToEffect()
-    },
-      startDeviceMotionUpdates: { _ in .fireAndForget { isStarted = true } },
-      stopDeviceMotionUpdates: { _ in .fireAndForget { isStarted = false } }
-    )
+          }
+          .setFailureType(to: Error.self)
+          .eraseToEffect()
+      },
+      stopDeviceMotionUpdates: { _ in
+        .fireAndForget { isStarted = false }
+      })
 
     return AppView(
       store: Store(
@@ -162,7 +213,7 @@ struct AppView_Previews: PreviewProvider {
           }
         ),
         reducer: appReducer,
-        environment: .init(motionClient: mockMotionClient)
+        environment: .init(motionManager: mockMotionManager)
       )
     )
   }
