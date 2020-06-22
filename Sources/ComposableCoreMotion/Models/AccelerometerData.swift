@@ -4,7 +4,7 @@ import CoreMotion
 ///
 /// See the documentation for `CMAccelerometerData` for more info.
 public struct AccelerometerData: Equatable {
-  var acceleration: CMAcceleration
+  public var acceleration: CMAcceleration
 
   public init(_ accelerometerData: CMAccelerometerData) {
     self.acceleration = accelerometerData.acceleration
