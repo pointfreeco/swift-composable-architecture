@@ -6,7 +6,7 @@ import XCTest
 
 @testable import MotionManagerDemo
 
-class MotionManagerTests: XCTestCase {
+class MotionTests: XCTestCase {
   func testMotionUpdate() {
     let motionSubject = PassthroughSubject<DeviceMotion, Error>()
 
@@ -43,10 +43,12 @@ class MotionManagerTests: XCTestCase {
         $0.isRecording = true
         XCTAssertEqual(motionManagerIsLive, true)
       },
+
       .do { motionSubject.send(deviceMotion) },
       .receive(.motionUpdate(.success(deviceMotion))) {
         $0.z = [32]
       },
+
       .send(.recordingButtonTapped) {
         $0.isRecording = false
         XCTAssertEqual(motionManagerIsLive, false)
@@ -91,17 +93,20 @@ class MotionManagerTests: XCTestCase {
         $0.isRecording = true
         XCTAssertEqual(motionManagerIsLive, true)
       },
+
       .do { motionSubject.send(initialDeviceMotion) },
       .receive(.motionUpdate(.success(initialDeviceMotion))) {
         $0.facingDirection = .forward
         $0.initialAttitude = initialDeviceMotion.attitude
         $0.z = [0]
       },
+
       .do { motionSubject.send(updatedDeviceMotion) },
       .receive(.motionUpdate(.success(updatedDeviceMotion))) {
         $0.z = [0, 0]
         $0.facingDirection = .backward
       },
+      
       .send(.recordingButtonTapped) {
         $0.facingDirection = nil
         $0.initialAttitude = nil
