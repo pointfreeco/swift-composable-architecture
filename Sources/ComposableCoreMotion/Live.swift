@@ -196,6 +196,7 @@ extension MotionManager {
         }
         manager.stopAccelerometerUpdates()
         accelerometerUpdatesSubscribers[id]?.send(completion: .finished)
+        accelerometerUpdatesSubscribers[id] = nil
       }
     },
     stopDeviceMotionUpdates: { id in
@@ -207,6 +208,7 @@ extension MotionManager {
         }
         manager.stopDeviceMotionUpdates()
         deviceMotionUpdatesSubscribers[id]?.send(completion: .finished)
+        deviceMotionUpdatesSubscribers[id] = nil
       }
     },
     stopGyroUpdates: { id in
@@ -218,6 +220,7 @@ extension MotionManager {
         }
         manager.stopGyroUpdates()
         deviceGyroUpdatesSubscribers[id]?.send(completion: .finished)
+        deviceGyroUpdatesSubscribers[id] = nil
       }
     },
     stopMagnetometerUpdates: { id in
@@ -229,6 +232,7 @@ extension MotionManager {
         }
         manager.stopMagnetometerUpdates()
         deviceMagnetometerUpdatesSubscribers[id]?.send(completion: .finished)
+        deviceMagnetometerUpdatesSubscribers[id] = nil
       }
     })
 }

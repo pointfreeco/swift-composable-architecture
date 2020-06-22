@@ -11,7 +11,7 @@
 		5A405A30244F410F002D4C76 /* MotionManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A405A2F244F410F002D4C76 /* MotionManagerView.swift */; };
 		5A405A32244F4110002D4C76 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5A405A31244F4110002D4C76 /* Assets.xcassets */; };
 		CA01F8932479B2FF004C5C0D /* ComposableCoreMotion in Frameworks */ = {isa = PBXBuildFile; productRef = CA01F8922479B2FF004C5C0D /* ComposableCoreMotion */; };
-		CA0F931F244FE3F000E85985 /* MotionManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0F931E244FE3F000E85985 /* MotionManagerTests.swift */; };
+		CA0F931F244FE3F000E85985 /* MotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0F931E244FE3F000E85985 /* MotionTests.swift */; };
 		DC1394122469E2E100EE1157 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC1394112469E2E100EE1157 /* ComposableArchitecture */; };
 /* End PBXBuildFile section */
 
@@ -55,7 +55,7 @@
 		5A405A31244F4110002D4C76 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5A405A39244F4110002D4C76 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CA0F931C244FE3F000E85985 /* MotionManagerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MotionManagerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		CA0F931E244FE3F000E85985 /* MotionManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionManagerTests.swift; sourceTree = "<group>"; };
+		CA0F931E244FE3F000E85985 /* MotionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionTests.swift; sourceTree = "<group>"; };
 		CA0F9320244FE3F000E85985 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DCFC51472466F49B00A0B8CF /* swift-composable-architecture */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "swift-composable-architecture"; path = ../..; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -121,7 +121,7 @@
 		CA0F931D244FE3F000E85985 /* MotionManagerTests */ = {
 			isa = PBXGroup;
 			children = (
-				CA0F931E244FE3F000E85985 /* MotionManagerTests.swift */,
+				CA0F931E244FE3F000E85985 /* MotionTests.swift */,
 				CA0F9320244FE3F000E85985 /* Info.plist */,
 			);
 			path = MotionManagerTests;
@@ -243,7 +243,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CA0F931F244FE3F000E85985 /* MotionManagerTests.swift in Sources */,
+				CA0F931F244FE3F000E85985 /* MotionTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
