@@ -8,7 +8,7 @@ private let readMe = """
 
   The Motion APIs are not available in SwiftUI previews or simulators. However, thanks to how \
   the Composable Architecture models its dependencies and effects, it is trivial to substitute \
-  a mock MotionClient into the SwiftUI preview so that we can still play around with its basic \
+  a mock MotionManager into the SwiftUI preview so that we can still play around with its basic \
   functionality.
 
   We also have the background of the screen change colors depending on if the screen is facing \
@@ -41,7 +41,7 @@ struct AppEnvironment {
 }
 
 let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
-  struct MotionClientId: Hashable {}
+  struct MotionManagerId: Hashable {}
 
   switch action {
   case .alertDismissed:
@@ -59,7 +59,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
   case let .motionUpdate(.success(motion)):
     state.initialAttitude =
       state.initialAttitude
-      ?? environment.motionManager.deviceMotion(id: MotionClientId())?.attitude
+      ?? environment.motionManager.deviceMotion(id: MotionManagerId())?.attitude
 
     if let initialAttitude = state.initialAttitude {
       let newAttitude = motion.attitude.multiply(byInverseOf: initialAttitude)
@@ -86,11 +86,11 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     case true:
       return .concatenate(
         environment.motionManager
-          .create(id: MotionClientId())
+          .create(id: MotionManagerId())
           .fireAndForget(),
 
         environment.motionManager
-          .startDeviceMotionUpdates(id: MotionClientId(), using: .xArbitraryZVertical, to: .main)
+          .startDeviceMotionUpdates(id: MotionManagerId(), using: .xArbitraryZVertical, to: .main)
           .mapError { $0 as NSError }
           .catchToEffect()
           .map(AppAction.motionUpdate)
@@ -101,11 +101,11 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
       state.facingDirection = nil
       return .concatenate(
         environment.motionManager
-          .stopDeviceMotionUpdates(id: MotionClientId())
+          .stopDeviceMotionUpdates(id: MotionManagerId())
           .fireAndForget(),
 
         environment.motionManager
-          .destroy(id: MotionClientId())
+          .destroy(id: MotionManagerId())
           .fireAndForget()
       )
     }
