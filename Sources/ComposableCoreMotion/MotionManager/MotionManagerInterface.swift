@@ -4,9 +4,9 @@ import CoreMotion
 /// A wrapper around Core Motion's `CMMotionManager` that exposes its functionality through effects
 /// and actions, making it easy to use with the Composable Architecture, and easy to test.
 ///
-/// To use in your application, start by adding an action to your feature's domain that represents
-/// the type of motion data you are interested in receiving. For example, if you only want motion
-/// updates, then you can add the following to your actions:
+/// To use in your application, you can add an action to your feature's domain that represents the
+/// type of motion data you are interested in receiving. For example, if you only want motion
+/// updates, then you can add the following action:
 ///
 ///     import ComposableCoreLocation
 ///
