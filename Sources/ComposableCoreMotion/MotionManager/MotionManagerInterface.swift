@@ -39,7 +39,7 @@ import CoreMotion
 ///
 ///     let featureReducer = Reducer<FeatureState, FeatureAction, FeatureEnvironment> {
 ///       state, action, environment in
-
+///
 ///       // A unique identifier for our location manager, just in case we want to use
 ///       // more than one in our application.
 ///       struct MotionManagerId: Hashable {}
