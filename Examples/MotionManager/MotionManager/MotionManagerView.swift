@@ -85,9 +85,9 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     switch state.isRecording {
     case true:
       return .concatenate(
-//        environment.motionManager
-//          .create(id: MotionClientId())
-//          .fireAndForget(),
+        environment.motionManager
+          .create(id: MotionClientId())
+          .fireAndForget(),
 
         environment.motionManager
           .startDeviceMotionUpdates(id: MotionClientId(), using: .xArbitraryZVertical, to: .main)

@@ -1,6 +1,6 @@
 import Combine
 import ComposableArchitecture
-import ComposableCoreMotion
+@testable import ComposableCoreMotion
 import CoreMotion
 import XCTest
 
@@ -56,26 +56,9 @@ class MotionManagerTests: XCTestCase {
 
   func testFacingDirection() {
     let motionSubject = PassthroughSubject<DeviceMotion, Error>()
-
     var motionManagerIsLive = false
 
-    let store = TestStore(
-      initialState: .init(),
-      reducer: appReducer,
-      environment: .init(
-        motionManager: .mock(
-          create: { _ in .fireAndForget { motionManagerIsLive = true } },
-          destroy: { _ in .fireAndForget { motionManagerIsLive = false } },
-          deviceMotion: { _ in nil },
-          startDeviceMotionUpdates: { _, _, _ in motionSubject.eraseToEffect() },
-          stopDeviceMotionUpdates: { _ in
-            .fireAndForget { motionSubject.send(completion: .finished) }
-          }
-        )
-      )
-    )
-
-    let deviceMotion1 = DeviceMotion(
+    let initialDeviceMotion = DeviceMotion(
       attitude: .init(quaternion: .init(x: 1, y: 0, z: 0, w: 0)),
       gravity: CMAcceleration(x: 0, y: 0, z: 0),
       heading: 0,
@@ -84,37 +67,47 @@ class MotionManagerTests: XCTestCase {
       timestamp: 0,
       userAcceleration: CMAcceleration(x: 0, y: 0, z: 0)
     )
-    var deviceMotion2 = deviceMotion1
-    deviceMotion2.attitude = .init(quaternion: .init(x: <#T##Double#>, y: <#T##Double#>, z: <#T##Double#>, w: <#T##Double#>))
+    var updatedDeviceMotion = initialDeviceMotion
+    updatedDeviceMotion.attitude = .init(quaternion: .init(x: 0, y: 0, z: 1, w: 0))
+
+    let store = TestStore(
+      initialState: .init(),
+      reducer: appReducer,
+      environment: .init(
+        motionManager: .mock(
+          create: { _ in .fireAndForget { motionManagerIsLive = true } },
+          destroy: { _ in .fireAndForget { motionManagerIsLive = false } },
+          deviceMotion: { _ in initialDeviceMotion },
+          startDeviceMotionUpdates: { _, _, _ in motionSubject.eraseToEffect() },
+          stopDeviceMotionUpdates: { _ in
+            .fireAndForget { motionSubject.send(completion: .finished) }
+          }
+        )
+      )
+    )
 
     store.assert(
       .send(.recordingButtonTapped) {
         $0.isRecording = true
         XCTAssertEqual(motionManagerIsLive, true)
       },
-      .do { motionSubject.send(deviceMotion) },
-      .receive(.motionUpdate(.success(deviceMotion))) {
+      .do { motionSubject.send(initialDeviceMotion) },
+      .receive(.motionUpdate(.success(initialDeviceMotion))) {
+        $0.facingDirection = .forward
+        $0.initialAttitude = initialDeviceMotion.attitude
         $0.z = [0]
       },
+      .do { motionSubject.send(updatedDeviceMotion) },
+      .receive(.motionUpdate(.success(updatedDeviceMotion))) {
+        $0.z = [0, 0]
+        $0.facingDirection = .backward
+      },
       .send(.recordingButtonTapped) {
+        $0.facingDirection = nil
+        $0.initialAttitude = nil
         $0.isRecording = false
         XCTAssertEqual(motionManagerIsLive, false)
       }
     )
   }
-
-
-
-      // start
-  //initialAttitude Attitude(quaternion: __C.CMQuaternion(x: 0.6494714776423881, y: 0.0026255963956893884, z: -8.671706123902431e-05, w: 0.7603814935004795))
-  //newAttitude Attitude(quaternion: __C.CMQuaternion(x: -0.0007262714670632696, y: -5.7950864636874874e-05, z: 6.705383863074782e-05, w: 0.9999997078327616))
-
-
-      // end
-  //    initialAttitude Attitude(quaternion: __C.CMQuaternion(x: 0.6494714776423881, y: 0.0026255963956893884, z: -8.671706123902431e-05, w: 0.7603814935004795))
-  //    newAttitude Attitude(quaternion: __C.CMQuaternion(x: 0.03000185075978253, y: 0.06587886308240093, z: 0.9970180422410506, w: -0.026737043251725486))
-
-
-
-
 }
