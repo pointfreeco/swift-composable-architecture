@@ -7,7 +7,7 @@ import XCTest
 @testable import MotionManagerDemo
 
 class MotionManagerTests: XCTestCase {
-  func testExample() {
+  func testMotionUpdate() {
     let motionSubject = PassthroughSubject<DeviceMotion, Error>()
 
     var motionManagerIsLive = false
