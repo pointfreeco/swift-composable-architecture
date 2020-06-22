@@ -172,18 +172,13 @@ import CoreMotion
 public struct MotionManager {
   /// The latest sample of accelerometer data.
   public func accelerometerData(id: AnyHashable) -> AccelerometerData? {
-    self._accelerometerData(id)
+    self.accelerometerData(id)
   }
 
   /// Returns either the reference frame currently being used or the default attitude reference
   /// frame.
   public func attitudeReferenceFrame(id: AnyHashable) -> CMAttitudeReferenceFrame {
-    self._attitudeReferenceFrame(id)
-  }
-
-  /// Returns a bitmask specifying the available attitude reference frames on the device.
-  public func availableAttitudeReferenceFrames() -> CMAttitudeReferenceFrame {
-    self._availableAttitudeReferenceFrames()
+    self.attitudeReferenceFrame(id)
   }
 
   /// Creates a motion manager.
@@ -191,7 +186,7 @@ public struct MotionManager {
   /// A motion manager must be first created before you can use its functionality, such as starting
   /// device motion updates or accessing data directly from the manager.
   public func create(id: AnyHashable) -> Effect<Never, Never> {
-    self._create(id)
+    self.create(id)
   }
 
   /// Destroys a currently running motion manager.
@@ -199,63 +194,63 @@ public struct MotionManager {
   /// In is good practice to destroy a motion manager once you are done with it, such as when you
   /// leave a screen or no longer need motion data.
   public func destroy(id: AnyHashable) -> Effect<Never, Never> {
-    self._destroy(id)
+    self.destroy(id)
   }
 
   /// The latest sample of device-motion data.
   public func deviceMotion(id: AnyHashable) -> DeviceMotion? {
-    self._deviceMotion(id)
+    self.deviceMotion(id)
   }
 
   /// The latest sample of gyroscope data.
   public func gyroData(id: AnyHashable) -> GyroData? {
-    self._gyroData(id)
+    self.gyroData(id)
   }
 
   /// A Boolean value that indicates whether accelerometer updates are currently happening.
   public func isAccelerometerActive(id: AnyHashable) -> Bool {
-    self._isAccelerometerActive(id)
+    self.isAccelerometerActive(id)
   }
 
   /// A Boolean value that indicates whether an accelerometer is available on the device.
   public func isAccelerometerAvailable(id: AnyHashable) -> Bool {
-    self._isAccelerometerAvailable(id)
+    self.isAccelerometerAvailable(id)
   }
 
   /// A Boolean value that determines whether the app is receiving updates from the device-motion
   /// service.
   public func isDeviceMotionActive(id: AnyHashable) -> Bool {
-    self._isDeviceMotionActive(id)
+    self.isDeviceMotionActive(id)
   }
 
   /// A Boolean value that indicates whether the device-motion service is available on the device.
   public func isDeviceMotionAvailable(id: AnyHashable) -> Bool {
-    self._isDeviceMotionAvailable(id)
+    self.isDeviceMotionAvailable(id)
   }
 
   /// A Boolean value that determines whether gyroscope updates are currently happening.
   public func isGyroActive(id: AnyHashable) -> Bool {
-    self._isGyroActive(id)
+    self.isGyroActive(id)
   }
 
   /// A Boolean value that indicates whether a gyroscope is available on the device.
   public func isGyroAvailable(id: AnyHashable) -> Bool {
-    self._isGyroAvailable(id)
+    self.isGyroAvailable(id)
   }
 
   /// A Boolean value that determines whether magnetometer updates are currently happening.
   public func isMagnetometerActive(id: AnyHashable) -> Bool {
-    self._isMagnetometerActive(id)
+    self.isMagnetometerActive(id)
   }
 
   /// A Boolean value that indicates whether a magnetometer is available on the device.
   public func isMagnetometerAvailable(id: AnyHashable) -> Bool {
-    self._isMagnetometerAvailable(id)
+    self.isMagnetometerAvailable(id)
   }
 
   /// The latest sample of magnetometer data.
   public func magnetometerData(id: AnyHashable) -> MagnetometerData? {
-    self._magnetometerData(id)
+    self.magnetometerData(id)
   }
 
   /// Sets certain properties on the motion manager.
@@ -267,7 +262,7 @@ public struct MotionManager {
     magnetometerUpdateInterval: TimeInterval? = nil,
     showsDeviceMovementDisplay: Bool? = nil
   ) -> Effect<Never, Never> {
-    self._set(
+    self.set(
       id,
       .init(
         accelerometerUpdateInterval: accelerometerUpdateInterval,
@@ -287,7 +282,7 @@ public struct MotionManager {
     id: AnyHashable,
     to queue: OperationQueue = .main
   ) -> Effect<AccelerometerData, Error> {
-    self._startAccelerometerUpdates(id, queue)
+    self.startAccelerometerUpdates(id, queue)
   }
 
   /// Starts device-motion updates without a block handler.
@@ -299,7 +294,7 @@ public struct MotionManager {
     using referenceFrame: CMAttitudeReferenceFrame,
     to queue: OperationQueue = .main
   ) -> Effect<DeviceMotion, Error> {
-    self._startDeviceMotionUpdates(id, referenceFrame, queue)
+    self.startDeviceMotionUpdates(id, referenceFrame, queue)
   }
 
   /// Starts gyroscope updates without a handler.
@@ -310,7 +305,7 @@ public struct MotionManager {
     id: AnyHashable,
     to queue: OperationQueue = .main
   ) -> Effect<GyroData, Error> {
-    self._startGyroUpdates(id, queue)
+    self.startGyroUpdates(id, queue)
   }
 
   /// Starts magnetometer updates without a block handler.
@@ -321,27 +316,27 @@ public struct MotionManager {
     id: AnyHashable,
     to queue: OperationQueue = .main
   ) -> Effect<MagnetometerData, Error> {
-    self._startMagnetometerUpdates(id, queue)
+    self.startMagnetometerUpdates(id, queue)
   }
 
   /// Stops accelerometer updates.
   public func stopAccelerometerUpdates(id: AnyHashable) -> Effect<Never, Never> {
-    self._stopAccelerometerUpdates(id)
+    self.stopAccelerometerUpdates(id)
   }
 
   /// Stops device-motion updates.
   public func stopDeviceMotionUpdates(id: AnyHashable) -> Effect<Never, Never> {
-    self._stopDeviceMotionUpdates(id)
+    self.stopDeviceMotionUpdates(id)
   }
 
   /// Stops gyroscope updates.
   public func stopGyroUpdates(id: AnyHashable) -> Effect<Never, Never> {
-    self._stopGyroUpdates(id)
+    self.stopGyroUpdates(id)
   }
 
   /// Stops magnetometer updates.
   public func stopMagnetometerUpdates(id: AnyHashable) -> Effect<Never, Never> {
-    self._stopMagnetometerUpdates(id)
+    self.stopMagnetometerUpdates(id)
   }
 
   public init(
@@ -376,31 +371,31 @@ public struct MotionManager {
     stopGyroUpdates: @escaping (AnyHashable) -> Effect<Never, Never>,
     stopMagnetometerUpdates: @escaping (AnyHashable) -> Effect<Never, Never>
   ) {
-    self._accelerometerData = accelerometerData
-    self._attitudeReferenceFrame = attitudeReferenceFrame
-    self._availableAttitudeReferenceFrames = availableAttitudeReferenceFrames
-    self._create = create
-    self._destroy = destroy
-    self._deviceMotion = deviceMotion
-    self._gyroData = gyroData
-    self._isAccelerometerActive = isAccelerometerActive
-    self._isAccelerometerAvailable = isAccelerometerAvailable
-    self._isDeviceMotionActive = isDeviceMotionActive
-    self._isDeviceMotionAvailable = isDeviceMotionAvailable
-    self._isGyroActive = isGyroActive
-    self._isGyroAvailable = isGyroAvailable
-    self._isMagnetometerActive = isMagnetometerActive
-    self._isMagnetometerAvailable = isMagnetometerAvailable
-    self._magnetometerData = magnetometerData
-    self._set = set
-    self._startAccelerometerUpdates = startAccelerometerUpdates
-    self._startDeviceMotionUpdates = startDeviceMotionUpdates
-    self._startGyroUpdates = startGyroUpdates
-    self._startMagnetometerUpdates = startMagnetometerUpdates
-    self._stopAccelerometerUpdates = stopAccelerometerUpdates
-    self._stopDeviceMotionUpdates = stopDeviceMotionUpdates
-    self._stopGyroUpdates = stopGyroUpdates
-    self._stopMagnetometerUpdates = stopMagnetometerUpdates
+    self.accelerometerData = accelerometerData
+    self.attitudeReferenceFrame = attitudeReferenceFrame
+    self.availableAttitudeReferenceFrames = availableAttitudeReferenceFrames
+    self.create = create
+    self.destroy = destroy
+    self.deviceMotion = deviceMotion
+    self.gyroData = gyroData
+    self.isAccelerometerActive = isAccelerometerActive
+    self.isAccelerometerAvailable = isAccelerometerAvailable
+    self.isDeviceMotionActive = isDeviceMotionActive
+    self.isDeviceMotionAvailable = isDeviceMotionAvailable
+    self.isGyroActive = isGyroActive
+    self.isGyroAvailable = isGyroAvailable
+    self.isMagnetometerActive = isMagnetometerActive
+    self.isMagnetometerAvailable = isMagnetometerAvailable
+    self.magnetometerData = magnetometerData
+    self.set = set
+    self.startAccelerometerUpdates = startAccelerometerUpdates
+    self.startDeviceMotionUpdates = startDeviceMotionUpdates
+    self.startGyroUpdates = startGyroUpdates
+    self.startMagnetometerUpdates = startMagnetometerUpdates
+    self.stopAccelerometerUpdates = stopAccelerometerUpdates
+    self.stopDeviceMotionUpdates = stopDeviceMotionUpdates
+    self.stopGyroUpdates = stopGyroUpdates
+    self.stopMagnetometerUpdates = stopMagnetometerUpdates
   }
 
   public struct Properties {
@@ -425,30 +420,31 @@ public struct MotionManager {
     }
   }
 
-  var _accelerometerData: (AnyHashable) -> AccelerometerData?
-  var _attitudeReferenceFrame: (AnyHashable) -> CMAttitudeReferenceFrame
-  var _availableAttitudeReferenceFrames: () -> CMAttitudeReferenceFrame
-  var _create: (AnyHashable) -> Effect<Never, Never>
-  var _destroy: (AnyHashable) -> Effect<Never, Never>
-  var _deviceMotion: (AnyHashable) -> DeviceMotion?
-  var _gyroData: (AnyHashable) -> GyroData?
-  var _isAccelerometerActive: (AnyHashable) -> Bool
-  var _isAccelerometerAvailable: (AnyHashable) -> Bool
-  var _isDeviceMotionActive: (AnyHashable) -> Bool
-  var _isDeviceMotionAvailable: (AnyHashable) -> Bool
-  var _isGyroActive: (AnyHashable) -> Bool
-  var _isGyroAvailable: (AnyHashable) -> Bool
-  var _isMagnetometerActive: (AnyHashable) -> Bool
-  var _isMagnetometerAvailable: (AnyHashable) -> Bool
-  var _magnetometerData: (AnyHashable) -> MagnetometerData?
-  var _set: (AnyHashable, Properties) -> Effect<Never, Never>
-  var _startAccelerometerUpdates: (AnyHashable, OperationQueue) -> Effect<AccelerometerData, Error>
-  var _startDeviceMotionUpdates:
+  var accelerometerData: (AnyHashable) -> AccelerometerData?
+  var attitudeReferenceFrame: (AnyHashable) -> CMAttitudeReferenceFrame
+  /// Returns a bitmask specifying the available attitude reference frames on the device.
+  var availableAttitudeReferenceFrames: () -> CMAttitudeReferenceFrame
+  var create: (AnyHashable) -> Effect<Never, Never>
+  var destroy: (AnyHashable) -> Effect<Never, Never>
+  var deviceMotion: (AnyHashable) -> DeviceMotion?
+  var gyroData: (AnyHashable) -> GyroData?
+  var isAccelerometerActive: (AnyHashable) -> Bool
+  var isAccelerometerAvailable: (AnyHashable) -> Bool
+  var isDeviceMotionActive: (AnyHashable) -> Bool
+  var isDeviceMotionAvailable: (AnyHashable) -> Bool
+  var isGyroActive: (AnyHashable) -> Bool
+  var isGyroAvailable: (AnyHashable) -> Bool
+  var isMagnetometerActive: (AnyHashable) -> Bool
+  var isMagnetometerAvailable: (AnyHashable) -> Bool
+  var magnetometerData: (AnyHashable) -> MagnetometerData?
+  var set: (AnyHashable, Properties) -> Effect<Never, Never>
+  var startAccelerometerUpdates: (AnyHashable, OperationQueue) -> Effect<AccelerometerData, Error>
+  var startDeviceMotionUpdates:
     (AnyHashable, CMAttitudeReferenceFrame, OperationQueue) -> Effect<DeviceMotion, Error>
-  var _startGyroUpdates: (AnyHashable, OperationQueue) -> Effect<GyroData, Error>
-  var _startMagnetometerUpdates: (AnyHashable, OperationQueue) -> Effect<MagnetometerData, Error>
-  var _stopAccelerometerUpdates: (AnyHashable) -> Effect<Never, Never>
-  var _stopDeviceMotionUpdates: (AnyHashable) -> Effect<Never, Never>
-  var _stopGyroUpdates: (AnyHashable) -> Effect<Never, Never>
-  var _stopMagnetometerUpdates: (AnyHashable) -> Effect<Never, Never>
+  var startGyroUpdates: (AnyHashable, OperationQueue) -> Effect<GyroData, Error>
+  var startMagnetometerUpdates: (AnyHashable, OperationQueue) -> Effect<MagnetometerData, Error>
+  var stopAccelerometerUpdates: (AnyHashable) -> Effect<Never, Never>
+  var stopDeviceMotionUpdates: (AnyHashable) -> Effect<Never, Never>
+  var stopGyroUpdates: (AnyHashable) -> Effect<Never, Never>
+  var stopMagnetometerUpdates: (AnyHashable) -> Effect<Never, Never>
 }

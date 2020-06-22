@@ -1,6 +1,6 @@
 import Combine
 import ComposableArchitecture
-@testable import ComposableCoreMotion
+import ComposableCoreMotion
 import CoreMotion
 import XCTest
 
