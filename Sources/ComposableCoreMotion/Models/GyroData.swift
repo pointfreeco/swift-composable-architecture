@@ -1,6 +1,6 @@
 import CoreMotion
 
-/// A single measurement of the device’s rotation rate.
+/// A single measurement of the device's rotation rate.
 ///
 /// See the documentation for `CMGyroData` for more info.
 public struct GyroData: Equatable {
