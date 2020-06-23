@@ -56,13 +56,13 @@ public struct TwoFactorView: View {
         }
       }
       .disabled(viewStore.isFormDisabled)
-      .navigationBarTitle("Two Factor Confirmation")
       .alert(
         item: viewStore.binding(get: { $0.alertData }, send: .alertDismissed)
       ) { alertData in
         Alert(title: Text(alertData.title))
       }
     }
+    .navigationBarTitle("Two Factor Confirmation")
   }
 }
 
