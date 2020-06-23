@@ -24,7 +24,7 @@ extension HeadphoneMotionManager {
         }
 
         let manager = CMHeadphoneMotionManager()
-        var delegate = HeadphoneMotionManagerDelegate(subscriber)
+        var delegate = Delegate(subscriber)
         manager.delegate = delegate
 
         dependencies[id] = Dependencies(
@@ -86,61 +86,41 @@ extension HeadphoneMotionManager {
       }
     }
   )
+
+  private class Delegate: NSObject, CMHeadphoneMotionManagerDelegate {
+    let subscriber: Effect<HeadphoneMotionManager.Action, Never>.Subscriber
+
+    init(_ subscriber: Effect<HeadphoneMotionManager.Action, Never>.Subscriber) {
+      self.subscriber = subscriber
+    }
+
+    func headphoneMotionManagerDidConnect(_ manager: CMHeadphoneMotionManager) {
+      self.subscriber.send(.didConnect)
+    }
+
+    func headphoneMotionManagerDidDisconnect(_ manager: CMHeadphoneMotionManager) {
+      self.subscriber.send(.didDisconnect)
+    }
+  }
+
+  private struct Dependencies {
+    let delegate: Delegate
+    let manager: CMHeadphoneMotionManager
+    let subscriber: Effect<HeadphoneMotionManager.Action, Never>.Subscriber
+  }
+
+  private static var dependencies: [AnyHashable: Dependencies] = [:]
+
+  private static func requireHeadphoneMotionManager(id: AnyHashable) -> CMHeadphoneMotionManager? {
+    if dependencies[id] == nil {
+      couldNotFindHeadphoneMotionManager(id: id)
+    }
+    return dependencies[id]?.manager
+  }
 }
 
 private var deviceMotionUpdatesSubscribers: [AnyHashable: Effect<DeviceMotion, Error>.Subscriber] =
   [:]
-
-@available(iOS 14, *)
-@available(macCatalyst 14, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS 7, *)
-private class HeadphoneMotionManagerDelegate: NSObject, CMHeadphoneMotionManagerDelegate {
-  let subscriber: Effect<HeadphoneMotionManager.Action, Never>.Subscriber
-
-  init(_ subscriber: Effect<HeadphoneMotionManager.Action, Never>.Subscriber) {
-    self.subscriber = subscriber
-  }
-
-  func headphoneMotionManagerDidConnect(_ manager: CMHeadphoneMotionManager) {
-    self.subscriber.send(.didConnect)
-  }
-
-  func headphoneMotionManagerDidDisconnect(_ manager: CMHeadphoneMotionManager) {
-    self.subscriber.send(.didDisconnect)
-  }
-}
-
-@available(iOS 14, *)
-@available(macCatalyst 14, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS 7, *)
-private struct Dependencies {
-  let delegate: HeadphoneMotionManagerDelegate
-  let manager: CMHeadphoneMotionManager
-  let subscriber: Effect<HeadphoneMotionManager.Action, Never>.Subscriber
-}
-
-@available(iOS 14, *)
-@available(macCatalyst 14, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS 7, *)
-private var dependencies: [AnyHashable: Dependencies] = [:]
-
-@available(iOS 14, *)
-@available(macCatalyst 14, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS 7, *)
-private func requireHeadphoneMotionManager(id: AnyHashable) -> CMHeadphoneMotionManager? {
-  if dependencies[id] == nil {
-    couldNotFindHeadphoneMotionManager(id: id)
-  }
-  return dependencies[id]?.manager
-}
 
 private func couldNotFindHeadphoneMotionManager(id: Any) {
   assertionFailure(
