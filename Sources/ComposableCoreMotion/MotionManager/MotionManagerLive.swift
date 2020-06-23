@@ -2,11 +2,11 @@ import Combine
 import ComposableArchitecture
 import CoreMotion
 
-@available(iOS 4.0, *)
-@available(macCatalyst 13.0, *)
+@available(iOS 4, *)
+@available(macCatalyst 13, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
-@available(watchOS 2.0, *)
+@available(watchOS 2, *)
 extension MotionManager {
   public static let live = MotionManager(
     accelerometerData: { id in
