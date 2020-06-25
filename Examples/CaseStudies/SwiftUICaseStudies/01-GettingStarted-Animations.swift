@@ -18,15 +18,20 @@ private let readMe = """
 
 struct AnimationsState: Equatable {
   var circleCenter = CGPoint.zero
+  var circleColor = Color.white
   var isCircleScaled = false
 }
 
 enum AnimationsAction: Equatable {
   case circleScaleToggleChanged(Bool)
+  case rainbowButtonTapped
+  case setColor(Color)
   case tapped(CGPoint)
 }
 
-struct AnimationsEnvironment {}
+struct AnimationsEnvironment {
+  var mainQueue: AnySchedulerOf<DispatchQueue>
+}
 
 let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnvironment> {
   state, action, environment in
@@ -34,6 +39,23 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
   switch action {
   case let .circleScaleToggleChanged(isScaled):
     state.isCircleScaled = isScaled
+    return .none
+
+  case .rainbowButtonTapped:
+    return .concatenate(
+      [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .white]
+        .enumerated()
+        .map { index, color in
+          index == 0
+            ? Effect(value: .setColor(color))
+            : Effect(value: .setColor(color))
+              .delay(for: 1, scheduler: environment.mainQueue)
+              .eraseToEffect()
+      }
+    )
+
+  case let .setColor(color):
+    state.circleColor = color
     return .none
 
   case let .tapped(point):
@@ -49,13 +71,14 @@ struct AnimationsView: View {
   var body: some View {
     GeometryReader { proxy in
       WithViewStore(self.store) { viewStore in
-        VStack {
+        VStack(alignment: .leading) {
           ZStack(alignment: .center) {
             Text(template: readMe, .body)
               .padding()
 
             Circle()
-              .fill(Color.white)
+              .fill(viewStore.circleColor)
+              .animation(.linear)
               .blendMode(.difference)
               .frame(width: 50, height: 50)
               .scaleEffect(viewStore.isCircleScaled ? 2 : 1)
@@ -81,6 +104,8 @@ struct AnimationsView: View {
               .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.1))
           )
           .padding()
+          Button("Rainbow") { viewStore.send(.rainbowButtonTapped) }
+          .padding([.leading, .trailing, .bottom])
         }
       }
     }
@@ -95,7 +120,9 @@ struct AnimationsView_Previews: PreviewProvider {
           store: Store(
             initialState: AnimationsState(circleCenter: CGPoint(x: 50, y: 50)),
             reducer: animationsReducer,
-            environment: AnimationsEnvironment()
+            environment: AnimationsEnvironment(
+              mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+            )
           )
         )
       }
@@ -105,7 +132,9 @@ struct AnimationsView_Previews: PreviewProvider {
           store: Store(
             initialState: AnimationsState(circleCenter: CGPoint(x: 50, y: 50)),
             reducer: animationsReducer,
-            environment: AnimationsEnvironment()
+            environment: AnimationsEnvironment(
+              mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+            )
           )
         )
       }
