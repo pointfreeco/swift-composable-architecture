@@ -23,6 +23,27 @@ public enum ActionFormat {
 }
 
 extension Reducer {
+  /// Raises a debugger signal when a provided closure needs to stop the process in the debugger.
+  ///
+  /// - Parameter condition: Whether or not the process should be stopped.
+  /// - Returns: A reducer that can raise a debugger signal.
+  public func breakpoint(
+    _ condition: @escaping (State, Action) -> Bool = { _, _ in true }
+  ) -> Reducer {
+    #if DEBUG
+    return self.combined(
+      with: .init { state, action, _ in
+        if condition(state, action) {
+          raise(SIGTRAP)
+        }
+        return .none
+      }
+    )
+    #else
+    return self
+    #endif
+  }
+
   /// Prints debug messages describing all received actions and state mutations.
   ///
   /// Printing is only done in debug (`#if DEBUG`) builds.
