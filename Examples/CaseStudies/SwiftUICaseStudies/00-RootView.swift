@@ -68,7 +68,9 @@ struct RootView: View {
               store: Store(
                 initialState: AnimationsState(circleCenter: CGPoint(x: 50, y: 50)),
                 reducer: animationsReducer,
-                environment: AnimationsEnvironment()
+                environment: AnimationsEnvironment(
+                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+                )
               )
             )
           )
