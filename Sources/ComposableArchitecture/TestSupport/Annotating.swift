@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by Luke Redpath on 25/06/2020.
-//
-
 #if DEBUG
 
 import XCTest
