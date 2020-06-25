@@ -180,10 +180,12 @@ final class ComposableArchitectureTests: XCTestCase {
     )
   }
     
-  func testAssertWithActivitySteps() {
+  func testAssertWithAnnotations() {
     enum CounterAction {
       case increment
       case decrement
+      case produceEffect
+      case effectProduced
     }
     
     let counterReducer = Reducer<Int, CounterAction, Void> { state, action, _ in
@@ -192,6 +194,10 @@ final class ComposableArchitectureTests: XCTestCase {
         state += 1
       case .decrement:
         state -= 1
+      case .produceEffect:
+        return Effect(value: .effectProduced)
+      case .effectProduced:
+        break
       }
       return .none
     }
@@ -219,7 +225,14 @@ final class ComposableArchitectureTests: XCTestCase {
           $0 = 0
         }
       ),
-      annotateTo: .console
+      .group("Send and receive with effects",
+        .send(.produceEffect),
+        .receive(.effectProduced)
+      ),
+      .send(.increment) {
+        $0 = 1
+      },
+      annotateTo: .combine(.console, .activity)
     )
   }
 }

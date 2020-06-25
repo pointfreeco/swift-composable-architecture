@@ -158,7 +158,7 @@
     /// Asserts against a script of actions.
     public func assert(
       _ steps: Step...,
-      annotateTo annotating: Annotating = Annotating(annotate: { _, callback in callback() }),
+      annotateTo annotating: Annotating = .none,
       file: StaticString = #file,
       line: UInt = #line
     ) {
@@ -196,95 +196,91 @@
       }
 
       for step in steps {
-        var expectedState = toLocalState(state)
+        annotating.annotate(step) { stepResultCallback in
+          var expectedState = toLocalState(state)
 
-        switch step.type {
-        case let .send(action, update):
-          if !receivedActions.isEmpty {
-            _XCTFail(
-              """
-              Must handle \(receivedActions.count) received \
-              action\(receivedActions.count == 1 ? "" : "s") before sending an action: …
+          switch step.type {
+          case let .send(action, update):
+            if !receivedActions.isEmpty {
+              _XCTFail(
+                """
+                Must handle \(receivedActions.count) received \
+                action\(receivedActions.count == 1 ? "" : "s") before sending an action: …
 
-              Unhandled actions: \(debugOutput(receivedActions))
-              """,
-              file: step.file, line: step.line
-            )
-          }
-          annotating.annotate(step) {
+                Unhandled actions: \(debugOutput(receivedActions))
+                """,
+                file: step.file, line: step.line
+              )
+            }
             runReducer(action: self.fromLocalAction(action))
             update(&expectedState)
+
+          case let .receive(expectedAction, update):
+            guard !receivedActions.isEmpty else {
+              _XCTFail(
+                """
+                Expected to receive an action, but received none.
+                """,
+                file: step.file,
+                line: step.line
+              )
+              break
+            }
+            let receivedAction = receivedActions.removeFirst()
+            if expectedAction != receivedAction {
+              let diff =
+                debugDiff(expectedAction, receivedAction)
+                .map { ": …\n\n\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
+                ?? ""
+              _XCTFail(
+                """
+                Received unexpected action\(diff)
+                """,
+                file: step.file,
+                line: step.line
+              )
+            }
+            runReducer(action: receivedAction)
+            update(&expectedState)
+
+          case let .environment(work):
+            if !receivedActions.isEmpty {
+              _XCTFail(
+                """
+                Must handle \(receivedActions.count) received \
+                action\(receivedActions.count == 1 ? "" : "s") before performing this work: …
+
+                Unhandled actions: \(debugOutput(receivedActions))
+                """,
+                file: step.file, line: step.line
+              )
+            }
+            work(&self.environment)
+            
+          case let .group(_, steps):
+            if steps.count > 0 {
+              self.assert(steps, annotateTo: annotating, file: step.file, line: step.line)
+            }
+            return
           }
 
-        case let .receive(expectedAction, update):
-          guard !receivedActions.isEmpty else {
-            _XCTFail(
-              """
-              Expected to receive an action, but received none.
-              """,
-              file: step.file,
-              line: step.line
-            )
-            break
-          }
-          let receivedAction = receivedActions.removeFirst()
-          if expectedAction != receivedAction {
+          let actualState = self.toLocalState(self.state)
+          if expectedState != actualState {
+            stepResultCallback(false)
+            
             let diff =
-              debugDiff(expectedAction, receivedAction)
+              debugDiff(expectedState, actualState)
               .map { ": …\n\n\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
               ?? ""
             _XCTFail(
               """
-              Received unexpected action\(diff)
+              State change does not match expectation\(diff)
               """,
               file: step.file,
               line: step.line
             )
           }
-          annotating.annotate(step) {
-            runReducer(action: receivedAction)
-            update(&expectedState)
-          }
-
-        case let .environment(work):
-          if !receivedActions.isEmpty {
-            _XCTFail(
-              """
-              Must handle \(receivedActions.count) received \
-              action\(receivedActions.count == 1 ? "" : "s") before performing this work: …
-
-              Unhandled actions: \(debugOutput(receivedActions))
-              """,
-              file: step.file, line: step.line
-            )
-          }
-
-          annotating.annotate(step) {
-            work(&self.environment)
-          }
-          
-        case let .group(_, steps):
-          annotating.annotate(step) {
-            if steps.count > 0 {
-              self.assert(steps, annotateTo: annotating, file: step.file, line: step.line)
-            }
-          }
-          return
-        }
-
-        let actualState = self.toLocalState(self.state)
-        if expectedState != actualState {
-          let diff =
-            debugDiff(expectedState, actualState)
-            .map { ": …\n\n\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
-            ?? ""
-          _XCTFail(
-            """
-            State change does not match expectation\(diff)
-            """,
-            file: step.file,
-            line: step.line
-          )
+          stepResultCallback(true)
         }
       }
 
@@ -449,10 +445,36 @@
     }
     
     public struct Annotating {
-      public var annotate: (Step, () -> Void) -> Void
+      public typealias StepResultCallback = (Bool) -> Void
       
-      public init(annotate: @escaping (Step, () -> Void) -> Void) {
+      public var annotate: (Step, (@escaping StepResultCallback) -> Void) -> Void
+      
+      public init(annotate: @escaping (Step, (@escaping StepResultCallback) -> Void) -> Void) {
         self.annotate = annotate
+      }
+      
+      public static func combine(_ annotatings: Annotating...) -> Self {
+        return Annotating { step, callback in
+          var combinedCallbacks: [StepResultCallback] = []
+          
+          for annotating in annotatings {
+            annotating.annotate(step) { resultCallback in
+              combinedCallbacks.append(resultCallback)
+            }
+          }
+        
+          callback() { stepResult in
+            for callback in combinedCallbacks {
+              callback(stepResult)
+            }
+          }
+        }
+      }
+      
+      public static var none: Self {
+        Self { step, callback in
+          callback() { _ in }
+        }
       }
     }
   }

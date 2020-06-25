@@ -16,18 +16,18 @@ extension TestStore.Annotating {
       
       switch step.type {
       case let .send(action, _):
-        activityName = "send: \(action)"
+        activityName = "--> send: \(action)"
       case let .receive(action, _):
-        activityName = "receive: \(action)"
+        activityName = "<-- receive: \(action)"
       case let .group(name, _):
         activityName = name
       default:
-        callback()
+        callback() { _ in }
         return
       }
       
       XCTContext.runActivity(named: activityName) { _ in
-        callback()
+        callback() { _ in }
       }
     }
   }
@@ -45,7 +45,9 @@ extension TestStore.Annotating {
         return
       }
       
-      callback()
+      callback() { stepPassed in
+        print("\t\t [\(stepPassed ? "PASS" : "FAIL")]")
+      }
     }
   }
 }
