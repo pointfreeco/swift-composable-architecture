@@ -2,7 +2,115 @@ import Combine
 import ComposableArchitecture
 import SwiftUI
 
+struct RootState {
+  var animation = AnimationsState()
+  var bindingBasics = BindingBasicsState()
+  var counter = CounterState()
+  var effectsBasics = EffectsBasicsState()
+  var effectsCancellation = EffectsCancellationState()
+  var effectsTimers = TimersState()
+  var longLivingEffects = LongLivingEffectsState()
+  var optionalBasics = OptionalBasicsState()
+  var shared = SharedState()
+  var twoCounters = TwoCountersState()
+}
+
+enum RootAction {
+  case animation(AnimationsAction)
+  case bindingBasics(BindingBasicsAction)
+  case counter(CounterAction)
+  case effectsBasics(EffectsBasicsAction)
+  case effectsCancellation(EffectsCancellationAction)
+  case longLivingEffects(LongLivingEffectsAction)
+  case optionalBasics(OptionalBasicsAction)
+  case shared(SharedStateAction)
+  case twoCounters(TwoCountersAction)
+}
+
+struct RootEnvironment {
+  var mainQueue: AnySchedulerOf<DispatchQueue>
+  var numberFact: (Int) -> Effect<String, NumbersApiError>
+  var trivia: (Int) -> Effect<String, TriviaApiError>
+  var userDidTakeScreenshot: Effect<Void, Never>
+
+  static let live = Self(
+    mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+    numberFact: liveNumberFact(for:),
+    trivia: liveTrivia(for:),
+    userDidTakeScreenshot: NotificationCenter.default
+      .publisher(for: UIApplication.userDidTakeScreenshotNotification)
+      .map { _ in () }
+      .eraseToEffect()
+  )
+}
+
+let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
+  // 01 - Getting Started
+  animationsReducer
+    .pullback(
+      state: \.animation,
+      action: /RootAction.animation,
+      environment: { _ in AnimationsEnvironment() }
+    ),
+  bindingBasicsReducer
+    .pullback(
+      state: \.bindingBasics,
+      action: /RootAction.bindingBasics,
+      environment: { _ in BindingBasicsEnvironment() }
+    ),
+  counterReducer
+    .pullback(
+      state: \.counter,
+      action: /RootAction.counter,
+      environment: { _ in CounterEnvironment() }
+    ),
+  optionalBasicsReducer
+    .pullback(
+      state: \.optionalBasics,
+      action: /RootAction.optionalBasics,
+      environment: { _ in OptionalBasicsEnvironment() }
+    ),
+  sharedStateReducer
+    .pullback(
+      state: \.shared,
+      action: /RootAction.shared,
+      environment: { _ in () }
+    ),
+  twoCountersReducer
+    .pullback(
+      state: \.twoCounters,
+      action: /RootAction.twoCounters,
+      environment: { _ in TwoCountersEnvironment() }
+    ),
+
+  // 02 - Effects
+  effectsBasicsReducer
+    .pullback(
+      state: \.effectsBasics,
+      action: /RootAction.effectsBasics,
+      environment: { EffectsBasicsEnvironment(mainQueue: $0.mainQueue, numberFact: $0.numberFact ) }
+    ),
+  effectsCancellationReducer
+    .pullback(
+      state: \.effectsCancellation,
+      action: /RootAction.effectsCancellation,
+      environment: { EffectsCancellationEnvironment(mainQueue: $0.mainQueue, trivia: $0.trivia) }
+    ),
+  longLivingEffectsReducer
+    .pullback(
+      state: \.longLivingEffects,
+      action: /RootAction.longLivingEffects,
+      environment: { LongLivingEffectsEnvironment(userDidTakeScreenshot: $0.userDidTakeScreenshot) }
+    ),
+
+
+  .empty
+)
+.signpost()
+
 struct RootView: View {
+  let store: Store<RootState, RootAction>
+
   var body: some View {
     NavigationView {
       Form {
@@ -10,10 +118,9 @@ struct RootView: View {
           NavigationLink(
             "Basics",
             destination: CounterDemoView(
-              store: Store(
-                initialState: CounterState(),
-                reducer: counterReducer,
-                environment: CounterEnvironment()
+              store: self.store.scope(
+                state: { $0.counter },
+                action: RootAction.counter
               )
             )
           )
@@ -21,10 +128,9 @@ struct RootView: View {
           NavigationLink(
             "Pullback and combine",
             destination: TwoCountersView(
-              store: Store(
-                initialState: TwoCountersState(),
-                reducer: twoCountersReducer,
-                environment: TwoCountersEnvironment()
+              store: self.store.scope(
+                state: { $0.twoCounters },
+                action: RootAction.twoCounters
               )
             )
           )
@@ -32,10 +138,9 @@ struct RootView: View {
           NavigationLink(
             "Bindings",
             destination: BindingBasicsView(
-              store: Store(
-                initialState: BindingBasicsState(),
-                reducer: bindingBasicsReducer,
-                environment: BindingBasicsEnvironment()
+              store: self.store.scope(
+                state: { $0.bindingBasics },
+                action: RootAction.bindingBasics
               )
             )
           )
@@ -43,10 +148,9 @@ struct RootView: View {
           NavigationLink(
             "Optional state",
             destination: OptionalBasicsView(
-              store: Store(
-                initialState: OptionalBasicsState(),
-                reducer: optionalBasicsReducer,
-                environment: OptionalBasicsEnvironment()
+              store: self.store.scope(
+                state: { $0.optionalBasics },
+                action: RootAction.optionalBasics
               )
             )
           )
@@ -54,10 +158,9 @@ struct RootView: View {
           NavigationLink(
             "Shared state",
             destination: SharedStateView(
-              store: Store(
-                initialState: SharedState(),
-                reducer: sharedStateReducer,
-                environment: ()
+              store: self.store.scope(
+                state: { $0.shared },
+                action: RootAction.shared
               )
             )
           )
@@ -76,12 +179,9 @@ struct RootView: View {
           NavigationLink(
             "Animations",
             destination: AnimationsView(
-              store: Store(
-                initialState: AnimationsState(circleCenter: CGPoint(x: 50, y: 50)),
-                reducer: animationsReducer,
-                environment: AnimationsEnvironment(
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
-                )
+              store: self.store.scope(
+                state: { $0.animation },
+                action: RootAction.animation
               )
             )
           )
@@ -91,10 +191,9 @@ struct RootView: View {
           NavigationLink(
             "Basics",
             destination: EffectsBasicsView(
-              store: Store(
-                initialState: EffectsBasicsState(),
-                reducer: effectsBasicsReducer,
-                environment: .live
+              store: self.store.scope(
+                state: { $0.effectsBasics },
+                action: RootAction.effectsBasics
               )
             )
           )
@@ -102,20 +201,18 @@ struct RootView: View {
           NavigationLink(
             "Cancellation",
             destination: EffectsCancellationView(
-              store: Store(
-                initialState: .init(),
-                reducer: effectsCancellationReducer,
-                environment: .live)
-            )
+              store: self.store.scope(
+                state: { $0.effectsCancellation },
+                action: RootAction.effectsCancellation)
+              )
           )
 
           NavigationLink(
             "Long-living effects",
             destination: LongLivingEffectsView(
-              store: Store(
-                initialState: LongLivingEffectsState(),
-                reducer: longLivingEffectsReducer,
-                environment: .live
+              store: self.store.scope(
+                state: { $0.longLivingEffects },
+                action: RootAction.longLivingEffects
               )
             )
           )
@@ -344,6 +441,44 @@ struct RootView: View {
 
 struct RootView_Previews: PreviewProvider {
   static var previews: some View {
-    RootView()
+    RootView(
+      store: .init(
+        initialState: RootState(),
+        reducer: rootReducer,
+        environment: .live
+      )
+    )
   }
+}
+
+// This is the "live" trivia dependency that reaches into the outside world to fetch trivia.
+// Typically this live implementation of the dependency would live in its own module so that the
+// main feature doesn't need to compile it.
+func liveNumberFact(for n: Int) -> Effect<String, NumbersApiError> {
+  return URLSession.shared.dataTaskPublisher(for: URL(string: "http://numbersapi.com/\(n)/trivia")!)
+    .map { data, _ in String(decoding: data, as: UTF8.self) }
+    .catch { _ in
+      // Sometimes numbersapi.com can be flakey, so if it ever fails we will just
+      // default to a mock response.
+      Just("\(n) is a good number Brent")
+        .delay(for: 1, scheduler: DispatchQueue.main)
+    }
+    .mapError { _ in NumbersApiError() }
+    .eraseToEffect()
+}
+
+// This is the "live" trivia dependency that reaches into the outside world to fetch trivia.
+// Typically this live implementation of the dependency would live in its own module so that the
+// main feature doesn't need to compile it.
+func liveTrivia(for n: Int) -> Effect<String, TriviaApiError> {
+  URLSession.shared.dataTaskPublisher(for: URL(string: "http://numbersapi.com/\(n)/trivia")!)
+    .map { data, _ in String.init(decoding: data, as: UTF8.self) }
+    .catch { _ in
+      // Sometimes numbersapi.com can be flakey, so if it ever fails we will just
+      // default to a mock response.
+      Just("\(n) is a good number Brent")
+        .delay(for: 1, scheduler: DispatchQueue.main)
+    }
+    .mapError { _ in TriviaApiError() }
+    .eraseToEffect()
 }
