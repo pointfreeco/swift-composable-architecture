@@ -18,6 +18,7 @@ class AnimationTests: XCTestCase {
 
     store.assert(
       .send(.rainbowButtonTapped),
+
       .receive(.setColor(.red)) {
         $0.circleColor = .red
       },

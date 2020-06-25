@@ -18,7 +18,7 @@ private let readMe = """
 
 struct AnimationsState: Equatable {
   var circleCenter = CGPoint.zero
-  var circleColor: Color = Color.white
+  var circleColor = Color.white
   var isCircleScaled = false
 }
 
@@ -43,28 +43,15 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
 
   case .rainbowButtonTapped:
     return .concatenate(
-      Effect(value: .setColor(.red)),
-      Effect(value: .setColor(.blue))
-        .delay(for: 1, scheduler: environment.mainQueue)
-        .eraseToEffect(),
-      Effect(value: .setColor(.green))
-        .delay(for: 1, scheduler: environment.mainQueue)
-        .eraseToEffect(),
-      Effect(value: .setColor(.orange))
-        .delay(for: 1, scheduler: environment.mainQueue)
-        .eraseToEffect(),
-      Effect(value: .setColor(.pink))
-        .delay(for: 1, scheduler: environment.mainQueue)
-        .eraseToEffect(),
-      Effect(value: .setColor(.purple))
-        .delay(for: 1, scheduler: environment.mainQueue)
-        .eraseToEffect(),
-      Effect(value: .setColor(.yellow))
-        .delay(for: 1, scheduler: environment.mainQueue)
-        .eraseToEffect(),
-      Effect(value: .setColor(.white))
-        .delay(for: 1, scheduler: environment.mainQueue)
-        .eraseToEffect()
+      [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .white]
+        .enumerated()
+        .map { index, color in
+          index == 0
+            ? Effect(value: .setColor(color))
+            : Effect(value: .setColor(color))
+              .delay(for: 1, scheduler: environment.mainQueue)
+              .eraseToEffect()
+      }
     )
 
   case let .setColor(color):
