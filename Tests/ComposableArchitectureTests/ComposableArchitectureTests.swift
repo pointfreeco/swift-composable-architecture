@@ -203,7 +203,7 @@ final class ComposableArchitectureTests: XCTestCase {
     )
     
     store.assert(
-      .activity("Incrementing steps",
+      .group("Incrementing steps",
         .send(.increment) {
           $0 = 1
         },
@@ -211,14 +211,16 @@ final class ComposableArchitectureTests: XCTestCase {
           $0 = 2
         }
       ),
-      .activity("Decrementing steps",
+      .group("Decrementing steps",
         .send(.decrement) {
           $0 = 1
         },
         .send(.decrement) {
           $0 = 0
         }
-      )
+      ),
+      annotateTo: .console
     )
   }
 }
+

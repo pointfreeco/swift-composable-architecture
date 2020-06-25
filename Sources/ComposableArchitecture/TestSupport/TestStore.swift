@@ -1,7 +1,6 @@
 #if DEBUG
   import Combine
   import Foundation
-  import XCTest
 
   /// A testable runtime for a reducer.
   ///
@@ -159,15 +158,17 @@
     /// Asserts against a script of actions.
     public func assert(
       _ steps: Step...,
+      annotateTo annotating: Annotating = Annotating(annotate: { _, callback in callback() }),
       file: StaticString = #file,
       line: UInt = #line
     ) {
-      assert(steps, file: file, line: line)
+      assert(steps, annotateTo: annotating, file: file, line: line)
     }
 
     /// Asserts against an array of actions.
     public func assert(
       _ steps: [Step],
+      annotateTo annotating: Annotating,
       file: StaticString = #file,
       line: UInt = #line
     ) {
@@ -210,7 +211,7 @@
               file: step.file, line: step.line
             )
           }
-          XCTContext.runActivity(named: "send: \(action)") { _ in
+          annotating.annotate(step) {
             runReducer(action: self.fromLocalAction(action))
             update(&expectedState)
           }
@@ -240,7 +241,7 @@
               line: step.line
             )
           }
-          XCTContext.runActivity(named: "receive: \(expectedAction)") { _ in
+          annotating.annotate(step) {
             runReducer(action: receivedAction)
             update(&expectedState)
           }
@@ -258,14 +259,14 @@
             )
           }
 
-          XCTContext.runActivity(named: "environment") { _ in
+          annotating.annotate(step) {
             work(&self.environment)
           }
           
-        case let .activity(name, steps):
-          XCTContext.runActivity(named: name) { activity in
+        case let .group(_, steps):
+          annotating.annotate(step) {
             if steps.count > 0 {
-              self.assert(steps, file: step.file, line: step.line)
+              self.assert(steps, annotateTo: annotating, file: step.file, line: step.line)
             }
           }
           return
@@ -357,7 +358,7 @@
 
     /// A single step of a `TestStore` assertion.
     public struct Step {
-      fileprivate let type: StepType
+      public let type: StepType
       fileprivate let file: StaticString
       fileprivate let line: UInt
 
@@ -430,20 +431,28 @@
         self.environment(file: file, line: line) { _ in work() }
       }
       
-      public static func activity(
+      public static func group(
         _ name: String,
         file: StaticString = #file,
         line: UInt = #line,
         _ steps: Step...
       ) -> Step {
-        Step(.activity(name, steps), file: file, line: line)
+        Step(.group(name, steps), file: file, line: line)
       }
 
-      fileprivate enum StepType {
+      public enum StepType {
         case send(LocalAction, (inout LocalState) -> Void)
         case receive(Action, (inout LocalState) -> Void)
         case environment((inout Environment) -> Void)
-        case activity(String, [Step])
+        case group(String, [Step])
+      }
+    }
+    
+    public struct Annotating {
+      public var annotate: (Step, () -> Void) -> Void
+      
+      public init(annotate: @escaping (Step, () -> Void) -> Void) {
+        self.annotate = annotate
       }
     }
   }
