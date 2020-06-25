@@ -11,23 +11,24 @@ import XCTest
 
 extension TestStore.Annotating {
   public static var activity: Self {
-    Self { step, _, callback in
-      var activityName: String!
+    Self { step, groupLevel, callback in
+      func runActivity(named name: String) {
+        let indent = String(repeating: "\t", count: groupLevel)
+        XCTContext.runActivity(named: "\(indent)\(name)") { _ in
+          callback() { _ in }
+        }
+      }
       
       switch step.type {
       case let .send(action, _):
-        activityName = "--> send: \(action)"
+        runActivity(named: "send: \(action)")
       case let .receive(action, _):
-        activityName = "<-- receive: \(action)"
+        runActivity(named: "recv: \(action)")
       case let .group(name, _):
-        activityName = name
+        runActivity(named: name)
       default:
         callback() { _ in }
         return
-      }
-      
-      XCTContext.runActivity(named: activityName) { _ in
-        callback() { _ in }
       }
     }
   }
