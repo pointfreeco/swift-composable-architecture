@@ -179,4 +179,46 @@ final class ComposableArchitectureTests: XCTestCase {
       .do { scheduler.run() }
     )
   }
+    
+  func testAssertWithActivitySteps() {
+    enum CounterAction {
+      case increment
+      case decrement
+    }
+    
+    let counterReducer = Reducer<Int, CounterAction, Void> { state, action, _ in
+      switch action {
+      case .increment:
+        state += 1
+      case .decrement:
+        state -= 1
+      }
+      return .none
+    }
+    
+    let store = TestStore(
+      initialState: 0,
+      reducer: counterReducer,
+      environment: ()
+    )
+    
+    store.assert(
+      .activity("Incrementing steps",
+        .send(.increment) {
+          $0 = 1
+        },
+        .send(.increment) {
+          $0 = 2
+        }
+      ),
+      .activity("Decrementing steps",
+        .send(.decrement) {
+          $0 = 1
+        },
+        .send(.decrement) {
+          $0 = 0
+        }
+      )
+    )
+  }
 }

@@ -1,6 +1,7 @@
 #if DEBUG
   import Combine
   import Foundation
+  import XCTest
 
   /// A testable runtime for a reducer.
   ///
@@ -209,8 +210,10 @@
               file: step.file, line: step.line
             )
           }
-          runReducer(action: self.fromLocalAction(action))
-          update(&expectedState)
+          XCTContext.runActivity(named: "send: \(action)") { _ in
+            runReducer(action: self.fromLocalAction(action))
+            update(&expectedState)
+          }
 
         case let .receive(expectedAction, update):
           guard !receivedActions.isEmpty else {
@@ -237,8 +240,10 @@
               line: step.line
             )
           }
-          runReducer(action: receivedAction)
-          update(&expectedState)
+          XCTContext.runActivity(named: "receive: \(expectedAction)") { _ in
+            runReducer(action: receivedAction)
+            update(&expectedState)
+          }
 
         case let .environment(work):
           if !receivedActions.isEmpty {
@@ -253,7 +258,17 @@
             )
           }
 
-          work(&self.environment)
+          XCTContext.runActivity(named: "environment") { _ in
+            work(&self.environment)
+          }
+          
+        case let .activity(name, steps):
+          XCTContext.runActivity(named: name) { activity in
+            if steps.count > 0 {
+              self.assert(steps, file: step.file, line: step.line)
+            }
+          }
+          return
         }
 
         let actualState = self.toLocalState(self.state)
@@ -414,11 +429,21 @@
       ) -> Step {
         self.environment(file: file, line: line) { _ in work() }
       }
+      
+      public static func activity(
+        _ name: String,
+        file: StaticString = #file,
+        line: UInt = #line,
+        _ steps: Step...
+      ) -> Step {
+        Step(.activity(name, steps), file: file, line: line)
+      }
 
       fileprivate enum StepType {
         case send(LocalAction, (inout LocalState) -> Void)
         case receive(Action, (inout LocalState) -> Void)
         case environment((inout Environment) -> Void)
+        case activity(String, [Step])
       }
     }
   }
