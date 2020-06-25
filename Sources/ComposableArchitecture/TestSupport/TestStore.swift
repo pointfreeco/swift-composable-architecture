@@ -159,6 +159,7 @@
     public func assert(
       _ steps: Step...,
       annotateTo annotating: Annotating = .none,
+      groupLevel: Int = 0,
       file: StaticString = #file,
       line: UInt = #line
     ) {
@@ -169,6 +170,7 @@
     public func assert(
       _ steps: [Step],
       annotateTo annotating: Annotating,
+      groupLevel: Int = 0,
       file: StaticString = #file,
       line: UInt = #line
     ) {
@@ -196,7 +198,7 @@
       }
 
       for step in steps {
-        annotating.annotate(step) { stepResultCallback in
+        annotating.annotate(step, groupLevel) { stepResultCallback in
           var expectedState = toLocalState(state)
 
           switch step.type {
@@ -259,7 +261,13 @@
             
           case let .group(_, steps):
             if steps.count > 0 {
-              self.assert(steps, annotateTo: annotating, file: step.file, line: step.line)
+              self.assert(
+                steps,
+                annotateTo: annotating,
+                groupLevel: groupLevel + 1,
+                file: step.file,
+                line: step.line
+              )
             }
             return
           }
@@ -447,18 +455,18 @@
     public struct Annotating {
       public typealias StepResultCallback = (Bool) -> Void
       
-      public var annotate: (Step, (@escaping StepResultCallback) -> Void) -> Void
+      public var annotate: (Step, Int, (@escaping StepResultCallback) -> Void) -> Void
       
-      public init(annotate: @escaping (Step, (@escaping StepResultCallback) -> Void) -> Void) {
+      public init(annotate: @escaping (Step, Int, (@escaping StepResultCallback) -> Void) -> Void) {
         self.annotate = annotate
       }
       
       public static func combine(_ annotatings: Annotating...) -> Self {
-        return Annotating { step, callback in
+        return Annotating { step, groupLevel, callback in
           var combinedCallbacks: [StepResultCallback] = []
           
           for annotating in annotatings {
-            annotating.annotate(step) { resultCallback in
+            annotating.annotate(step, groupLevel) { resultCallback in
               combinedCallbacks.append(resultCallback)
             }
           }
@@ -472,7 +480,7 @@
       }
       
       public static var none: Self {
-        Self { step, callback in
+        Self { _, _, callback in
           callback() { _ in }
         }
       }

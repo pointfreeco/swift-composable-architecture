@@ -11,7 +11,7 @@ import XCTest
 
 extension TestStore.Annotating {
   public static var activity: Self {
-    Self { step, callback in
+    Self { step, _, callback in
       var activityName: String!
       
       switch step.type {
@@ -33,20 +33,25 @@ extension TestStore.Annotating {
   }
   
   public static var console: Self {
-    Self { step, callback in
+    Self { step, groupLevel, callback in
+      func console(_ string: String) {
+        let indent = String(repeating: "\t", count: groupLevel)
+        print("\(indent)\(string)")
+      }
+      
       switch step.type {
       case let .send(action, _):
-        print("\t send: \(action)")
+        console("send: \(action)")
       case let .receive(action, _):
-        print("\t receive: \(action)")
+        console("receive: \(action)")
       case let .group(name, _):
-        print("TestStore assert group: '\(name)' started at \(Date())")
+        console("TestStore assert group: '\(name)' started at \(Date())")
       default:
         return
       }
       
       callback() { stepPassed in
-        print("\t\t [\(stepPassed ? "PASS" : "FAIL")]")
+        console("\t [\(stepPassed ? "PASS" : "FAIL")]")
       }
     }
   }
