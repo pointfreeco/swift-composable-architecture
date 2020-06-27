@@ -170,6 +170,12 @@ public struct Effect<Output, Failure: Error>: Publisher {
   /// Concatenates a variadic list of effects together into a single effect, which runs the effects
   /// one after the other.
   ///
+  /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
+  ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
+  ///   Composable Architecture in functions like `Reducer.combine`.
+  ///
+  ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
+  ///
   /// - Parameter effects: A variadic list of effects.
   /// - Returns: A new effect
   public static func concatenate(_ effects: Effect...) -> Effect {
@@ -178,6 +184,12 @@ public struct Effect<Output, Failure: Error>: Publisher {
 
   /// Concatenates a collection of effects together into a single effect, which runs the effects one
   /// after the other.
+  ///
+  /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
+  ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
+  ///   Composable Architecture in functions like `Reducer.combine`.
+  ///
+  ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
   ///
   /// - Parameter effects: A collection of effects.
   /// - Returns: A new effect
