@@ -63,6 +63,17 @@ struct RootView: View {
           )
 
           NavigationLink(
+            "Alerts and Action Sheets",
+            destination: SharedStateView(
+              store: Store(
+                initialState: SharedState(),
+                reducer: sharedStateReducer,
+                environment: ()
+              )
+            )
+          )
+
+          NavigationLink(
             "Animations",
             destination: AnimationsView(
               store: Store(
