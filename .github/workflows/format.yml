@@ -3,7 +3,7 @@ name: Format
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   swift_format:
