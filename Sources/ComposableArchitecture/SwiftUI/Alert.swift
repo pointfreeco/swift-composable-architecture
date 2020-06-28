@@ -39,8 +39,8 @@ import SwiftUI
 ///           return .none
 ///
 ///         case .confirmTapped:
-///             state.alert = .dismissed
-///             // Do deletion logic...
+///           state.alert = .dismissed
+///           // Do deletion logic...
 ///
 ///         case .deleteTapped:
 ///           state.alert = .show(
@@ -58,6 +58,7 @@ import SwiftUI
 ///               title: "Delete"
 ///             )
 ///           )
+///         return .none
 ///       }
 ///     }
 ///
@@ -75,7 +76,7 @@ import SwiftUI
 /// it so that any choice made in the alert is automatically fed back into the reducer so that you
 /// can handle its logic.
 ///
-/// Even better, you can instantly write tests that your alert-behavior works as expected:
+/// Even better, you can instantly write tests that your alert behavior works as expected:
 ///
 ///     let store = TestStore(
 ///       initialState: AppState(),
@@ -202,11 +203,11 @@ extension AlertState.Alert.Button {
   fileprivate func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.Alert.Button {
     switch self.type {
     case .cancel:
-      return SwiftUI.Alert.Button.cancel(Text(self.label)) { send(self.action) }
+      return .cancel(Text(self.label)) { send(self.action) }
     case .default:
-      return SwiftUI.Alert.Button.default(Text(self.label)) { send(self.action) }
+      return .default(Text(self.label)) { send(self.action) }
     case .destructive:
-      return SwiftUI.Alert.Button.destructive(Text(self.label)) { send(self.action) }
+      return .destructive(Text(self.label)) { send(self.action) }
     }
   }
 }
