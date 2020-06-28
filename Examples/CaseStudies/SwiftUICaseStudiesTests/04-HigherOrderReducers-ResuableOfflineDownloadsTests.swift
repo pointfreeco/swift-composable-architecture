@@ -126,8 +126,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
             ),
             secondaryButton: .init(
               action: .nevermindButtonTapped,
-              label: "Nevermind",
-              type: .default
+              label: "Nevermind"
             ),
             title: "Do you want to cancel downloading this map?"
           )
@@ -175,8 +174,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
             ),
             secondaryButton: .init(
               action: .nevermindButtonTapped,
-              label: "Nevermind",
-              type: .default
+              label: "Nevermind"
             ),
             title: "Do you want to cancel downloading this map?"
           )
@@ -221,8 +219,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
             ),
             secondaryButton: .init(
               action: .nevermindButtonTapped,
-              label: "Nevermind",
-              type: .default
+              label: "Nevermind"
             ),
             title: "Do you want to delete this map from your offline storage?"
           )

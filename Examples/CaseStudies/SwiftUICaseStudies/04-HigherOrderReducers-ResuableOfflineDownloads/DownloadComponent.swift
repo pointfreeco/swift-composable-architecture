@@ -143,8 +143,7 @@ private let cancelAlert = AlertState.show(
 
 let nevermindButton = AlertState<DownloadComponentAction.AlertAction>.Alert.Button(
   action: .nevermindButtonTapped,
-  label: "Nevermind",
-  type: .default
+  label: "Nevermind"
 )
 
 struct DownloadComponent<ID: Equatable>: View {

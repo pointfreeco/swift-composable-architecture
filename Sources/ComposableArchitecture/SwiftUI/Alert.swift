@@ -48,8 +48,7 @@ import SwiftUI
 ///               message: "Are you sure you want to delete this? It cannot be undone.",
 ///               primaryButton: .init(
 ///                 action: .confirmTapped,
-///                 label: "Confirm",
-///                 type: .default
+///                 label: "Confirm"
 ///               ),
 ///               secondaryButton: .init(
 ///                 action: .cancelTapped,
@@ -91,8 +90,7 @@ import SwiftUI
 ///             message: "Are you sure you want to delete this? It cannot be undone.",
 ///             primaryButton: .init(
 ///               action: .confirmTapped,
-///               label: "Confirm",
-///               type: .default
+///               label: "Confirm"
 ///             ),
 ///             secondaryButton: .init(
 ///               action: .cancelTapped,
@@ -139,7 +137,7 @@ public enum AlertState<Action> {
       public init(
         action: Action,
         label: String,
-        type: `Type`
+        type: `Type` = .default
       ) {
         self.action = action
         self.label = label

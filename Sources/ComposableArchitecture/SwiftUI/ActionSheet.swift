@@ -17,7 +17,7 @@ public enum ActionSheetState<Action> {
 
     public init(
       buttons: [Button],
-      message: String?,
+      message: String? = nil,
       title: String
     ) {
       self.buttons = buttons
@@ -33,7 +33,7 @@ public enum ActionSheetState<Action> {
       public init(
         action: Action,
         label: String,
-        type: `Type`
+        type: `Type` = .default
       ) {
         self.action = action
         self.label = label

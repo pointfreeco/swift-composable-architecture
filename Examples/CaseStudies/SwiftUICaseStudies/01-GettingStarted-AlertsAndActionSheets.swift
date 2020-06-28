@@ -52,13 +52,11 @@ let AlertAndSheetReducer = Reducer<
           ),
           .init(
             action: .incrementButtonTapped,
-            label: "Increment",
-            type: .default
+            label: "Increment"
           ),
           .init(
             action: .decrementButtonTapped,
-            label: "Decrement",
-            type: .default
+            label: "Decrement"
           ),
         ],
         message: "This is an action sheet.",
@@ -82,8 +80,7 @@ let AlertAndSheetReducer = Reducer<
         ),
         secondaryButton: .init(
           action: .incrementButtonTapped,
-          label: "Increment",
-          type: .default
+          label: "Increment"
         ),
         title: "Aert!"
       )
