@@ -62,7 +62,7 @@ import SwiftUI
 ///       }
 ///     }
 ///
-/// And then, in your view you can use the new `.sheet(_:send:dismiss:)` method on `View` in order
+/// And then, in your view you can use the `.alert(_:send:dismiss:)` method on `View` in order
 /// to present the alert in a way that works best with the Composable Architecture:
 ///
 ///     Button("Delete") { viewStore.send(.deleteTapped) }

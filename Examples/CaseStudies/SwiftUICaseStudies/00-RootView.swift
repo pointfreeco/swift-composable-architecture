@@ -64,10 +64,10 @@ struct RootView: View {
 
           NavigationLink(
             "Alerts and Action Sheets",
-            destination: AlertsAndActionSheetsView(
+            destination: AlertAndSheetView(
               store: .init(
                 initialState: .init(),
-                reducer: alertsAndActionSheetsReducer,
+                reducer: AlertAndSheetReducer,
                 environment: .init()
               )
             )

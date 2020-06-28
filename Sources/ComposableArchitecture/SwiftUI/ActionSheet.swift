@@ -1,5 +1,11 @@
 import SwiftUI
 
+/// 
+@available(iOS 13, *)
+@available(macCatalyst 13, *)
+@available(macOS, unavailable)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
 public enum ActionSheetState<Action> {
   case dismissed
   case show(ActionSheet)
@@ -18,38 +24,78 @@ public enum ActionSheetState<Action> {
       self.message = message
       self.title = title
     }
-  }
 
-  public struct Button {
-    public var action: Action
-    public var label: String
-    public var type: `Type`
+    public struct Button {
+      public var action: Action
+      public var label: String
+      public var type: `Type`
 
-    public init(
-      action: Action,
-      label: String,
-      type: `Type`
-    ) {
-      self.action = action
-      self.label = label
-      self.type = type
-    }
+      public init(
+        action: Action,
+        label: String,
+        type: `Type`
+      ) {
+        self.action = action
+        self.label = label
+        self.type = type
+      }
 
-    public enum `Type` {
-      case cancel
-      case `default`
-      case destructive
+      public enum `Type` {
+        case cancel
+        case `default`
+        case destructive
+      }
     }
   }
 }
 
+@available(iOS 13, *)
+@available(macCatalyst 13, *)
+@available(macOS, unavailable)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
 extension ActionSheetState: Equatable where Action: Equatable {}
-extension ActionSheetState: Hashable where Action: Hashable {}
-extension ActionSheetState.ActionSheet: Equatable where Action: Equatable {}
-extension ActionSheetState.ActionSheet: Hashable where Action: Hashable {}
-extension ActionSheetState.Button: Equatable where Action: Equatable {}
-extension ActionSheetState.Button: Hashable where Action: Hashable {}
 
+@available(iOS 13, *)
+@available(macCatalyst 13, *)
+@available(macOS, unavailable)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
+extension ActionSheetState: Hashable where Action: Hashable {}
+
+@available(iOS 13, *)
+@available(macCatalyst 13, *)
+@available(macOS, unavailable)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
+extension ActionSheetState.ActionSheet: Equatable where Action: Equatable {}
+
+@available(iOS 13, *)
+@available(macCatalyst 13, *)
+@available(macOS, unavailable)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
+extension ActionSheetState.ActionSheet: Hashable where Action: Hashable {}
+
+@available(iOS 13, *)
+@available(macCatalyst 13, *)
+@available(macOS, unavailable)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
+extension ActionSheetState.ActionSheet.Button: Equatable where Action: Equatable {}
+
+@available(iOS 13, *)
+@available(macCatalyst 13, *)
+@available(macOS, unavailable)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
+extension ActionSheetState.ActionSheet.Button: Hashable where Action: Hashable {}
+
+@available(iOS 13, *)
+@available(macCatalyst 13, *)
+@available(macOS, unavailable)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
 extension ActionSheetState.ActionSheet: Identifiable where Action: Hashable {
   public var id: Self { self }
 }
@@ -63,6 +109,11 @@ extension View {
   ///   should be sent to.
   ///   - dismissal: An action to send when the alert is dismissed through non-user actions, such
   ///   as when an alert is automatically dismissed by the system.
+  @available(iOS 13, *)
+  @available(macCatalyst 13, *)
+  @available(macOS, unavailable)
+  @available(tvOS 13, *)
+  @available(watchOS 6, *)
   public func actionSheet<Action>(
     _ state: ActionSheetState<Action>,
     send: @escaping (Action) -> Void,
@@ -88,7 +139,12 @@ extension View {
   }
 }
 
-extension ActionSheetState.Button {
+@available(iOS 13, *)
+@available(macCatalyst 13, *)
+@available(macOS, unavailable)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
+extension ActionSheetState.ActionSheet.Button {
   fileprivate func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.Alert.Button {
     switch self.type {
     case .cancel:
@@ -101,6 +157,11 @@ extension ActionSheetState.Button {
   }
 }
 
+@available(iOS 13, *)
+@available(macCatalyst 13, *)
+@available(macOS, unavailable)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
 extension ActionSheetState.ActionSheet {
   fileprivate func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.ActionSheet {
 

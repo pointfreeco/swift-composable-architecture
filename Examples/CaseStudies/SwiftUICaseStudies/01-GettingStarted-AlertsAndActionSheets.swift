@@ -19,13 +19,13 @@ private let readMe = """
   with alerts and action sheets in your application
   """
 
-struct AlertsAndActionSheetsState: Equatable {
-  var actionSheet = ActionSheetState<AlertsAndActionSheetsAction>.dismissed
-  var alert = AlertState<AlertsAndActionSheetsAction>.dismissed
+struct AlertAndSheetState: Equatable {
+  var actionSheet = ActionSheetState<AlertAndSheetAction>.dismissed
+  var alert = AlertState<AlertAndSheetAction>.dismissed
   var count = 0
 }
 
-enum AlertsAndActionSheetsAction: Equatable {
+enum AlertAndSheetAction: Equatable {
   case actionSheetButtonTapped
   case actionSheetCancelTapped
   case alertButtonTapped
@@ -34,10 +34,10 @@ enum AlertsAndActionSheetsAction: Equatable {
   case incrementButtonTapped
 }
 
-struct AlertsAndActionSheetsEnvironment {}
+struct AlertAndSheetEnvironment {}
 
-let alertsAndActionSheetsReducer = Reducer<
-  AlertsAndActionSheetsState, AlertsAndActionSheetsAction, AlertsAndActionSheetsEnvironment
+let AlertAndSheetReducer = Reducer<
+  AlertAndSheetState, AlertAndSheetAction, AlertAndSheetEnvironment
 > { state, action, _ in
 
   switch action {
@@ -104,13 +104,13 @@ let alertsAndActionSheetsReducer = Reducer<
   }
 }
 
-struct AlertsAndActionSheetsView: View {
-  let store: Store<AlertsAndActionSheetsState, AlertsAndActionSheetsAction>
+struct AlertAndSheetView: View {
+  let store: Store<AlertAndSheetState, AlertAndSheetAction>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(template: readMe, .caption).textCase(.none)) {
+        Section(header: Text(template: readMe, .caption)) {
           Text("Count: \(viewStore.count)")
 
           Button("Alert") { viewStore.send(.alertButtonTapped) }
@@ -129,17 +129,17 @@ struct AlertsAndActionSheetsView: View {
         }
       }
     }
-    .navigationTitle("Alerts & Action Sheets")
+    .navigationBarTitle("Alerts & Action Sheets")
   }
 }
 
-struct AlertsAndActionSheets_Previews: PreviewProvider {
+struct AlertAndSheet_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
-      AlertsAndActionSheetsView(
+      AlertAndSheetView(
         store: .init(
           initialState: .init(),
-          reducer: alertsAndActionSheetsReducer,
+          reducer: AlertAndSheetReducer,
           environment: .init()
         )
       )
