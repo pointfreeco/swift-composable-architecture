@@ -67,6 +67,7 @@ test-workspace:
 		-destination platform="$(PLATFORM_IOS)"
 
 format:
-	swift format --in-place --recursive ./Package.swift ./Sources ./Tests
+	swift format --in-place --recursive \
+		./Examples ./Package.swift ./Sources ./Tests
 
 .PHONY: format test-all test-swift test-workspace

@@ -179,11 +179,11 @@ extension View {
           case let .show(alert):
             return alert
           }
-      },
+        },
         set: {
           guard $0 == nil else { return }
           send(dismissal)
-      }),
+        }),
       content: { $0.toSwiftUI(send: send) }
     )
   }

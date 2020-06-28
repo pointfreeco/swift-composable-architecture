@@ -54,7 +54,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
     action: /VoiceMemosAction.voiceMemo(index:action:),
     environment: {
       VoiceMemoEnvironment(audioPlayerClient: $0.audioPlayerClient, mainQueue: $0.mainQueue)
-  }),
+    }),
   .init { state, action, environment in
     struct RecorderId: Hashable {}
     struct RecorderTimerId: Hashable {}

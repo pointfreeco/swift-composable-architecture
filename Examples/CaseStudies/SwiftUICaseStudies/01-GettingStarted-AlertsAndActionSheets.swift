@@ -36,7 +36,9 @@ enum AlertsAndActionSheetsAction: Equatable {
 
 struct AlertsAndActionSheetsEnvironment {}
 
-let alertsAndActionSheetsReducer = Reducer<AlertsAndActionSheetsState, AlertsAndActionSheetsAction, AlertsAndActionSheetsEnvironment> { state, action, _ in
+let alertsAndActionSheetsReducer = Reducer<
+  AlertsAndActionSheetsState, AlertsAndActionSheetsAction, AlertsAndActionSheetsEnvironment
+> { state, action, _ in
 
   switch action {
   case .actionSheetButtonTapped:
@@ -134,13 +136,13 @@ struct AlertsAndActionSheetsView: View {
 struct AlertsAndActionSheets_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
-    AlertsAndActionSheetsView(
-      store: .init(
-        initialState: .init(),
-        reducer: alertsAndActionSheetsReducer,
-        environment: .init()
+      AlertsAndActionSheetsView(
+        store: .init(
+          initialState: .init(),
+          reducer: alertsAndActionSheetsReducer,
+          environment: .init()
+        )
       )
-    )
     }
   }
 }

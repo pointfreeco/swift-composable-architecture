@@ -178,8 +178,8 @@ struct AppView_Previews: PreviewProvider {
     // sends a bunch of data on some sine curves.
     var isStarted = false
     let mockMotionManager = MotionManager.mock(
-      create: { _ in .fireAndForget { } },
-      destroy: { _ in .fireAndForget { } },
+      create: { _ in .fireAndForget {} },
+      destroy: { _ in .fireAndForget {} },
       deviceMotion: { _ in nil },
       startDeviceMotionUpdates: { _, _, _ in
         isStarted = true
