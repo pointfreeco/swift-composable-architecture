@@ -82,7 +82,7 @@ let AlertAndSheetReducer = Reducer<
           action: .incrementButtonTapped,
           label: "Increment"
         ),
-        title: "Aert!"
+        title: "Alert!"
       )
     )
     return .none
@@ -92,10 +92,13 @@ let AlertAndSheetReducer = Reducer<
     return .none
 
   case .decrementButtonTapped:
+    state.actionSheet = .dismissed
     state.count -= 1
     return .none
 
   case .incrementButtonTapped:
+    state.actionSheet = .dismissed
+    state.alert = .dismissed
     state.count += 1
     return .none
   }
