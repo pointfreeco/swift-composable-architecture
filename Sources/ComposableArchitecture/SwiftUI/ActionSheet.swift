@@ -286,7 +286,6 @@ extension ActionSheetState.ActionSheet.Button {
 @available(watchOS 6, *)
 extension ActionSheetState.ActionSheet {
   fileprivate func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.ActionSheet {
-
     SwiftUI.ActionSheet(
       title: Text(self.title),
       message: self.message.map { Text($0) },
