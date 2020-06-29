@@ -77,8 +77,7 @@ import SwiftUI
 ///
 ///     Button("Info") { viewStore.send(.infoTapped) }
 ///       .actionSheet(
-///         viewStore.actionSheet,
-///         send: viewStore.send,
+///         self.store.scope(state: { $0.actionSheet }),
 ///         dismiss: .cancelTapped
 ///       )
 ///
@@ -226,26 +225,24 @@ extension View {
   /// Displays an action sheet when `state` is in the `.show` state.
   ///
   /// - Parameters:
-  ///   - state: A value that describes if the action sheet is shown or dismissed.
-  ///   - send: A reference to the view store's `send` method for which actions from this action
-  ///   sheet should be sent to.
+  ///   - store: A store that describes if the action sheet is shown or dismissed.
   ///   - dismissal: An action to send when the action sheet is dismissed through non-user actions,
-  ///   such as when an action sheet is automatically dismissed by the system.
+  ///     such as when an action sheet is automatically dismissed by the system.
   @available(iOS 13, *)
   @available(macCatalyst 13, *)
   @available(macOS, unavailable)
   @available(tvOS 13, *)
   @available(watchOS 6, *)
   public func actionSheet<Action>(
-    _ state: ActionSheetState<Action>,
-    send: @escaping (Action) -> Void,
-    dismissal: Action
+    _ store: Store<ActionSheetState<Action>, Action>,
+    dismiss: Action
   ) -> some View where Action: Hashable {
 
-    self.actionSheet(
+    let viewStore = ViewStore(store)
+    return self.actionSheet(
       item: Binding<ActionSheetState<Action>.ActionSheet?>(
         get: {
-          switch state {
+          switch viewStore.state {
           case .dismissed:
             return nil
           case let .show(actionSheet):
@@ -254,9 +251,9 @@ extension View {
         },
         set: {
           guard $0 == nil else { return }
-          send(dismissal)
+          viewStore.send(dismiss)
         }),
-      content: { $0.toSwiftUI(send: send) }
+      content: { $0.toSwiftUI(send: viewStore.send) }
     )
   }
 }

@@ -5,15 +5,15 @@ private let readMe = """
   This demonstrates how to best handle alerts and action sheets in the Composable Architecture.
 
   Because the library demands that all data flow through the application in a single direction, \
-  we cannot leverage SwiftUI's two-way bindings since they allow making changes to state without \
-  going through a reducer. This means we can't directly use the standard API for display alerts \
-  and sheets.
+  we cannot leverage SwiftUI's two-way bindings because they can make changes to state without \
+  going through a reducer. This means we can't directly use the standard API to display alerts and \
+  sheets.
 
   However, the library comes with two types, `AlertState` and `ActionSheetState`, which can be \
-  constructed from reducers that control whether or not an alert or action sheet is displayed. \
+  constructed from reducers and control whether or not an alert or action sheet is displayed. \
   Further, it automatically handles sending actions when you tap their buttons, which allows you \
-  to properly handle their functionality in the reducer rather than in two-way bindings and \
-  action closures.
+  to properly handle their functionality in the reducer rather than in two-way bindings and action \
+  closures.
 
   The benefit of doing this is that you can get full test coverage on how a user interacts with \
   with alerts and action sheets in your application
@@ -115,16 +115,14 @@ struct AlertAndSheetView: View {
 
           Button("Alert") { viewStore.send(.alertButtonTapped) }
             .alert(
-              viewStore.alert,
-              send: viewStore.send,
-              dismissal: .alertCancelTapped
+              self.store.scope(state: { $0.alert }),
+              dismiss: .alertCancelTapped
             )
 
           Button("Action sheet") { viewStore.send(.actionSheetButtonTapped) }
             .actionSheet(
-              viewStore.actionSheet,
-              send: viewStore.send,
-              dismissal: .actionSheetCancelTapped
+              self.store.scope(state: { $0.actionSheet }),
+              dismiss: .actionSheetCancelTapped
             )
         }
       }

@@ -158,21 +158,19 @@ extension View {
   /// Displays an alert when `state` is in the `.show` state.
   ///
   /// - Parameters:
-  ///   - state: A value that describes if the alert is shown or dismissed.
-  ///   - send: A reference to the view store's `send` method for which actions from this alert
-  ///   should be sent to.
+  ///   - store: A store that describes if the alert is shown or dismissed.
   ///   - dismissal: An action to send when the alert is dismissed through non-user actions, such
-  ///   as when an alert is automatically dismissed by the system.
+  ///     as when an alert is automatically dismissed by the system.
   public func alert<Action>(
-    _ state: AlertState<Action>,
-    send: @escaping (Action) -> Void,
-    dismissal: Action
+    _ store: Store<AlertState<Action>, Action>,
+    dismiss: Action
   ) -> some View where Action: Hashable {
 
-    self.alert(
+    let viewStore = ViewStore(store)
+    return self.alert(
       item: Binding<AlertState<Action>.Alert?>(
         get: {
-          switch state {
+          switch viewStore.state {
           case .dismissed:
             return nil
           case let .show(alert):
@@ -181,9 +179,9 @@ extension View {
         },
         set: {
           guard $0 == nil else { return }
-          send(dismissal)
+          viewStore.send(dismiss)
         }),
-      content: { $0.toSwiftUI(send: send) }
+      content: { $0.toSwiftUI(send: viewStore.send) }
     )
   }
 }

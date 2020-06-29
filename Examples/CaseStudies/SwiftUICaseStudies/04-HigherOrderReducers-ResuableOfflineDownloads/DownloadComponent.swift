@@ -178,9 +178,8 @@ struct DownloadComponent<ID: Equatable>: View {
         }
       }
       .alert(
-        viewStore.alert,
-        send: { viewStore.send(.alert($0)) },
-        dismissal: .dismiss
+        self.store.scope(state: { $0.alert }, action: DownloadComponentAction.alert),
+        dismiss: .dismiss
       )
     }
   }
