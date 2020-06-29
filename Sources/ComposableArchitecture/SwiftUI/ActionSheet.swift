@@ -13,7 +13,7 @@ import SwiftUI
 ///
 /// To use this API, you model all the action sheet actions in your domain's action enum:
 ///
-///     enum Action {
+///     enum AppAction: Hashable {
 ///       case cancelTapped
 ///       case deleteTapped
 ///       case favoriteTapped
@@ -53,7 +53,7 @@ import SwiftUI
 ///             buttons: [
 ///               .default("Favorite", send: .favoriteTapped),
 ///               .destructive("Delete", send: .deleteTapped),
-///               .cancel(send: .cancelTapped),
+///               .cancel(),
 ///             ]
 ///           )
 ///         return .none

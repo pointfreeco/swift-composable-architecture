@@ -13,7 +13,7 @@ import SwiftUI
 ///
 /// To use this API, you model all the alert actions in your domain's action enum:
 ///
-///     enum Action {
+///     enum AppAction: Hashable {
 ///       case cancelTapped
 ///       case confirmTapped
 ///       case deleteTapped
@@ -47,7 +47,7 @@ import SwiftUI
 ///             title: "Delete",
 ///             message: "Are you sure you want to delete this? It cannot be undone.",
 ///             primaryButton: .default("Confirm", send: .confirmTapped),
-///             secondaryButton: .cancel(send: .cancelTapped)
+///             secondaryButton: .cancel()
 ///           )
 ///         return .none
 ///       }
