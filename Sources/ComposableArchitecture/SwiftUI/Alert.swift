@@ -26,6 +26,7 @@ import SwiftUI
 ///
 ///     struct AppState {
 ///       var alert = AlertState<AppAction>.dismissed
+///
 ///       // Your other state
 ///     }
 ///

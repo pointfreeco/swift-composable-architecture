@@ -27,6 +27,7 @@ import SwiftUI
 ///
 ///     struct AppState {
 ///       var actionSheet = ActionSheetState<AppAction>.dismissed
+///
 ///       // Your other state
 ///     }
 ///
@@ -86,19 +87,9 @@ import SwiftUI
 ///         $0.actionSheet = .show(
 ///           title: "What would you like to do?",
 ///           buttons: [
-///             .init(
-///               action: .favoriteTapped,
-///               label: "Favorite"
-///             ),
-///             .init(
-///               action: .deleteTapped,
-///               label: "Delete"
-///             ),
-///             .init(
-///               action: .cancelTapped,
-///               label: "Cancel",
-///               type: .cancel
-///             )
+///             .default("Favorite", send: .favoriteTapped),
+///             .destructive("Delete", send: .deleteTapped),
+///             .cancel(),
 ///           ]
 ///         )
 ///       },
