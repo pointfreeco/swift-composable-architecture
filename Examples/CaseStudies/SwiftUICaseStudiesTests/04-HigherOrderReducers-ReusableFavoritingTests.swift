@@ -65,13 +65,13 @@ class ReusableComponentsFavoritingTests: XCTestCase {
       .receive(
         .episode(index: 2, action: .favorite(.response(.failure(FavoriteError(error: error)))))
       ) {
-        $0.episodes[2].alert = .show(
+        $0.episodes[2].alert = .init(
           title: "The operation couldn’t be completed. (co.pointfree error -1.)"
         )
       },
 
       .send(.episode(index: 2, action: .favorite(.alertDismissed))) {
-        $0.episodes[2].alert = .dismissed
+        $0.episodes[2].alert = nil
         $0.episodes[2].isFavorite = false
       }
     )

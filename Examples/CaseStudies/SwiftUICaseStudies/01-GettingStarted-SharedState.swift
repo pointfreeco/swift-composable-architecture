@@ -21,7 +21,7 @@ struct SharedState: Equatable {
   enum Tab { case counter, profile }
 
   struct CounterState: Equatable {
-    var alert = AlertState<SharedStateAction.CounterAction>.dismissed
+    var alert: AlertState<SharedStateAction.CounterAction>?
     var count = 0
     var maxCount = 0
     var minCount = 0
@@ -89,7 +89,7 @@ let sharedStateCounterReducer = Reducer<
 > { state, action, _ in
   switch action {
   case .alertDismissed:
-    state.alert = .dismissed
+    state.alert = nil
     return .none
 
   case .decrementButtonTapped:
@@ -105,7 +105,7 @@ let sharedStateCounterReducer = Reducer<
     return .none
 
   case .isPrimeButtonTapped:
-    state.alert = .show(
+    state.alert = .init(
       title: isPrime(state.count)
         ? "👍 The number \(state.count) is prime!"
         : "👎 The number \(state.count) is not prime :("

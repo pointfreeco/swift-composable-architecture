@@ -16,7 +16,7 @@ private let readMe = """
   """
 
 struct MultipleDependenciesState: Equatable {
-  var alert = AlertState<MultipleDependenciesAction>.dismissed
+  var alert: AlertState<MultipleDependenciesAction>?
   var dateString: String?
   var fetchedNumberString: String?
   var isFetchInFlight = false
@@ -50,11 +50,11 @@ let multipleDependenciesReducer = Reducer<
       .eraseToEffect()
 
   case .alertDelayReceived:
-    state.alert = .show(title: "Here's an alert after a delay!")
+    state.alert = .init(title: "Here's an alert after a delay!")
     return .none
 
   case .alertDismissed:
-    state.alert = .dismissed
+    state.alert = nil
     return .none
 
   case .dateButtonTapped:

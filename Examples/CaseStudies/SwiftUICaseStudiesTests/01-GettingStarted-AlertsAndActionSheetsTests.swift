@@ -15,7 +15,7 @@ class AlertsAndActionSheetsTests: XCTestCase {
 
     store.assert(
       .send(.alertButtonTapped) {
-        $0.alert = .show(
+        $0.alert = .init(
           title: "Alert!",
           message: "This is an alert",
           primaryButton: .cancel(),
@@ -23,7 +23,7 @@ class AlertsAndActionSheetsTests: XCTestCase {
         )
       },
       .send(.incrementButtonTapped) {
-        $0.alert = .dismissed
+        $0.alert = nil
         $0.count = 1
       }
     )
@@ -38,7 +38,7 @@ class AlertsAndActionSheetsTests: XCTestCase {
 
     store.assert(
       .send(.actionSheetButtonTapped) {
-        $0.actionSheet = .show(
+        $0.actionSheet = .init(
           title: "Action sheet",
           message: "This is an action sheet.",
           buttons: [
@@ -49,7 +49,7 @@ class AlertsAndActionSheetsTests: XCTestCase {
         )
       },
       .send(.incrementButtonTapped) {
-        $0.actionSheet = .dismissed
+        $0.actionSheet = nil
         $0.count = 1
       }
     )

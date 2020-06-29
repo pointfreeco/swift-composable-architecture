@@ -11,7 +11,7 @@ private let readMe = """
   """
 
 struct WebSocketState: Equatable {
-  var alert = AlertState<WebSocketAction>.dismissed
+  var alert: AlertState<WebSocketAction>?
   var connectivityState = ConnectivityState.disconnected
   var messageToSend = ""
   var receivedMessages: [String] = []
@@ -60,7 +60,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
 
   switch action {
   case .alertDismissed:
-    state.alert = .dismissed
+    state.alert = nil
     return .none
 
   case .connectButtonTapped:
@@ -109,7 +109,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
 
   case let .sendResponse(error):
     if error != nil {
-      state.alert = .show(title: "Could not send socket message. Try again.")
+      state.alert = .init(title: "Could not send socket message. Try again.")
     }
     return .none
 
@@ -121,7 +121,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
     let .webSocket(.didCompleteWithError(error)):
     state.connectivityState = .disconnected
     if error != nil {
-      state.alert = .show(title: "Disconnected from socket for some reason. Try again.")
+      state.alert = .init(title: "Disconnected from socket for some reason. Try again.")
     }
     return .cancel(id: WebSocketId())
 

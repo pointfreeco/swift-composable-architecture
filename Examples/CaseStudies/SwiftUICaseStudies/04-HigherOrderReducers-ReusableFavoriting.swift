@@ -21,7 +21,7 @@ private let readMe = """
 // MARK: - Favorite domain
 
 struct FavoriteState<ID>: Equatable, Identifiable where ID: Hashable {
-  var alert = AlertState<FavoriteAction>.dismissed
+  var alert: AlertState<FavoriteAction>?
   let id: ID
   var isFavorite: Bool
 }
@@ -63,7 +63,7 @@ extension Reducer {
         state, action, environment in
         switch action {
         case .alertDismissed:
-          state.alert = .dismissed
+          state.alert = nil
           state.isFavorite.toggle()
           return .none
 
@@ -78,7 +78,7 @@ extension Reducer {
             .cancellable(id: FavoriteCancelId(id: state.id), cancelInFlight: true)
 
         case let .response(.failure(error)):
-          state.alert = .show(title: error.localizedDescription)
+          state.alert = .init(title: error.localizedDescription)
           return .none
 
         case let .response(.success(isFavorite)):
@@ -110,7 +110,7 @@ struct FavoriteButton<ID>: View where ID: Hashable {
 // MARK: Feature domain -
 
 struct EpisodeState: Equatable, Identifiable {
-  var alert = AlertState<FavoriteAction>.dismissed
+  var alert: AlertState<FavoriteAction>?
   let id: UUID
   var isFavorite: Bool
   let title: String

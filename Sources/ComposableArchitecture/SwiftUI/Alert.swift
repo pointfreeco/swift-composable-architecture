@@ -21,11 +21,11 @@ import SwiftUI
 ///       // Your other actions
 ///     }
 ///
-/// And you model the state for showing the alert in your domain's state, and it can start off in
-/// the `.dismissed` state:
+/// And you model the state for showing the alert in your domain's state, and it can start off
+/// `nil`:
 ///
 ///     struct AppState {
-///       var alert = AlertState<AppAction>.dismissed
+///       var alert = AlertState<AppAction>?
 ///
 ///       // Your other state
 ///     }
@@ -44,7 +44,7 @@ import SwiftUI
 ///           // Do deletion logic...
 ///
 ///         case .deleteTapped:
-///           state.alert = .show(
+///           state.alert = .init(
 ///             title: "Delete",
 ///             message: "Are you sure you want to delete this? It cannot be undone.",
 ///             primaryButton: .default("Confirm", send: .confirmTapped),
@@ -77,7 +77,7 @@ import SwiftUI
 ///
 ///     store.assert(
 ///       .send(.deleteTapped) {
-///         $0.alert = .show(
+///         $0.alert = .init(
 ///           title: "Delete",
 ///           message: "Are you sure you want to delete this? It cannot be undone.",
 ///           primaryButton: .default("Confirm", send: .confirmTapped),
@@ -90,104 +90,69 @@ import SwiftUI
 ///       }
 ///     )
 ///
-public enum AlertState<Action> {
-  case dismissed
-  case show(Alert)
+public struct AlertState<Action> {
+  public var message: String?
+  public var primaryButton: Button?
+  public var secondaryButton: Button?
+  public var title: String
 
-  public static func show(
+  public init(
     title: String,
     message: String? = nil,
-    dismissButton: Alert.Button? = nil
-  ) -> Self {
-    return .show(
-      .init(
-        title: title,
-        message: message,
-        dismissButton: dismissButton
-      )
-    )
+    dismissButton: Button? = nil
+  ) {
+    self.title = title
+    self.message = message
+    self.primaryButton = dismissButton
   }
 
-  public static func show(
+  public init(
     title: String,
     message: String? = nil,
-    primaryButton: Alert.Button,
-    secondaryButton: Alert.Button
-  ) -> Self {
-    return .show(
-      .init(
-        title: title,
-        message: message,
-        primaryButton: primaryButton,
-        secondaryButton: secondaryButton
-      )
-    )
+    primaryButton: Button,
+    secondaryButton: Button
+  ) {
+    self.title = title
+    self.message = message
+    self.primaryButton = primaryButton
+    self.secondaryButton = secondaryButton
   }
 
-  public struct Alert {
-    public var message: String?
-    public var primaryButton: Button?
-    public var secondaryButton: Button?
-    public var title: String
+  public struct Button {
+    public var action: Action?
+    public var type: `Type`
 
-    public init(
-      title: String,
-      message: String? = nil,
-      dismissButton: Button? = nil
-    ) {
-      self.message = message
-      self.primaryButton = dismissButton
-      self.title = title
+    public static func cancel(
+      _ label: String,
+      send action: Action? = nil
+    ) -> Self {
+      Self(action: action, type: .cancel(label: label))
     }
 
-    public init(
-      title: String,
-      message: String? = nil,
-      primaryButton: Button,
-      secondaryButton: Button
-    ) {
-      self.message = message
-      self.primaryButton = primaryButton
-      self.secondaryButton = secondaryButton
-      self.title = title
+    public static func cancel(
+      send action: Action? = nil
+    ) -> Self {
+      Self(action: action, type: .cancel(label: nil))
     }
 
-    public struct Button {
-      public var action: Action?
-      public var type: `Type`
+    public static func `default`(
+      _ label: String,
+      send action: Action? = nil
+    ) -> Self {
+      Self(action: action, type: .default(label: label))
+    }
 
-      public static func cancel(
-        _ label: String,
-        send action: Action? = nil
-      ) -> Self {
-        Self(action: action, type: .cancel(label: label))
-      }
+    public static func destructive(
+      _ label: String,
+      send action: Action? = nil
+    ) -> Self {
+      Self(action: action, type: .destructive(label: label))
+    }
 
-      public static func cancel(
-        send action: Action? = nil
-      ) -> Self {
-        Self(action: action, type: .cancel(label: nil))
-      }
-
-      public static func `default`(
-        _ label: String,
-        send action: Action? = nil
-      ) -> Self {
-        Self(action: action, type: .default(label: label))
-      }
-
-      public static func destructive(
-        _ label: String,
-        send action: Action? = nil
-      ) -> Self {
-        Self(action: action, type: .destructive(label: label))
-      }
-
-      public enum `Type`: Hashable {
-        case cancel(label: String?)
-        case `default`(label: String)
-        case destructive(label: String)
-      }
+    public enum `Type`: Hashable {
+      case cancel(label: String?)
+      case `default`(label: String)
+      case destructive(label: String)
     }
   }
 }
@@ -200,21 +165,14 @@ extension View {
   ///   - dismissal: An action to send when the alert is dismissed through non-user actions, such
   ///     as when an alert is automatically dismissed by the system.
   public func alert<Action>(
-    _ store: Store<AlertState<Action>, Action>,
+    _ store: Store<AlertState<Action>?, Action>,
     dismiss: Action
   ) -> some View where Action: Hashable {
 
     let viewStore = ViewStore(store)
     return self.alert(
-      item: Binding<AlertState<Action>.Alert?>(
-        get: {
-          switch viewStore.state {
-          case .dismissed:
-            return nil
-          case let .show(alert):
-            return alert
-          }
-        },
+      item: Binding<AlertState<Action>?>(
+        get: { viewStore.state },
         set: {
           guard $0 == nil else { return }
           viewStore.send(dismiss)
@@ -226,16 +184,14 @@ extension View {
 
 extension AlertState: Equatable where Action: Equatable {}
 extension AlertState: Hashable where Action: Hashable {}
-extension AlertState.Alert: Equatable where Action: Equatable {}
-extension AlertState.Alert: Hashable where Action: Hashable {}
-extension AlertState.Alert.Button: Equatable where Action: Equatable {}
-extension AlertState.Alert.Button: Hashable where Action: Hashable {}
+extension AlertState.Button: Equatable where Action: Equatable {}
+extension AlertState.Button: Hashable where Action: Hashable {}
 
-extension AlertState.Alert: Identifiable where Action: Hashable {
+extension AlertState: Identifiable where Action: Hashable {
   public var id: Self { self }
 }
 
-extension AlertState.Alert.Button {
+extension AlertState.Button {
   func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.Alert.Button {
     let action = { if let action = self.action { send(action) } }
     switch self.type {
@@ -251,7 +207,7 @@ extension AlertState.Alert.Button {
   }
 }
 
-extension AlertState.Alert {
+extension AlertState {
   fileprivate func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.Alert {
     let title = Text(self.title)
     let message = self.message.map { Text($0) }

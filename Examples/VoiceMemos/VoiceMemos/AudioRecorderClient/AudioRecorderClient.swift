@@ -7,11 +7,11 @@ struct AudioRecorderClient {
   var startRecording: (AnyHashable, URL) -> Effect<Action, Failure>
   var stopRecording: (AnyHashable) -> Effect<Never, Never>
 
-  enum Action: Equatable {
+  enum Action: Hashable {
     case didFinishRecording(successfully: Bool)
   }
 
-  enum Failure: Error, Equatable {
+  enum Failure: Error, Hashable {
     case couldntCreateAudioRecorder
     case couldntActivateAudioSession
     case couldntSetAudioSessionCategory

@@ -19,8 +19,8 @@ private let readMe = """
   """
 
 struct AlertAndSheetState: Equatable {
-  var actionSheet = ActionSheetState<AlertAndSheetAction>.dismissed
-  var alert = AlertState<AlertAndSheetAction>.dismissed
+  var actionSheet: ActionSheetState<AlertAndSheetAction>?
+  var alert: AlertState<AlertAndSheetAction>?
   var count = 0
 }
 
@@ -41,7 +41,7 @@ let AlertAndSheetReducer = Reducer<
 
   switch action {
   case .actionSheetButtonTapped:
-    state.actionSheet = .show(
+    state.actionSheet = .init(
       title: "Action sheet",
       message: "This is an action sheet.",
       buttons: [
@@ -53,11 +53,11 @@ let AlertAndSheetReducer = Reducer<
     return .none
 
   case .actionSheetCancelTapped:
-    state.actionSheet = .dismissed
+    state.actionSheet = nil
     return .none
 
   case .alertButtonTapped:
-    state.alert = .show(
+    state.alert = .init(
       title: "Alert!",
       message: "This is an alert",
       primaryButton: .cancel(),
@@ -66,17 +66,17 @@ let AlertAndSheetReducer = Reducer<
     return .none
 
   case .alertCancelTapped:
-    state.alert = .dismissed
+    state.alert = nil
     return .none
 
   case .decrementButtonTapped:
-    state.actionSheet = .dismissed
+    state.actionSheet = nil
     state.count -= 1
     return .none
 
   case .incrementButtonTapped:
-    state.actionSheet = .dismissed
-    state.alert = .dismissed
+    state.actionSheet = nil
+    state.alert = nil
     state.count += 1
     return .none
   }
