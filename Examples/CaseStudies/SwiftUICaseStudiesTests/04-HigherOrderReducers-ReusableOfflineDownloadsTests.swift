@@ -119,16 +119,9 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       .send(.buttonTapped) {
         $0.alert = .show(
           .init(
-            primaryButton: .init(
-              action: .cancelButtonTapped,
-              label: "Cancel",
-              type: .destructive
-            ),
-            secondaryButton: .init(
-              action: .nevermindButtonTapped,
-              label: "Nevermind"
-            ),
-            title: "Do you want to cancel downloading this map?"
+            title: "Do you want to cancel downloading this map?",
+            primaryButton: .cancel(send: .cancelButtonTapped),
+            secondaryButton: .default("Nevermind", send: .nevermindButtonTapped)
           )
         )
       },
@@ -167,16 +160,9 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       .send(.buttonTapped) {
         $0.alert = .show(
           .init(
-            primaryButton: .init(
-              action: .cancelButtonTapped,
-              label: "Cancel",
-              type: .destructive
-            ),
-            secondaryButton: .init(
-              action: .nevermindButtonTapped,
-              label: "Nevermind"
-            ),
-            title: "Do you want to cancel downloading this map?"
+            title: "Do you want to cancel downloading this map?",
+            primaryButton: .cancel(send: .cancelButtonTapped),
+            secondaryButton: .default("Nevermind", send: .nevermindButtonTapped)
           )
         )
       },
@@ -212,16 +198,9 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       .send(.buttonTapped) {
         $0.alert = .show(
           .init(
-            primaryButton: .init(
-              action: .deleteButtonTapped,
-              label: "Delete",
-              type: .destructive
-            ),
-            secondaryButton: .init(
-              action: .nevermindButtonTapped,
-              label: "Nevermind"
-            ),
-            title: "Do you want to delete this map from your offline storage?"
+            title: "Do you want to delete this map from your offline storage?",
+            primaryButton: .destructive("Delete", send: .deleteButtonTapped),
+            secondaryButton: .default("Nevermind", send: .nevermindButtonTapped)
           )
         )
       },

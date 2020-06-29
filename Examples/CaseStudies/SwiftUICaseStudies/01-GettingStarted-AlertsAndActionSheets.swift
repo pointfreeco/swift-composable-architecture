@@ -44,23 +44,13 @@ let AlertAndSheetReducer = Reducer<
   case .actionSheetButtonTapped:
     state.actionSheet = .show(
       .init(
-        buttons: [
-          .init(
-            action: .actionSheetCancelTapped,
-            label: "Cancel",
-            type: .cancel
-          ),
-          .init(
-            action: .incrementButtonTapped,
-            label: "Increment"
-          ),
-          .init(
-            action: .decrementButtonTapped,
-            label: "Decrement"
-          ),
-        ],
+        title: "Action sheet",
         message: "This is an action sheet.",
-        title: "Action sheet"
+        buttons: [
+          .cancel(),
+          .default("Increment", send: .incrementButtonTapped),
+          .default("Decrement", send: .decrementButtonTapped),
+        ]
       )
     )
     return .none
@@ -74,14 +64,8 @@ let AlertAndSheetReducer = Reducer<
       .init(
         title: "Alert!",
         message: "This is an alert",
-        primaryButton: .cancel(
-          "Cancel",
-          send: .alertCancelTapped
-        ),
-        secondaryButton: .default(
-          "Increment",
-          send: .incrementButtonTapped
-        )
+        primaryButton: .cancel(),
+        secondaryButton: .default("Increment", send: .incrementButtonTapped)
       )
     )
     return .none

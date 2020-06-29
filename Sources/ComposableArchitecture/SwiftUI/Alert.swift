@@ -45,17 +45,10 @@ import SwiftUI
 ///         case .deleteTapped:
 ///           state.alert = .show(
 ///             .init(
+///               title: "Delete",
 ///               message: "Are you sure you want to delete this? It cannot be undone.",
-///               primaryButton: .init(
-///                 action: .confirmTapped,
-///                 label: "Confirm"
-///               ),
-///               secondaryButton: .init(
-///                 action: .cancelTapped,
-///                 label: "Cancel",
-///                 type: .cancel
-///               ),
-///               title: "Delete"
+///               primaryButton: .default("Confirm", send: .confirmTapped),
+///               secondaryButton: .cancel(send: .cancelTapped)
 ///             )
 ///           )
 ///         return .none
@@ -67,8 +60,7 @@ import SwiftUI
 ///
 ///     Button("Delete") { viewStore.send(.deleteTapped) }
 ///       .alert(
-///         viewStore.alert,
-///         send: viewStore.send,
+///         viewStore.scope(state: \.alert),
 ///         dismiss: .cancelTapped
 ///       )
 ///
@@ -88,17 +80,10 @@ import SwiftUI
 ///       .send(.deleteTapped) {
 ///         $0.alert = .show(
 ///           .init(
+///             title: "Delete",
 ///             message: "Are you sure you want to delete this? It cannot be undone.",
-///             primaryButton: .init(
-///               action: .confirmTapped,
-///               label: "Confirm"
-///             ),
-///             secondaryButton: .init(
-///               action: .cancelTapped,
-///               label: "Cancel",
-///               type: .cancel
-///             ),
-///             title: "Delete"
+///             primaryButton: .default("Confirm", send: .confirmTapped),
+///             secondaryButton: .cancel(send: .cancelTapped)
 ///           )
 ///         )
 ///       },
@@ -141,35 +126,40 @@ public enum AlertState<Action> {
     }
 
     public struct Button {
-      public var action: Action
-      public var label: String
+      public var action: Action?
       public var type: `Type`
 
       public static func cancel(
         _ label: String,
-        send action: Action
+        send action: Action? = nil
       ) -> Self {
-        Self(action: action, label: label, type: .cancel)
+        Self(action: action, type: .cancel(label: label))
+      }
+
+      public static func cancel(
+        send action: Action? = nil
+      ) -> Self {
+        Self(action: action, type: .cancel(label: nil))
       }
 
       public static func `default`(
         _ label: String,
-        send action: Action
+        send action: Action? = nil
       ) -> Self {
-        Self(action: action, label: label, type: .default)
+        Self(action: action, type: .default(label: label))
       }
 
       public static func destructive(
         _ label: String,
-        send action: Action
+        send action: Action? = nil
       ) -> Self {
-        Self(action: action, label: label, type: .destructive)
+        Self(action: action, type: .destructive(label: label))
       }
 
-      public enum `Type` {
-        case cancel
-        case `default`
-        case destructive
+      public enum `Type`: Hashable {
+        case cancel(label: String?)
+        case `default`(label: String)
+        case destructive(label: String)
       }
     }
   }
@@ -219,14 +209,17 @@ extension AlertState.Alert: Identifiable where Action: Hashable {
 }
 
 extension AlertState.Alert.Button {
-  fileprivate func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.Alert.Button {
+  func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.Alert.Button {
+    let action = { if let action = self.action { send(action) } }
     switch self.type {
-    case .cancel:
-      return .cancel(Text(self.label)) { send(self.action) }
-    case .default:
-      return .default(Text(self.label)) { send(self.action) }
-    case .destructive:
-      return .destructive(Text(self.label)) { send(self.action) }
+    case let .cancel(.some(label)):
+      return .cancel(Text(label), action: action)
+    case .cancel(.none):
+      return .cancel(action)
+    case let .default(label):
+      return .default(Text(label), action: action)
+    case let .destructive(label):
+      return .destructive(Text(label), action: action)
     }
   }
 }

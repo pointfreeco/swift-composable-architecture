@@ -51,19 +51,9 @@ import SwiftUI
 ///           state.actionSheet = .show(
 ///             .init(
 ///               buttons: [
-///                 .init(
-///                   action: .favoriteTapped,
-///                   label: "Favorite"
-///                 ),
-///                 .init(
-///                   action: .deleteTapped,
-///                   label: "Delete"
-///                 ),
-///                 .init(
-///                   action: .cancelTapped,
-///                   label: "Cancel",
-///                   type: .cancel
-///                 )
+///                 .default("Favorite", send: .favoriteTapped),
+///                 .destructive("Delete", send: .deleteTapped),
+///                 .cancel(send: .cancelTapped),
 ///               ],
 ///               title: "What would you like to do?"
 ///             )
@@ -137,36 +127,16 @@ public enum ActionSheetState<Action> {
     public var title: String
 
     public init(
-      buttons: [Button],
+      title: String,
       message: String? = nil,
-      title: String
+      buttons: [Button]
     ) {
       self.buttons = buttons
       self.message = message
       self.title = title
     }
 
-    public struct Button {
-      public var action: Action
-      public var label: String
-      public var type: `Type`
-
-      public init(
-        action: Action,
-        label: String,
-        type: `Type` = .default
-      ) {
-        self.action = action
-        self.label = label
-        self.type = type
-      }
-
-      public enum `Type` {
-        case cancel
-        case `default`
-        case destructive
-      }
-    }
+    public typealias Button = AlertState<Action>.Alert.Button
   }
 }
 
@@ -197,20 +167,6 @@ extension ActionSheetState.ActionSheet: Equatable where Action: Equatable {}
 @available(tvOS 13, *)
 @available(watchOS 6, *)
 extension ActionSheetState.ActionSheet: Hashable where Action: Hashable {}
-
-@available(iOS 13, *)
-@available(macCatalyst 13, *)
-@available(macOS, unavailable)
-@available(tvOS 13, *)
-@available(watchOS 6, *)
-extension ActionSheetState.ActionSheet.Button: Equatable where Action: Equatable {}
-
-@available(iOS 13, *)
-@available(macCatalyst 13, *)
-@available(macOS, unavailable)
-@available(tvOS 13, *)
-@available(watchOS 6, *)
-extension ActionSheetState.ActionSheet.Button: Hashable where Action: Hashable {}
 
 @available(iOS 13, *)
 @available(macCatalyst 13, *)
@@ -255,24 +211,6 @@ extension View {
         }),
       content: { $0.toSwiftUI(send: viewStore.send) }
     )
-  }
-}
-
-@available(iOS 13, *)
-@available(macCatalyst 13, *)
-@available(macOS, unavailable)
-@available(tvOS 13, *)
-@available(watchOS 6, *)
-extension ActionSheetState.ActionSheet.Button {
-  fileprivate func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.ActionSheet.Button {
-    switch self.type {
-    case .cancel:
-      return .cancel(Text(self.label)) { send(self.action) }
-    case .default:
-      return .default(Text(self.label)) { send(self.action) }
-    case .destructive:
-      return .destructive(Text(self.label)) { send(self.action) }
-    }
   }
 }
 

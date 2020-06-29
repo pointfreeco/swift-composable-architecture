@@ -17,17 +17,10 @@ class AlertsAndActionSheetsTests: XCTestCase {
       .send(.alertButtonTapped) {
         $0.alert = .show(
           .init(
+            title: "Alert!",
             message: "This is an alert",
-            primaryButton: .init(
-              action: .alertCancelTapped,
-              label: "Cancel",
-              type: .cancel
-            ),
-            secondaryButton: .init(
-              action: .incrementButtonTapped,
-              label: "Increment"
-            ),
-            title: "Alert!"
+            primaryButton: .cancel(),
+            secondaryButton: .default("Increment", send: .incrementButtonTapped)
           )
         )
       },
@@ -49,23 +42,13 @@ class AlertsAndActionSheetsTests: XCTestCase {
       .send(.actionSheetButtonTapped) {
         $0.actionSheet = .show(
           .init(
-            buttons: [
-              .init(
-                action: .actionSheetCancelTapped,
-                label: "Cancel",
-                type: .cancel
-              ),
-              .init(
-                action: .incrementButtonTapped,
-                label: "Increment"
-              ),
-              .init(
-                action: .decrementButtonTapped,
-                label: "Decrement"
-              ),
-            ],
+            title: "Action sheet",
             message: "This is an action sheet.",
-            title: "Action sheet"
+            buttons: [
+              .cancel(),
+              .default("Increment", send: .incrementButtonTapped),
+              .default("Decrement", send: .decrementButtonTapped),
+            ]
           )
         )
       },
