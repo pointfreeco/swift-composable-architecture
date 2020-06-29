@@ -18,6 +18,6 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Run swift-format
-          branch: 'master'
+          branch: 'main'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
