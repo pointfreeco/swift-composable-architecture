@@ -72,17 +72,16 @@ let AlertAndSheetReducer = Reducer<
   case .alertButtonTapped:
     state.alert = .show(
       .init(
+        title: "Alert!",
         message: "This is an alert",
-        primaryButton: .init(
-          action: .alertCancelTapped,
-          label: "Cancel",
-          type: .cancel
+        primaryButton: .cancel(
+          "Cancel",
+          send: .alertCancelTapped
         ),
-        secondaryButton: .init(
-          action: .incrementButtonTapped,
-          label: "Increment"
-        ),
-        title: "Alert!"
+        secondaryButton: .default(
+          "Increment",
+          send: .incrementButtonTapped
+        )
       )
     )
     return .none

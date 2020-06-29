@@ -119,31 +119,29 @@ extension Reducer {
 
 private let deleteAlert = AlertState.show(
   .init(
-    primaryButton: .init(
-      action: .deleteButtonTapped,
-      label: "Delete",
-      type: .destructive
+    title: "Do you want to delete this map from your offline storage?",
+    primaryButton: .destructive(
+      "Delete",
+      send: .deleteButtonTapped
     ),
-    secondaryButton: nevermindButton,
-    title: "Do you want to delete this map from your offline storage?"
+    secondaryButton: nevermindButton
   )
 )
 
 private let cancelAlert = AlertState.show(
   .init(
-    primaryButton: .init(
-      action: .cancelButtonTapped,
-      label: "Cancel",
-      type: .destructive
+    title: "Do you want to cancel downloading this map?",
+    primaryButton: .cancel(
+      "Cancel",
+      send: .cancelButtonTapped
     ),
-    secondaryButton: nevermindButton,
-    title: "Do you want to cancel downloading this map?"
+    secondaryButton: nevermindButton
   )
 )
 
-let nevermindButton = AlertState<DownloadComponentAction.AlertAction>.Alert.Button(
-  action: .nevermindButtonTapped,
-  label: "Nevermind"
+let nevermindButton = AlertState<DownloadComponentAction.AlertAction>.Alert.Button.default(
+  "Nevermind",
+  send: .nevermindButtonTapped
 )
 
 struct DownloadComponent<ID: Equatable>: View {

@@ -114,15 +114,25 @@ public enum AlertState<Action> {
 
   public struct Alert {
     public var message: String?
-    public var primaryButton: Button
+    public var primaryButton: Button?
     public var secondaryButton: Button?
     public var title: String
 
     public init(
+      title: String,
+      message: String? = nil,
+      dismissButton: Button? = nil
+    ) {
+      self.message = message
+      self.primaryButton = dismissButton
+      self.title = title
+    }
+
+    public init(
+      title: String,
       message: String? = nil,
       primaryButton: Button,
-      secondaryButton: Button? = nil,
-      title: String
+      secondaryButton: Button
     ) {
       self.message = message
       self.primaryButton = primaryButton
@@ -135,14 +145,25 @@ public enum AlertState<Action> {
       public var label: String
       public var type: `Type`
 
-      public init(
-        action: Action,
-        label: String,
-        type: `Type` = .default
-      ) {
-        self.action = action
-        self.label = label
-        self.type = type
+      public static func cancel(
+        _ label: String,
+        send action: Action
+      ) -> Self {
+        Self(action: action, label: label, type: .cancel)
+      }
+
+      public static func `default`(
+        _ label: String,
+        send action: Action
+      ) -> Self {
+        Self(action: action, label: label, type: .default)
+      }
+
+      public static func destructive(
+        _ label: String,
+        send action: Action
+      ) -> Self {
+        Self(action: action, label: label, type: .destructive)
       }
 
       public enum `Type` {
@@ -215,18 +236,18 @@ extension AlertState.Alert {
     let title = Text(self.title)
     let message = self.message.map { Text($0) }
 
-    if let secondaryButton = self.secondaryButton {
+    if let primaryButton = self.primaryButton, let secondaryButton = self.secondaryButton {
       return SwiftUI.Alert(
         title: title,
         message: message,
-        primaryButton: self.primaryButton.toSwiftUI(send: send),
+        primaryButton: primaryButton.toSwiftUI(send: send),
         secondaryButton: secondaryButton.toSwiftUI(send: send)
       )
     } else {
       return SwiftUI.Alert(
         title: title,
         message: message,
-        dismissButton: self.primaryButton.toSwiftUI(send: send)
+        dismissButton: self.primaryButton?.toSwiftUI(send: send)
       )
     }
   }
