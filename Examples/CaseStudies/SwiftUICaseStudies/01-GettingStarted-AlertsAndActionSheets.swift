@@ -4,10 +4,9 @@ import SwiftUI
 private let readMe = """
   This demonstrates how to best handle alerts and action sheets in the Composable Architecture.
 
-  Because the library demands that all data flow through the application in a single direction, \
-  we cannot leverage SwiftUI's two-way bindings because they can make changes to state without \
-  going through a reducer. This means we can't directly use the standard API to display alerts and \
-  sheets.
+  Because the library demands that all data flow through the application in a single direction, we \
+  cannot leverage SwiftUI's two-way bindings because they can make changes to state without going \
+  through a reducer. This means we can't directly use the standard API to display alerts and sheets.
 
   However, the library comes with two types, `AlertState` and `ActionSheetState`, which can be \
   constructed from reducers and control whether or not an alert or action sheet is displayed. \
@@ -43,15 +42,13 @@ let AlertAndSheetReducer = Reducer<
   switch action {
   case .actionSheetButtonTapped:
     state.actionSheet = .show(
-      .init(
-        title: "Action sheet",
-        message: "This is an action sheet.",
-        buttons: [
-          .cancel(),
-          .default("Increment", send: .incrementButtonTapped),
-          .default("Decrement", send: .decrementButtonTapped),
-        ]
-      )
+      title: "Action sheet",
+      message: "This is an action sheet.",
+      buttons: [
+        .cancel(),
+        .default("Increment", send: .incrementButtonTapped),
+        .default("Decrement", send: .decrementButtonTapped),
+      ]
     )
     return .none
 
@@ -61,12 +58,10 @@ let AlertAndSheetReducer = Reducer<
 
   case .alertButtonTapped:
     state.alert = .show(
-      .init(
-        title: "Alert!",
-        message: "This is an alert",
-        primaryButton: .cancel(),
-        secondaryButton: .default("Increment", send: .incrementButtonTapped)
-      )
+      title: "Alert!",
+      message: "This is an alert",
+      primaryButton: .cancel(),
+      secondaryButton: .default("Increment", send: .incrementButtonTapped)
     )
     return .none
 

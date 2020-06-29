@@ -11,7 +11,7 @@ private let readMe = """
   """
 
 struct WebSocketState: Equatable {
-  var alert: String?
+  var alert = AlertState<WebSocketAction>.dismissed
   var connectivityState = ConnectivityState.disconnected
   var messageToSend = ""
   var receivedMessages: [String] = []
@@ -23,7 +23,7 @@ struct WebSocketState: Equatable {
   }
 }
 
-enum WebSocketAction: Equatable {
+enum WebSocketAction: Hashable {
   case alertDismissed
   case connectButtonTapped
   case messageToSendChanged(String)
@@ -60,7 +60,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
 
   switch action {
   case .alertDismissed:
-    state.alert = nil
+    state.alert = .dismissed
     return .none
 
   case .connectButtonTapped:
@@ -109,7 +109,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
 
   case let .sendResponse(error):
     if error != nil {
-      state.alert = "Could not send socket message. Try again."
+      state.alert = .show(title: "Could not send socket message. Try again.")
     }
     return .none
 
@@ -121,7 +121,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
     let .webSocket(.didCompleteWithError(error)):
     state.connectivityState = .disconnected
     if error != nil {
-      state.alert = "Disconnected from socket for some reason. Try again."
+      state.alert = .show(title: "Disconnected from socket for some reason. Try again.")
     }
     return .cancel(id: WebSocketId())
 
@@ -176,35 +176,25 @@ struct WebSocketView: View {
       }
       .padding()
       .alert(
-        item: viewStore.binding(
-          get: { $0.alert.map(WebSocketAlert.init(title:)) },
-          send: .alertDismissed
-        )
-      ) { alert in
-        Alert(title: Text(alert.title))
-      }
+        self.store.scope(state: { $0.alert }),
+        dismiss: .alertDismissed
+      )
       .navigationBarTitle("Web Socket")
     }
   }
 }
 
-struct WebSocketAlert: Identifiable {
-  var title: String
-
-  var id: String { self.title }
-}
-
 // MARK: - WebSocketClient
 
 struct WebSocketClient {
-  enum Action: Equatable {
+  enum Action: Hashable {
     case didBecomeInvalidWithError(NSError?)
     case didClose(code: URLSessionWebSocketTask.CloseCode, reason: Data?)
     case didCompleteWithError(NSError?)
     case didOpenWithProtocol(String?)
   }
 
-  enum Message: Equatable {
+  enum Message: Hashable {
     case data(Data)
     case string(String)
 

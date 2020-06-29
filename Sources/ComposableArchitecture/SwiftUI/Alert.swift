@@ -44,12 +44,10 @@ import SwiftUI
 ///
 ///         case .deleteTapped:
 ///           state.alert = .show(
-///             .init(
-///               title: "Delete",
-///               message: "Are you sure you want to delete this? It cannot be undone.",
-///               primaryButton: .default("Confirm", send: .confirmTapped),
-///               secondaryButton: .cancel(send: .cancelTapped)
-///             )
+///             title: "Delete",
+///             message: "Are you sure you want to delete this? It cannot be undone.",
+///             primaryButton: .default("Confirm", send: .confirmTapped),
+///             secondaryButton: .cancel(send: .cancelTapped)
 ///           )
 ///         return .none
 ///       }
@@ -79,12 +77,10 @@ import SwiftUI
 ///     store.assert(
 ///       .send(.deleteTapped) {
 ///         $0.alert = .show(
-///           .init(
-///             title: "Delete",
-///             message: "Are you sure you want to delete this? It cannot be undone.",
-///             primaryButton: .default("Confirm", send: .confirmTapped),
-///             secondaryButton: .cancel(send: .cancelTapped)
-///           )
+///           title: "Delete",
+///           message: "Are you sure you want to delete this? It cannot be undone.",
+///           primaryButton: .default("Confirm", send: .confirmTapped),
+///           secondaryButton: .cancel(send: .cancelTapped)
 ///         )
 ///       },
 ///       .send(.deleteTapped) {
@@ -96,6 +92,36 @@ import SwiftUI
 public enum AlertState<Action> {
   case dismissed
   case show(Alert)
+
+  public static func show(
+    title: String,
+    message: String? = nil,
+    dismissButton: Alert.Button? = nil
+  ) -> Self {
+    return .show(
+      .init(
+        title: title,
+        message: message,
+        dismissButton: dismissButton
+      )
+    )
+  }
+
+  public static func show(
+    title: String,
+    message: String? = nil,
+    primaryButton: Alert.Button,
+    secondaryButton: Alert.Button
+  ) -> Self {
+    return .show(
+      .init(
+        title: title,
+        message: message,
+        primaryButton: primaryButton,
+        secondaryButton: secondaryButton
+      )
+    )
+  }
 
   public struct Alert {
     public var message: String?

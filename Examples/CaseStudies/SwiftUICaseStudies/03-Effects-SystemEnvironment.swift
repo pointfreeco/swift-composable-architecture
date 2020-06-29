@@ -16,14 +16,14 @@ private let readMe = """
   """
 
 struct MultipleDependenciesState: Equatable {
-  var alertTitle: String?
+  var alert = AlertState<MultipleDependenciesAction>.dismissed
   var dateString: String?
   var fetchedNumberString: String?
   var isFetchInFlight = false
   var uuidString: String?
 }
 
-enum MultipleDependenciesAction {
+enum MultipleDependenciesAction: Hashable {
   case alertButtonTapped
   case alertDelayReceived
   case alertDismissed
@@ -50,11 +50,11 @@ let multipleDependenciesReducer = Reducer<
       .eraseToEffect()
 
   case .alertDelayReceived:
-    state.alertTitle = "Here's an alert after a delay!"
+    state.alert = .show(title: "Here's an alert after a delay!")
     return .none
 
   case .alertDismissed:
-    state.alertTitle = nil
+    state.alert = .dismissed
     return .none
 
   case .dateButtonTapped:
@@ -107,13 +107,9 @@ struct MultipleDependenciesView: View {
 
           Button("Delayed Alert") { viewStore.send(.alertButtonTapped) }
             .alert(
-              item: viewStore.binding(
-                get: { $0.alertTitle.map(Alert.init(title:)) },
-                send: { _ in .alertDismissed }
-              )
-            ) {
-              SwiftUI.Alert(title: Text($0.title))
-            }
+              self.store.scope(state: { $0.alert }),
+              dismiss: .alertDismissed
+            )
         }
 
         Section(
@@ -138,11 +134,6 @@ struct MultipleDependenciesView: View {
       .buttonStyle(BorderlessButtonStyle())
     }
     .navigationBarTitle("System Environment")
-  }
-
-  struct Alert: Identifiable {
-    var title: String
-    var id: String { self.title }
   }
 }
 

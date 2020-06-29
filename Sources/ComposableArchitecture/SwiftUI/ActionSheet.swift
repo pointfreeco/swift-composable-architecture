@@ -49,14 +49,12 @@ import SwiftUI
 ///
 ///         case .infoTapped:
 ///           state.actionSheet = .show(
-///             .init(
-///               buttons: [
-///                 .default("Favorite", send: .favoriteTapped),
-///                 .destructive("Delete", send: .deleteTapped),
-///                 .cancel(send: .cancelTapped),
-///               ],
-///               title: "What would you like to do?"
-///             )
+///             title: "What would you like to do?",
+///             buttons: [
+///               .default("Favorite", send: .favoriteTapped),
+///               .destructive("Delete", send: .deleteTapped),
+///               .cancel(send: .cancelTapped),
+///             ]
 ///           )
 ///         return .none
 ///       }
@@ -67,7 +65,7 @@ import SwiftUI
 ///
 ///     Button("Info") { viewStore.send(.infoTapped) }
 ///       .actionSheet(
-///         self.store.scope(state: { $0.actionSheet }),
+///         self.store.scope(state: \.actionSheet),
 ///         dismiss: .cancelTapped
 ///       )
 ///
@@ -86,24 +84,22 @@ import SwiftUI
 ///     store.assert(
 ///       .send(.infoTapped) {
 ///         $0.actionSheet = .show(
-///           .init(
-///             buttons: [
-///               .init(
-///                 action: .favoriteTapped,
-///                 label: "Favorite"
-///               ),
-///               .init(
-///                 action: .deleteTapped,
-///                 label: "Delete"
-///               ),
-///               .init(
-///                 action: .cancelTapped,
-///                 label: "Cancel",
-///                 type: .cancel
-///               )
-///             ],
-///             title: "What would you like to do?"
-///           )
+///           title: "What would you like to do?",
+///           buttons: [
+///             .init(
+///               action: .favoriteTapped,
+///               label: "Favorite"
+///             ),
+///             .init(
+///               action: .deleteTapped,
+///               label: "Delete"
+///             ),
+///             .init(
+///               action: .cancelTapped,
+///               label: "Cancel",
+///               type: .cancel
+///             )
+///           ]
 ///         )
 ///       },
 ///       .send(.favoriteTapped) {
@@ -120,6 +116,14 @@ import SwiftUI
 public enum ActionSheetState<Action> {
   case dismissed
   case show(ActionSheet)
+
+  public static func show(
+    title: String,
+    message: String? = nil,
+    buttons: [ActionSheet.Button]
+  ) -> Self {
+    self.show(.init(title: title, message: message, buttons: buttons))
+  }
 
   public struct ActionSheet {
     public var buttons: [Button]
