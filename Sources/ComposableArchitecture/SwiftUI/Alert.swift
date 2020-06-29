@@ -191,6 +191,8 @@ public enum AlertState<Action> {
   }
 }
 
+public struct DismissAction: Hashable {}
+
 extension View {
   /// Displays an alert when `state` is in the `.show` state.
   ///
@@ -217,6 +219,33 @@ extension View {
         set: {
           guard $0 == nil else { return }
           viewStore.send(dismiss)
+        }),
+      content: { $0.toSwiftUI(send: viewStore.send) }
+    )
+  }
+
+  /// Displays an alert when `state` is in the `.show` state.
+  ///
+  /// - Parameters:
+  ///   - store: A store that describes if the alert is shown or dismissed.
+  public func alert(
+    _ store: Store<AlertState<DismissAction>, DismissAction>
+  ) -> some View {
+
+    let viewStore = ViewStore(store)
+    return self.alert(
+      item: Binding<AlertState<DismissAction>.Alert?>(
+        get: {
+          switch viewStore.state {
+          case .dismissed:
+            return nil
+          case let .show(alert):
+            return alert
+          }
+        },
+        set: {
+          guard $0 == nil else { return }
+          viewStore.send(DismissAction())
         }),
       content: { $0.toSwiftUI(send: viewStore.send) }
     )

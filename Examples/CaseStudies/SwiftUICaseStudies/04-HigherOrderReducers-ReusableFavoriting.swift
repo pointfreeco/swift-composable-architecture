@@ -21,7 +21,7 @@ private let readMe = """
 // MARK: - Favorite domain
 
 struct FavoriteState<ID>: Equatable, Identifiable where ID: Hashable {
-  var alert = AlertState<FavoriteAction>.dismissed
+  var alert = AlertState<DismissAction>.dismissed
   let id: ID
   var isFavorite: Bool
 }
@@ -100,8 +100,7 @@ struct FavoriteButton<ID>: View where ID: Hashable {
         Image(systemName: viewStore.isFavorite ? "heart.fill" : "heart")
       }
       .alert(
-        self.store.scope(state: { $0.alert }),
-        dismiss: .alertDismissed
+        self.store.scope(state: { $0.alert }, action: { _ in .alertDismissed })
       )
     }
   }
@@ -110,7 +109,7 @@ struct FavoriteButton<ID>: View where ID: Hashable {
 // MARK: Feature domain -
 
 struct EpisodeState: Equatable, Identifiable {
-  var alert = AlertState<FavoriteAction>.dismissed
+  var alert = AlertState<DismissAction>.dismissed
   let id: UUID
   var isFavorite: Bool
   let title: String
