@@ -36,11 +36,11 @@ import SwiftUI
 ///     let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, env in
 ///       switch action
 ///         case .cancelTapped:
-///           state.alert = .dismissed
+///           state.alert = nil
 ///           return .none
 ///
 ///         case .confirmTapped:
-///           state.alert = .dismissed
+///           state.alert = nil
 ///           // Do deletion logic...
 ///
 ///         case .deleteTapped:
@@ -85,7 +85,7 @@ import SwiftUI
 ///         )
 ///       },
 ///       .send(.deleteTapped) {
-///         $0.alert = .dismissed
+///         $0.alert = nil
 ///         // Also verify that delete logic executed correctly
 ///       }
 ///     )

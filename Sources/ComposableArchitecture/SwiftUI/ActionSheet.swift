@@ -84,7 +84,7 @@ import SwiftUI
 ///
 ///     store.assert(
 ///       .send(.infoTapped) {
-///         $0.actionSheet = .show(
+///         $0.actionSheet = .init(
 ///           title: "What would you like to do?",
 ///           buttons: [
 ///             .default("Favorite", send: .favoriteTapped),
@@ -94,7 +94,7 @@ import SwiftUI
 ///         )
 ///       },
 ///       .send(.favoriteTapped) {
-///         $0.actionSheet = .dismissed
+///         $0.actionSheet = nil
 ///         // Also verify that favoriting logic executed correctly
 ///       }
 ///     )
