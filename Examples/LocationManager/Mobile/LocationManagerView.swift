@@ -55,14 +55,7 @@ struct LocationManagerView: View {
           }
         }
       }
-      .alert(
-        item: viewStore.binding(
-          get: { $0.alert.map(AppAlert.init(title:)) },
-          send: AppAction.dismissAlertButtonTapped
-        )
-      ) { alert in
-        Alert(title: Text(alert.title))
-      }
+      .alert(self.store.scope(state: { $0.alert }), dismiss: .dismissAlertButtonTapped)
       .onAppear { viewStore.send(.onAppear) }
       .onDisappear { viewStore.send(.onDisappear) }
     }

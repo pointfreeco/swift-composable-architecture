@@ -5,7 +5,7 @@ import Dispatch
 import TicTacToeCommon
 
 public struct TwoFactorState: Equatable {
-  public var alertData: AlertData? = nil
+  public var alert: AlertState<TwoFactorAction>?
   public var code = ""
   public var isFormValid = false
   public var isTwoFactorRequestInFlight = false
@@ -41,7 +41,7 @@ public let twoFactorReducer = Reducer<TwoFactorState, TwoFactorAction, TwoFactor
 
   switch action {
   case .alertDismissed:
-    state.alertData = nil
+    state.alert = nil
     return .none
 
   case let .codeChanged(code):
@@ -58,7 +58,7 @@ public let twoFactorReducer = Reducer<TwoFactorState, TwoFactorAction, TwoFactor
       .map(TwoFactorAction.twoFactorResponse)
 
   case let .twoFactorResponse(.failure(error)):
-    state.alertData = AlertData(title: error.localizedDescription)
+    state.alert = .init(title: error.localizedDescription)
     state.isTwoFactorRequestInFlight = false
     return .none
 

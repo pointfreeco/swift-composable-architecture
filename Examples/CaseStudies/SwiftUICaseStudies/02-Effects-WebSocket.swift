@@ -23,7 +23,7 @@ struct WebSocketState: Equatable {
   }
 }
 
-enum WebSocketAction: Hashable {
+enum WebSocketAction: Equatable {
   case alertDismissed
   case connectButtonTapped
   case messageToSendChanged(String)
@@ -175,10 +175,7 @@ struct WebSocketView: View {
         Text(viewStore.receivedMessages.joined(separator: "\n"))
       }
       .padding()
-      .alert(
-        self.store.scope(state: { $0.alert }),
-        dismiss: .alertDismissed
-      )
+      .alert(self.store.scope(state: { $0.alert }), dismiss: .alertDismissed)
       .navigationBarTitle("Web Socket")
     }
   }
@@ -187,14 +184,14 @@ struct WebSocketView: View {
 // MARK: - WebSocketClient
 
 struct WebSocketClient {
-  enum Action: Hashable {
+  enum Action: Equatable {
     case didBecomeInvalidWithError(NSError?)
     case didClose(code: URLSessionWebSocketTask.CloseCode, reason: Data?)
     case didCompleteWithError(NSError?)
     case didOpenWithProtocol(String?)
   }
 
-  enum Message: Hashable {
+  enum Message: Equatable {
     case data(Data)
     case string(String)
 

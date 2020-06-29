@@ -25,7 +25,7 @@ struct VoiceMemo: Equatable {
   }
 }
 
-enum VoiceMemoAction: Hashable {
+enum VoiceMemoAction: Equatable {
   case audioPlayerClient(Result<AudioPlayerClient.Action, AudioPlayerClient.Failure>)
   case playButtonTapped
   case delete

@@ -5,11 +5,11 @@ struct AudioPlayerClient {
   var play: (AnyHashable, URL) -> Effect<Action, Failure>
   var stop: (AnyHashable) -> Effect<Never, Never>
 
-  enum Action: Hashable {
+  enum Action: Equatable {
     case didFinishPlaying(successfully: Bool)
   }
 
-  enum Failure: Error, Hashable {
+  enum Failure: Equatable, Error {
     case couldntCreateAudioPlayer
     case decodeErrorDidOccur
   }

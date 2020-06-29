@@ -3,7 +3,7 @@ import GameCore
 import TicTacToeCommon
 
 public struct NewGameState: Equatable {
-  public var game: GameState? = nil
+  public var game: GameState?
   public var oPlayerName = ""
   public var xPlayerName = ""
 

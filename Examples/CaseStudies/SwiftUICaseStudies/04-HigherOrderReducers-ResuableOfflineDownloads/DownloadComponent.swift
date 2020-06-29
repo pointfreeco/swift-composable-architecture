@@ -34,7 +34,7 @@ enum DownloadComponentAction: Equatable {
   case buttonTapped
   case downloadClient(Result<DownloadClient.Action, DownloadClient.Error>)
 
-  enum AlertAction: Equatable, Hashable {
+  enum AlertAction: Equatable {
     case cancelButtonTapped
     case deleteButtonTapped
     case dismiss

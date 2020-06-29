@@ -6,14 +6,14 @@ import TwoFactorCore
 
 public struct TwoFactorView: View {
   struct ViewState: Equatable {
-    var alertData: AlertData?
+    var alert: AlertState<TwoFactorAction>?
     var code: String
     var isActivityIndicatorVisible: Bool
     var isFormDisabled: Bool
     var isSubmitButtonDisabled: Bool
   }
 
-  enum ViewAction {
+  enum ViewAction: Equatable {
     case alertDismissed
     case codeChanged(String)
     case submitButtonTapped
@@ -56,11 +56,7 @@ public struct TwoFactorView: View {
         }
       }
       .disabled(viewStore.isFormDisabled)
-      .alert(
-        item: viewStore.binding(get: { $0.alertData }, send: .alertDismissed)
-      ) { alertData in
-        Alert(title: Text(alertData.title))
-      }
+      .alert(self.store.scope(state: { $0.alert }), dismiss: .alertDismissed)
     }
     .navigationBarTitle("Two Factor Confirmation")
   }
@@ -69,7 +65,7 @@ public struct TwoFactorView: View {
 extension TwoFactorState {
   var view: TwoFactorView.ViewState {
     TwoFactorView.ViewState(
-      alertData: self.alertData,
+      alert: self.alert,
       code: self.code,
       isActivityIndicatorVisible: self.isTwoFactorRequestInFlight,
       isFormDisabled: self.isTwoFactorRequestInFlight,

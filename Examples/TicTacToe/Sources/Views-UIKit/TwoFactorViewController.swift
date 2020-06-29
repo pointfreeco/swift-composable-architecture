@@ -6,7 +6,7 @@ import UIKit
 
 public final class TwoFactorViewController: UIViewController {
   struct ViewState: Equatable {
-    let alertData: AlertData?
+    let alert: AlertState<TwoFactorAction>?
     let code: String?
     let isActivityIndicatorHidden: Bool
     let isLoginButtonEnabled: Bool
@@ -87,13 +87,13 @@ public final class TwoFactorViewController: UIViewController {
       .assign(to: \.isEnabled, on: loginButton)
       .store(in: &self.cancellables)
 
-    self.viewStore.publisher.alertData
-      .sink { [weak self] alertData in
+    self.viewStore.publisher.alert
+      .sink { [weak self] alert in
         guard let self = self else { return }
-        guard let alertData = alertData else { return }
+        guard let alert = alert else { return }
 
         let alertController = UIAlertController(
-          title: alertData.title, message: nil, preferredStyle: .alert)
+          title: alert.title, message: nil, preferredStyle: .alert)
         alertController.addAction(
           UIAlertAction(
             title: "Ok", style: .default,
@@ -117,7 +117,7 @@ public final class TwoFactorViewController: UIViewController {
 extension TwoFactorState {
   var view: TwoFactorViewController.ViewState {
     .init(
-      alertData: self.alertData,
+      alert: self.alert,
       code: self.code,
       isActivityIndicatorHidden: !self.isTwoFactorRequestInFlight,
       isLoginButtonEnabled: self.isFormValid && !self.isTwoFactorRequestInFlight

@@ -6,7 +6,7 @@ import NewGameCore
 
 public struct AppState: Equatable {
   public var login: LoginState? = LoginState()
-  public var newGame: NewGameState? = nil
+  public var newGame: NewGameState?
 
   public init() {}
 }

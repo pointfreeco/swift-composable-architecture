@@ -13,7 +13,7 @@ import SwiftUI
 ///
 /// To use this API, you model all the action sheet actions in your domain's action enum:
 ///
-///     enum AppAction: Hashable {
+///     enum AppAction: Equatable {
 ///       case cancelTapped
 ///       case deleteTapped
 ///       case favoriteTapped
@@ -25,7 +25,7 @@ import SwiftUI
 /// And you model the state for showing the action sheet in your domain's state, and it can start
 /// off in a `nil` state:
 ///
-///     struct AppState {
+///     struct AppState: Equatable {
 ///       var actionSheet: ActionSheetState<AppAction>?
 ///
 ///       // Your other state
@@ -160,17 +160,17 @@ extension View {
   public func actionSheet<Action>(
     _ store: Store<ActionSheetState<Action>?, Action>,
     dismiss: Action
-  ) -> some View where Action: Hashable {
+  ) -> some View {
 
-    let viewStore = ViewStore(store)
+    let viewStore = ViewStore(store, removeDuplicates: { ($0 == nil) != ($1 == nil) })
     return self.actionSheet(
-      item: Binding<ActionSheetState<Action>?>(
-        get: { viewStore.state },
+      isPresented: Binding(
+        get: { viewStore.state != nil },
         set: {
-          guard $0 == nil else { return }
+          guard !$0 else { return }
           viewStore.send(dismiss)
         }),
-      content: { $0.toSwiftUI(send: viewStore.send) }
+      content: { viewStore.state?.toSwiftUI(send: viewStore.send) ?? ActionSheet(title: Text("")) }
     )
   }
 }

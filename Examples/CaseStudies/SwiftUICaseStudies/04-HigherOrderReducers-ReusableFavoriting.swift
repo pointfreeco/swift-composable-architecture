@@ -26,7 +26,7 @@ struct FavoriteState<ID>: Equatable, Identifiable where ID: Hashable {
   var isFavorite: Bool
 }
 
-enum FavoriteAction: Hashable {
+enum FavoriteAction: Equatable {
   case alertDismissed
   case buttonTapped
   case response(Result<Bool, FavoriteError>)
@@ -43,7 +43,7 @@ struct FavoriteCancelId<ID>: Hashable where ID: Hashable {
 }
 
 /// A wrapper for errors that occur when favoriting.
-struct FavoriteError: Error, Hashable, Identifiable {
+struct FavoriteError: Equatable, Error, Identifiable {
   let error: NSError
   var localizedDescription: String { self.error.localizedDescription }
   var id: String { self.error.localizedDescription }
@@ -99,10 +99,7 @@ struct FavoriteButton<ID>: View where ID: Hashable {
       Button(action: { viewStore.send(.buttonTapped) }) {
         Image(systemName: viewStore.isFavorite ? "heart.fill" : "heart")
       }
-      .alert(
-        self.store.scope(state: { $0.alert }),
-        dismiss: .alertDismissed
-      )
+      .alert(self.store.scope(state: { $0.alert }), dismiss: .alertDismissed)
     }
   }
 }

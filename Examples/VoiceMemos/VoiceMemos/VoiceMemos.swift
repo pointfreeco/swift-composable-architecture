@@ -27,7 +27,7 @@ struct VoiceMemosState: Equatable {
   }
 }
 
-enum VoiceMemosAction: Hashable {
+enum VoiceMemosAction: Equatable {
   case alertDismissed
   case audioRecorderClient(Result<AudioRecorderClient.Action, AudioRecorderClient.Failure>)
   case currentRecordingTimerUpdated

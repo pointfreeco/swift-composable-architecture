@@ -18,7 +18,7 @@ private let readMe = """
   """
 
 struct AppState: Equatable {
-  var alertTitle: String?
+  var alert: AlertState<AppAction>?
   var facingDirection: Direction?
   var initialAttitude: Attitude?
   var isRecording = false
@@ -45,14 +45,14 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
   switch action {
   case .alertDismissed:
-    state.alertTitle = nil
+    state.alert = nil
     return .none
 
   case .motionUpdate(.failure):
-    state.alertTitle = """
+    state.alert = .init(title: """
       We encountered a problem with the motion manager. Make sure you run this demo on a real \
       device, not the simulator.
-      """
+      """)
     state.isRecording = false
     return .none
 
@@ -143,14 +143,7 @@ struct AppView: View {
       }
       .padding()
       .background(viewStore.facingDirection == .backward ? Color.green : Color.clear)
-      .alert(
-        item: viewStore.binding(
-          get: { $0.alertTitle.map(AppAlert.init(title:)) },
-          send: .alertDismissed
-        )
-      ) { alert in
-        Alert(title: Text(alert.title))
-      }
+      .alert(self.store.scope(state: { $0.alert }), dismiss: .alertDismissed)
     }
   }
 }

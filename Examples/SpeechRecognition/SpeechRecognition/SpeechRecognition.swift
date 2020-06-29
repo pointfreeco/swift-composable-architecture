@@ -10,7 +10,7 @@ private let readMe = """
   """
 
 struct AppState: Equatable {
-  var authorizationStateAlert: String?
+  var alert: AlertState<AppAction>?
   var isRecording = false
   var speechRecognizerAuthorizationStatus = SFSpeechRecognizerAuthorizationStatus.notDetermined
   var transcribedText = ""
@@ -33,12 +33,12 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
   switch action {
   case .dismissAuthorizationStateAlert:
-    state.authorizationStateAlert = nil
+    state.alert = nil
     return .none
 
   case .speech(.failure(.couldntConfigureAudioSession)),
     .speech(.failure(.couldntStartAudioEngine)):
-    state.authorizationStateAlert = "Problem with audio device. Please try again."
+    state.alert = .init(title: "Problem with audio device. Please try again.")
     return .none
 
   case .recordButtonTapped:
@@ -66,7 +66,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     }
 
   case let .speech(.failure(error)):
-    state.authorizationStateAlert = "An error occured while transcribing. Please try again."
+    state.alert = .init(title: "An error occured while transcribing. Please try again.")
     return environment.speechClient.finishTask(SpeechRecognitionId())
       .fireAndForget()
 
@@ -76,17 +76,17 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
     switch status {
     case .notDetermined:
-      state.authorizationStateAlert = "Try again."
+      state.alert = .init(title: "Try again.")
       return .none
 
     case .denied:
-      state.authorizationStateAlert = """
+      state.alert = .init(title: """
         You denied access to speech recognition. This app needs access to transcribe your speech.
-        """
+        """)
       return .none
 
     case .restricted:
-      state.authorizationStateAlert = "Your device does not allow speech recognition."
+      state.alert = .init(title: "Your device does not allow speech recognition.")
       return .none
 
     case .authorized:
@@ -144,14 +144,7 @@ struct SpeechRecognitionView: View {
         }
       }
       .padding()
-      .alert(
-        item: viewStore.binding(
-          get: { $0.authorizationStateAlert.map(AuthorizationStateAlert.init(title:)) },
-          send: .dismissAuthorizationStateAlert
-        )
-      ) { alert in
-        Alert(title: Text(alert.title))
-      }
+      .alert(self.store.scope(state: { $0.alert }), dismiss: .dismissAuthorizationStateAlert)
     }
   }
 }

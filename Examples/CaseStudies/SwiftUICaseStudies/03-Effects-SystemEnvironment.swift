@@ -23,7 +23,7 @@ struct MultipleDependenciesState: Equatable {
   var uuidString: String?
 }
 
-enum MultipleDependenciesAction: Hashable {
+enum MultipleDependenciesAction: Equatable {
   case alertButtonTapped
   case alertDelayReceived
   case alertDismissed
@@ -106,10 +106,7 @@ struct MultipleDependenciesView: View {
           }
 
           Button("Delayed Alert") { viewStore.send(.alertButtonTapped) }
-            .alert(
-              self.store.scope(state: { $0.alert }),
-              dismiss: .alertDismissed
-            )
+            .alert(self.store.scope(state: { $0.alert }), dismiss: .alertDismissed)
         }
 
         Section(
