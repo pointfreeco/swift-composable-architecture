@@ -93,9 +93,11 @@ extension Array where Element == [Player?] {
     ]
 
     for condition in winConditions {
-      let matches = condition
+      let matches =
+        condition
         .map { self[$0 % 3][$0 / 3] }
-      let matchCount = matches
+      let matchCount =
+        matches
         .filter { $0 == player }
         .count
 

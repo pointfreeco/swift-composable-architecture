@@ -28,8 +28,8 @@ class SpeechRecognitionTests: XCTestCase {
       .receive(.speechRecognizerAuthorizationStatusResponse(.denied)) {
         $0.alert = .init(
           title: """
-          You denied access to speech recognition. This app needs access to transcribe your speech.
-          """
+            You denied access to speech recognition. This app needs access to transcribe your speech.
+            """
         )
         $0.isRecording = false
         $0.speechRecognizerAuthorizationStatus = .denied

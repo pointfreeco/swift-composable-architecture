@@ -49,10 +49,11 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     return .none
 
   case .motionUpdate(.failure):
-    state.alert = .init(title: """
-      We encountered a problem with the motion manager. Make sure you run this demo on a real \
-      device, not the simulator.
-      """)
+    state.alert = .init(
+      title: """
+        We encountered a problem with the motion manager. Make sure you run this demo on a real \
+        device, not the simulator.
+        """)
     state.isRecording = false
     return .none
 

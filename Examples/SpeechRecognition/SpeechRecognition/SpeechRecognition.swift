@@ -80,9 +80,10 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
       return .none
 
     case .denied:
-      state.alert = .init(title: """
-        You denied access to speech recognition. This app needs access to transcribe your speech.
-        """)
+      state.alert = .init(
+        title: """
+          You denied access to speech recognition. This app needs access to transcribe your speech.
+          """)
       return .none
 
     case .restricted:

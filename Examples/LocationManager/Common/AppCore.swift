@@ -188,8 +188,7 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, ac
 .signpost()
 .debug()
 
-private let locationManagerReducer = Reducer<AppState, LocationManager.Action, AppEnvironment>
-{
+private let locationManagerReducer = Reducer<AppState, LocationManager.Action, AppEnvironment> {
   state, action, environment in
 
   switch action {

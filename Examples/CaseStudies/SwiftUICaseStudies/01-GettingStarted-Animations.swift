@@ -51,7 +51,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
             : Effect(value: .setColor(color))
               .delay(for: 1, scheduler: environment.mainQueue)
               .eraseToEffect()
-      }
+        }
     )
 
   case let .setColor(color):
@@ -105,7 +105,7 @@ struct AnimationsView: View {
           )
           .padding()
           Button("Rainbow") { viewStore.send(.rainbowButtonTapped) }
-          .padding([.leading, .trailing, .bottom])
+            .padding([.leading, .trailing, .bottom])
         }
       }
     }
