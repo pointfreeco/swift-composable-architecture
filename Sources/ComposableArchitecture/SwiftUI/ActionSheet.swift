@@ -183,12 +183,10 @@ extension View {
 @available(watchOS 6, *)
 extension ActionSheetState {
   fileprivate func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.ActionSheet {
-    SwiftUI.ActionSheet(
+    ActionSheet(
       title: Text(self.title),
       message: self.message.map { Text($0) },
-      buttons: self.buttons.map {
-        $0.toSwiftUI(send: send)
-      }
+      buttons: self.buttons.map { $0.toSwiftUI(send: send) }
     )
   }
 }

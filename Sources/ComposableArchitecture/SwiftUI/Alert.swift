@@ -163,8 +163,8 @@ extension View {
   ///
   /// - Parameters:
   ///   - store: A store that describes if the alert is shown or dismissed.
-  ///   - dismissal: An action to send when the alert is dismissed through non-user actions, such
-  ///     as when an alert is automatically dismissed by the system.
+  ///   - dismissal: An action to send when the alert is dismissed through non-user actions, such as
+  ///     when an alert is automatically dismissed by the system.
   public func alert<Action>(
     _ store: Store<AlertState<Action>?, Action>,
     dismiss: Action
@@ -214,14 +214,14 @@ extension AlertState {
     let message = self.message.map { Text($0) }
 
     if let primaryButton = self.primaryButton, let secondaryButton = self.secondaryButton {
-      return SwiftUI.Alert(
+      return Alert(
         title: title,
         message: message,
         primaryButton: primaryButton.toSwiftUI(send: send),
         secondaryButton: secondaryButton.toSwiftUI(send: send)
       )
     } else {
-      return SwiftUI.Alert(
+      return Alert(
         title: title,
         message: message,
         dismissButton: self.primaryButton?.toSwiftUI(send: send)
