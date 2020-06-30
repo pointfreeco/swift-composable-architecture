@@ -21,7 +21,7 @@ struct SharedState: Equatable {
   enum Tab { case counter, profile }
 
   struct CounterState: Equatable {
-    var alert = AlertState<SharedStateAction.CounterAction>.dismissed
+    var alert: AlertState<SharedStateAction.CounterAction>?
     var count = 0
     var maxCount = 0
     var minCount = 0
@@ -72,7 +72,7 @@ enum SharedStateAction {
   case profile(ProfileAction)
   case selectTab(SharedState.Tab)
 
-  enum CounterAction: Hashable {
+  enum CounterAction {
     case alertDismissed
     case decrementButtonTapped
     case incrementButtonTapped
@@ -89,7 +89,7 @@ let sharedStateCounterReducer = Reducer<
 > { state, action, _ in
   switch action {
   case .alertDismissed:
-    state.alert = .dismissed
+    state.alert = nil
     return .none
 
   case .decrementButtonTapped:
@@ -105,7 +105,7 @@ let sharedStateCounterReducer = Reducer<
     return .none
 
   case .isPrimeButtonTapped:
-    state.alert = .show(
+    state.alert = .init(
       title: isPrime(state.count)
         ? "👍 The number \(state.count) is prime!"
         : "👎 The number \(state.count) is not prime :("
@@ -205,10 +205,7 @@ struct SharedStateCounterView: View {
       .padding(16)
       .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity, alignment: .top)
       .navigationBarTitle("Shared State Demo")
-      .alert(
-        self.store.scope(state: \.alert),
-        dismiss: .alertDismissed
-      )
+      .alert(self.store.scope(state: { $0.alert }), dismiss: .alertDismissed)
     }
   }
 }

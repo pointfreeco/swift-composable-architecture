@@ -19,14 +19,14 @@ public struct PointOfInterest: Equatable, Hashable {
 }
 
 public struct AppState: Equatable {
-  public var alert: String?
+  public var alert: AlertState<AppAction>?
   public var isRequestingCurrentLocation = false
   public var pointOfInterestCategory: MKPointOfInterestCategory?
   public var pointsOfInterest: [PointOfInterest] = []
   public var region: CoordinateRegion?
 
   public init(
-    alert: String? = nil,
+    alert: AlertState<AppAction>? = nil,
     isRequestingCurrentLocation: Bool = false,
     pointOfInterestCategory: MKPointOfInterestCategory? = nil,
     pointsOfInterest: [PointOfInterest] = [],
@@ -99,7 +99,7 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, ac
 
   case .currentLocationButtonTapped:
     guard environment.locationManager.locationServicesEnabled() else {
-      state.alert = "Location services are turned off."
+      state.alert = .init(title: "Location services are turned off.")
       return .none
     }
 
@@ -117,11 +117,11 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, ac
       #endif
 
     case .restricted:
-      state.alert = "Please give us access to your location in settings."
+      state.alert = .init(title: "Please give us access to your location in settings.")
       return .none
 
     case .denied:
-      state.alert = "Please give us access to your location in settings."
+      state.alert = .init(title: "Please give us access to your location in settings.")
       return .none
 
     case .authorizedAlways, .authorizedWhenInUse:
@@ -148,7 +148,7 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, ac
     return .none
 
   case .localSearchResponse(.failure):
-    state.alert = "Could not perform search. Please try again."
+    state.alert = .init(title: "Could not perform search. Please try again.")
     return .none
 
   case .locationManager:
@@ -204,7 +204,9 @@ private let locationManagerReducer = Reducer<AppState, LocationManager.Action, A
 
   case .didChangeAuthorization(.denied):
     if state.isRequestingCurrentLocation {
-      state.alert = "Location makes this app better. Please consider giving us access."
+      state.alert = .init(
+        title: "Location makes this app better. Please consider giving us access."
+      )
       state.isRequestingCurrentLocation = false
     }
     return .none

@@ -16,14 +16,14 @@ private let readMe = """
   """
 
 struct MultipleDependenciesState: Equatable {
-  var alert = AlertState<MultipleDependenciesAction>.dismissed
+  var alert: AlertState<MultipleDependenciesAction>?
   var dateString: String?
   var fetchedNumberString: String?
   var isFetchInFlight = false
   var uuidString: String?
 }
 
-enum MultipleDependenciesAction: Hashable {
+enum MultipleDependenciesAction: Equatable {
   case alertButtonTapped
   case alertDelayReceived
   case alertDismissed
@@ -50,11 +50,11 @@ let multipleDependenciesReducer = Reducer<
       .eraseToEffect()
 
   case .alertDelayReceived:
-    state.alert = .show(title: "Here's an alert after a delay!")
+    state.alert = .init(title: "Here's an alert after a delay!")
     return .none
 
   case .alertDismissed:
-    state.alert = .dismissed
+    state.alert = nil
     return .none
 
   case .dateButtonTapped:
@@ -106,10 +106,7 @@ struct MultipleDependenciesView: View {
           }
 
           Button("Delayed Alert") { viewStore.send(.alertButtonTapped) }
-            .alert(
-              self.store.scope(state: { $0.alert }),
-              dismiss: .alertDismissed
-            )
+            .alert(self.store.scope(state: { $0.alert }), dismiss: .alertDismissed)
         }
 
         Section(

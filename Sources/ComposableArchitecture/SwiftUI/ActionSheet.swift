@@ -13,7 +13,7 @@ import SwiftUI
 ///
 /// To use this API, you model all the action sheet actions in your domain's action enum:
 ///
-///     enum AppAction: Hashable {
+///     enum AppAction: Equatable {
 ///       case cancelTapped
 ///       case deleteTapped
 ///       case favoriteTapped
@@ -23,10 +23,10 @@ import SwiftUI
 ///     }
 ///
 /// And you model the state for showing the action sheet in your domain's state, and it can start
-/// off in the `.dismissed` state:
+/// off in a `nil` state:
 ///
-///     struct AppState {
-///       var actionSheet = ActionSheetState<AppAction>.dismissed
+///     struct AppState: Equatable {
+///       var actionSheet: ActionSheetState<AppAction>?
 ///
 ///       // Your other state
 ///     }
@@ -37,19 +37,19 @@ import SwiftUI
 ///     let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, env in
 ///       switch action
 ///         case .cancelTapped:
-///           state.actionSheet = .dismissed
+///           state.actionSheet = nil
 ///           return .none
 ///
 ///         case .deleteTapped:
-///           state.actionSheet = .dismissed
+///           state.actionSheet = nil
 ///           // Do deletion logic...
 ///
 ///         case .favoriteTapped:
-///           state.actionSheet = .dismissed
+///           state.actionSheet = nil
 ///           // Do favoriting logic
 ///
 ///         case .infoTapped:
-///           state.actionSheet = .show(
+///           state.actionSheet = .init(
 ///             title: "What would you like to do?",
 ///             buttons: [
 ///               .default("Favorite", send: .favoriteTapped),
@@ -84,7 +84,7 @@ import SwiftUI
 ///
 ///     store.assert(
 ///       .send(.infoTapped) {
-///         $0.actionSheet = .show(
+///         $0.actionSheet = .init(
 ///           title: "What would you like to do?",
 ///           buttons: [
 ///             .default("Favorite", send: .favoriteTapped),
@@ -94,7 +94,7 @@ import SwiftUI
 ///         )
 ///       },
 ///       .send(.favoriteTapped) {
-///         $0.actionSheet = .dismissed
+///         $0.actionSheet = nil
 ///         // Also verify that favoriting logic executed correctly
 ///       }
 ///     )
@@ -104,35 +104,22 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS 13, *)
 @available(watchOS 6, *)
-public enum ActionSheetState<Action> {
-  case dismissed
-  case show(ActionSheet)
+public struct ActionSheetState<Action> {
+  public var buttons: [Button]
+  public var message: String?
+  public var title: String
 
-  public static func show(
+  public init(
     title: String,
     message: String? = nil,
-    buttons: [ActionSheet.Button]
-  ) -> Self {
-    self.show(.init(title: title, message: message, buttons: buttons))
+    buttons: [Button]
+  ) {
+    self.buttons = buttons
+    self.message = message
+    self.title = title
   }
 
-  public struct ActionSheet {
-    public var buttons: [Button]
-    public var message: String?
-    public var title: String
-
-    public init(
-      title: String,
-      message: String? = nil,
-      buttons: [Button]
-    ) {
-      self.buttons = buttons
-      self.message = message
-      self.title = title
-    }
-
-    public typealias Button = AlertState<Action>.Alert.Button
-  }
+  public typealias Button = AlertState<Action>.Button
 }
 
 @available(iOS 13, *)
@@ -154,21 +141,7 @@ extension ActionSheetState: Hashable where Action: Hashable {}
 @available(macOS, unavailable)
 @available(tvOS 13, *)
 @available(watchOS 6, *)
-extension ActionSheetState.ActionSheet: Equatable where Action: Equatable {}
-
-@available(iOS 13, *)
-@available(macCatalyst 13, *)
-@available(macOS, unavailable)
-@available(tvOS 13, *)
-@available(watchOS 6, *)
-extension ActionSheetState.ActionSheet: Hashable where Action: Hashable {}
-
-@available(iOS 13, *)
-@available(macCatalyst 13, *)
-@available(macOS, unavailable)
-@available(tvOS 13, *)
-@available(watchOS 6, *)
-extension ActionSheetState.ActionSheet: Identifiable where Action: Hashable {
+extension ActionSheetState: Identifiable where Action: Hashable {
   public var id: Self { self }
 }
 
@@ -185,26 +158,19 @@ extension View {
   @available(tvOS 13, *)
   @available(watchOS 6, *)
   public func actionSheet<Action>(
-    _ store: Store<ActionSheetState<Action>, Action>,
+    _ store: Store<ActionSheetState<Action>?, Action>,
     dismiss: Action
-  ) -> some View where Action: Hashable {
+  ) -> some View {
 
-    let viewStore = ViewStore(store)
+    let viewStore = ViewStore(store, removeDuplicates: { ($0 == nil) != ($1 == nil) })
     return self.actionSheet(
-      item: Binding<ActionSheetState<Action>.ActionSheet?>(
-        get: {
-          switch viewStore.state {
-          case .dismissed:
-            return nil
-          case let .show(actionSheet):
-            return actionSheet
-          }
-        },
+      isPresented: Binding(
+        get: { viewStore.state != nil },
         set: {
-          guard $0 == nil else { return }
+          guard !$0 else { return }
           viewStore.send(dismiss)
         }),
-      content: { $0.toSwiftUI(send: viewStore.send) }
+      content: { viewStore.state?.toSwiftUI(send: viewStore.send) ?? ActionSheet(title: Text("")) }
     )
   }
 }
@@ -214,7 +180,7 @@ extension View {
 @available(macOS, unavailable)
 @available(tvOS 13, *)
 @available(watchOS 6, *)
-extension ActionSheetState.ActionSheet {
+extension ActionSheetState {
   fileprivate func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.ActionSheet {
     SwiftUI.ActionSheet(
       title: Text(self.title),

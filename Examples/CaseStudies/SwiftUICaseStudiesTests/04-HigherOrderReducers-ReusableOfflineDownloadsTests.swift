@@ -117,7 +117,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       },
 
       .send(.buttonTapped) {
-        $0.alert = .show(
+        $0.alert = .init(
           title: "Do you want to cancel downloading this map?",
           primaryButton: .cancel(send: .cancelButtonTapped),
           secondaryButton: .default("Nevermind", send: .nevermindButtonTapped)
@@ -125,7 +125,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       },
 
       .send(.alert(.cancelButtonTapped)) {
-        $0.alert = .dismissed
+        $0.alert = nil
         $0.mode = .notDownloaded
       },
 
@@ -156,7 +156,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       },
 
       .send(.buttonTapped) {
-        $0.alert = .show(
+        $0.alert = .init(
           title: "Do you want to cancel downloading this map?",
           primaryButton: .cancel(send: .cancelButtonTapped),
           secondaryButton: .default("Nevermind", send: .nevermindButtonTapped)
@@ -167,7 +167,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       .do { self.downloadSubject.send(completion: .finished) },
       .do { self.scheduler.advance(by: 1) },
       .receive(.downloadClient(.success(.response(Data())))) {
-        $0.alert = .dismissed
+        $0.alert = nil
         $0.mode = .downloaded
       }
     )
@@ -192,7 +192,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 
     store.assert(
       .send(.buttonTapped) {
-        $0.alert = .show(
+        $0.alert = .init(
           title: "Do you want to delete this map from your offline storage?",
           primaryButton: .destructive("Delete", send: .deleteButtonTapped),
           secondaryButton: .default("Nevermind", send: .nevermindButtonTapped)
@@ -200,7 +200,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       },
 
       .send(.alert(.deleteButtonTapped)) {
-        $0.alert = .dismissed
+        $0.alert = nil
         $0.mode = .notDownloaded
       }
     )

@@ -9,7 +9,7 @@ struct AudioPlayerClient {
     case didFinishPlaying(successfully: Bool)
   }
 
-  enum Failure: Error, Equatable {
+  enum Failure: Equatable, Error {
     case couldntCreateAudioPlayer
     case decodeErrorDidOccur
   }

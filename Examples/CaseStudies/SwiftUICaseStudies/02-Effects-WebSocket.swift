@@ -11,7 +11,7 @@ private let readMe = """
   """
 
 struct WebSocketState: Equatable {
-  var alert = AlertState<WebSocketAction>.dismissed
+  var alert: AlertState<WebSocketAction>?
   var connectivityState = ConnectivityState.disconnected
   var messageToSend = ""
   var receivedMessages: [String] = []
@@ -23,7 +23,7 @@ struct WebSocketState: Equatable {
   }
 }
 
-enum WebSocketAction: Hashable {
+enum WebSocketAction: Equatable {
   case alertDismissed
   case connectButtonTapped
   case messageToSendChanged(String)
@@ -60,7 +60,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
 
   switch action {
   case .alertDismissed:
-    state.alert = .dismissed
+    state.alert = nil
     return .none
 
   case .connectButtonTapped:
@@ -109,7 +109,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
 
   case let .sendResponse(error):
     if error != nil {
-      state.alert = .show(title: "Could not send socket message. Try again.")
+      state.alert = .init(title: "Could not send socket message. Try again.")
     }
     return .none
 
@@ -121,7 +121,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
     let .webSocket(.didCompleteWithError(error)):
     state.connectivityState = .disconnected
     if error != nil {
-      state.alert = .show(title: "Disconnected from socket for some reason. Try again.")
+      state.alert = .init(title: "Disconnected from socket for some reason. Try again.")
     }
     return .cancel(id: WebSocketId())
 
@@ -175,10 +175,7 @@ struct WebSocketView: View {
         Text(viewStore.receivedMessages.joined(separator: "\n"))
       }
       .padding()
-      .alert(
-        self.store.scope(state: { $0.alert }),
-        dismiss: .alertDismissed
-      )
+      .alert(self.store.scope(state: { $0.alert }), dismiss: .alertDismissed)
       .navigationBarTitle("Web Socket")
     }
   }
@@ -187,14 +184,14 @@ struct WebSocketView: View {
 // MARK: - WebSocketClient
 
 struct WebSocketClient {
-  enum Action: Hashable {
+  enum Action: Equatable {
     case didBecomeInvalidWithError(NSError?)
     case didClose(code: URLSessionWebSocketTask.CloseCode, reason: Data?)
     case didCompleteWithError(NSError?)
     case didOpenWithProtocol(String?)
   }
 
-  enum Message: Hashable {
+  enum Message: Equatable {
     case data(Data)
     case string(String)
 

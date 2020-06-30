@@ -1,10 +1,5 @@
 import Foundation
 
-struct AlertData: Identifiable {
-  var message: String
-  var id: String { self.message }
-}
-
 let dateFormatter: DateFormatter = {
   let formatter = DateFormatter()
   formatter.dateStyle = .short

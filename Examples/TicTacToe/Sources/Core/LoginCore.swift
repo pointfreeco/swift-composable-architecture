@@ -5,12 +5,12 @@ import TicTacToeCommon
 import TwoFactorCore
 
 public struct LoginState: Equatable {
-  public var alertData: AlertData? = nil
+  public var alert: AlertState<LoginAction>?
   public var email = ""
   public var isFormValid = false
   public var isLoginRequestInFlight = false
   public var password = ""
-  public var twoFactor: TwoFactorState? = nil
+  public var twoFactor: TwoFactorState?
 
   public init() {}
 }
@@ -55,7 +55,7 @@ public let loginReducer = twoFactorReducer
       state, action, environment in
       switch action {
       case .alertDismissed:
-        state.alertData = nil
+        state.alert = nil
         return .none
 
       case let .emailChanged(email):
@@ -71,7 +71,7 @@ public let loginReducer = twoFactorReducer
         return .none
 
       case let .loginResponse(.failure(error)):
-        state.alertData = AlertData(title: error.localizedDescription)
+        state.alert = .init(title: error.localizedDescription)
         state.isLoginRequestInFlight = false
         return .none
 

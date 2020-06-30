@@ -7,7 +7,7 @@ import UIKit
 
 class LoginViewController: UIViewController {
   struct ViewState: Equatable {
-    let alertData: AlertData?
+    let alert: AlertState<LoginAction>?
     let email: String?
     let isActivityIndicatorHidden: Bool
     let isEmailTextFieldEnabled: Bool
@@ -131,13 +131,13 @@ class LoginViewController: UIViewController {
       .assign(to: \.isHidden, on: activityIndicator)
       .store(in: &self.cancellables)
 
-    self.viewStore.publisher.alertData
-      .sink { [weak self] alertData in
+    self.viewStore.publisher.alert
+      .sink { [weak self] alert in
         guard let self = self else { return }
-        guard let alertData = alertData else { return }
+        guard let alert = alert else { return }
 
         let alertController = UIAlertController(
-          title: alertData.title, message: nil, preferredStyle: .alert)
+          title: alert.title, message: nil, preferredStyle: .alert)
         alertController.addAction(
           UIAlertAction(
             title: "Ok", style: .default,
@@ -189,7 +189,7 @@ class LoginViewController: UIViewController {
 extension LoginState {
   var view: LoginViewController.ViewState {
     .init(
-      alertData: self.alertData,
+      alert: self.alert,
       email: self.email,
       isActivityIndicatorHidden: !self.isLoginRequestInFlight,
       isEmailTextFieldEnabled: !self.isLoginRequestInFlight,

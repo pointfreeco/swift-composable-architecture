@@ -2,7 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 struct DownloadComponentState<ID: Equatable>: Equatable {
-  var alert: AlertState<DownloadComponentAction.AlertAction> = .dismissed
+  var alert: AlertState<DownloadComponentAction.AlertAction>?
   let id: ID
   var mode: Mode
   let url: URL
@@ -34,7 +34,7 @@ enum DownloadComponentAction: Equatable {
   case buttonTapped
   case downloadClient(Result<DownloadClient.Action, DownloadClient.Error>)
 
-  enum AlertAction: Equatable, Hashable {
+  enum AlertAction: Equatable {
     case cancelButtonTapped
     case deleteButtonTapped
     case dismiss
@@ -59,18 +59,18 @@ extension Reducer {
         switch action {
         case .alert(.cancelButtonTapped):
           state.mode = .notDownloaded
-          state.alert = .dismissed
+          state.alert = nil
           return environment.downloadClient.cancel(state.id)
             .fireAndForget()
 
         case .alert(.deleteButtonTapped):
-          state.alert = .dismissed
+          state.alert = nil
           state.mode = .notDownloaded
           return .none
 
         case .alert(.nevermindButtonTapped),
           .alert(.dismiss):
-          state.alert = .dismissed
+          state.alert = nil
           return .none
 
         case .buttonTapped:
@@ -98,7 +98,7 @@ extension Reducer {
 
         case .downloadClient(.success(.response)):
           state.mode = .downloaded
-          state.alert = .dismissed
+          state.alert = nil
           return .none
 
         case let .downloadClient(.success(.updateProgress(progress))):
@@ -107,7 +107,7 @@ extension Reducer {
 
         case .downloadClient(.failure):
           state.mode = .notDownloaded
-          state.alert = .dismissed
+          state.alert = nil
           return .none
         }
       }
@@ -117,23 +117,19 @@ extension Reducer {
   }
 }
 
-private let deleteAlert = AlertState.show(
-  .init(
-    title: "Do you want to delete this map from your offline storage?",
-    primaryButton: .destructive("Delete", send: .deleteButtonTapped),
-    secondaryButton: nevermindButton
-  )
+private let deleteAlert = AlertState(
+  title: "Do you want to delete this map from your offline storage?",
+  primaryButton: .destructive("Delete", send: .deleteButtonTapped),
+  secondaryButton: nevermindButton
 )
 
-private let cancelAlert = AlertState.show(
-  .init(
-    title: "Do you want to cancel downloading this map?",
-    primaryButton: .cancel(send: .cancelButtonTapped),
-    secondaryButton: nevermindButton
-  )
+private let cancelAlert = AlertState(
+  title: "Do you want to cancel downloading this map?",
+  primaryButton: .cancel(send: .cancelButtonTapped),
+  secondaryButton: nevermindButton
 )
 
-let nevermindButton = AlertState<DownloadComponentAction.AlertAction>.Alert.Button
+let nevermindButton = AlertState<DownloadComponentAction.AlertAction>.Button
   .default("Nevermind", send: .nevermindButtonTapped)
 
 struct DownloadComponent<ID: Equatable>: View {
