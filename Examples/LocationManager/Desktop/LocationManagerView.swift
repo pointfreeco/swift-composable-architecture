@@ -49,7 +49,7 @@ struct LocationManagerView: View {
           .padding([.bottom], 16)
         }
       }
-      .alert(self.store(scope: { $0.alert }), dismiss: .dismissAlertButtonTapped)
+      .alert(self.store.scope(state: { $0.alert }), dismiss: .dismissAlertButtonTapped)
       .onAppear { viewStore.send(.onAppear) }
     }
   }
