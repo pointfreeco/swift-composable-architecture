@@ -26,8 +26,11 @@ class SpeechRecognitionTests: XCTestCase {
       },
       .do { self.scheduler.advance() },
       .receive(.speechRecognizerAuthorizationStatusResponse(.denied)) {
-        $0.authorizationStateAlert =
-          "You denied access to speech recognition. This app needs access to transcribe your speech."
+        $0.alert = .init(
+          title: """
+          You denied access to speech recognition. This app needs access to transcribe your speech.
+          """
+        )
         $0.isRecording = false
         $0.speechRecognizerAuthorizationStatus = .denied
       }
@@ -52,7 +55,7 @@ class SpeechRecognitionTests: XCTestCase {
       },
       .do { self.scheduler.advance() },
       .receive(.speechRecognizerAuthorizationStatusResponse(.restricted)) {
-        $0.authorizationStateAlert = "Your device does not allow speech recognition."
+        $0.alert = .init(title: "Your device does not allow speech recognition.")
         $0.isRecording = false
         $0.speechRecognizerAuthorizationStatus = .restricted
       }
@@ -136,7 +139,7 @@ class SpeechRecognitionTests: XCTestCase {
 
       .do { self.recognitionTaskSubject.send(completion: .failure(.couldntConfigureAudioSession)) },
       .receive(.speech(.failure(.couldntConfigureAudioSession))) {
-        $0.authorizationStateAlert = "Problem with audio device. Please try again."
+        $0.alert = .init(title: "Problem with audio device. Please try again.")
       },
 
       .do { self.recognitionTaskSubject.send(completion: .finished) }
@@ -168,7 +171,7 @@ class SpeechRecognitionTests: XCTestCase {
 
       .do { self.recognitionTaskSubject.send(completion: .failure(.couldntStartAudioEngine)) },
       .receive(.speech(.failure(.couldntStartAudioEngine))) {
-        $0.authorizationStateAlert = "Problem with audio device. Please try again."
+        $0.alert = .init(title: "Problem with audio device. Please try again.")
       },
 
       .do { self.recognitionTaskSubject.send(completion: .finished) }
