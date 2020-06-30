@@ -158,7 +158,8 @@ public struct AlertState<Action> {
 }
 
 extension View {
-  /// Displays an alert when `state` is in the `.show` state.
+  /// Displays an alert when then store's state becomes non-`nil`, and dismisses it when it becomes
+  /// `nil`.
   ///
   /// - Parameters:
   ///   - store: A store that describes if the alert is shown or dismissed.

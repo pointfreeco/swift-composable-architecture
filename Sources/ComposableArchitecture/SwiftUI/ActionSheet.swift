@@ -146,7 +146,8 @@ extension ActionSheetState: Identifiable where Action: Hashable {
 }
 
 extension View {
-  /// Displays an action sheet when `state` is in the `.show` state.
+  /// Displays an action sheet when the store's state becomes non-`nil`, and dismisses it when it
+  /// becomes `nil`.
   ///
   /// - Parameters:
   ///   - store: A store that describes if the action sheet is shown or dismissed.
