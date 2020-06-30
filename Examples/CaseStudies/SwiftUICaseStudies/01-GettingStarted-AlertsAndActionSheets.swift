@@ -35,7 +35,7 @@ enum AlertAndSheetAction: Equatable {
 
 struct AlertAndSheetEnvironment {}
 
-let AlertAndSheetReducer = Reducer<
+let alertAndSheetReducer = Reducer<
   AlertAndSheetState, AlertAndSheetAction, AlertAndSheetEnvironment
 > { state, action, _ in
 
@@ -115,7 +115,7 @@ struct AlertAndSheet_Previews: PreviewProvider {
       AlertAndSheetView(
         store: .init(
           initialState: .init(),
-          reducer: AlertAndSheetReducer,
+          reducer: alertAndSheetReducer,
           environment: .init()
         )
       )

@@ -67,7 +67,7 @@ struct RootView: View {
             destination: AlertAndSheetView(
               store: .init(
                 initialState: .init(),
-                reducer: AlertAndSheetReducer,
+                reducer: alertAndSheetReducer,
                 environment: .init()
               )
             )

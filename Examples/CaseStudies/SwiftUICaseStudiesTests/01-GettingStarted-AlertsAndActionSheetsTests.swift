@@ -9,7 +9,7 @@ class AlertsAndActionSheetsTests: XCTestCase {
   func testAlert() {
     let store = TestStore(
       initialState: AlertAndSheetState(),
-      reducer: AlertAndSheetReducer,
+      reducer: alertAndSheetReducer,
       environment: AlertAndSheetEnvironment()
     )
 
@@ -32,7 +32,7 @@ class AlertsAndActionSheetsTests: XCTestCase {
   func testActionSheet() {
     let store = TestStore(
       initialState: AlertAndSheetState(),
-      reducer: AlertAndSheetReducer,
+      reducer: alertAndSheetReducer,
       environment: AlertAndSheetEnvironment()
     )
 
