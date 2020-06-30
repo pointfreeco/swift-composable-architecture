@@ -2,41 +2,10 @@ import ComposableArchitecture
 import SwiftUI
 
 struct DownloadComponentState<ID: Equatable>: Equatable {
-  var alert: DownloadAlert?
+  var alert: AlertState<DownloadComponentAction.AlertAction>?
   let id: ID
   var mode: Mode
   let url: URL
-}
-
-struct DownloadAlert: Equatable, Identifiable {
-  var primaryButton: Button
-  var secondaryButton: Button
-  var title: String
-
-  var id: String { self.title }
-
-  struct Button: Equatable {
-    var action: DownloadComponentAction
-    var label: String
-    var type: `Type`
-
-    enum `Type` {
-      case cancel
-      case `default`
-      case destructive
-    }
-
-    func toSwiftUI(action: @escaping (DownloadComponentAction) -> Void) -> Alert.Button {
-      switch self.type {
-      case .cancel:
-        return .cancel(Text(self.label)) { action(self.action) }
-      case .default:
-        return .default(Text(self.label)) { action(self.action) }
-      case .destructive:
-        return .destructive(Text(self.label)) { action(self.action) }
-      }
-    }
-  }
 }
 
 enum Mode: Equatable {
@@ -148,31 +117,20 @@ extension Reducer {
   }
 }
 
-private let deleteAlert = DownloadAlert(
-  primaryButton: .init(
-    action: .alert(.deleteButtonTapped),
-    label: "Delete",
-    type: .destructive
-  ),
-  secondaryButton: nevermindButton,
-  title: "Do you want to delete this map from your offline storage?"
+private let deleteAlert = AlertState(
+  title: "Do you want to delete this map from your offline storage?",
+  primaryButton: .destructive("Delete", send: .deleteButtonTapped),
+  secondaryButton: nevermindButton
 )
 
-private let cancelAlert = DownloadAlert(
-  primaryButton: .init(
-    action: .alert(.cancelButtonTapped),
-    label: "Cancel",
-    type: .destructive
-  ),
-  secondaryButton: nevermindButton,
-  title: "Do you want to cancel downloading this map?"
+private let cancelAlert = AlertState(
+  title: "Do you want to cancel downloading this map?",
+  primaryButton: .cancel(send: .cancelButtonTapped),
+  secondaryButton: nevermindButton
 )
 
-let nevermindButton = DownloadAlert.Button(
-  action: .alert(.nevermindButtonTapped),
-  label: "Nevermind",
-  type: .default
-)
+let nevermindButton = AlertState<DownloadComponentAction.AlertAction>.Button
+  .default("Nevermind", send: .nevermindButtonTapped)
 
 struct DownloadComponent<ID: Equatable>: View {
   let store: Store<DownloadComponentState<ID>, DownloadComponentAction>
@@ -206,14 +164,9 @@ struct DownloadComponent<ID: Equatable>: View {
         }
       }
       .alert(
-        item: viewStore.binding(get: { $0.alert }, send: .alert(.dismiss))
-      ) { alert in
-        Alert(
-          title: Text(alert.title),
-          primaryButton: alert.primaryButton.toSwiftUI(action: viewStore.send),
-          secondaryButton: alert.secondaryButton.toSwiftUI(action: viewStore.send)
-        )
-      }
+        self.store.scope(state: { $0.alert }, action: DownloadComponentAction.alert),
+        dismiss: .dismiss
+      )
     }
   }
 }

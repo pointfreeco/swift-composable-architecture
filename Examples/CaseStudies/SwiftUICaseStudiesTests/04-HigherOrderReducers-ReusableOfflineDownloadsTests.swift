@@ -20,7 +20,6 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   func testDownloadFlow() {
     let store = TestStore(
       initialState: DownloadComponentState(
-        alert: nil,
         id: 1,
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
@@ -57,7 +56,6 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   func testDownloadThrottling() {
     let store = TestStore(
       initialState: DownloadComponentState(
-        alert: nil,
         id: 1,
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
@@ -99,7 +97,6 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   func testCancelDownloadFlow() {
     let store = TestStore(
       initialState: DownloadComponentState(
-        alert: nil,
         id: 1,
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
@@ -120,14 +117,10 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       },
 
       .send(.buttonTapped) {
-        $0.alert = DownloadAlert(
-          primaryButton: .init(
-            action: .alert(.cancelButtonTapped), label: "Cancel", type: .destructive
-          ),
-          secondaryButton: .init(
-            action: .alert(.nevermindButtonTapped), label: "Nevermind", type: .default
-          ),
-          title: "Do you want to cancel downloading this map?"
+        $0.alert = .init(
+          title: "Do you want to cancel downloading this map?",
+          primaryButton: .cancel(send: .cancelButtonTapped),
+          secondaryButton: .default("Nevermind", send: .nevermindButtonTapped)
         )
       },
 
@@ -143,7 +136,6 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   func testDownloadFinishesWhileTryingToCancel() {
     let store = TestStore(
       initialState: DownloadComponentState(
-        alert: nil,
         id: 1,
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
@@ -164,14 +156,10 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       },
 
       .send(.buttonTapped) {
-        $0.alert = DownloadAlert(
-          primaryButton: .init(
-            action: .alert(.cancelButtonTapped), label: "Cancel", type: .destructive
-          ),
-          secondaryButton: .init(
-            action: .alert(.nevermindButtonTapped), label: "Nevermind", type: .default
-          ),
-          title: "Do you want to cancel downloading this map?"
+        $0.alert = .init(
+          title: "Do you want to cancel downloading this map?",
+          primaryButton: .cancel(send: .cancelButtonTapped),
+          secondaryButton: .default("Nevermind", send: .nevermindButtonTapped)
         )
       },
 
@@ -188,7 +176,6 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   func testDeleteDownloadFlow() {
     let store = TestStore(
       initialState: DownloadComponentState(
-        alert: nil,
         id: 1,
         mode: .downloaded,
         url: URL(string: "https://www.pointfree.co")!
@@ -205,14 +192,10 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 
     store.assert(
       .send(.buttonTapped) {
-        $0.alert = DownloadAlert(
-          primaryButton: .init(
-            action: .alert(.deleteButtonTapped), label: "Delete", type: .destructive
-          ),
-          secondaryButton: .init(
-            action: .alert(.nevermindButtonTapped), label: "Nevermind", type: .default
-          ),
-          title: "Do you want to delete this map from your offline storage?"
+        $0.alert = .init(
+          title: "Do you want to delete this map from your offline storage?",
+          primaryButton: .destructive("Delete", send: .deleteButtonTapped),
+          secondaryButton: .default("Nevermind", send: .nevermindButtonTapped)
         )
       },
 

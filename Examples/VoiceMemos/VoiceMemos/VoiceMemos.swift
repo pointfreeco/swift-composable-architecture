@@ -3,7 +3,7 @@ import ComposableArchitecture
 import SwiftUI
 
 struct VoiceMemosState: Equatable {
-  var alertMessage: String?
+  var alert: AlertState<VoiceMemosAction>?
   var audioRecorderPermission = RecorderPermission.undetermined
   var currentRecording: CurrentRecording?
   var voiceMemos: [VoiceMemo] = []
@@ -54,7 +54,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
     action: /VoiceMemosAction.voiceMemo(index:action:),
     environment: {
       VoiceMemoEnvironment(audioPlayerClient: $0.audioPlayerClient, mainQueue: $0.mainQueue)
-  }),
+    }),
   .init { state, action, environment in
     struct RecorderId: Hashable {}
     struct RecorderTimerId: Hashable {}
@@ -78,7 +78,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
 
     switch action {
     case .alertDismissed:
-      state.alertMessage = nil
+      state.alert = nil
       return .none
 
     case .audioRecorderClient(.success(.didFinishRecording(successfully: true))):
@@ -103,7 +103,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
 
     case .audioRecorderClient(.success(.didFinishRecording(successfully: false))),
       .audioRecorderClient(.failure):
-      state.alertMessage = "Voice memo recording failed."
+      state.alert = .init(title: "Voice memo recording failed.")
       state.currentRecording = nil
       return .cancel(id: RecorderTimerId())
 
@@ -128,7 +128,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
           .eraseToEffect()
 
       case .denied:
-        state.alertMessage = "Permission is required to record voice memos."
+        state.alert = .init(title: "Permission is required to record voice memos.")
         return .none
 
       case .allowed:
@@ -159,12 +159,12 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       if permission {
         return startRecording()
       } else {
-        state.alertMessage = "Permission is required to record voice memos."
+        state.alert = .init(title: "Permission is required to record voice memos.")
         return .none
       }
 
     case .voiceMemo(index: _, action: .audioPlayerClient(.failure)):
-      state.alertMessage = "Voice memo playback failed."
+      state.alert = .init(title: "Voice memo playback failed.")
       return .none
 
     case let .voiceMemo(index: index, action: .delete):
@@ -243,13 +243,9 @@ struct VoiceMemosView: View {
           .animation(Animation.easeInOut(duration: 0.3))
         }
         .alert(
-          item: viewStore.binding(
-            get: { $0.alertMessage.map(AlertData.init) },
-            send: .alertDismissed
-          )
-        ) { alertMessage in
-          Alert(title: Text(alertMessage.message))
-        }
+          self.store.scope(state: { $0.alert }),
+          dismiss: .alertDismissed
+        )
         .navigationBarTitle("Voice memos")
       }
       .navigationViewStyle(StackNavigationViewStyle())

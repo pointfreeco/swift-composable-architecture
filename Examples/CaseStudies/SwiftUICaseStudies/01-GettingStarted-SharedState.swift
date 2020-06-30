@@ -21,7 +21,7 @@ struct SharedState: Equatable {
   enum Tab { case counter, profile }
 
   struct CounterState: Equatable {
-    var alert: String?
+    var alert: AlertState<SharedStateAction.CounterAction>?
     var count = 0
     var maxCount = 0
     var minCount = 0
@@ -105,10 +105,11 @@ let sharedStateCounterReducer = Reducer<
     return .none
 
   case .isPrimeButtonTapped:
-    state.alert =
-      isPrime(state.count)
-      ? "👍 The number \(state.count) is prime!"
-      : "👎 The number \(state.count) is not prime :("
+    state.alert = .init(
+      title: isPrime(state.count)
+        ? "👍 The number \(state.count) is prime!"
+        : "👎 The number \(state.count) is not prime :("
+    )
     return .none
   }
 }
@@ -204,14 +205,7 @@ struct SharedStateCounterView: View {
       .padding(16)
       .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity, alignment: .top)
       .navigationBarTitle("Shared State Demo")
-      .alert(
-        item: viewStore.binding(
-          get: { $0.alert.map(PrimeAlert.init(title:)) },
-          send: .alertDismissed
-        )
-      ) { alert in
-        SwiftUI.Alert(title: Text(alert.title))
-      }
+      .alert(self.store.scope(state: { $0.alert }), dismiss: .alertDismissed)
     }
   }
 }
@@ -247,11 +241,6 @@ struct SharedStateProfileView: View {
       .navigationBarTitle("Profile")
     }
   }
-}
-
-private struct PrimeAlert: Equatable, Identifiable {
-  let title: String
-  var id: String { self.title }
 }
 
 // MARK: - SwiftUI previews

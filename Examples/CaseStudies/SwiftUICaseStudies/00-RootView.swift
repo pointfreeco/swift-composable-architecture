@@ -63,6 +63,17 @@ struct RootView: View {
           )
 
           NavigationLink(
+            "Alerts and Action Sheets",
+            destination: AlertAndSheetView(
+              store: .init(
+                initialState: .init(),
+                reducer: alertAndSheetReducer,
+                environment: .init()
+              )
+            )
+          )
+
+          NavigationLink(
             "Animations",
             destination: AnimationsView(
               store: Store(

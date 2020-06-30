@@ -11,7 +11,7 @@ private let readMe = """
   """
 
 struct WebSocketState: Equatable {
-  var alert: String?
+  var alert: AlertState<WebSocketAction>?
   var connectivityState = ConnectivityState.disconnected
   var messageToSend = ""
   var receivedMessages: [String] = []
@@ -109,7 +109,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
 
   case let .sendResponse(error):
     if error != nil {
-      state.alert = "Could not send socket message. Try again."
+      state.alert = .init(title: "Could not send socket message. Try again.")
     }
     return .none
 
@@ -121,7 +121,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
     let .webSocket(.didCompleteWithError(error)):
     state.connectivityState = .disconnected
     if error != nil {
-      state.alert = "Disconnected from socket for some reason. Try again."
+      state.alert = .init(title: "Disconnected from socket for some reason. Try again.")
     }
     return .cancel(id: WebSocketId())
 
@@ -175,23 +175,10 @@ struct WebSocketView: View {
         Text(viewStore.receivedMessages.joined(separator: "\n"))
       }
       .padding()
-      .alert(
-        item: viewStore.binding(
-          get: { $0.alert.map(WebSocketAlert.init(title:)) },
-          send: .alertDismissed
-        )
-      ) { alert in
-        Alert(title: Text(alert.title))
-      }
+      .alert(self.store.scope(state: { $0.alert }), dismiss: .alertDismissed)
       .navigationBarTitle("Web Socket")
     }
   }
-}
-
-struct WebSocketAlert: Identifiable {
-  var title: String
-
-  var id: String { self.title }
 }
 
 // MARK: - WebSocketClient
