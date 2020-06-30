@@ -4,9 +4,9 @@ import SwiftUI
 /// generic is the type of actions that can be sent from tapping on a button in the alert.
 ///
 /// This type can be used in your application's state in order to control the presentation or
-/// dismissal of alerts. It is preferrable to use this API instead of the default SwiftUI API
-/// for alerts because SwiftUI uses 2-way bindings in order to control the showing and dismissal
-/// of alerts, and that does not play nicely with the Composable Architecture. The library requires
+/// dismissal of alerts. It is preferrable to use this API instead of the default SwiftUI API for
+/// alerts because SwiftUI uses 2-way bindings in order to control the showing and dismissal of
+/// alerts, and that does not play nicely with the Composable Architecture. The library requires
 /// that all state mutations happen by sending an action so that a reducer can handle that logic,
 /// which greatly simplifies how data flows through your application, and gives you instant
 /// testability on all parts of your application.
@@ -30,8 +30,8 @@ import SwiftUI
 ///       // Your other state
 ///     }
 ///
-/// Then, in the reducer you can construct an `AlertState` value to represent the alert you want
-/// to show to the user:
+/// Then, in the reducer you can construct an `AlertState` value to represent the alert you want to
+/// show to the user:
 ///
 ///     let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, env in
 ///       switch action
@@ -50,12 +50,12 @@ import SwiftUI
 ///             primaryButton: .default("Confirm", send: .confirmTapped),
 ///             secondaryButton: .cancel()
 ///           )
-///         return .none
+///           return .none
 ///       }
 ///     }
 ///
-/// And then, in your view you can use the `.alert(_:send:dismiss:)` method on `View` in order
-/// to present the alert in a way that works best with the Composable Architecture:
+/// And then, in your view you can use the `.alert(_:send:dismiss:)` method on `View` in order to
+/// present the alert in a way that works best with the Composable Architecture:
 ///
 ///     Button("Delete") { viewStore.send(.deleteTapped) }
 ///       .alert(

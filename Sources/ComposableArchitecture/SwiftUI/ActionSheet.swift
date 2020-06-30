@@ -31,8 +31,8 @@ import SwiftUI
 ///       // Your other state
 ///     }
 ///
-/// Then, in the reducer you can construct an `ActionSheetState` value to represent the action
-/// sheet you want to show to the user:
+/// Then, in the reducer you can construct an `ActionSheetState` value to represent the action sheet
+/// you want to show to the user:
 ///
 ///     let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, env in
 ///       switch action
@@ -57,7 +57,7 @@ import SwiftUI
 ///               .cancel(),
 ///             ]
 ///           )
-///         return .none
+///           return .none
 ///       }
 ///     }
 ///
