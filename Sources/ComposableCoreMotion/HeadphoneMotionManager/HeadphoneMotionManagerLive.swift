@@ -16,7 +16,7 @@
             assertionFailure(
               """
               You are attempting to create a headphone motion manager with the id \(id), but there \
-              is already a running manager with that id. This is considered a programmer error
+              is already a running manager with that id. This is considered a programmer error \
               since you may be accidentally overwriting an existing manager without knowing.
 
               To fix you should either destroy the existing manager before creating a new one, or \
