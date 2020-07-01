@@ -3,72 +3,138 @@ import ComposableArchitecture
 import SwiftUI
 
 struct RootState {
+  var alertAndActionSheet = AlertAndSheetState()
   var animation = AnimationsState()
   var bindingBasics = BindingBasicsState()
+  var clock = ClockState()
   var counter = CounterState()
+  var dieRoll = DieRollState()
   var effectsBasics = EffectsBasicsState()
   var effectsCancellation = EffectsCancellationState()
   var effectsTimers = TimersState()
+  var episodes = EpisodesState(
+    episodes: .mocks
+  )
+  var loadThenNavigate = LoadThenNavigateState()
+  var loadThenNavigateList = LoadThenNavigateListState(
+    rows: [
+      .init(count: 1, id: UUID()),
+      .init(count: 42, id: UUID()),
+      .init(count: 100, id: UUID()),
+    ]
+  )
+  var loadThenPresent = LoadThenPresentState()
   var longLivingEffects = LongLivingEffectsState()
+  var map = MapAppState(cityMaps: .mocks)
+  var multipleDependencies = MultipleDependenciesState()
+  var navigateAndLoad = NavigateAndLoadState()
+  var navigateAndLoadList = NavigateAndLoadListState(
+    rows: [
+      .init(count: 1, id: UUID()),
+      .init(count: 42, id: UUID()),
+      .init(count: 100, id: UUID()),
+    ]
+  )
+  var nested = NestedState.mock
   var optionalBasics = OptionalBasicsState()
+  var presentAndLoad = PresentAndLoadState()
   var shared = SharedState()
+  var timers = TimersState()
   var twoCounters = TwoCountersState()
+  var webSocket = WebSocketState()
 }
 
 enum RootAction {
+  case alertAndActionSheet(AlertAndSheetAction)
   case animation(AnimationsAction)
   case bindingBasics(BindingBasicsAction)
+  case clock(ClockAction)
   case counter(CounterAction)
+  case dieRoll(DieRollAction)
   case effectsBasics(EffectsBasicsAction)
   case effectsCancellation(EffectsCancellationAction)
+  case episodes(EpisodesAction)
+  case loadThenNavigate(LoadThenNavigateAction)
+  case loadThenNavigateList(LoadThenNavigateListAction)
+  case loadThenPresent(LoadThenPresentAction)
   case longLivingEffects(LongLivingEffectsAction)
+  case map(MapAppAction)
+  case multipleDependencies(MultipleDependenciesAction)
+  case navigateAndLoad(NavigateAndLoadAction)
+  case navigateAndLoadList(NavigateAndLoadListAction)
+  case nested(NestedAction)
   case optionalBasics(OptionalBasicsAction)
+  case presentAndLoad(PresentAndLoadAction)
   case shared(SharedStateAction)
+  case timers(TimersAction)
   case twoCounters(TwoCountersAction)
+  case webSocket(WebSocketAction)
 }
 
 struct RootEnvironment {
+  var date: () -> Date
+  var downloadClient:  DownloadClient
+  var favorite: (UUID, Bool) ->  Effect<Bool, Error>
+  var fetchNumber: () -> Effect<Int, Never>
   var mainQueue: AnySchedulerOf<DispatchQueue>
   var numberFact: (Int) -> Effect<String, NumbersApiError>
   var trivia: (Int) -> Effect<String, TriviaApiError>
   var userDidTakeScreenshot: Effect<Void, Never>
+  var uuid: () -> UUID
+  var webSocket: WebSocketClient
 
   static let live = Self(
+    date: Date.init,
+    downloadClient: .live,
+    favorite: favorite(id:isFavorite:),
+    fetchNumber: {
+      Effect(value: Int.random(in: 1...1_000))
+        .delay(for: 1, scheduler: DispatchQueue.main)
+        .eraseToEffect()
+    },
     mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
     numberFact: liveNumberFact(for:),
     trivia: liveTrivia(for:),
     userDidTakeScreenshot: NotificationCenter.default
       .publisher(for: UIApplication.userDidTakeScreenshotNotification)
       .map { _ in () }
-      .eraseToEffect()
+      .eraseToEffect(),
+    uuid: UUID.init,
+    webSocket: .live
   )
 }
 
 let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
   // 01 - Getting Started
+  alertAndSheetReducer
+    .pullback(
+      state: \.alertAndActionSheet,
+      action: /RootAction.alertAndActionSheet,
+      environment: { _ in .init() }
+    ),
   animationsReducer
     .pullback(
       state: \.animation,
       action: /RootAction.animation,
-      environment: { _ in AnimationsEnvironment() }
+      environment: { .init(mainQueue: $0.mainQueue) }
     ),
   bindingBasicsReducer
     .pullback(
       state: \.bindingBasics,
       action: /RootAction.bindingBasics,
-      environment: { _ in BindingBasicsEnvironment() }
+      environment: { _ in .init() }
     ),
   counterReducer
     .pullback(
       state: \.counter,
       action: /RootAction.counter,
-      environment: { _ in CounterEnvironment() }
+      environment: { _ in .init() }
     ),
   optionalBasicsReducer
     .pullback(
       state: \.optionalBasics,
       action: /RootAction.optionalBasics,
-      environment: { _ in OptionalBasicsEnvironment() }
+      environment: { _ in .init() }
     ),
   sharedStateReducer
     .pullback(
@@ -80,7 +146,7 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.twoCounters,
       action: /RootAction.twoCounters,
-      environment: { _ in TwoCountersEnvironment() }
+      environment: { _ in .init() }
     ),
 
   // 02 - Effects
@@ -88,23 +154,115 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.effectsBasics,
       action: /RootAction.effectsBasics,
-      environment: { EffectsBasicsEnvironment(mainQueue: $0.mainQueue, numberFact: $0.numberFact ) }
+      environment: { .init(mainQueue: $0.mainQueue, numberFact: $0.numberFact ) }
     ),
   effectsCancellationReducer
     .pullback(
       state: \.effectsCancellation,
       action: /RootAction.effectsCancellation,
-      environment: { EffectsCancellationEnvironment(mainQueue: $0.mainQueue, trivia: $0.trivia) }
+      environment: { .init(mainQueue: $0.mainQueue, trivia: $0.trivia) }
     ),
   longLivingEffectsReducer
     .pullback(
       state: \.longLivingEffects,
       action: /RootAction.longLivingEffects,
-      environment: { LongLivingEffectsEnvironment(userDidTakeScreenshot: $0.userDidTakeScreenshot) }
+      environment: { .init(userDidTakeScreenshot: $0.userDidTakeScreenshot) }
+    ),
+  multipleDependenciesReducer
+    .pullback(
+      state: \.multipleDependencies,
+      action: /RootAction.multipleDependencies,
+      environment: { env in
+        .init(
+          date: env.date,
+          environment: .init(fetchNumber: env.fetchNumber),
+          mainQueue: { env.mainQueue },
+          uuid: env.uuid
+        )
+      }
+    ),
+  timersReducer
+    .pullback(
+      state: \.timers,
+      action: /RootAction.timers,
+      environment: { .init(mainQueue: $0.mainQueue) }
+    ),
+  webSocketReducer
+    .pullback(
+      state: \.webSocket,
+      action: /RootAction.webSocket,
+      environment: { .init(mainQueue: $0.mainQueue, webSocket: $0.webSocket) }
     ),
 
+  // 03 - Navigation
+  navigateAndLoadReducer
+    .pullback(
+      state: \.navigateAndLoad,
+      action: /RootAction.navigateAndLoad,
+      environment: { .init(mainQueue: $0.mainQueue) }
+    ),
+  loadThenNavigateReducer
+    .pullback(
+      state: \.loadThenNavigate,
+      action: /RootAction.loadThenNavigate,
+      environment: { .init(mainQueue: $0.mainQueue) }
+    ),
+  navigateAndLoadListReducer
+    .pullback(
+      state: \.navigateAndLoadList,
+      action: /RootAction.navigateAndLoadList,
+      environment: { .init(mainQueue: $0.mainQueue) }
+    ),
+  loadThenNavigateListReducer
+    .pullback(
+      state: \.loadThenNavigateList,
+      action: /RootAction.loadThenNavigateList,
+      environment: { .init(mainQueue: $0.mainQueue) }
+    ),
+  presentAndLoadReducer
+    .pullback(
+      state: \.presentAndLoad,
+      action: /RootAction.presentAndLoad,
+      environment: { .init(mainQueue: $0.mainQueue) }
+    ),
+  loadThenPresentReducer
+    .pullback(
+      state: \.loadThenPresent,
+      action: /RootAction.loadThenPresent,
+      environment: { .init(mainQueue: $0.mainQueue) }
+    ),
 
-  .empty
+  // 04 - Higher order reducers
+  episodesReducer
+    .pullback(
+      state: \.episodes,
+      action: /RootAction.episodes,
+      environment: { .init(favorite: $0.favorite, mainQueue: $0.mainQueue) }
+    ),
+  mapAppReducer
+    .pullback(
+      state: \.map,
+      action: /RootAction.map,
+      environment: { .init(downloadClient: $0.downloadClient, mainQueue: $0.mainQueue) }
+    ),
+  dieRollReducer
+    .pullback(
+      state: \.dieRoll,
+      action: /RootAction.dieRoll,
+      environment: { _ in .init(rollDie: { .random(in: 1...6) }) }
+    ),
+  clockReducer
+    .pullback(
+      state: \.clock,
+      action: /RootAction.clock,
+      environment: { .init(mainQueue: $0.mainQueue) }
+    ),
+  nestedReducer
+    .pullback(
+      state: \.nested,
+      action: /RootAction.nested,
+      environment: { .init(uuid: $0.uuid) }
+    )
 )
 .signpost()
 
@@ -168,10 +326,9 @@ struct RootView: View {
           NavigationLink(
             "Alerts and Action Sheets",
             destination: AlertAndSheetView(
-              store: .init(
-                initialState: .init(),
-                reducer: alertAndSheetReducer,
-                environment: .init()
+              store: self.store.scope(
+                state: { $0.alertAndActionSheet },
+                action: RootAction.alertAndActionSheet
               )
             )
           )
@@ -220,12 +377,9 @@ struct RootView: View {
           NavigationLink(
             "Timers",
             destination: TimersView(
-              store: Store(
-                initialState: TimersState(),
-                reducer: timersReducer,
-                environment: TimersEnvironment(
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
-                )
+              store: self.store.scope(
+                state: { $0.timers },
+                action: RootAction.timers
               )
             )
           )
@@ -233,18 +387,9 @@ struct RootView: View {
           NavigationLink(
             "System environment",
             destination: MultipleDependenciesView(
-              store: Store(
-                initialState: MultipleDependenciesState(),
-                reducer: multipleDependenciesReducer,
-                environment: .live(
-                  environment: MultipleDependenciesEnvironment(
-                    fetchNumber: {
-                      Effect(value: Int.random(in: 1...1_000))
-                        .delay(for: 1, scheduler: DispatchQueue.main)
-                        .eraseToEffect()
-                    }
-                  )
-                )
+              store: self.store.scope(
+                state: { $0.multipleDependencies },
+                action: RootAction.multipleDependencies
               )
             )
           )
@@ -252,13 +397,9 @@ struct RootView: View {
           NavigationLink(
             "Web socket",
             destination: WebSocketView(
-              store: Store(
-                initialState: .init(),
-                reducer: webSocketReducer,
-                environment: WebSocketEnvironment(
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
-                  webSocket: .live
-                )
+              store: self.store.scope(
+                state: { $0.webSocket },
+                action: RootAction.webSocket
               )
             )
           )
@@ -268,12 +409,9 @@ struct RootView: View {
           NavigationLink(
             "Navigate and load data",
             destination: NavigateAndLoadView(
-              store: Store(
-                initialState: NavigateAndLoadState(),
-                reducer: navigateAndLoadReducer,
-                environment: NavigateAndLoadEnvironment(
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
-                )
+              store: self.store.scope(
+                state: { $0.navigateAndLoad },
+                action: RootAction.navigateAndLoad
               )
             )
           )
@@ -281,12 +419,9 @@ struct RootView: View {
           NavigationLink(
             "Load data then navigate",
             destination: LoadThenNavigateView(
-              store: Store(
-                initialState: LoadThenNavigateState(),
-                reducer: loadThenNavigateReducer,
-                environment: LoadThenNavigateEnvironment(
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
-                )
+              store: self.store.scope(
+                state: { $0.loadThenNavigate },
+                action: RootAction.loadThenNavigate
               )
             )
           )
@@ -294,18 +429,9 @@ struct RootView: View {
           NavigationLink(
             "Lists: Navigate and load data",
             destination: NavigateAndLoadListView(
-              store: Store(
-                initialState: NavigateAndLoadListState(
-                  rows: [
-                    .init(count: 1, id: UUID()),
-                    .init(count: 42, id: UUID()),
-                    .init(count: 100, id: UUID()),
-                  ]
-                ),
-                reducer: navigateAndLoadListReducer,
-                environment: NavigateAndLoadListEnvironment(
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
-                )
+              store: self.store.scope(
+                state: { $0.navigateAndLoadList },
+                action: RootAction.navigateAndLoadList
               )
             )
           )
@@ -313,18 +439,9 @@ struct RootView: View {
           NavigationLink(
             "Lists: Load data then navigate",
             destination: LoadThenNavigateListView(
-              store: Store(
-                initialState: LoadThenNavigateListState(
-                  rows: [
-                    .init(count: 1, id: UUID()),
-                    .init(count: 42, id: UUID()),
-                    .init(count: 100, id: UUID()),
-                  ]
-                ),
-                reducer: loadThenNavigateListReducer,
-                environment: LoadThenNavigateListEnvironment(
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
-                )
+              store: self.store.scope(
+                state: { $0.loadThenNavigateList },
+                action: RootAction.loadThenNavigateList
               )
             )
           )
@@ -332,12 +449,9 @@ struct RootView: View {
           NavigationLink(
             "Sheets: Present and load data",
             destination: PresentAndLoadView(
-              store: Store(
-                initialState: PresentAndLoadState(),
-                reducer: presentAndLoadReducer,
-                environment: PresentAndLoadEnvironment(
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
-                )
+              store: self.store.scope(
+                state: { $0.presentAndLoad },
+                action: RootAction.presentAndLoad
               )
             )
           )
@@ -345,12 +459,9 @@ struct RootView: View {
           NavigationLink(
             "Sheets: Load data then present",
             destination: LoadThenPresentView(
-              store: Store(
-                initialState: LoadThenPresentState(),
-                reducer: loadThenPresentReducer,
-                environment: LoadThenPresentEnvironment(
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
-                )
+              store: self.store.scope(
+                state: { $0.loadThenPresent },
+                action: RootAction.loadThenPresent
               )
             )
           )
@@ -360,15 +471,9 @@ struct RootView: View {
           NavigationLink(
             "Reusable favoriting component",
             destination: EpisodesView(
-              store: Store(
-                initialState: EpisodesState(
-                  episodes: .mocks
-                ),
-                reducer: episodesReducer,
-                environment: EpisodesEnvironment(
-                  favorite: favorite(id:isFavorite:),
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
-                )
+              store: self.store.scope(
+                state: { $0.episodes },
+                action: RootAction.episodes
               )
             )
           )
@@ -376,13 +481,9 @@ struct RootView: View {
           NavigationLink(
             "Reusable offline download component",
             destination: CitiesView(
-              store: Store(
-                initialState: .init(cityMaps: .mocks),
-                reducer: mapAppReducer,
-                environment: .init(
-                  downloadClient: .live,
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
-                )
+              store: self.store.scope(
+                state: { $0.map },
+                action: RootAction.map
               )
             )
           )
@@ -390,12 +491,9 @@ struct RootView: View {
           NavigationLink(
             "Strict reducers",
             destination: DieRollView(
-              store: Store(
-                initialState: DieRollState(),
-                reducer: dieRollReducer,
-                environment: DieRollEnvironment(
-                  rollDie: { .random(in: 1...6) }
-                )
+              store: self.store.scope(
+                state: { $0.dieRoll },
+                action: RootAction.dieRoll
               )
             )
           )
@@ -403,12 +501,9 @@ struct RootView: View {
           NavigationLink(
             "Elm-like subscriptions",
             destination: ClockView(
-              store: Store(
-                initialState: ClockState(),
-                reducer: clockReducer,
-                environment: ClockEnvironment(
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
-                )
+              store: self.store.scope(
+                state: { $0.clock },
+                action: RootAction.clock
               )
             )
           )
@@ -416,12 +511,9 @@ struct RootView: View {
           NavigationLink(
             "Recursive state and actions",
             destination: NestedView(
-              store: Store(
-                initialState: .mock,
-                reducer: nestedReducer,
-                environment: NestedEnvironment(
-                  uuid: UUID.init
-                )
+              store: self.store.scope(
+                state: { $0.nested },
+                action: RootAction.nested
               )
             )
           )
