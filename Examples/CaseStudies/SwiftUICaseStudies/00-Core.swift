@@ -74,18 +74,11 @@ struct RootEnvironment {
     date: Date.init,
     downloadClient: .live,
     favorite: favorite(id:isFavorite:),
-    fetchNumber: {
-      Effect(value: Int.random(in: 1...1_000))
-        .delay(for: 1, scheduler: DispatchQueue.main)
-        .eraseToEffect()
-    },
+    fetchNumber: liveFetchNumber,
     mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
     numberFact: liveNumberFact(for:),
     trivia: liveTrivia(for:),
-    userDidTakeScreenshot: NotificationCenter.default
-      .publisher(for: UIApplication.userDidTakeScreenshotNotification)
-      .map { _ in () }
-      .eraseToEffect(),
+    userDidTakeScreenshot: liveUserDidTakeScreenshot,
     uuid: UUID.init,
     webSocket: .live
   )
@@ -295,3 +288,14 @@ func liveTrivia(for n: Int) -> Effect<String, TriviaApiError> {
     .mapError { _ in TriviaApiError() }
     .eraseToEffect()
 }
+
+private func liveFetchNumber() -> Effect<Int, Never> {
+  Deferred { Just(Int.random(in: 1...1_000)) }
+    .delay(for: 1, scheduler: DispatchQueue.main)
+    .eraseToEffect()
+}
+
+private let liveUserDidTakeScreenshot =  NotificationCenter.default
+     .publisher(for: UIApplication.userDidTakeScreenshotNotification)
+     .map { _ in () }
+     .eraseToEffect()
