@@ -119,7 +119,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       .send(.buttonTapped) {
         $0.alert = .init(
           title: "Do you want to cancel downloading this map?",
-          primaryButton: .cancel(send: .cancelButtonTapped),
+          primaryButton: .destructive("Cancel", send: .cancelButtonTapped),
           secondaryButton: .default("Nevermind", send: .nevermindButtonTapped)
         )
       },
@@ -158,7 +158,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       .send(.buttonTapped) {
         $0.alert = .init(
           title: "Do you want to cancel downloading this map?",
-          primaryButton: .cancel(send: .cancelButtonTapped),
+          primaryButton: .destructive("Cancel", send: .cancelButtonTapped),
           secondaryButton: .default("Nevermind", send: .nevermindButtonTapped)
         )
       },

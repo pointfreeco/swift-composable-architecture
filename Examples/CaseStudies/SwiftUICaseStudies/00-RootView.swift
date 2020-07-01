@@ -3,347 +3,274 @@ import ComposableArchitecture
 import SwiftUI
 
 struct RootView: View {
+  let store: Store<RootState, RootAction>
+
   var body: some View {
-    NavigationView {
-      Form {
-        Section(header: Text("Getting started")) {
-          NavigationLink(
-            "Basics",
-            destination: CounterDemoView(
-              store: Store(
-                initialState: CounterState(),
-                reducer: counterReducer,
-                environment: CounterEnvironment()
-              )
-            )
-          )
-
-          NavigationLink(
-            "Pullback and combine",
-            destination: TwoCountersView(
-              store: Store(
-                initialState: TwoCountersState(),
-                reducer: twoCountersReducer,
-                environment: TwoCountersEnvironment()
-              )
-            )
-          )
-
-          NavigationLink(
-            "Bindings",
-            destination: BindingBasicsView(
-              store: Store(
-                initialState: BindingBasicsState(),
-                reducer: bindingBasicsReducer,
-                environment: BindingBasicsEnvironment()
-              )
-            )
-          )
-
-          NavigationLink(
-            "Optional state",
-            destination: OptionalBasicsView(
-              store: Store(
-                initialState: OptionalBasicsState(),
-                reducer: optionalBasicsReducer,
-                environment: OptionalBasicsEnvironment()
-              )
-            )
-          )
-
-          NavigationLink(
-            "Shared state",
-            destination: SharedStateView(
-              store: Store(
-                initialState: SharedState(),
-                reducer: sharedStateReducer,
-                environment: ()
-              )
-            )
-          )
-
-          NavigationLink(
-            "Alerts and Action Sheets",
-            destination: AlertAndSheetView(
-              store: .init(
-                initialState: .init(),
-                reducer: alertAndSheetReducer,
-                environment: .init()
-              )
-            )
-          )
-
-          NavigationLink(
-            "Animations",
-            destination: AnimationsView(
-              store: Store(
-                initialState: AnimationsState(circleCenter: CGPoint(x: 50, y: 50)),
-                reducer: animationsReducer,
-                environment: AnimationsEnvironment(
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+    WithViewStore(self.store.stateless) { viewStore in
+      NavigationView {
+        Form {
+          Section(header: Text("Getting started")) {
+            NavigationLink(
+              "Basics",
+              destination: CounterDemoView(
+                store: self.store.scope(
+                  state: { $0.counter },
+                  action: RootAction.counter
                 )
               )
             )
-          )
+
+            NavigationLink(
+              "Pullback and combine",
+              destination: TwoCountersView(
+                store: self.store.scope(
+                  state: { $0.twoCounters },
+                  action: RootAction.twoCounters
+                )
+              )
+            )
+
+            NavigationLink(
+              "Bindings",
+              destination: BindingBasicsView(
+                store: self.store.scope(
+                  state: { $0.bindingBasics },
+                  action: RootAction.bindingBasics
+                )
+              )
+            )
+
+            NavigationLink(
+              "Optional state",
+              destination: OptionalBasicsView(
+                store: self.store.scope(
+                  state: { $0.optionalBasics },
+                  action: RootAction.optionalBasics
+                )
+              )
+            )
+
+            NavigationLink(
+              "Shared state",
+              destination: SharedStateView(
+                store: self.store.scope(
+                  state: { $0.shared },
+                  action: RootAction.shared
+                )
+              )
+            )
+
+            NavigationLink(
+              "Alerts and Action Sheets",
+              destination: AlertAndSheetView(
+                store: self.store.scope(
+                  state: { $0.alertAndActionSheet },
+                  action: RootAction.alertAndActionSheet
+                )
+              )
+            )
+
+            NavigationLink(
+              "Animations",
+              destination: AnimationsView(
+                store: self.store.scope(
+                  state: { $0.animation },
+                  action: RootAction.animation
+                )
+              )
+            )
+          }
+
+          Section(header: Text("Effects")) {
+            NavigationLink(
+              "Basics",
+              destination: EffectsBasicsView(
+                store: self.store.scope(
+                  state: { $0.effectsBasics },
+                  action: RootAction.effectsBasics
+                )
+              )
+            )
+
+            NavigationLink(
+              "Cancellation",
+              destination: EffectsCancellationView(
+                store: self.store.scope(
+                  state: { $0.effectsCancellation },
+                  action: RootAction.effectsCancellation)
+              )
+            )
+
+            NavigationLink(
+              "Long-living effects",
+              destination: LongLivingEffectsView(
+                store: self.store.scope(
+                  state: { $0.longLivingEffects },
+                  action: RootAction.longLivingEffects
+                )
+              )
+            )
+
+            NavigationLink(
+              "Timers",
+              destination: TimersView(
+                store: self.store.scope(
+                  state: { $0.timers },
+                  action: RootAction.timers
+                )
+              )
+            )
+
+            NavigationLink(
+              "System environment",
+              destination: MultipleDependenciesView(
+                store: self.store.scope(
+                  state: { $0.multipleDependencies },
+                  action: RootAction.multipleDependencies
+                )
+              )
+            )
+
+            NavigationLink(
+              "Web socket",
+              destination: WebSocketView(
+                store: self.store.scope(
+                  state: { $0.webSocket },
+                  action: RootAction.webSocket
+                )
+              )
+            )
+          }
+
+          Section(header: Text("Navigation")) {
+            NavigationLink(
+              "Navigate and load data",
+              destination: NavigateAndLoadView(
+                store: self.store.scope(
+                  state: { $0.navigateAndLoad },
+                  action: RootAction.navigateAndLoad
+                )
+              )
+            )
+
+            NavigationLink(
+              "Load data then navigate",
+              destination: LoadThenNavigateView(
+                store: self.store.scope(
+                  state: { $0.loadThenNavigate },
+                  action: RootAction.loadThenNavigate
+                )
+              )
+            )
+
+            NavigationLink(
+              "Lists: Navigate and load data",
+              destination: NavigateAndLoadListView(
+                store: self.store.scope(
+                  state: { $0.navigateAndLoadList },
+                  action: RootAction.navigateAndLoadList
+                )
+              )
+            )
+
+            NavigationLink(
+              "Lists: Load data then navigate",
+              destination: LoadThenNavigateListView(
+                store: self.store.scope(
+                  state: { $0.loadThenNavigateList },
+                  action: RootAction.loadThenNavigateList
+                )
+              )
+            )
+
+            NavigationLink(
+              "Sheets: Present and load data",
+              destination: PresentAndLoadView(
+                store: self.store.scope(
+                  state: { $0.presentAndLoad },
+                  action: RootAction.presentAndLoad
+                )
+              )
+            )
+
+            NavigationLink(
+              "Sheets: Load data then present",
+              destination: LoadThenPresentView(
+                store: self.store.scope(
+                  state: { $0.loadThenPresent },
+                  action: RootAction.loadThenPresent
+                )
+              )
+            )
+          }
+
+          Section(header: Text("Higher-order reducers")) {
+            NavigationLink(
+              "Reusable favoriting component",
+              destination: EpisodesView(
+                store: self.store.scope(
+                  state: { $0.episodes },
+                  action: RootAction.episodes
+                )
+              )
+            )
+
+            NavigationLink(
+              "Reusable offline download component",
+              destination: CitiesView(
+                store: self.store.scope(
+                  state: { $0.map },
+                  action: RootAction.map
+                )
+              )
+            )
+
+            NavigationLink(
+              "Strict reducers",
+              destination: DieRollView(
+                store: self.store.scope(
+                  state: { $0.dieRoll },
+                  action: RootAction.dieRoll
+                )
+              )
+            )
+
+            NavigationLink(
+              "Elm-like subscriptions",
+              destination: ClockView(
+                store: self.store.scope(
+                  state: { $0.clock },
+                  action: RootAction.clock
+                )
+              )
+            )
+
+            NavigationLink(
+              "Recursive state and actions",
+              destination: NestedView(
+                store: self.store.scope(
+                  state: { $0.nested },
+                  action: RootAction.nested
+                )
+              )
+            )
+          }
         }
-
-        Section(header: Text("Effects")) {
-          NavigationLink(
-            "Basics",
-            destination: EffectsBasicsView(
-              store: Store(
-                initialState: EffectsBasicsState(),
-                reducer: effectsBasicsReducer,
-                environment: .live
-              )
-            )
-          )
-
-          NavigationLink(
-            "Cancellation",
-            destination: EffectsCancellationView(
-              store: Store(
-                initialState: .init(),
-                reducer: effectsCancellationReducer,
-                environment: .live)
-            )
-          )
-
-          NavigationLink(
-            "Long-living effects",
-            destination: LongLivingEffectsView(
-              store: Store(
-                initialState: LongLivingEffectsState(),
-                reducer: longLivingEffectsReducer,
-                environment: .live
-              )
-            )
-          )
-
-          NavigationLink(
-            "Timers",
-            destination: TimersView(
-              store: Store(
-                initialState: TimersState(),
-                reducer: timersReducer,
-                environment: TimersEnvironment(
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
-                )
-              )
-            )
-          )
-
-          NavigationLink(
-            "System environment",
-            destination: MultipleDependenciesView(
-              store: Store(
-                initialState: MultipleDependenciesState(),
-                reducer: multipleDependenciesReducer,
-                environment: .live(
-                  environment: MultipleDependenciesEnvironment(
-                    fetchNumber: {
-                      Effect(value: Int.random(in: 1...1_000))
-                        .delay(for: 1, scheduler: DispatchQueue.main)
-                        .eraseToEffect()
-                    }
-                  )
-                )
-              )
-            )
-          )
-
-          NavigationLink(
-            "Web socket",
-            destination: WebSocketView(
-              store: Store(
-                initialState: .init(),
-                reducer: webSocketReducer,
-                environment: WebSocketEnvironment(
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
-                  webSocket: .live
-                )
-              )
-            )
-          )
-        }
-
-        Section(header: Text("Navigation")) {
-          NavigationLink(
-            "Navigate and load data",
-            destination: NavigateAndLoadView(
-              store: Store(
-                initialState: NavigateAndLoadState(),
-                reducer: navigateAndLoadReducer,
-                environment: NavigateAndLoadEnvironment(
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
-                )
-              )
-            )
-          )
-
-          NavigationLink(
-            "Load data then navigate",
-            destination: LoadThenNavigateView(
-              store: Store(
-                initialState: LoadThenNavigateState(),
-                reducer: loadThenNavigateReducer,
-                environment: LoadThenNavigateEnvironment(
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
-                )
-              )
-            )
-          )
-
-          NavigationLink(
-            "Lists: Navigate and load data",
-            destination: NavigateAndLoadListView(
-              store: Store(
-                initialState: NavigateAndLoadListState(
-                  rows: [
-                    .init(count: 1, id: UUID()),
-                    .init(count: 42, id: UUID()),
-                    .init(count: 100, id: UUID()),
-                  ]
-                ),
-                reducer: navigateAndLoadListReducer,
-                environment: NavigateAndLoadListEnvironment(
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
-                )
-              )
-            )
-          )
-
-          NavigationLink(
-            "Lists: Load data then navigate",
-            destination: LoadThenNavigateListView(
-              store: Store(
-                initialState: LoadThenNavigateListState(
-                  rows: [
-                    .init(count: 1, id: UUID()),
-                    .init(count: 42, id: UUID()),
-                    .init(count: 100, id: UUID()),
-                  ]
-                ),
-                reducer: loadThenNavigateListReducer,
-                environment: LoadThenNavigateListEnvironment(
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
-                )
-              )
-            )
-          )
-
-          NavigationLink(
-            "Sheets: Present and load data",
-            destination: PresentAndLoadView(
-              store: Store(
-                initialState: PresentAndLoadState(),
-                reducer: presentAndLoadReducer,
-                environment: PresentAndLoadEnvironment(
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
-                )
-              )
-            )
-          )
-
-          NavigationLink(
-            "Sheets: Load data then present",
-            destination: LoadThenPresentView(
-              store: Store(
-                initialState: LoadThenPresentState(),
-                reducer: loadThenPresentReducer,
-                environment: LoadThenPresentEnvironment(
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
-                )
-              )
-            )
-          )
-        }
-
-        Section(header: Text("Higher-order reducers")) {
-          NavigationLink(
-            "Reusable favoriting component",
-            destination: EpisodesView(
-              store: Store(
-                initialState: EpisodesState(
-                  episodes: .mocks
-                ),
-                reducer: episodesReducer,
-                environment: EpisodesEnvironment(
-                  favorite: favorite(id:isFavorite:),
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
-                )
-              )
-            )
-          )
-
-          NavigationLink(
-            "Reusable offline download component",
-            destination: CitiesView(
-              store: Store(
-                initialState: .init(cityMaps: .mocks),
-                reducer: mapAppReducer,
-                environment: .init(
-                  downloadClient: .live,
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
-                )
-              )
-            )
-          )
-
-          NavigationLink(
-            "Strict reducers",
-            destination: DieRollView(
-              store: Store(
-                initialState: DieRollState(),
-                reducer: dieRollReducer,
-                environment: DieRollEnvironment(
-                  rollDie: { .random(in: 1...6) }
-                )
-              )
-            )
-          )
-
-          NavigationLink(
-            "Elm-like subscriptions",
-            destination: ClockView(
-              store: Store(
-                initialState: ClockState(),
-                reducer: clockReducer,
-                environment: ClockEnvironment(
-                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
-                )
-              )
-            )
-          )
-
-          NavigationLink(
-            "Recursive state and actions",
-            destination: NestedView(
-              store: Store(
-                initialState: .mock,
-                reducer: nestedReducer,
-                environment: NestedEnvironment(
-                  uuid: UUID.init
-                )
-              )
-            )
-          )
-        }
+        .navigationBarTitle("Case Studies")
+        .onAppear { viewStore.send(.onAppear) }
       }
-      .navigationBarTitle("Case Studies")
-      .onAppear { self.id = UUID() }
-
-      Text("\(self.id)")
     }
-    .navigationViewStyle(StackNavigationViewStyle())
   }
-  // NB: This is a hack to force the root view to re-compute itself each time it appears so that
-  //     each demo is provided a fresh store each time.
-  @State var id = UUID()
 }
 
 struct RootView_Previews: PreviewProvider {
   static var previews: some View {
-    RootView()
+    RootView(
+      store: .init(
+        initialState: RootState(),
+        reducer: rootReducer,
+        environment: .live
+      )
+    )
   }
 }

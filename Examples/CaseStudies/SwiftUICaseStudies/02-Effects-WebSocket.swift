@@ -133,7 +133,6 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
     )
   }
 }
-.debug()
 
 struct WebSocketView: View {
   let store: Store<WebSocketState, WebSocketAction>
