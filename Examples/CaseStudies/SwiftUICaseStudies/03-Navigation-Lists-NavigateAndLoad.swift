@@ -12,7 +12,7 @@ struct NavigateAndLoadListState: Equatable {
   var rows: IdentifiedArrayOf<Row> = [
     .init(count: 1, id: UUID()),
     .init(count: 42, id: UUID()),
-    .init(count: 100, id: UUID())
+    .init(count: 100, id: UUID()),
   ]
   var selection: Identified<Row.ID, CounterState?>?
 
