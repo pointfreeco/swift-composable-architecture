@@ -30,7 +30,6 @@ let counterReducer = Reducer<CounterState, CounterAction, CounterEnvironment> { 
     return .none
   }
 }
-.signpost()
 
 struct CounterView: View {
   let store: Store<CounterState, CounterAction>

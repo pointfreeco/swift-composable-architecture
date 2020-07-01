@@ -63,7 +63,6 @@ let nestedReducer = Reducer<
     return .none
   }
 }
-.debug()
 
 struct NestedView: View {
   let store: Store<NestedState, NestedAction>
