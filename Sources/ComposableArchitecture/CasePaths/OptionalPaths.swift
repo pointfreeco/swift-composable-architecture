@@ -1,11 +1,11 @@
-public protocol WritablePath {
+public protocol Path {
   associatedtype Root
   associatedtype Value
   func extract(from root: Root) -> Value?
   func set(into root: inout Root, _ value: Value)
 }
 
-extension WritableKeyPath: WritablePath {
+extension WritableKeyPath: Path {
   public func extract(from root: Root) -> Value? {
     root[keyPath: self]
   }
@@ -15,13 +15,13 @@ extension WritableKeyPath: WritablePath {
   }
 }
 
-extension CasePath: WritablePath {
+extension CasePath: Path {
   public func set(into root: inout Root, _ value: Value) {
     root = self.embed(value)
   }
 }
 
-public struct OptionalPath<Root, Value>: WritablePath {
+public struct OptionalPath<Root, Value>: Path {
   private let _extract: (Root) -> Value?
   private let _set: (inout Root, Value) -> Void
 

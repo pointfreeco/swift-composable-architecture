@@ -129,8 +129,8 @@ public struct Reducer<State, Action, Environment> {
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment>
   where
-    StatePath: WritablePath, StatePath.Root == GlobalState, StatePath.Value == State,
-    ActionPath: WritablePath, ActionPath.Root == GlobalAction, ActionPath.Value == Action
+    StatePath: Path, StatePath.Root == GlobalState, StatePath.Value == State,
+    ActionPath: Path, ActionPath.Root == GlobalAction, ActionPath.Value == Action
   {
 
     return .init { globalState, globalAction, globalEnvironment in
