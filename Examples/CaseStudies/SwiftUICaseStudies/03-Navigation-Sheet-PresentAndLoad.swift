@@ -24,9 +24,8 @@ struct PresentAndLoadEnvironment {
 }
 
 let presentAndLoadReducer = counterReducer
-  .optional
   .pullback(
-    state: \.optionalCounter,
+    state: OptionalPath(\.optionalCounter),
     action: /PresentAndLoadAction.optionalCounter,
     environment: { _ in CounterEnvironment() }
   )

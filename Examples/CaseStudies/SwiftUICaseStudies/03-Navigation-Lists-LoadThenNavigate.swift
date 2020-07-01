@@ -37,13 +37,7 @@ struct LoadThenNavigateListEnvironment {
 let loadThenNavigateListReducer =
   counterReducer
   .pullback(
-    state: \Identified.value,
-    action: .self,
-    environment: { $0 }
-  )
-  .optional
-  .pullback(
-    state: \LoadThenNavigateListState.selection,
+    state: OptionalPath(\.selection).appending(path: \.value),
     action: /LoadThenNavigateListAction.counter,
     environment: { _ in CounterEnvironment() }
   )

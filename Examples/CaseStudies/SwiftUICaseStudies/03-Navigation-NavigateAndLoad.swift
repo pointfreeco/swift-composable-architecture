@@ -26,9 +26,8 @@ struct NavigateAndLoadEnvironment {
 }
 
 let navigateAndLoadReducer = counterReducer
-  .optional
   .pullback(
-    state: \.optionalCounter,
+    state: OptionalPath(\.optionalCounter),
     action: /NavigateAndLoadAction.optionalCounter,
     environment: { _ in CounterEnvironment() }
   )

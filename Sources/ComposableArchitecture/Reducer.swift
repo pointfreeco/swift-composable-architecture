@@ -117,23 +117,37 @@ public struct Reducer<State, Action, Environment> {
   ///     )
   ///
   /// - Parameters:
-  ///   - toLocalState: A key path that can get/set `State` inside `GlobalState`.
-  ///   - toLocalAction: A case path that can extract/embed `Action` from `GlobalAction`.
+  ///   - toLocalState: A writable path (`WritableKeyPath`, `CasePath`, or `OptionalPath`) that can
+  ///     get/set `State` inside `GlobalState`.
+  ///   - toLocalAction: A writable path (`WritableKeyPath`, `CasePath`, or `OptionalPath`) that can
+  ///     get/set `Action` inside `GlobalAction`.
   ///   - toLocalEnvironment: A function that transforms `GlobalEnvironment` into `Environment`.
   /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
-  public func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
-    state toLocalState: WritableKeyPath<GlobalState, State>,
-    action toLocalAction: CasePath<GlobalAction, Action>,
+  public func pullback<GlobalState, GlobalAction, GlobalEnvironment, StatePath, ActionPath>(
+    state toLocalState: StatePath,
+    action toLocalAction: ActionPath,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
-    .init { globalState, globalAction, globalEnvironment in
-      guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
-      return self.reducer(
-        &globalState[keyPath: toLocalState],
-        localAction,
-        toLocalEnvironment(globalEnvironment)
-      )
-      .map(toLocalAction.embed)
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment>
+  where
+    StatePath: WritablePath, StatePath.Root == GlobalState, StatePath.Value == State,
+    ActionPath: WritablePath, ActionPath.Root == GlobalAction, ActionPath.Value == Action
+  {
+
+    return .init { globalState, globalAction, globalEnvironment in
+      guard
+        var localState = toLocalState.extract(from: globalState),
+        let localAction = toLocalAction.extract(from: globalAction)
+      else { return .none }
+      let effect =
+        self
+        .reducer(&localState, localAction, toLocalEnvironment(globalEnvironment))
+        .map { localAction -> GlobalAction in
+          var globalAction = globalAction
+          toLocalAction.set(into: &globalAction, localAction)
+          return globalAction
+        }
+      toLocalState.set(into: &globalState, localState)
+      return effect
     }
   }
 
@@ -163,31 +177,9 @@ public struct Reducer<State, Action, Environment> {
   ///   store on non-optional state.
   /// - See also: `Store.ifLet`, a UIKit helper for doing imperative work with a store on optional
   ///   state.
+  @available(*, deprecated, message: "Use pullback with OptionalPath(\\.localState) instead")
   public var optional: Reducer<State?, Action, Environment> {
-    .init { state, action, environment in
-      guard state != nil else {
-        assertionFailure(
-          """
-          "\(debugCaseOutput(action))" was received by an optional reducer when its state was \
-          "nil". This can happen for a few reasons:
-
-          * The optional reducer was combined with or run from another reducer that set \
-          "\(State.self)" to "nil" before the optional reducer ran. Combine or run optional \
-          reducers before reducers that can set their state to "nil". This ensures that optional \
-          reducers can handle their actions while their state is still non-"nil".
-
-          * An active effect emitted this action while state was "nil". Make sure that effects for \
-          this optional reducer are canceled when optional state is set to "nil".
-
-          * This action was sent to the store while state was "nil". Make sure that actions for \
-          this reducer can only be sent to a view store when state is non-"nil". In SwiftUI \
-          applications, use "IfLetStore".
-          """
-        )
-        return .none
-      }
-      return self.reducer(&state!, action, environment)
-    }
+    self.pullback(state: OptionalPath(\.self), action: \.self, environment: { $0 })
   }
 
   /// A version of `pullback` that transforms a reducer that works on an element into one that works
@@ -344,6 +336,7 @@ public struct Reducer<State, Action, Environment> {
     .init { globalState, globalAction, globalEnvironment in
       guard let (key, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
 
+      // This does not need to be a fatal error because of the unwrap that follows it.
       assert(
         globalState[keyPath: toLocalState][key] != nil,
         """

@@ -19,9 +19,8 @@ struct EagerNavigationEnvironment {
 }
 
 let eagerNavigationReducer = counterReducer
-  .optional
   .pullback(
-    state: \.optionalCounter,
+    state: OptionalPath(\.optionalCounter),
     action: /EagerNavigationAction.optionalCounter,
     environment: { _ in CounterEnvironment() }
   )

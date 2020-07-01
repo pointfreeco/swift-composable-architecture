@@ -97,91 +97,91 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
   },
   alertAndSheetReducer
     .pullback(
-      state: \.alertAndActionSheet,
+      state: \RootState.alertAndActionSheet,
       action: /RootAction.alertAndActionSheet,
       environment: { _ in .init() }
     ),
   animationsReducer
     .pullback(
-      state: \.animation,
+      state: \RootState.animation,
       action: /RootAction.animation,
       environment: { .init(mainQueue: $0.mainQueue) }
     ),
   bindingBasicsReducer
     .pullback(
-      state: \.bindingBasics,
+      state: \RootState.bindingBasics,
       action: /RootAction.bindingBasics,
       environment: { _ in .init() }
     ),
   clockReducer
     .pullback(
-      state: \.clock,
+      state: \RootState.clock,
       action: /RootAction.clock,
       environment: { .init(mainQueue: $0.mainQueue) }
     ),
   counterReducer
     .pullback(
-      state: \.counter,
+      state: \RootState.counter,
       action: /RootAction.counter,
       environment: { _ in .init() }
     ),
   dieRollReducer
     .pullback(
-      state: \.dieRoll,
+      state: \RootState.dieRoll,
       action: /RootAction.dieRoll,
       environment: { _ in .init(rollDie: { .random(in: 1...6) }) }
     ),
   effectsBasicsReducer
     .pullback(
-      state: \.effectsBasics,
+      state: \RootState.effectsBasics,
       action: /RootAction.effectsBasics,
       environment: { .init(mainQueue: $0.mainQueue, numberFact: $0.numberFact) }
     ),
   effectsCancellationReducer
     .pullback(
-      state: \.effectsCancellation,
+      state: \RootState.effectsCancellation,
       action: /RootAction.effectsCancellation,
       environment: { .init(mainQueue: $0.mainQueue, trivia: $0.trivia) }
     ),
   episodesReducer
     .pullback(
-      state: \.episodes,
+      state: \RootState.episodes,
       action: /RootAction.episodes,
       environment: { .init(favorite: $0.favorite, mainQueue: $0.mainQueue) }
     ),
   loadThenNavigateReducer
     .pullback(
-      state: \.loadThenNavigate,
+      state: \RootState.loadThenNavigate,
       action: /RootAction.loadThenNavigate,
       environment: { .init(mainQueue: $0.mainQueue) }
     ),
   loadThenNavigateListReducer
     .pullback(
-      state: \.loadThenNavigateList,
+      state: \RootState.loadThenNavigateList,
       action: /RootAction.loadThenNavigateList,
       environment: { .init(mainQueue: $0.mainQueue) }
     ),
   loadThenPresentReducer
     .pullback(
-      state: \.loadThenPresent,
+      state: \RootState.loadThenPresent,
       action: /RootAction.loadThenPresent,
       environment: { .init(mainQueue: $0.mainQueue) }
     ),
   longLivingEffectsReducer
     .pullback(
-      state: \.longLivingEffects,
+      state: \RootState.longLivingEffects,
       action: /RootAction.longLivingEffects,
       environment: { .init(userDidTakeScreenshot: $0.userDidTakeScreenshot) }
     ),
   mapAppReducer
     .pullback(
-      state: \.map,
+      state: \RootState.map,
       action: /RootAction.map,
       environment: { .init(downloadClient: $0.downloadClient, mainQueue: $0.mainQueue) }
     ),
   multipleDependenciesReducer
     .pullback(
-      state: \.multipleDependencies,
+      state: \RootState.multipleDependencies,
       action: /RootAction.multipleDependencies,
       environment: { env in
         .init(
@@ -194,55 +194,55 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     ),
   navigateAndLoadReducer
     .pullback(
-      state: \.navigateAndLoad,
+      state: \RootState.navigateAndLoad,
       action: /RootAction.navigateAndLoad,
       environment: { .init(mainQueue: $0.mainQueue) }
     ),
   navigateAndLoadListReducer
     .pullback(
-      state: \.navigateAndLoadList,
+      state: \RootState.navigateAndLoadList,
       action: /RootAction.navigateAndLoadList,
       environment: { .init(mainQueue: $0.mainQueue) }
     ),
   nestedReducer
     .pullback(
-      state: \.nested,
+      state: \RootState.nested,
       action: /RootAction.nested,
       environment: { .init(uuid: $0.uuid) }
     ),
   optionalBasicsReducer
     .pullback(
-      state: \.optionalBasics,
+      state: \RootState.optionalBasics,
       action: /RootAction.optionalBasics,
       environment: { _ in .init() }
     ),
   presentAndLoadReducer
     .pullback(
-      state: \.presentAndLoad,
+      state: \RootState.presentAndLoad,
       action: /RootAction.presentAndLoad,
       environment: { .init(mainQueue: $0.mainQueue) }
     ),
   sharedStateReducer
     .pullback(
-      state: \.shared,
+      state: \RootState.shared,
       action: /RootAction.shared,
       environment: { _ in () }
     ),
   timersReducer
     .pullback(
-      state: \.timers,
+      state: \RootState.timers,
       action: /RootAction.timers,
       environment: { .init(mainQueue: $0.mainQueue) }
     ),
   twoCountersReducer
     .pullback(
-      state: \.twoCounters,
+      state: \RootState.twoCounters,
       action: /RootAction.twoCounters,
       environment: { _ in .init() }
     ),
   webSocketReducer
     .pullback(
-      state: \.webSocket,
+      state: \RootState.webSocket,
       action: /RootAction.webSocket,
       environment: { .init(mainQueue: $0.mainQueue, webSocket: $0.webSocket) }
     )
