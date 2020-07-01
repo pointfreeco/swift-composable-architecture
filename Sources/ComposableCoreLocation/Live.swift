@@ -48,6 +48,8 @@ extension LocationManager {
 
     manager.locationServicesEnabled = CLLocationManager.locationServicesEnabled
 
+    manager.location = { id in dependencies[id]?.manager.location.map(Location.init(rawValue:)) }
+    
     manager.requestLocation = { id in
       .fireAndForget { dependencies[id]?.manager.requestLocation() }
     }

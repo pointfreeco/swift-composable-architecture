@@ -272,7 +272,7 @@ public struct LocationManager {
   @available(watchOS, unavailable)
   public var isRangingAvailable: () -> Bool = { _unimplemented("isRangingAvailable") }
 
-  var location: (AnyHashable) -> Location = { _ in _unimplemented("location") }
+  var location: (AnyHashable) -> Location? = { _ in _unimplemented("location") }
 
   public var locationServicesEnabled: () -> Bool = { _unimplemented("locationServicesEnabled") }
 
@@ -393,7 +393,7 @@ public struct LocationManager {
   @available(tvOS, unavailable)
   public func heading(id: AnyHashable) -> Heading? { self.heading(id) }
 
-  public func location(id: AnyHashable) -> Location { self.location(id) }
+  public func location(id: AnyHashable) -> Location? { self.location(id) }
 
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
