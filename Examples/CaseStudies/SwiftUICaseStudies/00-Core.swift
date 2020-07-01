@@ -12,29 +12,15 @@ struct RootState {
   var effectsBasics = EffectsBasicsState()
   var effectsCancellation = EffectsCancellationState()
   var effectsTimers = TimersState()
-  var episodes = EpisodesState(
-    episodes: .mocks
-  )
+  var episodes = EpisodesState(episodes: .mocks)
   var loadThenNavigate = LoadThenNavigateState()
-  var loadThenNavigateList = LoadThenNavigateListState(
-    rows: [
-      .init(count: 1, id: UUID()),
-      .init(count: 42, id: UUID()),
-      .init(count: 100, id: UUID()),
-    ]
-  )
+  var loadThenNavigateList = LoadThenNavigateListState()
   var loadThenPresent = LoadThenPresentState()
   var longLivingEffects = LongLivingEffectsState()
   var map = MapAppState(cityMaps: .mocks)
   var multipleDependencies = MultipleDependenciesState()
   var navigateAndLoad = NavigateAndLoadState()
-  var navigateAndLoadList = NavigateAndLoadListState(
-    rows: [
-      .init(count: 1, id: UUID()),
-      .init(count: 42, id: UUID()),
-      .init(count: 100, id: UUID()),
-    ]
-  )
+  var navigateAndLoadList = NavigateAndLoadListState()
   var nested = NestedState.mock
   var optionalBasics = OptionalBasicsState()
   var presentAndLoad = PresentAndLoadState()

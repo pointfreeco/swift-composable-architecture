@@ -43,11 +43,6 @@ struct NumbersApiError: Error, Equatable {}
 struct EffectsBasicsEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
   var numberFact: (Int) -> Effect<String, NumbersApiError>
-
-  static let live = EffectsBasicsEnvironment(
-    mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
-    numberFact: liveNumberFact(for:)
-  )
 }
 
 // MARK: - Feature business logic

@@ -33,11 +33,6 @@ struct TriviaApiError: Error, Equatable {}
 struct EffectsCancellationEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
   var trivia: (Int) -> Effect<String, TriviaApiError>
-
-  static let live = EffectsCancellationEnvironment(
-    mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
-    trivia: liveTrivia(for:)
-  )
 }
 
 // MARK: - Business logic
