@@ -199,7 +199,7 @@
 
       for step in steps {
         annotating.annotate(step, groupLevel) { stepResultCallback in
-          var expectedState = toLocalState(state)
+          var expectedState = self.toLocalState(self.state)
 
           switch step.type {
           case let .send(action, update):
@@ -455,9 +455,9 @@
     public struct Annotating {
       public typealias StepResultCallback = (Bool) -> Void
       
-      public var annotate: (Step, Int, (@escaping StepResultCallback) -> Void) -> Void
+      public var annotate: (Step, Int, @escaping (@escaping StepResultCallback) -> Void) -> Void
       
-      public init(annotate: @escaping (Step, Int, (@escaping StepResultCallback) -> Void) -> Void) {
+      public init(annotate: @escaping (Step, Int, @escaping (@escaping StepResultCallback) -> Void) -> Void) {
         self.annotate = annotate
       }
       

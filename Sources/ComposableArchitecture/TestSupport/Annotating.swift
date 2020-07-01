@@ -1,15 +1,16 @@
 #if DEBUG
 
-import XCTest
-
 extension TestStore.Annotating {
   public static var activity: Self {
     Self { step, groupLevel, callback in
       func runActivity(named name: String) {
         let indent = String(repeating: "\t", count: groupLevel)
-        XCTContext.runActivity(named: "\(indent)\(name)") { _ in
-          callback() { _ in }
-        }
+        let callback: (@convention(block) () -> Void) = { callback() { _ in } }
+        _XCTContext.perform(
+          Selector(("runActivityNamed:block:")),
+          with: "\(indent)\(name)",
+          with: callback
+        )
       }
       
       switch step.type {
@@ -50,5 +51,7 @@ extension TestStore.Annotating {
     }
   }
 }
+
+private let _XCTContext = (NSClassFromString("XCTContext") as Any) as! NSObjectProtocol
 
 #endif
