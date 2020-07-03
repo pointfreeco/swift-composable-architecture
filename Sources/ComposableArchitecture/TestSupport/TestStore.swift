@@ -1,6 +1,7 @@
 #if DEBUG
   import Combine
   import Foundation
+  import Difference
 
   /// A testable runtime for a reducer.
   ///
@@ -225,13 +226,21 @@
           }
           let receivedAction = receivedActions.removeFirst()
           if expectedAction != receivedAction {
-            let diff =
-              debugDiff(expectedAction, receivedAction)
-              .map { ": …\n\n\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
-              ?? ""
+//            let diff =
+//              debugDiff(expectedAction, receivedAction)
+//              .map { ": …\n\n\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
+//              ?? ""
+            let nDiff : [String] = diff(
+              expectedAction,
+              receivedAction,
+              indentationType: Difference.IndentationType.tab,
+              skipPrintingOnDiffCount: false
+            )
+            let jDiff = nDiff.joined(separator: "\n")
+
             _XCTFail(
               """
-              Received unexpected action\(diff)
+              Received unexpected action\(jDiff)
               """,
               file: step.file,
               line: step.line
@@ -258,13 +267,21 @@
 
         let actualState = self.toLocalState(self.state)
         if expectedState != actualState {
-          let diff =
-            debugDiff(expectedState, actualState)
-            .map { ": …\n\n\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
-            ?? ""
+//          let diff =
+//            debugDiff(expectedState, actualState)
+//            .map { ": …\n\n\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
+//            ?? ""
+          let nDiff : [String] = diff(
+            expectedState,
+            actualState,
+            indentationType: Difference.IndentationType.tab,
+            skipPrintingOnDiffCount: false
+          )
+          let jDiff = nDiff.joined(separator: "\n")
+
           _XCTFail(
             """
-            State change does not match expectation\(diff)
+            State change does not match expectation\(jDiff)
             """,
             file: step.file,
             line: step.line
