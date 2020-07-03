@@ -59,7 +59,7 @@ import SwiftUI
 ///
 ///     Button("Delete") { viewStore.send(.deleteTapped) }
 ///       .alert(
-///         viewStore.scope(state: \.alert),
+///         self.store.scope(state: \.alert),
 ///         dismiss: .cancelTapped
 ///       )
 ///
