@@ -444,7 +444,6 @@ There are also many architecture libraries in the Swift and iOS community. Each 
 * [RIBs](https://github.com/uber/RIBs)
 * [Loop](https://github.com/ReactiveCocoa/Loop)
 * [ReSwift](https://github.com/ReSwift/ReSwift)
-* [Fluxor](https://github.com/FluxorOrg/Fluxor)
 * [Workflow](https://github.com/square/workflow)
 * [ReactorKit](https://github.com/ReactorKit/ReactorKit)
 * [RxFeedback](https://github.com/NoTests/RxFeedback.swift)
@@ -453,6 +452,7 @@ There are also many architecture libraries in the Swift and iOS community. Each 
   <summary>And more</summary>
 
   * [PromisedArchitectureKit](https://github.com/RPallas92/PromisedArchitectureKit)
+  * [Fluxor](https://github.com/FluxorOrg/Fluxor)
   </details>
 
 ## License
