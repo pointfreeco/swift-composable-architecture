@@ -56,7 +56,7 @@
       heading: @escaping (AnyHashable) -> Heading? = { _ in _unimplemented("heading") },
       headingAvailable: @escaping () -> Bool = { _unimplemented("headingAvailable") },
       isRangingAvailable: @escaping () -> Bool = { _unimplemented("isRangingAvailable") },
-      location: @escaping (AnyHashable) -> Location = { _ in _unimplemented("location") },
+      location: @escaping (AnyHashable) -> Location? = { _ in _unimplemented("location") },
       locationServicesEnabled: @escaping () -> Bool = { _unimplemented("locationServicesEnabled") },
       maximumRegionMonitoringDistance: @escaping (AnyHashable) -> CLLocationDistance = { _ in
         _unimplemented("maximumRegionMonitoringDistance")
@@ -157,7 +157,7 @@
       },
       heading: @escaping (AnyHashable) -> Heading? = { _ in _unimplemented("heading") },
       headingAvailable: @escaping () -> Bool = { _unimplemented("headingAvailable") },
-      location: @escaping (AnyHashable) -> Location = { _ in _unimplemented("location") },
+      location: @escaping (AnyHashable) -> Location? = { _ in _unimplemented("location") },
       locationServicesEnabled: @escaping () -> Bool = { _unimplemented("locationServicesEnabled") },
       requestAlwaysAuthorization: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
         _unimplemented("requestAlwaysAuthorization")
@@ -216,7 +216,7 @@
         _unimplemented("create")
       },
       destroy: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("destroy") },
-      location: @escaping (AnyHashable) -> Location = { _ in _unimplemented("location") },
+      location: @escaping (AnyHashable) -> Location? = { _ in _unimplemented("location") },
       locationServicesEnabled: @escaping () -> Bool = { _unimplemented("locationServicesEnabled") },
       requestLocation: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
         _unimplemented("requestLocation")
@@ -257,7 +257,7 @@
       },
       destroy: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in _unimplemented("destroy") },
       headingAvailable: @escaping () -> Bool = { _unimplemented("headingAvailable") },
-      location: @escaping (AnyHashable) -> Location = { _ in _unimplemented("location") },
+      location: @escaping (AnyHashable) -> Location? = { _ in _unimplemented("location") },
       locationServicesEnabled: @escaping () -> Bool = { _unimplemented("locationServicesEnabled") },
       maximumRegionMonitoringDistance: @escaping (AnyHashable) -> CLLocationDistance = { _ in
         _unimplemented("maximumRegionMonitoringDistance")
