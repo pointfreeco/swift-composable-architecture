@@ -50,8 +50,7 @@ extension Store {
             .removeDuplicates(by: { ($0 != nil) == ($1 != nil) })
             .handleEvents(receiveOutput: { if $0 == nil { `else`() } })
             .compactMap { $0 }
-        },
-        action: { $0 }
+        }
       )
       .sink(receiveValue: unwrap)
   }
