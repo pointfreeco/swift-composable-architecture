@@ -161,6 +161,17 @@ public final class ViewStore<State, Action>: ObservableObject {
     self.binding(get: get, send: { _ in action })
   }
 
+  /// Derives a read only binding.
+  ///
+  /// - Parameters:
+  ///   - get: A function to get the state for the binding from the view store's full state.
+  /// - Returns: A binding.
+  public func binding<LocalState>(
+    get: @escaping (State) -> LocalState
+  ) -> Binding<LocalState> {
+      Binding(get: { get(self.state) }, set: { _ in })
+  }
+
   /// Derives a binding from the store that prevents direct writes to state and instead sends
   /// actions to the store.
   ///
