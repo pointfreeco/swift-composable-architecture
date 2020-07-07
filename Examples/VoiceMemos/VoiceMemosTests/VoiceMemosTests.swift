@@ -310,7 +310,7 @@ class VoiceMemosTests: XCTestCase {
       environment: .mock(
         audioPlayerClient: .mock(
           play: { id, url in .future { _ in } },
-          stop: { _ in .fireAndForget { } }
+          stop: { _ in .fireAndForget {} }
         ),
         mainQueue: self.scheduler.eraseToAnyScheduler()
       )
