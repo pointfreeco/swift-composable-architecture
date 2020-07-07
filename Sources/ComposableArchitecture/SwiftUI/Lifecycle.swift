@@ -1,4 +1,4 @@
-
+/// <#Description#>
 public enum LifecycleAction<Action> {
   case onAppear
   case onDisappear
@@ -8,6 +8,11 @@ public enum LifecycleAction<Action> {
 extension LifecycleAction: Equatable where Action: Equatable {}
 
 extension Reducer {
+  /// <#Description#>
+  /// - Parameters:
+  ///   - onAppear: <#onAppear description#>
+  ///   - onDisappear: <#onDisappear description#>
+  /// - Returns: <#description#>
   public func lifecycle(
     onAppear: @escaping (Environment) -> Effect<Action, Never>,
     onDisappear: @escaping (Environment) -> Effect<Never, Never>
@@ -22,11 +27,12 @@ extension Reducer {
         return onDisappear(environment).fireAndForget()
 
       case let .action(action):
-        if state != nil {
-          return self.run(&state!, action, environment)
-            .map(LifecycleAction.action)
+        guard state != nil else {
+          fatalError("TODO")
         }
-        fatalError("TODO")
+        
+        return self.run(&state!, action, environment)
+          .map(LifecycleAction.action)
       }
     }
   }
