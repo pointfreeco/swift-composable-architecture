@@ -13,6 +13,7 @@ struct RootState {
   var effectsCancellation = EffectsCancellationState()
   var effectsTimers = TimersState()
   var episodes = EpisodesState(episodes: .mocks)
+  var lifecycle = LifecycleDemoState()
   var loadThenNavigate = LoadThenNavigateState()
   var loadThenNavigateList = LoadThenNavigateListState()
   var loadThenPresent = LoadThenPresentState()
@@ -40,6 +41,7 @@ enum RootAction {
   case effectsBasics(EffectsBasicsAction)
   case effectsCancellation(EffectsCancellationAction)
   case episodes(EpisodesAction)
+  case lifecycle(LifecycleDemoAction)
   case loadThenNavigate(LoadThenNavigateAction)
   case loadThenNavigateList(LoadThenNavigateListAction)
   case loadThenPresent(LoadThenPresentAction)
@@ -148,6 +150,12 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       state: \.episodes,
       action: /RootAction.episodes,
       environment: { .init(favorite: $0.favorite, mainQueue: $0.mainQueue) }
+    ),
+  lifecycleDemoReducer
+    .pullback(
+      state: \.lifecycle,
+      action: /RootAction.lifecycle,
+      environment: { .init(mainQueue: $0.mainQueue )}
     ),
   loadThenNavigateReducer
     .pullback(

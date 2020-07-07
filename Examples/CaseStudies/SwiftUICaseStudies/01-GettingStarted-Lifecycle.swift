@@ -5,11 +5,11 @@ private let readMe = """
   TODO
   """
 
-struct LifecyleDemoState: Equatable {
+struct LifecycleDemoState: Equatable {
   var count: Int?
 }
 
-enum LifecyleDemoAction: Equatable {
+enum LifecycleDemoAction: Equatable {
   case timer(LifecycleAction<TimerAction>)
   case toggleTimerButtonTapped
 }
@@ -18,11 +18,11 @@ struct LifecycleDemoEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
-let lifecycleDemoReducer: Reducer<LifecyleDemoState, LifecyleDemoAction, LifecycleDemoEnvironment>
+let lifecycleDemoReducer: Reducer<LifecycleDemoState, LifecycleDemoAction, LifecycleDemoEnvironment>
   = .combine(
     timerReducer.pullback(
       state: \.count,
-      action: /LifecyleDemoAction.timer,
+      action: /LifecycleDemoAction.timer,
       environment: { TimerEnvironment(mainQueue: $0.mainQueue) }
     ),
     Reducer { state, action, environment in
@@ -38,7 +38,7 @@ let lifecycleDemoReducer: Reducer<LifecyleDemoState, LifecyleDemoAction, Lifecyc
   )
 
 struct LifecycleDemoView: View {
-  let store: Store<LifecyleDemoState, LifecyleDemoAction>
+  let store: Store<LifecycleDemoState, LifecycleDemoAction>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -46,7 +46,7 @@ struct LifecycleDemoView: View {
         Button("Toggle Timer") { viewStore.send(.toggleTimerButtonTapped) }
 
         IfLetStore(
-          self.store.scope(state: \.count, action: LifecyleDemoAction.timer),
+          self.store.scope(state: \.count, action: LifecycleDemoAction.timer),
           then: TimerView.init(store:)
         )
       }
