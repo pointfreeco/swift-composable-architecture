@@ -10,6 +10,7 @@
 		CA0C51FB245389CC00A04EAB /* 04-HigherOrderReducers-ResuableOfflineDownloadsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0C51FA245389CC00A04EAB /* 04-HigherOrderReducers-ResuableOfflineDownloadsTests.swift */; };
 		CA25E5D224463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA25E5D124463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift */; };
 		CA27C0B7245780CE00CB1E59 /* 03-Effects-SystemEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA27C0B6245780CE00CB1E59 /* 03-Effects-SystemEnvironment.swift */; };
+		CA3E4C5B24B4FA0E00447C0B /* 01-GettingStarted-Lifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA3E4C5A24B4FA0E00447C0B /* 01-GettingStarted-Lifecycle.swift */; };
 		CA410EE0247A15FE00E41798 /* 02-Effects-WebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA410EDF247A15FE00E41798 /* 02-Effects-WebSocket.swift */; };
 		CA410EE2247C73B400E41798 /* 02-Effects-WebSocketTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA410EE1247C73B400E41798 /* 02-Effects-WebSocketTests.swift */; };
 		CA6AC2642451135C00C71CB3 /* ReusableComponents-Download.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6AC2602451135C00C71CB3 /* ReusableComponents-Download.swift */; };
@@ -127,6 +128,7 @@
 		CA0C51FA245389CC00A04EAB /* 04-HigherOrderReducers-ResuableOfflineDownloadsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-ResuableOfflineDownloadsTests.swift"; sourceTree = "<group>"; };
 		CA25E5D124463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Bindings-Basics.swift"; sourceTree = "<group>"; };
 		CA27C0B6245780CE00CB1E59 /* 03-Effects-SystemEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Effects-SystemEnvironment.swift"; sourceTree = "<group>"; };
+		CA3E4C5A24B4FA0E00447C0B /* 01-GettingStarted-Lifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Lifecycle.swift"; sourceTree = "<group>"; };
 		CA410EDF247A15FE00E41798 /* 02-Effects-WebSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-WebSocket.swift"; sourceTree = "<group>"; };
 		CA410EE1247C73B400E41798 /* 02-Effects-WebSocketTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-WebSocketTests.swift"; sourceTree = "<group>"; };
 		CA6AC2602451135C00C71CB3 /* ReusableComponents-Download.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ReusableComponents-Download.swift"; sourceTree = "<group>"; };
@@ -307,6 +309,7 @@
 				DC89C42424460F96006900B9 /* Info.plist */,
 				DC89C41A24460F95006900B9 /* 00-RootView.swift */,
 				DC88D8A5245341EC0077F427 /* 01-GettingStarted-Animations.swift */,
+				CA3E4C5A24B4FA0E00447C0B /* 01-GettingStarted-Lifecycle.swift */,
 				CA25E5D124463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift */,
 				DCC68EE02447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift */,
 				DC89C4432446111B006900B9 /* 01-GettingStarted-Counter.swift */,
@@ -582,6 +585,7 @@
 				CA6AC2652451135C00C71CB3 /* CircularProgressView.swift in Sources */,
 				CA6AC2642451135C00C71CB3 /* ReusableComponents-Download.swift in Sources */,
 				CA6AC2662451135C00C71CB3 /* DownloadComponent.swift in Sources */,
+				CA3E4C5B24B4FA0E00447C0B /* 01-GettingStarted-Lifecycle.swift in Sources */,
 				CAA9ADC22446587C0003A984 /* 02-Effects-Basics.swift in Sources */,
 				DC89C41B24460F95006900B9 /* 00-RootView.swift in Sources */,
 				DCC68EDD2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift in Sources */,
