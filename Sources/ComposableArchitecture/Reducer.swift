@@ -66,7 +66,7 @@ public struct Reducer<State, Action, Environment> {
   /// This is perhaps most easily seen when working with `optional` reducers, where the parent
   /// domain may listen to the child domain to `nil` out its state. If the parent reducer runs
   /// before the child reducer, then the child reducer will not be able to react to its own action.
-  /// This is considered an application logic error and produce an assertion failure.
+  /// This is considered an application logic error and will produce an assertion failure.
   ///
   /// You should almost always combine reducers in order from child to parent domain. For example:
   ///
@@ -104,7 +104,7 @@ public struct Reducer<State, Action, Environment> {
   /// This is perhaps most easily seen when working with `optional` reducers, where the parent
   /// domain may listen to the child domain to `nil` out its state. If the parent reducer runs
   /// before the child reducer, then the child reducer will not be able to react to its own action.
-  /// This is considered an application logic error and produce an assertion failure.
+  /// This is considered an application logic error and will produce an assertion failure.
   ///
   /// You should almost always combine reducers in order from child to parent domain. For example:
   ///
@@ -144,7 +144,7 @@ public struct Reducer<State, Action, Environment> {
   /// This is perhaps most easily seen when working with `optional` reducers, where the parent
   /// domain may listen to the child domain to `nil` out its state. If the parent reducer runs
   /// before the child reducer, then the child reducer will not be able to react to its own action.
-  /// This is considered an application logic error and produce an assertion failure.
+  /// This is considered an application logic error and will produce an assertion failure.
   ///
   /// You should almost always combine reducers in order from child to parent domain. For example:
   ///
