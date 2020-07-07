@@ -56,8 +56,37 @@ public struct Reducer<State, Action, Environment> {
     Self { _, _, _ in .none }
   }
 
-  /// Combines many reducers into a single one by running each one on the state, and merging
+  /// Combines many reducers into a single one by running each one on state in order, and merging
   /// all of the effects.
+  ///
+  /// It is important to consider the order of reducers passed to this function, especially when
+  /// combining a child domain with a parent domain that can modify the child domain by listening to
+  /// its actions.
+  ///
+  /// This is perhaps most easily seen when working with `optional` reducers, where the parent
+  /// domain may listen to the child domain to `nil` out its state. If the parent reducer runs
+  /// before the child reducer, then the child reducer will not be able to react to its own action.
+  /// This is considered an application logic error and produce an assertion failure.
+  ///
+  /// You should almost always combine reducers in order from child to parent domain. For example:
+  ///
+  ///     let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
+  ///       // Combined before parent so that it can react to `.dismiss` while state is non-`nil`.
+  ///       childReducer.optional.pullback(
+  ///         state: \.child,
+  ///         action: /ParentAction.child,
+  ///         environment: { $0.child }
+  ///       ),
+  ///       // Combined after child so that it can `nil` out child state upon `.child(.dismiss)`.
+  ///       Reducer { state, action, environment in
+  ///         switch action
+  ///         case .child(.dismiss):
+  ///           state.child = nil
+  ///           return .none
+  ///         ...
+  ///         }
+  ///       },
+  ///     )
   ///
   /// - Parameter reducers: A list of reducers.
   /// - Returns: A single reducer.
@@ -65,8 +94,37 @@ public struct Reducer<State, Action, Environment> {
     .combine(reducers)
   }
 
-  /// Combines an array of reducers into a single one by running each one on the state, and
-  /// merging all of the effects.
+  /// Combines many reducers into a single one by running each one on state in order, and merging
+  /// all of the effects.
+  ///
+  /// It is important to consider the order of reducers passed to this function, especially when
+  /// combining a child domain with a parent domain that can modify the child domain by listening to
+  /// its actions.
+  ///
+  /// This is perhaps most easily seen when working with `optional` reducers, where the parent
+  /// domain may listen to the child domain to `nil` out its state. If the parent reducer runs
+  /// before the child reducer, then the child reducer will not be able to react to its own action.
+  /// This is considered an application logic error and produce an assertion failure.
+  ///
+  /// You should almost always combine reducers in order from child to parent domain. For example:
+  ///
+  ///     let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
+  ///       // Combined before parent so that it can react to `.dismiss` while state is non-`nil`.
+  ///       childReducer.optional.pullback(
+  ///         state: \.child,
+  ///         action: /ParentAction.child,
+  ///         environment: { $0.child }
+  ///       ),
+  ///       // Combined after child so that it can `nil` out child state upon `.child(.dismiss)`.
+  ///       Reducer { state, action, environment in
+  ///         switch action
+  ///         case .child(.dismiss):
+  ///           state.child = nil
+  ///           return .none
+  ///         ...
+  ///         }
+  ///       },
+  ///     )
   ///
   /// - Parameter reducers: An array of reducers.
   /// - Returns: A single reducer.
@@ -76,8 +134,40 @@ public struct Reducer<State, Action, Environment> {
     }
   }
 
-  /// Combines the current reducer with another given reducer by running each one on the state,
-  /// and merging their effects.
+  /// Combines the current reducer with another given reducer by first running the current reducer,
+  /// then running the given reducer, and finally returning their merged effects.
+  ///
+  /// It is important to consider the order of reducers passed to this function, especially when
+  /// combining a child domain with a parent domain that can modify the child domain by listening to
+  /// its actions.
+  ///
+  /// This is perhaps most easily seen when working with `optional` reducers, where the parent
+  /// domain may listen to the child domain to `nil` out its state. If the parent reducer runs
+  /// before the child reducer, then the child reducer will not be able to react to its own action.
+  /// This is considered an application logic error and produce an assertion failure.
+  ///
+  /// You should almost always combine reducers in order from child to parent domain. For example:
+  ///
+  ///     let parentReducer: Reducer<ParentState, ParentAction, ParentEnvironment> =
+  ///       // Run before parent so that it can react to `.dismiss` while state is non-`nil`.
+  ///       childReducer
+  ///         .optional
+  ///         .pullback(
+  ///           state: \.child,
+  ///           action: /ParentAction.child,
+  ///           environment: { $0.child }
+  ///         )
+  ///         // Combined after child so that it can `nil` out child state upon `.child(.dismiss)`.
+  ///         .combined(
+  ///           with: Reducer { state, action, environment in
+  ///             switch action
+  ///             case .child(.dismiss):
+  ///               state.child = nil
+  ///               return .none
+  ///             ...
+  ///             }
+  ///           }
+  ///         )
   ///
   /// - Parameter other: Another reducer.
   /// - Returns: A single reducer.
@@ -141,7 +231,8 @@ public struct Reducer<State, Action, Environment> {
   /// only running the non-optional reducer when state is non-nil.
   ///
   /// Often used in tandem with `pullback` to transform a reducer on a non-optional local domain
-  /// into a reducer on a global domain that contains an optional local domain:
+  /// into a reducer that can be combined with a reducer on a global domain that contains some
+  /// optional local domain:
   ///
   ///     // Global domain that holds an optional local domain:
   ///     struct AppState { var modal: ModalState? }
@@ -152,12 +243,20 @@ public struct Reducer<State, Action, Environment> {
   ///     let modalReducer = Reducer<ModalState, ModalAction, ModalEnvironment { ... }
   ///
   ///     // Pullback the local modal reducer so that it works on all of the app domain:
-  ///     let appReducer: Reducer<AppState, AppAction, AppEnvironment> =
+  ///     let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
   ///       modalReducer.optional.pullback(
   ///         state: \.modal,
   ///         action: /AppAction.modal,
   ///         environment: { ModalEnvironment(mainQueue: $0.mainQueue) }
-  ///       )
+  ///       ),
+  ///       Reducer { state, action, environment in
+  ///         ...
+  ///       }
+  ///     )
+  ///
+  /// Take care when combining optional reducers into parent domains, as order matters. Always
+  /// combine optional reducers _before_ parent reducers that can `nil` out the associated optional
+  /// state.
   ///
   /// - See also: `IfLetStore`, a SwiftUI helper for transforming a store on optional state into a
   ///   store on non-optional state.
@@ -202,12 +301,19 @@ public struct Reducer<State, Action, Environment> {
   ///     let todoReducer = Reducer<Todo, TodoAction, TodoEnvironment> { ... }
   ///
   ///     // Pullback the local todo reducer so that it works on all of the app domain:
-  ///     let appReducer: Reducer<AppState, AppAction, AppEnvironment> =
+  ///     let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
   ///       todoReducer.forEach(
   ///         state: \.todos,
   ///         action: /AppAction.todo(index:action:),
   ///         environment: { _ in TodoEnvironment() }
-  ///       )
+  ///       ),
+  ///       Reducer { state, action, environment in
+  ///         ...
+  ///       }
+  ///     )
+  ///
+  /// Take care when combining `forEach` reducers into parent domains, as order matters. Always
+  /// combine `forEach` reducers _before_ parent reducers that can modify the collection.
   ///
   /// - Parameters:
   ///   - toLocalState: A key path that can get/set an array of `State` elements inside.
@@ -269,12 +375,19 @@ public struct Reducer<State, Action, Environment> {
   ///     let todoReducer = Reducer<Todo, TodoAction, TodoEnvironment> { ... }
   ///
   ///     // Pullback the local todo reducer so that it works on all of the app domain:
-  ///     let appReducer: Reducer<AppState, AppAction, AppEnvironment> =
+  ///     let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
   ///       todoReducer.forEach(
   ///         state: \.todos,
   ///         action: /AppAction.todo(id:action:),
   ///         environment: { _ in TodoEnvironment() }
-  ///       )
+  ///       ),
+  ///       Reducer { state, action, environment in
+  ///         ...
+  ///       }
+  ///     )
+  ///
+  /// Take care when combining `forEach` reducers into parent domains, as order matters. Always
+  /// combine `forEach` reducers _before_ parent reducers that can modify the collection.
   ///
   /// - Parameters:
   ///   - toLocalState: A key path that can get/set a collection of `State` elements inside
@@ -329,6 +442,9 @@ public struct Reducer<State, Action, Environment> {
 
   /// A version of `pullback` that transforms a reducer that works on an element into one that works
   /// on a dictionary of element values.
+  ///
+  /// Take care when combining `forEach` reducers into parent domains, as order matters. Always
+  /// combine `forEach` reducers _before_ parent reducers that can modify the dictionary.
   ///
   /// - Parameters:
   ///   - toLocalState: A key path that can get/set a dictionary of `State` values inside
