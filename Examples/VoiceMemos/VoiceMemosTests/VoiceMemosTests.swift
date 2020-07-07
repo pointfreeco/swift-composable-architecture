@@ -262,6 +262,8 @@ class VoiceMemosTests: XCTestCase {
   }
 
   func testDeleteMemo() {
+    var didStopAudioPlayerClient = false
+
     let store = TestStore(
       initialState: VoiceMemosState(
         voiceMemos: [
@@ -276,6 +278,9 @@ class VoiceMemosTests: XCTestCase {
       ),
       reducer: voiceMemosReducer,
       environment: .mock(
+        audioPlayerClient: .mock(
+          stop: { _ in .fireAndForget { didStopAudioPlayerClient = true } }
+        ),
         mainQueue: self.scheduler.eraseToAnyScheduler()
       )
     )
@@ -283,6 +288,7 @@ class VoiceMemosTests: XCTestCase {
     store.assert(
       .send(.voiceMemo(index: 0, action: .delete)) {
         $0.voiceMemos = []
+        XCTAssertEqual(didStopAudioPlayerClient, true)
       }
     )
   }
@@ -303,7 +309,8 @@ class VoiceMemosTests: XCTestCase {
       reducer: voiceMemosReducer,
       environment: .mock(
         audioPlayerClient: .mock(
-          play: { id, url in .future { _ in } }
+          play: { id, url in .future { _ in } },
+          stop: { _ in .fireAndForget { } }
         ),
         mainQueue: self.scheduler.eraseToAnyScheduler()
       )
