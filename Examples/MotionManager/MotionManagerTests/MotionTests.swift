@@ -106,7 +106,7 @@ class MotionTests: XCTestCase {
         $0.z = [0, 0]
         $0.facingDirection = .backward
       },
-      
+
       .send(.recordingButtonTapped) {
         $0.facingDirection = nil
         $0.initialAttitude = nil

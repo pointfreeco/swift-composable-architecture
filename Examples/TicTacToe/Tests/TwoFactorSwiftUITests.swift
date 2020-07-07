@@ -88,12 +88,12 @@ class TwoFactorSwiftUITests: XCTestCase {
         self.scheduler.advance()
       },
       .receive(.twoFactorResponse(.failure(.invalidTwoFactor))) {
-        $0.alertData = AlertData(title: AuthenticationError.invalidTwoFactor.localizedDescription)
+        $0.alert = .init(title: AuthenticationError.invalidTwoFactor.localizedDescription)
         $0.isActivityIndicatorVisible = false
         $0.isFormDisabled = false
       },
       .send(.alertDismissed) {
-        $0.alertData = nil
+        $0.alert = nil
       }
     )
   }

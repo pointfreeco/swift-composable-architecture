@@ -43,8 +43,6 @@ let timersReducer = Reducer<TimersState, TimersAction, TimersEnvironment> {
       : Effect.cancel(id: TimerId())
   }
 }
-.signpost()
-.debug()
 
 // MARK: - Timer feature view
 

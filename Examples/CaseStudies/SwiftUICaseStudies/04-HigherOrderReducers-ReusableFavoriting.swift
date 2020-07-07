@@ -21,14 +21,14 @@ private let readMe = """
 // MARK: - Favorite domain
 
 struct FavoriteState<ID>: Equatable, Identifiable where ID: Hashable {
+  var alert: AlertState<FavoriteAction>?
   let id: ID
   var isFavorite: Bool
-  var error: FavoriteError?
 }
 
 enum FavoriteAction: Equatable {
+  case alertDismissed
   case buttonTapped
-  case errorDismissed
   case response(Result<Bool, FavoriteError>)
 }
 
@@ -44,7 +44,7 @@ struct FavoriteCancelId<ID>: Hashable where ID: Hashable {
 
 /// A wrapper for errors that occur when favoriting.
 struct FavoriteError: Equatable, Error, Identifiable {
-  let error: Error
+  let error: NSError
   var localizedDescription: String { self.error.localizedDescription }
   var id: String { self.error.localizedDescription }
   static func == (lhs: Self, rhs: Self) -> Bool { lhs.id == rhs.id }
@@ -62,23 +62,23 @@ extension Reducer {
       Reducer<FavoriteState<ID>, FavoriteAction, FavoriteEnvironment> {
         state, action, environment in
         switch action {
+        case .alertDismissed:
+          state.alert = nil
+          state.isFavorite.toggle()
+          return .none
+
         case .buttonTapped:
           state.isFavorite.toggle()
 
           return environment.request(state.id, state.isFavorite)
             .receive(on: environment.mainQueue)
-            .mapError(FavoriteError.init(error:))
+            .mapError { FavoriteError(error: $0 as NSError) }
             .catchToEffect()
             .map(FavoriteAction.response)
             .cancellable(id: FavoriteCancelId(id: state.id), cancelInFlight: true)
 
-        case .errorDismissed:
-          state.error = nil
-          state.isFavorite.toggle()
-          return .none
-
         case let .response(.failure(error)):
-          state.error = error
+          state.alert = .init(title: error.localizedDescription)
           return .none
 
         case let .response(.success(isFavorite)):
@@ -99,9 +99,7 @@ struct FavoriteButton<ID>: View where ID: Hashable {
       Button(action: { viewStore.send(.buttonTapped) }) {
         Image(systemName: viewStore.isFavorite ? "heart.fill" : "heart")
       }
-      .alert(item: viewStore.binding(get: { $0.error }, send: .errorDismissed)) {
-        Alert(title: Text($0.localizedDescription))
-      }
+      .alert(self.store.scope(state: { $0.alert }), dismiss: .alertDismissed)
     }
   }
 }
@@ -109,14 +107,14 @@ struct FavoriteButton<ID>: View where ID: Hashable {
 // MARK: Feature domain -
 
 struct EpisodeState: Equatable, Identifiable {
-  var error: FavoriteError?
+  var alert: AlertState<FavoriteAction>?
   let id: UUID
   var isFavorite: Bool
   let title: String
 
   var favorite: FavoriteState<ID> {
-    get { .init(id: self.id, isFavorite: self.isFavorite, error: self.error) }
-    set { (self.isFavorite, self.error) = (newValue.isFavorite, newValue.error) }
+    get { .init(alert: self.alert, id: self.id, isFavorite: self.isFavorite) }
+    set { (self.alert, self.isFavorite) = (newValue.alert, newValue.isFavorite) }
   }
 }
 

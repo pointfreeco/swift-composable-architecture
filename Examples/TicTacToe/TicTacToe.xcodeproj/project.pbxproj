@@ -88,7 +88,6 @@
 		DC9195A324201B3B00A5BE1F /* LoginSwiftUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9195A124201B3B00A5BE1F /* LoginSwiftUITests.swift */; };
 		DCAF10D1242027D400483288 /* TwoFactorSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF10C8242027D400483288 /* TwoFactorSwiftUI.framework */; };
 		DCAF10D8242027D400483288 /* TwoFactorSwiftUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAF10D7242027D400483288 /* TwoFactorSwiftUITests.swift */; };
-		DCAF114E2420294700483288 /* AlertData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAF10E52420285A00483288 /* AlertData.swift */; };
 		DCAF1152242029EE00483288 /* TwoFactorSwiftView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAF1151242029EE00483288 /* TwoFactorSwiftView.swift */; };
 		DCAF115D24202A5700483288 /* AuthenticationClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC919425242012D200A5BE1F /* AuthenticationClient.framework */; };
 		DCAF115E24202A5C00483288 /* TicTacToeCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAF11312420293300483288 /* TicTacToeCommon.framework */; };
@@ -600,7 +599,6 @@
 		DCAF10C8242027D400483288 /* TwoFactorSwiftUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TwoFactorSwiftUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCAF10D0242027D400483288 /* TwoFactorSwiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TwoFactorSwiftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCAF10D7242027D400483288 /* TwoFactorSwiftUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwoFactorSwiftUITests.swift; sourceTree = "<group>"; };
-		DCAF10E52420285A00483288 /* AlertData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertData.swift; sourceTree = "<group>"; };
 		DCAF10EC242028DE00483288 /* AppCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AppCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCAF110E242028E600483288 /* AppSwiftUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AppSwiftUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCAF11312420293300483288 /* TicTacToeCommon.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TicTacToeCommon.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -934,7 +932,6 @@
 			isa = PBXGroup;
 			children = (
 				DCAF11C72420335500483288 /* ActivityIndicator.swift */,
-				DCAF10E52420285A00483288 /* AlertData.swift */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -1965,7 +1962,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				DCAF11CA2420335500483288 /* ActivityIndicator.swift in Sources */,
-				DCAF114E2420294700483288 /* AlertData.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
