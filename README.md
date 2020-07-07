@@ -451,6 +451,7 @@ There are also many architecture libraries in the Swift and iOS community. Each 
 * <details>
   <summary>And more</summary>
 
+  * [Fluxor](https://github.com/FluxorOrg/Fluxor)
   * [PromisedArchitectureKit](https://github.com/RPallas92/PromisedArchitectureKit)
   </details>
 

@@ -8,7 +8,7 @@ import TwoFactorSwiftUI
 
 public struct LoginView: View {
   struct ViewState: Equatable {
-    var alertData: AlertData?
+    var alert: AlertState<LoginAction>?
     var email: String
     var isActivityIndicatorVisible: Bool
     var isFormDisabled: Bool
@@ -82,22 +82,18 @@ public struct LoginView: View {
         }
         .disabled(viewStore.isFormDisabled)
       }
-      .navigationBarTitle("Login")
-      // NB: This is necessary to clear the bar items from the game.
-      .navigationBarItems(trailing: EmptyView())
-      .alert(
-        item: viewStore.binding(get: { $0.alertData }, send: .alertDismissed)
-      ) { alertData in
-        Alert(title: Text(alertData.title))
-      }
+      .alert(self.store.scope(state: { $0.alert }), dismiss: .alertDismissed)
     }
+    .navigationBarTitle("Login")
+    // NB: This is necessary to clear the bar items from the game.
+    .navigationBarItems(trailing: EmptyView())
   }
 }
 
 extension LoginState {
   var view: LoginView.ViewState {
     LoginView.ViewState(
-      alertData: self.alertData,
+      alert: self.alert,
       email: self.email,
       isActivityIndicatorVisible: self.isLoginRequestInFlight,
       isFormDisabled: self.isLoginRequestInFlight,

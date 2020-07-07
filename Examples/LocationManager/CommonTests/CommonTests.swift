@@ -154,7 +154,9 @@ class LocationManagerTests: XCTestCase {
         locationManagerSubject.send(.didChangeAuthorization(.denied))
       },
       .receive(.locationManager(.didChangeAuthorization(.denied))) {
-        $0.alert = "Location makes this app better. Please consider giving us access."
+        $0.alert = .init(
+          title: "Location makes this app better. Please consider giving us access."
+        )
         $0.isRequestingCurrentLocation = false
       },
 

@@ -8,7 +8,7 @@ private let readMe = """
   It reuses the the domain of the counter screen and embeds it, twice, in a larger domain.
   """
 
-struct TwoCountersState {
+struct TwoCountersState: Equatable {
   var counter1 = CounterState()
   var counter2 = CounterState()
 }

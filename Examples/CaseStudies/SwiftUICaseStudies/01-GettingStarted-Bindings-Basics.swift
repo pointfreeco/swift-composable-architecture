@@ -79,8 +79,7 @@ struct BindingBasicsView: View {
 
           Toggle(
             isOn: viewStore.binding(get: { $0.toggleIsOn }, send: BindingBasicsAction.toggleChange)
-          )
-          {
+          ) {
             Text("Disable other controls")
           }
 

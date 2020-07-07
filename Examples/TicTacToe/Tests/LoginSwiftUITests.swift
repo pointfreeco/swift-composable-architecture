@@ -119,13 +119,13 @@ class LoginSwiftUITests: XCTestCase {
         self.scheduler.advance()
       },
       .receive(.loginResponse(.failure(.invalidUserPassword))) {
-        $0.alertData = AlertData(
+        $0.alert = .init(
           title: AuthenticationError.invalidUserPassword.localizedDescription)
         $0.isActivityIndicatorVisible = false
         $0.isFormDisabled = false
       },
       .send(.alertDismissed) {
-        $0.alertData = nil
+        $0.alert = nil
       }
     )
   }

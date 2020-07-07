@@ -52,7 +52,7 @@ let package = Package(
     .testTarget(
       name: "ComposableCoreLocationTests",
       dependencies: [
-        "ComposableCoreLocation",
+        "ComposableCoreLocation"
       ]
     ),
     .target(
