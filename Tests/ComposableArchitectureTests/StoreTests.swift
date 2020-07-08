@@ -313,4 +313,37 @@ final class StoreTests: XCTestCase {
     parentStore.send(nil)
     XCTAssertEqual(outputs, [nil, 1, nil, 1, nil, 1, nil])
   }
+
+  func testIfLetTwo() {
+    let parentStore = Store(
+      initialState: 0,
+      reducer: Reducer<Int?, Bool, Void> { state, action, _ in
+        if action {
+          state? += 1
+          return .none
+        } else {
+          return Just(true).receive(on: DispatchQueue.main).eraseToEffect()
+        }
+      },
+      environment: ()
+    )
+
+    parentStore.ifLet { childStore in
+      let vs = ViewStore(childStore)
+
+      vs
+        .publisher
+        .sink { print($0) }
+        .store(in: &self.cancellables)
+
+      vs.send(false)
+      _ = XCTWaiter.wait(for: [.init()], timeout: 0.1)
+      vs.send(false)
+      _ = XCTWaiter.wait(for: [.init()], timeout: 0.1)
+      vs.send(false)
+      _ = XCTWaiter.wait(for: [.init()], timeout: 0.1)
+      XCTAssertEqual(vs.state, 3)
+    }
+    .store(in: &self.cancellables)
+  }
 }
