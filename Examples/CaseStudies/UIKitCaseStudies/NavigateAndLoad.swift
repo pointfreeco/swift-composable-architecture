@@ -18,8 +18,9 @@ struct EagerNavigationEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
-let eagerNavigationReducer = counterReducer
-  .optional
+let eagerNavigationReducer =
+  counterReducer
+  .optional()
   .pullback(
     state: \.optionalCounter,
     action: /EagerNavigationAction.optionalCounter,

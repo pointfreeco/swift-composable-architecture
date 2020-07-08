@@ -34,7 +34,7 @@ extension Reducer {
   ) -> Reducer {
     self.debug(prefix, state: toLocalState, action: toLocalAction, environment: toDebugEnvironment)
   }
-    
+
   @available(*, deprecated, renamed: "optional()")
   public var optional: Reducer<State?, Action, Environment> {
     self.optional()

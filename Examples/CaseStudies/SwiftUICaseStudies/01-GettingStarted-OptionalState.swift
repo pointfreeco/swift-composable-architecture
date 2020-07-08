@@ -23,8 +23,9 @@ enum OptionalBasicsAction: Equatable {
 
 struct OptionalBasicsEnvironment {}
 
-let optionalBasicsReducer = counterReducer
-  .optional
+let optionalBasicsReducer =
+  counterReducer
+  .optional()
   .pullback(
     state: \.optionalCounter,
     action: /OptionalBasicsAction.optionalCounter,

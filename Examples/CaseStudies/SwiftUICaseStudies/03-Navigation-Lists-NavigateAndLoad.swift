@@ -32,10 +32,11 @@ struct NavigateAndLoadListEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
-let navigateAndLoadListReducer = counterReducer
-  .optional
+let navigateAndLoadListReducer =
+  counterReducer
+  .optional()
   .pullback(state: \Identified.value, action: .self, environment: { $0 })
-  .optional
+  .optional()
   .pullback(
     state: \NavigateAndLoadListState.selection,
     action: /NavigateAndLoadListAction.counter,
