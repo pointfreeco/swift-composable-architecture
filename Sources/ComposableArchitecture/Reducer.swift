@@ -216,7 +216,7 @@ public struct Reducer<State, Action, Environment> {
     ///   store on non-optional state.
     /// - See also: `Store.ifLet`, a UIKit helper for doing imperative work with a store on optional
     ///   state.
-    public func optional(_ file: String = #file, _ line: Int = #line) -> Reducer<State?, Action, Environment> {
+    public func optional(_ file: StaticString = #file, _ line: UInt = #line) -> Reducer<State?, Action, Environment> {
       .init { state, action, environment in
         guard state != nil else {
           assertionFailure(
@@ -235,7 +235,9 @@ public struct Reducer<State, Action, Environment> {
             * This action was sent to the store while state was "nil". Make sure that actions for \
             this reducer can only be sent to a view store when state is non-"nil". In SwiftUI \
             applications, use "IfLetStore".
-            """
+            """,
+            file: file,
+            line: line
           )
           return .none
         }
