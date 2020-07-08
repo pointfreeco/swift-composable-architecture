@@ -153,7 +153,7 @@ public struct Reducer<State, Action, Environment> {
   ///
   ///     // Pullback the local modal reducer so that it works on all of the app domain:
   ///     let appReducer: Reducer<AppState, AppAction, AppEnvironment> =
-  ///       modalReducer.optional.pullback(
+  ///       modalReducer.optional().pullback(
   ///         state: \.modal,
   ///         action: /AppAction.modal,
   ///         environment: { ModalEnvironment(mainQueue: $0.mainQueue) }
@@ -163,7 +163,9 @@ public struct Reducer<State, Action, Environment> {
   ///   store on non-optional state.
   /// - See also: `Store.ifLet`, a UIKit helper for doing imperative work with a store on optional
   ///   state.
-  public var optional: Reducer<State?, Action, Environment> {
+  public func optional(_ file: StaticString = #file, _ line: UInt = #line) -> Reducer<
+    State?, Action, Environment
+  > {
     .init { state, action, environment in
       guard state != nil else {
         assertionFailure(
@@ -182,7 +184,9 @@ public struct Reducer<State, Action, Environment> {
           * This action was sent to the store while state was "nil". Make sure that actions for \
           this reducer can only be sent to a view store when state is non-"nil". In SwiftUI \
           applications, use "IfLetStore".
-          """
+          """,
+          file: file,
+          line: line
         )
         return .none
       }
@@ -218,7 +222,9 @@ public struct Reducer<State, Action, Environment> {
   public func forEach<GlobalState, GlobalAction, GlobalEnvironment>(
     state toLocalState: WritableKeyPath<GlobalState, [State]>,
     action toLocalAction: CasePath<GlobalAction, (Int, Action)>,
-    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment
+    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+    _ file: StaticString = #file,
+    _ line: UInt = #line
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
     .init { globalState, globalAction, globalEnvironment in
       guard let (index, localAction) = toLocalAction.extract(from: globalAction) else {
@@ -246,7 +252,9 @@ public struct Reducer<State, Action, Environment> {
         * This action was sent to the store while its state contained no element at this index. \
         To fix this make sure that actions for this reducer can only be sent to a view store when \
         its state contains an element at this index. In SwiftUI applications, use `ForEachStore`.
-        """
+        """,
+        file: file,
+        line: line
       )
       return self.reducer(
         &globalState[keyPath: toLocalState][index],
@@ -286,7 +294,9 @@ public struct Reducer<State, Action, Environment> {
   public func forEach<GlobalState, GlobalAction, GlobalEnvironment, ID>(
     state toLocalState: WritableKeyPath<GlobalState, IdentifiedArray<ID, State>>,
     action toLocalAction: CasePath<GlobalAction, (ID, Action)>,
-    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment
+    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+    _ file: StaticString = #file,
+    _ line: UInt = #line
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
     .init { globalState, globalAction, globalEnvironment in
       guard let (id, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
@@ -313,7 +323,9 @@ public struct Reducer<State, Action, Environment> {
         * This action was sent to the store while its state contained no element at this id. \
         To fix this make sure that actions for this reducer can only be sent to a view store when \
         its state contains an element at this id. In SwiftUI applications, use `ForEachStore`.
-        """
+        """,
+        file: file,
+        line: line
       )
 
       return
@@ -339,7 +351,9 @@ public struct Reducer<State, Action, Environment> {
   public func forEach<GlobalState, GlobalAction, GlobalEnvironment, Key>(
     state toLocalState: WritableKeyPath<GlobalState, [Key: State]>,
     action toLocalAction: CasePath<GlobalAction, (Key, Action)>,
-    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment
+    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+    _ file: StaticString = #file,
+    _ line: UInt = #line
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
     .init { globalState, globalAction, globalEnvironment in
       guard let (key, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
@@ -364,7 +378,9 @@ public struct Reducer<State, Action, Environment> {
         * This action was sent to the store while its state contained no element at this key. \
         To fix this make sure that actions for this reducer can only be sent to a view store
         when its state contains an element at this key.
-        """
+        """,
+        file: file,
+        line: line
       )
       return self.reducer(
         &globalState[keyPath: toLocalState][key]!,

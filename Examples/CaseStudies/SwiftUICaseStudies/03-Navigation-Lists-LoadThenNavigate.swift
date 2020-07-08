@@ -41,7 +41,7 @@ let loadThenNavigateListReducer =
     action: .self,
     environment: { $0 }
   )
-  .optional
+  .optional()
   .pullback(
     state: \LoadThenNavigateListState.selection,
     action: /LoadThenNavigateListAction.counter,
