@@ -137,59 +137,6 @@ public struct Reducer<State, Action, Environment> {
     }
   }
 
-  /// Transforms a reducer that works on non-optional state into one that works on optional state by
-  /// only running the non-optional reducer when state is non-nil.
-  ///
-  /// Often used in tandem with `pullback` to transform a reducer on a non-optional local domain
-  /// into a reducer on a global domain that contains an optional local domain:
-  ///
-  ///     // Global domain that holds an optional local domain:
-  ///     struct AppState { var modal: ModalState? }
-  ///     struct AppAction { case modal(ModalAction) }
-  ///     struct AppEnvironment { var mainQueue: AnySchedulerOf<DispatchQueue> }
-  ///
-  ///     // A reducer that works on the non-optional local domain:
-  ///     let modalReducer = Reducer<ModalState, ModalAction, ModalEnvironment { ... }
-  ///
-  ///     // Pullback the local modal reducer so that it works on all of the app domain:
-  ///     let appReducer: Reducer<AppState, AppAction, AppEnvironment> =
-  ///       modalReducer.optional.pullback(
-  ///         state: \.modal,
-  ///         action: /AppAction.modal,
-  ///         environment: { ModalEnvironment(mainQueue: $0.mainQueue) }
-  ///       )
-  ///
-  /// - See also: `IfLetStore`, a SwiftUI helper for transforming a store on optional state into a
-  ///   store on non-optional state.
-  /// - See also: `Store.ifLet`, a UIKit helper for doing imperative work with a store on optional
-  ///   state.
-  public var optional: Reducer<State?, Action, Environment> {
-    .init { state, action, environment in
-      guard state != nil else {
-        assertionFailure(
-          """
-          "\(debugCaseOutput(action))" was received by an optional reducer when its state was \
-          "nil". This can happen for a few reasons:
-
-          * The optional reducer was combined with or run from another reducer that set \
-          "\(State.self)" to "nil" before the optional reducer ran. Combine or run optional \
-          reducers before reducers that can set their state to "nil". This ensures that optional \
-          reducers can handle their actions while their state is still non-"nil".
-
-          * An active effect emitted this action while state was "nil". Make sure that effects for \
-          this optional reducer are canceled when optional state is set to "nil".
-
-          * This action was sent to the store while state was "nil". Make sure that actions for \
-          this reducer can only be sent to a view store when state is non-"nil". In SwiftUI \
-          applications, use "IfLetStore".
-          """
-        )
-        return .none
-      }
-      return self.reducer(&state!, action, environment)
-    }
-  }
-    
     /// Transforms a reducer that works on non-optional state into one that works on optional state by
     /// only running the non-optional reducer when state is non-nil.
     ///
