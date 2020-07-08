@@ -202,7 +202,7 @@ public final class Store<State, Action> {
     return self.scope(state: { $0 }, action: absurd)
   }
 
-  private init(
+  init(
     initialState: State,
     reducer: @escaping (inout State, Action) -> Effect<Action, Never>
   ) {

@@ -37,9 +37,13 @@ class AppViewController: UINavigationController {
 
     self.store
       .scope(state: { $0.login }, action: AppAction.login)
-      .ifLet { [weak self] loginStore in
-        self?.setViewControllers([LoginViewController(store: loginStore)], animated: false)
-      }
+      .ifLet(
+        then: { [weak self] loginStore in
+          print("then")
+          self?.setViewControllers([LoginViewController(store: loginStore)], animated: false)
+        },
+        else: { print("else") }
+      )
       .store(in: &self.cancellables)
 
     self.store

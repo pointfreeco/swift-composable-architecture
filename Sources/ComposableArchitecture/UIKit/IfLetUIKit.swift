@@ -43,16 +43,38 @@ extension Store {
     then unwrap: @escaping (Store<Wrapped, Action>) -> Void,
     else: @escaping () -> Void
   ) -> Cancellable where State == Wrapped? {
-    self
-      .scope(
-        state: { state in
-          state
-            .removeDuplicates(by: { ($0 != nil) == ($1 != nil) })
-            .handleEvents(receiveOutput: { if $0 == nil { `else`() } })
-            .compactMap { $0 }
+    ViewStore(self, removeDuplicates: { ($0 != nil) == ($1 != nil) })
+      .publisher
+      .sink { value in
+        if let value = value {
+          unwrap(
+            .init(
+              initialState: value,
+              reducer: { state, action in
+                self.send(action)
+                if let value = self.state.value {
+                  state = value
+                }
+                return .none
+              }
+            )
+          )
+        } else {
+          `else`()
         }
-      )
-      .sink(receiveValue: unwrap)
+      }
+
+//    self
+//      .scope(
+//        state: { state in
+//          state
+//            .print("ifLet \(state)")
+//            .removeDuplicates(by: { ($0 != nil) == ($1 != nil) })
+//            .handleEvents(receiveOutput: { if $0 == nil { `else`() } })
+//            .compactMap { $0 }
+//        }
+//      )
+//      .sink(receiveValue: unwrap)
   }
 
   /// An overload of `ifLet(then:else:)` for the times that you do not want to handle the `else`
