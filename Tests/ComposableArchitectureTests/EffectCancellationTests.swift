@@ -286,4 +286,77 @@ final class EffectCancellationTests: XCTestCase {
     scheduler.advance(by: 1)
     XCTAssertEqual(expectedOutput, [])
   }
+
+  func testEffectCancellationPublisherRelease() {
+    class CustomPublisher: Publisher {
+      typealias Output = Void
+      typealias Failure = Never
+
+      init() {
+        Self.instancesCount += 1
+      }
+
+      deinit {
+        Self.instancesCount -= 0
+      }
+
+      func receive<S>(subscriber: S) where S: Subscriber, S.Failure == Failure, S.Input == Output {}
+
+      static var instancesCount = 0
+    }
+
+    struct State: Equatable {}
+
+    enum Action: Equatable {
+      case start
+      case stop
+      case action
+    }
+
+    let reducer = Reducer<State, Action, Void> { state, action, _ in
+      struct EffectId: Hashable {}
+
+      switch action {
+      case .start:
+        return CustomPublisher()
+          .map { Action.action }
+          .eraseToEffect()
+          .cancellable(id: EffectId(), cancelInFlight: true)
+
+      case .stop:
+        return .cancel(id: EffectId())
+
+      case .action:
+        return .none
+      }
+    }
+
+    struct ParentState: Equatable {
+      var state: State?
+    }
+
+    enum ParentAction: Equatable {
+      case action(Action)
+    }
+
+    let parentReducer: Reducer<ParentState, ParentAction, Void> = reducer.optional.pullback(
+      state: \.state,
+      action: /ParentAction.action,
+      environment: { $0 }
+    )
+
+    let store = TestStore(
+      initialState: ParentState(state: State()),
+      reducer: parentReducer,
+      environment: ()
+    )
+
+    store.assert(
+      .do { XCTAssertEqual(CustomPublisher.instancesCount, 0) },
+      .send(.action(.start)),
+      .do { XCTAssertEqual(CustomPublisher.instancesCount, 1) },
+      .send(.action(.stop)),
+      .do { XCTAssertEqual(CustomPublisher.instancesCount, 0) }
+    )
+  }
 }
