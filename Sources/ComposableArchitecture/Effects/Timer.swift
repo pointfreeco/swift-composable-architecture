@@ -81,10 +81,10 @@ extension Effect where Failure == Never {
   ///   }
   ///
   /// - Note: This effect is only meant to be used with features built in the Composable
-  ///   Architecture, and returned from a reducer. If you want a testable alternative to Foundation's
-  ///   `Timer.publish` you can use the publisher `Publishers.Timer` that is included in this
-  ///   library via the [`CombineSchedulers`](https://github.com/pointfreeco/combine-schedulers)
-  ///   module.
+  ///   Architecture, and returned from a reducer. If you want a testable alternative to
+  ///   Foundation's `Timer.publish` you can use the publisher `Publishers.Timer` that is included
+  ///   in this library via the
+  ///   [`CombineSchedulers`](https://github.com/pointfreeco/combine-schedulers) module.
   ///
   /// - Parameters:
   ///   - interval: The time interval on which to publish events. For example, a value of `0.5`
