@@ -11,9 +11,9 @@ extension Effect where Failure == Never {
   /// wait for time to pass in order to see how the effect evolves in your feature.
   ///
   /// In the Composable Architecture we test time-based effects like this by using the
-  /// `TestScheduler`, which allows us to explicitly advance time forward so that we can see how
-  /// effects emit. However, because `Timer.publish` takes a concrete `RunLoop` as its
-  /// scheduler, we can't substitute in a `TestScheduler` during tests`.
+  /// `TestScheduler`, which allows us to explicitly and immediately advance time forward so that
+  /// we can see how effects emit. However, because `Timer.publish` takes a concrete `RunLoop` as
+  /// its scheduler, we can't substitute in a `TestScheduler` during tests`.
   ///
   /// That is why we provide the `Effect.timer` effect. It allows you to create a timer that works
   /// with any scheduler, not just a run loop, which means you can use a `DispatchQueue` or
