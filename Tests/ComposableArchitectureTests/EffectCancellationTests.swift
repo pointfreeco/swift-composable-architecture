@@ -287,24 +287,47 @@ final class EffectCancellationTests: XCTestCase {
     XCTAssertEqual(expectedOutput, [])
   }
 
+  /// Custom Combine Publisher, used in the following tests
+  class CustomPublisher: Publisher {
+    typealias Output = Void
+    typealias Failure = Never
+
+    func receive<S>(subscriber: S) where S: Subscriber, S.Failure == Failure, S.Input == Output {}
+  }
+
+  /// Check if CustomPublisher is correctly released from the memory after cancelling the subscription
+  func testCustomPublisherRelease() {
+    var publisher: CustomPublisher!
+    weak var weakPublisher: CustomPublisher?
+    var receivedRequests = 0
+    var receivedCancels = 0
+    var cancellables = Set<AnyCancellable>()
+
+    publisher = CustomPublisher()
+    weakPublisher = publisher
+    publisher.handleEvents(
+      receiveCancel: { receivedCancels += 1 },
+      receiveRequest: { _ in receivedRequests += 1 })
+      .sink(receiveValue: { _ in })
+      .store(in: &cancellables)
+
+    XCTAssertNotNil(weakPublisher)
+
+    publisher = nil
+
+    XCTAssertNotNil(weakPublisher)
+    XCTAssertEqual(receivedRequests, 1)
+    XCTAssertEqual(receivedCancels, 0)
+
+    cancellables.removeAll()
+
+    XCTAssertNil(weakPublisher)
+    XCTAssertEqual(receivedRequests, 1)
+    XCTAssertEqual(receivedCancels, 1)
+  }
+
+  /// Check if CustomPublisher is correctly released from the memory after cancelling an Effect originating from it
   func testEffectCancellationPublisherRelease() {
-    class CustomPublisher: Publisher {
-      typealias Output = Void
-      typealias Failure = Never
-
-      init() {
-        Self.instancesCount += 1
-      }
-
-      deinit {
-        Self.instancesCount -= 0
-      }
-
-      func receive<S>(subscriber: S) where S: Subscriber, S.Failure == Failure, S.Input == Output {}
-
-      static var instancesCount = 0
-    }
-
     struct State: Equatable {}
 
     enum Action: Equatable {
@@ -313,12 +336,25 @@ final class EffectCancellationTests: XCTestCase {
       case action
     }
 
-    let reducer = Reducer<State, Action, Void> { state, action, _ in
+    var store: TestStore<State, State, Action, Action, Void>!
+    var reducer: Reducer<State, Action, Void>!
+    weak var weakPublisher: CustomPublisher?
+    var receivedRequests = 0
+    var receivedCancels = 0
+
+    reducer = Reducer { state, action, _ in
       struct EffectId: Hashable {}
 
       switch action {
       case .start:
-        return CustomPublisher()
+        let publisher = CustomPublisher()
+        weakPublisher = publisher
+        return publisher
+          .handleEvents(receiveCancel: {
+            receivedCancels += 1
+          }, receiveRequest: { _ in
+            receivedRequests += 1
+          })
           .map { Action.action }
           .eraseToEffect()
           .cancellable(id: EffectId(), cancelInFlight: true)
@@ -331,32 +367,36 @@ final class EffectCancellationTests: XCTestCase {
       }
     }
 
-    struct ParentState: Equatable {
-      var state: State
-    }
-
-    enum ParentAction: Equatable {
-      case action(Action)
-    }
-
-    let parentReducer: Reducer<ParentState, ParentAction, Void> = reducer.pullback(
-      state: \.state,
-      action: /ParentAction.action,
-      environment: { $0 }
-    )
-
-    let store = TestStore(
-      initialState: ParentState(state: State()),
-      reducer: parentReducer,
+    store = TestStore(
+      initialState: State(),
+      reducer: reducer,
       environment: ()
     )
 
     store.assert(
-      .do { XCTAssertEqual(CustomPublisher.instancesCount, 0) },
-      .send(.action(.start)),
-      .do { XCTAssertEqual(CustomPublisher.instancesCount, 1) },
-      .send(.action(.stop)),
-      .do { XCTAssertEqual(CustomPublisher.instancesCount, 0) }
+      .do {
+        XCTAssertNil(weakPublisher)
+        XCTAssertEqual(receivedRequests, 0)
+        XCTAssertEqual(receivedCancels, 0)
+      },
+      .send(.start),
+      .do {
+        XCTAssertNotNil(weakPublisher)
+        XCTAssertEqual(receivedRequests, 1)
+        XCTAssertEqual(receivedCancels, 0)
+      },
+      .send(.stop),
+      .do {
+        XCTAssertNil(weakPublisher)
+        XCTAssertEqual(receivedRequests, 1)
+        XCTAssertEqual(receivedCancels, 1)
+      }
     )
+
+    store = nil
+    reducer = nil
+    XCTAssertNil(weakPublisher)
+    XCTAssertEqual(receivedRequests, 1)
+    XCTAssertEqual(receivedCancels, 1)
   }
 }
