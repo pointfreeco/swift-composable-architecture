@@ -2,8 +2,45 @@ import ComposableArchitecture
 import SwiftUI
 
 private let readMe = """
-  TODO
+  This demonstrates how to trigger effects when a view appears, and cancel effects when a view
+  disappears. This can be helpful for starting up a feature's long living effects, such as timers,
+  location managers, etc. when that feature is first presented.
+
+  To accomplish this we define a higher-order reducer that enhances any reducer with two additional
+  actions, `.onAppear` and `.onDisappear`, and a way to automate running effects when those actions
+  are sent to the store.
   """
+
+extension Reducer {
+  public func lifecycle(
+    onAppear: @escaping (Environment) -> Effect<Action, Never>,
+    onDisappear: @escaping (Environment) -> Effect<Never, Never>
+  ) -> Reducer<State?, LifecycleAction<Action>, Environment> {
+
+    return .init { state, lifecycleAction, environment in
+      switch lifecycleAction {
+      case .onAppear:
+        return onAppear(environment).map(LifecycleAction.action)
+
+      case .onDisappear:
+        return onDisappear(environment).fireAndForget()
+
+      case let .action(action):
+        guard state != nil else { return .none }
+        return self.run(&state!, action, environment)
+          .map(LifecycleAction.action)
+      }
+    }
+  }
+}
+
+public enum LifecycleAction<Action> {
+  case onAppear
+  case onDisappear
+  case action(Action)
+}
+
+extension LifecycleAction: Equatable where Action: Equatable {}
 
 struct LifecycleDemoState: Equatable {
   var count: Int?
@@ -35,15 +72,17 @@ let lifecycleDemoReducer: Reducer<LifecycleDemoState, LifecycleDemoAction, Lifec
         return .none
       }
     }
-  )
+)
 
 struct LifecycleDemoView: View {
   let store: Store<LifecycleDemoState, LifecycleDemoAction>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
-      VStack {
-        Button("Toggle Timer") { viewStore.send(.toggleTimerButtonTapped) }
+      Form {
+        Section.init(header: Text(template: readMe, .body)) {
+          Button("Toggle Timer") { viewStore.send(.toggleTimerButtonTapped) }
+        }
 
         IfLetStore(
           self.store.scope(state: \.count, action: LifecycleDemoAction.timer),
@@ -57,6 +96,8 @@ struct LifecycleDemoView: View {
 private struct TimerId: Hashable {}
 
 enum TimerAction {
+  case decrementButtonTapped
+  case incrementButtonTapped
   case tick
 }
 
@@ -66,6 +107,14 @@ struct TimerEnvironment {
 
 private let timerReducer = Reducer<Int, TimerAction, TimerEnvironment> { state, action, TimerEnvironment in
   switch action {
+  case .decrementButtonTapped:
+    state -= 1
+    return .none
+
+  case .incrementButtonTapped:
+    state += 1
+    return .none
+
   case .tick:
     state += 1
     return .none
@@ -75,33 +124,44 @@ private let timerReducer = Reducer<Int, TimerAction, TimerEnvironment> { state, 
   onAppear: {
     Effect.timer(id: TimerId(), every: 1, tolerance: 0, on: $0.mainQueue)
       .map { _ in TimerAction.tick }
-  },
+},
   onDisappear: { _ in
     .cancel(id: TimerId())
-  })
+})
 
 private struct TimerView: View {
   let store: Store<Int, LifecycleAction<TimerAction>>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
-      Text("Count: \(viewStore.state)")
-        .onAppear { viewStore.send(.onAppear) }
-        .onDisappear { viewStore.send(.onDisappear) }
+      Section {
+        Text("Count: \(viewStore.state)")
+          .onAppear { viewStore.send(.onAppear) }
+          .onDisappear { viewStore.send(.onDisappear) }
+
+        Button("Decrement") { viewStore.send(.action(.decrementButtonTapped))}
+
+        Button("Increment") { viewStore.send(.action(.incrementButtonTapped)) }
+      }
     }
   }
 }
 
 struct Lifecycle_Previews: PreviewProvider {
   static var previews: some View {
-    LifecycleDemoView(
-      store: .init(
-        initialState: .init(),
-        reducer: lifecycleDemoReducer,
-        environment: .init(
-          mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+    Group {
+      NavigationView {
+        LifecycleDemoView(
+          store: .init(
+            initialState: .init(),
+            reducer: lifecycleDemoReducer,
+            environment: .init(
+              mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+            )
+          )
         )
-      )
-    )
+          .navigationBarTitle("Lifecycle")
+      }
+    }
   }
 }
