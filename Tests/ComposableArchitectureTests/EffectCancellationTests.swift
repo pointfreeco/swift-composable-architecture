@@ -332,14 +332,14 @@ final class EffectCancellationTests: XCTestCase {
     }
 
     struct ParentState: Equatable {
-      var state: State?
+      var state: State
     }
 
     enum ParentAction: Equatable {
       case action(Action)
     }
 
-    let parentReducer: Reducer<ParentState, ParentAction, Void> = reducer.optional.pullback(
+    let parentReducer: Reducer<ParentState, ParentAction, Void> = reducer.pullback(
       state: \.state,
       action: /ParentAction.action,
       environment: { $0 }
