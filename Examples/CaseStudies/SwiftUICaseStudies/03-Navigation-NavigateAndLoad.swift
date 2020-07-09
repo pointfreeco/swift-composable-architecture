@@ -25,8 +25,9 @@ struct NavigateAndLoadEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
-let navigateAndLoadReducer = counterReducer
-  .optional
+let navigateAndLoadReducer =
+  counterReducer
+  .optional()
   .pullback(
     state: \.optionalCounter,
     action: /NavigateAndLoadAction.optionalCounter,

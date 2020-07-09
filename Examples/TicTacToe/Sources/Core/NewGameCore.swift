@@ -23,8 +23,9 @@ public struct NewGameEnvironment {
   public init() {}
 }
 
-public let newGameReducer = gameReducer
-  .optional
+public let newGameReducer =
+  gameReducer
+  .optional()
   .pullback(
     state: \.game,
     action: /NewGameAction.game,

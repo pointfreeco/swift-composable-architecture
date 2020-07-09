@@ -18,8 +18,9 @@ struct LazyNavigationEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
-let lazyNavigationReducer = counterReducer
-  .optional
+let lazyNavigationReducer =
+  counterReducer
+  .optional()
   .pullback(
     state: \.optionalCounter,
     action: /LazyNavigationAction.optionalCounter,

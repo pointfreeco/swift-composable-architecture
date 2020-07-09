@@ -4,20 +4,55 @@
 
   /// A testable runtime for a reducer.
   ///
+  /// This object aids in writing expressive and exhaustive tests for features built in the
+  /// Composable Architecture. It allows you to send a sequence of actions to the store, and each
+  /// step of the way you must assert exactly how state changed, and how effect emissions were fed
+  /// back into the system.
+  ///
+  /// There are multiple ways the test store forces you to exhaustively assert on how your feature
+  /// behaves:
+  ///
+  /// * After each action is sent you must describe precisely how the state changed from before the
+  ///   action was sent to after it was sent.
+  ///
+  ///   If even the smallest piece of data differs the test will fail. This guarantees that you are
+  ///   proving you know precisely how the state of the system changes.
+  ///
+  /// * Sending an action can sometimes cause an effect to be executed, and if that effect emits an
+  ///   action that is fed back into the system, you **must** explicitly assert that you expect to
+  ///   receive that action from the effect, _and_ you must assert how state changed as a result.
+  ///
+  ///   If you try to send another action before you have handled all effect emissions the assertion
+  ///   will fail. This guarantees that you do not accidentally forget about an effect emission, and
+  ///   that the sequence of steps you are describing will mimic how the application behaves in
+  ///   reality.
+  ///
+  /// * All effects must complete by the time the assertion has finished running the steps you
+  ///   specify.
+  ///
+  ///   If at the end of the assertion there is still an in-flight effect running, the assertion
+  ///   will fail. This helps exhaustively prove that you know what effects are in flight and forces
+  ///   you to prove that effects will not cause any future changes to your state.
+  ///
   /// For example, given a simple counter reducer:
+  ///
+  ///     struct CounterState {
+  ///       var count = 0
+  ///     }
   ///
   ///     enum CounterAction: Equatable {
   ///       case decrementButtonTapped
   ///       case incrementButtonTapped
   ///     }
   ///
-  ///     let counterReducer = Reducer<Int, CounterAction, Void> { count, action, _ in
+  ///     let counterReducer = Reducer<CounterState, CounterAction, Void> { state, action, _ in
   ///       switch action {
   ///       case .decrementButtonTapped:
-  ///         count -= 1
+  ///         state.count -= 1
   ///         return .none
+  ///
   ///       case .incrementButtonTapped:
-  ///         count += 1
+  ///         state.count += 1
   ///         return .none
   ///       }
   ///     }
@@ -27,50 +62,56 @@
   ///     class CounterTests: XCTestCase {
   ///       func testCounter() {
   ///         let store = TestStore(
-  ///           initialState: 0,                // GIVEN counter state of 0
+  ///           initialState: .init(count: 0),  // GIVEN counter state of 0
   ///           reducer: counterReducer,
   ///           environment: ()
   ///         )
   ///
   ///         store.assert(
   ///           .send(.incrementButtonTapped) { // WHEN the increment button is tapped
-  ///             $0 = 1                        // THEN the count should be 1
+  ///             $0.count = 1                  // THEN the count should be 1
   ///           }
   ///         )
   ///       }
   ///     }
   ///
-  /// For a more complex example, including timing and effects, consider the following bare-bones
-  /// search feature:
+  /// Note that in the trailing closure of `.send(.incrementButtonTapped)` we are given a single
+  /// mutable value of the state before the action was sent, and it is our job to mutate the value
+  /// to match the state after the action was sent. In this case the `count` field changes to `1`.
+  ///
+  /// For a more complex example, consider the following bare-bones search feature that uses the
+  /// `.debounce` operator to wait for the user to stop typing before making a network request:
   ///
   ///     struct SearchState: Equatable {
   ///       var query = ""
   ///       var results: [String] = []
   ///     }
+  ///
   ///     enum SearchAction: Equatable {
   ///       case queryChanged(String)
   ///       case response([String])
   ///     }
+  ///
   ///     struct SearchEnvironment {
   ///       var mainQueue: AnySchedulerOf<DispatchQueue>
   ///       var request: (String) -> Effect<[String], Never>
   ///     }
-  ///     let searchReducer = Reducer<
-  ///       SearchState, SearchAction, SearchEnvironment
-  ///     > { state, action, environment in
   ///
-  ///       // A local identifier for debouncing and canceling the search request effect.
-  ///       struct SearchId: Hashable {}
+  ///     let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
+  ///       state, action, environment in
   ///
-  ///       switch action {
-  ///       case let .queryChanged(query):
-  ///         state.query = query
-  ///         return environment.request(self.query)
-  ///           .debounce(id: SearchId(), for: 0.5, scheduler: environment.mainQueue)
-  ///       case let .response(results):
-  ///         state.results = results
-  ///         return .none
-  ///       }
+  ///         struct SearchId: Hashable {}
+  ///
+  ///         switch action {
+  ///         case let .queryChanged(query):
+  ///           state.query = query
+  ///           return environment.request(self.query)
+  ///             .debounce(id: SearchId(), for: 0.5, scheduler: environment.mainQueue)
+  ///
+  ///         case let .response(results):
+  ///           state.results = results
+  ///           return .none
+  ///         }
   ///     }
   ///
   /// It can be fully tested by controlling the environment's scheduler and effect:
@@ -94,22 +135,31 @@
   ///         // Assert that state updates accordingly
   ///         $0.query = "c"
   ///       },
+  ///
   ///       // Advance the scheduler by a period shorter than the debounce
   ///       .do { scheduler.advance(by: 0.25) },
+  ///
   ///       // Change the query again
   ///       .send(.searchFieldChanged("co") {
   ///         $0.query = "co"
   ///       },
+  ///
   ///       // Advance the scheduler by a period shorter than the debounce
   ///       .do { scheduler.advance(by: 0.25) },
   ///       // Advance the scheduler to the debounce
   ///       .do { scheduler.advance(by: 0.25) },
+  ///
   ///       // Assert that the expected response is received
   ///       .receive(.response(["Composable Architecture"])) {
   ///         // Assert that state updates accordingly
   ///         $0.results = ["Composable Architecture"]
   ///       }
   ///     )
+  ///
+  /// This test is proving that the debounced network requests are correctly canceled when we do not
+  /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
+  /// not expect it would cause a test failure.
+  ///
   public final class TestStore<State, LocalState, Action: Equatable, LocalAction, Environment> {
     private var environment: Environment
     private let fromLocalAction: (LocalAction) -> Action
