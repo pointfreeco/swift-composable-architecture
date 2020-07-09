@@ -25,7 +25,8 @@
   ///
   ///   If you try to send another action before you have handled all effect emissions the assertion
   /// will fail. This guarantees that you do not accidentally forget about an effect emission, and
-  /// that the sequence of steps you are describing will mimic how the application behaves in reality.
+  /// that the sequence of steps you are describing will mimic how the application behaves in
+  /// reality.
   ///
   /// * All effects must complete by the time the assertion has finished running the steps you
   /// specify.
