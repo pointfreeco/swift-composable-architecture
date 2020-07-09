@@ -312,13 +312,13 @@ final class EffectCancellationTests: XCTestCase {
       .store(in: &cancellables)
     publisher = nil
 
-    XCTAssertNotNil(weakPublisher, "should not release publisher after subscribing")
+    XCTAssertNotNil(weakPublisher, "should retain publisher after subscribing")
     XCTAssertEqual(receivedRequests, 1, "should receive request after subscribing")
     XCTAssertEqual(receivedCancels, 0, "should not receive cancel after subscribing")
 
     cancellables.removeAll()
 
-    XCTAssertNil(weakPublisher, "should release publisher after cancellation")
+    XCTAssertNil(weakPublisher, "should not retain publisher after cancellation")
     XCTAssertEqual(receivedRequests, 1, "should not receive request after cancellation")
     XCTAssertEqual(receivedCancels, 1, "should receive cancel after cancellation")
   }
