@@ -390,7 +390,7 @@ final class EffectCancellationTests: XCTestCase {
       .send(.stop),
       .do {
         XCTAssertEqual(createdPublishers, 1, "should not create another publisher after sending stop action")
-        XCTAssertNil(weakPublisher, "should release publisher after sending stop action")
+        XCTAssertNil(weakPublisher, "should not retain publisher after sending stop action")
         XCTAssertEqual(receivedRequests, 1, "should not receive requests after sending stop action")
         XCTAssertEqual(receivedCancels, 1, "should receive cancel after sending stop action")
       }
