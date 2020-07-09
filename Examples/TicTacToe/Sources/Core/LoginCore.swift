@@ -38,8 +38,9 @@ public struct LoginEnvironment {
   }
 }
 
-public let loginReducer = twoFactorReducer
-  .optional
+public let loginReducer =
+  twoFactorReducer
+  .optional()
   .pullback(
     state: \.twoFactor,
     action: /LoginAction.twoFactor,
