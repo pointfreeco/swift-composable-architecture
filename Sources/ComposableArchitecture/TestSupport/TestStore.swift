@@ -13,7 +13,7 @@
   /// behaved:
   ///
   /// * After each action is sent you must describe precisely how the state changed from before the
-  /// action was sent to after it was sent.
+  ///   action was sent to after it was sent.
   ///
   ///   If even the smallest piece of data differs the test will
   /// fail. This guarantees that you are proving you know precisely how the state of the system
