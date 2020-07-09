@@ -71,9 +71,10 @@ public struct Reducer<State, Action, Environment> {
   /// domain may listen to the child domain and `nil` out its state. If the parent reducer runs
   /// before the child reducer, then the child reducer will not be able to react to its own action.
   ///
-  /// The same can be said for a `forEach` reducer. If the parent domain modifies the child
-  /// collection by moving or removing an element before the `forEach` reducer runs, the `forEach`
-  /// reducer may perform its action against the wrong element or an element that no longer exists.
+  /// Similar can be said for a `forEach` reducer. If the parent domain modifies the child
+  /// collection by moving, removing, or modifying an element before the `forEach` reducer runs, the
+  /// `forEach` reducer may perform its action against the wrong element, an element that no longer
+  /// exists, or an element in an unexpected state.
   ///
   /// Running a parent reducer before a child reducer can be considered an application logic
   /// error, and can produce assertion failures. So you should almost always combine reducers in
@@ -120,9 +121,10 @@ public struct Reducer<State, Action, Environment> {
   /// domain may listen to the child domain and `nil` out its state. If the parent reducer runs
   /// before the child reducer, then the child reducer will not be able to react to its own action.
   ///
-  /// The same can be said for a `forEach` reducer. If the parent domain modifies the child
-  /// collection by moving or removing an element before the `forEach` reducer runs, the `forEach`
-  /// reducer may perform its action against the wrong element or an element that no longer exists.
+  /// Similar can be said for a `forEach` reducer. If the parent domain modifies the child
+  /// collection by moving, removing, or modifying an element before the `forEach` reducer runs, the
+  /// `forEach` reducer may perform its action against the wrong element, an element that no longer
+  /// exists, or an element in an unexpected state.
   ///
   /// Running a parent reducer before a child reducer can be considered an application logic
   /// error, and can produce assertion failures. So you should almost always combine reducers in
@@ -171,9 +173,10 @@ public struct Reducer<State, Action, Environment> {
   /// domain may listen to the child domain and `nil` out its state. If the parent reducer runs
   /// before the child reducer, then the child reducer will not be able to react to its own action.
   ///
-  /// The same can be said for a `forEach` reducer. If the parent domain modifies the child
-  /// collection by moving or removing an element before the `forEach` reducer runs, the `forEach`
-  /// reducer may perform its action against the wrong element or an element that no longer exists.
+  /// Similar can be said for a `forEach` reducer. If the parent domain modifies the child
+  /// collection by moving, removing, or modifying an element before the `forEach` reducer runs, the
+  /// `forEach` reducer may perform its action against the wrong element, an element that no longer
+  /// exists, or an element in an unexpected state.
   ///
   /// Running a parent reducer before a child reducer can be considered an application logic
   /// error, and can produce assertion failures. So you should almost always combine reducers in
