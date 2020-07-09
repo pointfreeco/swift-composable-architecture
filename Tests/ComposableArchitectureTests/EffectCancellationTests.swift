@@ -310,20 +310,17 @@ final class EffectCancellationTests: XCTestCase {
       receiveRequest: { _ in receivedRequests += 1 })
       .sink(receiveValue: { _ in })
       .store(in: &cancellables)
-
-    XCTAssertNotNil(weakPublisher)
-
     publisher = nil
 
-    XCTAssertNotNil(weakPublisher)
-    XCTAssertEqual(receivedRequests, 1)
-    XCTAssertEqual(receivedCancels, 0)
+    XCTAssertNotNil(weakPublisher, "should not release publisher after subscribing")
+    XCTAssertEqual(receivedRequests, 1, "should receive request after subscribing")
+    XCTAssertEqual(receivedCancels, 0, "should not receive cancel after subscribing")
 
     cancellables.removeAll()
 
-    XCTAssertNil(weakPublisher)
-    XCTAssertEqual(receivedRequests, 1)
-    XCTAssertEqual(receivedCancels, 1)
+    XCTAssertNil(weakPublisher, "should release publisher after cancellation")
+    XCTAssertEqual(receivedRequests, 1, "should not receive request after cancellation")
+    XCTAssertEqual(receivedCancels, 1, "should receive cancel after cancellation")
   }
 
   /// Check if CustomPublisher is correctly released from the memory after cancelling an Effect originating from it
@@ -337,8 +334,10 @@ final class EffectCancellationTests: XCTestCase {
     }
 
     var store: TestStore<State, State, Action, Action, Void>!
+    weak var weakStore: TestStore<State, State, Action, Action, Void>?
     var reducer: Reducer<State, Action, Void>!
     weak var weakPublisher: CustomPublisher?
+    var createdPublishers = 0
     var receivedRequests = 0
     var receivedCancels = 0
 
@@ -349,6 +348,7 @@ final class EffectCancellationTests: XCTestCase {
       case .start:
         let publisher = CustomPublisher()
         weakPublisher = publisher
+        createdPublishers += 1
         return publisher
           .handleEvents(receiveCancel: {
             receivedCancels += 1
@@ -372,31 +372,35 @@ final class EffectCancellationTests: XCTestCase {
       reducer: reducer,
       environment: ()
     )
+    weakStore = store
 
     store.assert(
       .do {
-        XCTAssertNil(weakPublisher)
-        XCTAssertEqual(receivedRequests, 0)
-        XCTAssertEqual(receivedCancels, 0)
+        XCTAssertEqual(createdPublishers, 0, "should not create publisher before sending start action")
+        XCTAssertEqual(receivedRequests, 0, "should not receive requests before sending start action")
+        XCTAssertEqual(receivedCancels, 0, "should not receive cancels before sending start action")
       },
       .send(.start),
       .do {
-        XCTAssertNotNil(weakPublisher)
-        XCTAssertEqual(receivedRequests, 1)
-        XCTAssertEqual(receivedCancels, 0)
+        XCTAssertEqual(createdPublishers, 1, "should create publisher after sending start action")
+        XCTAssertNotNil(weakPublisher, "should retain publisher after sending start action")
+        XCTAssertEqual(receivedRequests, 1, "should receive request after sending start action")
+        XCTAssertEqual(receivedCancels, 0, "should not receive cancel after sending start action")
       },
       .send(.stop),
       .do {
-        XCTAssertNil(weakPublisher)
-        XCTAssertEqual(receivedRequests, 1)
-        XCTAssertEqual(receivedCancels, 1)
+        XCTAssertEqual(createdPublishers, 1, "should not create another publisher after sending stop action")
+        XCTAssertNil(weakPublisher, "should release publisher after sending stop action")
+        XCTAssertEqual(receivedRequests, 1, "should not receive requests after sending stop action")
+        XCTAssertEqual(receivedCancels, 1, "should receive cancel after sending stop action")
       }
     )
 
     store = nil
-    reducer = nil
-    XCTAssertNil(weakPublisher)
-    XCTAssertEqual(receivedRequests, 1)
-    XCTAssertEqual(receivedCancels, 1)
+
+    XCTAssertNil(weakStore, "should not retain store when it's no longer referenced")
+    XCTAssertNil(weakPublisher, "should not retain publisher when store is no longer referenced")
+    XCTAssertEqual(receivedRequests, 1, "should not receive actions when store is no longer referenced")
+    XCTAssertEqual(receivedCancels, 1, "should not receive cancels when store is no longer referenced")
   }
 }
