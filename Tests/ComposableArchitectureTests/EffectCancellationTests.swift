@@ -333,8 +333,8 @@ final class EffectCancellationTests: XCTestCase {
       case action
     }
 
-    var store: TestStore<State, State, Action, Action, Void>!
-    weak var weakStore: TestStore<State, State, Action, Action, Void>?
+    var store: Store<State, Action>!
+    weak var weakStore: Store<State, Action>?
     var reducer: Reducer<State, Action, Void>!
     weak var weakPublisher: CustomPublisher?
     var createdPublishers = 0
@@ -367,34 +367,30 @@ final class EffectCancellationTests: XCTestCase {
       }
     }
 
-    store = TestStore(
+    store = Store(
       initialState: State(),
       reducer: reducer,
       environment: ()
     )
     weakStore = store
 
-    store.assert(
-      .do {
-        XCTAssertEqual(createdPublishers, 0, "should not create publisher before sending start action")
-        XCTAssertEqual(receivedRequests, 0, "should not receive requests before sending start action")
-        XCTAssertEqual(receivedCancels, 0, "should not receive cancels before sending start action")
-      },
-      .send(.start),
-      .do {
-        XCTAssertEqual(createdPublishers, 1, "should create publisher after sending start action")
-        XCTAssertNotNil(weakPublisher, "should retain publisher after sending start action")
-        XCTAssertEqual(receivedRequests, 1, "should receive request after sending start action")
-        XCTAssertEqual(receivedCancels, 0, "should not receive cancel after sending start action")
-      },
-      .send(.stop),
-      .do {
-        XCTAssertEqual(createdPublishers, 1, "should not create another publisher after sending stop action")
-        XCTAssertNil(weakPublisher, "should not retain publisher after sending stop action")
-        XCTAssertEqual(receivedRequests, 1, "should not receive requests after sending stop action")
-        XCTAssertEqual(receivedCancels, 1, "should receive cancel after sending stop action")
-      }
-    )
+    XCTAssertEqual(createdPublishers, 0, "should not create publisher before sending start action")
+    XCTAssertEqual(receivedRequests, 0, "should not receive requests before sending start action")
+    XCTAssertEqual(receivedCancels, 0, "should not receive cancels before sending start action")
+
+    ViewStore(store).send(.start)
+
+    XCTAssertEqual(createdPublishers, 1, "should create publisher after sending start action")
+    XCTAssertNotNil(weakPublisher, "should retain publisher after sending start action")
+    XCTAssertEqual(receivedRequests, 1, "should receive request after sending start action")
+    XCTAssertEqual(receivedCancels, 0, "should not receive cancel after sending start action")
+
+    ViewStore(store).send(.stop)
+
+    XCTAssertEqual(createdPublishers, 1, "should not create another publisher after sending stop action")
+    XCTAssertNil(weakPublisher, "should not retain publisher after sending stop action")
+    XCTAssertEqual(receivedRequests, 1, "should not receive requests after sending stop action")
+    XCTAssertEqual(receivedCancels, 1, "should receive cancel after sending stop action")
 
     store = nil
 
