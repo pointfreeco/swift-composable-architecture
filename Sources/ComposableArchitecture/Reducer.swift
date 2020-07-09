@@ -62,12 +62,24 @@ public struct Reducer<State, Action, Environment> {
   /// It is important to note that the order of combining reducers matter. Combining `reducerA` with 
   /// `reducerB` is not necessarily the same as combining `reducerB` with `reducerA`.
   ///
-  /// This is perhaps most easily seen when working with `optional` reducers, where the parent
-  /// domain may listen to the child domain to `nil` out its state. If the parent reducer runs
-  /// before the child reducer, then the child reducer will not be able to react to its own action.
-  /// This is considered an application logic error and will produce an assertion failure.
+  /// This can become an issue when working with reducers that have overlapping domains. For
+  /// example, if `reducerA` embeds the domain of `reducerB` and reacts to its actions of modifies
+  /// its state, it can make a difference if `reducerA` chooses to modify `reducerB`'s state
+  /// _before_ or _after_ `reducerB` runs.
   ///
-  /// You should almost always combine reducers in order from child to parent domain. For example:
+  /// This is perhaps most easily seen when working with `optional` reducers, where the parent
+  /// domain may listen to the child domain and `nil` out its state. If the parent reducer runs
+  /// before the child reducer, then the child reducer will not be able to react to its own action.
+  ///
+  /// The same can be said for a `forEach` reducer. If the parent domain modifies the child
+  /// collection by moving or removing an element before the `forEach` reducer runs, the `forEach`
+  /// reducer may perform its action against the wrong element or an element that no longer exists.
+  ///
+  /// Running a parent reducer before a child reducer can be considered an application logic
+  /// error, and can produce assertion failures. So you should almost always combine reducers in
+  /// order from child to parent domain.
+  ///
+  /// Here is an example of how you should combine an `optional` reducer with a parent domain:
   ///
   ///     let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
   ///       // Combined before parent so that it can react to `.dismiss` while state is non-`nil`.
@@ -96,16 +108,27 @@ public struct Reducer<State, Action, Environment> {
   /// Combines many reducers into a single one by running each one on state in order, and merging
   /// all of the effects.
   ///
-  /// It is important to consider the order of reducers passed to this function, especially when
-  /// combining a child domain with a parent domain that can modify the child domain by listening to
-  /// its actions.
+  /// It is important to note that the order of combining reducers matter. Combining `reducerA` with
+  /// `reducerB` is not necessarily the same as combining `reducerB` with `reducerA`.
+  ///
+  /// This can become an issue when working with reducers that have overlapping domains. For
+  /// example, if `reducerA` embeds the domain of `reducerB` and reacts to its actions of modifies
+  /// its state, it can make a difference if `reducerA` chooses to modify `reducerB`'s state
+  /// _before_ or _after_ `reducerB` runs.
   ///
   /// This is perhaps most easily seen when working with `optional` reducers, where the parent
-  /// domain may listen to the child domain to `nil` out its state. If the parent reducer runs
+  /// domain may listen to the child domain and `nil` out its state. If the parent reducer runs
   /// before the child reducer, then the child reducer will not be able to react to its own action.
-  /// This is considered an application logic error and will produce an assertion failure.
   ///
-  /// You should almost always combine reducers in order from child to parent domain. For example:
+  /// The same can be said for a `forEach` reducer. If the parent domain modifies the child
+  /// collection by moving or removing an element before the `forEach` reducer runs, the `forEach`
+  /// reducer may perform its action against the wrong element or an element that no longer exists.
+  ///
+  /// Running a parent reducer before a child reducer can be considered an application logic
+  /// error, and can produce assertion failures. So you should almost always combine reducers in
+  /// order from child to parent domain.
+  ///
+  /// Here is an example of how you should combine an `optional` reducer with a parent domain:
   ///
   ///     let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
   ///       // Combined before parent so that it can react to `.dismiss` while state is non-`nil`.
@@ -133,19 +156,30 @@ public struct Reducer<State, Action, Environment> {
     }
   }
 
-  /// Combines the current reducer with another given reducer by first running the current reducer,
-  /// then running the given reducer, and finally returning their merged effects.
+  /// Combines many reducers into a single one by running each one on state in order, and merging
+  /// all of the effects.
   ///
-  /// It is important to consider the order of reducers passed to this function, especially when
-  /// combining a child domain with a parent domain that can modify the child domain by listening to
-  /// its actions.
+  /// It is important to note that the order of combining reducers matter. Combining `reducerA` with
+  /// `reducerB` is not necessarily the same as combining `reducerB` with `reducerA`.
+  ///
+  /// This can become an issue when working with reducers that have overlapping domains. For
+  /// example, if `reducerA` embeds the domain of `reducerB` and reacts to its actions of modifies
+  /// its state, it can make a difference if `reducerA` chooses to modify `reducerB`'s state
+  /// _before_ or _after_ `reducerB` runs.
   ///
   /// This is perhaps most easily seen when working with `optional` reducers, where the parent
-  /// domain may listen to the child domain to `nil` out its state. If the parent reducer runs
+  /// domain may listen to the child domain and `nil` out its state. If the parent reducer runs
   /// before the child reducer, then the child reducer will not be able to react to its own action.
-  /// This is considered an application logic error and will produce an assertion failure.
   ///
-  /// You should almost always combine reducers in order from child to parent domain. For example:
+  /// The same can be said for a `forEach` reducer. If the parent domain modifies the child
+  /// collection by moving or removing an element before the `forEach` reducer runs, the `forEach`
+  /// reducer may perform its action against the wrong element or an element that no longer exists.
+  ///
+  /// Running a parent reducer before a child reducer can be considered an application logic
+  /// error, and can produce assertion failures. So you should almost always combine reducers in
+  /// order from child to parent domain.
+  ///
+  /// Here is an example of how you should combine an `optional` reducer with a parent domain:
   ///
   ///     let parentReducer: Reducer<ParentState, ParentAction, ParentEnvironment> =
   ///       // Run before parent so that it can react to `.dismiss` while state is non-`nil`.
