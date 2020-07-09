@@ -63,7 +63,7 @@ public struct Reducer<State, Action, Environment> {
   /// `reducerB` is not necessarily the same as combining `reducerB` with `reducerA`.
   ///
   /// This can become an issue when working with reducers that have overlapping domains. For
-  /// example, if `reducerA` embeds the domain of `reducerB` and reacts to its actions of modifies
+  /// example, if `reducerA` embeds the domain of `reducerB` and reacts to its actions or modifies
   /// its state, it can make a difference if `reducerA` chooses to modify `reducerB`'s state
   /// _before_ or _after_ `reducerB` runs.
   ///
@@ -112,7 +112,7 @@ public struct Reducer<State, Action, Environment> {
   /// `reducerB` is not necessarily the same as combining `reducerB` with `reducerA`.
   ///
   /// This can become an issue when working with reducers that have overlapping domains. For
-  /// example, if `reducerA` embeds the domain of `reducerB` and reacts to its actions of modifies
+  /// example, if `reducerA` embeds the domain of `reducerB` and reacts to its actions or modifies
   /// its state, it can make a difference if `reducerA` chooses to modify `reducerB`'s state
   /// _before_ or _after_ `reducerB` runs.
   ///
@@ -163,7 +163,7 @@ public struct Reducer<State, Action, Environment> {
   /// `reducerB` is not necessarily the same as combining `reducerB` with `reducerA`.
   ///
   /// This can become an issue when working with reducers that have overlapping domains. For
-  /// example, if `reducerA` embeds the domain of `reducerB` and reacts to its actions of modifies
+  /// example, if `reducerA` embeds the domain of `reducerB` and reacts to its actions or modifies
   /// its state, it can make a difference if `reducerA` chooses to modify `reducerB`'s state
   /// _before_ or _after_ `reducerB` runs.
   ///
