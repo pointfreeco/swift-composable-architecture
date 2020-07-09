@@ -4,36 +4,35 @@
 
   /// A testable runtime for a reducer.
   ///
-  /// This object aids in writing expressive and exhaustive tests on your features built in the
+  /// This object aids in writing expressive and exhaustive tests for features built in the
   /// Composable Architecture. It allows you to send a sequence of actions to the store, and each
   /// step of the way you must assert exactly how state changed, and how effect emissions were fed
   /// back into the system.
   ///
   /// There are multiple ways the test store forces you to exhaustively assert on how your feature
-  /// behaved:
+  /// behaves:
   ///
   /// * After each action is sent you must describe precisely how the state changed from before the
   ///   action was sent to after it was sent.
   ///
-  ///   If even the smallest piece of data differs the test will
-  /// fail. This guarantees that you are proving you know precisely how the state of the system
-  /// changed.
+  ///   If even the smallest piece of data differs the test will fail. This guarantees that you are
+  ///   proving you know precisely how the state of the system changes.
   ///
   /// * Sending an action can sometimes cause an effect to be executed, and if that effect emits an
-  /// action that is fed back into the system, you **must** explicitly assert that you expect to
-  /// receive that action from the effect, _and_ you must assert how state changed as a result.
+  ///   action that is fed back into the system, you **must** explicitly assert that you expect to
+  ///   receive that action from the effect, _and_ you must assert how state changed as a result.
   ///
   ///   If you try to send another action before you have handled all effect emissions the assertion
-  /// will fail. This guarantees that you do not accidentally forget about an effect emission, and
-  /// that the sequence of steps you are describing will mimic how the application behaves in
-  /// reality.
+  ///   will fail. This guarantees that you do not accidentally forget about an effect emission, and
+  ///   that the sequence of steps you are describing will mimic how the application behaves in
+  ///   reality.
   ///
   /// * All effects must complete by the time the assertion has finished running the steps you
-  /// specify.
+  ///   specify.
   ///
-  ///   If at the end of the assertion there is still an inflight effect running, the assertion will
-  ///   fail. This helps exhaustively prove that you know what effects are inflight and forces you
-  ///   to prove that effects will not cause any future changes to your state.
+  ///   If at the end of the assertion there is still an in-flight effect running, the assertion
+  ///   will fail. This helps exhaustively prove that you know what effects are in flight and forces
+  ///   you to prove that effects will not cause any future changes to your state.
   ///
   /// For example, given a simple counter reducer:
   ///
@@ -100,7 +99,7 @@
   ///
   ///     let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
   ///       state, action, environment in
-
+  ///
   ///         struct SearchId: Hashable {}
   ///
   ///         switch action {
@@ -158,8 +157,8 @@
   ///     )
   ///
   /// This test is proving that the debounced network requests are correctly canceled when we do not
-  /// wait longer than the 0.5 seconds, because if it wasn't and it delievered an action when we
-  /// did not expect it would cause a test failure.
+  /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
+  /// not expect it would cause a test failure.
   ///
   public final class TestStore<State, LocalState, Action: Equatable, LocalAction, Environment> {
     private var environment: Environment
