@@ -59,9 +59,8 @@ public struct Reducer<State, Action, Environment> {
   /// Combines many reducers into a single one by running each one on state in order, and merging
   /// all of the effects.
   ///
-  /// It is important to consider the order of reducers passed to this function, especially when
-  /// combining a child domain with a parent domain that can modify the child domain by listening to
-  /// its actions.
+  /// It is important to note that the order of combining reducers matter. Combining `reducerA` with 
+  /// `reducerB` is not necessarily the same as combining `reducerB` with `reducerA`.
   ///
   /// This is perhaps most easily seen when working with `optional` reducers, where the parent
   /// domain may listen to the child domain to `nil` out its state. If the parent reducer runs
