@@ -2,12 +2,12 @@ import ComposableArchitecture
 import SwiftUI
 
 private let readMe = """
-  This demonstrates how to trigger effects when a view appears, and cancel effects when a view
-  disappears. This can be helpful for starting up a feature's long living effects, such as timers,
+  This demonstrates how to trigger effects when a view appears, and cancel effects when a view \
+  disappears. This can be helpful for starting up a feature's long living effects, such as timers, \
   location managers, etc. when that feature is first presented.
 
-  To accomplish this we define a higher-order reducer that enhances any reducer with two additional
-  actions, `.onAppear` and `.onDisappear`, and a way to automate running effects when those actions
+  To accomplish this we define a higher-order reducer that enhances any reducer with two additional \
+  actions, `.onAppear` and `.onDisappear`, and a way to automate running effects when those actions \
   are sent to the store.
   """
 
