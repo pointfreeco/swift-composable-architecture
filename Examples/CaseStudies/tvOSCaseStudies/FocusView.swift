@@ -37,11 +37,11 @@ struct FocusView: View {
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
-
       VStack(spacing: 100) {
         Text(readMe)
-          .font(.title3)
+          .font(.headline)
           .multilineTextAlignment(.leading)
+          .padding()
 
         HStack(spacing: 40) {
           ForEach(1..<11) { index in
