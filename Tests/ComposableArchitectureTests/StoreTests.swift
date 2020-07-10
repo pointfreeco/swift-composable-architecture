@@ -281,7 +281,7 @@ final class StoreTests: XCTestCase {
     var stores: [Any] = []
 
     parentStore
-      .scope(state: \.count)
+      .scope(state: { $0.count })
       .ifLet(
         then: { store in
           stores.append(store)
