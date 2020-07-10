@@ -32,8 +32,6 @@
 		CAF88E7324B8E26D00539345 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF88E7224B8E26D00539345 /* AppDelegate.swift */; };
 		CAF88E7524B8E26D00539345 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF88E7424B8E26D00539345 /* RootView.swift */; };
 		CAF88E7724B8E26E00539345 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CAF88E7624B8E26E00539345 /* Assets.xcassets */; };
-		CAF88E7A24B8E26E00539345 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CAF88E7924B8E26E00539345 /* Preview Assets.xcassets */; };
-		CAF88E7D24B8E26E00539345 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CAF88E7B24B8E26E00539345 /* LaunchScreen.storyboard */; };
 		CAF88E8824B8E26E00539345 /* tvOSCaseStudiesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF88E8724B8E26E00539345 /* tvOSCaseStudiesTests.swift */; };
 		CAF88E9124B8E3AF00539345 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = CAF88E9024B8E3AF00539345 /* ComposableArchitecture */; };
 		CAF88E9324B8E3D000539345 /* Core.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF88E9224B8E3D000539345 /* Core.swift */; };
@@ -172,12 +170,9 @@
 		CAF88E7224B8E26D00539345 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CAF88E7424B8E26D00539345 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		CAF88E7624B8E26E00539345 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		CAF88E7924B8E26E00539345 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		CAF88E7C24B8E26E00539345 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		CAF88E7E24B8E26E00539345 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CAF88E8324B8E26E00539345 /* tvOSCaseStudiesTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = tvOSCaseStudiesTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CAF88E8724B8E26E00539345 /* tvOSCaseStudiesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = tvOSCaseStudiesTests.swift; sourceTree = "<group>"; };
-		CAF88E8924B8E26E00539345 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CAF88E9224B8E3D000539345 /* Core.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core.swift; sourceTree = "<group>"; };
 		CAF88E9424B8E4D500539345 /* FocusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusView.swift; sourceTree = "<group>"; };
 		DC07231624465D1E003A8B65 /* 02-Effects-TimersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-TimersTests.swift"; sourceTree = "<group>"; };
@@ -295,25 +290,14 @@
 				CAF88E9224B8E3D000539345 /* Core.swift */,
 				CAF88E7424B8E26D00539345 /* RootView.swift */,
 				CAF88E7624B8E26E00539345 /* Assets.xcassets */,
-				CAF88E7B24B8E26E00539345 /* LaunchScreen.storyboard */,
-				CAF88E7824B8E26E00539345 /* Preview Content */,
 			);
 			path = tvOSCaseStudies;
-			sourceTree = "<group>";
-		};
-		CAF88E7824B8E26E00539345 /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				CAF88E7924B8E26E00539345 /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
 			sourceTree = "<group>";
 		};
 		CAF88E8624B8E26E00539345 /* tvOSCaseStudiesTests */ = {
 			isa = PBXGroup;
 			children = (
 				CAF88E8724B8E26E00539345 /* tvOSCaseStudiesTests.swift */,
-				CAF88E8924B8E26E00539345 /* Info.plist */,
 			);
 			path = tvOSCaseStudiesTests;
 			sourceTree = "<group>";
@@ -651,8 +635,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CAF88E7D24B8E26E00539345 /* LaunchScreen.storyboard in Resources */,
-				CAF88E7A24B8E26E00539345 /* Preview Assets.xcassets in Resources */,
 				CAF88E7724B8E26E00539345 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -821,14 +803,6 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		CAF88E7B24B8E26E00539345 /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				CAF88E7C24B8E26E00539345 /* Base */,
-			);
-			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
 		DC4C6EB42450DD380066A05D /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -845,7 +819,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_ASSET_PATHS = "\"tvOSCaseStudies/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = tvOSCaseStudies/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -866,7 +839,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_ASSET_PATHS = "\"tvOSCaseStudies/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = tvOSCaseStudies/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -888,7 +860,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = tvOSCaseStudiesTests/Info.plist;
+				INFOPLIST_FILE = tvOSCaseStudies/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -900,7 +872,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOSCaseStudies.app/tvOSCaseStudies";
-				TVOS_DEPLOYMENT_TARGET = 13.4;
+				TVOS_DEPLOYMENT_TARGET = 14.0;
 			};
 			name = Debug;
 		};
@@ -910,7 +882,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = tvOSCaseStudiesTests/Info.plist;
+				INFOPLIST_FILE = tvOSCaseStudies/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -922,7 +894,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOSCaseStudies.app/tvOSCaseStudies";
-				TVOS_DEPLOYMENT_TARGET = 13.4;
+				TVOS_DEPLOYMENT_TARGET = 14.0;
 			};
 			name = Release;
 		};
