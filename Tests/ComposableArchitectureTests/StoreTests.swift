@@ -288,7 +288,6 @@ final class StoreTests: XCTestCase {
           outputs.append(store.state.value)
         },
         else: {
-          print(1)
           outputs.append(nil)
         })
       .store(in: &self.cancellables)
@@ -333,7 +332,7 @@ final class StoreTests: XCTestCase {
 
       vs
         .publisher
-        .sink { print($0) }
+        .sink { _ in }
         .store(in: &self.cancellables)
 
       vs.send(false)
