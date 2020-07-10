@@ -1,3 +1,4 @@
+#if canImport(CoreMotion)
 import ComposableArchitecture
 
 @available(iOS 4.0, *)
@@ -113,3 +114,4 @@ public func _unimplemented(
     line: line
   )
 }
+#endif

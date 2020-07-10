@@ -1,3 +1,4 @@
+#if canImport(CoreMotion)
 import CoreMotion
 
 /// The device's orientation relative to a known frame of reference at a point in time.
@@ -107,3 +108,4 @@ extension CMQuaternion {
     return result
   }
 }
+#endif

@@ -1,3 +1,4 @@
+#if canImport(CoreMotion)
 import Combine
 import ComposableArchitecture
 import CoreMotion
@@ -259,3 +260,4 @@ private func couldNotFindMotionManager(id: Any) {
     time you invoke this endpoint.
     """)
 }
+#endif

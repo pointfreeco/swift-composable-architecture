@@ -1,3 +1,4 @@
+#if canImport(CoreMotion)
 import CoreMotion
 
 /// Measurements of the Earth's magnetic field relative to the device.
@@ -27,3 +28,4 @@ public struct MagnetometerData: Equatable {
       && lhs.timestamp == rhs.timestamp
   }
 }
+#endif
