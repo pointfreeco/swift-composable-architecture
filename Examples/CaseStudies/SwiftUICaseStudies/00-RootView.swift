@@ -226,6 +226,16 @@ struct RootView: View {
             )
 
             NavigationLink(
+              "Lifecycle",
+              destination: LifecycleDemoView(
+                store: self.store.scope(
+                  state: { $0.lifecycle },
+                  action: RootAction.lifecycle
+                )
+              )
+            )
+
+            NavigationLink(
               "Strict reducers",
               destination: DieRollView(
                 store: self.store.scope(
