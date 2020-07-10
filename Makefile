@@ -69,4 +69,14 @@ format:
 	swift format --in-place --recursive \
 		./Examples ./Package.swift ./Sources ./Tests
 
-.PHONY: format test-all test-swift test-workspace
+cleandocs:
+	rm -fr docs
+
+docs:
+	bundle exec jazzy \
+		--module ComposableArchitecture \
+		--swift-build-tool spm \
+		--theme fullwidth
+
+.PHONY: format test-all test-swift test-workspace docs
+

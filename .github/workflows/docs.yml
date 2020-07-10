@@ -1,0 +1,38 @@
+name: Publish Docs
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  docs:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        xcode:
+          - 11.5
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Cache gems
+      uses: actions/cache@preview
+      with:
+        path: vendor/bundle
+        key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-gem-
+
+    - name: Install Gems
+      run: |
+        bundle config path vendor/bundle
+        bundle config with docs
+        bundle install
+
+    - name: Generate documentation
+      run: make docs
+    
+    - name: Deploy to Github Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs
