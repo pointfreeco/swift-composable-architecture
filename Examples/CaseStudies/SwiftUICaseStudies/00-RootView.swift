@@ -71,16 +71,6 @@ struct RootView: View {
             )
 
             NavigationLink(
-              "Lifecycle",
-              destination: LifecycleDemoView(
-                store: self.store.scope(
-                  state: { $0.lifecycle },
-                  action: RootAction.lifecycle
-                )
-              )
-            )
-
-            NavigationLink(
               "Animations",
               destination: AnimationsView(
                 store: self.store.scope(
@@ -231,6 +221,16 @@ struct RootView: View {
                 store: self.store.scope(
                   state: { $0.map },
                   action: RootAction.map
+                )
+              )
+            )
+
+            NavigationLink(
+              "Lifecycle",
+              destination: LifecycleDemoView(
+                store: self.store.scope(
+                  state: { $0.lifecycle },
+                  action: RootAction.lifecycle
                 )
               )
             )

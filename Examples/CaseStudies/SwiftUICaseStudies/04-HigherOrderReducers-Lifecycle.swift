@@ -89,6 +89,7 @@ struct LifecycleDemoView: View {
           then: TimerView.init(store:)
         )
       }
+      .navigationBarTitle("Lifecycle")
     }
   }
 }
@@ -160,7 +161,6 @@ struct Lifecycle_Previews: PreviewProvider {
             )
           )
         )
-          .navigationBarTitle("Lifecycle")
       }
     }
   }
