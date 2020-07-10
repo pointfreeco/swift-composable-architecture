@@ -29,6 +29,8 @@ let focusReducer = Reducer<FocusState, FocusAction, FocusEnvironment> { state, a
   }
 }
 
+#if swift(>=5.3)
+@available(tvOS 14.0, *)
 struct FocusView: View {
   let store: Store<FocusState, FocusAction>
 
@@ -61,7 +63,21 @@ struct FocusView: View {
   }
 }
 
-let numbers = [
+@available(tvOS 14.0, *)
+struct FocusView_Previews: PreviewProvider {
+  static var previews: some View {
+    FocusView(
+      store: .init(
+        initialState: .init(),
+        reducer: focusReducer,
+        environment: .init()
+      )
+    )
+  }
+}
+#endif
+
+private let numbers = [
   "Zero",
   "One",
   "Two",
@@ -74,15 +90,3 @@ let numbers = [
   "Nine",
   "Ten"
 ]
-
-struct FocusView_Previews: PreviewProvider {
-  static var previews: some View {
-    FocusView(
-      store: .init(
-        initialState: .init(),
-        reducer: focusReducer,
-        environment: .init()
-      )
-    )
-  }
-}
