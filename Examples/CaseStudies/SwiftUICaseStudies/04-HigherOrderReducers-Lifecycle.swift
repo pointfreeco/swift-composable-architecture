@@ -79,15 +79,15 @@ struct LifecycleDemoView: View {
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
-      Form {
-        Section.init(header: Text(template: readMe, .body)) {
-          Button("Toggle Timer") { viewStore.send(.toggleTimerButtonTapped) }
-        }
+      VStack {
+        Button("Toggle Timer") { viewStore.send(.toggleTimerButtonTapped) }
 
         IfLetStore(
           self.store.scope(state: { $0.count }, action: LifecycleDemoAction.timer),
           then: TimerView.init(store:)
         )
+
+        Spacer()
       }
       .navigationBarTitle("Lifecycle")
     }
