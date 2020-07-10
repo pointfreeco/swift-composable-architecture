@@ -155,7 +155,7 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.lifecycle,
       action: /RootAction.lifecycle,
-      environment: { .init(mainQueue: $0.mainQueue )}
+      environment: { .init(mainQueue: $0.mainQueue) }
     ),
   loadThenNavigateReducer
     .pullback(
