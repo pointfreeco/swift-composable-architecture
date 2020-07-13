@@ -4,6 +4,9 @@ extension TestStore.Annotating {
   public static var activity: Self {
     Self { step, groupLevel, callback in
       func runActivity(named name: String) {
+        // NB: `swift test` does not support XCTActivity, so do not run this code.
+        guard ProcessInfo.processInfo.environment["_"] == nil else { return }
+
         let indent = String(repeating: "\t", count: groupLevel)
         let callback: (@convention(block) () -> Void) = { callback() { _ in } }
         _XCTContext.perform(
