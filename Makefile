@@ -69,7 +69,7 @@ format:
 	swift format --in-place --recursive \
 		./Examples ./Package.swift ./Sources ./Tests
 
-SWIFT_DOC = /Users/brandon/projects/github/swift-doc/.build/x86_64-apple-macosx/release/swift-doc
+SWIFT_DOC = swift-doc
 
 docs:
 	rm -rf Documentation
@@ -83,6 +83,11 @@ docs:
 		--output Documentation/ComposableCoreLocation \
 		--format=html \
 		--base-url $(BASE_URL)/ComposableCoreLocation
+	$(SWIFT_DOC) generate Sources/ComposableCoreMotion/ \
+		--module-name ComposableCoreMotion \
+		--output Documentation/ComposableCoreMotion \
+		--format=html \
+		--base-url $(BASE_URL)/ComposableCoreMotion
 
 
 .PHONY: format test-all test-swift test-workspace
