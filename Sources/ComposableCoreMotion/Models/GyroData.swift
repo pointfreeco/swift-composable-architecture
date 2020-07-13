@@ -1,3 +1,4 @@
+#if canImport(CoreMotion)
 import CoreMotion
 
 /// A single measurement of the device's rotation rate.
@@ -27,3 +28,4 @@ public struct GyroData: Equatable {
       && lhs.timestamp == rhs.timestamp
   }
 }
+#endif

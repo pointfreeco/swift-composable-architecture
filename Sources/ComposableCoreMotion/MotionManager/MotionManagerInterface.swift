@@ -1,3 +1,4 @@
+#if canImport(CoreMotion)
 import ComposableArchitecture
 import CoreMotion
 
@@ -446,3 +447,4 @@ public struct MotionManager {
   var stopGyroUpdates: (AnyHashable) -> Effect<Never, Never>
   var stopMagnetometerUpdates: (AnyHashable) -> Effect<Never, Never>
 }
+#endif

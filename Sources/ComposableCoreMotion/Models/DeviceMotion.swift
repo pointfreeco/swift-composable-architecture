@@ -1,3 +1,4 @@
+#if canImport(CoreMotion)
 import CoreMotion
 
 /// Encapsulated measurements of the attitude, rotation rate, and acceleration of a device.
@@ -59,3 +60,4 @@ public struct DeviceMotion: Equatable {
       && lhs.userAcceleration.z == rhs.userAcceleration.z
   }
 }
+#endif

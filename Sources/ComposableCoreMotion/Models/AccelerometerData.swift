@@ -1,3 +1,4 @@
+#if canImport(CoreMotion)
 import CoreMotion
 
 /// A data sample from the device's three accelerometers.
@@ -20,3 +21,4 @@ public struct AccelerometerData: Equatable {
       && lhs.acceleration.z == rhs.acceleration.z
   }
 }
+#endif
