@@ -3,7 +3,7 @@ import SwiftUI
 
 struct RootView: View {
   let store: Store<RootState, RootAction>
-  
+
   var body: some View {
     NavigationView {
       Form {
@@ -13,21 +13,21 @@ struct RootView: View {
       }
     }
   }
-  
+
   var focusView: AnyView? {
     if #available(tvOS 14.0, *) {
       #if swift(>=5.3)
-      return AnyView(
-        NavigationLink(
-          destination: FocusView(
-            store: self.store.scope(state: { $0.focus }, action: RootAction.focus)
-          ),
-          label: {
-            Text("Focus")
-          })
-      )
+        return AnyView(
+          NavigationLink(
+            destination: FocusView(
+              store: self.store.scope(state: { $0.focus }, action: RootAction.focus)
+            ),
+            label: {
+              Text("Focus")
+            })
+        )
       #else
-      return nil
+        return nil
       #endif
     } else {
       return nil
