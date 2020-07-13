@@ -289,7 +289,8 @@ final class StoreTests: XCTestCase {
         },
         else: {
           outputs.append(nil)
-        })
+        }
+      )
       .store(in: &self.cancellables)
 
     XCTAssertEqual(outputs, [nil])

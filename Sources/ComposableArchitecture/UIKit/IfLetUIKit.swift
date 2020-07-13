@@ -43,7 +43,8 @@ extension Store {
     then unwrap: @escaping (Store<Wrapped, Action>) -> Void,
     else: @escaping () -> Void
   ) -> Cancellable where State == Wrapped? {
-    let elseCancellable = self
+    let elseCancellable =
+      self
       .scope(
         state: { state in
           state
@@ -54,7 +55,8 @@ extension Store {
         if store.state.value == nil { `else`() }
       }
 
-    let unwrapCancellable = self
+    let unwrapCancellable =
+      self
       .scope(
         state: { state in
           state
