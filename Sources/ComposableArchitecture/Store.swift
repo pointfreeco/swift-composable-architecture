@@ -7,7 +7,7 @@ import Foundation
 /// You will typically construct a single one of these at the root of your application, and then use
 /// the `scope` method to derive more focused stores that can be passed to subviews.
 public final class Store<State, Action> {
-  @Published private(set) var state: State
+  var state: CurrentValueSubject<State, Never>
   var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
   private var parentCancellable: AnyCancellable?
@@ -60,15 +60,15 @@ public final class Store<State, Action> {
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> Store<LocalState, LocalAction> {
     let localStore = Store<LocalState, LocalAction>(
-      initialState: toLocalState(self.state),
+      initialState: toLocalState(self.state.value),
       reducer: { localState, localAction in
         self.send(fromLocalAction(localAction))
-        localState = toLocalState(self.state)
+        localState = toLocalState(self.state.value)
         return .none
       }
     )
-    localStore.parentCancellable = self.$state
-      .sink { [weak localStore] newValue in localStore?.state = toLocalState(newValue) }
+    localStore.parentCancellable = self.state
+      .sink { [weak localStore] newValue in localStore?.state.value = toLocalState(newValue) }
     return localStore
   }
 
@@ -102,20 +102,20 @@ public final class Store<State, Action> {
       return localState
     }
 
-    return toLocalState(self.$state.eraseToAnyPublisher())
+    return toLocalState(self.state.eraseToAnyPublisher())
       .map { localState in
         let localStore = Store<LocalState, LocalAction>(
           initialState: localState,
           reducer: { localState, localAction in
             self.send(fromLocalAction(localAction))
-            localState = extractLocalState(self.state) ?? localState
+            localState = extractLocalState(self.state.value) ?? localState
             return .none
           })
 
-        localStore.parentCancellable = self.$state
+        localStore.parentCancellable = self.state
           .sink { [weak localStore] state in
             guard let localStore = localStore else { return }
-            localStore.state = extractLocalState(state) ?? localStore.state
+            localStore.state.value = extractLocalState(state) ?? localStore.state.value
           }
         return localStore
       }
@@ -144,23 +144,26 @@ public final class Store<State, Action> {
       if self.isSending {
         assertionFailure(
           """
-          The store was sent an action while it was already processing another action. This can \
-          happen for a few reasons:
+          The store was sent the action \(debugCaseOutput(action)) while it was already 
+          processing another action.
 
-          * The store was sent an action recursively. This can occur when you run an effect directly \
-          in the reducer, rather than returning it from the reducer. Check the stack (⌘7) to find \
-          frames corresponding to one of your reducers. That code should be refactored to not invoke \
-          the effect directly.
+          This can happen for a few reasons:
+
+          * The store was sent an action recursively. This can occur when you run an effect \
+          directly in the reducer, rather than returning it from the reducer. Check the stack (⌘7) \
+          to find frames corresponding to one of your reducers. That code should be refactored to \
+          not invoke the effect directly.
 
           * The store has been sent actions from multiple threads. The `send` method is not \
-          thread-safe, and should only ever be used from a single thread (typically the main thread). 
-          Instead of calling `send` from multiple threads you should use effects to process expensive \
-          computations on background threads so that it can be fed back into the store.
+          thread-safe, and should only ever be used from a single thread (typically the main \
+          thread). Instead of calling `send` from multiple threads you should use effects to \
+          process expensive computations on background threads so that it can be fed back into the \
+          store.
           """
         )
       }
       self.isSending = true
-      let effect = self.reducer(&self.state, action)
+      let effect = self.reducer(&self.state.value, action)
       self.isSending = false
 
       var didComplete = false
@@ -204,7 +207,7 @@ public final class Store<State, Action> {
     reducer: @escaping (inout State, Action) -> Effect<Action, Never>
   ) {
     self.reducer = reducer
-    self.state = initialState
+    self.state = CurrentValueSubject(initialState)
   }
 }
 

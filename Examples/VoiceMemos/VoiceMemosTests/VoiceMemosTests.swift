@@ -97,11 +97,11 @@ class VoiceMemosTests: XCTestCase {
       .send(.recordButtonTapped),
       .do { self.scheduler.advance() },
       .receive(.recordPermissionBlockCalled(false)) {
-        $0.alertMessage = "Permission is required to record voice memos."
+        $0.alert = .init(title: "Permission is required to record voice memos.")
         $0.audioRecorderPermission = .denied
       },
       .send(.alertDismissed) {
-        $0.alertMessage = nil
+        $0.alert = nil
       },
       .send(.openSettingsButtonTapped),
       .do { XCTAssert(didOpenSettings) }
@@ -142,7 +142,7 @@ class VoiceMemosTests: XCTestCase {
       },
       .do { audioRecorderSubject.send(completion: .failure(.couldntActivateAudioSession)) },
       .receive(.audioRecorderClient(.failure(.couldntActivateAudioSession))) {
-        $0.alertMessage = "Voice memo recording failed."
+        $0.alert = .init(title: "Voice memo recording failed.")
         $0.currentRecording = nil
       }
     )
@@ -158,7 +158,7 @@ class VoiceMemosTests: XCTestCase {
             mode: .notPlaying,
             title: "",
             url: URL(string: "https://www.pointfree.co/functions")!
-          ),
+          )
         ]
       ),
       reducer: voiceMemosReducer,
@@ -206,7 +206,7 @@ class VoiceMemosTests: XCTestCase {
             mode: .notPlaying,
             title: "",
             url: URL(string: "https://www.pointfree.co/functions")!
-          ),
+          )
         ]
       ),
       reducer: voiceMemosReducer,
@@ -223,7 +223,7 @@ class VoiceMemosTests: XCTestCase {
         $0.voiceMemos[0].mode = .playing(progress: 0)
       },
       .receive(.voiceMemo(index: 0, action: .audioPlayerClient(.failure(.decodeErrorDidOccur)))) {
-        $0.alertMessage = "Voice memo playback failed."
+        $0.alert = .init(title: "Voice memo playback failed.")
         $0.voiceMemos[0].mode = .notPlaying
       }
     )
@@ -241,7 +241,7 @@ class VoiceMemosTests: XCTestCase {
             mode: .playing(progress: 0.3),
             title: "",
             url: URL(string: "https://www.pointfree.co/functions")!
-          ),
+          )
         ]
       ),
       reducer: voiceMemosReducer,
@@ -262,6 +262,8 @@ class VoiceMemosTests: XCTestCase {
   }
 
   func testDeleteMemo() {
+    var didStopAudioPlayerClient = false
+
     let store = TestStore(
       initialState: VoiceMemosState(
         voiceMemos: [
@@ -271,20 +273,57 @@ class VoiceMemosTests: XCTestCase {
             mode: .playing(progress: 0.3),
             title: "",
             url: URL(string: "https://www.pointfree.co/functions")!
-          ),
+          )
         ]
       ),
       reducer: voiceMemosReducer,
       environment: .mock(
+        audioPlayerClient: .mock(
+          stop: { _ in .fireAndForget { didStopAudioPlayerClient = true } }
+        ),
         mainQueue: self.scheduler.eraseToAnyScheduler()
       )
     )
 
     store.assert(
-      .send(.deleteVoiceMemo(IndexSet(integer: 1))),
-      .send(.deleteVoiceMemo(IndexSet(integer: 0))) {
+      .send(.voiceMemo(index: 0, action: .delete)) {
         $0.voiceMemos = []
+        XCTAssertEqual(didStopAudioPlayerClient, true)
       }
+    )
+  }
+
+  func testDeleteMemoWhilePlaying() {
+    let store = TestStore(
+      initialState: VoiceMemosState(
+        voiceMemos: [
+          VoiceMemo(
+            date: Date(timeIntervalSinceNow: 0),
+            duration: 10,
+            mode: .notPlaying,
+            title: "",
+            url: URL(string: "https://www.pointfree.co/functions")!
+          )
+        ]
+      ),
+      reducer: voiceMemosReducer,
+      environment: .mock(
+        audioPlayerClient: .mock(
+          play: { id, url in .future { _ in } },
+          stop: { _ in .fireAndForget {} }
+        ),
+        mainQueue: self.scheduler.eraseToAnyScheduler()
+      )
+    )
+
+    store.assert(
+      .send(.voiceMemo(index: 0, action: .playButtonTapped)) {
+        $0.voiceMemos[0].mode = .playing(progress: 0)
+      },
+      .send(.voiceMemo(index: 0, action: .delete)) {
+        $0.voiceMemos = []
+      },
+      .do { self.scheduler.run() }
     )
   }
 }

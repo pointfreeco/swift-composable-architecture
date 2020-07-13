@@ -6,7 +6,7 @@ import XCTest
 class NewGameCoreTests: XCTestCase {
   let store = TestStore(
     initialState: NewGameState(),
-    reducer: newGameFeatureReducer,
+    reducer: newGameReducer,
     environment: NewGameEnvironment()
   )
 

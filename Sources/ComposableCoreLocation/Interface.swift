@@ -36,7 +36,7 @@ import CoreLocation
 /// `onAppear` of your view. You must also provide a unique identifier to associate with the
 /// location manager you create since it is possible to have multiple managers running at once.
 ///
-///     let appReducer = AppReducer<AppState, AppAction, AppEnvironment> {
+///     let appReducer = Reducer<AppState, AppAction, AppEnvironment> {
 ///       state, action, environment in
 ///
 ///       // A unique identifier for our location manager, just in case we want to use
@@ -231,6 +231,11 @@ public struct LocationManager {
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     case monitoringDidFail(region: Region?, error: Error)
+
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    case didRangeBeacons([Beacon], satisfyingConstraint: CLBeaconIdentityConstraint)
   }
 
   public struct Error: Swift.Error, Equatable {
@@ -267,7 +272,7 @@ public struct LocationManager {
   @available(watchOS, unavailable)
   public var isRangingAvailable: () -> Bool = { _unimplemented("isRangingAvailable") }
 
-  var location: (AnyHashable) -> Location = { _ in _unimplemented("location") }
+  var location: (AnyHashable) -> Location? = { _ in _unimplemented("location") }
 
   public var locationServicesEnabled: () -> Bool = { _unimplemented("locationServicesEnabled") }
 
@@ -388,7 +393,7 @@ public struct LocationManager {
   @available(tvOS, unavailable)
   public func heading(id: AnyHashable) -> Heading? { self.heading(id) }
 
-  public func location(id: AnyHashable) -> Location { self.location(id) }
+  public func location(id: AnyHashable) -> Location? { self.location(id) }
 
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)

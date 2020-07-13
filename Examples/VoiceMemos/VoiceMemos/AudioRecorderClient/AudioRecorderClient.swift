@@ -11,7 +11,7 @@ struct AudioRecorderClient {
     case didFinishRecording(successfully: Bool)
   }
 
-  enum Failure: Error, Equatable {
+  enum Failure: Equatable, Error {
     case couldntCreateAudioRecorder
     case couldntActivateAudioSession
     case couldntSetAudioSessionCategory

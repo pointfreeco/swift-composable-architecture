@@ -75,7 +75,7 @@ To build a feature using the Composable Architecture you define some types and v
 * **State**: A type that describes the data your feature needs to perform its logic and render its UI.
 * **Action**: A type that represents all of the actions that can happen in your feature, such as user actions, notifications, event sources and more.
 * **Environment**: A type that holds any dependencies the feature needs, such as API clients, analytics clients, etc.
-* **Reducer**: A function that describes how to evolve the current state of the app to the next state given an action. The reducer is also responsible for returning any effects that should be run, such as API requests.
+* **Reducer**: A function that describes how to evolve the current state of the app to the next state given an action. The reducer is also responsible for returning any effects that should be run, such as API requests, which can be done by returning an `Effect` value.
 * **Store**: The runtime that actually drives your feature. You send all user actions to the store so that the store can run the reducer and effects, and you can observe state changes in the store so that you can update UI.
 
 The benefits of doing this is that you will instantly unlock testability of your feature, and you will be able to break large, complex features into smaller domains that can be glued together.
@@ -356,7 +356,8 @@ One of the most important principles of the Composable Architecture is that side
 
 However, this also means that many libraries and SDKs you interact with on a daily basis need to be retrofitted to be a little more friendly to the Composable Architecture style. That's why we'd like to ease the pain of using some of Apple's most popular frameworks by providing wrapper libraries that expose their functionality in a way that plays nicely with our library. So far we support:
 
-* [`ComposableCoreLocation`](./Sources/ComposableCoreLocation/): A wrapper around `CLLocationManager` that makes it easy to use from a reducer, and easy to write tests on how your logic interacts with `CLLocationManager`'s functionality.
+* [`ComposableCoreLocation`](./Sources/ComposableCoreLocation/): A wrapper around `CLLocationManager` that makes it easy to use from a reducer, and easy to write tests for how your logic interacts with `CLLocationManager`'s functionality.
+* [`ComposableCoreMotion`](./Sources/ComposableCoreMotion/): A wrapper around `CMMotionManager` that makes it easy to use from a reducer, and easy to write tests for how your logic interacts with `CMMotionManager`'s functionality.
 * More to come soon. Keep an eye out 😉
 
 If you are interested in contributing a wrapper library for a framework that we have not yet covered, feel free to open an issue expressing your interest so that we can discuss a path forward.
@@ -405,10 +406,10 @@ If you are interested in contributing a wrapper library for a framework that we 
 
     You would probably still want something like a `UIScheduler` so that you don't needlessly perform thread hops.
   </details>
-  
+
 ## Requirements
 
-The Composable Architecture depends on the Combine framework, so it requires minimum deployment targets of iOS 13, macOS 10.15, Mac Catalyst 13, tvOS 13, and watchOS 6. If your application must support older OSes, there is [a ReactiveSwift fork](https://github.com/trading-point/reactiveswift-composable-architecture) that you can adopt!
+The Composable Architecture depends on the Combine framework, so it requires minimum deployment targets of iOS 13, macOS 10.15, Mac Catalyst 13, tvOS 13, and watchOS 6. If your application must support older OSes, there are forks for [ReactiveSwift](https://github.com/trading-point/reactiveswift-composable-architecture) and [RxSwift](https://github.com/dannyhertz/rxswift-composable-architecture) that you can adopt!
 
 ## Installation
 
@@ -449,7 +450,8 @@ There are also many architecture libraries in the Swift and iOS community. Each 
 * [Mobius.swift](https://github.com/spotify/mobius.swift)
 * <details>
   <summary>And more</summary>
-  
+
+  * [Fluxor](https://github.com/FluxorOrg/Fluxor)
   * [PromisedArchitectureKit](https://github.com/RPallas92/PromisedArchitectureKit)
   </details>
 

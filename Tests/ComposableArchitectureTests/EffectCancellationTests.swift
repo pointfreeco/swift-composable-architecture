@@ -29,7 +29,7 @@ final class EffectCancellationTests: XCTestCase {
     subject.send(2)
     XCTAssertEqual(values, [1, 2])
 
-    _ = Effect<Never, Never>.cancel(id: CancelToken())
+    Effect<Never, Never>.cancel(id: CancelToken())
       .sink { _ in }
       .store(in: &self.cancellables)
 
@@ -76,7 +76,7 @@ final class EffectCancellationTests: XCTestCase {
     XCTAssertEqual(value, nil)
 
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-      _ = Effect<Never, Never>.cancel(id: CancelToken())
+      Effect<Never, Never>.cancel(id: CancelToken())
         .sink { _ in }
         .store(in: &self.cancellables)
     }
@@ -116,7 +116,7 @@ final class EffectCancellationTests: XCTestCase {
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
-    XCTAssertTrue(cancellationCancellables.isEmpty)
+    XCTAssertEqual([:], cancellationCancellables)
   }
 
   func testCancellablesCleanUp_OnCancel() {
@@ -132,7 +132,7 @@ final class EffectCancellationTests: XCTestCase {
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
-    XCTAssertTrue(cancellationCancellables.isEmpty)
+    XCTAssertEqual([:], cancellationCancellables)
   }
 
   func testDoubleCancellation() {
@@ -151,7 +151,7 @@ final class EffectCancellationTests: XCTestCase {
     subject.send(1)
     XCTAssertEqual(values, [1])
 
-    _ = Effect<Never, Never>.cancel(id: CancelToken())
+    Effect<Never, Never>.cancel(id: CancelToken())
       .sink { _ in }
       .store(in: &self.cancellables)
 
@@ -176,7 +176,7 @@ final class EffectCancellationTests: XCTestCase {
     subject.send(completion: .finished)
     XCTAssertEqual(values, [1])
 
-    _ = Effect<Never, Never>.cancel(id: CancelToken())
+    Effect<Never, Never>.cancel(id: CancelToken())
       .sink { _ in }
       .store(in: &self.cancellables)
 
@@ -201,14 +201,14 @@ final class EffectCancellationTests: XCTestCase {
         return Effect.merge(
           Just(idx)
             .delay(
-              for: .microseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
+              for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
             )
             .eraseToEffect()
             .cancellable(id: id),
 
           Just(())
             .delay(
-              for: .microseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
+              for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
             )
             .flatMap { Effect.cancel(id: id) }
             .eraseToEffect()
@@ -241,6 +241,49 @@ final class EffectCancellationTests: XCTestCase {
     cancellables.removeAll()
 
     XCTAssertEqual([:], cancellationCancellables)
-    XCTAssertEqual([], isCancelling)
+  }
+
+  func testSharedId() {
+    let scheduler = DispatchQueue.testScheduler
+
+    let effect1 = Just(1)
+      .delay(for: 1, scheduler: scheduler)
+      .eraseToEffect()
+      .cancellable(id: "id")
+
+    let effect2 = Just(2)
+      .delay(for: 2, scheduler: scheduler)
+      .eraseToEffect()
+      .cancellable(id: "id")
+
+    var expectedOutput: [Int] = []
+    effect1
+      .sink { expectedOutput.append($0) }
+      .store(in: &cancellables)
+    effect2
+      .sink { expectedOutput.append($0) }
+      .store(in: &cancellables)
+
+    XCTAssertEqual(expectedOutput, [])
+    scheduler.advance(by: 1)
+    XCTAssertEqual(expectedOutput, [1])
+    scheduler.advance(by: 1)
+    XCTAssertEqual(expectedOutput, [1, 2])
+  }
+
+  func testImmediateCancellation() {
+    let scheduler = DispatchQueue.testScheduler
+
+    var expectedOutput: [Int] = []
+    // Don't hold onto cancellable so that it is deallocated immediately.
+    _ = Deferred { Just(1) }
+      .delay(for: 1, scheduler: scheduler)
+      .eraseToEffect()
+      .cancellable(id: "id")
+      .sink { expectedOutput.append($0) }
+
+    XCTAssertEqual(expectedOutput, [])
+    scheduler.advance(by: 1)
+    XCTAssertEqual(expectedOutput, [])
   }
 }

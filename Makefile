@@ -8,78 +8,66 @@ test-all: test-swift test-workspace
 
 test-swift:
 	swift test \
-		--enable-pubgrub-resolver \
 		--enable-test-discovery \
 		--parallel
 
 test-workspace:
+	instruments -s devices
 	xcodebuild test \
 		-scheme ComposableArchitecture \
-		-destination platform="$(PLATFORM_IOS)" \
-		-quiet
+		-destination platform="$(PLATFORM_IOS)"
 	xcodebuild test \
 		-scheme ComposableArchitecture \
-		-destination platform="$(PLATFORM_MACOS)" \
-		-quiet
+		-destination platform="$(PLATFORM_MACOS)"
 	xcodebuild test \
 		-scheme ComposableArchitecture \
-		-destination platform="$(PLATFORM_TVOS)" \
-		-quiet
+		-destination platform="$(PLATFORM_TVOS)"
 	xcodebuild test \
 		-scheme ComposableCoreLocation \
-		-destination platform="$(PLATFORM_IOS)" \
-		-quiet
+		-destination platform="$(PLATFORM_IOS)"
 	xcodebuild test \
 		-scheme ComposableCoreLocation \
-		-destination platform="$(PLATFORM_MACOS)" \
-		-quiet
+		-destination platform="$(PLATFORM_MACOS)"
 	xcodebuild test \
 		-scheme ComposableCoreLocation \
-		-destination platform="$(PLATFORM_TVOS)" \
-		-quiet
+		-destination platform="$(PLATFORM_TVOS)"
+	xcodebuild test \
+		-scheme ComposableCoreMotion \
+		-destination platform="$(PLATFORM_IOS)"
 	xcodebuild test \
 		-scheme "CaseStudies (SwiftUI)" \
-		-destination platform="$(PLATFORM_IOS)" \
-		-quiet
+		-destination platform="$(PLATFORM_IOS)"
 	xcodebuild test \
 		-scheme "CaseStudies (UIKit)" \
-		-destination platform="$(PLATFORM_IOS)" \
-		-quiet
+		-destination platform="$(PLATFORM_IOS)"
 	xcodebuild test \
 		-scheme MotionManager \
-		-destination platform="$(PLATFORM_IOS)" \
-		-quiet
+		-destination platform="$(PLATFORM_IOS)"
 	xcodebuild test \
 		-scheme LocationManagerDesktop \
-		-destination platform="$(PLATFORM_MACOS)" \
-		-quiet
+		-destination platform="$(PLATFORM_MACOS)"
 	xcodebuild test \
 		-scheme LocationManagerMobile \
-		-destination platform="$(PLATFORM_IOS)" \
-		-quiet
+		-destination platform="$(PLATFORM_IOS)"
 	xcodebuild test \
 		-scheme Search \
-		-destination platform="$(PLATFORM_IOS)" \
-		-quiet
+		-destination platform="$(PLATFORM_IOS)"
 	xcodebuild test \
 		-scheme SpeechRecognition \
-		-destination platform="$(PLATFORM_IOS)" \
-		-quiet
+		-destination platform="$(PLATFORM_IOS)"
 	xcodebuild test \
 		-scheme TicTacToe \
-		-destination platform="$(PLATFORM_IOS)" \
-		-quiet
+		-destination platform="$(PLATFORM_IOS)"
 	xcodebuild test \
 		-scheme Todos \
-		-destination platform="$(PLATFORM_IOS)" \
-		-quiet
+		-destination platform="$(PLATFORM_IOS)"
 	xcodebuild test \
 		-scheme VoiceMemos \
-		-destination platform="$(PLATFORM_IOS)" \
-		-quiet
+		-destination platform="$(PLATFORM_IOS)"
 
 format:
-	swift format --in-place --recursive .
+	swift format --in-place --recursive \
+		./Examples ./Package.swift ./Sources ./Tests
 
 SWIFT_DOC = /Users/brandon/projects/github/swift-doc/.build/x86_64-apple-macosx/release/swift-doc
 
