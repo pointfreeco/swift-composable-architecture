@@ -19,12 +19,13 @@ enum FocusAction {
 }
 
 struct FocusEnvironment {
+  var randomElement: () -> Int = { (1..<11).randomElement()! }
 }
 
-let focusReducer = Reducer<FocusState, FocusAction, FocusEnvironment> { state, action, _ in
+let focusReducer = Reducer<FocusState, FocusAction, FocusEnvironment> { state, action, environment in
   switch action {
   case .randomButtonClicked:
-    state.currentFocus = (1...10).randomElement()!
+    state.currentFocus = environment.randomElement()
     return .none
   }
 }

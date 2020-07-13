@@ -9,12 +9,13 @@ enum RootAction {
 }
 
 struct RootEnvironment {
+  var focus = FocusEnvironment()
 }
 
 let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
   focusReducer.pullback(
     state: \.focus,
     action: /RootAction.focus,
-    environment: { _ in .init() }
+    environment: { $0.focus }
   )
 )
