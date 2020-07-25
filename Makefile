@@ -89,5 +89,4 @@ docs:
 		--format=html \
 		--base-url $(BASE_URL)/ComposableCoreMotion
 
-
 .PHONY: format test-all test-swift test-workspace
