@@ -1,0 +1,26 @@
+name: Wiki
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+
+      # - name: Generate Documentation
+      #   uses: kareman/swift-doc@support-kareman-Patterns
+      #   with:
+      #     inputs: "Sources/Patterns"
+      #     module-name: Patterns
+      #     output: "Documentation"
+
+      - name: Upload Documentation to Wiki
+        uses: SwiftDocOrg/github-wiki-publish-action@v1
+        with:
+          path: "Documentation"
+        env:
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
