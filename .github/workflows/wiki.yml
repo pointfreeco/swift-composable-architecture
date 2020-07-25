@@ -13,11 +13,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install swift-doc
-        run: brew install swiftdocorg/formulae/swift-doc
-
       - name: Generate Documentation
-        run: make docs
+        uses: SwiftDocOrg/swift-doc@master
+        with:
+          inputs: "Sources/ComposableArchitecture"
+          module-name: "ComposableArchitecture"
+          output: "Documentation"
 
       # - name: Generate Documentation
       #   uses: kareman/swift-doc@support-kareman-Patterns
