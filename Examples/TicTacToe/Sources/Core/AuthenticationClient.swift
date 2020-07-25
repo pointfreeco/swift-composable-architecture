@@ -40,12 +40,12 @@ public struct AuthenticationResponse: Equatable {
   }
 }
 
-public enum AuthenticationError: Equatable, Error {
+public enum AuthenticationError: Equatable, LocalizedError {
   case invalidUserPassword
   case invalidTwoFactor
   case invalidIntermediateToken
 
-  var localizedDescription: String {
+  public var errorDescription: String? {
     switch self {
     case .invalidUserPassword:
       return "Unknown user or invalid password."

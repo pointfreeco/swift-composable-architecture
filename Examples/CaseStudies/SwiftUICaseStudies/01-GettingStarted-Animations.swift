@@ -1,3 +1,4 @@
+import Combine
 import ComposableArchitecture
 import SwiftUI
 
@@ -15,6 +16,25 @@ private let readMe = """
   Try it out by tapping or dragging anywhere on the screen to move the dot, and by flipping the \
   toggle at the bottom of the screen.
   """
+
+extension Effect where Failure == Never {
+  public static func keyFrames<S>(
+    values: [(output: Output, duration: S.SchedulerTimeType.Stride)],
+    scheduler: S
+  ) -> Effect where S: Scheduler {
+    .concatenate(
+      values
+        .enumerated()
+        .map { index, animationState in
+          index == 0
+            ? Effect(value: animationState.output)
+            : Just(animationState.output)
+              .delay(for: values[index - 1].duration, scheduler: scheduler)
+              .eraseToEffect()
+        }
+    )
+  }
+}
 
 struct AnimationsState: Equatable {
   var circleCenter = CGPoint.zero
@@ -42,16 +62,10 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
     return .none
 
   case .rainbowButtonTapped:
-    return .concatenate(
-      [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .white]
-        .enumerated()
-        .map { index, color in
-          index == 0
-            ? Effect(value: .setColor(color))
-            : Effect(value: .setColor(color))
-              .delay(for: 1, scheduler: environment.mainQueue)
-              .eraseToEffect()
-        }
+    return .keyFrames(
+      values: [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .white]
+        .map { (output: .setColor($0), duration: 1) },
+      scheduler: environment.mainQueue
     )
 
   case let .setColor(color):
