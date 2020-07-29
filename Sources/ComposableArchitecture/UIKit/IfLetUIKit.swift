@@ -52,7 +52,7 @@ extension Store {
         }
       )
       .sink { store in
-        if store.state.value == nil { `else`() }
+        if store.state == nil { `else`() }
       }
 
     let unwrapCancellable =

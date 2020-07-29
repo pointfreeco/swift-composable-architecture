@@ -9,7 +9,7 @@ on:
       - '*'
 
 jobs:
-  examples:
+  tests:
     runs-on: macOS-latest
     strategy:
       matrix:
@@ -18,7 +18,7 @@ jobs:
           - 11.4
           - 11.5
           - 11.6
-          - 12_beta
+          #- 12_beta
     steps:
       - uses: actions/checkout@v2
       - name: Select Xcode ${{ matrix.xcode }}
