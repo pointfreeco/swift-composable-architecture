@@ -13,9 +13,9 @@ jobs:
         uses: SwiftDocOrg/swift-doc@master
         with:
           base-url: /swift-composable-architecture/
+          format: html
           inputs: Sources/ComposableArchitecture
           module-name: ComposableArchitecture
-          format: html
           output: Documentation
       - name: Update Permissions
         run: 'sudo chown --recursive $USER Documentation'
