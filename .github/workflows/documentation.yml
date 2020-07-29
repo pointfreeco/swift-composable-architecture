@@ -1,0 +1,29 @@
+name: Documentation
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Generate Documentation
+        uses: SwiftDocOrg/swift-doc@master
+        with:
+          base-url: /swift-composable-architecture/
+          format: html
+          inputs: Sources/ComposableArchitecture
+          module-name: ComposableArchitecture
+          output: Documentation
+      - name: Update Permissions
+        run: 'sudo chown --recursive $USER Documentation'
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          BRANCH: gh-pages
+          FOLDER: Documentation
