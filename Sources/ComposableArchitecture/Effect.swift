@@ -232,9 +232,15 @@ public struct Effect<Output, Failure: Error>: Publisher {
   /// - Parameter work: A closure encapsulating some work to execute in the real world.
   /// - Returns: An effect.
   public static func fireAndForget(_ work: @escaping () -> Void) -> Effect {
-    Deferred { () -> Empty<Output, Failure> in
+    // NB: Ideally we'd return a `Deferred` wrapping an `Empty(completeImmediately: true)`, but
+    //     due to a bug in iOS 13.2 that publisher will never complete. The bug was fixed in
+    //     iOS 13.3, but to remain compatible with iOS 13.2 and higher we need to do a little
+    //     trickery to make sure the deferred publisher completes.
+    Deferred { () -> Publishers.CompactMap<Result<Output?, Failure>.Publisher, Output> in
       work()
-      return Empty(completeImmediately: true)
+      return Just<Output?>(nil)
+        .setFailureType(to: Failure.self)
+        .compactMap { $0 }
     }
     .eraseToEffect()
   }
