@@ -9,32 +9,19 @@ on:
       - '*'
 
 jobs:
-  library:
-    runs-on: macOS-latest
-    strategy:
-      matrix:
-        xcode:
-          - 11.3
-          - 11.6_beta
-          - 12_beta
-    steps:
-      - uses: actions/checkout@v2
-      - name: Select Xcode ${{ matrix.xcode }}
-        run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
-      - name: Run tests
-        run: make test-swift
-
   examples:
     runs-on: macOS-latest
     strategy:
       matrix:
         xcode:
           - 11.3
-          - 11.6_beta
+          - 11.4
+          - 11.5
+          - 11.6
           - 12_beta
     steps:
       - uses: actions/checkout@v2
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
       - name: Run tests
-        run: make test-workspace
+        run: make test
