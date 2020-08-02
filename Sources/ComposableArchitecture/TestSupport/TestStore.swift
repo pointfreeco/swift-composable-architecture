@@ -228,16 +228,24 @@
         let effect = self.reducer.run(&self.state, action, self.environment)
         var isComplete = false
         var cancellable: AnyCancellable?
-        cancellable = effect.sink(
-          receiveCompletion: { _ in
-            isComplete = true
-            guard let cancellable = cancellable else { return }
-            cancellables.removeAll(where: { $0 == cancellable })
-          },
-          receiveValue: {
-            receivedActions.append($0)
-          }
-        )
+        cancellable = effect
+          .handleEvents(
+            receiveCancel: {
+              isComplete = true
+              guard let cancellable = cancellable else { return }
+              cancellables.removeAll(where: { $0 == cancellable })
+            }
+          )
+          .sink(
+            receiveCompletion: { _ in
+              isComplete = true
+              guard let cancellable = cancellable else { return }
+              cancellables.removeAll(where: { $0 == cancellable })
+            },
+            receiveValue: {
+              receivedActions.append($0)
+            }
+          )
         if !isComplete, let cancellable = cancellable {
           cancellables.append(cancellable)
         }

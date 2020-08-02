@@ -49,7 +49,18 @@ final class EffectCancellationTests: XCTestCase {
 //      .cancellable(id: CancelToken())
 
     effect
-      .sink { values.append($0) }
+      .handleEvents(
+        receiveCancel: {
+          print("!")
+        }
+      )
+      .sink(
+        receiveCompletion: { _ in
+          print("!")
+        },
+        receiveValue: {
+          values.append($0) 
+        })
       .store(in: &self.cancellables)
 
     XCTAssertEqual(values, [])

@@ -127,15 +127,9 @@ final class ComposableArchitectureTests: XCTestCase {
     enum Action: Equatable {
       case cancel
       case incr
-      case response(Int)
     }
 
-    struct Environment {
-      let fetch: (Int) -> Effect<Int, Never>
-      let mainQueue: AnySchedulerOf<DispatchQueue>
-    }
-
-    let reducer = Reducer<Int, Action, Environment> { state, action, environment in
+    let reducer = Reducer<Int, Action, Void> { state, action, _ in
       struct CancelId: Hashable {}
 
       switch action {
@@ -144,42 +138,26 @@ final class ComposableArchitectureTests: XCTestCase {
 
       case .incr:
         state += 1
-        return environment.fetch(state)
-          .receive(on: environment.mainQueue)
-          .map(Action.response)
+        return Empty(completeImmediately: false)
+          .handleEvents(
+            receiveCancel: {
+              print("!")
+            }
+          )
           .eraseToEffect()
           .cancellable(id: CancelId())
-
-      case let .response(value):
-        state = value
-        return .none
       }
     }
-
-    let scheduler = DispatchQueue.testScheduler
 
     let store = TestStore(
       initialState: 0,
       reducer: reducer,
-      environment: Environment(
-        fetch: { value in Effect(value: value * value) },
-        mainQueue: scheduler.eraseToAnyScheduler()
-      )
+      environment: ()
     )
 
     store.assert(
       .send(.incr) { $0 = 1 },
-      .do { scheduler.advance() },
-      .receive(.response(1)) { $0 = 1 }
-    )
-
-    store.assert(
-      .send(.incr) { $0 = 2 },
-      .send(.cancel),
-      .do { scheduler.run() },
-      .do {
-        _ = XCTWaiter.wait(for: [.init()], timeout: 1)
-      }
+      .send(.cancel)
     )
   }
 }
