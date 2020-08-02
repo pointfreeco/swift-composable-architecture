@@ -106,7 +106,7 @@ extension Reducer {
         guard let localAction = toLocalAction.extract(from: action) else { return effects }
         let nextState = toLocalState(state)
         let debugEnvironment = toDebugEnvironment(environment)
-        return .merge(
+        return .concatenate(
           .fireAndForget {
             debugEnvironment.queue.async {
               let actionOutput =

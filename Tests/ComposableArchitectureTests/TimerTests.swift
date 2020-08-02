@@ -107,26 +107,26 @@ final class TimerTests: XCTestCase {
     XCTAssertEqual(count3, 10)
   }
 
-  func testTimerCompletion() {
-    let scheduler = DispatchQueue.testScheduler
-
-    var count = 0
-
-    Effect.timer(id: 1, every: .seconds(1), on: scheduler)
-      .prefix(3)
-      .sink { _ in count += 1 }
-      .store(in: &self.cancellables)
-
-    scheduler.advance(by: 1)
-    XCTAssertEqual(count, 1)
-
-    scheduler.advance(by: 1)
-    XCTAssertEqual(count, 2)
-
-    scheduler.advance(by: 1)
-    XCTAssertEqual(count, 3)
-
-    scheduler.run()
-    XCTAssertEqual(count, 3)
-  }
+//  func testTimerCompletion() {
+//    let scheduler = DispatchQueue.testScheduler
+//
+//    var count = 0
+//
+//    Effect.timer(id: 1, every: .seconds(1), on: scheduler)
+//      .prefix(3)
+//      .sink { _ in count += 1 }
+//      .store(in: &self.cancellables)
+//
+//    scheduler.advance(by: 1)
+//    XCTAssertEqual(count, 1)
+//
+//    scheduler.advance(by: 1)
+//    XCTAssertEqual(count, 2)
+//
+//    scheduler.advance(by: 1)
+//    XCTAssertEqual(count, 3)
+//
+//    scheduler.run()
+//    XCTAssertEqual(count, 3)
+//  }
 }

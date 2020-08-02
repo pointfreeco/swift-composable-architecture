@@ -256,6 +256,7 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     )
 )
 .signpost()
+.debug()
 
 // This is the "live" trivia dependency that reaches into the outside world to fetch trivia.
 // Typically this live implementation of the dependency would live in its own module so that the

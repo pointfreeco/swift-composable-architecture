@@ -176,7 +176,10 @@ final class ComposableArchitectureTests: XCTestCase {
     store.assert(
       .send(.incr) { $0 = 2 },
       .send(.cancel),
-      .do { scheduler.run() }
+      .do { scheduler.run() },
+      .do {
+        _ = XCTWaiter.wait(for: [.init()], timeout: 1)
+      }
     )
   }
 }
