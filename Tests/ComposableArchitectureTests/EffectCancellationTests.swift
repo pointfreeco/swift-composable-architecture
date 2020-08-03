@@ -117,9 +117,9 @@ final class EffectCancellationTests: XCTestCase {
       .store(in: &self.cancellables)
 
     #if swift(>=5.3) && !os(macOS)
-    XCTAssertTrue(subjects.isEmpty)
+      XCTAssertTrue(subjects.isEmpty)
     #else
-    XCTAssertTrue(cancellationCancellables.isEmpty)
+      XCTAssertTrue(cancellationCancellables.isEmpty)
     #endif
   }
 
@@ -137,9 +137,9 @@ final class EffectCancellationTests: XCTestCase {
       .store(in: &self.cancellables)
 
     #if swift(>=5.3) && !os(macOS)
-    XCTAssertTrue(subjects.isEmpty)
+      XCTAssertTrue(subjects.isEmpty)
     #else
-    XCTAssertTrue(cancellationCancellables.isEmpty)
+      XCTAssertTrue(cancellationCancellables.isEmpty)
     #endif
   }
 
@@ -231,9 +231,9 @@ final class EffectCancellationTests: XCTestCase {
     self.wait(for: [expectation], timeout: 999)
 
     #if swift(>=5.3) && !os(macOS)
-    XCTAssertTrue(subjects.isEmpty)
+      XCTAssertTrue(subjects.isEmpty)
     #else
-    XCTAssertTrue(cancellationCancellables.isEmpty)
+      XCTAssertTrue(cancellationCancellables.isEmpty)
     #endif
   }
 
@@ -253,9 +253,9 @@ final class EffectCancellationTests: XCTestCase {
     cancellables.removeAll()
 
     #if swift(>=5.3) && !os(macOS)
-    XCTAssertTrue(subjects.isEmpty)
+      XCTAssertTrue(subjects.isEmpty)
     #else
-    XCTAssertTrue(cancellationCancellables.isEmpty)
+      XCTAssertTrue(cancellationCancellables.isEmpty)
     #endif
   }
 

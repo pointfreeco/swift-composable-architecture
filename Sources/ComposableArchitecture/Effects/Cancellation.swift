@@ -29,57 +29,58 @@ extension Effect {
   public func cancellable(id: AnyHashable, cancelInFlight: Bool = false) -> Effect {
     // NB: This check intends to work around bugs over different versions of Combine
     #if swift(>=5.3) && !os(macOS)
-    let effect = Deferred<
-      Publishers.PrefixUntilOutput<Publishers.HandleEvents<Self>, PassthroughSubject<Void, Never>>
-    > {
-      let subject = PassthroughSubject<Void, Never>()
-      lock.sync { subjects[id, default: []].append(subject) }
-      let cleanup = {
-        lock.sync {
-          subjects[id]?.removeAll(where: { $0 === subject })
-          if subjects[id]?.isEmpty == true {
-            subjects[id] = nil
+      let effect = Deferred<
+        Publishers.PrefixUntilOutput<Publishers.HandleEvents<Self>, PassthroughSubject<Void, Never>>
+      > {
+        let subject = PassthroughSubject<Void, Never>()
+        lock.sync { subjects[id, default: []].append(subject) }
+        let cleanup = {
+          lock.sync {
+            subjects[id]?.removeAll(where: { $0 === subject })
+            if subjects[id]?.isEmpty == true {
+              subjects[id] = nil
+            }
           }
         }
+        return
+          self
+          .handleEvents(
+            receiveCompletion: { _ in cleanup() },
+            receiveCancel: cleanup
+          )
+          .prefix(untilOutputFrom: subject)
       }
-      return self
-        .handleEvents(
-          receiveCompletion: { _ in cleanup() },
-          receiveCancel: cleanup
-        )
-        .prefix(untilOutputFrom: subject)
-    }
-    .eraseToEffect()
+      .eraseToEffect()
     #else
-    let effect = Deferred { () -> Publishers.HandleEvents<PassthroughSubject<Output, Failure>> in
-      cancellablesLock.lock()
-      defer { cancellablesLock.unlock() }
+      let effect = Deferred { () -> Publishers.HandleEvents<PassthroughSubject<Output, Failure>> in
+        cancellablesLock.lock()
+        defer { cancellablesLock.unlock() }
 
-      let subject = PassthroughSubject<Output, Failure>()
-      let cancellable = self.subscribe(subject)
+        let subject = PassthroughSubject<Output, Failure>()
+        let cancellable = self.subscribe(subject)
 
-      var cancellationCancellable: AnyCancellable!
-      cancellationCancellable = AnyCancellable {
-        cancellablesLock.sync {
-          subject.send(completion: .finished)
-          cancellable.cancel()
-          cancellationCancellables[id]?.remove(cancellationCancellable)
-          if cancellationCancellables[id]?.isEmpty == .some(true) {
-            cancellationCancellables[id] = nil
+        var cancellationCancellable: AnyCancellable!
+        cancellationCancellable = AnyCancellable {
+          cancellablesLock.sync {
+            subject.send(completion: .finished)
+            cancellable.cancel()
+            cancellationCancellables[id]?.remove(cancellationCancellable)
+            if cancellationCancellables[id]?.isEmpty == .some(true) {
+              cancellationCancellables[id] = nil
+            }
           }
         }
+
+        cancellationCancellables[id, default: []].insert(
+          cancellationCancellable
+        )
+
+        return subject.handleEvents(
+          receiveCompletion: { _ in cancellationCancellable.cancel() },
+          receiveCancel: cancellationCancellable.cancel
+        )
       }
-
-      cancellationCancellables[id, default: []].insert(
-        cancellationCancellable
-      )
-
-      return subject.handleEvents(
-        receiveCompletion: { _ in cancellationCancellable.cancel() },
-        receiveCancel: cancellationCancellable.cancel
-      )
-    }
-    .eraseToEffect()
+      .eraseToEffect()
     #endif
 
     return cancelInFlight ? .concatenate(.cancel(id: id), effect) : effect
@@ -92,25 +93,25 @@ extension Effect {
   ///   identifier.
   public static func cancel(id: AnyHashable) -> Effect {
     #if swift(>=5.3) && !os(macOS)
-    return .fireAndForget {
-      lock.sync {
-        subjects[id]?.forEach { $0.send(()) }
+      return .fireAndForget {
+        lock.sync {
+          subjects[id]?.forEach { $0.send(()) }
+        }
       }
-    }
     #else
-    return .fireAndForget {
-      cancellablesLock.sync {
-        cancellationCancellables[id]?.forEach { $0.cancel() }
+      return .fireAndForget {
+        cancellablesLock.sync {
+          cancellationCancellables[id]?.forEach { $0.cancel() }
+        }
       }
-    }
     #endif
   }
 }
 
 #if swift(>=5.3) && !os(macOS)
-var subjects: [AnyHashable: [PassthroughSubject<Void, Never>]] = [:]
-let lock = NSRecursiveLock()
+  var subjects: [AnyHashable: [PassthroughSubject<Void, Never>]] = [:]
+  let lock = NSRecursiveLock()
 #else
-var cancellationCancellables: [AnyHashable: Set<AnyCancellable>] = [:]
-let cancellablesLock = NSRecursiveLock()
+  var cancellationCancellables: [AnyHashable: Set<AnyCancellable>] = [:]
+  let cancellablesLock = NSRecursiveLock()
 #endif
