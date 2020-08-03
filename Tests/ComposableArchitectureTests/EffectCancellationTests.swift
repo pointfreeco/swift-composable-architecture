@@ -104,12 +104,12 @@ final class EffectCancellationTests: XCTestCase {
   }
 
   func testWTF() {
-    let s = PassthroughSubject<Void, Never>()
+    var s: PassthroughSubject<Void, Never>? = .init()
     var value: Int? = nil
 
     Just(1)
       .delay(for: 1, scheduler: DispatchQueue.global())
-      .prefix(untilOutputFrom: s.print("subject"))
+      .prefix(untilOutputFrom: s!.print("subject"))
       .print()
       .sink(
         receiveCompletion: {
@@ -124,8 +124,9 @@ final class EffectCancellationTests: XCTestCase {
 
     XCTAssertEqual(value, nil)
 
-    s.send()
-    s.send(completion: .finished)
+    s?.send()
+    s?.send(completion: .finished)
+    s = nil
 
     _ = XCTWaiter.wait(for: [.init()], timeout: 2)
     XCTAssertEqual(value, nil)

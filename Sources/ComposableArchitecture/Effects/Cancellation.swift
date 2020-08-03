@@ -33,7 +33,7 @@ extension Effect {
       if cancelInFlight {
         subjects[id]?.send(())
         subjects[id]?.send(completion: .finished)
-//        subjects[id] = nil
+        subjects[id] = nil
       }
 
       let subject = subjects[id] ?? PassthroughSubject<Void, Never>()
@@ -63,7 +63,7 @@ extension Effect {
     .fireAndForget {
       subjects[id]?.send(())
       subjects[id]?.send(completion: .finished)
-//      subjects[id] = nil
+      subjects[id] = nil
     }
 
 //    Deferred { () -> Empty<Output, Failure> in

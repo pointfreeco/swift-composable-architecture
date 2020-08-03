@@ -279,6 +279,7 @@ func liveNumberFact(for n: Int) -> Effect<String, NumbersApiError> {
 // main feature doesn't need to compile it.
 func liveTrivia(for n: Int) -> Effect<String, TriviaApiError> {
   URLSession.shared.dataTaskPublisher(for: URL(string: "http://numbersapi.com/\(n)/trivia")!)
+    .delay(for: 2, scheduler: DispatchQueue.main)
     .map { data, _ in String.init(decoding: data, as: UTF8.self) }
     .catch { _ in
       // Sometimes numbersapi.com can be flakey, so if it ever fails we will just
