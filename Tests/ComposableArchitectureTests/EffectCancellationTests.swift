@@ -103,25 +103,63 @@ final class EffectCancellationTests: XCTestCase {
     XCTAssertEqual(values, [1, 2, 3, 4])
   }
 
-  func testCancellationAfterDelay() {
-    var value: Int?
+  func testWTF() {
+    let s = PassthroughSubject<Void, Never>()
+    var value: Int? = nil
 
     Just(1)
-      .delay(for: 0.15, scheduler: DispatchQueue.main)
-      .eraseToEffect()
-      .cancellable(id: CancelToken())
-      .sink { value = $0 }
+      .delay(for: 1, scheduler: DispatchQueue.global())
+      .prefix(untilOutputFrom: s.print("subject"))
+      .print()
+      .sink(
+        receiveCompletion: {
+          print("receiveCompletion", $0)
+        },
+        receiveValue: {
+          value = $0
+          print("receiveValue", $0)
+          _ = s
+        })
       .store(in: &self.cancellables)
 
     XCTAssertEqual(value, nil)
 
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+    s.send()
+    s.send(completion: .finished)
+
+    _ = XCTWaiter.wait(for: [.init()], timeout: 2)
+    XCTAssertEqual(value, nil)
+  }
+
+  func testCancellationAfterDelay() {
+    var value: Int?
+
+    let s = PassthroughSubject<Void, Never>()
+
+    Just(1)
+      .delay(for: 1, scheduler: DispatchQueue.main)
+      .prefix(untilOutputFrom: s)
+//      .eraseToEffect()
+//      .cancellable(id: CancelToken())
+      .sink(
+//        receiveCompletion: { print($0) },
+        receiveValue: { print($0); value = $0 }
+      )
+      .store(in: &self.cancellables)
+
+    XCTAssertEqual(value, nil)
+
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
       Effect<Never, Never>.cancel(id: CancelToken())
-        .sink { _ in }
+        .sink { _ in
+          print("!")
+        }
         .store(in: &self.cancellables)
     }
 
-    _ = XCTWaiter.wait(for: [self.expectation(description: "")], timeout: 0.3)
+//    s.send(())
+
+    _ = XCTWaiter.wait(for: [self.expectation(description: "")], timeout: 2)
 
     XCTAssertEqual(value, nil)
   }
@@ -130,19 +168,27 @@ final class EffectCancellationTests: XCTestCase {
     let scheduler = DispatchQueue.testScheduler
     var value: Int?
 
+    let s = PassthroughSubject<Void, Never>()
+
+
     Just(1)
       .delay(for: 2, scheduler: scheduler)
-      .eraseToEffect()
-      .cancellable(id: CancelToken())
-      .sink { value = $0 }
+//      .eraseToEffect()
+      //      .cancellable(id: CancelToken())
+      .prefix(untilOutputFrom: s)
+      .sink {
+        value = $0
+      }
       .store(in: &self.cancellables)
 
     XCTAssertEqual(value, nil)
 
     scheduler.advance(by: 1)
-    Effect<Never, Never>.cancel(id: CancelToken())
-      .sink { _ in }
-      .store(in: &self.cancellables)
+//    Effect<Never, Never>.cancel(id: CancelToken())
+//      .sink { _ in }
+//      .store(in: &self.cancellables)
+    s.send(())
+    s.send(completion: .finished)
 
     scheduler.run()
 
