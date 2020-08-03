@@ -26,38 +26,29 @@ extension Effect {
   ///   - cancelInFlight: Determines if any in-flight effect with the same identifier should be
   ///     canceled before starting this new one.
   /// - Returns: A new effect that is capable of being canceled by an identifier.
-  public func cancellable(id: AnyHashable, cancelInFlight: Bool = false) -> Effect {
-    let effect = Deferred { () -> Publishers.HandleEvents<PassthroughSubject<Output, Failure>> in
-      cancellablesLock.lock()
-      defer { cancellablesLock.unlock() }
+  public func cancellable<Id: Hashable>(id: Id, cancelInFlight: Bool = false) -> Effect {
 
-      let subject = PassthroughSubject<Output, Failure>()
-      let cancellable = self.subscribe(subject)
+    Deferred { () -> Self in
 
-      var cancellationCancellable: AnyCancellable!
-      cancellationCancellable = AnyCancellable {
-        cancellablesLock.sync {
-          subject.send(completion: .finished)
-          cancellable.cancel()
-          cancellationCancellables[id]?.remove(cancellationCancellable)
-          if cancellationCancellables[id]?.isEmpty == .some(true) {
-            cancellationCancellables[id] = nil
-          }
-        }
+      let subject = cancellablesLock.sync { () -> PassthroughSubject<Void, Never> in
+      if cancelInFlight {
+        subjects[id]?.send(())
+        subjects[id]?.send(completion: .finished)
+        subjects[id] = nil
       }
 
-      cancellationCancellables[id, default: []].insert(
-        cancellationCancellable
-      )
+      let subject = subjects[id] ?? PassthroughSubject<Void, Never>()
+      subjects[id] = subject
+        return subject
+      }
 
-      return subject.handleEvents(
-        receiveCompletion: { _ in cancellationCancellable.cancel() },
-        receiveCancel: cancellationCancellable.cancel
-      )
+      return self
+        .prefix(untilOutputFrom: subject)
+        .eraseToEffect()
+
     }
     .eraseToEffect()
 
-    return cancelInFlight ? .concatenate(.cancel(id: id), effect) : effect
   }
 
   /// An effect that will cancel any currently in-flight effect with the given identifier.
@@ -65,14 +56,19 @@ extension Effect {
   /// - Parameter id: An effect identifier.
   /// - Returns: A new effect that will cancel any currently in-flight effect with the given
   ///   identifier.
-  public static func cancel(id: AnyHashable) -> Effect {
-    return .fireAndForget {
+  public static func cancel<Id: Hashable>(id: Id) -> Effect {
+    .fireAndForget {
       cancellablesLock.sync {
-        cancellationCancellables[id]?.forEach { $0.cancel() }
+      subjects[id]?.send(())
+      subjects[id]?.send(completion: .finished)
+      subjects[id] = nil
       }
     }
+
   }
 }
+
+var subjects: [AnyHashable: PassthroughSubject<Void, Never>] = [:]
 
 var cancellationCancellables: [AnyHashable: Set<AnyCancellable>] = [:]
 let cancellablesLock = NSRecursiveLock()
