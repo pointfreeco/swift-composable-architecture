@@ -58,27 +58,6 @@ final class TimerTests: XCTestCase {
     XCTAssertEqual(count3, 1)
   }
 
-  func testWTF() {
-
-    var count = 0
-    Timer.publish(every: 0.1, on: .main, in: .default)
-      .autoconnect()
-      .eraseToEffect()
-      .cancellable(id: "")
-      .sink { _ in count += 1 }
-      .store(in: &self.cancellables)
-
-    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-      Effect.cancel(id: "")
-        .sink { }
-        .store(in: &self.cancellables)
-    }
-
-    _ = XCTWaiter.wait(for: [.init()], timeout: 2)
-
-    XCTAssertEqual(count, 10)
-  }
-
   func testTimerCancellation() {
     let scheduler = DispatchQueue.testScheduler
 
