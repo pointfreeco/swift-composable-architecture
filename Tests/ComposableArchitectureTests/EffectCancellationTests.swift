@@ -183,47 +183,47 @@ final class EffectCancellationTests: XCTestCase {
     XCTAssertEqual(values, [1])
   }
 
-  func testConcurrentCancels() {
-    let queues = [
-      DispatchQueue.main,
-      DispatchQueue.global(qos: .background),
-      DispatchQueue.global(qos: .default),
-      DispatchQueue.global(qos: .unspecified),
-      DispatchQueue.global(qos: .userInitiated),
-      DispatchQueue.global(qos: .userInteractive),
-      DispatchQueue.global(qos: .utility),
-    ]
-
-    let effect = Effect.merge(
-      (1...1_000).map { idx -> Effect<Int, Never> in
-        let id = idx % 10
-
-        return Effect.merge(
-          Just(idx)
-            .delay(
-              for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
-            )
-            .eraseToEffect()
-            .cancellable(id: id),
-
-          Just(())
-            .delay(
-              for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
-            )
-            .flatMap { Effect.cancel(id: id) }
-            .eraseToEffect()
-        )
-      }
-    )
-
-    let expectation = self.expectation(description: "wait")
-    effect
-      .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
-      .store(in: &self.cancellables)
-    self.wait(for: [expectation], timeout: 999)
-
-    XCTAssertTrue(cancellationCancellables.isEmpty)
-  }
+//  func testConcurrentCancels() {
+//    let queues = [
+//      DispatchQueue.main,
+//      DispatchQueue.global(qos: .background),
+//      DispatchQueue.global(qos: .default),
+//      DispatchQueue.global(qos: .unspecified),
+//      DispatchQueue.global(qos: .userInitiated),
+//      DispatchQueue.global(qos: .userInteractive),
+//      DispatchQueue.global(qos: .utility),
+//    ]
+//
+//    let effect = Effect.merge(
+//      (1...1_000).map { idx -> Effect<Int, Never> in
+//        let id = idx % 10
+//
+//        return Effect.merge(
+//          Just(idx)
+//            .delay(
+//              for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
+//            )
+//            .eraseToEffect()
+//            .cancellable(id: id),
+//
+//          Just(())
+//            .delay(
+//              for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
+//            )
+//            .flatMap { Effect.cancel(id: id) }
+//            .eraseToEffect()
+//        )
+//      }
+//    )
+//
+//    let expectation = self.expectation(description: "wait")
+//    effect
+//      .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
+//      .store(in: &self.cancellables)
+//    self.wait(for: [expectation], timeout: 999)
+//
+//    XCTAssertTrue(cancellationCancellables.isEmpty)
+//  }
 
   func testNestedCancels() {
     var effect = Empty<Void, Never>(completeImmediately: false)

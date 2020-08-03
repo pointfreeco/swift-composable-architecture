@@ -147,6 +147,11 @@ final class ComposableArchitectureTests: XCTestCase {
         return environment.fetch(state)
           .receive(on: environment.mainQueue)
           .map(Action.response)
+          .handleEvents(
+            receiveCancel: {
+              print("receiveCancel")
+            }
+            )
           .eraseToEffect()
           .cancellable(id: CancelId())
 
