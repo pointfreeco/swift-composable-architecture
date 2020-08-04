@@ -311,23 +311,23 @@ extension URL: CustomDebugOutputConvertible {
     }
   #endif
 
-  #if canImport(Speech)
-    import Speech
-    extension SFSpeechRecognizerAuthorizationStatus: CustomDebugOutputConvertible {
-      public var debugOutput: String {
-        switch self {
-        case .notDetermined:
-          return "notDetermined"
-        case .denied:
-          return "denied"
-        case .restricted:
-          return "restricted"
-        case .authorized:
-          return "authorized"
-        @unknown default:
-          return "unknown"
-        }
-      }
-    }
-  #endif
+//  #if canImport(Speech)
+//    import Speech
+//    extension SFSpeechRecognizerAuthorizationStatus: CustomDebugOutputConvertible {
+//      public var debugOutput: String {
+//        switch self {
+//        case .notDetermined:
+//          return "notDetermined"
+//        case .denied:
+//          return "denied"
+//        case .restricted:
+//          return "restricted"
+//        case .authorized:
+//          return "authorized"
+//        @unknown default:
+//          return "unknown"
+//        }
+//      }
+//    }
+//  #endif
 #endif
