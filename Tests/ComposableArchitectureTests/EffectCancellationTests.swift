@@ -116,11 +116,7 @@ final class EffectCancellationTests: XCTestCase {
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
-    #if swift(>=5.3) && !os(macOS)
-      XCTAssertTrue(subjects.isEmpty)
-    #else
-      XCTAssertTrue(cancellationCancellables.isEmpty)
-    #endif
+    XCTAssertEqual([:], cancellationCancellables)
   }
 
   func testCancellablesCleanUp_OnCancel() {
@@ -136,11 +132,7 @@ final class EffectCancellationTests: XCTestCase {
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
-    #if swift(>=5.3) && !os(macOS)
-      XCTAssertTrue(subjects.isEmpty)
-    #else
-      XCTAssertTrue(cancellationCancellables.isEmpty)
-    #endif
+    XCTAssertEqual([:], cancellationCancellables)
   }
 
   func testDoubleCancellation() {
@@ -230,11 +222,7 @@ final class EffectCancellationTests: XCTestCase {
       .store(in: &self.cancellables)
     self.wait(for: [expectation], timeout: 999)
 
-    #if swift(>=5.3) && !os(macOS)
-      XCTAssertTrue(subjects.isEmpty)
-    #else
-      XCTAssertTrue(cancellationCancellables.isEmpty)
-    #endif
+    XCTAssertTrue(cancellationCancellables.isEmpty)
   }
 
   func testNestedCancels() {
@@ -252,11 +240,7 @@ final class EffectCancellationTests: XCTestCase {
 
     cancellables.removeAll()
 
-    #if swift(>=5.3) && !os(macOS)
-      XCTAssertTrue(subjects.isEmpty)
-    #else
-      XCTAssertTrue(cancellationCancellables.isEmpty)
-    #endif
+    XCTAssertEqual([:], cancellationCancellables)
   }
 
   func testSharedId() {
