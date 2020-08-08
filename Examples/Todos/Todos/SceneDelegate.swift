@@ -14,14 +14,29 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     let rootView = AppView(
       store: Store(
-        initialState: AppState(),
-        reducer: appReducer,
-        environment: AppEnvironment(
-          mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
-          uuid: UUID.init
-        )
+        initialState: AppState(
+          todos: [
+            Todo(description: "Buy milk", id: UUID(), isComplete: false),
+            Todo(description: "Buy eggs", id: UUID(), isComplete: false),
+            Todo(description: "Pick up kids", id: UUID(), isComplete: true),
+            Todo(description: "Download Xcode beta", id: UUID(), isComplete: true),
+          ]
+        ),
+        reducer: .init { state, action, _ in
+          switch action {
+          case let .filterPicked(filter):
+            state.filter = filter
+            return .none
+            
+          default:
+            return .none
+          }
+        },
+        environment: ()
       )
     )
+    .redacted(reason: RedactionReasons.init(rawValue: 1))
+    .disabled(true)
 
     self.window?.rootViewController = UIHostingController(rootView: rootView)
     self.window?.makeKeyAndVisible()

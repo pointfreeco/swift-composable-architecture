@@ -14,6 +14,8 @@ struct SearchState: Equatable {
   var locationWeather: LocationWeather?
   var locationWeatherRequestInFlight: Location?
   var searchQuery = ""
+
+  var isLoadingLocations = false
 }
 
 enum SearchAction: Equatable {
@@ -34,10 +36,12 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
   state, action, environment in
   switch action {
   case .locationsResponse(.failure):
+    state.isLoadingLocations = false
     state.locations = []
     return .none
 
   case let .locationsResponse(.success(response)):
+    state.isLoadingLocations = false
     state.locations = response
     return .none
 
@@ -63,8 +67,11 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
     guard !query.isEmpty else {
       state.locations = []
       state.locationWeather = nil
+      state.isLoadingLocations = false
       return .cancel(id: SearchLocationId())
     }
+
+    state.isLoadingLocations = true
 
     return environment.weatherClient
       .searchLocation(query)
@@ -110,24 +117,21 @@ struct SearchView: View {
           }
           .padding([.leading, .trailing], 16)
 
-          List {
-            ForEach(viewStore.locations, id: \.id) { location in
-              VStack(alignment: .leading) {
-                Button(action: { viewStore.send(.locationTapped(location)) }) {
-                  HStack {
-                    Text(location.title)
-
-                    if viewStore.locationWeatherRequestInFlight?.id == location.id {
-                      ActivityIndicator()
-                    }
-                  }
-                }
-
-                if location.id == viewStore.locationWeather?.id {
-                  self.weatherView(locationWeather: viewStore.locationWeather)
-                }
-              }
-            }
+          if viewStore.isLoadingLocations {
+            LocationResultsView(
+              store: Store(
+                initialState: SearchState(locations: locationPlaceholders),
+                reducer: searchReducer, // .empty,
+                environment: SearchEnvironment(
+                  weatherClient: .live,
+                  mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+                )
+              )
+            )
+            .redacted(reason: RedactionReasons(rawValue: 1))
+//            .disabled(true)
+          } else {
+            LocationResultsView(store: self.store)
           }
 
           Button("Weather API provided by MetaWeather.com") {
@@ -139,6 +143,34 @@ struct SearchView: View {
         .navigationBarTitle("Search")
       }
       .navigationViewStyle(StackNavigationViewStyle())
+    }
+  }
+}
+
+struct LocationResultsView: View {
+  let store: Store<SearchState, SearchAction>
+
+  var body: some View {
+    WithViewStore(self.store) { viewStore in
+      List {
+        ForEach(viewStore.locations, id: \.id) { location in
+          VStack(alignment: .leading) {
+            Button(action: { viewStore.send(.locationTapped(location)) }) {
+              HStack {
+                Text(location.title)
+
+                if viewStore.locationWeatherRequestInFlight?.id == location.id {
+                  ActivityIndicator()
+                }
+              }
+            }
+
+            if location.id == viewStore.locationWeather?.id {
+              self.weatherView(locationWeather: viewStore.locationWeather)
+            }
+          }
+        }
+      }
     }
   }
 
@@ -161,6 +193,11 @@ struct SearchView: View {
     )
   }
 }
+
+let locationPlaceholders = (1...20)
+  .map {
+    Location(id: $0, title: String.init(repeating: "A", count: Int.random(in: 6...20)))
+  }
 
 // MARK: - Private helpers
 

@@ -29,6 +29,7 @@ enum AlertAndSheetAction: Equatable {
   case actionSheetCancelTapped
   case alertButtonTapped
   case alertCancelTapped
+  case alertDismissed
   case decrementButtonTapped
   case incrementButtonTapped
 }
@@ -53,48 +54,61 @@ let alertAndSheetReducer = Reducer<
     return .none
 
   case .actionSheetCancelTapped:
-    state.actionSheet = nil
+//    state.actionSheet = nil
     return .none
 
   case .alertButtonTapped:
     state.alert = .init(
       title: "Alert!",
       message: "This is an alert",
-      primaryButton: .cancel(),
+      primaryButton: .cancel(send: nil),
       secondaryButton: .default("Increment", send: .incrementButtonTapped)
     )
     return .none
 
   case .alertCancelTapped:
+//    state.alert = nil
+    return .none
+
+  case .alertDismissed:
     state.alert = nil
+    state.alert = .init(title: "Hi")
     return .none
 
   case .decrementButtonTapped:
-    state.actionSheet = nil
+//    state.actionSheet = nil
     state.count -= 1
     return .none
 
   case .incrementButtonTapped:
-    state.actionSheet = nil
-    state.alert = nil
+//    state.actionSheet = nil
+//    state.alert = nil
+//    state.alert = .init(title: "Hi")
     state.count += 1
     return .none
   }
 }
+.debug()
 
 struct AlertAndSheetView: View {
   let store: Store<AlertAndSheetState, AlertAndSheetAction>
+  @ObservedObject var viewStore: ViewStore<AlertAndSheetState, AlertAndSheetAction>
+
+  init(store: Store<AlertAndSheetState, AlertAndSheetAction>) {
+    self.store = store
+    self.viewStore = ViewStore(self.store)
+  }
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+//    WithViewStore(self.store) { viewStore in
       Form {
         Section(header: Text(template: readMe, .caption)) {
           Text("Count: \(viewStore.count)")
 
           Button("Alert") { viewStore.send(.alertButtonTapped) }
-            .alert(
+            ._alert(
               self.store.scope(state: { $0.alert }),
-              dismiss: .alertCancelTapped
+              dismiss: .alertDismissed
             )
 
           Button("Action sheet") { viewStore.send(.actionSheetButtonTapped) }
@@ -104,7 +118,7 @@ struct AlertAndSheetView: View {
             )
         }
       }
-    }
+//    }
     .navigationBarTitle("Alerts & Action Sheets")
   }
 }
