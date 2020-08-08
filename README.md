@@ -142,7 +142,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     state.numberFactAlert = fact
     return .none
 
-  case let .numberFactResponse(.failure):
+  case .numberFactResponse(.failure):
     state.numberFactAlert = "Could not load a number fact :("
     return .none
   }
