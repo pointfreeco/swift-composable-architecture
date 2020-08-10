@@ -26,8 +26,8 @@ struct AlertAndSheetState: Equatable {
 
 enum AlertAndSheetAction: Equatable {
   case actionSheetButtonTapped
-  case actionSheetDismissed
   case actionSheetCancelTapped
+  case actionSheetDismissed
   case alertButtonTapped
   case alertCancelTapped
   case alertDismissed
