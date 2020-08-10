@@ -110,7 +110,6 @@ struct AppView: View {
               }
             }
             .pickerStyle(SegmentedPickerStyle())
-            .unredacted()
           }
           .padding([.leading, .trailing])
 

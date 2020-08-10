@@ -49,7 +49,6 @@ extension WeatherClient {
         .map { data, _ in data }
         .decode(type: [Location].self, decoder: jsonDecoder)
         .mapError { _ in Failure() }
-        .delay(for: 2, scheduler: DispatchQueue.main)
         .eraseToEffect()
     },
     weather: { id in
