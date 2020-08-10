@@ -19,6 +19,8 @@ jobs:
           inputs: Sources/ComposableArchitecture
           module-name: ComposableArchitecture
           output: Documentation
+      - name: Update Permissions
+        run: 'sudo chown --recursive $USER Documentation'
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@releases/v3
         with:
