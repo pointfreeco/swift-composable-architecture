@@ -91,6 +91,7 @@ import SwiftUI
 ///     )
 ///
 public struct AlertState<Action> {
+  public let id = UUID()
   public var message: String?
   public var primaryButton: Button?
   public var secondaryButton: Button?
@@ -164,33 +165,53 @@ extension View {
   /// - Parameters:
   ///   - store: A store that describes if the alert is shown or dismissed.
   ///   - dismissal: An action to send when the alert is dismissed through non-user actions, such
-  ///     as when an alert is automatically dismissed by the system.
+  ///     as when an alert is automatically dismissed by the system. Use this action to `nil` out
+  ///     the associated alert state.
   public func alert<Action>(
     _ store: Store<AlertState<Action>?, Action>,
     dismiss: Action
   ) -> some View {
 
-    let viewStore = ViewStore(store, removeDuplicates: { ($0 == nil) != ($1 == nil) })
-    return self.alert(
-      isPresented: Binding(
-        get: { viewStore.state != nil },
-        set: {
-          guard !$0 else { return }
-          viewStore.send(dismiss)
-        }),
-      content: { viewStore.state?.toSwiftUI(send: viewStore.send) ?? Alert(title: Text("")) }
-    )
+    WithViewStore(store, removeDuplicates: { $0?.id == $1?.id }) { viewStore in
+      self.alert(item: viewStore.binding(send: dismiss)) { state in
+        state.toSwiftUI(send: viewStore.send)
+      }
+    }
   }
 }
 
-extension AlertState: Equatable where Action: Equatable {}
-extension AlertState: Hashable where Action: Hashable {}
+extension AlertState: CustomDebugOutputConvertible {
+  public var debugOutput: String {
+    let fields = (
+      title: self.title,
+      message: self.message,
+      primaryButton: self.primaryButton,
+      secondaryButton: self.secondaryButton
+    )
+    return "\(Self.self)\(ComposableArchitecture.debugOutput(fields))"
+  }
+}
+
+extension AlertState: Equatable where Action: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.title == rhs.title
+      && lhs.message == rhs.message
+      && lhs.primaryButton == rhs.primaryButton
+      && lhs.secondaryButton == rhs.secondaryButton
+  }
+}
+extension AlertState: Hashable where Action: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.title)
+    hasher.combine(self.message)
+    hasher.combine(self.primaryButton)
+    hasher.combine(self.secondaryButton)
+  }
+}
+extension AlertState: Identifiable {}
+
 extension AlertState.Button: Equatable where Action: Equatable {}
 extension AlertState.Button: Hashable where Action: Hashable {}
-
-extension AlertState: Identifiable where Action: Hashable {
-  public var id: Self { self }
-}
 
 extension AlertState.Button {
   func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.Alert.Button {
