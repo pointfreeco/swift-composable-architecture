@@ -26,6 +26,7 @@ struct AlertAndSheetState: Equatable {
 
 enum AlertAndSheetAction: Equatable {
   case actionSheetButtonTapped
+  case actionSheetDismissed
   case actionSheetCancelTapped
   case alertButtonTapped
   case alertCancelTapped
@@ -54,36 +55,35 @@ let alertAndSheetReducer = Reducer<
     return .none
 
   case .actionSheetCancelTapped:
-//    state.actionSheet = nil
+    return .none
+
+  case .actionSheetDismissed:
+    state.actionSheet = nil
     return .none
 
   case .alertButtonTapped:
     state.alert = .init(
       title: "Alert!",
       message: "This is an alert",
-      primaryButton: .cancel(send: nil),
+      primaryButton: .cancel(),
       secondaryButton: .default("Increment", send: .incrementButtonTapped)
     )
     return .none
 
   case .alertCancelTapped:
-//    state.alert = nil
     return .none
 
   case .alertDismissed:
     state.alert = nil
-    state.alert = .init(title: "Hi")
     return .none
 
   case .decrementButtonTapped:
-//    state.actionSheet = nil
+    state.alert = .init(title: "Decremented!")
     state.count -= 1
     return .none
 
   case .incrementButtonTapped:
-//    state.actionSheet = nil
-//    state.alert = nil
-//    state.alert = .init(title: "Hi")
+    state.alert = .init(title: "Incremented!")
     state.count += 1
     return .none
   }
@@ -92,21 +92,15 @@ let alertAndSheetReducer = Reducer<
 
 struct AlertAndSheetView: View {
   let store: Store<AlertAndSheetState, AlertAndSheetAction>
-  @ObservedObject var viewStore: ViewStore<AlertAndSheetState, AlertAndSheetAction>
-
-  init(store: Store<AlertAndSheetState, AlertAndSheetAction>) {
-    self.store = store
-    self.viewStore = ViewStore(self.store)
-  }
 
   var body: some View {
-//    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store) { viewStore in
       Form {
         Section(header: Text(template: readMe, .caption)) {
           Text("Count: \(viewStore.count)")
 
           Button("Alert") { viewStore.send(.alertButtonTapped) }
-            ._alert(
+            .alert(
               self.store.scope(state: { $0.alert }),
               dismiss: .alertDismissed
             )
@@ -114,11 +108,11 @@ struct AlertAndSheetView: View {
           Button("Action sheet") { viewStore.send(.actionSheetButtonTapped) }
             .actionSheet(
               self.store.scope(state: { $0.actionSheet }),
-              dismiss: .actionSheetCancelTapped
+              dismiss: .actionSheetDismissed
             )
         }
       }
-//    }
+    }
     .navigationBarTitle("Alerts & Action Sheets")
   }
 }

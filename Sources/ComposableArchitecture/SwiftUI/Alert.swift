@@ -91,6 +91,7 @@ import SwiftUI
 ///     )
 ///
 public struct AlertState<Action> {
+  public let id = UUID()
   public var message: String?
   public var primaryButton: Button?
   public var secondaryButton: Button?
@@ -158,65 +159,23 @@ public struct AlertState<Action> {
 }
 
 extension View {
-  public func _alert<Action>(
-    _ store: Store<AlertState<Action>?, Action>,
-    dismiss: Action
-  ) -> some View {
-    ModifiedContent(content: self, modifier: AlertViewModifier(store: store, dismiss: dismiss))
-  }
-}
-
-struct AlertViewModifier<Action>: ViewModifier {
-  let dismiss: Action
-  let store: Store<AlertState<Action>?, Action>
-  @ObservedObject var viewStore: ViewStore<AlertState<Action>?, Action>
-
-  init(store: Store<AlertState<Action>?, Action>, dismiss: Action) {
-    self.dismiss = dismiss
-    self.store = store
-    self.viewStore = ViewStore(store, removeDuplicates: { ($0 == nil) != ($1 == nil) })
-  }
-
-  func body(content: Content) -> some View {
-    content
-      .alert(
-        isPresented: Binding(
-          get: { viewStore.state != nil },
-          set: {
-            guard !$0 else { return }
-            self.viewStore.send(self.dismiss)
-          })
-      ) {
-        self.viewStore.state?.toSwiftUI(send: self.viewStore.send)
-          ?? Alert(title: Text(""))
-      }
-  }
-}
-
-extension View {
   /// Displays an alert when then store's state becomes non-`nil`, and dismisses it when it becomes
   /// `nil`.
   ///
   /// - Parameters:
   ///   - store: A store that describes if the alert is shown or dismissed.
   ///   - dismissal: An action to send when the alert is dismissed through non-user actions, such
-  ///     as when an alert is automatically dismissed by the system.
+  ///     as when an alert is automatically dismissed by the system. Use this action to `nil` out
+  ///     the associated alert state.
   public func alert<Action>(
     _ store: Store<AlertState<Action>?, Action>,
     dismiss: Action
   ) -> some View {
 
-    let viewStore = ViewStore(store, removeDuplicates: { ($0 == nil) != ($1 == nil) })
-    return self.alert(
-      isPresented: Binding(
-        get: { viewStore.state != nil },
-        set: {
-          guard !$0 else { return }
-          viewStore.send(dismiss)
-        })
-    ) {
-      viewStore.state?.toSwiftUI(send: viewStore.send)
-        ?? Alert(title: Text(""))
+    WithViewStore(store, removeDuplicates: { $0?.id == $1?.id }) { viewStore in
+      self.alert(item: viewStore.binding(send: dismiss)) { state in
+        state.toSwiftUI(send: viewStore.send)
+      }
     }
   }
 }
@@ -226,9 +185,7 @@ extension AlertState: Hashable where Action: Hashable {}
 extension AlertState.Button: Equatable where Action: Equatable {}
 extension AlertState.Button: Hashable where Action: Hashable {}
 
-extension AlertState: Identifiable where Action: Hashable {
-  public var id: Self { self }
-}
+extension AlertState: Identifiable {}
 
 extension AlertState.Button {
   func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.Alert.Button {

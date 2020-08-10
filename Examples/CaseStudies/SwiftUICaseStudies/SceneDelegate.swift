@@ -11,11 +11,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
   ) {
     self.window = (scene as? UIWindowScene).map(UIWindow.init(windowScene:))
     self.window?.rootViewController = UIHostingController(
-      rootView: AlertAndSheetView(
+      rootView: RootView(
         store: .init(
-          initialState: .init(),
-          reducer: alertAndSheetReducer,
-          environment: .init()
+          initialState: RootState(),
+          reducer: rootReducer,
+          environment: .live
         )
       )
     )
