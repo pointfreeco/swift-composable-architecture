@@ -123,6 +123,17 @@ public struct ActionSheetState<Action> {
   public typealias Button = AlertState<Action>.Button
 }
 
+extension ActionSheetState: CustomDebugOutputConvertible {
+  public var debugOutput: String {
+    let fields = (
+      title: self.title,
+      message: self.message,
+      buttons: self.buttons
+    )
+    return "\(Self.self)\(ComposableArchitecture.debugOutput(fields))"
+  }
+}
+
 @available(iOS 13, *)
 @available(macCatalyst 13, *)
 @available(macOS, unavailable)
@@ -146,17 +157,6 @@ extension ActionSheetState: Hashable where Action: Hashable {
     hasher.combine(self.title)
     hasher.combine(self.message)
     hasher.combine(self.buttons)
-  }
-}
-
-extension ActionSheetState: CustomDebugOutputConvertible {
-  public var debugOutput: String {
-    let fields = (
-      title: self.title,
-      message: self.message,
-      buttons: self.buttons
-    )
-    return "\(Self.self)\(ComposableArchitecture.debugOutput(fields))"
   }
 }
 
