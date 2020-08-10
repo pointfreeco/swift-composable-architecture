@@ -123,6 +123,11 @@ public struct ActionSheetState<Action> {
   public typealias Button = AlertState<Action>.Button
 }
 
+@available(iOS 13, *)
+@available(macCatalyst 13, *)
+@available(macOS, unavailable)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
 extension ActionSheetState: CustomDebugOutputConvertible {
   public var debugOutput: String {
     let fields = (
