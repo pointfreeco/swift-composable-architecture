@@ -88,6 +88,16 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
 
 .debugActions(actionFormat: .labelsOnly)
 
+struct TutorialStepEnvironmentKey: EnvironmentKey {
+  static var defaultValue: TutorialStep? = nil
+}
+extension EnvironmentValues {
+  var tutorialStep: TutorialStep? {
+    get { self[TutorialStepEnvironmentKey.self] }
+    set { self[TutorialStepEnvironmentKey.self] = newValue }
+  }
+}
+
 struct AppView: View {
   struct ViewState: Equatable {
     var editMode: EditMode
@@ -95,6 +105,7 @@ struct AppView: View {
   }
 
   let store: Store<AppState, AppAction>
+  @Environment(\.tutorialStep) var tutorialStep
 
   var body: some View {
     WithViewStore(self.store.scope(state: { $0.view })) { viewStore in
@@ -112,6 +123,7 @@ struct AppView: View {
             .pickerStyle(SegmentedPickerStyle())
           }
           .padding([.leading, .trailing])
+          .unredacted(if: self.tutorialStep == .filters)
 
           List {
             ForEachStore(
@@ -121,6 +133,7 @@ struct AppView: View {
             .onDelete { viewStore.send(.delete($0)) }
             .onMove { viewStore.send(.move($0, $1)) }
           }
+          .unredacted(if: self.tutorialStep == .todos)
         }
         .navigationBarTitle("Todos")
         .navigationBarItems(
@@ -129,7 +142,9 @@ struct AppView: View {
             Button("Clear Completed") { viewStore.send(.clearCompletedButtonTapped) }
               .disabled(viewStore.isClearCompletedButtonDisabled)
             Button("Add Todo") { viewStore.send(.addTodoButtonTapped) }
+              .redacted(reason: RedactionReasons.init(rawValue: 0))
           }
+          .unredacted(if: self.tutorialStep == .actions)
         )
         .environment(
           \.editMode,
@@ -137,6 +152,16 @@ struct AppView: View {
         )
       }
       .navigationViewStyle(StackNavigationViewStyle())
+    }
+  }
+}
+
+extension View {
+  @ViewBuilder func unredacted(if condition: Bool) -> some View {
+    if condition {
+      self.unredacted()
+    } else {
+      self
     }
   }
 }
@@ -178,6 +203,211 @@ extension IdentifiedArray where ID == UUID, Element == Todo {
     Todo(
       description: "Call Mom",
       id: UUID(uuidString: "D00DCAFE-D00D-CAFE-D00D-CAFED00DCAFE")!,
+      isComplete: true
+    ),
+  ]
+}
+
+enum TutorialStep: Equatable {
+  case actions
+  case filters
+  case todos
+}
+
+struct TutorialState: Equatable {
+  var app: AppState
+  var tutorialStep: TutorialStep?
+}
+
+enum TutorialAction {
+  case app(AppAction)
+  case nextButtonTapped
+  case previousButtonTapped
+  case skipButtonTapped
+}
+
+let tutorialReducer = Reducer<TutorialState, TutorialAction, AppEnvironment> { state, action, env in
+  switch action {
+  case let .app(.filterPicked(filter)):
+    guard state.tutorialStep == .filters else { return .none }
+    state.app.filter = filter
+    return .none
+
+  case let .app(action):
+    guard state.tutorialStep == .todos else { return .none }
+
+    switch action {
+    case .sortCompletedTodos, .todo(id: _, action: .checkBoxToggled):
+      return appReducer
+        .run(&state.app, action, env)
+        .map(TutorialAction.app)
+
+    default: return .none
+    }
+
+  case .nextButtonTapped:
+    switch state.tutorialStep {
+    case .actions:
+      state.tutorialStep = .filters
+    case .filters:
+      state.tutorialStep = .todos
+      state.app.filter = .all
+    case .todos:
+      state.tutorialStep = nil
+    case .none:
+      break
+    }
+    return .none
+
+  case .previousButtonTapped:
+    switch state.tutorialStep {
+    case .actions:
+      break
+    case .filters:
+      state.tutorialStep = .actions
+    case .todos:
+      state.tutorialStep = .filters
+    case .none:
+      break
+    }
+    return .none
+
+  case .skipButtonTapped:
+    state.tutorialStep = nil
+    return .none
+  }
+}
+
+struct TutorialView: View {
+  let tutorialStore: Store<TutorialState, TutorialAction>
+  let appStore: Store<AppState, AppAction>
+
+  var body: some View {
+    WithViewStore(self.tutorialStore) { tutorialViewStore in
+      if tutorialViewStore.tutorialStep != nil {
+        ZStack {
+          AppView(store: self.tutorialStore.scope(state: \.app, action: TutorialAction.app))
+            .environment(\.tutorialStep, tutorialViewStore.tutorialStep)
+            .redacted(reason: .placeholder)
+
+          VStack {
+            Spacer()
+
+            HStack(alignment: .top) {
+              Button(action: { tutorialViewStore.send(.previousButtonTapped) }) {
+                Image(systemName: "chevron.left")
+              }
+              .disabled(tutorialViewStore.tutorialStep == .actions)
+              .frame(width: 44, height: 44)
+              .foregroundColor(.white)
+              .background(Color.gray)
+              .clipShape(Circle())
+              .padding([.leading, .trailing])
+
+              Spacer()
+              VStack {
+                switch tutorialViewStore.tutorialStep {
+                case .actions:
+                  Text("Use the navbar actions to mass delete todos, clear all your completed todos, or add a new one.")
+                case .filters:
+                  Text("Use the filters bar to change what todos are currently displayed to you. Try changing a filter.")
+                case .todos:
+                  Text("Here's your list of todos. You can check one off to complete it, or edit its title by tapping on the current title.")
+                case .none:
+                  Text("Hi")
+                }
+                Button("Skip") { tutorialViewStore.send(.skipButtonTapped) }
+                  .padding()
+              }
+              Spacer()
+              Button(action: { tutorialViewStore.send(.nextButtonTapped) }) {
+                Image(systemName: "chevron.right")
+              }
+              .frame(width: 44, height: 44)
+              .background(Color.gray)
+              .foregroundColor(.white)
+              .clipShape(Circle())
+              .padding([.leading, .trailing])
+
+            }
+            .padding(.top, 400)
+            .padding(.bottom, 100)
+            .background(LinearGradient(gradient: Gradient(colors: [.init(white: 1, opacity: 0), .init(white: 0.8, opacity: 1)]), startPoint: .top, endPoint: .bottom))
+          }
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+      } else {
+        AppView(store: self.appStore)
+      }
+    }
+  }
+}
+
+struct TutorialView_Previews: PreviewProvider {
+  static var previews: some View {
+    TutorialView(
+      tutorialStore: Store(
+        initialState: TutorialState(app: .init(todos: .placeholder), tutorialStep: .actions),
+        reducer: tutorialReducer,
+        environment: AppEnvironment(mainQueue: DispatchQueue.main.eraseToAnyScheduler(), uuid: UUID.init)
+      ),
+      appStore: Store(
+        initialState: .init(),
+        reducer: appReducer,
+        environment: AppEnvironment(
+          mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+          uuid: UUID.init
+        )
+      )
+    )
+  }
+}
+
+extension IdentifiedArray where ID == UUID, Element == Todo {
+  static let placeholder: Self = [
+    Todo(
+      description: "Check Mail",
+      id: UUID(),
+      isComplete: false
+    ),
+    Todo(
+      description: "Buy Milk",
+      id: UUID(),
+      isComplete: false
+    ),
+    Todo(
+      description: "Get haircut",
+      id: UUID(),
+      isComplete: false
+    ),
+    Todo(
+      description: "Write meeting notes",
+      id: UUID(),
+      isComplete: false
+    ),
+    Todo(
+      description: "Email Blob",
+      id: UUID(),
+      isComplete: false
+    ),
+    Todo(
+      description: "Return book",
+      id: UUID(),
+      isComplete: true
+    ),
+    Todo(
+      description: "Pack for trip",
+      id: UUID(),
+      isComplete: true
+    ),
+    Todo(
+      description: "Prep lunch for the week",
+      id: UUID(),
+      isComplete: true
+    ),
+    Todo(
+      description: "Call Mom",
+      id: UUID(),
       isComplete: true
     ),
   ]
