@@ -180,6 +180,18 @@ extension View {
   }
 }
 
+extension AlertState: CustomDebugOutputConvertible {
+  public var debugOutput: String {
+    let fields = (
+      title: self.title,
+      message: self.message,
+      primaryButton: self.primaryButton,
+      secondaryButton: self.secondaryButton
+    )
+    return "\(Self.self)\(ComposableArchitecture.debugOutput(fields))"
+  }
+}
+
 extension AlertState: Equatable where Action: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.title == rhs.title
@@ -196,10 +208,10 @@ extension AlertState: Hashable where Action: Hashable {
     hasher.combine(self.secondaryButton)
   }
 }
+extension AlertState: Identifiable {}
+
 extension AlertState.Button: Equatable where Action: Equatable {}
 extension AlertState.Button: Hashable where Action: Hashable {}
-
-extension AlertState: Identifiable {}
 
 extension AlertState.Button {
   func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.Alert.Button {

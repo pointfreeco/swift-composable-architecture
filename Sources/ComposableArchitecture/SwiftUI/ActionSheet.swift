@@ -149,6 +149,17 @@ extension ActionSheetState: Hashable where Action: Hashable {
   }
 }
 
+extension ActionSheetState: CustomDebugOutputConvertible {
+  public var debugOutput: String {
+    let fields = (
+      title: self.title,
+      message: self.message,
+      buttons: self.buttons
+    )
+    return "\(Self.self)\(ComposableArchitecture.debugOutput(fields))"
+  }
+}
+
 @available(iOS 13, *)
 @available(macCatalyst 13, *)
 @available(macOS, unavailable)
