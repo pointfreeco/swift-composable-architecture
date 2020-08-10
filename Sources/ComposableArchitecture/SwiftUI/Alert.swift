@@ -180,8 +180,22 @@ extension View {
   }
 }
 
-extension AlertState: Equatable where Action: Equatable {}
-extension AlertState: Hashable where Action: Hashable {}
+extension AlertState: Equatable where Action: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.title == rhs.title
+      && lhs.message == rhs.message
+      && lhs.primaryButton == rhs.primaryButton
+      && lhs.secondaryButton == rhs.secondaryButton
+  }
+}
+extension AlertState: Hashable where Action: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.title)
+    hasher.combine(self.message)
+    hasher.combine(self.primaryButton)
+    hasher.combine(self.secondaryButton)
+  }
+}
 extension AlertState.Button: Equatable where Action: Equatable {}
 extension AlertState.Button: Hashable where Action: Hashable {}
 

@@ -128,14 +128,26 @@ public struct ActionSheetState<Action> {
 @available(macOS, unavailable)
 @available(tvOS 13, *)
 @available(watchOS 6, *)
-extension ActionSheetState: Equatable where Action: Equatable {}
+extension ActionSheetState: Equatable where Action: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.title == rhs.title
+      && lhs.message == rhs.message
+      && lhs.buttons == rhs.buttons
+  }
+}
 
 @available(iOS 13, *)
 @available(macCatalyst 13, *)
 @available(macOS, unavailable)
 @available(tvOS 13, *)
 @available(watchOS 6, *)
-extension ActionSheetState: Hashable where Action: Hashable {}
+extension ActionSheetState: Hashable where Action: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.title)
+    hasher.combine(self.message)
+    hasher.combine(self.buttons)
+  }
+}
 
 @available(iOS 13, *)
 @available(macCatalyst 13, *)
