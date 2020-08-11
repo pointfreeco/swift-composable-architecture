@@ -15,7 +15,7 @@ private let readMe = """
   closures.
 
   The benefit of doing this is that you can get full test coverage on how a user interacts with \
-  with alerts and action sheets in your application
+  alerts and action sheets in your application
   """
 
 struct AlertAndSheetState: Equatable {
