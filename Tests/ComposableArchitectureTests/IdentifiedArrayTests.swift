@@ -196,6 +196,7 @@ final class IdentifiedArrayTests: XCTestCase {
 
   }
   
+  #if swift(>=5.2)
   func testShuffle() {
     struct User: Equatable, Identifiable {
       let id: Int
@@ -223,4 +224,5 @@ final class IdentifiedArrayTests: XCTestCase {
     )
     XCTAssertEqual([1, 3, 5, 4, 2], array.ids)
   }
+  #endif
 }
