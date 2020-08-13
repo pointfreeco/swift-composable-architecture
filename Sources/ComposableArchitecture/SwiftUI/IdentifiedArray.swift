@@ -190,11 +190,11 @@ where ID: Hashable {
       try areInIncreasingOrder(self.dictionary[$0]!, self.dictionary[$1]!)
     }
   }
-  
-  public mutating func shuffle<T>(using generator: inout T) where T : RandomNumberGenerator {
+
+  public mutating func shuffle<T>(using generator: inout T) where T: RandomNumberGenerator {
     ids.shuffle(using: &generator)
   }
-  
+
   public mutating func shuffle() {
     var rng = SystemRandomNumberGenerator()
     self.shuffle(using: &rng)

@@ -9,7 +9,7 @@ public struct LCRNG: RandomNumberGenerator {
 
   @inlinable
   public mutating func next() -> UInt64 {
-    seed = 2862933555777941757 &* seed &+ 3037000493
+    seed = 2_862_933_555_777_941_757 &* seed &+ 3_037_000_493
     return seed
   }
 }
