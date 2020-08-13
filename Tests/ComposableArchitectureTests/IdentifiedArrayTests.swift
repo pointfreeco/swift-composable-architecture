@@ -196,7 +196,9 @@ final class IdentifiedArrayTests: XCTestCase {
 
   }
   
-  #if swift(>=5.2)
+  // Account for randomness API changes in Swift 5.3 (https://twitter.com/mbrandonw/status/1262388756847505410)
+  // TODO: Try swapping out the LCRNG for a Xoshiro generator
+  #if swift(>=5.3)
   func testShuffle() {
     struct User: Equatable, Identifiable {
       let id: Int
