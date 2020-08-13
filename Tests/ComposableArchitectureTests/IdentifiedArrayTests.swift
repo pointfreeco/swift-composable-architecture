@@ -195,4 +195,32 @@ final class IdentifiedArrayTests: XCTestCase {
       ], array)
 
   }
+  
+  func testShuffle() {
+    struct User: Equatable, Identifiable {
+      let id: Int
+      var name: String
+    }
+
+    var array: IdentifiedArray = [
+      User(id: 1, name: "Blob"),
+      User(id: 2, name: "Blob Jr."),
+      User(id: 3, name: "Blob Sr."),
+      User(id: 4, name: "Foo Jr."),
+      User(id: 5, name: "Bar Jr."),
+    ]
+    var lcrng = LCRNG(seed: 0)
+    array.shuffle(using: &lcrng)
+    XCTAssertEqual(
+      [
+        User(id: 1, name: "Blob"),
+        User(id: 3, name: "Blob Sr."),
+        User(id: 5, name: "Bar Jr."),
+        User(id: 4, name: "Foo Jr."),
+        User(id: 2, name: "Blob Jr.")
+      ],
+      array.elements
+    )
+    XCTAssertEqual([1, 3, 5, 4, 2], array.ids)
+  }
 }
