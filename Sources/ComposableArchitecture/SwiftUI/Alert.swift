@@ -93,30 +93,35 @@ import SwiftUI
 public struct AlertState<Action> {
   public let id = UUID()
   public var message: String?
+  public var onDismiss: Action?
   public var primaryButton: Button?
   public var secondaryButton: Button?
   public var title: String
 
-  public init(
-    title: String,
-    message: String? = nil,
-    dismissButton: Button? = nil
-  ) {
-    self.title = title
-    self.message = message
-    self.primaryButton = dismissButton
-  }
+//  public init(
+//    title: String,
+//    message: String? = nil,
+//    dismissButton: Button? = nil,
+//    onDismiss: Action?
+//  ) {
+//    self.title = title
+//    self.message = message
+//    self.primaryButton = dismissButton
+//    self.onDismiss = onDismiss
+//  }
 
   public init(
     title: String,
     message: String? = nil,
     primaryButton: Button,
-    secondaryButton: Button
+    secondaryButton: Button?,
+    onDismiss: Action?
   ) {
     self.title = title
     self.message = message
     self.primaryButton = primaryButton
     self.secondaryButton = secondaryButton
+    self.onDismiss = onDismiss
   }
 
   public struct Button {
@@ -168,12 +173,35 @@ extension View {
   ///     as when an alert is automatically dismissed by the system. Use this action to `nil` out
   ///     the associated alert state.
   public func alert<Action>(
-    _ store: Store<AlertState<Action>?, Action>,
-    dismiss: Action
+    _ store: Store<AlertState<Action>?, Action>
   ) -> some View {
 
     WithViewStore(store, removeDuplicates: { $0?.id == $1?.id }) { viewStore in
-      self.alert(item: viewStore.binding(send: dismiss)) { state in
+      self.alert(
+        item:     Binding(
+          get: { viewStore.state },
+          set: { newLocalState, transaction in
+            withAnimation(transaction.disablesAnimations ? nil : transaction.animation) {
+//              self.send(localStateToViewAction(newLocalState))
+              if let dismiss = viewStore.state?.onDismiss {
+                viewStore.send(dismiss)
+              }
+
+            }
+
+          })
+
+
+
+//          viewStore.binding(
+//          send: { alertState in
+//            if let dismiss = dismiss {
+//              viewStore.send(dismiss)
+//            }
+//          }
+            //dismiss
+
+      ) { state in
         state.toSwiftUI(send: viewStore.send)
       }
     }
