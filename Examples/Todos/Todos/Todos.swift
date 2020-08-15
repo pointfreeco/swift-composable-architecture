@@ -208,7 +208,7 @@ extension IdentifiedArray where ID == UUID, Element == Todo {
   ]
 }
 
-enum TutorialStep: Equatable {
+enum TutorialStep: Int, Equatable {
   case actions
   case filters
   case todos
@@ -246,30 +246,13 @@ let tutorialReducer = Reducer<TutorialState, TutorialAction, AppEnvironment> { s
     }
 
   case .nextButtonTapped:
-    switch state.tutorialStep {
-    case .actions:
-      state.tutorialStep = .filters
-    case .filters:
-      state.tutorialStep = .todos
-      state.app.filter = .all
-    case .todos:
-      state.tutorialStep = nil
-    case .none:
-      break
-    }
+    guard let step = state.tutorialStep else { return .none }
+    state.tutorialStep = TutorialStep.init(rawValue: step.rawValue + 1)
     return .none
 
   case .previousButtonTapped:
-    switch state.tutorialStep {
-    case .actions:
-      break
-    case .filters:
-      state.tutorialStep = .actions
-    case .todos:
-      state.tutorialStep = .filters
-    case .none:
-      break
-    }
+    guard let step = state.tutorialStep else { return .none }
+    state.tutorialStep = TutorialStep.init(rawValue: step.rawValue - 1)
     return .none
 
   case .skipButtonTapped:
