@@ -110,6 +110,7 @@ struct AppView: View {
               }
             }
             .pickerStyle(SegmentedPickerStyle())
+            .unredacted()
           }
           .padding([.leading, .trailing])
 
@@ -183,17 +184,55 @@ extension IdentifiedArray where ID == UUID, Element == Todo {
   ]
 }
 
+let redactedReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
+  switch action {
+  case .addTodoButtonTapped:
+    return .none
+  case .clearCompletedButtonTapped:
+    return .none
+  case .delete(_):
+    return .none
+  case .editModeChanged(_):
+    return .none
+  case let .filterPicked(filter):
+    state.filter = filter
+    return .none
+  case .move(_, _):
+    return .none
+  case .sortCompletedTodos:
+    return .none
+  case .todo(id: let id, action: let action):
+    return .none
+  }
+}
+
 struct AppView_Previews: PreviewProvider {
   static var previews: some View {
     AppView(
       store: Store(
         initialState: AppState(todos: .mock),
-        reducer: appReducer,
-        environment: AppEnvironment(
-          mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
-          uuid: UUID.init
-        )
+        reducer: .init { state, action, environment in
+          switch action {
+          case .filterPicked:
+//            state.filter = filter
+//            return .none
+            return appReducer.run(&state, action, environment)
+
+          default:
+            return .none
+          }
+        },
+        environment:
+          //()
+          AppEnvironment(
+//            analytics: AnalyticsClient(
+//              track: { name, properties in }
+//            ),
+            mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+            uuid: UUID.init
+          )
       )
     )
+    .redacted(reason: .placeholder)
   }
 }
