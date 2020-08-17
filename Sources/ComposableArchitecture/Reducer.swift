@@ -566,3 +566,104 @@ public struct Reducer<State, Action, Environment> {
     self.reducer(&state, action, environment)
   }
 }
+
+extension Reducer where State == Void {
+  /// Transforms a reducer that works on local state, action and environment into one that works on
+  /// global state, action and environment. It accomplishes this by providing 2 transformations to
+  /// the method:
+  ///
+  /// * A case path that can extract/embed a local action into a global action.
+  /// * A function that can transform the global environment into a local environment.
+  ///
+  /// This operation is important for breaking down large reducers into small ones. When used with
+  /// the `combine` operator you can define many reducers that work on small pieces of domain, and
+  /// then _pull them back_ and _combine_ them into one big reducer that works on a large domain.
+  ///
+  ///     // Global domain that holds a local domain:
+  ///     struct AppState { /* state */ }
+  ///     struct AppAction { case settings(SettingsAction), /* other actions */ }
+  ///     struct AppEnvironment { var settings: SettingsEnvironment, /* rest of dependencies */ }
+  ///
+  ///     // A reducer that works on the local domain:
+  ///     let localActionReducer = Reducer<SettingsState, SettingsAction, SettingsEnvironment> { ... }
+  ///
+  ///     // Pullback the settings reducer so that it works on all of the app domain:
+  ///     let appReducer: Reducer<AppState, AppAction, AppEnvironment> = .combine(
+  ///       localActionReducer.pullback(
+  ///         action: /AppAction.settings,
+  ///         environment: { $0.settings }
+  ///       ),
+  ///
+  ///       /* other reducers */
+  ///     )
+  ///
+  /// - Parameters:
+  ///   - toLocalAction: A case path that can extract/embed `Action` from `GlobalAction`.
+  ///   - toLocalEnvironment: A function that transforms `GlobalEnvironment` into `Environment`.
+  /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
+  public func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
+    action toLocalAction: CasePath<GlobalAction, Action>,
+    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+    return .init { globalState, globalAction, globalEnvironment in
+      guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
+      var void: Void = ()
+      return self.reducer(
+        &void,
+        localAction,
+        toLocalEnvironment(globalEnvironment)
+      )
+      .map(toLocalAction.embed)
+    }
+  }
+}
+
+extension Reducer where Environment == Void {
+  /// Transforms a reducer that works on local state, action and environment into one that works on
+  /// global state, action and environment. It accomplishes this by providing 2 transformations to
+  /// the method:
+  ///
+  /// * A writable key path that can get/set a piece of local state from the global state.
+  /// * A case path that can extract/embed a local action into a global action.
+  ///
+  /// This operation is important for breaking down large reducers into small ones. When used with
+  /// the `combine` operator you can define many reducers that work on small pieces of domain, and
+  /// then _pull them back_ and _combine_ them into one big reducer that works on a large domain.
+  ///
+  ///     // Global domain that holds a local domain:
+  ///     struct AppState { var settings: SettingsState, /* rest of state */ }
+  ///     struct AppAction { case settings(SettingsAction), /* other actions */ }
+  ///     struct AppEnvironment { /* dependencies */ }
+  ///
+  ///     // A reducer that works on the local domain:
+  ///     let settingsReducer = Reducer<SettingsState, SettingsAction, Void> { ... }
+  ///
+  ///     // Pullback the settings reducer so that it works on all of the app domain:
+  ///     let appReducer: Reducer<AppState, AppAction, AppEnvironment> = .combine(
+  ///       settingsReducer.pullback(
+  ///         state: \.settings,
+  ///         action: /AppAction.settings
+  ///       ),
+  ///
+  ///       /* other reducers */
+  ///     )
+  ///
+  /// - Parameters:
+  ///   - toLocalState: A key path that can get/set `State` inside `GlobalState`.
+  ///   - toLocalAction: A case path that can extract/embed `Action` from `GlobalAction`.
+  /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
+  public func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
+    state toLocalState: WritableKeyPath<GlobalState, State>,
+    action toLocalAction: CasePath<GlobalAction, Action>
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+    .init { globalState, globalAction, globalEnvironment in
+      guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
+      return self.reducer(
+        &globalState[keyPath: toLocalState],
+        localAction,
+        ()
+      )
+      .map(toLocalAction.embed)
+    }
+  }
+}
