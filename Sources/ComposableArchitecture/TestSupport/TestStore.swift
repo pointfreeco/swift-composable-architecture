@@ -335,6 +335,23 @@
         )
       }
       if !cancellables.isEmpty {
+        var actionDebugContent = ""
+        if signpostContent.isEmpty {
+          actionDebugContent = """
+          
+          Enable signpost on you reducer will help you debug this. To enable it just add \
+          `.signpost()` behind your reducer.
+          """
+        } else {
+          actionDebugContent = """
+          
+          Look closely at the actions that are not in `Finished` state immediatly.
+          
+          Actions:
+          \(signpostContent.joined(separator: "\n"))
+          """
+        }
+
         _XCTFail(
           """
           Some effects are still running. All effects must complete by the end of the assertion.

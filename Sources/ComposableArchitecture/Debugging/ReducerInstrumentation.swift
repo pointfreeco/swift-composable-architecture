@@ -1,6 +1,8 @@
 import Combine
 import os.signpost
 
+var signpostContent : [String] = []
+
 extension Reducer {
   /// Instruments the reducer with
   /// [signposts](https://developer.apple.com/documentation/os/logging/recording_performance_data).
@@ -40,10 +42,12 @@ extension Reducer {
       if log.signpostsEnabled {
         actionOutput = debugCaseOutput(action)
         os_signpost(.begin, log: log, name: "Action", "%s%s", prefix, actionOutput)
+        signpostContent.append("Begin: Action \(prefix)\(String(describing: actionOutput))")
       }
       let effects = self.run(&state, action, environment)
       if log.signpostsEnabled {
         os_signpost(.end, log: log, name: "Action")
+        signpostContent.append("End: Action")
         return
           effects
           .effectSignpost(prefix, log: log, actionOutput: actionOutput)
@@ -69,19 +73,24 @@ extension Publisher where Failure == Never {
           os_signpost(
             .begin, log: log, name: "Effect", signpostID: sid, "%sStarted from %s", prefix,
             actionOutput)
+          signpostContent.append("Begin: Effect(\(sid)) \(prefix)Started from \(actionOutput)")
+
         },
         receiveOutput: { value in
           os_signpost(
             .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput)
+          signpostContent.append("Event: Effect \(prefix)Output from \(actionOutput)")
         },
         receiveCompletion: { completion in
           switch completion {
           case .finished:
             os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sFinished", prefix)
+            signpostContent.append("End: Effect(\(sid)) \(prefix)Finished")
           }
         },
         receiveCancel: {
           os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sCancelled", prefix)
+          signpostContent.append("End: Effect(\(sid)) \(prefix)Cancelled")
         })
   }
 }
