@@ -42,7 +42,7 @@ extension Reducer {
       if log.signpostsEnabled {
         actionOutput = debugCaseOutput(action)
         os_signpost(.begin, log: log, name: "Action", "%s%s", prefix, actionOutput)
-        signpostContent.append("Begin: Action \(prefix)\(String(describing: actionOutput))")
+        signpostContent.append("Begin: Action \(prefix)\(actionOutput ?? "<no action output>")")
       }
       let effects = self.run(&state, action, environment)
       if log.signpostsEnabled {
