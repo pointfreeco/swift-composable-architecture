@@ -365,6 +365,8 @@
           • If you are using long-living effects (for example timers, notifications, etc.), then \
           ensure those effects are completed by returning an `Effect.cancel` effect from a \
           particular action in your reducer, and sending that action in the test.
+
+          \(actionDebugContent)
           """,
           file: file,
           line: line
