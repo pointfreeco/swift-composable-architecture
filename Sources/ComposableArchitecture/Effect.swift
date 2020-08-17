@@ -56,6 +56,11 @@ public struct Effect<Output, Failure: Error>: Publisher {
   public init(error: Failure) {
     self.init(Fail(error: error))
   }
+  
+  /// Initializes an effect that immediately emits the value passed in.
+  ///
+  /// - Parameter output: The value that is immediately emitted by the effect.
+  public static func value(_ output: Output) -> Effect { .init(value: output) }
 
   /// An effect that does nothing and completes immediately. Useful for situations where you must
   /// return an effect, but you don't need to do anything.
