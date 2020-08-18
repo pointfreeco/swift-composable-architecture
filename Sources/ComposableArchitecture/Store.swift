@@ -136,6 +136,7 @@ public final class Store<State, Action> {
   }
 
   func send(_ action: Action) {
+    var state = self.state
     self.synchronousActionsToSend.append(action)
 
     while !self.synchronousActionsToSend.isEmpty {
@@ -163,7 +164,7 @@ public final class Store<State, Action> {
         )
       }
       self.isSending = true
-      let effect = self.reducer(&self.state, action)
+      let effect = self.reducer(&state, action)
       self.isSending = false
 
       var didComplete = false
@@ -188,6 +189,7 @@ public final class Store<State, Action> {
       if !didComplete {
         self.effectCancellables[uuid] = effectCancellable
       }
+      self.state = state
     }
   }
 
