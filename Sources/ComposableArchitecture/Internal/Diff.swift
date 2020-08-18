@@ -1,4 +1,9 @@
-func diff(_ first: String, _ second: String) -> String? {
+enum DiffMode {
+  case full
+  case filtered
+}
+
+func diff(_ first: String, _ second: String, _ mode : DiffMode = .full) -> String? {
   struct Difference {
     enum Which {
       case both
@@ -67,10 +72,19 @@ func diff(_ first: String, _ second: String) -> String? {
     }
   }
 
-  let differences = diffHelp(
+  let unfilteredDifferences = diffHelp(
     first.split(separator: "\n", omittingEmptySubsequences: false)[...],
     second.split(separator: "\n", omittingEmptySubsequences: false)[...]
   )
+  
+  let differences : [Difference]
+  switch mode {
+  case .full:
+    differences = unfilteredDifferences
+  case .filtered:
+    differences = unfilteredDifferences.filter { $0.which != .both }
+  }
+  
   if differences.count == 1, case .both = differences[0].which { return nil }
   var string = differences.reduce(into: "") { string, diff in
     diff.elements.forEach { line in

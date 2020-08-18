@@ -166,6 +166,8 @@
     private let reducer: Reducer<State, Action, Environment>
     private var state: State
     private let toLocalState: (State) -> LocalState
+    public var stateDiffMode: DiffMode = .full
+    public var actionDiffMode: DiffMode = .full
 
     private init(
       initialState: State,
@@ -276,7 +278,7 @@
           let receivedAction = receivedActions.removeFirst()
           if expectedAction != receivedAction {
             let diff =
-              debugDiff(expectedAction, receivedAction)
+              debugDiff(expectedAction, receivedAction, actionDiffMode)
               .map { ": …\n\n\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
               ?? ""
             _XCTFail(
@@ -309,7 +311,7 @@
         let actualState = self.toLocalState(self.state)
         if expectedState != actualState {
           let diff =
-            debugDiff(expectedState, actualState)
+            debugDiff(expectedState, actualState, stateDiffMode)
             .map { ": …\n\n\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
             ?? ""
           _XCTFail(

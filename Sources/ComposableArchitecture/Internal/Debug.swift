@@ -144,9 +144,9 @@ func debugOutput(_ value: Any, indent: Int = 0) -> String {
   return debugOutputHelp(value, indent: indent)
 }
 
-func debugDiff<T>(_ before: T, _ after: T, printer: (T) -> String = { debugOutput($0) }) -> String?
+func debugDiff<T>(_ before: T, _ after: T, _ mode : DiffMode = .full, printer: (T) -> String = { debugOutput($0) }) -> String?
 {
-  diff(printer(before), printer(after))
+  diff(printer(before), printer(after), mode)
 }
 
 extension String {
