@@ -12,16 +12,17 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
   ) {
     self.window = (scene as? UIWindowScene).map(UIWindow.init(windowScene:))
 
-    let rootView = AppView(
-      store: Store(
-        initialState: AppState(),
-        reducer: appReducer,
-        environment: AppEnvironment(
-          mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
-          uuid: UUID.init
-        )
-      )
-    )
+    let rootView = OnboardingView_Previews.previews
+//    AppView(
+//      store: Store(
+//        initialState: AppState(),
+//        reducer: appReducer,
+//        environment: AppEnvironment(
+//          mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+//          uuid: UUID.init
+//        )
+//      )
+//    )
 
     self.window?.rootViewController = UIHostingController(rootView: rootView)
     self.window?.makeKeyAndVisible()

@@ -32,7 +32,37 @@ enum AppAction: Equatable {
   case todo(id: UUID, action: TodoAction)
 }
 
+struct AnalyticsClient {
+  var track: (String, [String: String]) -> Effect<Never, Never>
+}
+
+extension AnalyticsClient {
+  static func onboarding(_ client: Self) -> Self {
+    .init(
+      track: { event, properties in
+        client.track(
+          "[Onboarding] \(event)",
+          properties.merging(["onboarding": "true"], uniquingKeysWith: { $1 })
+        )
+      }
+    )
+  }
+}
+
+extension AnalyticsClient {
+  static let noop = Self(track: { _, _ in .fireAndForget { } })
+
+  static let live = Self(
+    track: { event, properties in
+      .fireAndForget {
+        // perform URL request to send event to your analytics server
+      }
+    }
+  )
+}
+
 struct AppEnvironment {
+  var analytics: AnalyticsClient
   var mainQueue: AnySchedulerOf<DispatchQueue>
   var uuid: () -> UUID
 }
@@ -42,7 +72,8 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     switch action {
     case .addTodoButtonTapped:
       state.todos.insert(Todo(id: environment.uuid()), at: 0)
-      return .none
+      return environment.analytics.track("Add Todo", [:])
+        .fireAndForget()
 
     case .clearCompletedButtonTapped:
       state.todos.removeAll(where: { $0.isComplete })
@@ -95,6 +126,7 @@ struct AppView: View {
   }
 
   let store: Store<AppState, AppAction>
+  @Environment(\.onboardingStep) var onboardingStep
 
   var body: some View {
     WithViewStore(self.store.scope(state: { $0.view })) { viewStore in
@@ -110,7 +142,8 @@ struct AppView: View {
               }
             }
             .pickerStyle(SegmentedPickerStyle())
-            .unredacted()
+            .unredacted(if: self.onboardingStep == .filters)
+//            .unredacted()
           }
           .padding([.leading, .trailing])
 
@@ -122,6 +155,7 @@ struct AppView: View {
             .onDelete { viewStore.send(.delete($0)) }
             .onMove { viewStore.send(.move($0, $1)) }
           }
+          .unredacted(if: self.onboardingStep == .todos)
         }
         .navigationBarTitle("Todos")
         .navigationBarItems(
@@ -131,6 +165,7 @@ struct AppView: View {
               .disabled(viewStore.isClearCompletedButtonDisabled)
             Button("Add Todo") { viewStore.send(.addTodoButtonTapped) }
           }
+          .unredacted(if: self.onboardingStep == .actions)
         )
         .environment(
           \.editMode,
@@ -184,27 +219,201 @@ extension IdentifiedArray where ID == UUID, Element == Todo {
   ]
 }
 
-let redactedReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
+enum OnboardingStep: Equatable {
+  case actions
+  case filters
+  case todos
+
+  var next: Self? {
+    switch self {
+    case .actions:
+      return .filters
+    case .filters:
+      return .todos
+    case .todos:
+      return nil
+    }
+  }
+
+  var previous: Self? {
+    switch self {
+    case .actions:
+      return nil
+    case .filters:
+      return .actions
+    case .todos:
+      return .filters
+    }
+  }
+}
+
+struct OnboardingState: Equatable {
+  var placeholderApp: AppState
+  var step: OnboardingStep?
+}
+
+enum OnboardingAction {
+  case app(AppAction)
+  case nextButtonTapped
+  case previousButtonTapped
+  case skipButtonTapped
+}
+
+let onboardingReducer = Reducer<OnboardingState, OnboardingAction, AppEnvironment> { state, action, environment in
   switch action {
-  case .addTodoButtonTapped:
+
+  case let .app(.filterPicked(filter)) where state.step == .filters:
+    state.placeholderApp.filter = filter
     return .none
-  case .clearCompletedButtonTapped:
+
+  case let .app(action) where state.step == .todos:
+    switch action {
+    case .sortCompletedTodos,
+         .todo(id: _, action: .checkBoxToggled):
+      return appReducer
+        .run(
+          &state.placeholderApp,
+          action,
+          AppEnvironment(
+            analytics: .onboarding(environment.analytics),
+            mainQueue: environment.mainQueue,
+            uuid: environment.uuid
+          )
+        )
+        .map(OnboardingAction.app)
+
+    default:
+      return .none
+    }
+
+//    state.placeholderApp.todos[id: id]?.isComplete.toggle()
+//    state.placeholderApp.todos.sortCompleted()
+//    return .none
+
+  case .app:
     return .none
-  case .delete(_):
+
+  case .nextButtonTapped:
+    state.step = state.step?.next
     return .none
-  case .editModeChanged(_):
+
+  case .previousButtonTapped:
+    state.step = state.step?.previous
     return .none
-  case let .filterPicked(filter):
-    state.filter = filter
-    return .none
-  case .move(_, _):
-    return .none
-  case .sortCompletedTodos:
-    return .none
-  case .todo(id: let id, action: let action):
+
+  case .skipButtonTapped:
+    state.step = nil
     return .none
   }
 }
+
+struct OnboardingStepEnvironmentKey: EnvironmentKey {
+  static var defaultValue: OnboardingStep? = nil
+}
+extension EnvironmentValues {
+  var onboardingStep: OnboardingStep? {
+    get { self[OnboardingStepEnvironmentKey.self] }
+    set { self[OnboardingStepEnvironmentKey.self] = newValue }
+  }
+}
+
+extension View {
+  @ViewBuilder func unredacted(if condition: Bool) -> some View {
+    if condition {
+      self.unredacted()
+    } else {
+      self
+    }
+  }
+}
+
+struct OnboardingView: View {
+//  @State var step: OnboardingStep? = .actions
+  let onboardingStore: Store<OnboardingState, OnboardingAction>
+  let store: Store<AppState, AppAction>
+
+  var body: some View {
+    WithViewStore(self.onboardingStore) { onboardingViewStore in
+    if let step = onboardingViewStore.step {
+      ZStack {
+        AppView(
+          store: self.onboardingStore.scope(
+            state: \.placeholderApp,
+            action: OnboardingAction.app
+          )
+//          store: Store(
+//            initialState: AppState(todos: .mock),
+//            reducer: .empty,
+//            environment: ()
+//          )
+        )
+        .environment(\.onboardingStep, step)
+        .redacted(reason: .placeholder)
+
+        VStack {
+          Spacer()
+
+          HStack(alignment: .top) {
+            Button(action: { onboardingViewStore.send(.previousButtonTapped) }) {
+              Image(systemName: "chevron.left")
+            }
+            //            .disabled(tutorialViewStore.tutorialStep == .actions)
+            .frame(width: 44, height: 44)
+            .foregroundColor(.white)
+            .background(Color.gray)
+            .clipShape(Circle())
+            .padding([.leading, .trailing])
+
+            Spacer()
+
+            VStack {
+              switch step {
+              case .actions:
+                Text("Use the navbar actions to mass delete todos, clear all your completed todos, or add a new one.")
+              case .filters:
+                Text("Use the filters bar to change what todos are currently displayed to you. Try changing a filter.")
+              case .todos:
+                Text("Here's your list of todos. You can check one off to complete it, or edit its title by tapping on the current title.")
+              }
+              Button("Skip") { onboardingViewStore.send(.skipButtonTapped) }
+                .padding()
+            }
+
+            Spacer()
+            Button(action: { onboardingViewStore.send(.nextButtonTapped) }) {
+              Image(systemName: "chevron.right")
+            }
+            .frame(width: 44, height: 44)
+            .background(Color.gray)
+            .foregroundColor(.white)
+            .clipShape(Circle())
+            .padding([.leading, .trailing])
+
+          }
+          .padding(.top, 400)
+          .padding(.bottom, 100)
+          .background(
+            LinearGradient(
+              gradient: .init(
+                colors: [.init(white: 1, opacity: 0), .init(white: 0.8, opacity: 1)]
+              ),
+              startPoint: .top,
+              endPoint: .bottom
+            )
+          )
+        }
+      }
+    } else {
+       AppView(store: self.store)
+    }
+    }
+  }
+}
+
+
+
+
+
 
 struct AppView_Previews: PreviewProvider {
   static var previews: some View {
@@ -228,11 +437,37 @@ struct AppView_Previews: PreviewProvider {
 //            analytics: AnalyticsClient(
 //              track: { name, properties in }
 //            ),
+            analytics: .live,
             mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
             uuid: UUID.init
           )
       )
     )
     .redacted(reason: .placeholder)
+  }
+}
+
+struct OnboardingView_Previews: PreviewProvider {
+  static var previews: some View {
+    OnboardingView(
+      onboardingStore: Store(
+        initialState: .init(placeholderApp: AppState(todos: .mock), step: .actions),
+        reducer: onboardingReducer,
+        environment: .init(
+          analytics: .live,
+          mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+          uuid: UUID.init
+        )
+      ),
+      store: Store(
+        initialState: .init(),
+        reducer: appReducer,
+        environment: .init(
+          analytics: .live,
+          mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+          uuid: UUID.init
+        )
+      )
+    )
   }
 }
