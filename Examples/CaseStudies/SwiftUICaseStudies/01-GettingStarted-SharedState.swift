@@ -34,7 +34,6 @@ struct SharedState: Equatable {
   var profile: ProfileState {
     get {
       ProfileState(
-        currentTab: self.currentTab,
         count: self.counter.count,
         maxCount: self.counter.maxCount,
         minCount: self.counter.minCount,
@@ -42,7 +41,6 @@ struct SharedState: Equatable {
       )
     }
     set {
-      self.currentTab = newValue.currentTab
       self.counter.count = newValue.count
       self.counter.maxCount = newValue.maxCount
       self.counter.minCount = newValue.minCount
@@ -51,14 +49,12 @@ struct SharedState: Equatable {
   }
 
   struct ProfileState: Equatable {
-    private(set) var currentTab: Tab
     private(set) var count = 0
     private(set) var maxCount: Int
     private(set) var minCount: Int
     private(set) var numberOfCounts: Int
 
     fileprivate mutating func resetCount() {
-      self.currentTab = .counter
       self.count = 0
       self.maxCount = 0
       self.minCount = 0
