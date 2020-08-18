@@ -1,4 +1,4 @@
-enum DiffMode {
+public enum DiffMode {
   case full
   case filtered
 }
