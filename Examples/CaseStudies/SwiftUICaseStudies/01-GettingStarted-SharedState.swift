@@ -67,19 +67,19 @@ struct SharedState: Equatable {
   }
 }
 
-enum SharedStateAction {
+enum SharedStateAction: Equatable {
   case counter(CounterAction)
   case profile(ProfileAction)
   case selectTab(SharedState.Tab)
 
-  enum CounterAction {
+  enum CounterAction: Equatable {
     case alertDismissed
     case decrementButtonTapped
     case incrementButtonTapped
     case isPrimeButtonTapped
   }
 
-  enum ProfileAction {
+  enum ProfileAction: Equatable {
     case resetCounterButtonTapped
   }
 }
