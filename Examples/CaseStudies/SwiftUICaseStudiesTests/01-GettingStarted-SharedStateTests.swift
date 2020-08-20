@@ -15,9 +15,11 @@ class SharedStateTests: XCTestCase {
     store.assert(
       .send(.selectTab(.profile)) {
         $0.currentTab = .profile
+        $0.profile = .init(currentTab: .profile, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0)
       },
       .send(.profile(.resetCounterButtonTapped)) {
         $0.currentTab = .counter
+        $0.profile = .init(currentTab: .counter, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0)
       })
   }
 
@@ -31,9 +33,33 @@ class SharedStateTests: XCTestCase {
     store.assert(
       .send(.selectTab(.profile)) {
         $0.currentTab = .profile
+        $0.profile = .init(currentTab: .profile, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0)
       },
       .send(.selectTab(.counter)) {
         $0.currentTab = .counter
+        $0.profile = .init(currentTab: .counter, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0)
+      })
+  }
+
+  func testSharedCounts() {
+    let store = TestStore(
+      initialState: SharedState(),
+      reducer: sharedStateReducer,
+      environment: ()
+    )
+
+    store.assert(
+      .send(.counter(.incrementButtonTapped)) {
+        $0.counter = .init(alert: nil, count: 1, maxCount: 1, minCount: 0, numberOfCounts: 1)
+        $0.profile = .init(currentTab: .counter, count: 1, maxCount: 1, minCount: 0, numberOfCounts: 1)
+      },
+      .send(.counter(.decrementButtonTapped)) {
+        $0.counter = .init(alert: nil, count: 0, maxCount: 1, minCount: 0, numberOfCounts: 2)
+        $0.profile = .init(currentTab: .counter, count: 0, maxCount: 1, minCount: 0, numberOfCounts: 2)
+      },
+      .send(.counter(.decrementButtonTapped)) {
+        $0.counter = .init(alert: nil, count: -1, maxCount: 1, minCount: -1, numberOfCounts: 3)
+        $0.profile = .init(currentTab: .counter, count: -1, maxCount: 1, minCount: -1, numberOfCounts: 3)
       })
   }
 
