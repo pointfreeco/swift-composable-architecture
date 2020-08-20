@@ -336,7 +336,7 @@
       }
       if !cancellables.isEmpty {
         var actionDebugContent = ""
-        if signpostData.unfinished.isEmpty {
+        if signpostData.log.isEmpty {
           actionDebugContent = """
           Enable signpost on you reducer will help you debug this. To enable it just add \
           `.signpost()` behind your reducer.
