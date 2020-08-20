@@ -3,7 +3,7 @@ import CoreLocation
 /// A value type wrapper for `CLLocation`. This type is necessary so that we can do equality checks
 /// and write tests against its values.
 @dynamicMemberLookup
-public struct Location: Hashable {
+public struct Location {
   public let rawValue: CLLocation
 
   public init(
@@ -35,7 +35,7 @@ public struct Location: Hashable {
   }
 }
 
-extension Location: Equatable {
+extension Location: Hashable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
     let speedAccuracyIsEqual: Bool
     let courseAccuracyIsEqual: Bool
@@ -65,6 +65,24 @@ extension Location: Equatable {
       && courseAccuracyIsEqual
   }
 
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.altitude)
+    hasher.combine(self.coordinate.latitude)
+    hasher.combine(self.coordinate.longitude)
+    hasher.combine(self.course)
+    hasher.combine(self.floor)
+    hasher.combine(self.horizontalAccuracy)
+    hasher.combine(self.speed)
+    hasher.combine(self.timestamp)
+    hasher.combine(self.verticalAccuracy)
+
+    #if compiler(>=5.2)
+    if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
+      hasher.combine(self.courseAccuracy)
+    }
+    hasher.combine(self.speedAccuracy)
+    #endif
+  }
 }
 
 #if compiler(>=5.2)
