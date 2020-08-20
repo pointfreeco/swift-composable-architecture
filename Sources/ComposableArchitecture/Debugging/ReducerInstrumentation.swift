@@ -4,6 +4,26 @@ import os.signpost
 struct SignpostData {
   var log : [String] = []
   var unfinished : [String:String] = [:]
+  
+  var logContent : String {
+    if !log.isEmpty {
+      return """
+
+          Log:
+          \(log.joined(separator: "\n"))
+      """
+    }
+  }
+  
+  var unfinishedContent : String {
+    if !unfinished.isEmpty {
+      return """
+
+          Not Finished Effects:
+          \(unfinished)
+      """
+    }
+  }
 }
 
 var signpostData = SignpostData()
