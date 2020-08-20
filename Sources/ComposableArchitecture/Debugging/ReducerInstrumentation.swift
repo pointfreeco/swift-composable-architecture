@@ -1,7 +1,12 @@
 import Combine
 import os.signpost
 
-var signpostContent : [String] = []
+struct SignpostData {
+  var log : [String] = []
+  var unfinished : [String:String] = [:]
+}
+
+var signpostData = SignpostData()
 
 extension Reducer {
   /// Instruments the reducer with
@@ -42,12 +47,15 @@ extension Reducer {
       if log.signpostsEnabled {
         actionOutput = debugCaseOutput(action)
         os_signpost(.begin, log: log, name: "Action", "%s%s", prefix, actionOutput)
-        signpostContent.append("Begin: Action \(prefix)\(actionOutput ?? "<no action output>")")
+        let content = "Begin: Action \(prefix)\(actionOutput ?? "<no action output>")"
+        signpostData.log.append(content)
+        signpostData.unfinished[actionOutput] = content
       }
       let effects = self.run(&state, action, environment)
       if log.signpostsEnabled {
         os_signpost(.end, log: log, name: "Action")
-        signpostContent.append("End: Action")
+        signpostData.log.append("End: Action")
+        signpostData.unfinished[actionOutput] = nil
         return
           effects
           .effectSignpost(prefix, log: log, actionOutput: actionOutput)
@@ -73,24 +81,24 @@ extension Publisher where Failure == Never {
           os_signpost(
             .begin, log: log, name: "Effect", signpostID: sid, "%sStarted from %s", prefix,
             actionOutput)
-          signpostContent.append("Begin: Effect(\(sid)) \(prefix)Started from \(actionOutput)")
+          signpostData.log.append("Begin: Effect(\(sid)) \(prefix)Started from \(actionOutput)")
 
         },
         receiveOutput: { value in
           os_signpost(
             .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput)
-          signpostContent.append("Event: Effect \(prefix)Output from \(actionOutput)")
+          signpostData.log.append("Event: Effect \(prefix)Output from \(actionOutput)")
         },
         receiveCompletion: { completion in
           switch completion {
           case .finished:
             os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sFinished", prefix)
-            signpostContent.append("End: Effect(\(sid)) \(prefix)Finished")
+            signpostData.log.append("End: Effect(\(sid)) \(prefix)Finished")
           }
         },
         receiveCancel: {
           os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sCancelled", prefix)
-          signpostContent.append("End: Effect(\(sid)) \(prefix)Cancelled")
+          signpostData.log.append("End: Effect(\(sid)) \(prefix)Cancelled")
         })
   }
 }
