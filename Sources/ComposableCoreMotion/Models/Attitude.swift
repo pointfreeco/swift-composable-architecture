@@ -4,7 +4,7 @@
   /// The device's orientation relative to a known frame of reference at a point in time.
   ///
   /// See the documentation for `CMAttitude` for more info.
-  public struct Attitude: Equatable {
+  public struct Attitude: Hashable {
     public var quaternion: CMQuaternion
 
     public init(_ attitude: CMAttitude) {
@@ -82,6 +82,13 @@
         && lhs.quaternion.x == rhs.quaternion.x
         && lhs.quaternion.y == rhs.quaternion.y
         && lhs.quaternion.z == rhs.quaternion.z
+    }
+
+    public func hash(into hasher: inout Hasher) {
+      hasher.combine(self.quaternion.w)
+      hasher.combine(self.quaternion.x)
+      hasher.combine(self.quaternion.y)
+      hasher.combine(self.quaternion.z)
     }
   }
 

@@ -5,7 +5,7 @@ import CoreLocation
 @available(iOS 3, macCatalyst 13, watchOS 2, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
-public struct Heading: Equatable {
+public struct Heading: Hashable {
   public let rawValue: CLHeading?
 
   public var headingAccuracy: CLLocationDirection
