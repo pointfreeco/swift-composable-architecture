@@ -47,14 +47,4 @@ public struct Heading: Hashable {
     self.y = y
     self.z = z
   }
-
-  public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.headingAccuracy == rhs.headingAccuracy
-      && lhs.magneticHeading == rhs.magneticHeading
-      && lhs.timestamp == rhs.timestamp
-      && lhs.trueHeading == rhs.trueHeading
-      && lhs.x == rhs.x
-      && lhs.y == rhs.y
-      && lhs.z == rhs.z
-  }
 }
