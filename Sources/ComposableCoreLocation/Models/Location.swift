@@ -71,12 +71,12 @@ extension Location: Hashable {
     hasher.combine(self.speed)
     hasher.combine(self.timestamp)
     hasher.combine(self.verticalAccuracy)
+    hasher.combine(self.speedAccuracy)
 
     #if compiler(>=5.2)
     if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
       hasher.combine(self.courseAccuracy)
     }
-    hasher.combine(self.speedAccuracy)
     #endif
   }
 }
