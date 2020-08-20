@@ -13,6 +13,7 @@ struct SignpostData {
           \(log.joined(separator: "\n"))
       """
     }
+    return ""
   }
   
   var unfinishedContent : String {
@@ -23,6 +24,7 @@ struct SignpostData {
           \(unfinished)
       """
     }
+    return ""
   }
 }
 
