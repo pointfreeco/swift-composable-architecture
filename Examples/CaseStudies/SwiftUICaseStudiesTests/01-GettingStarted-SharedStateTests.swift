@@ -50,16 +50,18 @@ class SharedStateTests: XCTestCase {
 
     store.assert(
       .send(.counter(.incrementButtonTapped)) {
-        $0.counter = .init(alert: nil, count: 1, maxCount: 1, minCount: 0, numberOfCounts: 1)
-        $0.profile = .init(currentTab: .counter, count: 1, maxCount: 1, minCount: 0, numberOfCounts: 1)
+        $0.counter.count = 1
+        $0.counter.maxCount = 1
+        $0.counter.numberOfCounts = 1
       },
       .send(.counter(.decrementButtonTapped)) {
-        $0.counter = .init(alert: nil, count: 0, maxCount: 1, minCount: 0, numberOfCounts: 2)
-        $0.profile = .init(currentTab: .counter, count: 0, maxCount: 1, minCount: 0, numberOfCounts: 2)
+        $0.counter.count = 0
+        $0.counter.numberOfCounts = 2
       },
       .send(.counter(.decrementButtonTapped)) {
-        $0.counter = .init(alert: nil, count: -1, maxCount: 1, minCount: -1, numberOfCounts: 3)
-        $0.profile = .init(currentTab: .counter, count: -1, maxCount: 1, minCount: -1, numberOfCounts: 3)
+        $0.counter.count = -1
+        $0.counter.minCount = -1
+        $0.counter.numberOfCounts = 3
       })
   }
 
