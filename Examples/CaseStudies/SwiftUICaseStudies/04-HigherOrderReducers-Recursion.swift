@@ -34,6 +34,7 @@ struct NestedState: Equatable, Identifiable {
 
 indirect enum NestedAction: Equatable {
   case append
+  case exclaim
   case node(index: Int, action: NestedAction)
   case remove(IndexSet)
   case rename(String)
@@ -51,16 +52,24 @@ let nestedReducer = Reducer<
     state.children.append(NestedState(id: environment.uuid()))
     return .none
 
+  case .exclaim:
+    state.description += "!"
+    return .none
+
   case let .node(index, action):
     return self.run(&state.children[index], action, environment)
+      .map { .node(index: index, action: $0) }
 
   case let .remove(indexSet):
     state.children.remove(atOffsets: indexSet)
     return .none
 
   case let .rename(name):
+    struct ExclaimId: Hashable {}
+
     state.description = name
-    return .none
+    return Effect(value: .exclaim)
+      .debounce(id: ExclaimId(), for: 1, scheduler: DispatchQueue.main)
   }
 }
 
