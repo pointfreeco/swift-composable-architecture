@@ -12,6 +12,7 @@ struct Log {
       return """
 
           Log:
+
           \(log.joined(separator: "\n"))
       """
     }
@@ -23,6 +24,7 @@ struct Log {
       return """
 
           Not Finished Actions(\(ongoingActions.count)):
+
           - \(ongoingActions.joined(separator: "\n- "))
       """
     }
@@ -66,20 +68,20 @@ extension Publisher where Failure == Never {
       self
       .handleEvents(
         receiveSubscription: { _ in
-          loggedEffect.log.append("\tBegin: Effect Started from \(prefix)\(actionOutput)")
+          loggedEffect.log.append("\tBegin: Effect Started")
         },
         receiveOutput: { value in
-          loggedEffect.log.append("\t\tEvent: Effect Output from \(prefix)\(actionOutput)")
+          loggedEffect.log.append("\tEvent: Effect Receive Output")
         },
         receiveCompletion: { completion in
           switch completion {
           case .finished:
-            loggedEffect.log.append("\t\t\tEnd: Effect Finished from \(prefix)\(actionOutput)")
+            loggedEffect.log.append("\tEnd: Effect Finished")
             endAction()
           }
         },
         receiveCancel: {
-          loggedEffect.log.append("\t\t\tEnd: Effect Cancelled from \(prefix)\(actionOutput)")
+          loggedEffect.log.append("\tEnd: Effect Cancelled")
           endAction()
         })
   }
