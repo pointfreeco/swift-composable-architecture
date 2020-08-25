@@ -28,6 +28,8 @@ extension Effect where Failure == Never {
         .map { index, animationState in
           index == 0
             ? Effect(value: animationState.output)
+            .receive(on: scheduler)
+            .eraseToEffect()
             : Just(animationState.output)
               .delay(for: values[index - 1].duration, scheduler: scheduler)
               .eraseToEffect()
@@ -53,6 +55,30 @@ struct AnimationsEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
+extension Scheduler {
+  func animation(_ animation: Animation) -> AnyScheduler<SchedulerTimeType, SchedulerOptions> {
+    AnyScheduler(
+      minimumTolerance: { self.minimumTolerance },
+      now: { self.now },
+      scheduleImmediately: { options, action in
+        self.schedule(options: options) {
+          withAnimation(animation, action)
+        }
+      },
+      delayed: { date, tolerance, options, action in
+        self.schedule(after: date, tolerance: tolerance, options: options) {
+          withAnimation(animation, action)
+        }
+      },
+      interval: { date, interval, tolerance, options, action in
+        self.schedule(after: date, interval: interval, tolerance: tolerance, options: options) {
+          withAnimation(animation, action)
+        }
+      }
+    )
+  }
+}
+
 let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnvironment> {
   state, action, environment in
 
@@ -65,7 +91,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
     return .keyFrames(
       values: [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .white]
         .map { (output: .setColor($0), duration: 1) },
-      scheduler: environment.mainQueue
+      scheduler: environment.mainQueue.animation(.linear)
     )
 
   case let .setColor(color):
@@ -92,7 +118,6 @@ struct AnimationsView: View {
 
             Circle()
               .fill(viewStore.circleColor)
-              .animation(.linear)
               .blendMode(.difference)
               .frame(width: 50, height: 50)
               .scaleEffect(viewStore.isCircleScaled ? 2 : 1)
