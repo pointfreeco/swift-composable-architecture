@@ -66,20 +66,20 @@ extension Publisher where Failure == Never {
       self
       .handleEvents(
         receiveSubscription: { _ in
-          loggedEffect.log.append("Begin: Effect \(prefix)Started from \(actionOutput)")
+          loggedEffect.log.append("\tBegin: Effect Started from \(prefix)\(actionOutput)")
         },
         receiveOutput: { value in
-          loggedEffect.log.append("Event: Effect \(prefix)Output from \(actionOutput)")
+          loggedEffect.log.append("\t\tEvent: Effect Output from \(prefix)\(actionOutput)")
         },
         receiveCompletion: { completion in
           switch completion {
           case .finished:
-            loggedEffect.log.append("End: Effect \(prefix)Finished")
+            loggedEffect.log.append("\t\t\tEnd: Effect Finished from \(prefix)\(actionOutput)")
             endAction()
           }
         },
         receiveCancel: {
-          loggedEffect.log.append("End: Effect \(prefix)Cancelled")
+          loggedEffect.log.append("\t\t\tEnd: Effect Cancelled from \(prefix)\(actionOutput)")
           endAction()
         })
   }
