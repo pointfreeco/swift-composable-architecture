@@ -338,13 +338,13 @@
         var actionDebugContent = ""
         if loggedEffect.logContent.isEmpty {
           actionDebugContent = """
-          Enable signpost on you reducer will help you debug this. To enable it just add \
+          Enable logEffect on you reducer will help you debug this. To enable it just add \
           `.logEffect()` behind your reducer.
           """
         } else {
           actionDebugContent = """
           Look closely at the actions that are not in `Finished` or `Cancel` state. 
-          \(loggedEffect.unfinishedActionsContent)
+          \(loggedEffect.ongoingActionsContent)
           \(loggedEffect.logContent)
           """
         }

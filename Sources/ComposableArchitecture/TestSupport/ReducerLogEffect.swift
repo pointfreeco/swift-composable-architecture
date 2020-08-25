@@ -5,7 +5,7 @@ var loggedEffect = Log()
 
 struct Log {
   var log : [String] = []
-  var unfinishedActions = Set<String>()
+  var ongoingActions = Set<String>()
 
   var logContent : String {
     if !log.isEmpty {
@@ -18,12 +18,12 @@ struct Log {
     return ""
   }
   
-  var unfinishedActionsContent : String {
-    if !unfinishedActions.isEmpty {
+  var ongoingActionsContent : String {
+    if !ongoingActions.isEmpty {
       return """
 
-          Not Finished Actions:
-          \(unfinishedActions)
+          Not Finished Actions(\(ongoingActions.count)):
+          \(ongoingActions)
       """
     }
     return ""
@@ -43,7 +43,7 @@ extension Reducer {
       let actionOutput = debugCaseOutput(action)
       let content = "Begin: Action \(prefix)\(actionOutput)"
       loggedEffect.log.append(content)
-      loggedEffect.unfinishedActions.insert(actionOutput)
+      loggedEffect.ongoingActions.insert(actionOutput)
       
       return
         self.run(&state, action, environment)
@@ -59,8 +59,8 @@ extension Publisher where Failure == Never {
     actionOutput: String
   ) -> Publishers.HandleEvents<Self> {
     let endAction = {
-      loggedEffect.log.append("End: Action")
-      loggedEffect.unfinishedActions.remove(actionOutput)
+      loggedEffect.log.append("End: Action \(prefix)\(actionOutput)"
+      loggedEffect.ongoingActions.remove(actionOutput)
     }
     return
       self
