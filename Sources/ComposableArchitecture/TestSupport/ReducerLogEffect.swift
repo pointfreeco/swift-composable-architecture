@@ -59,7 +59,7 @@ extension Publisher where Failure == Never {
     actionOutput: String
   ) -> Publishers.HandleEvents<Self> {
     let endAction = {
-      loggedEffect.log.append("End: Action \(prefix)\(actionOutput)"
+      loggedEffect.log.append("End: Action \(prefix)\(actionOutput)")
       loggedEffect.ongoingActions.remove(actionOutput)
     }
     return
