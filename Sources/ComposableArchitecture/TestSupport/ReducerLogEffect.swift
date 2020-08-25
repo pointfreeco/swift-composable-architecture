@@ -23,7 +23,7 @@ struct Log {
       return """
 
           Not Finished Actions(\(ongoingActions.count)):
-          \(ongoingActions)
+          - \(ongoingActions.joined(separator: "\n- "))
       """
     }
     return ""
