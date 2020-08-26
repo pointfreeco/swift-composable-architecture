@@ -43,7 +43,7 @@ extension Reducer {
     
     return Self { state, action, environment in
       let actionOutput = debugCaseOutput(action)
-      let content = "Begin: Action \(prefix)\(actionOutput)"
+      let content = "\tBegin: Action \(prefix)\(actionOutput)"
       loggedEffect.log.append(content)
       loggedEffect.ongoingActions.insert(actionOutput)
       
@@ -61,27 +61,27 @@ extension Publisher where Failure == Never {
     actionOutput: String
   ) -> Publishers.HandleEvents<Self> {
     let endAction = {
-      loggedEffect.log.append("End: Action \(prefix)\(actionOutput)")
+      loggedEffect.log.append("\tEnd: Action \(prefix)\(actionOutput)")
       loggedEffect.ongoingActions.remove(actionOutput)
     }
     return
       self
       .handleEvents(
         receiveSubscription: { _ in
-          loggedEffect.log.append("\tBegin: Effect Started")
+          loggedEffect.log.append("\t\tBegin: Effect Started")
         },
         receiveOutput: { value in
-          loggedEffect.log.append("\tEvent: Effect Receive Output")
+          loggedEffect.log.append("\t\tEvent: Effect Receive Output")
         },
         receiveCompletion: { completion in
           switch completion {
           case .finished:
-            loggedEffect.log.append("\tEnd: Effect Finished")
+            loggedEffect.log.append("\t\tEnd: Effect Finished")
             endAction()
           }
         },
         receiveCancel: {
-          loggedEffect.log.append("\tEnd: Effect Cancelled")
+          loggedEffect.log.append("\t\tEnd: Effect Cancelled")
           endAction()
         })
   }
