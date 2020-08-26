@@ -26,6 +26,7 @@ struct Log {
           Not Finished Actions(\(ongoingActions.count)):
 
           - \(ongoingActions.joined(separator: "\n- "))
+
       """
     }
     return ""
