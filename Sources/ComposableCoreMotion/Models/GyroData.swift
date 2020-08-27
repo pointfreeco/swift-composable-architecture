@@ -4,7 +4,7 @@
   /// A single measurement of the device's rotation rate.
   ///
   /// See the documentation for `CMGyroData` for more info.
-  public struct GyroData: Equatable {
+  public struct GyroData: Hashable {
     public var rotationRate: CMRotationRate
     public var timestamp: TimeInterval
 
@@ -26,6 +26,13 @@
         && lhs.rotationRate.y == rhs.rotationRate.y
         && lhs.rotationRate.z == rhs.rotationRate.z
         && lhs.timestamp == rhs.timestamp
+    }
+
+    public func hash(into hasher: inout Hasher) {
+      hasher.combine(self.rotationRate.x)
+      hasher.combine(self.rotationRate.y)
+      hasher.combine(self.rotationRate.z)
+      hasher.combine(self.timestamp)
     }
   }
 #endif

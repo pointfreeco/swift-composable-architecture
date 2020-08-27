@@ -4,7 +4,7 @@
   /// Encapsulated measurements of the attitude, rotation rate, and acceleration of a device.
   ///
   /// See the documentation for `CMDeviceMotion` for more info.
-  public struct DeviceMotion: Equatable {
+  public struct DeviceMotion: Hashable {
     public var attitude: Attitude
     public var gravity: CMAcceleration
     public var heading: Double
@@ -58,6 +58,25 @@
         && lhs.userAcceleration.x == rhs.userAcceleration.x
         && lhs.userAcceleration.y == rhs.userAcceleration.y
         && lhs.userAcceleration.z == rhs.userAcceleration.z
+    }
+
+    public func hash(into hasher: inout Hasher) {
+      hasher.combine(self.attitude)
+      hasher.combine(self.gravity.x)
+      hasher.combine(self.gravity.y)
+      hasher.combine(self.gravity.z)
+      hasher.combine(self.heading)
+      hasher.combine(self.magneticField.accuracy)
+      hasher.combine(self.magneticField.field.x)
+      hasher.combine(self.magneticField.field.y)
+      hasher.combine(self.magneticField.field.z)
+      hasher.combine(self.rotationRate.x)
+      hasher.combine(self.rotationRate.y)
+      hasher.combine(self.rotationRate.z)
+      hasher.combine(self.timestamp)
+      hasher.combine(self.userAcceleration.x)
+      hasher.combine(self.userAcceleration.y)
+      hasher.combine(self.userAcceleration.z)
     }
   }
 #endif

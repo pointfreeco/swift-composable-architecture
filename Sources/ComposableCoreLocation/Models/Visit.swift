@@ -6,7 +6,7 @@ import CoreLocation
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-public struct Visit: Equatable {
+public struct Visit: Hashable {
   public let rawValue: CLVisit?
 
   public var arrivalDate: Date
@@ -43,5 +43,13 @@ public struct Visit: Equatable {
       && lhs.coordinate.longitude == rhs.coordinate.longitude
       && lhs.departureDate == rhs.departureDate
       && lhs.horizontalAccuracy == rhs.horizontalAccuracy
+  }
+
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.arrivalDate)
+    hasher.combine(self.coordinate.latitude)
+    hasher.combine(self.coordinate.longitude)
+    hasher.combine(self.departureDate)
+    hasher.combine(self.horizontalAccuracy)
   }
 }
