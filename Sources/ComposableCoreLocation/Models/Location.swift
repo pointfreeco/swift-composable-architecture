@@ -77,10 +77,10 @@ extension Location: Hashable {
     hasher.combine(self.verticalAccuracy)
 
     #if compiler(>=5.2)
-    if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
-      hasher.combine(self.speedAccuracy)
-      hasher.combine(self.courseAccuracy)
-    }
+      if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
+        hasher.combine(self.speedAccuracy)
+        hasher.combine(self.courseAccuracy)
+      }
     #endif
   }
 }
