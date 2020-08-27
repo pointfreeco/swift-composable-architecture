@@ -38,14 +38,18 @@ public struct Location {
 extension Location: Hashable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
     let courseAccuracyIsEqual: Bool
+    let speedAccuracyIsEqual: Bool
     #if compiler(>=5.2)
       if #available(iOS 13.4, macCatalyst 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
         courseAccuracyIsEqual = lhs.courseAccuracy == rhs.courseAccuracy
+        speedAccuracyIsEqual = lhs.speedAccuracy == rhs.speedAccuracy
       } else {
         courseAccuracyIsEqual = true
+        speedAccuracyIsEqual = true
       }
     #else
       courseAccuracyIsEqual = true
+      speedAccuracyIsEqual = true
     #endif
 
     return lhs.altitude == rhs.altitude
@@ -57,7 +61,7 @@ extension Location: Hashable {
       && lhs.speed == rhs.speed
       && lhs.timestamp == rhs.timestamp
       && lhs.verticalAccuracy == rhs.verticalAccuracy
-      && lhs.speedAccuracy == rhs.speedAccuracy
+      && speedAccuracyIsEqual
       && courseAccuracyIsEqual
   }
 
