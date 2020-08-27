@@ -11,15 +11,17 @@ class SharedStateTests: XCTestCase {
       reducer: sharedStateReducer,
       environment: ()
     )
-    
+
     store.assert(
       .send(.selectTab(.profile)) {
         $0.currentTab = .profile
-        $0.profile = .init(currentTab: .profile, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0)
+        $0.profile = .init(
+          currentTab: .profile, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0)
       },
       .send(.profile(.resetCounterButtonTapped)) {
         $0.currentTab = .counter
-        $0.profile = .init(currentTab: .counter, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0)
+        $0.profile = .init(
+          currentTab: .counter, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0)
       })
   }
 
@@ -33,11 +35,13 @@ class SharedStateTests: XCTestCase {
     store.assert(
       .send(.selectTab(.profile)) {
         $0.currentTab = .profile
-        $0.profile = .init(currentTab: .profile, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0)
+        $0.profile = .init(
+          currentTab: .profile, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0)
       },
       .send(.selectTab(.counter)) {
         $0.currentTab = .counter
-        $0.profile = .init(currentTab: .counter, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0)
+        $0.profile = .init(
+          currentTab: .counter, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0)
       })
   }
 
@@ -67,7 +71,8 @@ class SharedStateTests: XCTestCase {
 
   func testIsPrimeWhenPrime() {
     let store = TestStore(
-      initialState: SharedState.CounterState(alert: nil, count: 3, maxCount: 0, minCount: 0, numberOfCounts: 0),
+      initialState: SharedState.CounterState(
+        alert: nil, count: 3, maxCount: 0, minCount: 0, numberOfCounts: 0),
       reducer: sharedStateCounterReducer,
       environment: ()
     )
@@ -86,7 +91,8 @@ class SharedStateTests: XCTestCase {
 
   func testIsPrimeWhenNotPrime() {
     let store = TestStore(
-      initialState: SharedState.CounterState(alert: nil, count: 6, maxCount: 0, minCount: 0, numberOfCounts: 0),
+      initialState: SharedState.CounterState(
+        alert: nil, count: 6, maxCount: 0, minCount: 0, numberOfCounts: 0),
       reducer: sharedStateCounterReducer,
       environment: ()
     )
