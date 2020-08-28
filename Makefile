@@ -6,7 +6,6 @@ PLATFORM_WATCHOS = watchOS Simulator,name=Apple Watch Series 4 - 44mm
 default: test
 
 test:
-	xcrun xctrace list devices
 	xcodebuild test \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_IOS)"
