@@ -12,7 +12,8 @@ extension LocalizedStringKey: CustomDebugOutputConvertible {
         let formatter: Formatter?
         // `LocalizedStringKey.FormatArgument` differs depending on OS/platform.
         if children[0].label == "storage" {
-          (value, formatter) = Array(Mirror(reflecting: children[0].value).children)[0].value as! (Any, Formatter?)
+          (value, formatter) =
+            Array(Mirror(reflecting: children[0].value).children)[0].value as! (Any, Formatter?)
         } else {
           value = children[0].value
           formatter = children[1].value as? Formatter
