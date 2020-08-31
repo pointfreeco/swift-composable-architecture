@@ -1,8 +1,7 @@
 import SwiftUI
 
 extension LocalizedStringKey: CustomDebugOutputConvertible {
-  // NB: `LocalizedStringKey` conforms to `Equatable` but returns false for 2 equivalent format strings.
-  //
+  // NB: `LocalizedStringKey` conforms to `Equatable` but returns false for equivalent format strings.
   func formatted(locale: Locale? = nil) -> String {
     let children = Array(Mirror(reflecting: self).children)
     let key = children[0].value as! String
