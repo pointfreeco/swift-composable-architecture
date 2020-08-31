@@ -58,7 +58,7 @@ public let twoFactorReducer = Reducer<TwoFactorState, TwoFactorAction, TwoFactor
       .map(TwoFactorAction.twoFactorResponse)
 
   case let .twoFactorResponse(.failure(error)):
-    state.alert = .init(title: error.localizedDescription)
+    state.alert = .init(title: .init(error.localizedDescription))
     state.isTwoFactorRequestInFlight = false
     return .none
 
