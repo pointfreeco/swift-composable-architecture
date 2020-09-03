@@ -199,6 +199,10 @@ where ID: Hashable {
     var rng = SystemRandomNumberGenerator()
     self.shuffle(using: &rng)
   }
+
+  public mutating func reverse() {
+    ids.reverse()
+  }
 }
 
 extension IdentifiedArray: CustomDebugStringConvertible {
