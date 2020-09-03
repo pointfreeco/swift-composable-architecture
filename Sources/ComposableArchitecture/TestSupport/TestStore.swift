@@ -238,7 +238,8 @@
 
           let key = debugCaseOutput(action)
           let id = UUID()
-          return effects
+          return
+            effects
             .handleEvents(
               receiveSubscription: { _ in longLivingEffects[key, default: []].insert(id) },
               receiveCompletion: { _ in longLivingEffects[key]?.remove(id) },
@@ -269,8 +270,7 @@
               """
               State change does not match expectation\(diff)
               """,
-              file: step.file,
-              line: step.line
+              file: step.file, line: step.line
             )
           }
         }
@@ -298,8 +298,7 @@
               """
               Expected to receive an action, but received none.
               """,
-              file: step.file,
-              line: step.line
+              file: step.file, line: step.line
             )
             break
           }
@@ -313,8 +312,7 @@
               """
               Received unexpected action\(diff)
               """,
-              file: step.file,
-              line: step.line
+              file: step.file, line: step.line
             )
           }
           update(&expectedState)
@@ -353,13 +351,12 @@
       if !receivedActions.isEmpty {
         _XCTFail(
           """
-            Received \(receivedActions.count) unexpected \
-            action\(receivedActions.count == 1 ? "" : "s"): …
+          Received \(receivedActions.count) unexpected \
+          action\(receivedActions.count == 1 ? "" : "s"): …
 
-            Unhandled actions: \(debugOutput(receivedActions))
-            """,
-          file: file,
-          line: line
+          Unhandled actions: \(debugOutput(receivedActions))
+          """,
+          file: file, line: line
         )
       }
 
@@ -370,26 +367,25 @@
 
         _XCTFail(
           """
-            Some effects are still running. All effects must complete by the end of the assertion.
+          Some effects are still running. All effects must complete by the end of the assertion.
 
-            The effects that are still running were started by the following action\(pluralSuffix):
+          The effects that are still running were started by the following action\(pluralSuffix):
 
-            \(initiatingActions)
+          \(initiatingActions)
 
-            To fix you need to inspect the effects returned from the above action\(pluralSuffix) and \
-            make sure that all of them are completed by the end of your assertion. There are a few \
-            reasons why your effects may not have completed:
+          To fix you need to inspect the effects returned from the above action\(pluralSuffix) and \
+          make sure that all of them are completed by the end of your assertion. There are a few \
+          reasons why your effects may not have completed:
 
-            • If you are using a scheduler in your effect, then make sure that you wait enough time \
-            for the effect to finish. If you are using a test scheduler, then make sure you advance \
-            the scheduler so that the effects complete.
+          • If you are using a scheduler in your effect, then make sure that you wait enough time \
+          for the effect to finish. If you are using a test scheduler, then make sure you advance \
+          the scheduler so that the effects complete.
 
-            • If you are using long-living effects (for example timers, notifications, etc.), then \
-            ensure those effects are completed by returning an `Effect.cancel` effect from a \
-            particular action in your reducer, and sending that action in the test.
-            """,
-          file: file,
-          line: line
+          • If you are using long-living effects (for example timers, notifications, etc.), then \
+          ensure those effects are completed by returning an `Effect.cancel` effect from a \
+          particular action in your reducer, and sending that action in the test.
+          """,
+          file: file, line: line
         )
       }
     }
@@ -526,8 +522,8 @@
     else {
       assertionFailure(
         """
-          Couldn't load XCTest. Are you using a test store in application code?"
-          """,
+        Couldn't load XCTest. Are you using a test store in application code?"
+        """,
         file: file,
         line: line
       )

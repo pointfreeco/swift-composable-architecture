@@ -24,10 +24,12 @@ class TestStoreTests: XCTestCase {
             .cancellable(id: 1)
         )
       case .b1:
-        return Effect
+        return
+          Effect
           .concatenate(.init(value: .b2), .init(value: .b3))
       case .c1:
-        return Effect
+        return
+          Effect
           .concatenate(.init(value: .c2), .init(value: .c3))
       case .b2, .b3, .c2, .c3:
         return .none
