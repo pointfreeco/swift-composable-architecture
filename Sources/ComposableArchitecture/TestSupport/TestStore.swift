@@ -163,22 +163,22 @@
   public final class TestStore<State, LocalState, Action: Equatable, LocalAction, Environment> {
     private var environment: Environment
     private let fromLocalAction: (LocalAction) -> Action
-    private let reducer: Reducer<State, Action, Environment>
     private var state: State
+    private let reducer: Reducer<State, Action, Environment>
     private let toLocalState: (State) -> LocalState
 
     private init(
+      environment: Environment,
+      fromLocalAction: @escaping (LocalAction) -> Action,
       initialState: State,
       reducer: Reducer<State, Action, Environment>,
-      environment: Environment,
-      state toLocalState: @escaping (State) -> LocalState,
-      action fromLocalAction: @escaping (LocalAction) -> Action
+      toLocalState: @escaping (State) -> LocalState
     ) {
+      self.environment = environment
+      self.fromLocalAction = fromLocalAction
       self.state = initialState
       self.reducer = reducer
-      self.environment = environment
       self.toLocalState = toLocalState
-      self.fromLocalAction = fromLocalAction
     }
   }
 
@@ -195,11 +195,11 @@
       environment: Environment
     ) {
       self.init(
+        environment: environment,
+        fromLocalAction: { $0 },
         initialState: initialState,
         reducer: reducer,
-        environment: environment,
-        state: { $0 },
-        action: { $0 }
+        toLocalState: { $0 }
       )
     }
   }
@@ -220,34 +220,60 @@
       file: StaticString = #file,
       line: UInt = #line
     ) {
-      var receivedActions: [Action] = []
+      var receivedActions: [(action: Action, state: State)] = []
+      var longLivingEffects: [String: Set<UUID>] = [:]
 
-      var cancellables: [String: [AnyCancellable]] = [:]
+      let store = Store(
+        initialState: self.state,
+        reducer: Reducer<State, TestAction, Void> { state, action, _ in
+          let effects: Effect<Action, Never>
+          switch action {
+          case let .send(localAction):
+            effects = self.reducer.run(&state, self.fromLocalAction(localAction), self.environment)
 
-      func runReducer(action: Action) {
-        let actionKey = debugCaseOutput(action)
-
-        let effect = self.reducer.run(&self.state, action, self.environment)
-        var isComplete = false
-        var cancellable: AnyCancellable?
-        cancellable = effect.sink(
-          receiveCompletion: { _ in
-            isComplete = true
-            guard let cancellable = cancellable else { return }
-            cancellables[actionKey]?.removeAll(where: { $0 == cancellable })
-          },
-          receiveValue: {
-            receivedActions.append($0)
+          case let .receive(action):
+            effects = self.reducer.run(&state, action, self.environment)
+            receivedActions.append((action, state))
           }
-        )
-        if !isComplete, let cancellable = cancellable {
-          cancellables[actionKey] = cancellables[actionKey] ?? []
-          cancellables[actionKey]?.append(cancellable)
-        }
-      }
+
+          let key = debugCaseOutput(action)
+          let id = UUID()
+          return effects
+            .handleEvents(
+              receiveSubscription: { _ in longLivingEffects[key, default: []].insert(id) },
+              receiveCompletion: { _ in longLivingEffects[key]?.remove(id) },
+              receiveCancel: { longLivingEffects[key]?.remove(id) }
+            )
+            .map(TestAction.receive)
+            .eraseToEffect()
+
+        },
+        environment: ()
+      )
+      defer { self.state = store.state.value }
+
+      let viewStore = ViewStore(
+        store.scope(state: self.toLocalState, action: TestAction.send)
+      )
 
       for step in steps {
-        var expectedState = toLocalState(state)
+        var expectedState = viewStore.state
+
+        func expectedStateShouldMatch(actualState: LocalState) {
+          if expectedState != actualState {
+            let diff =
+              debugDiff(expectedState, actualState)
+              .map { ": …\n\n\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
+              ?? ""
+            _XCTFail(
+              """
+              State change does not match expectation\(diff)
+              """,
+              file: step.file,
+              line: step.line
+            )
+          }
+        }
 
         switch step.type {
         case let .send(action, update):
@@ -262,8 +288,9 @@
               file: step.file, line: step.line
             )
           }
-          runReducer(action: self.fromLocalAction(action))
+          viewStore.send(action)
           update(&expectedState)
+          expectedStateShouldMatch(actualState: viewStore.state)
 
         case let .receive(expectedAction, update):
           guard !receivedActions.isEmpty else {
@@ -276,7 +303,7 @@
             )
             break
           }
-          let receivedAction = receivedActions.removeFirst()
+          let (receivedAction, stateSnapshot) = receivedActions.removeFirst()
           if expectedAction != receivedAction {
             let diff =
               debugDiff(expectedAction, receivedAction)
@@ -290,8 +317,8 @@
               line: step.line
             )
           }
-          runReducer(action: receivedAction)
           update(&expectedState)
+          expectedStateShouldMatch(actualState: toLocalState(stateSnapshot))
 
         case let .environment(work):
           if !receivedActions.isEmpty {
@@ -305,64 +332,62 @@
               file: step.file, line: step.line
             )
           }
-
           work(&self.environment)
-        }
 
-        let actualState = self.toLocalState(self.state)
-        if expectedState != actualState {
-          let diff =
-            debugDiff(expectedState, actualState)
-            .map { ": …\n\n\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
-            ?? ""
-          _XCTFail(
-            """
-            State change does not match expectation\(diff)
-            """,
-            file: step.file,
-            line: step.line
-          )
+        case let .do(work):
+          if !receivedActions.isEmpty {
+            _XCTFail(
+              """
+              Must handle \(receivedActions.count) received \
+              action\(receivedActions.count == 1 ? "" : "s") before performing this work: …
+
+              Unhandled actions: \(debugOutput(receivedActions))
+              """,
+              file: step.file, line: step.line
+            )
+          }
+          work()
         }
       }
 
       if !receivedActions.isEmpty {
         _XCTFail(
           """
-          Received \(receivedActions.count) unexpected \
-          action\(receivedActions.count == 1 ? "" : "s"): …
+            Received \(receivedActions.count) unexpected \
+            action\(receivedActions.count == 1 ? "" : "s"): …
 
-          Unhandled actions: \(debugOutput(receivedActions))
-          """,
+            Unhandled actions: \(debugOutput(receivedActions))
+            """,
           file: file,
           line: line
         )
       }
 
-      let unfinishedActions = cancellables.filter { !$0.value.isEmpty }.map { $0.key }
+      let unfinishedActions = longLivingEffects.filter { !$0.value.isEmpty }.map { $0.key }
       if unfinishedActions.count > 0 {
         let initiatingActions = unfinishedActions.map { "• \($0)" }.joined(separator: "\n")
         let pluralSuffix = unfinishedActions.count == 1 ? "" : "s"
 
         _XCTFail(
           """
-          Some effects are still running. All effects must complete by the end of the assertion.
+            Some effects are still running. All effects must complete by the end of the assertion.
 
-          The effects that are still running were started by the following action\(pluralSuffix):
+            The effects that are still running were started by the following action\(pluralSuffix):
 
-          \(initiatingActions)
+            \(initiatingActions)
 
-          To fix you need to inspect the effects returned from the above action\(pluralSuffix) and \
-          make sure that all of them are completed by the end of your assertion. There are a few \
-          reasons why your effects may not have completed:
+            To fix you need to inspect the effects returned from the above action\(pluralSuffix) and \
+            make sure that all of them are completed by the end of your assertion. There are a few \
+            reasons why your effects may not have completed:
 
-          • If you are using a scheduler in your effect, then make sure that you wait enough time \
-          for the effect to finish. If you are using a test scheduler, then make sure you advance \
-          the scheduler so that the effects complete.
+            • If you are using a scheduler in your effect, then make sure that you wait enough time \
+            for the effect to finish. If you are using a test scheduler, then make sure you advance \
+            the scheduler so that the effects complete.
 
-          • If you are using long-living effects (for example timers, notifications, etc.), then \
-          ensure those effects are completed by returning an `Effect.cancel` effect from a \
-          particular action in your reducer, and sending that action in the test.
-          """,
+            • If you are using long-living effects (for example timers, notifications, etc.), then \
+            ensure those effects are completed by returning an `Effect.cancel` effect from a \
+            particular action in your reducer, and sending that action in the test.
+            """,
           file: file,
           line: line
         )
@@ -385,11 +410,11 @@
       action fromLocalAction: @escaping (A) -> LocalAction
     ) -> TestStore<State, S, Action, A, Environment> {
       .init(
+        environment: self.environment,
+        fromLocalAction: { self.fromLocalAction(fromLocalAction($0)) },
         initialState: self.state,
         reducer: self.reducer,
-        environment: self.environment,
-        state: { toLocalState(self.toLocalState($0)) },
-        action: { self.fromLocalAction(fromLocalAction($0)) }
+        toLocalState: { toLocalState(self.toLocalState($0)) }
       )
     }
 
@@ -476,14 +501,20 @@
         line: UInt = #line,
         _ work: @escaping () -> Void
       ) -> Step {
-        self.environment(file: file, line: line) { _ in work() }
+        Step(.do(work), file: file, line: line)
       }
 
       fileprivate enum StepType {
         case send(LocalAction, (inout LocalState) -> Void)
         case receive(Action, (inout LocalState) -> Void)
         case environment((inout Environment) -> Void)
+        case `do`(() -> Void)
       }
+    }
+
+    private enum TestAction {
+      case send(LocalAction)
+      case receive(Action)
     }
   }
 
@@ -495,8 +526,8 @@
     else {
       assertionFailure(
         """
-        Couldn't load XCTest. Are you using a test store in application code?"
-        """,
+          Couldn't load XCTest. Are you using a test store in application code?"
+          """,
         file: file,
         line: line
       )
@@ -525,5 +556,4 @@
     _XCTest
     .flatMap { dlsym($0, "_XCTCurrentTestCase") }
     .map({ unsafeBitCast($0, to: XCTCurrentTestCase.self) })
-
 #endif
