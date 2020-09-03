@@ -86,7 +86,14 @@ where ID: Hashable {
   public subscript(position: Int) -> Element {
     // NB: `_read` crashes Xcode Preview compilation.
     get { self.dictionary[self.ids[position]]! }
-    _modify { yield &self.dictionary[self.ids[position]]! }
+    set {
+      let id = self.ids[position]
+      let newId = newValue[keyPath: self.id]
+      if id != newId, let newPosition = self.ids.firstIndex(of: newId), position != newPosition {
+        (self.ids[position], self.ids[newPosition]) = (self.ids[newPosition], self.ids[position])
+      }
+      self.dictionary[newId] = newValue
+    }
   }
 
   #if DEBUG
@@ -130,20 +137,6 @@ where ID: Hashable {
     }
   #endif
 
-  public mutating func insert(_ newElement: Element, at i: Int) {
-    let id = newElement[keyPath: self.id]
-    self.dictionary[id] = newElement
-    self.ids.insert(id, at: i)
-  }
-
-  public mutating func insert<C>(
-    contentsOf newElements: C, at i: Int
-  ) where C: Collection, Element == C.Element {
-    for newElement in newElements.reversed() {
-      self.insert(newElement, at: i)
-    }
-  }
-
   /// Removes and returns the element with the specified identifier.
   ///
   /// - Parameter id: The identifier of the element to remove.
@@ -155,49 +148,6 @@ where ID: Hashable {
     self.dictionary[id] = nil
     self.ids.removeAll(where: { $0 == id })
     return element!
-  }
-
-  @discardableResult
-  public mutating func remove(at position: Int) -> Element {
-    self.remove(id: self.ids.remove(at: position))
-  }
-
-  public mutating func removeAll(where shouldBeRemoved: (Element) throws -> Bool) rethrows {
-    var ids: [ID] = []
-    for (index, id) in zip(self.ids.indices, self.ids).reversed() {
-      if try shouldBeRemoved(self.dictionary[id]!) {
-        self.ids.remove(at: index)
-        ids.append(id)
-      }
-    }
-    for id in ids where !self.ids.contains(id) {
-      self.dictionary[id] = nil
-    }
-  }
-
-  public mutating func remove(atOffsets offsets: IndexSet) {
-    for offset in offsets.reversed() {
-      _ = self.remove(at: offset)
-    }
-  }
-
-  public mutating func move(fromOffsets source: IndexSet, toOffset destination: Int) {
-    self.ids.move(fromOffsets: source, toOffset: destination)
-  }
-
-  public mutating func sort(by areInIncreasingOrder: (Element, Element) throws -> Bool) rethrows {
-    try self.ids.sort {
-      try areInIncreasingOrder(self.dictionary[$0]!, self.dictionary[$1]!)
-    }
-  }
-
-  public mutating func shuffle<T>(using generator: inout T) where T: RandomNumberGenerator {
-    ids.shuffle(using: &generator)
-  }
-
-  public mutating func shuffle() {
-    var rng = SystemRandomNumberGenerator()
-    self.shuffle(using: &rng)
   }
 }
 
