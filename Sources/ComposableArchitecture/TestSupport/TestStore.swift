@@ -163,8 +163,8 @@
   public final class TestStore<State, LocalState, Action: Equatable, LocalAction, Environment> {
     private var environment: Environment
     private let fromLocalAction: (LocalAction) -> Action
-    private var state: State
     private let reducer: Reducer<State, Action, Environment>
+    private var state: State
     private let toLocalState: (State) -> LocalState
 
     private init(
