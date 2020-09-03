@@ -220,6 +220,7 @@
       file: StaticString = #file,
       line: UInt = #line
     ) {
+      var stateAfterSend = self.state
       var receivedActions: [(action: Action, state: State)] = []
       var longLivingEffects: [String: Set<UUID>] = [:]
 
@@ -230,6 +231,7 @@
           switch action {
           case let .send(localAction):
             effects = self.reducer.run(&state, self.fromLocalAction(localAction), self.environment)
+            stateAfterSend = state
 
           case let .receive(action):
             effects = self.reducer.run(&state, action, self.environment)
@@ -290,7 +292,7 @@
           }
           viewStore.send(action)
           update(&expectedState)
-          expectedStateShouldMatch(actualState: viewStore.state)
+          expectedStateShouldMatch(actualState: toLocalState(stateAfterSend))
 
         case let .receive(expectedAction, update):
           guard !receivedActions.isEmpty else {
