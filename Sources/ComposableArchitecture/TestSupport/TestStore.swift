@@ -220,9 +220,9 @@
       file: StaticString = #file,
       line: UInt = #line
     ) {
-      var stateAfterSend = self.state
       var receivedActions: [(action: Action, state: State)] = []
       var longLivingEffects: [String: Set<UUID>] = [:]
+      var snapshotState = self.state
 
       let store = Store(
         initialState: self.state,
@@ -231,7 +231,7 @@
           switch action {
           case let .send(localAction):
             effects = self.reducer.run(&state, self.fromLocalAction(localAction), self.environment)
-            stateAfterSend = state
+            snapshotState = state
 
           case let .receive(action):
             effects = self.reducer.run(&state, action, self.environment)
@@ -260,7 +260,7 @@
       )
 
       for step in steps {
-        var expectedState = viewStore.state
+        var expectedState = toLocalState(snapshotState)
 
         func expectedStateShouldMatch(actualState: LocalState) {
           if expectedState != actualState {
@@ -292,7 +292,7 @@
           }
           viewStore.send(action)
           update(&expectedState)
-          expectedStateShouldMatch(actualState: toLocalState(stateAfterSend))
+          expectedStateShouldMatch(actualState: toLocalState(snapshotState))
 
         case let .receive(expectedAction, update):
           guard !receivedActions.isEmpty else {
@@ -304,7 +304,7 @@
             )
             break
           }
-          let (receivedAction, stateSnapshot) = receivedActions.removeFirst()
+          let (receivedAction, snapshotState) = receivedActions.removeFirst()
           if expectedAction != receivedAction {
             let diff =
               debugDiff(expectedAction, receivedAction)
@@ -318,7 +318,7 @@
             )
           }
           update(&expectedState)
-          expectedStateShouldMatch(actualState: toLocalState(stateSnapshot))
+          expectedStateShouldMatch(actualState: toLocalState(snapshotState))
 
         case let .environment(work):
           if !receivedActions.isEmpty {
