@@ -304,7 +304,7 @@
             )
             break
           }
-          let (receivedAction, snapshotState) = receivedActions.removeFirst()
+          let (receivedAction, state) = receivedActions.removeFirst()
           if expectedAction != receivedAction {
             let diff =
               debugDiff(expectedAction, receivedAction)
@@ -318,7 +318,8 @@
             )
           }
           update(&expectedState)
-          expectedStateShouldMatch(actualState: toLocalState(snapshotState))
+          expectedStateShouldMatch(actualState: toLocalState(state))
+          snapshotState = state
 
         case let .environment(work):
           if !receivedActions.isEmpty {
