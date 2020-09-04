@@ -168,17 +168,17 @@
     private let toLocalState: (State) -> LocalState
 
     private init(
+      environment: Environment,
+      fromLocalAction: @escaping (LocalAction) -> Action,
       initialState: State,
       reducer: Reducer<State, Action, Environment>,
-      environment: Environment,
-      state toLocalState: @escaping (State) -> LocalState,
-      action fromLocalAction: @escaping (LocalAction) -> Action
+      toLocalState: @escaping (State) -> LocalState
     ) {
+      self.environment = environment
+      self.fromLocalAction = fromLocalAction
       self.state = initialState
       self.reducer = reducer
-      self.environment = environment
       self.toLocalState = toLocalState
-      self.fromLocalAction = fromLocalAction
     }
   }
 
@@ -195,11 +195,11 @@
       environment: Environment
     ) {
       self.init(
+        environment: environment,
+        fromLocalAction: { $0 },
         initialState: initialState,
         reducer: reducer,
-        environment: environment,
-        state: { $0 },
-        action: { $0 }
+        toLocalState: { $0 }
       )
     }
   }
@@ -220,34 +220,62 @@
       file: StaticString = #file,
       line: UInt = #line
     ) {
-      var receivedActions: [Action] = []
+      var receivedActions: [(action: Action, state: State)] = []
+      var longLivingEffects: [String: Set<UUID>] = [:]
+      var snapshotState = self.state
 
-      var cancellables: [String: [AnyCancellable]] = [:]
+      let store = Store(
+        initialState: self.state,
+        reducer: Reducer<State, TestAction, Void> { state, action, _ in
+          let effects: Effect<Action, Never>
+          switch action {
+          case let .send(localAction):
+            effects = self.reducer.run(&state, self.fromLocalAction(localAction), self.environment)
+            snapshotState = state
 
-      func runReducer(action: Action) {
-        let actionKey = debugCaseOutput(action)
-
-        let effect = self.reducer.run(&self.state, action, self.environment)
-        var isComplete = false
-        var cancellable: AnyCancellable?
-        cancellable = effect.sink(
-          receiveCompletion: { _ in
-            isComplete = true
-            guard let cancellable = cancellable else { return }
-            cancellables[actionKey]?.removeAll(where: { $0 == cancellable })
-          },
-          receiveValue: {
-            receivedActions.append($0)
+          case let .receive(action):
+            effects = self.reducer.run(&state, action, self.environment)
+            receivedActions.append((action, state))
           }
-        )
-        if !isComplete, let cancellable = cancellable {
-          cancellables[actionKey] = cancellables[actionKey] ?? []
-          cancellables[actionKey]?.append(cancellable)
-        }
-      }
+
+          let key = debugCaseOutput(action)
+          let id = UUID()
+          return
+            effects
+            .handleEvents(
+              receiveSubscription: { _ in longLivingEffects[key, default: []].insert(id) },
+              receiveCompletion: { _ in longLivingEffects[key]?.remove(id) },
+              receiveCancel: { longLivingEffects[key]?.remove(id) }
+            )
+            .map(TestAction.receive)
+            .eraseToEffect()
+
+        },
+        environment: ()
+      )
+      defer { self.state = store.state.value }
+
+      let viewStore = ViewStore(
+        store.scope(state: self.toLocalState, action: TestAction.send)
+      )
 
       for step in steps {
-        var expectedState = toLocalState(state)
+        var expectedState = toLocalState(snapshotState)
+
+        func expectedStateShouldMatch(actualState: LocalState) {
+          if expectedState != actualState {
+            let diff =
+              debugDiff(expectedState, actualState)
+              .map { ": …\n\n\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
+              ?? ""
+            _XCTFail(
+              """
+              State change does not match expectation\(diff)
+              """,
+              file: step.file, line: step.line
+            )
+          }
+        }
 
         switch step.type {
         case let .send(action, update):
@@ -262,8 +290,9 @@
               file: step.file, line: step.line
             )
           }
-          runReducer(action: self.fromLocalAction(action))
+          viewStore.send(action)
           update(&expectedState)
+          expectedStateShouldMatch(actualState: toLocalState(snapshotState))
 
         case let .receive(expectedAction, update):
           guard !receivedActions.isEmpty else {
@@ -271,12 +300,11 @@
               """
               Expected to receive an action, but received none.
               """,
-              file: step.file,
-              line: step.line
+              file: step.file, line: step.line
             )
             break
           }
-          let receivedAction = receivedActions.removeFirst()
+          let (receivedAction, state) = receivedActions.removeFirst()
           if expectedAction != receivedAction {
             let diff =
               debugDiff(expectedAction, receivedAction)
@@ -286,12 +314,12 @@
               """
               Received unexpected action\(diff)
               """,
-              file: step.file,
-              line: step.line
+              file: step.file, line: step.line
             )
           }
-          runReducer(action: receivedAction)
           update(&expectedState)
+          expectedStateShouldMatch(actualState: toLocalState(state))
+          snapshotState = state
 
         case let .environment(work):
           if !receivedActions.isEmpty {
@@ -305,23 +333,21 @@
               file: step.file, line: step.line
             )
           }
-
           work(&self.environment)
-        }
 
-        let actualState = self.toLocalState(self.state)
-        if expectedState != actualState {
-          let diff =
-            debugDiff(expectedState, actualState)
-            .map { ": …\n\n\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
-            ?? ""
-          _XCTFail(
-            """
-            State change does not match expectation\(diff)
-            """,
-            file: step.file,
-            line: step.line
-          )
+        case let .do(work):
+          if !receivedActions.isEmpty {
+            _XCTFail(
+              """
+              Must handle \(receivedActions.count) received \
+              action\(receivedActions.count == 1 ? "" : "s") before performing this work: …
+
+              Unhandled actions: \(debugOutput(receivedActions))
+              """,
+              file: step.file, line: step.line
+            )
+          }
+          work()
         }
       }
 
@@ -333,12 +359,11 @@
 
           Unhandled actions: \(debugOutput(receivedActions))
           """,
-          file: file,
-          line: line
+          file: file, line: line
         )
       }
 
-      let unfinishedActions = cancellables.filter { !$0.value.isEmpty }.map { $0.key }
+      let unfinishedActions = longLivingEffects.filter { !$0.value.isEmpty }.map { $0.key }
       if unfinishedActions.count > 0 {
         let initiatingActions = unfinishedActions.map { "• \($0)" }.joined(separator: "\n")
         let pluralSuffix = unfinishedActions.count == 1 ? "" : "s"
@@ -363,8 +388,7 @@
           ensure those effects are completed by returning an `Effect.cancel` effect from a \
           particular action in your reducer, and sending that action in the test.
           """,
-          file: file,
-          line: line
+          file: file, line: line
         )
       }
     }
@@ -385,11 +409,11 @@
       action fromLocalAction: @escaping (A) -> LocalAction
     ) -> TestStore<State, S, Action, A, Environment> {
       .init(
+        environment: self.environment,
+        fromLocalAction: { self.fromLocalAction(fromLocalAction($0)) },
         initialState: self.state,
         reducer: self.reducer,
-        environment: self.environment,
-        state: { toLocalState(self.toLocalState($0)) },
-        action: { self.fromLocalAction(fromLocalAction($0)) }
+        toLocalState: { toLocalState(self.toLocalState($0)) }
       )
     }
 
@@ -476,14 +500,20 @@
         line: UInt = #line,
         _ work: @escaping () -> Void
       ) -> Step {
-        self.environment(file: file, line: line) { _ in work() }
+        Step(.do(work), file: file, line: line)
       }
 
       fileprivate enum StepType {
         case send(LocalAction, (inout LocalState) -> Void)
         case receive(Action, (inout LocalState) -> Void)
         case environment((inout Environment) -> Void)
+        case `do`(() -> Void)
       }
+    }
+
+    private enum TestAction {
+      case send(LocalAction)
+      case receive(Action)
     }
   }
 
@@ -525,5 +555,4 @@
     _XCTest
     .flatMap { dlsym($0, "_XCTCurrentTestCase") }
     .map({ unsafeBitCast($0, to: XCTCurrentTestCase.self) })
-
 #endif
