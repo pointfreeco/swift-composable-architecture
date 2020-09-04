@@ -70,7 +70,7 @@ let voiceMemoReducer = Reducer<VoiceMemo, VoiceMemoAction, VoiceMemoEnvironment>
                 / TimeInterval(NSEC_PER_SEC)
             )
           },
-        
+
         environment.audioPlayerClient
           .play(PlayerId(), memo.url)
           .catchToEffect()
