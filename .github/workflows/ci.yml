@@ -15,7 +15,7 @@ jobs:
       matrix:
         xcode:
           - 11.3
-          - 11.6
+          - 11.7
           - 12_beta
     steps:
       - uses: actions/checkout@v2
