@@ -34,7 +34,8 @@ let package = Package(
       dependencies: [
         "CasePaths",
         "CombineSchedulers",
-      ]
+      ],
+      swiftSettings: [.define("DEBUG")]
     ),
     .testTarget(
       name: "ComposableArchitectureTests",
