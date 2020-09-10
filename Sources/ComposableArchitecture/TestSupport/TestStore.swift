@@ -266,13 +266,23 @@
           if expectedState != actualState {
             let diff =
               debugDiff(expectedState, actualState)
-              .map { ": …\n\n\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
-              ?? ""
+              .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
+              ?? """
+              Expected:
+              \(String(describing: expectedState).indent(by: 2))
+
+              Actual:
+              \(String(describing: actualState).indent(by: 2))
+              """
+
             _XCTFail(
               """
-              State change does not match expectation\(diff)
+              State change does not match expectation: …
+
+              \(diff)
               """,
-              file: step.file, line: step.line
+              file: step.file,
+              line: step.line
             )
           }
         }
@@ -291,7 +301,11 @@
             )
           }
           viewStore.send(action)
-          update(&expectedState)
+          do {
+            try update(&expectedState)
+          } catch {
+            _XCTFail("Threw error: \(error)", file: step.file, line: step.line)
+          }
           expectedStateShouldMatch(actualState: toLocalState(snapshotState))
 
         case let .receive(expectedAction, update):
@@ -308,16 +322,29 @@
           if expectedAction != receivedAction {
             let diff =
               debugDiff(expectedAction, receivedAction)
-              .map { ": …\n\n\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
-              ?? ""
+              .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
+              ?? """
+              Expected:
+              \(String(describing: expectedState).indent(by: 2))
+
+              Received:
+              \(String(describing: receivedAction).indent(by: 2))
+              """
+
             _XCTFail(
               """
-              Received unexpected action\(diff)
+              Received unexpected action: …
+
+              \(diff)
               """,
               file: step.file, line: step.line
             )
           }
-          update(&expectedState)
+          do {
+            try update(&expectedState)
+          } catch {
+            _XCTFail("Threw error: \(error)", file: step.file, line: step.line)
+          }
           expectedStateShouldMatch(actualState: toLocalState(state))
           snapshotState = state
 
@@ -333,7 +360,11 @@
               file: step.file, line: step.line
             )
           }
-          work(&self.environment)
+          do {
+            try work(&self.environment)
+          } catch {
+            _XCTFail("Threw error: \(error)", file: step.file, line: step.line)
+          }
 
         case let .do(work):
           if !receivedActions.isEmpty {
@@ -347,7 +378,11 @@
               file: step.file, line: step.line
             )
           }
-          work()
+          do {
+            try work()
+          } catch {
+            _XCTFail("Threw error: \(error)", file: step.file, line: step.line)
+          }
         }
       }
 
@@ -456,7 +491,7 @@
         _ action: LocalAction,
         file: StaticString = #file,
         line: UInt = #line,
-        _ update: @escaping (inout LocalState) -> Void = { _ in }
+        _ update: @escaping (inout LocalState) throws -> Void = { _ in }
       ) -> Step {
         Step(.send(action, update), file: file, line: line)
       }
@@ -473,7 +508,7 @@
         _ action: Action,
         file: StaticString = #file,
         line: UInt = #line,
-        _ update: @escaping (inout LocalState) -> Void = { _ in }
+        _ update: @escaping (inout LocalState) throws -> Void = { _ in }
       ) -> Step {
         Step(.receive(action, update), file: file, line: line)
       }
@@ -486,7 +521,7 @@
       public static func environment(
         file: StaticString = #file,
         line: UInt = #line,
-        _ update: @escaping (inout Environment) -> Void
+        _ update: @escaping (inout Environment) throws -> Void
       ) -> Step {
         Step(.environment(update), file: file, line: line)
       }
@@ -498,16 +533,16 @@
       public static func `do`(
         file: StaticString = #file,
         line: UInt = #line,
-        _ work: @escaping () -> Void
+        _ work: @escaping () throws -> Void
       ) -> Step {
         Step(.do(work), file: file, line: line)
       }
 
       fileprivate enum StepType {
-        case send(LocalAction, (inout LocalState) -> Void)
-        case receive(Action, (inout LocalState) -> Void)
-        case environment((inout Environment) -> Void)
-        case `do`(() -> Void)
+        case send(LocalAction, (inout LocalState) throws -> Void)
+        case receive(Action, (inout LocalState) throws -> Void)
+        case environment((inout Environment) throws -> Void)
+        case `do`(() throws -> Void)
       }
     }
 

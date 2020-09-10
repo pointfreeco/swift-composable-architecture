@@ -117,7 +117,7 @@ final class ComposableArchitectureTests: XCTestCase {
     store.assert(
       .send(.start),
       .send(.incr) { $0 = 1 },
-      .do { subject.send() },
+      .do(subject.send),
       .receive(.incr) { $0 = 2 },
       .send(.end)
     )
