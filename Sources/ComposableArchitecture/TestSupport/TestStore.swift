@@ -266,13 +266,23 @@
           if expectedState != actualState {
             let diff =
               debugDiff(expectedState, actualState)
-              .map { ": …\n\n\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
-              ?? ""
+              .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
+              ?? """
+              Expected:
+              \(String(describing: expectedState).indent(by: 2))
+
+              Actual:
+              \(String(describing: actualState).indent(by: 2))
+              """
+
             _XCTFail(
               """
-              State change does not match expectation\(diff)
+              State change does not match expectation: …
+
+              \(diff)
               """,
-              file: step.file, line: step.line
+              file: step.file,
+              line: step.line
             )
           }
         }
@@ -290,6 +300,7 @@
               file: step.file, line: step.line
             )
           }
+          viewStore.send(action)
           do {
             try update(&expectedState)
           } catch {
@@ -372,30 +383,6 @@
           } catch {
             _XCTFail("Threw error: \(error)", file: step.file, line: step.line)
           }
-        }
-
-        let actualState = self.toLocalState(self.state)
-        if expectedState != actualState {
-          let diff =
-            debugDiff(expectedState, actualState)
-            .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
-            ?? """
-            Expected:
-            \(String(describing: expectedState).indent(by: 2))
-
-            Actual:
-            \(String(describing: actualState).indent(by: 2))
-            """
-
-          _XCTFail(
-            """
-            State change does not match expectation: …
-
-            \(diff)
-            """,
-            file: step.file,
-            line: step.line
-          )
         }
       }
 
