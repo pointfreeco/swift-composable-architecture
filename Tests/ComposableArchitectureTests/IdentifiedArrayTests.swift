@@ -227,4 +227,22 @@ final class IdentifiedArrayTests: XCTestCase {
       XCTAssertEqual([1, 3, 5, 4, 2], array.ids)
     }
   #endif
+
+  func testReverse() {
+    var array: IdentifiedArray = [
+      ComparableValue(id: 1, value: 100),
+      ComparableValue(id: 2, value: 50),
+      ComparableValue(id: 3, value: 75),
+    ]
+
+    array.reverse()
+
+    XCTAssertEqual([3, 2, 1], array.ids)
+    XCTAssertEqual(
+      [
+        ComparableValue(id: 3, value: 75),
+        ComparableValue(id: 2, value: 50),
+        ComparableValue(id: 1, value: 100),
+      ], array)
+  }
 }

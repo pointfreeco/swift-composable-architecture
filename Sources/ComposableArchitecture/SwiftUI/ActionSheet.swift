@@ -4,7 +4,7 @@ import SwiftUI
 /// `Action` generic is the type of actions that can be sent from tapping on a button in the sheet.
 ///
 /// This type can be used in your application's state in order to control the presentation or
-/// dismissal of action sheets. It is preferrable to use this API instead of the default SwiftUI API
+/// dismissal of action sheets. It is preferable to use this API instead of the default SwiftUI API
 /// for action sheets because SwiftUI uses 2-way bindings in order to control the showing and
 /// dismissal of sheets, and that does not play nicely with the Composable Architecture. The library
 /// requires that all state mutations happen by sending an action so that a reducer can handle that
@@ -107,12 +107,12 @@ import SwiftUI
 public struct ActionSheetState<Action> {
   public let id = UUID()
   public var buttons: [Button]
-  public var message: String?
-  public var title: String
+  public var message: LocalizedStringKey?
+  public var title: LocalizedStringKey
 
   public init(
-    title: String,
-    message: String? = nil,
+    title: LocalizedStringKey,
+    message: LocalizedStringKey? = nil,
     buttons: [Button]
   ) {
     self.buttons = buttons
@@ -146,8 +146,8 @@ extension ActionSheetState: CustomDebugOutputConvertible {
 @available(watchOS 6, *)
 extension ActionSheetState: Equatable where Action: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.title == rhs.title
-      && lhs.message == rhs.message
+    lhs.title.formatted() == rhs.title.formatted()
+      && lhs.message?.formatted() == rhs.message?.formatted()
       && lhs.buttons == rhs.buttons
   }
 }
@@ -159,8 +159,8 @@ extension ActionSheetState: Equatable where Action: Equatable {
 @available(watchOS 6, *)
 extension ActionSheetState: Hashable where Action: Hashable {
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(self.title)
-    hasher.combine(self.message)
+    hasher.combine(self.title.formatted())
+    hasher.combine(self.message?.formatted())
     hasher.combine(self.buttons)
   }
 }
