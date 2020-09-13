@@ -23,11 +23,11 @@ class AlertsAndActionSheetsTests: XCTestCase {
         )
       },
       .send(.incrementButtonTapped) {
-        $0.alert = .init(title: "Incremented!")
+        $0.resultAlert = .init(title: "Incremented!")
         $0.count = 1
       },
-      .send(.alertDismissed) {
-        $0.alert = nil
+      .send(.resultAlertDismissed) {
+        $0.resultAlert = nil
       }
     )
   }
@@ -52,7 +52,7 @@ class AlertsAndActionSheetsTests: XCTestCase {
         )
       },
       .send(.incrementButtonTapped) {
-        $0.alert = .init(title: "Incremented!")
+        $0.resultAlert = .init(title: "Incremented!")
         $0.count = 1
       },
       .send(.actionSheetDismissed) {

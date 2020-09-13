@@ -21,6 +21,7 @@ private let readMe = """
 struct AlertAndSheetState: Equatable {
   var actionSheet: ActionSheetState<AlertAndSheetAction>?
   var alert: AlertState<AlertAndSheetAction>?
+  var resultAlert: AlertState<AlertAndSheetAction>?
   var count = 0
 }
 
@@ -31,6 +32,7 @@ enum AlertAndSheetAction: Equatable {
   case alertButtonTapped
   case alertCancelTapped
   case alertDismissed
+  case resultAlertDismissed
   case decrementButtonTapped
   case incrementButtonTapped
 }
@@ -77,13 +79,17 @@ let alertAndSheetReducer = Reducer<
     state.alert = nil
     return .none
 
+  case .resultAlertDismissed:
+    state.resultAlert = nil
+    return .none
+
   case .decrementButtonTapped:
-    state.alert = .init(title: "Decremented!")
+    state.resultAlert = .init(title: "Decremented!")
     state.count -= 1
     return .none
 
   case .incrementButtonTapped:
-    state.alert = .init(title: "Incremented!")
+    state.resultAlert = .init(title: "Incremented!")
     state.count += 1
     return .none
   }
@@ -112,6 +118,10 @@ struct AlertAndSheetView: View {
             )
         }
       }
+      .alert(
+        self.store.scope(state: { $0.resultAlert }),
+        dismiss: .resultAlertDismissed
+      )
     }
     .navigationBarTitle("Alerts & Action Sheets")
   }
