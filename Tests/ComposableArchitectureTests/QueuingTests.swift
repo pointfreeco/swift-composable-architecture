@@ -23,19 +23,25 @@ final class QueuingTests: XCTestCase {
     viewStore.send(.sendNilTapped)
     XCTAssertEqual(.init(toggle: .off), viewStore.state)
 
-
-//    store.assert(
-//      .send(.`init`),
-//      .send(.sendUUIDTapped),
-//      .receive(.receiveServiceResult("A")) {
-//        $0.toggle = .on
-//      },
-//      .send(.sendNilTapped),
-//      .receive(.receiveServiceResult(nil)) {
-//        $0.toggle = .off
-//      },
-//      .do { service.subject.send(completion: .finished)}
-//    )
+    let testStore = TestStore(
+      initialState: State(toggle: .off),
+      reducer: reducer,
+      environment: Environment(
+        service: service
+      )
+    )
+    testStore.assert(
+      .send(.`init`),
+      .send(.sendUUIDTapped),
+      .receive(.receiveServiceResult("A")) {
+        $0.toggle = .on
+      },
+      .send(.sendNilTapped),
+      .receive(.receiveServiceResult(nil)) {
+        $0.toggle = .off
+      },
+      .do { service.subject.send(completion: .finished)}
+    )
   }
 }
 
