@@ -145,7 +145,8 @@ public final class Store<State, Action> {
     }
 
     while !self.synchronousActionsToSend.isEmpty || !self.bufferedActions.isEmpty {
-      let action = !self.synchronousActionsToSend.isEmpty
+      let action =
+        !self.synchronousActionsToSend.isEmpty
         ? self.synchronousActionsToSend.removeFirst()
         : self.bufferedActions.removeFirst()
 
