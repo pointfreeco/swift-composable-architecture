@@ -179,6 +179,35 @@ public final class Store<State, Action> {
     }
   }
 
+
+    public func optionalScope<LocalState, LocalAction>(
+        state toLocalState: @escaping (State) -> LocalState?,
+        action fromLocalAction: @escaping (LocalAction) -> Action
+    ) -> Store<LocalState, LocalAction>? {
+
+        guard let initialState = toLocalState(self.state.value) else {
+            return nil
+        }
+
+        let localStore = Store<LocalState, LocalAction>(
+            initialState: initialState,
+            reducer: { localState, localAction in
+                self.send(fromLocalAction(localAction))
+                if let newLocalState = toLocalState(self.state.value) {
+                    localState = newLocalState
+                }
+                return .none
+            }
+        )
+        localStore.parentCancellable = self.state
+            .sink { [weak localStore] newValue in
+                if let newLocalState = toLocalState(newValue) {
+                    localStore?.state.value = newLocalState
+                }
+            }
+        return localStore
+    }
+
   /// Returns a "stateless" store by erasing state to `Void`.
   public var stateless: Store<Void, Action> {
     self.scope(state: { _ in () })
