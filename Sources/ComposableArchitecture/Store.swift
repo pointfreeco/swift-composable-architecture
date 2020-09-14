@@ -13,6 +13,7 @@ public final class Store<State, Action> {
   private var parentCancellable: AnyCancellable?
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   private var synchronousActionsToSend: [Action] = []
+  private var bufferedActions: [Action] = []
 
   /// Initializes a store from an initial state, a reducer, and an environment.
   ///
@@ -136,32 +137,18 @@ public final class Store<State, Action> {
   }
 
   func send(_ action: Action) {
-    self.synchronousActionsToSend.append(action)
+    if !self.isSending {
+      self.synchronousActionsToSend.append(action)
+    } else {
+      self.bufferedActions.append(action)
+      return
+    }
 
-    while !self.synchronousActionsToSend.isEmpty {
-      let action = self.synchronousActionsToSend.removeFirst()
+    while !self.synchronousActionsToSend.isEmpty || !self.bufferedActions.isEmpty {
+      let action = !self.synchronousActionsToSend.isEmpty
+        ? self.synchronousActionsToSend.removeFirst()
+        : self.bufferedActions.removeFirst()
 
-      if self.isSending {
-        assertionFailure(
-          """
-          The store was sent the action \(debugCaseOutput(action)) while it was already 
-          processing another action.
-
-          This can happen for a few reasons:
-
-          * The store was sent an action recursively. This can occur when you run an effect \
-          directly in the reducer, rather than returning it from the reducer. Check the stack (⌘7) \
-          to find frames corresponding to one of your reducers. That code should be refactored to \
-          not invoke the effect directly.
-
-          * The store has been sent actions from multiple threads. The `send` method is not \
-          thread-safe, and should only ever be used from a single thread (typically the main \
-          thread). Instead of calling `send` from multiple threads you should use effects to \
-          process expensive computations on background threads so that it can be fed back into the \
-          store.
-          """
-        )
-      }
       self.isSending = true
       let effect = self.reducer(&self.state.value, action)
       self.isSending = false
