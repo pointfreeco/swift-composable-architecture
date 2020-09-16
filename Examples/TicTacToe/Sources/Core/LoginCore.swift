@@ -94,7 +94,7 @@ public let loginReducer =
 
       case .twoFactorDismissed:
         state.twoFactor = nil
-        return .none
+        return .cancel(id: TwoFactorTearDownToken())
       }
     }
   )
