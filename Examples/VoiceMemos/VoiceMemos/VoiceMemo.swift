@@ -137,7 +137,7 @@ struct VoiceMemoView: View {
           dateComponentsFormatter.string(from: self.currentTime).map {
             Text($0)
               .font(Font.footnote.monospacedDigit())
-              .foregroundColor(.gray)
+              .foregroundColor(Color(.systemGray))
           }
 
           Button(action: { self.viewStore.send(.playButtonTapped) }) {

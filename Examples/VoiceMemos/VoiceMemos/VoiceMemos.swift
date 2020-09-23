@@ -207,12 +207,12 @@ struct VoiceMemosView: View {
           VStack {
             ZStack {
               Circle()
-                .foregroundColor(.black)
+                .foregroundColor(Color(.label))
                 .frame(width: 74, height: 74)
 
               Button(action: { viewStore.send(.recordButtonTapped) }) {
                 RoundedRectangle(cornerRadius: viewStore.currentRecording != nil ? 4 : 35)
-                  .foregroundColor(.red)
+                  .foregroundColor(Color(.systemRed))
                   .padding(viewStore.currentRecording != nil ? 17 : 2)
                   .animation(.spring())
               }
@@ -234,7 +234,7 @@ struct VoiceMemosView: View {
                 Text($0)
                   .font(Font.body.monospacedDigit().bold())
                   .foregroundColor(.white)
-                  .colorMultiply(Int(duration).isMultiple(of: 2) ? .red : .black)
+                  .colorMultiply(Int(duration).isMultiple(of: 2) ? Color(.systemRed) : Color(.label))
                   .animation(.easeInOut(duration: 0.5))
               }
             }
