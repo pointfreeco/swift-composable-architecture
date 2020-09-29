@@ -334,3 +334,19 @@ extension Publisher {
       .eraseToEffect()
   }
 }
+
+#if DEBUG
+extension Effect {
+  public static func unimplemented(
+    _ message: @autoclosure @escaping () -> String = "",
+    file: StaticString = #file,
+    line: UInt = #line
+  ) -> Effect<Output, Failure> {
+    Deferred {
+      Future { _ in
+        fatalError(message(), file: file, line: line)
+      }
+    }.eraseToEffect()
+  }
+}
+#endif
