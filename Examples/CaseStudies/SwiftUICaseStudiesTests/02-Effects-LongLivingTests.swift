@@ -28,7 +28,7 @@ class LongLivingEffectsTests: XCTestCase {
 
       .send(.onDisappear),
 
-      // Simulate a screenshot being taken to show not effects
+      // Simulate a screenshot being taken to show no effects
       // are executed.
       .do { screenshotTaken.send() }
     )

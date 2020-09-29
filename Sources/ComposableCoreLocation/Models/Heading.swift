@@ -5,7 +5,7 @@ import CoreLocation
 @available(iOS 3, macCatalyst 13, watchOS 2, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
-public struct Heading: Equatable {
+public struct Heading: Hashable {
   public let rawValue: CLHeading?
 
   public var headingAccuracy: CLLocationDirection
@@ -46,15 +46,5 @@ public struct Heading: Equatable {
     self.x = x
     self.y = y
     self.z = z
-  }
-
-  public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.headingAccuracy == rhs.headingAccuracy
-      && lhs.magneticHeading == rhs.magneticHeading
-      && lhs.timestamp == rhs.timestamp
-      && lhs.trueHeading == rhs.trueHeading
-      && lhs.x == rhs.x
-      && lhs.y == rhs.y
-      && lhs.z == rhs.z
   }
 }

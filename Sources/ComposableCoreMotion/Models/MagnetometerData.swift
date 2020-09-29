@@ -4,7 +4,7 @@
   /// Measurements of the Earth's magnetic field relative to the device.
   ///
   /// See the documentation for `CMMagnetometerData` for more info.
-  public struct MagnetometerData: Equatable {
+  public struct MagnetometerData: Hashable {
     public var magneticField: CMMagneticField
     public var timestamp: TimeInterval
 
@@ -26,6 +26,13 @@
         && lhs.magneticField.y == rhs.magneticField.y
         && lhs.magneticField.z == rhs.magneticField.z
         && lhs.timestamp == rhs.timestamp
+    }
+
+    public func hash(into hasher: inout Hasher) {
+      hasher.combine(self.magneticField.x)
+      hasher.combine(self.magneticField.y)
+      hasher.combine(self.magneticField.z)
+      hasher.combine(self.timestamp)
     }
   }
 #endif

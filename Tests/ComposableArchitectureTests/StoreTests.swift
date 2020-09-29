@@ -57,7 +57,7 @@ final class StoreTests: XCTestCase {
     let childStore = parentStore.scope(state: String.init)
 
     var values: [String] = []
-    childStore.$state
+    childStore.state
       .sink(receiveValue: { values.append($0) })
       .store(in: &self.cancellables)
 
@@ -79,7 +79,7 @@ final class StoreTests: XCTestCase {
     let childViewStore = ViewStore(childStore)
 
     var values: [Int] = []
-    parentStore.$state
+    parentStore.state
       .sink(receiveValue: { values.append($0) })
       .store(in: &self.cancellables)
 
@@ -102,7 +102,7 @@ final class StoreTests: XCTestCase {
     parentStore
       .scope(state: { $0.map { "\($0)" }.removeDuplicates() })
       .sink { childStore in
-        childStore.$state
+        childStore.state
           .sink { outputs.append($0) }
           .store(in: &self.cancellables)
       }
@@ -246,7 +246,7 @@ final class StoreTests: XCTestCase {
 
     parentStore
       .scope { $0.removeDuplicates() }
-      .sink { outputs.append($0.state) }
+      .sink { outputs.append($0.state.value) }
       .store(in: &self.cancellables)
 
     XCTAssertEqual(outputs, [0])
@@ -285,7 +285,7 @@ final class StoreTests: XCTestCase {
       .ifLet(
         then: { store in
           stores.append(store)
-          outputs.append(store.state)
+          outputs.append(store.state.value)
         },
         else: {
           outputs.append(nil)
@@ -345,5 +345,47 @@ final class StoreTests: XCTestCase {
       XCTAssertEqual(vs.state, 3)
     }
     .store(in: &self.cancellables)
+  }
+
+  func testActionQueuing() {
+    let subject = PassthroughSubject<Void, Never>()
+
+    enum Action: Equatable {
+      case incrementTapped
+      case `init`
+      case doIncrement
+    }
+
+    let store = TestStore(
+      initialState: 0,
+      reducer: Reducer<Int, Action, Void> { state, action, _ in
+        switch action {
+        case .incrementTapped:
+          subject.send()
+          return .none
+
+        case .`init`:
+          return subject.map { .doIncrement }.eraseToEffect()
+
+        case .doIncrement:
+          state += 1
+          return .none
+        }
+      },
+      environment: ()
+    )
+
+    store.assert(
+      .send(.`init`),
+      .send(.incrementTapped),
+      .receive(.doIncrement) {
+        $0 = 1
+      },
+      .send(.incrementTapped),
+      .receive(.doIncrement) {
+        $0 = 2
+      },
+      .do { subject.send(completion: .finished) }
+    )
   }
 }
