@@ -195,4 +195,54 @@ final class IdentifiedArrayTests: XCTestCase {
       ], array)
 
   }
+
+  // Account for randomness API changes in Swift 5.3 (https://twitter.com/mbrandonw/status/1262388756847505410)
+  // TODO: Try swapping out the LCRNG for a Xoshiro generator
+  #if swift(>=5.3)
+    func testShuffle() {
+      struct User: Equatable, Identifiable {
+        let id: Int
+        var name: String
+      }
+
+      var array: IdentifiedArray = [
+        User(id: 1, name: "Blob"),
+        User(id: 2, name: "Blob Jr."),
+        User(id: 3, name: "Blob Sr."),
+        User(id: 4, name: "Foo Jr."),
+        User(id: 5, name: "Bar Jr."),
+      ]
+      var lcrng = LCRNG(seed: 0)
+      array.shuffle(using: &lcrng)
+      XCTAssertEqual(
+        [
+          User(id: 1, name: "Blob"),
+          User(id: 3, name: "Blob Sr."),
+          User(id: 5, name: "Bar Jr."),
+          User(id: 4, name: "Foo Jr."),
+          User(id: 2, name: "Blob Jr."),
+        ],
+        array.elements
+      )
+      XCTAssertEqual([1, 3, 5, 4, 2], array.ids)
+    }
+  #endif
+
+  func testReverse() {
+    var array: IdentifiedArray = [
+      ComparableValue(id: 1, value: 100),
+      ComparableValue(id: 2, value: 50),
+      ComparableValue(id: 3, value: 75),
+    ]
+
+    array.reverse()
+
+    XCTAssertEqual([3, 2, 1], array.ids)
+    XCTAssertEqual(
+      [
+        ComparableValue(id: 3, value: 75),
+        ComparableValue(id: 2, value: 50),
+        ComparableValue(id: 1, value: 100),
+      ], array)
+  }
 }

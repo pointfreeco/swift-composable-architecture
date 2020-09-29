@@ -15,7 +15,7 @@ private let readMe = """
   closures.
 
   The benefit of doing this is that you can get full test coverage on how a user interacts with \
-  with alerts and action sheets in your application
+  alerts and action sheets in your application
   """
 
 struct AlertAndSheetState: Equatable {
@@ -27,8 +27,10 @@ struct AlertAndSheetState: Equatable {
 enum AlertAndSheetAction: Equatable {
   case actionSheetButtonTapped
   case actionSheetCancelTapped
+  case actionSheetDismissed
   case alertButtonTapped
   case alertCancelTapped
+  case alertDismissed
   case decrementButtonTapped
   case incrementButtonTapped
 }
@@ -53,6 +55,9 @@ let alertAndSheetReducer = Reducer<
     return .none
 
   case .actionSheetCancelTapped:
+    return .none
+
+  case .actionSheetDismissed:
     state.actionSheet = nil
     return .none
 
@@ -66,21 +71,24 @@ let alertAndSheetReducer = Reducer<
     return .none
 
   case .alertCancelTapped:
+    return .none
+
+  case .alertDismissed:
     state.alert = nil
     return .none
 
   case .decrementButtonTapped:
-    state.actionSheet = nil
+    state.alert = .init(title: "Decremented!")
     state.count -= 1
     return .none
 
   case .incrementButtonTapped:
-    state.actionSheet = nil
-    state.alert = nil
+    state.alert = .init(title: "Incremented!")
     state.count += 1
     return .none
   }
 }
+.debug()
 
 struct AlertAndSheetView: View {
   let store: Store<AlertAndSheetState, AlertAndSheetAction>
@@ -94,13 +102,13 @@ struct AlertAndSheetView: View {
           Button("Alert") { viewStore.send(.alertButtonTapped) }
             .alert(
               self.store.scope(state: { $0.alert }),
-              dismiss: .alertCancelTapped
+              dismiss: .alertDismissed
             )
 
           Button("Action sheet") { viewStore.send(.actionSheetButtonTapped) }
             .actionSheet(
               self.store.scope(state: { $0.actionSheet }),
-              dismiss: .actionSheetCancelTapped
+              dismiss: .actionSheetDismissed
             )
         }
       }

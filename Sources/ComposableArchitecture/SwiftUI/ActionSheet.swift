@@ -4,7 +4,7 @@ import SwiftUI
 /// `Action` generic is the type of actions that can be sent from tapping on a button in the sheet.
 ///
 /// This type can be used in your application's state in order to control the presentation or
-/// dismissal of action sheets. It is preferrable to use this API instead of the default SwiftUI API
+/// dismissal of action sheets. It is preferable to use this API instead of the default SwiftUI API
 /// for action sheets because SwiftUI uses 2-way bindings in order to control the showing and
 /// dismissal of sheets, and that does not play nicely with the Composable Architecture. The library
 /// requires that all state mutations happen by sending an action so that a reducer can handle that
@@ -105,13 +105,14 @@ import SwiftUI
 @available(tvOS 13, *)
 @available(watchOS 6, *)
 public struct ActionSheetState<Action> {
+  public let id = UUID()
   public var buttons: [Button]
-  public var message: String?
-  public var title: String
+  public var message: LocalizedStringKey?
+  public var title: LocalizedStringKey
 
   public init(
-    title: String,
-    message: String? = nil,
+    title: LocalizedStringKey,
+    message: LocalizedStringKey? = nil,
     buttons: [Button]
   ) {
     self.buttons = buttons
@@ -127,23 +128,49 @@ public struct ActionSheetState<Action> {
 @available(macOS, unavailable)
 @available(tvOS 13, *)
 @available(watchOS 6, *)
-extension ActionSheetState: Equatable where Action: Equatable {}
-
-@available(iOS 13, *)
-@available(macCatalyst 13, *)
-@available(macOS, unavailable)
-@available(tvOS 13, *)
-@available(watchOS 6, *)
-extension ActionSheetState: Hashable where Action: Hashable {}
-
-@available(iOS 13, *)
-@available(macCatalyst 13, *)
-@available(macOS, unavailable)
-@available(tvOS 13, *)
-@available(watchOS 6, *)
-extension ActionSheetState: Identifiable where Action: Hashable {
-  public var id: Self { self }
+extension ActionSheetState: CustomDebugOutputConvertible {
+  public var debugOutput: String {
+    let fields = (
+      title: self.title,
+      message: self.message,
+      buttons: self.buttons
+    )
+    return "\(Self.self)\(ComposableArchitecture.debugOutput(fields))"
+  }
 }
+
+@available(iOS 13, *)
+@available(macCatalyst 13, *)
+@available(macOS, unavailable)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
+extension ActionSheetState: Equatable where Action: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.title.formatted() == rhs.title.formatted()
+      && lhs.message?.formatted() == rhs.message?.formatted()
+      && lhs.buttons == rhs.buttons
+  }
+}
+
+@available(iOS 13, *)
+@available(macCatalyst 13, *)
+@available(macOS, unavailable)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
+extension ActionSheetState: Hashable where Action: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.title.formatted())
+    hasher.combine(self.message?.formatted())
+    hasher.combine(self.buttons)
+  }
+}
+
+@available(iOS 13, *)
+@available(macCatalyst 13, *)
+@available(macOS, unavailable)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
+extension ActionSheetState: Identifiable {}
 
 extension View {
   /// Displays an action sheet when the store's state becomes non-`nil`, and dismisses it when it
@@ -152,7 +179,8 @@ extension View {
   /// - Parameters:
   ///   - store: A store that describes if the action sheet is shown or dismissed.
   ///   - dismissal: An action to send when the action sheet is dismissed through non-user actions,
-  ///     such as when an action sheet is automatically dismissed by the system.
+  ///     such as when an action sheet is automatically dismissed by the system. Use this action to
+  ///     `nil` out the associated action sheet state.
   @available(iOS 13, *)
   @available(macCatalyst 13, *)
   @available(macOS, unavailable)
@@ -163,16 +191,11 @@ extension View {
     dismiss: Action
   ) -> some View {
 
-    let viewStore = ViewStore(store, removeDuplicates: { ($0 == nil) != ($1 == nil) })
-    return self.actionSheet(
-      isPresented: Binding(
-        get: { viewStore.state != nil },
-        set: {
-          guard !$0 else { return }
-          viewStore.send(dismiss)
-        }),
-      content: { viewStore.state?.toSwiftUI(send: viewStore.send) ?? ActionSheet(title: Text("")) }
-    )
+    WithViewStore(store, removeDuplicates: { $0?.id == $1?.id }) { viewStore in
+      self.actionSheet(item: viewStore.binding(send: dismiss)) { state in
+        state.toSwiftUI(send: viewStore.send)
+      }
+    }
   }
 }
 

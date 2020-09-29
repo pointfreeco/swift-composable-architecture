@@ -178,9 +178,13 @@ class VoiceMemosTests: XCTestCase {
       .send(.voiceMemo(index: 0, action: .playButtonTapped)) {
         $0.voiceMemos[0].mode = VoiceMemo.Mode.playing(progress: 0)
       },
-      .do { self.scheduler.advance(by: 1) },
+      .do { self.scheduler.advance(by: 0.5) },
       .receive(VoiceMemosAction.voiceMemo(index: 0, action: VoiceMemoAction.timerUpdated(0.5))) {
         $0.voiceMemos[0].mode = .playing(progress: 0.5)
+      },
+      .do { self.scheduler.advance(by: 0.5) },
+      .receive(VoiceMemosAction.voiceMemo(index: 0, action: VoiceMemoAction.timerUpdated(1))) {
+        $0.voiceMemos[0].mode = .playing(progress: 1)
       },
       .receive(
         .voiceMemo(
@@ -188,9 +192,6 @@ class VoiceMemosTests: XCTestCase {
           action: .audioPlayerClient(.success(.didFinishPlaying(successfully: true)))
         )
       ) {
-        $0.voiceMemos[0].mode = .notPlaying
-      },
-      .receive(VoiceMemosAction.voiceMemo(index: 0, action: VoiceMemoAction.timerUpdated(1))) {
         $0.voiceMemos[0].mode = .notPlaying
       }
     )

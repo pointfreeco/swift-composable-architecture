@@ -67,19 +67,19 @@ struct SharedState: Equatable {
   }
 }
 
-enum SharedStateAction {
+enum SharedStateAction: Equatable {
   case counter(CounterAction)
   case profile(ProfileAction)
   case selectTab(SharedState.Tab)
 
-  enum CounterAction {
+  enum CounterAction: Equatable {
     case alertDismissed
     case decrementButtonTapped
     case incrementButtonTapped
     case isPrimeButtonTapped
   }
 
-  enum ProfileAction {
+  enum ProfileAction: Equatable {
     case resetCounterButtonTapped
   }
 }
@@ -221,8 +221,8 @@ struct SharedStateProfileView: View {
             This tab shows state from the previous tab, and it is capable of reseting all of the \
             state back to 0.
 
-            This shows that it is possible to for each screen to model its state in the way that \
-            makes the most sense for it, while still allowing the state and mutations to be shared \
+            This shows that it is possible for each screen to model its state in the way that makes \
+            the most sense for it, while still allowing the state and mutations to be shared \
             across independent screens.
             """,
           .caption

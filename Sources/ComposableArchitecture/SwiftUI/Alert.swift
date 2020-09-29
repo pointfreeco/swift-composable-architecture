@@ -4,7 +4,7 @@ import SwiftUI
 /// generic is the type of actions that can be sent from tapping on a button in the alert.
 ///
 /// This type can be used in your application's state in order to control the presentation or
-/// dismissal of alerts. It is preferrable to use this API instead of the default SwiftUI API
+/// dismissal of alerts. It is preferable to use this API instead of the default SwiftUI API
 /// for alerts because SwiftUI uses 2-way bindings in order to control the showing and dismissal
 /// of alerts, and that does not play nicely with the Composable Architecture. The library requires
 /// that all state mutations happen by sending an action so that a reducer can handle that logic,
@@ -91,14 +91,15 @@ import SwiftUI
 ///     )
 ///
 public struct AlertState<Action> {
-  public var message: String?
+  public let id = UUID()
+  public var message: LocalizedStringKey?
   public var primaryButton: Button?
   public var secondaryButton: Button?
-  public var title: String
+  public var title: LocalizedStringKey
 
   public init(
-    title: String,
-    message: String? = nil,
+    title: LocalizedStringKey,
+    message: LocalizedStringKey? = nil,
     dismissButton: Button? = nil
   ) {
     self.title = title
@@ -107,8 +108,8 @@ public struct AlertState<Action> {
   }
 
   public init(
-    title: String,
-    message: String? = nil,
+    title: LocalizedStringKey,
+    message: LocalizedStringKey? = nil,
     primaryButton: Button,
     secondaryButton: Button
   ) {
@@ -123,7 +124,7 @@ public struct AlertState<Action> {
     public var type: `Type`
 
     public static func cancel(
-      _ label: String,
+      _ label: LocalizedStringKey,
       send action: Action? = nil
     ) -> Self {
       Self(action: action, type: .cancel(label: label))
@@ -136,23 +137,23 @@ public struct AlertState<Action> {
     }
 
     public static func `default`(
-      _ label: String,
+      _ label: LocalizedStringKey,
       send action: Action? = nil
     ) -> Self {
       Self(action: action, type: .default(label: label))
     }
 
     public static func destructive(
-      _ label: String,
+      _ label: LocalizedStringKey,
       send action: Action? = nil
     ) -> Self {
       Self(action: action, type: .destructive(label: label))
     }
 
-    public enum `Type`: Hashable {
-      case cancel(label: String?)
-      case `default`(label: String)
-      case destructive(label: String)
+    public enum `Type` {
+      case cancel(label: LocalizedStringKey?)
+      case `default`(label: LocalizedStringKey)
+      case destructive(label: LocalizedStringKey)
     }
   }
 }
@@ -164,32 +165,84 @@ extension View {
   /// - Parameters:
   ///   - store: A store that describes if the alert is shown or dismissed.
   ///   - dismissal: An action to send when the alert is dismissed through non-user actions, such
-  ///     as when an alert is automatically dismissed by the system.
+  ///     as when an alert is automatically dismissed by the system. Use this action to `nil` out
+  ///     the associated alert state.
   public func alert<Action>(
     _ store: Store<AlertState<Action>?, Action>,
     dismiss: Action
   ) -> some View {
 
-    let viewStore = ViewStore(store, removeDuplicates: { ($0 == nil) != ($1 == nil) })
-    return self.alert(
-      isPresented: Binding(
-        get: { viewStore.state != nil },
-        set: {
-          guard !$0 else { return }
-          viewStore.send(dismiss)
-        }),
-      content: { viewStore.state?.toSwiftUI(send: viewStore.send) ?? Alert(title: Text("")) }
-    )
+    WithViewStore(store, removeDuplicates: { $0?.id == $1?.id }) { viewStore in
+      self.alert(item: viewStore.binding(send: dismiss)) { state in
+        state.toSwiftUI(send: viewStore.send)
+      }
+    }
   }
 }
 
-extension AlertState: Equatable where Action: Equatable {}
-extension AlertState: Hashable where Action: Hashable {}
-extension AlertState.Button: Equatable where Action: Equatable {}
-extension AlertState.Button: Hashable where Action: Hashable {}
+extension AlertState: CustomDebugOutputConvertible {
+  public var debugOutput: String {
+    let fields = (
+      title: self.title,
+      message: self.message,
+      primaryButton: self.primaryButton,
+      secondaryButton: self.secondaryButton
+    )
+    return "\(Self.self)\(ComposableArchitecture.debugOutput(fields))"
+  }
+}
 
-extension AlertState: Identifiable where Action: Hashable {
-  public var id: Self { self }
+extension AlertState: Equatable where Action: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.title.formatted() == rhs.title.formatted()
+      && lhs.message?.formatted() == rhs.message?.formatted()
+      && lhs.primaryButton == rhs.primaryButton
+      && lhs.secondaryButton == rhs.secondaryButton
+  }
+}
+extension AlertState: Hashable where Action: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.title.formatted())
+    hasher.combine(self.message?.formatted())
+    hasher.combine(self.primaryButton)
+    hasher.combine(self.secondaryButton)
+  }
+}
+extension AlertState: Identifiable {}
+
+extension AlertState.Button.`Type`: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    switch (lhs, rhs) {
+    case let (.cancel(lhs), .cancel(rhs)):
+      return lhs?.formatted() == rhs?.formatted()
+    case let (.default(lhs), .default(rhs)), let (.destructive(lhs), .destructive(rhs)):
+      return lhs.formatted() == rhs.formatted()
+    default:
+      return false
+    }
+  }
+}
+extension AlertState.Button: Equatable where Action: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    return lhs.action == rhs.action && lhs.type == rhs.type
+  }
+}
+
+extension AlertState.Button.`Type`: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    switch self {
+    case let .cancel(label):
+      hasher.combine(label?.formatted())
+    case let .default(label), let .destructive(label):
+      hasher.combine(label.formatted())
+    }
+  }
+}
+extension AlertState.Button: Hashable where Action: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.action)
+    hasher.combine(self.type)
+  }
 }
 
 extension AlertState.Button {

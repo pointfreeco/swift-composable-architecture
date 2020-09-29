@@ -137,7 +137,7 @@ class LoginViewController: UIViewController {
         guard let alert = alert else { return }
 
         let alertController = UIAlertController(
-          title: alert.title, message: nil, preferredStyle: .alert)
+          title: alert.title.formatted(), message: nil, preferredStyle: .alert)
         alertController.addAction(
           UIAlertAction(
             title: "Ok", style: .default,

@@ -1,2 +1,4 @@
-@_exported import ComposableArchitecture
-@_exported import CoreMotion
+#if canImport(CoreMotion)
+  @_exported import ComposableArchitecture
+  @_exported import CoreMotion
+#endif
