@@ -124,6 +124,18 @@ extension LocationManager {
       }
     #endif
 
+    #if os(iOS) || os(watchOS) || targetEnvironment(macCatalyst)
+    manager.startUpdatingHeading = { id in
+      .fireAndForget { dependencies[id]?.manager.startUpdatingHeading() }
+    }
+    #endif
+
+    #if os(iOS) || os(watchOS) || targetEnvironment(macCatalyst)
+    manager.stopUpdatingHeading = { id in
+      .fireAndForget { dependencies[id]?.manager.stopUpdatingHeading() }
+    }
+    #endif
+
     manager.stopUpdatingLocation = { id in
       .fireAndForget { dependencies[id]?.manager.stopUpdatingLocation() }
     }
