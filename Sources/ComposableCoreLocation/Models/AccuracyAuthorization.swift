@@ -5,7 +5,7 @@ import Foundation
 public enum AccuracyAuthorization {
   case fullAccuracy
   case reducedAccuracy
-  
+
   @available(iOS 14, macCatalyst 14, macOS 11, tvOS 14, watchOS 7, *)
   init?(_ accuracyAuth: CLAccuracyAuthorization?) {
     switch accuracyAuth {

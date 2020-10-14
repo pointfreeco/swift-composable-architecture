@@ -399,7 +399,9 @@ public struct LocationManager {
 
   public func location(id: AnyHashable) -> Location? { self.location(id) }
 
-  public func accuracyAuthorization(id: AnyHashable) -> AccuracyAuthorization? { self.accuracyAuthorization(id) }
+  public func accuracyAuthorization(id: AnyHashable) -> AccuracyAuthorization? {
+    self.accuracyAuthorization(id)
+  }
 
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
