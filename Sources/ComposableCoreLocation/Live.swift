@@ -50,6 +50,13 @@ extension LocationManager {
 
     manager.location = { id in dependencies[id]?.manager.location.map(Location.init(rawValue:)) }
 
+    manager.accuracyAuthorization = { id in
+      if #available(iOS 14.0, *) {
+        return AccuracyAuthorization(dependencies[id]?.manager.accuracyAuthorization)
+      }
+      return nil
+    }
+
     manager.requestLocation = { id in
       .fireAndForget { dependencies[id]?.manager.requestLocation() }
     }
