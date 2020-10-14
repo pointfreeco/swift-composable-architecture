@@ -1,13 +1,7 @@
-//
-//  File.swift
-//
-//
-//  Created by Jeffrey Macko on 15/10/2020.
-//
-
 import CoreLocation
 import Foundation
 
+/// A value type wrapper for `CLAccuracyAuthorization`. This type is necessary to have iOS 13 support
 public enum AccuracyAuthorization {
   case fullAccuracy
   case reducedAccuracy
