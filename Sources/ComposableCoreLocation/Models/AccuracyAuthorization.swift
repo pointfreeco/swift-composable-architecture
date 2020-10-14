@@ -5,20 +5,16 @@ import Foundation
 public enum AccuracyAuthorization {
   case fullAccuracy
   case reducedAccuracy
-
-  @available(iOS 14, *)
+  
+  @available(iOS 14, macCatalyst 14, macOS 11, tvOS 14, watchOS 7, *)
   init?(_ accuracyAuth: CLAccuracyAuthorization?) {
-    if accuracyAuth == nil {
+    switch accuracyAuth {
+    case .fullAccuracy:
+      self = .fullAccuracy
+    case .reducedAccuracy:
+      self = .reducedAccuracy
+    default:
       return nil
-    } else {
-      switch accuracyAuth {
-      case .fullAccuracy:
-        self = .fullAccuracy
-      case .reducedAccuracy:
-        self = .reducedAccuracy
-      @unknown default:
-        return nil
-      }
     }
   }
 }
