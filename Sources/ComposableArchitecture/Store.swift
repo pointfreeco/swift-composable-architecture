@@ -90,7 +90,7 @@ public final class Store<State, Action> {
   ///   - fromLocalAction: A function that transforms `LocalAction` into `Action`.
   /// - Returns: A publisher of stores with its domain (state and action) transformed.
   public func scope<P: Publisher, LocalState, LocalAction>(
-    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P,
+    publisher toLocalState: @escaping (AnyPublisher<State, Never>) -> P,
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> AnyPublisher<Store<LocalState, LocalAction>, Never>
   where P.Output == LocalState, P.Failure == Never {
@@ -129,10 +129,10 @@ public final class Store<State, Action> {
   /// - Returns: A publisher of stores with its domain (state and action)
   ///   transformed.
   public func scope<P: Publisher, LocalState>(
-    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P
+    publisher toLocalState: @escaping (AnyPublisher<State, Never>) -> P
   ) -> AnyPublisher<Store<LocalState, Action>, Never>
   where P.Output == LocalState, P.Failure == Never {
-    self.scope(state: toLocalState, action: { $0 })
+    self.scope(publisher: toLocalState, action: { $0 })
   }
 
   func send(_ action: Action) {

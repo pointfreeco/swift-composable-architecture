@@ -46,7 +46,7 @@ extension Store {
     let elseCancellable =
       self
       .scope(
-        state: { state in
+        publisher: { state in
           state
             .removeDuplicates(by: { ($0 != nil) == ($1 != nil) })
         }
@@ -58,7 +58,7 @@ extension Store {
     let unwrapCancellable =
       self
       .scope(
-        state: { state in
+        publisher: { state in
           state
             .removeDuplicates(by: { ($0 != nil) == ($1 != nil) })
             .compactMap { $0 }
