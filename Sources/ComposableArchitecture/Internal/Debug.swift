@@ -174,10 +174,10 @@ private let dateFormatter: ISO8601DateFormatter = {
 
 extension DispatchQueue: CustomDebugOutputConvertible {
   public var debugOutput: String {
-    switch (self, self.label) {
-    case (.main, _): return "DispatchQueue.main"
-    case (_, "com.apple.root.default-qos"): return "DispatchQueue.global()"
-    case (_, _) where self.label == "com.apple.root.\(self.qos.qosClass)-qos":
+    switch self.label {
+    case "com.apple.main-thread": return "DispatchQueue.main"
+    case "com.apple.root.default-qos": return "DispatchQueue.global()"
+    case _ where self.label == "com.apple.root.\(self.qos.qosClass)-qos":
       return "DispatchQueue.global(qos: .\(self.qos.qosClass))"
     default:
       return "DispatchQueue(label: \(self.label.debugDescription), qos: .\(self.qos.qosClass))"
