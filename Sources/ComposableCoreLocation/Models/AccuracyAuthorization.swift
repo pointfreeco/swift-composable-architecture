@@ -1,13 +1,15 @@
 import CoreLocation
 import Foundation
 
-/// A value type wrapper for `CLAccuracyAuthorization`. This type is necessary to have iOS 13 support
-public enum AccuracyAuthorization: Hashable {
-  case fullAccuracy
-  case reducedAccuracy
+/// A value type wrapper for `CLAccuracyAuthorization`
+public enum AccuracyAuthorization: Int {
+  case fullAccuracy = 0
+  case reducedAccuracy = 1
+}
 
-  #if swift(>=5.3)
-  @available(iOS 14, macCatalyst 14, macOS 11, tvOS 14, watchOS 7, *)
+#if os(iOS) || os(tvOS) || os(watchOS) || compiler(>=5.3.1)
+@available(iOS 14.0, macCatalyst 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+extension AccuracyAuthorization {
   init?(_ accuracyAuth: CLAccuracyAuthorization?) {
     switch accuracyAuth {
     case .fullAccuracy:
@@ -18,5 +20,5 @@ public enum AccuracyAuthorization: Hashable {
       return nil
     }
   }
-  #endif
 }
+#endif

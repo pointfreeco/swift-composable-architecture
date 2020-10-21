@@ -51,8 +51,8 @@ extension LocationManager {
     manager.location = { id in dependencies[id]?.manager.location.map(Location.init(rawValue:)) }
 
     manager.accuracyAuthorization = { id in
-      #if swift(>=5.3)
-      if #available(iOS 14, tvOS 14, watchOS 7, macOS 11, macCatalyst 14, *) {
+      #if os(iOS) || os(tvOS) || os(watchOS) || compiler(>=5.3.1)
+      if #available(iOS 14.0, tvOS 14.0, watchOS 7.0, macOS 11.0, macCatalyst 14.0, *) {
         return AccuracyAuthorization(dependencies[id]?.manager.accuracyAuthorization)
       }
       #endif
