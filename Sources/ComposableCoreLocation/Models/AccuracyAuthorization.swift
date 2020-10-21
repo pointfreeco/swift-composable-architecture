@@ -7,7 +7,7 @@ public enum AccuracyAuthorization: Int {
   case reducedAccuracy = 1
 }
 
-#if os(iOS) || os(tvOS) || os(watchOS) || compiler(>=5.3.1)
+#if (os(iOS) && !targetEnvironment(macCatalyst)) || os(tvOS) || os(watchOS) || compiler(>=5.3.1)
 @available(iOS 14.0, macCatalyst 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
 extension AccuracyAuthorization {
   init?(_ accuracyAuth: CLAccuracyAuthorization?) {
