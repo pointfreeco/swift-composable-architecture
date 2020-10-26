@@ -77,5 +77,11 @@ let package = Package(
         "ComposableArchitecture"
       ]
     ),
+    .testTarget(
+      name: "ComposableCoreBluetoothTests",
+      dependencies: [
+        "ComposableCoreBluetooth"
+      ]
+    ),
   ]
 )
