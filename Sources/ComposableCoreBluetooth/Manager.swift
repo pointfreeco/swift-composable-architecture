@@ -299,6 +299,26 @@ extension BluetoothManager.Action {
         public let txPowerLevel: NSNumber?
         public let isConnectable: Bool?
         
+        public init(
+            localName: String? = nil,
+            manufacturerData: Data? = nil,
+            serviceData: [CBUUID: Data]? = nil,
+            serviceUUIDs: [CBUUID]? = nil,
+            overflowServiceUUIDs: [CBUUID]? = nil,
+            solicitedServiceUUIDs: [CBUUID]? = nil,
+            txPowerLevel: NSNumber? = nil,
+            isConnectable: Bool? = nil
+        ) {
+            self.localName = localName
+            self.manufacturerData = manufacturerData
+            self.serviceData = serviceData
+            self.serviceUUIDs = serviceUUIDs
+            self.overflowServiceUUIDs = overflowServiceUUIDs
+            self.solicitedServiceUUIDs = solicitedServiceUUIDs
+            self.txPowerLevel = txPowerLevel
+            self.isConnectable = isConnectable
+        }
+        
         init(from dictionary: [String: Any]) {
             localName = dictionary[CBAdvertisementDataLocalNameKey] as? String
             manufacturerData = dictionary[CBAdvertisementDataManufacturerDataKey] as? Data
