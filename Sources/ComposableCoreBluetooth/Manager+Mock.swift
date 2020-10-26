@@ -22,6 +22,7 @@ public func _unimplemented(_ function: StaticString, file: StaticString = #file,
 
 extension BluetoothManager {
     
+    @available(macOS, unavailable)
     public static func mock(
         create: @escaping (AnyHashable, DispatchQueue?, InitializationOptions?) -> Effect<Action, Never> = { _, _, _ in
             _unimplemented("create")
@@ -69,6 +70,48 @@ extension BluetoothManager {
             isScanning: isScanning,
             registerForConnectionEvents: registerForConnectionEvents,
             supports: supports
+        )
+    }
+    
+    public static func mock(
+        create: @escaping (AnyHashable, DispatchQueue?, InitializationOptions?) -> Effect<Action, Never> = { _, _, _ in
+            _unimplemented("create")
+        },
+        destroy: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
+            _unimplemented("destroy")
+        },
+        connect: @escaping (AnyHashable, Peripheral, ConnectionOptions?) -> Effect<Never, Never> = { _, _, _ in
+            _unimplemented("connect")
+        },
+        cancelConnection: @escaping (AnyHashable, Peripheral) -> Effect<Never, Never> = { _, _ in
+            _unimplemented("cancelConnection")
+        },
+        retrieveConnectedPeripherals: @escaping (AnyHashable, [CBUUID]) -> [Peripheral] = { _, _ in
+            _unimplemented("retrieveConnectedPeripherals")
+        },
+        retrievePeripherals: @escaping (AnyHashable, [UUID]) -> [Peripheral] = { _, _ in
+            _unimplemented("retrievePeripherals")
+        },
+        scanForPeripherals: @escaping (AnyHashable, [CBUUID]?, ScanOptions?) -> Effect<Never, Never> = { _, _, _ in
+            _unimplemented("scanForPeripherals")
+        },
+        stopScan: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
+            _unimplemented("stopScan")
+        },
+        isScanning: @escaping (AnyHashable) -> Bool = { _ in
+            _unimplemented("isScanning")
+        }
+    ) -> Self {
+        Self(
+            create: create,
+            destroy: destroy,
+            connect: connect,
+            cancelConnection: cancelConnection,
+            retrieveConnectedPeripherals: retrieveConnectedPeripherals,
+            retrievePeripherals: retrievePeripherals,
+            scanForPeripherals: scanForPeripherals,
+            stopScan: stopScan,
+            isScanning: isScanning
         )
     }
 }

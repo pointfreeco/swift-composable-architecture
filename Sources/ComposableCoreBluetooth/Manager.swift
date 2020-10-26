@@ -12,42 +12,50 @@ import ComposableArchitecture
 
 public struct BluetoothManager {
     
-    var create: (AnyHashable, DispatchQueue?, InitializationOptions?) -> Effect<Action, Never>
-    var destroy: (AnyHashable) -> Effect<Never, Never>
-    var connect: (AnyHashable, Peripheral, ConnectionOptions?) -> Effect<Never, Never>
-    var cancelConnection: (AnyHashable, Peripheral) -> Effect<Never, Never>
-    var retrieveConnectedPeripherals: (AnyHashable, [CBUUID]) -> [Peripheral]
-    var retrievePeripherals: (AnyHashable, [UUID]) -> [Peripheral]
-    var scanForPeripherals: (AnyHashable, [CBUUID]?, ScanOptions?) -> Effect<Never, Never>
-    var stopScan: (AnyHashable) -> Effect<Never, Never>
-    var isScanning: (AnyHashable) -> Bool
-    var supports: (CBCentralManager.Feature) -> Bool
-    var registerForConnectionEvents: (AnyHashable, ConnectionEventOptions?) -> Effect<Never, Never>
-
-    public init(
-        create: @escaping (AnyHashable, DispatchQueue?, InitializationOptions?) -> Effect<Action, Never>,
-        destroy: @escaping (AnyHashable) -> Effect<Never, Never>,
-        connect: @escaping (AnyHashable, Peripheral, ConnectionOptions?) -> Effect<Never, Never>,
-        cancelConnection: @escaping (AnyHashable, Peripheral) -> Effect<Never, Never>,
-        retrieveConnectedPeripherals: @escaping (AnyHashable, [CBUUID]) -> [Peripheral],
-        retrievePeripherals: @escaping (AnyHashable, [UUID]) -> [Peripheral],
-        scanForPeripherals: @escaping (AnyHashable, [CBUUID]?, ScanOptions?) -> Effect<Never, Never>,
-        stopScan: @escaping (AnyHashable) -> Effect<Never, Never>,
-        isScanning: @escaping (AnyHashable) -> Bool,
-        registerForConnectionEvents: @escaping (AnyHashable, ConnectionEventOptions?) -> Effect<Never, Never>,
-        supports: @escaping (CBCentralManager.Feature) -> Bool
-    ) {
-        self.create = create
-        self.destroy = destroy
-        self.connect = connect
-        self.cancelConnection = cancelConnection
-        self.retrieveConnectedPeripherals = retrieveConnectedPeripherals
-        self.retrievePeripherals = retrievePeripherals
-        self.scanForPeripherals = scanForPeripherals
-        self.stopScan = stopScan
-        self.isScanning = isScanning
-        self.supports = supports
-        self.registerForConnectionEvents = registerForConnectionEvents
+    var create: (AnyHashable, DispatchQueue?, InitializationOptions?) -> Effect<Action, Never> = { _, _, _ in
+        _unimplemented("create")
+    }
+    
+    var destroy: (AnyHashable) -> Effect<Never, Never> = { _ in
+        _unimplemented("create")
+    }
+    
+    var connect: (AnyHashable, Peripheral, ConnectionOptions?) -> Effect<Never, Never> = { _, _, _ in
+        _unimplemented("create")
+    }
+    
+    var cancelConnection: (AnyHashable, Peripheral) -> Effect<Never, Never> = { _, _ in
+        _unimplemented("create")
+    }
+    
+    var retrieveConnectedPeripherals: (AnyHashable, [CBUUID]) -> [Peripheral] = { _, _ in
+        _unimplemented("create")
+    }
+    
+    var retrievePeripherals: (AnyHashable, [UUID]) -> [Peripheral] = { _, _ in
+        _unimplemented("create")
+    }
+    
+    var scanForPeripherals: (AnyHashable, [CBUUID]?, ScanOptions?) -> Effect<Never, Never> = { _, _, _ in
+        _unimplemented("create")
+    }
+    
+    var stopScan: (AnyHashable) -> Effect<Never, Never> = { _ in
+        _unimplemented("create")
+    }
+    
+    var isScanning: (AnyHashable) -> Bool = { _ in
+        _unimplemented("create")
+    }
+    
+    @available(macOS, unavailable)
+    var registerForConnectionEvents: (AnyHashable, ConnectionEventOptions?) -> Effect<Never, Never> = { _, _ in
+        _unimplemented("create")
+    }
+    
+    @available(macOS, unavailable)
+    var supports: (CBCentralManager.Feature) -> Bool = { _ in
+        _unimplemented("create")
     }
 }
 
@@ -88,10 +96,12 @@ extension BluetoothManager {
         isScanning(id)
     }
     
+    @available(macOS, unavailable)
     public func supports(_ feature: CBCentralManager.Feature) -> Bool {
         supports(feature)
     }
     
+    @available(macOS, unavailable)
     public func registerForConnectionEvents(id: AnyHashable, options: ConnectionEventOptions? = nil) -> Effect<Never, Never> {
         registerForConnectionEvents(id, options)
     }
@@ -133,6 +143,7 @@ extension BluetoothManager {
         let requiredANCS: Bool?
         let startDelay: NSNumber?
         
+        @available(macOS, unavailable)
         public init(
             notifyOnConnection: Bool? = nil,
             notifyOnDisconnection: Bool? = nil,
@@ -146,6 +157,20 @@ extension BluetoothManager {
             self.notifyOnNotification = notifyOnNotification
             self.enableTransportBridging = enableTransportBridging
             self.requiredANCS = requiredANCS
+            self.startDelay = startDelay
+        }
+        
+        public init(
+            notifyOnConnection: Bool? = nil,
+            notifyOnDisconnection: Bool? = nil,
+            notifyOnNotification: Bool? = nil,
+            startDelay: NSNumber? = nil
+        ) {
+            self.notifyOnConnection = notifyOnConnection
+            self.notifyOnDisconnection = notifyOnDisconnection
+            self.notifyOnNotification = notifyOnNotification
+            self.enableTransportBridging = nil
+            self.requiredANCS = nil
             self.startDelay = startDelay
         }
         
@@ -164,13 +189,17 @@ extension BluetoothManager {
                 dictionary[CBConnectPeripheralOptionNotifyOnNotificationKey] = NSNumber(booleanLiteral: notifyOnNotification)
             }
             
+            #if os(iOS) || os(watchOS) || os(tvOS) || targetEnvironment(macCatalyst)
             if let enableTransportBridging = enableTransportBridging {
                 dictionary[CBConnectPeripheralOptionEnableTransportBridgingKey] = NSNumber(booleanLiteral: enableTransportBridging)
             }
+            #endif
             
+            #if os(iOS) || os(watchOS) || os(tvOS) || targetEnvironment(macCatalyst)
             if let requiredANCS = requiredANCS {
                 dictionary[CBConnectPeripheralOptionRequiresANCS] = NSNumber(booleanLiteral: requiredANCS)
             }
+            #endif
             
             if let startDelay = startDelay {
                 dictionary[CBConnectPeripheralOptionStartDelayKey] = startDelay
@@ -211,6 +240,7 @@ extension BluetoothManager {
         }
     }
     
+    @available(macOS, unavailable)
     public struct ConnectionEventOptions {
         
         let peripheralUUIDs: [UUID]?
@@ -243,12 +273,16 @@ extension BluetoothManager {
         case didConnect(Peripheral)
         case didDisconnect(Peripheral, CBError?)
         case didFailToConnect(Peripheral, CBError?)
-        case connectionEventDidOccur(CBConnectionEvent, Peripheral)
         case didDiscover(Peripheral, AdvertismentData, NSNumber)
         case willRestore(RestorationOptions)
-        case didUpdateANCSAuthorization(Peripheral)
         case didUpdateState(CBManagerState)
         
+        @available(macOS, unavailable)
+        case didUpdateANCSAuthorization(Peripheral)
+        
+        @available(macOS, unavailable)
+        case connectionEventDidOccur(CBConnectionEvent, Peripheral)
+
         case peripheral(UUID, Peripheral.Action)
     }
 }

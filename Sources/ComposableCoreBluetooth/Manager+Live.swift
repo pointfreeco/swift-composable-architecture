@@ -41,8 +41,10 @@ private func couldNotFindRawPeripheralValue() {
 
 extension BluetoothManager {
     
-    public static let live = BluetoothManager(
-        create: { id, queue, options in
+    public static let live: BluetoothManager = { () -> BluetoothManager in
+        var manager = BluetoothManager()
+        
+        manager.create = { id, queue, options in
             Effect.run { subscriber in
                 let delegate = Delegate(subscriber)
                 let manager = CBCentralManager(delegate: delegate, queue: queue, options: options?.toDictionary())
@@ -53,14 +55,16 @@ extension BluetoothManager {
                     dependencies[id] = nil
                 }
             }
-        },
-        destroy: { id in
+        }
+        
+        manager.destroy = { id in
             .fireAndForget {
                 dependencies[id]?.subscriber.send(completion: .finished)
                 dependencies[id] = nil
             }
-        },
-        connect: { id, peripheral, options in
+        }
+        
+        manager.connect = { id, peripheral, options in
             
             guard let rawPeripheral = peripheral.rawValue else {
                 couldNotFindRawPeripheralValue()
@@ -68,8 +72,9 @@ extension BluetoothManager {
             }
             
             return .fireAndForget { dependencies[id]?.manager.connect(rawPeripheral, options: options?.toDictionary()) }
-        },
-        cancelConnection: { id, peripheral  in
+        }
+        
+        manager.cancelConnection = { id, peripheral  in
             
             guard let rawPeripheral = peripheral.rawValue else {
                 couldNotFindRawPeripheralValue()
@@ -77,8 +82,10 @@ extension BluetoothManager {
             }
             
             return .fireAndForget { dependencies[id]?.manager.cancelPeripheralConnection(rawPeripheral) }
-        },
-        retrieveConnectedPeripherals: { id, uuids in
+        }
+        
+        manager.retrieveConnectedPeripherals = { id, uuids in
+            
             guard let dependency = dependencies[id] else {
                 couldNotFindBluetoothManager(id: id)
                 return []
@@ -88,8 +95,10 @@ extension BluetoothManager {
                 .manager
                 .retrieveConnectedPeripherals(withServices: uuids)
                 .map { Peripheral.live(from: $0, subscriber: dependency.subscriber) }
-        },
-        retrievePeripherals: { id, uuids in
+        }
+        
+        manager.retrievePeripherals = { id, uuids in
+            
             guard let dependency = dependencies[id] else {
                 couldNotFindBluetoothManager(id: id)
                 return []
@@ -99,21 +108,32 @@ extension BluetoothManager {
                 .manager
                 .retrieveConnectedPeripherals(withServices: uuids.map(CBUUID.init))
                 .map { Peripheral.live(from: $0, subscriber: dependency.subscriber) }
-        },
-        scanForPeripherals: { id, services, options in
+        }
+        
+        manager.scanForPeripherals = { id, services, options in
             .fireAndForget { dependencies[id]?.manager.scanForPeripherals(withServices: services, options: options?.toDictionary()) }
-        },
-        stopScan: { id in
+        }
+        
+        manager.stopScan = { id in
             .fireAndForget { dependencies[id]?.manager.stopScan() }
-        },
-        isScanning: { id in
+        }
+        
+        manager.isScanning = { id in
             dependencies[id]?.manager.isScanning ?? false
-        },
-        registerForConnectionEvents: { id, options in
+        }
+        
+        #if os(iOS) || os(watchOS) || os(tvOS) || targetEnvironment(macCatalyst)
+        manager.registerForConnectionEvents = { id, options in
             .fireAndForget { dependencies[id]?.manager.registerForConnectionEvents(options: options?.toDictionary()) }
-        },
-        supports: CBCentralManager.supports
-    )
+        }
+        #endif
+        
+        #if os(iOS) || os(watchOS) || os(tvOS) || targetEnvironment(macCatalyst)
+        manager.supports = CBCentralManager.supports
+        #endif
+
+        return manager
+    }()
     
     class Delegate: NSObject, CBCentralManagerDelegate {
         let subscriber: Effect<BluetoothManager.Action, Never>.Subscriber
@@ -134,9 +154,11 @@ extension BluetoothManager {
             subscriber.send(.didFailToConnect(.live(from: peripheral, subscriber: subscriber), error as? CBError))
         }
         
+        #if os(iOS) || os(watchOS) || os(tvOS) || targetEnvironment(macCatalyst)
         func centralManager(_ central: CBCentralManager, connectionEventDidOccur event: CBConnectionEvent, for peripheral: CBPeripheral) {
             subscriber.send(.connectionEventDidOccur(event, .live(from: peripheral, subscriber: subscriber)))
         }
+        #endif
         
         func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
             subscriber.send(.didDiscover(.live(from: peripheral, subscriber: subscriber), .init(from: advertisementData), RSSI))
@@ -150,8 +172,10 @@ extension BluetoothManager {
             subscriber.send(.willRestore(.init(from: dict, subscriber: subscriber)))
         }
         
+        #if os(iOS) || os(watchOS) || os(tvOS) || targetEnvironment(macCatalyst)
         func centralManager(_ central: CBCentralManager, didUpdateANCSAuthorizationFor peripheral: CBPeripheral) {
             subscriber.send(.didUpdateANCSAuthorization(.live(from: peripheral, subscriber: subscriber)))
         }
+        #endif
     }
 }

@@ -73,6 +73,9 @@ extension Peripheral {
             identifier: identifier,
             name: name,
             services: services,
+            state: state,
+            canSendWriteWithoutResponse: canSendWriteWithoutResponse,
+            readRSSI: readRSSI,
             discoverServices: discoverServices,
             discoverIncludedServices: discoverIncludedServices,
             discoverCharacteristics: discoverCharacteristics,
@@ -83,9 +86,6 @@ extension Peripheral {
             writeDescriptorValue: writeDescriptorValue,
             maximumWriteValueLength: maximumWriteValueLength,
             setNotifyValue: setNotifyValue,
-            state: state,
-            canSendWriteWithoutResponse: canSendWriteWithoutResponse,
-            readRSSI: readRSSI,
             openL2CAPChannel: openL2CAPChannel,
             ancsAuthorized: ancsAuthorized
         )

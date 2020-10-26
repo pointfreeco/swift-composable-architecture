@@ -39,100 +39,105 @@ private func couldNotFindRawDescriptorValue() {
 
 extension Peripheral {
     
-    public static func live(from peripheral: CBPeripheral, subscriber: Effect<BluetoothManager.Action, Never>.Subscriber) -> Self {
+    public static func live(from cbPeripheral: CBPeripheral, subscriber: Effect<BluetoothManager.Action, Never>.Subscriber) -> Self {
+
+        var peripheral = Peripheral()
         
-        Self(
-            rawValue: peripheral,
-            delegate: Delegate(subscriber),
-            identifier: { peripheral.identifier },
-            name: { peripheral.name },
-            services: { peripheral.services?.map(Service.init) },
-            discoverServices: { ids in
-                .fireAndForget { peripheral.discoverServices(ids) }
-            },
-            discoverIncludedServices: { ids, service in
-                
-                guard let rawService = service.rawValue else {
-                    couldNotFindRawServiceValue()
-                    return .none
-                }
-                
-                return .fireAndForget { peripheral.discoverIncludedServices(ids, for: rawService) }
-            },
-            discoverCharacteristics: { ids, service in
-                
-                guard let rawService = service.rawValue else {
-                    couldNotFindRawServiceValue()
-                    return .none
-                }
-                
-                return .fireAndForget { peripheral.discoverCharacteristics(ids, for: rawService) }
-            },
-            discoverDescriptors: { characteristic in
-                
-                guard let rawCharacteristic = characteristic.rawValue else {
-                    couldNotFindRawCharacteristicValue()
-                    return .none
-                }
-                
-                return .fireAndForget { peripheral.discoverDescriptors(for: rawCharacteristic) }
-            },
-            readCharacteristicValue: { characteristic in
-                
-                guard let rawCharacteristic = characteristic.rawValue else {
-                    couldNotFindRawCharacteristicValue()
-                    return .none
-                }
-                
-                return .fireAndForget { peripheral.readValue(for: rawCharacteristic) }
-            },
-            readDescriptorValue: { descriptor in
-                
-                guard let rawDescriptor = descriptor.rawValue else {
-                    couldNotFindRawDescriptorValue()
-                    return .none
-                }
-                
-                return .fireAndForget { peripheral.readValue(for: rawDescriptor) }
-            },
-            writeCharacteristicValue: { data, characteristic, writeType in
-                
-                guard let rawCharacteristic = characteristic.rawValue else {
-                    couldNotFindRawCharacteristicValue()
-                    return .none
-                }
-                
-                return .fireAndForget { peripheral.writeValue(data, for: rawCharacteristic, type: writeType) }
-            },
-            writeDescriptorValue: { data, descriptor in
-                
-                guard let rawDescriptor = descriptor.rawValue else {
-                    couldNotFindRawDescriptorValue()
-                    return .none
-                }
-                
-                return .fireAndForget { peripheral.writeValue(data, for: rawDescriptor) }
-            },
-            maximumWriteValueLength: peripheral.maximumWriteValueLength,
-            setNotifyValue: { value, characteristic in
-                
-                guard let rawCharacteristic = characteristic.rawValue else {
-                    couldNotFindRawCharacteristicValue()
-                    return .none
-                }
-                
-                return .fireAndForget { peripheral.setNotifyValue(value, for: rawCharacteristic) }
-            },
-            state: { peripheral.state },
-            canSendWriteWithoutResponse: { peripheral.canSendWriteWithoutResponse },
-            readRSSI: {
-                .fireAndForget { peripheral.readRSSI() }
-            },
-            openL2CAPChannel: { psm in
-                .fireAndForget { peripheral.openL2CAPChannel(psm) }
-            },
-            ancsAuthorized: { peripheral.ancsAuthorized }
-        )
+        peripheral.rawValue = cbPeripheral
+        peripheral.delegate = Delegate(subscriber)
+        peripheral.identifier = { cbPeripheral.identifier }
+        peripheral.name = { cbPeripheral.name }
+        peripheral.services = { cbPeripheral.services?.map(Service.init) }
+        peripheral.discoverServices = { ids in
+            .fireAndForget { cbPeripheral.discoverServices(ids) }
+        }
+        peripheral.discoverIncludedServices = { ids, service in
+            
+            guard let rawService = service.rawValue else {
+                couldNotFindRawServiceValue()
+                return .none
+            }
+            
+            return .fireAndForget { cbPeripheral.discoverIncludedServices(ids, for: rawService) }
+        }
+        peripheral.discoverCharacteristics = { ids, service in
+            
+            guard let rawService = service.rawValue else {
+                couldNotFindRawServiceValue()
+                return .none
+            }
+            
+            return .fireAndForget { cbPeripheral.discoverCharacteristics(ids, for: rawService) }
+        }
+        peripheral.discoverDescriptors = { characteristic in
+            
+            guard let rawCharacteristic = characteristic.rawValue else {
+                couldNotFindRawCharacteristicValue()
+                return .none
+            }
+            
+            return .fireAndForget { cbPeripheral.discoverDescriptors(for: rawCharacteristic) }
+        }
+        peripheral.readCharacteristicValue = { characteristic in
+            
+            guard let rawCharacteristic = characteristic.rawValue else {
+                couldNotFindRawCharacteristicValue()
+                return .none
+            }
+            
+            return .fireAndForget { cbPeripheral.readValue(for: rawCharacteristic) }
+        }
+        peripheral.readDescriptorValue = { descriptor in
+            
+            guard let rawDescriptor = descriptor.rawValue else {
+                couldNotFindRawDescriptorValue()
+                return .none
+            }
+            
+            return .fireAndForget { cbPeripheral.readValue(for: rawDescriptor) }
+        }
+        peripheral.writeCharacteristicValue = { data, characteristic, writeType in
+            
+            guard let rawCharacteristic = characteristic.rawValue else {
+                couldNotFindRawCharacteristicValue()
+                return .none
+            }
+            
+            return .fireAndForget { cbPeripheral.writeValue(data, for: rawCharacteristic, type: writeType) }
+        }
+        peripheral.writeDescriptorValue = { data, descriptor in
+            
+            guard let rawDescriptor = descriptor.rawValue else {
+                couldNotFindRawDescriptorValue()
+                return .none
+            }
+            
+            return .fireAndForget { cbPeripheral.writeValue(data, for: rawDescriptor) }
+        }
+        peripheral.maximumWriteValueLength = cbPeripheral.maximumWriteValueLength
+        peripheral.setNotifyValue = { value, characteristic in
+            
+            guard let rawCharacteristic = characteristic.rawValue else {
+                couldNotFindRawCharacteristicValue()
+                return .none
+            }
+            
+            return .fireAndForget { cbPeripheral.setNotifyValue(value, for: rawCharacteristic) }
+        }
+        peripheral.state = { cbPeripheral.state }
+        peripheral.canSendWriteWithoutResponse = { cbPeripheral.canSendWriteWithoutResponse }
+        peripheral.readRSSI = {
+            .fireAndForget { cbPeripheral.readRSSI() }
+        }
+        peripheral.openL2CAPChannel = { psm in
+            .fireAndForget { cbPeripheral.openL2CAPChannel(psm) }
+        }
+        
+        #if os(iOS) || os(watchOS) || os(tvOS) || targetEnvironment(macCatalyst)
+        peripheral.ancsAuthorized = { cbPeripheral.ancsAuthorized }
+        #endif
+        
+        return peripheral
     }
     
     class Delegate: NSObject, CBPeripheralDelegate {

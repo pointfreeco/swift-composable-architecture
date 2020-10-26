@@ -14,68 +14,77 @@ public struct Peripheral {
     public var rawValue: CBPeripheral?
     var delegate: CBPeripheralDelegate?
     
-    public var identifier: () -> UUID
-    public var name: () -> String?
-    public var services: () -> [Service]?
-    public var state: () -> CBPeripheralState
-    public var canSendWriteWithoutResponse: () -> Bool
-    public var readRSSI: () -> Effect<Never, Never>
-    public var ancsAuthorized: () -> Bool
-    var discoverServices: ([CBUUID]?) -> Effect<Never, Never>
-    var discoverIncludedServices: ([CBUUID]?, Service) -> Effect<Never, Never>
-    var discoverCharacteristics: ([CBUUID]?, Service) -> Effect<Never, Never>
-    var discoverDescriptors: (Characteristic) -> Effect<Never, Never>
-    var readCharacteristicValue: (Characteristic) -> Effect<Never, Never>
-    var readDescriptorValue: (Descriptor) -> Effect<Never, Never>
-    var writeCharacteristicValue: (Data, Characteristic, CBCharacteristicWriteType) -> Effect<Never, Never>
-    var writeDescriptorValue: (Data, Descriptor) -> Effect<Never, Never>
-    var maximumWriteValueLength: (CBCharacteristicWriteType) -> Int
-    var setNotifyValue: (Bool, Characteristic) -> Effect<Never, Never>
-    var openL2CAPChannel: (CBL2CAPPSM) -> Effect<Never, Never>
+    public internal(set) var identifier: () -> UUID = {
+        _unimplemented("identifier")
+    }
     
-    public init(
-        rawValue: CBPeripheral?,
-        delegate: CBPeripheralDelegate?,
-        identifier: @escaping () -> UUID,
-        name: @escaping () -> String?,
-        services: @escaping () -> [Service]?,
-        discoverServices: @escaping ([CBUUID]?) -> Effect<Never, Never>,
-        discoverIncludedServices: @escaping ([CBUUID]?, Service) -> Effect<Never, Never>,
-        discoverCharacteristics: @escaping ([CBUUID]?, Service) -> Effect<Never, Never>,
-        discoverDescriptors: @escaping (Characteristic) -> Effect<Never, Never>,
-        readCharacteristicValue: @escaping (Characteristic) -> Effect<Never, Never>,
-        readDescriptorValue: @escaping (Descriptor) -> Effect<Never, Never>,
-        writeCharacteristicValue: @escaping (Data, Characteristic, CBCharacteristicWriteType) -> Effect<Never, Never>,
-        writeDescriptorValue: @escaping (Data, Descriptor) -> Effect<Never, Never>,
-        maximumWriteValueLength: @escaping (CBCharacteristicWriteType) -> Int,
-        setNotifyValue: @escaping (Bool, Characteristic) -> Effect<Never, Never>,
-        state: @escaping () -> CBPeripheralState,
-        canSendWriteWithoutResponse: @escaping () -> Bool,
-        readRSSI: @escaping () -> Effect<Never, Never>,
-        openL2CAPChannel: @escaping (CBL2CAPPSM) -> Effect<Never, Never>,
-        ancsAuthorized: @escaping () -> Bool
-    ) {
-        self.rawValue = rawValue
-        self.delegate = delegate
-        self.rawValue?.delegate = delegate
-        self.identifier = identifier
-        self.name = name
-        self.services = services
-        self.discoverServices = discoverServices
-        self.discoverIncludedServices = discoverIncludedServices
-        self.discoverCharacteristics = discoverCharacteristics
-        self.discoverDescriptors = discoverDescriptors
-        self.readCharacteristicValue = readCharacteristicValue
-        self.readDescriptorValue = readDescriptorValue
-        self.writeCharacteristicValue = writeCharacteristicValue
-        self.writeDescriptorValue = writeDescriptorValue
-        self.maximumWriteValueLength = maximumWriteValueLength
-        self.setNotifyValue = setNotifyValue
-        self.state = state
-        self.canSendWriteWithoutResponse = canSendWriteWithoutResponse
-        self.readRSSI = readRSSI
-        self.openL2CAPChannel = openL2CAPChannel
-        self.ancsAuthorized = ancsAuthorized
+    public internal(set) var name: () -> String? = {
+        _unimplemented("name")
+    }
+    
+    public internal(set) var services: () -> [Service]? = {
+        _unimplemented("services")
+    }
+    
+    public internal(set) var state: () -> CBPeripheralState = {
+        _unimplemented("state")
+    }
+    
+    public internal(set) var canSendWriteWithoutResponse: () -> Bool = {
+        _unimplemented("canSendWriteWithoutResponse")
+    }
+    
+    public internal(set) var readRSSI: () -> Effect<Never, Never> = {
+        _unimplemented("readRSSI")
+    }
+    
+    var discoverServices: ([CBUUID]?) -> Effect<Never, Never> = { _ in
+        _unimplemented("discoverServices")
+    }
+    
+    var discoverIncludedServices: ([CBUUID]?, Service) -> Effect<Never, Never> = { _, _ in
+        _unimplemented("discoverIncludedServices")
+    }
+    
+    var discoverCharacteristics: ([CBUUID]?, Service) -> Effect<Never, Never> = { _, _ in
+        _unimplemented("discoverCharacteristics")
+    }
+    
+    var discoverDescriptors: (Characteristic) -> Effect<Never, Never> = { _ in
+        _unimplemented("discoverDescriptors")
+    }
+    
+    var readCharacteristicValue: (Characteristic) -> Effect<Never, Never> = { _ in
+        _unimplemented("readCharacteristicValue")
+    }
+    
+    var readDescriptorValue: (Descriptor) -> Effect<Never, Never> = { _ in
+        _unimplemented("readDescriptorValue")
+    }
+    
+    var writeCharacteristicValue: (Data, Characteristic, CBCharacteristicWriteType) -> Effect<Never, Never> = { _, _, _ in
+        _unimplemented("writeCharacteristicValue")
+    }
+    
+    var writeDescriptorValue: (Data, Descriptor) -> Effect<Never, Never> = { _, _ in
+        _unimplemented("writeDescriptorValue")
+    }
+    
+    var maximumWriteValueLength: (CBCharacteristicWriteType) -> Int = { _ in
+        _unimplemented("maximumWriteValueLength")
+    }
+    
+    var setNotifyValue: (Bool, Characteristic) -> Effect<Never, Never> = { _, _ in
+        _unimplemented("setNotifyValue")
+    }
+    
+    var openL2CAPChannel: (CBL2CAPPSM) -> Effect<Never, Never> = { _ in
+        _unimplemented("openL2CAPChannel")
+    }
+    
+    @available(macOS, unavailable)
+    public internal(set) var ancsAuthorized: () -> Bool = {
+        _unimplemented("ancsAuthorized")
     }
 }
 
