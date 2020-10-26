@@ -166,3 +166,9 @@ extension Peripheral {
         case didOpenL2CAPChannel(CBL2CAPChannel?, CBError?)
     }
 }
+
+extension Peripheral: Identifiable {
+    public var id: UUID {
+        return identifier()
+    }
+}
