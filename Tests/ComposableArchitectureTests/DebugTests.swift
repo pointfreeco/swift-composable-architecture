@@ -246,50 +246,6 @@ final class DebugTests: XCTestCase {
       debugOutput(URL(string: "https://www.pointfree.co")!),
       "https://www.pointfree.co"
     )
-    XCTAssertEqual(
-      debugOutput(DispatchQueue.main),
-      "DispatchQueue.main"
-    )
-    XCTAssertEqual(
-      debugOutput(DispatchQueue.global()),
-      "DispatchQueue.global()"
-    )
-    XCTAssertEqual(
-      debugOutput(DispatchQueue.global(qos: .background)),
-      "DispatchQueue.global(qos: .background)"
-    )
-    XCTAssertEqual(
-      debugOutput(DispatchQueue(label: "co.pointfree", qos: .background)),
-      #"DispatchQueue(label: "co.pointfree", qos: .background)"#
-    )
-    XCTAssertEqual(
-      debugOutput(OperationQueue.main),
-      "OperationQueue.main"
-    )
-    XCTAssertEqual(
-      debugOutput(OperationQueue()),
-      "OperationQueue()"
-    )
-    XCTAssertEqual(
-      debugOutput(RunLoop.main),
-      "RunLoop.main"
-    )
-    //    XCTAssertEqual(
-    //      debugOutput(DispatchQueue.testScheduler),
-    //      "DispatchQueue.testScheduler"
-    //    )
-    //    XCTAssertEqual(
-    //      debugOutput(OperationQueue.testScheduler),
-    //      "OperationQueue.testScheduler"
-    //    )
-    //    XCTAssertEqual(
-    //      debugOutput(RunLoop.testScheduler),
-    //      "RunLoop.testScheduler"
-    //    )
-    //    XCTAssertEqual(
-    //      debugOutput(DispatchQueue.main.eraseToAnyScheduler()),
-    //      "DispatchQueue.main"
-    //    )
   }
 
   func testNestedDump() {
