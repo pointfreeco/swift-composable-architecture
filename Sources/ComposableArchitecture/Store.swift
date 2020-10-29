@@ -123,7 +123,6 @@ public final class Store<State, Action> {
       .eraseToAnyPublisher()
   }
 
-
   /// Scopes the store to a publisher of stores of more local state and local actions.
   ///
   /// - Parameter toLocalState: A function that transforms a publisher of `State` into a publisher
