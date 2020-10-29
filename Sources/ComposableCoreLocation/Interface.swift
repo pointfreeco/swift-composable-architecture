@@ -274,6 +274,10 @@ public struct LocationManager {
 
   var location: (AnyHashable) -> Location? = { _ in _unimplemented("location") }
 
+  var accuracyAuthorization: (AnyHashable) -> AccuracyAuthorization? = { _ in
+    _unimplemented("accuracyAuthorization")
+  }
+
   public var locationServicesEnabled: () -> Bool = { _unimplemented("locationServicesEnabled") }
 
   @available(tvOS, unavailable)
@@ -394,6 +398,11 @@ public struct LocationManager {
   public func heading(id: AnyHashable) -> Heading? { self.heading(id) }
 
   public func location(id: AnyHashable) -> Location? { self.location(id) }
+
+  @available(iOS 14.0, tvOS 14.0, watchOS 7.0, macOS 11.0, macCatalyst 14.0, *)
+  public func accuracyAuthorization(id: AnyHashable) -> AccuracyAuthorization? {
+    self.accuracyAuthorization(id)
+  }
 
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
