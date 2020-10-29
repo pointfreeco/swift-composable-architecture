@@ -60,8 +60,8 @@ This repo comes with _lots_ of examples to demonstrate how to solve common and c
   * Navigation
   * Higher-order reducers
   * Reusable components
-* [Location manager](https://github.com/pointfreeco/composable-core-location/tree/Examples/LocationManager)
-* [Motion manager](https://github.com/pointfreeco/composable-core-motion/tree/Examples/MotionManager)
+* [Location manager](https://github.com/pointfreeco/composable-core-location/tree/main/Examples/LocationManager)
+* [Motion manager](https://github.com/pointfreeco/composable-core-motion/tree/main/Examples/MotionManager)
 * [Search](./Examples/Search)
 * [Speech Recognition](./Examples/SpeechRecognition)
 * [Tic-Tac-Toe](./Examples/TicTacToe)
