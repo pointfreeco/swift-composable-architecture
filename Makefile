@@ -19,37 +19,10 @@ test:
 		-scheme ComposableArchitecture_watchOS \
 		-destination platform="$(PLATFORM_WATCHOS)"
 	xcodebuild test \
-		-scheme ComposableCoreLocation \
-		-destination platform="$(PLATFORM_IOS)"
-	xcodebuild test \
-		-scheme ComposableCoreLocation \
-		-destination platform="$(PLATFORM_MACOS)"
-	xcodebuild test \
-		-scheme ComposableCoreLocation \
-		-destination platform="$(PLATFORM_TVOS)"
-	xcodebuild test \
-		-scheme ComposableCoreMotion \
-		-destination platform="$(PLATFORM_IOS)"
-	xcodebuild test \
-		-scheme ComposableCoreMotion \
-		-destination platform="$(PLATFORM_MACOS)"
-	xcodebuild test \
-		-scheme ComposableCoreMotion \
-		-destination platform="$(PLATFORM_TVOS)"
-	xcodebuild test \
 		-scheme "CaseStudies (SwiftUI)" \
 		-destination platform="$(PLATFORM_IOS)"
 	xcodebuild test \
 		-scheme "CaseStudies (UIKit)" \
-		-destination platform="$(PLATFORM_IOS)"
-	xcodebuild test \
-		-scheme MotionManager \
-		-destination platform="$(PLATFORM_IOS)"
-	xcodebuild test \
-		-scheme LocationManagerDesktop \
-		-destination platform="$(PLATFORM_MACOS)"
-	xcodebuild test \
-		-scheme LocationManagerMobile \
 		-destination platform="$(PLATFORM_IOS)"
 	xcodebuild test \
 		-scheme Search \
