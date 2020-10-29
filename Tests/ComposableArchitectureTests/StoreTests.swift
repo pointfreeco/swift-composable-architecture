@@ -100,7 +100,7 @@ final class StoreTests: XCTestCase {
     var outputs: [String] = []
 
     parentStore
-      .scope(state: { $0.map { "\($0)" }.removeDuplicates() })
+      .scope(statePublisher: { $0.map { "\($0)" }.removeDuplicates() })
       .sink { childStore in
         childStore.state
           .sink { outputs.append($0) }
