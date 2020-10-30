@@ -59,7 +59,7 @@ public struct Reducer<State, Action, Environment> {
   /// Combines many reducers into a single one by running each one on state in order, and merging
   /// all of the effects.
   ///
-  /// It is important to note that the order of combining reducers matter. Combining `reducerA` with 
+  /// It is important to note that the order of combining reducers matter. Combining `reducerA` with
   /// `reducerB` is not necessarily the same as combining `reducerB` with `reducerA`.
   ///
   /// This can become an issue when working with reducers that have overlapping domains. For

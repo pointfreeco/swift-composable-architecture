@@ -120,7 +120,7 @@ struct VoiceMemoView: View {
       ZStack(alignment: .leading) {
         if self.viewStore.mode.isPlaying {
           Rectangle()
-            .foregroundColor(Color(white: 0.9))
+            .foregroundColor(Color(.systemGray5))
             .frame(width: proxy.size.width * CGFloat(self.viewStore.mode.progress ?? 0))
             .animation(.linear(duration: 0.5))
         }
@@ -137,7 +137,7 @@ struct VoiceMemoView: View {
           dateComponentsFormatter.string(from: self.currentTime).map {
             Text($0)
               .font(Font.footnote.monospacedDigit())
-              .foregroundColor(.gray)
+              .foregroundColor(Color(.systemGray))
           }
 
           Button(action: { self.viewStore.send(.playButtonTapped) }) {
@@ -145,11 +145,12 @@ struct VoiceMemoView: View {
               .font(Font.system(size: 22))
           }
         }
+        .frame(maxHeight: .infinity, alignment: .center)
         .padding([.leading, .trailing])
       }
     }
     .buttonStyle(BorderlessButtonStyle())
-    .listRowBackground(self.viewStore.mode.isPlaying ? Color(white: 0.97) : .clear)
+    .listRowBackground(self.viewStore.mode.isPlaying ? Color(.systemGray6) : .clear)
     .listRowInsets(EdgeInsets())
   }
 

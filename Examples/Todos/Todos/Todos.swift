@@ -38,6 +38,11 @@ struct AppEnvironment {
 }
 
 let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
+  todoReducer.forEach(
+    state: \.todos,
+    action: /AppAction.todo(id:action:),
+    environment: { _ in TodoEnvironment() }
+  ),
   Reducer { state, action, environment in
     switch action {
     case .addTodoButtonTapped:
@@ -78,12 +83,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     case .todo:
       return .none
     }
-  },
-  todoReducer.forEach(
-    state: \.todos,
-    action: /AppAction.todo(id:action:),
-    environment: { _ in TodoEnvironment() }
-  )
+  }
 )
 
 .debugActions(actionFormat: .labelsOnly)
