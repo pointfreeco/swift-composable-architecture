@@ -9,7 +9,7 @@ import Foundation
 public final class Store<State, Action> {
   var state: CurrentValueSubject<State, Never>
   var effectCancellables: [UUID: AnyCancellable] = [:]
-  private var isSending = false
+  private var isSending: String?
   private var parentCancellable: AnyCancellable?
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   private var synchronousActionsToSend: [Action] = []
@@ -141,11 +141,11 @@ public final class Store<State, Action> {
     while !self.synchronousActionsToSend.isEmpty {
       let action = self.synchronousActionsToSend.removeFirst()
 
-      if self.isSending {
+      if let alreadyProcessing = self.isSending {
         assertionFailure(
           """
           The store was sent the action \(debugCaseOutput(action)) while it was already 
-          processing another action.
+          processing \(alreadyProcessing).
 
           This can happen for a few reasons:
 
@@ -162,9 +162,9 @@ public final class Store<State, Action> {
           """
         )
       }
-      self.isSending = true
+      self.isSending = debugCaseOutput(action)
       let effect = self.reducer(&self.state.value, action)
-      self.isSending = false
+      self.isSending = nil
 
       var didComplete = false
       let uuid = UUID()
