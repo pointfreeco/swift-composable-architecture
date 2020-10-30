@@ -325,7 +325,7 @@
               .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
               ?? """
               Expected:
-              \(String(describing: expectedState).indent(by: 2))
+              \(String(describing: expectedAction).indent(by: 2))
 
               Received:
               \(String(describing: receivedAction).indent(by: 2))
