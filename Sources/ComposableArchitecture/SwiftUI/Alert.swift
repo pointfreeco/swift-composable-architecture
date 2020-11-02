@@ -155,6 +155,17 @@ public struct AlertState<Action> {
       }
     }
 
+    public static func ==(lhs: Self, rhs: Self) -> Bool {
+      switch (lhs, rhs) {
+      case let (.localized(lhs), .localized(rhs)):
+        return lhs.formatted() == rhs.formatted()
+      case let (.verbatim(lhs), .verbatim(rhs)):
+        return lhs == rhs
+      case (.verbatim, .localized), (.localized, .verbatim):
+        return false
+      }
+    }
+
     public func hash(into hasher: inout Hasher) {
       switch self {
       case let .localized(key):
