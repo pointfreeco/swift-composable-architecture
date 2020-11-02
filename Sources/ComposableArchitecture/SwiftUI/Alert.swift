@@ -92,18 +92,28 @@ import SwiftUI
 ///
 public struct AlertState<Action> {
   public let id = UUID()
-  public var message: LocalizedStringKey?
+  public var title: Text
+  public var message: Text?
   public var primaryButton: Button?
   public var secondaryButton: Button?
-  public var title: LocalizedStringKey
 
   public init(
     title: LocalizedStringKey,
     message: LocalizedStringKey? = nil,
     dismissButton: Button? = nil
   ) {
-    self.title = title
-    self.message = message
+    self.title = .localized(title)
+    self.message = message.map { .localized($0) }
+    self.primaryButton = dismissButton
+  }
+
+  public init(
+    verbatim title: String,
+    verbatim message: String? = nil,
+    dismissButton: Button? = nil
+  ) {
+    self.title = .verbatim(title)
+    self.message = message.map { .verbatim($0) }
     self.primaryButton = dismissButton
   }
 
@@ -113,10 +123,48 @@ public struct AlertState<Action> {
     primaryButton: Button,
     secondaryButton: Button
   ) {
-    self.title = title
-    self.message = message
+    self.title = .localized(title)
+    self.message = message.map { .localized($0) }
     self.primaryButton = primaryButton
     self.secondaryButton = secondaryButton
+  }
+
+  public init(
+    verbatim title: String,
+    verbatim message: String? = nil,
+    primaryButton: Button,
+    secondaryButton: Button
+  ) {
+    self.title = .verbatim(title)
+    self.message = message.map { .verbatim($0) }
+    self.primaryButton = primaryButton
+    self.secondaryButton = secondaryButton
+  }
+
+
+  public enum Text: Equatable, Hashable {
+    case verbatim(String)
+    case localized(LocalizedStringKey)
+
+    func toSwiftUI() -> SwiftUI.Text {
+      switch self {
+      case let .localized(key):
+        return SwiftUI.Text(key)
+      case let .verbatim(content):
+        return SwiftUI.Text(content)
+      }
+    }
+
+    public func hash(into hasher: inout Hasher) {
+      switch self {
+      case let .localized(key):
+        hasher.combine("localized")
+        hasher.combine(key.formatted())
+      case let .verbatim(content):
+        hasher.combine("verbatim")
+        hasher.combine(content)
+      }
+    }
   }
 
   public struct Button {
@@ -127,7 +175,14 @@ public struct AlertState<Action> {
       _ label: LocalizedStringKey,
       send action: Action? = nil
     ) -> Self {
-      Self(action: action, type: .cancel(label: label))
+      Self(action: action, type: .cancel(label: .localized(label)))
+    }
+
+    public static func cancel(
+      verbatim label: String,
+      send action: Action? = nil
+    ) -> Self {
+      Self(action: action, type: .cancel(label: .verbatim(label)))
     }
 
     public static func cancel(
@@ -140,20 +195,34 @@ public struct AlertState<Action> {
       _ label: LocalizedStringKey,
       send action: Action? = nil
     ) -> Self {
-      Self(action: action, type: .default(label: label))
+      Self(action: action, type: .default(label: .localized(label)))
+    }
+
+    public static func `default`(
+      verbatim label: String,
+      send action: Action? = nil
+    ) -> Self {
+      Self(action: action, type: .default(label: .verbatim(label)))
     }
 
     public static func destructive(
       _ label: LocalizedStringKey,
       send action: Action? = nil
     ) -> Self {
-      Self(action: action, type: .destructive(label: label))
+      Self(action: action, type: .destructive(label: .localized(label)))
+    }
+
+    public static func destructive(
+      verbatim label: String,
+      send action: Action? = nil
+    ) -> Self {
+      Self(action: action, type: .destructive(label: .verbatim(label)))
     }
 
     public enum `Type` {
-      case cancel(label: LocalizedStringKey?)
-      case `default`(label: LocalizedStringKey)
-      case destructive(label: LocalizedStringKey)
+      case cancel(label: AlertState.Text?)
+      case `default`(label: AlertState.Text)
+      case destructive(label: AlertState.Text)
     }
   }
 }
@@ -194,16 +263,16 @@ extension AlertState: CustomDebugOutputConvertible {
 
 extension AlertState: Equatable where Action: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.title.formatted() == rhs.title.formatted()
-      && lhs.message?.formatted() == rhs.message?.formatted()
+    lhs.title == rhs.title
+      && lhs.message == rhs.message
       && lhs.primaryButton == rhs.primaryButton
       && lhs.secondaryButton == rhs.secondaryButton
   }
 }
 extension AlertState: Hashable where Action: Hashable {
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(self.title.formatted())
-    hasher.combine(self.message?.formatted())
+    hasher.combine(self.title)
+    hasher.combine(self.message)
     hasher.combine(self.primaryButton)
     hasher.combine(self.secondaryButton)
   }
@@ -214,9 +283,9 @@ extension AlertState.Button.`Type`: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
     switch (lhs, rhs) {
     case let (.cancel(lhs), .cancel(rhs)):
-      return lhs?.formatted() == rhs?.formatted()
+      return lhs == rhs
     case let (.default(lhs), .default(rhs)), let (.destructive(lhs), .destructive(rhs)):
-      return lhs.formatted() == rhs.formatted()
+      return lhs == rhs
     default:
       return false
     }
@@ -232,9 +301,9 @@ extension AlertState.Button.`Type`: Hashable {
   public func hash(into hasher: inout Hasher) {
     switch self {
     case let .cancel(label):
-      hasher.combine(label?.formatted())
+      hasher.combine(label)
     case let .default(label), let .destructive(label):
-      hasher.combine(label.formatted())
+      hasher.combine(label)
     }
   }
 }
@@ -250,21 +319,21 @@ extension AlertState.Button {
     let action = { if let action = self.action { send(action) } }
     switch self.type {
     case let .cancel(.some(label)):
-      return .cancel(Text(label), action: action)
+      return .cancel(label.toSwiftUI(), action: action)
     case .cancel(.none):
       return .cancel(action)
     case let .default(label):
-      return .default(Text(label), action: action)
+      return .default(label.toSwiftUI(), action: action)
     case let .destructive(label):
-      return .destructive(Text(label), action: action)
+      return .destructive(label.toSwiftUI(), action: action)
     }
   }
 }
 
 extension AlertState {
   fileprivate func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.Alert {
-    let title = Text(self.title)
-    let message = self.message.map { Text($0) }
+    let title = self.title.toSwiftUI()
+    let message = self.message?.toSwiftUI()
 
     if let primaryButton = self.primaryButton, let secondaryButton = self.secondaryButton {
       return SwiftUI.Alert(

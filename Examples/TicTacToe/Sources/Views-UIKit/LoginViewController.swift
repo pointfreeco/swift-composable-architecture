@@ -136,14 +136,29 @@ class LoginViewController: UIViewController {
         guard let self = self else { return }
         guard let alert = alert else { return }
 
+        let title: String
+        switch alert.title {
+        case let .localized(key):
+          title = key.formatted()
+        case let .verbatim(content):
+          title = content
+        }
+
         let alertController = UIAlertController(
-          title: alert.title.formatted(), message: nil, preferredStyle: .alert)
+          title: title,
+          message: nil,
+          preferredStyle: .alert
+        )
+
         alertController.addAction(
           UIAlertAction(
             title: "Ok", style: .default,
             handler: { _ in
               self.viewStore.send(.alertDismissed)
-            }))
+            }
+          )
+        )
+
         self.present(alertController, animated: true, completion: nil)
       }
       .store(in: &self.cancellables)
