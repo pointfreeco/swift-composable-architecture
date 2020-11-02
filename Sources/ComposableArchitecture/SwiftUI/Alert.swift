@@ -109,7 +109,7 @@ public struct AlertState<Action> {
 
   public init(
     verbatim title: String,
-    verbatim message: String? = nil,
+    message: String? = nil,
     dismissButton: Button? = nil
   ) {
     self.title = .verbatim(title)
@@ -131,7 +131,7 @@ public struct AlertState<Action> {
 
   public init(
     verbatim title: String,
-    verbatim message: String? = nil,
+    message: String? = nil,
     primaryButton: Button,
     secondaryButton: Button
   ) {
