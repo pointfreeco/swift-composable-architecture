@@ -452,17 +452,6 @@
       )
     }
 
-    /// Scopes a store to assert against more local state.
-    ///
-    /// - Parameter toLocalState: A function that transforms the reducer's state into more local
-    ///   state. This state will be asserted against as it is mutated by the reducer. Useful for
-    ///   testing view store state transformations.
-    public func scope<S>(
-      state toLocalState: @escaping (LocalState) -> S
-    ) -> TestStore<State, S, Action, LocalAction, Environment> {
-      self.scope(state: toLocalState, action: { $0 })
-    }
-
     /// A single step of a `TestStore` assertion.
     public struct Step {
       fileprivate let type: StepType
