@@ -203,10 +203,10 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///     enum Action { case alertDismissed }
   ///
   ///     .alert(
-  ///       item: self.store.binding(
+  ///       item: viewStorestore.binding(
   ///         send: .alertDismissed
   ///       )
-  ///     ) { alert in Alert(title: Text(alert.message)) }
+  ///     ) { title in Alert(title: Text(title)) }
   ///
   /// - Parameters:
   ///   - action: The action to send when the binding is written to.
