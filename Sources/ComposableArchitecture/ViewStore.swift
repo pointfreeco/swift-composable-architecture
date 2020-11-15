@@ -170,7 +170,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///
   /// For example, a text field binding can be created like this:
   ///
-  ///     struct State { var name = "" }
+  ///     typealias State = String
   ///     enum Action { case nameChanged(String) }
   ///
   ///     TextField(
@@ -199,7 +199,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///
   /// For example, an alert binding can be dealt with like this:
   ///
-  ///     struct State { var alert: String? }
+  ///     typealias State = String
   ///     enum Action { case alertDismissed }
   ///
   ///     .alert(
