@@ -58,7 +58,8 @@ public final class Store<State, Action> {
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<LocalState, LocalAction>(
     state toLocalState: @escaping (State) -> LocalState,
-    action fromLocalAction: @escaping (LocalAction) -> Action
+    action fromLocalAction: @escaping (LocalAction) -> Action,
+    removeDuplicates predicate: ((State, State) -> Bool)? = nil
   ) -> Store<LocalState, LocalAction> {
     let localStore = Store<LocalState, LocalAction>(
       initialState: toLocalState(self.state.value),
@@ -68,19 +69,15 @@ public final class Store<State, Action> {
         return .none
       }
     )
-    localStore.parentCancellable = self.state
-      .sink { [weak localStore] newValue in localStore?.state.value = toLocalState(newValue) }
+    if let predicate = predicate {
+      localStore.parentCancellable = self.state
+        .removeDuplicates(by: predicate)
+        .sink { [weak localStore] newValue in localStore?.state.value = toLocalState(newValue) }
+    } else {
+      localStore.parentCancellable = self.state
+        .sink { [weak localStore] newValue in localStore?.state.value = toLocalState(newValue) }
+    }
     return localStore
-  }
-
-  /// Scopes the store to one that exposes local state.
-  ///
-  /// - Parameter toLocalState: A function that transforms `State` into `LocalState`.
-  /// - Returns: A new store with its domain (state and action) transformed.
-  public func scope<LocalState>(
-    state toLocalState: @escaping (State) -> LocalState
-  ) -> Store<LocalState, Action> {
-    self.scope(state: toLocalState, action: { $0 })
   }
 
   /// Scopes the store to a publisher of stores of more local state and local actions.
@@ -181,7 +178,7 @@ public final class Store<State, Action> {
 
   /// Returns a "stateless" store by erasing state to `Void`.
   public var stateless: Store<Void, Action> {
-    self.scope(state: { _ in () })
+    self.scope(state: { _ in () }, action: { $0 })
   }
 
   /// Returns an "actionless" store by erasing action to `Never`.
