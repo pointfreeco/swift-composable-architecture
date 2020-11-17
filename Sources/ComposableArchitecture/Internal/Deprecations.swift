@@ -1,5 +1,26 @@
 import Combine
 
+// NB: Deprecated after 0.9.0:
+
+extension Store {
+  @available(*, deprecated, renamed: "publisherScope(state:)")
+  public func scope<P: Publisher, LocalState>(
+    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P
+  ) -> AnyPublisher<Store<LocalState, Action>, Never>
+  where P.Output == LocalState, P.Failure == Never {
+    self.publisherScope(state: toLocalState)
+  }
+
+  @available(*, deprecated, renamed: "publisherScope(state:action:)")
+  public func scope<P: Publisher, LocalState, LocalAction>(
+    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P,
+    action fromLocalAction: @escaping (LocalAction) -> Action
+  ) -> AnyPublisher<Store<LocalState, LocalAction>, Never>
+  where P.Output == LocalState, P.Failure == Never {
+    self.publisherScope(state: toLocalState, action: fromLocalAction)
+  }
+}
+
 // NB: Deprecated after 0.6.0:
 
 extension Reducer {

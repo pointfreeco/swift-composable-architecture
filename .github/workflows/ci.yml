@@ -16,7 +16,7 @@ jobs:
         xcode:
           - 11.3
           - 11.7
-          - 12_beta
+          - 12
     steps:
       - uses: actions/checkout@v2
       - name: Select Xcode ${{ matrix.xcode }}

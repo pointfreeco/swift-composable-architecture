@@ -21,7 +21,7 @@ extension LocalizedStringKey: CustomDebugOutputConvertible {
         return formatter?.string(for: value) ?? value as! CVarArg
       }
 
-    return String(format: key, locale: nil, arguments: arguments)
+    return String(format: key, locale: locale, arguments: arguments)
   }
 
   public var debugOutput: String {
