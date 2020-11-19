@@ -11,6 +11,7 @@ class LocalizedStringKeyTests: XCTestCase {
     )
 
     let formatter = NumberFormatter()
+    formatter.locale = Locale(identifier: "en_US_POSIX")
     formatter.numberStyle = .ordinal
     XCTAssertEqual(
       LocalizedStringKey("You are \(1_000 as NSNumber, formatter: formatter) in line.").formatted(),

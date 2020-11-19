@@ -207,14 +207,19 @@ struct VoiceMemosView: View {
           VStack {
             ZStack {
               Circle()
-                .foregroundColor(.black)
+                .foregroundColor(Color(.label))
                 .frame(width: 74, height: 74)
 
-              Button(action: { viewStore.send(.recordButtonTapped) }) {
+              Button(
+                action: {
+                  withAnimation(.spring()) {
+                    viewStore.send(.recordButtonTapped)
+                  }
+                }
+              ) {
                 RoundedRectangle(cornerRadius: viewStore.currentRecording != nil ? 4 : 35)
-                  .foregroundColor(.red)
+                  .foregroundColor(Color(.systemRed))
                   .padding(viewStore.currentRecording != nil ? 17 : 2)
-                  .animation(.spring())
               }
               .frame(width: 70, height: 70)
 
@@ -234,13 +239,12 @@ struct VoiceMemosView: View {
                 Text($0)
                   .font(Font.body.monospacedDigit().bold())
                   .foregroundColor(.white)
-                  .colorMultiply(Int(duration).isMultiple(of: 2) ? .red : .black)
+                  .colorMultiply(Color(Int(duration).isMultiple(of: 2) ? .systemRed : .label))
                   .animation(.easeInOut(duration: 0.5))
               }
             }
           }
           .padding()
-          .animation(Animation.easeInOut(duration: 0.3))
         }
         .alert(
           self.store.scope(state: { $0.alert }),
@@ -293,5 +297,6 @@ struct VoiceMemos_Previews: PreviewProvider {
         )
       )
     )
+    .environment(\.colorScheme, .dark)
   }
 }

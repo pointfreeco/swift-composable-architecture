@@ -100,7 +100,7 @@ final class StoreTests: XCTestCase {
     var outputs: [String] = []
 
     parentStore
-      .scope(state: { $0.map { "\($0)" }.removeDuplicates() })
+      .publisherScope(state: { $0.map { "\($0)" }.removeDuplicates() })
       .sink { childStore in
         childStore.state
           .sink { outputs.append($0) }
@@ -245,7 +245,7 @@ final class StoreTests: XCTestCase {
     var outputs: [Int] = []
 
     parentStore
-      .scope { $0.removeDuplicates() }
+      .publisherScope { $0.removeDuplicates() }
       .sink { outputs.append($0.state.value) }
       .store(in: &self.cancellables)
 
