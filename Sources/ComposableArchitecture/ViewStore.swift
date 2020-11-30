@@ -68,7 +68,9 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// The current state.
   public private(set) var state: State {
     willSet {
-      self.objectWillChange.send()
+      DispatchQueue.main.async { [weak self] in
+        self?.objectWillChange.send()
+      }
     }
   }
 
