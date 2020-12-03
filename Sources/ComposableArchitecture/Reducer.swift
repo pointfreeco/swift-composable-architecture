@@ -51,6 +51,158 @@ public struct Reducer<State, Action, Environment> {
     self.reducer = reducer
   }
 
+  /// Initializes a reducer which will only execute the provided handler for a certain action (provided as argument).
+  ///
+  /// The handler will take three arguments: state, the action's associated value and environment. The state is `inout` so that
+  /// you can make any changes to it directly inline. The reducer must return an effect, which
+  /// typically would be constructed by using the dependencies inside the `environment` value. If
+  /// no effect needs to be executed, a `.none` effect can be returned.
+  ///
+  /// - Parameters:
+  ///   - casePath: The `CasePath` for the action which the Reducer will then call the reducer handler.
+  ///   - handler: A function signature that takes state, the action's associated value and environment.
+  ///   - state: The current state of the reducer. This is mutable since it is an `inout` variable.
+  ///   - actionResult: The associated type of the triggered action.
+  ///   - environment: The environment stored in the reducer
+  init<ActionResult>(
+    forAction casePath: CasePath<Action, ActionResult>,
+    handler: @escaping (_ state: inout State, _ actionResult: ActionResult, _ environment: Environment) -> Effect<Action, Never>
+  ) {
+    self.init { state, action, environment -> Effect<Action, Never> in
+      guard let actionResult = casePath.extract(from: action) else { return .none }
+      return handler(&state, actionResult, environment)
+    }
+  }
+
+  /// Initializes a reducer which will only execute the provided handler for a certain action (provided as argument).
+  ///
+  /// The handler will take two arguments only: state and environment. The action is ignored since it has no associated
+  /// type (`Void`). The state is `inout` so that you can make any changes to it directly inline. The reducer must
+  /// return an effect, which typically would be constructed by using the dependencies inside the `environment` value.
+  /// If no effect needs to be executed, a `.none` effect can be returned.
+  ///
+  /// - Parameters:
+  ///   - casePath: The `CasePath` for the action which the Reducer will then call the reducer handler.
+  ///   - handler: A function signature that takes state and environment. Notice that no action is provided
+  ///     to the handler since the action has a `Void` associated type.
+  ///   - state: The current state of the reducer. This is mutable since it is an `inout` variable.
+  ///   - environment: The environment stored in the reducer
+  init(
+    forAction casePath: CasePath<Action, Void>,
+    handler: @escaping (_ state: inout State, _ environment: Environment) -> Effect<Action, Never>
+  ) {
+    self.init { state, action, environment -> Effect<Action, Never> in
+      guard casePath.extract(from: action) != nil else { return .none }
+      return handler(&state, environment)
+    }
+  }
+
+  /// Initializes a reducer which will only execute the provided handler for the provided actions. Notice that all provided actions
+  /// must have the same type of associated value.
+  ///
+  /// The handler will take three arguments: state, the action's associated value and environment. The state is `inout` so that
+  /// you can make any changes to it directly inline. The reducer must return an effect, which
+  /// typically would be constructed by using the dependencies inside the `environment` value. If
+  /// no effect needs to be executed, a `.none` effect can be returned.
+  ///
+  /// - Parameters:
+  ///   - casePaths: All the actions that will be executing the provided handler. All the `CasePath`s must have the same
+  ///     resulting type.
+  ///   - handler: A function signature that takes state, the action's associated value and environment.
+  ///   - state: The current state of the reducer. This is mutable since it is an `inout` variable.
+  ///   - actionResult: The associated type of the triggered action.
+  ///   - environment: The environment stored in the reducer
+  init<ActionResult>(
+    forActions casePaths: CasePath<Action, ActionResult>...,
+    handler: @escaping (_ state: inout State, _ actionResult: ActionResult, _ environment: Environment) -> Effect<Action, Never>
+  ) {
+    self.init { state, action, environment -> Effect<Action, Never> in
+      for casePath in casePaths {
+        guard let actionResult = casePath.extract(from: action) else { continue }
+        return handler(&state, actionResult, environment)
+      }
+
+      return .none
+    }
+  }
+
+  /// Initializes a reducer which will only execute the provided handler for the provided actions. Notice that all provided actions
+  /// must have no associated value (`Void`).
+  ///
+  /// The handler will take two arguments only: state and environment. The action is ignored since it has no associated
+  /// type (`Void`). The state is `inout` so that you can make any changes to it directly inline. The reducer must
+  /// return an effect, which typically would be constructed by using the dependencies inside the `environment` value.
+  /// If no effect needs to be executed, a `.none` effect can be returned.
+  ///
+  /// - Parameters:
+  ///   - casePaths: All the actions that will be executing the provided handler. All the `CasePath`s must have no resulting type (`Void`).
+  ///   - handler: A function signature that takes state, the action's associated value and environment.
+  ///   - state: The current state of the reducer. This is mutable since it is an `inout` variable.
+  ///   - environment: The environment stored in the reducer
+  init(
+    forActions casePaths: CasePath<Action, Void>...,
+    handler: @escaping (_ state: inout State, _ environment: Environment) -> Effect<Action, Never>
+  ) {
+    self.init { state, action, environment -> Effect<Action, Never> in
+      for casePath in casePaths {
+        guard casePath.extract(from: action) != nil else { continue }
+        return handler(&state, environment)
+      }
+
+      return .none
+    }
+  }
+
+  /// Initializes a reducer which will bind a received action associated value to some key path on the reducer's state.
+  ///
+  /// Optionally you may provide an effect once the assignment is finished.
+  ///
+  /// - Parameters:
+  ///   - casePath: The `CasePath` for the action that we would like to bind to the state. The associated value
+  ///     must have the same type as the resulting key path.
+  ///   - keyPath: The key path to the property we would like to set in the State. Every new action that this reducer
+  ///     receives that matches the provided `casePath` will then store the associated value into the State's key path.
+  ///   - handler: A side effect to be produced after the State has been updated with the action's associated value.
+  ///     Defaults to not producing any side effects (`.none`).
+  ///   - state: The new mutated State, which might even be further mutated if needed.
+  ///   - actionResult: The associated value of the triggered action.
+  ///   - environment: The environment stored in the reducer.
+  init<ActionResult>(
+    bindingAction casePath: CasePath<Action, ActionResult>,
+    to keyPath: WritableKeyPath<State, ActionResult>,
+    handler: @escaping (_ state: inout State, _ actionResult: ActionResult, _ environment: Environment) -> Effect<Action, Never> = { _, _, _ in .none }
+  ) {
+    self.init(forAction: casePath) { state, actionResult, environment -> Effect<Action, Never> in
+      state[keyPath: keyPath] = actionResult
+      return handler(&state, actionResult, environment)
+    }
+  }
+
+  /// Initializes a reducer which will bind received actions associated values to some key path on the reducer's state.
+  ///
+  /// Optionally you may provide an effect once the assignment is finished.
+  ///
+  /// - Parameters:
+  ///   - casePaths: All the `CasePath`s for the actions that we would like to bind to the state. The associated value
+  ///     must have the same type as the resulting key path.
+  ///   - keyPath: The key path to the property we would like to set in the State. Every new action that this reducer
+  ///     receives that matches the provided `casePaths` will then store the associated value into the State's key path.
+  ///   - handler: A side effect to be produced after the State has been updated with the action's associated value.
+  ///     Defaults to not producing any side effects (`.none`).
+  ///   - state: The new mutated State, which might even be further mutated if needed.
+  ///   - actionResult: The associated value of the triggered action.
+  ///   - environment: The environment stored in the reducer.
+  init<ActionResult>(
+    bindingActions casePaths: CasePath<Action, ActionResult>,
+    to keyPath: WritableKeyPath<State, ActionResult>,
+    handler: @escaping (_ state: inout State, _ actionResult: ActionResult, _ environment: Environment) -> Effect<Action, Never> = { _, _, _ in .none }
+  ) {
+    self.init(forActions: casePaths) { state, actionResult, environment -> Effect<Action, Never> in
+      state[keyPath: keyPath] = actionResult
+        return handler(&state, actionResult, environment)
+    }
+  }
+
   /// A reducer that performs no state mutations and returns no effects.
   public static var empty: Reducer {
     Self { _, _, _ in .none }
