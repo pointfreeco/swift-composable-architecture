@@ -64,7 +64,7 @@ public struct Reducer<State, Action, Environment> {
   ///   - state: The current state of the reducer. This is mutable since it is an `inout` variable.
   ///   - actionResult: The associated type of the triggered action.
   ///   - environment: The environment stored in the reducer
-  init<ActionResult>(
+  public init<ActionResult>(
     forAction casePath: CasePath<Action, ActionResult>,
     handler: @escaping (_ state: inout State, _ actionResult: ActionResult, _ environment: Environment) -> Effect<Action, Never>
   ) {
@@ -87,7 +87,7 @@ public struct Reducer<State, Action, Environment> {
   ///     to the handler since the action has a `Void` associated type.
   ///   - state: The current state of the reducer. This is mutable since it is an `inout` variable.
   ///   - environment: The environment stored in the reducer
-  init(
+  public init(
     forAction casePath: CasePath<Action, Void>,
     handler: @escaping (_ state: inout State, _ environment: Environment) -> Effect<Action, Never>
   ) {
@@ -112,7 +112,7 @@ public struct Reducer<State, Action, Environment> {
   ///   - state: The current state of the reducer. This is mutable since it is an `inout` variable.
   ///   - actionResult: The associated type of the triggered action.
   ///   - environment: The environment stored in the reducer
-  init<ActionResult>(
+  public init<ActionResult>(
     forActions casePaths: CasePath<Action, ActionResult>...,
     handler: @escaping (_ state: inout State, _ actionResult: ActionResult, _ environment: Environment) -> Effect<Action, Never>
   ) {
@@ -139,7 +139,7 @@ public struct Reducer<State, Action, Environment> {
   ///   - handler: A function signature that takes state, the action's associated value and environment.
   ///   - state: The current state of the reducer. This is mutable since it is an `inout` variable.
   ///   - environment: The environment stored in the reducer
-  init(
+  public init(
     forActions casePaths: CasePath<Action, Void>...,
     handler: @escaping (_ state: inout State, _ environment: Environment) -> Effect<Action, Never>
   ) {
@@ -167,7 +167,7 @@ public struct Reducer<State, Action, Environment> {
   ///   - state: The new mutated State, which might even be further mutated if needed.
   ///   - actionResult: The associated value of the triggered action.
   ///   - environment: The environment stored in the reducer.
-  init<ActionResult>(
+  public init<ActionResult>(
     bindingAction casePath: CasePath<Action, ActionResult>,
     to keyPath: WritableKeyPath<State, ActionResult>,
     handler: @escaping (_ state: inout State, _ actionResult: ActionResult, _ environment: Environment) -> Effect<Action, Never> = { _, _, _ in .none }
@@ -192,7 +192,7 @@ public struct Reducer<State, Action, Environment> {
   ///   - state: The new mutated State, which might even be further mutated if needed.
   ///   - actionResult: The associated value of the triggered action.
   ///   - environment: The environment stored in the reducer.
-  init<ActionResult>(
+  public init<ActionResult>(
     bindingActions casePaths: CasePath<Action, ActionResult>,
     to keyPath: WritableKeyPath<State, ActionResult>,
     handler: @escaping (_ state: inout State, _ actionResult: ActionResult, _ environment: Environment) -> Effect<Action, Never> = { _, _, _ in .none }
