@@ -17,7 +17,7 @@ class TestStoreTests: XCTestCase {
       case .a:
         return .merge(
           Effect.concatenate(.init(value: .b1), .init(value: .c1))
-            .delay(for: 1, scheduler: scheduler)
+            .delay(for: 1, scheduler: scheduler.value)
             .eraseToEffect(),
           Empty(completeImmediately: false)
             .eraseToEffect()

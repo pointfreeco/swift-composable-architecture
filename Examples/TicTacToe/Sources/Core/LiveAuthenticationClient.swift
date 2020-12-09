@@ -7,7 +7,12 @@ extension AuthenticationClient {
   public static let live = AuthenticationClient(
     login: { request in
       (request.email.contains("@") && request.password == "password"
-        ? Effect(value: .init(token: "deadbeef", twoFactorRequired: request.email.contains("2fa")))
+        ? Effect(
+          value: .init(
+            token: "deadbeef",
+            twoFactorRequired: request.email.lowercased().contains("2fa")
+          )
+        )
         : Effect(error: .invalidUserPassword))
         .delay(for: 1, scheduler: queue)
         .eraseToEffect()

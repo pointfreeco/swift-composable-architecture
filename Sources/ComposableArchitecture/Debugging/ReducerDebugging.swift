@@ -105,7 +105,7 @@ extension Reducer {
         let effects = self.run(&state, action, environment)
         guard let localAction = toLocalAction.extract(from: action) else { return effects }
         let nextState = toLocalState(state)
-        let debugEnvironment = toDebugEnvironment(environment)
+        let debugEnvironment = environment.map(toDebugEnvironment)
         return .merge(
           .fireAndForget {
             debugEnvironment.queue.async {

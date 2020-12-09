@@ -28,7 +28,7 @@ final class ReducerTests: XCTestCase {
     let fastReducer = Reducer<Int, Action, Scheduler> { state, _, scheduler in
       state += 1
       return Effect.fireAndForget { fastValue = 42 }
-        .delay(for: 1, scheduler: scheduler)
+        .delay(for: 1, scheduler: scheduler.value)
         .eraseToEffect()
     }
 
@@ -36,7 +36,7 @@ final class ReducerTests: XCTestCase {
     let slowReducer = Reducer<Int, Action, Scheduler> { state, _, scheduler in
       state += 1
       return Effect.fireAndForget { slowValue = 1729 }
-        .delay(for: 2, scheduler: scheduler)
+        .delay(for: 2, scheduler: scheduler.value)
         .eraseToEffect()
     }
 
@@ -227,5 +227,55 @@ final class ReducerTests: XCTestCase {
       .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
       .store(in: &self.cancellables)
     self.wait(for: [expectation], timeout: 0.1)
+  }
+
+  func testFlatMapEnvironment() {
+    enum Action: Equatable {
+      case add(Int)
+      case start
+    }
+
+    struct Environment {
+      var request: Effect<Int, Never>
+      var scheduler: AnySchedulerOf<DispatchQueue>
+    }
+
+    let child = Reducer<Int, Action, Environment> { state, action, environment in
+      switch action {
+      case let .add(n):
+        state += n
+        return .none
+      case .start:
+        return environment.request
+          .receive(on: environment.scheduler)
+          .flatMap { n in
+            environment.request.map { m in
+              print(n, m)
+              return n + m
+            }
+          }
+          .eraseToEffect()
+          .map(Action.add)
+      }
+    }
+    let parent = child.pullback(state: \.self, action: /.self, environment: { $0 })
+
+    let scheduler = DispatchQueue.testScheduler
+
+    let store = TestStore(
+      initialState: 0,
+      reducer: child,
+//      reducer: parent,
+      environment: Environment(
+        request: .init(value: 1),
+        scheduler: scheduler.eraseToAnyScheduler()
+      )
+    )
+    store.assert(
+      .send(.start),
+      .environment { $0.request = .init(value: 2) },
+      .do { scheduler.advance() },
+      .receive(.add(3)) { $0 = 3 }
+    )
   }
 }

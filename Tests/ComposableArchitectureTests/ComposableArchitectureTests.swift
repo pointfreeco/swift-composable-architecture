@@ -19,13 +19,13 @@ final class ComposableArchitectureTests: XCTestCase {
       case .incrAndSquareLater:
         return .merge(
           Effect(value: .incrNow)
-            .delay(for: 2, scheduler: scheduler)
+            .delay(for: 2, scheduler: scheduler.value)
             .eraseToEffect(),
           Effect(value: .squareNow)
-            .delay(for: 1, scheduler: scheduler)
+            .delay(for: 1, scheduler: scheduler.value)
             .eraseToEffect(),
           Effect(value: .squareNow)
-            .delay(for: 2, scheduler: scheduler)
+            .delay(for: 2, scheduler: scheduler.value)
             .eraseToEffect()
         )
       case .incrNow:

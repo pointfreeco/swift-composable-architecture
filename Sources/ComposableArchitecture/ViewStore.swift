@@ -40,7 +40,6 @@ import SwiftUI
 ///     @objc func incrementButtonTapped() {
 ///       self.viewStore.send(.incrementButtonTapped)
 ///     }
-///
 @dynamicMemberLookup
 public final class ViewStore<State, Action>: ObservableObject {
   /// A publisher of state.

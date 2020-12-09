@@ -161,14 +161,14 @@
   /// not expect it would cause a test failure.
   ///
   public final class TestStore<State, LocalState, Action: Equatable, LocalAction, Environment> {
-    private var environment: Environment
+    private var environment: WritableEscaping<Environment>
     private let fromLocalAction: (LocalAction) -> Action
     private let reducer: Reducer<State, Action, Environment>
     private var state: State
     private let toLocalState: (State) -> LocalState
 
     private init(
-      environment: Environment,
+      environment: WritableEscaping<Environment>,
       fromLocalAction: @escaping (LocalAction) -> Action,
       initialState: State,
       reducer: Reducer<State, Action, Environment>,
@@ -195,7 +195,7 @@
       environment: Environment
     ) {
       self.init(
-        environment: environment,
+        environment: .init(environment),
         fromLocalAction: { $0 },
         initialState: initialState,
         reducer: reducer,
@@ -361,7 +361,7 @@
             )
           }
           do {
-            try work(&self.environment)
+            try work(&self.environment[dynamicMember: \.self])
           } catch {
             _XCTFail("Threw error: \(error)", file: step.file, line: step.line)
           }

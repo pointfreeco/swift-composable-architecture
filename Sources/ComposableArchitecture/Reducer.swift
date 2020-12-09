@@ -1,6 +1,35 @@
 import CasePaths
 import Combine
 
+@dynamicMemberLookup
+public final class WritableEscaping<Value>: Escaping<Value> {
+  public override init(_ value: Value) {
+    super.init(value)
+  }
+
+  public subscript<NewValue>(dynamicMember keyPath: WritableKeyPath<Value, NewValue>) -> NewValue {
+    get { self.value[keyPath: keyPath] }
+    set { self.value[keyPath: keyPath] = newValue }
+  }
+}
+
+@dynamicMemberLookup
+public class Escaping<Value> {
+  public fileprivate(set) var value: Value
+
+  public init(_ value: Value) {
+    self.value = value
+  }
+
+  public subscript<NewValue>(dynamicMember keyPath: KeyPath<Value, NewValue>) -> NewValue {
+    self.value[keyPath: keyPath]
+  }
+
+  public func map<NewValue>(_ transform: (Value) -> NewValue) -> Escaping<NewValue> {
+    .init(transform(self.value))
+  }
+}
+
 /// A reducer describes how to evolve the current state of an application to the next state, given
 /// an action, and describes what `Effect`s should be executed later by the store, if any.
 ///
@@ -18,7 +47,7 @@ import Combine
 ///   must be on the main thread. You can use the `Publisher` method `receive(on:)` for make the
 ///   effect output its values on the thread of your choice.
 public struct Reducer<State, Action, Environment> {
-  private let reducer: (inout State, Action, Environment) -> Effect<Action, Never>
+  private let reducer: (inout State, Action, Escaping<Environment>) -> Effect<Action, Never>
 
   /// Initializes a reducer from a simple reducer function signature.
   ///
@@ -47,7 +76,9 @@ public struct Reducer<State, Action, Environment> {
   ///
   /// - Parameter reducer: A function signature that takes state, action and
   ///   environment.
-  public init(_ reducer: @escaping (inout State, Action, Environment) -> Effect<Action, Never>) {
+  public init(
+    _ reducer: @escaping (inout State, Action, Escaping<Environment>
+    ) -> Effect<Action, Never>) {
     self.reducer = reducer
   }
 
@@ -257,7 +288,7 @@ public struct Reducer<State, Action, Environment> {
       return self.reducer(
         &globalState[keyPath: toLocalState],
         localAction,
-        toLocalEnvironment(globalEnvironment)
+        globalEnvironment.map(toLocalEnvironment)
       )
       .map(toLocalAction.embed)
     }
@@ -401,7 +432,7 @@ public struct Reducer<State, Action, Environment> {
       return self.reducer(
         &globalState[keyPath: toLocalState][index],
         localAction,
-        toLocalEnvironment(globalEnvironment)
+        globalEnvironment.map(toLocalEnvironment)
       )
       .map { toLocalAction.embed((index, $0)) }
     }
@@ -482,7 +513,7 @@ public struct Reducer<State, Action, Environment> {
         .reducer(
           &globalState[keyPath: toLocalState][id: id]!,
           localAction,
-          toLocalEnvironment(globalEnvironment)
+          globalEnvironment.map(toLocalEnvironment)
         )
         .map { toLocalAction.embed((id, $0)) }
     }
@@ -537,7 +568,7 @@ public struct Reducer<State, Action, Environment> {
       return self.reducer(
         &globalState[keyPath: toLocalState][key]!,
         localAction,
-        toLocalEnvironment(globalEnvironment)
+        globalEnvironment.map(toLocalEnvironment)
       )
       .map { toLocalAction.embed((key, $0)) }
     }
@@ -553,7 +584,7 @@ public struct Reducer<State, Action, Environment> {
   public func run(
     _ state: inout State,
     _ action: Action,
-    _ environment: Environment
+    _ environment: Escaping<Environment>
   ) -> Effect<Action, Never> {
     self.reducer(&state, action, environment)
   }
@@ -561,8 +592,31 @@ public struct Reducer<State, Action, Environment> {
   public func callAsFunction(
     _ state: inout State,
     _ action: Action,
-    _ environment: Environment
+    _ environment: Escaping<Environment>
   ) -> Effect<Action, Never> {
     self.reducer(&state, action, environment)
+  }
+
+  /// Runs the reducer.
+  ///
+  /// - Parameters:
+  ///   - state: Mutable state.
+  ///   - action: An action.
+  ///   - environment: An environment.
+  /// - Returns: An effect that can emit zero or more actions.
+  public func run(
+    _ state: inout State,
+    _ action: Action,
+    _ environment: Environment
+  ) -> Effect<Action, Never> {
+    self.reducer(&state, action, .init(environment))
+  }
+
+  public func callAsFunction(
+    _ state: inout State,
+    _ action: Action,
+    _ environment: Environment
+  ) -> Effect<Action, Never> {
+    self.reducer(&state, action, .init(environment))
   }
 }
