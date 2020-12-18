@@ -6,6 +6,7 @@ import Foundation
 ///
 /// You will typically construct a single one of these at the root of your application, and then use
 /// the `scope` method to derive more focused stores that can be passed to subviews.
+
 public final class Store<State, Action> {
   var state: CurrentValueSubject<State, Never>
   var effectCancellables: [UUID: AnyCancellable] = [:]
@@ -14,7 +15,8 @@ public final class Store<State, Action> {
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   private var synchronousActionsToSend: [Action] = []
   private var bufferedActions: [Action] = []
-
+  public private (set) var cancellationId: AnyHashable?
+  
   /// Initializes a store from an initial state, a reducer, and an environment.
   ///
   /// - Parameters:
@@ -31,7 +33,7 @@ public final class Store<State, Action> {
       reducer: { reducer.run(&$0, $1, environment) }
     )
   }
-
+  
   /// Scopes the store to one that exposes local state and actions.
   ///
   /// This can be useful for deriving new stores to hand to child views in an application. For
@@ -58,21 +60,28 @@ public final class Store<State, Action> {
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<LocalState, LocalAction>(
     state toLocalState: @escaping (State) -> LocalState,
-    action fromLocalAction: @escaping (LocalAction) -> Action
+    action fromLocalAction: @escaping (LocalAction) -> Action,
+    cancellationId: AnyHashable? = nil
   ) -> Store<LocalState, LocalAction> {
     let localStore = Store<LocalState, LocalAction>(
       initialState: toLocalState(self.state.value),
       reducer: { localState, localAction in
-        self.send(fromLocalAction(localAction))
+        let cancellables = self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
+        cancellables.forEach { cancellable in
+          if let cancellationId = cancellationId {
+            StoreCancellation.global.add(id: cancellationId, cancellable: cancellable)
+          }
+        }
         return .none
       }
     )
+    localStore.cancellationId = cancellationId
     localStore.parentCancellable = self.state
       .sink { [weak localStore] newValue in localStore?.state.value = toLocalState(newValue) }
     return localStore
   }
-
+  
   /// Scopes the store to one that exposes local state.
   ///
   /// - Parameter toLocalState: A function that transforms `State` into `LocalState`.
@@ -80,9 +89,9 @@ public final class Store<State, Action> {
   public func scope<LocalState>(
     state toLocalState: @escaping (State) -> LocalState
   ) -> Store<LocalState, Action> {
-    self.scope(state: toLocalState, action: { $0 })
+    self.scope(state: toLocalState, action: { $0 }, cancellationId: cancellationId)
   }
-
+  
   /// Scopes the store to a publisher of stores of more local state and local actions.
   ///
   /// - Parameters:
@@ -95,24 +104,24 @@ public final class Store<State, Action> {
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> AnyPublisher<Store<LocalState, LocalAction>, Never>
   where P.Output == LocalState, P.Failure == Never {
-
+    
     func extractLocalState(_ state: State) -> LocalState? {
       var localState: LocalState?
       _ = toLocalState(Just(state).eraseToAnyPublisher())
         .sink { localState = $0 }
       return localState
     }
-
+    
     return toLocalState(self.state.eraseToAnyPublisher())
       .map { localState in
         let localStore = Store<LocalState, LocalAction>(
           initialState: localState,
           reducer: { localState, localAction in
-            self.send(fromLocalAction(localAction))
+            let _ = self.send(fromLocalAction(localAction))
             localState = extractLocalState(self.state.value) ?? localState
             return .none
           })
-
+        
         localStore.parentCancellable = self.state
           .sink { [weak localStore] state in
             guard let localStore = localStore else { return }
@@ -122,7 +131,7 @@ public final class Store<State, Action> {
       }
       .eraseToAnyPublisher()
   }
-
+  
   /// Scopes the store to a publisher of stores of more local state and local actions.
   ///
   /// - Parameter toLocalState: A function that transforms a publisher of `State` into a publisher
@@ -135,61 +144,76 @@ public final class Store<State, Action> {
   where P.Output == LocalState, P.Failure == Never {
     self.publisherScope(state: toLocalState, action: { $0 })
   }
-
-  func send(_ action: Action) {
+  
+  func send(_ action: Action) -> [AnyCancellable] {
     if !self.isSending {
       self.synchronousActionsToSend.append(action)
     } else {
       self.bufferedActions.append(action)
-      return
+      return []
     }
-
+    
+    var cancellables: [AnyCancellable] = []
+    
     while !self.synchronousActionsToSend.isEmpty || !self.bufferedActions.isEmpty {
       let action =
         !self.synchronousActionsToSend.isEmpty
         ? self.synchronousActionsToSend.removeFirst()
         : self.bufferedActions.removeFirst()
-
+      
       self.isSending = true
       let effect = self.reducer(&self.state.value, action)
       self.isSending = false
-
+      
       var didComplete = false
       let uuid = UUID()
-
+      
       var isProcessingEffects = true
-      let effectCancellable = effect.sink(
+      let cancellable = effect.sink(
         receiveCompletion: { [weak self] _ in
           didComplete = true
-          self?.effectCancellables[uuid] = nil
+          self?.effectCancellables[uuid]?.cancel()
         },
         receiveValue: { [weak self] action in
           if isProcessingEffects {
             self?.synchronousActionsToSend.append(action)
           } else {
-            self?.send(action)
+            let _ = self?.send(action)
           }
         }
       )
       isProcessingEffects = false
-
+      
+      let effectCancellable = AnyCancellable() { [weak self] in
+        cancellable.cancel()
+        self?.effectCancellables[uuid] = nil
+      }
+      
       if !didComplete {
         self.effectCancellables[uuid] = effectCancellable
+        cancellables.append(effectCancellable)
       }
     }
+    return cancellables
   }
-
+  
+  func cancelAll() {
+    if let cancellationId = cancellationId {
+      StoreCancellation.global.cancel(cancellationId)
+    }
+  }
+  
   /// Returns a "stateless" store by erasing state to `Void`.
   public var stateless: Store<Void, Action> {
     self.scope(state: { _ in () })
   }
-
+  
   /// Returns an "actionless" store by erasing action to `Never`.
   public var actionless: Store<State, Never> {
     func absurd<A>(_ never: Never) -> A {}
     return self.scope(state: { $0 }, action: absurd)
   }
-
+  
   private init(
     initialState: State,
     reducer: @escaping (inout State, Action) -> Effect<Action, Never>
@@ -204,23 +228,43 @@ public final class Store<State, Action> {
 public struct StorePublisher<State>: Publisher {
   public typealias Output = State
   public typealias Failure = Never
-
+  
   public let upstream: AnyPublisher<State, Never>
-
+  
   public func receive<S>(subscriber: S)
   where S: Subscriber, Failure == S.Failure, Output == S.Input {
     self.upstream.subscribe(subscriber)
   }
-
+  
   init<P>(_ upstream: P) where P: Publisher, Failure == P.Failure, Output == P.Output {
     self.upstream = upstream.eraseToAnyPublisher()
   }
-
+  
   /// Returns the resulting publisher of a given key path.
   public subscript<LocalState>(
     dynamicMember keyPath: KeyPath<State, LocalState>
   ) -> StorePublisher<LocalState>
   where LocalState: Equatable {
     .init(self.upstream.map(keyPath).removeDuplicates())
+  }
+}
+
+fileprivate class StoreCancellation {
+  private var cancellables: [AnyHashable: [AnyCancellable]] = [:]
+  
+  static private(set) var global = StoreCancellation()
+  
+  func add(id: AnyHashable, cancellable: AnyCancellable) {
+    var copy = cancellables[id] ?? []
+    copy.append(cancellable)
+    cancellables[id] = copy
+  }
+  
+  func cancel(_ id: AnyHashable) {
+    self.cancellables[id]?.forEach { cancellable in
+      print("Cancelling", cancellable)
+      cancellable.cancel()
+    }
+    self.cancellables[id] = nil
   }
 }

@@ -61,7 +61,10 @@ public final class ViewStore<State, Action>: ObservableObject {
     let publisher = store.state.removeDuplicates(by: isDuplicate)
     self.publisher = StorePublisher(publisher)
     self.state = store.state.value
-    self._send = store.send
+    self._send = { action in
+        let _ = store.send(action)
+    }
+    self._cancelAll = store.cancelAll
     self.viewCancellable = publisher.sink { [weak self] in self?.state = $0 }
   }
 
@@ -73,6 +76,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   }
 
   let _send: (Action) -> Void
+  let _cancelAll: () -> Void
 
   /// Returns the resulting value of a given key path.
   public subscript<LocalState>(dynamicMember keyPath: KeyPath<State, LocalState>) -> LocalState {
@@ -90,6 +94,10 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// - Parameter action: An action.
   public func send(_ action: Action) {
     self._send(action)
+  }
+    
+  public func cancelAll() {
+    self._cancelAll()
   }
 
   /// Derives a binding from the store that prevents direct writes to state and instead sends
