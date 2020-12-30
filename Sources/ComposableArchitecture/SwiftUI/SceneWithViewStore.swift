@@ -1,3 +1,5 @@
+#if compiler(>=5.3)
+
 import SwiftUI
 
 /// A structure that transforms a store into an observable view store in order to compute scenes from
@@ -81,3 +83,4 @@ extension SceneWithViewStore where State == Void {
     self.init(store, removeDuplicates: ==, content: content)
   }
 }
+#endif
