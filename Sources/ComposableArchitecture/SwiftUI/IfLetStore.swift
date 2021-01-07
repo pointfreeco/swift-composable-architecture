@@ -46,10 +46,8 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
     else elseContent: @escaping @autoclosure () -> ElseContent
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
     self.store = store
-    var _state: State?
     self.content = { viewStore in
-      if let state = viewStore.state ?? _state {
-        _state = state
+      if let state = viewStore.state {
         return ViewBuilder.buildEither(first: ifContent(store.scope(state: { $0 ?? state })))
       } else {
         return ViewBuilder.buildEither(second: elseContent())
@@ -69,11 +67,9 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
     then ifContent: @escaping (Store<State, Action>) -> IfContent
   ) where Content == IfContent? {
     self.store = store
-    var _state: State?
     self.content = { viewStore in
-      (viewStore.state ?? _state).map { state in
-        _state = state
-        return ifContent(store.scope(state: { $0 ?? state }))
+      viewStore.state.map { state in
+        ifContent(store.scope(state: { $0 ?? state }))
       }
     }
   }
