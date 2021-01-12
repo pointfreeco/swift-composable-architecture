@@ -3,8 +3,8 @@
 import ComposableArchitecture
 import SwiftUI
 
-#if compiler(>=5.3)
-  @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
+#if compiler(>=5.3) && os(iOS) || os(macOS)
+  @available(iOS 14, macOS 11, *)
   struct TestApp: App {
     let store = Store(
       initialState: 0,
