@@ -3,8 +3,8 @@
 import ComposableArchitecture
 import SwiftUI
 
-#if compiler(>=5.3) && os(iOS) || os(macOS)
-  @available(iOS 14, macOS 11, *)
+#if compiler(>=5.3)
+  @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
   struct TestApp: App {
     let store = Store(
       initialState: 0,
@@ -17,17 +17,23 @@ import SwiftUI
 
     var body: some Scene {
       WithViewStore(self.store) { viewStore in
-        WindowGroup {
-          EmptyView()
-        }
-        .commands {
-          CommandMenu("Commands") {
-            Button("Increment") {
-              viewStore.send(())
-            }
-            .keyboardShortcut("+")
+        #if os(iOS) || os(macOS)
+          WindowGroup {
+            EmptyView()
           }
-        }
+          .commands {
+            CommandMenu("Commands") {
+              Button("Increment") {
+                viewStore.send(())
+              }
+              .keyboardShortcut("+")
+            }
+          }
+          #else
+          WindowGroup {
+            EmptyView()
+          }
+        #endif
       }
     }
   }
