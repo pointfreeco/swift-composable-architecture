@@ -17,17 +17,23 @@ import SwiftUI
 
     var body: some Scene {
       WithViewStore(self.store) { viewStore in
-        WindowGroup {
-          EmptyView()
-        }
-        .commands {
-          CommandMenu("Commands") {
-            Button("Increment") {
-              viewStore.send(())
-            }
-            .keyboardShortcut("+")
+        #if os(iOS) || os(macOS)
+          WindowGroup {
+            EmptyView()
           }
-        }
+          .commands {
+            CommandMenu("Commands") {
+              Button("Increment") {
+                viewStore.send(())
+              }
+              .keyboardShortcut("+")
+            }
+          }
+          #else
+          WindowGroup {
+            EmptyView()
+          }
+        #endif
       }
     }
   }
