@@ -29,7 +29,7 @@ import SwiftUI
               .keyboardShortcut("+")
             }
           }
-          #else
+        #else
           WindowGroup {
             EmptyView()
           }
