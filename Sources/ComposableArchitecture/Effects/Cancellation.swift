@@ -15,9 +15,9 @@ fileprivate let bagsLock = NSRecursiveLock()
 fileprivate let cancellablesLock = NSRecursiveLock()
 
 public final class CancellationBag {
-  fileprivate var children: [CancellationBag] = []
-  fileprivate var cancellationCancellables: [AnyHashable: Set<AnyCancellable>] = [:]
-  fileprivate let id: AnyHashable
+  internal var children: [CancellationBag] = []
+  internal var cancellationCancellables: [AnyHashable: Set<AnyCancellable>] = [:]
+  internal let id: AnyHashable
   
   public static var global: CancellationBag = {
     struct GlobalID: Hashable {}
