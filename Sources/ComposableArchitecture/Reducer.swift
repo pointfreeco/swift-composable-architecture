@@ -328,6 +328,18 @@ public struct Reducer<State, Action, Environment> {
       return self.reducer(&state!, action, environment)
     }
   }
+    
+  public func optional(cancellationBag: @escaping (Environment) -> CancellationBag) -> Reducer<
+      State?, Action, Environment
+  > {
+      .init { state, action, environment in
+          guard state != nil else {
+              cancellationBag(environment).cancelAll()
+              return .none
+          }
+          return self.run(&state!, action, environment)
+      }
+  }
 
   /// A version of `pullback` that transforms a reducer that works on an element into one that works
   /// on a collection of elements.
