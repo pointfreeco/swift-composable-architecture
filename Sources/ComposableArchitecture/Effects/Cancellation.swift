@@ -1,18 +1,10 @@
-//
-//  Cancellation.swift
-//  Demo
-//
-//  Created by Håvard Fossli on 07/01/2021.
-//  Copyright © 2021 Darrarski. All rights reserved.
-//
-
 import Combine
 import Foundation
 import ComposableArchitecture
 
 fileprivate var bags: [AnyHashable: CancellationBag] = [:]
-fileprivate let bagsLock = NSRecursiveLock()
-fileprivate let cancellablesLock = NSRecursiveLock()
+fileprivate let bagsLock = Lock()
+fileprivate let cancellablesLock = Lock()
 
 public final class CancellationBag {
   internal var children: [CancellationBag] = []
@@ -29,7 +21,7 @@ public final class CancellationBag {
   }
   
   public static func bag(id: AnyHashable, childOf parent: CancellationBag? = nil) -> CancellationBag {
-    let bag = bagsLock.sync { () -> CancellationBag in
+    let bag: CancellationBag = bagsLock.sync({
       if let bag = bags[id] {
         return bag
       } else {
@@ -37,7 +29,7 @@ public final class CancellationBag {
         bags[id] = bag
         return bag
       }
-    }
+    })
     if let parent = parent {
       return bag.asChild(of: parent)
     }
@@ -45,7 +37,7 @@ public final class CancellationBag {
   }
   
   public func cancelAll() {
-    cancellablesLock.sync {
+    bagsLock.sync({
       self.children.forEach {
         $0.cancelAll()
       }
@@ -54,22 +46,22 @@ public final class CancellationBag {
           $0.cancel()
         }
       }
-    }
+    })
   }
   
   public func cancel(id: AnyHashable) {
-    cancellablesLock.sync {
+    bagsLock.sync({
       self.cancellationCancellables[id]?.forEach { $0.cancel() }
-    }
+    })
   }
   
   public func asChild(of parent: CancellationBag) -> CancellationBag {
-    bagsLock.sync {
+    bagsLock.sync({
       guard !parent.children.contains(where: { $0.id == self.id }) else {
         return
       }
       parent.children.append(self)
-    }
+    })
     return self
   }
 }
@@ -118,22 +110,22 @@ extension Effect {
   /// - Returns: A new effect that is capable of being canceled by an identifier.
   public func cancellable(id: AnyHashable, cancelInFlight: Bool = false, bag: CancellationBag = .global) -> Effect {
     let effect = Deferred { () -> Publishers.HandleEvents<PassthroughSubject<Output, Failure>> in
-      cancellablesLock.lock()
-      defer { cancellablesLock.unlock() }
+      cancellablesLock.handle.lock()
+      defer { cancellablesLock.handle.unlock() }
       
       let subject = PassthroughSubject<Output, Failure>()
       let cancellable = self.subscribe(subject)
       
       var cancellationCancellable: AnyCancellable!
       cancellationCancellable = AnyCancellable {
-        cancellablesLock.sync {
+        cancellablesLock.sync({
           subject.send(completion: .finished)
           cancellable.cancel()
           bag.cancellationCancellables[id]?.remove(cancellationCancellable)
           if bag.cancellationCancellables[id]?.isEmpty == .some(true) {
             bag.cancellationCancellables[id] = nil
           }
-        }
+        })
       }
       
       bag.cancellationCancellables[id, default: []].insert(
@@ -166,4 +158,13 @@ extension Effect {
       bag.cancelAll()
     }
   }
+}
+
+fileprivate struct Lock {
+    let handle = NSRecursiveLock()
+    func sync<R>(_ work: () -> R) -> R {
+        handle.lock()
+        defer { handle.unlock() }
+        return work()
+    }
 }
