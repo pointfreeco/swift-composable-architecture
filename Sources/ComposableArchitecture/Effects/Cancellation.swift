@@ -153,7 +153,7 @@ extension Effect {
     }
   }
   
-  public static func cancelAll(bag: CancellationBag = .global) -> Effect {
+  public static func cancelAll(bag: CancellationBag) -> Effect {
     return .fireAndForget {
       bag.cancelAll()
     }
