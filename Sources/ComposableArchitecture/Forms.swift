@@ -14,6 +14,10 @@ private struct AnyEquatable: Equatable {
   }
 }
 
+func ~= <Root, Value>(keyPath: WritableKeyPath<Root, Value>, formAction: FormAction<Root>) -> Bool {
+  formAction.keyPath == keyPath
+}
+
 public struct FormAction<Root>: Equatable {
   public let keyPath: PartialKeyPath<Root>
   fileprivate let setter: (inout Root) -> Void
@@ -28,19 +32,28 @@ public struct FormAction<Root>: Equatable {
     self.setter = { $0[keyPath: keyPath] = value }
   }
 
+  public static func set<Value>(
+    _ keyPath: WritableKeyPath<Root, Value>,
+    to value: Value
+  ) -> Self where Value: Equatable {
+    Self(keyPath, value)
+  }
+
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.keyPath == rhs.keyPath && lhs.value == rhs.value
   }
 }
 
 extension Reducer {
-  public func form(action: CasePath<Action, FormAction<State>>) -> Self {
-    Reducer<State, FormAction<State>, Void> { state, action, _ in
-      action.setter(&state)
-      return .none
+  public func form(action formAction: CasePath<Action, FormAction<State>>) -> Self {
+    Self { state, action, environment in
+      guard let formAction = formAction.extract(from: action)
+      else {
+        return self.run(&state, action, environment)
+      }
+      formAction.setter(&state)
+      return self.run(&state, action, environment)
     }
-    .pullback(state: \.self, action: action, environment: { _ in () })
-    .combined(with: self)
   }
 }
 
