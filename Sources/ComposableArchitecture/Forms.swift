@@ -14,7 +14,7 @@ private struct AnyEquatable: Equatable {
   }
 }
 
-func ~= <Root, Value>(keyPath: WritableKeyPath<Root, Value>, formAction: FormAction<Root>) -> Bool {
+public func ~= <Root, Value>(keyPath: WritableKeyPath<Root, Value>, formAction: FormAction<Root>) -> Bool {
   formAction.keyPath == keyPath
 }
 
