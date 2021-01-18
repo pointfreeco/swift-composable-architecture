@@ -96,6 +96,12 @@ extension WithViewStore where Content: View, State == Void {
   }
 }
 
+extension WithViewStore: Equatable where State: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.viewStore.state == rhs.viewStore.state
+  }
+}
+
 extension WithViewStore: DynamicViewContent where State: Collection, Content: DynamicViewContent {
   public typealias Data = State
 
