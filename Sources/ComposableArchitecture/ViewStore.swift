@@ -48,6 +48,10 @@ public final class ViewStore<State, Action>: ObservableObject {
 
   private var viewCancellable: AnyCancellable?
 
+  // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
+  // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
+  public private(set) lazy var objectWillChange = ObservableObjectPublisher()
+
   /// Initializes a view store from a store.
   ///
   /// - Parameters:
