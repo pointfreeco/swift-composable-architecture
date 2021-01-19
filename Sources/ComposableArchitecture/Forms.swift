@@ -23,13 +23,15 @@ public struct FormAction<Root>: Equatable {
   fileprivate let setter: (inout Root) -> Void
   private let value: AnyEquatable
 
-  public init<Value>(
-    _ keyPath: WritableKeyPath<Root, Value>,
-    _ value: Value
-  ) where Value: Equatable {
-    self.keyPath = keyPath
-    self.value = AnyEquatable(value)
-    self.setter = { $0[keyPath: keyPath] = value }
+  public func pullback<NewRoot>(_ kp: WritableKeyPath<NewRoot, Root>) -> FormAction<NewRoot> {
+    let tmp1 = self.keyPath as AnyKeyPath
+    let tmp = (kp as AnyKeyPath).appending(path: tmp1)! as! PartialKeyPath<NewRoot>
+
+    return .init(
+      keyPath: tmp,
+      setter: { newRoot in self.setter(&newRoot[keyPath: kp]) },
+      value: self.value
+    )
   }
 
   public static func set<Value>(
@@ -41,6 +43,17 @@ public struct FormAction<Root>: Equatable {
 
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.keyPath == rhs.keyPath && lhs.value == rhs.value
+  }
+}
+
+extension FormAction {
+  public init<Value>(
+    _ keyPath: WritableKeyPath<Root, Value>,
+    _ value: Value
+  ) where Value: Equatable {
+    self.keyPath = keyPath
+    self.value = AnyEquatable(value)
+    self.setter = { $0[keyPath: keyPath] = value }
   }
 }
 
