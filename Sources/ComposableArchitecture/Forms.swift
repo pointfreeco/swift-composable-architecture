@@ -59,8 +59,8 @@ extension Reducer {
 
 extension ViewStore {
   public func binding<Value>(
-    get keyPath: WritableKeyPath<State, Value>,
-    send action: @escaping (FormAction<State>) -> Action
+    keyPath: WritableKeyPath<State, Value>,
+    form action: @escaping (FormAction<State>) -> Action
   ) -> Binding<Value> where Value: Equatable {
     self.binding(
       get: { $0[keyPath: keyPath] },
