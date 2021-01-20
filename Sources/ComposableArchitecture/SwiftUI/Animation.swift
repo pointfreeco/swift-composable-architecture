@@ -5,10 +5,10 @@ extension ViewStore {
   public func send(_ action: Action, animation: Animation? = nil) {
     if let animation = animation {
       withAnimation(animation) {
-        self.send(action)
+        self._send(action)
       }
     } else {
-      self.send(action)
+      self._send(action)
     }
   }
 }
