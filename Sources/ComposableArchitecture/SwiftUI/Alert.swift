@@ -202,7 +202,7 @@ extension View {
             //dismiss
 
       ) { state in
-        state.toSwiftUI(send: viewStore.send)
+        state.toSwiftUI(send: { viewStore.send($0) })
       }
     }
   }
