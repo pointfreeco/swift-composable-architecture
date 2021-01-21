@@ -17,10 +17,5 @@ class LocalizedStringTests: XCTestCase {
       LocalizedStringKey("You are \(1_000 as NSNumber, formatter: formatter) in line.").formatted(),
       "You are 1,000th in line."
     )
-
-    XCTAssertEqual(
-      LocalizedStringKey("Hello, #\(42)!").formatted(),
-      "Hello, #42!"
-    )
   }
 }
