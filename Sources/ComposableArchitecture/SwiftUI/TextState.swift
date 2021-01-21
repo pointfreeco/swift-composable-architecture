@@ -79,7 +79,7 @@ public struct TextState: Equatable, Hashable {
         return lhs == rhs
 
       case let (.localized(key, tableName, bundle, comment), .verbatim(string)),
-           let (.verbatim(string), .localized(key, tableName, bundle, comment)):
+        let (.verbatim(string), .localized(key, tableName, bundle, comment)):
         return key.formatted(tableName: tableName, bundle: bundle, comment: comment) == string
 
       // NB: We do not attempt to equate concatenated cases.
