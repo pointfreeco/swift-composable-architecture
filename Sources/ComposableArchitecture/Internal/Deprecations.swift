@@ -3,6 +3,11 @@ import SwiftUI
 
 // NB: Deprecated after 0.10.0:
 
+@available(iOS 13, *)
+@available(macCatalyst 13, *)
+@available(macOS, unavailable)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
 extension ActionSheetState {
   @available(*, deprecated, message: "'title' and 'message' should take SwiftUI.Text")
   public init(
