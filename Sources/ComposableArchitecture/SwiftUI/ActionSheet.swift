@@ -52,8 +52,8 @@ import SwiftUI
 ///           state.actionSheet = .init(
 ///             title: "What would you like to do?",
 ///             buttons: [
-///               .default("Favorite", send: .favoriteTapped),
-///               .destructive("Delete", send: .deleteTapped),
+///               .default(TextState("Favorite"), send: .favoriteTapped),
+///               .destructive(TextState("Delete"), send: .deleteTapped),
 ///               .cancel(),
 ///             ]
 ///           )
@@ -87,8 +87,8 @@ import SwiftUI
 ///         $0.actionSheet = .init(
 ///           title: "What would you like to do?",
 ///           buttons: [
-///             .default("Favorite", send: .favoriteTapped),
-///             .destructive("Delete", send: .deleteTapped),
+///             .default(TextState("Favorite"), send: .favoriteTapped),
+///             .destructive(TextState("Delete"), send: .deleteTapped),
 ///             .cancel(),
 ///           ]
 ///         )
