@@ -107,12 +107,12 @@ import SwiftUI
 public struct ActionSheetState<Action> {
   public let id = UUID()
   public var buttons: [Button]
-  public var message: LocalizedStringKey?
-  public var title: LocalizedStringKey
+  public var message: Text?
+  public var title: Text
 
   public init(
-    title: LocalizedStringKey,
-    message: LocalizedStringKey? = nil,
+    title: Text,
+    message: Text? = nil,
     buttons: [Button]
   ) {
     self.buttons = buttons
@@ -207,8 +207,8 @@ extension View {
 extension ActionSheetState {
   fileprivate func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.ActionSheet {
     SwiftUI.ActionSheet(
-      title: Text(self.title),
-      message: self.message.map { Text($0) },
+      title: self.title,
+      message: self.message,
       buttons: self.buttons.map {
         $0.toSwiftUI(send: send)
       }

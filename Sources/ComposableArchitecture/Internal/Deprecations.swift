@@ -1,4 +1,78 @@
 import Combine
+import SwiftUI
+
+// NB: Deprecated after 0.10.0:
+
+extension ActionSheetState {
+  @available(*, deprecated, message: "'title' and 'message' should take SwiftUI.Text")
+  public init(
+    title: LocalizedStringKey,
+    message: LocalizedStringKey? = nil,
+    buttons: [Button]
+  ) {
+    self.init(
+      title: Text(title),
+      message: message.map { Text($0) },
+      buttons: buttons
+    )
+  }
+}
+
+extension AlertState {
+  @available(*, deprecated, message: "'title' and 'message' should take SwiftUI.Text")
+  public init(
+    title: LocalizedStringKey,
+    message: LocalizedStringKey? = nil,
+    dismissButton: Button? = nil
+  ) {
+    self.init(
+      title: Text(title),
+      message: message.map { Text($0) },
+      dismissButton: dismissButton
+    )
+  }
+
+  @available(*, deprecated, message: "'title' and 'message' should take SwiftUI.Text")
+  public init(
+    title: LocalizedStringKey,
+    message: LocalizedStringKey? = nil,
+    primaryButton: Button,
+    secondaryButton: Button
+  ) {
+    self.init(
+      title: Text(title),
+      message: message.map { Text($0) },
+      primaryButton: primaryButton,
+      secondaryButton: secondaryButton
+    )
+  }
+}
+
+extension AlertState.Button {
+  @available(*, deprecated, message: "'label' should take SwiftUI.Text")
+  public static func cancel(
+    _ label: LocalizedStringKey,
+    send action: Action? = nil
+  ) -> Self {
+    Self(action: action, type: .cancel(label: Text(label)))
+  }
+
+  @available(*, deprecated, message: "'label' should take SwiftUI.Text")
+  public static func `default`(
+    _ label: LocalizedStringKey,
+    send action: Action? = nil
+  ) -> Self {
+    Self(action: action, type: .default(label: Text(label)))
+  }
+
+  @available(*, deprecated, message: "'label' should take SwiftUI.Text")
+  public static func destructive(
+    _ label: LocalizedStringKey,
+    send action: Action? = nil
+  ) -> Self {
+    Self(action: action, type: .destructive(label: Text(label)))
+  }
+}
 
 // NB: Deprecated after 0.9.0:
 

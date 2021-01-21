@@ -45,9 +45,9 @@ import SwiftUI
 ///
 ///         case .deleteTapped:
 ///           state.alert = .init(
-///             title: "Delete",
-///             message: "Are you sure you want to delete this? It cannot be undone.",
-///             primaryButton: .default("Confirm", send: .confirmTapped),
+///             title: Text("Delete"),
+///             message: Text("Are you sure you want to delete this? It cannot be undone."),
+///             primaryButton: .default(Text("Confirm"), send: .confirmTapped),
 ///             secondaryButton: .cancel()
 ///           )
 ///         return .none
@@ -78,9 +78,9 @@ import SwiftUI
 ///     store.assert(
 ///       .send(.deleteTapped) {
 ///         $0.alert = .init(
-///           title: "Delete",
-///           message: "Are you sure you want to delete this? It cannot be undone.",
-///           primaryButton: .default("Confirm", send: .confirmTapped),
+///           title: Text("Delete"),
+///           message: Text("Are you sure you want to delete this? It cannot be undone."),
+///           primaryButton: .default(Text("Confirm"), send: .confirmTapped),
 ///           secondaryButton: .cancel(send: .cancelTapped)
 ///         )
 ///       },
@@ -92,14 +92,14 @@ import SwiftUI
 ///
 public struct AlertState<Action> {
   public let id = UUID()
-  public var message: LocalizedStringKey?
+  public var message: Text?
   public var primaryButton: Button?
   public var secondaryButton: Button?
-  public var title: LocalizedStringKey
+  public var title: Text
 
   public init(
-    title: LocalizedStringKey,
-    message: LocalizedStringKey? = nil,
+    title: Text,
+    message: Text? = nil,
     dismissButton: Button? = nil
   ) {
     self.title = title
@@ -108,8 +108,8 @@ public struct AlertState<Action> {
   }
 
   public init(
-    title: LocalizedStringKey,
-    message: LocalizedStringKey? = nil,
+    title: Text,
+    message: Text? = nil,
     primaryButton: Button,
     secondaryButton: Button
   ) {
@@ -121,10 +121,10 @@ public struct AlertState<Action> {
 
   public struct Button {
     public var action: Action?
-    public var type: `Type`
+    var type: `Type`
 
     public static func cancel(
-      _ label: LocalizedStringKey,
+      _ label: Text,
       send action: Action? = nil
     ) -> Self {
       Self(action: action, type: .cancel(label: label))
@@ -137,23 +137,23 @@ public struct AlertState<Action> {
     }
 
     public static func `default`(
-      _ label: LocalizedStringKey,
+      _ label: Text,
       send action: Action? = nil
     ) -> Self {
       Self(action: action, type: .default(label: label))
     }
 
     public static func destructive(
-      _ label: LocalizedStringKey,
+      _ label: Text,
       send action: Action? = nil
     ) -> Self {
       Self(action: action, type: .destructive(label: label))
     }
 
-    public enum `Type` {
-      case cancel(label: LocalizedStringKey?)
-      case `default`(label: LocalizedStringKey)
-      case destructive(label: LocalizedStringKey)
+    enum `Type` {
+      case cancel(label: Text?)
+      case `default`(label: Text)
+      case destructive(label: Text)
     }
   }
 }
@@ -250,33 +250,30 @@ extension AlertState.Button {
     let action = { if let action = self.action { send(action) } }
     switch self.type {
     case let .cancel(.some(label)):
-      return .cancel(Text(label), action: action)
+      return .cancel(label, action: action)
     case .cancel(.none):
       return .cancel(action)
     case let .default(label):
-      return .default(Text(label), action: action)
+      return .default(label, action: action)
     case let .destructive(label):
-      return .destructive(Text(label), action: action)
+      return .destructive(label, action: action)
     }
   }
 }
 
 extension AlertState {
   fileprivate func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.Alert {
-    let title = Text(self.title)
-    let message = self.message.map { Text($0) }
-
     if let primaryButton = self.primaryButton, let secondaryButton = self.secondaryButton {
       return SwiftUI.Alert(
-        title: title,
-        message: message,
+        title: self.title,
+        message: self.message,
         primaryButton: primaryButton.toSwiftUI(send: send),
         secondaryButton: secondaryButton.toSwiftUI(send: send)
       )
     } else {
       return SwiftUI.Alert(
-        title: title,
-        message: message,
+        title: self.title,
+        message: self.message,
         dismissButton: self.primaryButton?.toSwiftUI(send: send)
       )
     }
