@@ -9,35 +9,38 @@ import SwiftUI
 @available(tvOS 13, *)
 @available(watchOS 6, *)
 extension ActionSheetState {
-  @available(*, deprecated, message: "'title' and 'message' should take SwiftUI.Text")
+  @available(*, deprecated, message: "'title' and 'message' should be 'TextState'")
+  @_disfavoredOverload
   public init(
     title: LocalizedStringKey,
     message: LocalizedStringKey? = nil,
     buttons: [Button]
   ) {
     self.init(
-      title: Text(title),
-      message: message.map { Text($0) },
+      title: .init(title),
+      message: message.map { .init($0) },
       buttons: buttons
     )
   }
 }
 
 extension AlertState {
-  @available(*, deprecated, message: "'title' and 'message' should take SwiftUI.Text")
+  @available(*, deprecated, message: "'title' and 'message' should be 'TextState'")
+  @_disfavoredOverload
   public init(
     title: LocalizedStringKey,
     message: LocalizedStringKey? = nil,
     dismissButton: Button? = nil
   ) {
     self.init(
-      title: Text(title),
-      message: message.map { Text($0) },
+      title: .init(title),
+      message: message.map { .init($0) },
       dismissButton: dismissButton
     )
   }
 
-  @available(*, deprecated, message: "'title' and 'message' should take SwiftUI.Text")
+  @available(*, deprecated, message: "'title' and 'message' should be 'TextState'")
+  @_disfavoredOverload
   public init(
     title: LocalizedStringKey,
     message: LocalizedStringKey? = nil,
@@ -45,8 +48,8 @@ extension AlertState {
     secondaryButton: Button
   ) {
     self.init(
-      title: Text(title),
-      message: message.map { Text($0) },
+      title: .init(title),
+      message: message.map { .init($0) },
       primaryButton: primaryButton,
       secondaryButton: secondaryButton
     )
@@ -54,28 +57,31 @@ extension AlertState {
 }
 
 extension AlertState.Button {
-  @available(*, deprecated, message: "'label' should take SwiftUI.Text")
+  @available(*, deprecated, message: "'label' should be 'TextState'")
+  @_disfavoredOverload
   public static func cancel(
     _ label: LocalizedStringKey,
     send action: Action? = nil
   ) -> Self {
-    Self(action: action, type: .cancel(label: Text(label)))
+    Self(action: action, type: .cancel(label: .init(label)))
   }
 
-  @available(*, deprecated, message: "'label' should take SwiftUI.Text")
+  @available(*, deprecated, message: "'label' should be 'TextState'")
+  @_disfavoredOverload
   public static func `default`(
     _ label: LocalizedStringKey,
     send action: Action? = nil
   ) -> Self {
-    Self(action: action, type: .default(label: Text(label)))
+    Self(action: action, type: .default(label: .init(label)))
   }
 
-  @available(*, deprecated, message: "'label' should take SwiftUI.Text")
+  @available(*, deprecated, message: "'label' should be 'TextState'")
+  @_disfavoredOverload
   public static func destructive(
     _ label: LocalizedStringKey,
     send action: Action? = nil
   ) -> Self {
-    Self(action: action, type: .destructive(label: Text(label)))
+    Self(action: action, type: .destructive(label: .init(label)))
   }
 }
 

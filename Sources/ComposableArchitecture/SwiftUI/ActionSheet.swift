@@ -107,12 +107,12 @@ import SwiftUI
 public struct ActionSheetState<Action> {
   public let id = UUID()
   public var buttons: [Button]
-  public var message: Text?
-  public var title: Text
+  public var message: TextState?
+  public var title: TextState
 
   public init(
-    title: Text,
-    message: Text? = nil,
+    title: TextState,
+    message: TextState? = nil,
     buttons: [Button]
   ) {
     self.buttons = buttons
@@ -146,8 +146,8 @@ extension ActionSheetState: CustomDebugOutputConvertible {
 @available(watchOS 6, *)
 extension ActionSheetState: Equatable where Action: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.title.formatted() == rhs.title.formatted()
-      && lhs.message?.formatted() == rhs.message?.formatted()
+    lhs.title == rhs.title
+      && lhs.message == rhs.message
       && lhs.buttons == rhs.buttons
   }
 }
@@ -159,8 +159,8 @@ extension ActionSheetState: Equatable where Action: Equatable {
 @available(watchOS 6, *)
 extension ActionSheetState: Hashable where Action: Hashable {
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(self.title.formatted())
-    hasher.combine(self.message?.formatted())
+    hasher.combine(self.title)
+    hasher.combine(self.message)
     hasher.combine(self.buttons)
   }
 }
@@ -207,8 +207,8 @@ extension View {
 extension ActionSheetState {
   fileprivate func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.ActionSheet {
     SwiftUI.ActionSheet(
-      title: self.title,
-      message: self.message,
+      title: Text(self.title),
+      message: self.message.map { Text($0) },
       buttons: self.buttons.map {
         $0.toSwiftUI(send: send)
       }

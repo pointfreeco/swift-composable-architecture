@@ -44,12 +44,12 @@ let alertAndSheetReducer = Reducer<
   switch action {
   case .actionSheetButtonTapped:
     state.actionSheet = .init(
-      title: Text("Action sheet"),
-      message: Text("This is an action sheet."),
+      title: .init("Action sheet"),
+      message: .init("This is an action sheet."),
       buttons: [
         .cancel(),
-        .default(Text("Increment"), send: .incrementButtonTapped),
-        .default(Text("Decrement"), send: .decrementButtonTapped),
+        .default(.init("Increment"), send: .incrementButtonTapped),
+        .default(.init("Decrement"), send: .decrementButtonTapped),
       ]
     )
     return .none
@@ -63,10 +63,10 @@ let alertAndSheetReducer = Reducer<
 
   case .alertButtonTapped:
     state.alert = .init(
-      title: Text("Alert!"),
-      message: Text("This is an alert"),
+      title: .init("Alert!"),
+      message: .init("This is an alert"),
       primaryButton: .cancel(),
-      secondaryButton: .default(Text("Increment"), send: .incrementButtonTapped)
+      secondaryButton: .default(.init("Increment"), send: .incrementButtonTapped)
     )
     return .none
 
@@ -78,12 +78,12 @@ let alertAndSheetReducer = Reducer<
     return .none
 
   case .decrementButtonTapped:
-    state.alert = .init(title: Text("Decremented!"))
+    state.alert = .init(title: .init("Decremented!"))
     state.count -= 1
     return .none
 
   case .incrementButtonTapped:
-    state.alert = .init(title: Text("Incremented!"))
+    state.alert = .init(title: .init("Incremented!"))
     state.count += 1
     return .none
   }
