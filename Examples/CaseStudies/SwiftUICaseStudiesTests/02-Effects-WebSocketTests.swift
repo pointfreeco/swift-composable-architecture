@@ -96,7 +96,7 @@ class WebSocketTests: XCTestCase {
         $0.messageToSend = ""
       },
       .receive(.sendResponse(NSError(domain: "", code: 1))) {
-        $0.alert = .init(title: "Could not send socket message. Try again.")
+        $0.alert = .init(title: .init("Could not send socket message. Try again."))
       },
 
       // Disconnect from the socket

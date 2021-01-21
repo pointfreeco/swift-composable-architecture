@@ -118,9 +118,9 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 
       .send(.buttonTapped) {
         $0.alert = .init(
-          title: "Do you want to cancel downloading this map?",
-          primaryButton: .destructive("Cancel", send: .cancelButtonTapped),
-          secondaryButton: .default("Nevermind", send: .nevermindButtonTapped)
+          title: .init("Do you want to cancel downloading this map?"),
+          primaryButton: .destructive(.init("Cancel"), send: .cancelButtonTapped),
+          secondaryButton: .default(.init("Nevermind"), send: .nevermindButtonTapped)
         )
       },
 
@@ -157,9 +157,9 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 
       .send(.buttonTapped) {
         $0.alert = .init(
-          title: "Do you want to cancel downloading this map?",
-          primaryButton: .destructive("Cancel", send: .cancelButtonTapped),
-          secondaryButton: .default("Nevermind", send: .nevermindButtonTapped)
+          title: .init("Do you want to cancel downloading this map?"),
+          primaryButton: .destructive(.init("Cancel"), send: .cancelButtonTapped),
+          secondaryButton: .default(.init("Nevermind"), send: .nevermindButtonTapped)
         )
       },
 
@@ -193,9 +193,9 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
     store.assert(
       .send(.buttonTapped) {
         $0.alert = .init(
-          title: "Do you want to delete this map from your offline storage?",
-          primaryButton: .destructive("Delete", send: .deleteButtonTapped),
-          secondaryButton: .default("Nevermind", send: .nevermindButtonTapped)
+          title: .init("Do you want to delete this map from your offline storage?"),
+          primaryButton: .destructive(.init("Delete"), send: .deleteButtonTapped),
+          secondaryButton: .default(.init("Nevermind"), send: .nevermindButtonTapped)
         )
       },
 

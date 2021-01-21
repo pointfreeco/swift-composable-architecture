@@ -119,7 +119,9 @@ class LoginSwiftUITests: XCTestCase {
         self.scheduler.advance()
       },
       .receive(.loginResponse(.failure(.invalidUserPassword))) {
-        $0.alert = .init(title: .init(AuthenticationError.invalidUserPassword.localizedDescription))
+        $0.alert = .init(
+          title: TextState(AuthenticationError.invalidUserPassword.localizedDescription)
+        )
         $0.isActivityIndicatorVisible = false
         $0.isFormDisabled = false
       },
