@@ -150,7 +150,7 @@ public struct AlertState<Action> {
       Self(action: action, type: .destructive(label: label))
     }
 
-    enum `Type` {
+    public enum `Type` {
       case cancel(label: TextState?)
       case `default`(label: TextState)
       case destructive(label: TextState)
