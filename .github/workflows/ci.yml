@@ -23,6 +23,7 @@ jobs:
       - name: Run tests
         run: make test
 
+# NB: GitHub's Big Sur instances are super flaky. We should revisit later.
 #   bigsur-tests:
 #     runs-on: macos-11.0
 #     strategy:
