@@ -34,7 +34,7 @@ struct RootState {
 enum RootAction {
   case alertAndActionSheet(AlertAndSheetAction)
   case animation(AnimationsAction)
-  case bindingBasics(BindingBasicsAction)
+  case bindingBasics(FormAction<BindingBasicsState>)
   case clock(ClockAction)
   case counter(CounterAction)
   case dieRoll(DieRollAction)

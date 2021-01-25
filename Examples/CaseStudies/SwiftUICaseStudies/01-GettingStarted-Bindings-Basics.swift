@@ -26,41 +26,25 @@ struct BindingBasicsState: Equatable {
   var toggleIsOn = false
 }
 
-enum BindingBasicsAction {
-  case sliderValueChanged(Double)
-  case stepCountChanged(Int)
-  case textChange(String)
-  case toggleChange(isOn: Bool)
-}
-
 struct BindingBasicsEnvironment {}
 
 let bindingBasicsReducer = Reducer<
-  BindingBasicsState, BindingBasicsAction, BindingBasicsEnvironment
+  BindingBasicsState, FormAction<BindingBasicsState>, BindingBasicsEnvironment
 > {
   state, action, _ in
   switch action {
-  case let .sliderValueChanged(value):
-    state.sliderValue = value
+  case \.stepCount:
+    state.sliderValue = .minimum(state.sliderValue, Double(state.stepCount))
     return .none
 
-  case let .stepCountChanged(count):
-    state.sliderValue = .minimum(state.sliderValue, Double(count))
-    state.stepCount = count
-    return .none
-
-  case let .textChange(text):
-    state.text = text
-    return .none
-
-  case let .toggleChange(isOn):
-    state.toggleIsOn = isOn
+  default:
     return .none
   }
 }
+.form(action: .self)
 
 struct BindingBasicsView: View {
-  let store: Store<BindingBasicsState, BindingBasicsAction>
+  let store: Store<BindingBasicsState, FormAction<BindingBasicsState>>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -69,7 +53,7 @@ struct BindingBasicsView: View {
           HStack {
             TextField(
               "Type here",
-              text: viewStore.binding(get: { $0.text }, send: BindingBasicsAction.textChange)
+              text: viewStore.binding(keyPath: \.text, send: { $0 })
             )
             .disableAutocorrection(true)
             .foregroundColor(viewStore.toggleIsOn ? .gray : .primary)
@@ -78,14 +62,14 @@ struct BindingBasicsView: View {
           .disabled(viewStore.toggleIsOn)
 
           Toggle(
-            isOn: viewStore.binding(get: { $0.toggleIsOn }, send: BindingBasicsAction.toggleChange)
+            isOn: viewStore.binding(keyPath: \.toggleIsOn, send: { $0 })
           ) {
             Text("Disable other controls")
           }
 
           Stepper(
             value: viewStore.binding(
-              get: { $0.stepCount }, send: BindingBasicsAction.stepCountChanged),
+              keyPath: \.stepCount, send: { $0 }),
             in: 0...100
           ) {
             Text("Max slider value: \(viewStore.stepCount)")
@@ -97,10 +81,7 @@ struct BindingBasicsView: View {
             Text("Slider value: \(Int(viewStore.sliderValue))")
               .font(Font.body.monospacedDigit())
             Slider(
-              value: viewStore.binding(
-                get: { $0.sliderValue },
-                send: BindingBasicsAction.sliderValueChanged
-              ),
+              value: viewStore.binding(keyPath: \.sliderValue, send: { $0 }),
               in: 0...Double(viewStore.stepCount)
             )
           }
