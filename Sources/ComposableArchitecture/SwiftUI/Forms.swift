@@ -1,8 +1,10 @@
 import CasePaths
 import SwiftUI
 
+/// An action that describes a simple mutations to state with a writable key path.
 public struct FormAction<Root> {
   public let keyPath: PartialKeyPath<Root>
+  
   private let isEqualTo: ((Any) -> Bool)?
   fileprivate let set: (inout Root) -> Void
   private let value: Any
@@ -24,6 +26,15 @@ public struct FormAction<Root> {
     formAction: FormAction<Root>
   ) -> Bool {
     keyPath == formAction.keyPath
+  }
+
+  public func pullback<NewRoot>(_ keyPath: WritableKeyPath<NewRoot, Root>) -> FormAction<NewRoot> {
+    .init(
+      keyPath: (keyPath as AnyKeyPath).appending(path: self.keyPath) as! PartialKeyPath<NewRoot>,
+      isEqualTo: self.isEqualTo,
+      set: { self.set(&$0[keyPath: keyPath]) },
+      value: self.value
+    )
   }
 }
 

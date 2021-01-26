@@ -44,6 +44,7 @@
 		DC25DC5F2450F13200082E81 /* IfLetStoreController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC25DC5E2450F13200082E81 /* IfLetStoreController.swift */; };
 		DC25DC612450F2B000082E81 /* LoadThenNavigate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC25DC602450F2B000082E81 /* LoadThenNavigate.swift */; };
 		DC25DC642450F2DF00082E81 /* ActivityIndicatorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC25DC632450F2DF00082E81 /* ActivityIndicatorViewController.swift */; };
+		DC27215625BF84FC00D9C8DB /* 01-GettingStarted-BindingBasicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC27215525BF84FC00D9C8DB /* 01-GettingStarted-BindingBasicsTests.swift */; };
 		DC2E370D24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC2E370C24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift */; };
 		DC4C6EAC2450DD380066A05D /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4C6EAB2450DD380066A05D /* SceneDelegate.swift */; };
 		DC4C6EAE2450DD380066A05D /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4C6EAD2450DD380066A05D /* RootViewController.swift */; };
@@ -182,6 +183,7 @@
 		DC25DC5E2450F13200082E81 /* IfLetStoreController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IfLetStoreController.swift; sourceTree = "<group>"; };
 		DC25DC602450F2B000082E81 /* LoadThenNavigate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadThenNavigate.swift; sourceTree = "<group>"; };
 		DC25DC632450F2DF00082E81 /* ActivityIndicatorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityIndicatorViewController.swift; sourceTree = "<group>"; };
+		DC27215525BF84FC00D9C8DB /* 01-GettingStarted-BindingBasicsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-BindingBasicsTests.swift"; sourceTree = "<group>"; };
 		DC2E370C24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-StrictReducers.swift"; sourceTree = "<group>"; };
 		DC4C6EA72450DD380066A05D /* UIKitCaseStudies.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UIKitCaseStudies.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC4C6EAB2450DD380066A05D /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -421,6 +423,7 @@
 			children = (
 				CA50BE5F24A8F46500FE7DBA /* 01-GettingStarted-AlertsAndActionSheetsTests.swift */,
 				CA34170724A4E89500FAF950 /* 01-GettingStarted-AnimationsTests.swift */,
+				DC27215525BF84FC00D9C8DB /* 01-GettingStarted-BindingBasicsTests.swift */,
 				4F5AC11E24ECC7E4009DC50B /* 01-GettingStarted-SharedStateTests.swift */,
 				CAA9ADC324465AB00003A984 /* 02-Effects-BasicsTests.swift */,
 				CAA9ADC724465D950003A984 /* 02-Effects-CancellationTests.swift */,
@@ -772,6 +775,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC27215625BF84FC00D9C8DB /* 01-GettingStarted-BindingBasicsTests.swift in Sources */,
 				CA0C51FB245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift in Sources */,
 				DC634B252448D15B00DAA016 /* 04-HigherOrderReducers-ReusableFavoritingTests.swift in Sources */,
 				CAA9ADC824465D950003A984 /* 02-Effects-CancellationTests.swift in Sources */,
