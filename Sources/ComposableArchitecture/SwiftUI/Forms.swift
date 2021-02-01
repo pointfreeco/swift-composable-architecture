@@ -2,23 +2,28 @@ import CasePaths
 import SwiftUI
 
 /// An action that describes a simple mutations to state with a writable key path.
-public struct FormAction<Root> {
+public struct FormAction<Root>: Equatable {
   public let keyPath: PartialKeyPath<Root>
   
-  private let isEqualTo: ((Any) -> Bool)?
   fileprivate let set: (inout Root) -> Void
   private let value: Any
+  private let valueIsEqualTo: (Any) -> Bool
 
   public static func set<Value>(
     _ keyPath: WritableKeyPath<Root, Value>,
     _ value: Value
-  ) -> Self {
+  ) -> Self
+  where Value: Equatable {
     .init(
       keyPath: keyPath,
-      isEqualTo: nil,
       set: { $0[keyPath: keyPath] = value },
-      value: value
+      value: value,
+      valueIsEqualTo: { $0 as? Value == value }
     )
+  }
+
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.keyPath == rhs.keyPath && lhs.valueIsEqualTo(rhs.value)
   }
 
   public static func ~= <Value>(
@@ -31,29 +36,10 @@ public struct FormAction<Root> {
   public func pullback<NewRoot>(_ keyPath: WritableKeyPath<NewRoot, Root>) -> FormAction<NewRoot> {
     .init(
       keyPath: (keyPath as AnyKeyPath).appending(path: self.keyPath) as! PartialKeyPath<NewRoot>,
-      isEqualTo: self.isEqualTo,
       set: { self.set(&$0[keyPath: keyPath]) },
-      value: self.value
+      value: self.value,
+      valueIsEqualTo: self.valueIsEqualTo
     )
-  }
-}
-
-extension FormAction: Equatable {
-  public static func set<Value>(
-    _ keyPath: WritableKeyPath<Root, Value>,
-    _ value: Value
-  ) -> Self
-  where Value: Equatable {
-    .init(
-      keyPath: keyPath,
-      isEqualTo: { value == $0 as? Value },
-      set: { $0[keyPath: keyPath] = value },
-      value: value
-    )
-  }
-
-  public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.isEqualTo?(rhs.value) == .some(true)
   }
 }
 
@@ -68,16 +54,6 @@ extension Reducer {
 }
 
 extension ViewStore {
-  public func binding<LocalState>(
-    keyPath: WritableKeyPath<State, LocalState>,
-    send action: @escaping (FormAction<State>) -> Action
-  ) -> Binding<LocalState> {
-    self.binding(
-      get: { $0[keyPath: keyPath] },
-      send: { action(.set(keyPath, $0)) }
-    )
-  }
-
   public func binding<LocalState>(
     keyPath: WritableKeyPath<State, LocalState>,
     send action: @escaping (FormAction<State>) -> Action

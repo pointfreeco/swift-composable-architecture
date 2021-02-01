@@ -42,11 +42,11 @@ let bindingBasicsReducer = Reducer<
     state.sliderValue = .minimum(state.sliderValue, Double(state.stepCount))
     return .none
 
-  case .resetButtonTapped:
-    state = .init()
+  case .form:
     return .none
 
-  default:
+  case .resetButtonTapped:
+    state = .init()
     return .none
   }
 }
