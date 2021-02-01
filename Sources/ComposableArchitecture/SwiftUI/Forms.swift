@@ -104,7 +104,7 @@ import SwiftUI
 ///       // Return an authorization request effect
 ///
 /// Form actions can also be tested in much the same way regular actions are tested. Rather than
-/// send a specific action describing how a binding changed, such as ``displayNameChanged("Blob")`,
+/// send a specific action describing how a binding changed, such as `displayNameChanged("Blob")`,
 /// you will send a `.form` action that describes which key path is being set to what value, such
 /// as `.form(.set(\.displayName, "Blob"))`:
 ///
