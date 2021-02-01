@@ -5,7 +5,7 @@ private let readMe = """
   This file demonstrates how to handle two-way bindings in the Composable Architecture using \
   binding actions.
 
-  Form actions allow you to eliminate the boilerplate caused by needing to have a unique action \
+  Binding actions allow you to eliminate the boilerplate caused by needing to have a unique action \
   for every UI control. Instead, all UI bindings can be consolidated into a single `binding` \
   action that holds onto a `BindingAction` value.
 
