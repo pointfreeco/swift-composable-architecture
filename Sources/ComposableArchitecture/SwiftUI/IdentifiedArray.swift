@@ -119,6 +119,17 @@ where ID: Hashable {
             """
           )
         }
+        if newValue[keyPath: self.id] != id {
+          fatalError(
+            """
+            Can't update element with mismatched identifier \(newValue[keyPath: self.id]) at \
+            identifier \(id).
+
+            If you would like to replace the element with identifier \(id) with an element with a \
+            new identifier, remove the existing element and then insert the new element, instead.
+            """
+          )
+        }
         self.dictionary[id] = newValue
       }
     }
