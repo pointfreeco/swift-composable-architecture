@@ -64,49 +64,49 @@ import SwiftUI
 ///     }
 ///
 /// This is a _lot_ of boilerplate for something that should be simple. Luckily, we can dramatically
-/// eliminate this boilerplate using `FormAction`. First, we can collapse all of these
-/// field-mutating actions into a single case that holds a `FormAction` generic over the reducer's
-/// root `SettingsState`:
+/// eliminate this boilerplate using `BindingAction`. First, we can collapse all of these
+/// field-mutating actions into a single case that holds a `BindingAction` generic over the
+/// reducer's root `SettingsState`:
 ///
 ///     enum SettingsAction {
-///       case form(FormAction<SettingsState>)
+///       case binding(BindingAction<SettingsState>)
 ///     }
 ///
-/// And then, we can simplify the settings reducer by allowing the `form` method to handle these
+/// And then, we can simplify the settings reducer by allowing the `binding` method to handle these
 /// field mutations for us:
 ///
 ///     let settingsReducer = Reducer<
 ///       SettingsState, SettingsAction, SettingsEnvironment
 ///     > {
 ///       switch action {
-///       case .form:
+///       case .binding:
 ///         return .none
 ///       }
 ///     }
-///     .form(action: /SettingsAction.form)
+///     .binding(action: /SettingsAction.binding)
 ///
-/// Form actions are constructed and sent to the store by providing a writable key path from root
+/// Binding actions are constructed and sent to the store by providing a writable key path from root
 /// state to the field being mutated. There is even a view store helper that simplifies this work.
-/// You can derive a binding by specifying the key path and form action case:
+/// You can derive a binding by specifying the key path and binding action case:
 ///
 ///     TextField(
 ///       "Display name",
-///       text: viewStore.binding(keyPath: \.displayName, send: SettingsAction.form)
+///       text: viewStore.binding(keyPath: \.displayName, send: SettingsAction.binding)
 ///     )
 ///
-/// Should you need to layer additional functionality over your form, your reducer can pattern match
-/// the form action for a given key path:
+/// Should you need to layer additional functionality over these bindings, your reducer can pattern
+/// match the action for a given key path:
 ///
-///     case .form(\.displayName):
+///     case .binding(\.displayName):
 ///       // Validate display name
 ///
-///     case .form(\.enableNotifications):
+///     case .binding(\.enableNotifications):
 ///       // Return an authorization request effect
 ///
-/// Form actions can also be tested in much the same way regular actions are tested. Rather than
+/// Binding actions can also be tested in much the same way regular actions are tested. Rather than
 /// send a specific action describing how a binding changed, such as `displayNameChanged("Blob")`,
-/// you will send a `.form` action that describes which key path is being set to what value, such
-/// as `.form(.set(\.displayName, "Blob"))`:
+/// you will send a `.binding` action that describes which key path is being set to what value, such
+/// as `.binding(.set(\.displayName, "Blob"))`:
 ///
 ///     let store = TestStore(
 ///       initialState: SettingsState(),
@@ -115,15 +115,15 @@ import SwiftUI
 ///     )
 ///
 ///     store.assert(
-///       .send(.form(.set(\.displayName, "Blob"))) {
+///       .send(.binding(.set(\.displayName, "Blob"))) {
 ///         $0.displayName = "Blob"
 ///       },
-///       .send(.form(.set(\.protectMyPosts, true))) {
+///       .send(.binding(.set(\.protectMyPosts, true))) {
 ///         $0.protectMyPosts = true
 ///       )
 ///     )
 ///
-public struct FormAction<Root>: Equatable {
+public struct BindingAction<Root>: Equatable {
   public let keyPath: PartialKeyPath<Root>
 
   fileprivate let set: (inout Root) -> Void
@@ -150,12 +150,14 @@ public struct FormAction<Root>: Equatable {
     )
   }
 
-  /// Transforms a form action over some root state to some other type of root state given a key
+  /// Transforms a binding action over some root state to some other type of root state given a key
   /// path.
   ///
   /// - Parameter keyPath: A key path from a new type of root state to the original root state.
-  /// - Returns: A form action over a new type of root state.
-  public func pullback<NewRoot>(_ keyPath: WritableKeyPath<NewRoot, Root>) -> FormAction<NewRoot> {
+  /// - Returns: A binding action over a new type of root state.
+  public func pullback<NewRoot>(
+    _ keyPath: WritableKeyPath<NewRoot, Root>
+  ) -> BindingAction<NewRoot> {
     .init(
       keyPath: (keyPath as AnyKeyPath).appending(path: self.keyPath) as! PartialKeyPath<NewRoot>,
       set: { self.set(&$0[keyPath: keyPath]) },
@@ -170,38 +172,39 @@ public struct FormAction<Root>: Equatable {
 
   public static func ~= <Value>(
     keyPath: WritableKeyPath<Root, Value>,
-    formAction: FormAction<Root>
+    bindingAction: Self
   ) -> Bool {
-    keyPath == formAction.keyPath
+    keyPath == bindingAction.keyPath
   }
 }
 
 extension Reducer {
-  /// Returns a reducer that applies `FormAction` mutations to `State` before running this reducer's
-  /// logic.
+  /// Returns a reducer that applies `BindingAction` mutations to `State` before running this
+  /// reducer's logic.
   ///
-  /// For example, a settings screen may gather its form actions into a single `FormAction` case:
+  /// For example, a settings screen may gather its binding actions into a single `BindingAction`
+  /// case:
   ///
   ///     enum SettingsAction {
   ///       ...
-  ///       case form(FormAction<SettingsState>)
+  ///       case binding(BindingAction<SettingsState>)
   ///     }
   ///
   /// The reducer can then be enhanced to automatically handle these mutations for you by tacking on
-  /// the `form` method:
+  /// the `binding` method:
   ///
   ///     let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvironment {
   ///       ...
   ///     }
-  ///     .form(action: /SettingsAction.form)
+  ///     .binding(action: /SettingsAction.binding)
   ///
-  /// - Parameter toFormAction: A case path from this reducer's `Action` type to a `FormAction` over
-  ///   this reducer's `State`.
-  /// - Returns: A reducer that applies `FormAction` mutations to `State` before running this
+  /// - Parameter toBindingAction: A case path from this reducer's `Action` type to a
+  ///   `BindingAction` over this reducer's `State`.
+  /// - Returns: A reducer that applies `BindingAction` mutations to `State` before running this
   ///   reducer's logic.
-  public func form(action toFormAction: CasePath<Action, FormAction<State>>) -> Self {
+  public func binding(action toBindingAction: CasePath<Action, BindingAction<State>>) -> Self {
     Self { state, action, environment in
-      toFormAction.extract(from: action)?.set(&state)
+      toBindingAction.extract(from: action)?.set(&state)
       return .none
     }
     .combined(with: self)
@@ -210,25 +213,25 @@ extension Reducer {
 
 extension ViewStore {
   /// Derives a binding from the store that mutates state at the given writable key path by wrapping
-  /// a `FormAction` with the store's action type.
+  /// a `BindingAction` with the store's action type.
   ///
   /// For example, a text field binding can be created like this:
   ///
   ///     struct State { var text = "" }
-  ///     enum Action { case form(FormAction<State>) }
+  ///     enum Action { case binding(BindingAction<State>) }
   ///
   ///     TextField(
   ///       "Enter text",
-  ///       text: viewStore.binding(keyPath: \.text, Action.form)
+  ///       text: viewStore.binding(keyPath: \.text, Action.binding)
   ///     )
   ///
   /// - Parameters:
   ///   - keyPath: A writable key path from the view store's state to a mutable field
-  ///   - action: A function that wraps a form action in the view store's action type.
+  ///   - action: A function that wraps a binding action in the view store's action type.
   /// - Returns: A binding.
   public func binding<LocalState>(
     keyPath: WritableKeyPath<State, LocalState>,
-    send action: @escaping (FormAction<State>) -> Action
+    send action: @escaping (BindingAction<State>) -> Action
   ) -> Binding<LocalState>
   where LocalState: Equatable {
     self.binding(
