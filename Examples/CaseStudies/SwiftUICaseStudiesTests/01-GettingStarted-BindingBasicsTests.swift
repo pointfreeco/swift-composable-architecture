@@ -4,12 +4,12 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
-class BindingBasicsTests: XCTestCase {
+class BindingFormTests: XCTestCase {
   func testBasics() {
     let store = TestStore(
-      initialState: BindingBasicsState(),
-      reducer: bindingBasicsReducer,
-      environment: BindingBasicsEnvironment()
+      initialState: BindingFormState(),
+      reducer: bindingFormReducer,
+      environment: BindingFormEnvironment()
     )
 
     store.assert(
@@ -27,7 +27,7 @@ class BindingBasicsTests: XCTestCase {
         $0.toggleIsOn = true
       },
       .send(.resetButtonTapped) {
-        $0 = BindingBasicsState(sliderValue: 5, stepCount: 10, text: "", toggleIsOn: false)
+        $0 = .init(sliderValue: 5, stepCount: 10, text: "", toggleIsOn: false)
       }
     )
   }
