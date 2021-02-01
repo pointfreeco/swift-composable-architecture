@@ -93,7 +93,7 @@ struct EffectsBasicsView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(readMe)) {
+        Section(header: Text(readMe).textCase(.none)) {
           EmptyView()
         }
 

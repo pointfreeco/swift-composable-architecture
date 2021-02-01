@@ -177,7 +177,7 @@ struct EpisodesView: View {
 
   var body: some View {
     Form {
-      Section(header: Text(template: readMe, .caption)) {
+      Section(header: Text(template: readMe, .caption).textCase(.none)) {
         ForEachStore(
           self.store.scope(state: { $0.episodes }, action: EpisodesAction.episode(index:action:))
         ) { rowStore in

@@ -84,7 +84,7 @@ struct MultipleDependenciesView: View {
     WithViewStore(self.store) { viewStore in
       Form {
         Section(
-          header: Text(template: readMe, .caption)
+          header: Text(template: readMe, .caption).textCase(.none)
         ) {
           EmptyView()
         }
@@ -93,7 +93,7 @@ struct MultipleDependenciesView: View {
           header: Text(
             template: """
               The actions below make use of the dependencies in the `SystemEnvironment`.
-              """, .caption)
+              """, .caption).textCase(.none)
         ) {
           HStack {
             Button("Date") { viewStore.send(.dateButtonTapped) }
@@ -114,7 +114,7 @@ struct MultipleDependenciesView: View {
             template: """
               The actions below make use of the custom environment for this screen, which holds a \
               dependency for fetching a random number.
-              """, .caption)
+              """, .caption).textCase(.none)
         ) {
           HStack {
             Button("Fetch Number") { viewStore.send(.fetchNumberButtonTapped) }

@@ -66,7 +66,7 @@ struct LongLivingEffectsView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(template: readMe, .body)) {
+        Section(header: Text(template: readMe, .body).textCase(.none)) {
           Text("A screenshot of this screen has been taken \(viewStore.screenshotCount) times.")
             .font(Font.headline)
         }

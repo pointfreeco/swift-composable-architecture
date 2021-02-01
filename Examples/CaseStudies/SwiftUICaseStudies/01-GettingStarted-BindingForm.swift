@@ -49,7 +49,7 @@ struct BindingFormView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(template: readMe, .caption)) {
+        Section(header: Text(template: readMe, .caption).textCase(.none)) {
           HStack {
             TextField(
               "Type here",
