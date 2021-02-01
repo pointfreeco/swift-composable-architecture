@@ -79,7 +79,7 @@ struct NestedView: View {
   var body: some View {
     WithViewStore(self.store.scope(state: { $0.description })) { viewStore in
       Form {
-        Section(header: Text(template: readMe, .caption).textCase(.none)) {
+        Section(header: Text(template: readMe, .caption)) {
 
           ForEachStore(
             self.store.scope(state: { $0.children }, action: NestedAction.node(index:action:))

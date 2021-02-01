@@ -65,7 +65,7 @@ struct NavigateAndLoadView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(readMe).textCase(.none)) {
+        Section(header: Text(readMe)) {
           NavigationLink(
             destination: IfLetStore(
               self.store.scope(

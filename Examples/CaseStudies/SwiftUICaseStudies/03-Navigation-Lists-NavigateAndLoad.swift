@@ -82,7 +82,7 @@ struct NavigateAndLoadListView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(readMe).textCase(.none)) {
+        Section(header: Text(readMe)) {
           ForEach(viewStore.rows) { row in
             NavigationLink(
               destination: IfLetStore(

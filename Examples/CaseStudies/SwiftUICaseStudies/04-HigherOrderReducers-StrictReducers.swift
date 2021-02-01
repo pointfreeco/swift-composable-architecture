@@ -64,7 +64,7 @@ struct DieRollView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(template: readMe, .caption).textCase(.none)) {
+        Section(header: Text(template: readMe, .caption)) {
           HStack {
             Button("Roll die") { viewStore.send(.rollDie) }
 

@@ -96,7 +96,7 @@ struct AlertAndSheetView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(template: readMe, .caption).textCase(.none)) {
+        Section(header: Text(template: readMe, .caption)) {
           Text("Count: \(viewStore.count)")
 
           Button("Alert") { viewStore.send(.alertButtonTapped) }
