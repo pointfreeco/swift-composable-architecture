@@ -103,7 +103,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
 
     case .audioRecorderClient(.success(.didFinishRecording(successfully: false))),
       .audioRecorderClient(.failure):
-      state.alert = .init(title: "Voice memo recording failed.")
+      state.alert = .init(title: .init("Voice memo recording failed."))
       state.currentRecording = nil
       return .cancel(id: RecorderTimerId())
 
@@ -128,7 +128,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
           .eraseToEffect()
 
       case .denied:
-        state.alert = .init(title: "Permission is required to record voice memos.")
+        state.alert = .init(title: .init("Permission is required to record voice memos."))
         return .none
 
       case .allowed:
@@ -159,12 +159,12 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       if permission {
         return startRecording()
       } else {
-        state.alert = .init(title: "Permission is required to record voice memos.")
+        state.alert = .init(title: .init("Permission is required to record voice memos."))
         return .none
       }
 
     case .voiceMemo(index: _, action: .audioPlayerClient(.failure)):
-      state.alert = .init(title: "Voice memo playback failed.")
+      state.alert = .init(title: .init("Voice memo playback failed."))
       return .none
 
     case let .voiceMemo(index: index, action: .delete):

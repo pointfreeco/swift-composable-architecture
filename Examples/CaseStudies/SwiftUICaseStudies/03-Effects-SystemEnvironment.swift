@@ -50,7 +50,7 @@ let multipleDependenciesReducer = Reducer<
       .eraseToEffect()
 
   case .alertDelayReceived:
-    state.alert = .init(title: "Here's an alert after a delay!")
+    state.alert = .init(title: .init("Here's an alert after a delay!"))
     return .none
 
   case .alertDismissed:

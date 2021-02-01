@@ -97,7 +97,7 @@ class VoiceMemosTests: XCTestCase {
       .send(.recordButtonTapped),
       .do { self.scheduler.advance() },
       .receive(.recordPermissionBlockCalled(false)) {
-        $0.alert = .init(title: "Permission is required to record voice memos.")
+        $0.alert = .init(title: .init("Permission is required to record voice memos."))
         $0.audioRecorderPermission = .denied
       },
       .send(.alertDismissed) {
@@ -142,7 +142,7 @@ class VoiceMemosTests: XCTestCase {
       },
       .do { audioRecorderSubject.send(completion: .failure(.couldntActivateAudioSession)) },
       .receive(.audioRecorderClient(.failure(.couldntActivateAudioSession))) {
-        $0.alert = .init(title: "Voice memo recording failed.")
+        $0.alert = .init(title: .init("Voice memo recording failed."))
         $0.currentRecording = nil
       }
     )
@@ -224,7 +224,7 @@ class VoiceMemosTests: XCTestCase {
         $0.voiceMemos[0].mode = .playing(progress: 0)
       },
       .receive(.voiceMemo(index: 0, action: .audioPlayerClient(.failure(.decodeErrorDidOccur)))) {
-        $0.alert = .init(title: "Voice memo playback failed.")
+        $0.alert = .init(title: .init("Voice memo playback failed."))
         $0.voiceMemos[0].mode = .notPlaying
       }
     )

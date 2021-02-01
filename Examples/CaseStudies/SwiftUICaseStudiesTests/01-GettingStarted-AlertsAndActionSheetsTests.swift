@@ -16,14 +16,14 @@ class AlertsAndActionSheetsTests: XCTestCase {
     store.assert(
       .send(.alertButtonTapped) {
         $0.alert = .init(
-          title: "Alert!",
-          message: "This is an alert",
+          title: .init("Alert!"),
+          message: .init("This is an alert"),
           primaryButton: .cancel(),
-          secondaryButton: .default("Increment", send: .incrementButtonTapped)
+          secondaryButton: .default(.init("Increment"), send: .incrementButtonTapped)
         )
       },
       .send(.incrementButtonTapped) {
-        $0.alert = .init(title: "Incremented!")
+        $0.alert = .init(title: .init("Incremented!"))
         $0.count = 1
       },
       .send(.alertDismissed) {
@@ -42,17 +42,17 @@ class AlertsAndActionSheetsTests: XCTestCase {
     store.assert(
       .send(.actionSheetButtonTapped) {
         $0.actionSheet = .init(
-          title: "Action sheet",
-          message: "This is an action sheet.",
+          title: .init("Action sheet"),
+          message: .init("This is an action sheet."),
           buttons: [
             .cancel(),
-            .default("Increment", send: .incrementButtonTapped),
-            .default("Decrement", send: .decrementButtonTapped),
+            .default(.init("Increment"), send: .incrementButtonTapped),
+            .default(.init("Decrement"), send: .decrementButtonTapped),
           ]
         )
       },
       .send(.incrementButtonTapped) {
-        $0.alert = .init(title: "Incremented!")
+        $0.alert = .init(title: .init("Incremented!"))
         $0.count = 1
       },
       .send(.actionSheetDismissed) {

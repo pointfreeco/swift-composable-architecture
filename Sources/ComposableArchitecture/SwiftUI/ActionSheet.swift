@@ -52,8 +52,8 @@ import SwiftUI
 ///           state.actionSheet = .init(
 ///             title: "What would you like to do?",
 ///             buttons: [
-///               .default("Favorite", send: .favoriteTapped),
-///               .destructive("Delete", send: .deleteTapped),
+///               .default(TextState("Favorite"), send: .favoriteTapped),
+///               .destructive(TextState("Delete"), send: .deleteTapped),
 ///               .cancel(),
 ///             ]
 ///           )
@@ -87,8 +87,8 @@ import SwiftUI
 ///         $0.actionSheet = .init(
 ///           title: "What would you like to do?",
 ///           buttons: [
-///             .default("Favorite", send: .favoriteTapped),
-///             .destructive("Delete", send: .deleteTapped),
+///             .default(TextState("Favorite"), send: .favoriteTapped),
+///             .destructive(TextState("Delete"), send: .deleteTapped),
 ///             .cancel(),
 ///           ]
 ///         )
@@ -107,12 +107,12 @@ import SwiftUI
 public struct ActionSheetState<Action> {
   public let id = UUID()
   public var buttons: [Button]
-  public var message: LocalizedStringKey?
-  public var title: LocalizedStringKey
+  public var message: TextState?
+  public var title: TextState
 
   public init(
-    title: LocalizedStringKey,
-    message: LocalizedStringKey? = nil,
+    title: TextState,
+    message: TextState? = nil,
     buttons: [Button]
   ) {
     self.buttons = buttons
@@ -146,8 +146,8 @@ extension ActionSheetState: CustomDebugOutputConvertible {
 @available(watchOS 6, *)
 extension ActionSheetState: Equatable where Action: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.title.formatted() == rhs.title.formatted()
-      && lhs.message?.formatted() == rhs.message?.formatted()
+    lhs.title == rhs.title
+      && lhs.message == rhs.message
       && lhs.buttons == rhs.buttons
   }
 }
@@ -159,8 +159,8 @@ extension ActionSheetState: Equatable where Action: Equatable {
 @available(watchOS 6, *)
 extension ActionSheetState: Hashable where Action: Hashable {
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(self.title.formatted())
-    hasher.combine(self.message?.formatted())
+    hasher.combine(self.title)
+    hasher.combine(self.message)
     hasher.combine(self.buttons)
   }
 }

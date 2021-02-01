@@ -1,4 +1,89 @@
 import Combine
+import SwiftUI
+
+// NB: Deprecated after 0.10.0:
+
+@available(iOS 13, *)
+@available(macCatalyst 13, *)
+@available(macOS, unavailable)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
+extension ActionSheetState {
+  @available(*, deprecated, message: "'title' and 'message' should be 'TextState'")
+  @_disfavoredOverload
+  public init(
+    title: LocalizedStringKey,
+    message: LocalizedStringKey? = nil,
+    buttons: [Button]
+  ) {
+    self.init(
+      title: .init(title),
+      message: message.map { .init($0) },
+      buttons: buttons
+    )
+  }
+}
+
+extension AlertState {
+  @available(*, deprecated, message: "'title' and 'message' should be 'TextState'")
+  @_disfavoredOverload
+  public init(
+    title: LocalizedStringKey,
+    message: LocalizedStringKey? = nil,
+    dismissButton: Button? = nil
+  ) {
+    self.init(
+      title: .init(title),
+      message: message.map { .init($0) },
+      dismissButton: dismissButton
+    )
+  }
+
+  @available(*, deprecated, message: "'title' and 'message' should be 'TextState'")
+  @_disfavoredOverload
+  public init(
+    title: LocalizedStringKey,
+    message: LocalizedStringKey? = nil,
+    primaryButton: Button,
+    secondaryButton: Button
+  ) {
+    self.init(
+      title: .init(title),
+      message: message.map { .init($0) },
+      primaryButton: primaryButton,
+      secondaryButton: secondaryButton
+    )
+  }
+}
+
+extension AlertState.Button {
+  @available(*, deprecated, message: "'label' should be 'TextState'")
+  @_disfavoredOverload
+  public static func cancel(
+    _ label: LocalizedStringKey,
+    send action: Action? = nil
+  ) -> Self {
+    Self(action: action, type: .cancel(label: .init(label)))
+  }
+
+  @available(*, deprecated, message: "'label' should be 'TextState'")
+  @_disfavoredOverload
+  public static func `default`(
+    _ label: LocalizedStringKey,
+    send action: Action? = nil
+  ) -> Self {
+    Self(action: action, type: .default(label: .init(label)))
+  }
+
+  @available(*, deprecated, message: "'label' should be 'TextState'")
+  @_disfavoredOverload
+  public static func destructive(
+    _ label: LocalizedStringKey,
+    send action: Action? = nil
+  ) -> Self {
+    Self(action: action, type: .destructive(label: .init(label)))
+  }
+}
 
 // NB: Deprecated after 0.9.0:
 

@@ -107,8 +107,8 @@ let sharedStateCounterReducer = Reducer<
   case .isPrimeButtonTapped:
     state.alert = .init(
       title: isPrime(state.count)
-        ? "👍 The number \(state.count) is prime!"
-        : "👎 The number \(state.count) is not prime :("
+        ? .init("👍 The number \(state.count) is prime!")
+        : .init("👎 The number \(state.count) is not prime :(")
     )
     return .none
   }
