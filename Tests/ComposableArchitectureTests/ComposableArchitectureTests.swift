@@ -15,7 +15,7 @@ final class ComposableArchitectureTests: XCTestCase {
       var enabled = false
     }
 
-    let settingsFormaction = FormAction<SettingsState>.init(\.enabled, true)
+    let settingsFormaction = FormAction<SettingsState>.set(\.enabled, true)
     let appFormAction = settingsFormaction.pullback(\AppState.settings)
 
     print("!")
