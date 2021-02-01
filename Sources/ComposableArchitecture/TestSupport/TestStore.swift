@@ -432,6 +432,8 @@
   extension TestStore {
     /// Scopes a store to assert against more local state and actions.
     ///
+    /// Useful for testing view store-specific state and actions.
+    ///
     /// - Parameters:
     ///   - toLocalState: A function that transforms the reducer's state into more local state. This
     ///     state will be asserted against as it is mutated by the reducer. Useful for testing view
@@ -453,6 +455,8 @@
     }
 
     /// Scopes a store to assert against more local state.
+    ///
+    /// Useful for testing view store-specific state.
     ///
     /// - Parameter toLocalState: A function that transforms the reducer's state into more local
     ///   state. This state will be asserted against as it is mutated by the reducer. Useful for
