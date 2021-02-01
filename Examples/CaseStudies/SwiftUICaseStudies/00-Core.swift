@@ -115,6 +115,12 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       action: /RootAction.bindingBasics,
       environment: { _ in .init() }
     ),
+  bindingFormReducer
+    .pullback(
+      state: \.bindingForm,
+      action: /RootAction.bindingForm,
+      environment: { _ in .init() }
+    ),
   clockReducer
     .pullback(
       state: \.clock,
