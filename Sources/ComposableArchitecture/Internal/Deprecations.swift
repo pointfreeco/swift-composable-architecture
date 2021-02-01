@@ -1,6 +1,18 @@
 import Combine
 import SwiftUI
 
+// NB: Deprecated after 0.13.0:
+
+@available(*, deprecated, renamed: "BindingAction")
+public typealias FormAction = BindingAction
+
+extension Reducer {
+  @available(*, deprecated, renamed: "binding")
+  public func form(action toFormAction: CasePath<Action, BindingAction<State>>) -> Self {
+    self.binding(action: toFormAction)
+  }
+}
+
 // NB: Deprecated after 0.10.0:
 
 @available(iOS 13, *)
