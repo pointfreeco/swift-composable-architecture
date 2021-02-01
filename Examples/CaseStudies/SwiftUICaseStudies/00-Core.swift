@@ -69,7 +69,6 @@ struct RootEnvironment {
   var fetchNumber: () -> Effect<Int, Never>
   var mainQueue: AnySchedulerOf<DispatchQueue>
   var numberFact: (Int) -> Effect<String, NumbersApiError>
-  var trivia: (Int) -> Effect<String, TriviaApiError>
   var userDidTakeScreenshot: Effect<Void, Never>
   var uuid: () -> UUID
   var webSocket: WebSocketClient
@@ -81,7 +80,6 @@ struct RootEnvironment {
     fetchNumber: liveFetchNumber,
     mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
     numberFact: liveNumberFact(for:),
-    trivia: liveTrivia(for:),
     userDidTakeScreenshot: liveUserDidTakeScreenshot,
     uuid: UUID.init,
     webSocket: .live
@@ -145,7 +143,7 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.effectsCancellation,
       action: /RootAction.effectsCancellation,
-      environment: { .init(mainQueue: $0.mainQueue, trivia: $0.trivia) }
+      environment: { .init(mainQueue: $0.mainQueue, numberFact: $0.numberFact) }
     ),
   episodesReducer
     .pullback(
@@ -271,7 +269,7 @@ func liveNumberFact(for n: Int) -> Effect<String, NumbersApiError> {
       Just("\(n) is a good number Brent")
         .delay(for: 1, scheduler: DispatchQueue.main)
     }
-    .mapError { _ in NumbersApiError() }
+    .setFailureType(to: NumbersApiError.self)
     .eraseToEffect()
 }
 
@@ -287,7 +285,7 @@ func liveTrivia(for n: Int) -> Effect<String, TriviaApiError> {
       Just("\(n) is a good number Brent")
         .delay(for: 1, scheduler: DispatchQueue.main)
     }
-    .mapError { _ in TriviaApiError() }
+    .setFailureType(to: TriviaApiError.self)
     .eraseToEffect()
 }
 
