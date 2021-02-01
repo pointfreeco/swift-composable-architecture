@@ -240,3 +240,17 @@ extension ViewStore {
     )
   }
 }
+
+public protocol ActionBindable {
+  associatedtype State
+  static func binding(_ action: BindingAction<State>) -> Self
+}
+
+extension ViewStore {
+  public func binding<LocalState>(
+    _ keyPath: WritableKeyPath<State, LocalState>
+  ) -> Binding<LocalState>
+  where LocalState: Equatable, Action: ActionBindable, Action.State == State {
+    self.binding(keyPath: keyPath, send: Action.binding)
+  }
+}

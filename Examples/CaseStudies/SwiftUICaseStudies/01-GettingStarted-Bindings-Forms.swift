@@ -20,7 +20,7 @@ struct BindingFormState: Equatable {
   var toggleIsOn = false
 }
 
-enum BindingFormAction: Equatable {
+enum BindingFormAction: Equatable, ActionBindable {
   case binding(BindingAction<BindingFormState>)
   case resetButtonTapped
 }
@@ -54,24 +54,18 @@ struct BindingFormView: View {
       Form {
         Section(header: Text(template: readMe, .caption)) {
           HStack {
-            TextField(
-              "Type here",
-              text: viewStore.binding(keyPath: \.text, send: BindingFormAction.binding)
-            )
-            .disableAutocorrection(true)
-            .foregroundColor(viewStore.toggleIsOn ? .gray : .primary)
+            TextField("Type here", text: viewStore.binding(\.text))
+              .disableAutocorrection(true)
+              .foregroundColor(viewStore.toggleIsOn ? .gray : .primary)
             Text(alternate(viewStore.text))
           }
           .disabled(viewStore.toggleIsOn)
 
-          Toggle(isOn: viewStore.binding(keyPath: \.toggleIsOn, send: BindingFormAction.binding)) {
+          Toggle(isOn: viewStore.binding(\.toggleIsOn)) {
             Text("Disable other controls")
           }
 
-          Stepper(
-            value: viewStore.binding(keyPath: \.stepCount, send: BindingFormAction.binding),
-            in: 0...100
-          ) {
+          Stepper(value: viewStore.binding(\.stepCount), in: 0...100) {
             Text("Max slider value: \(viewStore.stepCount)")
               .font(Font.body.monospacedDigit())
           }
@@ -80,10 +74,7 @@ struct BindingFormView: View {
           HStack {
             Text("Slider value: \(Int(viewStore.sliderValue))")
               .font(Font.body.monospacedDigit())
-            Slider(
-              value: viewStore.binding(keyPath: \.sliderValue, send: BindingFormAction.binding),
-              in: 0...Double(viewStore.stepCount)
-            )
+            Slider(value: viewStore.binding(\.sliderValue), in: 0...Double(viewStore.stepCount))
           }
           .disabled(viewStore.toggleIsOn)
         }
