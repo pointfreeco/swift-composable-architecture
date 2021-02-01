@@ -125,7 +125,7 @@ import SwiftUI
 ///
 public struct FormAction<Root>: Equatable {
   public let keyPath: PartialKeyPath<Root>
-  
+
   fileprivate let set: (inout Root) -> Void
   private let value: Any
   private let valueIsEqualTo: (Any) -> Bool
