@@ -5,8 +5,11 @@ private let readMe = """
   This file demonstrates how to handle two-way bindings in the Composable Architecture using form \
   actions.
 
-  Form actions allow you to eliminate the boilerplate typically associated with simply mutations \
-  by consolidating the actions into a single case.
+  Form actions allow you to eliminate the boilerplate caused by needing to have a unique action \
+  for every UI control. Instead, all UI bindings can be consolidated into a single `form` action \
+  that holds onto a `FormAction` value.
+
+  It is instructive to compare this case study to the "Binding Basics" case study.
   """
 
 // The state for this screen holds a bunch of values that will drive
