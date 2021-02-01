@@ -13,17 +13,17 @@ class BindingFormTests: XCTestCase {
     )
 
     store.assert(
-      .send(.form(.set(\.sliderValue, 2))) {
+      .send(.binding(.set(\.sliderValue, 2))) {
         $0.sliderValue = 2
       },
-      .send(.form(.set(\.stepCount, 1))) {
+      .send(.binding(.set(\.stepCount, 1))) {
         $0.sliderValue = 1
         $0.stepCount = 1
       },
-      .send(.form(.set(\.text, "Blob"))) {
+      .send(.binding(.set(\.text, "Blob"))) {
         $0.text = "Blob"
       },
-      .send(.form(.set(\.toggleIsOn, true))) {
+      .send(.binding(.set(\.toggleIsOn, true))) {
         $0.toggleIsOn = true
       },
       .send(.resetButtonTapped) {
