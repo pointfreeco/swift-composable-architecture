@@ -38,7 +38,7 @@ private var keyPathToName: [AnyKeyPath: String] = [:]
 //
 //===----------------------------------------------------------------------===//
 
-internal protocol RelativePointer {
+private protocol RelativePointer {
   associatedtype Pointee
 
   var offset: Int32 { get }
@@ -47,7 +47,7 @@ internal protocol RelativePointer {
   func pointee(from ptr: UnsafeRawPointer) -> Pointee?
 }
 
-extension RelativePointer {
+private extension RelativePointer {
   func address(from ptr: UnsafeRawPointer) -> UnsafePointer<Pointee> {
     let newPtr = UnsafeRawPointer(
       bitPattern: UInt(bitPattern: ptr) &+ UInt(bitPattern: Int(offset)))!
@@ -55,7 +55,7 @@ extension RelativePointer {
   }
 }
 
-internal struct RelativeDirectPointer<Pointee>: RelativePointer {
+private struct RelativeDirectPointer<Pointee>: RelativePointer {
   let offset: Int32
 
   func pointee(from ptr: UnsafeRawPointer) -> Pointee? {
@@ -67,7 +67,7 @@ internal struct RelativeDirectPointer<Pointee>: RelativePointer {
   }
 }
 
-extension UnsafeRawPointer {
+private extension UnsafeRawPointer {
   func relativeDirect<T>(as type: T.Type) -> UnsafePointer<T> {
     let relativePointer = RelativeDirectPointer<T>(
       offset: load(as: Int32.self)
@@ -76,7 +76,7 @@ extension UnsafeRawPointer {
   }
 }
 
-internal struct RelativeIndirectPointer<T>: RelativePointer {
+private struct RelativeIndirectPointer<T>: RelativePointer {
   typealias Pointee = UnsafePointer<T>
 
   let offset: Int32
@@ -90,7 +90,7 @@ internal struct RelativeIndirectPointer<T>: RelativePointer {
   }
 }
 
-internal struct RelativeIndirectablePointer<Pointee>: RelativePointer {
+private struct RelativeIndirectablePointer<Pointee>: RelativePointer {
   let offset: Int32
 
   func address(from ptr: UnsafeRawPointer) -> UnsafePointer<Pointee> {
@@ -113,24 +113,12 @@ internal struct RelativeIndirectablePointer<Pointee>: RelativePointer {
 }
 
 //===----------------------------------------------------------------------===//
-//
-// This source file is part of the Swift.org open source project
-//
-// Copyright (c) 2020 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
-//
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
-//
-//===----------------------------------------------------------------------===//
-
-//===----------------------------------------------------------------------===//
 // Metadata Structures
 //===----------------------------------------------------------------------===//
 
 // MetadataKind is the discriminator value found at the start of all metadata
 // records to determine what kind is a metadata.
-internal enum MetadataKind: Int {
+private enum MetadataKind: Int {
   case `class` = 0
   case `struct` = 512
 }
@@ -138,7 +126,7 @@ internal enum MetadataKind: Int {
 // Metadata refers to the runtime representation of a type in Swift. This
 // protocol is the generic version handed out by various methods to retrieve
 // metadata from types.
-internal protocol Metadata {
+private protocol Metadata {
   // The required backing pointer which points at the metadata record.
   var pointer: UnsafeRawPointer { get }
 
@@ -146,7 +134,7 @@ internal protocol Metadata {
   var kind: MetadataKind { get }
 }
 
-extension Metadata {
+private extension Metadata {
   // The type representation of the metadata.
   var type: Any.Type {
     unsafeBitCast(pointer, to: Any.Type.self)
@@ -158,7 +146,7 @@ extension Metadata {
 // FIXME: Right now this only supports structs and class types, but in the
 // future if we ever want to produce keypaths for tuples, enums, etc. handle
 // that here.
-internal func getMetadata(for type: Any.Type) -> Metadata? {
+private func getMetadata(for type: Any.Type) -> Metadata? {
   let pointer = unsafeBitCast(type, to: UnsafeRawPointer.self)
   let int = pointer.load(as: Int.self)
 
@@ -185,9 +173,9 @@ internal func getMetadata(for type: Any.Type) -> Metadata? {
 // Type Metadata is a more specialized metadata in that only struct, class, and
 // enum types conform to. There's more detail about the type and its properties
 // in the context descriptors, the generic types that make up said type, etc.
-internal protocol TypeMetadata: Metadata {}
+private protocol TypeMetadata: Metadata {}
 
-extension TypeMetadata {
+private extension TypeMetadata {
   // The context descriptors describes more in detail about the type. Some of
   // this information includes number of properties, the property names, the
   // name of this type, generic requirements, etc.
@@ -262,7 +250,7 @@ extension TypeMetadata {
 // Struct Metadata refers to types whom are implemented via a struct. Consider
 // the standard library type 'Int', it's implemented using a struct, so getting
 // the type metadata for that type will return an instance of struct metadata.
-internal struct StructMetadata: TypeMetadata, LayoutWrapper {
+private struct StructMetadata: TypeMetadata, LayoutWrapper {
   typealias Layout = _StructMetadata
 
   // The backing metadata pointer.
@@ -290,7 +278,7 @@ internal struct StructMetadata: TypeMetadata, LayoutWrapper {
   }
 }
 
-internal struct _StructMetadata {
+private struct _StructMetadata {
   let kind: Int
   let descriptor: StructDescriptor
 }
@@ -301,7 +289,7 @@ internal struct _StructMetadata {
 // the standard library type 'KeyPath', it's implemented using a class, so
 // getting the type metadata for that type will return an instance of class
 // metadata.
-internal struct ClassMetadata: TypeMetadata, LayoutWrapper {
+private struct ClassMetadata: TypeMetadata, LayoutWrapper {
   typealias Layout = _ClassMetadata
 
   // The backing metadata pointer.
@@ -339,7 +327,7 @@ internal struct ClassMetadata: TypeMetadata, LayoutWrapper {
   }
 }
 
-internal struct _ClassMetadata {
+private struct _ClassMetadata {
   let _kind: Int
   let _superclass: Any.Type?
   let _reserved: (Int, Int)
@@ -360,12 +348,12 @@ internal struct _ClassMetadata {
 
 // A context descriptor describes in entity in Swift who declares some context
 // which other declarations can be declared within.
-internal protocol ContextDescriptor {
+private protocol ContextDescriptor {
   // The backing context descriptor pointer.
   var pointer: UnsafeRawPointer { get }
 }
 
-extension ContextDescriptor {
+private extension ContextDescriptor {
   // The base structural representation of a context descriptor.
   var _contextDescriptor: _ContextDescriptor {
     pointer.load(as: _ContextDescriptor.self)
@@ -378,14 +366,14 @@ extension ContextDescriptor {
   }
 }
 
-internal struct _ContextDescriptor {
+private struct _ContextDescriptor {
   let _flags: ContextDescriptorFlags
   let _parent: RelativeIndirectablePointer<_ContextDescriptor>
 }
 
 // Flags that describe this context which include what kind it is, whether
 // or not it's a generic context, whether or not it's unique, etc.
-internal struct ContextDescriptorFlags {
+private struct ContextDescriptorFlags {
   // The backing integer representation of these flags.
   let bits: UInt32
 
@@ -401,12 +389,12 @@ internal struct ContextDescriptorFlags {
 // A type context descriptor is a refined context descriptor who describes a
 // type in Swift. This includes structs, classes, and enums. Protocols also
 // define a new type in Swift, but aren't considered type contexts.
-internal protocol TypeContextDescriptor: ContextDescriptor {
+private protocol TypeContextDescriptor: ContextDescriptor {
   // The field descriptor that describes the stored representation of this type.
   var fields: FieldDescriptor { get }
 }
 
-extension TypeContextDescriptor {
+private extension TypeContextDescriptor {
   // The base structural representation of a type context descriptor.
   var _typeDescriptor: _TypeContextDescriptor {
     pointer.load(as: _TypeContextDescriptor.self)
@@ -426,7 +414,7 @@ extension TypeContextDescriptor {
   }
 }
 
-internal struct _TypeContextDescriptor {
+private struct _TypeContextDescriptor {
   let _base: _ContextDescriptor
   let _name: RelativeDirectPointer<CChar>
   let _accessor: RelativeDirectPointer<UnsafeRawPointer>
@@ -435,7 +423,7 @@ internal struct _TypeContextDescriptor {
 
 // Certain flags specific to types in Swift, such as whether or not a class
 // has a resilient superclass.
-internal struct TypeContextDescriptorFlags {
+private struct TypeContextDescriptorFlags {
   // The backing integer representation of these flags.
   let bits: UInt16
 
@@ -453,7 +441,7 @@ internal struct TypeContextDescriptorFlags {
 // Struct Descriptor
 
 // A struct descriptor that describes some structure context.
-internal struct StructDescriptor: TypeContextDescriptor, PointerAuthenticatedLayoutWrapper {
+private struct StructDescriptor: TypeContextDescriptor, PointerAuthenticatedLayoutWrapper {
   typealias Layout = _StructDescriptor
 
   // The backing context descriptor pointer.
@@ -470,7 +458,7 @@ internal struct StructDescriptor: TypeContextDescriptor, PointerAuthenticatedLay
   }
 }
 
-internal struct _StructDescriptor {
+private struct _StructDescriptor {
   let _base: _TypeContextDescriptor
   let _numFields: UInt32
   let _fieldOffsetVectorOffset: UInt32
@@ -479,7 +467,7 @@ internal struct _StructDescriptor {
 // Class Descriptor
 
 // A class descriptor that descibes some class context.
-internal struct ClassDescriptor: TypeContextDescriptor, PointerAuthenticatedLayoutWrapper {
+private struct ClassDescriptor: TypeContextDescriptor, PointerAuthenticatedLayoutWrapper {
   typealias Layout = _ClassDescriptor
 
   // The backing context descriptor pointer.
@@ -521,7 +509,7 @@ internal struct ClassDescriptor: TypeContextDescriptor, PointerAuthenticatedLayo
   }
 }
 
-internal struct _ClassDescriptor {
+private struct _ClassDescriptor {
   let _base: _TypeContextDescriptor
   let _superclassMangledName: RelativeDirectPointer<CChar>
   let _negativeSizeOrResilientBounds: Int32
@@ -531,14 +519,14 @@ internal struct _ClassDescriptor {
   let _fieldOffsetVectorOffset: UInt32
 }
 
-internal struct _StoredClassMetadataBounds {
+private struct _StoredClassMetadataBounds {
   let _immediateMembersOffset: Int
 }
 
 // Field Descriptor
 
 // A special descriptor that describes a type's fields.
-internal struct FieldDescriptor: PointerAuthenticatedLayoutWrapper {
+private struct FieldDescriptor: PointerAuthenticatedLayoutWrapper {
   typealias Layout = _FieldDescriptor
 
   // The backing field descriptor pointer.
@@ -568,7 +556,7 @@ internal struct FieldDescriptor: PointerAuthenticatedLayoutWrapper {
 }
 
 // A record that describes a single stored property or an enum case.
-internal struct FieldRecord: PointerAuthenticatedLayoutWrapper {
+private struct FieldRecord: PointerAuthenticatedLayoutWrapper {
   typealias Layout = _FieldRecord
 
   // The backing field record pointer.
@@ -590,7 +578,7 @@ internal struct FieldRecord: PointerAuthenticatedLayoutWrapper {
   }
 }
 
-internal struct _FieldDescriptor {
+private struct _FieldDescriptor {
   let _mangledTypeName: RelativeDirectPointer<CChar>
   let _superclassMangledTypeName: RelativeDirectPointer<CChar>
   let _kind: UInt16
@@ -598,14 +586,14 @@ internal struct _FieldDescriptor {
   let _numFields: UInt32
 }
 
-internal struct _FieldRecord {
+private struct _FieldRecord {
   let _flags: FieldRecordFlags
   let _mangledTypeName: RelativeDirectPointer<CChar>
   let _fieldName: RelativeDirectPointer<CChar>
 }
 
 // The flags which describe a field record.
-internal struct FieldRecordFlags {
+private struct FieldRecordFlags {
   // The backing integer representation of these flags.
   let bits: UInt32
 
@@ -619,22 +607,22 @@ internal struct FieldRecordFlags {
 // Misc. Utilities
 //===----------------------------------------------------------------------===//
 
-internal protocol LayoutWrapper {
+private protocol LayoutWrapper {
   associatedtype Layout
   var pointer: UnsafeRawPointer { get }
 }
 
-internal protocol PointerAuthenticatedLayoutWrapper: LayoutWrapper {
+private protocol PointerAuthenticatedLayoutWrapper: LayoutWrapper {
   var signedPointer: UnsafeRawPointer { get }
 }
 
-extension PointerAuthenticatedLayoutWrapper {
+private extension PointerAuthenticatedLayoutWrapper {
   var pointer: UnsafeRawPointer {
     signedPointer
   }
 }
 
-extension LayoutWrapper {
+private extension LayoutWrapper {
   var layout: Layout {
     pointer.load(as: Layout.self)
   }
@@ -659,7 +647,7 @@ extension LayoutWrapper {
 // This is a utility within KeyPath.swift in the standard library. If this
 // gets moved into there, then this goes away, but will have to rethink if this
 // goes into a different module.
-func getSymbolicMangledNameLength(_ base: UnsafeRawPointer) -> Int {
+private func getSymbolicMangledNameLength(_ base: UnsafeRawPointer) -> Int {
   var end = base
   while let current = Optional(end.load(as: UInt8.self)), current != 0 {
     // Skip the current character
@@ -682,8 +670,8 @@ internal func _allocObject(_: UnsafeMutableRawPointer, _: Int, _: Int) -> AnyObj
 // This is a utility within KeyPath.swift in the standard library. If this
 // gets moved into there, then this goes away, but will have to rethink if this
 // goes into a different module.
-extension AnyKeyPath {
-  internal static func _create(
+private extension AnyKeyPath {
+  static func _create(
     capacityInBytes bytes: Int,
     initializedBy body: (UnsafeMutableRawBufferPointer) -> ()
   ) -> Self {
@@ -730,7 +718,7 @@ extension AnyKeyPath {
 
 // Helper struct to represent the keypath buffer header. This structure is also
 // found within KeyPath.swift, so if this gets moved there this goes away.
-internal struct KeyPathBufferHeader {
+private struct KeyPathBufferHeader {
   let bits: UInt32
 
   init(hasReferencePrefix: Bool, isTrivial: Bool, size: UInt32) {
@@ -749,7 +737,7 @@ internal struct KeyPathBufferHeader {
 }
 
 // This initializes the raw keypath buffer with the field offset information.
-func instantiateKeyPathBuffer(
+private func instantiateKeyPathBuffer(
   _ metadata: TypeMetadata,
   _ leafIndex: Int,
   _ data: UnsafeMutableRawBufferPointer
@@ -774,7 +762,7 @@ func instantiateKeyPathBuffer(
 
 // Returns a concrete type for which this keypath is going to be given a root
 // and leaf type.
-func getKeyPathType(
+private func getKeyPathType(
   from root: TypeMetadata,
   for leaf: FieldRecord
 ) -> AnyKeyPath.Type {
@@ -796,7 +784,7 @@ func getKeyPathType(
 
 // Given a root type and a leaf index, create a concrete keypath object at
 // runtime.
-internal func createKeyPath(root: TypeMetadata, leaf: Int) -> AnyKeyPath {
+private func createKeyPath(root: TypeMetadata, leaf: Int) -> AnyKeyPath {
   let field = root.contextDescriptor.fields.records[leaf]
 
   let keyPathTy = getKeyPathType(from: root, for: field)
