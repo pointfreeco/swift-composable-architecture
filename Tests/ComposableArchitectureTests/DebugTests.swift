@@ -246,6 +246,35 @@ final class DebugTests: XCTestCase {
       debugOutput(URL(string: "https://www.pointfree.co")!),
       "https://www.pointfree.co"
     )
+
+    struct User {
+      var name: String
+    }
+    struct Profile {
+      var user: User
+    }
+
+    XCTAssertEqual(
+      debugOutput(\User.name),
+      #"\User.name"#
+    )
+    XCTAssertEqual(
+      debugOutput(\Profile.user.name),
+      #"\Profile.user.name"#
+    )
+    XCTAssertEqual(
+      debugOutput(\User.name.count),
+      #"KeyPath<User, Int>"#
+    )
+    XCTAssertEqual(
+      debugOutput(BindingAction.set(\User.name, "Blob")),
+      #"""
+      BindingAction.set(
+        \User.name,
+        "Blob"
+      )
+      """#
+    )
   }
 
   func testNestedDump() {

@@ -178,6 +178,17 @@ public struct BindingAction<Root>: Equatable {
   }
 }
 
+extension BindingAction: CustomDebugOutputConvertible {
+  public var debugOutput: String {
+    """
+    BindingAction.set(
+      \(self.keyPath.debugOutput),
+    \(ComposableArchitecture.debugOutput(self.value, indent: 2))
+    )
+    """
+  }
+}
+
 extension Reducer {
   /// Returns a reducer that applies `BindingAction` mutations to `State` before running this
   /// reducer's logic.
