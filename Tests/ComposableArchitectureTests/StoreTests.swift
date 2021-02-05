@@ -214,7 +214,8 @@ final class StoreTests: XCTestCase {
 
     store.send(.tap)
 
-    XCTAssertEqual(values, [1, 2, 3, 4])
+//    XCTAssertEqual(values, [1, 2, 3, 4])
+    XCTAssertEqual(values, [4, 2, 3, 1])
   }
 
   func testLotsOfSynchronousActions() {
@@ -345,6 +346,42 @@ final class StoreTests: XCTestCase {
       XCTAssertEqual(vs.state, 3)
     }
     .store(in: &self.cancellables)
+  }
+
+  func testActionBuffering() {
+    enum Action {
+      case a, b, c, d, x
+    }
+    let reducer = Reducer<Int, Action, Void> { state, action, _ in
+      switch action {
+      case .a, .b, .c:
+        return .none
+      case .d:
+        //2
+        return .concatenate(
+          .init(value: .a),//2
+          .init(value: .b)//3
+        )
+      case .x:
+        //1
+        return .concatenate(
+          .init(value: .d),//1
+          .init(value: .c)//4
+        )
+      }
+    }
+    // x, d, a, b, c
+    // x, d, c, a, b
+
+    let store = TestStore(initialState: 0, reducer: reducer, environment: ())
+
+    store.assert(
+      .send(.x),
+      .receive(.d),
+      .receive(.a),
+      .receive(.b),
+      .receive(.c)
+    )
   }
 
   func testActionQueuing() {

@@ -15,6 +15,10 @@ public final class Store<State, Action> {
   private var synchronousActionsToSend: [Action] = []
   private var bufferedActions: [Action] = []
 
+  private var synchronousActionIdsToSend: [UUID] = []
+  private var _synchronousActionsToSend: [UUID: [Action]] = [:]
+
+
   /// Initializes a store from an initial state, a reducer, and an environment.
   ///
   /// - Parameters:
@@ -241,18 +245,25 @@ public final class Store<State, Action> {
   }
 
   func send(_ action: Action) {
+    let id = UUID()
+
     if !self.isSending {
-      self.synchronousActionsToSend.append(action)
+      self.synchronousActionIdsToSend.append(id)
+      self._synchronousActionsToSend[id] = [action]
+//      self.synchronousActionsToSend.append(action)
     } else {
       self.bufferedActions.append(action)
       return
     }
 
-    while !self.synchronousActionsToSend.isEmpty || !self.bufferedActions.isEmpty {
-      let action =
-        !self.synchronousActionsToSend.isEmpty
-        ? self.synchronousActionsToSend.removeFirst()
-        : self.bufferedActions.removeFirst()
+    while !self.synchronousActionIdsToSend.isEmpty || !self.bufferedActions.isEmpty {
+//      let action =
+//        !self.synchronousActionsToSend.isEmpty
+//        ? self.synchronousActionsToSend.removeFirst()
+//        : self.bufferedActions.removeFirst()
+
+      let idToSend = self.synchronousActionIdsToSend.removeFirst()
+      let actions = self._synchronousActionsToSend[idToSend] ?? []
 
       self.isSending = true
       let effect = self.reducer(&self.state.value, action)
