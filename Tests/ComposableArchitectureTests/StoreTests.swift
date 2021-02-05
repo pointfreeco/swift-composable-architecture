@@ -214,7 +214,42 @@ final class StoreTests: XCTestCase {
 
     store.send(.tap)
 
-    XCTAssertEqual(values, [1, 2, 3, 4])
+//    XCTAssertEqual(values, [1, 2, 3, 4])
+    XCTAssertEqual(values, [4, 2, 3, 1])
+  }
+
+  func testSynchronousEffectOrdering() {
+    enum Action {
+      case a, b, c, d, x
+    }
+    let reducer = Reducer<Int, Action, Void> { state, action, _ in
+      switch action {
+      case .a, .b, .c:
+        return .none
+      case .d:
+        //2
+        return .concatenate(
+          .init(value: .a),
+          .init(value: .b)
+        )
+      case .x:
+        //1
+        return .concatenate(
+          .init(value: .d),
+          .init(value: .c)
+        )
+      }
+    }
+
+    let store = TestStore(initialState: 0, reducer: reducer, environment: ())
+
+    store.assert(
+      .send(.x),
+      .receive(.d),
+      .receive(.a),
+      .receive(.b),
+      .receive(.c)
+    )
   }
 
   func testLotsOfSynchronousActions() {
