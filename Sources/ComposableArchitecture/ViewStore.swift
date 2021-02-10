@@ -230,3 +230,9 @@ extension ViewStore where State: Equatable {
     self.init(store, removeDuplicates: ==)
   }
 }
+
+extension ViewStore where State == Void {
+  public convenience init(_ store: Store<Void, Action>) {
+    self.init(store, removeDuplicates: ==)
+  }
+}
