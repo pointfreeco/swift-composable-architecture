@@ -22,27 +22,18 @@ where Data: Collection, ID: Hashable, Content: View {
     Data == [EachState],
     EachContent: View,
     Content == WithViewStore<
-      Data, (Data.Index, EachAction),
-      ForEach<ContiguousArray<(Data.Index, EachState)>, ID, EachContent>
+      [ID], (Data.Index, EachAction),
+      ForEach<[(offset: Int, element: ID)], ID, EachContent>
     >
   {
-    self.data = ViewStore(store, removeDuplicates: { _, _ in false }).state
+    self.data = store.state.value
     self.content = {
-      WithViewStore(
-        store,
-        removeDuplicates: { lhs, rhs in
-          guard lhs.count == rhs.count else { return false }
-          return zip(lhs, rhs).allSatisfy { $0[keyPath: id] == $1[keyPath: id] }
-        }
-      ) { viewStore in
-        ForEach(
-          ContiguousArray(zip(viewStore.indices, viewStore.state)),
-          id: (\(Data.Index, EachState).1).appending(path: id)
-        ) { index, element in
+      WithViewStore(store.scope(state: { $0.map { $0[keyPath: id] } })) { viewStore in
+        ForEach(Array(viewStore.state.enumerated()), id: \.element) { offset, element in
           content(
             store.scope(
-              state: { index < $0.endIndex ? $0[index] : element },
-              action: { (index, $0) }
+              state: { $0[offset] },
+              action: { (offset, $0) }
             )
           )
         }
@@ -64,8 +55,8 @@ where Data: Collection, ID: Hashable, Content: View {
     Data == [EachState],
     EachContent: View,
     Content == WithViewStore<
-      Data, (Data.Index, EachAction),
-      ForEach<ContiguousArray<(Data.Index, EachState)>, ID, EachContent>
+      [ID], (Data.Index, EachAction),
+      ForEach<[(offset: Int, element: ID)], ID, EachContent>
     >,
     EachState: Identifiable,
     EachState.ID == ID
@@ -87,26 +78,19 @@ where Data: Collection, ID: Hashable, Content: View {
     EachContent: View,
     Data == IdentifiedArray<ID, EachState>,
     Content == WithViewStore<
-      IdentifiedArray<ID, EachState>, (ID, EachAction),
-      ForEach<IdentifiedArray<ID, EachState>, ID, EachContent>
+      [ID], (ID, EachAction),
+      ForEach<[ID], ID, EachContent>
     >
   {
-
-    self.data = ViewStore(store, removeDuplicates: { _, _ in false }).state
+    let data = store.state.value
+    self.data = data
     self.content = {
-      WithViewStore(
-        store,
-        removeDuplicates: { lhs, rhs in
-          guard lhs.id == rhs.id else { return false }
-          guard lhs.count == rhs.count else { return false }
-          return zip(lhs, rhs).allSatisfy { $0[keyPath: lhs.id] == $1[keyPath: rhs.id] }
-        }
-      ) { viewStore in
-        ForEach(viewStore.state, id: viewStore.id) { element in
+      WithViewStore(store.scope(state: \.ids)) { viewStore in
+        ForEach(viewStore.state, id: \.self) { id in
           content(
             store.scope(
-              state: { $0[id: element[keyPath: viewStore.id]] ?? element },
-              action: { (element[keyPath: viewStore.id], $0) }
+              state: { $0[id: id] ?? data[id: id]! },
+              action: { (id, $0) }
             )
           )
         }
