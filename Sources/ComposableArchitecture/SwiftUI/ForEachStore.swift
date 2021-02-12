@@ -22,8 +22,7 @@ where Data: Collection, ID: Hashable, Content: View {
     Data == [EachState],
     EachContent: View,
     Content == WithViewStore<
-      [ID], (Data.Index, EachAction),
-      ForEach<[(offset: Int, element: ID)], ID, EachContent>
+      [ID], (Data.Index, EachAction), ForEach<[(offset: Int, element: ID)], ID, EachContent>
     >
   {
     let data = store.state.value
@@ -56,8 +55,7 @@ where Data: Collection, ID: Hashable, Content: View {
     Data == [EachState],
     EachContent: View,
     Content == WithViewStore<
-      [ID], (Data.Index, EachAction),
-      ForEach<[(offset: Int, element: ID)], ID, EachContent>
+      [ID], (Data.Index, EachAction), ForEach<[(offset: Int, element: ID)], ID, EachContent>
     >,
     EachState: Identifiable,
     EachState.ID == ID
@@ -78,10 +76,7 @@ where Data: Collection, ID: Hashable, Content: View {
   where
     EachContent: View,
     Data == IdentifiedArray<ID, EachState>,
-    Content == WithViewStore<
-      [ID], (ID, EachAction),
-      ForEach<[ID], ID, EachContent>
-    >
+    Content == WithViewStore<[ID], (ID, EachAction), ForEach<[ID], ID, EachContent>>
   {
     let data = store.state.value
     self.data = data
