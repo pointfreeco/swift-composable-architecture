@@ -26,14 +26,15 @@ where Data: Collection, ID: Hashable, Content: View {
       ForEach<[(offset: Int, element: ID)], ID, EachContent>
     >
   {
-    self.data = store.state.value
+    let data = store.state.value
+    self.data = data
     self.content = {
       WithViewStore(store.scope(state: { $0.map { $0[keyPath: id] } })) { viewStore in
-        ForEach(Array(viewStore.state.enumerated()), id: \.element) { offset, element in
+        ForEach(Array(viewStore.state.enumerated()), id: \.element) { index, element in
           content(
             store.scope(
-              state: { $0[offset] },
-              action: { (offset, $0) }
+              state: { index < $0.endIndex ? $0[index] : data[index] },
+              action: { (index, $0) }
             )
           )
         }
