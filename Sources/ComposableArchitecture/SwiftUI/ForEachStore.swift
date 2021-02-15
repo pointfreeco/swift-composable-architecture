@@ -49,7 +49,7 @@ import SwiftUI
 ///       environment: { _ in TodoEnvironment() }
 ///     )
 ///
-/// And finally render a list of `TodoView` using `ForEachStore`:
+/// And finally render a list of `TodoView`s using `ForEachStore`:
 ///
 ///     ForEachStore(
 ///       self.store.scope(state: \.todos, AppAction.todo(id:action:))
