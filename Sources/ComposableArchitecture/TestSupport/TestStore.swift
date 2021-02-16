@@ -259,7 +259,7 @@
         store.scope(state: self.toLocalState, action: TestAction.send)
       )
 
-      for step in steps {
+      func assert(step: Step) {
         var expectedState = toLocalState(snapshotState)
 
         func expectedStateShouldMatch(actualState: LocalState) {
@@ -383,8 +383,13 @@
           } catch {
             _XCTFail("Threw error: \(error)", file: step.file, line: step.line)
           }
+
+        case let .sequence(subSteps):
+          subSteps.forEach(assert(step:))
         }
       }
+
+      steps.forEach(assert(step:))
 
       if !receivedActions.isEmpty {
         _XCTFail(
@@ -542,11 +547,36 @@
         Step(.do(work), file: file, line: line)
       }
 
-      fileprivate enum StepType {
+      /// A step that captures a sub-sequence of steps.
+      ///
+      /// - Parameter steps: An array of `Step`
+      /// - Returns: A step that captures a sub-sequence of steps.
+      public static func sequence(
+        _ steps: [Step],
+        file: StaticString = #file,
+        line: UInt = #line
+      ) -> Step {
+        Step(.sequence(steps), file: file, line: line)
+      }
+
+      /// A step that captures a sub-sequence of steps.
+      ///
+      /// - Parameter steps: A variadic list of `Step`
+      /// - Returns: A step that captures a sub-sequence of steps.
+      public static func sequence(
+        _ steps: Step...,
+        file: StaticString = #file,
+        line: UInt = #line
+      ) -> Step {
+        Step(.sequence(steps), file: file, line: line)
+      }
+
+      fileprivate indirect enum StepType {
         case send(LocalAction, (inout LocalState) throws -> Void)
         case receive(Action, (inout LocalState) throws -> Void)
         case environment((inout Environment) throws -> Void)
         case `do`(() throws -> Void)
+        case sequence([Step])
       }
     }
 

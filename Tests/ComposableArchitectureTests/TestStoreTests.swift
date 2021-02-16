@@ -54,9 +54,11 @@ class TestStoreTests: XCTestCase {
       .receive(.b2),
       .receive(.b3),
 
-      .receive(.c1),
-      .receive(.c2),
-      .receive(.c3),
+      .sequence([
+        .receive(.c1),
+        .receive(.c2),
+        .receive(.c3),
+      ]),
 
       .send(.d)
     )
