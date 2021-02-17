@@ -76,6 +76,7 @@
 		DCC68EDF2447BC810037F998 /* TemplateText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EDE2447BC810037F998 /* TemplateText.swift */; };
 		DCC68EE12447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EE02447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift */; };
 		DCC68EE32447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EE22447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift */; };
+		DCC75B3725D6D56700D1F8F8 /* Performance.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC75B3625D6D56700D1F8F8 /* Performance.swift */; };
 		DCE63B71245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCE63B70245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift */; };
 /* End PBXBuildFile section */
 
@@ -225,6 +226,7 @@
 		DCC68EDE2447BC810037F998 /* TemplateText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateText.swift; sourceTree = "<group>"; };
 		DCC68EE02447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Composition-TwoCounters.swift"; sourceTree = "<group>"; };
 		DCC68EE22447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-ReusableFavoriting.swift"; sourceTree = "<group>"; };
+		DCC75B3625D6D56700D1F8F8 /* Performance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Performance.swift; sourceTree = "<group>"; };
 		DCE63B70245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-Recursion.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -413,6 +415,7 @@
 				DCE63B70245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift */,
 				DCC68EE22447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift */,
 				DC2E370C24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift */,
+				DCC75B3625D6D56700D1F8F8 /* Performance.swift */,
 				DC89C41824460F95006900B9 /* SceneDelegate.swift */,
 				DC89C41C24460F96006900B9 /* Assets.xcassets */,
 				CA6AC25F2451131C00C71CB3 /* 04-HigherOrderReducers-ResuableOfflineDownloads */,
@@ -743,6 +746,7 @@
 				DC89C45324465452006900B9 /* 03-Navigation-Lists-NavigateAndLoad.swift in Sources */,
 				CAF069D024ACC5AF00A1AAEF /* 00-Core.swift in Sources */,
 				DCC68EE32447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift in Sources */,
+				DCC75B3725D6D56700D1F8F8 /* Performance.swift in Sources */,
 				DCC68EDF2447BC810037F998 /* TemplateText.swift in Sources */,
 				DCAC2A4F2452352E0094DEF5 /* 04-HigherOrderReducers-ElmLikeSubscriptions.swift in Sources */,
 				CA6AC2672451135C00C71CB3 /* DownloadClient.swift in Sources */,
@@ -1107,6 +1111,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 72J2J79C89;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = SwiftUICaseStudies/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1125,6 +1130,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 72J2J79C89;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = SwiftUICaseStudies/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (

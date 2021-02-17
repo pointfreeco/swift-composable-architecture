@@ -9,6 +9,36 @@ struct RootView: View {
     WithViewStore(self.store.stateless) { viewStore in
       NavigationView {
         Form {
+          NavigationLink(
+            "Performance",
+            destination: Main.View(
+              store: .init(
+                initialState: .init(
+                  children: .init(
+                    (0...2000).map {
+                      .init(item: .init(id: "\($0)", name: "unloaded"))
+                    }
+                  )
+                ),
+                reducer: Main.reducer,
+                environment: .init(
+                  loadItem: { item in
+                    return Effect.future { promise in
+                      var newItem = item
+                      newItem.name = "Loaded"
+                      promise(.success(newItem))
+                    }
+                    .delay(
+                      for: .milliseconds(100),
+                      scheduler: DispatchQueue.main
+                    )
+                    .eraseToEffect()
+                  }
+                )
+              )
+            )
+          )
+
           Section(header: Text("Getting started")) {
             NavigationLink(
               "Basics",

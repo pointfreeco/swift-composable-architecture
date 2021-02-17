@@ -10,9 +10,9 @@ enum Filter: LocalizedStringKey, CaseIterable, Hashable {
 struct AppState: Equatable {
   var editMode: EditMode = .inactive
   var filter: Filter = .all
-  var todos: IdentifiedArrayOf<Todo> = []
+  var todos: [Todo] = []
 
-  var filteredTodos: IdentifiedArrayOf<Todo> {
+  var filteredTodos: [Todo] {
     switch filter {
     case .active: return self.todos.filter { !$0.isComplete }
     case .all: return self.todos
@@ -38,7 +38,7 @@ struct AppEnvironment {
 }
 
 let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
-  todoReducer.forEach(
+  todoReducer._forEach(
     state: \.todos,
     action: /AppAction.todo(id:action:),
     environment: { _ in TodoEnvironment() }
@@ -72,7 +72,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
         .eraseToEffect()
 
     case .sortCompletedTodos:
-      state.todos.sortCompleted()
+      state.todos.sort(by: { (!$0.isComplete && $1.isComplete) })
       return .none
 
     case .todo(id: _, action: .checkBoxToggled):
@@ -114,7 +114,7 @@ struct AppView: View {
           .padding([.leading, .trailing])
 
           List {
-            ForEachStore(
+            _ForEachStore(
               self.store.scope(state: { $0.filteredTodos }, action: AppAction.todo(id:action:)),
               content: TodoView.init(store:)
             )
@@ -126,9 +126,17 @@ struct AppView: View {
         .navigationBarItems(
           trailing: HStack(spacing: 20) {
             EditButton()
-            Button("Clear Completed") { viewStore.send(.clearCompletedButtonTapped) }
-              .disabled(viewStore.isClearCompletedButtonDisabled)
-            Button("Add Todo") { viewStore.send(.addTodoButtonTapped) }
+            Button("Clear Completed") {
+              withAnimation {
+                viewStore.send(.clearCompletedButtonTapped)
+              }
+            }
+            .disabled(viewStore.isClearCompletedButtonDisabled)
+            Button("Add Todo") {
+              withAnimation {
+                viewStore.send(.addTodoButtonTapped)
+              }
+            }
           }
         )
         .environment(
@@ -150,20 +158,7 @@ extension AppState {
   }
 }
 
-extension IdentifiedArray where ID == UUID, Element == Todo {
-  fileprivate mutating func sortCompleted() {
-    // Simulate stable sort
-    self = IdentifiedArray(
-      self.enumerated()
-        .sorted(by: { lhs, rhs in
-          (rhs.element.isComplete && !lhs.element.isComplete) || lhs.offset < rhs.offset
-        })
-        .map { $0.element }
-    )
-  }
-}
-
-extension IdentifiedArray where ID == UUID, Element == Todo {
+extension Array where Element == Todo {
   static let mock: Self = [
     Todo(
       description: "Check Mail",
