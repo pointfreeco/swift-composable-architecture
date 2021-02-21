@@ -230,3 +230,17 @@ extension ViewStore where State: Equatable {
     self.init(store, removeDuplicates: ==)
   }
 }
+
+extension ViewStore {
+  /// Initializes a view store from a store.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - equatingKeyPath: A keypath from `State` to some `Equatable` value.  When these values are
+  ///     equal, repeat view computations are removed.
+  public convenience init<Equated: Equatable>(_ store: Store<State, Action>,
+                                              removeDuplicates equatingKeyPath: KeyPath<State, Equated>) {
+    self.init(store,
+              removeDuplicates: { $0[keyPath: equatingKeyPath] == $1[keyPath:equatingKeyPath] })
+  }
+}
