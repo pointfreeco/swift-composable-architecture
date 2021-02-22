@@ -65,7 +65,12 @@ let clockReducer = Reducer<ClockState, ClockAction, ClockEnvironment>.combine(
     return [
       TimerId():
         Effect
-        .timer(id: TimerId(), every: 1, tolerance: .zero, on: environment.mainQueue)
+        .timer(
+          id: TimerId(),
+          every: 1,
+          tolerance: .zero,
+          on: environment.mainQueue.animation(.interpolatingSpring(stiffness: 3000, damping: 40))
+        )
         .map { _ in .timerTicked }
     ]
   }
@@ -119,7 +124,6 @@ struct ClockView: View {
           }
           .stroke(Color.black, lineWidth: 3)
           .rotationEffect(.degrees(Double(self.viewStore.secondsElapsed) * 360 / 60))
-          .animation(Animation.interpolatingSpring(stiffness: 3000, damping: 40))
         }
       }
       .frame(width: 280, height: 280)
