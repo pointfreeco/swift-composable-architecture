@@ -7,9 +7,8 @@ private let readMe = """
   `Store` processes actions sent to it synchronously you can typically perform animations \
   in the Composable Architecture just as you would in regular SwiftUI.
 
-  To animate the changes made to state when an action is sent to the store you only need to wrap \
-  instances of `viewStore.send` in a `withAnimations` block. For example, when sending an action \
-  to the store when a button is tapped.
+  To animate the changes made to state when an action is sent to the store you can pass along an \
+  explicit animation, as well, or you can call `viewStore.send` in a `withAnimation` block.
 
   To animate changes made to state through a binding, use the `.animation` method on `Binding`.
 
