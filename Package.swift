@@ -17,8 +17,8 @@ let package = Package(
     )
   ],
   dependencies: [
-    .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.1.0"),
-    .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.1.1"),
+    .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.3.1"),
+    .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.1.3"),
   ],
   targets: [
     .target(
