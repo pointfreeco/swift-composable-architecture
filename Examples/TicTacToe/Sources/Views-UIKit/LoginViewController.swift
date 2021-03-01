@@ -206,11 +206,11 @@ extension LoginAction {
     case .alertDismissed:
       return .alertDismissed
     case let .emailChanged(email):
-      return .emailChanged(email ?? "")
+      return .binding(.set(\.email, email ?? ""))
     case .loginButtonTapped:
       return .loginButtonTapped
     case let .passwordChanged(password):
-      return .passwordChanged(password ?? "")
+      return .binding(.set(\.password, password ?? ""))
     case .twoFactorDismissed:
       return .twoFactorDismissed
     }
