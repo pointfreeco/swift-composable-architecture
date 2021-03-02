@@ -114,13 +114,11 @@ import SwiftUI
 ///       environment: SettingsEnvironment(...)
 ///     )
 ///
-///     store.assert(
-///       .send(.binding(.set(\.displayName, "Blob"))) {
-///         $0.displayName = "Blob"
-///       },
-///       .send(.binding(.set(\.protectMyPosts, true))) {
-///         $0.protectMyPosts = true
-///       )
+///     store.send(.binding(.set(\.displayName, "Blob"))) {
+///       $0.displayName = "Blob"
+///     }
+///     store.send(.binding(.set(\.protectMyPosts, true))) {
+///       $0.protectMyPosts = true
 ///     )
 ///
 public struct BindingAction<Root>: Equatable {

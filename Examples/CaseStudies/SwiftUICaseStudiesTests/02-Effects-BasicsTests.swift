@@ -5,7 +5,7 @@ import XCTest
 
 class EffectsBasicsTests: XCTestCase {
   let scheduler = DispatchQueue.testScheduler
-
+  
   func testCountDown() {
     let store = TestStore(
       initialState: EffectsBasicsState(),
@@ -15,21 +15,20 @@ class EffectsBasicsTests: XCTestCase {
         numberFact: { _ in fatalError("Unimplemented") }
       )
     )
-
-    store.assert(
-      .send(.incrementButtonTapped) {
-        $0.count = 1
-      },
-      .send(.decrementButtonTapped) {
-        $0.count = 0
-      },
-      .do { self.scheduler.advance(by: 1) },
-      .receive(.incrementButtonTapped) {
-        $0.count = 1
-      }
-    )
+    
+    store.send(.incrementButtonTapped) {
+      $0.count = 1
+    }
+    store.send(.decrementButtonTapped) {
+      $0.count = 0
+    }
+    
+    self.scheduler.advance(by: 1)
+    store.receive(.incrementButtonTapped) {
+      $0.count = 1
+    }
   }
-
+  
   func testNumberFact() {
     let store = TestStore(
       initialState: EffectsBasicsState(),
@@ -39,19 +38,18 @@ class EffectsBasicsTests: XCTestCase {
         numberFact: { n in Effect(value: "\(n) is a good number Brent") }
       )
     )
-
-    store.assert(
-      .send(.incrementButtonTapped) {
-        $0.count = 1
-      },
-      .send(.numberFactButtonTapped) {
-        $0.isNumberFactRequestInFlight = true
-      },
-      .do { self.scheduler.advance() },
-      .receive(.numberFactResponse(.success("1 is a good number Brent"))) {
-        $0.isNumberFactRequestInFlight = false
-        $0.numberFact = "1 is a good number Brent"
-      }
-    )
+    
+    store.send(.incrementButtonTapped) {
+      $0.count = 1
+    }
+    store.send(.numberFactButtonTapped) {
+      $0.isNumberFactRequestInFlight = true
+    }
+    
+    self.scheduler.advance()
+    store.receive(.numberFactResponse(.success("1 is a good number Brent"))) {
+      $0.isNumberFactRequestInFlight = false
+      $0.numberFact = "1 is a good number Brent"
+    }
   }
 }

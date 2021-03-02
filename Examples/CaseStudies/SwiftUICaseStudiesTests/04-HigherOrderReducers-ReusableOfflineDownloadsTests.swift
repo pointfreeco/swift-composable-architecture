@@ -33,24 +33,22 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       )
     )
 
-    store.assert(
-      .send(.buttonTapped) {
-        $0.mode = .startingToDownload
-      },
+    store.send(.buttonTapped) {
+      $0.mode = .startingToDownload
+    }
 
-      .do { self.downloadSubject.send(.updateProgress(0.2)) },
-      .do { self.scheduler.advance() },
-      .receive(.downloadClient(.success(.updateProgress(0.2)))) {
-        $0.mode = .downloading(progress: 0.2)
-      },
+    self.downloadSubject.send(.updateProgress(0.2))
+    self.scheduler.advance()
+    store.receive(.downloadClient(.success(.updateProgress(0.2)))) {
+      $0.mode = .downloading(progress: 0.2)
+    }
 
-      .do { self.downloadSubject.send(.response(Data())) },
-      .do { self.downloadSubject.send(completion: .finished) },
-      .do { self.scheduler.advance(by: 1) },
-      .receive(.downloadClient(.success(.response(Data())))) {
-        $0.mode = .downloaded
-      }
-    )
+    self.downloadSubject.send(.response(Data()))
+    self.downloadSubject.send(completion: .finished)
+    self.scheduler.advance(by: 1)
+    store.receive(.downloadClient(.success(.response(Data())))) {
+      $0.mode = .downloaded
+    }
   }
 
   func testDownloadThrottling() {
@@ -69,29 +67,27 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       )
     )
 
-    store.assert(
-      .send(.buttonTapped) {
-        $0.mode = .startingToDownload
-      },
+    store.send(.buttonTapped) {
+      $0.mode = .startingToDownload
+    }
 
-      .do { self.downloadSubject.send(.updateProgress(0.5)) },
-      .do { self.scheduler.advance() },
-      .receive(.downloadClient(.success(.updateProgress(0.5)))) {
-        $0.mode = .downloading(progress: 0.5)
-      },
+    self.downloadSubject.send(.updateProgress(0.5))
+    self.scheduler.advance()
+    store.receive(.downloadClient(.success(.updateProgress(0.5)))) {
+      $0.mode = .downloading(progress: 0.5)
+    }
 
-      .do { self.downloadSubject.send(.updateProgress(0.6)) },
-      .do { self.scheduler.advance(by: 0.5) },
+    self.downloadSubject.send(.updateProgress(0.6))
+    self.scheduler.advance(by: 0.5)
 
-      .do { self.downloadSubject.send(.updateProgress(0.7)) },
-      .do { self.scheduler.advance(by: 0.5) },
-      .receive(.downloadClient(.success(.updateProgress(0.7)))) {
-        $0.mode = .downloading(progress: 0.7)
-      },
+    self.downloadSubject.send(.updateProgress(0.7))
+    self.scheduler.advance(by: 0.5)
+    store.receive(.downloadClient(.success(.updateProgress(0.7)))) {
+      $0.mode = .downloading(progress: 0.7)
+    }
 
-      .do { self.downloadSubject.send(completion: .finished) },
-      .do { self.scheduler.run() }
-    )
+    self.downloadSubject.send(completion: .finished)
+    self.scheduler.run()
   }
 
   func testCancelDownloadFlow() {
@@ -111,26 +107,24 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       )
     )
 
-    store.assert(
-      .send(.buttonTapped) {
-        $0.mode = .startingToDownload
-      },
+    store.send(.buttonTapped) {
+      $0.mode = .startingToDownload
+    }
 
-      .send(.buttonTapped) {
-        $0.alert = .init(
-          title: .init("Do you want to cancel downloading this map?"),
-          primaryButton: .destructive(.init("Cancel"), send: .cancelButtonTapped),
-          secondaryButton: .default(.init("Nevermind"), send: .nevermindButtonTapped)
-        )
-      },
+    store.send(.buttonTapped) {
+      $0.alert = .init(
+        title: .init("Do you want to cancel downloading this map?"),
+        primaryButton: .destructive(.init("Cancel"), send: .cancelButtonTapped),
+        secondaryButton: .default(.init("Nevermind"), send: .nevermindButtonTapped)
+      )
+    }
 
-      .send(.alert(.cancelButtonTapped)) {
-        $0.alert = nil
-        $0.mode = .notDownloaded
-      },
+    store.send(.alert(.cancelButtonTapped)) {
+      $0.alert = nil
+      $0.mode = .notDownloaded
+    }
 
-      .do { self.scheduler.run() }
-    )
+    self.scheduler.run()
   }
 
   func testDownloadFinishesWhileTryingToCancel() {
@@ -150,27 +144,25 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       )
     )
 
-    store.assert(
-      .send(.buttonTapped) {
-        $0.mode = .startingToDownload
-      },
+    store.send(.buttonTapped) {
+      $0.mode = .startingToDownload
+    }
 
-      .send(.buttonTapped) {
-        $0.alert = .init(
-          title: .init("Do you want to cancel downloading this map?"),
-          primaryButton: .destructive(.init("Cancel"), send: .cancelButtonTapped),
-          secondaryButton: .default(.init("Nevermind"), send: .nevermindButtonTapped)
-        )
-      },
+    store.send(.buttonTapped) {
+      $0.alert = .init(
+        title: .init("Do you want to cancel downloading this map?"),
+        primaryButton: .destructive(.init("Cancel"), send: .cancelButtonTapped),
+        secondaryButton: .default(.init("Nevermind"), send: .nevermindButtonTapped)
+      )
+    }
 
-      .do { self.downloadSubject.send(.response(Data())) },
-      .do { self.downloadSubject.send(completion: .finished) },
-      .do { self.scheduler.advance(by: 1) },
-      .receive(.downloadClient(.success(.response(Data())))) {
-        $0.alert = nil
-        $0.mode = .downloaded
-      }
-    )
+    self.downloadSubject.send(.response(Data()))
+    self.downloadSubject.send(completion: .finished)
+    self.scheduler.advance(by: 1)
+    store.receive(.downloadClient(.success(.response(Data())))) {
+      $0.alert = nil
+      $0.mode = .downloaded
+    }
   }
 
   func testDeleteDownloadFlow() {
@@ -190,20 +182,18 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       )
     )
 
-    store.assert(
-      .send(.buttonTapped) {
-        $0.alert = .init(
-          title: .init("Do you want to delete this map from your offline storage?"),
-          primaryButton: .destructive(.init("Delete"), send: .deleteButtonTapped),
-          secondaryButton: .default(.init("Nevermind"), send: .nevermindButtonTapped)
-        )
-      },
+    store.send(.buttonTapped) {
+      $0.alert = .init(
+        title: .init("Do you want to delete this map from your offline storage?"),
+        primaryButton: .destructive(.init("Delete"), send: .deleteButtonTapped),
+        secondaryButton: .default(.init("Nevermind"), send: .nevermindButtonTapped)
+      )
+    }
 
-      .send(.alert(.deleteButtonTapped)) {
-        $0.alert = nil
-        $0.mode = .notDownloaded
-      }
-    )
+    store.send(.alert(.deleteButtonTapped)) {
+      $0.alert = nil
+      $0.mode = .notDownloaded
+    }
   }
 }
 
