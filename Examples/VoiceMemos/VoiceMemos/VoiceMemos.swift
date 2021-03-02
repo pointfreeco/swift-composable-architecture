@@ -210,13 +210,7 @@ struct VoiceMemosView: View {
                 .foregroundColor(Color(.label))
                 .frame(width: 74, height: 74)
 
-              Button(
-                action: {
-                  withAnimation(.spring()) {
-                    viewStore.send(.recordButtonTapped)
-                  }
-                }
-              ) {
+              Button(action: { viewStore.send(.recordButtonTapped, animation: .spring()) }) {
                 RoundedRectangle(cornerRadius: viewStore.currentRecording != nil ? 4 : 35)
                   .foregroundColor(Color(.systemRed))
                   .padding(viewStore.currentRecording != nil ? 17 : 2)
