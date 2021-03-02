@@ -16,50 +16,48 @@ class AnimationTests: XCTestCase {
       )
     )
 
-    store.assert(
-      .send(.rainbowButtonTapped),
+    store.send(.rainbowButtonTapped)
 
-      .do { self.scheduler.advance() },
-      .receive(.setColor(.red)) {
-        $0.circleColor = .red
-      },
+    store.receive(.setColor(.red)) {
+      $0.circleColor = .red
+    }
 
-      .do { self.scheduler.advance(by: .seconds(1)) },
-      .receive(.setColor(.blue)) {
-        $0.circleColor = .blue
-      },
+    self.scheduler.advance(by: .seconds(1))
+    store.receive(.setColor(.blue)) {
+      $0.circleColor = .blue
+    }
 
-      .do { self.scheduler.advance(by: .seconds(1)) },
-      .receive(.setColor(.green)) {
-        $0.circleColor = .green
-      },
+    self.scheduler.advance(by: .seconds(1))
+    store.receive(.setColor(.green)) {
+      $0.circleColor = .green
+    }
 
-      .do { self.scheduler.advance(by: .seconds(1)) },
-      .receive(.setColor(.orange)) {
-        $0.circleColor = .orange
-      },
+    self.scheduler.advance(by: .seconds(1))
+    store.receive(.setColor(.orange)) {
+      $0.circleColor = .orange
+    }
 
-      .do { self.scheduler.advance(by: .seconds(1)) },
-      .receive(.setColor(.pink)) {
-        $0.circleColor = .pink
-      },
+    self.scheduler.advance(by: .seconds(1))
+    store.receive(.setColor(.pink)) {
+      $0.circleColor = .pink
+    }
 
-      .do { self.scheduler.advance(by: .seconds(1)) },
-      .receive(.setColor(.purple)) {
-        $0.circleColor = .purple
-      },
+    self.scheduler.advance(by: .seconds(1))
+    store.receive(.setColor(.purple)) {
+      $0.circleColor = .purple
+    }
 
-      .do { self.scheduler.advance(by: .seconds(1)) },
-      .receive(.setColor(.yellow)) {
-        $0.circleColor = .yellow
-      },
+    self.scheduler.advance(by: .seconds(1))
+    store.receive(.setColor(.yellow)) {
+      $0.circleColor = .yellow
+    }
 
-      .do { self.scheduler.advance(by: .seconds(1)) },
-      .receive(.setColor(.white)) {
-        $0.circleColor = .white
-      },
+    self.scheduler.advance(by: .seconds(1))
+    store.receive(.setColor(.white)) {
+      $0.circleColor = .white
+    }
 
-      .do { self.scheduler.run() }
-    )
+    self.scheduler.run()
+>>>>>>> 15c6cc0... wip
   }
 }

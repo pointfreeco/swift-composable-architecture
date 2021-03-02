@@ -5,7 +5,7 @@ import XCTest
 
 class TimersTests: XCTestCase {
   let scheduler = DispatchQueue.testScheduler
-
+  
   func testStart() {
     let store = TestStore(
       initialState: TimersState(),
@@ -14,34 +14,34 @@ class TimersTests: XCTestCase {
         mainQueue: self.scheduler.eraseToAnyScheduler()
       )
     )
-
-    store.assert(
-      .send(.toggleTimerButtonTapped) {
-        $0.isTimerActive = true
-      },
-      .do { self.scheduler.advance(by: 1) },
-      .receive(.timerTicked) {
-        $0.secondsElapsed = 1
-      },
-      .do { self.scheduler.advance(by: 5) },
-      .receive(.timerTicked) {
-        $0.secondsElapsed = 2
-      },
-      .receive(.timerTicked) {
-        $0.secondsElapsed = 3
-      },
-      .receive(.timerTicked) {
-        $0.secondsElapsed = 4
-      },
-      .receive(.timerTicked) {
-        $0.secondsElapsed = 5
-      },
-      .receive(.timerTicked) {
-        $0.secondsElapsed = 6
-      },
-      .send(.toggleTimerButtonTapped) {
-        $0.isTimerActive = false
-      }
-    )
+    
+    store.send(.toggleTimerButtonTapped) {
+      $0.isTimerActive = true
+    }
+    
+    self.scheduler.advance(by: 1)
+    store.receive(.timerTicked) {
+      $0.secondsElapsed = 1
+    }
+    
+    self.scheduler.advance(by: 5)
+    store.receive(.timerTicked) {
+      $0.secondsElapsed = 2
+    }
+    store.receive(.timerTicked) {
+      $0.secondsElapsed = 3
+    }
+    store.receive(.timerTicked) {
+      $0.secondsElapsed = 4
+    }
+    store.receive(.timerTicked) {
+      $0.secondsElapsed = 5
+    }
+    store.receive(.timerTicked) {
+      $0.secondsElapsed = 6
+    }
+    store.send(.toggleTimerButtonTapped) {
+      $0.isTimerActive = false
+    }
   }
 }
