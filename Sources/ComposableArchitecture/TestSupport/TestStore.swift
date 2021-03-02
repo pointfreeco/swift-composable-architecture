@@ -12,27 +12,28 @@
   /// There are multiple ways the test store forces you to exhaustively assert on how your feature
   /// behaves:
   ///
-  /// * After each action is sent you must describe precisely how the state changed from before the
-  ///   action was sent to after it was sent.
+  ///   * After each action is sent you must describe precisely how the state changed from before
+  ///     the action was sent to after it was sent.
   ///
-  ///   If even the smallest piece of data differs the test will fail. This guarantees that you are
-  ///   proving you know precisely how the state of the system changes.
+  ///     If even the smallest piece of data differs the test will fail. This guarantees that you
+  ///     are proving you know precisely how the state of the system changes.
   ///
-  /// * Sending an action can sometimes cause an effect to be executed, and if that effect emits an
-  ///   action that is fed back into the system, you **must** explicitly assert that you expect to
-  ///   receive that action from the effect, _and_ you must assert how state changed as a result.
+  ///   * Sending an action can sometimes cause an effect to be executed, and if that effect emits
+  ///     an action that is fed back into the system, you **must** explicitly assert that you expect
+  ///     to receive that action from the effect, _and_ you must assert how state changed as a
+  ///     result.
   ///
-  ///   If you try to send another action before you have handled all effect emissions the assertion
-  ///   will fail. This guarantees that you do not accidentally forget about an effect emission, and
-  ///   that the sequence of steps you are describing will mimic how the application behaves in
-  ///   reality.
+  ///     If you try to send another action before you have handled all effect emissions the
+  ///     assertion will fail. This guarantees that you do not accidentally forget about an effect
+  ///     emission, and that the sequence of steps you are describing will mimic how the application
+  ///     behaves in reality.
   ///
-  /// * All effects must complete by the time the assertion has finished running the steps you
-  ///   specify.
+  ///   * All effects must complete by the time the assertion has finished running the steps you
+  ///     specify.
   ///
-  ///   If at the end of the assertion there is still an in-flight effect running, the assertion
-  ///   will fail. This helps exhaustively prove that you know what effects are in flight and forces
-  ///   you to prove that effects will not cause any future changes to your state.
+  ///     If at the end of the assertion there is still an in-flight effect running, the assertion
+  ///     will fail. This helps exhaustively prove that you know what effects are in flight and
+  ///     forces you to prove that effects will not cause any future changes to your state.
   ///
   /// For example, given a simple counter reducer:
   ///
