@@ -27,10 +27,6 @@ final class CountersTableViewController: UITableViewController {
   let viewStore: ViewStore<CounterListState, CounterListAction>
   var cancellables: Set<AnyCancellable> = []
 
-  var dataSource: [CounterState] = [] {
-    didSet { self.tableView.reloadData() }
-  }
-
   init(store: Store<CounterListState, CounterListAction>) {
     self.store = store
     self.viewStore = ViewStore(store)
@@ -49,12 +45,12 @@ final class CountersTableViewController: UITableViewController {
     self.tableView.register(UITableViewCell.self, forCellReuseIdentifier: cellIdentifier)
 
     self.viewStore.publisher.counters
-      .sink(receiveValue: { [weak self] in self?.dataSource = $0 })
+      .sink(receiveValue: { [weak self] _ in self?.tableView.reloadData() })
       .store(in: &self.cancellables)
   }
 
   override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    self.dataSource.count
+    self.viewStore.counters.count
   }
 
   override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath)
@@ -62,7 +58,7 @@ final class CountersTableViewController: UITableViewController {
   {
     let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
     cell.accessoryType = .disclosureIndicator
-    cell.textLabel?.text = "\(self.dataSource[indexPath.row].count)"
+    cell.textLabel?.text = "\(self.viewStore.counters[indexPath.row].count)"
     return cell
   }
 

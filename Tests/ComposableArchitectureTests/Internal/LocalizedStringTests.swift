@@ -3,8 +3,8 @@ import XCTest
 
 @testable import ComposableArchitecture
 
-class LocalizedStringKeyTests: XCTestCase {
-  func testFormatting() {
+class LocalizedStringTests: XCTestCase {
+  func testLocalizedStringKeyFormatting() {
     XCTAssertEqual(
       LocalizedStringKey("Hello, #\(42)!").formatted(),
       "Hello, #42!"

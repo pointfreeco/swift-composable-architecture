@@ -7,11 +7,13 @@ private let readMe = """
   `Store` processes actions sent to it synchronously you can typically perform animations \
   in the Composable Architecture just as you would in regular SwiftUI.
 
-  To animate the changes made to state when an action is sent to the store you only need to wrap \
-  instances of `viewStore.send` in a `withAnimations` block. For example, when sending an action \
-  to the store when a button is tapped.
+  To animate the changes made to state when an action is sent to the store you can pass along an \
+  explicit animation, as well, or you can call `viewStore.send` in a `withAnimation` block.
 
   To animate changes made to state through a binding, use the `.animation` method on `Binding`.
+
+  To animate asynchronous changes made to state via effects, use the `.animation` method provided \
+  by the CombineSchedulers library to receive asynchronous actions in an animated fashion.
 
   Try it out by tapping or dragging anywhere on the screen to move the dot, and by flipping the \
   toggle at the bottom of the screen.
@@ -65,7 +67,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
     return .keyFrames(
       values: [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .white]
         .map { (output: .setColor($0), duration: 1) },
-      scheduler: environment.mainQueue
+      scheduler: environment.mainQueue.animation(.linear)
     )
 
   case let .setColor(color):
@@ -92,7 +94,6 @@ struct AnimationsView: View {
 
             Circle()
               .fill(viewStore.circleColor)
-              .animation(.linear)
               .blendMode(.difference)
               .frame(width: 50, height: 50)
               .scaleEffect(viewStore.isCircleScaled ? 2 : 1)
@@ -105,9 +106,10 @@ struct AnimationsView: View {
           .background(self.colorScheme == .dark ? Color.black : .white)
           .simultaneousGesture(
             DragGesture(minimumDistance: 0).onChanged { gesture in
-              withAnimation(.interactiveSpring(response: 0.25, dampingFraction: 0.1)) {
-                viewStore.send(.tapped(gesture.location))
-              }
+              viewStore.send(
+                .tapped(gesture.location),
+                animation: .interactiveSpring(response: 0.25, dampingFraction: 0.1)
+              )
             }
           )
           Toggle(
@@ -118,7 +120,7 @@ struct AnimationsView: View {
               .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.1))
           )
           .padding()
-          Button("Rainbow") { viewStore.send(.rainbowButtonTapped) }
+          Button("Rainbow") { viewStore.send(.rainbowButtonTapped, animation: .linear) }
             .padding([.leading, .trailing, .bottom])
         }
       }

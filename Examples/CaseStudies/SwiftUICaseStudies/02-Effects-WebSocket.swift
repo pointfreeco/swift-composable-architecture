@@ -109,7 +109,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
 
   case let .sendResponse(error):
     if error != nil {
-      state.alert = .init(title: "Could not send socket message. Try again.")
+      state.alert = .init(title: .init("Could not send socket message. Try again."))
     }
     return .none
 
@@ -121,7 +121,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
     let .webSocket(.didCompleteWithError(error)):
     state.connectivityState = .disconnected
     if error != nil {
-      state.alert = .init(title: "Disconnected from socket for some reason. Try again.")
+      state.alert = .init(title: .init("Disconnected from socket for some reason. Try again."))
     }
     return .cancel(id: WebSocketId())
 

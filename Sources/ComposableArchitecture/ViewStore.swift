@@ -48,6 +48,10 @@ public final class ViewStore<State, Action>: ObservableObject {
 
   private var viewCancellable: AnyCancellable?
 
+  // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
+  // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
+  public private(set) lazy var objectWillChange = ObservableObjectPublisher()
+
   /// Initializes a view store from a store.
   ///
   /// - Parameters:
@@ -125,10 +129,15 @@ public final class ViewStore<State, Action>: ObservableObject {
     Binding(
       get: { get(self.state) },
       set: { newLocalState, transaction in
-        withAnimation(transaction.disablesAnimations ? nil : transaction.animation) {
+        if transaction.animation != nil {
+          withTransaction(transaction) {
+            self.send(localStateToViewAction(newLocalState))
+          }
+        } else {
           self.send(localStateToViewAction(newLocalState))
         }
-      })
+      }
+    )
   }
 
   /// Derives a binding from the store that prevents direct writes to state and instead sends

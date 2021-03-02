@@ -80,7 +80,7 @@ class SharedStateTests: XCTestCase {
     store.assert(
       .send(.isPrimeButtonTapped) {
         $0.alert = .init(
-          title: "👍 The number \($0.count) is prime!"
+          title: .init("👍 The number \($0.count) is prime!")
         )
       },
       .send(.alertDismissed) {
@@ -100,7 +100,7 @@ class SharedStateTests: XCTestCase {
     store.assert(
       .send(.isPrimeButtonTapped) {
         $0.alert = .init(
-          title: "👎 The number \($0.count) is not prime :("
+          title: .init("👎 The number \($0.count) is not prime :(")
         )
       },
       .send(.alertDismissed) {

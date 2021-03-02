@@ -66,7 +66,7 @@ class ReusableComponentsFavoritingTests: XCTestCase {
         .episode(index: 2, action: .favorite(.response(.failure(FavoriteError(error: error)))))
       ) {
         $0.episodes[2].alert = .init(
-          title: "The operation couldn’t be completed. (co.pointfree error -1.)"
+          title: .init("The operation couldn’t be completed. (co.pointfree error -1.)")
         )
       },
 
