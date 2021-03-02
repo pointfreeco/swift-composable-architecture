@@ -169,26 +169,7 @@
     private var longLivingEffects: Set<LongLivingEffect> = []
     private var receivedActions: [(action: Action, state: State)] = []
     private var snapshotState: State
-
-    private struct LongLivingEffect: Hashable {
-      let id = UUID()
-      let file: StaticString
-      let line: UInt
-
-      static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.id == rhs.id
-      }
-
-      func hash(into hasher: inout Hasher) {
-        self.id.hash(into: &hasher)
-      }
-    }
-
     private var store: Store<State, TestAction>!
-
-    deinit {
-      self.completed()
-    }
 
     private init(
       environment: Environment,
@@ -239,6 +220,10 @@
       )
     }
 
+    deinit {
+      self.completed()
+    }
+
     private func completed() {
       if !self.receivedActions.isEmpty {
         _XCTFail(
@@ -254,23 +239,40 @@
       for effect in self.longLivingEffects {
         _XCTFail(
           """
-          This action triggered an effect that did not complete by the end of the test: …
+          An effect returned for this action is still running. It must complete before the end of \
+          the test. …
 
-          To fix you need to inspect the effects returned from this action and make sure that all \
-          of them have completed by the end of the test. There are a few reasons why your effects \
-          may not have completed:
+          To fix, inspect any effects the reducer returns for this action and ensure that all of \
+          them complete by the end of the test. There are a few reasons why an effect may not have \
+          completed:
 
-          • If you are using a scheduler in an effect, make sure that you wait enough time for the \
-          effect to finish. If you are using a test scheduler, make sure you advance the scheduler \
-          so that the effects complete.
+          • If an effect uses a scheduler (via "receive(on:)", "delay", "debounce", etc.), make \
+          sure that you wait enough time for the scheduler to perform the effect. If you are using \
+          a test scheduler, advance the scheduler so that the effects may complete, or consider \
+          using an immediate scheduler to immediately perform the effect instead.
 
-          • If you are using long-living effects (for example timers, notifications, etc.), then \
-          ensure those effects are completed by returning an `Effect.cancel` effect from a \
-          particular action in your reducer, and sending that action in the test.
+          • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
+          then make sure those effects are torn down by marking the effect ".cancellable" and \
+          returning a corresponding cancellation effect ("Effect.cancel") effect from another \
+          action, or, if your effect is driven by a Combine subject, send it a completion.
           """,
           file: effect.file,
           line: effect.line
         )
+      }
+    }
+
+    private struct LongLivingEffect: Hashable {
+      let id = UUID()
+      let file: StaticString
+      let line: UInt
+
+      static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.id == rhs.id
+      }
+
+      func hash(into hasher: inout Hasher) {
+        self.id.hash(into: &hasher)
       }
     }
   }
