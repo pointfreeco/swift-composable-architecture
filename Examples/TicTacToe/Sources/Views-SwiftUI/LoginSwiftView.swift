@@ -19,8 +19,9 @@ public struct LoginView: View {
 
   enum ViewAction {
     case alertDismissed
-    case binding(BindingAction<ViewState>)
+    case emailChanged(String)
     case loginButtonTapped
+    case passwordChanged(String)
     case twoFactorDismissed
   }
 
@@ -47,7 +48,7 @@ public struct LoginView: View {
           Section(header: Text("Email")) {
             TextField(
               "blob@pointfree.co",
-              text: viewStore.binding(keyPath: \.email, send: ViewAction.binding)
+              text: viewStore.binding(get: { $0.email }, send: ViewAction.emailChanged)
             )
             .autocapitalization(.none)
             .keyboardType(.emailAddress)
@@ -56,7 +57,7 @@ public struct LoginView: View {
           Section(header: Text("Password")) {
             SecureField(
               "••••••••",
-              text: viewStore.binding(keyPath: \.password, send: ViewAction.binding)
+              text: viewStore.binding(get: { $0.password }, send: ViewAction.passwordChanged)
             )
           }
           Section {
@@ -91,20 +92,15 @@ public struct LoginView: View {
 
 extension LoginState {
   var view: LoginView.ViewState {
-    get {
-      LoginView.ViewState(
-        alert: self.alert,
-        email: self.email,
-        isActivityIndicatorVisible: self.isLoginRequestInFlight,
-        isFormDisabled: self.isLoginRequestInFlight,
-        isLoginButtonDisabled: !self.isFormValid,
-        password: self.password,
-        isTwoFactorActive: self.twoFactor != nil
-      )
-    }
-    set {
-      (self.email, self.password) = (newValue.email, newValue.password)
-    }
+    LoginView.ViewState(
+      alert: self.alert,
+      email: self.email,
+      isActivityIndicatorVisible: self.isLoginRequestInFlight,
+      isFormDisabled: self.isLoginRequestInFlight,
+      isLoginButtonDisabled: !self.isFormValid,
+      password: self.password,
+      isTwoFactorActive: self.twoFactor != nil
+    )
   }
 }
 
@@ -115,10 +111,12 @@ extension LoginAction {
       return .alertDismissed
     case .twoFactorDismissed:
       return .twoFactorDismissed
-    case let .binding(action):
-      return .binding(action.pullback(\.view))
+    case let .emailChanged(email):
+      return .emailChanged(email)
     case .loginButtonTapped:
       return .loginButtonTapped
+    case let .passwordChanged(password):
+      return .passwordChanged(password)
     }
   }
 }

@@ -17,7 +17,8 @@ public struct LoginState: Equatable {
 
 public enum LoginAction: Equatable {
   case alertDismissed
-  case binding(BindingAction<LoginState>)
+  case emailChanged(String)
+  case passwordChanged(String)
   case loginButtonTapped
   case loginResponse(Result<AuthenticationResponse, AuthenticationError>)
   case twoFactor(TwoFactorAction)
@@ -58,7 +59,8 @@ public let loginReducer =
         state.alert = nil
         return .none
 
-      case .binding:
+      case let .emailChanged(email):
+        state.email = email
         state.isFormValid = !state.email.isEmpty && !state.password.isEmpty
         return .none
 
@@ -72,6 +74,11 @@ public let loginReducer =
       case let .loginResponse(.failure(error)):
         state.alert = .init(title: TextState(error.localizedDescription))
         state.isLoginRequestInFlight = false
+        return .none
+
+      case let .passwordChanged(password):
+        state.password = password
+        state.isFormValid = !state.email.isEmpty && !state.password.isEmpty
         return .none
 
       case .loginButtonTapped:
@@ -90,5 +97,4 @@ public let loginReducer =
         return .cancel(id: TwoFactorTearDownToken())
       }
     }
-    .binding(action: /LoginAction.binding)
   )
