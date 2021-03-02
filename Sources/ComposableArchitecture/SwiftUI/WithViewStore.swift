@@ -17,7 +17,7 @@ import SwiftUI
 ///     inside a `WithViewStore` it will behave erratically. To work around you should use the
 ///     initializer that takes a binding (see
 ///     [here](https://gist.github.com/mbrandonw/dee2ceac2c316a1619cfdf1dc7945f66)).
-public struct WithViewStore<State, Action, Content>: View where Content: View {
+public struct WithViewStore<State, Action, Content> {
   private let content: (ViewStore<State, Action>) -> Content
   private var prefix: String?
   @ObservedObject private var viewStore: ViewStore<State, Action>
