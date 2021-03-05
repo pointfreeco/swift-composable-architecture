@@ -77,6 +77,7 @@ class TodosTests: XCTestCase {
         isComplete: false
       ),
     ]
+    let failingScheduler = DispatchQueue.failing
     let store = TestStore(
       initialState: AppState(todos: todos),
       reducer: appReducer,
@@ -87,19 +88,20 @@ class TodosTests: XCTestCase {
       )
     )
 
-    store.assert(
-      .send(.todo(id: todos[0].id, action: .checkBoxToggled)) {
-        $0.todos[0].isComplete = true
-      },
+//    TestStore.Step
 
-      .do { self.scheduler.advance(by: 1) },
-      .receive(.sortCompletedTodos) {
-        $0.todos = [
-          $0.todos[1],
-          $0.todos[0],
-        ]
-      }
-    )
+
+    store.send(.todo(id: todos[0].id, action: .checkBoxToggled)) {
+      $0.todos[0].isComplete = true
+    }
+    
+    self.scheduler.advance(by: 1)
+    store.receive(.sortCompletedTodos) {
+      $0.todos = [
+        $0.todos[1],
+        $0.todos[0],
+      ]
+    }
   }
 
   func testCompleteTodoDebounces() {
@@ -378,21 +380,21 @@ extension Scheduler {
   ) -> AnySchedulerOf<Self> {
     .init(
       minimumTolerance: {
-        XCTFail("Scheduler is unimplemented")
+        XCTFail("Scheduler.minimumTolerance is unimplemented")
         return minimumTolerance()
       },
       now: {
-        XCTFail("Scheduler is unimplemented")
+        XCTFail("Scheduler.now is unimplemented")
         return now()
       },
       scheduleImmediately: { options, action in
-        XCTFail("Scheduler is unimplemented")
+        XCTFail("Scheduler.scheduleImmediately is unimplemented")
       },
       delayed: { delay, tolerance, options, action in
-        XCTFail("Scheduler is unimplemented")
+        XCTFail("Scheduler.delayed is unimplemented")
       },
       interval: { delay, interval, tolerance, options, action in
-        XCTFail("Scheduler is unimplemented")
+        XCTFail("Scheduler.interval is unimplemented")
         return AnyCancellable {}
       }
     )
