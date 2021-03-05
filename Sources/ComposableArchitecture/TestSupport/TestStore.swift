@@ -421,8 +421,8 @@
 
           • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
           then make sure those effects are torn down by marking the effect ".cancellable" and \
-          returning a corresponding cancellation effect ("Effect.cancel") effect from another \
-          action, or, if your effect is driven by a Combine subject, send it a completion.
+          returning a corresponding cancellation effect ("Effect.cancel") from another action, or, \
+          if your effect is driven by a Combine subject, send it a completion.
           """,
           file: effect.file,
           line: effect.line
