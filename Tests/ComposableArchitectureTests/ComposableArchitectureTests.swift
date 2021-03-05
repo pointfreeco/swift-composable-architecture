@@ -50,7 +50,7 @@ final class ComposableArchitectureTests: XCTestCase {
     store.receive(.squareNow) { $0 = 4 }
     scheduler.advance(by: 1)
     store.receive(.incrNow) { $0 = 5 }
-    store.receive(.squareNow) { $0 = 25
+    store.receive(.squareNow) { $0 = 25 }
 
     store.send(.incrAndSquareLater)
     scheduler.advance(by: 2)
