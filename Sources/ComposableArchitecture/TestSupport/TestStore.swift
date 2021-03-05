@@ -222,14 +222,14 @@
       line: UInt = #line
     ) {
       var receivedActions: [(action: Action, state: State)] = []
-      var longLivingEffects: [String: Set<UUID>] = [:]
+      var longLivingEffects: Set<LongLivingEffect> = []
       var snapshotState = self.state
 
       let store = Store(
         initialState: self.state,
         reducer: Reducer<State, TestAction, Void> { state, action, _ in
           let effects: Effect<Action, Never>
-          switch action {
+          switch action.origin {
           case let .send(localAction):
             effects = self.reducer.run(&state, self.fromLocalAction(localAction), self.environment)
             snapshotState = state
@@ -239,26 +239,20 @@
             receivedActions.append((action, state))
           }
 
-          let key = debugCaseOutput(action)
-          let id = UUID()
+          let effect = LongLivingEffect(file: action.file, line: action.line)
           return
             effects
             .handleEvents(
-              receiveSubscription: { _ in longLivingEffects[key, default: []].insert(id) },
-              receiveCompletion: { _ in longLivingEffects[key]?.remove(id) },
-              receiveCancel: { longLivingEffects[key]?.remove(id) }
+              receiveSubscription: { _ in longLivingEffects.insert(effect) },
+              receiveCompletion: { _ in longLivingEffects.remove(effect) },
+              receiveCancel: { longLivingEffects.remove(effect) }
             )
-            .map(TestAction.receive)
+            .map { .init(origin: .receive($0), file: action.file, line: action.line) }
             .eraseToEffect()
-
         },
         environment: ()
       )
       defer { self.state = store.state.value }
-
-      let viewStore = ViewStore(
-        store.scope(state: self.toLocalState, action: TestAction.send)
-      )
 
       func assert(step: Step) {
         var expectedState = toLocalState(snapshotState)
@@ -301,7 +295,13 @@
               file: step.file, line: step.line
             )
           }
-          viewStore.send(action)
+          ViewStore(
+            store.scope(
+              state: self.toLocalState,
+              action: { .init(origin: .send($0), file: step.file, line: step.line) }
+            )
+          )
+          .send(action)
           do {
             try update(&expectedState)
           } catch {
@@ -404,33 +404,43 @@
         )
       }
 
-      let unfinishedActions = longLivingEffects.filter { !$0.value.isEmpty }.map { $0.key }
-      if unfinishedActions.count > 0 {
-        let initiatingActions = unfinishedActions.map { "• \($0)" }.joined(separator: "\n")
-        let pluralSuffix = unfinishedActions.count == 1 ? "" : "s"
-
+      for effect in longLivingEffects {
         _XCTFail(
           """
-          Some effects are still running. All effects must complete by the end of the assertion.
+          An effect returned for this action is still running. It must complete before the end of \
+          the assertion. …
 
-          The effects that are still running were started by the following action\(pluralSuffix):
+          To fix, inspect any effects the reducer returns for this action and ensure that all of \
+          them complete by the end of the test. There are a few reasons why an effect may not have \
+          completed:
 
-          \(initiatingActions)
+          • If an effect uses a scheduler (via "receive(on:)", "delay", "debounce", etc.), make \
+          sure that you wait enough time for the scheduler to perform the effect. If you are using \
+          a test scheduler, advance the scheduler so that the effects may complete, or consider \
+          using an immediate scheduler to immediately perform the effect instead.
 
-          To fix you need to inspect the effects returned from the above action\(pluralSuffix) and \
-          make sure that all of them are completed by the end of your assertion. There are a few \
-          reasons why your effects may not have completed:
-
-          • If you are using a scheduler in your effect, then make sure that you wait enough time \
-          for the effect to finish. If you are using a test scheduler, then make sure you advance \
-          the scheduler so that the effects complete.
-
-          • If you are using long-living effects (for example timers, notifications, etc.), then \
-          ensure those effects are completed by returning an `Effect.cancel` effect from a \
-          particular action in your reducer, and sending that action in the test.
+          • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
+          then make sure those effects are torn down by marking the effect ".cancellable" and \
+          returning a corresponding cancellation effect ("Effect.cancel") from another action, or, \
+          if your effect is driven by a Combine subject, send it a completion.
           """,
-          file: file, line: line
+          file: effect.file,
+          line: effect.line
         )
+      }
+    }
+
+    private struct LongLivingEffect: Hashable {
+      let id = UUID()
+      let file: StaticString
+      let line: UInt
+
+      static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.id == rhs.id
+      }
+
+      func hash(into hasher: inout Hasher) {
+        self.id.hash(into: &hasher)
       }
     }
   }
@@ -581,9 +591,15 @@
       }
     }
 
-    private enum TestAction {
-      case send(LocalAction)
-      case receive(Action)
+    private struct TestAction {
+      let origin: Origin
+      let file: StaticString
+      let line: UInt
+
+      enum Origin {
+        case send(LocalAction)
+        case receive(Action)
+      }
     }
   }
 
