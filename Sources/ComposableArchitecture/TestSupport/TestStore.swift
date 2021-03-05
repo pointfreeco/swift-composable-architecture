@@ -63,16 +63,13 @@
   ///     class CounterTests: XCTestCase {
   ///       func testCounter() {
   ///         let store = TestStore(
-  ///           initialState: .init(count: 0),  // GIVEN counter state of 0
+  ///           initialState: .init(count: 0),     // GIVEN counter state of 0
   ///           reducer: counterReducer,
   ///           environment: ()
   ///         )
-  ///
-  ///         store.assert(
-  ///           .send(.incrementButtonTapped) { // WHEN the increment button is tapped
-  ///             $0.count = 1                  // THEN the count should be 1
-  ///           }
-  ///         )
+  ///         store.send(.incrementButtonTapped) { // WHEN the increment button is tapped
+  ///           $0.count = 1                       // THEN the count should be 1
+  ///         }
   ///       }
   ///     }
   ///
@@ -130,32 +127,31 @@
   ///         request: { _ in Effect(value: ["Composable Architecture"]) }
   ///       )
   ///     )
-  ///     store.assert(
-  ///       // Change the query
-  ///       .send(.searchFieldChanged("c") {
-  ///         // Assert that state updates accordingly
-  ///         $0.query = "c"
-  ///       },
   ///
-  ///       // Advance the scheduler by a period shorter than the debounce
-  ///       .do { scheduler.advance(by: 0.25) },
+  ///     // Change the query
+  ///     store.send(.searchFieldChanged("c") {
+  ///       // Assert that state updates accordingly
+  ///       $0.query = "c"
+  ///     }
   ///
-  ///       // Change the query again
-  ///       .send(.searchFieldChanged("co") {
-  ///         $0.query = "co"
-  ///       },
+  ///     // Advance the scheduler by a period shorter than the debounce
+  ///     scheduler.advance(by: 0.25)
   ///
-  ///       // Advance the scheduler by a period shorter than the debounce
-  ///       .do { scheduler.advance(by: 0.25) },
-  ///       // Advance the scheduler to the debounce
-  ///       .do { scheduler.advance(by: 0.25) },
+  ///     // Change the query again
+  ///     store.send(.searchFieldChanged("co") {
+  ///       $0.query = "co"
+  ///     }
   ///
-  ///       // Assert that the expected response is received
-  ///       .receive(.response(["Composable Architecture"])) {
-  ///         // Assert that state updates accordingly
-  ///         $0.results = ["Composable Architecture"]
-  ///       }
-  ///     )
+  ///     // Advance the scheduler by a period shorter than the debounce
+  ///     scheduler.advance(by: 0.25)
+  ///     // Advance the scheduler to the debounce
+  ///     scheduler.advance(by: 0.25)
+  ///
+  ///     // Assert that the expected response is received
+  ///     store.receive(.response(["Composable Architecture"])) {
+  ///       // Assert that state updates accordingly
+  ///       $0.results = ["Composable Architecture"]
+  ///     }
   ///
   /// This test is proving that the debounced network requests are correctly canceled when we do not
   /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did

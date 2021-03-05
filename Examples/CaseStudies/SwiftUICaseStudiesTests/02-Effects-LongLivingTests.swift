@@ -17,20 +17,18 @@ class LongLivingEffectsTests: XCTestCase {
       )
     )
 
-    store.assert(
-      .send(.onAppear),
+    store.send(.onAppear)
 
-      // Simulate a screenshot being taken
-      .do { screenshotTaken.send() },
-      .receive(.userDidTakeScreenshotNotification) {
-        $0.screenshotCount = 1
-      },
+    // Simulate a screenshot being taken
+    screenshotTaken.send()
+    store.receive(.userDidTakeScreenshotNotification) {
+      $0.screenshotCount = 1
+    }
 
-      .send(.onDisappear),
+    store.send(.onDisappear)
 
-      // Simulate a screenshot being taken to show no effects
-      // are executed.
-      .do { screenshotTaken.send() }
-    )
+    // Simulate a screenshot being taken to show no effects
+    // are executed.
+    screenshotTaken.send()
   }
 }

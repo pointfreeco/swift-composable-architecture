@@ -5,17 +5,15 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 class WebSocketTests: XCTestCase {
-  let scheduler = DispatchQueue.testScheduler
-
   func testWebSocketHappyPath() {
     let socketSubject = PassthroughSubject<WebSocketClient.Action, Never>()
     let receiveSubject = PassthroughSubject<WebSocketClient.Message, NSError>()
 
-    let testStore = TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: webSocketReducer,
       environment: WebSocketEnvironment(
-        mainQueue: self.scheduler.eraseToAnyScheduler(),
+        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
         webSocket: .mock(
           open: { _, _, _ in socketSubject.eraseToEffect() },
           receive: { _ in receiveSubject.eraseToEffect() },
@@ -25,49 +23,45 @@ class WebSocketTests: XCTestCase {
       )
     )
 
-    testStore.assert(
-      // Connect to the socket
-      .send(.connectButtonTapped) {
-        $0.connectivityState = .connecting
-      },
-      .do { socketSubject.send(.didOpenWithProtocol(nil)) },
-      .do { self.scheduler.advance() },
-      .receive(.webSocket(.didOpenWithProtocol(nil))) {
-        $0.connectivityState = .connected
-      },
+    // Connect to the socket
+    store.send(.connectButtonTapped) {
+      $0.connectivityState = .connecting
+    }
+    socketSubject.send(.didOpenWithProtocol(nil))
+    store.receive(.webSocket(.didOpenWithProtocol(nil))) {
+      $0.connectivityState = .connected
+    }
 
-      // Send a message
-      .send(.messageToSendChanged("Hi")) {
-        $0.messageToSend = "Hi"
-      },
-      .send(.sendButtonTapped) {
-        $0.messageToSend = ""
-      },
-      .receive(.sendResponse(nil)),
+    // Send a message
+    store.send(.messageToSendChanged("Hi")) {
+      $0.messageToSend = "Hi"
+    }
+    store.send(.sendButtonTapped) {
+      $0.messageToSend = ""
+    }
+    store.receive(.sendResponse(nil))
 
-      // Receive a message
-      .do { receiveSubject.send(.string("Hi")) },
-      .do { self.scheduler.advance() },
-      .receive(.receivedSocketMessage(.success(.string("Hi")))) {
-        $0.receivedMessages = ["Hi"]
-      },
+    // Receive a message
+    receiveSubject.send(.string("Hi"))
+    store.receive(.receivedSocketMessage(.success(.string("Hi")))) {
+      $0.receivedMessages = ["Hi"]
+    }
 
-      // Disconnect from the socket
-      .send(.connectButtonTapped) {
-        $0.connectivityState = .disconnected
-      }
-    )
+    // Disconnect from the socket
+    store.send(.connectButtonTapped) {
+      $0.connectivityState = .disconnected
+    }
   }
 
   func testWebSocketSendFailure() {
     let socketSubject = PassthroughSubject<WebSocketClient.Action, Never>()
     let receiveSubject = PassthroughSubject<WebSocketClient.Message, NSError>()
 
-    let testStore = TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: webSocketReducer,
       environment: WebSocketEnvironment(
-        mainQueue: self.scheduler.eraseToAnyScheduler(),
+        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
         webSocket: .mock(
           open: { _, _, _ in socketSubject.eraseToEffect() },
           receive: { _ in receiveSubject.eraseToEffect() },
@@ -77,44 +71,42 @@ class WebSocketTests: XCTestCase {
       )
     )
 
-    testStore.assert(
-      // Connect to the socket
-      .send(.connectButtonTapped) {
-        $0.connectivityState = .connecting
-      },
-      .do { socketSubject.send(.didOpenWithProtocol(nil)) },
-      .do { self.scheduler.advance() },
-      .receive(.webSocket(.didOpenWithProtocol(nil))) {
-        $0.connectivityState = .connected
-      },
+    // Connect to the socket
+    store.send(.connectButtonTapped) {
+      $0.connectivityState = .connecting
+    }
+    socketSubject.send(.didOpenWithProtocol(nil))
+    store.receive(.webSocket(.didOpenWithProtocol(nil))) {
+      $0.connectivityState = .connected
+    }
 
-      // Send a message
-      .send(.messageToSendChanged("Hi")) {
-        $0.messageToSend = "Hi"
-      },
-      .send(.sendButtonTapped) {
-        $0.messageToSend = ""
-      },
-      .receive(.sendResponse(NSError(domain: "", code: 1))) {
-        $0.alert = .init(title: .init("Could not send socket message. Try again."))
-      },
+    // Send a message
+    store.send(.messageToSendChanged("Hi")) {
+      $0.messageToSend = "Hi"
+    }
+    store.send(.sendButtonTapped) {
+      $0.messageToSend = ""
+    }
+    store.receive(.sendResponse(NSError(domain: "", code: 1))) {
+      $0.alert = .init(title: .init("Could not send socket message. Try again."))
+    }
 
-      // Disconnect from the socket
-      .send(.connectButtonTapped) {
-        $0.connectivityState = .disconnected
-      }
-    )
+    // Disconnect from the socket
+    store.send(.connectButtonTapped) {
+      $0.connectivityState = .disconnected
+    }
   }
 
   func testWebSocketPings() {
     let socketSubject = PassthroughSubject<WebSocketClient.Action, Never>()
     let pingSubject = PassthroughSubject<NSError?, Never>()
 
-    let testStore = TestStore(
+    let scheduler = DispatchQueue.testScheduler
+    let store = TestStore(
       initialState: .init(),
       reducer: webSocketReducer,
       environment: WebSocketEnvironment(
-        mainQueue: self.scheduler.eraseToAnyScheduler(),
+        mainQueue: scheduler.eraseToAnyScheduler(),
         webSocket: .mock(
           open: { _, _, _ in socketSubject.eraseToEffect() },
           receive: { _ in .none },
@@ -123,36 +115,34 @@ class WebSocketTests: XCTestCase {
       )
     )
 
-    testStore.assert(
-      .send(.connectButtonTapped) {
-        $0.connectivityState = .connecting
-      },
+    store.send(.connectButtonTapped) {
+      $0.connectivityState = .connecting
+    }
 
-      .do { socketSubject.send(.didOpenWithProtocol(nil)) },
-      .do { self.scheduler.advance() },
-      .receive(.webSocket(.didOpenWithProtocol(nil))) {
-        $0.connectivityState = .connected
-      },
+    socketSubject.send(.didOpenWithProtocol(nil))
+    scheduler.advance()
+    store.receive(.webSocket(.didOpenWithProtocol(nil))) {
+      $0.connectivityState = .connected
+    }
 
-      .do { pingSubject.send(nil) },
-      .do { self.scheduler.advance(by: .seconds(5)) },
-      .do { self.scheduler.advance(by: .seconds(5)) },
-      .receive(.pingResponse(nil)),
+    pingSubject.send(nil)
+    scheduler.advance(by: .seconds(5))
+    scheduler.advance(by: .seconds(5))
+    store.receive(.pingResponse(nil))
 
-      .send(.connectButtonTapped) {
-        $0.connectivityState = .disconnected
-      }
-    )
+    store.send(.connectButtonTapped) {
+      $0.connectivityState = .disconnected
+    }
   }
 
   func testWebSocketConnectError() {
     let socketSubject = PassthroughSubject<WebSocketClient.Action, Never>()
 
-    let testStore = TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: webSocketReducer,
       environment: WebSocketEnvironment(
-        mainQueue: self.scheduler.eraseToAnyScheduler(),
+        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
         webSocket: .mock(
           cancel: { _, _, _ in .fireAndForget { socketSubject.send(completion: .finished) } },
           open: { _, _, _ in socketSubject.eraseToEffect() },
@@ -162,17 +152,14 @@ class WebSocketTests: XCTestCase {
       )
     )
 
-    testStore.assert(
-      .send(.connectButtonTapped) {
-        $0.connectivityState = .connecting
-      },
+    store.send(.connectButtonTapped) {
+      $0.connectivityState = .connecting
+    }
 
-      .do { socketSubject.send(.didClose(code: .internalServerError, reason: nil)) },
-      .do { self.scheduler.advance() },
-      .receive(.webSocket(.didClose(code: .internalServerError, reason: nil))) {
-        $0.connectivityState = .disconnected
-      }
-    )
+    socketSubject.send(.didClose(code: .internalServerError, reason: nil))
+    store.receive(.webSocket(.didClose(code: .internalServerError, reason: nil))) {
+      $0.connectivityState = .disconnected
+    }
   }
 }
 

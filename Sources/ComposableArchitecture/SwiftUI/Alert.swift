@@ -75,20 +75,18 @@ import SwiftUI
 ///       environment: .mock
 ///     )
 ///
-///     store.assert(
-///       .send(.deleteTapped) {
-///         $0.alert = .init(
-///           title: TextState("Delete"),
-///           message: TextState("Are you sure you want to delete this? It cannot be undone."),
-///           primaryButton: .default(TextState("Confirm"), send: .confirmTapped),
-///           secondaryButton: .cancel(send: .cancelTapped)
-///         )
-///       },
-///       .send(.deleteTapped) {
-///         $0.alert = nil
-///         // Also verify that delete logic executed correctly
-///       }
-///     )
+///     store.send(.deleteTapped) {
+///       $0.alert = .init(
+///         title: TextState("Delete"),
+///         message: TextState("Are you sure you want to delete this? It cannot be undone."),
+///         primaryButton: .default(TextState("Confirm"), send: .confirmTapped),
+///         secondaryButton: .cancel(send: .cancelTapped)
+///       )
+///     }
+///     store.send(.deleteTapped) {
+///       $0.alert = nil
+///       // Also verify that delete logic executed correctly
+///     }
 ///
 public struct AlertState<Action> {
   public let id = UUID()

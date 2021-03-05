@@ -63,21 +63,19 @@ extension Effect where Failure == Never {
   ///       )
   ///     )
   ///
-  ///     store.assert(
-  ///       .send(.startButtonTapped),
+  ///     store.send(.startButtonTapped)
   ///
-  ///       .do { scheduler.advance(by: .seconds(1)) },
-  ///       .receive(.timerTicked) { $0.count = 1 },
+  ///     scheduler.advance(by: .seconds(1))
+  ///     store.receive(.timerTicked) { $0.count = 1 }
   ///
-  ///       .do { scheduler.advance(by: .seconds(5)) },
-  ///       .receive(.timerTicked) { $0.count = 2 },
-  ///       .receive(.timerTicked) { $0.count = 3 },
-  ///       .receive(.timerTicked) { $0.count = 4 },
-  ///       .receive(.timerTicked) { $0.count = 5 },
-  ///       .receive(.timerTicked) { $0.count = 6 },
+  ///     scheduler.advance(by: .seconds(5))
+  ///     store.receive(.timerTicked) { $0.count = 2 }
+  ///     store.receive(.timerTicked) { $0.count = 3 }
+  ///     store.receive(.timerTicked) { $0.count = 4 }
+  ///     store.receive(.timerTicked) { $0.count = 5 }
+  ///     store.receive(.timerTicked) { $0.count = 6 }
   ///
-  ///       .send(.stopButtonTapped)
-  ///     )
+  ///     store.send(.stopButtonTapped)
   ///   }
   ///
   /// - Note: This effect is only meant to be used with features built in the Composable
