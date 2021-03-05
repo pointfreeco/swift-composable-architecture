@@ -33,6 +33,7 @@ enum AppAction: Equatable {
 }
 
 struct AppEnvironment {
+  var analyticsClient: AnalyticsClient
   var mainQueue: AnySchedulerOf<DispatchQueue>
   var uuid: () -> UUID
 }
@@ -51,11 +52,19 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
 
     case .clearCompletedButtonTapped:
       state.todos.removeAll(where: { $0.isComplete })
-      return .none
+      return environment.analyticsClient.track(.init(name: "Cleared Completed Todos", properties: [:]))
+        .fireAndForget()
 
     case let .delete(indexSet):
+//      _ = environment.uuid()
       state.todos.remove(atOffsets: indexSet)
-      return .none
+      return environment.analyticsClient.track(
+        .init(
+          name: "Todo Deleted",
+          properties: ["editMode": "\(state.editMode)"]
+        )
+      )
+        .fireAndForget()
 
     case let .editModeChanged(editMode):
       state.editMode = editMode
@@ -63,7 +72,9 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
 
     case let .filterPicked(filter):
       state.filter = filter
-      return .none
+      return environment.analyticsClient
+        .track(.init(name: "Filter Changed", properties: ["filter": "\(filter)"]))
+        .fireAndForget()
 
     case let .move(source, destination):
       state.todos.move(fromOffsets: source, toOffset: destination)
@@ -85,8 +96,6 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     }
   }
 )
-
-.debugActions(actionFormat: .labelsOnly)
 
 struct AppView: View {
   struct ViewState: Equatable {
@@ -192,10 +201,53 @@ struct AppView_Previews: PreviewProvider {
         initialState: AppState(todos: .mock),
         reducer: appReducer,
         environment: AppEnvironment(
+          analyticsClient: .live,
           mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
           uuid: UUID.init
         )
       )
+    )
+  }
+}
+
+
+
+import ComposableArchitecture
+
+public struct AnalyticsClient {
+  public var track: (Event) -> Effect<Never, Never>
+
+  public struct Event: Equatable {
+    public var name: String
+    public var properties: [String: String] = [:]
+  }
+}
+
+extension AnalyticsClient {
+  public static let live = Self(
+    track: { event in
+      .fireAndForget {
+        print("Track name: \"\(event.name)\", properties: \(event.properties)")
+        // TODO: prep the URL to send analytics
+        URLSession.shared.dataTask(with: URL(string: "https://www.my-company.com/analytics")!)
+          .resume()
+      }
+    }
+  )
+
+  public static let noop = Self(
+    track: { _ in
+      .fireAndForget {}
+    }
+  )
+
+  public static func test(onEvent: @escaping (Event) -> Void) -> Self {
+    .init(
+      track: { event in
+        .fireAndForget {
+          onEvent(event)
+        }
+      }
     )
   }
 }

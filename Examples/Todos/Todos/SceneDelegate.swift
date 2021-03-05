@@ -17,6 +17,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         initialState: AppState(),
         reducer: appReducer,
         environment: AppEnvironment(
+          analyticsClient: .live,
           mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
           uuid: UUID.init
         )
