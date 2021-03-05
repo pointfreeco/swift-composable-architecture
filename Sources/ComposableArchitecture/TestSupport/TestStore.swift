@@ -408,7 +408,7 @@
         _XCTFail(
           """
           An effect returned for this action is still running. It must complete before the end of \
-          the test. …
+          the assertion. …
 
           To fix, inspect any effects the reducer returns for this action and ensure that all of \
           them complete by the end of the test. There are a few reasons why an effect may not have \
