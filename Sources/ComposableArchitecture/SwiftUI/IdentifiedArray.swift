@@ -14,7 +14,7 @@ import Foundation
 ///
 /// This domain can be pulled back to a larger domain with the `forEach` method:
 ///
-///     struct AppState { var counters = IdentifiedArray<UUID, CounterState>() }
+///     struct AppState { var counters = IdentifiedArrayOf<CounterState>() }
 ///     enum AppAction { case counter(id: UUID, action: CounterAction) }
 ///     let appReducer = counterReducer.forEach(
 ///       state: \AppState.counters,
