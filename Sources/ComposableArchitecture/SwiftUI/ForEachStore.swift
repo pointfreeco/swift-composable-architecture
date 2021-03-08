@@ -85,7 +85,7 @@ where Data: Collection, ID: Hashable, Content: View {
     self.content = {
       WithViewStore(store.scope(state: { $0.map { $0[keyPath: id] } })) { viewStore in
         if viewStore.state.isEmpty { fatalError("viewStore.state should not be empty") }
-        ForEach(Array(viewStore.state.enumerated()), id: \.element) { index, _ in
+        return ForEach(Array(viewStore.state.enumerated()), id: \.element) { index, _ in
           content(
             store.scope(
               state: { index < $0.endIndex ? $0[index] : data[index] },
@@ -139,7 +139,7 @@ where Data: Collection, ID: Hashable, Content: View {
     self.content = {
       WithViewStore(store.scope(state: { $0.ids })) { viewStore in
         if viewStore.state.isEmpty { fatalError("viewStore.state should not be empty") }
-        ForEach(viewStore.state, id: \.self) { id in
+        return ForEach(viewStore.state, id: \.self) { id in
           content(
             store.scope(
               state: { $0[id: id] ?? data[id: id]! },
