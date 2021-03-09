@@ -302,3 +302,51 @@ extension LocalizedStringKey: CustomDebugOutputConvertible {
     self.formatted().debugDescription
   }
 }
+
+extension TextState: CustomDebugOutputConvertible {
+  public var debugOutput: String {
+    func debugOutputHelp(_ textState: Self) -> String {
+      var output: String
+      switch textState.storage {
+      case let .concatenated(lhs, rhs):
+        output = debugOutputHelp(lhs) + debugOutputHelp(rhs)
+      case let .localized(key, tableName, bundle, comment):
+        output = key.formatted(tableName: tableName, bundle: bundle, comment: comment)
+      case let .verbatim(string):
+        output = string
+      }
+      for modifier in textState.modifiers {
+        switch modifier {
+        case .bold,
+             // TODO: Distinguish
+             .fontWeight(.some(.semibold)),
+             .fontWeight(.some(.bold)),
+             .fontWeight(.some(.heavy)),
+             .fontWeight(.some(.black)):
+          output = "**\(output)**"
+        case .italic:
+          output = "_\(output)_"
+        case .strikethrough:
+          output = "~~\(output)~~"
+
+        // TODO:
+        case .baselineOffset,
+             .font,
+             .fontWeight,
+             .foregroundColor,
+             .kerning,
+             .tracking,
+             .underline:
+          break
+        }
+      }
+      return output
+    }
+
+    return #"""
+      \#(Self.self)(
+      \#(debugOutputHelp(self).indent(by: 2))
+      )
+      """#
+  }
+}

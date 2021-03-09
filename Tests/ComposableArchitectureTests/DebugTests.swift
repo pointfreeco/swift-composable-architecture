@@ -345,6 +345,32 @@ final class DebugTests: XCTestCase {
     )
   }
 
+  func testTextState() {
+    XCTAssertEqual(
+      debugOutput(
+        TextState("Hello, world!")
+      ),
+      """
+      TextState(
+        Hello, world!
+      )
+      """
+    )
+
+    XCTAssertEqual(
+      debugOutput(
+        TextState("Hello, ")
+          + TextState("world").bold()
+          + TextState("!")
+      ),
+      """
+      TextState(
+        Hello, **world**!
+      )
+      """
+    )
+  }
+
   func testEffectOutput() {
     //    XCTAssertEqual(
     //      Effect<Int, Never>(value: 42)
