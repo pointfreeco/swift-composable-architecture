@@ -77,19 +77,15 @@ class TodosTests: XCTestCase {
         isComplete: false
       ),
     ]
-    let failingScheduler = DispatchQueue.failing
     let store = TestStore(
       initialState: AppState(todos: todos),
       reducer: appReducer,
       environment: AppEnvironment(
         analyticsClient: .failing,
-        mainQueue: .failing,
+        mainQueue: self.scheduler.eraseToAnyScheduler(),
         uuid: UUID.failing
       )
     )
-
-//    TestStore.Step
-
 
     store.send(.todo(id: todos[0].id, action: .checkBoxToggled)) {
       $0.todos[0].isComplete = true
@@ -165,7 +161,7 @@ class TodosTests: XCTestCase {
       reducer: appReducer,
       environment: AppEnvironment(
         analyticsClient: .test { events.append($0) },
-        mainQueue: self.scheduler.eraseToAnyScheduler(),
+        mainQueue: .failing,
         uuid: UUID.failing
       )
     )
@@ -208,17 +204,19 @@ class TodosTests: XCTestCase {
       )
     )
 
-    store.assert(
-      .send(.delete([1])) {
-        $0.todos.remove(at: 1)
-      },
-      .send(.editModeChanged(.active)) {
-        $0.editMode = .active
-      },
-      .send(.delete([0])) {
-        $0.todos.remove(at: 0)
-      }
-    )
+    //store.assert(
+    store.send(.delete([1])) {
+      $0.todos.remove(at: 1)
+    }
+    //,
+    store.send(.editModeChanged(.active)) {
+      $0.editMode = .active
+    }
+    //,
+    store.send(.delete([0])) {
+      $0.todos.remove(at: 0)
+    }
+    //)
     XCTAssertEqual(
       events,
       [
@@ -258,19 +256,19 @@ class TodosTests: XCTestCase {
       )
     )
 
-//    store.send(.editModeChanged(.active)) {
-//      $0.editMode = .active
-//    }
-//    store.send(.move([0], 2)) {
-//      $0.todos = [
-//        $0.todos[1],
-//        $0.todos[0],
-//        $0.todos[2],
-//      ]
-//    }
-//
-//    self.scheduler.advance(by: .milliseconds(100))
-//    store.receive(.sortCompletedTodos)
+    store.send(.editModeChanged(.active)) {
+      $0.editMode = .active
+    }
+    store.send(.move([0], 2)) {
+      $0.todos = [
+        $0.todos[1],
+        $0.todos[0],
+        $0.todos[2],
+      ]
+    }
+
+    self.scheduler.advance(by: .milliseconds(100))
+    store.receive(.sortCompletedTodos)
   }
 
   func testFilteredEdit() {
@@ -294,7 +292,7 @@ class TodosTests: XCTestCase {
       reducer: appReducer,
       environment: AppEnvironment(
         analyticsClient: .test { events.append($0) },
-        mainQueue: self.scheduler.eraseToAnyScheduler(),
+        mainQueue: .failing,
         uuid: UUID.failing
       )
     )
