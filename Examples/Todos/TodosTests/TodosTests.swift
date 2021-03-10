@@ -13,7 +13,7 @@ class TodosTests: XCTestCase {
       reducer: appReducer,
       environment: AppEnvironment(
         analytics: .failing,
-        mainQueue: .unimplemented,
+        mainQueue: .failing,
         uuid: UUID.incrementing
       )
     )
@@ -57,7 +57,7 @@ class TodosTests: XCTestCase {
       reducer: appReducer,
       environment: AppEnvironment(
         analytics: .failing,
-        mainQueue: .unimplemented,
+        mainQueue: .failing,
         uuid: UUID.failing
       )
     )
@@ -91,7 +91,7 @@ class TodosTests: XCTestCase {
       reducer: appReducer,
       environment: AppEnvironment(
         analytics: .failing,
-        mainQueue: self.scheduler.eraseToAnyScheduler(),
+        mainQueue: .failing, // self.scheduler.eraseToAnyScheduler(),
         uuid: UUID.failing
       )
     )
@@ -208,7 +208,7 @@ class TodosTests: XCTestCase {
       reducer: appReducer,
       environment: AppEnvironment(
         analytics: .test { self.events.append($0) },
-        mainQueue: .unimplemented,
+        mainQueue: .failing,
         uuid: UUID.failing
       )
     )
@@ -372,6 +372,35 @@ extension Scheduler {
       delayed: { _, _, _, _ in fatalError() },
       interval: { _, _, _, _, _ in fatalError() }
     )
+  }
+  
+  static func failing(now: SchedulerTimeType) -> AnySchedulerOf<Self> {
+    AnyScheduler(
+      minimumTolerance: {
+        XCTFail("Scheduler.minimumTolerance is unimplemented")
+        return .zero
+      },
+      now: {
+        XCTFail("Scheduler.now is unimplemented")
+        return now
+      },
+      scheduleImmediately: { _, _ in XCTFail("Scheduler.scheduleImmediately is unimplemented") },
+      delayed: { _, _, _, _ in XCTFail("Scheduler.delayed is unimplemented") },
+      interval: { _, _, _, _, _ in
+        XCTFail("Scheduler.interval is unimplemented")
+        return AnyCancellable {}
+      }
+    )
+  }
+}
+
+extension Scheduler
+where
+  SchedulerTimeType == DispatchQueue.SchedulerTimeType,
+  SchedulerOptions == DispatchQueue.SchedulerOptions
+{
+  static var failing: AnySchedulerOf<Self> {
+    .failing(now: .init(.init(uptimeNanoseconds: 0)))
   }
 }
 
