@@ -11,7 +11,7 @@ class TodosTests: XCTestCase {
       initialState: AppState(),
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: self.scheduler.eraseToAnyScheduler(),
+        mainQueue: .unimplemented,
         uuid: UUID.incrementing
       )
     )
@@ -54,8 +54,8 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: self.scheduler.eraseToAnyScheduler(),
-        uuid: UUID.incrementing
+        mainQueue: .unimplemented,
+        uuid: UUID.unimplemented
       )
     )
 
@@ -88,7 +88,7 @@ class TodosTests: XCTestCase {
       reducer: appReducer,
       environment: AppEnvironment(
         mainQueue: self.scheduler.eraseToAnyScheduler(),
-        uuid: UUID.incrementing
+        uuid: UUID.unimplemented
       )
     )
 
@@ -200,8 +200,8 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: self.scheduler.eraseToAnyScheduler(),
-        uuid: UUID.incrementing
+        mainQueue: .unimplemented,
+        uuid: UUID.unimplemented
       )
     )
 
@@ -303,5 +303,21 @@ extension UUID {
       defer { uuid += 1 }
       return UUID(uuidString: "00000000-0000-0000-0000-\(String(format: "%012x", uuid))")!
     }
+  }
+  
+  static let unimplemented: () -> UUID = { fatalError() }
+}
+
+import Combine
+
+extension Scheduler {
+  static var unimplemented: AnySchedulerOf<Self> {
+    AnyScheduler(
+      minimumTolerance: { fatalError() },
+      now: { fatalError() },
+      scheduleImmediately: { _, _ in fatalError() },
+      delayed: { _, _, _, _ in fatalError() },
+      interval: { _, _, _, _, _ in fatalError() }
+    )
   }
 }

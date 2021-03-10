@@ -48,7 +48,7 @@ final class ComposableArchitectureTests: XCTestCase {
     store.assert(
       .send(.incrAndSquareLater),
       .do { scheduler.advance(by: 1) },
-      .receive(.squareNow) { $0 = 4 },
+      .receive(.squareNow) { $0 = 3 },
       .do { scheduler.advance(by: 1) },
       .receive(.incrNow) { $0 = 5 },
       .receive(.squareNow) { $0 = 25 }
