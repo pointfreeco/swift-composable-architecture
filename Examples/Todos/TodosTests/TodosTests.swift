@@ -12,7 +12,7 @@ class TodosTests: XCTestCase {
       initialState: AppState(),
       reducer: appReducer,
       environment: AppEnvironment(
-        analytics: .unimplemented,
+        analytics: .failing,
         mainQueue: .unimplemented,
         uuid: UUID.incrementing
       )
@@ -56,9 +56,9 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
-        analytics: .unimplemented,
+        analytics: .failing,
         mainQueue: .unimplemented,
-        uuid: UUID.unimplemented
+        uuid: UUID.failing
       )
     )
 
@@ -90,9 +90,9 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
-        analytics: .unimplemented,
+        analytics: .failing,
         mainQueue: self.scheduler.eraseToAnyScheduler(),
-        uuid: UUID.unimplemented
+        uuid: UUID.failing
       )
     )
 
@@ -129,7 +129,7 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
-        analytics: .unimplemented,
+        analytics: .failing,
         mainQueue: self.scheduler.eraseToAnyScheduler(),
         uuid: UUID.incrementing
       )
@@ -209,7 +209,7 @@ class TodosTests: XCTestCase {
       environment: AppEnvironment(
         analytics: .test { self.events.append($0) },
         mainQueue: .unimplemented,
-        uuid: UUID.unimplemented
+        uuid: UUID.failing
       )
     )
 
@@ -271,7 +271,7 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
-        analytics: .unimplemented,
+        analytics: .failing,
         mainQueue: self.scheduler.eraseToAnyScheduler(),
         uuid: UUID.incrementing
       )
@@ -312,7 +312,7 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
-        analytics: .unimplemented,
+        analytics: .test(onEvent: { self.events.append($0) }),
         mainQueue: self.scheduler.eraseToAnyScheduler(),
         uuid: UUID.incrementing
       )
@@ -321,6 +321,12 @@ class TodosTests: XCTestCase {
     store.assert(
       .send(.filterPicked(.completed)) {
         $0.filter = .completed
+      },
+      .do {
+        XCTAssertEqual(
+          self.events,
+          [.init(name: "Filter Changed", properties: ["filter": "completed"])]
+        )
       },
       .send(.todo(id: state.todos[1].id, action: .textFieldChanged("Did this already"))) {
         $0.todos[1].description = "Did this already"
@@ -340,6 +346,19 @@ extension UUID {
   }
   
   static let unimplemented: () -> UUID = { fatalError() }
+
+//  static func failing(file: StaticString = #file, line: UInt = #line) -> () -> UUID {
+//    {
+//      XCTFail("UUID initializer is unimplemented.", file: file, line: line)
+//      return UUID()
+//    }
+//  }
+
+  static let failing: () -> UUID = {
+    XCTFail("UUID initializer is unimplemented.")
+    return UUID()
+//    return UUID.init(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
+  }
 }
 
 import Combine
@@ -356,9 +375,23 @@ extension Scheduler {
   }
 }
 
+extension Effect {
+  static func failing(_ title: String) -> Self {
+    .fireAndForget {
+      XCTFail("\(title): Effect is unimplemented")
+    }
+  }
+}
+
 extension AnalyticsClient {
   static let unimplemented = Self(
     track: { _ in fatalError() }
+  )
+
+  static let failing = Self(
+    track: { event in
+      .failing("AnalyticsClient.track")
+    }
   )
   
   static func test(onEvent: @escaping (Event) -> Void) -> Self {

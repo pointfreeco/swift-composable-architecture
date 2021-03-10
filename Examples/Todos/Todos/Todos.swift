@@ -56,6 +56,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
         .fireAndForget()
 
     case let .delete(indexSet):
+//      _ = environment.uuid()
       state.todos.remove(atOffsets: indexSet)
       return environment.analytics.track(
         .init(
@@ -71,7 +72,13 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
 
     case let .filterPicked(filter):
       state.filter = filter
-      return .none
+      return environment.analytics.track(
+        .init(
+          name: "Filter Changed",
+          properties: ["filter": "\(filter)"]
+        )
+      )
+      .fireAndForget()
 
     case let .move(source, destination):
       state.todos.move(fromOffsets: source, toOffset: destination)
