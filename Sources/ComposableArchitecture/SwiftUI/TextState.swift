@@ -317,26 +317,34 @@ extension TextState: CustomDebugOutputConvertible {
       }
       for modifier in textState.modifiers {
         switch modifier {
-        case .bold,
-             // TODO: Distinguish
-             .fontWeight(.some(.semibold)),
-             .fontWeight(.some(.bold)),
-             .fontWeight(.some(.heavy)),
-             .fontWeight(.some(.black)):
+        case let .baselineOffset(baselineOffset):
+          output = "<baseline-offset=\(baselineOffset)>\(output)</baseline-offset>"
+        case .bold, .fontWeight(.some(.bold)):
           output = "**\(output)**"
+        case let .font(.some):
+          // TODO: Better describe fonts?
+          output = "<font>\(output)</font>"
+        case let .fontWeight(.some(weight)):
+          output = "<font-weight=\(weight)>\(output)</font-weight>"
+        case let .foregroundColor(.some(color)):
+          output = "<foreground-color=\(color)>\(output)</foreground-color>"
         case .italic:
           output = "_\(output)_"
-        case .strikethrough:
+        case let .kerning(kerning):
+          output = "<kerning=\(kerning)>\(output)</kerning>"
+        case let .strikethrough(active: true, color: .some(color)):
+          output = "<s color=\(color)>\(output)</s>"
+        case .strikethrough(active: true, color: .none):
           output = "~~\(output)~~"
-
-        // TODO:
-        case .baselineOffset,
-             .font,
-             .fontWeight,
-             .foregroundColor,
-             .kerning,
-             .tracking,
-             .underline:
+        case let .tracking(tracking):
+          output = "<tracking=\(tracking)>\(output)</tracking>"
+        case let .underline(active: true, color):
+          output = "<u\(color.map { " color=\($0)" } ?? "")>\(output)</u>"
+        case .font(.none),
+             .fontWeight(.none),
+             .foregroundColor(.none),
+             .strikethrough(active: false, color: _),
+             .underline(active: false, color: _):
           break
         }
       }
