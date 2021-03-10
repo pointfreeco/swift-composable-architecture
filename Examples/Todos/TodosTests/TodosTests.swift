@@ -4,6 +4,7 @@ import XCTest
 @testable import Todos
 
 class TodosTests: XCTestCase {
+  var events: [AnalyticsClient.Event] = []
   let scheduler = DispatchQueue.testScheduler
 
   func testAddTodo() {
@@ -11,6 +12,7 @@ class TodosTests: XCTestCase {
       initialState: AppState(),
       reducer: appReducer,
       environment: AppEnvironment(
+        analytics: .unimplemented,
         mainQueue: .unimplemented,
         uuid: UUID.incrementing
       )
@@ -54,6 +56,7 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
+        analytics: .unimplemented,
         mainQueue: .unimplemented,
         uuid: UUID.unimplemented
       )
@@ -87,6 +90,7 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
+        analytics: .unimplemented,
         mainQueue: self.scheduler.eraseToAnyScheduler(),
         uuid: UUID.unimplemented
       )
@@ -125,6 +129,7 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
+        analytics: .unimplemented,
         mainQueue: self.scheduler.eraseToAnyScheduler(),
         uuid: UUID.incrementing
       )
@@ -162,6 +167,7 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
+        analytics: .test(onEvent: { event in self.events.append(event) }),
         mainQueue: self.scheduler.eraseToAnyScheduler(),
         uuid: UUID.incrementing
       )
@@ -174,6 +180,7 @@ class TodosTests: XCTestCase {
         ]
       }
     )
+    XCTAssertEqual(events, [.init(name: "Cleared Completed Todos")])
   }
 
   func testDelete() {
@@ -200,6 +207,7 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
+        analytics: .test { self.events.append($0) },
         mainQueue: .unimplemented,
         uuid: UUID.unimplemented
       )
@@ -211,7 +219,31 @@ class TodosTests: XCTestCase {
           $0.todos[0],
           $0.todos[2],
         ]
+      },
+      .do {
+        XCTAssertEqual(
+          self.events,
+          [
+            .init(name: "Todo Deleted", properties: ["editMode": "inactive"]),
+          ]
+        )
+
+      },
+      .send(.editModeChanged(.active)) {
+        $0.editMode = .active
+      },
+      .send(.delete([0])) {
+        $0.todos = [
+          $0.todos[1]
+        ]
       }
+    )
+    XCTAssertEqual(
+      events,
+      [
+        .init(name: "Todo Deleted", properties: ["editMode": "inactive"]),
+        .init(name: "Todo Deleted", properties: ["editMode": "active"]),
+      ]
     )
   }
 
@@ -239,6 +271,7 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
+        analytics: .unimplemented,
         mainQueue: self.scheduler.eraseToAnyScheduler(),
         uuid: UUID.incrementing
       )
@@ -279,6 +312,7 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
+        analytics: .unimplemented,
         mainQueue: self.scheduler.eraseToAnyScheduler(),
         uuid: UUID.incrementing
       )
@@ -318,6 +352,22 @@ extension Scheduler {
       scheduleImmediately: { _, _ in fatalError() },
       delayed: { _, _, _, _ in fatalError() },
       interval: { _, _, _, _, _ in fatalError() }
+    )
+  }
+}
+
+extension AnalyticsClient {
+  static let unimplemented = Self(
+    track: { _ in fatalError() }
+  )
+  
+  static func test(onEvent: @escaping (Event) -> Void) -> Self {
+    Self(
+      track: { event in
+        .fireAndForget {
+          onEvent(event)
+        }
+      }
     )
   }
 }
