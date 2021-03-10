@@ -235,3 +235,107 @@ extension AnalyticsClient {
     }
   )
 }
+
+
+#if canImport(XCTest)
+import XCTest
+
+extension UUID {
+  // A deterministic, auto-incrementing "UUID" generator for testing.
+  static var incrementing: () -> UUID {
+    var uuid = 0
+    return {
+      defer { uuid += 1 }
+      return UUID(uuidString: "00000000-0000-0000-0000-\(String(format: "%012x", uuid))")!
+    }
+  }
+
+  static let unimplemented: () -> UUID = { fatalError() }
+
+//  static func failing(file: StaticString = #file, line: UInt = #line) -> () -> UUID {
+//    {
+//      XCTFail("UUID initializer is unimplemented.", file: file, line: line)
+//      return UUID()
+//    }
+//  }
+
+  static let failing: () -> UUID = {
+    XCTFail("UUID initializer is unimplemented.")
+    return UUID()
+//    return UUID.init(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
+  }
+}
+
+import Combine
+
+extension Scheduler {
+  static var unimplemented: AnySchedulerOf<Self> {
+    AnyScheduler(
+      minimumTolerance: { fatalError() },
+      now: { fatalError() },
+      scheduleImmediately: { _, _ in fatalError() },
+      delayed: { _, _, _, _ in fatalError() },
+      interval: { _, _, _, _, _ in fatalError() }
+    )
+  }
+
+  static func failing(now: SchedulerTimeType) -> AnySchedulerOf<Self> {
+    AnyScheduler(
+      minimumTolerance: {
+        XCTFail("Scheduler.minimumTolerance is unimplemented")
+        return .zero
+      },
+      now: {
+        XCTFail("Scheduler.now is unimplemented")
+        return now
+      },
+      scheduleImmediately: { _, _ in XCTFail("Scheduler.scheduleImmediately is unimplemented") },
+      delayed: { _, _, _, _ in XCTFail("Scheduler.delayed is unimplemented") },
+      interval: { _, _, _, _, _ in
+        XCTFail("Scheduler.interval is unimplemented")
+        return AnyCancellable {}
+      }
+    )
+  }
+}
+
+extension Scheduler
+where
+  SchedulerTimeType == DispatchQueue.SchedulerTimeType,
+  SchedulerOptions == DispatchQueue.SchedulerOptions
+{
+  static var failing: AnySchedulerOf<Self> {
+    .failing(now: .init(.init(uptimeNanoseconds: 0)))
+  }
+}
+
+extension Effect {
+  static func failing(_ title: String) -> Self {
+    .fireAndForget {
+      XCTFail("\(title): Effect is unimplemented")
+    }
+  }
+}
+
+extension AnalyticsClient {
+  static let unimplemented = Self(
+    track: { _ in fatalError() }
+  )
+
+  static let failing = Self(
+    track: { event in
+      .failing("AnalyticsClient.track")
+    }
+  )
+
+  static func test(onEvent: @escaping (Event) -> Void) -> Self {
+    Self(
+      track: { event in
+        .fireAndForget {
+          onEvent(event)
+        }
+      }
+    )
+  }
+}
+#endif

@@ -91,23 +91,22 @@ class TodosTests: XCTestCase {
       reducer: appReducer,
       environment: AppEnvironment(
         analytics: .failing,
-        mainQueue: .failing, // self.scheduler.eraseToAnyScheduler(),
+        mainQueue: self.scheduler.eraseToAnyScheduler(),
         uuid: UUID.failing
       )
     )
 
-    store.assert(
-      .send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
-        $0.todos[0].isComplete = true
-      },
-      .do { self.scheduler.advance(by: 1) },
-      .receive(.sortCompletedTodos) {
-        $0.todos = [
-          $0.todos[1],
-          $0.todos[0],
-        ]
-      }
-    )
+    store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
+      $0.todos[0].isComplete = true
+    }
+
+    self.scheduler.advance(by: 1)
+    store.receive(.sortCompletedTodos) {
+      $0.todos = [
+        $0.todos[1],
+        $0.todos[0],
+      ]
+    }
   }
 
   func testCompleteTodoDebounces() {
@@ -213,31 +212,29 @@ class TodosTests: XCTestCase {
       )
     )
 
-    store.assert(
-      .send(.delete([1])) {
-        $0.todos = [
-          $0.todos[0],
-          $0.todos[2],
-        ]
-      },
-      .do {
-        XCTAssertEqual(
-          self.events,
-          [
-            .init(name: "Todo Deleted", properties: ["editMode": "inactive"]),
-          ]
-        )
+    store.send(.delete([1])) {
+      $0.todos = [
+        $0.todos[0],
+        $0.todos[2],
+      ]
+    }
 
-      },
-      .send(.editModeChanged(.active)) {
-        $0.editMode = .active
-      },
-      .send(.delete([0])) {
-        $0.todos = [
-          $0.todos[1]
-        ]
-      }
+    XCTAssertEqual(
+      self.events,
+      [
+        .init(name: "Todo Deleted", properties: ["editMode": "inactive"]),
+      ]
     )
+
+    store.send(.editModeChanged(.active)) {
+      $0.editMode = .active
+    }
+    store.send(.delete([0])) {
+      $0.todos = [
+        $0.todos[1]
+      ]
+    }
+
     XCTAssertEqual(
       events,
       [
@@ -330,105 +327,6 @@ class TodosTests: XCTestCase {
       },
       .send(.todo(id: state.todos[1].id, action: .textFieldChanged("Did this already"))) {
         $0.todos[1].description = "Did this already"
-      }
-    )
-  }
-}
-
-extension UUID {
-  // A deterministic, auto-incrementing "UUID" generator for testing.
-  static var incrementing: () -> UUID {
-    var uuid = 0
-    return {
-      defer { uuid += 1 }
-      return UUID(uuidString: "00000000-0000-0000-0000-\(String(format: "%012x", uuid))")!
-    }
-  }
-  
-  static let unimplemented: () -> UUID = { fatalError() }
-
-//  static func failing(file: StaticString = #file, line: UInt = #line) -> () -> UUID {
-//    {
-//      XCTFail("UUID initializer is unimplemented.", file: file, line: line)
-//      return UUID()
-//    }
-//  }
-
-  static let failing: () -> UUID = {
-    XCTFail("UUID initializer is unimplemented.")
-    return UUID()
-//    return UUID.init(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
-  }
-}
-
-import Combine
-
-extension Scheduler {
-  static var unimplemented: AnySchedulerOf<Self> {
-    AnyScheduler(
-      minimumTolerance: { fatalError() },
-      now: { fatalError() },
-      scheduleImmediately: { _, _ in fatalError() },
-      delayed: { _, _, _, _ in fatalError() },
-      interval: { _, _, _, _, _ in fatalError() }
-    )
-  }
-  
-  static func failing(now: SchedulerTimeType) -> AnySchedulerOf<Self> {
-    AnyScheduler(
-      minimumTolerance: {
-        XCTFail("Scheduler.minimumTolerance is unimplemented")
-        return .zero
-      },
-      now: {
-        XCTFail("Scheduler.now is unimplemented")
-        return now
-      },
-      scheduleImmediately: { _, _ in XCTFail("Scheduler.scheduleImmediately is unimplemented") },
-      delayed: { _, _, _, _ in XCTFail("Scheduler.delayed is unimplemented") },
-      interval: { _, _, _, _, _ in
-        XCTFail("Scheduler.interval is unimplemented")
-        return AnyCancellable {}
-      }
-    )
-  }
-}
-
-extension Scheduler
-where
-  SchedulerTimeType == DispatchQueue.SchedulerTimeType,
-  SchedulerOptions == DispatchQueue.SchedulerOptions
-{
-  static var failing: AnySchedulerOf<Self> {
-    .failing(now: .init(.init(uptimeNanoseconds: 0)))
-  }
-}
-
-extension Effect {
-  static func failing(_ title: String) -> Self {
-    .fireAndForget {
-      XCTFail("\(title): Effect is unimplemented")
-    }
-  }
-}
-
-extension AnalyticsClient {
-  static let unimplemented = Self(
-    track: { _ in fatalError() }
-  )
-
-  static let failing = Self(
-    track: { event in
-      .failing("AnalyticsClient.track")
-    }
-  )
-  
-  static func test(onEvent: @escaping (Event) -> Void) -> Self {
-    Self(
-      track: { event in
-        .fireAndForget {
-          onEvent(event)
-        }
       }
     )
   }
