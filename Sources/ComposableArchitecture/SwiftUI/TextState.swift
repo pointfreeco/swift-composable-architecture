@@ -322,8 +322,7 @@ extension TextState: CustomDebugOutputConvertible {
         case .bold, .fontWeight(.some(.bold)):
           output = "**\(output)**"
         case .font(.some):
-          // TODO: Better describe fonts?
-          output = "<font>\(output)</font>"
+          break // TODO: capture Font description using DSL similar to TextState and print here
         case let .fontWeight(.some(weight)):
           func describe(weight: Font.Weight) -> String {
             switch weight {
