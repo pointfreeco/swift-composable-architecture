@@ -321,11 +321,24 @@ extension TextState: CustomDebugOutputConvertible {
           output = "<baseline-offset=\(baselineOffset)>\(output)</baseline-offset>"
         case .bold, .fontWeight(.some(.bold)):
           output = "**\(output)**"
-        case let .font(.some):
+        case .font(.some):
           // TODO: Better describe fonts?
           output = "<font>\(output)</font>"
         case let .fontWeight(.some(weight)):
-          output = "<font-weight=\(weight)>\(output)</font-weight>"
+          func describe(weight: Font.Weight) -> String {
+            switch weight {
+            case .black: return "black"
+            case .bold: return "bold"
+            case .heavy: return "heavy"
+            case .light: return "light"
+            case .medium: return "medium"
+            case .regular: return "regular"
+            case .semibold: return "semibold"
+            case .thin: return "thin"
+            default: return "\(weight)"
+            }
+          }
+          output = "<font-weight=\(describe(weight: weight))>\(output)</font-weight>"
         case let .foregroundColor(.some(color)):
           output = "<foreground-color=\(color)>\(output)</foreground-color>"
         case .italic:

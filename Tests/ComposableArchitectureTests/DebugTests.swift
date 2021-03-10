@@ -394,7 +394,7 @@ final class DebugTests: XCTestCase {
         <baseline-offset=10.5>Offset by 10.5</baseline-offset>
         <font>Headline</font>
         No font
-        <font-weight=Weight(value: -0.4)>Light font weight</font-weight>
+        <font-weight=light>Light font weight</font-weight>
         No font weight
         <foreground-color=red>Red</foreground-color>
         No color
