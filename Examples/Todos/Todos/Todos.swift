@@ -33,6 +33,7 @@ enum AppAction: Equatable {
 }
 
 struct AppEnvironment {
+  var analytics: AnalyticsClient
   var mainQueue: AnySchedulerOf<DispatchQueue>
   var uuid: () -> UUID
 }
@@ -51,11 +52,18 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
 
     case .clearCompletedButtonTapped:
       state.todos.removeAll(where: { $0.isComplete })
-      return .none
+      return environment.analytics.track(.init(name: "Cleared Completed Todos"))
+        .fireAndForget()
 
     case let .delete(indexSet):
       state.todos.remove(atOffsets: indexSet)
-      return .none
+      return environment.analytics.track(
+        .init(
+          name: "Todo Deleted",
+          properties: ["editMode": "\(state.editMode)"]
+        )
+      )
+      .fireAndForget()
 
     case let .editModeChanged(editMode):
       state.editMode = editMode
@@ -85,8 +93,6 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     }
   }
 )
-
-.debugActions(actionFormat: .labelsOnly)
 
 struct AppView: View {
   struct ViewState: Equatable {
@@ -192,10 +198,33 @@ struct AppView_Previews: PreviewProvider {
         initialState: AppState(todos: .mock),
         reducer: appReducer,
         environment: AppEnvironment(
+          analytics: .live,
           mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
           uuid: UUID.init
         )
       )
     )
   }
+}
+
+struct AnalyticsClient {
+  let track: (Event) -> Effect<Never, Never>
+
+  struct Event: Equatable {
+    var name: String
+    var properties: [String: String] = [:]
+  }
+}
+
+extension AnalyticsClient {
+  static let live = Self(
+    track: { event in
+      .fireAndForget {
+        print("Track name: \(event.name), properties: \(event.properties)")
+        // TODO: send the event data to the analytics server
+//        URLSession.shared.dataTask(with: URL(string: "https://www.my-company.com/analytics")!)
+//          .resume()
+      }
+    }
+  )
 }
