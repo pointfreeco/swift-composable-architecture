@@ -1,6 +1,7 @@
+#if !os(macOS)
 import CasePaths
-import UIKit
 import SwiftUI
+import UIKit
 
 /// Can be used in conjunction with the `.opensURL` view modifier to automatically open
 /// external URLs driven by your application state.
@@ -103,6 +104,7 @@ public enum OpenURLViewAction: Equatable {
   case urlNotSupported
 }
 
+@available(macOS, unavailable)
 private struct OpenURLViewModifier: ViewModifier {
   let store: Store<URL?, OpenURLViewAction>
   let viewStore: ViewStore<URL?, OpenURLViewAction>
@@ -128,10 +130,10 @@ private struct OpenURLViewModifier: ViewModifier {
   }
 
   private func openURL(_ url: URL, completion: @escaping (Bool) -> Void) {
-    if #available(iOS 14, *) {
-      URLOpener_iOS14(url: url).open(completion: completion)
+    if #available(iOS 14, macCatalyst 14, tvOS 14, *) {
+      URLOpener_OpenURLAction(url: url).open(completion: completion)
     } else {
-      URLOpener_iOS13(url: url).open(completion: completion)
+      URLOpener_UIApplication(url: url).open(completion: completion)
     }
   }
 
@@ -139,8 +141,7 @@ private struct OpenURLViewModifier: ViewModifier {
     UIApplication.shared.canOpenURL(url)
   }
 
-  @available(iOS 13, *)
-  struct URLOpener_iOS13 {
+  struct URLOpener_UIApplication {
     let url: URL
 
     func open(completion: @escaping (Bool) -> Void) {
@@ -149,7 +150,9 @@ private struct OpenURLViewModifier: ViewModifier {
   }
 
   @available(iOS 14, *)
-  struct URLOpener_iOS14 {
+  @available(macCatalyst 14, *)
+  @available(tvOS 14, *)
+  struct URLOpener_OpenURLAction {
     let url: URL
 
     @Environment(\.openURL) var openURL
@@ -174,3 +177,4 @@ public extension View {
     modifier(OpenURLViewModifier(store: store))
   }
 }
+#endif
