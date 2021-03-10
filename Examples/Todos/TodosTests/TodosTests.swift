@@ -26,6 +26,16 @@ class TodosTests: XCTestCase {
           ),
           at: 0
         )
+      },
+      .send(.addTodoButtonTapped) {
+        $0.todos.insert(
+          Todo(
+            description: "",
+            id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+            isComplete: false
+          ),
+          at: 0
+        )
       }
     )
   }
