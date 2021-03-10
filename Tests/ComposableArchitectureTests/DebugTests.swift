@@ -392,7 +392,7 @@ final class DebugTests: XCTestCase {
       """
       TextState(
         <baseline-offset=10.5>Offset by 10.5</baseline-offset>
-        <font ...>Headline</font>
+        <font>Headline</font>
         No font
         <font-weight=Weight(value: -0.4)>Light font weight</font-weight>
         No font weight
