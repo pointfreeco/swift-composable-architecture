@@ -45,7 +45,9 @@ class OpenURLTests: XCTestCase {
       .send(.tappedToOpen) {
         $0.url = URL(string: "http://example.com")
       },
-      .send(.openURL(.urlNotSupported))
+      .send(.openURL(.urlNotSupported)) {
+        $0.url = nil
+      }
     )
   }
 

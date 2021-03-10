@@ -24,6 +24,7 @@ struct RootState {
   var navigateAndLoad = NavigateAndLoadState()
   var navigateAndLoadList = NavigateAndLoadListState()
   var nested = NestedState.mock
+  var openingURLBasics = OpeningURLBasicsState()
   var optionalBasics = OptionalBasicsState()
   var presentAndLoad = PresentAndLoadState()
   var shared = SharedState()
@@ -53,6 +54,7 @@ enum RootAction {
   case navigateAndLoad(NavigateAndLoadAction)
   case navigateAndLoadList(NavigateAndLoadListAction)
   case nested(NestedAction)
+  case openingURLBasics(OpeningURLBasicsAction)
   case optionalBasics(OptionalBasicsAction)
   case onAppear
   case presentAndLoad(PresentAndLoadAction)
@@ -223,6 +225,12 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       state: \.nested,
       action: /RootAction.nested,
       environment: { .init(uuid: $0.uuid) }
+    ),
+  openingURLBasicsReducer
+    .pullback(
+      state: \.openingURLBasics,
+      action: /RootAction.openingURLBasics,
+      environment: { .init(mainQueue: $0.mainQueue) }
     ),
   optionalBasicsReducer
     .pullback(

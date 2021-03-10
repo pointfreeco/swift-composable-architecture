@@ -80,10 +80,8 @@ public extension Reducer where State: Equatable {
   ) -> Self {
     Reducer<URL?, OpenURLViewAction, Void> { state, action, _ in
       switch action {
-      case .openedURL:
+      case .openedURL, .urlNotSupported:
         state = nil
-        return .none
-      case .urlNotSupported:
         return .none
       }
     }

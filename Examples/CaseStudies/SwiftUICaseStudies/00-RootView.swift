@@ -89,6 +89,16 @@ struct RootView: View {
                 )
               )
             )
+
+            NavigationLink(
+              "Opening URLs",
+              destination: OpeningURLBasicsView(
+                store: self.store.scope(
+                  state: { $0.openingURLBasics },
+                  action: RootAction.openingURLBasics
+                )
+              )
+            )
           }
 
           Section(header: Text("Effects")) {
