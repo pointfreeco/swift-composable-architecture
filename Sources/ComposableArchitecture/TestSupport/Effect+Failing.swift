@@ -2,7 +2,7 @@
   import Foundation
 
   extension Effect {
-    static func failing(_ message: String = "") -> Self {
+    public static func failing(_ message: String = "") -> Self {
       .fireAndForget {
         _XCTFail(message.isEmpty ? "A failing effect was subscribed to" : message)
       }
