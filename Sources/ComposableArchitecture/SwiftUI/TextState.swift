@@ -322,7 +322,7 @@ extension TextState: CustomDebugOutputConvertible {
         case .bold, .fontWeight(.some(.bold)):
           output = "**\(output)**"
         case .font(.some):
-          break // TODO: capture Font description using DSL similar to TextState and print here
+          break  // TODO: capture Font description using DSL similar to TextState and print here
         case let .fontWeight(.some(weight)):
           func describe(weight: Font.Weight) -> String {
             switch weight {
@@ -353,10 +353,10 @@ extension TextState: CustomDebugOutputConvertible {
         case let .underline(active: true, color):
           output = "<u\(color.map { " color=\($0)" } ?? "")>\(output)</u>"
         case .font(.none),
-             .fontWeight(.none),
-             .foregroundColor(.none),
-             .strikethrough(active: false, color: _),
-             .underline(active: false, color: _):
+          .fontWeight(.none),
+          .foregroundColor(.none),
+          .strikethrough(active: false, color: _),
+          .underline(active: false, color: _):
           break
         }
       }
