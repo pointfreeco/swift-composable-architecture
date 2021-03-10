@@ -3,70 +3,75 @@ import CasePaths
 import SwiftUI
 import UIKit
 
-/// Can be used in conjunction with the `.opensURL` view modifier to automatically open
-/// external URLs driven by your application state.
-///
-/// To use this high-level reducer, you first need to embed it into your feature. This requires:
-///
-/// * A `URL?` property  on your state that represents the URL you want to open.
-/// * An action in your feature's action enum that wraps `OpenURLViewAction`
-///
-/// For example, given the following domain:
-///
-///     struct FeatureState: Equatable {
-///         var urlToOpen: URL?
-///     }
-///
-///     enum FeatureAction: Equatable {
-///         case tappedOpenLinkButton
-///         case openURL(OpenURLViewAction)
-///     }
-///
-/// You can then attach the open URL reducer to your feature's reducer, providing a key path
-/// to the URL and a case path for the action:
-///
-///     let featureReducer = Reducer<FeatureState, FeatureAction, Void> { state, action in
-///         switch action {
-///         case .tappedOpenLinkButton:
-///             state.urlToOpen = URL(string: "http://www.example.com")
-///             return .none
-///         case .openURL:
-///             return .none
-///         }
-///     }
-///     .opensURL(\.urlToOpen, action: /FeatureAction.openURL)
-///
-/// The above reducer will set the URL to be opened when the feature's view sends the `tappedOpenLinkButton`.
-///
-/// To actually open the URL, the corresponding feature view needs to use the `.opensURL` view modifier, passing
-/// in a store scoped to the `URL` state and `OpenURLViewAction` action:
-///
-///     struct FeatureView: View {
-///         let store: Store<FeatureState, FeatureAction>
-///
-///         var body: some View {
-///             WithViewStore(store) { viewStore in
-///                 Button("Open example.com") {
-///                     viewStore.send(.tappedOpenLinkButton)
-///                 }
-///             }
-///             .opensURL(
-///                 store.scope(
-///                     state: \.urlToOpen,
-///                     action: /FeatureAction.openURL
-///                 )
-///             )
-///         }
-///     }
-///
-/// Now, when the `urlToOpen` property is set to a `URL` value, it will automatically open and fire an action
-/// back into the store to indicate it was opened, which will set the `urlToOpen` property back to `nil`.
-///
 public extension Reducer where State: Equatable {
   /// Attaches the `opensURL` logic to your existing feature reducer, returning a new reducer.
   ///
+  /// Can be used in conjunction with the `.opensURL` view modifier to automatically open
+  /// external URLs driven by your application state.
+  ///
+  /// To use this high-level reducer, you first need to embed it into your feature. This requires:
+  ///
+  /// * A `URL?` property  on your state that represents the URL you want to open.
+  /// * An action in your feature's action enum that wraps `OpenURLViewAction`
+  ///
+  /// For example, given the following domain:
+  ///
+  ///     struct FeatureState: Equatable {
+  ///         var urlToOpen: URL?
+  ///     }
+  ///
+  ///     enum FeatureAction: Equatable {
+  ///         case tappedOpenLinkButton
+  ///         case openURL(OpenURLViewAction)
+  ///     }
+  ///
+  /// You can then attach the open URL reducer to your feature's reducer, providing a key path
+  /// to the URL and a case path for the action:
+  ///
+  ///     let featureReducer = Reducer<FeatureState, FeatureAction, Void> { state, action in
+  ///         switch action {
+  ///         case .tappedOpenLinkButton:
+  ///             state.urlToOpen = URL(string: "http://www.example.com")
+  ///             return .none
+  ///         case .openURL:
+  ///             return .none
+  ///         }
+  ///     }
+  ///     .opensURL(\.urlToOpen, action: /FeatureAction.openURL)
+  ///
+  /// The above reducer will set the URL to be opened when the feature's view sends the `tappedOpenLinkButton`.
+  ///
+  /// To actually open the URL, the corresponding feature view needs to use the `.opensURL` view modifier, passing
+  /// in a store scoped to the `URL` state and `OpenURLViewAction` action:
+  ///
+  ///     struct FeatureView: View {
+  ///         let store: Store<FeatureState, FeatureAction>
+  ///
+  ///         var body: some View {
+  ///             WithViewStore(store) { viewStore in
+  ///                 Button("Open example.com") {
+  ///                     viewStore.send(.tappedOpenLinkButton)
+  ///                 }
+  ///             }
+  ///             .opensURL(
+  ///                 store.scope(
+  ///                     state: \.urlToOpen,
+  ///                     action: /FeatureAction.openURL
+  ///                 )
+  ///             )
+  ///         }
+  ///     }
+  ///
+  /// Now, when the `urlToOpen` property is set to a `URL` value, it will automatically open and fire an action
+  /// back into the store to indicate it was opened, which will set the `urlToOpen` property back to `nil`.
+  ///
+  /// - Note: A check will be made before attempting to open the URL that opening that URL is supported - if not, the action
+  /// `OpenURLViewAction.urlNotSupported` will be sent to the store.
+  ///
+  /// You can handle this action in your own feature reducer if you want to provide some kind of fallback option.
+  ///
   /// - Parameters:
-  ///     - toLocalState: either a `WritableKeyPath` or `CasePath` to the `URL?` you want to open.
+  ///     - state: a key path to the URL that should be opened.
   ///     - action: the `CasePath` to the action that embeds the `OpenURLViewAction` in your domain.
   ///
   func opensURL(
@@ -94,13 +99,10 @@ public extension Reducer where State: Equatable {
 /// Represents the domain of opening URLs and can be embedded in your feature domain actions.
 ///
 public enum OpenURLViewAction: Equatable {
-  /// Sent by the component to the store to indicate the URL was opened.
-  ///
-  /// The `Bool` value indicates whether or not the URL was opened successfully.
+  /// Sent by the component to the store to indicate if URL was opened.
   case openedURL(Bool)
 
-  /// Indicates the URL given cannot be opened on this platform. Your own feature reducer
-  /// can hook into this action to provide some backup behaviour.
+  /// Indicates the URL given cannot be opened on this platform.
   case urlNotSupported
 }
 
