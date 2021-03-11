@@ -223,6 +223,31 @@ public struct AnalyticsClient {
   }
 }
 
+#if canImport(XCTest)
+import XCTest
+
+extension Effect {
+  static func failing(_ title: String) -> Self {
+    .fireAndForget {
+      XCTFail("\(title): Effect is unimplemented")
+    }
+  }
+}
+
+extension AnalyticsClient {
+  public static let unimplemented = Self(
+    track: { _ in
+      fatalError("Track is unimplemented")
+    }
+  )
+
+  public static let failing = Self(
+    track: { _ in
+      .failing("AnalyticsClient.track")
+    }
+  )
+}
+
 extension AnalyticsClient {
   public static let live = Self(
     track: { event in
@@ -251,3 +276,82 @@ extension AnalyticsClient {
     )
   }
 }
+
+extension UUID {
+  // A deterministic, auto-incrementing "UUID" generator for testing.
+  static var incrementing: () -> UUID {
+    var uuid = 0
+    return {
+      defer { uuid += 1 }
+      return UUID(uuidString: "00000000-0000-0000-0000-\(String(format: "%012x", uuid))")!
+    }
+  }
+
+  static var failing: () -> UUID {
+    {
+      XCTFail("UUID initializer is unimplemented")
+      return UUID()
+    }
+  }
+}
+
+extension UUID {
+  static let unimplemented: () -> UUID = { fatalError() }
+}
+
+extension AnyScheduler {
+  static var unimplemented: Self {
+    Self(
+      minimumTolerance: { fatalError() },
+      now: { fatalError() },
+      scheduleImmediately: { _, _ in fatalError() },
+      delayed: { _, _, _, _ in fatalError() },
+      interval: { _, _, _, _, _ in fatalError() }
+    )
+  }
+}
+
+
+import Combine
+
+extension Scheduler {
+  public static func failing(
+    minimumTolerance: @escaping () -> SchedulerTimeType.Stride,
+    now: @escaping () -> SchedulerTimeType
+  ) -> AnySchedulerOf<Self> {
+    .init(
+      minimumTolerance: {
+        XCTFail("Scheduler.minimumTolerance is unimplemented")
+        return minimumTolerance()
+      },
+      now: {
+        XCTFail("Scheduler.now is unimplemented")
+        return now()
+      },
+      scheduleImmediately: { options, action in
+        XCTFail("Scheduler.scheduleImmediately is unimplemented")
+      },
+      delayed: { delay, tolerance, options, action in
+        XCTFail("Scheduler.delayed is unimplemented")
+      },
+      interval: { delay, interval, tolerance, options, action in
+        XCTFail("Scheduler.interval is unimplemented")
+        return AnyCancellable {}
+      }
+    )
+  }
+}
+
+extension Scheduler
+where
+  SchedulerTimeType == DispatchQueue.SchedulerTimeType,
+  SchedulerOptions == DispatchQueue.SchedulerOptions
+{
+  public static var failing: AnySchedulerOf<Self> {
+    AnySchedulerOf<Self>.failing(
+      minimumTolerance: { .zero },
+      now: { .init(.init(uptimeNanoseconds: 1)) }
+    )
+  }
+}
+#endif
