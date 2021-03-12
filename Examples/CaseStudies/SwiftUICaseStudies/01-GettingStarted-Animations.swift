@@ -30,8 +30,6 @@ extension Effect where Failure == Never {
         .map { index, animationState in
           index == 0
             ? Effect(value: animationState.output)
-            .receive(on: scheduler)
-            .eraseToEffect()
             : Just(animationState.output)
               .delay(for: values[index - 1].duration, scheduler: scheduler)
               .eraseToEffect()

@@ -20,22 +20,23 @@ class SpeechRecognitionTests: XCTestCase {
       )
     )
 
-    store.send(.recordButtonTapped) {
-      $0.isRecording = true
-    }
-
-    self.scheduler.advance()
-    store.receive(.speechRecognizerAuthorizationStatusResponse(.denied)) {
-      $0.alert = .init(
-        title: .init(
-          """
+    store.assert(
+      .send(.recordButtonTapped) {
+        $0.isRecording = true
+      },
+      .do { self.scheduler.advance() },
+      .receive(.speechRecognizerAuthorizationStatusResponse(.denied)) {
+        $0.alert = .init(
+          title: .init(
+            """
             You denied access to speech recognition. This app needs access to transcribe your speech.
             """
+          )
         )
-      )
-      $0.isRecording = false
-      $0.speechRecognizerAuthorizationStatus = .denied
-    }
+        $0.isRecording = false
+        $0.speechRecognizerAuthorizationStatus = .denied
+      }
+    )
   }
 
   func testRestrictedAuthorization() {
@@ -50,16 +51,17 @@ class SpeechRecognitionTests: XCTestCase {
       )
     )
 
-    store.send(.recordButtonTapped) {
-      $0.isRecording = true
-    }
-
-    self.scheduler.advance()
-    store.receive(.speechRecognizerAuthorizationStatusResponse(.restricted)) {
-      $0.alert = .init(title: .init("Your device does not allow speech recognition."))
-      $0.isRecording = false
-      $0.speechRecognizerAuthorizationStatus = .restricted
-    }
+    store.assert(
+      .send(.recordButtonTapped) {
+        $0.isRecording = true
+      },
+      .do { self.scheduler.advance() },
+      .receive(.speechRecognizerAuthorizationStatusResponse(.restricted)) {
+        $0.alert = .init(title: .init("Your device does not allow speech recognition."))
+        $0.isRecording = false
+        $0.speechRecognizerAuthorizationStatus = .restricted
+      }
+    )
   }
 
   func testAllowAndRecord() {
@@ -92,24 +94,26 @@ class SpeechRecognitionTests: XCTestCase {
     finalResult.bestTranscription.formattedString = "Hello world"
     finalResult.isFinal = true
 
-    store.send(.recordButtonTapped) {
-      $0.isRecording = true
-    }
+    store.assert(
+      .send(.recordButtonTapped) {
+        $0.isRecording = true
+      },
 
-    self.scheduler.advance()
-    store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized)) {
-      $0.speechRecognizerAuthorizationStatus = .authorized
-    }
+      .do { self.scheduler.advance() },
+      .receive(.speechRecognizerAuthorizationStatusResponse(.authorized)) {
+        $0.speechRecognizerAuthorizationStatus = .authorized
+      },
 
-    self.recognitionTaskSubject.send(.taskResult(result))
-    store.receive(.speech(.success(.taskResult(result)))) {
-      $0.transcribedText = "Hello"
-    }
+      .do { self.recognitionTaskSubject.send(.taskResult(result)) },
+      .receive(.speech(.success(.taskResult(result)))) {
+        $0.transcribedText = "Hello"
+      },
 
-    self.recognitionTaskSubject.send(.taskResult(finalResult))
-    store.receive(.speech(.success(.taskResult(finalResult)))) {
-      $0.transcribedText = "Hello world"
-    }
+      .do { self.recognitionTaskSubject.send(.taskResult(finalResult)) },
+      .receive(.speech(.success(.taskResult(finalResult)))) {
+        $0.transcribedText = "Hello world"
+      }
+    )
   }
 
   func testAudioSessionFailure() {
@@ -125,21 +129,23 @@ class SpeechRecognitionTests: XCTestCase {
       )
     )
 
-    store.send(.recordButtonTapped) {
-      $0.isRecording = true
-    }
+    store.assert(
+      .send(.recordButtonTapped) {
+        $0.isRecording = true
+      },
 
-    self.scheduler.advance()
-    store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized)) {
-      $0.speechRecognizerAuthorizationStatus = .authorized
-    }
+      .do { self.scheduler.advance() },
+      .receive(.speechRecognizerAuthorizationStatusResponse(.authorized)) {
+        $0.speechRecognizerAuthorizationStatus = .authorized
+      },
 
-    self.recognitionTaskSubject.send(completion: .failure(.couldntConfigureAudioSession))
-    store.receive(.speech(.failure(.couldntConfigureAudioSession))) {
-      $0.alert = .init(title: .init("Problem with audio device. Please try again."))
-    }
+      .do { self.recognitionTaskSubject.send(completion: .failure(.couldntConfigureAudioSession)) },
+      .receive(.speech(.failure(.couldntConfigureAudioSession))) {
+        $0.alert = .init(title: .init("Problem with audio device. Please try again."))
+      },
 
-    self.recognitionTaskSubject.send(completion: .finished)
+      .do { self.recognitionTaskSubject.send(completion: .finished) }
+    )
   }
 
   func testAudioEngineFailure() {
@@ -155,20 +161,22 @@ class SpeechRecognitionTests: XCTestCase {
       )
     )
 
-    store.send(.recordButtonTapped) {
-      $0.isRecording = true
-    }
+    store.assert(
+      .send(.recordButtonTapped) {
+        $0.isRecording = true
+      },
 
-    self.scheduler.advance()
-    store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized)) {
-      $0.speechRecognizerAuthorizationStatus = .authorized
-    }
+      .do { self.scheduler.advance() },
+      .receive(.speechRecognizerAuthorizationStatusResponse(.authorized)) {
+        $0.speechRecognizerAuthorizationStatus = .authorized
+      },
 
-    self.recognitionTaskSubject.send(completion: .failure(.couldntStartAudioEngine))
-    store.receive(.speech(.failure(.couldntStartAudioEngine))) {
-      $0.alert = .init(title: .init("Problem with audio device. Please try again."))
-    }
+      .do { self.recognitionTaskSubject.send(completion: .failure(.couldntStartAudioEngine)) },
+      .receive(.speech(.failure(.couldntStartAudioEngine))) {
+        $0.alert = .init(title: .init("Problem with audio device. Please try again."))
+      },
 
-    self.recognitionTaskSubject.send(completion: .finished)
+      .do { self.recognitionTaskSubject.send(completion: .finished) }
+    )
   }
 }

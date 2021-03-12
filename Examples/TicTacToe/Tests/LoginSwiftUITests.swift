@@ -9,7 +9,7 @@ import XCTest
 
 class LoginSwiftUITests: XCTestCase {
   let scheduler = DispatchQueue.testScheduler
-  
+
   func testFlow_Success() {
     let store = TestStore(
       initialState: LoginState(),
@@ -24,28 +24,30 @@ class LoginSwiftUITests: XCTestCase {
       )
     )
     .scope(state: { $0.view }, action: LoginAction.view)
-    
-    store.send(.emailChanged("blob@pointfree.co")) {
-      $0.email = "blob@pointfree.co"
-    }
-    store.send(.passwordChanged("password")) {
-      $0.password = "password"
-      $0.isLoginButtonDisabled = false
-    }
-    store.send(.loginButtonTapped) {
-      $0.isActivityIndicatorVisible = true
-      $0.isFormDisabled = true
-    }
-    
-    self.scheduler.advance()
-    store.receive(
-      .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
-    ) {
-      $0.isActivityIndicatorVisible = false
-      $0.isFormDisabled = false
-    }
+
+    store.assert(
+      .send(.emailChanged("blob@pointfree.co")) {
+        $0.email = "blob@pointfree.co"
+      },
+      .send(.passwordChanged("password")) {
+        $0.password = "password"
+        $0.isLoginButtonDisabled = false
+      },
+      .send(.loginButtonTapped) {
+        $0.isActivityIndicatorVisible = true
+        $0.isFormDisabled = true
+      },
+      .do {
+        self.scheduler.advance()
+      },
+      .receive(.loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: false))))
+      {
+        $0.isActivityIndicatorVisible = false
+        $0.isFormDisabled = false
+      }
+    )
   }
-  
+
   func testFlow_Success_TwoFactor() {
     let store = TestStore(
       initialState: LoginState(),
@@ -60,32 +62,34 @@ class LoginSwiftUITests: XCTestCase {
       )
     )
     .scope(state: { $0.view }, action: LoginAction.view)
-    
-    store.send(.emailChanged("2fa@pointfree.co")) {
-      $0.email = "2fa@pointfree.co"
-    }
-    store.send(.passwordChanged("password")) {
-      $0.password = "password"
-      $0.isLoginButtonDisabled = false
-    }
-    store.send(.loginButtonTapped) {
-      $0.isActivityIndicatorVisible = true
-      $0.isFormDisabled = true
-    }
-    
-    self.scheduler.advance()
-    store.receive(
-      .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: true)))
-    ) {
-      $0.isActivityIndicatorVisible = false
-      $0.isFormDisabled = false
-      $0.isTwoFactorActive = true
-    }
-    store.send(.twoFactorDismissed) {
-      $0.isTwoFactorActive = false
-    }
+
+    store.assert(
+      .send(.emailChanged("2fa@pointfree.co")) {
+        $0.email = "2fa@pointfree.co"
+      },
+      .send(.passwordChanged("password")) {
+        $0.password = "password"
+        $0.isLoginButtonDisabled = false
+      },
+      .send(.loginButtonTapped) {
+        $0.isActivityIndicatorVisible = true
+        $0.isFormDisabled = true
+      },
+      .do {
+        self.scheduler.advance()
+      },
+      .receive(.loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: true))))
+      {
+        $0.isActivityIndicatorVisible = false
+        $0.isFormDisabled = false
+        $0.isTwoFactorActive = true
+      },
+      .send(.twoFactorDismissed) {
+        $0.isTwoFactorActive = false
+      }
+    )
   }
-  
+
   func testFlow_Failure() {
     let store = TestStore(
       initialState: LoginState(),
@@ -98,29 +102,32 @@ class LoginSwiftUITests: XCTestCase {
       )
     )
     .scope(state: { $0.view }, action: LoginAction.view)
-    
-    store.send(.emailChanged("blob")) {
-      $0.email = "blob"
-    }
-    store.send(.passwordChanged("password")) {
-      $0.password = "password"
-      $0.isLoginButtonDisabled = false
-    }
-    store.send(.loginButtonTapped) {
-      $0.isActivityIndicatorVisible = true
-      $0.isFormDisabled = true
-    }
-    
-    self.scheduler.advance()
-    store.receive(.loginResponse(.failure(.invalidUserPassword))) {
-      $0.alert = .init(
-        title: TextState(AuthenticationError.invalidUserPassword.localizedDescription)
-      )
-      $0.isActivityIndicatorVisible = false
-      $0.isFormDisabled = false
-    }
-    store.send(.alertDismissed) {
-      $0.alert = nil
-    }
+
+    store.assert(
+      .send(.emailChanged("blob")) {
+        $0.email = "blob"
+      },
+      .send(.passwordChanged("password")) {
+        $0.password = "password"
+        $0.isLoginButtonDisabled = false
+      },
+      .send(.loginButtonTapped) {
+        $0.isActivityIndicatorVisible = true
+        $0.isFormDisabled = true
+      },
+      .do {
+        self.scheduler.advance()
+      },
+      .receive(.loginResponse(.failure(.invalidUserPassword))) {
+        $0.alert = .init(
+          title: TextState(AuthenticationError.invalidUserPassword.localizedDescription)
+        )
+        $0.isActivityIndicatorVisible = false
+        $0.isFormDisabled = false
+      },
+      .send(.alertDismissed) {
+        $0.alert = nil
+      }
+    )
   }
 }

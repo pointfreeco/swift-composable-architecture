@@ -16,16 +16,18 @@ class TodosTests: XCTestCase {
       )
     )
 
-    store.send(.addTodoButtonTapped) {
-      $0.todos.insert(
-        Todo(
-          description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
-          isComplete: false
-        ),
-        at: 0
-      )
-    }
+    store.assert(
+      .send(.addTodoButtonTapped) {
+        $0.todos.insert(
+          Todo(
+            description: "",
+            id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+            isComplete: false
+          ),
+          at: 0
+        )
+      }
+    )
   }
 
   func testEditTodo() {
@@ -47,11 +49,13 @@ class TodosTests: XCTestCase {
       )
     )
 
-    store.send(
-      .todo(id: state.todos[0].id, action: .textFieldChanged("Learn Composable Architecture"))
-    ) {
-      $0.todos[0].description = "Learn Composable Architecture"
-    }
+    store.assert(
+      .send(
+        .todo(id: state.todos[0].id, action: .textFieldChanged("Learn Composable Architecture"))
+      ) {
+        $0.todos[0].description = "Learn Composable Architecture"
+      }
+    )
   }
 
   func testCompleteTodo() {
@@ -78,17 +82,18 @@ class TodosTests: XCTestCase {
       )
     )
 
-    store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
-      $0.todos[0].isComplete = true
-    }
-
-    self.scheduler.advance(by: 1)
-    store.receive(.sortCompletedTodos) {
-      $0.todos = [
-        $0.todos[1],
-        $0.todos[0],
-      ]
-    }
+    store.assert(
+      .send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
+        $0.todos[0].isComplete = true
+      },
+      .do { self.scheduler.advance(by: 1) },
+      .receive(.sortCompletedTodos) {
+        $0.todos = [
+          $0.todos[1],
+          $0.todos[0],
+        ]
+      }
+    )
   }
 
   func testCompleteTodoDebounces() {
@@ -115,17 +120,17 @@ class TodosTests: XCTestCase {
       )
     )
 
-    store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
-      $0.todos[0].isComplete = true
-    }
-
-    self.scheduler.advance(by: 0.5)
-    store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
-      $0.todos[0].isComplete = false
-    }
-
-    self.scheduler.advance(by: 1)
-    store.receive(.sortCompletedTodos)
+    store.assert(
+      .send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
+        $0.todos[0].isComplete = true
+      },
+      .do { self.scheduler.advance(by: 0.5) },
+      .send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
+        $0.todos[0].isComplete = false
+      },
+      .do { self.scheduler.advance(by: 1) },
+      .receive(.sortCompletedTodos)
+    )
   }
 
   func testClearCompleted() {
@@ -152,11 +157,13 @@ class TodosTests: XCTestCase {
       )
     )
 
-    store.send(.clearCompletedButtonTapped) {
-      $0.todos = [
-        $0.todos[0]
-      ]
-    }
+    store.assert(
+      .send(.clearCompletedButtonTapped) {
+        $0.todos = [
+          $0.todos[0]
+        ]
+      }
+    )
   }
 
   func testDelete() {
@@ -188,12 +195,14 @@ class TodosTests: XCTestCase {
       )
     )
 
-    store.send(.delete([1])) {
-      $0.todos = [
-        $0.todos[0],
-        $0.todos[2],
-      ]
-    }
+    store.assert(
+      .send(.delete([1])) {
+        $0.todos = [
+          $0.todos[0],
+          $0.todos[2],
+        ]
+      }
+    )
   }
 
   func testEditModeMoving() {
@@ -225,19 +234,20 @@ class TodosTests: XCTestCase {
       )
     )
 
-    store.send(.editModeChanged(.active)) {
-      $0.editMode = .active
-    }
-    store.send(.move([0], 2)) {
-      $0.todos = [
-        $0.todos[1],
-        $0.todos[0],
-        $0.todos[2],
-      ]
-    }
-
-    self.scheduler.advance(by: .milliseconds(100))
-    store.receive(.sortCompletedTodos)
+    store.assert(
+      .send(.editModeChanged(.active)) {
+        $0.editMode = .active
+      },
+      .send(.move([0], 2)) {
+        $0.todos = [
+          $0.todos[1],
+          $0.todos[0],
+          $0.todos[2],
+        ]
+      },
+      .do { self.scheduler.advance(by: .milliseconds(100)) },
+      .receive(.sortCompletedTodos)
+    )
   }
 
   func testFilteredEdit() {
@@ -264,12 +274,14 @@ class TodosTests: XCTestCase {
       )
     )
 
-    store.send(.filterPicked(.completed)) {
-      $0.filter = .completed
-    }
-    store.send(.todo(id: state.todos[1].id, action: .textFieldChanged("Did this already"))) {
-      $0.todos[1].description = "Did this already"
-    }
+    store.assert(
+      .send(.filterPicked(.completed)) {
+        $0.filter = .completed
+      },
+      .send(.todo(id: state.todos[1].id, action: .textFieldChanged("Did this already"))) {
+        $0.todos[1].description = "Did this already"
+      }
+    )
   }
 }
 
