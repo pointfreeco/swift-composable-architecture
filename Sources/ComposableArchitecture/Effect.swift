@@ -333,4 +333,23 @@ extension Publisher {
       .catch { Just(.failure($0)) }
       .eraseToEffect()
   }
+
+  /// Turns any publisher into an `Effect<T, Never>` for any type `T` by ignoring all output and
+  /// failures.
+  ///
+  /// This is useful for times you want to fire off an effect but don't want to feed any data back
+  /// into the system.
+  ///
+  ///     case .buttonTapped:
+  ///       return analyticsClient.track("Button Tapped")
+  ///         .fireAndForget()
+  ///
+  /// - Returns: An effect that never produces output or errors.
+  public func fireAndForget<T>() -> Effect<T, Never> {
+    func absurd<A>(_ never: Never) -> A {}
+    return self
+      .flatMap { _ in Empty() }
+      .catch { _ in Empty() }
+      .eraseToEffect()
+  }
 }
