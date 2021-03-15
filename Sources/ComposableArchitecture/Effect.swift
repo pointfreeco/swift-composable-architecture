@@ -324,8 +324,14 @@ extension Publisher {
   ///       return analyticsClient.track("Button Tapped")
   ///         .fireAndForget()
   ///
+  /// - Parameters:
+  ///   - outputType: An output type.
+  ///   - failureType: A failure type.
   /// - Returns: An effect that never produces output or errors.
-  public func fireAndForget<NewOutput, NewFailure>() -> Effect<NewOutput, NewFailure> {
+  public func fireAndForget<NewOutput, NewFailure>(
+    outputType: NewOutput.Type = NewOutput.self,
+    failureType: NewFailure.Type = NewFailure.self
+  ) -> Effect<NewOutput, NewFailure> {
     return
       self
       .flatMap { _ in Empty() }
