@@ -334,8 +334,8 @@ extension Publisher {
       .eraseToEffect()
   }
 
-  /// Turns any publisher into an `Effect<T, Never>` for any type `T` by ignoring all output and
-  /// failures.
+  /// Turns any publisher into an `Effect` for any output and failure type by ignoring all output
+  /// and any failure.
   ///
   /// This is useful for times you want to fire off an effect but don't want to feed any data back
   /// into the system.
@@ -345,7 +345,7 @@ extension Publisher {
   ///         .fireAndForget()
   ///
   /// - Returns: An effect that never produces output or errors.
-  public func fireAndForget<T>() -> Effect<T, Never> {
+  public func fireAndForget<NewOutput, NewFailure>() -> Effect<NewOutput, NewFailure> {
     return self
       .flatMap { _ in Empty() }
       .catch { _ in Empty() }
