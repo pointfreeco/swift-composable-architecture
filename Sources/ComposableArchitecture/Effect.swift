@@ -346,7 +346,8 @@ extension Publisher {
   ///
   /// - Returns: An effect that never produces output or errors.
   public func fireAndForget<NewOutput, NewFailure>() -> Effect<NewOutput, NewFailure> {
-    return self
+    return
+      self
       .flatMap { _ in Empty() }
       .catch { _ in Empty() }
       .eraseToEffect()
