@@ -318,7 +318,7 @@ extension Publisher {
   /// and any failure.
   ///
   /// This is useful for times you want to fire off an effect but don't want to feed any data back
-  /// into the system.
+  /// into the system. It can automatically promote an effect to your reducer's domain.
   ///
   ///     case .buttonTapped:
   ///       return analyticsClient.track("Button Tapped")
