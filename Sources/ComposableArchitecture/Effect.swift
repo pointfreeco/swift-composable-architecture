@@ -327,8 +327,7 @@ extension Publisher {
   ///         .fireAndForget()
   ///
   /// - Returns: An effect.
-  public func fireAndForget<T>() -> Effect<T, Never> {
-    func absurd<A>(_ never: Never) -> A {}
+  public func fireAndForget<NewOutput, NewFailure>() -> Effect<NewOutput, NewFailure> {
     return self
       .flatMap { _ in Empty() }
       .catch { _ in Empty() }
