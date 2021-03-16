@@ -352,10 +352,9 @@ extension Publisher {
   ///
   /// - Returns: An `Effect` which completes immediately upon receiving successful output, and only publishes errors
   public func fireAndCatch() -> Effect<Failure, Never> {
-    flatMap { _ in
-      Empty<Failure, Failure>()
-    }
-    .catch(Just.init)
-    .eraseToEffect()
+    ignoreOutput()
+      .map { _ -> Failure in }
+      .catch(Just.init)
+      .eraseToEffect()
   }
 }
