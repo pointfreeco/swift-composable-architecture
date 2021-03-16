@@ -158,4 +158,34 @@ final class EffectTests: XCTestCase {
     XCTAssertEqual(values, [1])
     XCTAssertEqual(isComplete, true)
   }
+
+  func testEffectFireAndCatch() {
+    enum Error: Swift.Error, Equatable { case error }
+
+    var error: Error?
+
+    Future<Int, Error> { completion in
+      completion(.success(5))
+    }
+      .fireAndCatch()
+      .receive(on: scheduler)
+      .sink(receiveValue: { error = $0 })
+      .store(in: &self.cancellables)
+
+    self.scheduler.advance(by: 1)
+
+    XCTAssertNil(error)
+
+    Future<Int, Error> { completion in
+      completion(.failure(.error))
+    }
+      .fireAndCatch()
+      .receive(on: scheduler)
+      .sink { error = $0 }
+      .store(in: &self.cancellables)
+
+    self.scheduler.advance(by: 1)
+
+    XCTAssertEqual(Error.error, error)
+  }
 }
