@@ -169,7 +169,7 @@ final class EffectTests: XCTestCase {
     }
       .fireAndCatch()
       .receive(on: scheduler)
-      .sink(receiveValue: { error = $0 })
+      .sink { error = $0 }
       .store(in: &self.cancellables)
 
     self.scheduler.advance(by: 1)
