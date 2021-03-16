@@ -338,4 +338,24 @@ extension Publisher {
       .catch { _ in Empty() }
       .eraseToEffect()
   }
+
+  /// Turns any publisher into an `Effect` for any output and failure type by ignoring all output,
+  /// but retaining any failure.
+  ///
+  ///     case let .saveUser(user):
+  ///       return environment.saveUser(user)
+  ///         .fireAndCatch()
+  ///         .map(UserAction.saveFailure)
+  ///
+  /// This is useful for times you want to fire off an effect, and only want to feed data back into the
+  /// system if the effect fails.
+  ///
+  /// - Returns: An `Effect` which completes immediately upon receiving successful output, and only publishes errors
+  public func fireAndCatch() -> Effect<Failure, Never> {
+    flatMap { _ in
+      Empty<Failure, Failure>()
+    }
+    .catch(Just.init)
+    .eraseToEffect()
+  }
 }
