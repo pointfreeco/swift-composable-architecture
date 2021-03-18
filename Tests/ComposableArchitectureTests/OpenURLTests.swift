@@ -1,3 +1,4 @@
+#if !os(macOS)
 import XCTest
 
 @testable import ComposableArchitecture
@@ -62,3 +63,4 @@ class OpenURLTests: XCTestCase {
     )
   }
 }
+#endif
