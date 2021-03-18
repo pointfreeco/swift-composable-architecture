@@ -120,10 +120,10 @@ private struct OpenURLViewModifier: ViewModifier {
     // `.onAppear()` modifier first.
     content.onAppear().onReceive(viewStore.publisher) { newValue in
       if let url = newValue {
-        if canOpenURL(url) {
-          openURL(url) { viewStore.send(.openedURL($0)) }
+        if self.canOpenURL(url) {
+          self.openURL(url) { self.viewStore.send(.openedURL($0)) }
         } else {
-          viewStore.send(.urlNotSupported)
+          self.viewStore.send(.urlNotSupported)
         }
       }
     }
