@@ -16,6 +16,7 @@ jobs:
         xcode:
           - 11.3
           - 11.7
+          - 12.4
     steps:
       - uses: actions/checkout@v2
       - name: Select Xcode ${{ matrix.xcode }}
@@ -29,7 +30,7 @@ jobs:
 #     strategy:
 #       matrix:
 #         xcode:
-#           - 12.3
+#           - 12.4
 #     steps:
 #       - uses: actions/checkout@v2
 #       - name: Select Xcode ${{ matrix.xcode }}

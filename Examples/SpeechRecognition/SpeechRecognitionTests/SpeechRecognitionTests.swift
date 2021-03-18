@@ -6,37 +6,33 @@ import XCTest
 
 class SpeechRecognitionTests: XCTestCase {
   let recognitionTaskSubject = PassthroughSubject<SpeechClient.Action, SpeechClient.Error>()
-  let scheduler = DispatchQueue.testScheduler
 
   func testDenyAuthorization() {
     let store = TestStore(
       initialState: .init(),
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: scheduler.eraseToAnyScheduler(),
+        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
         speechClient: .mock(
           requestAuthorization: { Effect(value: .denied) }
         )
       )
     )
 
-    store.assert(
-      .send(.recordButtonTapped) {
-        $0.isRecording = true
-      },
-      .do { self.scheduler.advance() },
-      .receive(.speechRecognizerAuthorizationStatusResponse(.denied)) {
-        $0.alert = .init(
-          title: .init(
-            """
+    store.send(.recordButtonTapped) {
+      $0.isRecording = true
+    }
+    store.receive(.speechRecognizerAuthorizationStatusResponse(.denied)) {
+      $0.alert = .init(
+        title: .init(
+          """
             You denied access to speech recognition. This app needs access to transcribe your speech.
             """
-          )
         )
-        $0.isRecording = false
-        $0.speechRecognizerAuthorizationStatus = .denied
-      }
-    )
+      )
+      $0.isRecording = false
+      $0.speechRecognizerAuthorizationStatus = .denied
+    }
   }
 
   func testRestrictedAuthorization() {
@@ -44,24 +40,21 @@ class SpeechRecognitionTests: XCTestCase {
       initialState: .init(),
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: scheduler.eraseToAnyScheduler(),
+        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
         speechClient: .mock(
           requestAuthorization: { Effect(value: .restricted) }
         )
       )
     )
 
-    store.assert(
-      .send(.recordButtonTapped) {
-        $0.isRecording = true
-      },
-      .do { self.scheduler.advance() },
-      .receive(.speechRecognizerAuthorizationStatusResponse(.restricted)) {
-        $0.alert = .init(title: .init("Your device does not allow speech recognition."))
-        $0.isRecording = false
-        $0.speechRecognizerAuthorizationStatus = .restricted
-      }
-    )
+    store.send(.recordButtonTapped) {
+      $0.isRecording = true
+    }
+    store.receive(.speechRecognizerAuthorizationStatusResponse(.restricted)) {
+      $0.alert = .init(title: .init("Your device does not allow speech recognition."))
+      $0.isRecording = false
+      $0.speechRecognizerAuthorizationStatus = .restricted
+    }
   }
 
   func testAllowAndRecord() {
@@ -69,7 +62,7 @@ class SpeechRecognitionTests: XCTestCase {
       initialState: .init(),
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: scheduler.eraseToAnyScheduler(),
+        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
         speechClient: .mock(
           finishTask: { _ in
             .fireAndForget { self.recognitionTaskSubject.send(completion: .finished) }
@@ -94,26 +87,23 @@ class SpeechRecognitionTests: XCTestCase {
     finalResult.bestTranscription.formattedString = "Hello world"
     finalResult.isFinal = true
 
-    store.assert(
-      .send(.recordButtonTapped) {
-        $0.isRecording = true
-      },
+    store.send(.recordButtonTapped) {
+      $0.isRecording = true
+    }
 
-      .do { self.scheduler.advance() },
-      .receive(.speechRecognizerAuthorizationStatusResponse(.authorized)) {
-        $0.speechRecognizerAuthorizationStatus = .authorized
-      },
+    store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized)) {
+      $0.speechRecognizerAuthorizationStatus = .authorized
+    }
 
-      .do { self.recognitionTaskSubject.send(.taskResult(result)) },
-      .receive(.speech(.success(.taskResult(result)))) {
-        $0.transcribedText = "Hello"
-      },
+    self.recognitionTaskSubject.send(.taskResult(result))
+    store.receive(.speech(.success(.taskResult(result)))) {
+      $0.transcribedText = "Hello"
+    }
 
-      .do { self.recognitionTaskSubject.send(.taskResult(finalResult)) },
-      .receive(.speech(.success(.taskResult(finalResult)))) {
-        $0.transcribedText = "Hello world"
-      }
-    )
+    self.recognitionTaskSubject.send(.taskResult(finalResult))
+    store.receive(.speech(.success(.taskResult(finalResult)))) {
+      $0.transcribedText = "Hello world"
+    }
   }
 
   func testAudioSessionFailure() {
@@ -121,7 +111,7 @@ class SpeechRecognitionTests: XCTestCase {
       initialState: .init(),
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: scheduler.eraseToAnyScheduler(),
+        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
         speechClient: .mock(
           recognitionTask: { _, _ in self.recognitionTaskSubject.eraseToEffect() },
           requestAuthorization: { Effect(value: .authorized) }
@@ -129,31 +119,28 @@ class SpeechRecognitionTests: XCTestCase {
       )
     )
 
-    store.assert(
-      .send(.recordButtonTapped) {
-        $0.isRecording = true
-      },
+    store.send(.recordButtonTapped) {
+      $0.isRecording = true
+    }
 
-      .do { self.scheduler.advance() },
-      .receive(.speechRecognizerAuthorizationStatusResponse(.authorized)) {
-        $0.speechRecognizerAuthorizationStatus = .authorized
-      },
+    store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized)) {
+      $0.speechRecognizerAuthorizationStatus = .authorized
+    }
 
-      .do { self.recognitionTaskSubject.send(completion: .failure(.couldntConfigureAudioSession)) },
-      .receive(.speech(.failure(.couldntConfigureAudioSession))) {
-        $0.alert = .init(title: .init("Problem with audio device. Please try again."))
-      },
+    self.recognitionTaskSubject.send(completion: .failure(.couldntConfigureAudioSession))
+    store.receive(.speech(.failure(.couldntConfigureAudioSession))) {
+      $0.alert = .init(title: .init("Problem with audio device. Please try again."))
+    }
 
-      .do { self.recognitionTaskSubject.send(completion: .finished) }
-    )
+    self.recognitionTaskSubject.send(completion: .finished)
   }
-
+  
   func testAudioEngineFailure() {
     let store = TestStore(
       initialState: .init(),
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: scheduler.eraseToAnyScheduler(),
+        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
         speechClient: .mock(
           recognitionTask: { _, _ in self.recognitionTaskSubject.eraseToEffect() },
           requestAuthorization: { Effect(value: .authorized) }
@@ -161,22 +148,19 @@ class SpeechRecognitionTests: XCTestCase {
       )
     )
 
-    store.assert(
-      .send(.recordButtonTapped) {
-        $0.isRecording = true
-      },
+    store.send(.recordButtonTapped) {
+      $0.isRecording = true
+    }
 
-      .do { self.scheduler.advance() },
-      .receive(.speechRecognizerAuthorizationStatusResponse(.authorized)) {
-        $0.speechRecognizerAuthorizationStatus = .authorized
-      },
+    store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized)) {
+      $0.speechRecognizerAuthorizationStatus = .authorized
+    }
 
-      .do { self.recognitionTaskSubject.send(completion: .failure(.couldntStartAudioEngine)) },
-      .receive(.speech(.failure(.couldntStartAudioEngine))) {
-        $0.alert = .init(title: .init("Problem with audio device. Please try again."))
-      },
+    self.recognitionTaskSubject.send(completion: .failure(.couldntStartAudioEngine))
+    store.receive(.speech(.failure(.couldntStartAudioEngine))) {
+      $0.alert = .init(title: .init("Problem with audio device. Please try again."))
+    }
 
-      .do { self.recognitionTaskSubject.send(completion: .finished) }
-    )
+    self.recognitionTaskSubject.send(completion: .finished)
   }
 }

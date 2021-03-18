@@ -1,6 +1,7 @@
 #if DEBUG
   import Combine
   import Foundation
+  import XCTestDynamicOverlay
 
   /// A testable runtime for a reducer.
   ///
@@ -67,7 +68,6 @@
   ///           reducer: counterReducer,
   ///           environment: ()
   ///         )
-  ///
   ///         store.send(.incrementButtonTapped) { // WHEN the increment button is tapped
   ///           $0.count = 1                       // THEN the count should be 1
   ///         }
@@ -128,7 +128,7 @@
   ///         request: { _ in Effect(value: ["Composable Architecture"]) }
   ///       )
   ///     )
-///
+  ///
   ///     // Change the query
   ///     store.send(.searchFieldChanged("c") {
   ///       // Assert that state updates accordingly
@@ -160,16 +160,16 @@
   ///
   public final class TestStore<State, LocalState, Action: Equatable, LocalAction, Environment> {
     public var environment: Environment
+
     private let file: StaticString
     private let fromLocalAction: (LocalAction) -> Action
     private var line: UInt
-    private let reducer: Reducer<State, Action, Environment>
-    private let toLocalState: (State) -> LocalState
-
     private var longLivingEffects: Set<LongLivingEffect> = []
     private var receivedActions: [(action: Action, state: State)] = []
+    private let reducer: Reducer<State, Action, Environment>
     private var snapshotState: State
     private var store: Store<State, TestAction>!
+    private let toLocalState: (State) -> LocalState
 
     private init(
       environment: Environment,
@@ -192,7 +192,7 @@
         initialState: initialState,
         reducer: Reducer<State, TestAction, Void> { [unowned self] state, action, _ in
           let effects: Effect<Action, Never>
-          switch action.action {
+          switch action.origin {
           case let .send(localAction):
             effects = self.reducer.run(&state, self.fromLocalAction(localAction), self.environment)
             self.snapshotState = state
@@ -212,7 +212,7 @@
               receiveCompletion: { [weak self] _ in self?.longLivingEffects.remove(effect) },
               receiveCancel: { [weak self] in self?.longLivingEffects.remove(effect) }
             )
-            .map { .init(action: .receive($0), file: action.file, line: action.line) }
+            .map { .init(origin: .receive($0), file: action.file, line: action.line) }
             .eraseToEffect()
 
         },
@@ -226,7 +226,7 @@
 
     private func completed() {
       if !self.receivedActions.isEmpty {
-        _XCTFail(
+        XCTFail(
           """
           The store received \(self.receivedActions.count) unexpected \
           action\(self.receivedActions.count == 1 ? "" : "s") after this one: …
@@ -237,7 +237,7 @@
         )
       }
       for effect in self.longLivingEffects {
-        _XCTFail(
+        XCTFail(
           """
           An effect returned for this action is still running. It must complete before the end of \
           the test. …
@@ -253,8 +253,8 @@
 
           • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
           then make sure those effects are torn down by marking the effect ".cancellable" and \
-          returning a corresponding cancellation effect ("Effect.cancel") effect from another \
-          action, or, if your effect is driven by a Combine subject, send it a completion.
+          returning a corresponding cancellation effect ("Effect.cancel") from another action, or, \
+          if your effect is driven by a Combine subject, send it a completion.
           """,
           file: effect.file,
           line: effect.line
@@ -311,7 +311,7 @@
       line: UInt = #line
     ) {
       if !self.receivedActions.isEmpty {
-        _XCTFail(
+        XCTFail(
           """
           Must handle \(self.receivedActions.count) received \
           action\(self.receivedActions.count == 1 ? "" : "s") before sending an action: …
@@ -325,14 +325,14 @@
       ViewStore(
         self.store.scope(
           state: self.toLocalState,
-          action: { .init(action: .send($0), file: file, line: line) }
+          action: { .init(origin: .send($0), file: file, line: line) }
         )
       )
       .send(action)
       do {
         try update(&expectedState)
       } catch {
-        _XCTFail("Threw error: \(error)", file: file, line: line)
+        XCTFail("Threw error: \(error)", file: file, line: line)
       }
       self.expectedStateShouldMatch(
         expected: expectedState,
@@ -352,7 +352,7 @@
       line: UInt = #line
     ) {
       guard !self.receivedActions.isEmpty else {
-        _XCTFail(
+        XCTFail(
           """
           Expected to receive an action, but received none.
           """,
@@ -373,7 +373,7 @@
           \(String(describing: receivedAction).indent(by: 2))
           """
 
-        _XCTFail(
+        XCTFail(
           """
           Received unexpected action: …
 
@@ -386,7 +386,7 @@
       do {
         try update(&expectedState)
       } catch {
-        _XCTFail("Threw error: \(error)", file: file, line: line)
+        XCTFail("Threw error: \(error)", file: file, line: line)
       }
       expectedStateShouldMatch(
         expected: expectedState,
@@ -426,7 +426,7 @@
 
         case let .environment(work):
           if !self.receivedActions.isEmpty {
-            _XCTFail(
+            XCTFail(
               """
               Must handle \(self.receivedActions.count) received \
               action\(self.receivedActions.count == 1 ? "" : "s") before performing this work: …
@@ -439,12 +439,12 @@
           do {
             try work(&self.environment)
           } catch {
-            _XCTFail("Threw error: \(error)", file: step.file, line: step.line)
+            XCTFail("Threw error: \(error)", file: step.file, line: step.line)
           }
 
         case let .do(work):
           if !receivedActions.isEmpty {
-            _XCTFail(
+            XCTFail(
               """
               Must handle \(self.receivedActions.count) received \
               action\(self.receivedActions.count == 1 ? "" : "s") before performing this work: …
@@ -457,7 +457,7 @@
           do {
             try work()
           } catch {
-            _XCTFail("Threw error: \(error)", file: step.file, line: step.line)
+            XCTFail("Threw error: \(error)", file: step.file, line: step.line)
           }
 
         case let .sequence(subSteps):
@@ -488,7 +488,7 @@
           \(String(describing: actual).indent(by: 2))
           """
 
-        _XCTFail(
+        XCTFail(
           """
           State change does not match expectation: …
 
@@ -650,52 +650,14 @@
     }
 
     private struct TestAction {
-      let action: ActionMethod
+      let origin: Origin
       let file: StaticString
       let line: UInt
 
-      enum ActionMethod {
+      enum Origin {
         case send(LocalAction)
         case receive(Action)
       }
     }
   }
-
-  // NB: Dynamically load XCTest to prevent leaking its symbols into our library code.
-  private func _XCTFail(_ message: String = "", file: StaticString = #file, line: UInt = #line) {
-    guard
-      let _XCTFailureHandler = _XCTFailureHandler,
-      let _XCTCurrentTestCase = _XCTCurrentTestCase
-    else {
-      assertionFailure(
-        """
-        Couldn't load XCTest. Are you using a test store in application code?"
-        """,
-        file: file,
-        line: line
-      )
-      return
-    }
-    _XCTFailureHandler(_XCTCurrentTestCase(), true, "\(file)", line, message, nil)
-  }
-
-  private typealias XCTCurrentTestCase = @convention(c) () -> AnyObject
-  private typealias XCTFailureHandler = @convention(c) (
-    AnyObject, Bool, UnsafePointer<CChar>, UInt, String, String?
-  ) -> Void
-
-  private let _XCTest = NSClassFromString("XCTest")
-    .flatMap(Bundle.init(for:))
-    .flatMap { $0.executablePath }
-    .flatMap { dlopen($0, RTLD_NOW) }
-
-  private let _XCTFailureHandler =
-    _XCTest
-    .flatMap { dlsym($0, "_XCTFailureHandler") }
-    .map { unsafeBitCast($0, to: XCTFailureHandler.self) }
-
-  private let _XCTCurrentTestCase =
-    _XCTest
-    .flatMap { dlsym($0, "_XCTCurrentTestCase") }
-    .map { unsafeBitCast($0, to: XCTCurrentTestCase.self) }
 #endif

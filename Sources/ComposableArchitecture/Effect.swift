@@ -314,39 +314,28 @@ extension Publisher {
       .eraseToEffect()
   }
 
-  /// Transforms a publisher into an `Effect<T, Never>` for any type `T`. This is
-  /// possible to do because an `Effect<Never, Failure>` can never produce any values to feed back
-  /// into the store (hence the name "fire and forget"), and therefore we can act like it's an
-  /// effect that produces values of any type (since it never produces values).
+  /// Turns any publisher into an `Effect` for any output and failure type by ignoring all output
+  /// and any failure.
   ///
-  /// This is useful for times you have an `Effect<Never, Failure>` but need to massage it into
-  /// another type in order to return it from a reducer:
+  /// This is useful for times you want to fire off an effect but don't want to feed any data back
+  /// into the system. It can automatically promote an effect to your reducer's domain.
   ///
   ///     case .buttonTapped:
   ///       return analyticsClient.track("Button Tapped")
   ///         .fireAndForget()
   ///
-  /// - Returns: An effect.
-  public func fireAndForget<NewOutput, NewFailure>() -> Effect<NewOutput, NewFailure> {
-    return self
+  /// - Parameters:
+  ///   - outputType: An output type.
+  ///   - failureType: A failure type.
+  /// - Returns: An effect that never produces output or errors.
+  public func fireAndForget<NewOutput, NewFailure>(
+    outputType: NewOutput.Type = NewOutput.self,
+    failureType: NewFailure.Type = NewFailure.self
+  ) -> Effect<NewOutput, NewFailure> {
+    return
+      self
       .flatMap { _ in Empty() }
       .catch { _ in Empty() }
       .eraseToEffect()
   }
 }
-
-#if DEBUG
-extension Effect {
-  public static func unimplemented(
-    _ message: @autoclosure @escaping () -> String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-  ) -> Effect<Output, Failure> {
-    Deferred {
-      Future { _ in
-        fatalError(message(), file: file, line: line)
-      }
-    }.eraseToEffect()
-  }
-}
-#endif

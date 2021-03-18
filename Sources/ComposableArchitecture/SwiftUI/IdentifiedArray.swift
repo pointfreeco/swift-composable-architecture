@@ -14,7 +14,7 @@ import Foundation
 ///
 /// This domain can be pulled back to a larger domain with the `forEach` method:
 ///
-///     struct AppState { var counters = IdentifiedArray<Int>(id: \.self) }
+///     struct AppState { var counters = IdentifiedArrayOf<CounterState>() }
 ///     enum AppAction { case counter(id: UUID, action: CounterAction) }
 ///     let appReducer = counterReducer.forEach(
 ///       state: \AppState.counters,
@@ -30,7 +30,7 @@ import Foundation
 ///       var body: some View {
 ///         List {
 ///           ForEachStore(
-///             self.store.scope(state: \.counters, action: AppAction.counter(id:action))
+///             self.store.scope(state: \.counters, action: AppAction.counter(id:action:)),
 ///             content: CounterView.init(store:)
 ///           )
 ///         }
