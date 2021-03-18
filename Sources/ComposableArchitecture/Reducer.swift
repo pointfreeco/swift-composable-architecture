@@ -262,6 +262,72 @@ public struct Reducer<State, Action, Environment> {
       .map(toLocalAction.embed)
     }
   }
+  
+  /// Transforms a reducer that works on local state, action and environment into one that works on
+  /// global state, action and environment. It accomplishes this by providing 3 transformations to
+  /// the method:
+  ///
+  ///   * A lens that can get/set a piece of local state from the global state.
+  ///   * A case path that can extract/embed a local action into a global action.
+  ///   * A function that can transform the global environment into a local environment.
+  ///
+  /// This operation is important for breaking down large reducers into small ones. When used with
+  /// the `combine` operator you can define many reducers that work on small pieces of domain, and
+  /// then _pull them back_ and _combine_ them into one big reducer that works on a large domain.
+  ///
+  ///     // Global domain that holds a local domain:
+  ///     struct AppState { var settingA: Bool; var settingB: Int, /* rest of state */ }
+  ///     enum AppAction { case settings(SettingsAction), /* other actions */ }
+  ///     struct AppEnvironment { var settings: SettingsEnvironment, /* rest of dependencies */ }
+  ///
+  ///     // Settings state example
+  ///     struct SettingsState { var settingA: Bool; var settingB: Int }
+  ///
+  ///     // A reducer that works on the local domain:
+  ///     let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvironment> { ... }
+  ///
+  ///     // Pullback the settings reducer so that it works on all of the app domain:
+  ///     let appReducer: Reducer<AppState, AppAction, AppEnvironment> = .combine(
+  ///       settingsReducer.pullback(
+  ///         state: Lens(
+  ///           extract: { state in
+  ///             SettingsState(
+  ///               settingA: state.settingA,
+  ///               settingB: state.settingB
+  ///             )
+  ///           },
+  ///           embed: { settings, state in
+  ///             state.settingA = settings.settingA
+  ///             state.settingB = settings.settingB
+  ///           }
+  ///         ),
+  ///         action: /AppAction.settings,
+  ///         environment: { $0.settings }
+  ///       ),
+  ///
+  ///       /* other reducers */
+  ///     )
+  ///
+  /// - Parameters:
+  ///   - toLocalState: A lens that can get/set `State` inside `GlobalState`.
+  ///   - toLocalAction: A case path that can extract/embed `Action` from `GlobalAction`.
+  ///   - toLocalEnvironment: A function that transforms `GlobalEnvironment` into `Environment`.
+  /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
+  public func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
+    state toLocalState: Lens<GlobalState, State>,
+    action toLocalAction: CasePath<GlobalAction, Action>,
+    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+    .init { globalState, globalAction, globalEnvironment in
+      guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
+      return self.reducer(
+        &toLocalState[{ $0(&globalState) }],
+        localAction,
+        toLocalEnvironment(globalEnvironment)
+      )
+      .map(toLocalAction.embed)
+    }
+  }
 
   /// Transforms a reducer that works on non-optional state into one that works on optional state by
   /// only running the non-optional reducer when state is non-nil.

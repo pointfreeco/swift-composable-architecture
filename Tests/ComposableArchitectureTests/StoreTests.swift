@@ -5,6 +5,108 @@ import XCTest
 
 final class StoreTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
+  
+  func testLensPullback() {
+    enum IntChildAction: Equatable {
+      case increment
+    }
+    
+    struct ChildState: Equatable {
+      var a: Int = 0
+      var b: Int = 0
+    }
+    
+    enum ChildAction: Equatable {
+      case incrementA
+      case incrementB
+    }
+    
+    enum ParentAction: Equatable {
+      case child(ChildAction)
+      case singleChild(IntChildAction)
+    }
+    
+    struct ParentState: Equatable {
+      var a: Int = 0
+      var b: Int = 0
+    }
+    
+    let singleChildReducer = Reducer<
+      Int,
+      IntChildAction,
+      Void
+    > { state, action, _ in
+      switch action {
+      case .increment:
+        state += 1
+        return .none
+      }
+    }
+    
+    let childReducer = Reducer<
+      ChildState,
+      ChildAction,
+      Void
+    > { state, action, _ in
+      switch action {
+      case .incrementA:
+        state.a += 1
+        return .none
+        
+      case .incrementB:
+        state.b += 1
+        return .none
+      }
+    }
+    
+    let parentReducer = Reducer<
+      ParentState,
+      ParentAction,
+      Void
+    >.combine(
+      childReducer.pullback(
+        state: Lens(
+          extract: { ChildState(a: $0.a, b: $0.b) },
+          embed: { $1.a = $0.a; $1.b = $0.b }
+        ),
+        action: /ParentAction.child,
+        environment: {}
+      ),
+      singleChildReducer.pullback(
+        state: \.a,
+        action: /ParentAction.singleChild,
+        environment: {}
+      )
+    )
+
+    let parentStore = Store<ParentState, ParentAction>(
+      initialState: .init(),
+      reducer: parentReducer,
+      environment: ()
+    )
+    let parentViewStore = ViewStore(parentStore)
+    
+    let childStore = parentStore.scope(state: { ChildState(a: $0.a, b: $0.b) })
+    let childViewStore = ViewStore(childStore)
+    
+    let intChildStore = parentStore.scope(state: \.a)
+    let intChildViewStore = ViewStore(intChildStore)
+
+    var values: [ChildState] = []
+    childViewStore.publisher
+      .sink { values.append($0) }
+      .store(in: &self.cancellables)
+
+    XCTAssertEqual(values, [ChildState()])
+
+    parentViewStore.send(.child(.incrementB))
+
+    XCTAssertEqual(values, [ChildState(), ChildState(b: 1)])
+    
+    XCTAssertEqual(childViewStore.state.a, parentViewStore.state.a)
+    XCTAssertEqual(intChildViewStore.state, parentViewStore.state.a)
+    XCTAssertEqual(childViewStore.state.b, parentViewStore.state.b)
+  }
 
   func testCancellableIsRemovedOnImmediatelyCompletingEffect() {
     let reducer = Reducer<Void, Void, Void> { _, _, _ in .none }
