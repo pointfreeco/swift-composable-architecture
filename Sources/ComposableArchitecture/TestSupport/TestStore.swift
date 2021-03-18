@@ -1,6 +1,7 @@
 #if DEBUG
   import Combine
   import Foundation
+  import XCTestDynamicOverlay
 
   /// A testable runtime for a reducer.
   ///
@@ -225,7 +226,7 @@
 
     private func completed() {
       if !self.receivedActions.isEmpty {
-        _XCTFail(
+        XCTFail(
           """
           The store received \(self.receivedActions.count) unexpected \
           action\(self.receivedActions.count == 1 ? "" : "s") after this one: …
@@ -236,7 +237,7 @@
         )
       }
       for effect in self.longLivingEffects {
-        _XCTFail(
+        XCTFail(
           """
           An effect returned for this action is still running. It must complete before the end of \
           the test. …
@@ -310,7 +311,7 @@
       _ update: @escaping (inout LocalState) throws -> Void = { _ in }
     ) {
       if !self.receivedActions.isEmpty {
-        _XCTFail(
+        XCTFail(
           """
           Must handle \(self.receivedActions.count) received \
           action\(self.receivedActions.count == 1 ? "" : "s") before sending an action: …
@@ -331,7 +332,7 @@
       do {
         try update(&expectedState)
       } catch {
-        _XCTFail("Threw error: \(error)", file: file, line: line)
+        XCTFail("Threw error: \(error)", file: file, line: line)
       }
       self.expectedStateShouldMatch(
         expected: expectedState,
@@ -351,7 +352,7 @@
       _ update: @escaping (inout LocalState) throws -> Void = { _ in }
     ) {
       guard !self.receivedActions.isEmpty else {
-        _XCTFail(
+        XCTFail(
           """
           Expected to receive an action, but received none.
           """,
@@ -372,7 +373,7 @@
           \(String(describing: receivedAction).indent(by: 2))
           """
 
-        _XCTFail(
+        XCTFail(
           """
           Received unexpected action: …
 
@@ -385,7 +386,7 @@
       do {
         try update(&expectedState)
       } catch {
-        _XCTFail("Threw error: \(error)", file: file, line: line)
+        XCTFail("Threw error: \(error)", file: file, line: line)
       }
       expectedStateShouldMatch(
         expected: expectedState,
@@ -425,7 +426,7 @@
 
         case let .environment(work):
           if !self.receivedActions.isEmpty {
-            _XCTFail(
+            XCTFail(
               """
               Must handle \(self.receivedActions.count) received \
               action\(self.receivedActions.count == 1 ? "" : "s") before performing this work: …
@@ -438,12 +439,12 @@
           do {
             try work(&self.environment)
           } catch {
-            _XCTFail("Threw error: \(error)", file: step.file, line: step.line)
+            XCTFail("Threw error: \(error)", file: step.file, line: step.line)
           }
 
         case let .do(work):
           if !receivedActions.isEmpty {
-            _XCTFail(
+            XCTFail(
               """
               Must handle \(self.receivedActions.count) received \
               action\(self.receivedActions.count == 1 ? "" : "s") before performing this work: …
@@ -456,7 +457,7 @@
           do {
             try work()
           } catch {
-            _XCTFail("Threw error: \(error)", file: step.file, line: step.line)
+            XCTFail("Threw error: \(error)", file: step.file, line: step.line)
           }
 
         case let .sequence(subSteps):
@@ -487,7 +488,7 @@
           \(String(describing: actual).indent(by: 2))
           """
 
-        _XCTFail(
+        XCTFail(
           """
           State change does not match expectation: …
 
@@ -659,42 +660,4 @@
       }
     }
   }
-
-  // NB: Dynamically load XCTest to prevent leaking its symbols into our library code.
-  private func _XCTFail(_ message: String = "", file: StaticString = #file, line: UInt = #line) {
-    guard
-      let _XCTFailureHandler = _XCTFailureHandler,
-      let _XCTCurrentTestCase = _XCTCurrentTestCase
-    else {
-      assertionFailure(
-        """
-        Couldn't load XCTest. Are you using a test store in application code?"
-        """,
-        file: file,
-        line: line
-      )
-      return
-    }
-    _XCTFailureHandler(_XCTCurrentTestCase(), true, "\(file)", line, message, nil)
-  }
-
-  private typealias XCTCurrentTestCase = @convention(c) () -> AnyObject
-  private typealias XCTFailureHandler = @convention(c) (
-    AnyObject, Bool, UnsafePointer<CChar>, UInt, String, String?
-  ) -> Void
-
-  private let _XCTest = NSClassFromString("XCTest")
-    .flatMap(Bundle.init(for:))
-    .flatMap { $0.executablePath }
-    .flatMap { dlopen($0, RTLD_NOW) }
-
-  private let _XCTFailureHandler =
-    _XCTest
-    .flatMap { dlsym($0, "_XCTFailureHandler") }
-    .map { unsafeBitCast($0, to: XCTFailureHandler.self) }
-
-  private let _XCTCurrentTestCase =
-    _XCTest
-    .flatMap { dlsym($0, "_XCTCurrentTestCase") }
-    .map { unsafeBitCast($0, to: XCTCurrentTestCase.self) }
 #endif

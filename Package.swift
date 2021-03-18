@@ -27,6 +27,7 @@ let package = Package(
       dependencies: [
         "CasePaths",
         "CombineSchedulers",
+        "XCTestDynamicOverlay"
       ]
     ),
     .testTarget(
