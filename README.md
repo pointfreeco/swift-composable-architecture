@@ -68,6 +68,8 @@ This repo comes with _lots_ of examples to demonstrate how to solve common and c
 * [Todos](./Examples/Todos)
 * [Voice memos](./Examples/VoiceMemos)
 
+Looking for something more substantial? Check out the source code for [isowords](https://github.com/pointfreeco/isowords), an iOS word search game built in SwiftUI and the Composable Architecture.
+
 ## Basic Usage
 
 To build a feature using the Composable Architecture you define some types and values that model your domain:
