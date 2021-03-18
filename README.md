@@ -293,7 +293,7 @@ store.send(.incrementButtonTapped) {
 }
 store.send(.decrementButtonTapped) {
   $0.count = 0
-},
+}
 
 // Test that tapping the fact button causes us to receive a response from the effect. Note
 // that we have to advance the scheduler because we used `.receive(on:)` in the reducer.
