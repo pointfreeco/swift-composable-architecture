@@ -382,7 +382,7 @@ If you are interested in contributing a wrapper library for a framework that we 
   <details>
     <summary>Expand to see answer</summary>
 
-    All interactions with an instance of `Store` (including all of its scopes and derived `ViewStore`s) must be done on the same thread, and if the store is powering a SwiftUI or UIKit view then it further must be done on the main thread.
+    All interactions with an instance of `Store` (including all of its scopes and derived `ViewStore`s) must be done on the same thread, and if the store is powering a SwiftUI or UIKit view then interactions must be done on the main thread.
 
     When an action is sent to the `Store`, a reducer is run on the current state, and this process cannot be done from multiple threads. A possible work around is to use a queue in `send`s implementation, but this introduces a few new complications:
 
