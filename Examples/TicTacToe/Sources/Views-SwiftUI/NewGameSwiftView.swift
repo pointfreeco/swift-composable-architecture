@@ -29,9 +29,10 @@ public struct NewGameView: View {
 
   public var body: some View {
     WithViewStore(self.store.scope(state: { $0.view }, action: NewGameAction.view)) { viewStore in
-      VStack {
-        Form {
-          Section(header: Text("X Player Name")) {
+      ScrollView {
+        VStack(spacing: 16) {
+          VStack(alignment: .leading) {
+            Text("X Player Name")
             TextField(
               "Blob Sr.",
               text: viewStore.binding(get: { $0.xPlayerName }, send: ViewAction.xPlayerNameChanged)
@@ -39,8 +40,11 @@ public struct NewGameView: View {
             .autocapitalization(.words)
             .disableAutocorrection(true)
             .textContentType(.name)
+            .textFieldStyle(RoundedBorderTextFieldStyle())
           }
-          Section(header: Text("O Player Name")) {
+          
+          VStack(alignment: .leading) {
+            Text("O Player Name")
             TextField(
               "Blob Jr.",
               text: viewStore.binding(get: { $0.oPlayerName }, send: ViewAction.oPlayerNameChanged)
@@ -48,23 +52,24 @@ public struct NewGameView: View {
             .autocapitalization(.words)
             .disableAutocorrection(true)
             .textContentType(.name)
+            .textFieldStyle(RoundedBorderTextFieldStyle())
           }
-          Section {
-            NavigationLink(
-              destination: IfLetStore(
-                self.store.scope(state: { $0.game }, action: NewGameAction.game),
-                then: GameView.init(store:)
-              ),
-              isActive: viewStore.binding(
-                get: { $0.isGameActive },
-                send: { $0 ? .letsPlayButtonTapped : .gameDismissed }
-              )
-            ) {
-              Text("Let's play!")
-            }
-            .disabled(viewStore.isLetsPlayButtonDisabled)
+
+          NavigationLink(
+            destination: IfLetStore(
+              self.store.scope(state: { $0.game }, action: NewGameAction.game),
+              then: GameView.init(store:)
+            ),
+            isActive: viewStore.binding(
+              get: { $0.isGameActive },
+              send: { $0 ? .letsPlayButtonTapped : .gameDismissed }
+            )
+          ) {
+            Text("Let's play!")
           }
+          .disabled(viewStore.isLetsPlayButtonDisabled)
         }
+        .padding(.horizontal)
       }
       .navigationBarTitle("New Game")
       .navigationBarItems(trailing: Button("Logout") { viewStore.send(.logoutButtonTapped) })

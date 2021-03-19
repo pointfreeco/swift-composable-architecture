@@ -27,22 +27,20 @@ public struct TwoFactorView: View {
 
   public var body: some View {
     WithViewStore(self.store.scope(state: { $0.view }, action: TwoFactorAction.view)) { viewStore in
-      Form {
-        Section(
-          header: Text(#"To confirm the second factor enter "1234" into the form."#)
-        ) {
-          EmptyView()
-        }
+      ScrollView {
+        VStack(spacing: 16) {
+          Text(#"To confirm the second factor enter "1234" into the form."#)
 
-        Section(header: Text("Code")) {
-          TextField(
-            "1234",
-            text: viewStore.binding(get: { $0.code }, send: ViewAction.codeChanged)
-          )
-          .keyboardType(.numberPad)
-        }
+          VStack(alignment: .leading) {
+            Text("Code")
+            TextField(
+              "1234",
+              text: viewStore.binding(get: { $0.code }, send: ViewAction.codeChanged)
+            )
+            .keyboardType(.numberPad)
+            .textFieldStyle(RoundedBorderTextFieldStyle())
+          }
 
-        Section {
           HStack {
             Button("Submit") {
               viewStore.send(.submitButtonTapped)
@@ -54,11 +52,12 @@ public struct TwoFactorView: View {
             }
           }
         }
+        .alert(self.store.scope(state: { $0.alert }), dismiss: .alertDismissed)
+        .disabled(viewStore.isFormDisabled)
+        .padding(.horizontal)
       }
-      .disabled(viewStore.isFormDisabled)
-      .alert(self.store.scope(state: { $0.alert }), dismiss: .alertDismissed)
     }
-    .navigationBarTitle("Two Factor Confirmation")
+    .navigationBarTitle("Confirmation Code")
   }
 }
 

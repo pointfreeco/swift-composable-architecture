@@ -33,19 +33,18 @@ public struct LoginView: View {
 
   public var body: some View {
     WithViewStore(self.store.scope(state: { $0.view }, action: LoginAction.view)) { viewStore in
-      VStack {
-        Form {
-          Section(
-            header: Text(
-              """
+      ScrollView {
+        VStack(spacing: 16) {
+          Text(
+            """
               To login use any email and "password" for the password. If your email contains the \
               characters "2fa" you will be taken to a two-factor flow, and on that screen you can \
               use "1234" for the code.
               """
-            )
-          ) { EmptyView() }
+          )
 
-          Section(header: Text("Email")) {
+          VStack(alignment: .leading) {
+            Text("Email")
             TextField(
               "blob@pointfree.co",
               text: viewStore.binding(get: { $0.email }, send: ViewAction.emailChanged)
@@ -53,36 +52,40 @@ public struct LoginView: View {
             .autocapitalization(.none)
             .keyboardType(.emailAddress)
             .textContentType(.emailAddress)
+            .textFieldStyle(RoundedBorderTextFieldStyle())
           }
-          Section(header: Text("Password")) {
+
+          VStack(alignment: .leading) {
+            Text("Password")
             SecureField(
               "••••••••",
               text: viewStore.binding(get: { $0.password }, send: ViewAction.passwordChanged)
             )
+            .textFieldStyle(RoundedBorderTextFieldStyle())
           }
-          Section {
-            NavigationLink(
-              destination: IfLetStore(
-                self.store.scope(state: { $0.twoFactor }, action: LoginAction.twoFactor),
-                then: TwoFactorView.init(store:)
-              ),
-              isActive: viewStore.binding(
-                get: { $0.isTwoFactorActive },
-                send: { $0 ? .loginButtonTapped : .twoFactorDismissed }
-              )
-            ) {
-              Text("Log in")
 
-              if viewStore.isActivityIndicatorVisible {
-                ActivityIndicator()
-              }
+          NavigationLink(
+            destination: IfLetStore(
+              self.store.scope(state: { $0.twoFactor }, action: LoginAction.twoFactor),
+              then: TwoFactorView.init(store:)
+            ),
+            isActive: viewStore.binding(
+              get: { $0.isTwoFactorActive },
+              send: { $0 ? .loginButtonTapped : .twoFactorDismissed }
+            )
+          ) {
+            Text("Log in")
+
+            if viewStore.isActivityIndicatorVisible {
+              ActivityIndicator()
             }
-            .disabled(viewStore.isLoginButtonDisabled)
           }
+          .disabled(viewStore.isLoginButtonDisabled)
         }
+        .alert(self.store.scope(state: { $0.alert }), dismiss: .alertDismissed)
         .disabled(viewStore.isFormDisabled)
+        .padding(.horizontal)
       }
-      .alert(self.store.scope(state: { $0.alert }), dismiss: .alertDismissed)
     }
     .navigationBarTitle("Login")
     // NB: This is necessary to clear the bar items from the game.
