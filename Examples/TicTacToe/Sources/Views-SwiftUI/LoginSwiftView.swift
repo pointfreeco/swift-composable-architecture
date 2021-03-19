@@ -37,10 +37,10 @@ public struct LoginView: View {
         VStack(spacing: 16) {
           Text(
             """
-              To login use any email and "password" for the password. If your email contains the \
-              characters "2fa" you will be taken to a two-factor flow, and on that screen you can \
-              use "1234" for the code.
-              """
+            To login use any email and "password" for the password. If your email contains the \
+            characters "2fa" you will be taken to a two-factor flow, and on that screen you can \
+            use "1234" for the code.
+            """
           )
 
           VStack(alignment: .leading) {

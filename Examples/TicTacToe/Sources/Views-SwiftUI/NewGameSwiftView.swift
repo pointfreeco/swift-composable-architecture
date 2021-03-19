@@ -42,7 +42,7 @@ public struct NewGameView: View {
             .textContentType(.name)
             .textFieldStyle(RoundedBorderTextFieldStyle())
           }
-          
+
           VStack(alignment: .leading) {
             Text("O Player Name")
             TextField(
