@@ -70,7 +70,6 @@ struct RootView: View {
               )
             )
 
-            #if swift(>=5.4)
             NavigationLink(
               "Shared state with StateBinding",
               destination: SharedStateWithBindingView(
@@ -80,7 +79,6 @@ struct RootView: View {
                 )
               )
             )
-            #endif
             
             NavigationLink(
               "Alerts and Action Sheets",
