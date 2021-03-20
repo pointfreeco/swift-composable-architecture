@@ -229,7 +229,7 @@
 		DCC68EE02447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Composition-TwoCounters.swift"; sourceTree = "<group>"; };
 		DCC68EE22447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-ReusableFavoriting.swift"; sourceTree = "<group>"; };
 		DCE63B70245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-Recursion.swift"; sourceTree = "<group>"; };
-		E91720D52605665C00D35505 /* 01-GettingStarted-SharedState-StateBindings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-SharedState-StateBindings.swift"; sourceTree = "<group>"; };
+		E91720D52605665C00D35505 /* 01-GettingStarted-SharedState-StateBindings.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-SharedState-StateBindings.swift"; sourceTree = "<group>"; tabWidth = 2; };
 		E91720D72605734600D35505 /* StateBinding.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = StateBinding.swift; sourceTree = "<group>"; tabWidth = 2; };
 		E931BC852605B99C005E3C3B /* StateBindingTests.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = StateBindingTests.swift; sourceTree = "<group>"; tabWidth = 2; };
 /* End PBXFileReference section */

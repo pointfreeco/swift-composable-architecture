@@ -1,3 +1,4 @@
+#if swift(>=5.4)
 @testable import SwiftUICaseStudies
 import XCTest
 
@@ -182,3 +183,4 @@ class StateBindingTests: XCTestCase {
     state.feature.external = "Hello!"
   }
 }
+#endif

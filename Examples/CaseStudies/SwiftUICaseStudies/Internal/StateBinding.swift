@@ -1,4 +1,4 @@
-
+#if swift(>=5.4)
 /// A struct that describe a directional binding between instances of `Source` and `Destination`. It's main
 /// use is to describe a connection between a property of `Source` and a property of `Destination` when
 /// using `BoundState`, `OptionalBoundState`, `ComputedState` or `ComputedOptionalState`
@@ -246,3 +246,4 @@ public struct StateBinding<Source, Destination> {
     component ?? []
   }
 }
+#endif
