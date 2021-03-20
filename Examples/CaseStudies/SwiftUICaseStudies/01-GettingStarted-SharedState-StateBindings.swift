@@ -159,11 +159,12 @@ struct SharedStateWithBinding: Equatable {
             PropertyBinding(\.count, \.count),
 
             // Explicit declaration, equivalent to
-            // PropertyBinding(\.content, \.text)
-            PropertyBinding<Self, FeatureState>(
-              get: { src, dest in dest.text = src.content },
-              set: { src, dest in src.content = dest.text }
-            )
+            // PropertyBinding(\.content, \.text) or (\.content, \.text)
+            PropertyBinding<Self, FeatureState> { src, dest in
+                dest.text = src.content
+            } set: { src, dest in
+                src.content = dest.text
+            }
         ]
         #endif
     }
