@@ -62,7 +62,6 @@ struct SharedStateWithBinding: Equatable {
   ] }
   #endif
   
-  
   // Public accessor, proxying calls to the binding. The shape is always the same: One retrieves the
   // binding and call `get` with `self` to return an up-to-date value of FeatureState. In the setter,
   // we also retrieve the binding, but we call this time `set` with a pointer to `self` and `newValue`.
@@ -163,7 +162,7 @@ struct SharedStateWithBinding: Equatable {
   }
 
   // MARK: "Computed State with deduplication" -
-  // In this example similar to feature1, we avoid writing the private storage if the value is unchanged.
+  // In this example similar to feature2, we avoid writing the private storage if the value is unchanged.
   // We also avoid to write `self.content` if it hasn't changed.
   fileprivate var _feature6: FeatureState = .init()
   // Will not update _feature6 if equal
