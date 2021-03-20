@@ -71,6 +71,16 @@ struct RootView: View {
             )
 
             NavigationLink(
+              "Shared state with StateBinding",
+              destination: SharedStateWithBindingView(
+                store: self.store.scope(
+                  state: { $0.sharedWithBinding },
+                  action: RootAction.sharedWithBinding
+                )
+              )
+            )
+            
+            NavigationLink(
               "Alerts and Action Sheets",
               destination: AlertAndSheetView(
                 store: self.store.scope(

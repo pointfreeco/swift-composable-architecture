@@ -27,6 +27,7 @@ struct RootState {
   var optionalBasics = OptionalBasicsState()
   var presentAndLoad = PresentAndLoadState()
   var shared = SharedState()
+  var sharedWithBinding = SharedStateWithBinding()
   var timers = TimersState()
   var twoCounters = TwoCountersState()
   var webSocket = WebSocketState()
@@ -57,6 +58,7 @@ enum RootAction {
   case onAppear
   case presentAndLoad(PresentAndLoadAction)
   case shared(SharedStateAction)
+  case sharedWithBinding(SharedStateWithBindingAction)
   case timers(TimersAction)
   case twoCounters(TwoCountersAction)
   case webSocket(WebSocketAction)
@@ -241,6 +243,12 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       state: \.shared,
       action: /RootAction.shared,
       environment: { _ in () }
+    ),
+  sharedStateWithBindingReducer
+    .pullback(
+        state: \.sharedWithBinding,
+        action: /RootAction.sharedWithBinding,
+        environment: { _ in () }
     ),
   timersReducer
     .pullback(
