@@ -11,7 +11,13 @@ class StateBindingTests: XCTestCase {
       var content: String = ""
       var _feature: Feature = .init()
       static var _feature = StateBinding(\Self._feature) {
+        #if swift(>=5.4)
         (\.content, \.external)
+        #else
+        return [
+          PropertyBinding(\.content, \.external),
+        ]
+        #endif
       }
 
       var feature: Feature {
@@ -41,9 +47,15 @@ class StateBindingTests: XCTestCase {
     struct State {
       var content: String = ""
       var _feature: Feature? = nil
+      #if swift(>=5.4)
       static var _feature = StateBinding(\Self._feature) {
         (\.content, \.external)
       }
+      #else
+      static var _feature = StateBinding(optional: \Self._feature) {
+        [PropertyBinding(\.content, \.external)]
+      }
+      #endif
 
       var feature: Feature? {
         get { Self._feature.get(self) }
@@ -81,8 +93,15 @@ class StateBindingTests: XCTestCase {
       var count = 0
             
       static var _feature = StateBinding(Self.self, with: Feature.init) {
+        #if swift(>=5.4)
         (\.content, \.external)
         (\.count, \.internal)
+        #else
+        return [
+          PropertyBinding(\.content, \.external),
+          PropertyBinding(\.count, \.internal),
+        ]
+        #endif
       }
 
       var feature: Feature {
@@ -115,8 +134,15 @@ class StateBindingTests: XCTestCase {
       var count = 0
       var hasFeature = false
       static var _feature = StateBinding<State, Feature?>(with: { $0.hasFeature ? .init() : nil }) {
+        #if swift(>=5.4)
         (\.content, \.external)
         (\.count, \.internal)
+        #else
+        return [
+          PropertyBinding(\.content, \.external),
+          PropertyBinding(\.count, \.internal),
+        ]
+        #endif
       }
 
       var feature: Feature? {
@@ -167,7 +193,13 @@ class StateBindingTests: XCTestCase {
       }
 
       static var _feature = StateBinding(\Self._feature, removeDuplicateStorage: ==) {
+        #if swift(>=5.4)
         (\.content, \.external, removeDuplicates: ==)
+        #else
+        return [
+          PropertyBinding(\.content, \.external, removeDuplicates: ==),
+        ]
+        #endif
       }
 
       var feature: Feature {
