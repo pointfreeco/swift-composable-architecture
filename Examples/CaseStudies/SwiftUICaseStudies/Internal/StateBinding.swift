@@ -60,7 +60,6 @@ public struct PropertyBinding<Source, Destination> {
   }
 }
 
-#if swift(>=5.4)
 /// Describe a binding between a parent state `Source` and a child state `Destination`. Several initializer are
 /// provided to handle the following cases:
 /// - Synchronization of a subset of `Destination` properties with `Source`
@@ -100,8 +99,11 @@ public struct StateBinding<Source, Destination> {
   public let get: (_ source: Source) -> Destination
   /// Set the storage in `source` and update `source`.
   public let set: (_ source: inout Source, _ newValue: Destination) -> Void
+}
 
-  /// Initialize an binding between a parent state `Source` and a child state `Destination`.
+#if swift(>=5.4)
+public extension StateBinding {
+  /// Initialize a binding between a parent state `Source` and a child state `Destination`.
   /// A private storage for a `Source` is provided so unaffected properties are preserved between accesses.
   /// In other words, `Destination` can have private fields and only properties specified in `properties`
   /// are synchronized with `Source`.
@@ -110,26 +112,15 @@ public struct StateBinding<Source, Destination> {
   ///   `Destination`'s internal properties.
   ///   - removeDuplicateStorage: A function used to compare private storage and avoid setting it in `Source` if unnecessary
   ///   - properties: A function that returns an array of `PropertyBinding<Source, Destination>`
-  public init(
+  init(
     _ storage: WritableKeyPath<Source, Destination>,
     removeDuplicateStorage: ((Destination, Destination) -> Bool)? = nil,
     @PropertyBindingsBuilder <Source, Destination> properties: () -> [PropertyBinding<Source, Destination>]
   ) {
-    let properties = properties()
-    get = { source in
-      var stored = source[keyPath: storage]
-      properties.forEach { $0.get(source, &stored) }
-      return stored
-    }
-    set = { source, newValue in
-      if removeDuplicateStorage?(source[keyPath: storage], newValue) != true {
-        source[keyPath: storage] = newValue
-      }
-      properties.forEach { $0.set(&source, newValue) }
-    }
+    self = .init(_storage: storage, removeDuplicateStorage: removeDuplicateStorage, properties: properties)
   }
   
-  /// Initialize an binding between a parent state `Source` and a child state `Destination`.
+  /// Initialize a binding between a parent state `Source` and a child state `Destination`.
   /// A private storage for a `Source` is provided so unaffected properties are preserved between accesses.
   /// In other words, `Destination` can have private fields and only properties specified in `properties`
   /// are synchronized with `Source`.
@@ -138,7 +129,7 @@ public struct StateBinding<Source, Destination> {
   ///   `Destination`'s internal properties.
   ///   - properties: A function that returns an array of `PropertyBinding<Source, Destination>`
   /// Remark: this function is defined to maintain trailing closure syntax between Swift 5.3 and earlier versions.
-  public init(
+  init(
     _ storage: WritableKeyPath<Source, Destination>,
     @PropertyBindingsBuilder <Source, Destination> properties: () -> [PropertyBinding<Source, Destination>]
   ) {
@@ -151,23 +142,15 @@ public struct StateBinding<Source, Destination> {
   ///   - source: The `Source`'s or parent state type
   ///   - destination: A function that returns an default instance of `Destination` (the child state)
   ///   - properties: A function that returns an array of `PropertyBinding<Source, Destination>`
-  public init(
+  init(
     _ source: Source.Type,
     with destination: @escaping () -> Destination,
     @PropertyBindingsBuilder <Source, Destination> properties: () -> [PropertyBinding<Source, Destination>]
   ) {
-    let properties = properties()
-    get = { source in
-      var destination = destination()
-      properties.forEach { $0.get(source, &destination) }
-      return destination
-    }
-    set = { source, newValue in
-      properties.forEach { $0.set(&source, newValue) }
-    }
+    self = .init(_source: source, with: destination, properties: properties)
   }
 
-  /// Initialize an binding between a parent state `Source` and a child state `Destination`.
+  /// Initialize a binding between a parent state `Source` and a child state `Destination`.
   /// A private storage for an optional `Source` is provided so unaffected properties are preserved between accesses.
   /// In other words, `Destination` can have private fields and only properties specified in `properties` are synchronized
   /// with `Source`. If the child is set to nil, source properties other than the storage property are kept untouched
@@ -176,24 +159,28 @@ public struct StateBinding<Source, Destination> {
   ///   `Destination`'s internal properties. If this instance is nil, the computed property will be also nil.
   ///   - removeDuplicateStorage: A function used to compare private storage and avoid setting it in `Source` if unnecessary
   ///   - properties: A function that returns an array of `PropertyBinding<Source, Destination>`
-  public init<UnwrappedDestination>(
+  init<UnwrappedDestination>(
     _ storage: WritableKeyPath<Source, Destination>,
     removeDuplicateStorage: ((Destination, Destination) -> Bool)? = nil,
     @PropertyBindingsBuilder <Source, UnwrappedDestination> properties: () -> [PropertyBinding<Source, UnwrappedDestination>]
   ) where Destination == UnwrappedDestination? {
-    let properties = properties()
-    get = { source in
-      guard var stored = source[keyPath: storage] else { return nil }
-      properties.forEach { $0.get(source, &stored) }
-      return stored
-    }
-    set = { source, newValue in
-      if removeDuplicateStorage?(source[keyPath: storage], newValue) != true {
-        source[keyPath: storage] = newValue
-      }
-      guard let newValue = newValue else { return }
-      properties.forEach { $0.set(&source, newValue) }
-    }
+    self = .init(_storage: storage, removeDuplicateStorage: removeDuplicateStorage, properties: properties)
+  }
+  
+  /// Initialize a binding between a parent state `Source` and a child state `Destination`.
+  /// A private storage for an optional `Source` is provided so unaffected properties are preserved between accesses.
+  /// In other words, `Destination` can have private fields and only properties specified in `properties` are synchronized
+  /// with `Source`. If the child is set to nil, source properties other than the storage property are kept untouched
+  /// - Parameters:
+  ///   - storage: A writable (private) keyPath to an instance of `Destination?`, used to store
+  ///   `Destination`'s internal properties. If this instance is nil, the computed property will be also nil.
+  ///   - removeDuplicateStorage: A function used to compare private storage and avoid setting it in `Source` if unnecessary
+  ///   - properties: A function that returns an array of `PropertyBinding<Source, Destination>`
+  init<UnwrappedDestination>(
+    _ storage: WritableKeyPath<Source, Destination>,
+    @PropertyBindingsBuilder <Source, UnwrappedDestination> properties: () -> [PropertyBinding<Source, UnwrappedDestination>]
+  ) where Destination == UnwrappedDestination? {
+    self = .init(_storage: storage, removeDuplicateStorage: nil, properties: properties)
   }
 
   /// Initialize a  computed binding between a parent state `Source` and an optional child state `Destination`
@@ -202,20 +189,11 @@ public struct StateBinding<Source, Destination> {
   /// - Parameters:
   ///   - destination: A function that returns an default instance of `Destination`(the child state) or nil.
   ///   - properties: A function that returns an array of `PropertyBinding<Source, Destination>`
-  public init<UnwrappedDestination>(
+  init<UnwrappedDestination>(
     with destination: @escaping (Source) -> Destination,
     @PropertyBindingsBuilder <Source, UnwrappedDestination> properties: () -> [PropertyBinding<Source, UnwrappedDestination>] = { [] }
   ) where Destination == UnwrappedDestination? {
-    let properties = properties()
-    get = { source in
-      guard var destination = destination(source) else { return nil }
-      properties.forEach { $0.get(source, &destination) }
-      return destination
-    }
-    set = { source, newValue in
-      guard let newValue = newValue else { return }
-      properties.forEach { $0.set(&source, newValue) }
-    }
+    self = .init(_with: destination, properties: properties)
   }
 }
 
@@ -267,49 +245,10 @@ public struct StateBinding<Source, Destination> {
     component ?? []
   }
 }
+
 #else
-
-/// Describe a binding between a parent state `Source` and a child state `Destination`. Several initializer are
-/// provided to handle the following cases:
-/// - Synchronization of a subset of `Destination` properties with `Source`
-/// - Synchronization of a subset of an optional `Destination` state with `Source`
-/// - Synchronization of all the properties of `Destination` with `Source`
-/// - Synchronization of all the properties of an optional `Destination` with `Source`.
-///
-/// This binding can then be used to define public accessors to a `Destination` instance in `Source`, calling
-/// the `get` and `set` function with the `Source` instance and `Destination`'s `newValue`.
-///
-/// Let the child state `Destination` be:
-/// ```
-/// struct Destination {
-///   var value: String = ""
-///   var internalValue: Int = 0
-/// }
-/// ```
-/// We can the use `StateBinding` to generate a `Destination` instance whose `value` will be synchronized
-/// with the `title` value of `Source`:
-/// ```
-/// struct Source {
-///   var title: String = "Hello! world"
-///
-///   private var _storage = Feature()
-///   private static let _binding = StateBinding(\Self._storage) {
-///     (\.title, \.value)
-///   }
-///
-///   var feature: Feature {
-///     get { Self._binding.get(self) }
-///     set { Self._binding.set(&self, newValue) }
-///   }
-/// }
-///
-public struct StateBinding<Source, Destination> {
-  /// Retrieve the storage in `source`, update it and returns the result.
-  public let get: (_ source: Source) -> Destination
-  /// Set the storage in `source` and update `source`.
-  public let set: (_ source: inout Source, _ newValue: Destination) -> Void
-
-  /// Initialize an binding between a parent state `Source` and a child state `Destination`.
+public extension StateBinding {
+  /// Initialize a binding between a parent state `Source` and a child state `Destination`.
   /// A private storage for a `Source` is provided so unaffected properties are preserved between accesses.
   /// In other words, `Destination` can have private fields and only properties specified in `properties`
   /// are synchronized with `Source`.
@@ -318,8 +257,65 @@ public struct StateBinding<Source, Destination> {
   ///   `Destination`'s internal properties.
   ///   - removeDuplicateStorage: A function used to compare private storage and avoid setting it in `Source` if unnecessary
   ///   - properties: A function that returns an array of `PropertyBinding<Source, Destination>`
-  public init(
+   init(
     _ storage: WritableKeyPath<Source, Destination>,
+    removeDuplicateStorage: ((Destination, Destination) -> Bool)? = nil,
+    properties: () -> [PropertyBinding<Source, Destination>]
+  ) {
+    self = .init(_storage: storage, removeDuplicateStorage: removeDuplicateStorage, properties: properties)
+  }
+
+  /// Initialize a  computed binding between a parent state `Source` and a child state `Destination`. These derived states
+  /// are used when all the properties of `Destination` can be individually stored in `Source`.
+  /// - Parameters:
+  ///   - source: The `Source`'s or parent state type
+  ///   - destination: A function that returns an default instance of `Destination` (the child state)
+  ///   - properties: A function that returns an array of `PropertyBinding<Source, Destination>`
+  init(
+    _ source: Source.Type,
+    with destination: @escaping () -> Destination,
+    properties: () -> [PropertyBinding<Source, Destination>]
+  ) {
+    self = .init(_source: source, with: destination, properties: properties)
+  }
+
+  /// Initialize a binding between a parent state `Source` and a child state `Destination`.
+  /// A private storage for an optional `Source` is provided so unaffected properties are preserved between accesses.
+  /// In other words, `Destination` can have private fields and only properties specified in `properties` are synchronized
+  /// with `Source`. If the child is set to nil, source properties other than the storage property are kept untouched
+  /// - Parameters:
+  ///   - storage: A writable (private) keyPath to an instance of `Destination?`, used to store
+  ///   `Destination`'s internal properties. If this instance is nil, the computed property will be also nil.
+  ///   - removeDuplicateStorage: A function used to compare private storage and avoid setting it in `Source` if unnecessary
+  ///   - properties: A function that returns an array of `PropertyBinding<Source, Destination>`
+  init<UnwrappedDestination>(
+    _ storage: WritableKeyPath<Source, Destination>,
+    removeDuplicateStorage: ((Destination, Destination) -> Bool)? = nil,
+    properties: () -> [PropertyBinding<Source, UnwrappedDestination>]
+  ) where Destination == UnwrappedDestination? {
+    self = .init(_storage: storage, removeDuplicateStorage: removeDuplicateStorage, properties: properties)
+  }
+
+  /// Initialize a  computed binding between a parent state `Source` and an optional child state `Destination`
+  /// These derived states are used when all the properties of `Destination` can be individually stored in `Source`.
+  /// If the child is set to nil, the source properties are kept untouched
+  /// - Parameters:
+  ///   - destination: A function that returns an default instance of `Destination`(the child state) or nil.
+  ///   - properties: A function that returns an array of `PropertyBinding<Source, Destination>`
+  init<UnwrappedDestination>(
+    with destination: @escaping (Source) -> Destination,
+    properties: () -> [PropertyBinding<Source, UnwrappedDestination>] = { [] }
+  ) where Destination == UnwrappedDestination? {
+    self = .init(_with: destination, properties: properties)
+  }
+}
+
+#endif
+
+fileprivate extension StateBinding {
+  // Binding With Storage
+  init(
+    _storage storage: WritableKeyPath<Source, Destination>,
     removeDuplicateStorage: ((Destination, Destination) -> Bool)? = nil,
     properties: () -> [PropertyBinding<Source, Destination>]
   ) {
@@ -337,14 +333,9 @@ public struct StateBinding<Source, Destination> {
     }
   }
 
-  /// Initialize a  computed binding between a parent state `Source` and a child state `Destination`. These derived states
-  /// are used when all the properties of `Destination` can be individually stored in `Source`.
-  /// - Parameters:
-  ///   - source: The `Source`'s or parent state type
-  ///   - destination: A function that returns an default instance of `Destination` (the child state)
-  ///   - properties: A function that returns an array of `PropertyBinding<Source, Destination>`
-  public init(
-    _ source: Source.Type,
+  // Computed Binding Without Storage
+  init(
+    _source source: Source.Type,
     with destination: @escaping () -> Destination,
     properties: () -> [PropertyBinding<Source, Destination>]
   ) {
@@ -358,18 +349,10 @@ public struct StateBinding<Source, Destination> {
       properties.forEach { $0.set(&source, newValue) }
     }
   }
-
-  /// Initialize an binding between a parent state `Source` and a child state `Destination`.
-  /// A private storage for an optional `Source` is provided so unaffected properties are preserved between accesses.
-  /// In other words, `Destination` can have private fields and only properties specified in `properties` are synchronized
-  /// with `Source`. If the child is set to nil, source properties other than the storage property are kept untouched
-  /// - Parameters:
-  ///   - storage: A writable (private) keyPath to an instance of `Destination?`, used to store
-  ///   `Destination`'s internal properties. If this instance is nil, the computed property will be also nil.
-  ///   - removeDuplicateStorage: A function used to compare private storage and avoid setting it in `Source` if unnecessary
-  ///   - properties: A function that returns an array of `PropertyBinding<Source, Destination>`
-  public init<UnwrappedDestination>(
-    _ storage: WritableKeyPath<Source, Destination>,
+  
+  // Optional Binding With Storage
+  init<UnwrappedDestination>(
+    _storage storage: WritableKeyPath<Source, Destination>,
     removeDuplicateStorage: ((Destination, Destination) -> Bool)? = nil,
     properties: () -> [PropertyBinding<Source, UnwrappedDestination>]
   ) where Destination == UnwrappedDestination? {
@@ -388,14 +371,9 @@ public struct StateBinding<Source, Destination> {
     }
   }
 
-  /// Initialize a  computed binding between a parent state `Source` and an optional child state `Destination`
-  /// These derived states are used when all the properties of `Destination` can be individually stored in `Source`.
-  /// If the child is set to nil, the source properties are kept untouched
-  /// - Parameters:
-  ///   - destination: A function that returns an default instance of `Destination`(the child state) or nil.
-  ///   - properties: A function that returns an array of `PropertyBinding<Source, Destination>`
-  public init<UnwrappedDestination>(
-    with destination: @escaping (Source) -> Destination,
+  // Computed Optional Binding Without Storage
+  init<UnwrappedDestination>(
+    _with destination: @escaping (Source) -> Destination,
     properties: () -> [PropertyBinding<Source, UnwrappedDestination>] = { [] }
   ) where Destination == UnwrappedDestination? {
     let properties = properties()
@@ -410,5 +388,3 @@ public struct StateBinding<Source, Destination> {
     }
   }
 }
-
-#endif

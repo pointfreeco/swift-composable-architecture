@@ -130,7 +130,7 @@ struct SharedStateWithBinding: Equatable {
   // when accessed and the flag is enough to condition its existence and content without ambiguity.
   #if swift(>=5.4)
   fileprivate static let _feature5 = StateBinding<SharedStateWithBinding, FeatureState?>(with:
-    { $0.shouldShowFeature5 ? .init() : nil }, properties: {
+    { $0.shouldShowFeature5 ? .init() : nil }) {
     (readonly: \.feature5Name, \.name)
     (readonly: \.isCountInternal, \.isCountInternal)
     (\.count, \.count)
@@ -139,8 +139,9 @@ struct SharedStateWithBinding: Equatable {
     // PropertyBinding(\.content, \.text) or (\.content, \.text)
     PropertyBinding(
       get: { src, dest in dest.text = src.content },
-      set: { src, dest in src.content = dest.text })
-  })
+      set: { src, dest in src.content = dest.text }
+    )
+  }
   #else
   fileprivate static let _feature5 = StateBinding<SharedStateWithBinding, FeatureState?>(with:
     { $0.shouldShowFeature5 ? .init() : nil }) { [
@@ -152,7 +153,8 @@ struct SharedStateWithBinding: Equatable {
     // PropertyBinding(\.content, \.text) or (\.content, \.text)
     PropertyBinding<SharedStateWithBinding, FeatureState>(
       get: { src, dest in dest.text = src.content },
-      set: { src, dest in src.content = dest.text }),
+      set: { src, dest in src.content = dest.text }
+    ),
   ] }
   #endif
 
@@ -343,13 +345,13 @@ struct SharedStateWithBindingView: View {
                     value: viewStore.binding(keyPath: \.count, send: FeatureAction.binding),
                     in: 0...9)
               .font(Font.system(.body).monospacedDigit())
-              .fixedSize()
               .foregroundColor(viewStore.isCountInternal ? .red : .green)
+              .fixedSize()
           }
           Text("\"count\" value is \(viewStore.isCountInternal ? "internal" : "global")")
             .font(.footnote)
-            .frame(maxWidth: .infinity, alignment: .trailing)
             .foregroundColor(viewStore.isCountInternal ? .red : .green)
+            .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .id(viewStore.name)
         .listRowInsets(EdgeInsets(top: 11, leading: 8, bottom: 8, trailing: 8))
