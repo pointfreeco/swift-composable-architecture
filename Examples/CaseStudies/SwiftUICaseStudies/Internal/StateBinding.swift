@@ -12,6 +12,7 @@
 /// ```
 /// struct Destination {
 ///   var value: String = ""
+///   var count: Int = 0
 ///   var internalValue: Int = 0
 /// }
 /// ```
@@ -20,17 +21,19 @@
 /// ```
 /// struct Source {
 ///   var title: String = "Hello! world"
+///   var count: Int = 0
 ///
 ///   private var _storage = Feature()
-///   private static let _binding = StateBinding(\Self._storage) {
-///     (\.title, \.value)
-///   }
+///   private static let _binding = StateBinding(\Self._storage)
+///     .rw(\.title, \.value)
+///     .rw(\.count, \.count)
 ///
 ///   var feature: Feature {
 ///     get { Self._binding.get(self) }
 ///     set { Self._binding.set(&self, newValue) }
 ///   }
 /// }
+/// ```
 ///
 public struct StateBinding<Source, Destination> {
   /// Retrieve the storage in `source`, update it and returns the result.
