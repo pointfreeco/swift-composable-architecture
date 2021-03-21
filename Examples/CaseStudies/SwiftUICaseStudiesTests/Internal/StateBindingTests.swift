@@ -11,9 +11,8 @@ class StateBindingTests: XCTestCase {
       var content: String = ""
       var _feature: Feature = .init()
       
-      static var _feature = StateBinding(\Self._feature) {[
-        PropertyBinding(\.content, \.external)
-      ]}
+      static var _feature = StateBinding(\Self._feature)
+        .rw(\.content, \.external)
 
       var feature: Feature {
         get { Self._feature.get(self) }
@@ -42,9 +41,8 @@ class StateBindingTests: XCTestCase {
     struct State {
       var content: String = ""
       var _feature: Feature? = nil
-      static var _feature = StateBinding(\Self._feature) {[
-        PropertyBinding(\.content, \.external)
-      ]}
+      static var _feature = StateBinding(\Self._feature)
+        .rw(\.content, \.external)
 
       var feature: Feature? {
         get { Self._feature.get(self) }
@@ -81,10 +79,9 @@ class StateBindingTests: XCTestCase {
       var content: String = ""
       var count = 0
             
-      static var _feature = StateBinding(Self.self, with: Feature.init) {[
-        PropertyBinding(\.content, \.external),
-        PropertyBinding(\.count, \.internal),
-      ]}
+      static var _feature = StateBinding(Self.self, with: Feature.init)
+        .rw(\.content, \.external)
+        .rw(\.count, \.internal)
 
       var feature: Feature {
         get { Self._feature.get(self) }
@@ -115,10 +112,9 @@ class StateBindingTests: XCTestCase {
       var content: String = ""
       var count = 0
       var hasFeature = false
-      static var _feature = StateBinding<State, Feature?>(with: { $0.hasFeature ? .init() : nil }) {[
-        PropertyBinding(\.content, \.external),
-        PropertyBinding(\.count, \.internal),
-      ]}
+      static var _feature = StateBinding<State, Feature?>(with: { $0.hasFeature ? .init() : nil })
+        .rw(\.content, \.external)
+        .rw(\.count, \.internal)
 
       var feature: Feature? {
         get { Self._feature.get(self) }
@@ -167,9 +163,8 @@ class StateBindingTests: XCTestCase {
         didSet { XCTFail("`_feature` value was set") }
       }
 
-      static var _feature = StateBinding(\Self._feature, removeDuplicateStorage: ==) {[
-        PropertyBinding(\.content, \.external, removeDuplicates: ==)
-       ]}
+      static var _feature = StateBinding(\Self._feature, removeDuplicateStorage: ==)
+        .rw(\.content, \.external, removeDuplicates: ==)
 
       var feature: Feature {
         get { Self._feature.get(self) }

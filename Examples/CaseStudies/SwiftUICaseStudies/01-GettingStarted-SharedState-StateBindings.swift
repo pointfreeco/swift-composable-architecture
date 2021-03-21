@@ -28,7 +28,7 @@ struct SharedStateWithBinding: Equatable {
   // This flag is used to trigger the existence of the computed and optional `feature5`
   var shouldShowFeature5: Bool = false
 
-  // MARK: Manual approach -
+  // MARK: Classical approach -
   // We create a FeatureState on the fly each time it is requested.
   // The global state needs to explicitly handle all FeatureState stored properties.
   // The setter need to by synchronized with the getter for all readwrite properties.
@@ -49,19 +49,11 @@ struct SharedStateWithBinding: Equatable {
   // This instance will participate to state comparisons if any. In the binding, we only declare
   // the relevant property `name`, bound with `self.content`. The private instance stores all the
   // other internal properties.
-  fileprivate var _feature2: FeatureState = .init()
-  #if swift(>=5.4)
-  fileprivate static let _feature2 = StateBinding(\Self._feature2) {
-    (readonly: \.feature2Name, \.name) // self.feature2Name -> feature2.name
-    (\.content, \.text) // self.content and feature2.text are bound in both directions.
-  }
-  #else
-  fileprivate static let _feature2 = StateBinding(\Self._feature2) { [
-    PropertyBinding(readonly: \.feature2Name, \.name), // self.feature2Name -> feature2.name
-    PropertyBinding(\.content, \.text), // self.content and feature2.text are bound in both directions.
-  ] }
-  #endif
-  
+  private var _feature2: FeatureState = .init()
+  private static let _feature2 = StateBinding(\Self._feature2)
+    .ro(\.feature2Name, \.name) // self.feature2Name -> feature2.name
+    .rw(\.content, \.text) // self.content and feature2.text are bound in both directions.
+
   // Public accessor, proxying calls to the binding. The shape is always the same: One retrieves the
   // binding and call `get` with `self` to return an up-to-date value of FeatureState. In the setter,
   // we also retrieve the binding, but we call this time `set` with a pointer to `self` and `newValue`.
@@ -79,17 +71,9 @@ struct SharedStateWithBinding: Equatable {
   // publicly accessed property. Please note that the `PropertyBindings` a defined between unwrapped
   // values.
   fileprivate var _feature3: FeatureState?
-  #if swift(>=5.4)
-  fileprivate static let _feature3 = StateBinding(\Self._feature3) {
-    (readonly: \.feature3Name, \.name)
-    (\.content, \.text)
-  }
-  #else
-  fileprivate static let _feature3 = StateBinding(\Self._feature3) { [
-    PropertyBinding(readonly: \.feature3Name, \.name),
-    PropertyBinding(\.content, \.text),
-  ] }
-  #endif
+  fileprivate static let _feature3 = StateBinding(\Self._feature3)
+    .ro(\.feature2Name, \.name)
+    .rw(\.content, \.text)
 
   /// Public accessor, same shape as `feature2`, but optional.
   var feature3: FeatureState? {
@@ -102,21 +86,11 @@ struct SharedStateWithBinding: Equatable {
   // All the properties of `Feature` are bound to some property of `self`. A new instance is created
   // from the provided `with:` argument. We use `Self.self` because we need to tie the first generic
   // parameter of `StateBinding` to `Self`.
-  #if swift(>=5.4)
-  fileprivate static let _feature4 = StateBinding(Self.self, with: FeatureState.init) {
-    (readonly: \.feature4Name, \.name)
-    (readonly: \.isCountInternal, \.isCountInternal)
-    (\.content, \.text)
-    (\.count, \.count)
-  }
-  #else
-  fileprivate static let _feature4 = StateBinding(Self.self, with: FeatureState.init) { [
-    PropertyBinding(readonly: \.feature4Name, \.name),
-    PropertyBinding(readonly: \.isCountInternal, \.isCountInternal),
-    PropertyBinding(\.content, \.text),
-    PropertyBinding(\.count, \.count),
-  ] }
-  #endif
+  fileprivate static let _feature4 = StateBinding(Self.self, with: FeatureState.init)
+    .ro(\.feature4Name, \.name)
+    .ro(\.isCountInternal, \.isCountInternal)
+    .rw(\.content, \.text)
+    .rw(\.count, \.count)
 
   var feature4: FeatureState {
     get { Self._feature4.get(self) }
@@ -128,35 +102,17 @@ struct SharedStateWithBinding: Equatable {
   // instance is created from a function of `Self`. We use the `shouldShowFeature5` flag to decide if the
   // property is nil or not. Because it has no private storage, the `feature5` instance is completly set
   // when accessed and the flag is enough to condition its existence and content without ambiguity.
-  #if swift(>=5.4)
-  fileprivate static let _feature5 = StateBinding<SharedStateWithBinding, FeatureState?>(with:
-    { $0.shouldShowFeature5 ? .init() : nil }) {
-    (readonly: \.feature5Name, \.name)
-    (readonly: \.isCountInternal, \.isCountInternal)
-    (\.count, \.count)
-    
-    // Explicit declaration, equivalent to
-    // PropertyBinding(\.content, \.text) or (\.content, \.text)
-    PropertyBinding(
-      get: { src, dest in dest.text = src.content },
-      set: { src, dest in src.content = dest.text }
+  fileprivate static let _feature5 = StateBinding<SharedStateWithBinding, FeatureState?>(with: { $0.shouldShowFeature5 ? .init() : nil })
+    .ro(\.feature5Name, \.name)
+    .ro(\.isCountInternal, \.isCountInternal)
+    .rw(\.count, \.count)
+    // Explicit declaration, equivalent to .rw(\.content, \.text)
+    .with(
+      .init(
+        get: { src, dest in dest.text = src.content },
+        set: { src, dest in src.content = dest.text }
+      )
     )
-  }
-  #else
-  fileprivate static let _feature5 = StateBinding<SharedStateWithBinding, FeatureState?>(with:
-    { $0.shouldShowFeature5 ? .init() : nil }) { [
-    PropertyBinding(readonly: \.feature5Name, \.name),
-    PropertyBinding(readonly: \.isCountInternal, \.isCountInternal),
-    PropertyBinding(\.count, \.count),
-
-    // Explicit declaration, equivalent to
-    // PropertyBinding(\.content, \.text) or (\.content, \.text)
-    PropertyBinding<SharedStateWithBinding, FeatureState>(
-      get: { src, dest in dest.text = src.content },
-      set: { src, dest in src.content = dest.text }
-    ),
-  ] }
-  #endif
 
   var feature5: FeatureState? {
     get { Self._feature5.get(self) }
@@ -168,33 +124,27 @@ struct SharedStateWithBinding: Equatable {
   // We also avoid to write `self.content` if it hasn't changed.
   fileprivate var _feature6: FeatureState = .init()
   // Will not update _feature6 if equal
-  #if swift(>=5.4)
-  fileprivate static let _feature6 = StateBinding(\Self._feature6, removeDuplicateStorage: ==) {
-    (readonly: \.feature6Name, \.name)
-    (\.content, \.text, removeDuplicates: ==) // Will not set `content` if equal to `text`
-  }
-  #else
-  fileprivate static let _feature6 = StateBinding(\Self._feature6, removeDuplicateStorage: ==) { [
-    PropertyBinding(readonly: \.feature6Name, \.name),
-    PropertyBinding(\.content, \.text, removeDuplicates: ==), // Will not set `content` if equal to `text`
-  ] }
-  #endif
+  fileprivate static let _feature6 = StateBinding(\Self._feature6, removeDuplicateStorage: ==)
+    .ro(\.feature6Name, \.name)
+    .rw(\.content, \.text, removeDuplicates: ==) // Will not set `content` if equal to `text`
 
   var feature6: FeatureState {
     get { Self._feature6.get(self) }
     set { Self._feature6.set(&self, newValue) }
   }
+}
 
-  // MARK: Internal
+// MARK: Internal
 
+private extension SharedStateWithBinding {
   // Used for this case study presentation
-  var feature1Name = "Manual binding"
-  var feature2Name = "State Binding with internal storage"
-  var feature3Name = "Optional State Binding with internal storage"
-  var feature4Name = "Computed State Binding"
-  var feature5Name = "Optional Computed State Binding"
-  var feature6Name = "Computed State with deduplication"
-  var isCountInternal: Bool = false
+  var feature1Name: String { "Manual binding" }
+  var feature2Name: String { "State Binding with internal storage" }
+  var feature3Name: String { "Optional State Binding with internal storage" }
+  var feature4Name: String { "Computed State Binding" }
+  var feature5Name: String { "Optional Computed State Binding" }
+  var feature6Name: String { "Computed State with deduplication" }
+  var isCountInternal: Bool { false }
 }
 
 // MARK: - Actions
@@ -222,53 +172,52 @@ let boundFeatureReducer =
 
 let sharedStateWithBindingReducer =
   Reducer<SharedStateWithBinding, SharedStateWithBindingAction, Void>
-  .combine(
-    boundFeatureReducer.pullback(state: \.feature1,
-                                 action: /SharedStateWithBindingAction.feature1,
-                                 environment: { _ in () }),
+    .combine(
+      boundFeatureReducer.pullback(state: \.feature1,
+                                   action: /SharedStateWithBindingAction.feature1,
+                                   environment: { _ in () }),
 
-    boundFeatureReducer.pullback(state: \.feature2,
-                                 action: /SharedStateWithBindingAction.feature2,
-                                 environment: { _ in () }),
+      boundFeatureReducer.pullback(state: \.feature2,
+                                   action: /SharedStateWithBindingAction.feature2,
+                                   environment: { _ in () }),
 
-    boundFeatureReducer.optional().pullback(state: \.feature3,
-                                            action: /SharedStateWithBindingAction.feature3,
-                                            environment: { _ in () }),
+      boundFeatureReducer.optional().pullback(state: \.feature3,
+                                              action: /SharedStateWithBindingAction.feature3,
+                                              environment: { _ in () }),
 
-    boundFeatureReducer.pullback(state: \.feature4,
-                                 action: /SharedStateWithBindingAction.feature4,
-                                 environment: { _ in () }),
+      boundFeatureReducer.pullback(state: \.feature4,
+                                   action: /SharedStateWithBindingAction.feature4,
+                                   environment: { _ in () }),
 
-    boundFeatureReducer.optional().pullback(state: \.feature5,
-                                            action: /SharedStateWithBindingAction.feature5,
-                                            environment: { _ in () }),
+      boundFeatureReducer.optional().pullback(state: \.feature5,
+                                              action: /SharedStateWithBindingAction.feature5,
+                                              environment: { _ in () }),
 
-    boundFeatureReducer.pullback(state: \.feature6,
-                                 action: /SharedStateWithBindingAction.feature6,
-                                 environment: { _ in () }),
+      boundFeatureReducer.pullback(state: \.feature6,
+                                   action: /SharedStateWithBindingAction.feature6,
+                                   environment: { _ in () }),
 
-    Reducer<SharedStateWithBinding, SharedStateWithBindingAction, Void> {
-      state, action, _ in
-      switch action {
-      case .toggleFeature3: // feature3 is a optional state with internal storage.
-        if state._feature3 == nil {
-          // We set up a new instance of FeatureState() so its internal properties
-          // can be stored by the feature itself.
-          state._feature3 = .init()
-        } else {
-          state._feature3 = nil
+      Reducer<SharedStateWithBinding, SharedStateWithBindingAction, Void> {
+        state, action, _ in
+        switch action {
+        case .toggleFeature3: // feature3 is a optional state with internal storage.
+          if state._feature3 == nil {
+            // We set up a new instance of FeatureState() so its internal properties
+            // can be stored by the feature itself.
+            state._feature3 = .init()
+          } else {
+            state._feature3 = nil
+          }
+          return .none
+        case .toggleFeature5: // feature5 is a optional computed state.
+          state.shouldShowFeature5.toggle()
+          return .none
+        default: return .none
         }
-        return .none
-      case .toggleFeature5: // feature5 is a optional computed state.
-        state.shouldShowFeature5.toggle()
-        return .none
-      default: return .none
       }
-    }
-  )
+    )
 
 // MARK: - View
-
 struct SharedStateWithBindingView: View {
   let store: Store<SharedStateWithBinding, SharedStateWithBindingAction>
 
@@ -293,10 +242,9 @@ struct SharedStateWithBindingView: View {
                     : "Remove Feature"
                   )
                 }) {
-            IfLetStore(self.store.scope(state: { $0.feature3 },
-                                        action: SharedStateWithBindingAction.feature3),
-                                        then: FeatureView.init(store:)
-            )
+          IfLetStore(self.store.scope(state: { $0.feature3 },
+                                      action: SharedStateWithBindingAction.feature3),
+                     then: FeatureView.init(store:))
         }
 
         Section(header: Text(viewStore.feature4Name)) {
@@ -312,10 +260,9 @@ struct SharedStateWithBindingView: View {
                     : "Remove Feature"
                   )
                 }) {
-            IfLetStore(self.store.scope(state: { $0.feature5 },
-                                        action: SharedStateWithBindingAction.feature5),
-                                        then: FeatureView.init(store:)
-            )
+          IfLetStore(self.store.scope(state: { $0.feature5 },
+                                      action: SharedStateWithBindingAction.feature5),
+                     then: FeatureView.init(store:))
         }
 
         Section(header: Text(viewStore.feature6Name)) {
@@ -343,7 +290,7 @@ struct SharedStateWithBindingView: View {
 
             Stepper("\(viewStore.count)",
                     value: viewStore.binding(keyPath: \.count, send: FeatureAction.binding),
-                    in: 0...9)
+                    in: 0 ... 9)
               .font(Font.system(.body).monospacedDigit())
               .foregroundColor(viewStore.isCountInternal ? .red : .green)
               .fixedSize()
@@ -361,7 +308,6 @@ struct SharedStateWithBindingView: View {
 }
 
 // MARK: - Preview
-
 struct SharedStateWithBindingView_Previews: PreviewProvider {
   static var previews: some View {
     SharedStateWithBindingView(store: .init(initialState: .init(),

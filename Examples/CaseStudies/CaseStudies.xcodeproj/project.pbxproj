@@ -431,7 +431,6 @@
 		DC89C42C24460F96006900B9 /* SwiftUICaseStudiesTests */ = {
 			isa = PBXGroup;
 			children = (
-				E931BC842605B989005E3C3B /* Internal */,
 				CA50BE5F24A8F46500FE7DBA /* 01-GettingStarted-AlertsAndActionSheetsTests.swift */,
 				CA34170724A4E89500FAF950 /* 01-GettingStarted-AnimationsTests.swift */,
 				DC27215525BF84FC00D9C8DB /* 01-GettingStarted-BindingBasicsTests.swift */,
@@ -444,6 +443,7 @@
 				DC634B242448D15B00DAA016 /* 04-HigherOrderReducers-ReusableFavoritingTests.swift */,
 				CA0C51FA245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift */,
 				CA0C0C4624B89BEC00CBDD8A /* 04-HigherOrderReducers-LifecycleTests.swift */,
+				E931BC842605B989005E3C3B /* Internal */,
 			);
 			path = SwiftUICaseStudiesTests;
 			sourceTree = "<group>";
