@@ -289,28 +289,27 @@ Once the test store is created we can use it to make an assertion of an entire u
 The test below has the user increment and decrement the count, then they ask for a number fact, and the response of that effect triggers an alert to be shown, and then dismissing the alert causes the alert to go away.
 
 ```swift
-store.assert(
-  // Test that tapping on the increment/decrement buttons changes the count
-  .send(.incrementButtonTapped) {
-    $0.count = 1
-  },
-  .send(.decrementButtonTapped) {
-    $0.count = 0
-  },
+// Test that tapping on the increment/decrement buttons changes the count
+store.send(.incrementButtonTapped) {
+  $0.count = 1
+}
+store.send(.decrementButtonTapped) {
+  $0.count = 0
+}
 
-  // Test that tapping the fact button causes us to receive a response from the effect. Note
-  // that we have to advance the scheduler because we used `.receive(on:)` in the reducer.
-  .send(.numberFactButtonTapped),
-  .do { scheduler.advance() },
-  .receive(.numberFactResponse(.success("0 is a good number Brent"))) {
-    $0.numberFactAlert = "0 is a good number Brent"
-  },
+// Test that tapping the fact button causes us to receive a response from the effect. Note
+// that we have to advance the scheduler because we used `.receive(on:)` in the reducer.
+store.send(.numberFactButtonTapped)
 
-  // And finally dismiss the alert
-  .send(.factAlertDismissed) {
-    $0.numberFactAlert = nil
-  }
-)
+scheduler.advance()
+store.receive(.numberFactResponse(.success("0 is a good number Brent"))) {
+  $0.numberFactAlert = "0 is a good number Brent"
+}
+
+// And finally dismiss the alert
+store.send(.factAlertDismissed) {
+  $0.numberFactAlert = nil
+}
 ```
 
 That is the basics of building and testing a feature in the Composable Architecture. There are _a lot_ more things to be explored, such as composition, modularity, adaptability, and complex effects. The [Examples](./Examples) directory has a bunch of projects to explore to see more advanced usages.

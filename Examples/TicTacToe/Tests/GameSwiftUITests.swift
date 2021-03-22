@@ -14,78 +14,74 @@ class GameSwiftUITests: XCTestCase {
     environment: GameEnvironment()
   )
   .scope(state: { $0.view })
-
+  
   func testFlow_Winner_Quit() {
-    self.store.assert(
-      .send(.cellTapped(row: 0, column: 0)) {
-        $0.board[0][0] = "❌"
-        $0.title = "Blob Jr., place your ⭕️"
-      },
-      .send(.cellTapped(row: 2, column: 1)) {
-        $0.board[2][1] = "⭕️"
-        $0.title = "Blob Sr., place your ❌"
-      },
-      .send(.cellTapped(row: 1, column: 0)) {
-        $0.board[1][0] = "❌"
-        $0.title = "Blob Jr., place your ⭕️"
-      },
-      .send(.cellTapped(row: 1, column: 1)) {
-        $0.board[1][1] = "⭕️"
-        $0.title = "Blob Sr., place your ❌"
-      },
-      .send(.cellTapped(row: 2, column: 0)) {
-        $0.board[2][0] = "❌"
-        $0.isGameDisabled = true
-        $0.isPlayAgainButtonVisible = true
-        $0.title = "Winner! Congrats Blob Sr.!"
-      },
-      .send(.quitButtonTapped)
-    )
+    self.store.send(.cellTapped(row: 0, column: 0)) {
+      $0.board[0][0] = "❌"
+      $0.title = "Blob Jr., place your ⭕️"
+    }
+    self.store.send(.cellTapped(row: 2, column: 1)) {
+      $0.board[2][1] = "⭕️"
+      $0.title = "Blob Sr., place your ❌"
+    }
+    self.store.send(.cellTapped(row: 1, column: 0)) {
+      $0.board[1][0] = "❌"
+      $0.title = "Blob Jr., place your ⭕️"
+    }
+    self.store.send(.cellTapped(row: 1, column: 1)) {
+      $0.board[1][1] = "⭕️"
+      $0.title = "Blob Sr., place your ❌"
+    }
+    self.store.send(.cellTapped(row: 2, column: 0)) {
+      $0.board[2][0] = "❌"
+      $0.isGameDisabled = true
+      $0.isPlayAgainButtonVisible = true
+      $0.title = "Winner! Congrats Blob Sr.!"
+    }
+    self.store.send(.quitButtonTapped)
   }
-
+  
   func testFlow_Tie() {
-    self.store.assert(
-      .send(.cellTapped(row: 0, column: 0)) {
-        $0.board[0][0] = "❌"
-        $0.title = "Blob Jr., place your ⭕️"
-      },
-      .send(.cellTapped(row: 2, column: 2)) {
-        $0.board[2][2] = "⭕️"
-        $0.title = "Blob Sr., place your ❌"
-      },
-      .send(.cellTapped(row: 1, column: 0)) {
-        $0.board[1][0] = "❌"
-        $0.title = "Blob Jr., place your ⭕️"
-      },
-      .send(.cellTapped(row: 2, column: 0)) {
-        $0.board[2][0] = "⭕️"
-        $0.title = "Blob Sr., place your ❌"
-      },
-      .send(.cellTapped(row: 2, column: 1)) {
-        $0.board[2][1] = "❌"
-        $0.title = "Blob Jr., place your ⭕️"
-      },
-      .send(.cellTapped(row: 1, column: 2)) {
-        $0.board[1][2] = "⭕️"
-        $0.title = "Blob Sr., place your ❌"
-      },
-      .send(.cellTapped(row: 0, column: 2)) {
-        $0.board[0][2] = "❌"
-        $0.title = "Blob Jr., place your ⭕️"
-      },
-      .send(.cellTapped(row: 0, column: 1)) {
-        $0.board[0][1] = "⭕️"
-        $0.title = "Blob Sr., place your ❌"
-      },
-      .send(.cellTapped(row: 1, column: 1)) {
-        $0.board[1][1] = "❌"
-        $0.isGameDisabled = true
-        $0.isPlayAgainButtonVisible = true
-        $0.title = "Tied game!"
-      },
-      .send(.playAgainButtonTapped) {
-        $0 = GameState(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr.").view
-      }
-    )
+    self.store.send(.cellTapped(row: 0, column: 0)) {
+      $0.board[0][0] = "❌"
+      $0.title = "Blob Jr., place your ⭕️"
+    }
+    self.store.send(.cellTapped(row: 2, column: 2)) {
+      $0.board[2][2] = "⭕️"
+      $0.title = "Blob Sr., place your ❌"
+    }
+    self.store.send(.cellTapped(row: 1, column: 0)) {
+      $0.board[1][0] = "❌"
+      $0.title = "Blob Jr., place your ⭕️"
+    }
+    self.store.send(.cellTapped(row: 2, column: 0)) {
+      $0.board[2][0] = "⭕️"
+      $0.title = "Blob Sr., place your ❌"
+    }
+    self.store.send(.cellTapped(row: 2, column: 1)) {
+      $0.board[2][1] = "❌"
+      $0.title = "Blob Jr., place your ⭕️"
+    }
+    self.store.send(.cellTapped(row: 1, column: 2)) {
+      $0.board[1][2] = "⭕️"
+      $0.title = "Blob Sr., place your ❌"
+    }
+    self.store.send(.cellTapped(row: 0, column: 2)) {
+      $0.board[0][2] = "❌"
+      $0.title = "Blob Jr., place your ⭕️"
+    }
+    self.store.send(.cellTapped(row: 0, column: 1)) {
+      $0.board[0][1] = "⭕️"
+      $0.title = "Blob Sr., place your ❌"
+    }
+    self.store.send(.cellTapped(row: 1, column: 1)) {
+      $0.board[1][1] = "❌"
+      $0.isGameDisabled = true
+      $0.isPlayAgainButtonVisible = true
+      $0.title = "Tied game!"
+    }
+    self.store.send(.playAgainButtonTapped) {
+      $0 = GameState(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr.").view
+    }
   }
 }
