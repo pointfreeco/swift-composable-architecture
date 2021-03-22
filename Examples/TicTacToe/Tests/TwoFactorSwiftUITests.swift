@@ -65,7 +65,7 @@ class TwoFactorSwiftUITests: XCTestCase {
       )
     )
     .scope(state: { $0.view }, action: TwoFactorAction.view)
-    
+
     store.send(.codeChanged("1234")) {
       $0.code = "1234"
       $0.isSubmitButtonDisabled = false

@@ -17,9 +17,9 @@ let package = Package(
     )
   ],
   dependencies: [
-    .package(url: "https://github.com/pointfreeco/combine-schedulers", .branch("failing")),
+    .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.4.0"),
     .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.1.3"),
-    .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", .branch("main")),
+    .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.1.0"),
   ],
   targets: [
     .target(
@@ -33,7 +33,6 @@ let package = Package(
     .testTarget(
       name: "ComposableArchitectureTests",
       dependencies: [
-        "CombineSchedulers",
         "ComposableArchitecture",
       ]
     ),

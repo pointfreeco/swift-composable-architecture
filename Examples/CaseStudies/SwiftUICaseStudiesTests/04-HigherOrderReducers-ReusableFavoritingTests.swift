@@ -5,6 +5,8 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 class ReusableComponentsFavoritingTests: XCTestCase {
+  let scheduler = DispatchQueue.testScheduler
+
   func testFavoriteButton() {
     let store = TestStore(
       initialState: EpisodesState(
@@ -29,7 +31,7 @@ class ReusableComponentsFavoritingTests: XCTestCase {
       reducer: episodesReducer,
       environment: EpisodesEnvironment(
         favorite: { _, isFavorite in Effect.future { $0(.success(isFavorite)) } },
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
+        mainQueue: self.scheduler.eraseToAnyScheduler()
       )
     )
 
@@ -38,6 +40,7 @@ class ReusableComponentsFavoritingTests: XCTestCase {
       $0.episodes[0].isFavorite = true
     }
 
+    self.scheduler.advance()
     store.receive(.episode(index: 0, action: .favorite(.response(.success(true)))))
 
     store.send(.episode(index: 1, action: .favorite(.buttonTapped))) {
@@ -47,6 +50,7 @@ class ReusableComponentsFavoritingTests: XCTestCase {
       $0.episodes[1].isFavorite = false
     }
 
+    self.scheduler.advance()
     store.receive(.episode(index: 1, action: .favorite(.response(.success(false)))))
 
     store.environment.favorite = { _, _ in .future { $0(.failure(error)) } }
@@ -54,6 +58,7 @@ class ReusableComponentsFavoritingTests: XCTestCase {
       $0.episodes[2].isFavorite = true
     }
 
+    self.scheduler.advance()
     store.receive(
       .episode(index: 2, action: .favorite(.response(.failure(FavoriteError(error: error)))))
     ) {

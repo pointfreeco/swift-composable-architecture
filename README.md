@@ -68,6 +68,8 @@ This repo comes with _lots_ of examples to demonstrate how to solve common and c
 * [Todos](./Examples/Todos)
 * [Voice memos](./Examples/VoiceMemos)
 
+Looking for something more substantial? Check out the source code for [isowords](https://github.com/pointfreeco/isowords), an iOS word search game built in SwiftUI and the Composable Architecture.
+
 ## Basic Usage
 
 To build a feature using the Composable Architecture you define some types and values that model your domain:
@@ -379,13 +381,15 @@ If you are interested in contributing a wrapper library for a framework that we 
   <details>
     <summary>Expand to see answer</summary>
 
+    All interactions with an instance of `Store` (including all of its scopes and derived `ViewStore`s) must be done on the same thread. If the store is powering a SwiftUI or UIKit view then, all interactions must be done on the _main_ thread.
+
     When an action is sent to the `Store`, a reducer is run on the current state, and this process cannot be done from multiple threads. A possible work around is to use a queue in `send`s implementation, but this introduces a few new complications:
 
     1. If done simply with `DispatchQueue.main.async` you will incur a thread hop even when you are already on the main thread. This can lead to unexpected behavior in UIKit and SwiftUI, where sometimes you are required to do work synchronously, such as in animation blocks.
 
     2. It is possible to create a scheduler that performs its work immediately when on the main thread and otherwise uses `DispatchQueue.main.async` (_e.g._ see ReactiveSwift's [`UIScheduler`](https://github.com/ReactiveCocoa/ReactiveSwift/blob/f97db218c0236b0c6ef74d32adb3d578792969c0/Sources/Scheduler.swift)). This introduces a lot more complexity, and should probably not be adopted without having a very good reason.
 
-    At the end of the day, we require `Store` to be used in much the same way that you interact with Apple's APIs. Just as `URLSession` delivers its results on a background thread, thus making you responsible for dispatching back to the main thread, the Composable Architecture makes you responsible for making sure to send actions on the main thread. If you are using an effect that may deliver its output on a non-main thread, you must explicitly perform `.receive(on:)` in order to force it back on the main thread.
+    This is why we require all actions be sent from the same thread. This requirement is in the same spirit of how `URLSession` and other Apple APIs are designed. Those APIs tend to deliver their outputs on whatever thread is most convenient for them, and then it is your responsibility to dispatch back to the main queue if that's what you need. The Composable Architecture makes you responsible for making sure to send actions on the main thread. If you are using an effect that may deliver its output on a non-main thread, you must explicitly perform `.receive(on:)` in order to force it back on the main thread.
 
     This approach makes the fewest number of assumptions about how effects are created and transformed, and prevents unnecessary thread hops and re-dispatching. It also provides some testing benefits. If your effects are not responsible for their own scheduling, then in tests all of the effects would run synchronously and immediately. You would not be able to test how multiple in-flight effects interleave with each other and affect the state of your application. However, by leaving scheduling out of the `Store` we get to test these aspects of our effects if we so desire, or we can ignore if we prefer. We have that flexibility.
 
@@ -418,7 +422,7 @@ You can add ComposableArchitecture to an Xcode project by adding it as a package
   2. Enter "https://github.com/pointfreeco/swift-composable-architecture" into the package repository URL text field
   3. Depending on how your project is structured:
       - If you have a single application target that needs access to the library, then add **ComposableArchitecture** directly to your application.
-      - If you want to use this library from multiple targets you must create a shared framework that depends on **ComposableArchitecture** and then depend on that framework in all of your targets. For an example of this, check out the [Tic-Tac-Toe](./Examples/TicTacToe) demo application, which splits lots of features into modules and consumes the static library in this fashion using the **TicTacToeCommon** framework.
+      - If you want to use this library from multiple Xcode targets, or mixing Xcode targets and SPM targets, you must create a shared framework that depends on **ComposableArchitecture** and then depend on that framework in all of your targets. For an example of this, check out the [Tic-Tac-Toe](./Examples/TicTacToe) demo application, which splits lots of features into modules and consumes the static library in this fashion using the **TicTacToeCommon** framework.
 
 ## Documentation
 

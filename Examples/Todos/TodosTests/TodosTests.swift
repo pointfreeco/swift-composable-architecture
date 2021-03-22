@@ -15,7 +15,7 @@ class TodosTests: XCTestCase {
         uuid: UUID.incrementing
       )
     )
-    
+
     store.send(.addTodoButtonTapped) {
       $0.todos.insert(
         Todo(
@@ -46,7 +46,7 @@ class TodosTests: XCTestCase {
         uuid: UUID.incrementing
       )
     )
-    
+
     store.send(
       .todo(id: state.todos[0].id, action: .textFieldChanged("Learn Composable Architecture"))
     ) {
@@ -77,7 +77,7 @@ class TodosTests: XCTestCase {
         uuid: UUID.incrementing
       )
     )
-    
+
     store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
       $0.todos[0].isComplete = true
     }
@@ -113,7 +113,7 @@ class TodosTests: XCTestCase {
         uuid: UUID.incrementing
       )
     )
-    
+
     store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
       $0.todos[0].isComplete = true
     }
@@ -148,7 +148,7 @@ class TodosTests: XCTestCase {
         uuid: UUID.incrementing
       )
     )
-    
+
     store.send(.clearCompletedButtonTapped) {
       $0.todos = [
         $0.todos[0]
@@ -184,7 +184,7 @@ class TodosTests: XCTestCase {
         uuid: UUID.incrementing
       )
     )
-    
+
     store.send(.delete([1])) {
       $0.todos = [
         $0.todos[0],
@@ -221,7 +221,7 @@ class TodosTests: XCTestCase {
         uuid: UUID.incrementing
       )
     )
-    
+
     store.send(.editModeChanged(.active)) {
       $0.editMode = .active
     }
@@ -259,7 +259,7 @@ class TodosTests: XCTestCase {
         uuid: UUID.incrementing
       )
     )
-    
+
     store.send(.filterPicked(.completed)) {
       $0.filter = .completed
     }
