@@ -100,9 +100,9 @@ public extension StateBinding {
   /// - Parameters:
   ///   - destination: A function that returns an default instance of `Destination`(the child state) or nil. `Source` can
   ///   be used to decide if `Destination` is nil or not.
-  init<UnwrappedDestination>(
+  init(
     with destination: @escaping (Source) -> Destination
-  ) where Destination == UnwrappedDestination? {
+  ) {
     get = destination
     set = { _, _ in () }
   }
