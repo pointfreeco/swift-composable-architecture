@@ -17,22 +17,18 @@ class SearchTests: XCTestCase {
       )
     )
 
-    store.assert(
-      .environment {
-        $0.weatherClient.searchLocation = { _ in Effect(value: mockLocations) }
-      },
-      .send(.searchQueryChanged("S")) {
-        $0.searchQuery = "S"
-      },
-      .do { self.scheduler.advance(by: 0.3) },
-      .receive(.locationsResponse(.success(mockLocations))) {
-        $0.locations = mockLocations
-      },
-      .send(.searchQueryChanged("")) {
-        $0.locations = []
-        $0.searchQuery = ""
-      }
-    )
+    store.environment.weatherClient.searchLocation = { _ in Effect(value: mockLocations) }
+    store.send(.searchQueryChanged("S")) {
+      $0.searchQuery = "S"
+    }
+    self.scheduler.advance(by: 0.3)
+    store.receive(.locationsResponse(.success(mockLocations))) {
+      $0.locations = mockLocations
+    }
+    store.send(.searchQueryChanged("")) {
+      $0.locations = []
+      $0.searchQuery = ""
+    }
   }
 
   func testSearchFailure() {
@@ -45,16 +41,12 @@ class SearchTests: XCTestCase {
       )
     )
 
-    store.assert(
-      .environment {
-        $0.weatherClient.searchLocation = { _ in Effect(error: .init()) }
-      },
-      .send(.searchQueryChanged("S")) {
-        $0.searchQuery = "S"
-      },
-      .do { self.scheduler.advance(by: 0.3) },
-      .receive(.locationsResponse(.failure(.init())))
-    )
+    store.environment.weatherClient.searchLocation = { _ in Effect(error: .init()) }
+    store.send(.searchQueryChanged("S")) {
+      $0.searchQuery = "S"
+    }
+    self.scheduler.advance(by: 0.3)
+    store.receive(.locationsResponse(.failure(.init())))
   }
 
   func testClearQueryCancelsInFlightSearchRequest() {
@@ -67,16 +59,14 @@ class SearchTests: XCTestCase {
       )
     )
 
-    store.assert(
-      .send(.searchQueryChanged("S")) {
-        $0.searchQuery = "S"
-      },
-      .do { self.scheduler.advance(by: 0.2) },
-      .send(.searchQueryChanged("")) {
-        $0.searchQuery = ""
-      },
-      .do { self.scheduler.run() }
-    )
+    store.send(.searchQueryChanged("S")) {
+      $0.searchQuery = "S"
+    }
+    self.scheduler.advance(by: 0.2)
+    store.send(.searchQueryChanged("")) {
+      $0.searchQuery = ""
+    }
+    self.scheduler.run()
   }
 
   func testTapOnLocation() {
@@ -95,16 +85,14 @@ class SearchTests: XCTestCase {
       )
     )
 
-    store.assert(
-      .send(.locationTapped(specialLocation)) {
-        $0.locationWeatherRequestInFlight = specialLocation
-      },
-      .do { self.scheduler.advance() },
-      .receive(.locationWeatherResponse(.success(specialLocationWeather))) {
-        $0.locationWeatherRequestInFlight = nil
-        $0.locationWeather = specialLocationWeather
-      }
-    )
+    store.send(.locationTapped(specialLocation)) {
+      $0.locationWeatherRequestInFlight = specialLocation
+    }
+    self.scheduler.advance()
+    store.receive(.locationWeatherResponse(.success(specialLocationWeather))) {
+      $0.locationWeatherRequestInFlight = nil
+      $0.locationWeather = specialLocationWeather
+    }
   }
 
   func testTapOnLocationCancelsInFlightRequest() {
@@ -123,19 +111,17 @@ class SearchTests: XCTestCase {
       )
     )
 
-    store.assert(
-      .send(.locationTapped(mockLocations.first!)) {
-        $0.locationWeatherRequestInFlight = mockLocations.first!
-      },
-      .send(.locationTapped(specialLocation)) {
-        $0.locationWeatherRequestInFlight = specialLocation
-      },
-      .do { self.scheduler.advance() },
-      .receive(.locationWeatherResponse(.success(specialLocationWeather))) {
-        $0.locationWeatherRequestInFlight = nil
-        $0.locationWeather = specialLocationWeather
-      }
-    )
+    store.send(.locationTapped(mockLocations.first!)) {
+      $0.locationWeatherRequestInFlight = mockLocations.first!
+    }
+    store.send(.locationTapped(specialLocation)) {
+      $0.locationWeatherRequestInFlight = specialLocation
+    }
+    self.scheduler.advance()
+    store.receive(.locationWeatherResponse(.success(specialLocationWeather))) {
+      $0.locationWeatherRequestInFlight = nil
+      $0.locationWeather = specialLocationWeather
+    }
   }
 
   func testTapOnLocationFailure() {
@@ -148,15 +134,13 @@ class SearchTests: XCTestCase {
       )
     )
 
-    store.assert(
-      .send(.locationTapped(mockLocations.first!)) {
-        $0.locationWeatherRequestInFlight = mockLocations.first!
-      },
-      .do { self.scheduler.advance() },
-      .receive(.locationWeatherResponse(.failure(.init()))) {
-        $0.locationWeatherRequestInFlight = nil
-      }
-    )
+    store.send(.locationTapped(mockLocations.first!)) {
+      $0.locationWeatherRequestInFlight = mockLocations.first!
+    }
+    self.scheduler.advance()
+    store.receive(.locationWeatherResponse(.failure(.init()))) {
+      $0.locationWeatherRequestInFlight = nil
+    }
   }
 }
 

@@ -188,4 +188,15 @@ final class EffectTests: XCTestCase {
 
     XCTAssertEqual(Error.error, error)
   }
+
+  #if compiler(>=5.4)
+    func testFailing() {
+      let effect = Effect<Never, Never>.failing("failing")
+      XCTExpectFailure {
+        effect
+          .sink(receiveValue: { _ in })
+          .store(in: &self.cancellables)
+      }
+    }
+  #endif
 }

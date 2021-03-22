@@ -13,23 +13,21 @@ class AlertsAndActionSheetsTests: XCTestCase {
       environment: AlertAndSheetEnvironment()
     )
 
-    store.assert(
-      .send(.alertButtonTapped) {
-        $0.alert = .init(
-          title: .init("Alert!"),
-          message: .init("This is an alert"),
-          primaryButton: .cancel(),
-          secondaryButton: .default(.init("Increment"), send: .incrementButtonTapped)
-        )
-      },
-      .send(.incrementButtonTapped) {
-        $0.alert = .init(title: .init("Incremented!"))
-        $0.count = 1
-      },
-      .send(.alertDismissed) {
-        $0.alert = nil
-      }
-    )
+    store.send(.alertButtonTapped) {
+      $0.alert = .init(
+        title: .init("Alert!"),
+        message: .init("This is an alert"),
+        primaryButton: .cancel(),
+        secondaryButton: .default(.init("Increment"), send: .incrementButtonTapped)
+      )
+    }
+    store.send(.incrementButtonTapped) {
+      $0.alert = .init(title: .init("Incremented!"))
+      $0.count = 1
+    }
+    store.send(.alertDismissed) {
+      $0.alert = nil
+    }
   }
 
   func testActionSheet() {
@@ -39,25 +37,23 @@ class AlertsAndActionSheetsTests: XCTestCase {
       environment: AlertAndSheetEnvironment()
     )
 
-    store.assert(
-      .send(.actionSheetButtonTapped) {
-        $0.actionSheet = .init(
-          title: .init("Action sheet"),
-          message: .init("This is an action sheet."),
-          buttons: [
-            .cancel(),
-            .default(.init("Increment"), send: .incrementButtonTapped),
-            .default(.init("Decrement"), send: .decrementButtonTapped),
-          ]
-        )
-      },
-      .send(.incrementButtonTapped) {
-        $0.alert = .init(title: .init("Incremented!"))
-        $0.count = 1
-      },
-      .send(.actionSheetDismissed) {
-        $0.actionSheet = nil
-      }
-    )
+    store.send(.actionSheetButtonTapped) {
+      $0.actionSheet = .init(
+        title: .init("Action sheet"),
+        message: .init("This is an action sheet."),
+        buttons: [
+          .cancel(),
+          .default(.init("Increment"), send: .incrementButtonTapped),
+          .default(.init("Decrement"), send: .decrementButtonTapped),
+        ]
+      )
+    }
+    store.send(.incrementButtonTapped) {
+      $0.alert = .init(title: .init("Incremented!"))
+      $0.count = 1
+    }
+    store.send(.actionSheetDismissed) {
+      $0.actionSheet = nil
+    }
   }
 }
