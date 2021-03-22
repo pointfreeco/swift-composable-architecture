@@ -29,7 +29,7 @@ class ReusableComponentsFavoritingTests: XCTestCase {
       reducer: episodesReducer,
       environment: EpisodesEnvironment(
         favorite: { _, isFavorite in Effect.future { $0(.success(isFavorite)) } },
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
+        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler()
       )
     )
 
