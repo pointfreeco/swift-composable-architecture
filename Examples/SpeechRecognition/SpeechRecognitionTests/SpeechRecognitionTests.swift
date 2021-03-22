@@ -26,8 +26,8 @@ class SpeechRecognitionTests: XCTestCase {
       $0.alert = .init(
         title: .init(
           """
-            You denied access to speech recognition. This app needs access to transcribe your speech.
-            """
+          You denied access to speech recognition. This app needs access to transcribe your speech.
+          """
         )
       )
       $0.isRecording = false
@@ -134,7 +134,7 @@ class SpeechRecognitionTests: XCTestCase {
 
     self.recognitionTaskSubject.send(completion: .finished)
   }
-  
+
   func testAudioEngineFailure() {
     let store = TestStore(
       initialState: .init(),

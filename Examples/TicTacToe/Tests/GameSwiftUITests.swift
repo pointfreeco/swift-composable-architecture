@@ -14,7 +14,7 @@ class GameSwiftUITests: XCTestCase {
     environment: GameEnvironment()
   )
   .scope(state: { $0.view })
-  
+
   func testFlow_Winner_Quit() {
     self.store.send(.cellTapped(row: 0, column: 0)) {
       $0.board[0][0] = "❌"
@@ -40,7 +40,7 @@ class GameSwiftUITests: XCTestCase {
     }
     self.store.send(.quitButtonTapped)
   }
-  
+
   func testFlow_Tie() {
     self.store.send(.cellTapped(row: 0, column: 0)) {
       $0.board[0][0] = "❌"

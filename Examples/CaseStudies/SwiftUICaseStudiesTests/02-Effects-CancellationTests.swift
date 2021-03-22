@@ -14,7 +14,7 @@ class EffectsCancellationTests: XCTestCase {
         numberFact: { n in Effect(value: "\(n) is a good number Brent") }
       )
     )
-    
+
     store.send(.stepperChanged(1)) {
       $0.count = 1
     }
@@ -29,7 +29,7 @@ class EffectsCancellationTests: XCTestCase {
       $0.isTriviaRequestInFlight = false
     }
   }
-  
+
   func testTrivia_FailedRequest() {
     let store = TestStore(
       initialState: .init(),
@@ -39,7 +39,7 @@ class EffectsCancellationTests: XCTestCase {
         numberFact: { _ in Fail(error: NumbersApiError()).eraseToEffect() }
       )
     )
-    
+
     store.send(.triviaButtonTapped) {
       $0.isTriviaRequestInFlight = true
     }
@@ -47,7 +47,7 @@ class EffectsCancellationTests: XCTestCase {
       $0.isTriviaRequestInFlight = false
     }
   }
-  
+
   // NB: This tests that the cancel button really does cancel the in-flight API request.
   //
   // To see the real power of this test, try replacing the `.cancel` effect with a `.none` effect
@@ -64,7 +64,7 @@ class EffectsCancellationTests: XCTestCase {
         numberFact: { n in Effect(value: "\(n) is a good number Brent") }
       )
     )
-    
+
     store.send(.triviaButtonTapped) {
       $0.isTriviaRequestInFlight = true
     }
@@ -73,7 +73,7 @@ class EffectsCancellationTests: XCTestCase {
     }
     scheduler.run()
   }
-  
+
   func testTrivia_PlusMinusButtonsCancelsRequest() {
     let scheduler = DispatchQueue.testScheduler
     let store = TestStore(
@@ -84,7 +84,7 @@ class EffectsCancellationTests: XCTestCase {
         numberFact: { n in Effect(value: "\(n) is a good number Brent") }
       )
     )
-    
+
     store.send(.triviaButtonTapped) {
       $0.isTriviaRequestInFlight = true
     }
