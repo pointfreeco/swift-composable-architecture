@@ -112,10 +112,8 @@ struct SharedStateWithBinding: Equatable {
     .rw(\.count, \.count)
     // Explicit declaration, equivalent to .rw(\.content, \.text)
     .with(
-      .init(
-        get: { src, dest in dest.text = src.content },
-        set: { src, dest in src.content = dest.text }
-      )
+      get: { src, dest in dest.text = src.content },
+      set: { src, dest in src.content = dest.text }
     )
 
   var feature5: FeatureState? {

@@ -108,7 +108,7 @@ public extension StateBinding {
   }
 }
 
-public extension StateBinding {
+fileprivate extension StateBinding {
   /// Returns a modified `StateBinding`using a couble of `PropertyBinding`  to bind similar
   /// properties in `Source` and `Destination`.
   func with(_ propertyBinding: PropertyBinding<Source, Destination>) -> Self {
@@ -144,6 +144,31 @@ public extension StateBinding {
 }
 
 public extension StateBinding {
+  /// Returns a modified `StateBinding` binding similar properties between `Source` and `Destination`.
+  /// - Parameters:
+  ///   - get: A function applied when `Destination` is requested from `Source`. The `Destination`
+  ///   instance can be updated at this point.
+  ///   - set: A function applied when `Destination` is set in `Source`. The `Source` instance can be
+  ///   updated at this point.
+  func with(get: @escaping (Source, inout Destination) -> Void,
+            set: @escaping (inout Source, Destination) -> Void = { _, _ in () }
+  ) -> Self {
+    with(PropertyBinding<Source, Destination>(get: get, set: set))
+  }
+
+  /// Returns a modified `StateBinding` binding similar properties between `Source` and `Destination.Wrapped`.
+  /// - Parameters:
+  ///   - get: A function applied when `Destination.Wrapped` is requested from `Source`. The `Destination.Wrapped`
+  ///   instance can be updated at this point.
+  ///   - set: A function applied when `Destination.Wrapped` is set in `Source`. The `Source` instance can be
+  ///   updated at this point.
+  func with<UnwrappedDestination>(get: @escaping (Source, inout UnwrappedDestination) -> Void,
+                                  set: @escaping (inout Source, UnwrappedDestination) -> Void = { _, _ in () }
+                        ) -> Self
+    where Destination == UnwrappedDestination?
+  {
+    with(PropertyBinding<Source, UnwrappedDestination>(get: get, set: set))
+  }
 
   /// Returns a modified `StateBinding`using a couble of `KeyPath`  to link in a read-write fashion a similar
   /// property in `Source` and `Destination`.
@@ -198,8 +223,8 @@ public extension StateBinding {
   }
 }
 
-/// A struct that describe a directional binding between instances of `Source` and `Destination`.
-public struct PropertyBinding<Source, Destination> {
+/// A utility struct that describe a directional binding between instances of `Source` and `Destination`.
+fileprivate struct PropertyBinding<Source, Destination> {
   let get: (Source, inout Destination) -> Void
   let set: (inout Source, Destination) -> Void
   /// Initialize a binding between a `Source` instance and a`Destination` instance.
@@ -208,7 +233,7 @@ public struct PropertyBinding<Source, Destination> {
   ///   instance can be updated at this point.
   ///   - set: A function applied when `Destination` is set in `Source`. The `Source` instance can be
   ///   updated at this point.
-  public init(
+  init(
     get: @escaping (Source, inout Destination) -> Void = { _, _ in },
     set: @escaping (inout Source, Destination) -> Void = { _, _ in }
   ) {
@@ -223,7 +248,7 @@ public struct PropertyBinding<Source, Destination> {
   ///   - destinationValue: A `KeyPath` to get and set `Value` in `Destination`
   ///   - removeDuplicates: Used when the `Value` is set on `Source`. If this function is implemented
   ///     and returns `true`, no assignation will occur and `Source` will be kept untouched.
-  public init<Value>(
+  init<Value>(
     _ sourceValue: WritableKeyPath<Source, Value>,
     _ destinationValue: WritableKeyPath<Destination, Value>,
     removeDuplicates: ((Value, Value) -> Bool)? = nil
@@ -245,7 +270,7 @@ public struct PropertyBinding<Source, Destination> {
   /// - Parameters:
   ///   - sourceValue: A `KeyPath` to get `Value` in `Source`
   ///   - destinationValue: A `KeyPath` to get and set `Value` in `Destination`
-  public init<Value>(
+  init<Value>(
     readonly sourceValue: KeyPath<Source, Value>,
     _ destinationValue: WritableKeyPath<Destination, Value>
   ) {
