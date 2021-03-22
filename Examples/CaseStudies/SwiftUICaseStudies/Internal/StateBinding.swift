@@ -54,9 +54,7 @@ public extension StateBinding {
   init(_ storage: WritableKeyPath<Source, Destination>,
        removeDuplicateStorage: ((Destination, Destination) -> Bool)? = nil)
   {
-    get = { source in
-      source[keyPath: storage]
-    }
+    get = { $0[keyPath: storage] }
     set = { source, newValue in
       if removeDuplicateStorage?(source[keyPath: storage], newValue) != true {
         source[keyPath: storage] = newValue
@@ -83,29 +81,29 @@ public extension StateBinding {
       }
     }
   }
+  
+  /// Initialize a computed binding between a parent state `Source` and a child state `Destination`. These derived states
+  /// are used when all the properties of `Destination` can be individually stored in `Source`. Please note that this version
+  /// needs explicit generics on call site as the initializer lacks information to resolve `Source` by itself.
+  /// - Parameters:
+  ///   - destination: A function that returns an default instance of `Destination` (the child state)
+  init(
+    with destination: @escaping () -> Destination
+  ) {
+    get = { _ in destination() }
+    set = { _, _ in () }
+  }
 
-  /// Initialize a  computed binding between a parent state `Source` and an optional child state `Destination`
+  /// Initialize a computed binding between a parent state `Source` and an optional child state `Destination`
   /// These derived states are used when all the properties of `Destination` can be individually stored in `Source`.
   /// If the child is set to nil, the source properties are kept untouched
   /// - Parameters:
-  ///   - destination: A function that returns an default instance of `Destination`(the child state) or nil.
+  ///   - destination: A function that returns an default instance of `Destination`(the child state) or nil. `Source` can
+  ///   be used to decide if `Destination` is nil or not.
   init<UnwrappedDestination>(
     with destination: @escaping (Source) -> Destination
   ) where Destination == UnwrappedDestination? {
     get = destination
-    set = { _, _ in () }
-  }
-
-  /// Initialize a  computed binding between a parent state `Source` and a child state `Destination`. These derived states
-  /// are used when all the properties of `Destination` can be individually stored in `Source`.
-  /// - Parameters:
-  ///   - source: The `Source`'s or parent state type
-  ///   - destination: A function that returns an default instance of `Destination` (the child state)
-  init(
-    _ source: Source.Type,
-    with destination: @escaping () -> Destination
-  ) {
-    get = { _ in destination() }
     set = { _, _ in () }
   }
 }
@@ -146,16 +144,6 @@ public extension StateBinding {
 }
 
 public extension StateBinding {
-  /// Returns a modified `StateBinding`using a couble of `KeyPath`  to link in a read-write fashion a similar
-  /// property in `Source` and `Destination`.
-  /// - Parameters:
-  ///   - sourceValue: A `KeyPath` to get and set `Value` in `Source`
-  ///   - destinationValue: A `KeyPath` to get and set `Value` in `Destination`
-  func rw<Value>(_ sourceValue: WritableKeyPath<Source, Value>,
-                 _ destinationValue: WritableKeyPath<Destination, Value>) -> Self
-  {
-    with(.init(sourceValue, destinationValue))
-  }
 
   /// Returns a modified `StateBinding`using a couble of `KeyPath`  to link in a read-write fashion a similar
   /// property in `Source` and `Destination`.
@@ -166,21 +154,9 @@ public extension StateBinding {
   ///     and returns `true`, no assignation will occur and `Source` will be kept untouched.
   func rw<Value>(_ sourceValue: WritableKeyPath<Source, Value>,
                  _ destinationValue: WritableKeyPath<Destination, Value>,
-                 removeDuplicates: @escaping (Value, Value) -> Bool) -> Self
+                 removeDuplicates: ((Value, Value) -> Bool)? = nil) -> Self
   {
     with(.init(sourceValue, destinationValue, removeDuplicates: removeDuplicates))
-  }
-
-  /// Returns a modified `StateBinding`using a couble of `KeyPath`  to link in a read-write fashion a similar
-  /// property in `Source` and `Destination.Wrapped`.
-  /// - Parameters:
-  ///   - sourceValue: A `KeyPath` to get and set `Value` in `Source`
-  ///   - destinationValue: A `KeyPath` to get and set `Value` in `Destination`
-  func rw<Value, UnwrappedDestination>(_ sourceValue: WritableKeyPath<Source, Value>,
-                                       _ destinationValue: WritableKeyPath<UnwrappedDestination, Value>) -> Self
-    where Destination == UnwrappedDestination?
-  {
-    with(.init(sourceValue, destinationValue))
   }
 
   /// Returns a modified `StateBinding`using a couble of `KeyPath`  to link in a read-write fashion a similar
@@ -192,7 +168,7 @@ public extension StateBinding {
   ///     and returns `true`, no assignation will occur and `Source` will be kept untouched.
   func rw<Value, UnwrappedDestination>(_ sourceValue: WritableKeyPath<Source, Value>,
                                        _ destinationValue: WritableKeyPath<UnwrappedDestination, Value>,
-                                       removeDuplicates: @escaping (Value, Value) -> Bool) -> Self
+                                       removeDuplicates: ((Value, Value) -> Bool)? = nil) -> Self
     where Destination == UnwrappedDestination?
   {
     with(.init(sourceValue, destinationValue, removeDuplicates: removeDuplicates))

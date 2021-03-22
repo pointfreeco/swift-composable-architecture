@@ -86,7 +86,7 @@ struct SharedStateWithBinding: Equatable {
   // All the properties of `Feature` are bound to some property of `self`. A new instance is created
   // from the provided `with:` argument. We use `Self.self` because we need to tie the first generic
   // parameter of `StateBinding` to `Self`.
-  fileprivate static let _feature4 = StateBinding(Self.self, with: FeatureState.init)
+  fileprivate static let _feature4 = StateBinding<Self, FeatureState> { .init() }
     .ro(\.feature4Name, \.name)
     .ro(\.isCountInternal, \.isCountInternal)
     .rw(\.content, \.text)
@@ -102,7 +102,11 @@ struct SharedStateWithBinding: Equatable {
   // instance is created from a function of `Self`. We use the `shouldShowFeature5` flag to decide if the
   // property is nil or not. Because it has no private storage, the `feature5` instance is completly set
   // when accessed and the flag is enough to condition its existence and content without ambiguity.
-  fileprivate static let _feature5 = StateBinding<SharedStateWithBinding, FeatureState?>(with: { $0.shouldShowFeature5 ? .init() : nil })
+  fileprivate static let _feature5 = StateBinding<SharedStateWithBinding, FeatureState?> {
+      $0.shouldShowFeature5
+      ? .init()
+      : nil
+    }
     .ro(\.feature5Name, \.name)
     .ro(\.isCountInternal, \.isCountInternal)
     .rw(\.count, \.count)

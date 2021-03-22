@@ -79,7 +79,7 @@ class StateBindingTests: XCTestCase {
       var content: String = ""
       var count = 0
             
-      static var _feature = StateBinding(Self.self, with: Feature.init)
+      static var _feature = StateBinding<State, Feature>(with: Feature.init)
         .rw(\.content, \.external)
         .rw(\.count, \.internal)
 
