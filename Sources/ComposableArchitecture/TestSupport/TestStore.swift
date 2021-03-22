@@ -305,9 +305,9 @@
   extension TestStore where LocalState: Equatable {
     public func send(
       _ action: LocalAction,
-      _ update: @escaping (inout LocalState) throws -> Void = { _ in },
       file: StaticString = #file,
-      line: UInt = #line
+      line: UInt = #line,
+      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
     ) {
       if !self.receivedActions.isEmpty {
         _XCTFail(
@@ -346,9 +346,9 @@
 
     public func receive(
       _ expectedAction: Action,
-      _ update: @escaping (inout LocalState) throws -> Void = { _ in },
       file: StaticString = #file,
-      line: UInt = #line
+      line: UInt = #line,
+      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
     ) {
       guard !self.receivedActions.isEmpty else {
         _XCTFail(
@@ -418,10 +418,10 @@
       func assert(step: Step) {
         switch step.type {
         case let .send(action, update):
-          self.send(action, update, file: step.file, line: step.line)
+          self.send(action, file: step.file, line: step.line, update)
 
         case let .receive(expectedAction, update):
-          self.receive(expectedAction, update, file: step.file, line: step.line)
+          self.receive(expectedAction, file: step.file, line: step.line, update)
 
         case let .environment(work):
           if !self.receivedActions.isEmpty {
