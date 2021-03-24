@@ -1,4 +1,5 @@
 @testable import SwiftUICaseStudies
+import ComposableArchitecture
 import XCTest
 
 class StateBindingTests: XCTestCase {
@@ -34,6 +35,45 @@ class StateBindingTests: XCTestCase {
   }
     
   func testOptionalStateBindingWithStorage() {
+    struct Feature {
+      var external: String = ""
+      var `internal`: Int = 0
+    }
+    struct State {
+      var content: String = ""
+      var _feature: Feature? = nil
+      static var _feature = StateBinding(\Self._feature)
+        .map(
+          .rw(\.content, \.external)
+        )
+
+      var feature: Feature? {
+        get { Self._feature.get(self) }
+        set { Self._feature.set(&self, newValue) }
+      }
+    }
+        
+    var state = State()
+    state.feature = .init()
+        
+    state.feature?.internal = 1
+    state.feature?.external = "Hello!"
+        
+    XCTAssertEqual(state.feature?.internal, 1)
+    XCTAssertEqual(state.feature?.external, "Hello!")
+    XCTAssertEqual(state.content, "Hello!")
+
+    state.content = "World!"
+    XCTAssertEqual(state.feature?.internal, 1)
+    XCTAssertEqual(state.feature?.external, "World!")
+        
+    state._feature = nil
+    state.feature?.external = "Test"
+    // `content` should be unchanged as `feature` is nil.
+    XCTAssertEqual(state.content, "World!")
+  }
+  
+  func testCanonicalOptionalStateBindingWithStorage() {
     struct Feature {
       var external: String = ""
       var `internal`: Int = 0
@@ -176,5 +216,106 @@ class StateBindingTests: XCTestCase {
     // This would hit didSet and fail if not deduplicated.
     state.feature.internal = 1
     state.feature.external = "Hello!"
+  }
+  
+  func testArrayStateBindingWithStorage() {
+    struct Feature {
+      var external: String = ""
+      var `internal`: Int = 0
+    }
+    struct State {
+      var content: String = ""
+      var _features: [Feature] = []
+      static var _features = StateBinding(\Self._features)
+        .map(
+          .rw(\.content, \.external)
+        )
+
+      var features: [Feature] {
+        get { Self._features.get(self) }
+        set { Self._features.set(&self, newValue) }
+      }
+    }
+        
+    var state = State()
+    state.features = [.init(), .init()]
+      
+    state.content = "World!"
+    XCTAssertEqual(state.features[0].external, "World!")
+    XCTAssertEqual(state.features[1].external, "World!")
+
+    state.features[0].external = "Hello!"
+    
+    // `content` should be unchanged.
+    XCTAssertEqual(state.content, "World!")
+    XCTAssertEqual(state.features[0].external, "World!")
+  }
+  
+  func testDictionaryStateBindingWithStorage() {
+    struct Feature {
+      var external: String = ""
+      var `internal`: Int = 0
+    }
+    struct State {
+      var content: String = ""
+      var _features: [Int: Feature] = [:]
+      static var _features = StateBinding(\Self._features)
+        .map(
+          .rw(\.content, \.external)
+        )
+
+      var features: [Int:Feature] {
+        get { Self._features.get(self) }
+        set { Self._features.set(&self, newValue) }
+      }
+    }
+        
+    var state = State()
+    state.features = [1:.init(), 2:.init()]
+      
+    state.content = "World!"
+    XCTAssertEqual(state.features[1]?.external, "World!")
+    XCTAssertEqual(state.features[2]?.external, "World!")
+
+    state.features[1]?.external = "Hello!"
+    
+    // `content` should be unchanged.
+    XCTAssertEqual(state.content, "World!")
+    XCTAssertEqual(state.features[1]?.external, "World!")
+  }
+  
+  func testIdentifiedArrayStateBindingWithStorage() {
+    struct Feature: Identifiable {
+      var id: Int
+      var external: String = ""
+      var `internal`: Int = 0
+    }
+    struct State {
+      var content: String = ""
+      var _features: IdentifiedArray<Int, Feature> = IdentifiedArray<Int, Feature>(id: \.id)
+      static var _features = StateBinding(\Self._features)
+        .map(
+          .rw(\.content, \.external)
+        )
+
+      var features: IdentifiedArray<Int, Feature> {
+        get { Self._features.get(self) }
+        set { Self._features.set(&self, newValue) }
+      }
+    }
+        
+    var state = State()
+    state.features.append(.init(id: 1))
+    state.features.append(.init(id: 2))
+
+    state.content = "World!"
+    XCTAssertEqual(state.features[0].external, "World!")
+    XCTAssertEqual(state.features[1].external, "World!")
+
+    state.features[0].external = "Hello!"
+    
+    // `content` should be unchanged.
+    XCTAssertEqual(state.content, "World!")
+    XCTAssertEqual(state.features[0].external, "World!")
   }
 }

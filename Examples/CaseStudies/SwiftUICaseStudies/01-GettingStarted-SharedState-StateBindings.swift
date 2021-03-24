@@ -14,6 +14,7 @@ struct SharedStateWithBinding: Equatable {
   struct FeatureState: Equatable {
     var name: String = "" // Used for this case study presentation
     var isCountInternal: Bool = true // Used for this case study presentation
+    var isSelected: Bool? = nil
 
     var text: String = ""
     var count: Int = 0
@@ -115,7 +116,7 @@ struct SharedStateWithBinding: Equatable {
       get: { src, dest in dest.text = src.content },
       set: { src, dest in src.content = dest.text }
     )
-
+  
   var feature5: FeatureState? {
     get { Self._feature5.get(self) }
     set { Self._feature5.set(&self, newValue) }
@@ -134,10 +135,40 @@ struct SharedStateWithBinding: Equatable {
     get { Self._feature6.get(self) }
     set { Self._feature6.set(&self, newValue) }
   }
+  
+  // MARK: "Collection of features" -
+  // In this example, we have an `IdentifiedArray` of `FeatureState` and we use `map` to transform
+  // `FeatureState` bindings into `IdentifiedArrays<_,FeatureState>` bindings. This allows to
+  // update each feature of the collection from `self`'s values on the fly. Because the way
+  // back is undecided (how to update `self` from the collection newValue), we request to
+  // update `self` using the element with `selectedID` as a base. This is purely optional and we
+  // can return `nil` if we don't want to update `self`, rendering the binding read-only.
+  let selectedID = "Id:1"
+  fileprivate var _features7: IdentifiedArray<String, FeatureState> = IdentifiedArray<String, FeatureState>( [
+      .init(name: "Id:1", isSelected: true),
+      .init(name: "Id:2", isSelected: false),
+      .init(name: "Id:3", isSelected: false)
+    ], id: \.name)
+  
+  // Since we work on an IdentifiedArray, we need to map the binding so we can directly
+  // use `FeatureState` keyPaths. We update only `Feature.text` from `self.content`. The
+  // `count` in `FeatureState` states are thus internal, stored by the `_feature7` array.
+  fileprivate static let _feature7 = StateBinding(\Self._features7)
+    .map(
+      .rw(\.content, \.text),
+      // The feature with `SelectedID` will be used to update values in `SharedStateWithBinding`.
+      // We return a `FeatureState` instance that will go upflow when setting the value.
+      // If we return `nil`, the binding would be read-only for its properties.
+      getBack: { $1[id: $0.selectedID] }
+    )
+  
+  var feature7: IdentifiedArray<String, FeatureState> {
+    get { Self._feature7.get(self) }
+    set { Self._feature7.set(&self, newValue) }
+  }
 }
 
 // MARK: Internal
-
 private extension SharedStateWithBinding {
   // Used for this case study presentation
   var feature1Name: String { "Manual binding" }
@@ -161,6 +192,7 @@ enum SharedStateWithBindingAction {
   case feature4(FeatureAction)
   case feature5(FeatureAction)
   case feature6(FeatureAction)
+  case feature7(String, FeatureAction)
 
   case toggleFeature3
   case toggleFeature5
@@ -198,6 +230,10 @@ let sharedStateWithBindingReducer =
       boundFeatureReducer.pullback(state: \.feature6,
                                    action: /SharedStateWithBindingAction.feature6,
                                    environment: { _ in () }),
+      
+      boundFeatureReducer.forEach(state: \.feature7,
+                                  action: /SharedStateWithBindingAction.feature7,
+                                  environment: { _ in () }),
 
       Reducer<SharedStateWithBinding, SharedStateWithBindingAction, Void> {
         state, action, _ in
@@ -272,6 +308,13 @@ struct SharedStateWithBindingView: View {
                                               action: SharedStateWithBindingAction.feature6)
           )
         }
+
+        Section(header: Text("Features array, selected: \(viewStore.selectedID)"),
+                footer: Text("These three feature are stored as an array in State. Only the first one is fully responsive, with its values updating the whole app. The two other ones have an internal \"count\" value, but their textField is read-only from the state.")) {
+          ForEachStore(self.store.scope(state: { $0.feature7 },
+                                       action: SharedStateWithBindingAction.feature7),
+                       content: FeatureView.init(store:))
+        }
       }
     }
     .listStyle(GroupedListStyle())
@@ -289,7 +332,7 @@ struct SharedStateWithBindingView: View {
             TextField(viewStore.name,
                       text: viewStore.binding(keyPath: \.text, send: FeatureAction.binding))
               .textFieldStyle(RoundedBorderTextFieldStyle())
-
+ 
             Stepper("\(viewStore.count)",
                     value: viewStore.binding(keyPath: \.count, send: FeatureAction.binding),
                     in: 0 ... 9)
@@ -301,7 +344,21 @@ struct SharedStateWithBindingView: View {
             .font(.footnote)
             .foregroundColor(viewStore.isCountInternal ? .red : .green)
             .frame(maxWidth: .infinity, alignment: .trailing)
+          if viewStore.isSelected == false {
+            Text("The text field is updated by the global state but it can't update it back")
+              .font(.footnote)
+              .foregroundColor(.orange)
+              .lineLimit(nil)
+              .frame(maxWidth: .infinity, alignment: .leading)
+          }
         }
+        .listRowBackground(
+          (viewStore.isSelected == false)
+            ? Color.yellow.opacity(0.1)
+            : (viewStore.isSelected == true )
+            ? Color.green.opacity(0.1)
+            : Color.clear
+        )
         .id(viewStore.name)
         .listRowInsets(EdgeInsets(top: 11, leading: 8, bottom: 8, trailing: 8))
       }
