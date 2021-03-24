@@ -42,6 +42,10 @@ public struct StateBinding<Source, Destination> {
   public let get: (_ source: Source) -> Destination
   /// Set the storage in `source` and update `source`.
   public let set: (_ source: inout Source, _ newValue: Destination) -> Void
+  
+  public func callAsFunction(_ source: Source) -> Destination {
+    get(source)
+  }
 }
 
 public extension StateBinding {
@@ -475,4 +479,387 @@ public extension PropertyBinding {
                                                                 self.set(&src, reduced)
                                                               })
   }
+}
+
+
+// MARK: Reducer Specializations to use StateBinding directly -
+/// Use this marker protocol on a parent state `Source` to allow reducer pullback and forEach using `StateBinding<Source, _>`
+/// direcly, without having to generate accessors.
+public protocol StateContainer {}
+
+extension StateContainer {
+  // This subscript is used instead of `WritableKeyPath<Self, T>` in the `StateBinding` reducer's specializations
+  subscript<T>(binding binding: StateBinding<Self, T>) -> T {
+    get { binding.get(self) }
+    set { binding.set(&self, newValue) }
+  }
+}
+
+/// inout arguments in subscripts are not currently allowed in Swift.
+/// If they are one day (*), the StateContainer protocol can be dropped in favor of a `StateBinding` subscript:
+///
+/// ```
+/// extension StateBinding {
+///  subscript (source source: inout Source) -> Destination {
+///    get { get(source) }
+///    set { set(&source, newValue) }
+///  }
+/// }
+/// ```
+///
+/// The reducer specializations can then call `toLocalState[source: &globalState]` instead
+/// of  `&globalState[binding: toLocalState]`
+///
+/// (*) see: https://forums.swift.org/t/inout-subscript-parameters/31429
+public extension Reducer {
+  /// Transforms a reducer that works on local state, action, and environment into one that works on
+  /// global state, action and environment. It accomplishes this by providing 3 transformations to
+  /// the method:
+  ///
+  ///   * A state binding that can get/set a piece of local state from the global state.
+  ///   * A case path that can extract/embed a local action into a global action.
+  ///   * A function that can transform the global environment into a local environment.
+  ///
+  /// This operation is important for breaking down large reducers into small ones. When used with
+  /// the `combine` operator you can define many reducers that work on small pieces of domain, and
+  /// then _pull them back_ and _combine_ them into one big reducer that works on a large domain.
+  ///
+  ///     // Global domain that holds a local domain:
+  ///     struct AppState { static var settings: StateBinding<AppState,SettingsState>, /* rest of state */ }
+  ///     enum AppAction { case settings(SettingsAction), /* other actions */ }
+  ///     struct AppEnvironment { var settings: SettingsEnvironment, /* rest of dependencies */ }
+  ///
+  ///     // A reducer that works on the local domain:
+  ///     let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvironment> { ... }
+  ///
+  ///     // Pullback the settings reducer so that it works on all of the app domain:
+  ///     let appReducer: Reducer<AppState, AppAction, AppEnvironment> = .combine(
+  ///       settingsReducer.pullback(
+  ///         binding: AppState.settings,
+  ///         action: /AppAction.settings,
+  ///         environment: { $0.settings }
+  ///       ),
+  ///
+  ///       /* other reducers */
+  ///     )
+  ///
+  /// - Parameters:
+  ///   - toLocalState: A state binding can get/set `State` inside `GlobalState`.
+  ///   - toLocalAction: A case path that can extract/embed `Action` from `GlobalAction`.
+  ///   - toLocalEnvironment: A function that transforms `GlobalEnvironment` into `Environment`.
+  /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
+  func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
+    binding toLocalState: StateBinding<GlobalState, State>,
+    action toLocalAction: CasePath<GlobalAction, Action>,
+    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment>
+  where GlobalState: StateContainer {
+    .init { globalState, globalAction, globalEnvironment in
+      guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
+      return self.run(
+        &globalState[binding: toLocalState],
+        localAction,
+        toLocalEnvironment(globalEnvironment)
+      )
+      .map(toLocalAction.embed)
+    }
+  }
+
+
+  /// A version of `pullback` that transforms a reducer that works on an element into one that works
+  /// on a collection of elements.
+  ///
+  ///     // Global domain that holds a collection of local domains bindings:
+  ///     struct AppState { static var todos: StateBinding<AppState, [Todo]> }
+  ///     enum AppAction { case todo(index: Int, action: TodoAction) }
+  ///     struct AppEnvironment { var mainQueue: AnySchedulerOf<DispatchQueue> }
+  ///
+  ///     // A reducer that works on a local domain:
+  ///     let todoReducer = Reducer<Todo, TodoAction, TodoEnvironment> { ... }
+  ///
+  ///     // Pullback the local todo reducer so that it works on all of the app domain:
+  ///     let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
+  ///       todoReducer.forEach(
+  ///         binding: AppState.todos,
+  ///         action: /AppAction.todo(index:action:),
+  ///         environment: { _ in TodoEnvironment() }
+  ///       ),
+  ///       Reducer { state, action, environment in
+  ///         ...
+  ///       }
+  ///     )
+  ///
+  /// Take care when combining `forEach` reducers into parent domains, as order matters. Always
+  /// combine `forEach` reducers _before_ parent reducers that can modify the collection.
+  ///
+  /// - Parameters:
+  ///   - toLocalState: A state binding that can get/set an array of `State` elements inside.
+  ///     `GlobalState`.
+  ///   - toLocalAction: A case path that can extract/embed `(Int, Action)` from `GlobalAction`.
+  ///   - toLocalEnvironment: A function that transforms `GlobalEnvironment` into `Environment`.
+  ///   - breakpointOnNil: Raises `SIGTRAP` signal when an action is sent to the reducer but the
+  ///     index is out of bounds. This is generally considered a logic error, as a child reducer
+  ///     cannot process a child action for unavailable child state.
+  /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
+  func forEach<GlobalState, GlobalAction, GlobalEnvironment>(
+    binding toLocalState: StateBinding<GlobalState, [State]>,
+    action toLocalAction: CasePath<GlobalAction, (Int, Action)>,
+    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+    breakpointOnNil: Bool = true,
+    _ file: StaticString = #file,
+    _ line: UInt = #line
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment>
+  where GlobalState: StateContainer {
+    .init { globalState, globalAction, globalEnvironment in
+      guard let (index, localAction) = toLocalAction.extract(from: globalAction) else {
+        return .none
+      }
+      if index >= globalState[binding: toLocalState].endIndex {
+        #if DEBUG
+          if breakpointOnNil {
+            fputs(
+              """
+              ---
+              Warning: Reducer.forEach@\(file):\(line)
+
+              "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at index \
+              \(index) when its state contained no element at this index. This is generally \
+              considered an application logic error, and can happen for a few reasons:
+
+              * This "forEach" reducer was combined with or run from another reducer that removed \
+              the element at this index when it handled this action. To fix this make sure that \
+              this "forEach" reducer is run before any other reducers that can move or remove \
+              elements from state. This ensures that "forEach" reducers can handle their actions \
+              for the element at the intended index.
+
+              * An in-flight effect emitted this action while state contained no element at this \
+              index. While it may be perfectly reasonable to ignore this action, you may want to \
+              cancel the associated effect when moving or removing an element. If your "forEach" \
+              reducer returns any long-living effects, you should use the identifier-based \
+              "forEach" instead.
+
+              * This action was sent to the store while its state contained no element at this \
+              index. To fix this make sure that actions for this reducer can only be sent to a \
+              view store when its state contains an element at this index. In SwiftUI \
+              applications, use "ForEachStore".
+              ---
+
+              """,
+              stderr
+            )
+            raise(SIGTRAP)
+          }
+        #endif
+        return .none
+      }
+      return self.run(
+        &globalState[binding: toLocalState][index],
+        localAction,
+        toLocalEnvironment(globalEnvironment)
+      )
+      .map { toLocalAction.embed((index, $0)) }
+    }
+  }
+
+  /// A version of `pullback` that transforms a reducer that works on an element into one that works
+  /// on an identified array of elements.
+  ///
+  ///     // Global domain that holds a collection of local domains:
+  ///     struct AppState { static var todos: StateBinding<AppState: IdentifiedArrayOf<Todo>> }
+  ///     enum AppAction { case todo(id: Todo.ID, action: TodoAction) }
+  ///     struct AppEnvironment { var mainQueue: AnySchedulerOf<DispatchQueue> }
+  ///
+  ///     // A reducer that works on a local domain:
+  ///     let todoReducer = Reducer<Todo, TodoAction, TodoEnvironment> { ... }
+  ///
+  ///     // Pullback the local todo reducer so that it works on all of the app domain:
+  ///     let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
+  ///       todoReducer.forEach(
+  ///         binding: AppState.todos,
+  ///         action: /AppAction.todo(id:action:),
+  ///         environment: { _ in TodoEnvironment() }
+  ///       ),
+  ///       Reducer { state, action, environment in
+  ///         ...
+  ///       }
+  ///     )
+  ///
+  /// Take care when combining `forEach` reducers into parent domains, as order matters. Always
+  /// combine `forEach` reducers _before_ parent reducers that can modify the collection.
+  ///
+  /// - Parameters:
+  ///   - toLocalState: A state binding that can get/set a collection of `State` elements inside
+  ///     `GlobalState`.
+  ///   - toLocalAction: A case path that can extract/embed `(Collection.Index, Action)` from
+  ///     `GlobalAction`.
+  ///   - toLocalEnvironment: A function that transforms `GlobalEnvironment` into `Environment`.
+  ///   - breakpointOnNil: Raises `SIGTRAP` signal when an action is sent to the reducer but the
+  ///     identified array does not contain an element with the action's identifier. This is
+  ///     generally considered a logic error, as a child reducer cannot process a child action
+  ///     for unavailable child state.
+  /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
+  func forEach<GlobalState, GlobalAction, GlobalEnvironment, ID>(
+    binding toLocalState: StateBinding<GlobalState, IdentifiedArray<ID, State>>,
+    action toLocalAction: CasePath<GlobalAction, (ID, Action)>,
+    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+    breakpointOnNil: Bool = true,
+    _ file: StaticString = #file,
+    _ line: UInt = #line
+
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment>
+  where GlobalState: StateContainer {
+    .init { globalState, globalAction, globalEnvironment in
+      guard let (id, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
+      if globalState[binding: toLocalState][id: id] == nil {
+        #if DEBUG
+          if breakpointOnNil {
+            fputs(
+              """
+              ---
+              Warning: Reducer.forEach@\(file):\(line)
+
+              "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at id \(id) \
+              when its state contained no element at this id. This is generally considered an \
+              application logic error, and can happen for a few reasons:
+
+              * This "forEach" reducer was combined with or run from another reducer that removed \
+              the element at this id when it handled this action. To fix this make sure that this \
+              "forEach" reducer is run before any other reducers that can move or remove elements \
+              from state. This ensures that "forEach" reducers can handle their actions for the \
+              element at the intended id.
+
+              * An in-flight effect emitted this action while state contained no element at this \
+              id. It may be perfectly reasonable to ignore this action, but you also may want to \
+              cancel the effect it originated from when removing an element from the identified \
+              array, especially if it is a long-living effect.
+
+              * This action was sent to the store while its state contained no element at this id. \
+              To fix this make sure that actions for this reducer can only be sent to a view store \
+              when its state contains an element at this id. In SwiftUI applications, use \
+              "ForEachStore".
+              ---
+
+              """,
+              stderr
+            )
+            raise(SIGTRAP)
+          }
+        #endif
+        return .none
+      }
+      return
+        self
+        .run(
+          &globalState[binding: toLocalState][id: id]!,
+          localAction,
+          toLocalEnvironment(globalEnvironment)
+        )
+        .map { toLocalAction.embed((id, $0)) }
+    }
+  }
+
+  /// A version of `pullback` that transforms a reducer that works on an element into one that works
+  /// on a dictionary of element values.
+  ///
+  /// Take care when combining `forEach` reducers into parent domains, as order matters. Always
+  /// combine `forEach` reducers _before_ parent reducers that can modify the dictionary.
+  ///
+  /// - Parameters:
+  ///   - toLocalState: A state binding that can get/set a dictionary of `State` values inside
+  ///     `GlobalState`.
+  ///   - toLocalAction: A case path that can extract/embed `(Key, Action)` from `GlobalAction`.
+  ///   - toLocalEnvironment: A function that transforms `GlobalEnvironment` into `Environment`.
+  ///   - breakpointOnNil: Raises `SIGTRAP` signal when an action is sent to the reducer but the
+  ///     identified array does not contain an element with the action's identifier. This is
+  ///     generally considered a logic error, as a child reducer cannot process a child action
+  ///     for unavailable child state.
+  /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
+  func forEach<GlobalState, GlobalAction, GlobalEnvironment, Key>(
+    binding toLocalState: StateBinding<GlobalState, [Key: State]>,
+    action toLocalAction: CasePath<GlobalAction, (Key, Action)>,
+    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+    breakpointOnNil: Bool = true,
+    _ file: StaticString = #file,
+    _ line: UInt = #line
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment>
+  where GlobalState: StateContainer {
+    .init { globalState, globalAction, globalEnvironment in
+      guard let (key, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
+
+      if globalState[binding: toLocalState][key] == nil {
+        #if DEBUG
+          if breakpointOnNil {
+            fputs(
+              """
+              ---
+              Warning: Reducer.forEach@\(file):\(line)
+
+              "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at key \(key) \
+              when its state contained no element at this key. This is generally considered an \
+              application logic error, and can happen for a few reasons:
+
+              * This "forEach" reducer was combined with or run from another reducer that removed \
+              the element at this key when it handled this action. To fix this make sure that this \
+              "forEach" reducer is run before any other reducers that can move or remove elements \
+              from state. This ensures that "forEach" reducers can handle their actions for the \
+              element at the intended key.
+
+              * An in-flight effect emitted this action while state contained no element at this \
+              key. It may be perfectly reasonable to ignore this action, but you also may want to \
+              cancel the effect it originated from when removing a value from the dictionary, \
+              especially if it is a long-living effect.
+
+              * This action was sent to the store while its state contained no element at this \
+              key. To fix this make sure that actions for this reducer can only be sent to a view \
+              store when its state contains an element at this key.
+              ---
+
+              """,
+              stderr
+            )
+            raise(SIGTRAP)
+          }
+        #endif
+        return .none
+      }
+      return self.run(
+        &globalState[binding: toLocalState][key]!,
+        localAction,
+        toLocalEnvironment(globalEnvironment)
+      )
+      .map { toLocalAction.embed((key, $0)) }
+    }
+  }
+}
+
+// MARK: - Copy/Paste debugCaseOutput which is internal to TCA.
+// Should be discared if `StateBinding` moves into TCA.
+fileprivate func debugCaseOutput(_ value: Any) -> String {
+  func debugCaseOutputHelp(_ value: Any) -> String {
+    let mirror = Mirror(reflecting: value)
+    switch mirror.displayStyle {
+    case .enum:
+      guard let child = mirror.children.first else {
+        let childOutput = "\(value)"
+        return childOutput == "\(type(of: value))" ? "" : ".\(childOutput)"
+      }
+      let childOutput = debugCaseOutputHelp(child.value)
+      return ".\(child.label ?? "")\(childOutput.isEmpty ? "" : "(\(childOutput))")"
+    case .tuple:
+      return mirror.children.map { label, value in
+        let childOutput = debugCaseOutputHelp(value)
+        return
+          "\(label.map { isUnlabeledArgument($0) ? "_:" : "\($0):" } ?? "")\(childOutput.isEmpty ? "" : " \(childOutput)")"
+      }
+      .joined(separator: ", ")
+    default:
+      return ""
+    }
+  }
+
+  return "\(type(of: value))\(debugCaseOutputHelp(value))"
+}
+
+private func isUnlabeledArgument(_ label: String) -> Bool {
+  label.firstIndex(where: { $0 != "." && !$0.isNumber }) == nil
 }

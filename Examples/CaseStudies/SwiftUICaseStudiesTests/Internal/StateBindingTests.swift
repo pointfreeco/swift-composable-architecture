@@ -318,4 +318,41 @@ class StateBindingTests: XCTestCase {
     XCTAssertEqual(state.content, "World!")
     XCTAssertEqual(state.features[0].external, "World!")
   }
+  
+  func testStatesSynchronization() {
+    let store = TestStore(
+      initialState: SharedStateWithBinding(),
+      reducer: sharedStateWithBindingReducer,
+      environment: ()
+    )
+
+    store.assert(
+      .send(.feature1(.binding(BindingAction<SharedStateWithBinding.FeatureState>.set(\.text, "Hello!")))) {
+        $0.content = "Hello!"
+        $0._feature2.count = 0
+        $0._feature2.text = ""
+        $0._feature2.name = ""
+      },
+      .send(.feature2(.binding(BindingAction<SharedStateWithBinding.FeatureState>.set(\.count, 4)))) {
+        $0._feature2.count = 4
+        $0._feature2.text = "Hello!"
+        $0._feature2.name = $0.feature2Name
+        $0._feature3 = nil
+      },
+      .send(.toggleFeature3) {
+        $0._feature3 = SharedStateWithBinding.FeatureState()
+      },
+      .send(.feature3(.binding(BindingAction<SharedStateWithBinding.FeatureState>.set(\.count, 10)))) {
+        $0._feature3?.count = 10
+        $0._feature3?.text = "Hello!"
+        $0._feature3!.name = $0.feature3Name
+      },
+      .send(.feature3(.binding(BindingAction<SharedStateWithBinding.FeatureState>.set(\.text, "World")))) {
+        $0._feature3?.count = 10
+        $0._feature3?.text = "World"
+        $0.content = "World"
+      }
+    )
+  }
+  
 }
