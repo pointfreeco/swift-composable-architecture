@@ -1,14 +1,14 @@
 import ComposableArchitecture
 
+// MARK: - State Bindings
+
 /// Describes a binding between a parent state `Source` and a child state `Destination`. Several initializers are
 /// provided to handle the following cases:
 /// - Synchronization of a subset of `Destination` properties with `Source`
-/// - Synchronization of a subset of an optional `Destination` state with `Source`
 /// - Synchronization of all the properties of `Destination` with `Source`
-/// - Synchronization of all the properties of an optional `Destination` with `Source`.
 ///
-/// This binding can then be used to define public accessors to a `Destination` instance in `Source`, calling
-/// the `get` and `set` function with the `Source` instance and `Destination`'s `newValue`.
+/// This binding can then be used to define public accessors to a `Destination` value in `Source`, calling
+/// the `get` and `set` function with the `Source` value and `Destination`'s `newValue`.
 ///
 /// Let the child state `Destination` be:
 /// ```
@@ -18,7 +18,7 @@ import ComposableArchitecture
 ///   var internalValue: Int = 0
 /// }
 /// ```
-/// We can the use `StateBinding` to generate a `Destination` instance whose `value` will be synchronized
+/// We can the use `StateBinding` to generate a `Destination` value whose `value` will be synchronized
 /// with the `title` value of `Source`:
 /// ```
 /// struct Source {
@@ -26,23 +26,32 @@ import ComposableArchitecture
 ///   var count: Int = 0
 ///
 ///   private var _storage = Feature()
-///   private static let _binding = StateBinding(\Self._storage)
+///   private static let featureBinding = StateBinding(\Self._storage)
 ///     .rw(\.title, \.value)
 ///     .rw(\.count, \.count)
 ///
 ///   var feature: Feature {
-///     get { Self._binding.get(self) }
-///     set { Self._binding.set(&self, newValue) }
+///     get { Self.featureBinding.get(self) }
+///     set { Self.featureBinding.set(&self, newValue) }
 ///   }
 /// }
 /// ```
-///
+/// One can also omit the `feature` accessor implementation and work directly with the state bindind
+/// when scoping a store:
+/// ```
+/// store.scope(Source.featureBinding.get)
+/// ```
+/// or pulling back a reducer:
+/// ```
+/// featureReducer.pullback(binding: Source.featureBinding, action: ...
+/// ```
+/// If one implements `feature` accessors, one can use its keyPath like a classical state property in TCA.
 public struct StateBinding<Source, Destination> {
   /// Retrieve the storage in `source`, update it and returns the result.
   public let get: (_ source: Source) -> Destination
   /// Set the storage in `source` and update `source`.
   public let set: (_ source: inout Source, _ newValue: Destination) -> Void
-  
+
   public func callAsFunction(_ source: Source) -> Destination {
     get(source)
   }
@@ -54,7 +63,7 @@ public extension StateBinding {
   /// In other words, `Destination` can have private fields and only properties specified in `properties`
   /// are synchronized with `Source`.
   /// - Parameters:
-  ///   - storage: A writable (private) keyPath to an instance of `Destination`, used to store
+  ///   - storage: A writable (private) keyPath to an value of `Destination`, used to store
   ///   `Destination`'s internal properties.
   ///   - removeDuplicateStorage: A function used to compare private storage and avoid setting it in `Source` if unnecessary
   init(_ storage: WritableKeyPath<Source, Destination>,
@@ -70,9 +79,10 @@ public extension StateBinding {
 
   /// Initializes a computed binding between a parent state `Source` and an optional child state `Destination`
   /// These derived states are used when all the properties of `Destination` can be individually stored in `Source`.
-  /// If the child is set to nil, the source properties are kept untouched
+  /// If the child is set to nil, the source properties are kept untouched. This kind of binding is convenient when `Destination`'s
+  /// existence is conditioned with a boolean flag like `isEditing` on `Source`'s side.
   /// - Parameters:
-  ///   - destination: A function that returns an default instance of `Destination`(the child state) or nil. `Source` can
+  ///   - destination: A function that returns an default value of `Destination`(the child state) or nil. `Source` can
   ///   be used to decide if `Destination` is nil or not.
   init(with destination: @escaping (Source) -> Destination) {
     get = destination
@@ -81,17 +91,17 @@ public extension StateBinding {
 
   /// Initializes a computed binding between a parent state `Source` and a child state `Destination`. These derived states
   /// are used when all the properties of `Destination` can be individually stored in `Source`. Please note that this version
-  /// needs explicit generics on call site as the initializer lacks information to resolve `Source` by itself.
+  /// needs explicit generics on call site as the initializer lacks information to resolve `Source` by itself. This kind of binding is
+  /// useful when `Destination` has an `init()` initializer without arguments.
   /// - Parameters:
-  ///   - destination: A function that returns an default instance of `Destination` (the child state).
-  ///     This initializer signature is convenient when `Destination` has a `.init()` initializer without arguments.
+  ///   - destination: A function that returns an default value of `Destination` (the child state).
   init(with destination: @escaping () -> Destination) {
     self.init(with: { _ in destination() })
   }
 }
 
 public extension StateBinding {
-  /// Returns a modified `StateBinding`using a couble of `PropertyBinding` to bind similar
+  /// Returns a modified `StateBinding`using a `PropertyBinding` to bind similar
   /// properties in `Source` and `Destination`.
   func with(_ propertyBinding: PropertyBinding<Source, Destination>) -> Self {
     let get: (Source) -> Destination = { source in
@@ -109,8 +119,8 @@ public extension StateBinding {
   /// Returns a modified `StateBinding` binding similar properties between `Source` and `Destination`.
   /// - Parameters:
   ///   - get: A function applied when `Destination` is requested from `Source`. The `Destination`
-  ///   instance can be updated at this point.
-  ///   - set: A function applied when `Destination` is set in `Source`. The `Source` instance can be
+  ///   value can be updated at this point.
+  ///   - set: A function applied when `Destination` is set in `Source`. The `Source` value can be
   ///   updated at this point.
   func with(get: @escaping (Source, inout Destination) -> Void,
             set: @escaping (inout Source, Destination) -> Void = { _, _ in () }) -> Self
@@ -119,8 +129,9 @@ public extension StateBinding {
   }
 }
 
+// Shorthands
 public extension StateBinding {
-  /// Returns a modified `StateBinding`using a couble of `KeyPath`  to link in a read-write fashion a similar
+  /// Returns a modified `StateBinding`using a couble of `KeyPath` to link in a read-write fashion a similar
   /// property in `Source` and `Destination`.
   /// - Parameters:
   ///   - sourceValue: A `KeyPath` to get and set `Value` in `Source`
@@ -134,10 +145,10 @@ public extension StateBinding {
     with(.init(sourceValue, destinationValue, removeDuplicates: removeDuplicates))
   }
 
-  /// Returns a modified `StateBinding`using a couble of `KeyPath`  to link in a read-only fashion a similar
+  /// Returns a modified `StateBinding`using a couble of `KeyPath` to link in a read-only fashion a similar
   /// property in `Source` and `Destination`.
   /// - Parameters:
-  ///   - sourceValue: A `KeyPath` to get and set `Value` in `Source`
+  ///   - sourceValue: A `KeyPath` to get `Value` in `Source`
   ///   - destinationValue: A `KeyPath` to get and set `Value` in `Destination`
   func ro<Value>(_ sourceValue: KeyPath<Source, Value>,
                  _ destinationValue: WritableKeyPath<Destination, Value>) -> Self
@@ -146,73 +157,78 @@ public extension StateBinding {
   }
 }
 
-// Mappings of `StateBinding` so they can work in some containers content directly.
+// Mappings of `StateBinding` so they can work in containers elements directly.
 public extension StateBinding {
   /// Maps a `PropertyBinding<Source, Wrapped>` to a `PropertyBinding<Source, Wrapped?>` and installs
   /// it into a `StateBinding<Source, Wrapped?>`.
   /// - Parameters:
   ///   - binding: A `PropertyBinding<Source, Wrapped>` to be mapped.
-  ///   - getBack: A `(Source, Wrapped?) -> Wrapped?` function to decide how to reinject the
-  ///   `Wrapped` instance's properties into `Source`. If this function returns nil, the binding will be readonly. The returned type
-  ///   should rigorously be  `Wrapped??`, but since both `nil` values would have the same semantic in the setter,
-  ///   we can use only `Wrapped?`.
+  ///   - reduce: A `(Source, Wrapped?) -> Wrapped?` function to decide how to reinject the `Wrapped?` value  into `Source`.
+  ///   If this function returns nil, the binding will be readonly. By default, we directly returns the destination's value, as it is the expected behavior
+  ///   for `WritableKeyPath<Source, Wrapped?>`.
   /// - Returns: A `StateBinding<Source, Wrapped?>` state binding.
   func map<Wrapped>(_ binding: PropertyBinding<Source, Wrapped>,
-                    getBack: @escaping (Source, Destination) -> Wrapped? = { $1 }) -> Self
+                    reduce: @escaping (Source, Destination) -> Wrapped? = { $1 }) -> Self
     where Destination == Wrapped?
   {
-    with(binding.map(getBack: getBack))
+    with(binding.map(reduce: reduce))
   }
 
   /// Maps a `PropertyBinding<Source, Element>` to a `PropertyBinding<Source, [Element]>` and installs
   /// it into a `StateBinding<Source, [Element]>`.
   /// - Parameters:
   ///   - binding: A `PropertyBinding<Source, Element>` to be mapped.
-  ///   - getBack: A `(Source, [Element]) -> Element?` function to decide how to reinject the
-  ///   `[Element]` instance's properties into `Source`. If this function returns nil, the binding will be readonly.
+  ///   - reduce: A `(Source, [Element]) -> Element?` function to decide how to "unmap" `[Element]`'s values
+  ///    into `Source`'s properties.  In other words, we need to extract from `[Element]` a candidate `Element` value to send
+  ///    upward the original `StateBinding<Source, Element>`'s setter and set some values in `Source`.
+  ///    If this function returns nil, the binding will be readonly for its mapped properties.
   /// - Returns: A `StateBinding<Source, [Element]>` state binding.
   func map<Element>(_ binding: PropertyBinding<Source, Element>,
-                    getBack: @escaping (Source, Destination) -> Element? = { _, _ in nil }) -> Self
+                    reduce: @escaping (Source, Destination) -> Element? = { _, _ in nil }) -> Self
     where Destination == [Element]
   {
-    with(binding.map(getBack: getBack))
+    with(binding.map(reduce: reduce))
   }
 
   /// Maps a `PropertyBinding<Source, Value>` to a `PropertyBinding<Source, [Key: Value]>` and installs
   /// it into a `StateBinding<Source, [Key: Value]>`.
   /// - Parameters:
   ///   - binding: A `PropertyBinding<Source, Value>` to be mapped.
-  ///   - getBack: A `(Source, [Key: Value]) -> Value?` function to decide how to reinject the
-  ///   `[Key: Value]` instance's properties into `Source`. If this function returns nil, the binding will be readonly.
+  ///   - reduce: A `(Source, [Key: Value]) -> Value?` function to decide how to "unmap" `[Key: Value]`'s values
+  ///    into `Source`'s properties.  In other words, we need to extract from `[Key: Value]` a candidate `Value` value to send
+  ///    upward the original `StateBinding<Source, Value>`'s setter and set some values in `Source`.
+  ///   If this function returns nil, the binding will be readonly for  its mapped properties.
   /// - Returns: A `StateBinding<Source, [Key: Value]>` state binding.
   func map<Key, Value>(_ binding: PropertyBinding<Source, Value>,
-                       getBack: @escaping (Source, Destination) -> Value? = { _, _ in nil }) -> Self
+                       reduce: @escaping (Source, Destination) -> Value? = { _, _ in nil }) -> Self
     where Destination == [Key: Value]
   {
-    with(binding.map(getBack: getBack))
+    with(binding.map(reduce: reduce))
   }
 
   /// Maps a `PropertyBinding<Source, Element>` to a `PropertyBinding<Source, IdentifiedArray<ID, Element>>`
   /// and installs it into a `StateBinding<Source, IdentifiedArray<ID, Element>>`.
   /// - Parameters:
   ///   - binding: A `PropertyBinding<Source, Element>` to be mapped.
-  ///   - getBack: A `(Source, IdentifiedArray<ID, Element>) -> Element?` function to decide how to reinject the
-  ///   `IdentifiedArray<ID, Element>` instance's properties into `Source`. If this function returns nil, the binding will be readonly.
+  ///   - reduce: A `(Source, IdentifiedArray<ID, Element>) -> Element?`function to decide how to "unmap"
+  ///   `IdentifiedArray<ID, Element>`'s values into `Source`'s properties.  In other words, we need to extract from
+  ///   `IdentifiedArray<ID, Element>` a candidate `Element` value to send upward the original `StateBinding<Source, Element>`'s
+  ///   setter and set some values in `Source`. If this function returns nil, the binding will be readonly for its mapped properties.
   /// - Returns: A `StateBinding<Source, IdentifiedArray<ID, Element>>` state binding.
   func map<ID, Element>(_ binding: PropertyBinding<Source, Element>,
-                        getBack: @escaping (Source, Destination) -> Element? = { _, _ in nil }) -> Self
+                        reduce: @escaping (Source, Destination) -> Element? = { _, _ in nil }) -> Self
     where Destination == IdentifiedArray<ID, Element>
   {
-    with(binding.map(getBack: getBack))
+    with(binding.map(reduce: reduce))
   }
 }
 
 // Because a trivial reduction `(Source, Destination?) -> Destination?` exists, and because
-// mapping successively `Optional` has no sensible performance impact, we can implement
-// dedicated overloads when the destination state is optional. This allows the user to
-// directly chain `rw(...`, `ro(...`, etc. without having to call `.map(...` first.
+// mapping successively `Optional` values has no sensible performance impact (unlike Arrays for
+// example, we can implement dedicated overloads when the destination state is optional.
+// This allows to directly chain `rw(...`, `ro(...`, etc. without having to call `.map(...` first.
 public extension StateBinding {
-  /// Returns a modified `StateBinding`using a couble of `KeyPath`  to link in a read-write fashion a similar
+  /// Returns a modified `StateBinding`using a couble of `KeyPath` to link in a read-write fashion a similar
   /// property in `Source` and `Destination.Wrapped`.
   /// - Parameters:
   ///   - sourceValue: A `KeyPath` to get and set `Value` in `Source`
@@ -221,7 +237,7 @@ public extension StateBinding {
   ///     returns `true`, no assignation will occur and `Source` will be kept untouched.
   func rw<Value, Wrapped>(_ sourceValue: WritableKeyPath<Source, Value>,
                           _ destinationValue: WritableKeyPath<Wrapped, Value>,
-                          getBack: (Source, Destination) -> Wrapped? = { $1 },
+                          reduce: (Source, Destination) -> Wrapped? = { $1 },
                           removeDuplicates: @escaping (Value, Value) -> Bool = { _, _ in false }) -> Self
     where Destination == Wrapped?
   {
@@ -240,39 +256,44 @@ public extension StateBinding {
     with(.ro(sourceValue, destinationValue))
   }
 
-  /// Returns a modified `StateBinding`using a couble of `PropertyBinding` to bind similar
-  /// properties in `Source` and `Destination.Wrapped`.
+  /// Returns a modified `StateBinding`using a `PropertyBinding` to bind similar properties in `Source` and
+  /// `Destination.Wrapped`.
   func with<Wrapped>(_ propertyBinding: PropertyBinding<Source, Wrapped>,
-                     getBack: @escaping (Source, Destination) -> Wrapped? = { $1 }) -> Self
+                     reduce: @escaping (Source, Destination) -> Wrapped? = { $1 }) -> Self
     where Destination == Wrapped?
   {
-    self.map(propertyBinding, getBack: getBack)
+    self.map(propertyBinding, reduce: reduce)
   }
 
   /// Returns a modified `StateBinding` binding similar properties between `Source` and `Destination.Wrapped`.
   /// - Parameters:
   ///   - get: A function applied when `Destination.Wrapped` is requested from `Source`. The `Destination.Wrapped`
-  ///   instance can be updated at this point.
-  ///   - set: A function applied when `Destination.Wrapped` is set in `Source`. The `Source` instance can be
+  ///   value can be updated at this point.
+  ///   - set: A function applied when `Destination.Wrapped` is set in `Source`. The `Source` value can be
   ///   updated at this point.
   func with<Wrapped>(get: @escaping (Source, inout Wrapped) -> Void,
                      set: @escaping (inout Source, Wrapped) -> Void = { _, _ in () },
-                     getBack: @escaping (Source, Destination) -> Wrapped? = { $1 }) -> Self
+                     reduce: @escaping (Source, Destination) -> Wrapped? = { $1 }) -> Self
     where Destination == Wrapped?
   {
-    with(PropertyBinding<Source, Wrapped>(get: get, set: set), getBack: getBack)
+    with(PropertyBinding<Source, Wrapped>(get: get, set: set), reduce: reduce)
   }
 }
 
-/// A utility struct that describe a directional binding between instances of `Source` and `Destination`.
+// MARK: - Property Bindings
+
+/// A  type that describes a directional binding between values of `Source` and `Destination`. We usually link only
+/// one property per `PropertyBinding` value, and compose them using `.with`, `rw` or `ro.` We can also map
+/// a `PropertyBinding<Source, Destination>` to `PropertyBinding<Source, T<Destination>>`, allowing
+/// to work on `T<Destination>` with `Destination`'s transformations.
 public struct PropertyBinding<Source, Destination> {
   let get: (Source, inout Destination) -> Void
   let set: (inout Source, Destination) -> Void
-  /// Initializes a binding between a `Source` instance and a`Destination` instance.
+  /// Initializes a binding between a `Source` value and a`Destination` value.
   /// - Parameters:
   ///   - get: A function applied when `Destination` is requested from `Source`. The `Destination`
-  ///   instance can be updated at this point.
-  ///   - set: A function applied when `Destination` is set in `Source`. The `Source` instance can be
+  ///   value can be updated at this point.
+  ///   - set: A function applied when `Destination` is set in `Source`. The `Source` value can be
   ///   updated at this point.
   public init(
     get: @escaping (Source, inout Destination) -> Void = { _, _ in },
@@ -397,12 +418,13 @@ public extension PropertyBinding {
 // PropertyBinding Mappings
 public extension PropertyBinding {
   /// Transform a binding from `Source` to `Destination` into a binding from `Source` to `Destination?`.
-  /// - Parameter getBack: A `(Source, Destination?) -> Destination?` function to decide how to reinject the
-  ///   `Destination` instance's properties into `Source`. If this function returns nil, the binding will be readonly.
-  ///   The returned type should rigorously be  `Destination??`, but since both `nil` values would have the same
-  ///   semantic in the setter, we can use only `Wrapped?`.
+  /// - Parameter reduce: A `(Source, Destination?) -> Destination?` function to decide how to "unmap"
+  ///   `Destination?` into `Source`. In other words, we need to extract from `Destination?` a candidate
+  ///   `Destination` value to send upward the original `PropertyBinding<Source, Destination>`'s setter and set some
+  ///   values in `Source`. If this function returns nil, the binding will be readonly. By default, we return the wrapped value itself,
+  ///   as it is the expected behavior for `WritableKeyPath<Source, Destination?>`.
   /// - Returns: A  `PropertyBinding<Source, Destination?>`
-  func map(getBack: @escaping (Source, Destination?) -> Destination? = { $1 })
+  func map(reduce: @escaping (Source, Destination?) -> Destination? = { $1 })
     -> PropertyBinding<Source, Destination?>
   {
     PropertyBinding<Source, Destination?>(get: { src, container in
@@ -412,16 +434,18 @@ public extension PropertyBinding {
         return value
       }
     }, set: { src, container in
-      guard let reduced = getBack(src, container) else { return }
+      guard let reduced = reduce(src, container) else { return }
       self.set(&src, reduced)
     })
   }
 
   /// Transform a binding from `Source` to `Destination` into a binding from `Source` to `[Destination]`.
-  /// - Parameter getBack: A `(Source, [Destination]) -> Destination?` function to decide how to reinject the
-  ///   `Destination` instance's properties into `Source`. If this function returns nil, the binding will be readonly.
+  /// - Parameter reduce: A `(Source, [Destination]) -> Destination?` function to decide how to "unmap" the
+  ///   `[Destination]` values into `Source`'s properties. In other words, we need to extract from `[Destination]`
+  ///   a candidate `Destination` value to send upward the original `PropertyBinding<Source, Destination>`'s setter and set
+  ///   some values in `Source`. If this function returns nil, the binding will be readonly.
   /// - Returns: A  `PropertyBinding<Source, [Destination]>`
-  func map(getBack: @escaping (Source, [Destination]) -> Destination? = { _, _ in nil })
+  func map(reduce: @escaping (Source, [Destination]) -> Destination? = { _, _ in nil })
     -> PropertyBinding<Source, [Destination]>
   {
     PropertyBinding<Source, [Destination]>(get: { src, container in
@@ -431,16 +455,18 @@ public extension PropertyBinding {
         return value
       }
     }, set: { src, container in
-      guard let reduced = getBack(src, container) else { return }
+      guard let reduced = reduce(src, container) else { return }
       self.set(&src, reduced)
     })
   }
 
   /// Transform a binding from `Source` to `Destination` into a binding from `Source` to `[Key: Destination]`.
-  /// - Parameter getBack: A `(Source, [Key: Destination]) -> Destination?` function to decide how to reinject the
-  ///   `Destination` instance's properties into `Source`. If this function returns nil, the binding will be readonly.
+  /// - Parameter reduce: A `(Source, [Key: Destination]) -> Destination?` function to decide how to reinject the
+  ///   `[Key: Destination]` values into `Source`'s properties. In other words, we need to extract from `[Key: Destination]`
+  ///   a candidate `Destination` value to send upward the original `PropertyBinding<Source, Destination>`'s setter and set
+  ///   some values in `Source`.  If this function returns nil, the binding will be readonly.
   /// - Returns: A  `PropertyBinding<Source, [Key: Destination]>`
-  func map<Key>(getBack: @escaping (Source, [Key: Destination]) -> Destination? = { _, _ in nil })
+  func map<Key>(reduce: @escaping (Source, [Key: Destination]) -> Destination? = { _, _ in nil })
     -> PropertyBinding<Source, [Key: Destination]>
   {
     PropertyBinding<Source, [Key: Destination]>(get: { src, container in
@@ -450,16 +476,19 @@ public extension PropertyBinding {
         return value
       }
     }, set: { src, container in
-      guard let reduced = getBack(src, container) else { return }
+      guard let reduced = reduce(src, container) else { return }
       self.set(&src, reduced)
     })
   }
 
   /// Transform a binding from `Source` to `Destination` into a binding from `Source` to `IdentifiedArray<ID, Destination>`.
-  /// - Parameter getBack: A `(Source, IdentifiedArray<ID, Destination>) -> Destination?` function to decide how
-  ///   to reinject the `Destination` instance's properties into `Source`. If this function returns nil, the binding will be readonly.
+  /// - Parameter reduce: A `(Source, IdentifiedArray<ID, Destination>) -> Destination?` function to decide how
+  ///   to reinject the `IdentifiedArray<ID, Destination>` values into `Source`. In other words, we need to extract
+  ///   from `IdentifiedArray<ID, Destination>` a candidate `Destination` value to send upward the original
+  ///   `PropertyBinding<Source, Destination>` setter and set some values in `Source`.
+  ///   If this function returns nil, the binding will be readonly.
   /// - Returns: A  `PropertyBinding<Source, IdentifiedArray<ID, Destination>>`
-  func map<ID>(getBack: @escaping (Source, IdentifiedArray<ID, Destination>) -> Destination? = { _, _ in nil })
+  func map<ID>(reduce: @escaping (Source, IdentifiedArray<ID, Destination>) -> Destination? = { _, _ in nil })
     -> PropertyBinding<Source, IdentifiedArray<ID, Destination>> where ID: Hashable
   {
     PropertyBinding<Source, IdentifiedArray<ID, Destination>>(get: { src, container in
@@ -474,7 +503,7 @@ public extension PropertyBinding {
                                                                 )
                                                               },
                                                               set: { src, container in
-                                                                guard let reduced = getBack(src, container)
+                                                                guard let reduced = reduce(src, container)
                                                                 else { return }
                                                                 self.set(&src, reduced)
                                                               })
@@ -483,20 +512,20 @@ public extension PropertyBinding {
 
 
 // MARK: Reducer Specializations to use StateBinding directly -
-/// Use this marker protocol on a parent state `Source` to allow reducer pullback and forEach using `StateBinding<Source, _>`
-/// direcly, without having to generate accessors.
+/// Use this marker protocol on a parent state `Source` to allow reducer pullbacks using `StateBinding<Source, _>`
+/// directly, without having to generate accessors.
 public protocol StateContainer {}
 
 extension StateContainer {
-  // This subscript is used instead of `WritableKeyPath<Self, T>` in the `StateBinding` reducer's specializations
+  // This subscript is used instead of `WritableKeyPath<Self, T>` in `StateBinding` reducer's specializations
   subscript<T>(binding binding: StateBinding<Self, T>) -> T {
     get { binding.get(self) }
     set { binding.set(&self, newValue) }
   }
 }
 
-/// inout arguments in subscripts are not currently allowed in Swift.
-/// If they are one day (*), the StateContainer protocol can be dropped in favor of a `StateBinding` subscript:
+/// `inout` arguments in subscripts are not currently allowed in Swift.
+/// If this changes one day (*), the StateContainer protocol can be dropped in favor of a `StateBinding` subscript:
 ///
 /// ```
 /// extension StateBinding {
@@ -506,7 +535,6 @@ extension StateContainer {
 ///  }
 /// }
 /// ```
-///
 /// The reducer specializations can then call `toLocalState[source: &globalState]` instead
 /// of  `&globalState[binding: toLocalState]`
 ///

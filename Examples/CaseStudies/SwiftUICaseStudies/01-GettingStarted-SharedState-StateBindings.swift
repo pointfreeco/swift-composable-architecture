@@ -2,19 +2,19 @@ import ComposableArchitecture
 import SwiftUI
 
 private let readMe = """
-This screen demonstrates how to use StateBindings and PropertyBinding to ensure that sub-states are
+This screen demonstrates how to use StateBindings and PropertyBindings to ensure that sub-states are
 up-to-date with their parent state. They also provide a convenient way to specify fine-grained or coarse
 deduplication if needed.
 
 It demonstrates several use cases, like sub-states with internal properties, optional sub-states or
-deduplicated sub-state setters.
+deduplicated sub-state setters, or operating on collections of sub-states.
 """
 
 struct SharedStateWithBinding: Equatable, StateContainer {
   struct FeatureState: Equatable {
     var name: String = "" // Used for this case study presentation
     var isCountInternal: Bool = true // Used for this case study presentation
-    var isSelected: Bool? = nil
+    var isSelected: Bool? = nil // Used for this case study presentation
 
     var text: String = ""
     var count: Int = 0
@@ -23,7 +23,7 @@ struct SharedStateWithBinding: Equatable, StateContainer {
   // This value is shared across all features.
   var content: String = "Shared Content"
 
-  // This value is not used for cases with internal storage
+  // This value is not used for cases with internal storage.
   var count: Int = 0
 
   // This flag is used to trigger the existence of the computed and optional `feature5`
@@ -32,7 +32,7 @@ struct SharedStateWithBinding: Equatable, StateContainer {
   // MARK: Classical approach -
   // We create a FeatureState on the fly each time it is requested.
   // The global state needs to explicitly handle all FeatureState stored properties.
-  // The setter need to by synchronized with the getter for all readwrite properties.
+  // The setter needs to by synchronized with the getter for all readwrite properties.
   var feature1: FeatureState {
     get { FeatureState(name: feature1Name, // Read only
                        isCountInternal: false, // Read only
@@ -46,9 +46,9 @@ struct SharedStateWithBinding: Equatable, StateContainer {
   }
 
   // MARK: State Binding with internal storage -
-  // A private instance of FeatureState is stored.
-  // This instance will participate to state comparisons if any. In the binding, we only declare
-  // the relevant property `name`, bound with `self.content`. The private instance stores all the
+  // A private value of FeatureState is stored.
+  // This value will participate to state comparisons if any. In the binding, we only declare
+  // the relevant property `text`, bound with `self.content`. The private value stores all the
   // other internal properties.
   var _feature2: FeatureState = .init()
   static let feature2 = StateBinding(\Self._feature2)
@@ -59,28 +59,32 @@ struct SharedStateWithBinding: Equatable, StateContainer {
   // binding and call `get` with `self` to return an up-to-date value of FeatureState. In the setter,
   // we also retrieve the binding, but we call this time `set` with a pointer to `self` and `newValue`.
   // This function updates `self` accordingly.
-//  var feature2: FeatureState {
-//    get { Self._feature2.get(self) }
-//    set { Self._feature2.set(&self, newValue) }
-//  }
+  //
+  // The following is optional, but would allow to access `self.feature2` like any property, and handle
+  // its `KeyPath`. You can expose any StateBinding in a similar fashion. If you don't implement these
+  // accessors, you can use dedicated store scoping and reducer pullback using the `StateBinding` directly.
+  //
+  //  var feature2: FeatureState {
+  //    get { Self._feature2.get(self) }
+  //    set { Self._feature2.set(&self, newValue) }
+  //  }
 
   // MARK: "Optional State Binding with internal storage" -
-  // A optional private instance of FeatureState is stored.
-  // This instance will participate to state comparisons if any. In the binding, we only declare
-  // the relevant property `name`, bound with `self.content`. The private instance stores all the
-  // other internal properties. The optionality of this value condition the optionality of the
-  // publicly accessed property. Please note that the `PropertyBindings` a defined between unwrapped
-  // values.
+  // A optional private value of FeatureState is stored.
+  // This value will participate to state comparisons if any. In the binding, we only declare
+  // the relevant property `text`, bound with `self.content`. The private value stores all
+  // other internal properties. The optionality of this value conditions the optionality of the
+  // publicly accessed property if one implement the accessors. Please note that we use directly
+  // `PropertyBindings` of the unwrapped value.
   var _feature3: FeatureState?
   static let feature3 = StateBinding(\Self._feature3)
     .ro(\.feature3Name, \.name)
     .rw(\.content, \.text)
 
   // MARK: "Computed State Binding" -
-  // This instance doesn't have internal properties (or they stay to their default value otherwise)
-  // All the properties of `Feature` are bound to some property of `self`. A new instance is created
-  // from the provided `with:` argument. We use `Self.self` because we need to tie the first generic
-  // parameter of `StateBinding` to `Self`.
+  // This value doesn't have internal properties (or they stay to their default value otherwise).
+  // All the properties of `FeatureStates` are bound to some properties of `self`. A new value is created
+  // using the provided argument, and then configured according the bindings.
   static let feature4 = StateBinding<Self, FeatureState> { .init() }
     .ro(\.feature4Name, \.name)
     .ro(\.isCountInternal, \.isCountInternal)
@@ -88,10 +92,9 @@ struct SharedStateWithBinding: Equatable, StateContainer {
     .rw(\.count, \.count)
 
   // MARK: "Optional Computed State Binding" -
-  // Similar to the previous construction, but the value returned is now optional and is the `Feature`
-  // instance is created from a function of `Self`. We use the `shouldShowFeature5` flag to decide if the
-  // property is nil or not. Because it has no private storage, the `feature5` instance is completly set
-  // when accessed and the flag is enough to condition its existence and content without ambiguity.
+  // Similar to the previous construction, but the value returned is now optional and the `FeatureState`
+  // value is created from a function of `Self`. We use the `shouldShowFeature5` flag to decide if the
+  // property is nil or not.
   static let feature5 = StateBinding<SharedStateWithBinding, FeatureState?> {
       $0.shouldShowFeature5
       ? .init()
@@ -110,7 +113,7 @@ struct SharedStateWithBinding: Equatable, StateContainer {
   // In this example similar to feature2, we avoid writing the private storage if the value is unchanged.
   // We also avoid to write `self.content` if it hasn't changed.
   fileprivate var _feature6: FeatureState = .init()
-  // Will not update _feature6 if equal
+  // Will not update _feature6 storage if equal
   static let feature6 = StateBinding(\Self._feature6, removeDuplicateStorage: ==)
     .ro(\.feature6Name, \.name)
     .rw(\.content, \.text, removeDuplicates: ==) // Will not set `content` if equal to `text`
@@ -118,8 +121,8 @@ struct SharedStateWithBinding: Equatable, StateContainer {
   // MARK: "Collection of features" -
   // In this example, we have an `IdentifiedArray` of `FeatureState` and we use `map` to transform
   // `FeatureState` bindings into `IdentifiedArrays<_,FeatureState>` bindings. This allows to
-  // update each feature of the collection from `self`'s values on the fly. Because the way
-  // back is undecided (how to update `self` from the collection newValue), we request to
+  // update each feature of the collection from `self`'s properties on the fly. Because the way
+  // back is undecided (how to update `self` from the collection newValue), we specify to
   // update `self` using the element with `selectedID` as a base. This is purely optional and we
   // can return `nil` if we don't want to update `self`, rendering the binding read-only.
   let selectedID = "Id:1"
@@ -136,9 +139,10 @@ struct SharedStateWithBinding: Equatable, StateContainer {
     .map(
       .rw(\.content, \.text),
       // The feature with `SelectedID` will be used to update values in `SharedStateWithBinding`.
-      // We return a `FeatureState` instance that will go upflow when setting the value.
-      // If we return `nil`, the binding would be read-only for its properties.
-      getBack: { $1[id: $0.selectedID] }
+      // We need to return a `FeatureState` value or nil that will flow up when setting the value.
+      // In other words, we will use this `FeatureState` value to extract its `\.text` value and set
+      // the `\.content`. If we return `nil`, the binding would be read-only for its mapped properties.
+      reduce: { $1[id: $0.selectedID] }
     )
 }
 
@@ -212,16 +216,16 @@ let sharedStateWithBindingReducer =
       Reducer<SharedStateWithBinding, SharedStateWithBindingAction, Void> {
         state, action, _ in
         switch action {
-        case .toggleFeature3: // feature3 is a optional state with internal storage.
+        case .toggleFeature3: // feature3 is an optional state with internal storage.
           if state._feature3 == nil {
-            // We set up a new instance of FeatureState() so its internal properties
+            // We set up a new value of FeatureState() so its internal properties
             // can be stored by the feature itself.
             state._feature3 = .init()
           } else {
             state._feature3 = nil
           }
           return .none
-        case .toggleFeature5: // feature5 is a optional computed state.
+        case .toggleFeature5: // feature5 is an optional computed state.
           state.shouldShowFeature5.toggle()
           return .none
         default: return .none
