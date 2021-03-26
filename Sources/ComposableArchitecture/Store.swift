@@ -188,6 +188,7 @@ public final class Store<State, Action> {
   }
 
   /// Scopes the store to one that exposes local state & local actions, where LocalState is Equatable
+
   public func scope<LocalState: Equatable, LocalAction>(
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action
@@ -335,6 +336,14 @@ public final class Store<State, Action> {
     self.reducer = reducer
     self.state = CurrentValueSubject(initialState)
   }
+}
+
+extension Store where State: Equatable {
+    /// Returns an "actionless" store by erasing action to `Never`.
+    public var actionless: Store<State, Never> {
+        func absurd<A>(_ never: Never) -> A {}
+        return self.scope(state: { $0 }, action: absurd)
+    }
 }
 
 /// A publisher of store state.
