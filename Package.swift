@@ -27,13 +27,13 @@ let package = Package(
       dependencies: [
         "CasePaths",
         "CombineSchedulers",
-        "XCTestDynamicOverlay"
+        "XCTestDynamicOverlay",
       ]
     ),
     .testTarget(
       name: "ComposableArchitectureTests",
       dependencies: [
-        "ComposableArchitecture",
+        "ComposableArchitecture"
       ]
     ),
   ]
