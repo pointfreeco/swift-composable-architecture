@@ -176,6 +176,32 @@ public final class Store<State, Action> {
       .sink { [weak localStore] newValue in localStore?.state.value = toLocalState(newValue) }
     return localStore
   }
+  
+  /// opnalScope is the same as .scopes but does pass on state changes for which toLocalState returns a nil value.
+  public func optionalScope<LocalState, LocalAction>(
+    state toLocalState: @escaping (State) -> LocalState?,
+    action fromLocalAction: @escaping (LocalAction) -> Action
+  ) -> Store<LocalState, LocalAction> {
+    let localStore = Store<LocalState, LocalAction>(
+      initialState: toLocalState(self.state.value)!,
+      reducer: { localState, localAction in
+      self.send(fromLocalAction(localAction))
+      guard let newLocalState = toLocalState(self.state.value) else {
+        return .none
+      }
+      localState = newLocalState
+      return .none
+      }
+    )
+    localStore.parentCancellable = self.state
+      .sink { [weak localStore] newValue in
+        guard let newLocalState = toLocalState(newValue) else {
+          return
+        }
+        localStore?.state.value = newLocalState
+      }
+    return localStore
+  }
 
   /// Scopes the store to one that exposes local state.
   ///

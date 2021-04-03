@@ -139,8 +139,8 @@ where Data: Collection, ID: Hashable, Content: View {
       WithViewStore(store.scope(state: { $0.ids })) { viewStore in
         ForEach(viewStore.state, id: \.self) { id in
           content(
-            store.scope(
-              state: { $0[id: id] ?? data[id: id]! },
+            store.optionalScope(
+              state: { $0[id: id] ?? data[id: id] },
               action: { (id, $0) }
             )
           )
