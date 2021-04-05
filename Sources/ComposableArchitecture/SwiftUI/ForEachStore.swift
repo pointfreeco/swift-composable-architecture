@@ -131,18 +131,17 @@ where Data: Collection, ID: Hashable, Content: View {
   where
     EachContent: View,
     Data == IdentifiedArray<ID, EachState>,
-    Content == WithViewStore<[ID], (ID, EachAction), ForEach<[ID], ID, EachContent>>
+    Content == WithViewStore<[ID], (ID, EachAction), ForEach<[ID], ID, IfLetStore<EachState, EachAction, EachContent?>>>
   {
-    let data = store.state.value
-    self.data = data
+    self.data = store.state.value
     self.content = {
       WithViewStore(store.scope(state: { $0.ids })) { viewStore in
         ForEach(viewStore.state, id: \.self) { id in
-          content(
-            store.scope(
-              state: { $0[id: id] ?? data[id: id]! },
-              action: { (id, $0) }
-            )
+          // NB: We safely unwrap state here to avoid a potential crash where SwiftUI may
+          //     re-evaluate views for elements no longer in the collection.
+          IfLetStore(
+            store.scope(state: { $0[id: id] }, action: { (id, $0) }),
+            then: content
           )
         }
       }
