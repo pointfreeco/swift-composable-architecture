@@ -139,6 +139,8 @@ where Data: Collection, ID: Hashable, Content: View {
         ForEach(viewStore.state, id: \.self) { id in
           // NB: We safely unwrap state here to avoid a potential crash where SwiftUI may
           //     re-evaluate views for elements no longer in the collection.
+          //
+          // Feedback filed: https://gist.github.com/stephencelis/cdf85ae8dab437adc998fb0204ed9a6b
           IfLetStore(
             store.scope(state: { $0[id: id] }, action: { (id, $0) }),
             then: content
