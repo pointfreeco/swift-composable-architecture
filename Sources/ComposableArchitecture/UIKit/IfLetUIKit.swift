@@ -83,4 +83,54 @@ extension Store {
   ) -> Cancellable where State == Wrapped? {
     self.ifLet(then: unwrap, else: {})
   }
+
+  /// Synchronous unwrapping of `LocalState`
+  ///
+  /// This is useful for interacting with the DataSource pattern in UIKit - where a cell/view/component is re-configured on data updates.
+  ///
+  /// - Parameters:
+  ///   - unwrap: A function that is called synchronous if the store's optional state is non-nil
+  ///   - else: A function that is called synchronous if the store's optional state is `nil`
+  public func ifLet<Wrapped>(
+    then unwrap: (Store<Wrapped, Action>) -> Void,
+    else: () -> Void
+  ) where State == Wrapped? {
+    guard let unwrapped = state.value else {
+      `else`()
+      return
+    }
+
+    let store = self.scope(state: { _ in unwrapped }, action: { $0 })
+    unwrap(store)
+  }
+
+  /// An overload of the synchronous `ifLet(then:else:)` for the times that you do not want to handle the `else`
+  /// case.
+  ///
+  /// - Parameter unwrap: A function that is called synchronously if `State` is non-nil
+  public func ifLet<Wrapped>(
+    then unwrap: (Store<Wrapped, Action>) -> Void
+  ) where State == Wrapped? {
+    self.ifLet(then: unwrap, else: {})
+  }
+
+  /// Forced unwrapping of `LocalState`
+  ///
+  /// This is useful for interacting with the DataSource pattern in UIKit - where a cell/view/component is re-configured on data updates.
+  /// A developer may choose to reconcile the optionality of a dictionary or `IdentifiedArray` lookup with a forced unwrapping.
+  ///
+  /// - Parameters:
+  ///   - message: A debug message to be printed alongside the fatalError
+  public func guardLet<Wrapped>(_ message: @escaping @autoclosure () -> String = String(), file: StaticString = #file, line: UInt = #line) -> Store<Wrapped, Action> where State == Wrapped? {
+    return self.scope(
+      state: { (state: State) -> Wrapped in
+        guard let localState = state else {
+          fatalError(message(), file: file, line: line)
+        }
+        return localState
+      },
+      action: { $0 }
+    )
+  }
+
 }
