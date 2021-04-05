@@ -131,7 +131,9 @@ where Data: Collection, ID: Hashable, Content: View {
   where
     EachContent: View,
     Data == IdentifiedArray<ID, EachState>,
-    Content == WithViewStore<[ID], (ID, EachAction), ForEach<[ID], ID, IfLetStore<EachState, EachAction, EachContent?>>>
+    Content == WithViewStore<
+      [ID], (ID, EachAction), ForEach<[ID], ID, IfLetStore<EachState, EachAction, EachContent?>>
+    >
   {
     self.data = store.state.value
     self.content = {
