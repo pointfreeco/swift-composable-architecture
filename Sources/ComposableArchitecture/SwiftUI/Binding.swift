@@ -177,7 +177,43 @@ public struct BindingAction<Root>: Equatable {
 }
 
 extension Reducer {
-  /// Returns a reducer that applies `BindingAction` mutations to `State` before running this
+  /// Returns a reducer that applies `BindingAction` mutations to state before running this
+  /// reducer's logic.
+  ///
+  /// For example, a settings screen may gather its binding actions into a single `BindingAction`
+  /// case:
+  ///
+  ///     enum SettingsAction {
+  ///       ...
+  ///       case binding(BindingAction<SettingsState>)
+  ///     }
+  ///
+  /// The reducer can then be enhanced to automatically handle these mutations for you by tacking on
+  /// the `binding` method:
+  ///
+  ///     let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvironment {
+  ///       ...
+  ///     }
+  ///     .binding(state: \.self, action: /SettingsAction.binding)
+  ///
+  /// - Parameters:
+  ///   - toLocalState: A key path that can get/set `LocalState` inside `State`.
+  ///   - toBindingAction: A case path from this reducer's `Action` type to a BindingAction` over
+  ///     `LocalState`.
+  /// - Returns: A reducer that applies `BindingAction` mutations to state before running this
+  ///   reducer's logic.
+  public func binding<LocalState>(
+    state toLocalState: WritableKeyPath<State, LocalState>,
+    action toBindingAction: CasePath<Action, BindingAction<LocalState>>
+  ) -> Self {
+    Self { state, action, environment in
+      toBindingAction.extract(from: action)?.set(&state[keyPath: toLocalState])
+      return .none
+    }
+    .combined(with: self)
+  }
+
+  /// Returns a reducer that applies `BindingAction` mutations to state before running this
   /// reducer's logic.
   ///
   /// For example, a settings screen may gather its binding actions into a single `BindingAction`
@@ -196,16 +232,13 @@ extension Reducer {
   ///     }
   ///     .binding(action: /SettingsAction.binding)
   ///
-  /// - Parameter toBindingAction: A case path from this reducer's `Action` type to a
-  ///   `BindingAction` over this reducer's `State`.
-  /// - Returns: A reducer that applies `BindingAction` mutations to `State` before running this
+  /// - Parameters:
+  ///   - toBindingAction: A case path from this reducer's `Action` type to a BindingAction` over
+  ///     `State`.
+  /// - Returns: A reducer that applies `BindingAction` mutations to state before running this
   ///   reducer's logic.
   public func binding(action toBindingAction: CasePath<Action, BindingAction<State>>) -> Self {
-    Self { state, action, environment in
-      toBindingAction.extract(from: action)?.set(&state)
-      return .none
-    }
-    .combined(with: self)
+    self.binding(state: \.self, action: toBindingAction)
   }
 }
 
