@@ -6,7 +6,7 @@ final class TimerTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
   func testTimer() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
 
     var count = 0
 
@@ -28,7 +28,7 @@ final class TimerTests: XCTestCase {
   }
 
   func testInterleavingTimer() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
 
     var count2 = 0
     var count3 = 0
@@ -59,7 +59,7 @@ final class TimerTests: XCTestCase {
   }
 
   func testTimerCancellation() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
 
     var count2 = 0
     var count3 = 0
@@ -108,7 +108,7 @@ final class TimerTests: XCTestCase {
   }
 
   func testTimerCompletion() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
 
     var count = 0
 

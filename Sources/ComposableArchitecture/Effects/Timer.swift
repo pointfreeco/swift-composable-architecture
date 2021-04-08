@@ -53,7 +53,7 @@ extension Effect where Failure == Never {
   /// Then to test the timer in this feature you can use a test scheduler to advance time:
   ///
   ///   func testTimer() {
-  ///     let scheduler = DispatchQueue.testScheduler
+  ///     let scheduler = DispatchQueue.test
   ///
   ///     let store = TestStore(
   ///       initialState: .init(),

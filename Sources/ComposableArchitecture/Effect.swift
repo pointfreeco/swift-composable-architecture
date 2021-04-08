@@ -54,7 +54,15 @@ public struct Effect<Output, Failure: Error>: Publisher {
   ///
   /// - Parameter error: The error that is immediately emitted by the effect.
   public init(error: Failure) {
-    self.init(Fail(error: error))
+    // NB: Ideally we'd return a `Fail` publisher here, but due to a bug in iOS 13 that publisher
+    //     can crash when used with certain combinations of operators such as `.retry.catch`. The
+    //     bug was fixed in iOS 14, but to remain compatible with iOS 13 and higher we need to do
+    //     a little trickery to fail in a slightly different way.
+    self.init(
+      Deferred {
+        Future { $0(.failure(error)) }
+      }
+    )
   }
 
   /// An effect that does nothing and completes immediately. Useful for situations where you must

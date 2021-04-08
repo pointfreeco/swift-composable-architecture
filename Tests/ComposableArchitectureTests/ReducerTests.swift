@@ -40,7 +40,7 @@ final class ReducerTests: XCTestCase {
         .eraseToEffect()
     }
 
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
     let store = TestStore(
       initialState: 0,
       reducer: .combine(fastReducer, slowReducer),

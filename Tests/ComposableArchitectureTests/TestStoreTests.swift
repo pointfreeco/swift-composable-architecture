@@ -10,7 +10,7 @@ class TestStoreTests: XCTestCase {
       case a, b1, b2, b3, c1, c2, c3, d
     }
 
-    let testScheduler = DispatchQueue.testScheduler
+    let testScheduler = DispatchQueue.test
 
     let reducer = Reducer<State, Action, AnySchedulerOf<DispatchQueue>> { _, action, scheduler in
       switch action {
