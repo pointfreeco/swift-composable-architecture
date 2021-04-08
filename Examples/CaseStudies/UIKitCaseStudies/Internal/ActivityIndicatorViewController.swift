@@ -4,7 +4,7 @@ final class ActivityIndicatorViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
 
-    self.view.backgroundColor = .white
+    self.view.backgroundColor = .systemBackground
 
     let activityIndicator = UIActivityIndicatorView()
     activityIndicator.startAnimating()

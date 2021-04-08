@@ -43,7 +43,7 @@ class LoginViewController: UIViewController {
     super.viewDidLoad()
 
     self.navigationItem.title = "Login"
-    self.view.backgroundColor = .white
+    self.view.backgroundColor = .systemBackground
 
     let disclaimerLabel = UILabel()
     disclaimerLabel.text = """
