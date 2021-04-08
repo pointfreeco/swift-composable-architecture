@@ -30,7 +30,7 @@ public final class GameViewController: UIViewController {
     super.viewDidLoad()
 
     self.navigationItem.title = "Tic-Tac-Toe"
-    self.view.backgroundColor = .white
+    self.view.backgroundColor = .systemBackground
 
     self.navigationItem.leftBarButtonItem = UIBarButtonItem(
       title: "Quit",
