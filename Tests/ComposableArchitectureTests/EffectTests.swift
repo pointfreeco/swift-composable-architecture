@@ -162,17 +162,13 @@ final class EffectTests: XCTestCase {
   func testEffectErrorCrash() {
     let expectation = self.expectation(description: "Complete")
 
-    // This crashes on iOS 13
+    // This crashes on iOS 13 if Effect.init(error:) is implemented using the Fail publisher.
     Effect<Never, Error>(error: NSError(domain: "", code: 1))
       .retry(3)
       .catch { _ in Fail(error: NSError(domain: "", code: 1)) }
       .sink(
-        receiveCompletion: { _ in
-          expectation.fulfill()
-        },
-        receiveValue: { _ in
-          XCTAssertTrue(false)
-        }
+        receiveCompletion: { _ in expectation.fulfill() },
+        receiveValue: { _ in XCTAssertTrue(false) }
       )
       .store(in: &self.cancellables)
 
