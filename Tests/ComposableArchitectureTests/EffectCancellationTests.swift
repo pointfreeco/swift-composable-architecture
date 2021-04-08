@@ -87,7 +87,7 @@ final class EffectCancellationTests: XCTestCase {
   }
 
   func testCancellationAfterDelay_WithTestScheduler() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
     var value: Int?
 
     Just(1)
@@ -120,7 +120,7 @@ final class EffectCancellationTests: XCTestCase {
   }
 
   func testCancellablesCleanUp_OnCancel() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
     Just(1)
       .delay(for: 1, scheduler: scheduler)
       .eraseToEffect()
@@ -244,7 +244,7 @@ final class EffectCancellationTests: XCTestCase {
   }
 
   func testSharedId() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
 
     let effect1 = Just(1)
       .delay(for: 1, scheduler: scheduler)
@@ -272,7 +272,7 @@ final class EffectCancellationTests: XCTestCase {
   }
 
   func testImmediateCancellation() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
 
     var expectedOutput: [Int] = []
     // Don't hold onto cancellable so that it is deallocated immediately.
