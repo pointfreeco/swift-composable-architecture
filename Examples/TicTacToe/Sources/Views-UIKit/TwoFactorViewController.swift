@@ -36,7 +36,7 @@ public final class TwoFactorViewController: UIViewController {
   public override func viewDidLoad() {
     super.viewDidLoad()
 
-    self.view.backgroundColor = .white
+    self.view.backgroundColor = .systemBackground
 
     let titleLabel = UILabel()
     titleLabel.text = "Enter the one time code to continue"

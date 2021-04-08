@@ -69,7 +69,7 @@ class EagerNavigationViewController: UIViewController {
 
     self.title = "Navigate and load"
 
-    self.view.backgroundColor = .white
+    self.view.backgroundColor = .systemBackground
 
     let button = UIButton(type: .system)
     button.addTarget(self, action: #selector(loadOptionalCounterTapped), for: .touchUpInside)

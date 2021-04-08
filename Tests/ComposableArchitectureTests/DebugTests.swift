@@ -439,27 +439,27 @@ final class DebugTests: XCTestCase {
 
     //    XCTAssertEqual(
     //      Just(42)
-    //        .delay(for: 1, scheduler: DispatchQueue.testScheduler.eraseToAnyScheduler())
+    //        .delay(for: 1, scheduler: DispatchQueue.test.eraseToAnyScheduler())
     //        .eraseToEffect()
     //        .debugOutput,
     //      """
     //      Effect<Int>(
     //        value: 42
     //      )
-    //      .delay(for: 1.0, scheduler: DispatchQueue.testScheduler)
+    //      .delay(for: 1.0, scheduler: DispatchQueue.test)
     //      """
     //    )
     //
     //    XCTAssertEqual(
     //      Just(42)
-    //        .receive(on: DispatchQueue.testScheduler.eraseToAnyScheduler())
+    //        .receive(on: DispatchQueue.test.eraseToAnyScheduler())
     //        .eraseToEffect()
     //        .debugOutput,
     //      """
     //      Effect<Int>(
     //        value: 42
     //      )
-    //      .receive(on: DispatchQueue.testScheduler)
+    //      .receive(on: DispatchQueue.test)
     //      """
     //    )
 
@@ -570,7 +570,7 @@ final class DebugTests: XCTestCase {
     //
     //    XCTAssertEqual(
     //      Effect
-    //        .timer(every: 1, on: DispatchQueue.testScheduler.eraseToAnyScheduler())
+    //        .timer(every: 1, on: DispatchQueue.test.eraseToAnyScheduler())
     //        .debugOutput,
     //      """
     //      Effect<SchedulerTimeType>()

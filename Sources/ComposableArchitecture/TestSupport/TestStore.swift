@@ -116,7 +116,7 @@
   /// It can be fully tested by controlling the environment's scheduler and effect:
   ///
   ///     // Create a test dispatch scheduler to control the timing of effects
-  ///     let scheduler = DispatchQueue.testScheduler
+  ///     let scheduler = DispatchQueue.test
   ///
   ///     let store = TestStore(
   ///       initialState: SearchState(),

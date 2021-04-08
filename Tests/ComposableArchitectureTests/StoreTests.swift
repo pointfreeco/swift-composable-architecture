@@ -18,7 +18,7 @@ final class StoreTests: XCTestCase {
   }
 
   func testCancellableIsRemovedWhenEffectCompletes() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
     let effect = Effect<Void, Never>(value: ())
       .delay(for: 1, scheduler: scheduler)
       .eraseToEffect()

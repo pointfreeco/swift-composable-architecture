@@ -53,7 +53,7 @@ final class ComposableArchitectureTests: XCTestCase {
       }
     }
 
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
 
     let store = TestStore(
       initialState: 2,
@@ -168,7 +168,7 @@ final class ComposableArchitectureTests: XCTestCase {
       }
     }
 
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
 
     let store = TestStore(
       initialState: 0,

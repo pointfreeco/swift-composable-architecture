@@ -5,7 +5,7 @@ import XCTest
 
 final class EffectTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
-  let scheduler = DispatchQueue.testScheduler
+  let scheduler = DispatchQueue.test
 
   func testEraseToEffectWithError() {
     struct Error: Swift.Error, Equatable {}
@@ -157,6 +157,22 @@ final class EffectTests: XCTestCase {
 
     XCTAssertEqual(values, [1])
     XCTAssertEqual(isComplete, true)
+  }
+
+  func testEffectErrorCrash() {
+    let expectation = self.expectation(description: "Complete")
+
+    // This crashes on iOS 13 if Effect.init(error:) is implemented using the Fail publisher.
+    Effect<Never, Error>(error: NSError(domain: "", code: 1))
+      .retry(3)
+      .catch { _ in Fail(error: NSError(domain: "", code: 1)) }
+      .sink(
+        receiveCompletion: { _ in expectation.fulfill() },
+        receiveValue: { _ in XCTAssertTrue(false) }
+      )
+      .store(in: &self.cancellables)
+
+    self.wait(for: [expectation], timeout: 0)
   }
 
   #if compiler(>=5.4)
