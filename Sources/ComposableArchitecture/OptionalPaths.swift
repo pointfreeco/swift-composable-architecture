@@ -163,6 +163,7 @@ extension Reducer {
     state toLocalState: StatePath,
     action toLocalAction: ActionPath,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+    breakpointOnNil: Bool = true,
     file: StaticString = #file,
     line: UInt = #line
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment>
@@ -178,26 +179,35 @@ extension Reducer {
 
       guard var localState = toLocalState.extract(from: globalState)
       else {
-        assertionFailure(
-          """
-          "\(globalAction)" was received by an optional reducer when its state was \
-          "nil". This can happen for a few reasons:
+        #if DEBUG
+          if breakpointOnNil {
+            fputs(
+              """
+              ---
+              Warning: Reducer._pullback@\(file):\(line)
 
-          * The optional reducer was combined with or run from another reducer that set \
-          "\(State.self)" to "nil" before the optional reducer ran. Combine or run optional \
-          reducers before reducers that can set their state to "nil". This ensures that optional \
-          reducers can handle their actions while their state is still non-"nil".
+              "\(globalAction)" was received by an optional reducer when its state was \
+              "nil". This can happen for a few reasons:
 
-          * An active effect emitted this action while state was "nil". Make sure that effects for \
-          this optional reducer are canceled when optional state is set to "nil".
+              * The optional reducer was combined with or run from another reducer that set \
+              "\(State.self)" to "nil" before the optional reducer ran. Combine or run optional \
+              reducers before reducers that can set their state to "nil". This ensures that \
+              optional reducers can handle their actions while their state is still non-"nil".
 
-          * This action was sent to the store while state was "nil". Make sure that actions for \
-          this reducer can only be sent to a view store when state is non-"nil". In SwiftUI \
-          applications, use "IfLetStore".
-          """,
-          file: file,
-          line: line
-        )
+              * An active effect emitted this action while state was "nil". Make sure that effects
+              for this optional reducer are canceled when optional state is set to "nil".
+
+              * This action was sent to the store while state was "nil". Make sure that actions \
+              for this reducer can only be sent to a view store when state is non-"nil". In \
+              SwiftUI applications, use "IfLetStore".
+              ---
+
+              """,
+              stderr
+            )
+            raise(SIGTRAP)
+          }
+        #endif
         return .none
       }
 
