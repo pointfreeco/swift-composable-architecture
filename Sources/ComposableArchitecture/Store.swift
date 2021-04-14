@@ -187,6 +187,41 @@ public final class Store<State, Action> {
     self.scope(state: toLocalState, action: { $0 })
   }
 
+  /// Scopes the store to one that exposes local state & local actions, where LocalState is Equatable
+
+  public func scope<LocalState: Equatable, LocalAction>(
+    state toLocalState: @escaping (State) -> LocalState,
+    action fromLocalAction: @escaping (LocalAction) -> Action
+  ) -> Store<LocalState, LocalAction> {
+    let localStore = Store<LocalState, LocalAction>(
+      initialState: toLocalState(self.state.value),
+      reducer: { localState, localAction in
+        self.send(fromLocalAction(localAction))
+        let newLocalState = toLocalState(self.state.value)
+        guard newLocalState != localState else { return .none }
+        localState = newLocalState
+        return .none
+      }
+    )
+    localStore.parentCancellable = self.state
+      .sink { [weak localStore] newValue in
+        let newLocalState = toLocalState(newValue)
+        guard localStore?.state.value != newLocalState else { return }
+        localStore?.state.value = newLocalState
+      }
+    return localStore
+  }
+
+  /// Scopes the store to one that exposes local state, where LocalState is Equatable
+  ///
+  /// - Parameter toLocalState: A function that transforms `State` into `LocalState`.
+  /// - Returns: A new store with its domain (state and action) transformed.
+  public func scope<LocalState: Equatable>(
+    state toLocalState: @escaping (State) -> LocalState
+  ) -> Store<LocalState, Action> {
+    self.scope(state: toLocalState, action: { $0 })
+  }
+
   /// Scopes the store to a publisher of stores of more local state and local actions.
   ///
   /// - Parameters:
@@ -301,6 +336,14 @@ public final class Store<State, Action> {
     self.reducer = reducer
     self.state = CurrentValueSubject(initialState)
   }
+}
+
+extension Store where State: Equatable {
+    /// Returns an "actionless" store by erasing action to `Never`.
+    public var actionless: Store<State, Never> {
+        func absurd<A>(_ never: Never) -> A {}
+        return self.scope(state: { $0 }, action: absurd)
+    }
 }
 
 /// A publisher of store state.
