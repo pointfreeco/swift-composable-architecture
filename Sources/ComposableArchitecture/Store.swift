@@ -8,7 +8,6 @@ import Foundation
 /// the `scope` method to derive more focused stores that can be passed to subviews.
 public final class Store<State, Action> {
   var state: CurrentValueSubject<State, Never>
-  let storeDidSend = CurrentValueSubject<Void, Never>(())
   var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
   private var parentCancellable: AnyCancellable?
@@ -173,11 +172,8 @@ public final class Store<State, Action> {
         return .none
       }
     )
-    localStore.parentCancellable = self.storeDidSend.sink { [weak self, weak localStore] newValue in
-      guard let self = self, let localStore = localStore else { return }
-      localStore.state.value = toLocalState(self.state.value)
-      localStore.storeDidSend.send()
-    }
+    localStore.parentCancellable = self.state
+      .sink { [weak localStore] newValue in localStore?.state.value = toLocalState(newValue) }
     return localStore
   }
 
@@ -225,7 +221,6 @@ public final class Store<State, Action> {
           .sink { [weak localStore] state in
             guard let localStore = localStore else { return }
             localStore.state.value = extractLocalState(state) ?? localStore.state.value
-            localStore.storeDidSend.send()
           }
         return localStore
       }
@@ -286,7 +281,6 @@ public final class Store<State, Action> {
         self.effectCancellables[uuid] = effectCancellable
       }
     }
-    self.storeDidSend.send()
   }
 
   /// Returns a "stateless" store by erasing state to `Void`.
