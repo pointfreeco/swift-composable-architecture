@@ -176,6 +176,7 @@ public final class Store<State, Action> {
     localStore.parentCancellable = self.storeDidSend.sink { [weak self, weak localStore] newValue in
       guard let self = self, let localStore = localStore else { return }
       localStore.state.value = toLocalState(self.state.value)
+      localStore.storeDidSend.send()
     }
     return localStore
   }
@@ -224,6 +225,7 @@ public final class Store<State, Action> {
           .sink { [weak localStore] state in
             guard let localStore = localStore else { return }
             localStore.state.value = extractLocalState(state) ?? localStore.state.value
+            localStore.storeDidSend.send()
           }
         return localStore
       }
