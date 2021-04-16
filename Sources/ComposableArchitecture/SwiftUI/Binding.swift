@@ -213,6 +213,25 @@ extension Reducer {
     .combined(with: self)
   }
 
+
+    public func _binding<LocalState, StatePath>(
+      state toLocalState: StatePath,
+      action toBindingAction: CasePath<Action, BindingAction<LocalState>>
+    )
+    -> Self
+    where StatePath: Path, StatePath.Root == State, StatePath.Value == LocalState {
+      Self { state, action, environment in
+        guard var localState = toLocalState.extract(from: state)
+        else { return .none }
+        toBindingAction.extract(from: action)?.set(&localState)
+        toLocalState.set(into: &state, localState)
+        return .none
+      }
+      .combined(with: self)
+    }
+
+
+
   /// Returns a reducer that applies `BindingAction` mutations to state before running this
   /// reducer's logic.
   ///
