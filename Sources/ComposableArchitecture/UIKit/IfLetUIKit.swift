@@ -80,7 +80,7 @@ extension Store {
   /// case.
   ///
   /// - Parameter unwrap: A function that is called with a store of non-optional state whenever the
-  ///   store's optional state goes from `nil` to non-`nil`.
+  ///   store's optional state is initially non-`nil` or goes from `nil` to non-`nil`.
   /// - Returns: A cancellable associated with the underlying subscription.
   public func ifLet<Wrapped>(
     then unwrap: @escaping (Store<Wrapped, Action>) -> Void
