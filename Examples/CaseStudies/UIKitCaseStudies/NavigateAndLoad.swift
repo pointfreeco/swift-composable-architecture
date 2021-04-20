@@ -90,7 +90,7 @@ class EagerNavigationViewController: UIViewController {
             store: self.store
               .scope(state: { $0.optionalCounter }, action: EagerNavigationAction.optionalCounter),
             then: CounterViewController.init(store:),
-            else: ActivityIndicatorViewController()
+            else: ActivityIndicatorViewController.init
           ),
           animated: true
         )

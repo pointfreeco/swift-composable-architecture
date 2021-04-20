@@ -69,7 +69,9 @@ struct OptionalBasicsView: View {
                   .buttonStyle(BorderlessButtonStyle())
               }
             },
-            else: Text(template: "`CounterState` is `nil`", .body)
+            else: {
+              Text(template: "`CounterState` is `nil`", .body)
+            }
           )
         }
       }
