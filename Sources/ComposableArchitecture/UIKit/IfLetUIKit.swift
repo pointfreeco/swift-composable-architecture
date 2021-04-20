@@ -4,6 +4,9 @@ extension Store {
   /// Subscribes to updates when a store containing optional state goes from `nil` to non-`nil` or
   /// non-`nil` to `nil`.
   ///
+  /// **NOTE:** one of the `unwrap` or `else` closures is always called based on the *initial* state of the
+  /// optional state (`nil` or non-`nil`), in addition to subsequent changes of `nil` / non-`nil`.
+  ///
   /// This is useful for handling navigation in UIKit. The state for a screen that you want to
   /// navigate to can be held as an optional value in the parent, and when that value switches
   /// from `nil` to non-`nil` you want to trigger a navigation and hand the detail view a `Store`
@@ -35,9 +38,10 @@ extension Store {
   ///
   /// - Parameters:
   ///   - unwrap: A function that is called with a store of non-optional state whenever the store's
-  ///     optional state goes from `nil` to non-`nil`.
-  ///   - else: A function that is called whenever the store's optional state goes from non-`nil` to
-  ///     `nil`.
+  ///     optional state is initially non-`nil` or goes from `nil` to non-`nil`.
+  ///   - else: A function that is called whenever the store's optional state is initially `nil` or
+  ///     goes from non-`nil` to `nil`.
+
   /// - Returns: A cancellable associated with the underlying subscription.
   public func ifLet<Wrapped>(
     then unwrap: @escaping (Store<Wrapped, Action>) -> Void,
@@ -76,7 +80,7 @@ extension Store {
   /// case.
   ///
   /// - Parameter unwrap: A function that is called with a store of non-optional state whenever the
-  ///   store's optional state goes from `nil` to non-`nil`.
+  ///   store's optional state is initially non-`nil` or goes from `nil` to non-`nil`.
   /// - Returns: A cancellable associated with the underlying subscription.
   public func ifLet<Wrapped>(
     then unwrap: @escaping (Store<Wrapped, Action>) -> Void
