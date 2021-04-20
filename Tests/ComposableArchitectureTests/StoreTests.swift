@@ -348,6 +348,83 @@ final class StoreTests: XCTestCase {
       .store(in: &self.cancellables)
   }
 
+    func testIfLetWithParentChildTeardown() {
+        enum ChildAction: Equatable { case clearMessage, dismissRequested }
+        struct ChildState: Equatable { var message: String? }
+
+        let childReducer = Reducer<ChildState, ChildAction, Void> { s, a, _ in
+            switch a {
+            case .clearMessage:
+                s.message = nil
+                return .init(value: .dismissRequested)
+            case .dismissRequested:
+                return .none
+            }
+        }
+
+        enum ParentAction: Equatable {
+            case presentChild
+            case child(ChildAction)
+        }
+        struct ParentState: Equatable { var child: ChildState? }
+
+        let parentReducer: Reducer<ParentState, ParentAction, Void> = .combine(
+            childReducer.optional().pullback(state: \ParentState.child, action: /ParentAction.child, environment: { $0 }),
+            Reducer<ParentState, ParentAction, Void> { s, a, _ in
+                switch a {
+                case .presentChild:
+                    s.child = .init(message: "hey")
+                    return .none
+                case .child(.dismissRequested):
+                    s.child = nil
+                    return .none
+                case .child:
+                    return .none
+                }
+            }
+        )
+
+        let parentStore = Store(initialState: ParentState(), reducer: parentReducer, environment: ())
+        var childStates: [ChildState?] = []
+        var stores: [Any] = []
+        let parentVs = ViewStore(parentStore)
+        var childVs: ViewStore<ChildState, ChildAction>?
+        var childStoreCount = 1
+
+        parentStore
+            .scope(state: { $0.child }, action: ParentAction.child)
+            .ifLet(
+                then: { store in
+                    stores.append(store)
+                    childStoreCount += 1
+
+                    let vs = ViewStore(store)
+                    childVs = vs
+
+                    vs.publisher.sink(receiveValue: {
+                        childStates.append($0)
+                    })
+                    .store(in: &self.cancellables)
+                },
+                else: {
+                    childStoreCount -= 1
+                }
+            )
+            .store(in: &self.cancellables)
+
+        XCTAssertEqual(0, childStoreCount)
+
+        parentVs.send(.presentChild)
+
+        XCTAssertEqual(1, childStoreCount)
+        XCTAssertEqual([.init(message: "hey")], childStates)
+
+        childVs?.send(.clearMessage)
+
+        XCTAssertEqual(0, childStoreCount)
+        XCTAssertEqual([.init(message: "hey"), .init(message: nil)], childStates) // This fails at the moment from a rogue emission with a message.
+    }
+
   func testActionQueuing() {
     let subject = PassthroughSubject<Void, Never>()
 
