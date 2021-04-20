@@ -328,7 +328,7 @@ final class StoreTests: XCTestCase {
       environment: ()
     )
 
-    parentStore.ifLet { childStore in
+    parentStore.ifLet(then: { childStore in
       let vs = ViewStore(childStore)
 
       vs
@@ -345,7 +345,7 @@ final class StoreTests: XCTestCase {
       XCTAssertEqual(vs.state, 3)
     }
     .store(in: &self.cancellables)
-  }
+  })
 
   func testActionQueuing() {
     let subject = PassthroughSubject<Void, Never>()
