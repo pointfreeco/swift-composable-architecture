@@ -80,7 +80,7 @@ where Data: Collection, ID: Hashable, Content: View {
       [ID], (Data.Index, EachAction), ForEach<[(offset: Int, element: ID)], ID, EachContent>
     >
   {
-    let data = store.state.value
+    let data = store.currentState()
     self.data = data
     self.content = {
       WithViewStore(store.scope(state: { $0.map { $0[keyPath: id] } })) { viewStore in
@@ -135,7 +135,7 @@ where Data: Collection, ID: Hashable, Content: View {
       [ID], (ID, EachAction), ForEach<[ID], ID, IfLetStore<EachState, EachAction, EachContent?>>
     >
   {
-    self.data = store.state.value
+    self.data = store.currentState()
     self.content = {
       WithViewStore(store.scope(state: { $0.ids })) { viewStore in
         ForEach(viewStore.state, id: \.self) { id in

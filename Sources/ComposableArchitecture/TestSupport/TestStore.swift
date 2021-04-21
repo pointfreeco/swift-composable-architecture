@@ -521,7 +521,7 @@
         environment: self.environment,
         file: self.file,
         fromLocalAction: { self.fromLocalAction(fromLocalAction($0)) },
-        initialState: self.store.state.value,
+        initialState: ViewStore(self.store, removeDuplicates: { _, _ in false }).state,
         line: self.line,
         reducer: self.reducer,
         toLocalState: { toLocalState(self.toLocalState($0)) }

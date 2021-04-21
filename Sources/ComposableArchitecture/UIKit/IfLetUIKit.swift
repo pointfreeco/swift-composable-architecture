@@ -47,6 +47,7 @@ extension Store {
     then unwrap: @escaping (Store<Wrapped, Action>) -> Void,
     else: @escaping () -> Void = {}
   ) -> Cancellable where State == Wrapped? {
+
     let elseCancellable =
       self
       .publisherScope(
@@ -56,7 +57,7 @@ extension Store {
         }
       )
       .sink { store in
-        if store.state.value == nil { `else`() }
+        if store.currentState() == nil { `else`() }
       }
 
     let unwrapCancellable =
