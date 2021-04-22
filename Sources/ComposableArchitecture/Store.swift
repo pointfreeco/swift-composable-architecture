@@ -210,12 +210,27 @@ public final class Store<State, Action> {
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> Store<LocalState, LocalAction> {
-    return .init(
+    var localState: LocalState!
+    let _toLocalState: (State) -> LocalState = {
+      if let localState = localState { return localState }
+      localState = toLocalState($0)
+      return localState
+    }
+    let localStore = Store<LocalState, LocalAction>(
       effectCancellables: self.$effectCancellables,
-      send: { self.send(fromLocalAction($0)) },
-      state: self.state.map(toLocalState)
+      send: {
+        self.send(fromLocalAction($0))
+        localState = nil
+      },
+      state: self.state.map(_toLocalState)
     )
+    localStore.parentCancellable = self.state.sink { _ in
+      localState = nil
+    }
+    return localStore
   }
+
+  var parentCancellable: AnyCancellable?
 
   /// Scopes the store to one that exposes local state.
   ///
@@ -274,23 +289,9 @@ public struct StorePublisher<State>: Publisher {
   public func map<NewOutput>(
     _ transform: @escaping (Output) -> NewOutput
   ) -> StorePublisher<NewOutput> {
-
-    var memoized: NewOutput!
-    let memoizedTransform: (Output) -> NewOutput = {
-      if let memoized = memoized { return memoized }
-      _count += 1
-      Swift.print(_count, "Store.scope<\(Output.self)->\(NewOutput.self)>")
-      memoized = transform($0)
-      return memoized
-    }
-
-    return .init(
+    .init(
       _output: { transform(self._output()) },
-      upstream: self.upstream
-        .share()
-        .map(memoizedTransform)
-        .handleEvents(receiveOutput: { _ in memoized = nil })
-        .eraseToAnyPublisher()
+      upstream: self.upstream.map(transform).eraseToAnyPublisher()
     )
   }
 
@@ -308,5 +309,3 @@ public struct StorePublisher<State>: Publisher {
     )
   }
 }
-
-var _count = 0
