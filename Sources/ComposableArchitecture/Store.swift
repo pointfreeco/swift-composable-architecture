@@ -253,6 +253,7 @@ public final class Store<State, Action> {
   }
 }
 
+/// A publisher of store state.
 @dynamicMemberLookup
 public struct StorePublisher<State>: Publisher {
   public typealias Output = State
