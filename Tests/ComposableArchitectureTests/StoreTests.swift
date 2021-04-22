@@ -6,45 +6,45 @@ import XCTest
 final class StoreTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
-//  func testCancellableIsRemovedOnImmediatelyCompletingEffect() {
-//    let reducer = Reducer<Void, Void, Void> { _, _, _ in .none }
-//    let store = Store(initialState: (), reducer: reducer, environment: ())
-//
-//    XCTAssertEqual(store.effectCancellables.count, 0)
-//
-//    store.send(())
-//
-//    XCTAssertEqual(store.effectCancellables.count, 0)
-//  }
-//
-//  func testCancellableIsRemovedWhenEffectCompletes() {
-//    let scheduler = DispatchQueue.test
-//    let effect = Effect<Void, Never>(value: ())
-//      .delay(for: 1, scheduler: scheduler)
-//      .eraseToEffect()
-//
-//    enum Action { case start, end }
-//
-//    let reducer = Reducer<Void, Action, Void> { _, action, _ in
-//      switch action {
-//      case .start:
-//        return effect.map { .end }
-//      case .end:
-//        return .none
-//      }
-//    }
-//    let store = Store(initialState: (), reducer: reducer, environment: ())
-//
-//    XCTAssertEqual(store.effectCancellables.count, 0)
-//
-//    store.send(.start)
-//
-//    XCTAssertEqual(store.effectCancellables.count, 1)
-//
-//    scheduler.advance(by: 2)
-//
-//    XCTAssertEqual(store.effectCancellables.count, 0)
-//  }
+  func testCancellableIsRemovedOnImmediatelyCompletingEffect() {
+    let reducer = Reducer<Void, Void, Void> { _, _, _ in .none }
+    let store = Store(initialState: (), reducer: reducer, environment: ())
+
+    XCTAssertEqual(store.effectCancellables.count, 0)
+
+    store.send(())
+
+    XCTAssertEqual(store.effectCancellables.count, 0)
+  }
+
+  func testCancellableIsRemovedWhenEffectCompletes() {
+    let scheduler = DispatchQueue.test
+    let effect = Effect<Void, Never>(value: ())
+      .delay(for: 1, scheduler: scheduler)
+      .eraseToEffect()
+
+    enum Action { case start, end }
+
+    let reducer = Reducer<Void, Action, Void> { _, action, _ in
+      switch action {
+      case .start:
+        return effect.map { .end }
+      case .end:
+        return .none
+      }
+    }
+    let store = Store(initialState: (), reducer: reducer, environment: ())
+
+    XCTAssertEqual(store.effectCancellables.count, 0)
+
+    store.send(.start)
+
+    XCTAssertEqual(store.effectCancellables.count, 1)
+
+    scheduler.advance(by: 2)
+
+    XCTAssertEqual(store.effectCancellables.count, 0)
+  }
 
   func testScopedStoreReceivesUpdatesFromParent() {
     let counterReducer = Reducer<Int, Void, Void> { state, _, _ in
@@ -88,36 +88,6 @@ final class StoreTests: XCTestCase {
     childViewStore.send(())
 
     XCTAssertEqual(values, [0, 1])
-  }
-
-  func testScopeWithPublisherTransform() {
-    let counterReducer = Reducer<Int, Int, Void> { state, action, _ in
-      state = action
-      return .none
-    }
-    let parentStore = Store(initialState: 0, reducer: counterReducer, environment: ())
-
-    var outputs: [String] = []
-
-    parentStore
-      .publisherScope(state: { $0.map { "\($0)" }.removeDuplicates() })
-      .sink { childStore in
-        childStore.state
-          .sink { outputs.append($0) }
-          .store(in: &self.cancellables)
-      }
-      .store(in: &self.cancellables)
-
-    parentStore.send(0)
-    XCTAssertEqual(outputs, ["0"])
-    parentStore.send(0)
-    XCTAssertEqual(outputs, ["0"])
-    parentStore.send(1)
-    XCTAssertEqual(outputs, ["0", "1"])
-    parentStore.send(1)
-    XCTAssertEqual(outputs, ["0", "1"])
-    parentStore.send(2)
-    XCTAssertEqual(outputs, ["0", "1", "2"])
   }
 
   func testScopeCallCount() {
@@ -237,85 +207,55 @@ final class StoreTests: XCTestCase {
     XCTAssertEqual(ViewStore(store).state, 100_000)
   }
 
-  func testPublisherScope() {
-    let appReducer = Reducer<Int, Bool, Void> { state, action, _ in
-      state += action ? 1 : 0
+  func testIfLetAfterScope() {
+    struct AppState {
+      var count: Int?
+    }
+
+    let appReducer = Reducer<AppState, Int?, Void> { state, action, _ in
+      state.count = action
       return .none
     }
 
-    let parentStore = Store(initialState: 0, reducer: appReducer, environment: ())
+    let parentStore = Store(initialState: AppState(), reducer: appReducer, environment: ())
 
-    var outputs: [Int] = []
+    // NB: This test needs to hold a strong reference to the emitted stores
+    var outputs: [Int?] = []
+    var stores: [Any] = []
 
     parentStore
-      .publisherScope { $0.removeDuplicates() }
-      .sink { outputs.append($0.currentState()) }
+      .scope(state: { $0.count })
+      .ifLet(
+        then: { store in
+          stores.append(store)
+          outputs.append(store.state.value)
+        },
+        else: {
+          outputs.append(nil)
+        }
+      )
       .store(in: &self.cancellables)
 
-    XCTAssertEqual(outputs, [0])
+    XCTAssertEqual(outputs, [nil])
 
-    parentStore.send(true)
-    XCTAssertEqual(outputs, [0, 1])
+    parentStore.send(1)
+    XCTAssertEqual(outputs, [nil, 1])
 
-    parentStore.send(false)
-    XCTAssertEqual(outputs, [0, 1])
-    parentStore.send(false)
-    XCTAssertEqual(outputs, [0, 1])
-    parentStore.send(false)
-    XCTAssertEqual(outputs, [0, 1])
-    parentStore.send(false)
-    XCTAssertEqual(outputs, [0, 1])
+    parentStore.send(nil)
+    XCTAssertEqual(outputs, [nil, 1, nil])
+
+    parentStore.send(1)
+    XCTAssertEqual(outputs, [nil, 1, nil, 1])
+
+    parentStore.send(nil)
+    XCTAssertEqual(outputs, [nil, 1, nil, 1, nil])
+
+    parentStore.send(1)
+    XCTAssertEqual(outputs, [nil, 1, nil, 1, nil, 1])
+
+    parentStore.send(nil)
+    XCTAssertEqual(outputs, [nil, 1, nil, 1, nil, 1, nil])
   }
-
-//  func testIfLetAfterScope() {
-//    struct AppState {
-//      var count: Int?
-//    }
-//
-//    let appReducer = Reducer<AppState, Int?, Void> { state, action, _ in
-//      state.count = action
-//      return .none
-//    }
-//
-//    let parentStore = Store(initialState: AppState(), reducer: appReducer, environment: ())
-//
-//    // NB: This test needs to hold a strong reference to the emitted stores
-//    var outputs: [Int?] = []
-//    var stores: [Any] = []
-//
-//    parentStore
-//      .scope(state: { $0.count })
-//      .ifLet(
-//        then: { store in
-//          stores.append(store)
-//          outputs.append(store.state.value)
-//        },
-//        else: {
-//          outputs.append(nil)
-//        }
-//      )
-//      .store(in: &self.cancellables)
-//
-//    XCTAssertEqual(outputs, [nil])
-//
-//    parentStore.send(1)
-//    XCTAssertEqual(outputs, [nil, 1])
-//
-//    parentStore.send(nil)
-//    XCTAssertEqual(outputs, [nil, 1, nil])
-//
-//    parentStore.send(1)
-//    XCTAssertEqual(outputs, [nil, 1, nil, 1])
-//
-//    parentStore.send(nil)
-//    XCTAssertEqual(outputs, [nil, 1, nil, 1, nil])
-//
-//    parentStore.send(1)
-//    XCTAssertEqual(outputs, [nil, 1, nil, 1, nil, 1])
-//
-//    parentStore.send(nil)
-//    XCTAssertEqual(outputs, [nil, 1, nil, 1, nil, 1, nil])
-//  }
 
   func testIfLetTwo() {
     let parentStore = Store(

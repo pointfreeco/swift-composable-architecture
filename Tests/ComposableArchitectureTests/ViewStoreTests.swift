@@ -26,7 +26,7 @@ final class ViewStoreTests: XCTestCase {
       environment: ()
     )
 
-    let viewStore = ViewStore(store.scope(state: { $0 }).scope(state: { $0 }))
+    let viewStore = ViewStore(store.scope(state: { $0 }).scope(state: { $0 }).scope(state: { $0 }))
 
     XCTAssertEqual(0, childChecks)
 

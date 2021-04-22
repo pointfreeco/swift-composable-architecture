@@ -108,6 +108,7 @@ class LoginViewController: UIViewController {
     ])
 
     self.viewStore.publisher.isLoginButtonEnabled
+      .print()
       .assign(to: \.isEnabled, on: loginButton)
       .store(in: &self.cancellables)
 
