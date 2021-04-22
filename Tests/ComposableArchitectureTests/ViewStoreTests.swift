@@ -5,6 +5,10 @@ import XCTest
 final class ViewStoreTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
+  func testCallCount() {
+    
+  }
+
   func testRemoveDuplicates() {
     let store = Store(
       initialState: State(),
