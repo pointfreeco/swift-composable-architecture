@@ -19,7 +19,6 @@ public final class Store<State, Action> {
     environment: Environment
   ) {
     var bufferedActions: [Action] = []
-    var currentState = initialState
     let effectCancellables = Ref<[UUID: AnyCancellable]>(wrappedValue: [:])
     var isSending = false
     var send: ((Action) -> Void)!
@@ -40,7 +39,7 @@ public final class Store<State, Action> {
           : bufferedActions.removeFirst()
 
         isSending = true
-        let effect = reducer(&currentState, action, environment)
+        let effect = reducer(&state.value, action, environment)
         isSending = false
 
         var didComplete = false
@@ -65,7 +64,6 @@ public final class Store<State, Action> {
         if !didComplete {
           effectCancellables[uuid] = effectCancellable
         }
-        state.value = currentState
       }
     }
     self.init(
