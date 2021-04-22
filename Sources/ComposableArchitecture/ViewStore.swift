@@ -46,11 +46,11 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// A publisher of state.
   public let publisher: StorePublisher<State>
 
-  private var viewCancellable: AnyCancellable?
-
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
+
+  private var viewCancellable: AnyCancellable?
 
   /// Initializes a view store from a store.
   ///
@@ -58,27 +58,16 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///   - store: A store.
   ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
   ///     equal, repeat view computations are removed.
-  public convenience init(
+  public init(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool
   ) {
-    let publisher = store.state.removeDuplicates(by: isDuplicate)
-    self.init(
-      publisher: publisher,
-      state: store.state.value,
-      send: store.send
-    )
-  }
-
-  private init<P: Publisher>(
-    publisher: P,
-    state: State,
-    send: @escaping (Action) -> Void
-  ) where P.Output == State, P.Failure == Never {
-    self.publisher = StorePublisher(publisher)
-    self.state = state
-    self._send = send
-    self.viewCancellable = publisher.sink { [weak self] in self?.state = $0 }
+    self.publisher = store.state
+    self.state = store.state.value
+    self._send = store.send
+    self.viewCancellable = publisher
+      .removeDuplicates(by: isDuplicate)
+      .sink { [weak self] in self?.state = $0 }
   }
 
   /// The current state.
@@ -234,17 +223,6 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// - Returns: A binding.
   public func binding(send action: Action) -> Binding<State> {
     self.binding(send: { _ in action })
-  }
-
-  public func scope<LocalState, LocalAction>(
-    state toLocalState: @escaping (State) -> LocalState,
-    action toGlobalAction: @escaping (LocalAction) -> Action
-  ) -> ViewStore<LocalState, LocalAction> where LocalState: Equatable {
-    ViewStore<LocalState, LocalAction>(
-      publisher: self.publisher.map(toLocalState).removeDuplicates(by: ==),
-      state: toLocalState(self.state),
-      send: { self._send(toGlobalAction($0)) }
-    )
   }
 }
 

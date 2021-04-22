@@ -71,7 +71,7 @@ where Data: Collection, ID: Hashable, Content: View {
   public init<EachContent>(
     _ store: Store<Data, (Data.Index, EachAction)>,
     id: KeyPath<EachState, ID>,
-    content: @escaping (Store<EachState, EachAction>) -> EachContent
+    @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
   )
   where
     Data == [EachState],
@@ -104,7 +104,7 @@ where Data: Collection, ID: Hashable, Content: View {
   ///   - content: A function that can generate content given a store of an element.
   public init<EachContent>(
     _ store: Store<Data, (Data.Index, EachAction)>,
-    content: @escaping (Store<EachState, EachAction>) -> EachContent
+    @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
   )
   where
     Data == [EachState],
@@ -126,7 +126,7 @@ where Data: Collection, ID: Hashable, Content: View {
   ///   - content: A function that can generate content given a store of an element.
   public init<EachContent: View>(
     _ store: Store<IdentifiedArray<ID, EachState>, (ID, EachAction)>,
-    content: @escaping (Store<EachState, EachAction>) -> EachContent
+    @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
   )
   where
     EachContent: View,

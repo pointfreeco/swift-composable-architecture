@@ -90,36 +90,6 @@ final class StoreTests: XCTestCase {
     XCTAssertEqual(values, [0, 1])
   }
 
-  func testScopeWithPublisherTransform() {
-    let counterReducer = Reducer<Int, Int, Void> { state, action, _ in
-      state = action
-      return .none
-    }
-    let parentStore = Store(initialState: 0, reducer: counterReducer, environment: ())
-
-    var outputs: [String] = []
-
-    parentStore
-      .publisherScope(state: { $0.map { "\($0)" }.removeDuplicates() })
-      .sink { childStore in
-        childStore.state
-          .sink { outputs.append($0) }
-          .store(in: &self.cancellables)
-      }
-      .store(in: &self.cancellables)
-
-    parentStore.send(0)
-    XCTAssertEqual(outputs, ["0"])
-    parentStore.send(0)
-    XCTAssertEqual(outputs, ["0"])
-    parentStore.send(1)
-    XCTAssertEqual(outputs, ["0", "1"])
-    parentStore.send(1)
-    XCTAssertEqual(outputs, ["0", "1"])
-    parentStore.send(2)
-    XCTAssertEqual(outputs, ["0", "1", "2"])
-  }
-
   func testScopeCallCount() {
     let counterReducer = Reducer<Int, Void, Void> { state, _, _ in state += 1
       return .none
@@ -132,7 +102,7 @@ final class StoreTests: XCTestCase {
         return count
       })
 
-    XCTAssertEqual(numCalls1, 2)
+    XCTAssertEqual(numCalls1, 0)
   }
 
   func testScopeCallCount2() {
@@ -159,28 +129,31 @@ final class StoreTests: XCTestCase {
         return count
       })
 
+    store.state.sink(receiveValue: { _ in }).store(in: &self.cancellables)
+
+    XCTAssertEqual(numCalls1, 1)
+    XCTAssertEqual(numCalls2, 1)
+    XCTAssertEqual(numCalls3, 1)
+
+    store.send(())
+
     XCTAssertEqual(numCalls1, 2)
     XCTAssertEqual(numCalls2, 2)
     XCTAssertEqual(numCalls3, 2)
 
     store.send(())
 
+    XCTAssertEqual(numCalls1, 3)
+    XCTAssertEqual(numCalls2, 3)
+    XCTAssertEqual(numCalls3, 3)
+
+    store.send(())
+
     XCTAssertEqual(numCalls1, 4)
-    XCTAssertEqual(numCalls2, 5)
-    XCTAssertEqual(numCalls3, 6)
-
-    store.send(())
-
-    XCTAssertEqual(numCalls1, 6)
-    XCTAssertEqual(numCalls2, 8)
-    XCTAssertEqual(numCalls3, 10)
-
-    store.send(())
-
-    XCTAssertEqual(numCalls1, 8)
-    XCTAssertEqual(numCalls2, 11)
-    XCTAssertEqual(numCalls3, 14)
+    XCTAssertEqual(numCalls2, 4)
+    XCTAssertEqual(numCalls3, 4)
   }
+
 
   func testSynchronousEffectsSentAfterSinking() {
     enum Action {
@@ -232,36 +205,6 @@ final class StoreTests: XCTestCase {
     let store = Store(initialState: 0, reducer: reducer, environment: ())
     store.send(.incr)
     XCTAssertEqual(ViewStore(store).state, 100_000)
-  }
-
-  func testPublisherScope() {
-    let appReducer = Reducer<Int, Bool, Void> { state, action, _ in
-      state += action ? 1 : 0
-      return .none
-    }
-
-    let parentStore = Store(initialState: 0, reducer: appReducer, environment: ())
-
-    var outputs: [Int] = []
-
-    parentStore
-      .publisherScope { $0.removeDuplicates() }
-      .sink { outputs.append($0.state.value) }
-      .store(in: &self.cancellables)
-
-    XCTAssertEqual(outputs, [0])
-
-    parentStore.send(true)
-    XCTAssertEqual(outputs, [0, 1])
-
-    parentStore.send(false)
-    XCTAssertEqual(outputs, [0, 1])
-    parentStore.send(false)
-    XCTAssertEqual(outputs, [0, 1])
-    parentStore.send(false)
-    XCTAssertEqual(outputs, [0, 1])
-    parentStore.send(false)
-    XCTAssertEqual(outputs, [0, 1])
   }
 
   func testIfLetAfterScope() {
@@ -328,23 +271,24 @@ final class StoreTests: XCTestCase {
       environment: ()
     )
 
-    parentStore.ifLet { childStore in
-      let vs = ViewStore(childStore)
+    parentStore
+      .ifLet(then: { childStore in
+        let vs = ViewStore(childStore)
 
-      vs
-        .publisher
-        .sink { _ in }
-        .store(in: &self.cancellables)
+        vs
+          .publisher
+          .sink { _ in }
+          .store(in: &self.cancellables)
 
-      vs.send(false)
-      _ = XCTWaiter.wait(for: [.init()], timeout: 0.1)
-      vs.send(false)
-      _ = XCTWaiter.wait(for: [.init()], timeout: 0.1)
-      vs.send(false)
-      _ = XCTWaiter.wait(for: [.init()], timeout: 0.1)
-      XCTAssertEqual(vs.state, 3)
-    }
-    .store(in: &self.cancellables)
+        vs.send(false)
+        _ = XCTWaiter.wait(for: [.init()], timeout: 0.1)
+        vs.send(false)
+        _ = XCTWaiter.wait(for: [.init()], timeout: 0.1)
+        vs.send(false)
+        _ = XCTWaiter.wait(for: [.init()], timeout: 0.1)
+        XCTAssertEqual(vs.state, 3)
+      })
+      .store(in: &self.cancellables)
   }
 
   func testActionQueuing() {

@@ -7,14 +7,6 @@ import Foundation
 /// You will typically construct a single one of these at the root of your application, and then use
 /// the `scope` method to derive more focused stores that can be passed to subviews.
 public final class Store<State, Action> {
-  var state: CurrentValueSubject<State, Never>
-  var effectCancellables: [UUID: AnyCancellable] = [:]
-  private var isSending = false
-  private var parentCancellable: AnyCancellable?
-  private let reducer: (inout State, Action) -> Effect<Action, Never>
-  private var synchronousActionsToSend: [Action] = []
-  private var bufferedActions: [Action] = []
-
   /// Initializes a store from an initial state, a reducer, and an environment.
   ///
   /// - Parameters:
@@ -26,9 +18,63 @@ public final class Store<State, Action> {
     reducer: Reducer<State, Action, Environment>,
     environment: Environment
   ) {
+    var bufferedActions: [Action] = []
+    var currentState = initialState
+    let effectCancellables = Ref<[UUID: AnyCancellable]>(wrappedValue: [:])
+    var isSending = false
+    var send: ((Action) -> Void)!
+    let state = CurrentValueSubject<State, Never>(initialState)
+    var synchronousActionsToSend: [Action] = []
+    send = { action in
+      if !isSending {
+        synchronousActionsToSend.append(action)
+      } else {
+        bufferedActions.append(action)
+        return
+      }
+
+      while !synchronousActionsToSend.isEmpty || !bufferedActions.isEmpty {
+        let action =
+          !synchronousActionsToSend.isEmpty
+          ? synchronousActionsToSend.removeFirst()
+          : bufferedActions.removeFirst()
+
+        isSending = true
+        let effect = reducer(&currentState, action, environment)
+        isSending = false
+
+        var didComplete = false
+        let uuid = UUID()
+
+        var isProcessingEffects = true
+        let effectCancellable = effect.sink(
+          receiveCompletion: { _ in
+            didComplete = true
+            effectCancellables[uuid] = nil
+          },
+          receiveValue: { action in
+            if isProcessingEffects {
+              synchronousActionsToSend.append(action)
+            } else {
+              send(action)
+            }
+          }
+        )
+        isProcessingEffects = false
+
+        if !didComplete {
+          effectCancellables[uuid] = effectCancellable
+        }
+        state.value = currentState
+      }
+    }
     self.init(
-      initialState: initialState,
-      reducer: { reducer.run(&$0, $1, environment) }
+      effectCancellables: effectCancellables,
+      send: send,
+      state: .init(
+        _output: { state.value },
+        upstream: state.eraseToAnyPublisher()
+      )
     )
   }
 
@@ -164,17 +210,11 @@ public final class Store<State, Action> {
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> Store<LocalState, LocalAction> {
-    let localStore = Store<LocalState, LocalAction>(
-      initialState: toLocalState(self.state.value),
-      reducer: { localState, localAction in
-        self.send(fromLocalAction(localAction))
-        localState = toLocalState(self.state.value)
-        return .none
-      }
+    .init(
+      effectCancellables: self.$effectCancellables,
+      send: { self.send(fromLocalAction($0)) },
+      state: self.state.map(toLocalState)
     )
-    localStore.parentCancellable = self.state
-      .sink { [weak localStore] newValue in localStore?.state.value = toLocalState(newValue) }
-    return localStore
   }
 
   /// Scopes the store to one that exposes local state.
@@ -185,102 +225,6 @@ public final class Store<State, Action> {
     state toLocalState: @escaping (State) -> LocalState
   ) -> Store<LocalState, Action> {
     self.scope(state: toLocalState, action: { $0 })
-  }
-
-  /// Scopes the store to a publisher of stores of more local state and local actions.
-  ///
-  /// - Parameters:
-  ///   - toLocalState: A function that transforms a publisher of `State` into a publisher of
-  ///     `LocalState`.
-  ///   - fromLocalAction: A function that transforms `LocalAction` into `Action`.
-  /// - Returns: A publisher of stores with its domain (state and action) transformed.
-  public func publisherScope<P: Publisher, LocalState, LocalAction>(
-    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P,
-    action fromLocalAction: @escaping (LocalAction) -> Action
-  ) -> AnyPublisher<Store<LocalState, LocalAction>, Never>
-  where P.Output == LocalState, P.Failure == Never {
-
-    func extractLocalState(_ state: State) -> LocalState? {
-      var localState: LocalState?
-      _ = toLocalState(Just(state).eraseToAnyPublisher())
-        .sink { localState = $0 }
-      return localState
-    }
-
-    return toLocalState(self.state.eraseToAnyPublisher())
-      .map { localState in
-        let localStore = Store<LocalState, LocalAction>(
-          initialState: localState,
-          reducer: { localState, localAction in
-            self.send(fromLocalAction(localAction))
-            localState = extractLocalState(self.state.value) ?? localState
-            return .none
-          })
-
-        localStore.parentCancellable = self.state
-          .sink { [weak localStore] state in
-            guard let localStore = localStore else { return }
-            localStore.state.value = extractLocalState(state) ?? localStore.state.value
-          }
-        return localStore
-      }
-      .eraseToAnyPublisher()
-  }
-
-  /// Scopes the store to a publisher of stores of more local state and local actions.
-  ///
-  /// - Parameter toLocalState: A function that transforms a publisher of `State` into a publisher
-  ///   of `LocalState`.
-  /// - Returns: A publisher of stores with its domain (state and action)
-  ///   transformed.
-  public func publisherScope<P: Publisher, LocalState>(
-    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P
-  ) -> AnyPublisher<Store<LocalState, Action>, Never>
-  where P.Output == LocalState, P.Failure == Never {
-    self.publisherScope(state: toLocalState, action: { $0 })
-  }
-
-  func send(_ action: Action) {
-    if !self.isSending {
-      self.synchronousActionsToSend.append(action)
-    } else {
-      self.bufferedActions.append(action)
-      return
-    }
-
-    while !self.synchronousActionsToSend.isEmpty || !self.bufferedActions.isEmpty {
-      let action =
-        !self.synchronousActionsToSend.isEmpty
-        ? self.synchronousActionsToSend.removeFirst()
-        : self.bufferedActions.removeFirst()
-
-      self.isSending = true
-      let effect = self.reducer(&self.state.value, action)
-      self.isSending = false
-
-      var didComplete = false
-      let uuid = UUID()
-
-      var isProcessingEffects = true
-      let effectCancellable = effect.sink(
-        receiveCompletion: { [weak self] _ in
-          didComplete = true
-          self?.effectCancellables[uuid] = nil
-        },
-        receiveValue: { [weak self] action in
-          if isProcessingEffects {
-            self?.synchronousActionsToSend.append(action)
-          } else {
-            self?.send(action)
-          }
-        }
-      )
-      isProcessingEffects = false
-
-      if !didComplete {
-        self.effectCancellables[uuid] = effectCancellable
-      }
-    }
   }
 
   /// Returns a "stateless" store by erasing state to `Void`.
@@ -294,12 +238,18 @@ public final class Store<State, Action> {
     return self.scope(state: { $0 }, action: absurd)
   }
 
-  private init(
-    initialState: State,
-    reducer: @escaping (inout State, Action) -> Effect<Action, Never>
+  @Ref var effectCancellables: [UUID: AnyCancellable]
+  let send: (Action) -> Void
+  var state: StorePublisher<State>
+
+  init(
+    effectCancellables: Ref<[UUID: AnyCancellable]>,
+    send: @escaping (Action) -> Void,
+    state: StorePublisher<State>
   ) {
-    self.reducer = reducer
-    self.state = CurrentValueSubject(initialState)
+    self.state = state
+    self.send = send
+    self._effectCancellables = effectCancellables
   }
 }
 
@@ -309,22 +259,38 @@ public struct StorePublisher<State>: Publisher {
   public typealias Output = State
   public typealias Failure = Never
 
+  let _output: () -> State
   public let upstream: AnyPublisher<State, Never>
 
+  var value: State {
+    self._output()
+  }
+
   public func receive<S>(subscriber: S)
-  where S: Subscriber, Failure == S.Failure, Output == S.Input {
+  where S: Subscriber, Output == S.Input, Failure == S.Failure {
     self.upstream.subscribe(subscriber)
   }
 
-  init<P>(_ upstream: P) where P: Publisher, Failure == P.Failure, Output == P.Output {
-    self.upstream = upstream.eraseToAnyPublisher()
+  public func map<NewOutput>(
+    _ transform: @escaping (Output) -> NewOutput
+  ) -> StorePublisher<NewOutput> {
+    .init(
+      _output: { transform(self._output()) },
+      upstream: self.upstream.map(transform).eraseToAnyPublisher()
+    )
   }
 
   /// Returns the resulting publisher of a given key path.
-  public subscript<LocalState>(
-    dynamicMember keyPath: KeyPath<State, LocalState>
-  ) -> StorePublisher<LocalState>
-  where LocalState: Equatable {
-    .init(self.upstream.map(keyPath).removeDuplicates())
+  public subscript<NewOutput>(
+    dynamicMember keyPath: KeyPath<Output, NewOutput>
+  ) -> StorePublisher<NewOutput>
+  where NewOutput: Equatable {
+    .init(
+      _output: { self._output()[keyPath: keyPath] },
+      upstream: self.upstream
+        .map { $0[keyPath: keyPath] }
+        .removeDuplicates()
+        .eraseToAnyPublisher()
+    )
   }
 }

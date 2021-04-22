@@ -1,6 +1,19 @@
 import Combine
 import SwiftUI
 
+// NB: Deprecated after 0.17.0:
+
+extension IfLetStore {
+  @available(*, deprecated, message: "'else' now takes a view builder closure")
+  public init<IfContent, ElseContent>(
+    _ store: Store<State?, Action>,
+    @ViewBuilder then ifContent: @escaping (Store<State, Action>) -> IfContent,
+    else elseContent: @escaping @autoclosure () -> ElseContent
+  ) where Content == _ConditionalContent<IfContent, ElseContent> {
+    self.init(store, then: ifContent, else: elseContent)
+  }
+}
+
 // NB: Deprecated after 0.13.0:
 
 @available(*, deprecated, renamed: "BindingAction")
@@ -94,27 +107,6 @@ extension AlertState.Button {
     send action: Action? = nil
   ) -> Self {
     Self(action: action, type: .destructive(label: .init(label)))
-  }
-}
-
-// NB: Deprecated after 0.9.0:
-
-extension Store {
-  @available(*, deprecated, renamed: "publisherScope(state:)")
-  public func scope<P: Publisher, LocalState>(
-    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P
-  ) -> AnyPublisher<Store<LocalState, Action>, Never>
-  where P.Output == LocalState, P.Failure == Never {
-    self.publisherScope(state: toLocalState)
-  }
-
-  @available(*, deprecated, renamed: "publisherScope(state:action:)")
-  public func scope<P: Publisher, LocalState, LocalAction>(
-    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P,
-    action fromLocalAction: @escaping (LocalAction) -> Action
-  ) -> AnyPublisher<Store<LocalState, LocalAction>, Never>
-  where P.Output == LocalState, P.Failure == Never {
-    self.publisherScope(state: toLocalState, action: fromLocalAction)
   }
 }
 

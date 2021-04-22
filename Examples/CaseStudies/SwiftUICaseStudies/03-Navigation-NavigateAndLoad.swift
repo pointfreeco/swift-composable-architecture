@@ -71,7 +71,7 @@ struct NavigateAndLoadView: View {
               self.store.scope(
                 state: { $0.optionalCounter }, action: NavigateAndLoadAction.optionalCounter),
               then: CounterView.init(store:),
-              else: ActivityIndicator()
+              else: { ActivityIndicator() }
             ),
             isActive: viewStore.binding(
               get: { $0.isNavigationActive },
