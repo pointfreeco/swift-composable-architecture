@@ -267,7 +267,7 @@ public struct StorePublisher<State>: Publisher {
 
   public func receive<S>(subscriber: S)
   where S: Subscriber, Failure == S.Failure, State == S.Input {
-    self.upstream.receive(subscriber: subscriber)
+    self.upstream.subscribe(subscriber)
   }
 
   public func map<NewOutput>(
