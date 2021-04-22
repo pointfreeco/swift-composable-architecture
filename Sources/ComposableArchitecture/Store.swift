@@ -210,19 +210,10 @@ public final class Store<State, Action> {
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> Store<LocalState, LocalAction> {
-    var localState: LocalState!
-    let _toLocalState: (State) -> LocalState = {
-      if let localState = localState { return localState }
-      localState = toLocalState($0)
-      return localState
-    }
     return .init(
       effectCancellables: self.$effectCancellables,
-      send: {
-        self.send(fromLocalAction($0))
-        localState = nil
-      },
-      state: self.state.map(_toLocalState)
+      send: { self.send(fromLocalAction($0)) },
+      state: self.state.map(toLocalState)
     )
   }
 
@@ -283,9 +274,23 @@ public struct StorePublisher<State>: Publisher {
   public func map<NewOutput>(
     _ transform: @escaping (Output) -> NewOutput
   ) -> StorePublisher<NewOutput> {
-    .init(
+
+    var memoized: NewOutput!
+    let memoizedTransform: (Output) -> NewOutput = {
+      if let memoized = memoized { return memoized }
+      _count += 1
+      Swift.print(_count, "Store.scope<\(Output.self)->\(NewOutput.self)>")
+      memoized = transform($0)
+      return memoized
+    }
+
+    return .init(
       _output: { transform(self._output()) },
-      upstream: self.upstream.map(transform).eraseToAnyPublisher()
+      upstream: self.upstream
+        .share()
+        .map(memoizedTransform)
+        .handleEvents(receiveOutput: { _ in memoized = nil })
+        .eraseToAnyPublisher()
     )
   }
 
@@ -303,3 +308,5 @@ public struct StorePublisher<State>: Publisher {
     )
   }
 }
+
+var _count = 0
