@@ -259,14 +259,14 @@ public struct StorePublisher<State>: Publisher {
   public typealias Failure = Never
 
   let _output: () -> State
-  let upstream: AnyPublisher<State, Never>
+  public let upstream: AnyPublisher<State, Never>
 
-  var value: Output {
+  var value: State {
     self._output()
   }
 
   public func receive<S>(subscriber: S)
-  where S: Subscriber, Failure == S.Failure, Output == S.Input {
+  where S: Subscriber, Failure == S.Failure, State == S.Input {
     self.upstream.receive(subscriber: subscriber)
   }
 
