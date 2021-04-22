@@ -266,7 +266,7 @@ public struct StorePublisher<State>: Publisher {
   }
 
   public func receive<S>(subscriber: S)
-  where S: Subscriber, Failure == S.Failure, State == S.Input {
+  where S: Subscriber, Output == S.Input, Failure == S.Failure {
     self.upstream.subscribe(subscriber)
   }
 
