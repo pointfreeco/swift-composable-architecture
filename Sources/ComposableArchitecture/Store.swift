@@ -73,7 +73,7 @@ public final class Store<State, Action> {
       send: send,
       state: .init(
         _output: { state.value },
-        upstream: state.eraseToAnyPublisher()
+        upstream: state.share().eraseToAnyPublisher()
       )
     )
   }
@@ -210,27 +210,13 @@ public final class Store<State, Action> {
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> Store<LocalState, LocalAction> {
-    var localState: LocalState!
-    let _toLocalState: (State) -> LocalState = {
-      if let localState = localState { return localState }
-      localState = toLocalState($0)
-      return localState
-    }
     let localStore = Store<LocalState, LocalAction>(
       effectCancellables: self.$effectCancellables,
-      send: {
-        self.send(fromLocalAction($0))
-        localState = nil
-      },
-      state: self.state.map(_toLocalState)
+      send: { self.send(fromLocalAction($0)) },
+      state: self.state.map(toLocalState)
     )
-    localStore.parentCancellable = self.state.sink { _ in
-      localState = nil
-    }
     return localStore
   }
-
-  var parentCancellable: AnyCancellable?
 
   /// Scopes the store to one that exposes local state.
   ///
@@ -270,12 +256,20 @@ public final class Store<State, Action> {
 
 /// A publisher of store state.
 @dynamicMemberLookup
-public struct StorePublisher<State>: Publisher {
+public final class StorePublisher<State>: Publisher {
   public typealias Output = State
   public typealias Failure = Never
 
   let _output: () -> State
   public let upstream: AnyPublisher<State, Never>
+
+  init(
+    _output: @escaping () -> State,
+    upstream: AnyPublisher<State, Never>
+  ) {
+    self._output = _output
+    self.upstream = upstream
+  }
 
   var value: State {
     self._output()
@@ -289,9 +283,21 @@ public struct StorePublisher<State>: Publisher {
   public func map<NewOutput>(
     _ transform: @escaping (Output) -> NewOutput
   ) -> StorePublisher<NewOutput> {
-    .init(
-      _output: { transform(self._output()) },
-      upstream: self.upstream.map(transform).eraseToAnyPublisher()
+    var memoized: NewOutput?
+    let memoizedTransform: (Output) -> NewOutput = { output in
+      if let memoized = memoized { return memoized }
+      let newOutput = transform(output)
+      memoized = newOutput
+      return newOutput
+    }
+
+    return .init(
+      _output: { memoizedTransform(self._output()) },
+      upstream: self.upstream
+        .handleEvents(receiveOutput: { _ in memoized = nil })
+        .share()
+        .map(memoizedTransform)
+        .eraseToAnyPublisher()
     )
   }
 
