@@ -79,7 +79,7 @@ struct PresentAndLoadView: View {
           self.store.scope(
             state: { $0.optionalCounter }, action: PresentAndLoadAction.optionalCounter),
           then: CounterView.init(store:),
-          else: ActivityIndicator()
+          else: { ActivityIndicator() }
         )
       }
       .navigationBarTitle("Present and load")
