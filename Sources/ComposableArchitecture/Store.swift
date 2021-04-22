@@ -19,7 +19,6 @@ public final class Store<State, Action> {
     environment: Environment
   ) {
     var bufferedActions: [Action] = []
-    var currentState = initialState
     let effectCancellables = Ref<[UUID: AnyCancellable]>(wrappedValue: [:])
     var isSending = false
     var send: ((Action) -> Void)!
@@ -33,6 +32,7 @@ public final class Store<State, Action> {
         return
       }
 
+      var currentState = state.value
       while !synchronousActionsToSend.isEmpty || !bufferedActions.isEmpty {
         let action =
           !synchronousActionsToSend.isEmpty
@@ -210,10 +210,19 @@ public final class Store<State, Action> {
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> Store<LocalState, LocalAction> {
-    .init(
+    var localState: LocalState!
+    let _toLocalState: (State) -> LocalState = {
+      if let localState = localState { return localState }
+      localState = toLocalState($0)
+      return localState
+    }
+    return .init(
       effectCancellables: self.$effectCancellables,
-      send: { self.send(fromLocalAction($0)) },
-      state: self.state.map(toLocalState)
+      send: {
+        self.send(fromLocalAction($0))
+        localState = nil
+      },
+      state: self.state.map(_toLocalState)
     )
   }
 
