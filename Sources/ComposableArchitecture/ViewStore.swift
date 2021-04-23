@@ -44,7 +44,8 @@ import SwiftUI
 @dynamicMemberLookup
 public final class ViewStore<State, Action>: ObservableObject {
   /// A publisher of state.
-  public let publisher: StorePublisher<State>
+//  public let publisher: StorePublisher<State>
+  public let publisher: AnyPublisher<State, Never>
 
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
@@ -62,12 +63,15 @@ public final class ViewStore<State, Action>: ObservableObject {
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool
   ) {
-    self.publisher = store.state
+    let publisher = store.state
+      .removeDuplicates(by: isDuplicate)
+      .prepend(store.state.value)
+      .share()
+    self.publisher = publisher
+      .eraseToAnyPublisher()
     self.state = store.state.value
     self._send = store.send
-    self.viewCancellable = publisher
-      .removeDuplicates(by: isDuplicate)
-      .sink { [weak self] in self?.state = $0 }
+    self.viewCancellable = publisher.sink { [weak self] in self?.state = $0 }
   }
 
   /// The current state.

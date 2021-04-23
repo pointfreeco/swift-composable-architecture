@@ -57,7 +57,8 @@ final class StoreTests: XCTestCase {
     let childStore = parentStore.scope(state: String.init)
 
     var values: [String] = []
-    childStore.state
+    ViewStore(childStore)
+      .publisher
       .sink(receiveValue: { values.append($0) })
       .store(in: &self.cancellables)
 
@@ -79,7 +80,8 @@ final class StoreTests: XCTestCase {
     let childViewStore = ViewStore(childStore)
 
     var values: [Int] = []
-    parentStore.state
+    ViewStore(parentStore)
+      .publisher
       .sink(receiveValue: { values.append($0) })
       .store(in: &self.cancellables)
 
@@ -115,43 +117,52 @@ final class StoreTests: XCTestCase {
     var numCalls2 = 0
     var numCalls3 = 0
 
-    let store = Store(initialState: 0, reducer: counterReducer, environment: ())
-      .scope(state: { (count: Int) -> Int in
+    let store1 = Store(initialState: 0, reducer: counterReducer, environment: ())
+      let store2 = store1.scope(state: { (count: Int) -> Int in
         numCalls1 += 1
         return count
       })
-      .scope(state: { (count: Int) -> Int in
+    let store3 = store2.scope(state: { (count: Int) -> Int in
         numCalls2 += 1
         return count
       })
-      .scope(state: { (count: Int) -> Int in
+    let store4 = store3.scope(state: { (count: Int) -> Int in
         numCalls3 += 1
         return count
       })
 
-    store.state.sink(receiveValue: { _ in }).store(in: &self.cancellables)
+    let viewStore1 = ViewStore(store1)
+    let viewStore2 = ViewStore(store2)
+    let viewStore3 = ViewStore(store3)
+    let viewStore4 = ViewStore(store4)
 
     XCTAssertEqual(numCalls1, 1)
     XCTAssertEqual(numCalls2, 1)
     XCTAssertEqual(numCalls3, 1)
 
-    store.send(())
+    viewStore1.send(())
 
     XCTAssertEqual(numCalls1, 2)
     XCTAssertEqual(numCalls2, 2)
     XCTAssertEqual(numCalls3, 2)
 
-    store.send(())
+    viewStore2.send(())
 
     XCTAssertEqual(numCalls1, 3)
     XCTAssertEqual(numCalls2, 3)
     XCTAssertEqual(numCalls3, 3)
 
-    store.send(())
+    viewStore3.send(())
 
     XCTAssertEqual(numCalls1, 4)
     XCTAssertEqual(numCalls2, 4)
     XCTAssertEqual(numCalls3, 4)
+
+    viewStore4.send(())
+
+    XCTAssertEqual(numCalls1, 5)
+    XCTAssertEqual(numCalls2, 5)
+    XCTAssertEqual(numCalls3, 5)
   }
 
 
@@ -221,13 +232,11 @@ final class StoreTests: XCTestCase {
 
     // NB: This test needs to hold a strong reference to the emitted stores
     var outputs: [Int?] = []
-    var stores: [Any] = []
 
     parentStore
       .scope(state: { $0.count })
       .ifLet(
         then: { store in
-          stores.append(store)
           outputs.append(store.state.value)
         },
         else: {

@@ -5,6 +5,10 @@ import XCTest
 final class ViewStoreTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
+  func testCallCount() {
+    
+  }
+
   func testRemoveDuplicates() {
     let store = Store(
       initialState: State(),
@@ -21,7 +25,7 @@ final class ViewStoreTests: XCTestCase {
 
     XCTAssertEqual(0, equalityChecks)
 
-    viewStore.publisher.name
+    viewStore.publisher.map(\.name)
       .sink { _ in }
       .store(in: &self.cancellables)
 
