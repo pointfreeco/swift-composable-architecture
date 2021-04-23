@@ -65,8 +65,8 @@ public final class Store<State, Action> {
         if !didComplete {
           effectCancellables[uuid] = effectCancellable
         }
-        state.value = currentState
       }
+      state.value = currentState
     }
     self.init(
       effectCancellables: effectCancellables,
