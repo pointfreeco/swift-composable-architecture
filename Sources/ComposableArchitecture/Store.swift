@@ -40,7 +40,7 @@ public final class Store<State, Action> {
           : bufferedActions.removeFirst()
 
         isSending = true
-        let effect = reducer(&state.value, action, environment)
+        let effect = reducer(&currentState, action, environment)
         isSending = false
 
         var didComplete = false
