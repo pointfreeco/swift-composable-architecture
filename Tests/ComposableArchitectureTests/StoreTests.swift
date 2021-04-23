@@ -57,7 +57,8 @@ final class StoreTests: XCTestCase {
     let childStore = parentStore.scope(state: String.init)
 
     var values: [String] = []
-    childStore.state
+    ViewStore(childStore)
+      .publisher
       .sink(receiveValue: { values.append($0) })
       .store(in: &self.cancellables)
 
@@ -79,7 +80,8 @@ final class StoreTests: XCTestCase {
     let childViewStore = ViewStore(childStore)
 
     var values: [Int] = []
-    parentStore.state
+    ViewStore(parentStore)
+      .publisher
       .sink(receiveValue: { values.append($0) })
       .store(in: &self.cancellables)
 

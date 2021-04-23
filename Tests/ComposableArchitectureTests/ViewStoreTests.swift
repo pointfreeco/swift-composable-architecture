@@ -25,7 +25,7 @@ final class ViewStoreTests: XCTestCase {
 
     XCTAssertEqual(0, equalityChecks)
 
-    viewStore.publisher.name
+    viewStore.publisher.map(\.name)
       .sink { _ in }
       .store(in: &self.cancellables)
 
