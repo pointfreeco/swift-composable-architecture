@@ -164,16 +164,22 @@ public final class Store<State, Action> {
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> Store<LocalState, LocalAction> {
+    var isSending = false
     let localStore = Store<LocalState, LocalAction>(
       initialState: toLocalState(self.state.value),
       reducer: { localState, localAction in
+        isSending = true
+        defer { isSending = false }
         self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
         return .none
       }
     )
-    localStore.parentCancellable = self.state
-      .sink { [weak localStore] newValue in localStore?.state.value = toLocalState(newValue) }
+    localStore.parentCancellable = self.state.dropFirst()
+      .sink { [weak localStore] newValue in
+        guard !isSending else { return }
+        localStore?.state.value = toLocalState(newValue)
+      }
     return localStore
   }
 
