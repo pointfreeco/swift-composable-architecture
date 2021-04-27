@@ -248,7 +248,7 @@ public final class Store<State, Action> {
 
   func send(_ action: Action) {
     var state = self.state.value
-    defer { var state = self.state.value = state }
+    defer { self.state.value = state }
 
     if !self.isSending {
       self.synchronousActionsToSend.append(action)

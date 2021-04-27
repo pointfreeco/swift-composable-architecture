@@ -33,16 +33,20 @@ final class ViewStoreTests: XCTestCase {
 
     XCTAssertEqual(0, equalityChecks)
 
-    viewStore1.publisher.name
-      .sink { _ in }
-      .store(in: &self.cancellables)
+//    viewStore1.publisher.name
+//      .sink { _ in }
+//      .store(in: &self.cancellables)
 //    viewStore2.publisher.name
 //      .sink { _ in }
 //      .store(in: &self.cancellables)
 //    viewStore3.publisher.name
 //      .sink { _ in }
 //      .store(in: &self.cancellables)
-    viewStore4.publisher.name
+//    viewStore4.publisher.name
+//      .sink { _ in }
+//      .store(in: &self.cancellables)
+
+    viewStore1.publisher.name.isEmpty
       .sink { _ in }
       .store(in: &self.cancellables)
 
