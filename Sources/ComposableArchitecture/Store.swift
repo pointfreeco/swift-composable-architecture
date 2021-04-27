@@ -248,7 +248,6 @@ public final class Store<State, Action> {
 
   func send(_ action: Action) {
     var state = self.state.value
-    defer { self.state.value = state }
 
     if !self.isSending {
       self.synchronousActionsToSend.append(action)
@@ -290,6 +289,8 @@ public final class Store<State, Action> {
         self.effectCancellables[uuid] = effectCancellable
       }
     }
+
+    self.state.value = state
   }
 
   /// Returns a "stateless" store by erasing state to `Void`.
