@@ -27,8 +27,8 @@ final class ViewStoreTests: XCTestCase {
     let store4 = store3.scope(state: { $0 })
 
     let viewStore1 = ViewStore(store1)
-    let viewStore2 = ViewStore(store2)
-    let viewStore3 = ViewStore(store3)
+//    let viewStore2 = ViewStore(store2)
+//    let viewStore3 = ViewStore(store3)
     let viewStore4 = ViewStore(store4)
 
     XCTAssertEqual(0, equalityChecks)
@@ -36,12 +36,12 @@ final class ViewStoreTests: XCTestCase {
     viewStore1.publisher.name
       .sink { _ in }
       .store(in: &self.cancellables)
-    viewStore2.publisher.name
-      .sink { _ in }
-      .store(in: &self.cancellables)
-    viewStore3.publisher.name
-      .sink { _ in }
-      .store(in: &self.cancellables)
+//    viewStore2.publisher.name
+//      .sink { _ in }
+//      .store(in: &self.cancellables)
+//    viewStore3.publisher.name
+//      .sink { _ in }
+//      .store(in: &self.cancellables)
     viewStore4.publisher.name
       .sink { _ in }
       .store(in: &self.cancellables)
@@ -52,15 +52,15 @@ final class ViewStoreTests: XCTestCase {
 
     XCTAssertEqual(1, equalityChecks)
 
-    viewStore2.send(true)
+    viewStore1.send(true)
 
     XCTAssertEqual(2, equalityChecks)
 
-    viewStore3.send(true)
+    viewStore1.send(true)
 
     XCTAssertEqual(3, equalityChecks)
 
-    viewStore4.send(true)
+    viewStore1.send(true)
 
     XCTAssertEqual(4, equalityChecks)
   }

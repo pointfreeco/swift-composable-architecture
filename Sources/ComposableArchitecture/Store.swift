@@ -247,6 +247,9 @@ public final class Store<State, Action> {
   }
 
   func send(_ action: Action) {
+    var state = self.state.value
+    defer { var state = self.state.value = state }
+
     if !self.isSending {
       self.synchronousActionsToSend.append(action)
     } else {
@@ -261,7 +264,7 @@ public final class Store<State, Action> {
         : self.bufferedActions.removeFirst()
 
       self.isSending = true
-      let effect = self.reducer(&self.state.value, action)
+      let effect = self.reducer(&state, action)
       self.isSending = false
 
       var didComplete = false
