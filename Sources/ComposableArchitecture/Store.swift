@@ -247,7 +247,6 @@ public final class Store<State, Action> {
   }
 
   func send(_ action: Action) {
-
     if !self.isSending {
       self.synchronousActionsToSend.append(action)
     } else {
@@ -255,7 +254,6 @@ public final class Store<State, Action> {
       return
     }
 
-    var currentState = self.state.value
     while !self.synchronousActionsToSend.isEmpty || !self.bufferedActions.isEmpty {
       let action =
         !self.synchronousActionsToSend.isEmpty
@@ -263,7 +261,7 @@ public final class Store<State, Action> {
         : self.bufferedActions.removeFirst()
 
       self.isSending = true
-      let effect = self.reducer(&currentState, action)
+      let effect = self.reducer(&self.state.value, action)
       self.isSending = false
 
       var didComplete = false
@@ -289,8 +287,6 @@ public final class Store<State, Action> {
         self.effectCancellables[uuid] = effectCancellable
       }
     }
-
-    self.state.value = currentState
   }
 
   /// Returns a "stateless" store by erasing state to `Void`.
