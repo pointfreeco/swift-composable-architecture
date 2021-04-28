@@ -28,7 +28,7 @@ final class ViewStoreTests: XCTestCase {
 
     viewStore.send(())
 
-    XCTAssertEqual(count, 1)
+    XCTAssertEqual(count, 2)
   }
 
   func testEqualityChecks() {
@@ -65,6 +65,10 @@ final class ViewStoreTests: XCTestCase {
 
     viewStore1.send(())
 
+    XCTAssertEqual(0, equalityChecks)
+
+    viewStore1.send(())
+
     XCTAssertEqual(4, equalityChecks)
 
     viewStore1.send(())
@@ -74,10 +78,6 @@ final class ViewStoreTests: XCTestCase {
     viewStore1.send(())
 
     XCTAssertEqual(12, equalityChecks)
-
-    viewStore1.send(())
-
-    XCTAssertEqual(16, equalityChecks)
   }
 }
 
