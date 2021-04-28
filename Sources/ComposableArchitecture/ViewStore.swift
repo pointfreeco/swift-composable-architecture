@@ -62,7 +62,7 @@ public final class ViewStore<State, Action>: ObservableObject {
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool
   ) {
-    self.publisher = StorePublisher(store.state)
+    self.publisher = StorePublisher(store.state, removeDuplicates: isDuplicate)
     self.state = store.state.value
     self._send = store.send
     self.viewCancellable = store.state

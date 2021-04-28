@@ -25,10 +25,16 @@ final class ViewStoreTests: XCTestCase {
       .store(in: &self.cancellables)
 
     XCTAssertEqual(count, 1)
-
     viewStore.send(())
-
-    XCTAssertEqual(count, 2)
+    XCTAssertEqual(count, 1)
+    viewStore.send(())
+    XCTAssertEqual(count, 1)
+    viewStore.send(())
+    XCTAssertEqual(count, 1)
+    viewStore.send(())
+    XCTAssertEqual(count, 1)
+    viewStore.send(())
+    XCTAssertEqual(count, 1)
   }
 
   func testEqualityChecks() {
@@ -63,21 +69,21 @@ final class ViewStoreTests: XCTestCase {
 
     XCTAssertEqual(0, equalityChecks)
 
-    viewStore1.send(())
-
-    XCTAssertEqual(0, equalityChecks)
-
-    viewStore1.send(())
+    viewStore4.send(())
 
     XCTAssertEqual(4, equalityChecks)
 
-    viewStore1.send(())
-
-    XCTAssertEqual(8, equalityChecks)
-
-    viewStore1.send(())
+    viewStore4.send(())
 
     XCTAssertEqual(12, equalityChecks)
+
+    viewStore4.send(())
+
+    XCTAssertEqual(20, equalityChecks)
+
+    viewStore4.send(())
+
+    XCTAssertEqual(28, equalityChecks)
   }
 }
 
