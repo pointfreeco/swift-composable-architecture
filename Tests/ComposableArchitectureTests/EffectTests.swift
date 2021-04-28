@@ -168,7 +168,7 @@ final class EffectTests: XCTestCase {
       .catch { _ in Fail(error: NSError(domain: "", code: 1)) }
       .sink(
         receiveCompletion: { _ in expectation.fulfill() },
-        receiveValue: { _ in XCTAssertTrue(false) }
+        receiveValue: { _ in }
       )
       .store(in: &self.cancellables)
 

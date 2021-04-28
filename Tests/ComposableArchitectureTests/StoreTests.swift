@@ -132,7 +132,7 @@ final class StoreTests: XCTestCase {
         return count
       })
 
-    XCTAssertEqual(numCalls1, 1)
+    XCTAssertEqual(numCalls1, 2)
   }
 
   func testScopeCallCount2() {
@@ -162,38 +162,38 @@ final class StoreTests: XCTestCase {
         return count
       })
 
-    let viewStore1 = ViewStore(store1)
-    let viewStore2 = ViewStore(store2)
-    let viewStore3 = ViewStore(store3)
+    _ = ViewStore(store1)
+    _ = ViewStore(store2)
+    _ = ViewStore(store3)
     let viewStore4 = ViewStore(store4)
-
-    XCTAssertEqual(numCalls1, 1)
-    XCTAssertEqual(numCalls2, 1)
-    XCTAssertEqual(numCalls3, 1)
-
-    viewStore1.send(())
 
     XCTAssertEqual(numCalls1, 2)
     XCTAssertEqual(numCalls2, 2)
     XCTAssertEqual(numCalls3, 2)
 
-    viewStore2.send(())
-
-    XCTAssertEqual(numCalls1, 3)
-    XCTAssertEqual(numCalls2, 3)
-    XCTAssertEqual(numCalls3, 3)
-
-    viewStore3.send(())
+    viewStore4.send(())
 
     XCTAssertEqual(numCalls1, 4)
-    XCTAssertEqual(numCalls2, 4)
-    XCTAssertEqual(numCalls3, 4)
+    XCTAssertEqual(numCalls2, 5)
+    XCTAssertEqual(numCalls3, 6)
 
     viewStore4.send(())
 
-    XCTAssertEqual(numCalls1, 5)
-    XCTAssertEqual(numCalls2, 5)
-    XCTAssertEqual(numCalls3, 5)
+    XCTAssertEqual(numCalls1, 6)
+    XCTAssertEqual(numCalls2, 8)
+    XCTAssertEqual(numCalls3, 10)
+
+    viewStore4.send(())
+
+    XCTAssertEqual(numCalls1, 8)
+    XCTAssertEqual(numCalls2, 11)
+    XCTAssertEqual(numCalls3, 14)
+
+    viewStore4.send(())
+
+    XCTAssertEqual(numCalls1, 10)
+    XCTAssertEqual(numCalls2, 14)
+    XCTAssertEqual(numCalls3, 18)
   }
 
   func testSynchronousEffectsSentAfterSinking() {

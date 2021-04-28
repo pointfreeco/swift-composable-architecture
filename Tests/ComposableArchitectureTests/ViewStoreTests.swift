@@ -8,6 +8,7 @@ final class ViewStoreTests: XCTestCase {
   override func setUp() {
     super.setUp()
     equalityChecks = 0
+    subEqualityChecks = 0
   }
 
   func testPublisherFirehose() {
@@ -19,22 +20,18 @@ final class ViewStoreTests: XCTestCase {
 
     let viewStore = ViewStore(store)
 
-    var count = 0
+    var emissionCount = 0
     viewStore.publisher
-      .sink { _ in count += 1 }
+      .sink { _ in emissionCount += 1 }
       .store(in: &self.cancellables)
 
-    XCTAssertEqual(count, 1)
+    XCTAssertEqual(emissionCount, 1)
     viewStore.send(())
-    XCTAssertEqual(count, 1)
+    XCTAssertEqual(emissionCount, 1)
     viewStore.send(())
-    XCTAssertEqual(count, 1)
+    XCTAssertEqual(emissionCount, 1)
     viewStore.send(())
-    XCTAssertEqual(count, 1)
-    viewStore.send(())
-    XCTAssertEqual(count, 1)
-    viewStore.send(())
-    XCTAssertEqual(count, 1)
+    XCTAssertEqual(emissionCount, 1)
   }
 
   func testEqualityChecks() {
@@ -54,46 +51,49 @@ final class ViewStoreTests: XCTestCase {
     let viewStore3 = ViewStore(store3)
     let viewStore4 = ViewStore(store4)
 
-    viewStore1.publisher
-      .sink { _ in }
-      .store(in: &self.cancellables)
-    viewStore2.publisher
-      .sink { _ in }
-      .store(in: &self.cancellables)
-    viewStore3.publisher
-      .sink { _ in }
-      .store(in: &self.cancellables)
-    viewStore4.publisher
-      .sink { _ in }
-      .store(in: &self.cancellables)
+    viewStore1.publisher.sink { _ in }.store(in: &self.cancellables)
+    viewStore2.publisher.sink { _ in }.store(in: &self.cancellables)
+    viewStore3.publisher.sink { _ in }.store(in: &self.cancellables)
+    viewStore4.publisher.sink { _ in }.store(in: &self.cancellables)
+    viewStore1.publisher.substate.sink { _ in }.store(in: &self.cancellables)
+    viewStore2.publisher.substate.sink { _ in }.store(in: &self.cancellables)
+    viewStore3.publisher.substate.sink { _ in }.store(in: &self.cancellables)
+    viewStore4.publisher.substate.sink { _ in }.store(in: &self.cancellables)
 
     XCTAssertEqual(0, equalityChecks)
-
+    XCTAssertEqual(0, subEqualityChecks)
     viewStore4.send(())
-
-    XCTAssertEqual(4, equalityChecks)
-
+    XCTAssertEqual(42, equalityChecks)
+    XCTAssertEqual(42, subEqualityChecks)
     viewStore4.send(())
-
-    XCTAssertEqual(12, equalityChecks)
-
+    XCTAssertEqual(84, equalityChecks)
+    XCTAssertEqual(84, subEqualityChecks)
     viewStore4.send(())
-
-    XCTAssertEqual(20, equalityChecks)
-
+    XCTAssertEqual(126, equalityChecks)
+    XCTAssertEqual(126, subEqualityChecks)
     viewStore4.send(())
-
-    XCTAssertEqual(28, equalityChecks)
+    XCTAssertEqual(168, equalityChecks)
+    XCTAssertEqual(168, subEqualityChecks)
   }
 }
 
 private struct State: Equatable {
-  var name = "Blob"
+  var substate = Substate()
 
   static func == (lhs: Self, rhs: Self) -> Bool {
     equalityChecks += 1
+    return lhs.substate == rhs.substate
+  }
+}
+
+private struct Substate: Equatable {
+  var name = "Blob"
+
+  static func == (lhs: Self, rhs: Self) -> Bool {
+    subEqualityChecks += 1
     return lhs.name == rhs.name
   }
 }
 
 private var equalityChecks = 0
+private var subEqualityChecks = 0
