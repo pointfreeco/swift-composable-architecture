@@ -27,7 +27,12 @@ final class ViewStoreTests: XCTestCase {
     XCTAssertEqual(count, 1)
 
     viewStore.send(())
+    XCTAssertEqual(count, 1)
 
+    viewStore.send(())
+    XCTAssertEqual(count, 1)
+
+    viewStore.send(())
     XCTAssertEqual(count, 1)
   }
 
