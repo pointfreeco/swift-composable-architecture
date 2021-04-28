@@ -5,19 +5,36 @@ import XCTest
 final class ViewStoreTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
-  func testCallCount() {
-
+  override func setUp() {
+    super.setUp()
+    equalityChecks = 0
   }
 
-  func testRemoveDuplicates() {
+  func testPublisherFirehose() {
+    let store = Store(
+      initialState: 0,
+      reducer: Reducer<Int, Void, Void>.empty,
+      environment: ()
+    )
+
+    let viewStore = ViewStore(store)
+
+    var count = 0
+    viewStore.publisher
+      .sink { _ in count += 1 }
+      .store(in: &self.cancellables)
+
+    XCTAssertEqual(count, 1)
+
+    viewStore.send(())
+
+    XCTAssertEqual(count, 1)
+  }
+
+  func testEqualityChecks() {
     let store = Store(
       initialState: State(),
-      reducer: Reducer<State, Bool, Void> { state, action, _ in
-        if action {
-          state.name = state.name + " " + state.name
-        }
-        return .none
-      },
+      reducer: Reducer<State, Void, Void>.empty,
       environment: ()
     )
 
@@ -27,46 +44,40 @@ final class ViewStoreTests: XCTestCase {
     let store4 = store3.scope(state: { $0 })
 
     let viewStore1 = ViewStore(store1)
-//    let viewStore2 = ViewStore(store2)
-//    let viewStore3 = ViewStore(store3)
+    let viewStore2 = ViewStore(store2)
+    let viewStore3 = ViewStore(store3)
     let viewStore4 = ViewStore(store4)
 
-    XCTAssertEqual(0, equalityChecks)
-
-//    viewStore1.publisher.name
-//      .sink { _ in }
-//      .store(in: &self.cancellables)
-//    viewStore2.publisher.name
-//      .sink { _ in }
-//      .store(in: &self.cancellables)
-//    viewStore3.publisher.name
-//      .sink { _ in }
-//      .store(in: &self.cancellables)
-//    viewStore4.publisher.name
-//      .sink { _ in }
-//      .store(in: &self.cancellables)
-
-    viewStore1.publisher.name.isEmpty
+    viewStore1.publisher
+      .sink { _ in }
+      .store(in: &self.cancellables)
+    viewStore2.publisher
+      .sink { _ in }
+      .store(in: &self.cancellables)
+    viewStore3.publisher
+      .sink { _ in }
+      .store(in: &self.cancellables)
+    viewStore4.publisher
       .sink { _ in }
       .store(in: &self.cancellables)
 
     XCTAssertEqual(0, equalityChecks)
 
-    viewStore1.send(true)
-
-    XCTAssertEqual(1, equalityChecks)
-
-    viewStore1.send(true)
-
-    XCTAssertEqual(2, equalityChecks)
-
-    viewStore1.send(true)
-
-    XCTAssertEqual(3, equalityChecks)
-
-    viewStore1.send(true)
+    viewStore1.send(())
 
     XCTAssertEqual(4, equalityChecks)
+
+    viewStore1.send(())
+
+    XCTAssertEqual(8, equalityChecks)
+
+    viewStore1.send(())
+
+    XCTAssertEqual(12, equalityChecks)
+
+    viewStore1.send(())
+
+    XCTAssertEqual(16, equalityChecks)
   }
 }
 
