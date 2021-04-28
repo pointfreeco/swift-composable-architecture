@@ -145,41 +145,55 @@ final class StoreTests: XCTestCase {
     var numCalls2 = 0
     var numCalls3 = 0
 
-    let store = Store(initialState: 0, reducer: counterReducer, environment: ())
+    let store1 = Store(initialState: 0, reducer: counterReducer, environment: ())
+      let store2 = store1
       .scope(state: { (count: Int) -> Int in
         numCalls1 += 1
         return count
       })
+    let store3 = store2
       .scope(state: { (count: Int) -> Int in
         numCalls2 += 1
         return count
       })
+    let store4 = store3
       .scope(state: { (count: Int) -> Int in
         numCalls3 += 1
         return count
       })
 
+    _ = ViewStore(store1)
+    _ = ViewStore(store2)
+    _ = ViewStore(store3)
+    let viewStore4 = ViewStore(store4)
+
     XCTAssertEqual(numCalls1, 2)
     XCTAssertEqual(numCalls2, 2)
     XCTAssertEqual(numCalls3, 2)
 
-    store.send(())
+    viewStore4.send(())
 
     XCTAssertEqual(numCalls1, 4)
     XCTAssertEqual(numCalls2, 5)
     XCTAssertEqual(numCalls3, 6)
 
-    store.send(())
+    viewStore4.send(())
 
     XCTAssertEqual(numCalls1, 6)
     XCTAssertEqual(numCalls2, 8)
     XCTAssertEqual(numCalls3, 10)
 
-    store.send(())
+    viewStore4.send(())
 
     XCTAssertEqual(numCalls1, 8)
     XCTAssertEqual(numCalls2, 11)
     XCTAssertEqual(numCalls3, 14)
+
+    viewStore4.send(())
+
+    XCTAssertEqual(numCalls1, 10)
+    XCTAssertEqual(numCalls2, 14)
+    XCTAssertEqual(numCalls3, 18)
   }
 
   func testSynchronousEffectsSentAfterSinking() {
