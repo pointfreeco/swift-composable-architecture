@@ -146,17 +146,20 @@ final class StoreTests: XCTestCase {
     var numCalls3 = 0
 
     let store1 = Store(initialState: 0, reducer: counterReducer, environment: ())
-      let store2 = store1
+    let store2 =
+      store1
       .scope(state: { (count: Int) -> Int in
         numCalls1 += 1
         return count
       })
-    let store3 = store2
+    let store3 =
+      store2
       .scope(state: { (count: Int) -> Int in
         numCalls2 += 1
         return count
       })
-    let store4 = store3
+    let store4 =
+      store3
       .scope(state: { (count: Int) -> Int in
         numCalls3 += 1
         return count
