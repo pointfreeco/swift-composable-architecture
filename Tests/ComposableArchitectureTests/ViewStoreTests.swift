@@ -8,6 +8,7 @@ final class ViewStoreTests: XCTestCase {
   override func setUp() {
     super.setUp()
     equalityChecks = 0
+    subEqualityChecks = 0
   }
 
   func testPublisherFirehose() {
@@ -54,30 +55,45 @@ final class ViewStoreTests: XCTestCase {
     viewStore2.publisher.sink { _ in }.store(in: &self.cancellables)
     viewStore3.publisher.sink { _ in }.store(in: &self.cancellables)
     viewStore4.publisher.sink { _ in }.store(in: &self.cancellables)
-    viewStore1.publisher.name.sink { _ in }.store(in: &self.cancellables)
-    viewStore2.publisher.name.sink { _ in }.store(in: &self.cancellables)
-    viewStore3.publisher.name.sink { _ in }.store(in: &self.cancellables)
-    viewStore4.publisher.name.sink { _ in }.store(in: &self.cancellables)
+    viewStore1.publisher.substate.sink { _ in }.store(in: &self.cancellables)
+    viewStore2.publisher.substate.sink { _ in }.store(in: &self.cancellables)
+    viewStore3.publisher.substate.sink { _ in }.store(in: &self.cancellables)
+    viewStore4.publisher.substate.sink { _ in }.store(in: &self.cancellables)
 
     XCTAssertEqual(0, equalityChecks)
+    XCTAssertEqual(0, subEqualityChecks)
     viewStore4.send(())
     XCTAssertEqual(42, equalityChecks)
+    XCTAssertEqual(42, subEqualityChecks)
     viewStore4.send(())
     XCTAssertEqual(84, equalityChecks)
+    XCTAssertEqual(84, subEqualityChecks)
     viewStore4.send(())
     XCTAssertEqual(126, equalityChecks)
+    XCTAssertEqual(126, subEqualityChecks)
     viewStore4.send(())
     XCTAssertEqual(168, equalityChecks)
+    XCTAssertEqual(168, subEqualityChecks)
   }
 }
 
 private struct State: Equatable {
-  var name = "Blob"
+  var substate = Substate()
 
   static func == (lhs: Self, rhs: Self) -> Bool {
     equalityChecks += 1
+    return lhs.substate == rhs.substate
+  }
+}
+
+private struct Substate: Equatable {
+  var name = "Blob"
+
+  static func == (lhs: Self, rhs: Self) -> Bool {
+    subEqualityChecks += 1
     return lhs.name == rhs.name
   }
 }
 
 private var equalityChecks = 0
+private var subEqualityChecks = 0
