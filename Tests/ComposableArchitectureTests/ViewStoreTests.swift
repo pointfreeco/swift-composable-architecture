@@ -19,21 +19,18 @@ final class ViewStoreTests: XCTestCase {
 
     let viewStore = ViewStore(store)
 
-    var count = 0
+    var emissionCount = 0
     viewStore.publisher
-      .sink { _ in count += 1 }
+      .sink { _ in emissionCount += 1 }
       .store(in: &self.cancellables)
 
-    XCTAssertEqual(count, 1)
-
+    XCTAssertEqual(emissionCount, 1)
     viewStore.send(())
-    XCTAssertEqual(count, 1)
-
+    XCTAssertEqual(emissionCount, 1)
     viewStore.send(())
-    XCTAssertEqual(count, 1)
-
+    XCTAssertEqual(emissionCount, 1)
     viewStore.send(())
-    XCTAssertEqual(count, 1)
+    XCTAssertEqual(emissionCount, 1)
   }
 
   func testEqualityChecks() {
@@ -53,36 +50,24 @@ final class ViewStoreTests: XCTestCase {
     let viewStore3 = ViewStore(store3)
     let viewStore4 = ViewStore(store4)
 
-    viewStore1.publisher
-      .sink { _ in }
-      .store(in: &self.cancellables)
-    viewStore2.publisher
-      .sink { _ in }
-      .store(in: &self.cancellables)
-    viewStore3.publisher
-      .sink { _ in }
-      .store(in: &self.cancellables)
-    viewStore4.publisher
-      .sink { _ in }
-      .store(in: &self.cancellables)
+    viewStore1.publisher.sink { _ in }.store(in: &self.cancellables)
+    viewStore2.publisher.sink { _ in }.store(in: &self.cancellables)
+    viewStore3.publisher.sink { _ in }.store(in: &self.cancellables)
+    viewStore4.publisher.sink { _ in }.store(in: &self.cancellables)
+    viewStore1.publisher.name.sink { _ in }.store(in: &self.cancellables)
+    viewStore2.publisher.name.sink { _ in }.store(in: &self.cancellables)
+    viewStore3.publisher.name.sink { _ in }.store(in: &self.cancellables)
+    viewStore4.publisher.name.sink { _ in }.store(in: &self.cancellables)
 
     XCTAssertEqual(0, equalityChecks)
-
     viewStore4.send(())
-
-    XCTAssertEqual(28, equalityChecks)
-
+    XCTAssertEqual(42, equalityChecks)
     viewStore4.send(())
-
-    XCTAssertEqual(56, equalityChecks)
-
-    viewStore4.send(())
-
     XCTAssertEqual(84, equalityChecks)
-
     viewStore4.send(())
-
-    XCTAssertEqual(112, equalityChecks)
+    XCTAssertEqual(126, equalityChecks)
+    viewStore4.send(())
+    XCTAssertEqual(168, equalityChecks)
   }
 }
 
