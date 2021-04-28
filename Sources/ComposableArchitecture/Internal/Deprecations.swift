@@ -115,7 +115,6 @@ extension AlertState.Button {
 extension Store {
   @_disfavoredOverload
   @available(*, deprecated, renamed: "publisherScope(state:)")
-  @_disfavoredOverload
   public func scope<P: Publisher, LocalState>(
     state toLocalState: @escaping (AnyPublisher<State, Never>) -> P
   ) -> AnyPublisher<Store<LocalState, Action>, Never>
@@ -125,7 +124,6 @@ extension Store {
 
   @_disfavoredOverload
   @available(*, deprecated, renamed: "publisherScope(state:action:)")
-  @_disfavoredOverload
   public func scope<P: Publisher, LocalState, LocalAction>(
     state toLocalState: @escaping (AnyPublisher<State, Never>) -> P,
     action fromLocalAction: @escaping (LocalAction) -> Action
