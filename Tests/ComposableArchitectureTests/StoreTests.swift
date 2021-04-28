@@ -132,7 +132,7 @@ final class StoreTests: XCTestCase {
         return count
       })
 
-    XCTAssertEqual(numCalls1, 2)
+    XCTAssertEqual(numCalls1, 1)
   }
 
   func testScopeCallCount2() {
@@ -170,33 +170,33 @@ final class StoreTests: XCTestCase {
     _ = ViewStore(store3)
     let viewStore4 = ViewStore(store4)
 
+    XCTAssertEqual(numCalls1, 1)
+    XCTAssertEqual(numCalls2, 1)
+    XCTAssertEqual(numCalls3, 1)
+
+    viewStore4.send(())
+
     XCTAssertEqual(numCalls1, 2)
     XCTAssertEqual(numCalls2, 2)
     XCTAssertEqual(numCalls3, 2)
 
     viewStore4.send(())
 
+    XCTAssertEqual(numCalls1, 3)
+    XCTAssertEqual(numCalls2, 3)
+    XCTAssertEqual(numCalls3, 3)
+
+    viewStore4.send(())
+
     XCTAssertEqual(numCalls1, 4)
+    XCTAssertEqual(numCalls2, 4)
+    XCTAssertEqual(numCalls3, 4)
+
+    viewStore4.send(())
+
+    XCTAssertEqual(numCalls1, 5)
     XCTAssertEqual(numCalls2, 5)
-    XCTAssertEqual(numCalls3, 6)
-
-    viewStore4.send(())
-
-    XCTAssertEqual(numCalls1, 6)
-    XCTAssertEqual(numCalls2, 8)
-    XCTAssertEqual(numCalls3, 10)
-
-    viewStore4.send(())
-
-    XCTAssertEqual(numCalls1, 8)
-    XCTAssertEqual(numCalls2, 11)
-    XCTAssertEqual(numCalls3, 14)
-
-    viewStore4.send(())
-
-    XCTAssertEqual(numCalls1, 10)
-    XCTAssertEqual(numCalls2, 14)
-    XCTAssertEqual(numCalls3, 18)
+    XCTAssertEqual(numCalls3, 5)
   }
 
   func testSynchronousEffectsSentAfterSinking() {
@@ -403,5 +403,37 @@ final class StoreTests: XCTestCase {
       $0 = 2
     }
     subject.send(completion: .finished)
+  }
+
+  func testCoalesceSynchronousActions() {
+    let store = Store(
+      initialState: 0,
+      reducer: Reducer<Int, Int, Void> { state, action, _ in
+        switch action {
+        case 0:
+          return .merge(
+            Effect(value: 1),
+            Effect(value: 2),
+            Effect(value: 3)
+          )
+        default:
+          state = action
+          return .none
+        }
+      },
+      environment: ()
+    )
+
+    var emissions: [Int] = []
+    let viewStore = ViewStore(store)
+    viewStore.publisher
+      .sink { emissions.append($0) }
+      .store(in: &self.cancellables)
+
+    XCTAssertEqual(emissions, [0])
+
+    viewStore.send(0)
+
+    XCTAssertEqual(emissions, [0, 3])
   }
 }
