@@ -97,10 +97,7 @@ public struct LoginView: View {
         .padding(.horizontal)
       }
     }
-    .navigationBarTitle("Login")
-    // NB: This is necessary to clear the bar items from the game.
-    .navigationBarItems(trailing: EmptyView())
-  }
+    .navigationBarTitle("Login")  }
 }
 
 extension LoginAction {
