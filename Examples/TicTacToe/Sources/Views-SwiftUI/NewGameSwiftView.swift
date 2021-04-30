@@ -6,11 +6,20 @@ import SwiftUI
 import TicTacToeCommon
 
 public struct NewGameView: View {
+  let store: Store<NewGameState, NewGameAction>
+
   struct ViewState: Equatable {
     var isGameActive: Bool
     var isLetsPlayButtonDisabled: Bool
     var oPlayerName: String
     var xPlayerName: String
+
+    init(state: NewGameState) {
+      self.isGameActive = state.game != nil
+      self.isLetsPlayButtonDisabled = state.oPlayerName.isEmpty || state.xPlayerName.isEmpty
+      self.oPlayerName = state.oPlayerName
+      self.xPlayerName = state.xPlayerName
+    }
   }
 
   enum ViewAction {
@@ -21,14 +30,12 @@ public struct NewGameView: View {
     case xPlayerNameChanged(String)
   }
 
-  let store: Store<NewGameState, NewGameAction>
-
   public init(store: Store<NewGameState, NewGameAction>) {
     self.store = store
   }
 
   public var body: some View {
-    WithViewStore(self.store.scope(state: { $0.view }, action: NewGameAction.view)) { viewStore in
+    WithViewStore(self.store.scope(state: ViewState.init, action: NewGameAction.init)) { viewStore in
       ScrollView {
         VStack(spacing: 16) {
           VStack(alignment: .leading) {
@@ -77,30 +84,19 @@ public struct NewGameView: View {
   }
 }
 
-extension NewGameState {
-  var view: NewGameView.ViewState {
-    NewGameView.ViewState(
-      isGameActive: self.game != nil,
-      isLetsPlayButtonDisabled: self.oPlayerName.isEmpty || self.xPlayerName.isEmpty,
-      oPlayerName: self.oPlayerName,
-      xPlayerName: self.xPlayerName
-    )
-  }
-}
-
 extension NewGameAction {
-  static func view(_ viewAction: NewGameView.ViewAction) -> Self {
-    switch viewAction {
+  init(action: NewGameView.ViewAction) {
+    switch action {
     case .gameDismissed:
-      return .gameDismissed
+      self = .gameDismissed
     case .letsPlayButtonTapped:
-      return .letsPlayButtonTapped
+      self = .letsPlayButtonTapped
     case .logoutButtonTapped:
-      return .logoutButtonTapped
+      self = .logoutButtonTapped
     case let .oPlayerNameChanged(name):
-      return .oPlayerNameChanged(name)
+      self = .oPlayerNameChanged(name)
     case let .xPlayerNameChanged(name):
-      return .xPlayerNameChanged(name)
+      self = .xPlayerNameChanged(name)
     }
   }
 }
