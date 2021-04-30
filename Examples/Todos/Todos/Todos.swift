@@ -90,11 +90,13 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
 
 struct AppView: View {
   struct ViewState: Equatable {
-    var editMode: EditMode
-    var isClearCompletedButtonDisabled: Bool
+    let editMode: EditMode
+    let filter: Filter
+    let isClearCompletedButtonDisabled: Bool
 
     init(state: AppState) {
       self.editMode = state.editMode
+      self.filter = state.filter
       self.isClearCompletedButtonDisabled = !state.todos.contains(where: \.isComplete)
     }
   }
@@ -105,17 +107,15 @@ struct AppView: View {
     WithViewStore(self.store.scope(state: ViewState.init)) { viewStore in
       NavigationView {
         VStack(alignment: .leading) {
-          WithViewStore(self.store.scope(state: \.filter, action: AppAction.filterPicked)) {
-            filterViewStore in
-            Picker(
-              "Filter", selection: filterViewStore.binding(send: { $0 }).animation()
-            ) {
-              ForEach(Filter.allCases, id: \.self) { filter in
-                Text(filter.rawValue).tag(filter)
-              }
+          Picker(
+            "Filter",
+            selection: viewStore.binding(get: \.filter, send: AppAction.filterPicked).animation()
+          ) {
+            ForEach(Filter.allCases, id: \.self) { filter in
+              Text(filter.rawValue).tag(filter)
             }
-            .pickerStyle(SegmentedPickerStyle())
           }
+          .pickerStyle(SegmentedPickerStyle())
           .padding([.leading, .trailing])
 
           List {
