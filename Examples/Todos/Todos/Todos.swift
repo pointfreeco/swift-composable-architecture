@@ -121,7 +121,7 @@ struct AppView: View {
           }
         }
         .pickerStyle(SegmentedPickerStyle())
-        .padding([.leading, .trailing])
+        .padding(.horizontal)
 
         List {
           ForEachStore(
