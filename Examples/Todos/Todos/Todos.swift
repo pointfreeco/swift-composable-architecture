@@ -89,6 +89,14 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
 .debugActions(actionFormat: .labelsOnly)
 
 struct AppView: View {
+  let store: Store<AppState, AppAction>
+  @ObservedObject var viewStore: ViewStore<ViewState, AppAction>
+
+  init(store: Store<AppState, AppAction>) {
+    self.store = store
+    self.viewStore = ViewStore(self.store.scope(state: ViewState.init(state:)))
+  }
+
   struct ViewState: Equatable {
     let editMode: EditMode
     let filter: Filter
@@ -101,50 +109,46 @@ struct AppView: View {
     }
   }
 
-  let store: Store<AppState, AppAction>
-
   var body: some View {
-    WithViewStore(self.store.scope(state: ViewState.init)) { viewStore in
-      NavigationView {
-        VStack(alignment: .leading) {
-          Picker(
-            "Filter",
-            selection: viewStore.binding(get: \.filter, send: AppAction.filterPicked).animation()
-          ) {
-            ForEach(Filter.allCases, id: \.self) { filter in
-              Text(filter.rawValue).tag(filter)
-            }
-          }
-          .pickerStyle(SegmentedPickerStyle())
-          .padding([.leading, .trailing])
-
-          List {
-            ForEachStore(
-              self.store.scope(state: \.filteredTodos, action: AppAction.todo(id:action:)),
-              content: TodoView.init(store:)
-            )
-            .onDelete { viewStore.send(.delete($0)) }
-            .onMove { viewStore.send(.move($0, $1)) }
+    NavigationView {
+      VStack(alignment: .leading) {
+        Picker(
+          "Filter",
+          selection: self.viewStore.binding(get: \.filter, send: AppAction.filterPicked).animation()
+        ) {
+          ForEach(Filter.allCases, id: \.self) { filter in
+            Text(filter.rawValue).tag(filter)
           }
         }
-        .navigationBarTitle("Todos")
-        .navigationBarItems(
-          trailing: HStack(spacing: 20) {
-            EditButton()
-            Button("Clear Completed") {
-              viewStore.send(.clearCompletedButtonTapped, animation: .default)
-            }
-            .disabled(viewStore.isClearCompletedButtonDisabled)
-            Button("Add Todo") { viewStore.send(.addTodoButtonTapped, animation: .default) }
+        .pickerStyle(SegmentedPickerStyle())
+        .padding([.leading, .trailing])
+
+        List {
+          ForEachStore(
+            self.store.scope(state: \.filteredTodos, action: AppAction.todo(id:action:)),
+            content: TodoView.init(store:)
+          )
+            .onDelete { self.viewStore.send(.delete($0)) }
+            .onMove { self.viewStore.send(.move($0, $1)) }
+        }
+      }
+      .navigationBarTitle("Todos")
+      .navigationBarItems(
+        trailing: HStack(spacing: 20) {
+          EditButton()
+          Button("Clear Completed") {
+            self.viewStore.send(.clearCompletedButtonTapped, animation: .default)
           }
-        )
+          .disabled(self.viewStore.isClearCompletedButtonDisabled)
+          Button("Add Todo") { self.viewStore.send(.addTodoButtonTapped, animation: .default) }
+        }
+      )
         .environment(
           \.editMode,
-          viewStore.binding(get: \.editMode, send: AppAction.editModeChanged)
-        )
-      }
-      .navigationViewStyle(StackNavigationViewStyle())
+          self.viewStore.binding(get: \.editMode, send: AppAction.editModeChanged)
+      )
     }
+    .navigationViewStyle(StackNavigationViewStyle())
   }
 }
 
