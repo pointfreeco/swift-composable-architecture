@@ -97,7 +97,7 @@ struct LoadThenNavigateListView: View {
               destination: IfLetStore(
                 self.store.scope(
                   state: { $0.selection?.value }, action: LoadThenNavigateListAction.counter),
-                then: CounterView.init(store:)
+                then: { CounterView(store: $0) }
               ),
               tag: row.id,
               selection: viewStore.binding(

@@ -79,17 +79,27 @@ struct LoadThenPresentView: View {
         }
       }
       .sheet(
-        isPresented: viewStore.binding(
-          get: { $0.isSheetPresented },
-          send: LoadThenPresentAction.setSheet(isPresented:)
-        )
-      ) {
-        IfLetStore(
-          self.store.scope(
-            state: { $0.optionalCounter }, action: LoadThenPresentAction.optionalCounter),
-          then: CounterView.init(store:)
-        )
-      }
+        store: self.store.scope(
+          state: \.optionalCounter
+//          action: LoadThenPresentAction.optionalCounter
+        ),
+        dismiss: .setSheet(isPresented: false),
+        content: { CounterView(store: $0.scope(state: { $0 }, action: LoadThenPresentAction.optionalCounter)) }
+      )
+//      .sheet(
+//        isPresented: viewStore.binding(
+//          get: \.isSheetPresented,
+//          send: LoadThenPresentAction.setSheet(isPresented:)
+//        )
+//      ) {
+//        IfLetStore(
+//          self.store.scope(
+//            state: \.optionalCounter,
+//            action: LoadThenPresentAction.optionalCounter
+//          ),
+//          then: { CounterView(store: $0) }
+//        )
+//      }
       .navigationBarTitle("Load and present")
     }
   }

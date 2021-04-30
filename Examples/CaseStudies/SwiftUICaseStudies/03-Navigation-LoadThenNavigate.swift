@@ -71,7 +71,7 @@ struct LoadThenNavigateView: View {
             destination: IfLetStore(
               self.store.scope(
                 state: { $0.optionalCounter }, action: LoadThenNavigateAction.optionalCounter),
-              then: CounterView.init(store:)
+              then: { CounterView(store: $0) }
             ),
             isActive: viewStore.binding(
               get: { $0.isNavigationActive },

@@ -33,6 +33,7 @@ let counterReducer = Reducer<CounterState, CounterAction, CounterEnvironment> { 
 
 struct CounterView: View {
   let store: Store<CounterState, CounterAction>
+  @Environment(\.presentationMode) @Binding var presentationMode
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -41,7 +42,12 @@ struct CounterView: View {
         Text("\(viewStore.count)")
           .font(Font.body.monospacedDigit())
         Button("+") { viewStore.send(.incrementButtonTapped) }
+        Button("Done") {
+          self.presentationMode.dismiss()
+        }
       }
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
+      .background(Color.red)
     }
   }
 }

@@ -88,7 +88,7 @@ struct NavigateAndLoadListView: View {
               destination: IfLetStore(
                 self.store.scope(
                   state: { $0.selection?.value }, action: NavigateAndLoadListAction.counter),
-                then: CounterView.init(store:),
+                then: { CounterView(store: $0) },
                 else: { ActivityIndicator() }
               ),
               tag: row.id,

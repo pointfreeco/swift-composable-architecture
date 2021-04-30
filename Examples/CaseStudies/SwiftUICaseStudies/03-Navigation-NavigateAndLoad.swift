@@ -70,7 +70,7 @@ struct NavigateAndLoadView: View {
             destination: IfLetStore(
               self.store.scope(
                 state: { $0.optionalCounter }, action: NavigateAndLoadAction.optionalCounter),
-              then: CounterView.init(store:),
+              then: { CounterView(store: $0) },
               else: { ActivityIndicator() }
             ),
             isActive: viewStore.binding(
