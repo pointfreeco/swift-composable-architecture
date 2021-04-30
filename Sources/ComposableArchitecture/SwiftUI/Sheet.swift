@@ -16,6 +16,24 @@ extension View {
       )
     }
   }
+
+  public func sheet<State, Action, LocalState, LocalAction, Content: View>(
+    store: Store<State, Action>,
+    state: @escaping (State) -> LocalState?,
+    action: @escaping (LocalAction) -> Action,
+    dismiss: Action,
+    @ViewBuilder content: @escaping (Store<LocalState, LocalAction>) -> Content
+  ) -> some View {
+    WithViewStore(store.scope(state: { state($0) != nil })) { viewStore in
+      self.sheet(
+        isPresented: viewStore.binding(send: dismiss),
+        onDismiss: { viewStore.send(dismiss) },
+        content: {
+          LastNonEmptyView(store.scope(state: state, action: action), then: content)
+        }
+      )
+    }
+  }
 }
 
 private struct LastNonEmptyView<State, Action, Content>: View where Content: View {

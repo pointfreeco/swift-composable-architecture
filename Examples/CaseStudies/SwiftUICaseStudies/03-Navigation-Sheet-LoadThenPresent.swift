@@ -79,13 +79,19 @@ struct LoadThenPresentView: View {
         }
       }
       .sheet(
-        store: self.store.scope(
-          state: \.optionalCounter
-//          action: LoadThenPresentAction.optionalCounter
-        ),
+        store: self.store,
+        state: \.optionalCounter,
+        action: LoadThenPresentAction.optionalCounter,
         dismiss: .setSheet(isPresented: false),
-        content: { CounterView(store: $0.scope(state: { $0 }, action: LoadThenPresentAction.optionalCounter)) }
+        content: { CounterView(store: $0) }
       )
+
+//      .sheet(
+//        store: self.store.scope(state: \.optionalCounter),
+//        dismiss: .setSheet(isPresented: false),
+//        content: { CounterView(store: $0.scope(state: { $0 }, action: LoadThenPresentAction.optionalCounter)) }
+//      )
+
 //      .sheet(
 //        isPresented: viewStore.binding(
 //          get: \.isSheetPresented,
