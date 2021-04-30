@@ -4,21 +4,31 @@ import GameCore
 import UIKit
 
 public final class GameViewController: UIViewController {
+  let store: Store<GameState, GameAction>
+  let viewStore: ViewStore<ViewState, GameAction>
+  private var cancellables: Set<AnyCancellable> = []
+
   struct ViewState: Equatable {
     let board: [[String]]
     let isGameEnabled: Bool
     let isPlayAgainButtonHidden: Bool
     let title: String?
+
+    init(state: GameState) {
+      self.board = state.board.map { $0.map { $0?.label ?? "" } }
+      self.isGameEnabled = !state.board.hasWinner && !state.board.isFilled
+      self.isPlayAgainButtonHidden = !state.board.hasWinner && !state.board.isFilled
+      self.title = state.board.hasWinner
+        ? "Winner! Congrats \(state.currentPlayerName)!"
+        : state.board.isFilled
+          ? "Tied game!"
+          : "\(state.currentPlayerName), place your \(state.currentPlayer.label)"
+    }
   }
-
-  let store: Store<GameState, GameAction>
-  let viewStore: ViewStore<ViewState, GameAction>
-
-  private var cancellables: Set<AnyCancellable> = []
 
   init(store: Store<GameState, GameAction>) {
     self.store = store
-    self.viewStore = ViewStore(store.scope(state: { $0.view }))
+    self.viewStore = ViewStore(store.scope(state: ViewState.init))
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -156,20 +166,5 @@ public final class GameViewController: UIViewController {
 
   @objc private func playAgainButtonTapped() {
     self.viewStore.send(.playAgainButtonTapped)
-  }
-}
-
-extension GameState {
-  var view: GameViewController.ViewState {
-    GameViewController.ViewState(
-      board: self.board.map { $0.map { $0?.label ?? "" } },
-      isGameEnabled: !self.board.hasWinner && !self.board.isFilled,
-      isPlayAgainButtonHidden: !self.board.hasWinner && !self.board.isFilled,
-      title: self.board.hasWinner
-        ? "Winner! Congrats \(self.currentPlayerName)!"
-        : self.board.isFilled
-          ? "Tied game!"
-          : "\(self.currentPlayerName), place your \(self.currentPlayer.label)"
-    )
   }
 }

@@ -13,7 +13,7 @@ class WebSocketTests: XCTestCase {
       initialState: .init(),
       reducer: webSocketReducer,
       environment: WebSocketEnvironment(
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
+        mainQueue: .immediate.eraseToAnyScheduler(),
         webSocket: .mock(
           open: { _, _, _ in socketSubject.eraseToEffect() },
           receive: { _ in receiveSubject.eraseToEffect() },
@@ -61,7 +61,7 @@ class WebSocketTests: XCTestCase {
       initialState: .init(),
       reducer: webSocketReducer,
       environment: WebSocketEnvironment(
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
+        mainQueue: .immediate.eraseToAnyScheduler(),
         webSocket: .mock(
           open: { _, _, _ in socketSubject.eraseToEffect() },
           receive: { _ in receiveSubject.eraseToEffect() },
@@ -142,7 +142,7 @@ class WebSocketTests: XCTestCase {
       initialState: .init(),
       reducer: webSocketReducer,
       environment: WebSocketEnvironment(
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
+        mainQueue: .immediate.eraseToAnyScheduler(),
         webSocket: .mock(
           cancel: { _, _, _ in .fireAndForget { socketSubject.send(completion: .finished) } },
           open: { _, _, _ in socketSubject.eraseToEffect() },

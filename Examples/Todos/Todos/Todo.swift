@@ -40,7 +40,7 @@ struct TodoView: View {
 
         TextField(
           "Untitled Todo",
-          text: viewStore.binding(get: { $0.description }, send: TodoAction.textFieldChanged)
+          text: viewStore.binding(get: \.description, send: TodoAction.textFieldChanged)
         )
       }
       .foregroundColor(viewStore.isComplete ? .gray : nil)

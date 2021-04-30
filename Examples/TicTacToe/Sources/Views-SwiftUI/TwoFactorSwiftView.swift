@@ -98,7 +98,7 @@ struct TwoFactorView_Previews: PreviewProvider {
                 Effect(value: .init(token: "deadbeef", twoFactorRequired: false))
               }
             ),
-            mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+            mainQueue: .main
           )
         )
       )

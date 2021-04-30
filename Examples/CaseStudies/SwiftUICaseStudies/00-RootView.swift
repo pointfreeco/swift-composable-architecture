@@ -14,7 +14,7 @@ struct RootView: View {
               "Basics",
               destination: CounterDemoView(
                 store: self.store.scope(
-                  state: { $0.counter },
+                  state: \.counter,
                   action: RootAction.counter
                 )
               )
@@ -24,7 +24,7 @@ struct RootView: View {
               "Pullback and combine",
               destination: TwoCountersView(
                 store: self.store.scope(
-                  state: { $0.twoCounters },
+                  state: \.twoCounters,
                   action: RootAction.twoCounters
                 )
               )
@@ -34,7 +34,7 @@ struct RootView: View {
               "Bindings",
               destination: BindingBasicsView(
                 store: self.store.scope(
-                  state: { $0.bindingBasics },
+                  state: \.bindingBasics,
                   action: RootAction.bindingBasics
                 )
               )
@@ -44,7 +44,7 @@ struct RootView: View {
               "Form bindings",
               destination: BindingFormView(
                 store: self.store.scope(
-                  state: { $0.bindingForm },
+                  state: \.bindingForm,
                   action: RootAction.bindingForm
                 )
               )
@@ -54,7 +54,7 @@ struct RootView: View {
               "Optional state",
               destination: OptionalBasicsView(
                 store: self.store.scope(
-                  state: { $0.optionalBasics },
+                  state: \.optionalBasics,
                   action: RootAction.optionalBasics
                 )
               )
@@ -64,7 +64,7 @@ struct RootView: View {
               "Shared state",
               destination: SharedStateView(
                 store: self.store.scope(
-                  state: { $0.shared },
+                  state: \.shared,
                   action: RootAction.shared
                 )
               )
@@ -74,7 +74,7 @@ struct RootView: View {
               "Alerts and Action Sheets",
               destination: AlertAndSheetView(
                 store: self.store.scope(
-                  state: { $0.alertAndActionSheet },
+                  state: \.alertAndActionSheet,
                   action: RootAction.alertAndActionSheet
                 )
               )
@@ -84,7 +84,7 @@ struct RootView: View {
               "Animations",
               destination: AnimationsView(
                 store: self.store.scope(
-                  state: { $0.animation },
+                  state: \.animation,
                   action: RootAction.animation
                 )
               )
@@ -96,7 +96,7 @@ struct RootView: View {
               "Basics",
               destination: EffectsBasicsView(
                 store: self.store.scope(
-                  state: { $0.effectsBasics },
+                  state: \.effectsBasics,
                   action: RootAction.effectsBasics
                 )
               )
@@ -106,7 +106,7 @@ struct RootView: View {
               "Cancellation",
               destination: EffectsCancellationView(
                 store: self.store.scope(
-                  state: { $0.effectsCancellation },
+                  state: \.effectsCancellation,
                   action: RootAction.effectsCancellation)
               )
             )
@@ -115,7 +115,7 @@ struct RootView: View {
               "Long-living effects",
               destination: LongLivingEffectsView(
                 store: self.store.scope(
-                  state: { $0.longLivingEffects },
+                  state: \.longLivingEffects,
                   action: RootAction.longLivingEffects
                 )
               )
@@ -125,7 +125,7 @@ struct RootView: View {
               "Timers",
               destination: TimersView(
                 store: self.store.scope(
-                  state: { $0.timers },
+                  state: \.timers,
                   action: RootAction.timers
                 )
               )
@@ -135,7 +135,7 @@ struct RootView: View {
               "System environment",
               destination: MultipleDependenciesView(
                 store: self.store.scope(
-                  state: { $0.multipleDependencies },
+                  state: \.multipleDependencies,
                   action: RootAction.multipleDependencies
                 )
               )
@@ -145,7 +145,7 @@ struct RootView: View {
               "Web socket",
               destination: WebSocketView(
                 store: self.store.scope(
-                  state: { $0.webSocket },
+                  state: \.webSocket,
                   action: RootAction.webSocket
                 )
               )
@@ -157,7 +157,7 @@ struct RootView: View {
               "Navigate and load data",
               destination: NavigateAndLoadView(
                 store: self.store.scope(
-                  state: { $0.navigateAndLoad },
+                  state: \.navigateAndLoad,
                   action: RootAction.navigateAndLoad
                 )
               )
@@ -167,7 +167,7 @@ struct RootView: View {
               "Load data then navigate",
               destination: LoadThenNavigateView(
                 store: self.store.scope(
-                  state: { $0.loadThenNavigate },
+                  state: \.loadThenNavigate,
                   action: RootAction.loadThenNavigate
                 )
               )
@@ -177,7 +177,7 @@ struct RootView: View {
               "Lists: Navigate and load data",
               destination: NavigateAndLoadListView(
                 store: self.store.scope(
-                  state: { $0.navigateAndLoadList },
+                  state: \.navigateAndLoadList,
                   action: RootAction.navigateAndLoadList
                 )
               )
@@ -187,7 +187,7 @@ struct RootView: View {
               "Lists: Load data then navigate",
               destination: LoadThenNavigateListView(
                 store: self.store.scope(
-                  state: { $0.loadThenNavigateList },
+                  state: \.loadThenNavigateList,
                   action: RootAction.loadThenNavigateList
                 )
               )
@@ -197,7 +197,7 @@ struct RootView: View {
               "Sheets: Present and load data",
               destination: PresentAndLoadView(
                 store: self.store.scope(
-                  state: { $0.presentAndLoad },
+                  state: \.presentAndLoad,
                   action: RootAction.presentAndLoad
                 )
               )
@@ -207,7 +207,7 @@ struct RootView: View {
               "Sheets: Load data then present",
               destination: LoadThenPresentView(
                 store: self.store.scope(
-                  state: { $0.loadThenPresent },
+                  state: \.loadThenPresent,
                   action: RootAction.loadThenPresent
                 )
               )
@@ -219,7 +219,7 @@ struct RootView: View {
               "Reusable favoriting component",
               destination: EpisodesView(
                 store: self.store.scope(
-                  state: { $0.episodes },
+                  state: \.episodes,
                   action: RootAction.episodes
                 )
               )
@@ -229,7 +229,7 @@ struct RootView: View {
               "Reusable offline download component",
               destination: CitiesView(
                 store: self.store.scope(
-                  state: { $0.map },
+                  state: \.map,
                   action: RootAction.map
                 )
               )
@@ -239,7 +239,7 @@ struct RootView: View {
               "Lifecycle",
               destination: LifecycleDemoView(
                 store: self.store.scope(
-                  state: { $0.lifecycle },
+                  state: \.lifecycle,
                   action: RootAction.lifecycle
                 )
               )
@@ -249,7 +249,7 @@ struct RootView: View {
               "Strict reducers",
               destination: DieRollView(
                 store: self.store.scope(
-                  state: { $0.dieRoll },
+                  state: \.dieRoll,
                   action: RootAction.dieRoll
                 )
               )
@@ -259,7 +259,7 @@ struct RootView: View {
               "Elm-like subscriptions",
               destination: ClockView(
                 store: self.store.scope(
-                  state: { $0.clock },
+                  state: \.clock,
                   action: RootAction.clock
                 )
               )
@@ -269,7 +269,7 @@ struct RootView: View {
               "Recursive state and actions",
               destination: NestedView(
                 store: self.store.scope(
-                  state: { $0.nested },
+                  state: \.nested,
                   action: RootAction.nested
                 )
               )

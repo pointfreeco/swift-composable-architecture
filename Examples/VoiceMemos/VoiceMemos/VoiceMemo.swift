@@ -129,7 +129,7 @@ struct VoiceMemoView: View {
           TextField(
             "Untitled, \(dateFormatter.string(from: self.viewStore.date))",
             text: self.viewStore.binding(
-              get: { $0.title }, send: VoiceMemoAction.titleTextFieldChanged)
+              get: \.title, send: VoiceMemoAction.titleTextFieldChanged)
           )
 
           Spacer()

@@ -83,7 +83,7 @@ struct LifecycleDemoView: View {
         Button("Toggle Timer") { viewStore.send(.toggleTimerButtonTapped) }
 
         IfLetStore(
-          self.store.scope(state: { $0.count }, action: LifecycleDemoAction.timer),
+          self.store.scope(state: \.count, action: LifecycleDemoAction.timer),
           then: TimerView.init(store:)
         )
 
@@ -158,7 +158,7 @@ struct Lifecycle_Previews: PreviewProvider {
             initialState: .init(),
             reducer: lifecycleDemoReducer,
             environment: .init(
-              mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+              mainQueue: .main
             )
           )
         )

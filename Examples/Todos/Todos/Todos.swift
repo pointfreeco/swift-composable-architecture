@@ -16,7 +16,7 @@ struct AppState: Equatable {
     switch filter {
     case .active: return self.todos.filter { !$0.isComplete }
     case .all: return self.todos
-    case .completed: return self.todos.filter { $0.isComplete }
+    case .completed: return self.todos.filter(\.isComplete)
     }
   }
 }
@@ -50,7 +50,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
       return .none
 
     case .clearCompletedButtonTapped:
-      state.todos.removeAll(where: { $0.isComplete })
+      state.todos.removeAll(where: \.isComplete)
       return .none
 
     case let .delete(indexSet):
@@ -92,15 +92,20 @@ struct AppView: View {
   struct ViewState: Equatable {
     var editMode: EditMode
     var isClearCompletedButtonDisabled: Bool
+
+    init(state: AppState) {
+      self.editMode = state.editMode
+      self.isClearCompletedButtonDisabled = !state.todos.contains(where: \.isComplete)
+    }
   }
 
   let store: Store<AppState, AppAction>
 
   var body: some View {
-    WithViewStore(self.store.scope(state: { $0.view })) { viewStore in
+    WithViewStore(self.store.scope(state: ViewState.init)) { viewStore in
       NavigationView {
         VStack(alignment: .leading) {
-          WithViewStore(self.store.scope(state: { $0.filter }, action: AppAction.filterPicked)) {
+          WithViewStore(self.store.scope(state: \.filter, action: AppAction.filterPicked)) {
             filterViewStore in
             Picker(
               "Filter", selection: filterViewStore.binding(send: { $0 }).animation()
@@ -115,7 +120,7 @@ struct AppView: View {
 
           List {
             ForEachStore(
-              self.store.scope(state: { $0.filteredTodos }, action: AppAction.todo(id:action:)),
+              self.store.scope(state: \.filteredTodos, action: AppAction.todo(id:action:)),
               content: TodoView.init(store:)
             )
             .onDelete { viewStore.send(.delete($0)) }
@@ -135,20 +140,11 @@ struct AppView: View {
         )
         .environment(
           \.editMode,
-          viewStore.binding(get: { $0.editMode }, send: AppAction.editModeChanged)
+          viewStore.binding(get: \.editMode, send: AppAction.editModeChanged)
         )
       }
       .navigationViewStyle(StackNavigationViewStyle())
     }
-  }
-}
-
-extension AppState {
-  var view: AppView.ViewState {
-    .init(
-      editMode: self.editMode,
-      isClearCompletedButtonDisabled: !self.todos.contains(where: { $0.isComplete })
-    )
   }
 }
 
@@ -160,7 +156,7 @@ extension IdentifiedArray where ID == UUID, Element == Todo {
         .sorted(by: { lhs, rhs in
           (rhs.element.isComplete && !lhs.element.isComplete) || lhs.offset < rhs.offset
         })
-        .map { $0.element }
+        .map(\.element)
     )
   }
 }
@@ -192,7 +188,7 @@ struct AppView_Previews: PreviewProvider {
         initialState: AppState(todos: .mock),
         reducer: appReducer,
         environment: AppEnvironment(
-          mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+          mainQueue: .main,
           uuid: UUID.init
         )
       )

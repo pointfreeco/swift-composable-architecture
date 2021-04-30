@@ -4,11 +4,22 @@ import NewGameCore
 import UIKit
 
 class NewGameViewController: UIViewController {
+  let store: Store<NewGameState, NewGameAction>
+  let viewStore: ViewStore<ViewState, ViewAction>
+  private var cancellables: Set<AnyCancellable> = []
+
   struct ViewState: Equatable {
     let isGameActive: Bool
     let isLetsPlayButtonEnabled: Bool
     let oPlayerName: String?
     let xPlayerName: String?
+
+    public init(state: NewGameState) {
+      self.isGameActive = state.game != nil
+      self.isLetsPlayButtonEnabled = !state.oPlayerName.isEmpty && !state.xPlayerName.isEmpty
+      self.oPlayerName = state.oPlayerName
+      self.xPlayerName = state.xPlayerName
+    }
   }
 
   enum ViewAction {
@@ -19,14 +30,9 @@ class NewGameViewController: UIViewController {
     case xPlayerNameChanged(String?)
   }
 
-  let store: Store<NewGameState, NewGameAction>
-  let viewStore: ViewStore<ViewState, ViewAction>
-
-  private var cancellables: Set<AnyCancellable> = []
-
   init(store: Store<NewGameState, NewGameAction>) {
     self.store = store
-    self.viewStore = ViewStore(store.scope(state: { $0.view }, action: NewGameAction.view))
+    self.viewStore = ViewStore(store.scope(state: ViewState.init, action: NewGameAction.init))
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -116,7 +122,7 @@ class NewGameViewController: UIViewController {
       .store(in: &self.cancellables)
 
     self.store
-      .scope(state: { $0.game }, action: NewGameAction.game)
+      .scope(state: \.game, action: NewGameAction.game)
       .ifLet(
         then: { [weak self] gameStore in
           self?.navigationController?.pushViewController(
@@ -157,30 +163,19 @@ class NewGameViewController: UIViewController {
   }
 }
 
-extension NewGameState {
-  var view: NewGameViewController.ViewState {
-    .init(
-      isGameActive: self.game != nil,
-      isLetsPlayButtonEnabled: !self.oPlayerName.isEmpty && !self.xPlayerName.isEmpty,
-      oPlayerName: self.oPlayerName,
-      xPlayerName: self.xPlayerName
-    )
-  }
-}
-
 extension NewGameAction {
-  static func view(_ action: NewGameViewController.ViewAction) -> Self {
+  init(action: NewGameViewController.ViewAction) {
     switch action {
     case .gameDismissed:
-      return .gameDismissed
+      self = .gameDismissed
     case .letsPlayButtonTapped:
-      return .letsPlayButtonTapped
+      self = .letsPlayButtonTapped
     case .logoutButtonTapped:
-      return .logoutButtonTapped
+      self = .logoutButtonTapped
     case let .oPlayerNameChanged(name):
-      return .oPlayerNameChanged(name ?? "")
+      self = .oPlayerNameChanged(name ?? "")
     case let .xPlayerNameChanged(name):
-      return .xPlayerNameChanged(name ?? "")
+      self = .xPlayerNameChanged(name ?? "")
     }
   }
 }

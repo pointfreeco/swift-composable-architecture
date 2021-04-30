@@ -129,7 +129,7 @@ struct LoginView_Previews: PreviewProvider {
               login: { _ in Effect(value: .init(token: "deadbeef", twoFactorRequired: false)) },
               twoFactor: { _ in Effect(value: .init(token: "deadbeef", twoFactorRequired: false)) }
             ),
-            mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+            mainQueue: .main
           )
         )
       )

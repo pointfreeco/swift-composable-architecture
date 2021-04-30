@@ -20,7 +20,7 @@ struct RootView: View {
         return AnyView(
           NavigationLink(
             destination: FocusView(
-              store: self.store.scope(state: { $0.focus }, action: RootAction.focus)
+              store: self.store.scope(state: \.focus, action: RootAction.focus)
             ),
             label: {
               Text("Focus")
