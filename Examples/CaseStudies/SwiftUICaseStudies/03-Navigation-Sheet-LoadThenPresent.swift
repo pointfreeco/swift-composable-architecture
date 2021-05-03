@@ -12,13 +12,11 @@ private let readMe = """
 struct LoadThenPresentState: Equatable {
   var optionalCounter: CounterState?
   var isActivityIndicatorVisible = false
-
-  var isSheetPresented: Bool { self.optionalCounter != nil }
 }
 
 enum LoadThenPresentAction {
-  case optionalCounter(CounterAction)
-  case setSheet(isPresented: Bool)
+  case loadButtonTapped
+  case optionalCounter(PresentationAction<CounterState, CounterAction, Bool>)
   case setSheetIsPresentedDelayCompleted
 }
 
@@ -28,8 +26,7 @@ struct LoadThenPresentEnvironment {
 
 let loadThenPresentReducer =
   counterReducer
-  .optional()
-  .pullback(
+  .presented(
     state: \.optionalCounter,
     action: /LoadThenPresentAction.optionalCounter,
     environment: { _ in CounterEnvironment() }
@@ -39,22 +36,21 @@ let loadThenPresentReducer =
       LoadThenPresentState, LoadThenPresentAction, LoadThenPresentEnvironment
     > { state, action, environment in
       switch action {
-      case .setSheet(isPresented: true):
+      case .loadButtonTapped:
         state.isActivityIndicatorVisible = true
         return Effect(value: .setSheetIsPresentedDelayCompleted)
           .delay(for: 1, scheduler: environment.mainQueue)
           .eraseToEffect()
 
-      case .setSheet(isPresented: false):
-        state.optionalCounter = nil
+      case .optionalCounter(.presented(.incrementButtonTapped)):
+        return .none
+
+      case .optionalCounter:
         return .none
 
       case .setSheetIsPresentedDelayCompleted:
         state.isActivityIndicatorVisible = false
         state.optionalCounter = CounterState()
-        return .none
-
-      case .optionalCounter:
         return .none
       }
     }
@@ -67,7 +63,7 @@ struct LoadThenPresentView: View {
     WithViewStore(self.store) { viewStore in
       Form {
         Section(header: Text(readMe)) {
-          Button(action: { viewStore.send(.setSheet(isPresented: true)) }) {
+          Button(action: { viewStore.send(.loadButtonTapped) }) {
             HStack {
               Text("Load optional counter")
               if viewStore.isActivityIndicatorVisible {
@@ -79,33 +75,12 @@ struct LoadThenPresentView: View {
         }
       }
       .sheet(
-        store: self.store,
-        state: \.optionalCounter,
-        action: LoadThenPresentAction.optionalCounter,
-        dismiss: .setSheet(isPresented: false),
+        store: self.store.scope(
+          state: \.optionalCounter,
+          action: LoadThenPresentAction.optionalCounter
+        ),
         content: { CounterView(store: $0) }
       )
-
-//      .sheet(
-//        store: self.store.scope(state: \.optionalCounter),
-//        dismiss: .setSheet(isPresented: false),
-//        content: { CounterView(store: $0.scope(state: { $0 }, action: LoadThenPresentAction.optionalCounter)) }
-//      )
-
-//      .sheet(
-//        isPresented: viewStore.binding(
-//          get: \.isSheetPresented,
-//          send: LoadThenPresentAction.setSheet(isPresented:)
-//        )
-//      ) {
-//        IfLetStore(
-//          self.store.scope(
-//            state: \.optionalCounter,
-//            action: LoadThenPresentAction.optionalCounter
-//          ),
-//          then: { CounterView(store: $0) }
-//        )
-//      }
       .navigationBarTitle("Load and present")
     }
   }
@@ -124,5 +99,132 @@ struct LoadThenPresentView_Previews: PreviewProvider {
         )
       )
     }
+  }
+}
+
+import CasePaths
+extension Reducer {
+
+  func cancellable(id: AnyHashable) -> Reducer {
+    .init { state, action, environment in
+      self.run(&state, action, environment).cancellable(id: id)
+    }
+  }
+
+  func presented<GlobalState, GlobalAction, GlobalEnvironment>(
+    state toLocalState: WritableKeyPath<GlobalState, State?>,
+    action toSheetAction: CasePath<GlobalAction, PresentationAction<State, Action, Bool>>,
+    environment: @escaping (GlobalEnvironment) -> Environment
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+    let id = UUID()
+    return self
+      .optional()
+      .pullback(
+        state: toLocalState,
+        action: toSheetAction .. /PresentationAction.presented,
+        environment: environment
+      )
+      .cancellable(id: id)
+      .combined(with: .init { state, action, environment in
+        guard let sheetAction = toSheetAction.extract(from: action)
+        else { return .none }
+
+        switch sheetAction {
+        case .presented(_):
+          return .none
+        case let .setPresentation(isPresented):
+          if !isPresented {
+            state[keyPath: toLocalState] = nil
+          }
+          return !isPresented
+            ? .cancel(id: id)
+            : .none
+        }
+      })
+  }
+  func presented<GlobalState, GlobalAction, GlobalEnvironment, Tag: Hashable>(
+    state toLocalState: WritableKeyPath<GlobalState, State?>,
+    action toSheetAction: CasePath<GlobalAction, PresentationAction<State, Action, Tag?>>,
+    environment: @escaping (GlobalEnvironment) -> Environment
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+    let id = UUID()
+    return self
+      .optional()
+      .pullback(
+        state: toLocalState,
+        action: toSheetAction .. /PresentationAction.presented,
+        environment: environment
+      )
+      .cancellable(id: id)
+      .combined(with: .init { state, action, environment in
+        guard let sheetAction = toSheetAction.extract(from: action)
+        else { return .none }
+
+        switch sheetAction {
+        case .presented(_):
+          return .none
+        case let .setPresentation(tag):
+          if tag == nil {
+            state[keyPath: toLocalState] = nil
+          }
+          return tag == nil
+            ? .cancel(id: id)
+            : .none
+        }
+      })
+  }
+}
+
+public enum PresentationAction<State, Action, Tag: Hashable> {
+  case presented(Action)
+  case setPresentation(Tag)
+}
+
+extension PresentationAction: Equatable where State: Equatable, Action: Equatable {}
+
+import SwiftUI
+
+extension View {
+  public func sheet<State, Action, Content: View>(
+    store: Store<State?, PresentationAction<State, Action, Bool>>,
+    @ViewBuilder content: @escaping (Store<State, Action>) -> Content
+  ) -> some View {
+    WithViewStore(store.scope(state: { $0 != nil })) { viewStore in
+      self.sheet(
+        isPresented: viewStore.binding(send: PresentationAction.setPresentation),
+        content: {
+          LastNonEmptyView(store.scope(state: { $0 }, action: PresentationAction.presented), then: content)
+        }
+      )
+    }
+  }
+}
+
+struct LastNonEmptyView<State, Action, Content>: View where Content: View {
+  let content: (ViewStore<State?, Action>) -> Content
+  let store: Store<State?, Action>
+
+  public init<IfContent>(
+    _ store: Store<State?, Action>,
+    @ViewBuilder then ifContent: @escaping (Store<State, Action>) -> IfContent
+  ) where Content == _ConditionalContent<IfContent, EmptyView> {
+    self.store = store
+    var lastState: State?
+    self.content = { viewStore in
+      lastState = viewStore.state ?? lastState
+      if let lastState = lastState {
+        return ViewBuilder.buildEither(first: ifContent(store.scope(state: { $0 ?? lastState })))
+      } else {
+        return ViewBuilder.buildEither(second: EmptyView())
+      }
+    }
+  }
+
+  public var body: some View {
+    WithViewStore(
+      self.store,
+      removeDuplicates: { ($0 != nil) == ($1 != nil) },
+      content: self.content
+    )
   }
 }

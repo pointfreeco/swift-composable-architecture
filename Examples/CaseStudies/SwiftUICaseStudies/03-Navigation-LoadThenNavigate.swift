@@ -12,13 +12,10 @@ private let readMe = """
 struct LoadThenNavigateState: Equatable {
   var optionalCounter: CounterState?
   var isActivityIndicatorVisible = false
-
-  var isNavigationActive: Bool { self.optionalCounter != nil }
 }
 
-enum LoadThenNavigateAction: Equatable {
-  case optionalCounter(CounterAction)
-  case setNavigation(isActive: Bool)
+enum LoadThenNavigateAction {
+  case optionalCounter(PresentationAction<CounterState, CounterAction, Bool>)
   case setNavigationIsActiveDelayCompleted
 }
 
@@ -28,8 +25,7 @@ struct LoadThenNavigateEnvironment {
 
 let loadThenNavigateReducer =
   counterReducer
-  .optional()
-  .pullback(
+  .presented(
     state: \.optionalCounter,
     action: /LoadThenNavigateAction.optionalCounter,
     environment: { _ in CounterEnvironment() }
@@ -39,26 +35,59 @@ let loadThenNavigateReducer =
       LoadThenNavigateState, LoadThenNavigateAction, LoadThenNavigateEnvironment
     > { state, action, environment in
       switch action {
-      case .setNavigation(isActive: true):
+      case .optionalCounter(.setPresentation(true)):
         state.isActivityIndicatorVisible = true
         return Effect(value: .setNavigationIsActiveDelayCompleted)
           .delay(for: 1, scheduler: environment.mainQueue)
           .eraseToEffect()
 
-      case .setNavigation(isActive: false):
-        state.optionalCounter = nil
+      case .optionalCounter:
         return .none
 
       case .setNavigationIsActiveDelayCompleted:
         state.isActivityIndicatorVisible = false
         state.optionalCounter = CounterState()
         return .none
-
-      case .optionalCounter:
-        return .none
       }
     }
   )
+
+struct NavigationLinkStore<State, Action, Label: View, Destination: View, Tag: Hashable>: View {
+  let store: Store<State?, PresentationAction<State, Action, Tag?>>
+  let destination: (Store<State, Action>) -> Destination
+  let tag: Tag
+  let currentTag: (State) -> Tag?
+  let label: () -> Label
+
+  init(
+    store: Store<State?, PresentationAction<State, Action, Tag?>>,
+    tag: Tag,
+    currentTag: @escaping (State) -> Tag?,
+    destination: @escaping (Store<State, Action>) -> Destination,
+    @ViewBuilder label: @escaping () -> Label
+  ) {
+    self.store = store
+    self.tag = tag
+    self.currentTag = currentTag
+    self.destination = destination
+    self.label = label
+  }
+
+  var body: some View {
+    WithViewStore(self.store.scope(state: { $0.flatMap(currentTag) })) { viewStore in
+      NavigationLink(//destination: <#T##_#>, tag: <#T##Hashable#>, selection: <#T##Binding<Hashable?>#>, label: <#T##() -> _#>
+        destination: LastNonEmptyView(
+          self.store.scope(state: { $0 }, action: PresentationAction.presented),
+          then: destination
+        ),
+        tag: self.tag,
+        selection: viewStore.binding(send: PresentationAction.setPresentation),
+        label: label
+      )
+    }
+  }
+}
+
 
 struct LoadThenNavigateView: View {
   let store: Store<LoadThenNavigateState, LoadThenNavigateAction>
@@ -67,25 +96,38 @@ struct LoadThenNavigateView: View {
     WithViewStore(self.store) { viewStore in
       Form {
         Section(header: Text(readMe)) {
-          NavigationLink(
-            destination: IfLetStore(
-              self.store.scope(
-                state: { $0.optionalCounter }, action: LoadThenNavigateAction.optionalCounter),
-              then: { CounterView(store: $0) }
-            ),
-            isActive: viewStore.binding(
-              get: { $0.isNavigationActive },
-              send: LoadThenNavigateAction.setNavigation(isActive:)
-            )
-          ) {
-            HStack {
-              Text("Load optional counter")
-              if viewStore.isActivityIndicatorVisible {
-                Spacer()
-                ActivityIndicator()
+          NavigationLinkStore(
+            store: self.store.scope(state: \.optionalCounter, action: LoadThenNavigateAction.optionalCounter),
+            destination: { CounterView(store: $0) },
+            label: {
+              HStack {
+                Text("Load optional counter")
+                if viewStore.isActivityIndicatorVisible {
+                  Spacer()
+                  ActivityIndicator()
+                }
               }
             }
-          }
+          )
+//          NavigationLink(
+//            destination: IfLetStore(
+//              self.store.scope(
+//                state: { $0.optionalCounter }, action: LoadThenNavigateAction.optionalCounter),
+//              then: { CounterView(store: $0) }
+//            ),
+//            isActive: viewStore.binding(
+//              get: { $0.isNavigationActive },
+//              send: LoadThenNavigateAction.setNavigation(isActive:)
+//            )
+//          ) {
+//            HStack {
+//              Text("Load optional counter")
+//              if viewStore.isActivityIndicatorVisible {
+//                Spacer()
+//                ActivityIndicator()
+//              }
+//            }
+//          }
         }
       }
     }
