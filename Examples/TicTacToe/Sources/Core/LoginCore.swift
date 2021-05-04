@@ -51,36 +51,36 @@ public let loginReducer = Reducer<LoginState, LoginAction, LoginEnvironment>.com
         )
       }
     ),
-  
+
   .init {
     state, action, environment in
     switch action {
     case .alertDismissed:
       state.alert = nil
       return .none
-      
+
     case let .emailChanged(email):
       state.email = email
       state.isFormValid = !state.email.isEmpty && !state.password.isEmpty
       return .none
-      
+
     case let .loginResponse(.success(response)):
       state.isLoginRequestInFlight = false
       if response.twoFactorRequired {
         state.twoFactor = TwoFactorState(token: response.token)
       }
       return .none
-      
+
     case let .loginResponse(.failure(error)):
       state.alert = .init(title: TextState(error.localizedDescription))
       state.isLoginRequestInFlight = false
       return .none
-      
+
     case let .passwordChanged(password):
       state.password = password
       state.isFormValid = !state.email.isEmpty && !state.password.isEmpty
       return .none
-      
+
     case .loginButtonTapped:
       state.isLoginRequestInFlight = true
       return environment.authenticationClient
@@ -88,10 +88,10 @@ public let loginReducer = Reducer<LoginState, LoginAction, LoginEnvironment>.com
         .receive(on: environment.mainQueue)
         .catchToEffect()
         .map(LoginAction.loginResponse)
-      
+
     case .twoFactor:
       return .none
-      
+
     case .twoFactorDismissed:
       state.twoFactor = nil
       return .cancel(id: TwoFactorTearDownToken())

@@ -97,7 +97,8 @@ public struct LoginView: View {
         .padding(.horizontal)
       }
     }
-    .navigationBarTitle("Login")  }
+    .navigationBarTitle("Login")
+  }
 }
 
 extension LoginAction {

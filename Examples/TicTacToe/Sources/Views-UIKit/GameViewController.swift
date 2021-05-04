@@ -18,7 +18,8 @@ public final class GameViewController: UIViewController {
       self.board = state.board.map { $0.map { $0?.label ?? "" } }
       self.isGameEnabled = !state.board.hasWinner && !state.board.isFilled
       self.isPlayAgainButtonHidden = !state.board.hasWinner && !state.board.isFilled
-      self.title = state.board.hasWinner
+      self.title =
+        state.board.hasWinner
         ? "Winner! Congrats \(state.currentPlayerName)!"
         : state.board.isFilled
           ? "Tied game!"

@@ -35,7 +35,8 @@ public struct NewGameView: View {
   }
 
   public var body: some View {
-    WithViewStore(self.store.scope(state: ViewState.init, action: NewGameAction.init)) { viewStore in
+    WithViewStore(self.store.scope(state: ViewState.init, action: NewGameAction.init)) {
+      viewStore in
       ScrollView {
         VStack(spacing: 16) {
           VStack(alignment: .leading) {

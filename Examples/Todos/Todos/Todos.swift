@@ -128,8 +128,8 @@ struct AppView: View {
             self.store.scope(state: \.filteredTodos, action: AppAction.todo(id:action:)),
             content: TodoView.init(store:)
           )
-            .onDelete { self.viewStore.send(.delete($0)) }
-            .onMove { self.viewStore.send(.move($0, $1)) }
+          .onDelete { self.viewStore.send(.delete($0)) }
+          .onMove { self.viewStore.send(.move($0, $1)) }
         }
       }
       .navigationBarTitle("Todos")
@@ -143,9 +143,9 @@ struct AppView: View {
           Button("Add Todo") { self.viewStore.send(.addTodoButtonTapped, animation: .default) }
         }
       )
-        .environment(
-          \.editMode,
-          self.viewStore.binding(get: \.editMode, send: AppAction.editModeChanged)
+      .environment(
+        \.editMode,
+        self.viewStore.binding(get: \.editMode, send: AppAction.editModeChanged)
       )
     }
     .navigationViewStyle(StackNavigationViewStyle())

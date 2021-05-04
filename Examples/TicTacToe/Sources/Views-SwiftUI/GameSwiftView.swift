@@ -15,7 +15,8 @@ public struct GameView: View {
       self.board = state.board.map { $0.map { $0?.label ?? "" } }
       self.isGameDisabled = state.board.hasWinner || state.board.isFilled
       self.isPlayAgainButtonVisible = state.board.hasWinner || state.board.isFilled
-      self.title = state.board.hasWinner
+      self.title =
+        state.board.hasWinner
         ? "Winner! Congrats \(state.currentPlayerName)!"
         : state.board.isFilled
           ? "Tied game!"
