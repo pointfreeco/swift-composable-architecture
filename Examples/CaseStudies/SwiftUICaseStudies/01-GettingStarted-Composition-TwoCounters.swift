@@ -44,7 +44,7 @@ struct TwoCountersView: View {
           Text("Counter 1")
 
           CounterView(
-            store: self.store.scope(state: { $0.counter1 }, action: TwoCountersAction.counter1)
+            store: self.store.scope(state: \.counter1, action: TwoCountersAction.counter1)
           )
           .buttonStyle(BorderlessButtonStyle())
           .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
@@ -53,7 +53,7 @@ struct TwoCountersView: View {
           Text("Counter 2")
 
           CounterView(
-            store: self.store.scope(state: { $0.counter2 }, action: TwoCountersAction.counter2)
+            store: self.store.scope(state: \.counter2, action: TwoCountersAction.counter2)
           )
           .buttonStyle(BorderlessButtonStyle())
           .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)

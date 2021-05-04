@@ -20,7 +20,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             audioPlayerClient: .live,
             audioRecorderClient: .live,
             date: Date.init,
-            mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+            mainQueue: .main,
             openSettings: .fireAndForget {
               UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
             },

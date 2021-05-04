@@ -102,7 +102,7 @@ struct SearchView: View {
             TextField(
               "New York, San Francisco, ...",
               text: viewStore.binding(
-                get: { $0.searchQuery }, send: SearchAction.searchQueryChanged)
+                get: \.searchQuery, send: SearchAction.searchQueryChanged)
             )
             .textFieldStyle(RoundedBorderTextFieldStyle())
             .autocapitalization(.none)
@@ -232,7 +232,7 @@ struct SearchView_Previews: PreviewProvider {
                 id: id
               ))
           }),
-        mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+        mainQueue: .main
       )
     )
 

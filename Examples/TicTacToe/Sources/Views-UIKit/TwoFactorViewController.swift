@@ -5,11 +5,22 @@ import TwoFactorCore
 import UIKit
 
 public final class TwoFactorViewController: UIViewController {
+  let store: Store<TwoFactorState, TwoFactorAction>
+  let viewStore: ViewStore<ViewState, ViewAction>
+  private var cancellables: Set<AnyCancellable> = []
+
   struct ViewState: Equatable {
     let alert: AlertState<TwoFactorAction>?
     let code: String?
     let isActivityIndicatorHidden: Bool
     let isLoginButtonEnabled: Bool
+
+    init(state: TwoFactorState) {
+      self.alert = state.alert
+      self.code = state.code
+      self.isActivityIndicatorHidden = !state.isTwoFactorRequestInFlight
+      self.isLoginButtonEnabled = state.isFormValid && !state.isTwoFactorRequestInFlight
+    }
   }
 
   enum ViewAction {
@@ -18,14 +29,9 @@ public final class TwoFactorViewController: UIViewController {
     case loginButtonTapped
   }
 
-  let store: Store<TwoFactorState, TwoFactorAction>
-  let viewStore: ViewStore<ViewState, ViewAction>
-
-  private var cancellables: Set<AnyCancellable> = []
-
   public init(store: Store<TwoFactorState, TwoFactorAction>) {
     self.store = store
-    self.viewStore = ViewStore(store.scope(state: { $0.view }, action: TwoFactorAction.view))
+    self.viewStore = ViewStore(store.scope(state: ViewState.init, action: TwoFactorAction.init))
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -114,26 +120,15 @@ public final class TwoFactorViewController: UIViewController {
   }
 }
 
-extension TwoFactorState {
-  var view: TwoFactorViewController.ViewState {
-    .init(
-      alert: self.alert,
-      code: self.code,
-      isActivityIndicatorHidden: !self.isTwoFactorRequestInFlight,
-      isLoginButtonEnabled: self.isFormValid && !self.isTwoFactorRequestInFlight
-    )
-  }
-}
-
 extension TwoFactorAction {
-  static func view(_ localAction: TwoFactorViewController.ViewAction) -> Self {
-    switch localAction {
+  init(action: TwoFactorViewController.ViewAction) {
+    switch action {
     case .alertDismissed:
-      return .alertDismissed
+      self = .alertDismissed
     case let .codeChanged(code):
-      return .codeChanged(code ?? "")
+      self = .codeChanged(code ?? "")
     case .loginButtonTapped:
-      return .submitButtonTapped
+      self = .submitButtonTapped
     }
   }
 }

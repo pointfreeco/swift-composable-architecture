@@ -31,7 +31,7 @@ struct RootView: View {
     reducer: appReducer.debug(),
     environment: AppEnvironment(
       authenticationClient: .live,
-      mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+      mainQueue: .main
     )
   )
 

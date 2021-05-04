@@ -148,7 +148,7 @@ struct SpeechRecognitionView: View {
         }
       }
       .padding()
-      .alert(self.store.scope(state: { $0.alert }), dismiss: .dismissAuthorizationStateAlert)
+      .alert(self.store.scope(state: \.alert), dismiss: .dismissAuthorizationStateAlert)
     }
   }
 }
@@ -160,7 +160,7 @@ struct SpeechRecognitionView_Previews: PreviewProvider {
         initialState: .init(transcribedText: "Test test 123"),
         reducer: appReducer,
         environment: AppEnvironment(
-          mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+          mainQueue: .main,
           speechClient: .live
         )
       )

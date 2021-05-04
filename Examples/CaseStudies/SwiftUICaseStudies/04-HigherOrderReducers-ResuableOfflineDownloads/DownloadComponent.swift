@@ -164,7 +164,7 @@ struct DownloadComponent<ID: Equatable>: View {
         }
       }
       .alert(
-        self.store.scope(state: { $0.alert }, action: DownloadComponentAction.alert),
+        self.store.scope(state: \.alert, action: DownloadComponentAction.alert),
         dismiss: .dismiss
       )
     }

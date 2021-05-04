@@ -101,13 +101,13 @@ struct AlertAndSheetView: View {
 
           Button("Alert") { viewStore.send(.alertButtonTapped) }
             .alert(
-              self.store.scope(state: { $0.alert }),
+              self.store.scope(state: \.alert),
               dismiss: .alertDismissed
             )
 
           Button("Action sheet") { viewStore.send(.actionSheetButtonTapped) }
             .actionSheet(
-              self.store.scope(state: { $0.actionSheet }),
+              self.store.scope(state: \.actionSheet),
               dismiss: .actionSheetDismissed
             )
         }

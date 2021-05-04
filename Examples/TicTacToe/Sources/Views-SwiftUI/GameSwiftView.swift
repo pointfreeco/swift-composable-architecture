@@ -3,14 +3,25 @@ import GameCore
 import SwiftUI
 
 public struct GameView: View {
+  let store: Store<GameState, GameAction>
+
   struct ViewState: Equatable {
     var board: [[String]]
     var isGameDisabled: Bool
     var isPlayAgainButtonVisible: Bool
     var title: String
-  }
 
-  let store: Store<GameState, GameAction>
+    init(state: GameState) {
+      self.board = state.board.map { $0.map { $0?.label ?? "" } }
+      self.isGameDisabled = state.board.hasWinner || state.board.isFilled
+      self.isPlayAgainButtonVisible = state.board.hasWinner || state.board.isFilled
+      self.title = state.board.hasWinner
+        ? "Winner! Congrats \(state.currentPlayerName)!"
+        : state.board.isFilled
+          ? "Tied game!"
+          : "\(state.currentPlayerName), place your \(state.currentPlayer.label)"
+    }
+  }
 
   public init(store: Store<GameState, GameAction>) {
     self.store = store
@@ -18,7 +29,7 @@ public struct GameView: View {
 
   public var body: some View {
     GeometryReader { proxy in
-      WithViewStore(self.store.scope(state: { $0.view })) { viewStore in
+      WithViewStore(self.store.scope(state: ViewState.init)) { viewStore in
         VStack(spacing: 0.0) {
           VStack {
             Text(viewStore.title)
@@ -77,21 +88,6 @@ public struct GameView: View {
             : Color(red: 0.6, green: 0.6, blue: 0.6)
         )
     }
-  }
-}
-
-extension GameState {
-  var view: GameView.ViewState {
-    GameView.ViewState(
-      board: self.board.map { $0.map { $0?.label ?? "" } },
-      isGameDisabled: self.board.hasWinner || self.board.isFilled,
-      isPlayAgainButtonVisible: self.board.hasWinner || self.board.isFilled,
-      title: self.board.hasWinner
-        ? "Winner! Congrats \(self.currentPlayerName)!"
-        : self.board.isFilled
-          ? "Tied game!"
-          : "\(self.currentPlayerName), place your \(self.currentPlayer.label)"
-    )
   }
 }
 

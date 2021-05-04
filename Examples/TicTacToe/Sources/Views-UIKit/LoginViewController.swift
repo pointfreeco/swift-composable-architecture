@@ -6,6 +6,10 @@ import TwoFactorCore
 import UIKit
 
 class LoginViewController: UIViewController {
+  let store: Store<LoginState, LoginAction>
+  let viewStore: ViewStore<ViewState, ViewAction>
+  private var cancellables: Set<AnyCancellable> = []
+
   struct ViewState: Equatable {
     let alert: AlertState<LoginAction>?
     let email: String?
@@ -14,6 +18,16 @@ class LoginViewController: UIViewController {
     let isLoginButtonEnabled: Bool
     let isPasswordTextFieldEnabled: Bool
     let password: String?
+
+    init(state: LoginState) {
+      self.alert = state.alert
+      self.email = state.email
+      self.isActivityIndicatorHidden = !state.isLoginRequestInFlight
+      self.isEmailTextFieldEnabled = !state.isLoginRequestInFlight
+      self.isLoginButtonEnabled = state.isFormValid && !state.isLoginRequestInFlight
+      self.isPasswordTextFieldEnabled = !state.isLoginRequestInFlight
+      self.password = state.password
+    }
   }
 
   enum ViewAction {
@@ -24,14 +38,9 @@ class LoginViewController: UIViewController {
     case twoFactorDismissed
   }
 
-  let store: Store<LoginState, LoginAction>
-  let viewStore: ViewStore<ViewState, ViewAction>
-
-  private var cancellables: Set<AnyCancellable> = []
-
   init(store: Store<LoginState, LoginAction>) {
     self.store = store
-    self.viewStore = ViewStore(store.scope(state: { $0.view }, action: LoginAction.view))
+    self.viewStore = ViewStore(store.scope(state: ViewState.init, action: LoginAction.init))
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -149,7 +158,7 @@ class LoginViewController: UIViewController {
       .store(in: &self.cancellables)
 
     self.store
-      .scope(state: { $0.twoFactor }, action: LoginAction.twoFactor)
+      .scope(state: \.twoFactor, action: LoginAction.twoFactor)
       .ifLet(
         then: { [weak self] twoFactorStore in
           self?.navigationController?.pushViewController(
@@ -186,33 +195,19 @@ class LoginViewController: UIViewController {
   }
 }
 
-extension LoginState {
-  var view: LoginViewController.ViewState {
-    .init(
-      alert: self.alert,
-      email: self.email,
-      isActivityIndicatorHidden: !self.isLoginRequestInFlight,
-      isEmailTextFieldEnabled: !self.isLoginRequestInFlight,
-      isLoginButtonEnabled: self.isFormValid && !self.isLoginRequestInFlight,
-      isPasswordTextFieldEnabled: !self.isLoginRequestInFlight,
-      password: self.password
-    )
-  }
-}
-
 extension LoginAction {
-  static func view(_ localAction: LoginViewController.ViewAction) -> Self {
-    switch localAction {
+  init(action: LoginViewController.ViewAction) {
+    switch action {
     case .alertDismissed:
-      return .alertDismissed
+      self = .alertDismissed
     case let .emailChanged(email):
-      return .emailChanged(email ?? "")
+      self = .emailChanged(email ?? "")
     case .loginButtonTapped:
-      return .loginButtonTapped
+      self = .loginButtonTapped
     case let .passwordChanged(password):
-      return .passwordChanged(password ?? "")
+      self = .passwordChanged(password ?? "")
     case .twoFactorDismissed:
-      return .twoFactorDismissed
+      self = .twoFactorDismissed
     }
   }
 }

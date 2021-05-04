@@ -85,7 +85,7 @@ class VoiceMemosTests: XCTestCase {
         audioRecorderClient: .mock(
           requestRecordPermission: { Effect(value: false) }
         ),
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
+        mainQueue: .immediate,
         openSettings: .fireAndForget { didOpenSettings = true }
       )
     )
@@ -117,7 +117,7 @@ class VoiceMemosTests: XCTestCase {
           startRecording: { _, _ in audioRecorderSubject.eraseToEffect() }
         ),
         date: { Date(timeIntervalSinceReferenceDate: 0) },
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
+        mainQueue: .immediate,
         temporaryDirectory: { URL(fileURLWithPath: "/tmp") },
         uuid: { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! }
       )
@@ -313,7 +313,7 @@ extension VoiceMemosEnvironment {
     audioRecorderClient: AudioRecorderClient = .mock(),
     date: @escaping () -> Date = { fatalError() },
     mainQueue: AnySchedulerOf<DispatchQueue> =
-      DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
+      .immediate,
     openSettings: Effect<Never, Never> = .fireAndForget { fatalError() },
     temporaryDirectory: @escaping () -> URL = { fatalError() },
     uuid: @escaping () -> UUID = { fatalError() }
