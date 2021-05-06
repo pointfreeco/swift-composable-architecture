@@ -13,8 +13,8 @@ class GameSwiftUITests: XCTestCase {
     reducer: gameReducer,
     environment: GameEnvironment()
   )
-  .scope(state: { $0.view })
-  
+  .scope(state: GameView.ViewState.init)
+
   func testFlow_Winner_Quit() {
     self.store.send(.cellTapped(row: 0, column: 0)) {
       $0.board[0][0] = "❌"
@@ -81,7 +81,7 @@ class GameSwiftUITests: XCTestCase {
       $0.title = "Tied game!"
     }
     self.store.send(.playAgainButtonTapped) {
-      $0 = GameState(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr.").view
+      $0 = GameView.ViewState(state: GameState(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr."))
     }
   }
 }

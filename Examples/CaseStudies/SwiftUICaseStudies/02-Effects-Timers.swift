@@ -131,7 +131,7 @@ struct TimersView_Previews: PreviewProvider {
           initialState: TimersState(),
           reducer: timersReducer,
           environment: TimersEnvironment(
-            mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+            mainQueue: .main
           )
         )
       )

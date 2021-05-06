@@ -258,7 +258,7 @@ let appView = AppView(
     initialState: AppState(),
     reducer: appReducer,
     environment: AppEnvironment(
-      mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+      mainQueue: .main,
       numberFact: { number in Effect(value: "\(number) is a good number Brent") }
     )
   )

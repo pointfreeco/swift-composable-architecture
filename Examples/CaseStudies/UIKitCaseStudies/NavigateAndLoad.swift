@@ -88,7 +88,7 @@ class EagerNavigationViewController: UIViewController {
         self.navigationController?.pushViewController(
           IfLetStoreController(
             store: self.store
-              .scope(state: { $0.optionalCounter }, action: EagerNavigationAction.optionalCounter),
+              .scope(state: \.optionalCounter, action: EagerNavigationAction.optionalCounter),
             then: CounterViewController.init(store:),
             else: ActivityIndicatorViewController.init
           ),
@@ -122,7 +122,7 @@ struct EagerNavigationViewController_Previews: PreviewProvider {
           initialState: EagerNavigationState(),
           reducer: eagerNavigationReducer,
           environment: EagerNavigationEnvironment(
-            mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+            mainQueue: .main
           )
         )
       )

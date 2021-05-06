@@ -25,7 +25,7 @@ import SwiftUI
 /// `nil`:
 ///
 ///     struct AppState: Equatable {
-///       var alert = AlertState<AppAction>?
+///       var alert: AlertState<AppAction>?
 ///
 ///       // Your other state
 ///     }

@@ -404,4 +404,36 @@ final class StoreTests: XCTestCase {
     }
     subject.send(completion: .finished)
   }
+
+  func testCoalesceSynchronousActions() {
+    let store = Store(
+      initialState: 0,
+      reducer: Reducer<Int, Int, Void> { state, action, _ in
+        switch action {
+        case 0:
+          return .merge(
+            Effect(value: 1),
+            Effect(value: 2),
+            Effect(value: 3)
+          )
+        default:
+          state = action
+          return .none
+        }
+      },
+      environment: ()
+    )
+
+    var emissions: [Int] = []
+    let viewStore = ViewStore(store)
+    viewStore.publisher
+      .sink { emissions.append($0) }
+      .store(in: &self.cancellables)
+
+    XCTAssertEqual(emissions, [0])
+
+    viewStore.send(0)
+
+    XCTAssertEqual(emissions, [0, 1, 2, 3])
+  }
 }

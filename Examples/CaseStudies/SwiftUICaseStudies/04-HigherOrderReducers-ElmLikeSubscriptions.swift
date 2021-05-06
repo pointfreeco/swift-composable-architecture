@@ -154,7 +154,7 @@ struct Subscriptions_Previews: PreviewProvider {
           initialState: ClockState(),
           reducer: clockReducer,
           environment: ClockEnvironment(
-            mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+            mainQueue: .main
           )
         )
       )

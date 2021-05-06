@@ -91,7 +91,7 @@ struct EffectsCancellationView: View {
         ) {
           Stepper(
             value: viewStore.binding(
-              get: { $0.count }, send: EffectsCancellationAction.stepperChanged)
+              get: \.count, send: EffectsCancellationAction.stepperChanged)
           ) {
             Text("\(viewStore.count)")
           }
@@ -127,7 +127,7 @@ struct EffectsCancellation_Previews: PreviewProvider {
           initialState: EffectsCancellationState(),
           reducer: effectsCancellationReducer,
           environment: EffectsCancellationEnvironment(
-            mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+            mainQueue: .main,
             numberFact: liveNumberFact(for:)
           )
         )

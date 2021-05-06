@@ -193,7 +193,7 @@ struct VoiceMemosView: View {
           List {
             ForEachStore(
               self.store.scope(
-                state: { $0.voiceMemos }, action: VoiceMemosAction.voiceMemo(index:action:)
+                state: \.voiceMemos, action: VoiceMemosAction.voiceMemo(index:action:)
               ),
               id: \.url,
               content: VoiceMemoView.init(store:)
@@ -241,7 +241,7 @@ struct VoiceMemosView: View {
           .padding()
         }
         .alert(
-          self.store.scope(state: { $0.alert }),
+          self.store.scope(state: \.alert),
           dismiss: .alertDismissed
         )
         .navigationBarTitle("Voice memos")
@@ -284,7 +284,7 @@ struct VoiceMemos_Previews: PreviewProvider {
             stopRecording: { _ in .none }
           ),
           date: Date.init,
-          mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+          mainQueue: .main,
           openSettings: .none,
           temporaryDirectory: { URL(fileURLWithPath: NSTemporaryDirectory()) },
           uuid: UUID.init

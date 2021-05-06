@@ -10,7 +10,7 @@ class EffectsCancellationTests: XCTestCase {
       initialState: .init(),
       reducer: effectsCancellationReducer,
       environment: .init(
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
+        mainQueue: .immediate,
         numberFact: { n in Effect(value: "\(n) is a good number Brent") }
       )
     )
@@ -35,7 +35,7 @@ class EffectsCancellationTests: XCTestCase {
       initialState: .init(),
       reducer: effectsCancellationReducer,
       environment: .init(
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
+        mainQueue: .immediate,
         numberFact: { _ in Fail(error: NumbersApiError()).eraseToEffect() }
       )
     )

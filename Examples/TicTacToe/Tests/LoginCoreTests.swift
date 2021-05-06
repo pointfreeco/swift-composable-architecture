@@ -19,7 +19,7 @@ class LoginCoreTests: XCTestCase {
             Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
           }
         ),
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler()
+        mainQueue: .immediate
       )
     )
 

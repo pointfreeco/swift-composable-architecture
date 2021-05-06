@@ -18,10 +18,10 @@ class TwoFactorSwiftUITests: XCTestCase {
             Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
           }
         ),
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler()
+        mainQueue: .immediate
       )
     )
-    .scope(state: { $0.view }, action: TwoFactorAction.view)
+    .scope(state: TwoFactorView.ViewState.init, action: TwoFactorAction.init)
 
     store.environment.authenticationClient.twoFactor = { _ in
       Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
@@ -61,10 +61,10 @@ class TwoFactorSwiftUITests: XCTestCase {
             Effect(error: .invalidTwoFactor)
           }
         ),
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler()
+        mainQueue: .immediate
       )
     )
-    .scope(state: { $0.view }, action: TwoFactorAction.view)
+    .scope(state: TwoFactorView.ViewState.init, action: TwoFactorAction.init)
 
     store.send(.codeChanged("1234")) {
       $0.code = "1234"
