@@ -74,5 +74,13 @@ extension Effect {
   }
 }
 
+extension Reducer {
+  func cancellable(id: AnyHashable) -> Reducer {
+    .init { state, action, environment in
+      self.run(&state, action, environment).cancellable(id: id)
+    }
+  }
+}
+
 var cancellationCancellables: [AnyHashable: Set<AnyCancellable>] = [:]
 let cancellablesLock = NSRecursiveLock()
