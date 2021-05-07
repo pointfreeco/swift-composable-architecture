@@ -6,6 +6,9 @@ public enum PresentationAction<Action> {
   case present
 }
 
+extension PresentationAction: Equatable where Action: Equatable {}
+extension PresentationAction: Hashable where Action: Hashable {}
+
 extension Reducer {
   public func presents<LocalState, LocalAction, LocalEnvironment>(
     _ localReducer: Reducer<LocalState, LocalAction, LocalEnvironment>,

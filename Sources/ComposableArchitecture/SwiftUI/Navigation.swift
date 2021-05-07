@@ -5,6 +5,9 @@ public enum NavigationAction<Action> {
   case setNavigation(isActive: Bool)
 }
 
+extension NavigationAction: Equatable where Action: Equatable {}
+extension NavigationAction: Hashable where Action: Hashable {}
+
 extension Reducer {
   public func navigates<Route, LocalState, LocalAction, LocalEnvironment>(
     _ localReducer: Reducer<LocalState, LocalAction, LocalEnvironment>,
