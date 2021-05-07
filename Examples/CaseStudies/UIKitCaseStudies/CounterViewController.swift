@@ -3,7 +3,8 @@ import ComposableArchitecture
 import SwiftUI
 import UIKit
 
-struct CounterState: Equatable {
+struct CounterState: Equatable, Identifiable {
+  var id: UUID = .init() // used for diffing in `DiffableListsOfState` case study
   var count = 0
 }
 

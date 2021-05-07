@@ -40,6 +40,22 @@ let dataSource: [CaseStudy] = [
     )
   ),
   CaseStudy(
+    title: "Diffable Lists",
+    viewController: DiffableCountersTableViewController(
+      store: Store(
+        initialState: DiffableCounterListState(
+          counters: [
+            CounterState(),
+            CounterState(),
+            CounterState(),
+          ]
+        ),
+        reducer: diffableCounterListReducer,
+        environment: ()
+      )
+    )
+  ),
+  CaseStudy(
     title: "Navigate and load",
     viewController: EagerNavigationViewController(
       store: Store(

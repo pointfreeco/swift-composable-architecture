@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0AAA31292644B32A0091B0B1 /* CounterCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AAA31262644B3290091B0B1 /* CounterCollectionViewCell.swift */; };
+		0AAA312B2644B32A0091B0B1 /* DiffableListsOfState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AAA31282644B3290091B0B1 /* DiffableListsOfState.swift */; };
 		4F5AC11F24ECC7E4009DC50B /* 01-GettingStarted-SharedStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5AC11E24ECC7E4009DC50B /* 01-GettingStarted-SharedStateTests.swift */; };
 		CA0C0C4724B89BEC00CBDD8A /* 04-HigherOrderReducers-LifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0C0C4624B89BEC00CBDD8A /* 04-HigherOrderReducers-LifecycleTests.swift */; };
 		CA0C51FB245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0C51FA245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift */; };
@@ -150,6 +152,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0AAA31262644B3290091B0B1 /* CounterCollectionViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CounterCollectionViewCell.swift; sourceTree = "<group>"; };
+		0AAA31282644B3290091B0B1 /* DiffableListsOfState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiffableListsOfState.swift; sourceTree = "<group>"; };
 		4F5AC11E24ECC7E4009DC50B /* 01-GettingStarted-SharedStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-SharedStateTests.swift"; sourceTree = "<group>"; };
 		CA0C0C4624B89BEC00CBDD8A /* 04-HigherOrderReducers-LifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-LifecycleTests.swift"; sourceTree = "<group>"; };
 		CA0C51FA245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift"; sourceTree = "<group>"; };
@@ -283,6 +287,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0AAA31252644B3290091B0B1 /* DiffableListsOfState */ = {
+			isa = PBXGroup;
+			children = (
+				0AAA31282644B3290091B0B1 /* DiffableListsOfState.swift */,
+				0AAA31262644B3290091B0B1 /* CounterCollectionViewCell.swift */,
+			);
+			path = DiffableListsOfState;
+			sourceTree = "<group>";
+		};
 		CA6AC25F2451131C00C71CB3 /* 04-HigherOrderReducers-ResuableOfflineDownloads */ = {
 			isa = PBXGroup;
 			children = (
@@ -333,6 +346,7 @@
 				DC630FD92451016B00BAECBA /* ListsOfState.swift */,
 				DC4C6ED92450E6050066A05D /* NavigateAndLoad.swift */,
 				DC25DC602450F2B000082E81 /* LoadThenNavigate.swift */,
+				0AAA31252644B3290091B0B1 /* DiffableListsOfState */,
 				DC25DC622450F2D100082E81 /* Internal */,
 				DC4C6EAF2450DD380066A05D /* Assets.xcassets */,
 				DC4C6EB42450DD380066A05D /* LaunchScreen.storyboard */,
@@ -719,10 +733,12 @@
 				DC4C6ED62450E1050066A05D /* CounterViewController.swift in Sources */,
 				DC4C6EDA2450E6050066A05D /* NavigateAndLoad.swift in Sources */,
 				DC4C6EAC2450DD380066A05D /* SceneDelegate.swift in Sources */,
+				0AAA31292644B32A0091B0B1 /* CounterCollectionViewCell.swift in Sources */,
 				DC25DC612450F2B000082E81 /* LoadThenNavigate.swift in Sources */,
 				DC25DC5F2450F13200082E81 /* IfLetStoreController.swift in Sources */,
 				DC4C6EAE2450DD380066A05D /* RootViewController.swift in Sources */,
 				DC630FDA2451016B00BAECBA /* ListsOfState.swift in Sources */,
+				0AAA312B2644B32A0091B0B1 /* DiffableListsOfState.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
