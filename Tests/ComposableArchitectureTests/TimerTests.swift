@@ -61,50 +61,40 @@ final class TimerTests: XCTestCase {
   func testTimerCancellation() {
     let scheduler = DispatchQueue.test
 
-    var count2 = 0
-    var count3 = 0
+    var firstCount = 0
+    var secondCount = 0
 
     struct CancelToken: Hashable {}
+    
+    Effect.timer(id: CancelToken(), every: .seconds(2), on: scheduler)
+      .handleEvents(receiveOutput: { _ in firstCount += 1 })
+      .eraseToEffect()
+      .sink { _ in }
+      .store(in: &self.cancellables)
+    
+    scheduler.advance(by: 2)
 
-    Effect.merge(
-      Effect.timer(id: CancelToken(), every: .seconds(2), on: scheduler)
-        .handleEvents(receiveOutput: { _ in count2 += 1 })
-        .eraseToEffect(),
-      Effect.timer(id: CancelToken(), every: .seconds(3), on: scheduler)
-        .handleEvents(receiveOutput: { _ in count3 += 1 })
-        .eraseToEffect(),
-      Just(())
-        .delay(for: 30, scheduler: scheduler)
-        .flatMap { Effect.cancel(id: CancelToken()) }
-        .eraseToEffect()
-    )
-    .sink { _ in }
-    .store(in: &self.cancellables)
+    XCTAssertEqual(firstCount, 1)
 
-    scheduler.advance(by: 1)
+    scheduler.advance(by: 2)
 
-    XCTAssertEqual(count2, 0)
-    XCTAssertEqual(count3, 0)
+    XCTAssertEqual(firstCount, 2)
+    
+    Effect.timer(id: CancelToken(), every: .seconds(2), on: scheduler)
+      .handleEvents(receiveOutput: { _ in secondCount += 1 })
+      .eraseToEffect()
+      .sink { _ in }
+      .store(in: &self.cancellables)
 
-    scheduler.advance(by: 1)
+    scheduler.advance(by: 2)
 
-    XCTAssertEqual(count2, 1)
-    XCTAssertEqual(count3, 0)
+    XCTAssertEqual(firstCount, 2)
+    XCTAssertEqual(secondCount, 1)
 
-    scheduler.advance(by: 1)
+    scheduler.advance(by: 2)
 
-    XCTAssertEqual(count2, 1)
-    XCTAssertEqual(count3, 1)
-
-    scheduler.advance(by: 1)
-
-    XCTAssertEqual(count2, 2)
-    XCTAssertEqual(count3, 1)
-
-    scheduler.run()
-
-    XCTAssertEqual(count2, 15)
-    XCTAssertEqual(count3, 10)
+    XCTAssertEqual(firstCount, 2)
+    XCTAssertEqual(secondCount, 2)
   }
 
   func testTimerCompletion() {
