@@ -12,7 +12,6 @@ public final class Store<State, Action> {
   private var isSending = false
   private var parentCancellable: AnyCancellable?
   private let reducer: (inout State, Action) -> Effect<Action, Never>
-  private var synchronousActionsToSend: [Action] = []
   private var bufferedActions: [Action] = []
 
   /// Initializes a store from an initial state, a reducer, and an environment.
@@ -247,12 +246,8 @@ public final class Store<State, Action> {
   }
 
   func send(_ action: Action) {
-    if !self.isSending {
-      self.synchronousActionsToSend.append(action)
-    } else {
-      self.bufferedActions.append(action)
-      return
-    }
+    self.bufferedActions.append(action)
+    guard !self.isSending else { return }
 
     self.isSending = true
     var currentState = self.state.value
@@ -261,32 +256,21 @@ public final class Store<State, Action> {
       self.state.value = currentState
     }
 
-    while !self.synchronousActionsToSend.isEmpty || !self.bufferedActions.isEmpty {
-      let action =
-        !self.synchronousActionsToSend.isEmpty
-        ? self.synchronousActionsToSend.removeFirst()
-        : self.bufferedActions.removeFirst()
-
+    while !self.bufferedActions.isEmpty {
+      let action = self.bufferedActions.removeFirst()
       let effect = self.reducer(&currentState, action)
 
       var didComplete = false
       let uuid = UUID()
-
-      var isProcessingEffects = true
       let effectCancellable = effect.sink(
         receiveCompletion: { [weak self] _ in
           didComplete = true
           self?.effectCancellables[uuid] = nil
         },
         receiveValue: { [weak self] action in
-          if isProcessingEffects {
-            self?.synchronousActionsToSend.append(action)
-          } else {
-            self?.send(action)
-          }
+          self?.send(action)
         }
       )
-      isProcessingEffects = false
 
       if !didComplete {
         self.effectCancellables[uuid] = effectCancellable
