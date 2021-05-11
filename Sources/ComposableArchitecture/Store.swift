@@ -254,8 +254,12 @@ public final class Store<State, Action> {
       return
     }
 
+    self.isSending = true
     var currentState = self.state.value
-    defer { self.state.value = currentState }
+    defer {
+      self.isSending = false
+      self.state.value = currentState
+    }
 
     while !self.synchronousActionsToSend.isEmpty || !self.bufferedActions.isEmpty {
       let action =
@@ -263,9 +267,7 @@ public final class Store<State, Action> {
         ? self.synchronousActionsToSend.removeFirst()
         : self.bufferedActions.removeFirst()
 
-      self.isSending = true
       let effect = self.reducer(&currentState, action)
-      self.isSending = false
 
       var didComplete = false
       let uuid = UUID()
