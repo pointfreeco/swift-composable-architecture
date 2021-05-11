@@ -65,13 +65,13 @@ final class TimerTests: XCTestCase {
     var secondCount = 0
 
     struct CancelToken: Hashable {}
-    
+
     Effect.timer(id: CancelToken(), every: .seconds(2), on: scheduler)
       .handleEvents(receiveOutput: { _ in firstCount += 1 })
       .eraseToEffect()
       .sink { _ in }
       .store(in: &self.cancellables)
-    
+
     scheduler.advance(by: 2)
 
     XCTAssertEqual(firstCount, 1)
@@ -79,7 +79,7 @@ final class TimerTests: XCTestCase {
     scheduler.advance(by: 2)
 
     XCTAssertEqual(firstCount, 2)
-    
+
     Effect.timer(id: CancelToken(), every: .seconds(2), on: scheduler)
       .handleEvents(receiveOutput: { _ in secondCount += 1 })
       .eraseToEffect()
