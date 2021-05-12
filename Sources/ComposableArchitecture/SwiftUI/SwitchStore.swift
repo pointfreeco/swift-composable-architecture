@@ -61,7 +61,7 @@ where
   let fromLocalAction: (LocalAction) -> GlobalAction
   let content: (Store<LocalState, LocalAction>) -> Content
 
-  init(
+  public init(
     state toLocalState: CasePath<GlobalState, LocalState>,
     action fromLocalAction: @escaping (LocalAction) -> GlobalAction,
     @ViewBuilder then content: @escaping (Store<LocalState, LocalAction>) -> Content
