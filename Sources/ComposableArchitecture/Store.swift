@@ -252,8 +252,8 @@ public final class Store<State, Action> {
     self.isSending = true
     var currentState = self.state.value
     defer {
-      self.isSending = false
       self.state.value = currentState
+      self.isSending = false
     }
 
     while !self.bufferedActions.isEmpty {
