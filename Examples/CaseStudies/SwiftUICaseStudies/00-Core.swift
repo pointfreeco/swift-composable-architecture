@@ -78,7 +78,7 @@ struct RootEnvironment {
     downloadClient: .live,
     favorite: favorite(id:isFavorite:),
     fetchNumber: liveFetchNumber,
-    mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+    mainQueue: .main,
     numberFact: liveNumberFact(for:),
     userDidTakeScreenshot: liveUserDidTakeScreenshot,
     uuid: UUID.init,

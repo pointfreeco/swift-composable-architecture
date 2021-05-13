@@ -18,7 +18,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
           reducer: searchReducer.debug(),
           environment: SearchEnvironment(
             weatherClient: WeatherClient.live,
-            mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+            mainQueue: .main
           )
         )
       )

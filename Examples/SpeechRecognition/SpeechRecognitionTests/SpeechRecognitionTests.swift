@@ -12,7 +12,7 @@ class SpeechRecognitionTests: XCTestCase {
       initialState: .init(),
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
+        mainQueue: .immediate,
         speechClient: .mock(
           requestAuthorization: { Effect(value: .denied) }
         )
@@ -40,7 +40,7 @@ class SpeechRecognitionTests: XCTestCase {
       initialState: .init(),
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
+        mainQueue: .immediate,
         speechClient: .mock(
           requestAuthorization: { Effect(value: .restricted) }
         )
@@ -62,7 +62,7 @@ class SpeechRecognitionTests: XCTestCase {
       initialState: .init(),
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
+        mainQueue: .immediate,
         speechClient: .mock(
           finishTask: { _ in
             .fireAndForget { self.recognitionTaskSubject.send(completion: .finished) }
@@ -111,7 +111,7 @@ class SpeechRecognitionTests: XCTestCase {
       initialState: .init(),
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
+        mainQueue: .immediate,
         speechClient: .mock(
           recognitionTask: { _, _ in self.recognitionTaskSubject.eraseToEffect() },
           requestAuthorization: { Effect(value: .authorized) }
@@ -140,7 +140,7 @@ class SpeechRecognitionTests: XCTestCase {
       initialState: .init(),
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
+        mainQueue: .immediate,
         speechClient: .mock(
           recognitionTask: { _, _ in self.recognitionTaskSubject.eraseToEffect() },
           requestAuthorization: { Effect(value: .authorized) }

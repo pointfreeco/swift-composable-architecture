@@ -9,7 +9,7 @@ class EffectsBasicsTests: XCTestCase {
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
       environment: EffectsBasicsEnvironment(
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
+        mainQueue: .immediate,
         numberFact: { _ in fatalError("Unimplemented") }
       )
     )
@@ -30,7 +30,7 @@ class EffectsBasicsTests: XCTestCase {
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
       environment: EffectsBasicsEnvironment(
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
+        mainQueue: .immediate,
         numberFact: { n in Effect(value: "\(n) is a good number Brent") }
       )
     )

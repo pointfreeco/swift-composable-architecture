@@ -46,7 +46,7 @@ let dataSource: [CaseStudy] = [
         initialState: EagerNavigationState(),
         reducer: eagerNavigationReducer,
         environment: EagerNavigationEnvironment(
-          mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+          mainQueue: .main
         )
       )
     )
@@ -58,7 +58,7 @@ let dataSource: [CaseStudy] = [
         initialState: LazyNavigationState(),
         reducer: lazyNavigationReducer,
         environment: LazyNavigationEnvironment(
-          mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+          mainQueue: .main
         )
       )
     )
