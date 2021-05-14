@@ -31,22 +31,46 @@ public struct AppEnvironment {
   }
 }
 
+extension Reducer {
+  public func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
+    state toLocalState: CasePath<GlobalState, State>,
+    action toLocalAction: CasePath<GlobalAction, Action>,
+    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+    .init { globalState, globalAction, globalEnvironment in
+      guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
+
+      guard var localState = toLocalState.extract(from: globalState) else { return .none }
+      defer { globalState = toLocalState.embed(localState) }
+
+      let effects = self.run(
+        &localState,
+        localAction,
+        toLocalEnvironment(globalEnvironment)
+      )
+      .map(toLocalAction.embed)
+
+      return effects
+    }
+  }
+}
+
 public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
-//  loginReducer.optional().pullback(
-//    state: \.login,
-//    action: /AppAction.login,
-//    environment: {
-//      LoginEnvironment(
-//        authenticationClient: $0.authenticationClient,
-//        mainQueue: $0.mainQueue
-//      )
-//    }
-//  ),
-//  newGameReducer.optional().pullback(
-//    state: \.newGame,
-//    action: /AppAction.newGame,
-//    environment: { _ in NewGameEnvironment() }
-//  ),
+  loginReducer.pullback(
+    state: /AppState.login,
+    action: /AppAction.login,
+    environment: {
+      LoginEnvironment(
+        authenticationClient: $0.authenticationClient,
+        mainQueue: $0.mainQueue
+      )
+    }
+  ),
+  newGameReducer.pullback(
+    state: /AppState.newGame,
+    action: /AppAction.newGame,
+    environment: { _ in NewGameEnvironment() }
+  ),
   Reducer { state, action, environment in
     switch action {
     case let .login(.twoFactor(.twoFactorResponse(.success(response)))),
@@ -54,33 +78,37 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
       state = .newGame(NewGameState())
       return .none
 
-    case let .login(loginAction):
-      guard case var .login(loginState) = state else { return .none }
-      defer { state = .login(loginState) }
-      return loginReducer
-        .run(
-          &loginState, loginAction,
-          LoginEnvironment(
-            authenticationClient: environment.authenticationClient,
-            mainQueue: environment.mainQueue
-          )
-        )
-        .map(AppAction.login)
+//    case let .login(loginAction):
+//      guard case var .login(loginState) = state else { return .none }
+//      defer { state = .login(loginState) }
+//      return loginReducer
+//        .run(
+//          &loginState,
+//          loginAction,
+//          LoginEnvironment(
+//            authenticationClient: environment.authenticationClient,
+//            mainQueue: environment.mainQueue
+//          )
+//        )
+//        .map(AppAction.login)
 
     case .newGame(.logoutButtonTapped):
       state = .login(LoginState())
       return .none
 
-    case let .newGame(newGameAction):
-      guard case var .newGame(newGameState) = state else { return .none }
-      defer { state = .newGame(newGameState) }
-      return newGameReducer
-        .run(
-          &newGameState,
-          newGameAction,
-          NewGameEnvironment()
-        )
-        .map(AppAction.newGame)
+    case .login, .newGame:
+      return .none
+
+//    case let .newGame(newGameAction):
+//      guard case var .newGame(newGameState) = state else { return .none }
+//      defer { state = .newGame(newGameState) }
+//      return newGameReducer
+//        .run(
+//          &newGameState,
+//          newGameAction,
+//          NewGameEnvironment()
+//        )
+//        .map(AppAction.newGame)
     }
   }
 )

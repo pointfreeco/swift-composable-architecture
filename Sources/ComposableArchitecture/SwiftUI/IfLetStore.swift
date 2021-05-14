@@ -28,6 +28,51 @@ import SwiftUI
 ///        Text("Start!")
 ///      }
 ///
+
+
+public struct _IfLetStore<State, Action, IfContent, ElseContent>: View
+where
+  IfContent: View,
+  ElseContent: View
+{
+  private let store: Store<State?, Action>
+  private let thenContent: (Store<State, Action>) -> IfContent
+  private let elseContent: () -> ElseContent
+
+  public init(
+    _ store: Store<State?, Action>,
+    then thenContent: @escaping (Store<State, Action>) -> IfContent,
+    else elseContent: @escaping () -> ElseContent
+  ) {
+    self.store = store
+    self.thenContent = thenContent
+    self.elseContent = elseContent
+  }
+
+  public var body: some View {
+    WithViewStore(self.store, removeDuplicates: { ($0 != nil) == ($1 != nil) }) { viewStore in
+      if let state = viewStore.state {
+        self.thenContent(self.store.scope(state: { $0 ?? state }))
+      } else {
+        self.elseContent()
+      }
+    }
+  }
+}
+
+extension _IfLetStore where ElseContent == EmptyView {
+  public init(
+    _ store: Store<State?, Action>,
+    then thenContent: @escaping (Store<State, Action>) -> IfContent
+  ) {
+    self.store = store
+    self.thenContent = thenContent
+    self.elseContent = { EmptyView() }
+  }
+}
+
+
+
 public struct IfLetStore<State, Action, Content>: View where Content: View {
   private let content: (ViewStore<State?, Action>) -> Content
   private let store: Store<State?, Action>

@@ -45,10 +45,18 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
   }
 
   public var body: some View {
-    WithViewStore(self.store, removeDuplicates: { Tag($0) == Tag($1) }) { viewStore in
+//    WithViewStore(self.store, removeDuplicates: { Tag($0) == Tag($1) }) { _ in
       self.content()
-        .environmentObject(viewStore)
-    }
+        .environmentObject(StoreObservableObject(store: self.store))
+//    }
+  }
+}
+
+private class StoreObservableObject<State, Action>: ObservableObject {
+  let wrappedStore: Store<State, Action>
+
+  init(store: Store<State, Action>) {
+    self.wrappedStore = store
   }
 }
 
@@ -56,7 +64,7 @@ public struct CaseStore<GlobalState, GlobalAction, LocalState, LocalAction, Cont
 where
   Content: View
 {
-  @EnvironmentObject var viewStore: ViewStore<GlobalState, GlobalAction>
+  @EnvironmentObject private var store: StoreObservableObject<GlobalState, GlobalAction>
   let toLocalState: CasePath<GlobalState, LocalState>
   let fromLocalAction: (LocalAction) -> GlobalAction
   let content: (Store<LocalState, LocalAction>) -> Content
@@ -73,7 +81,7 @@ where
 
   public var body: some View {
     IfLetStore(
-      self.viewStore.store.scope(
+      self.store.wrappedStore.scope(
         state: self.toLocalState.extract(from:),
         action: self.fromLocalAction
       ),
