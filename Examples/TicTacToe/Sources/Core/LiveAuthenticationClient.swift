@@ -9,7 +9,7 @@ extension AuthenticationClient {
       (request.email.contains("@") && request.password == "password"
         ? Effect(value: .init(token: "deadbeef", twoFactorRequired: request.email.contains("2fa")))
         : Effect(error: .invalidUserPassword))
-        .delay(for: 1, scheduler: DispatchQueue.global())
+        .delay(for: 1, scheduler: queue)
         .eraseToEffect()
     },
     twoFactor: { request in
@@ -18,7 +18,9 @@ extension AuthenticationClient {
         : request.code != "1234"
           ? Effect(error: .invalidTwoFactor)
           : Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
-        .delay(for: 1, scheduler: DispatchQueue.global())
+        .delay(for: 1, scheduler: queue)
         .eraseToEffect()
     })
 }
+
+private let queue = DispatchQueue(label: "AuthenticationClient")

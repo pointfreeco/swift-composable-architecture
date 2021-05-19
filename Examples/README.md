@@ -5,12 +5,6 @@ This directory holds many case studies and applications to demonstrate solving v
 * **Case Studies**
   <br> Demonstrates how to solve some common application problems in an isolated environment, in both SwiftUI and UIKit. Things like bindings, navigation, effects, and reusable components.
 
-* **Location Manager**
-  <br> This application uses Apple's CoreLocation and MapKit frameworks to allow the user to search for points of interest on a map. It also includes the ability to center the map on your current location, as well as a full test suite for how the app interacts with `CLLocationManager` and `MKLocalSearch`.
-
-* **Motion Manager**
-  <br> This application uses Apple's CoreMotion framework to show a graph of device movements. It's a demonstration of how to wrap complex dependencies in the `Effect` type so that you can interact with them in the reducer _and_ write tests for its logic.
-
 * **Search**
   <br> Demonstrates how to build a search feature, with debouncing of typing events, and comes with a full test suite to performs end-to-end testing from user actions to running side effects.
 

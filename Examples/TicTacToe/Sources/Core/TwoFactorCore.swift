@@ -23,6 +23,10 @@ public enum TwoFactorAction: Equatable {
   case twoFactorResponse(Result<AuthenticationResponse, AuthenticationError>)
 }
 
+public struct TwoFactorTearDownToken: Hashable {
+  public init() {}
+}
+
 public struct TwoFactorEnvironment {
   public var authenticationClient: AuthenticationClient
   public var mainQueue: AnySchedulerOf<DispatchQueue>
@@ -56,9 +60,10 @@ public let twoFactorReducer = Reducer<TwoFactorState, TwoFactorAction, TwoFactor
       .receive(on: environment.mainQueue)
       .catchToEffect()
       .map(TwoFactorAction.twoFactorResponse)
+      .cancellable(id: TwoFactorTearDownToken())
 
   case let .twoFactorResponse(.failure(error)):
-    state.alert = .init(title: error.localizedDescription)
+    state.alert = .init(title: TextState(error.localizedDescription))
     state.isTwoFactorRequestInFlight = false
     return .none
 

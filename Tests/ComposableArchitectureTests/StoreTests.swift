@@ -18,7 +18,7 @@ final class StoreTests: XCTestCase {
   }
 
   func testCancellableIsRemovedWhenEffectCompletes() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
     let effect = Effect<Void, Never>(value: ())
       .delay(for: 1, scheduler: scheduler)
       .eraseToEffect()
@@ -100,7 +100,7 @@ final class StoreTests: XCTestCase {
     var outputs: [String] = []
 
     parentStore
-      .scope(state: { $0.map { "\($0)" }.removeDuplicates() })
+      .publisherScope(state: { $0.map { "\($0)" }.removeDuplicates() })
       .sink { childStore in
         childStore.state
           .sink { outputs.append($0) }
@@ -145,41 +145,58 @@ final class StoreTests: XCTestCase {
     var numCalls2 = 0
     var numCalls3 = 0
 
-    let store = Store(initialState: 0, reducer: counterReducer, environment: ())
+    let store1 = Store(initialState: 0, reducer: counterReducer, environment: ())
+    let store2 =
+      store1
       .scope(state: { (count: Int) -> Int in
         numCalls1 += 1
         return count
       })
+    let store3 =
+      store2
       .scope(state: { (count: Int) -> Int in
         numCalls2 += 1
         return count
       })
+    let store4 =
+      store3
       .scope(state: { (count: Int) -> Int in
         numCalls3 += 1
         return count
       })
 
+    _ = ViewStore(store1)
+    _ = ViewStore(store2)
+    _ = ViewStore(store3)
+    let viewStore4 = ViewStore(store4)
+
     XCTAssertEqual(numCalls1, 2)
     XCTAssertEqual(numCalls2, 2)
     XCTAssertEqual(numCalls3, 2)
 
-    store.send(())
+    viewStore4.send(())
 
     XCTAssertEqual(numCalls1, 4)
     XCTAssertEqual(numCalls2, 5)
     XCTAssertEqual(numCalls3, 6)
 
-    store.send(())
+    viewStore4.send(())
 
     XCTAssertEqual(numCalls1, 6)
     XCTAssertEqual(numCalls2, 8)
     XCTAssertEqual(numCalls3, 10)
 
-    store.send(())
+    viewStore4.send(())
 
     XCTAssertEqual(numCalls1, 8)
     XCTAssertEqual(numCalls2, 11)
     XCTAssertEqual(numCalls3, 14)
+
+    viewStore4.send(())
+
+    XCTAssertEqual(numCalls1, 10)
+    XCTAssertEqual(numCalls2, 14)
+    XCTAssertEqual(numCalls3, 18)
   }
 
   func testSynchronousEffectsSentAfterSinking() {
@@ -245,7 +262,7 @@ final class StoreTests: XCTestCase {
     var outputs: [Int] = []
 
     parentStore
-      .scope { $0.removeDuplicates() }
+      .publisherScope { $0.removeDuplicates() }
       .sink { outputs.append($0.state.value) }
       .store(in: &self.cancellables)
 
@@ -328,22 +345,95 @@ final class StoreTests: XCTestCase {
       environment: ()
     )
 
-    parentStore.ifLet { childStore in
-      let vs = ViewStore(childStore)
+    parentStore
+      .ifLet(then: { childStore in
+        let vs = ViewStore(childStore)
 
-      vs
-        .publisher
-        .sink { _ in }
-        .store(in: &self.cancellables)
+        vs
+          .publisher
+          .sink { _ in }
+          .store(in: &self.cancellables)
 
-      vs.send(false)
-      _ = XCTWaiter.wait(for: [.init()], timeout: 0.1)
-      vs.send(false)
-      _ = XCTWaiter.wait(for: [.init()], timeout: 0.1)
-      vs.send(false)
-      _ = XCTWaiter.wait(for: [.init()], timeout: 0.1)
-      XCTAssertEqual(vs.state, 3)
+        vs.send(false)
+        _ = XCTWaiter.wait(for: [.init()], timeout: 0.1)
+        vs.send(false)
+        _ = XCTWaiter.wait(for: [.init()], timeout: 0.1)
+        vs.send(false)
+        _ = XCTWaiter.wait(for: [.init()], timeout: 0.1)
+        XCTAssertEqual(vs.state, 3)
+      })
+      .store(in: &self.cancellables)
+  }
+
+  func testActionQueuing() {
+    let subject = PassthroughSubject<Void, Never>()
+
+    enum Action: Equatable {
+      case incrementTapped
+      case `init`
+      case doIncrement
     }
-    .store(in: &self.cancellables)
+
+    let store = TestStore(
+      initialState: 0,
+      reducer: Reducer<Int, Action, Void> { state, action, _ in
+        switch action {
+        case .incrementTapped:
+          subject.send()
+          return .none
+
+        case .`init`:
+          return subject.map { .doIncrement }.eraseToEffect()
+
+        case .doIncrement:
+          state += 1
+          return .none
+        }
+      },
+      environment: ()
+    )
+
+    store.send(.`init`)
+    store.send(.incrementTapped)
+    store.receive(.doIncrement) {
+      $0 = 1
+    }
+    store.send(.incrementTapped)
+    store.receive(.doIncrement) {
+      $0 = 2
+    }
+    subject.send(completion: .finished)
+  }
+
+  func testCoalesceSynchronousActions() {
+    let store = Store(
+      initialState: 0,
+      reducer: Reducer<Int, Int, Void> { state, action, _ in
+        switch action {
+        case 0:
+          return .merge(
+            Effect(value: 1),
+            Effect(value: 2),
+            Effect(value: 3)
+          )
+        default:
+          state = action
+          return .none
+        }
+      },
+      environment: ()
+    )
+
+    var emissions: [Int] = []
+    let viewStore = ViewStore(store)
+    viewStore.publisher
+      .sink { emissions.append($0) }
+      .store(in: &self.cancellables)
+
+    XCTAssertEqual(emissions, [0])
+
+    viewStore.send(0)
+
+    XCTAssertEqual(emissions, [0, 1, 2, 3])
   }
 }

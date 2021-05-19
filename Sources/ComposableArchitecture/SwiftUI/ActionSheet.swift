@@ -4,7 +4,7 @@ import SwiftUI
 /// `Action` generic is the type of actions that can be sent from tapping on a button in the sheet.
 ///
 /// This type can be used in your application's state in order to control the presentation or
-/// dismissal of action sheets. It is preferrable to use this API instead of the default SwiftUI API
+/// dismissal of action sheets. It is preferable to use this API instead of the default SwiftUI API
 /// for action sheets because SwiftUI uses 2-way bindings in order to control the showing and
 /// dismissal of sheets, and that does not play nicely with the Composable Architecture. The library
 /// requires that all state mutations happen by sending an action so that a reducer can handle that
@@ -52,8 +52,8 @@ import SwiftUI
 ///           state.actionSheet = .init(
 ///             title: "What would you like to do?",
 ///             buttons: [
-///               .default("Favorite", send: .favoriteTapped),
-///               .destructive("Delete", send: .deleteTapped),
+///               .default(TextState("Favorite"), send: .favoriteTapped),
+///               .destructive(TextState("Delete"), send: .deleteTapped),
 ///               .cancel(),
 ///             ]
 ///           )
@@ -82,22 +82,20 @@ import SwiftUI
 ///       environment: .mock
 ///     )
 ///
-///     store.assert(
-///       .send(.infoTapped) {
-///         $0.actionSheet = .init(
-///           title: "What would you like to do?",
-///           buttons: [
-///             .default("Favorite", send: .favoriteTapped),
-///             .destructive("Delete", send: .deleteTapped),
-///             .cancel(),
-///           ]
-///         )
-///       },
-///       .send(.favoriteTapped) {
-///         $0.actionSheet = nil
-///         // Also verify that favoriting logic executed correctly
-///       }
-///     )
+///     store.send(.infoTapped) {
+///       $0.actionSheet = .init(
+///         title: "What would you like to do?",
+///         buttons: [
+///           .default(TextState("Favorite"), send: .favoriteTapped),
+///           .destructive(TextState("Delete"), send: .deleteTapped),
+///           .cancel(),
+///         ]
+///       )
+///     }
+///     store.send(.favoriteTapped) {
+///       $0.actionSheet = nil
+///       // Also verify that favoriting logic executed correctly
+///     }
 ///
 @available(iOS 13, *)
 @available(macCatalyst 13, *)
@@ -107,12 +105,12 @@ import SwiftUI
 public struct ActionSheetState<Action> {
   public let id = UUID()
   public var buttons: [Button]
-  public var message: String?
-  public var title: String
+  public var message: TextState?
+  public var title: TextState
 
   public init(
-    title: String,
-    message: String? = nil,
+    title: TextState,
+    message: TextState? = nil,
     buttons: [Button]
   ) {
     self.buttons = buttons

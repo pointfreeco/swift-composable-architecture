@@ -41,7 +41,7 @@ final class CounterViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
 
-    self.view.backgroundColor = .white
+    self.view.backgroundColor = .systemBackground
 
     let decrementButton = UIButton(type: .system)
     decrementButton.addTarget(self, action: #selector(decrementButtonTapped), for: .touchUpInside)

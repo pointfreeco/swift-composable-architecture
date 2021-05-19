@@ -61,7 +61,9 @@ struct OptionalBasicsView: View {
 
           IfLetStore(
             self.store.scope(
-              state: { $0.optionalCounter }, action: OptionalBasicsAction.optionalCounter),
+              state: \.optionalCounter,
+              action: OptionalBasicsAction.optionalCounter
+            ),
             then: { store in
               VStack(alignment: .leading, spacing: 16) {
                 Text(template: "`CounterState` is non-`nil`", .body)
@@ -69,7 +71,9 @@ struct OptionalBasicsView: View {
                   .buttonStyle(BorderlessButtonStyle())
               }
             },
-            else: Text(template: "`CounterState` is `nil`", .body)
+            else: {
+              Text(template: "`CounterState` is `nil`", .body)
+            }
           )
         }
       }

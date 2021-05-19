@@ -63,19 +63,19 @@ let voiceMemoReducer = Reducer<VoiceMemo, VoiceMemoAction, VoiceMemoEnvironment>
       memo.mode = .playing(progress: 0)
       let start = environment.mainQueue.now
       return .merge(
-        environment.audioPlayerClient
-          .play(PlayerId(), memo.url)
-          .catchToEffect()
-          .map(VoiceMemoAction.audioPlayerClient)
-          .cancellable(id: PlayerId()),
-
         Effect.timer(id: TimerId(), every: 0.5, on: environment.mainQueue)
           .map {
             .timerUpdated(
               TimeInterval($0.dispatchTime.uptimeNanoseconds - start.dispatchTime.uptimeNanoseconds)
                 / TimeInterval(NSEC_PER_SEC)
             )
-          }
+          },
+
+        environment.audioPlayerClient
+          .play(PlayerId(), memo.url)
+          .catchToEffect()
+          .map(VoiceMemoAction.audioPlayerClient)
+          .cancellable(id: PlayerId())
       )
 
     case .playing:
@@ -120,7 +120,7 @@ struct VoiceMemoView: View {
       ZStack(alignment: .leading) {
         if self.viewStore.mode.isPlaying {
           Rectangle()
-            .foregroundColor(Color(white: 0.9))
+            .foregroundColor(Color(.systemGray5))
             .frame(width: proxy.size.width * CGFloat(self.viewStore.mode.progress ?? 0))
             .animation(.linear(duration: 0.5))
         }
@@ -129,7 +129,7 @@ struct VoiceMemoView: View {
           TextField(
             "Untitled, \(dateFormatter.string(from: self.viewStore.date))",
             text: self.viewStore.binding(
-              get: { $0.title }, send: VoiceMemoAction.titleTextFieldChanged)
+              get: \.title, send: VoiceMemoAction.titleTextFieldChanged)
           )
 
           Spacer()
@@ -137,7 +137,7 @@ struct VoiceMemoView: View {
           dateComponentsFormatter.string(from: self.currentTime).map {
             Text($0)
               .font(Font.footnote.monospacedDigit())
-              .foregroundColor(.gray)
+              .foregroundColor(Color(.systemGray))
           }
 
           Button(action: { self.viewStore.send(.playButtonTapped) }) {
@@ -145,11 +145,12 @@ struct VoiceMemoView: View {
               .font(Font.system(size: 22))
           }
         }
+        .frame(maxHeight: .infinity, alignment: .center)
         .padding([.leading, .trailing])
       }
     }
     .buttonStyle(BorderlessButtonStyle())
-    .listRowBackground(self.viewStore.mode.isPlaying ? Color(white: 0.97) : .clear)
+    .listRowBackground(self.viewStore.mode.isPlaying ? Color(.systemGray6) : .clear)
     .listRowInsets(EdgeInsets())
   }
 

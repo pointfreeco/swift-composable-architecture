@@ -10,24 +10,22 @@ class NewGameSwiftUITests: XCTestCase {
     reducer: newGameReducer,
     environment: NewGameEnvironment()
   )
-  .scope(state: { $0.view }, action: NewGameAction.view)
+  .scope(state: NewGameView.ViewState.init, action: NewGameAction.init)
 
   func testNewGame() {
-    self.store.assert(
-      .send(.xPlayerNameChanged("Blob Sr.")) {
-        $0.xPlayerName = "Blob Sr."
-      },
-      .send(.oPlayerNameChanged("Blob Jr.")) {
-        $0.oPlayerName = "Blob Jr."
-        $0.isLetsPlayButtonDisabled = false
-      },
-      .send(.letsPlayButtonTapped) {
-        $0.isGameActive = true
-      },
-      .send(.gameDismissed) {
-        $0.isGameActive = false
-      },
-      .send(.logoutButtonTapped)
-    )
+    self.store.send(.xPlayerNameChanged("Blob Sr.")) {
+      $0.xPlayerName = "Blob Sr."
+    }
+    self.store.send(.oPlayerNameChanged("Blob Jr.")) {
+      $0.oPlayerName = "Blob Jr."
+      $0.isLetsPlayButtonDisabled = false
+    }
+    self.store.send(.letsPlayButtonTapped) {
+      $0.isGameActive = true
+    }
+    self.store.send(.gameDismissed) {
+      $0.isGameActive = false
+    }
+    self.store.send(.logoutButtonTapped)
   }
 }

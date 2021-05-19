@@ -16,36 +16,34 @@ class LifecycleTests: XCTestCase {
       )
     )
 
-    store.assert(
-      .send(.toggleTimerButtonTapped) {
-        $0.count = 0
-      },
+    store.send(.toggleTimerButtonTapped) {
+      $0.count = 0
+    }
 
-      .send(.timer(.onAppear)),
+    store.send(.timer(.onAppear))
 
-      .do { scheduler.advance(by: .seconds(1)) },
-      .receive(.timer(.action(.tick))) {
-        $0.count = 1
-      },
+    scheduler.advance(by: .seconds(1))
+    store.receive(.timer(.action(.tick))) {
+      $0.count = 1
+    }
 
-      .do { scheduler.advance(by: .seconds(1)) },
-      .receive(.timer(.action(.tick))) {
-        $0.count = 2
-      },
+    scheduler.advance(by: .seconds(1))
+    store.receive(.timer(.action(.tick))) {
+      $0.count = 2
+    }
 
-      .send(.timer(.action(.incrementButtonTapped))) {
-        $0.count = 3
-      },
+    store.send(.timer(.action(.incrementButtonTapped))) {
+      $0.count = 3
+    }
 
-      .send(.timer(.action(.decrementButtonTapped))) {
-        $0.count = 2
-      },
+    store.send(.timer(.action(.decrementButtonTapped))) {
+      $0.count = 2
+    }
 
-      .send(.toggleTimerButtonTapped) {
-        $0.count = nil
-      },
+    store.send(.toggleTimerButtonTapped) {
+      $0.count = nil
+    }
 
-      .send(.timer(.onDisappear))
-    )
+    store.send(.timer(.onDisappear))
   }
 }

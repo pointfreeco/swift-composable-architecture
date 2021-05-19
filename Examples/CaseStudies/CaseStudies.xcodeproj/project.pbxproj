@@ -44,6 +44,7 @@
 		DC25DC5F2450F13200082E81 /* IfLetStoreController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC25DC5E2450F13200082E81 /* IfLetStoreController.swift */; };
 		DC25DC612450F2B000082E81 /* LoadThenNavigate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC25DC602450F2B000082E81 /* LoadThenNavigate.swift */; };
 		DC25DC642450F2DF00082E81 /* ActivityIndicatorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC25DC632450F2DF00082E81 /* ActivityIndicatorViewController.swift */; };
+		DC27215625BF84FC00D9C8DB /* 01-GettingStarted-BindingBasicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC27215525BF84FC00D9C8DB /* 01-GettingStarted-BindingBasicsTests.swift */; };
 		DC2E370D24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC2E370C24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift */; };
 		DC4C6EAC2450DD380066A05D /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4C6EAB2450DD380066A05D /* SceneDelegate.swift */; };
 		DC4C6EAE2450DD380066A05D /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4C6EAD2450DD380066A05D /* RootViewController.swift */; };
@@ -54,6 +55,7 @@
 		DC4C6ED62450E1050066A05D /* CounterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4C6ED52450E1050066A05D /* CounterViewController.swift */; };
 		DC4C6ED82450E4570066A05D /* UIViewRepresented.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4C6ED72450E4570066A05D /* UIViewRepresented.swift */; };
 		DC4C6EDA2450E6050066A05D /* NavigateAndLoad.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4C6ED92450E6050066A05D /* NavigateAndLoad.swift */; };
+		DC5B505125C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5B505025C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift */; };
 		DC630FDA2451016B00BAECBA /* ListsOfState.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC630FD92451016B00BAECBA /* ListsOfState.swift */; };
 		DC634B252448D15B00DAA016 /* 04-HigherOrderReducers-ReusableFavoritingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC634B242448D15B00DAA016 /* 04-HigherOrderReducers-ReusableFavoritingTests.swift */; };
 		DC88D8A6245341EC0077F427 /* 01-GettingStarted-Animations.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC88D8A5245341EC0077F427 /* 01-GettingStarted-Animations.swift */; };
@@ -182,6 +184,7 @@
 		DC25DC5E2450F13200082E81 /* IfLetStoreController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IfLetStoreController.swift; sourceTree = "<group>"; };
 		DC25DC602450F2B000082E81 /* LoadThenNavigate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadThenNavigate.swift; sourceTree = "<group>"; };
 		DC25DC632450F2DF00082E81 /* ActivityIndicatorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityIndicatorViewController.swift; sourceTree = "<group>"; };
+		DC27215525BF84FC00D9C8DB /* 01-GettingStarted-BindingBasicsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-BindingBasicsTests.swift"; sourceTree = "<group>"; };
 		DC2E370C24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-StrictReducers.swift"; sourceTree = "<group>"; };
 		DC4C6EA72450DD380066A05D /* UIKitCaseStudies.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UIKitCaseStudies.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC4C6EAB2450DD380066A05D /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -196,6 +199,7 @@
 		DC4C6ED52450E1050066A05D /* CounterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterViewController.swift; sourceTree = "<group>"; };
 		DC4C6ED72450E4570066A05D /* UIViewRepresented.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewRepresented.swift; sourceTree = "<group>"; };
 		DC4C6ED92450E6050066A05D /* NavigateAndLoad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigateAndLoad.swift; sourceTree = "<group>"; };
+		DC5B505025C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Bindings-Forms.swift"; sourceTree = "<group>"; };
 		DC630FD92451016B00BAECBA /* ListsOfState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListsOfState.swift; sourceTree = "<group>"; };
 		DC634B242448D15B00DAA016 /* 04-HigherOrderReducers-ReusableFavoritingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-ReusableFavoritingTests.swift"; sourceTree = "<group>"; };
 		DC88D8A5245341EC0077F427 /* 01-GettingStarted-Animations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Animations.swift"; sourceTree = "<group>"; };
@@ -387,6 +391,7 @@
 				CAE962FC24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndActionSheets.swift */,
 				DC88D8A5245341EC0077F427 /* 01-GettingStarted-Animations.swift */,
 				CA25E5D124463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift */,
+				DC5B505025C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift */,
 				DCC68EE02447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift */,
 				DC89C4432446111B006900B9 /* 01-GettingStarted-Counter.swift */,
 				DCC68EDC2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift */,
@@ -421,6 +426,7 @@
 			children = (
 				CA50BE5F24A8F46500FE7DBA /* 01-GettingStarted-AlertsAndActionSheetsTests.swift */,
 				CA34170724A4E89500FAF950 /* 01-GettingStarted-AnimationsTests.swift */,
+				DC27215525BF84FC00D9C8DB /* 01-GettingStarted-BindingBasicsTests.swift */,
 				4F5AC11E24ECC7E4009DC50B /* 01-GettingStarted-SharedStateTests.swift */,
 				CAA9ADC324465AB00003A984 /* 02-Effects-BasicsTests.swift */,
 				CAA9ADC724465D950003A984 /* 02-Effects-CancellationTests.swift */,
@@ -584,7 +590,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1150;
-				LastUpgradeCheck = 1200;
+				LastUpgradeCheck = 1240;
 				ORGANIZATIONNAME = "Point-Free";
 				TargetAttributes = {
 					CAF88E6F24B8E26D00539345 = {
@@ -749,6 +755,7 @@
 				CA6AC2642451135C00C71CB3 /* ReusableComponents-Download.swift in Sources */,
 				CA6AC2662451135C00C71CB3 /* DownloadComponent.swift in Sources */,
 				CA3E4C5B24B4FA0E00447C0B /* 04-HigherOrderReducers-Lifecycle.swift in Sources */,
+				DC5B505125C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift in Sources */,
 				CAA9ADC22446587C0003A984 /* 02-Effects-Basics.swift in Sources */,
 				DC89C41B24460F95006900B9 /* 00-RootView.swift in Sources */,
 				DCC68EDD2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift in Sources */,
@@ -772,6 +779,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC27215625BF84FC00D9C8DB /* 01-GettingStarted-BindingBasicsTests.swift in Sources */,
 				CA0C51FB245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift in Sources */,
 				DC634B252448D15B00DAA016 /* 04-HigherOrderReducers-ReusableFavoritingTests.swift in Sources */,
 				CAA9ADC824465D950003A984 /* 02-Effects-CancellationTests.swift in Sources */,
@@ -1006,6 +1014,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -1065,6 +1074,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;

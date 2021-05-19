@@ -69,7 +69,7 @@ class LazyNavigationViewController: UIViewController {
 
     self.title = "Load then navigate"
 
-    self.view.backgroundColor = .white
+    self.view.backgroundColor = .systemBackground
 
     let button = UIButton(type: .system)
     button.addTarget(self, action: #selector(loadOptionalCounterTapped), for: .touchUpInside)
@@ -95,7 +95,7 @@ class LazyNavigationViewController: UIViewController {
       .store(in: &self.cancellables)
 
     self.store
-      .scope(state: { $0.optionalCounter }, action: LazyNavigationAction.optionalCounter)
+      .scope(state: \.optionalCounter, action: LazyNavigationAction.optionalCounter)
       .ifLet(
         then: { [weak self] store in
           self?.navigationController?.pushViewController(
@@ -130,7 +130,7 @@ struct LazyNavigationViewController_Previews: PreviewProvider {
           initialState: LazyNavigationState(),
           reducer: lazyNavigationReducer,
           environment: LazyNavigationEnvironment(
-            mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+            mainQueue: .main
           )
         )
       )

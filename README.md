@@ -1,9 +1,8 @@
 # The Composable Architecture
 
-[![Swift 5.2](https://img.shields.io/badge/swift-5.2-ED523F.svg?style=flat)](https://swift.org/download/)
-[![Swift 5.1](https://img.shields.io/badge/swift-5.1-ED523F.svg?style=flat)](https://swift.org/download/)
 [![CI](https://github.com/pointfreeco/swift-composable-architecture/workflows/CI/badge.svg)](https://github.com/pointfreeco/swift-composable-architecture/actions?query=workflow%3ACI)
-[![@pointfreeco](https://img.shields.io/badge/contact-@pointfreeco-5AA9E7.svg?style=flat)](https://twitter.com/pointfreeco)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fpointfreeco%2Fswift-composable-architecture%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/pointfreeco/swift-composable-architecture)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fpointfreeco%2Fswift-composable-architecture%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/pointfreeco/swift-composable-architecture)
 
 The Composable Architecture (TCA, for short) is a library for building applications in a consistent and understandable way, with composition, testing, and ergonomics in mind. It can be used in SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, tvOS, and watchOS).
 
@@ -61,13 +60,15 @@ This repo comes with _lots_ of examples to demonstrate how to solve common and c
   * Navigation
   * Higher-order reducers
   * Reusable components
-* [Location manager](./Examples/LocationManager)
-* [Motion manager](./Examples/MotionManager)
+* [Location manager](https://github.com/pointfreeco/composable-core-location/tree/main/Examples/LocationManager)
+* [Motion manager](https://github.com/pointfreeco/composable-core-motion/tree/main/Examples/MotionManager)
 * [Search](./Examples/Search)
 * [Speech Recognition](./Examples/SpeechRecognition)
 * [Tic-Tac-Toe](./Examples/TicTacToe)
 * [Todos](./Examples/Todos)
 * [Voice memos](./Examples/VoiceMemos)
+
+Looking for something more substantial? Check out the source code for [isowords](https://github.com/pointfreeco/isowords), an iOS word search game built in SwiftUI and the Composable Architecture.
 
 ## Basic Usage
 
@@ -257,7 +258,7 @@ let appView = AppView(
     initialState: AppState(),
     reducer: appReducer,
     environment: AppEnvironment(
-      mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+      mainQueue: .main,
       numberFact: { number in Effect(value: "\(number) is a good number Brent") }
     )
   )
@@ -271,7 +272,7 @@ And that is enough to get something on the screen to play around with. It's defi
 To test, you first create a `TestStore` with the same information that you would to create a regular `Store`, except this time we can supply test-friendly dependencies. In particular, we use a test scheduler instead of the live `DispatchQueue.main` scheduler because that allows us to control when work is executed, and we don't have to artificially wait for queues to catch up.
 
 ```swift
-let scheduler = DispatchQueue.testScheduler
+let scheduler = DispatchQueue.test
 
 let store = TestStore(
   initialState: AppState(),
@@ -288,28 +289,27 @@ Once the test store is created we can use it to make an assertion of an entire u
 The test below has the user increment and decrement the count, then they ask for a number fact, and the response of that effect triggers an alert to be shown, and then dismissing the alert causes the alert to go away.
 
 ```swift
-store.assert(
-  // Test that tapping on the increment/decrement buttons changes the count
-  .send(.incrementButtonTapped) {
-    $0.count = 1
-  },
-  .send(.decrementButtonTapped) {
-    $0.count = 0
-  },
+// Test that tapping on the increment/decrement buttons changes the count
+store.send(.incrementButtonTapped) {
+  $0.count = 1
+}
+store.send(.decrementButtonTapped) {
+  $0.count = 0
+}
 
-  // Test that tapping the fact button causes us to receive a response from the effect. Note
-  // that we have to advance the scheduler because we used `.receive(on:)` in the reducer.
-  .send(.numberFactButtonTapped),
-  .do { scheduler.advance() },
-  .receive(.numberFactResponse(.success("0 is a good number Brent"))) {
-    $0.numberFactAlert = "0 is a good number Brent"
-  },
+// Test that tapping the fact button causes us to receive a response from the effect. Note
+// that we have to advance the scheduler because we used `.receive(on:)` in the reducer.
+store.send(.numberFactButtonTapped)
 
-  // And finally dismiss the alert
-  .send(.factAlertDismissed) {
-    $0.numberFactAlert = nil
-  }
-)
+scheduler.advance()
+store.receive(.numberFactResponse(.success("0 is a good number Brent"))) {
+  $0.numberFactAlert = "0 is a good number Brent"
+}
+
+// And finally dismiss the alert
+store.send(.factAlertDismissed) {
+  $0.numberFactAlert = nil
+}
 ```
 
 That is the basics of building and testing a feature in the Composable Architecture. There are _a lot_ more things to be explored, such as composition, modularity, adaptability, and complex effects. The [Examples](./Examples) directory has a bunch of projects to explore to see more advanced usages.
@@ -357,8 +357,8 @@ One of the most important principles of the Composable Architecture is that side
 
 However, this also means that many libraries and SDKs you interact with on a daily basis need to be retrofitted to be a little more friendly to the Composable Architecture style. That's why we'd like to ease the pain of using some of Apple's most popular frameworks by providing wrapper libraries that expose their functionality in a way that plays nicely with our library. So far we support:
 
-* [`ComposableCoreLocation`](./Sources/ComposableCoreLocation/): A wrapper around `CLLocationManager` that makes it easy to use from a reducer, and easy to write tests for how your logic interacts with `CLLocationManager`'s functionality.
-* [`ComposableCoreMotion`](./Sources/ComposableCoreMotion/): A wrapper around `CMMotionManager` that makes it easy to use from a reducer, and easy to write tests for how your logic interacts with `CMMotionManager`'s functionality.
+* [`ComposableCoreLocation`](https://github.com/pointfreeco/composable-core-location): A wrapper around `CLLocationManager` that makes it easy to use from a reducer, and easy to write tests for how your logic interacts with `CLLocationManager`'s functionality.
+* [`ComposableCoreMotion`](https://github.com/pointfreeco/composable-core-motion): A wrapper around `CMMotionManager` that makes it easy to use from a reducer, and easy to write tests for how your logic interacts with `CMMotionManager`'s functionality.
 * More to come soon. Keep an eye out 😉
 
 If you are interested in contributing a wrapper library for a framework that we have not yet covered, feel free to open an issue expressing your interest so that we can discuss a path forward.
@@ -381,13 +381,15 @@ If you are interested in contributing a wrapper library for a framework that we 
   <details>
     <summary>Expand to see answer</summary>
 
+    All interactions with an instance of `Store` (including all of its scopes and derived `ViewStore`s) must be done on the same thread. If the store is powering a SwiftUI or UIKit view then, all interactions must be done on the _main_ thread.
+
     When an action is sent to the `Store`, a reducer is run on the current state, and this process cannot be done from multiple threads. A possible work around is to use a queue in `send`s implementation, but this introduces a few new complications:
 
     1. If done simply with `DispatchQueue.main.async` you will incur a thread hop even when you are already on the main thread. This can lead to unexpected behavior in UIKit and SwiftUI, where sometimes you are required to do work synchronously, such as in animation blocks.
 
     2. It is possible to create a scheduler that performs its work immediately when on the main thread and otherwise uses `DispatchQueue.main.async` (_e.g._ see ReactiveSwift's [`UIScheduler`](https://github.com/ReactiveCocoa/ReactiveSwift/blob/f97db218c0236b0c6ef74d32adb3d578792969c0/Sources/Scheduler.swift)). This introduces a lot more complexity, and should probably not be adopted without having a very good reason.
 
-    At the end of the day, we require `Store` to be used in much the same way that you interact with Apple's APIs. Just as `URLSession` delivers its results on a background thread, thus making you responsible for dispatching back to the main thread, the Composable Architecture makes you responsible for making sure to send actions on the main thread. If you are using an effect that may deliver its output on a non-main thread, you must explicitly perform `.receive(on:)` in order to force it back on the main thread.
+    This is why we require all actions be sent from the same thread. This requirement is in the same spirit of how `URLSession` and other Apple APIs are designed. Those APIs tend to deliver their outputs on whatever thread is most convenient for them, and then it is your responsibility to dispatch back to the main queue if that's what you need. The Composable Architecture makes you responsible for making sure to send actions on the main thread. If you are using an effect that may deliver its output on a non-main thread, you must explicitly perform `.receive(on:)` in order to force it back on the main thread.
 
     This approach makes the fewest number of assumptions about how effects are created and transformed, and prevents unnecessary thread hops and re-dispatching. It also provides some testing benefits. If your effects are not responsible for their own scheduling, then in tests all of the effects would run synchronously and immediately. You would not be able to test how multiple in-flight effects interleave with each other and affect the state of your application. However, by leaving scheduling out of the `Store` we get to test these aspects of our effects if we so desire, or we can ignore if we prefer. We have that flexibility.
 
@@ -420,7 +422,7 @@ You can add ComposableArchitecture to an Xcode project by adding it as a package
   2. Enter "https://github.com/pointfreeco/swift-composable-architecture" into the package repository URL text field
   3. Depending on how your project is structured:
       - If you have a single application target that needs access to the library, then add **ComposableArchitecture** directly to your application.
-      - If you want to use this library from multiple targets you must create a shared framework that depends on **ComposableArchitecture** and then depend on that framework in all of your targets. For an example of this, check out the [Tic-Tac-Toe](./Examples/TicTacToe) demo application, which splits lots of features into modules and consumes the static library in this fashion using the **TicTacToeCommon** framework.
+      - If you want to use this library from multiple Xcode targets, or mixing Xcode targets and SPM targets, you must create a shared framework that depends on **ComposableArchitecture** and then depend on that framework in all of your targets. For an example of this, check out the [Tic-Tac-Toe](./Examples/TicTacToe) demo application, which splits lots of features into modules and consumes the static library in this fashion using the **TicTacToeCommon** framework.
 
 ## Documentation
 
@@ -428,7 +430,13 @@ The latest documentation for the Composable Architecture APIs is available [here
 
 ## Help
 
-If you want to discuss the Composable Architecture or have a question about how to use it to solve a particular problem, ask around on [its Swift forum](https://forums.swift.org/c/related-projects/swift-composable-architecture).
+If you want to discuss the Composable Architecture or have a question about how to use it to solve a particular problem, you can start a topic in the [discussions](https://github.com/pointfreeco/swift-composable-architecture/discussions) tab of this repo, or ask around on [its Swift forum](https://forums.swift.org/c/related-projects/swift-composable-architecture).
+
+## Translations
+
+- A Korean translation of this README is available [here](https://gist.github.com/pilgwon/ea05e2207ab68bdd1f49dff97b293b17).
+
+If you'd like to contribute a translation, please [open a PR](https://github.com/pointfreeco/swift-composable-architecture/edit/main/README.md) with a link to a [Gist](https://gist.github.com)!
 
 ## Credits and thanks
 

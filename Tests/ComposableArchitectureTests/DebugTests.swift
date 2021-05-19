@@ -246,50 +246,6 @@ final class DebugTests: XCTestCase {
       debugOutput(URL(string: "https://www.pointfree.co")!),
       "https://www.pointfree.co"
     )
-    XCTAssertEqual(
-      debugOutput(DispatchQueue.main),
-      "DispatchQueue.main"
-    )
-    XCTAssertEqual(
-      debugOutput(DispatchQueue.global()),
-      "DispatchQueue.global()"
-    )
-    XCTAssertEqual(
-      debugOutput(DispatchQueue.global(qos: .background)),
-      "DispatchQueue.global(qos: .background)"
-    )
-    XCTAssertEqual(
-      debugOutput(DispatchQueue(label: "co.pointfree", qos: .background)),
-      #"DispatchQueue(label: "co.pointfree", qos: .background)"#
-    )
-    XCTAssertEqual(
-      debugOutput(OperationQueue.main),
-      "OperationQueue.main"
-    )
-    XCTAssertEqual(
-      debugOutput(OperationQueue()),
-      "OperationQueue()"
-    )
-    XCTAssertEqual(
-      debugOutput(RunLoop.main),
-      "RunLoop.main"
-    )
-    //    XCTAssertEqual(
-    //      debugOutput(DispatchQueue.testScheduler),
-    //      "DispatchQueue.testScheduler"
-    //    )
-    //    XCTAssertEqual(
-    //      debugOutput(OperationQueue.testScheduler),
-    //      "OperationQueue.testScheduler"
-    //    )
-    //    XCTAssertEqual(
-    //      debugOutput(RunLoop.testScheduler),
-    //      "RunLoop.testScheduler"
-    //    )
-    //    XCTAssertEqual(
-    //      debugOutput(DispatchQueue.main.eraseToAnyScheduler()),
-    //      "DispatchQueue.main"
-    //    )
   }
 
   func testNestedDump() {
@@ -389,6 +345,73 @@ final class DebugTests: XCTestCase {
     )
   }
 
+  func testTextState() {
+    XCTAssertEqual(
+      debugOutput(
+        TextState("Hello, world!")
+      ),
+      """
+      TextState(
+        Hello, world!
+      )
+      """
+    )
+
+    XCTAssertEqual(
+      debugOutput(
+        TextState("Hello, ")
+          + TextState("world").bold().italic()
+          + TextState("!")
+      ),
+      """
+      TextState(
+        Hello, _**world**_!
+      )
+      """
+    )
+
+    XCTAssertEqual(
+      debugOutput(
+        TextState("Offset by 10.5").baselineOffset(10.5)
+          + TextState("\n") + TextState("Headline").font(.headline)
+          + TextState("\n") + TextState("No font").font(nil)
+          + TextState("\n") + TextState("Light font weight").fontWeight(.light)
+          + TextState("\n") + TextState("No font weight").fontWeight(nil)
+          + TextState("\n") + TextState("Red").foregroundColor(.red)
+          + TextState("\n") + TextState("No color").foregroundColor(nil)
+          + TextState("\n") + TextState("Italic").italic()
+          + TextState("\n") + TextState("Kerning of 2.5").kerning(2.5)
+          + TextState("\n") + TextState("Stricken").strikethrough()
+          + TextState("\n") + TextState("Stricken green").strikethrough(color: .green)
+          + TextState("\n") + TextState("Not stricken blue").strikethrough(false, color: .blue)
+          + TextState("\n") + TextState("Tracking of 5.5").tracking(5.5)
+          + TextState("\n") + TextState("Underlined").underline()
+          + TextState("\n") + TextState("Underlined pink").underline(color: .pink)
+          + TextState("\n") + TextState("Not underlined purple").underline(false, color: .pink)
+      ),
+      """
+      TextState(
+        <baseline-offset=10.5>Offset by 10.5</baseline-offset>
+        Headline
+        No font
+        <font-weight=light>Light font weight</font-weight>
+        No font weight
+        <foreground-color=red>Red</foreground-color>
+        No color
+        _Italic_
+        <kerning=2.5>Kerning of 2.5</kerning>
+        ~~Stricken~~
+        <s color=green>Stricken green</s>
+        Not stricken blue
+        <tracking=5.5>Tracking of 5.5</tracking>
+        <u>Underlined</u>
+        <u color=pink>Underlined pink</u>
+        Not underlined purple
+      )
+      """
+    )
+  }
+
   func testEffectOutput() {
     //    XCTAssertEqual(
     //      Effect<Int, Never>(value: 42)
@@ -416,27 +439,27 @@ final class DebugTests: XCTestCase {
 
     //    XCTAssertEqual(
     //      Just(42)
-    //        .delay(for: 1, scheduler: DispatchQueue.testScheduler.eraseToAnyScheduler())
+    //        .delay(for: 1, scheduler: DispatchQueue.test.eraseToAnyScheduler())
     //        .eraseToEffect()
     //        .debugOutput,
     //      """
     //      Effect<Int>(
     //        value: 42
     //      )
-    //      .delay(for: 1.0, scheduler: DispatchQueue.testScheduler)
+    //      .delay(for: 1.0, scheduler: DispatchQueue.test)
     //      """
     //    )
     //
     //    XCTAssertEqual(
     //      Just(42)
-    //        .receive(on: DispatchQueue.testScheduler.eraseToAnyScheduler())
+    //        .receive(on: DispatchQueue.test.eraseToAnyScheduler())
     //        .eraseToEffect()
     //        .debugOutput,
     //      """
     //      Effect<Int>(
     //        value: 42
     //      )
-    //      .receive(on: DispatchQueue.testScheduler)
+    //      .receive(on: DispatchQueue.test)
     //      """
     //    )
 
@@ -547,7 +570,7 @@ final class DebugTests: XCTestCase {
     //
     //    XCTAssertEqual(
     //      Effect
-    //        .timer(every: 1, on: DispatchQueue.testScheduler.eraseToAnyScheduler())
+    //        .timer(every: 1, on: DispatchQueue.test.eraseToAnyScheduler())
     //        .debugOutput,
     //      """
     //      Effect<SchedulerTimeType>()

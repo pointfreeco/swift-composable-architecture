@@ -4,7 +4,7 @@ import SwiftUI
 /// generic is the type of actions that can be sent from tapping on a button in the alert.
 ///
 /// This type can be used in your application's state in order to control the presentation or
-/// dismissal of alerts. It is preferrable to use this API instead of the default SwiftUI API
+/// dismissal of alerts. It is preferable to use this API instead of the default SwiftUI API
 /// for alerts because SwiftUI uses 2-way bindings in order to control the showing and dismissal
 /// of alerts, and that does not play nicely with the Composable Architecture. The library requires
 /// that all state mutations happen by sending an action so that a reducer can handle that logic,
@@ -25,7 +25,7 @@ import SwiftUI
 /// `nil`:
 ///
 ///     struct AppState: Equatable {
-///       var alert = AlertState<AppAction>?
+///       var alert: AlertState<AppAction>?
 ///
 ///       // Your other state
 ///     }
@@ -45,9 +45,9 @@ import SwiftUI
 ///
 ///         case .deleteTapped:
 ///           state.alert = .init(
-///             title: "Delete",
-///             message: "Are you sure you want to delete this? It cannot be undone.",
-///             primaryButton: .default("Confirm", send: .confirmTapped),
+///             title: TextState("Delete"),
+///             message: TextState("Are you sure you want to delete this? It cannot be undone."),
+///             primaryButton: .default(TextState("Confirm"), send: .confirmTapped),
 ///             secondaryButton: .cancel()
 ///           )
 ///         return .none
@@ -75,31 +75,29 @@ import SwiftUI
 ///       environment: .mock
 ///     )
 ///
-///     store.assert(
-///       .send(.deleteTapped) {
-///         $0.alert = .init(
-///           title: "Delete",
-///           message: "Are you sure you want to delete this? It cannot be undone.",
-///           primaryButton: .default("Confirm", send: .confirmTapped),
-///           secondaryButton: .cancel(send: .cancelTapped)
-///         )
-///       },
-///       .send(.deleteTapped) {
-///         $0.alert = nil
-///         // Also verify that delete logic executed correctly
-///       }
-///     )
+///     store.send(.deleteTapped) {
+///       $0.alert = .init(
+///         title: TextState("Delete"),
+///         message: TextState("Are you sure you want to delete this? It cannot be undone."),
+///         primaryButton: .default(TextState("Confirm"), send: .confirmTapped),
+///         secondaryButton: .cancel(send: .cancelTapped)
+///       )
+///     }
+///     store.send(.deleteTapped) {
+///       $0.alert = nil
+///       // Also verify that delete logic executed correctly
+///     }
 ///
 public struct AlertState<Action> {
   public let id = UUID()
-  public var message: String?
+  public var message: TextState?
   public var primaryButton: Button?
   public var secondaryButton: Button?
-  public var title: String
+  public var title: TextState
 
   public init(
-    title: String,
-    message: String? = nil,
+    title: TextState,
+    message: TextState? = nil,
     dismissButton: Button? = nil
   ) {
     self.title = title
@@ -108,8 +106,8 @@ public struct AlertState<Action> {
   }
 
   public init(
-    title: String,
-    message: String? = nil,
+    title: TextState,
+    message: TextState? = nil,
     primaryButton: Button,
     secondaryButton: Button
   ) {
@@ -124,7 +122,7 @@ public struct AlertState<Action> {
     public var type: `Type`
 
     public static func cancel(
-      _ label: String,
+      _ label: TextState,
       send action: Action? = nil
     ) -> Self {
       Self(action: action, type: .cancel(label: label))
@@ -137,23 +135,23 @@ public struct AlertState<Action> {
     }
 
     public static func `default`(
-      _ label: String,
+      _ label: TextState,
       send action: Action? = nil
     ) -> Self {
       Self(action: action, type: .default(label: label))
     }
 
     public static func destructive(
-      _ label: String,
+      _ label: TextState,
       send action: Action? = nil
     ) -> Self {
       Self(action: action, type: .destructive(label: label))
     }
 
-    public enum `Type`: Hashable {
-      case cancel(label: String?)
-      case `default`(label: String)
-      case destructive(label: String)
+    public enum `Type` {
+      case cancel(label: TextState?)
+      case `default`(label: TextState)
+      case destructive(label: TextState)
     }
   }
 }
@@ -210,7 +208,10 @@ extension AlertState: Hashable where Action: Hashable {
 }
 extension AlertState: Identifiable {}
 
+extension AlertState.Button.`Type`: Equatable {}
 extension AlertState.Button: Equatable where Action: Equatable {}
+
+extension AlertState.Button.`Type`: Hashable {}
 extension AlertState.Button: Hashable where Action: Hashable {}
 
 extension AlertState.Button {
@@ -231,20 +232,17 @@ extension AlertState.Button {
 
 extension AlertState {
   fileprivate func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.Alert {
-    let title = Text(self.title)
-    let message = self.message.map { Text($0) }
-
     if let primaryButton = self.primaryButton, let secondaryButton = self.secondaryButton {
       return SwiftUI.Alert(
-        title: title,
-        message: message,
+        title: Text(self.title),
+        message: self.message.map { Text($0) },
         primaryButton: primaryButton.toSwiftUI(send: send),
         secondaryButton: secondaryButton.toSwiftUI(send: send)
       )
     } else {
       return SwiftUI.Alert(
-        title: title,
-        message: message,
+        title: Text(self.title),
+        message: self.message.map { Text($0) },
         dismissButton: self.primaryButton?.toSwiftUI(send: send)
       )
     }

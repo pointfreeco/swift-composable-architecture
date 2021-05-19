@@ -109,7 +109,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
 
   case let .sendResponse(error):
     if error != nil {
-      state.alert = .init(title: "Could not send socket message. Try again.")
+      state.alert = .init(title: .init("Could not send socket message. Try again."))
     }
     return .none
 
@@ -121,7 +121,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
     let .webSocket(.didCompleteWithError(error)):
     state.connectivityState = .disconnected
     if error != nil {
-      state.alert = .init(title: "Disconnected from socket for some reason. Try again.")
+      state.alert = .init(title: .init("Disconnected from socket for some reason. Try again."))
     }
     return .cancel(id: WebSocketId())
 
@@ -147,7 +147,7 @@ struct WebSocketView: View {
           TextField(
             "Message to send",
             text: viewStore.binding(
-              get: { $0.messageToSend }, send: WebSocketAction.messageToSendChanged)
+              get: \.messageToSend, send: WebSocketAction.messageToSendChanged)
           )
 
           Button(
@@ -174,7 +174,7 @@ struct WebSocketView: View {
         Text(viewStore.receivedMessages.joined(separator: "\n"))
       }
       .padding()
-      .alert(self.store.scope(state: { $0.alert }), dismiss: .alertDismissed)
+      .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
       .navigationBarTitle("Web Socket")
     }
   }
@@ -350,7 +350,7 @@ struct WebSocketView_Previews: PreviewProvider {
           initialState: .init(receivedMessages: ["Echo"]),
           reducer: webSocketReducer,
           environment: WebSocketEnvironment(
-            mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+            mainQueue: .main,
             webSocket: .live
           )
         )

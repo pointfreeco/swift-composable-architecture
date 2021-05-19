@@ -6,7 +6,7 @@ final class EffectDebounceTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
   func testDebounce() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
     var values: [Int] = []
 
     func runDebouncedEffect(value: Int) {
@@ -51,7 +51,7 @@ final class EffectDebounceTests: XCTestCase {
   }
 
   func testDebounceIsLazy() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
     var values: [Int] = []
     var effectRuns = 0
 

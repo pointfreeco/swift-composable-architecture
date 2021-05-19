@@ -70,11 +70,13 @@ struct LoadThenNavigateView: View {
           NavigationLink(
             destination: IfLetStore(
               self.store.scope(
-                state: { $0.optionalCounter }, action: LoadThenNavigateAction.optionalCounter),
+                state: \.optionalCounter,
+                action: LoadThenNavigateAction.optionalCounter
+              ),
               then: CounterView.init(store:)
             ),
             isActive: viewStore.binding(
-              get: { $0.isNavigationActive },
+              get: \.isNavigationActive,
               send: LoadThenNavigateAction.setNavigation(isActive:)
             )
           ) {
@@ -101,7 +103,7 @@ struct LoadThenNavigateView_Previews: PreviewProvider {
           initialState: LoadThenNavigateState(),
           reducer: loadThenNavigateReducer,
           environment: LoadThenNavigateEnvironment(
-            mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+            mainQueue: .main
           )
         )
       )
