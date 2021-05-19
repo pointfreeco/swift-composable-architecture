@@ -28,11 +28,27 @@ extension Effect {
     scheduler: S,
     options: S.SchedulerOptions? = nil
   ) -> Effect {
+    _debounce(
+      id: id,
+      for: dueTime,
+      scheduler: scheduler,
+      options: options,
+      cancelInFlight: true
+    )
+  }
+    
+  internal func _debounce<S: Scheduler>(
+    id: AnyHashable,
+    for dueTime: S.SchedulerTimeType.Stride,
+    scheduler: S,
+    options: S.SchedulerOptions? = nil,
+    cancelInFlight: Bool = true
+  ) -> Effect {
     Just(())
       .setFailureType(to: Failure.self)
       .delay(for: dueTime, scheduler: scheduler, options: options)
       .flatMap { self }
       .eraseToEffect()
-      .cancellable(id: id, cancelInFlight: true)
+      .cancellable(id: id, cancelInFlight: cancelInFlight)
   }
 }
