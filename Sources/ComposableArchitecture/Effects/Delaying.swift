@@ -17,7 +17,7 @@ extension Effect {
     ///            .weather(location.id)
     ///            .receive(on: environment.mainQueue)
     ///            .catchToEffect()
-    ///            .map(SearchAction.locationWeatherResponse)
+    ///            .map(SearchAction.locationWeatherResponse),
     ///         id: SearchWeatherId(),
     ///         for: 3,
     ///         scheduller: environment.mainQueue
