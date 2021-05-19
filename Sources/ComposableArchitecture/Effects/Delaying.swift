@@ -26,8 +26,8 @@ extension Effect {
     /// - Parameters:
     ///   - upstream: the effect you want to delay.
     ///   - id: The effect's identifier.
-    ///   - dueTime: The duration you want to debounce for.
-    ///   - scheduler: The scheduler you want to deliver the debounced output to.
+    ///   - dueTime: The duration you want to delay for.
+    ///   - scheduler: The scheduler you want to deliver the delay output to.
     ///   - options: Scheduler options that customize the effect's delivery of elements.
     /// - Returns: An effect that will be executed after `dueTime`
     public static func delay<S: Scheduler>(
