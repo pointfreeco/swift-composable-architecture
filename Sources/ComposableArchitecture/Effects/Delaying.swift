@@ -29,7 +29,7 @@ extension Effect {
     scheduler: S,
     options: S.SchedulerOptions? = nil
   ) -> Effect {
-    _debounce(
+    pending(
       id: id,
       for: dueTime,
       scheduler: scheduler,
