@@ -35,18 +35,18 @@ class AppViewController: UINavigationController {
   override func viewDidLoad() {
     super.viewDidLoad()
 
-//    self.store
-//      .scope(state: \.login, action: AppAction.login)
-//      .ifLet(then: { [weak self] loginStore in
-//        self?.setViewControllers([LoginViewController(store: loginStore)], animated: false)
-//      })
-//      .store(in: &self.cancellables)
-//
-//    self.store
-//      .scope(state: \.newGame, action: AppAction.newGame)
-//      .ifLet(then: { [weak self] newGameStore in
-//        self?.setViewControllers([NewGameViewController(store: newGameStore)], animated: false)
-//      })
-//      .store(in: &self.cancellables)
+    self.store
+      .scope(state: /AppState.login, action: AppAction.login)
+      .ifLet(then: { [weak self] loginStore in
+        self?.setViewControllers([LoginViewController(store: loginStore)], animated: false)
+      })
+      .store(in: &self.cancellables)
+
+    self.store
+      .scope(state: /AppState.newGame, action: AppAction.newGame)
+      .ifLet(then: { [weak self] newGameStore in
+        self?.setViewControllers([NewGameViewController(store: newGameStore)], animated: false)
+      })
+      .store(in: &self.cancellables)
   }
 }

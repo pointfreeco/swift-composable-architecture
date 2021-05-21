@@ -19,13 +19,10 @@ public struct AppView: View {
           LoginView(store: store)
         }
       }
-//      CaseLet(state: /AppState.newGame, action: AppAction.newGame) { store in
-//        NavigationView {
-//          NewGameView(store: store)
-//        }
-//      }
-      Default {
-        Text("Fallthrough")
+      CaseLet(state: /AppState.newGame, action: AppAction.newGame) { store in
+        NavigationView {
+          NewGameView(store: store)
+        }
       }
     }
   }
