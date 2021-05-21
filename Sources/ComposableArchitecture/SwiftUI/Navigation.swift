@@ -19,26 +19,34 @@ extension Reducer {
     let id = UUID()
     return Self { state, action, environment in
       let wasPresented = state[keyPath: selection].flatMap(tag.extract(from:)) != nil
-      return Self.combine(
+      var effects: [Effect<Action, Never>] = []
+
+      effects.append(
         localReducer
-          .cancellable(id: id)
           ._pullback(
             state: OptionalPath(selection).appending(path: tag),
             action: toNavigationAction.appending(path: /NavigationAction.isActive),
-            environment: toLocalEnvironment),
-        self,
-        Reducer<State, NavigationAction<LocalAction>, Void> { state, action, _ in
-          if
-            state[keyPath: selection].flatMap(tag.extract(from:)) != nil,
-            case .setNavigation(isActive: false) = action
-          {
-            state[keyPath: selection] = nil
-          }
-          return wasPresented && state[keyPath: selection] == nil ? .cancel(id: id) : .none
-        }
-        .pullback(state: \.self, action: toNavigationAction, environment: { _ in () })
+            environment: toLocalEnvironment
+          )
+          .run(&state, action, environment)
+          .cancellable(id: id)
       )
-      .run(&state, action, environment)
+
+      effects.append(
+        self
+          .run(&state, action, environment)
+      )
+
+      if state[keyPath: selection].flatMap(tag.extract(from:)) != nil,
+         case .some(.setNavigation(isActive: false)) = toNavigationAction.extract(from: action)
+      {
+        state[keyPath: selection] = nil
+      }
+      if wasPresented && state[keyPath: selection] == nil {
+        effects.append(.cancel(id: id))
+      }
+
+      return .merge(effects)
     }
   }
 
@@ -53,30 +61,39 @@ extension Reducer {
     let id = UUID()
     return Self { state, action, environment in
       let wasPresented = state[keyPath: selection].flatMap(tag.extract(from:)) != nil
-      return Self.combine(
+      var effects: [Effect<Action, Never>] = []
+
+      effects.append(
         localReducer
-          .cancellable(id: id)
           .pullback(
             state: toLocalState,
             action: toNavigationAction.appending(path: /NavigationAction.isActive),
             environment: toLocalEnvironment
-          ),
-        self,
-        Reducer<State, NavigationAction<LocalAction>, Void> { state, action, _ in
-          switch action {
-          case .setNavigation(isActive: true): // TODO: `where state[keyPath: selection] == nil:`?
-            state[keyPath: selection] = tag.embed(())
-          case .setNavigation(isActive: false)
-                where state[keyPath: selection].flatMap(tag.extract(from:)) != nil:
-            state[keyPath: selection] = nil
-          default:
-            break
-          }
-          return wasPresented && state[keyPath: selection] == nil ? .cancel(id: id) : .none
-        }
-        .pullback(state: \.self, action: toNavigationAction, environment: { _ in () })
+          )
+          .run(&state, action, environment)
+          .cancellable(id: id)
       )
-      .run(&state, action, environment)
+
+      effects.append(
+        self.run(&state, action, environment)
+      )
+
+      switch toNavigationAction.extract(from: action) {
+      case .some(.setNavigation(isActive: true)):  // TODO: `where state[keyPath: selection] == nil:`?
+        state[keyPath: selection] = nil
+
+      case .some(.setNavigation(isActive: false))
+            where state[keyPath: selection].flatMap(tag.extract(from:)) != nil:
+        state[keyPath: selection] = nil
+
+      default:
+        break
+      }
+      if wasPresented && state[keyPath: selection] == nil {
+        effects.append(.cancel(id: id))
+      }
+
+      return .merge(effects)
     }
   }
 

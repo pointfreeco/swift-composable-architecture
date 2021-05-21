@@ -19,22 +19,33 @@ extension Reducer {
     let id = UUID()
     return Self { state, action, environment in
       let wasPresented = state[keyPath: toLocalState] != nil
-      return Self.combine(
+      var effects: [Effect<Action, Never>] = []
+
+      effects.append(
         localReducer
-          .cancellable(id: id)
           .optional()
           .pullback(
             state: toLocalState,
             action: toPresentationAction.appending(path: /PresentationAction.isPresented),
-            environment: toLocalEnvironment),
-        self,
-        Reducer<State, PresentationAction<LocalAction>, Void> { state, action, _ in
-          if case .onDismiss = action { state[keyPath: toLocalState] = nil }
-          return wasPresented && state[keyPath: toLocalState] == nil ? .cancel(id: id) : .none
-        }
-        .pullback(state: \.self, action: toPresentationAction, environment: { _ in () })
+            environment: toLocalEnvironment
+          )
+          .run(&state, action, environment)
+          .cancellable(id: id)
       )
-      .run(&state, action, environment)
+
+      effects.append(
+        self
+          .run(&state, action, environment)
+      )
+
+      if case .some(.onDismiss) = toPresentationAction.extract(from: action) {
+        state[keyPath: toLocalState] = nil
+      }
+      if wasPresented && state[keyPath: toLocalState] == nil {
+        effects.append(.cancel(id: id))
+      }
+
+      return .merge(effects)
     }
   }
 }
