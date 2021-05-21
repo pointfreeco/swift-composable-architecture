@@ -1,32 +1,38 @@
 import SwiftUI
 
-public struct AssertionView: View {
-  init(file: StaticString = #file, line: UInt = #line) {
-    assertionFailure(file: file, line: line)
-  }
-
-  public var body: some View {
-    return EmptyView()
-  }
-}
-
-public struct Default<Content>: View where Content: View {
-  let content: () -> Content
-
-  public init(
-    @ViewBuilder content: @escaping () -> Content
-  ) {
-    self.content = content
-  }
-
-  public var body: some View {
-    self.content()
-  }
-}
-
 public struct SwitchStore<State, Action, Content>: View where Content: View {
   public let store: Store<State, Action>
   public let content: () -> Content
+
+  public init<S1, A1, C1, D>(
+    _ store: Store<State, Action>,
+    @ViewBuilder content: @escaping () -> TupleView<(
+      Case<State, Action, S1, A1, C1>,
+      Default<D>
+    )>
+  )
+  where
+    Content == WithViewStore<
+      State,
+      Action,
+      _ConditionalContent<
+        Case<State, Action, S1, A1, C1>,
+        Default<D>
+      >
+    >
+  {
+    self.store = store
+    self.content = {
+      WithViewStore(store, removeDuplicates: { Tag($0) == Tag($1) }) { viewStore in
+        let content = content()
+        if content.value.0.toLocalState.extract(from: viewStore.state) != nil {
+          content.value.0
+        } else {
+          content.value.1
+        }
+      }
+    }
+  }
 
   public init<LocalState, LocalAction, LocalContent>(
     _ store: Store<State, Action>,
@@ -34,22 +40,53 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
   )
   where
     Content == WithViewStore<
-      Tag<State>?,
+      State,
       Action,
       _ConditionalContent<
         Case<State, Action, LocalState, LocalAction, LocalContent>,
-        AssertionView
+        Default<AssertionView>
+      >
+    >
+  {
+    self.init(store) {
+      content()
+      Default { AssertionView() }
+    }
+  }
+
+  public init<S1, A1, C1, S2, A2, C2, D>(
+    _ store: Store<State, Action>,
+    @ViewBuilder content: @escaping () -> TupleView<(
+      Case<State, Action, S1, A1, C1>,
+      Case<State, Action, S2, A2, C2>,
+      Default<D>
+    )>
+  )
+  where
+    Content == WithViewStore<
+      State,
+      Action,
+      _ConditionalContent<
+        TupleView<(
+          Case<State, Action, S1, A1, C1>,
+          Case<State, Action, S2, A2, C2>
+        )>,
+        Default<D>
       >
     >
   {
     self.store = store
     self.content = {
-      WithViewStore(store.scope(state: { Tag($0) })) { _ in
+      WithViewStore(store, removeDuplicates: { Tag($0) == Tag($1) }) { viewStore in
         let content = content()
-        if content.toLocalState.extract(from: store.state.value) != nil {
-          return ViewBuilder.buildEither(first: content)
+        if
+          content.value.0.toLocalState.extract(from: viewStore.state) != nil
+            || content.value.1.toLocalState.extract(from: viewStore.state) != nil
+        {
+          content.value.0
+          content.value.1
         } else {
-          return ViewBuilder.buildEither(second: AssertionView())
+          content.value.2
         }
       }
     }
@@ -64,58 +101,22 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
   )
   where
     Content == WithViewStore<
-      Tag<State>?,
+      State,
       Action,
       _ConditionalContent<
         TupleView<(
           Case<State, Action, S1, A1, C1>,
           Case<State, Action, S2, A2, C2>
         )>,
-        AssertionView
+        Default<AssertionView>
       >
     >
   {
-    self.store = store
-    self.content = {
-      WithViewStore(store.scope(state: { Tag($0) })) { _ in
-        let content = content()
-        if content.value.0.toLocalState.extract(from: store.state.value) != nil
-        || content.value.1.toLocalState.extract(from: store.state.value) != nil {
-          content
-        } else {
-          AssertionView()
-        }
-      }
-    }
-  }
-
-  public init<S1, A1, C1, D>(
-    _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<(
-      Case<State, Action, S1, A1, C1>,
-      Default<D>
-    )>
-  )
-  where
-    Content == WithViewStore<
-      Tag<State>?,
-      Action,
-      _ConditionalContent<
-        Case<State, Action, S1, A1, C1>,
-        Default<D>
-      >
-    >
-  {
-    self.store = store
-    self.content = {
-      WithViewStore(store.scope(state: { Tag($0) })) { _ in
-        let content = content()
-        if content.value.0.toLocalState.extract(from: store.state.value) != nil {
-          content.value.0
-        } else {
-          content.value.1
-        }
-      }
+    self.init(store) {
+      let content = content()
+      content.value.0
+      content.value.1
+      Default { AssertionView() }
     }
   }
 
@@ -130,36 +131,32 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
   )
   where
     Content == WithViewStore<
-      Tag<State>?,
+      State,
       Action,
       _ConditionalContent<
-        Case<State, Action, S1, A1, C1>,
-        _ConditionalContent<
+        TupleView<(
+          Case<State, Action, S1, A1, C1>,
           Case<State, Action, S2, A2, C2>,
-          _ConditionalContent<
-            Case<State, Action, S3, A3, C3>,
-            Default<D>
-          >
-        >
+          Case<State, Action, S3, A3, C3>
+        )>,
+        Default<D>
       >
     >
   {
     self.store = store
     self.content = {
-      WithViewStore(store.scope(state: { Tag($0) })) { _ in
+      WithViewStore(store, removeDuplicates: { Tag($0) == Tag($1) }) { viewStore in
         let content = content()
-        if content.value.0.toLocalState.extract(from: store.state.value) != nil {
+        if
+          content.value.0.toLocalState.extract(from: viewStore.state) != nil
+            || content.value.1.toLocalState.extract(from: viewStore.state) != nil
+            || content.value.2.toLocalState.extract(from: viewStore.state) != nil
+        {
           content.value.0
+          content.value.1
+          content.value.2
         } else {
-          if content.value.1.toLocalState.extract(from: store.state.value) != nil {
-            content.value.1
-          } else {
-            if content.value.2.toLocalState.extract(from: store.state.value) != nil {
-              content.value.2
-            } else {
-              content.value.3
-            }
-          }
+          content.value.3
         }
       }
     }
@@ -175,17 +172,15 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
   )
   where
     Content == WithViewStore<
-      Tag<State>?,
+      State,
       Action,
       _ConditionalContent<
-        Case<State, Action, S1, A1, C1>,
-        _ConditionalContent<
+        TupleView<(
+          Case<State, Action, S1, A1, C1>,
           Case<State, Action, S2, A2, C2>,
-          _ConditionalContent<
-            Case<State, Action, S3, A3, C3>,
-            Default<AssertionView>
-          >
-        >
+          Case<State, Action, S3, A3, C3>
+        )>,
+        Default<AssertionView>
       >
     >
   {
@@ -221,10 +216,6 @@ where
   let fromLocalAction: (LocalAction) -> GlobalAction
   let content: (Store<LocalState, LocalAction>) -> Content
 
-  var isVisible: Bool {
-    self.toLocalState.extract(from: self.store.wrappedStore.state.value) != nil
-  }
-
   public init(
     `let` toLocalState: CasePath<GlobalState, LocalState>,
     action fromLocalAction: @escaping (LocalAction) -> GlobalAction,
@@ -243,6 +234,30 @@ where
       ),
       then: self.content
     )
+  }
+}
+
+public struct AssertionView: View {
+  init(file: StaticString = #file, line: UInt = #line) {
+    assertionFailure(file: file, line: line)
+  }
+
+  public var body: some View {
+    return EmptyView()
+  }
+}
+
+public struct Default<Content>: View where Content: View {
+  let content: () -> Content
+
+  public init(
+    @ViewBuilder content: @escaping () -> Content
+  ) {
+    self.content = content
+  }
+
+  public var body: some View {
+    self.content()
   }
 }
 
@@ -268,4 +283,3 @@ public struct Tag<Enum>: Equatable, Hashable {
     self.rawValue = withUnsafePointer(to: `case`, { vwt.getEnumTag($0, metadataPtr) })
   }
 }
-
