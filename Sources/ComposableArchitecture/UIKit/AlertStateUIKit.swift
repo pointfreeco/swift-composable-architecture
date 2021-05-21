@@ -1,5 +1,11 @@
+#if canImport(UIKit)
 import UIKit
 
+@available(iOS 13, *)
+@available(macCatalyst 13, *)
+@available(macOS, unavailable)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
 extension AlertState {
   /// UIKit helper generating UIAlertController from corresponding AlertState
   ///
@@ -50,6 +56,11 @@ extension AlertState {
   }
 }
 
+@available(iOS 13, *)
+@available(macCatalyst 13, *)
+@available(macOS, unavailable)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
 extension AlertState.Button {
   func toUIAlertAction(send: @escaping (Action) -> Void) -> UIAlertAction {
     let action = { if let action = self.action { send(action) } }
@@ -66,3 +77,4 @@ extension AlertState.Button {
     }
   }
 }
+#endif
