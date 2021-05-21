@@ -1,11 +1,11 @@
-#if canImport(UIKit)
+#if canImport(UIKit) && !os(watchOS)
 import UIKit
 
 @available(iOS 13, *)
 @available(macCatalyst 13, *)
 @available(macOS, unavailable)
 @available(tvOS 13, *)
-@available(watchOS 6, *)
+@available(watchOS, unavailable)
 extension AlertState {
   /// UIKit helper generating UIAlertController from corresponding AlertState
   ///
@@ -60,7 +60,7 @@ extension AlertState {
 @available(macCatalyst 13, *)
 @available(macOS, unavailable)
 @available(tvOS 13, *)
-@available(watchOS 6, *)
+@available(watchOS, unavailable)
 extension AlertState.Button {
   func toUIAlertAction(send: @escaping (Action) -> Void) -> UIAlertAction {
     let action = { if let action = self.action { send(action) } }

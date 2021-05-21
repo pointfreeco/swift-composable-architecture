@@ -1,11 +1,11 @@
-#if canImport(UIKit)
+#if canImport(UIKit) && !os(watchOS)
 import UIKit
 
 @available(iOS 13, *)
 @available(macCatalyst 13, *)
 @available(macOS, unavailable)
 @available(tvOS 13, *)
-@available(watchOS 6, *)
+@available(watchOS, unavailable)
 extension ActionSheetState {
   /// UIKit helper generating UIAlertController from corresponding ActionSheetState
   /// - Parameter send: A function that wraps a alert action in the view store's action type.
