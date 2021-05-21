@@ -46,8 +46,6 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// A publisher of state.
   public let publisher: StorePublisher<State>
 
-  unowned var store: Store<State, Action>
-
   private var viewCancellable: AnyCancellable?
 
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
@@ -67,7 +65,6 @@ public final class ViewStore<State, Action>: ObservableObject {
     let publisher = store.state.removeDuplicates(by: isDuplicate)
     self.publisher = StorePublisher(publisher)
     self.state = store.state.value
-    self.store = store
     self._send = store.send
     self.viewCancellable = publisher.sink { [weak self] in self?.state = $0 }
   }
