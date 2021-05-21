@@ -78,37 +78,12 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
       state = .newGame(NewGameState())
       return .none
 
-//    case let .login(loginAction):
-//      guard case var .login(loginState) = state else { return .none }
-//      defer { state = .login(loginState) }
-//      return loginReducer
-//        .run(
-//          &loginState,
-//          loginAction,
-//          LoginEnvironment(
-//            authenticationClient: environment.authenticationClient,
-//            mainQueue: environment.mainQueue
-//          )
-//        )
-//        .map(AppAction.login)
-
     case .newGame(.logoutButtonTapped):
       state = .login(LoginState())
       return .none
 
     case .login, .newGame:
       return .none
-
-//    case let .newGame(newGameAction):
-//      guard case var .newGame(newGameState) = state else { return .none }
-//      defer { state = .newGame(newGameState) }
-//      return newGameReducer
-//        .run(
-//          &newGameState,
-//          newGameAction,
-//          NewGameEnvironment()
-//        )
-//        .map(AppAction.newGame)
     }
   }
 )
