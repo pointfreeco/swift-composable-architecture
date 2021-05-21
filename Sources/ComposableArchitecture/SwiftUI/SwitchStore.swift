@@ -1,54 +1,206 @@
 import SwiftUI
 
+public struct AssertionView: View {
+  init(file: StaticString = #file, line: UInt = #line) {
+    assertionFailure(file: file, line: line)
+  }
+
+  public var body: some View {
+    return EmptyView()
+  }
+}
+
+public struct Default<Content>: View where Content: View {
+  let content: () -> Content
+
+  public init(
+    @ViewBuilder content: @escaping () -> Content
+  ) {
+    self.content = content
+  }
+
+  public var body: some View {
+    self.content()
+  }
+}
+
 public struct SwitchStore<State, Action, Content>: View where Content: View {
   public let store: Store<State, Action>
   public let content: () -> Content
 
   public init<LocalState, LocalAction, LocalContent>(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> Content
+    @ViewBuilder content: @escaping () -> Case<State, Action, LocalState, LocalAction, LocalContent>
   )
   where
-    Content == CaseStore<State, Action, LocalState, LocalAction, LocalContent>
+    Content == WithViewStore<
+      Tag<State>?,
+      Action,
+      _ConditionalContent<
+        Case<State, Action, LocalState, LocalAction, LocalContent>,
+        AssertionView
+      >
+    >
   {
     self.store = store
-    self.content = content
+    self.content = {
+      WithViewStore(store.scope(state: { Tag($0) })) { _ in
+        let content = content()
+        if content.toLocalState.extract(from: store.state.value) != nil {
+          return ViewBuilder.buildEither(first: content)
+        } else {
+          return ViewBuilder.buildEither(second: AssertionView())
+        }
+      }
+    }
   }
 
   public init<S1, A1, C1, S2, A2, C2>(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> Content
+    @ViewBuilder content: @escaping () -> TupleView<(
+      Case<State, Action, S1, A1, C1>,
+      Case<State, Action, S2, A2, C2>
+    )>
   )
   where
-    Content == TupleView<(
-      CaseStore<State, Action, S1, A1, C1>,
-      CaseStore<State, Action, S2, A2, C2>
-    )>
+    Content == WithViewStore<
+      Tag<State>?,
+      Action,
+      _ConditionalContent<
+        TupleView<(
+          Case<State, Action, S1, A1, C1>,
+          Case<State, Action, S2, A2, C2>
+        )>,
+        AssertionView
+      >
+    >
   {
     self.store = store
-    self.content = content
+    self.content = {
+      WithViewStore(store.scope(state: { Tag($0) })) { _ in
+        let content = content()
+        if content.value.0.toLocalState.extract(from: store.state.value) != nil
+        || content.value.1.toLocalState.extract(from: store.state.value) != nil {
+          content
+        } else {
+          AssertionView()
+        }
+      }
+    }
+  }
+
+  public init<S1, A1, C1, D>(
+    _ store: Store<State, Action>,
+    @ViewBuilder content: @escaping () -> TupleView<(
+      Case<State, Action, S1, A1, C1>,
+      Default<D>
+    )>
+  )
+  where
+    Content == WithViewStore<
+      Tag<State>?,
+      Action,
+      _ConditionalContent<
+        Case<State, Action, S1, A1, C1>,
+        Default<D>
+      >
+    >
+  {
+    self.store = store
+    self.content = {
+      WithViewStore(store.scope(state: { Tag($0) })) { _ in
+        let content = content()
+        if content.value.0.toLocalState.extract(from: store.state.value) != nil {
+          content.value.0
+        } else {
+          content.value.1
+        }
+      }
+    }
+  }
+
+  public init<S1, A1, C1, S2, A2, C2, S3, A3, C3, D>(
+    _ store: Store<State, Action>,
+    @ViewBuilder content: @escaping () -> TupleView<(
+      Case<State, Action, S1, A1, C1>,
+      Case<State, Action, S2, A2, C2>,
+      Case<State, Action, S3, A3, C3>,
+      Default<D>
+    )>
+  )
+  where
+    Content == WithViewStore<
+      Tag<State>?,
+      Action,
+      _ConditionalContent<
+        Case<State, Action, S1, A1, C1>,
+        _ConditionalContent<
+          Case<State, Action, S2, A2, C2>,
+          _ConditionalContent<
+            Case<State, Action, S3, A3, C3>,
+            Default<D>
+          >
+        >
+      >
+    >
+  {
+    self.store = store
+    self.content = {
+      WithViewStore(store.scope(state: { Tag($0) })) { _ in
+        let content = content()
+        if content.value.0.toLocalState.extract(from: store.state.value) != nil {
+          content.value.0
+        } else {
+          if content.value.1.toLocalState.extract(from: store.state.value) != nil {
+            content.value.1
+          } else {
+            if content.value.2.toLocalState.extract(from: store.state.value) != nil {
+              content.value.2
+            } else {
+              content.value.3
+            }
+          }
+        }
+      }
+    }
   }
 
   public init<S1, A1, C1, S2, A2, C2, S3, A3, C3>(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> Content
+    @ViewBuilder content: @escaping () -> TupleView<(
+      Case<State, Action, S1, A1, C1>,
+      Case<State, Action, S2, A2, C2>,
+      Case<State, Action, S3, A3, C3>
+    )>
   )
   where
-    Content == TupleView<(
-      CaseStore<State, Action, S1, A1, C1>,
-      CaseStore<State, Action, S2, A2, C2>,
-      CaseStore<State, Action, S3, A3, C3>
-    )>
+    Content == WithViewStore<
+      Tag<State>?,
+      Action,
+      _ConditionalContent<
+        Case<State, Action, S1, A1, C1>,
+        _ConditionalContent<
+          Case<State, Action, S2, A2, C2>,
+          _ConditionalContent<
+            Case<State, Action, S3, A3, C3>,
+            Default<AssertionView>
+          >
+        >
+      >
+    >
   {
-    self.store = store
-    self.content = content
+    self.init(store) {
+      let content = content()
+      content.value.0
+      content.value.1
+      content.value.2
+      Default { AssertionView() }
+    }
   }
 
   public var body: some View {
-//    WithViewStore(self.store, removeDuplicates: { Tag($0) == Tag($1) }) { _ in
-      self.content()
-        .environmentObject(StoreObservableObject(store: self.store))
-//    }
+    self.content()
+      .environmentObject(StoreObservableObject(store: self.store))
   }
 }
 
@@ -60,7 +212,7 @@ private class StoreObservableObject<State, Action>: ObservableObject {
   }
 }
 
-public struct CaseStore<GlobalState, GlobalAction, LocalState, LocalAction, Content>: View
+public struct Case<GlobalState, GlobalAction, LocalState, LocalAction, Content>: View
 where
   Content: View
 {
@@ -69,8 +221,12 @@ where
   let fromLocalAction: (LocalAction) -> GlobalAction
   let content: (Store<LocalState, LocalAction>) -> Content
 
+  var isVisible: Bool {
+    self.toLocalState.extract(from: self.store.wrappedStore.state.value) != nil
+  }
+
   public init(
-    state toLocalState: CasePath<GlobalState, LocalState>,
+    `let` toLocalState: CasePath<GlobalState, LocalState>,
     action fromLocalAction: @escaping (LocalAction) -> GlobalAction,
     @ViewBuilder then content: @escaping (Store<LocalState, LocalAction>) -> Content
   ) {
@@ -90,88 +246,6 @@ where
   }
 }
 
-func f() {
-  struct LoggedInState: Equatable {}
-  enum LoggedInAction: Equatable {}
-  struct LoggedInView: View {
-    let store: Store<LoggedInState, LoggedInAction>
-    var body: some View { EmptyView() }
-  }
-
-  struct LoggedOutState: Equatable {}
-  enum LoggedOutAction: Equatable {}
-  struct LoggedOutView: View {
-    let store: Store<LoggedInState, LoggedInAction>
-    var body: some View { EmptyView() }
-  }
-
-  enum AppState: Equatable {
-    case loggedIn(LoggedInState)
-    case loggedOut(LoggedOutState)
-  }
-  enum AppAction: Equatable {
-    case loggedIn(LoggedInAction)
-    case loggedOut(LoggedOutAction)
-  }
-  struct AppView: View {
-    let store: Store<AppState, AppAction>
-
-    var body: some View {
-      SwitchStore(self.store) {
-        CaseStore(
-          state: /AppState.loggedIn,
-          action: AppAction.loggedIn,
-          then: LoggedInView.init(store:)
-        )
-        CaseStore(
-          state: /AppState.loggedIn,
-          action: AppAction.loggedIn,
-          then: LoggedInView.init(store:)
-        )
-      }
-
-//      SwitchStore(self.store) {
-//        CaseStore(
-//          state: /AppState.loggedIn,
-//          action: AppAction.loggedIn,
-//          then: LoggedInView.init(store:)
-//        )
-//        CaseStore(
-//          state: /AppState.loggedIn,
-//          action: AppAction.loggedIn,
-//          then: LoggedInView.init(store:)
-//        )
-//      }
-//
-//      SwitchStore(self.store) { route in
-//        route.case(
-//          state: /AppState.loggedIn,
-//          action: AppAction.loggedIn,
-//          then: LoggedInView.init(store:)
-//        )
-//        route.case(
-//          state: /AppState.loggedIn,
-//          action: AppAction.loggedIn,
-//          then: LoggedInView.init(store:)
-//        )
-//      }
-//
-//      SwitchStore(self.store)
-//        .case(
-//          state: /AppState.loggedIn,
-//          action: AppAction.loggedIn,
-//          then: LoggedInView.init(store:)
-//        )
-//        .case(
-//          state: /AppState.loggedIn,
-//          action: AppAction.loggedIn,
-//          then: LoggedInView.init(store:)
-//        )
-//      }
-    }
-  }
-}
-
 private struct EnumValueWitnessTable {
   let f1, f2, f3, f4, f5, f6, f7, f8: UnsafeRawPointer
   let size, stride: Int
@@ -180,7 +254,7 @@ private struct EnumValueWitnessTable {
   let f9, f10: UnsafeRawPointer
 }
 
-struct Tag<Enum>: Equatable, Hashable {
+public struct Tag<Enum>: Equatable, Hashable {
   let rawValue: UInt32
 
   init?(_ `case`: Enum) {
