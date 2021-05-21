@@ -14,12 +14,12 @@ public struct AppView: View {
 
   @ViewBuilder public var body: some View {
     SwitchStore(self.store) {
-      Case(let: /AppState.login, action: AppAction.login) { store in
+      CaseLet(state: /AppState.login, action: AppAction.login) { store in
         NavigationView {
           LoginView(store: store)
         }
       }
-//      CaseStore(state: /AppState.newGame, action: AppAction.newGame) { store in
+//      CaseLet(state: /AppState.newGame, action: AppAction.newGame) { store in
 //        NavigationView {
 //          NewGameView(store: store)
 //        }

@@ -7,7 +7,7 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
   public init<S1, A1, C1, D>(
     _ store: Store<State, Action>,
     @ViewBuilder content: @escaping () -> TupleView<(
-      Case<State, Action, S1, A1, C1>,
+      CaseLet<State, Action, S1, A1, C1>,
       Default<D>
     )>
   )
@@ -16,7 +16,7 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       State,
       Action,
       _ConditionalContent<
-        Case<State, Action, S1, A1, C1>,
+        CaseLet<State, Action, S1, A1, C1>,
         Default<D>
       >
     >
@@ -36,14 +36,14 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
 
   public init<LocalState, LocalAction, LocalContent>(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> Case<State, Action, LocalState, LocalAction, LocalContent>
+    @ViewBuilder content: @escaping () -> CaseLet<State, Action, LocalState, LocalAction, LocalContent>
   )
   where
     Content == WithViewStore<
       State,
       Action,
       _ConditionalContent<
-        Case<State, Action, LocalState, LocalAction, LocalContent>,
+        CaseLet<State, Action, LocalState, LocalAction, LocalContent>,
         Default<AssertionView>
       >
     >
@@ -57,8 +57,8 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
   public init<S1, A1, C1, S2, A2, C2, D>(
     _ store: Store<State, Action>,
     @ViewBuilder content: @escaping () -> TupleView<(
-      Case<State, Action, S1, A1, C1>,
-      Case<State, Action, S2, A2, C2>,
+      CaseLet<State, Action, S1, A1, C1>,
+      CaseLet<State, Action, S2, A2, C2>,
       Default<D>
     )>
   )
@@ -68,8 +68,8 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       Action,
       _ConditionalContent<
         TupleView<(
-          Case<State, Action, S1, A1, C1>,
-          Case<State, Action, S2, A2, C2>
+          CaseLet<State, Action, S1, A1, C1>,
+          CaseLet<State, Action, S2, A2, C2>
         )>,
         Default<D>
       >
@@ -95,8 +95,8 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
   public init<S1, A1, C1, S2, A2, C2>(
     _ store: Store<State, Action>,
     @ViewBuilder content: @escaping () -> TupleView<(
-      Case<State, Action, S1, A1, C1>,
-      Case<State, Action, S2, A2, C2>
+      CaseLet<State, Action, S1, A1, C1>,
+      CaseLet<State, Action, S2, A2, C2>
     )>
   )
   where
@@ -105,8 +105,8 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       Action,
       _ConditionalContent<
         TupleView<(
-          Case<State, Action, S1, A1, C1>,
-          Case<State, Action, S2, A2, C2>
+          CaseLet<State, Action, S1, A1, C1>,
+          CaseLet<State, Action, S2, A2, C2>
         )>,
         Default<AssertionView>
       >
@@ -123,9 +123,9 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
   public init<S1, A1, C1, S2, A2, C2, S3, A3, C3, D>(
     _ store: Store<State, Action>,
     @ViewBuilder content: @escaping () -> TupleView<(
-      Case<State, Action, S1, A1, C1>,
-      Case<State, Action, S2, A2, C2>,
-      Case<State, Action, S3, A3, C3>,
+      CaseLet<State, Action, S1, A1, C1>,
+      CaseLet<State, Action, S2, A2, C2>,
+      CaseLet<State, Action, S3, A3, C3>,
       Default<D>
     )>
   )
@@ -135,9 +135,9 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       Action,
       _ConditionalContent<
         TupleView<(
-          Case<State, Action, S1, A1, C1>,
-          Case<State, Action, S2, A2, C2>,
-          Case<State, Action, S3, A3, C3>
+          CaseLet<State, Action, S1, A1, C1>,
+          CaseLet<State, Action, S2, A2, C2>,
+          CaseLet<State, Action, S3, A3, C3>
         )>,
         Default<D>
       >
@@ -165,9 +165,9 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
   public init<S1, A1, C1, S2, A2, C2, S3, A3, C3>(
     _ store: Store<State, Action>,
     @ViewBuilder content: @escaping () -> TupleView<(
-      Case<State, Action, S1, A1, C1>,
-      Case<State, Action, S2, A2, C2>,
-      Case<State, Action, S3, A3, C3>
+      CaseLet<State, Action, S1, A1, C1>,
+      CaseLet<State, Action, S2, A2, C2>,
+      CaseLet<State, Action, S3, A3, C3>
     )>
   )
   where
@@ -176,9 +176,9 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       Action,
       _ConditionalContent<
         TupleView<(
-          Case<State, Action, S1, A1, C1>,
-          Case<State, Action, S2, A2, C2>,
-          Case<State, Action, S3, A3, C3>
+          CaseLet<State, Action, S1, A1, C1>,
+          CaseLet<State, Action, S2, A2, C2>,
+          CaseLet<State, Action, S3, A3, C3>
         )>,
         Default<AssertionView>
       >
@@ -207,7 +207,7 @@ private class StoreObservableObject<State, Action>: ObservableObject {
   }
 }
 
-public struct Case<GlobalState, GlobalAction, LocalState, LocalAction, Content>: View
+public struct CaseLet<GlobalState, GlobalAction, LocalState, LocalAction, Content>: View
 where
   Content: View
 {
@@ -217,7 +217,7 @@ where
   let content: (Store<LocalState, LocalAction>) -> Content
 
   public init(
-    `let` toLocalState: CasePath<GlobalState, LocalState>,
+    state toLocalState: CasePath<GlobalState, LocalState>,
     action fromLocalAction: @escaping (LocalAction) -> GlobalAction,
     @ViewBuilder then content: @escaping (Store<LocalState, LocalAction>) -> Content
   ) {
