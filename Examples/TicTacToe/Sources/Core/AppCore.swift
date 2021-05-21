@@ -47,7 +47,7 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     action: /AppAction.newGame,
     environment: { _ in NewGameEnvironment() }
   ),
-  Reducer { state, action, environment in
+  Reducer { state, action, _ in
     switch action {
     case let .login(.twoFactor(.twoFactorResponse(.success(response)))),
       let .login(.loginResponse(.success(response))) where !response.twoFactorRequired:
