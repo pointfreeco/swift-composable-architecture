@@ -31,30 +31,6 @@ public struct AppEnvironment {
   }
 }
 
-extension Reducer {
-  public func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
-    state toLocalState: CasePath<GlobalState, State>,
-    action toLocalAction: CasePath<GlobalAction, Action>,
-    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
-    .init { globalState, globalAction, globalEnvironment in
-      guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
-
-      guard var localState = toLocalState.extract(from: globalState) else { return .none }
-      defer { globalState = toLocalState.embed(localState) }
-
-      let effects = self.run(
-        &localState,
-        localAction,
-        toLocalEnvironment(globalEnvironment)
-      )
-      .map(toLocalAction.embed)
-
-      return effects
-    }
-  }
-}
-
 public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
   loginReducer.pullback(
     state: /AppState.login,
@@ -87,3 +63,27 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     }
   }
 )
+
+extension Reducer {
+  public func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
+    state toLocalState: CasePath<GlobalState, State>,
+    action toLocalAction: CasePath<GlobalAction, Action>,
+    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+    .init { globalState, globalAction, globalEnvironment in
+      guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
+
+      guard var localState = toLocalState.extract(from: globalState) else { return .none }
+      defer { globalState = toLocalState.embed(localState) }
+
+      let effects = self.run(
+        &localState,
+        localAction,
+        toLocalEnvironment(globalEnvironment)
+      )
+      .map(toLocalAction.embed)
+
+      return effects
+    }
+  }
+}
