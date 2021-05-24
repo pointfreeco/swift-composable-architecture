@@ -4,11 +4,11 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
   public let store: Store<State, Action>
   public let content: () -> Content
 
-  public init<S1, A1, C1, D>(
+  public init<State1, Action1, Content1, DefaultContent>(
     _ store: Store<State, Action>,
     @ViewBuilder content: @escaping () -> TupleView<(
-      CaseLet<State, Action, S1, A1, C1>,
-      Default<D>
+      CaseLet<State, Action, State1, Action1, Content1>,
+      Default<DefaultContent>
     )>
   )
   where
@@ -16,8 +16,8 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       State,
       Action,
       _ConditionalContent<
-        CaseLet<State, Action, S1, A1, C1>,
-        Default<D>
+        CaseLet<State, Action, State1, Action1, Content1>,
+        Default<DefaultContent>
       >
     >
   {
@@ -36,7 +36,10 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
 
   public init<LocalState, LocalAction, LocalContent>(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> CaseLet<State, Action, LocalState, LocalAction, LocalContent>
+    @ViewBuilder content: @escaping ()
+      -> CaseLet<State, Action, LocalState, LocalAction, LocalContent>,
+    file: StaticString = #file,
+    line: UInt = #line
   )
   where
     Content == WithViewStore<
@@ -50,16 +53,16 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
   {
     self.init(store) {
       content()
-      Default { AssertionView() }
+      Default { AssertionView(file: file, line: line) }
     }
   }
 
-  public init<S1, A1, C1, S2, A2, C2, D>(
+  public init<State1, Action1, Content1, State2, Action2, Content2, DefaultContent>(
     _ store: Store<State, Action>,
     @ViewBuilder content: @escaping () -> TupleView<(
-      CaseLet<State, Action, S1, A1, C1>,
-      CaseLet<State, Action, S2, A2, C2>,
-      Default<D>
+      CaseLet<State, Action, State1, Action1, Content1>,
+      CaseLet<State, Action, State2, Action2, Content2>,
+      Default<DefaultContent>
     )>
   )
   where
@@ -68,10 +71,10 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       Action,
       _ConditionalContent<
         TupleView<(
-          CaseLet<State, Action, S1, A1, C1>,
-          CaseLet<State, Action, S2, A2, C2>
+          CaseLet<State, Action, State1, Action1, Content1>,
+          CaseLet<State, Action, State2, Action2, Content2>
         )>,
-        Default<D>
+        Default<DefaultContent>
       >
     >
   {
@@ -92,12 +95,14 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
     }
   }
 
-  public init<S1, A1, C1, S2, A2, C2>(
+  public init<State1, Action1, Content1, State2, Action2, Content2>(
     _ store: Store<State, Action>,
     @ViewBuilder content: @escaping () -> TupleView<(
-      CaseLet<State, Action, S1, A1, C1>,
-      CaseLet<State, Action, S2, A2, C2>
-    )>
+      CaseLet<State, Action, State1, Action1, Content1>,
+      CaseLet<State, Action, State2, Action2, Content2>
+    )>,
+    file: StaticString = #file,
+    line: UInt = #line
   )
   where
     Content == WithViewStore<
@@ -105,8 +110,8 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       Action,
       _ConditionalContent<
         TupleView<(
-          CaseLet<State, Action, S1, A1, C1>,
-          CaseLet<State, Action, S2, A2, C2>
+          CaseLet<State, Action, State1, Action1, Content1>,
+          CaseLet<State, Action, State2, Action2, Content2>
         )>,
         Default<AssertionView>
       >
@@ -116,17 +121,22 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       let content = content()
       content.value.0
       content.value.1
-      Default { AssertionView() }
+      Default { AssertionView(file: file, line: line) }
     }
   }
 
-  public init<S1, A1, C1, S2, A2, C2, S3, A3, C3, D>(
+  public init<
+    State1, Action1, Content1,
+    State2, Action2, Content2,
+    State3, Action3, Content3,
+    DefaultContent
+  >(
     _ store: Store<State, Action>,
     @ViewBuilder content: @escaping () -> TupleView<(
-      CaseLet<State, Action, S1, A1, C1>,
-      CaseLet<State, Action, S2, A2, C2>,
-      CaseLet<State, Action, S3, A3, C3>,
-      Default<D>
+      CaseLet<State, Action, State1, Action1, Content1>,
+      CaseLet<State, Action, State2, Action2, Content2>,
+      CaseLet<State, Action, State3, Action3, Content3>,
+      Default<DefaultContent>
     )>
   )
   where
@@ -135,11 +145,11 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       Action,
       _ConditionalContent<
         TupleView<(
-          CaseLet<State, Action, S1, A1, C1>,
-          CaseLet<State, Action, S2, A2, C2>,
-          CaseLet<State, Action, S3, A3, C3>
+          CaseLet<State, Action, State1, Action1, Content1>,
+          CaseLet<State, Action, State2, Action2, Content2>,
+          CaseLet<State, Action, State3, Action3, Content3>
         )>,
-        Default<D>
+        Default<DefaultContent>
       >
     >
   {
@@ -162,13 +172,15 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
     }
   }
 
-  public init<S1, A1, C1, S2, A2, C2, S3, A3, C3>(
+  public init<State1, Action1, Content1, State2, Action2, Content2, State3, Action3, Content3>(
     _ store: Store<State, Action>,
     @ViewBuilder content: @escaping () -> TupleView<(
-      CaseLet<State, Action, S1, A1, C1>,
-      CaseLet<State, Action, S2, A2, C2>,
-      CaseLet<State, Action, S3, A3, C3>
-    )>
+      CaseLet<State, Action, State1, Action1, Content1>,
+      CaseLet<State, Action, State2, Action2, Content2>,
+      CaseLet<State, Action, State3, Action3, Content3>
+    )>,
+    file: StaticString = #file,
+    line: UInt = #line
   )
   where
     Content == WithViewStore<
@@ -176,9 +188,9 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       Action,
       _ConditionalContent<
         TupleView<(
-          CaseLet<State, Action, S1, A1, C1>,
-          CaseLet<State, Action, S2, A2, C2>,
-          CaseLet<State, Action, S3, A3, C3>
+          CaseLet<State, Action, State1, Action1, Content1>,
+          CaseLet<State, Action, State2, Action2, Content2>,
+          CaseLet<State, Action, State3, Action3, Content3>
         )>,
         Default<AssertionView>
       >
@@ -189,7 +201,7 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       content.value.0
       content.value.1
       content.value.2
-      Default { AssertionView() }
+      Default { AssertionView(file: file, line: line) }
     }
   }
 
@@ -238,8 +250,18 @@ where
 }
 
 public struct AssertionView: View {
-  init(file: StaticString = #file, line: UInt = #line) {
-    assertionFailure(file: file, line: line)
+  public init(file: StaticString = #file, line: UInt = #line) {
+    fputs(
+      """
+      Warning: SwitchStore must be exhaustive @ \(file):\(line)
+
+      A SwitchStore was used in file \(file) at line \(line) without exhaustively handling every
+      case with a CaseLet view. Make sure that you provide a CaseLet for each case in your enum,
+      or provide a Default view at the end of the SwitchStore's body.
+      """,
+      stderr
+    )
+    raise(SIGTRAP)
   }
 
   public var body: some View {
