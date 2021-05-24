@@ -11,8 +11,10 @@ jobs:
     runs-on: macOS-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Tap
+        run: brew tap pointfreeco/formulae
       - name: Install
-        run: brew install st3ffwo3/formulae/swift-format
+        run: brew install Formulae/swift-format@5.3
       - name: Format
         run: make format
       - uses: stefanzweifel/git-auto-commit-action@v4

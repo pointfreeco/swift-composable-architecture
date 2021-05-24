@@ -103,6 +103,6 @@ extension Effect where Failure == Never {
       .autoconnect()
       .setFailureType(to: Failure.self)
       .eraseToEffect()
-      .cancellable(id: id)
+      .cancellable(id: id, cancelInFlight: true)
   }
 }
