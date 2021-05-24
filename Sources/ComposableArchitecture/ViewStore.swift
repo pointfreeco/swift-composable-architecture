@@ -235,17 +235,6 @@ public final class ViewStore<State, Action>: ObservableObject {
   public func binding(send action: Action) -> Binding<State> {
     self.binding(send: { _ in action })
   }
-
-  public func scope<LocalState, LocalAction>(
-    state toLocalState: @escaping (State) -> LocalState,
-    action toGlobalAction: @escaping (LocalAction) -> Action
-  ) -> ViewStore<LocalState, LocalAction> where LocalState: Equatable {
-    ViewStore<LocalState, LocalAction>(
-      publisher: self.publisher.map(toLocalState).removeDuplicates(by: ==),
-      state: toLocalState(self.state),
-      send: { self._send(toGlobalAction($0)) }
-    )
-  }
 }
 
 extension ViewStore where State: Equatable {
