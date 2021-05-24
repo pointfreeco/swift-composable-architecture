@@ -6,22 +6,6 @@ import XCTest
 final class ComposableArchitectureTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
-  func testFormAction() {
-
-    struct AppState {
-      var settings: SettingsState
-    }
-    struct SettingsState {
-      var enabled = false
-    }
-
-    let settingsFormaction = FormAction<SettingsState>.set(\.enabled, true)
-    let appFormAction = settingsFormaction.pullback(\AppState.settings)
-
-    print("!")
-
-  }
-
   func testScheduling() {
     enum CounterAction: Equatable {
       case incrAndSquareLater
