@@ -211,14 +211,6 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
   }
 }
 
-private class StoreObservableObject<State, Action>: ObservableObject {
-  let wrappedStore: Store<State, Action>
-
-  init(store: Store<State, Action>) {
-    self.wrappedStore = store
-  }
-}
-
 public struct CaseLet<GlobalState, GlobalAction, LocalState, LocalAction, Content>: View
 where
   Content: View
@@ -250,7 +242,7 @@ where
 }
 
 public struct AssertionView: View {
-  public init(file: StaticString = #file, line: UInt = #line) {
+  init(file: StaticString = #file, line: UInt = #line) {
     fputs(
       """
       Warning: SwitchStore must be exhaustive @ \(file):\(line)
@@ -270,7 +262,7 @@ public struct AssertionView: View {
 }
 
 public struct Default<Content>: View where Content: View {
-  let content: () -> Content
+  private let content: () -> Content
 
   public init(
     @ViewBuilder content: @escaping () -> Content
@@ -283,6 +275,14 @@ public struct Default<Content>: View where Content: View {
   }
 }
 
+private class StoreObservableObject<State, Action>: ObservableObject {
+  let wrappedStore: Store<State, Action>
+
+  init(store: Store<State, Action>) {
+    self.wrappedStore = store
+  }
+}
+
 private struct EnumValueWitnessTable {
   let f1, f2, f3, f4, f5, f6, f7, f8: UnsafeRawPointer
   let size, stride: Int
@@ -291,7 +291,7 @@ private struct EnumValueWitnessTable {
   let f9, f10: UnsafeRawPointer
 }
 
-public struct Tag<Enum>: Equatable, Hashable {
+private struct Tag<Enum>: Equatable, Hashable {
   let rawValue: UInt32
 
   init?(_ `case`: Enum) {
