@@ -20,7 +20,7 @@ private let readMe = """
 
 struct AlertAndSheetState: Equatable {
   var actionSheet: ActionSheetState<AlertAndSheetAction>?
-  var alert: AlertState<AlertAndSheetAction>?
+  var alert: AlertState<AlertAndSheetAction.AlertAction>?
   var count = 0
 }
 
@@ -29,10 +29,13 @@ enum AlertAndSheetAction: Equatable {
   case actionSheetCancelTapped
   case actionSheetDismissed
   case alertButtonTapped
-  case alertCancelTapped
-  case alertDismissed
+  case alert(ComposableArchitecture.AlertAction<AlertAction>)
   case decrementButtonTapped
   case incrementButtonTapped
+
+  enum AlertAction: Equatable {
+    case incrementButtonTapped
+  }
 }
 
 struct AlertAndSheetEnvironment {}
@@ -70,11 +73,10 @@ let alertAndSheetReducer = Reducer<
     )
     return .none
 
-  case .alertCancelTapped:
-    return .none
+  case .alert(.isActive(.incrementButtonTapped)):
+    return Effect(value: .incrementButtonTapped)
 
-  case .alertDismissed:
-    state.alert = nil
+  case .alert:
     return .none
 
   case .decrementButtonTapped:
@@ -88,6 +90,7 @@ let alertAndSheetReducer = Reducer<
     return .none
   }
 }
+.alert(state: \.alert, action: /AlertAndSheetAction.alert)
 .debug()
 
 struct AlertAndSheetView: View {
@@ -100,10 +103,7 @@ struct AlertAndSheetView: View {
           Text("Count: \(viewStore.count)")
 
           Button("Alert") { viewStore.send(.alertButtonTapped) }
-            .alert(
-              self.store.scope(state: \.alert),
-              dismiss: .alertDismissed
-            )
+            .alert(self.store.scope(state: \.alert, action: AlertAndSheetAction.alert))
 
           Button("Action sheet") { viewStore.send(.actionSheetButtonTapped) }
             .actionSheet(

@@ -99,7 +99,7 @@ struct FavoriteButton<ID>: View where ID: Hashable {
       Button(action: { viewStore.send(.buttonTapped) }) {
         Image(systemName: viewStore.isFavorite ? "heart.fill" : "heart")
       }
-      .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
+//      .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
     }
   }
 }

@@ -174,7 +174,7 @@ struct WebSocketView: View {
         Text(viewStore.receivedMessages.joined(separator: "\n"))
       }
       .padding()
-      .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
+//      .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
       .navigationBarTitle("Web Socket")
     }
   }

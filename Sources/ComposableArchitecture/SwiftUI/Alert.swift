@@ -156,6 +156,31 @@ public struct AlertState<Action> {
   }
 }
 
+public enum AlertAction<Action> {
+  case isActive(Action)
+  case onDismiss
+}
+
+extension Reducer {
+  public func alert<LocalAction>(
+    state toAlertState: WritableKeyPath<State, AlertState<LocalAction>?>,
+    action toAlertAction: CasePath<Action, AlertAction<LocalAction>>
+  ) -> Self {
+    self.combined(
+      with: Reducer<AlertState<LocalAction>?, AlertAction<LocalAction>, Void> { state, action, _ in
+        switch action {
+        case .isActive:
+          return .none
+        case .onDismiss:
+          state = nil
+          return .none
+        }
+      }
+      .pullback(state: toAlertState, action: toAlertAction, environment: { _ in () })
+    )
+  }
+}
+
 extension View {
   /// Displays an alert when then store's state becomes non-`nil`, and dismisses it when it becomes
   /// `nil`.
@@ -166,13 +191,12 @@ extension View {
   ///     as when an alert is automatically dismissed by the system. Use this action to `nil` out
   ///     the associated alert state.
   public func alert<Action>(
-    _ store: Store<AlertState<Action>?, Action>,
-    dismiss: Action
+    _ store: Store<AlertState<Action>?, AlertAction<Action>>
   ) -> some View {
 
     WithViewStore(store, removeDuplicates: { $0?.id == $1?.id }) { viewStore in
-      self.alert(item: viewStore.binding(send: dismiss)) { state in
-        state.toSwiftUI(send: viewStore.send)
+      self.alert(item: viewStore.binding(send: .onDismiss)) { state in
+        state.toSwiftUI(send: { viewStore.send(.isActive($0)) })
       }
     }
   }
@@ -248,3 +272,6 @@ extension AlertState {
     }
   }
 }
+
+extension AlertAction: Equatable where Action: Equatable {}
+extension AlertAction: Hashable where Action: Hashable {}

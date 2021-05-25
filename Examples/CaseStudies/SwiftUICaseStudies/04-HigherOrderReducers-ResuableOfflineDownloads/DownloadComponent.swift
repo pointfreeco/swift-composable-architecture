@@ -163,10 +163,10 @@ struct DownloadComponent<ID: Equatable>: View {
           }
         }
       }
-      .alert(
-        self.store.scope(state: \.alert, action: DownloadComponentAction.alert),
-        dismiss: .dismiss
-      )
+//      .alert(
+//        self.store.scope(state: \.alert, action: DownloadComponentAction.alert),
+//        dismiss: .dismiss
+//      )
     }
   }
 }
