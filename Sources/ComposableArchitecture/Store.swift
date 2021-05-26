@@ -21,15 +21,13 @@ public final class Store<State, Action> {
   ///   - initialState: The state to start the application in.
   ///   - reducer: The reducer that powers the business logic of the application.
   ///   - environment: The environment of dependencies for the application.
-  public convenience init<Environment>(
+  public init<Environment>(
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
     environment: Environment
   ) {
-    self.init(
-      initialState: initialState,
-      reducer: { reducer.run(&$0, $1, environment) }
-    )
+    self.state = CurrentValueSubject(initialState)
+    self.reducer = { state, action in reducer.run(&state, action, environment) }
   }
 
   /// Scopes the store to one that exposes local state and actions.
@@ -166,11 +164,12 @@ public final class Store<State, Action> {
   ) -> Store<LocalState, LocalAction> {
     let localStore = Store<LocalState, LocalAction>(
       initialState: toLocalState(self.state.value),
-      reducer: { localState, localAction in
+      reducer: .init { localState, localAction, _ in
         self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
         return .none
-      }
+      },
+      environment: ()
     )
     localStore.parentCancellable = self.state
       .sink { [weak localStore] newValue in localStore?.state.value = toLocalState(newValue) }
@@ -211,11 +210,13 @@ public final class Store<State, Action> {
       .map { localState in
         let localStore = Store<LocalState, LocalAction>(
           initialState: localState,
-          reducer: { localState, localAction in
+          reducer: .init { localState, localAction, _ in
             self.send(fromLocalAction(localAction))
             localState = extractLocalState(self.state.value) ?? localState
             return .none
-          })
+          },
+          environment: ()
+        )
 
         localStore.parentCancellable = self.state
           .sink { [weak localStore] state in
@@ -292,14 +293,6 @@ public final class Store<State, Action> {
   public var actionless: Store<State, Never> {
     func absurd<A>(_ never: Never) -> A {}
     return self.scope(state: { $0 }, action: absurd)
-  }
-
-  private init(
-    initialState: State,
-    reducer: @escaping (inout State, Action) -> Effect<Action, Never>
-  ) {
-    self.reducer = reducer
-    self.state = CurrentValueSubject(initialState)
   }
 }
 
