@@ -255,8 +255,6 @@ public final class Store<State, Action> {
       return
     }
 
-    var currentState = self.state.value
-    defer { self.state.value = currentState }
     while !self.synchronousActionsToSend.isEmpty || !self.bufferedActions.isEmpty {
       let action =
         !self.synchronousActionsToSend.isEmpty
@@ -264,7 +262,7 @@ public final class Store<State, Action> {
         : self.bufferedActions.removeFirst()
 
       self.isSending = true
-      let effect = self.reducer(&currentState, action)
+      let effect = self.reducer(&self.state.value, action)
       self.isSending = false
 
       var didComplete = false
