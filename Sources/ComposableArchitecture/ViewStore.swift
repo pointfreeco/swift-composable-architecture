@@ -65,7 +65,10 @@ public final class ViewStore<State, Action>: ObservableObject {
     self.publisher = StorePublisher(store.state, removeDuplicates: isDuplicate)
     self.state = store.state.value
     self._send = store.send
-    self.viewCancellable = store.state.sink { [weak self] in self?.state = $0 }
+    self.viewCancellable = store.state
+      .dropFirst()
+      .removeDuplicates(by: isDuplicate)
+      .sink { [weak self] in self?.state = $0 }
   }
 
   /// The current state.
