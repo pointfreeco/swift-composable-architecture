@@ -12,18 +12,42 @@ public struct AppView: View {
     self.store = store
   }
 
-  @ViewBuilder public var body: some View {
-    SwitchStore(self.store) {
-      CaseLet(state: /AppState.login, action: AppAction.login) { store in
+  public var body: some View {
+    IfLetStore(
+      self.store.scope(
+        state: { (/AppState.login).extract(from: $0)  },
+        action: AppAction.login
+      ),
+      then: { store in
         NavigationView {
           LoginView(store: store)
         }
       }
-      CaseLet(state: /AppState.newGame, action: AppAction.newGame) { store in
+    )
+
+    IfLetStore(
+      self.store.scope(
+        state: { (/AppState.newGame).extract(from: $0)  },
+        action: AppAction.newGame
+      ),
+      then: { store in
         NavigationView {
           NewGameView(store: store)
         }
       }
-    }
+    )
+
+//    SwitchStore(self.store) {
+//      CaseLet(state: /AppState.login, action: AppAction.login) { store in
+//        NavigationView {
+//          LoginView(store: store)
+//        }
+//      }
+//      CaseLet(state: /AppState.newGame, action: AppAction.newGame) { store in
+//        NavigationView {
+//          NewGameView(store: store)
+//        }
+//      }
+//    }
   }
 }
