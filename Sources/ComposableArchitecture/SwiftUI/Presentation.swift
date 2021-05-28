@@ -83,6 +83,7 @@ extension View {
     }
   }
 
+    @available(tvOS, unavailable)
   public func popover<State, Action, Content>(
     ifLet store: Store<State?, PresentationAction<Action>>,
     @ViewBuilder then content: @escaping (Store<State, Action>) -> Content
