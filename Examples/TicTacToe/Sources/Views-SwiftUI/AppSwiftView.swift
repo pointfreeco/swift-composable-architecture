@@ -78,9 +78,8 @@ public struct _SwitchStore<State: Equatable, Action, Content>: View where Conten
   {
     self.store = store
     self.content = {
-//      let (case0, case1) = content().value
       let cases = content().value
-      WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
+      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         switch viewStore.state {
         case cases.0.state:
           cases.0
