@@ -30,21 +30,27 @@ public struct AppEnvironment {
 }
 
 public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
-  loginReducer.optional().pullback(
-    state: \.login,
-    action: /AppAction.login,
-    environment: {
-      LoginEnvironment(
-        authenticationClient: $0.authenticationClient,
-        mainQueue: $0.mainQueue
-      )
-    }
-  ),
-  newGameReducer.optional().pullback(
-    state: \.newGame,
-    action: /AppAction.newGame,
-    environment: { _ in NewGameEnvironment() }
-  ),
+  loginReducer
+    .optional()
+    .pullback(
+      state: \AppState.login,
+      action: /AppAction.login,
+      environment: {
+        LoginEnvironment(
+          authenticationClient: $0.authenticationClient,
+          mainQueue: $0.mainQueue
+        )
+      }
+    ),
+
+  newGameReducer
+    .optional()
+    .pullback(
+      state: \AppState.newGame,
+      action: /AppAction.newGame,
+      environment: { _ in NewGameEnvironment() }
+    ),
+
   Reducer { state, action, _ in
     switch action {
     case let .login(.twoFactor(.twoFactorResponse(.success(response)))),
