@@ -242,7 +242,7 @@ where
 }
 
 public struct AssertionView: View {
-  init(file: StaticString = #file, line: UInt = #line) {
+  public init(file: StaticString = #file, line: UInt = #line) {
     fputs(
       """
       Warning: SwitchStore must be exhaustive @ \(file):\(line)

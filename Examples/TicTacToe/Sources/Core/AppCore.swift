@@ -7,6 +7,7 @@ import NewGameCore
 public enum AppState: Equatable {
   case login(LoginState)
   case newGame(NewGameState)
+  case pending
 
   public init() {
     self = .login(.init())
@@ -51,7 +52,7 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     switch action {
     case let .login(.twoFactor(.twoFactorResponse(.success(response)))),
       let .login(.loginResponse(.success(response))) where !response.twoFactorRequired:
-      state = .newGame(NewGameState())
+      state = .pending// .newGame(NewGameState())
       return .none
 
     case .newGame(.logoutButtonTapped):
