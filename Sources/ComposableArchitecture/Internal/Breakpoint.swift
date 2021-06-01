@@ -13,6 +13,13 @@
   }
 
   if isDebuggerAttached {
+    fputs(
+      """
+      Caught internal breakpoint. Type "continue" ("c") to resume execution.
+
+      """,
+      stderr
+    )
     raise(SIGTRAP)
   }
   #endif
