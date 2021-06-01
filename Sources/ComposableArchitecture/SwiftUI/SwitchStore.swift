@@ -527,26 +527,24 @@ public struct _ExhaustivityCheckView<State, Action>: View {
   let file: StaticString
   let line: UInt
 
-  var message: String {
-    """
-    Warning: SwitchStore.body@\(file):\(line)
-
-    A "SwitchStore" is not exhaustively handling every case with a "CaseLet" view. Unhandled case:
-
-        \(debugCaseOutput(self.store.wrappedValue.state.value))
-
-    Make sure that you provide a "CaseLet" for each case in your enum, or provide a "Default" view \
-    at the end of the "SwitchStore".
-    """
-  }
-
   public var body: some View {
     #if DEBUG
+      let message = """
+        Warning: SwitchStore.body@\(self.file):\(self.line)
+
+        A "SwitchStore" is not exhaustively handling every case with a "CaseLet" view. Unhandled \
+        case:
+
+            \(debugCaseOutput(self.store.wrappedValue.state.value))
+
+        Make sure that you provide a "CaseLet" for each case in your enum, or provide a "Default" \
+        view at the end of the "SwitchStore".
+        """
       VStack(spacing: 17) {
         Image(systemName: "exclamationmark.triangle.fill")
           .font(.largeTitle)
 
-        Text(self.message)
+        Text(message)
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)
       .foregroundColor(.white)
@@ -556,7 +554,7 @@ public struct _ExhaustivityCheckView<State, Action>: View {
         fputs(
           """
           ---
-          \(self.message)
+          \(message)
           ---
 
           """,
