@@ -531,7 +531,7 @@ public struct _ExhaustivityCheckView<State, Action>: View {
         "\(debugCaseOutput(self.store.wrappedValue.state.value))" was encountered by a \
         "SwitchStore" that does not handle this case.
 
-        Make sure that you exhaustively provide a "CaseLet" view for each case in "\(State.self)",
+        Make sure that you exhaustively provide a "CaseLet" view for each case in "\(State.self)", \
         or provide a "Default" view at the end of the "SwitchStore".
         """
       VStack(spacing: 17) {
