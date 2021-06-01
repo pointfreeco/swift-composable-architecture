@@ -499,29 +499,6 @@ public struct _ExhaustivityCheckView: View {
       .padding()
       .background(Color.red.edgesIgnoringSafeArea(.all))
       .onAppear {
-        let isDebuggerAttached: Bool = {
-            var debuggerIsAttached = false
-
-            var name: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()]
-            var info: kinfo_proc = kinfo_proc()
-            var info_size = MemoryLayout<kinfo_proc>.size
-
-            let success = name.withUnsafeMutableBytes { (nameBytePtr: UnsafeMutableRawBufferPointer) -> Bool in
-                guard let nameBytesBlindMemory = nameBytePtr.bindMemory(to: Int32.self).baseAddress else { return false }
-                return -1 != sysctl(nameBytesBlindMemory, 4, &info, &info_size, nil, 0)
-            }
-
-            if !success {
-                debuggerIsAttached = false
-            }
-
-            if !debuggerIsAttached && (info.kp_proc.p_flag & P_TRACED) != 0 {
-                debuggerIsAttached = true
-            }
-
-            return debuggerIsAttached
-        }()
-
         fputs(
           """
           ---
@@ -531,9 +508,7 @@ public struct _ExhaustivityCheckView: View {
           """,
           stderr
         )
-        if isDebuggerAttached {
-          raise(SIGTRAP)
-        }
+        breakpoint()
       }
     #endif
   }
