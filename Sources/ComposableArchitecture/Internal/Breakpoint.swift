@@ -15,7 +15,7 @@
   if isDebuggerAttached {
     fputs(
       """
-      Caught internal breakpoint. Type "continue" ("c") to resume execution.
+      Caught debug breakpoint. Type "continue" ("c") to resume execution.
 
       """,
       stderr
