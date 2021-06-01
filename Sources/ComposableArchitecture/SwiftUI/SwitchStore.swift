@@ -81,28 +81,53 @@ extension SwitchStore {
     }
   }
 
-  public init<State1, Action1, Content1>(
-    _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping ()
-      -> CaseLet<State, Action, State1, Action1, Content1>,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  )
-  where
-    Content == WithViewStore<
-      State,
-      Action,
-      _ConditionalContent<
-        CaseLet<State, Action, State1, Action1, Content1>,
-        Default<_ExhaustivityCheckView>
+  #if compiler(>=5.3)
+    public init<State1, Action1, Content1>(
+      _ store: Store<State, Action>,
+      @ViewBuilder content: @escaping ()
+        -> CaseLet<State, Action, State1, Action1, Content1>,
+      file: StaticString = #fileID,
+      line: UInt = #line
+    )
+    where
+      Content == WithViewStore<
+        State,
+        Action,
+        _ConditionalContent<
+          CaseLet<State, Action, State1, Action1, Content1>,
+          Default<_ExhaustivityCheckView>
+        >
       >
-    >
-  {
-    self.init(store) {
-      content()
-      Default { _ExhaustivityCheckView(file: file, line: line) }
+    {
+      self.init(store) {
+        content()
+        Default { _ExhaustivityCheckView(file: file, line: line) }
+      }
     }
-  }
+  #else
+    public init<State1, Action1, Content1>(
+      _ store: Store<State, Action>,
+      @ViewBuilder content: @escaping ()
+        -> CaseLet<State, Action, State1, Action1, Content1>,
+      file: StaticString = #file,
+      line: UInt = #line
+    )
+    where
+      Content == WithViewStore<
+        State,
+        Action,
+        _ConditionalContent<
+          CaseLet<State, Action, State1, Action1, Content1>,
+          Default<_ExhaustivityCheckView>
+        >
+      >
+    {
+      self.init(store) {
+        content()
+        Default { _ExhaustivityCheckView(file: file, line: line) }
+      }
+    }
+  #endif
 
   public init<State1, Action1, Content1, State2, Action2, Content2, DefaultContent>(
     _ store: Store<State, Action>,
@@ -119,13 +144,13 @@ extension SwitchStore {
       _ConditionalContent<
         _ConditionalContent<
           CaseLet<State, Action, State1, Action1, Content1>,
-          CaseLet<State, Action, State2, Action2, Content2>>,
+          CaseLet<State, Action, State2, Action2, Content2>
+        >,
         Default<DefaultContent>
       >
     >
   {
-    self.store = store
-    self.content = {
+    self.init(store: store) {
       WithViewStore(store, removeDuplicates: { Tag($0) == Tag($1) }) { viewStore in
         let content = content().value
         switch viewStore.state {
@@ -140,34 +165,65 @@ extension SwitchStore {
     }
   }
 
-  public init<State1, Action1, Content1, State2, Action2, Content2>(
-    _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<(
-      CaseLet<State, Action, State1, Action1, Content1>,
-      CaseLet<State, Action, State2, Action2, Content2>
-    )>,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  )
-  where
-    Content == WithViewStore<
-      State,
-      Action,
-      _ConditionalContent<
+  #if compiler(>=5.3)
+    public init<State1, Action1, Content1, State2, Action2, Content2>(
+      _ store: Store<State, Action>,
+      @ViewBuilder content: @escaping () -> TupleView<(
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>
+      )>,
+      file: StaticString = #fileID,
+      line: UInt = #line
+    )
+    where
+      Content == WithViewStore<
+        State,
+        Action,
         _ConditionalContent<
-          CaseLet<State, Action, State1, Action1, Content1>,
-          CaseLet<State, Action, State2, Action2, Content2>>,
-        Default<_ExhaustivityCheckView>
+          _ConditionalContent<
+            CaseLet<State, Action, State1, Action1, Content1>,
+            CaseLet<State, Action, State2, Action2, Content2>>,
+          Default<_ExhaustivityCheckView>
+        >
       >
-    >
-  {
-    self.init(store) {
-      let content = content()
-      content.value.0
-      content.value.1
-      Default { _ExhaustivityCheckView(file: file, line: line) }
+    {
+      self.init(store) {
+        let content = content()
+        content.value.0
+        content.value.1
+        Default { _ExhaustivityCheckView(file: file, line: line) }
+      }
     }
-  }
+  #else
+    public init<State1, Action1, Content1, State2, Action2, Content2>(
+      _ store: Store<State, Action>,
+      @ViewBuilder content: @escaping () -> TupleView<(
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>
+      )>,
+      file: StaticString = #file,
+      line: UInt = #line
+    )
+    where
+      Content == WithViewStore<
+        State,
+        Action,
+        _ConditionalContent<
+          _ConditionalContent<
+            CaseLet<State, Action, State1, Action1, Content1>,
+            CaseLet<State, Action, State2, Action2, Content2>>,
+          Default<_ExhaustivityCheckView>
+        >
+      >
+    {
+      self.init(store) {
+        let content = content()
+        content.value.0
+        content.value.1
+        Default { _ExhaustivityCheckView(file: file, line: line) }
+      }
+    }
+  #endif
 
   public init<
     State1, Action1, Content1,
@@ -199,8 +255,7 @@ extension SwitchStore {
       >
     >
   {
-    self.store = store
-    self.content = {
+    self.init(store: store) {
       WithViewStore(store, removeDuplicates: { Tag($0) == Tag($1) }) { viewStore in
         let content = content().value
         switch viewStore.state {
@@ -217,40 +272,77 @@ extension SwitchStore {
     }
   }
 
-  public init<State1, Action1, Content1, State2, Action2, Content2, State3, Action3, Content3>(
-    _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<(
-      CaseLet<State, Action, State1, Action1, Content1>,
-      CaseLet<State, Action, State2, Action2, Content2>,
-      CaseLet<State, Action, State3, Action3, Content3>
-    )>,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  )
-  where
-    Content == WithViewStore<
-      State,
-      Action,
-      _ConditionalContent<
+  #if compiler(>=5.3)
+    public init<State1, Action1, Content1, State2, Action2, Content2, State3, Action3, Content3>(
+      _ store: Store<State, Action>,
+      @ViewBuilder content: @escaping () -> TupleView<(
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>,
+        CaseLet<State, Action, State3, Action3, Content3>
+      )>,
+      file: StaticString = #fileID,
+      line: UInt = #line
+    )
+    where
+      Content == WithViewStore<
+        State,
+        Action,
         _ConditionalContent<
-          CaseLet<State, Action, State1, Action1, Content1>,
-          CaseLet<State, Action, State2, Action2, Content2>
-        >,
-        _ConditionalContent<
-          CaseLet<State, Action, State3, Action3, Content3>,
-          Default<_ExhaustivityCheckView>
+          _ConditionalContent<
+            CaseLet<State, Action, State1, Action1, Content1>,
+            CaseLet<State, Action, State2, Action2, Content2>
+          >,
+          _ConditionalContent<
+            CaseLet<State, Action, State3, Action3, Content3>,
+            Default<_ExhaustivityCheckView>
+          >
         >
       >
-    >
-  {
-    self.init(store) {
-      let content = content()
-      content.value.0
-      content.value.1
-      content.value.2
-      Default { _ExhaustivityCheckView(file: file, line: line) }
+    {
+      self.init(store) {
+        let content = content()
+        content.value.0
+        content.value.1
+        content.value.2
+        Default { _ExhaustivityCheckView(file: file, line: line) }
+      }
     }
-  }
+  #else
+    public init<State1, Action1, Content1, State2, Action2, Content2, State3, Action3, Content3>(
+      _ store: Store<State, Action>,
+      @ViewBuilder content: @escaping () -> TupleView<(
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>,
+        CaseLet<State, Action, State3, Action3, Content3>
+      )>,
+      file: StaticString = #file,
+      line: UInt = #line
+    )
+    where
+      Content == WithViewStore<
+        State,
+        Action,
+        _ConditionalContent<
+          _ConditionalContent<
+            CaseLet<State, Action, State1, Action1, Content1>,
+            CaseLet<State, Action, State2, Action2, Content2>
+          >,
+          _ConditionalContent<
+            CaseLet<State, Action, State3, Action3, Content3>,
+            Default<_ExhaustivityCheckView>
+          >
+        >
+      >
+    {
+      self.init(store) {
+        let content = content()
+        content.value.0
+        content.value.1
+        content.value.2
+        Default { _ExhaustivityCheckView(file: file, line: line) }
+      }
+    }
+  #endif
 
   public init<
     State1, Action1, Content1,
@@ -287,8 +379,7 @@ extension SwitchStore {
       >
     >
   {
-    self.store = store
-    self.content = {
+    self.init(store: store) {
       WithViewStore(store, removeDuplicates: { Tag($0) == Tag($1) }) { viewStore in
         let content = content().value
         switch viewStore.state {
@@ -307,50 +398,97 @@ extension SwitchStore {
     }
   }
 
-  public init<
-    State1, Action1, Content1,
-    State2, Action2, Content2,
-    State3, Action3, Content3,
-    State4, Action4, Content4
-  >(
-    _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<(
-      CaseLet<State, Action, State1, Action1, Content1>,
-      CaseLet<State, Action, State2, Action2, Content2>,
-      CaseLet<State, Action, State3, Action3, Content3>,
-      CaseLet<State, Action, State4, Action4, Content4>
-    )>,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  )
-  where
-    Content == WithViewStore<
-      State,
-      Action,
-      _ConditionalContent<
+  #if compiler(>=5.3)
+    public init<
+      State1, Action1, Content1,
+      State2, Action2, Content2,
+      State3, Action3, Content3,
+      State4, Action4, Content4
+    >(
+      _ store: Store<State, Action>,
+      @ViewBuilder content: @escaping () -> TupleView<(
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>,
+        CaseLet<State, Action, State3, Action3, Content3>,
+        CaseLet<State, Action, State4, Action4, Content4>
+      )>,
+      file: StaticString = #fileID,
+      line: UInt = #line
+    )
+    where
+      Content == WithViewStore<
+        State,
+        Action,
         _ConditionalContent<
           _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
+            _ConditionalContent<
+              CaseLet<State, Action, State1, Action1, Content1>,
+              CaseLet<State, Action, State2, Action2, Content2>
+            >,
+            _ConditionalContent<
+              CaseLet<State, Action, State3, Action3, Content3>,
+              CaseLet<State, Action, State4, Action4, Content4>
+            >
           >,
-          _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
-          >
-        >,
-        Default<_ExhaustivityCheckView>
+          Default<_ExhaustivityCheckView>
+        >
       >
-    >
-  {
-    self.init(store) {
-      let content = content()
-      content.value.0
-      content.value.1
-      content.value.2
-      content.value.3
-      Default { _ExhaustivityCheckView(file: file, line: line) }
+    {
+      self.init(store) {
+        let content = content()
+        content.value.0
+        content.value.1
+        content.value.2
+        content.value.3
+        Default { _ExhaustivityCheckView(file: file, line: line) }
+      }
     }
-  }
+  #else
+    public init<
+      State1, Action1, Content1,
+      State2, Action2, Content2,
+      State3, Action3, Content3,
+      State4, Action4, Content4
+    >(
+      _ store: Store<State, Action>,
+      @ViewBuilder content: @escaping () -> TupleView<(
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>,
+        CaseLet<State, Action, State3, Action3, Content3>,
+        CaseLet<State, Action, State4, Action4, Content4>
+      )>,
+      file: StaticString = #file,
+      line: UInt = #line
+    )
+    where
+      Content == WithViewStore<
+        State,
+        Action,
+        _ConditionalContent<
+          _ConditionalContent<
+            _ConditionalContent<
+              CaseLet<State, Action, State1, Action1, Content1>,
+              CaseLet<State, Action, State2, Action2, Content2>
+            >,
+            _ConditionalContent<
+              CaseLet<State, Action, State3, Action3, Content3>,
+              CaseLet<State, Action, State4, Action4, Content4>
+            >
+          >,
+          Default<_ExhaustivityCheckView>
+        >
+      >
+    {
+      self.init(store) {
+        let content = content()
+        content.value.0
+        content.value.1
+        content.value.2
+        content.value.3
+        Default { _ExhaustivityCheckView(file: file, line: line) }
+      }
+    }
+  #endif
 
   public init<
     State1, Action1, Content1,
@@ -392,8 +530,7 @@ extension SwitchStore {
       >
     >
   {
-    self.store = store
-    self.content = {
+    self.init(store: store) {
       WithViewStore(store, removeDuplicates: { Tag($0) == Tag($1) }) { viewStore in
         let content = content().value
         switch viewStore.state {
@@ -414,67 +551,115 @@ extension SwitchStore {
     }
   }
 
-  public init<
-    State1, Action1, Content1,
-    State2, Action2, Content2,
-    State3, Action3, Content3,
-    State4, Action4, Content4,
-    State5, Action5, Content5
-  >(
-    _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<(
-      CaseLet<State, Action, State1, Action1, Content1>,
-      CaseLet<State, Action, State2, Action2, Content2>,
-      CaseLet<State, Action, State3, Action3, Content3>,
-      CaseLet<State, Action, State4, Action4, Content4>,
-      CaseLet<State, Action, State5, Action5, Content5>
-    )>,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  )
-  where
-    Content == WithViewStore<
-      State,
-      Action,
-      _ConditionalContent<
+  #if compiler(>=5.3)
+    public init<
+      State1, Action1, Content1,
+      State2, Action2, Content2,
+      State3, Action3, Content3,
+      State4, Action4, Content4,
+      State5, Action5, Content5
+    >(
+      _ store: Store<State, Action>,
+      @ViewBuilder content: @escaping () -> TupleView<(
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>,
+        CaseLet<State, Action, State3, Action3, Content3>,
+        CaseLet<State, Action, State4, Action4, Content4>,
+        CaseLet<State, Action, State5, Action5, Content5>
+      )>,
+      file: StaticString = #fileID,
+      line: UInt = #line
+    )
+    where
+      Content == WithViewStore<
+        State,
+        Action,
         _ConditionalContent<
           _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
+            _ConditionalContent<
+              CaseLet<State, Action, State1, Action1, Content1>,
+              CaseLet<State, Action, State2, Action2, Content2>
+            >,
+            _ConditionalContent<
+              CaseLet<State, Action, State3, Action3, Content3>,
+              CaseLet<State, Action, State4, Action4, Content4>
+            >
           >,
           _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
+            CaseLet<State, Action, State5, Action5, Content5>,
+            Default<_ExhaustivityCheckView>
           >
-        >,
-        _ConditionalContent<
-          CaseLet<State, Action, State5, Action5, Content5>,
-          Default<_ExhaustivityCheckView>
         >
       >
-    >
-  {
-    self.init(store) {
-      let content = content()
-      content.value.0
-      content.value.1
-      content.value.2
-      content.value.3
-      content.value.4
-      Default { _ExhaustivityCheckView(file: file, line: line) }
+    {
+      self.init(store) {
+        let content = content()
+        content.value.0
+        content.value.1
+        content.value.2
+        content.value.3
+        content.value.4
+        Default { _ExhaustivityCheckView(file: file, line: line) }
+      }
     }
-  }
+  #else
+    public init<
+      State1, Action1, Content1,
+      State2, Action2, Content2,
+      State3, Action3, Content3,
+      State4, Action4, Content4,
+      State5, Action5, Content5
+    >(
+      _ store: Store<State, Action>,
+      @ViewBuilder content: @escaping () -> TupleView<(
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>,
+        CaseLet<State, Action, State3, Action3, Content3>,
+        CaseLet<State, Action, State4, Action4, Content4>,
+        CaseLet<State, Action, State5, Action5, Content5>
+      )>,
+      file: StaticString = #file,
+      line: UInt = #line
+    )
+    where
+      Content == WithViewStore<
+        State,
+        Action,
+        _ConditionalContent<
+          _ConditionalContent<
+            _ConditionalContent<
+              CaseLet<State, Action, State1, Action1, Content1>,
+              CaseLet<State, Action, State2, Action2, Content2>
+            >,
+            _ConditionalContent<
+              CaseLet<State, Action, State3, Action3, Content3>,
+              CaseLet<State, Action, State4, Action4, Content4>
+            >
+          >,
+          _ConditionalContent<
+            CaseLet<State, Action, State5, Action5, Content5>,
+            Default<_ExhaustivityCheckView>
+          >
+        >
+      >
+    {
+      self.init(store) {
+        let content = content()
+        content.value.0
+        content.value.1
+        content.value.2
+        content.value.3
+        content.value.4
+        Default { _ExhaustivityCheckView(file: file, line: line) }
+      }
+    }
+  #endif
 }
 
 public struct _ExhaustivityCheckView: View {
   let message: String
-  let file: StaticString
-  let line: UInt
 
-  init(
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) {
+  init(file: StaticString, line: UInt) {
     self.message = """
       Warning: SwitchStore.body@\(file):\(line)
 
@@ -482,8 +667,6 @@ public struct _ExhaustivityCheckView: View {
       you provide a "CaseLet" for each case in your enum, or provide a "Default" view at the end \
       of the "SwitchStore".
       """
-    self.file = file
-    self.line = line
   }
 
   public var body: some View {
