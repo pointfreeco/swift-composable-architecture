@@ -4,6 +4,53 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
   public let store: Store<State, Action>
   public let content: () -> Content
 
+  public var body: some View {
+    self.content()
+      .environmentObject(StoreObservableObject(store: self.store))
+  }
+}
+
+public struct CaseLet<GlobalState, GlobalAction, LocalState, LocalAction, Content>: View
+where Content: View {
+  @EnvironmentObject private var store: StoreObservableObject<GlobalState, GlobalAction>
+  let toLocalState: CasePath<GlobalState, LocalState>
+  let fromLocalAction: (LocalAction) -> GlobalAction
+  let content: (Store<LocalState, LocalAction>) -> Content
+
+  public init(
+    state toLocalState: CasePath<GlobalState, LocalState>,
+    action fromLocalAction: @escaping (LocalAction) -> GlobalAction,
+    @ViewBuilder then content: @escaping (Store<LocalState, LocalAction>) -> Content
+  ) {
+    self.toLocalState = toLocalState
+    self.fromLocalAction = fromLocalAction
+    self.content = content
+  }
+
+  public var body: some View {
+    IfLetStore(
+      self.store.wrappedValue.scope(
+        state: self.toLocalState.extract(from:),
+        action: self.fromLocalAction
+      ),
+      then: self.content
+    )
+  }
+}
+
+public struct Default<Content>: View where Content: View {
+  private let content: () -> Content
+
+  public init(@ViewBuilder content: @escaping () -> Content) {
+    self.content = content
+  }
+
+  public var body: some View {
+    self.content()
+  }
+}
+
+extension SwitchStore {
   public init<State1, Action1, Content1, DefaultContent>(
     _ store: Store<State, Action>,
     @ViewBuilder content: @escaping () -> TupleView<(
@@ -21,24 +68,24 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       >
     >
   {
-    self.store = store
-    self.content = {
+    self.init(store: store) {
       WithViewStore(store, removeDuplicates: { Tag($0) == Tag($1) }) { viewStore in
-        let content = content()
-        if content.value.0.toLocalState.extract(from: viewStore.state) != nil {
-          content.value.0
-        } else {
-          content.value.1
+        let content = content().value
+        switch viewStore.state {
+        case content.0.toLocalState:
+          content.0
+        default:
+          content.1
         }
       }
     }
   }
 
-  public init<LocalState, LocalAction, LocalContent>(
+  public init<State1, Action1, Content1>(
     _ store: Store<State, Action>,
     @ViewBuilder content: @escaping ()
-      -> CaseLet<State, Action, LocalState, LocalAction, LocalContent>,
-    file: StaticString = #file,
+      -> CaseLet<State, Action, State1, Action1, Content1>,
+    file: StaticString = #fileID,
     line: UInt = #line
   )
   where
@@ -46,14 +93,14 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       State,
       Action,
       _ConditionalContent<
-        CaseLet<State, Action, LocalState, LocalAction, LocalContent>,
-        Default<AssertionView>
+        CaseLet<State, Action, State1, Action1, Content1>,
+        Default<_ExhaustivityCheckView>
       >
     >
   {
     self.init(store) {
       content()
-      Default { AssertionView(file: file, line: line) }
+      Default { _ExhaustivityCheckView(file: file, line: line) }
     }
   }
 
@@ -70,10 +117,9 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       State,
       Action,
       _ConditionalContent<
-        TupleView<(
+        _ConditionalContent<
           CaseLet<State, Action, State1, Action1, Content1>,
-          CaseLet<State, Action, State2, Action2, Content2>
-        )>,
+          CaseLet<State, Action, State2, Action2, Content2>>,
         Default<DefaultContent>
       >
     >
@@ -81,15 +127,14 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
     self.store = store
     self.content = {
       WithViewStore(store, removeDuplicates: { Tag($0) == Tag($1) }) { viewStore in
-        let content = content()
-        if
-          content.value.0.toLocalState.extract(from: viewStore.state) != nil
-            || content.value.1.toLocalState.extract(from: viewStore.state) != nil
-        {
-          content.value.0
-          content.value.1
-        } else {
-          content.value.2
+        let content = content().value
+        switch viewStore.state {
+        case content.0.toLocalState:
+          content.0
+        case content.1.toLocalState:
+          content.1
+        default:
+          content.2
         }
       }
     }
@@ -101,7 +146,7 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       CaseLet<State, Action, State1, Action1, Content1>,
       CaseLet<State, Action, State2, Action2, Content2>
     )>,
-    file: StaticString = #file,
+    file: StaticString = #fileID,
     line: UInt = #line
   )
   where
@@ -109,11 +154,10 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       State,
       Action,
       _ConditionalContent<
-        TupleView<(
+        _ConditionalContent<
           CaseLet<State, Action, State1, Action1, Content1>,
-          CaseLet<State, Action, State2, Action2, Content2>
-        )>,
-        Default<AssertionView>
+          CaseLet<State, Action, State2, Action2, Content2>>,
+        Default<_ExhaustivityCheckView>
       >
     >
   {
@@ -121,7 +165,7 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       let content = content()
       content.value.0
       content.value.1
-      Default { AssertionView(file: file, line: line) }
+      Default { _ExhaustivityCheckView(file: file, line: line) }
     }
   }
 
@@ -144,29 +188,30 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       State,
       Action,
       _ConditionalContent<
-        TupleView<(
+        _ConditionalContent<
           CaseLet<State, Action, State1, Action1, Content1>,
-          CaseLet<State, Action, State2, Action2, Content2>,
-          CaseLet<State, Action, State3, Action3, Content3>
-        )>,
-        Default<DefaultContent>
+          CaseLet<State, Action, State2, Action2, Content2>
+        >,
+        _ConditionalContent<
+          CaseLet<State, Action, State3, Action3, Content3>,
+          Default<DefaultContent>
+        >
       >
     >
   {
     self.store = store
     self.content = {
       WithViewStore(store, removeDuplicates: { Tag($0) == Tag($1) }) { viewStore in
-        let content = content()
-        if
-          content.value.0.toLocalState.extract(from: viewStore.state) != nil
-            || content.value.1.toLocalState.extract(from: viewStore.state) != nil
-            || content.value.2.toLocalState.extract(from: viewStore.state) != nil
-        {
-          content.value.0
-          content.value.1
-          content.value.2
-        } else {
-          content.value.3
+        let content = content().value
+        switch viewStore.state {
+        case content.0.toLocalState:
+          content.0
+        case content.1.toLocalState:
+          content.1
+        case content.2.toLocalState:
+          content.2
+        default:
+          content.3
         }
       }
     }
@@ -179,7 +224,7 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       CaseLet<State, Action, State2, Action2, Content2>,
       CaseLet<State, Action, State3, Action3, Content3>
     )>,
-    file: StaticString = #file,
+    file: StaticString = #fileID,
     line: UInt = #line
   )
   where
@@ -187,12 +232,14 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       State,
       Action,
       _ConditionalContent<
-        TupleView<(
+        _ConditionalContent<
           CaseLet<State, Action, State1, Action1, Content1>,
-          CaseLet<State, Action, State2, Action2, Content2>,
-          CaseLet<State, Action, State3, Action3, Content3>
-        )>,
-        Default<AssertionView>
+          CaseLet<State, Action, State2, Action2, Content2>
+        >,
+        _ConditionalContent<
+          CaseLet<State, Action, State3, Action3, Content3>,
+          Default<_ExhaustivityCheckView>
+        >
       >
     >
   {
@@ -201,85 +248,302 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
       content.value.0
       content.value.1
       content.value.2
-      Default { AssertionView(file: file, line: line) }
+      Default { _ExhaustivityCheckView(file: file, line: line) }
     }
   }
 
-  public var body: some View {
-    self.content()
-      .environmentObject(StoreObservableObject(store: self.store))
+  public init<
+    State1, Action1, Content1,
+    State2, Action2, Content2,
+    State3, Action3, Content3,
+    State4, Action4, Content4,
+    DefaultContent
+  >(
+    _ store: Store<State, Action>,
+    @ViewBuilder content: @escaping () -> TupleView<(
+      CaseLet<State, Action, State1, Action1, Content1>,
+      CaseLet<State, Action, State2, Action2, Content2>,
+      CaseLet<State, Action, State3, Action3, Content3>,
+      CaseLet<State, Action, State4, Action4, Content4>,
+      Default<DefaultContent>
+    )>
+  )
+  where
+    Content == WithViewStore<
+      State,
+      Action,
+      _ConditionalContent<
+        _ConditionalContent<
+          _ConditionalContent<
+            CaseLet<State, Action, State1, Action1, Content1>,
+            CaseLet<State, Action, State2, Action2, Content2>
+          >,
+          _ConditionalContent<
+            CaseLet<State, Action, State3, Action3, Content3>,
+            CaseLet<State, Action, State4, Action4, Content4>
+          >
+        >,
+        Default<DefaultContent>
+      >
+    >
+  {
+    self.store = store
+    self.content = {
+      WithViewStore(store, removeDuplicates: { Tag($0) == Tag($1) }) { viewStore in
+        let content = content().value
+        switch viewStore.state {
+        case content.0.toLocalState:
+          content.0
+        case content.1.toLocalState:
+          content.1
+        case content.2.toLocalState:
+          content.2
+        case content.3.toLocalState:
+          content.3
+        default:
+          content.4
+        }
+      }
+    }
+  }
+
+  public init<
+    State1, Action1, Content1,
+    State2, Action2, Content2,
+    State3, Action3, Content3,
+    State4, Action4, Content4
+  >(
+    _ store: Store<State, Action>,
+    @ViewBuilder content: @escaping () -> TupleView<(
+      CaseLet<State, Action, State1, Action1, Content1>,
+      CaseLet<State, Action, State2, Action2, Content2>,
+      CaseLet<State, Action, State3, Action3, Content3>,
+      CaseLet<State, Action, State4, Action4, Content4>
+    )>,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  )
+  where
+    Content == WithViewStore<
+      State,
+      Action,
+      _ConditionalContent<
+        _ConditionalContent<
+          _ConditionalContent<
+            CaseLet<State, Action, State1, Action1, Content1>,
+            CaseLet<State, Action, State2, Action2, Content2>
+          >,
+          _ConditionalContent<
+            CaseLet<State, Action, State3, Action3, Content3>,
+            CaseLet<State, Action, State4, Action4, Content4>
+          >
+        >,
+        Default<_ExhaustivityCheckView>
+      >
+    >
+  {
+    self.init(store) {
+      let content = content()
+      content.value.0
+      content.value.1
+      content.value.2
+      content.value.3
+      Default { _ExhaustivityCheckView(file: file, line: line) }
+    }
+  }
+
+  public init<
+    State1, Action1, Content1,
+    State2, Action2, Content2,
+    State3, Action3, Content3,
+    State4, Action4, Content4,
+    State5, Action5, Content5,
+    DefaultContent
+  >(
+    _ store: Store<State, Action>,
+    @ViewBuilder content: @escaping () -> TupleView<(
+      CaseLet<State, Action, State1, Action1, Content1>,
+      CaseLet<State, Action, State2, Action2, Content2>,
+      CaseLet<State, Action, State3, Action3, Content3>,
+      CaseLet<State, Action, State4, Action4, Content4>,
+      CaseLet<State, Action, State5, Action5, Content5>,
+      Default<DefaultContent>
+    )>
+  )
+  where
+    Content == WithViewStore<
+      State,
+      Action,
+      _ConditionalContent<
+        _ConditionalContent<
+          _ConditionalContent<
+            CaseLet<State, Action, State1, Action1, Content1>,
+            CaseLet<State, Action, State2, Action2, Content2>
+          >,
+          _ConditionalContent<
+            CaseLet<State, Action, State3, Action3, Content3>,
+            CaseLet<State, Action, State4, Action4, Content4>
+          >
+        >,
+        _ConditionalContent<
+          CaseLet<State, Action, State5, Action5, Content5>,
+          Default<DefaultContent>
+        >
+      >
+    >
+  {
+    self.store = store
+    self.content = {
+      WithViewStore(store, removeDuplicates: { Tag($0) == Tag($1) }) { viewStore in
+        let content = content().value
+        switch viewStore.state {
+        case content.0.toLocalState:
+          content.0
+        case content.1.toLocalState:
+          content.1
+        case content.2.toLocalState:
+          content.2
+        case content.3.toLocalState:
+          content.3
+        case content.4.toLocalState:
+          content.4
+        default:
+          content.5
+        }
+      }
+    }
+  }
+
+  public init<
+    State1, Action1, Content1,
+    State2, Action2, Content2,
+    State3, Action3, Content3,
+    State4, Action4, Content4,
+    State5, Action5, Content5
+  >(
+    _ store: Store<State, Action>,
+    @ViewBuilder content: @escaping () -> TupleView<(
+      CaseLet<State, Action, State1, Action1, Content1>,
+      CaseLet<State, Action, State2, Action2, Content2>,
+      CaseLet<State, Action, State3, Action3, Content3>,
+      CaseLet<State, Action, State4, Action4, Content4>,
+      CaseLet<State, Action, State5, Action5, Content5>
+    )>,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  )
+  where
+    Content == WithViewStore<
+      State,
+      Action,
+      _ConditionalContent<
+        _ConditionalContent<
+          _ConditionalContent<
+            CaseLet<State, Action, State1, Action1, Content1>,
+            CaseLet<State, Action, State2, Action2, Content2>
+          >,
+          _ConditionalContent<
+            CaseLet<State, Action, State3, Action3, Content3>,
+            CaseLet<State, Action, State4, Action4, Content4>
+          >
+        >,
+        _ConditionalContent<
+          CaseLet<State, Action, State5, Action5, Content5>,
+          Default<_ExhaustivityCheckView>
+        >
+      >
+    >
+  {
+    self.init(store) {
+      let content = content()
+      content.value.0
+      content.value.1
+      content.value.2
+      content.value.3
+      content.value.4
+      Default { _ExhaustivityCheckView(file: file, line: line) }
+    }
   }
 }
 
-public struct CaseLet<GlobalState, GlobalAction, LocalState, LocalAction, Content>: View
-where
-  Content: View
-{
-  @EnvironmentObject private var store: StoreObservableObject<GlobalState, GlobalAction>
-  let toLocalState: CasePath<GlobalState, LocalState>
-  let fromLocalAction: (LocalAction) -> GlobalAction
-  let content: (Store<LocalState, LocalAction>) -> Content
+public struct _ExhaustivityCheckView: View {
+  let message: String
+  let file: StaticString
+  let line: UInt
 
-  public init(
-    state toLocalState: CasePath<GlobalState, LocalState>,
-    action fromLocalAction: @escaping (LocalAction) -> GlobalAction,
-    @ViewBuilder then content: @escaping (Store<LocalState, LocalAction>) -> Content
+  init(
+    file: StaticString = #fileID,
+    line: UInt = #line
   ) {
-    self.toLocalState = toLocalState
-    self.fromLocalAction = fromLocalAction
-    self.content = content
-  }
+    self.message = """
+      Warning: SwitchStore.body@\(file):\(line)
 
-  public var body: some View {
-    IfLetStore(
-      self.store.wrappedStore.scope(
-        state: self.toLocalState.extract(from:),
-        action: self.fromLocalAction
-      ),
-      then: self.content
-    )
-  }
-}
-
-public struct AssertionView: View {
-  public init(file: StaticString = #file, line: UInt = #line) {
-    fputs(
+      A "SwitchStore" did not exhaustively handle every case with a "CaseLet" view. Make sure that \
+      you provide a "CaseLet" for each case in your enum, or provide a "Default" view at the end \
+      of the "SwitchStore".
       """
-      Warning: SwitchStore must be exhaustive @ \(file):\(line)
-
-      A SwitchStore was used in file \(file) at line \(line) without exhaustively handling every
-      case with a CaseLet view. Make sure that you provide a CaseLet for each case in your enum,
-      or provide a Default view at the end of the SwitchStore's body.
-      """,
-      stderr
-    )
-    raise(SIGTRAP)
+    self.file = file
+    self.line = line
   }
 
   public var body: some View {
-    return EmptyView()
-  }
-}
+    #if DEBUG
+      VStack(spacing: 17) {
+        Image(systemName: "exclamationmark.triangle.fill")
+          .font(.largeTitle)
 
-public struct Default<Content>: View where Content: View {
-  private let content: () -> Content
+        Text(self.message)
+      }
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
+      .foregroundColor(.white)
+      .padding()
+      .background(Color.red.edgesIgnoringSafeArea(.all))
+      .onAppear {
+        let isDebuggerAttached: Bool = {
+            var debuggerIsAttached = false
 
-  public init(
-    @ViewBuilder content: @escaping () -> Content
-  ) {
-    self.content = content
-  }
+            var name: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()]
+            var info: kinfo_proc = kinfo_proc()
+            var info_size = MemoryLayout<kinfo_proc>.size
 
-  public var body: some View {
-    self.content()
+            let success = name.withUnsafeMutableBytes { (nameBytePtr: UnsafeMutableRawBufferPointer) -> Bool in
+                guard let nameBytesBlindMemory = nameBytePtr.bindMemory(to: Int32.self).baseAddress else { return false }
+                return -1 != sysctl(nameBytesBlindMemory, 4, &info, &info_size, nil, 0)
+            }
+
+            if !success {
+                debuggerIsAttached = false
+            }
+
+            if !debuggerIsAttached && (info.kp_proc.p_flag & P_TRACED) != 0 {
+                debuggerIsAttached = true
+            }
+
+            return debuggerIsAttached
+        }()
+
+        fputs(
+          """
+          ---
+          \(self.message)
+          ---
+
+          """,
+          stderr
+        )
+        if isDebuggerAttached {
+          raise(SIGTRAP)
+        }
+      }
+    #endif
   }
 }
 
 private class StoreObservableObject<State, Action>: ObservableObject {
-  let wrappedStore: Store<State, Action>
+  let wrappedValue: Store<State, Action>
 
   init(store: Store<State, Action>) {
-    self.wrappedStore = store
+    self.wrappedValue = store
   }
 }
 
