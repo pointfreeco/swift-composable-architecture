@@ -2,26 +2,16 @@ import SwiftUI
 
 /// A view that can switch over a store of enum state and handle each case.
 ///
+/// An application may model parts of its state as an enum. For example, app state may be different
+/// depending on if a user is logged-in or not:
+///
 ///     enum AppState {
 ///       case loggedIn(LoggedInState)
 ///       case loggedOut(LoggedOutState)
 ///     }
-///     enum AppAction {
-///       case loggedIn(LoggedInAction)
-///       case loggedOut(LoggedOutAction)
-///     }
-///     let appReducer = Reducer.combine(
-///       loggedInReducer.pullback(
-///         state: /AppState.loggedIn,
-///         action: /AppAction.loggedIn,
-///         environment: { _ in LoggedInEnvironment() }
-///       ),
-///       loggedOutReducer(
-///         state: /AppState.loggedOut,
-///         action: /AppAction.loggedOut,
-///         environment: { _ in LoggedOutEnvironment() }
-///       )
-///     )
+///
+/// In the view layer, a store on this state can switch over each case using a `SwitchStore` and
+/// a `CaseLet` per case:
 ///
 ///     struct AppView: View {
 ///       let store: Store<AppState, AppAction>
@@ -38,9 +28,9 @@ import SwiftUI
 ///       }
 ///     }
 ///
-/// If a `SwitchStore` does not exhaustively handle each enum case with a corresponding `CaseLet`
-/// view, a debug breakpoint will be raised when an unhandled case is encountered. To fall back on
-/// a default view, instead, provide a `Default` view at the end of the `SwitchStore`:
+/// If a `SwitchStore` does not exhaustively handle every case with a corresponding `CaseLet` view,
+/// a debug breakpoint will be raised when an unhandled case is encountered. To fall back on a
+/// default view instead, introduce a `Default` view at the end of the `SwitchStore`:
 ///
 ///    SwitchStore(self.store) {
 ///      CaseLet(state: /MyState.first, action: MyAction.first, then: FirstView.init(store:))
@@ -97,9 +87,15 @@ where Content: View {
   }
 }
 
+/// A view that covers any cases that aren't addressed in a `SwitchStore`.
 public struct Default<Content>: View where Content: View {
   private let content: () -> Content
 
+  /// Initializes a `Default` view that computes content depending on if a store of enum state does
+  /// not match a particular case.
+  ///
+  /// - Parameter content: A function that returns a view that is visible only when the switch
+  ///   store's state does not match a preceding `CaseLet` view.
   public init(@ViewBuilder content: @escaping () -> Content) {
     self.content = content
   }
@@ -128,7 +124,7 @@ extension SwitchStore {
     >
   {
     self.init(store: store) {
-      WithViewStore(store, removeDuplicates: { Tag($0) == Tag($1) }) { viewStore in
+      WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         let content = content().value
         switch viewStore.state {
         case content.0.toLocalState:
@@ -185,7 +181,7 @@ extension SwitchStore {
     >
   {
     self.init(store: store) {
-      WithViewStore(store, removeDuplicates: { Tag($0) == Tag($1) }) { viewStore in
+      WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         let content = content().value
         switch viewStore.state {
         case content.0.toLocalState:
@@ -259,7 +255,7 @@ extension SwitchStore {
     >
   {
     self.init(store: store) {
-      WithViewStore(store, removeDuplicates: { Tag($0) == Tag($1) }) { viewStore in
+      WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         let content = content().value
         switch viewStore.state {
         case content.0.toLocalState:
@@ -346,7 +342,7 @@ extension SwitchStore {
     >
   {
     self.init(store: store) {
-      WithViewStore(store, removeDuplicates: { Tag($0) == Tag($1) }) { viewStore in
+      WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         let content = content().value
         switch viewStore.state {
         case content.0.toLocalState:
@@ -450,7 +446,7 @@ extension SwitchStore {
     >
   {
     self.init(store: store) {
-      WithViewStore(store, removeDuplicates: { Tag($0) == Tag($1) }) { viewStore in
+      WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         let content = content().value
         switch viewStore.state {
         case content.0.toLocalState:
@@ -532,13 +528,11 @@ public struct _ExhaustivityCheckView<State, Action>: View {
       let message = """
         Warning: SwitchStore.body@\(self.file):\(self.line)
 
-        A "SwitchStore" is not exhaustively handling every case with a "CaseLet" view. Unhandled \
-        case:
+        "\(debugCaseOutput(self.store.wrappedValue.state.value))" was encountered by a \
+        "SwitchStore" that does not handle this case.
 
-            \(debugCaseOutput(self.store.wrappedValue.state.value))
-
-        Make sure that you provide a "CaseLet" for each case in your enum, or provide a "Default" \
-        view at the end of the "SwitchStore".
+        Make sure that you exhaustively provide a "CaseLet" view for each case in "\(State.self)",
+        or provide a "Default" view at the end of the "SwitchStore".
         """
       VStack(spacing: 17) {
         Image(systemName: "exclamationmark.triangle.fill")
@@ -574,25 +568,20 @@ private class StoreObservableObject<State, Action>: ObservableObject {
   }
 }
 
-private struct EnumValueWitnessTable {
-  let f1, f2, f3, f4, f5, f6, f7, f8: UnsafeRawPointer
-  let size, stride: Int
-  let flags, extraInhabitantCount: UInt32
-  let getEnumTag: @convention(c) (_ value: UnsafeRawPointer, _ metadata: UnsafeRawPointer) -> UInt32
-  let f9, f10: UnsafeRawPointer
+private func enumTag<Case>(_ `case`: Case) -> UInt32? {
+  let metadataPtr = unsafeBitCast(type(of: `case`), to: UnsafeRawPointer.self)
+  let kind = metadataPtr.load(as: Int.self)
+  let isEnumOrOptional = kind == 0x201 || kind == 0x202
+  guard isEnumOrOptional else { return nil }
+  let vwtPtr = (metadataPtr - MemoryLayout<UnsafeRawPointer>.size).load(as: UnsafeRawPointer.self)
+  let vwt = vwtPtr.load(as: EnumValueWitnessTable.self)
+  return withUnsafePointer(to: `case`) { vwt.getEnumTag($0, metadataPtr) }
 }
 
-private struct Tag<Enum>: Equatable, Hashable {
-  let rawValue: UInt32
-
-  init?(_ `case`: Enum) {
-    let enumType = type(of: `case`)
-    let metadataPtr = unsafeBitCast(enumType, to: UnsafeRawPointer.self)
-    let metadataKind = metadataPtr.load(as: Int.self)
-    let isEnum = metadataKind == 0x201
-    guard isEnum else { return nil }
-    let vwtPtr = (metadataPtr - MemoryLayout<UnsafeRawPointer>.size).load(as: UnsafeRawPointer.self)
-    let vwt = vwtPtr.load(as: EnumValueWitnessTable.self)
-    self.rawValue = withUnsafePointer(to: `case`, { vwt.getEnumTag($0, metadataPtr) })
-  }
+private struct EnumValueWitnessTable {
+  let f1, f2, f3, f4, f5, f6, f7, f8: UnsafeRawPointer
+  let f9, f10: Int
+  let f11, f12: UInt32
+  let getEnumTag: @convention(c) (UnsafeRawPointer, UnsafeRawPointer) -> UInt32
+  let f13, f14: UnsafeRawPointer
 }

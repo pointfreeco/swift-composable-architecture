@@ -7,7 +7,6 @@ import NewGameCore
 public enum AppState: Equatable {
   case login(LoginState)
   case newGame(NewGameState)
-  case pending
 
   public init() {
     self = .login(.init())
@@ -52,11 +51,11 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     switch action {
     case let .login(.twoFactor(.twoFactorResponse(.success(response)))),
       let .login(.loginResponse(.success(response))) where !response.twoFactorRequired:
-      state = .pending// .newGame(NewGameState())
+      state = .newGame(.init())
       return .none
 
     case .newGame(.logoutButtonTapped):
-      state = .login(LoginState())
+      state = .login(.init())
       return .none
 
     case .login, .newGame:
@@ -64,27 +63,3 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     }
   }
 )
-
-extension Reducer {
-  public func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
-    state toLocalState: CasePath<GlobalState, State>,
-    action toLocalAction: CasePath<GlobalAction, Action>,
-    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
-    .init { globalState, globalAction, globalEnvironment in
-      guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
-
-      guard var localState = toLocalState.extract(from: globalState) else { return .none }
-      defer { globalState = toLocalState.embed(localState) }
-
-      let effects = self.run(
-        &localState,
-        localAction,
-        toLocalEnvironment(globalEnvironment)
-      )
-      .map(toLocalAction.embed)
-
-      return effects
-    }
-  }
-}
