@@ -5,33 +5,55 @@ import NewGameSwiftUI
 import SwiftUI
 import TicTacToeCommon
 
+let tmp = Group {
+  Text("")
+  Text("")
+  Text("")
+}
+
 struct SwitchStore<State, Action, Content>: View where Content: View {
   let store: Store<State, Action>
   let content: () -> Content
   
-  init(
+  init<State1, Action1, State2, Action2, Content1, Content2>(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> Content
-  ) {
+    @ViewBuilder content: @escaping () -> TupleView<(
+      CaseLet<State, Action, State1, Action1, Content1>,
+      CaseLet<State, Action, State2, Action2, Content2>
+    )>
+  )
+  where Content == TupleView<(
+    CaseLet<State, Action, State1, Action1, Content1>,
+    CaseLet<State, Action, State2, Action2, Content2>
+  )>
+  {
     self.store = store
     self.content = content
   }
   
   var body: some View {
     self.content()
+      .environmentObject(StoreWrapper(store: self.store))
+  }
+}
+
+private class StoreWrapper<State, Action>: ObservableObject {
+  let store: Store<State, Action>
+  init(store: Store<State, Action>) {
+    self.store = store
   }
 }
 
 struct CaseLet<GlobalState, GlobalAction, LocalState, LocalAction, Content>: View
 where Content: View {
-  let store: Store<GlobalState, GlobalAction>
+  @EnvironmentObject private var storeWrapper: StoreWrapper<GlobalState, GlobalAction>
   let state: CasePath<GlobalState, LocalState>
   let action: (LocalAction) -> GlobalAction
   @ViewBuilder let content: (Store<LocalState, LocalAction>) -> Content
   
   var body: some View {
     IfLetStore(
-      self.store.scope(state: state.extract(from:), action: action),
+      self.storeWrapper.store.scope(state: state.extract(from:), action: action),
       then: self.content
     )
   }
@@ -46,21 +68,13 @@ public struct AppView: View {
 
   @ViewBuilder public var body: some View {
     SwitchStore(self.store) {
-      CaseLet(
-        store: self.store,
-        state: /AppState.login,
-        action: AppAction.login
-      ) { loginStore in
+      CaseLet(state: /AppState.login, action: AppAction.login) { loginStore in
         NavigationView {
           LoginView(store: loginStore)
         }
         .navigationViewStyle(StackNavigationViewStyle())
       }
-      CaseLet(
-        store: self.store,
-        state: /AppState.newGame,
-        action: AppAction.newGame
-      ) { newGameStore in
+      CaseLet(state: /AppState.newGame, action: AppAction.newGame) { newGameStore in
         NavigationView {
           NewGameView(store: newGameStore)
         }
