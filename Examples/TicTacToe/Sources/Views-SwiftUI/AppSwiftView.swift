@@ -13,14 +13,24 @@ public struct AppView: View {
   }
 
   @ViewBuilder public var body: some View {
-    IfLetStore(self.store.scope(state: \.login, action: AppAction.login)) { store in
+    IfLetStore(
+      self.store.scope(
+        state: /AppState.login,
+        action: AppAction.login
+      )
+    ) { store in
       NavigationView {
         LoginView(store: store)
       }
       .navigationViewStyle(StackNavigationViewStyle())
     }
 
-    IfLetStore(self.store.scope(state: \.newGame, action: AppAction.newGame)) { store in
+    IfLetStore(
+      self.store.scope(
+        state: /AppState.newGame,
+        action: AppAction.newGame
+      )
+    ) { store in
       NavigationView {
         NewGameView(store: store)
       }
