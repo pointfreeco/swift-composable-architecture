@@ -90,10 +90,10 @@ public struct LoginView: View {
               ActivityIndicator()
             }
           }
-          .disabled(viewStore.isLoginButtonDisabled)
+//          .disabled(viewStore.isLoginButtonDisabled)
         }
         .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
-        .disabled(viewStore.isFormDisabled)
+//        .disabled(viewStore.isFormDisabled)
         .padding(.horizontal)
       }
     }

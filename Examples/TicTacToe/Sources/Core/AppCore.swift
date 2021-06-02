@@ -7,6 +7,7 @@ import NewGameCore
 public enum AppState: Equatable {
   case login(LoginState)
   case newGame(NewGameState)
+  case pending
 
   public init() {
     self = .login(.init())
