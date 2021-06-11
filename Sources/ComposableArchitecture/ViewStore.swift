@@ -1,24 +1,24 @@
 import Combine
 import SwiftUI
 
-/// A `ViewStore` is an object that can observe state changes and send actions. They are most
+/// A ``ViewStore`` is an object that can observe state changes and send actions. They are most
 /// commonly used in views, such as SwiftUI views, UIView or UIViewController, but they can be
 /// used anywhere it makes sense to observe state and send actions.
 ///
-/// In SwiftUI applications, a `ViewStore` is accessed most commonly using the `WithViewStore` view.
+/// In SwiftUI applications, a ``ViewStore`` is accessed most commonly using the ``WithViewStore`` view.
 /// It can be initialized with a store and a closure that is handed a view store and must return a
 /// view to be rendered:
-///
-///     var body: some View {
-///       WithViewStore(self.store) { viewStore in
-///         VStack {
-///           Text("Current count: \(viewStore.count)")
-///           Button("Increment") { viewStore.send(.incrementButtonTapped) }
-///         }
-///       }
-///     }
-///
-/// In UIKit applications a `ViewStore` can be created from a `Store` and then subscribed to for
+///    ```swift
+///    var body: some View {
+///      WithViewStore(self.store) { viewStore in
+///        VStack {
+///          Text("Current count: \(viewStore.count)")
+///          Button("Increment") { viewStore.send(.incrementButtonTapped) }
+///        }
+///      }
+///    }
+///    ```
+/// In UIKit applications a ``ViewStore`` can be created from a ``Store`` and then subscribed to for
 /// state updates:
 ///
 ///     let store: Store<State, Action>
@@ -85,10 +85,10 @@ public final class ViewStore<State, Action>: ObservableObject {
 
   /// Sends an action to the store.
   ///
-  /// `ViewStore` is not thread safe and you should only send actions to it from the main thread.
+  /// ``ViewStore`` is not thread safe and you should only send actions to it from the main thread.
   /// If you are wanting to send actions on background threads due to the fact that the reducer
   /// is performing computationally expensive work, then a better way to handle this is to wrap
-  /// that work in an `Effect` that is performed on a background thread so that the result can
+  /// that work in an ``Effect`` that is performed on a background thread so that the result can
   /// be fed back into the store.
   ///
   /// - Parameter action: An action.
@@ -100,7 +100,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// actions to the store.
   ///
   /// The method is useful for dealing with SwiftUI components that work with two-way `Binding`s
-  /// since the `Store` does not allow directly writing its state; it only allows reading state and
+  /// since the ``Store`` does not allow directly writing its state; it only allows reading state and
   /// sending actions.
   ///
   /// For example, a text field binding can be created like this:
@@ -144,7 +144,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// actions to the store.
   ///
   /// The method is useful for dealing with SwiftUI components that work with two-way `Binding`s
-  /// since the `Store` does not allow directly writing its state; it only allows reading state and
+  /// since the ``Store`` does not allow directly writing its state; it only allows reading state and
   /// sending actions.
   ///
   /// For example, an alert binding can be dealt with like this:
@@ -174,7 +174,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// actions to the store.
   ///
   /// The method is useful for dealing with SwiftUI components that work with two-way `Binding`s
-  /// since the `Store` does not allow directly writing its state; it only allows reading state and
+  /// since the ``Store`` does not allow directly writing its state; it only allows reading state and
   /// sending actions.
   ///
   /// For example, a text field binding can be created like this:
@@ -203,7 +203,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// actions to the store.
   ///
   /// The method is useful for dealing with SwiftUI components that work with two-way `Binding`s
-  /// since the `Store` does not allow directly writing its state; it only allows reading state and
+  /// since the ``Store`` does not allow directly writing its state; it only allows reading state and
   /// sending actions.
   ///
   /// For example, an alert binding can be dealt with like this:
