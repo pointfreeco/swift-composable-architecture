@@ -7,7 +7,7 @@ public enum ActionFormat {
   /// Prints the action in a single line by only specifying the labels of the associated values:
   ///
   ///    ```swift
-  ///    Action.screenA(.row(index:, action: .textChanged(query:)))
+  ///     Action.screenA(.row(index:, action: .textChanged(query:)))
   ///    ```
   ///
   case labelsOnly
@@ -15,14 +15,14 @@ public enum ActionFormat {
   /// any associated values, as well as the data held in the associated values:
   ///
   ///    ```swift
-  ///    Action.screenA(
-  ///      ScreenA.row(
-  ///        index: 1,
-  ///        action: RowAction.textChanged(
-  ///          query: "Hi"
-  ///        )
-  ///      )
-  ///    )
+  ///     Action.screenA(
+  ///       ScreenA.row(
+  ///         index: 1,
+  ///         action: RowAction.textChanged(
+  ///           query: "Hi"
+  ///         )
+  ///       )
+  ///     )
   ///    ```
   ///
   case prettyPrint

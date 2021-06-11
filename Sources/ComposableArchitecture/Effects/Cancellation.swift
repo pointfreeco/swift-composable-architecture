@@ -10,17 +10,17 @@ extension Effect {
   /// against typos by defining a new type that conforms to `Hashable`, such as an empty struct:
   ///
   ///    ```swift
-  ///    struct LoadUserId: Hashable {}
+  ///     struct LoadUserId: Hashable {}
   ///
-  ///    case .reloadButtonTapped:
-  ///      // Start a new effect to load the user
-  ///      return environment.loadUser
-  ///        .map(Action.userResponse)
-  ///        .cancellable(id: LoadUserId(), cancelInFlight: true)
+  ///     case .reloadButtonTapped:
+  ///       // Start a new effect to load the user
+  ///       return environment.loadUser
+  ///         .map(Action.userResponse)
+  ///         .cancellable(id: LoadUserId(), cancelInFlight: true)
   ///
-  ///    case .cancelButtonTapped:
-  ///      // Cancel any in-flight requests to load the user
-  ///      return .cancel(id: LoadUserId())
+  ///     case .cancelButtonTapped:
+  ///       // Cancel any in-flight requests to load the user
+  ///       return .cancel(id: LoadUserId())
   ///    ```
   ///
   /// - Parameters:

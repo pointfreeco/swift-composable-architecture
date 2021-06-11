@@ -10,12 +10,12 @@ extension Effect {
   /// struct:
   ///
   ///    ```swift
-  ///    case let .textChanged(text):
-  ///      struct SearchId: Hashable {}
+  ///     case let .textChanged(text):
+  ///       struct SearchId: Hashable {}
   ///
-  ///      return environment.search(text)
-  ///        .map(Action.searchResponse)
-  ///        .debounce(id: SearchId(), for: 0.5, scheduler: environment.mainQueue)
+  ///       return environment.search(text)
+  ///         .map(Action.searchResponse)
+  ///         .debounce(id: SearchId(), for: 0.5, scheduler: environment.mainQueue)
   ///    ```
   ///    
   /// - Parameters:
