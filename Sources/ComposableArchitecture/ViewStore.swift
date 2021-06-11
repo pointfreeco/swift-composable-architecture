@@ -8,19 +8,21 @@ import SwiftUI
 /// In SwiftUI applications, a ``ViewStore`` is accessed most commonly using the ``WithViewStore`` view.
 /// It can be initialized with a store and a closure that is handed a view store and must return a
 /// view to be rendered:
+///
 ///    ```swift
-///    var body: some View {
-///      WithViewStore(self.store) { viewStore in
-///        VStack {
-///          Text("Current count: \(viewStore.count)")
-///          Button("Increment") { viewStore.send(.incrementButtonTapped) }
-///        }
-///      }
-///    }
+///     var body: some View {
+///       WithViewStore(self.store) { viewStore in
+///         VStack {
+///           Text("Current count: \(viewStore.count)")
+///           Button("Increment") { viewStore.send(.incrementButtonTapped) }
+///         }
+///       }
+///     }
 ///    ```
 /// In UIKit applications a ``ViewStore`` can be created from a ``Store`` and then subscribed to for
 /// state updates:
 ///
+///    ```swift
 ///     let store: Store<State, Action>
 ///     let viewStore: ViewStore<State, Action>
 ///
@@ -40,6 +42,7 @@ import SwiftUI
 ///     @objc func incrementButtonTapped() {
 ///       self.viewStore.send(.incrementButtonTapped)
 ///     }
+///    ```
 ///
 @dynamicMemberLookup
 public final class ViewStore<State, Action>: ObservableObject {
@@ -105,6 +108,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///
   /// For example, a text field binding can be created like this:
   ///
+  ///    ```swift
   ///     struct State { var name = "" }
   ///     enum Action { case nameChanged(String) }
   ///
@@ -115,6 +119,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///         send: { Action.nameChanged($0) }
   ///       )
   ///     )
+  ///    ```
   ///
   /// - Parameters:
   ///   - get: A function to get the state for the binding from the view
@@ -149,6 +154,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///
   /// For example, an alert binding can be dealt with like this:
   ///
+  ///    ```swift
   ///     struct State { var alert: String? }
   ///     enum Action { case alertDismissed }
   ///
@@ -158,6 +164,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///         send: .alertDismissed
   ///       )
   ///     ) { alert in Alert(title: Text(alert.message)) }
+  ///    ```
   ///
   /// - Parameters:
   ///   - get: A function to get the state for the binding from the view store's full state.
@@ -179,6 +186,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///
   /// For example, a text field binding can be created like this:
   ///
+  ///    ```swift
   ///     typealias State = String
   ///     enum Action { case nameChanged(String) }
   ///
@@ -188,6 +196,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///         send: { Action.nameChanged($0) }
   ///       )
   ///     )
+  ///    ```
   ///
   /// - Parameters:
   ///   - localStateToViewAction: A function that transforms the binding's value
@@ -208,6 +217,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///
   /// For example, an alert binding can be dealt with like this:
   ///
+  ///    ```swift
   ///     typealias State = String
   ///     enum Action { case alertDismissed }
   ///
@@ -216,6 +226,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///         send: .alertDismissed
   ///       )
   ///     ) { title in Alert(title: Text(title)) }
+  ///    ```
   ///
   /// - Parameters:
   ///   - action: The action to send when the binding is written to.

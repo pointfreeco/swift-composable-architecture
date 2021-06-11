@@ -1,19 +1,22 @@
 import Foundation
 
 /// An array of elements that can be identified by a given key path.
-///
-/// A useful container of state that is intended to interface with `SwiftUI.ForEach`. For example,
+///`
+/// A useful container of state that is intended to interface with `SwiftUI/ForEach`. For example,
 /// your application may model a counter in an identifiable fashion:
 ///
+///    ```swift
 ///     struct CounterState: Identifiable {
 ///       let id: UUID
 ///       var count = 0
 ///     }
 ///     enum CounterAction { case incr, decr }
 ///     let counterReducer = Reducer<CounterState, CounterAction, Void> { ... }
+///    ```
 ///
-/// This domain can be pulled back to a larger domain with the `forEach` method:
+/// This domain can be pulled back to a larger domain with the ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-90ox5`` method:
 ///
+///    ```swift
 ///     struct AppState { var counters = IdentifiedArrayOf<CounterState>() }
 ///     enum AppAction { case counter(id: UUID, action: CounterAction) }
 ///     let appReducer = counterReducer.forEach(
@@ -21,9 +24,11 @@ import Foundation
 ///       action: /AppAction.counter(id:action:),
 ///       environment: { $0 }
 ///     )
+///    ```
 ///
 /// And then SwiftUI can work with this array of identified elements in a list view:
 ///
+///    ```swift
 ///     struct AppView: View {
 ///       let store: Store<AppState, AppAction>
 ///
@@ -36,6 +41,8 @@ import Foundation
 ///         }
 ///       }
 ///     }
+///    ```
+///    
 public struct IdentifiedArray<ID, Element>: MutableCollection, RandomAccessCollection
 where ID: Hashable {
   /// A key path to a value that identifies an element.

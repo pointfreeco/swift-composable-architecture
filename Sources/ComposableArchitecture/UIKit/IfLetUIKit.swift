@@ -13,29 +13,29 @@ extension Store {
   /// `nil` to non-`nil`, or non-`nil` to `nil`, you can update the navigation stack accordingly:
   ///
   ///    ```swift
-  ///    class ParentViewController: UIViewController {
-  ///      let store: Store<ParentState, ParentAction>
-  ///      var cancellables: Set<AnyCancellable> = []
-  ///      ...
-  ///      func viewDidLoad() {
-  ///        ...
-  ///        self.store
-  ///          .scope(state: \.optionalChild, action: ParentAction.child)
-  ///          .ifLet(
-  ///            then: { [weak self] childStore in
-  ///              self?.navigationController?.pushViewController(
-  ///                ChildViewController(store: childStore),
-  ///                animated: true
-  ///              )
-  ///            },
-  ///            else: { [weak self] in
-  ///              guard let self = self else { return }
-  ///              self.navigationController?.popToViewController(self, animated: true)
-  ///            }
-  ///          )
-  ///          .store(in: &self.cancellables)
-  ///      }
-  ///    }
+  ///     class ParentViewController: UIViewController {
+  ///       let store: Store<ParentState, ParentAction>
+  ///       var cancellables: Set<AnyCancellable> = []
+  ///       ...
+  ///       func viewDidLoad() {
+  ///         ...
+  ///         self.store
+  ///           .scope(state: \.optionalChild, action: ParentAction.child)
+  ///           .ifLet(
+  ///             then: { [weak self] childStore in
+  ///               self?.navigationController?.pushViewController(
+  ///                 ChildViewController(store: childStore),
+  ///                 animated: true
+  ///               )
+  ///             },
+  ///             else: { [weak self] in
+  ///               guard let self = self else { return }
+  ///               self.navigationController?.popToViewController(self, animated: true)
+  ///             }
+  ///           )
+  ///           .store(in: &self.cancellables)
+  ///       }
+  ///     }
   ///    ```
   ///
   /// - Parameters:

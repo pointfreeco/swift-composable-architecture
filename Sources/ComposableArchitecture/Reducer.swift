@@ -29,21 +29,21 @@ public struct Reducer<State, Action, Environment> {
   ///
   /// For example:
   ///    ```swift
-  ///    struct MyState { var count = 0, text = "" }
-  ///    enum MyAction { case buttonTapped, textChanged(String) }
-  ///    struct MyEnvironment { var analyticsClient: AnalyticsClient }
+  ///     struct MyState { var count = 0, text = "" }
+  ///     enum MyAction { case buttonTapped, textChanged(String) }
+  ///     struct MyEnvironment { var analyticsClient: AnalyticsClient }
   ///
-  ///    let myReducer = Reducer<MyState, MyAction, MyEnvironment> { state, action, environment in
-  ///      switch action {
-  ///      case .buttonTapped:
-  ///        state.count += 1
-  ///        return environment.analyticsClient.track("Button Tapped")
+  ///     let myReducer = Reducer<MyState, MyAction, MyEnvironment> { state, action, environment in
+  ///       switch action {
+  ///       case .buttonTapped:
+  ///         state.count += 1
+  ///         return environment.analyticsClient.track("Button Tapped")
   ///
-  ///      case .textChanged(let text):
-  ///        state.text = text
-  ///        return .none
-  ///      }
-  ///    }
+  ///       case .textChanged(let text):
+  ///         state.text = text
+  ///         return .none
+  ///       }
+  ///     }
   ///    ```
   ///
   /// - Parameter reducer: A function signature that takes state, action and
@@ -84,23 +84,23 @@ public struct Reducer<State, Action, Environment> {
   /// Here is an example of how you should combine an ``Reducer/optional`` reducer with a parent domain:
   ///
   ///    ```swift
-  ///    let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
-  ///      // Combined before parent so that it can react to `.dismiss` while state is non-`nil`.
-  ///      childReducer.optional().pullback(
-  ///        state: \.child,
-  ///        action: /ParentAction.child,
-  ///        environment: { $0.child }
-  ///      ),
-  ///      // Combined after child so that it can `nil` out child state upon `.child(.dismiss)`.
-  ///      Reducer { state, action, environment in
-  ///        switch action
-  ///        case .child(.dismiss):
-  ///          state.child = nil
-  ///          return .none
-  ///        ...
-  ///        }
-  ///      },
-  ///    )
+  ///     let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
+  ///       // Combined before parent so that it can react to `.dismiss` while state is non-`nil`.
+  ///       childReducer.optional().pullback(
+  ///         state: \.child,
+  ///         action: /ParentAction.child,
+  ///         environment: { $0.child }
+  ///       ),
+  ///       // Combined after child so that it can `nil` out child state upon `.child(.dismiss)`.
+  ///       Reducer { state, action, environment in
+  ///         switch action
+  ///         case .child(.dismiss):
+  ///           state.child = nil
+  ///           return .none
+  ///         ...
+  ///         }
+  ///       },
+  ///     )
   ///    ```
   ///
   /// - Parameter reducers: A list of reducers.
@@ -136,23 +136,23 @@ public struct Reducer<State, Action, Environment> {
   /// Here is an example of how you should combine an ``Reducer/optional`` reducer with a parent domain:
   ///
   ///    ```swift
-  ///    let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
-  ///      // Combined before parent so that it can react to `.dismiss` while state is non-`nil`.
-  ///      childReducer.optional().pullback(
-  ///        state: \.child,
-  ///        action: /ParentAction.child,
-  ///        environment: { $0.child }
-  ///      ),
-  ///      // Combined after child so that it can `nil` out child state upon `.child(.dismiss)`.
-  ///      Reducer { state, action, environment in
-  ///        switch action
-  ///        case .child(.dismiss):
-  ///          state.child = nil
-  ///          return .none
-  ///        ...
-  ///        }
-  ///      },
-  ///    )
+  ///     let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
+  ///       // Combined before parent so that it can react to `.dismiss` while state is non-`nil`.
+  ///       childReducer.optional().pullback(
+  ///         state: \.child,
+  ///         action: /ParentAction.child,
+  ///         environment: { $0.child }
+  ///       ),
+  ///       // Combined after child so that it can `nil` out child state upon `.child(.dismiss)`.
+  ///       Reducer { state, action, environment in
+  ///         switch action
+  ///         case .child(.dismiss):
+  ///           state.child = nil
+  ///           return .none
+  ///         ...
+  ///         }
+  ///       },
+  ///     )
   ///    ```
   ///
   /// - Parameter reducers: An array of reducers.
@@ -190,26 +190,26 @@ public struct Reducer<State, Action, Environment> {
   /// Here is an example of how you should combine an ``Reducer/optional`` reducer with a parent domain:
   ///
   ///    ```swift
-  ///    let parentReducer: Reducer<ParentState, ParentAction, ParentEnvironment> =
-  ///      // Run before parent so that it can react to `.dismiss` while state is non-`nil`.
-  ///      childReducer
-  ///        .optional()
-  ///        .pullback(
-  ///          state: \.child,
-  ///          action: /ParentAction.child,
-  ///          environment: { $0.child }
-  ///        )
-  ///        // Combined after child so that it can `nil` out child state upon `.child(.dismiss)`.
-  ///        .combined(
-  ///          with: Reducer { state, action, environment in
-  ///            switch action
-  ///            case .child(.dismiss):
-  ///              state.child = nil
-  ///              return .none
-  ///            ...
-  ///            }
-  ///          }
-  ///        )
+  ///     let parentReducer: Reducer<ParentState, ParentAction, ParentEnvironment> =
+  ///       // Run before parent so that it can react to `.dismiss` while state is non-`nil`.
+  ///       childReducer
+  ///         .optional()
+  ///         .pullback(
+  ///           state: \.child,
+  ///           action: /ParentAction.child,
+  ///           environment: { $0.child }
+  ///         )
+  ///         // Combined after child so that it can `nil` out child state upon `.child(.dismiss)`.
+  ///         .combined(
+  ///           with: Reducer { state, action, environment in
+  ///             switch action
+  ///             case .child(.dismiss):
+  ///               state.child = nil
+  ///               return .none
+  ///             ...
+  ///             }
+  ///           }
+  ///         )
   ///   ```
   ///
   /// - Parameter other: Another reducer.
@@ -231,24 +231,24 @@ public struct Reducer<State, Action, Environment> {
   /// then _pull them back_ and _combine_ them into one big reducer that works on a large domain.
   ///
   ///    ```swift
-  ///    // Global domain that holds a local domain:
-  ///    struct AppState { var settings: SettingsState, /* rest of state */ }
-  ///    enum AppAction { case settings(SettingsAction), /* other actions */ }
-  ///    struct AppEnvironment { var settings: SettingsEnvironment, /* rest of dependencies */ }
+  ///     // Global domain that holds a local domain:
+  ///     struct AppState { var settings: SettingsState, /* rest of state */ }
+  ///     enum AppAction { case settings(SettingsAction), /* other actions */ }
+  ///     struct AppEnvironment { var settings: SettingsEnvironment, /* rest of dependencies */ }
   ///
-  ///    // A reducer that works on the local domain:
-  ///    let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvironment> { ... }
+  ///     // A reducer that works on the local domain:
+  ///     let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvironment> { ... }
   ///
-  ///    // Pullback the settings reducer so that it works on all of the app domain:
-  ///    let appReducer: Reducer<AppState, AppAction, AppEnvironment> = .combine(
-  ///      settingsReducer.pullback(
-  ///        state: \.settings,
-  ///        action: /AppAction.settings,
-  ///        environment: { $0.settings }
-  ///      ),
+  ///     // Pullback the settings reducer so that it works on all of the app domain:
+  ///     let appReducer: Reducer<AppState, AppAction, AppEnvironment> = .combine(
+  ///       settingsReducer.pullback(
+  ///         state: \.settings,
+  ///         action: /AppAction.settings,
+  ///         environment: { $0.settings }
+  ///       ),
   ///
-  ///      /* other reducers */
-  ///    )
+  ///       /* other reducers */
+  ///     )
   ///    ```
   ///
   /// - Parameters:
@@ -280,25 +280,25 @@ public struct Reducer<State, Action, Environment> {
   /// optional child domain:
   ///
   ///    ```swift
-  ///    // Global domain that holds an optional local domain:
-  ///    struct AppState { var modal: ModalState? }
-  ///    enum AppAction { case modal(ModalAction) }
-  ///    struct AppEnvironment { var mainQueue: AnySchedulerOf<DispatchQueue> }
+  ///     // Global domain that holds an optional local domain:
+  ///     struct AppState { var modal: ModalState? }
+  ///     enum AppAction { case modal(ModalAction) }
+  ///     struct AppEnvironment { var mainQueue: AnySchedulerOf<DispatchQueue> }
   ///
-  ///    // A reducer that works on the non-optional local domain:
-  ///    let modalReducer = Reducer<ModalState, ModalAction, ModalEnvironment { ... }
+  ///     // A reducer that works on the non-optional local domain:
+  ///     let modalReducer = Reducer<ModalState, ModalAction, ModalEnvironment { ... }
   ///
-  ///    // Pullback the local modal reducer so that it works on all of the app domain:
-  ///    let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
-  ///      modalReducer.optional().pullback(
-  ///        state: \.modal,
-  ///        action: /AppAction.modal,
-  ///        environment: { ModalEnvironment(mainQueue: $0.mainQueue) }
-  ///      ),
-  ///      Reducer { state, action, environment in
-  ///        ...
-  ///      }
-  ///    )
+  ///     // Pullback the local modal reducer so that it works on all of the app domain:
+  ///     let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
+  ///       modalReducer.optional().pullback(
+  ///         state: \.modal,
+  ///         action: /AppAction.modal,
+  ///         environment: { ModalEnvironment(mainQueue: $0.mainQueue) }
+  ///       ),
+  ///       Reducer { state, action, environment in
+  ///         ...
+  ///       }
+  ///     )
   ///    ```
   ///
   /// Take care when combining optional reducers into parent domains. An optional reducer cannot
@@ -310,62 +310,62 @@ public struct Reducer<State, Action, Environment> {
   ///     _before_ the child reducer:
   ///
   ///        ```swift
-  ///        let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
-  ///          // When combining reducers, the parent reducer runs first
-  ///          Reducer { state, action, environment in
-  ///            switch action {
-  ///            case .child(.didDisappear):
-  ///              // And `nil`s out child state when processing a child action
-  ///              state.child = nil
-  ///              return .none
-  ///            ...
-  ///            }
-  ///          },
-  ///          // Before the child reducer runs
-  ///          childReducer.optional().pullback(...)
-  ///        )
+  ///         let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
+  ///           // When combining reducers, the parent reducer runs first
+  ///           Reducer { state, action, environment in
+  ///             switch action {
+  ///             case .child(.didDisappear):
+  ///               // And `nil`s out child state when processing a child action
+  ///               state.child = nil
+  ///               return .none
+  ///             ...
+  ///             }
+  ///           },
+  ///           // Before the child reducer runs
+  ///           childReducer.optional().pullback(...)
+  ///         )
   ///
-  ///        let childReducer = Reducer<
-  ///          ChildState, ChildAction, ChildEnvironment
-  ///        > { state, action environment in
-  ///          case .didDisappear:
-  ///            // This action is never received here because child state is `nil` in the parent
-  ///          ...
-  ///        }
+  ///         let childReducer = Reducer<
+  ///           ChildState, ChildAction, ChildEnvironment
+  ///         > { state, action environment in
+  ///           case .didDisappear:
+  ///             // This action is never received here because child state is `nil` in the parent
+  ///           ...
+  ///         }
   ///        ```
   ///
   ///     To ensure that a child reducer can process any action that a parent may use to `nil` out
   ///     its state, combine it _before_ the parent:
   ///
   ///        ```swift
-  ///        let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
-  ///          // The child runs first
-  ///          childReducer.optional().pullback(...),
-  ///          // The parent runs after
-  ///          Reducer { state, action, environment in
-  ///            ...
-  ///          }
-  ///        )
+  ///         let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
+  ///           // The child runs first
+  ///           childReducer.optional().pullback(...),
+  ///           // The parent runs after
+  ///           Reducer { state, action, environment in
+  ///             ...
+  ///           }
+  ///         )
   ///        ```
   ///
   ///   * A child effect feeds a child action back into the store when child state is `nil`:
   ///
   ///        ```swift
-  ///        let childReducer = Reducer<
-  ///          ChildState, ChildAction, ChildEnvironment
-  ///        > { state, action environment in
-  ///          switch action {
-  ///          case .onAppear:
-  ///            // An effect may want to feed its result back to the child domain in an action
-  ///            return environment.apiClient
-  ///              .request()
-  ///              .map(ChildAction.response)
+  ///         let childReducer = Reducer<
+  ///           ChildState, ChildAction, ChildEnvironment
+  ///         > { state, action environment in
+  ///           switch action {
+  ///           case .onAppear:
+  ///             // An effect may want to feed its result back to the child domain in an action
+  ///             return environment.apiClient
+  ///               .request()
+  ///               .map(ChildAction.response)
   ///
-  ///          case let .response(response):
-  ///            // But the child cannot process this action if its state is `nil` in the parent
-  ///          ...
-  ///          }
-  ///        }
+  ///           case let .response(response):
+  ///             // But the child cannot process this action if its state is `nil` in the parent
+  ///           ...
+  ///           }
+  ///         }
   ///        ```
   ///
   ///     It is perfectly reasonable to ignore the result of an effect when child state is `nil`,
@@ -373,51 +373,51 @@ public struct Reducer<State, Action, Environment> {
   ///     effects _should_ be explicitly canceled when tearing down a child domain:
   ///
   ///        ```swift
-  ///        let childReducer = Reducer<
-  ///          ChildState, ChildAction, ChildEnvironment
-  ///        > { state, action environment in
-  ///          struct MotionId: Hashable {}
+  ///         let childReducer = Reducer<
+  ///           ChildState, ChildAction, ChildEnvironment
+  ///         > { state, action environment in
+  ///           struct MotionId: Hashable {}
   ///
-  ///          switch action {
-  ///          case .onAppear:
-  ///            // Mark long-living effects that shouldn't outlive their domain cancellable
-  ///            return environment.motionClient
-  ///              .start()
-  ///              .map(ChildAction.motion)
-  ///              .cancellable(id: MotionId())
+  ///           switch action {
+  ///           case .onAppear:
+  ///             // Mark long-living effects that shouldn't outlive their domain cancellable
+  ///             return environment.motionClient
+  ///               .start()
+  ///               .map(ChildAction.motion)
+  ///               .cancellable(id: MotionId())
   ///
-  ///          case .onDisappear:
-  ///            // And explicitly cancel them when the domain is torn down
-  ///            return .cancel(id: MotionId())
-  ///          ...
-  ///          }
-  ///        }
+  ///           case .onDisappear:
+  ///             // And explicitly cancel them when the domain is torn down
+  ///             return .cancel(id: MotionId())
+  ///           ...
+  ///           }
+  ///         }
   ///        ```
   ///
   ///   * A view store sends a child action when child state is `nil`:
   ///
   ///        ```swift
-  ///        WithViewStore(self.parentStore) { parentViewStore in
-  ///          // If child state is `nil`, it cannot process this action.
-  ///          Button("Child Action") { parentViewStore.send(.child(.action)) }
-  ///          ...
-  ///        }
+  ///         WithViewStore(self.parentStore) { parentViewStore in
+  ///           // If child state is `nil`, it cannot process this action.
+  ///           Button("Child Action") { parentViewStore.send(.child(.action)) }
+  ///           ...
+  ///         }
   ///        ```
   ///
   ///     Use ``Store/scope(state:action:)-9iai9`` with ``IfLetStore`` or ``Store/ifLet(then:else:)`` to ensure that views can only send
   ///     child actions when the child domain is non-`nil`.
   ///
   ///        ```swift
-  ///        IfLetStore(
-  ///          self.parentStore.scope(state: { $0.child }, action: { .child($0) }
-  ///        ) { childStore in
-  ///          // This destination only appears when child state is non-`nil`
-  ///          WithViewStore(childStore) { childViewStore in
-  ///            // So this action can only be sent when child state is non-`nil`
-  ///            Button("Child Action") { childViewStore.send(.action) }
-  ///          }
-  ///          ...
-  ///        }
+  ///         IfLetStore(
+  ///           self.parentStore.scope(state: { $0.child }, action: { .child($0) }
+  ///         ) { childStore in
+  ///           // This destination only appears when child state is non-`nil`
+  ///           WithViewStore(childStore) { childViewStore in
+  ///             // So this action can only be sent when child state is non-`nil`
+  ///             Button("Child Action") { childViewStore.send(.action) }
+  ///           }
+  ///           ...
+  ///         }
   ///        ```
   ///
   /// - See also: ``IfLetStore``, a SwiftUI helper for transforming a store on optional state into a
@@ -478,25 +478,25 @@ public struct Reducer<State, Action, Environment> {
   /// A version of ``pullback(state:action:environment:)`` that transforms a reducer that works on an element into one that works
   /// on a collection of elements.
   ///    ```swift
-  ///    // Global domain that holds a collection of local domains:
-  ///    struct AppState { var todos: [Todo] }
-  ///    enum AppAction { case todo(index: Int, action: TodoAction) }
-  ///    struct AppEnvironment { var mainQueue: AnySchedulerOf<DispatchQueue> }
+  ///     // Global domain that holds a collection of local domains:
+  ///     struct AppState { var todos: [Todo] }
+  ///     enum AppAction { case todo(index: Int, action: TodoAction) }
+  ///     struct AppEnvironment { var mainQueue: AnySchedulerOf<DispatchQueue> }
   ///
-  ///    // A reducer that works on a local domain:
-  ///    let todoReducer = Reducer<Todo, TodoAction, TodoEnvironment> { ... }
+  ///     // A reducer that works on a local domain:
+  ///     let todoReducer = Reducer<Todo, TodoAction, TodoEnvironment> { ... }
   ///
-  ///    // Pullback the local todo reducer so that it works on all of the app domain:
-  ///    let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
-  ///      todoReducer.forEach(
-  ///        state: \.todos,
-  ///        action: /AppAction.todo(index:action:),
-  ///        environment: { _ in TodoEnvironment() }
-  ///      ),
-  ///      Reducer { state, action, environment in
-  ///        ...
-  ///      }
-  ///    )
+  ///     // Pullback the local todo reducer so that it works on all of the app domain:
+  ///     let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
+  ///       todoReducer.forEach(
+  ///         state: \.todos,
+  ///         action: /AppAction.todo(index:action:),
+  ///         environment: { _ in TodoEnvironment() }
+  ///       ),
+  ///       Reducer { state, action, environment in
+  ///         ...
+  ///       }
+  ///     )
   ///    ```
   ///
   /// Take care when combining ``forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87`` reducers into parent domains, as order matters. Always
@@ -574,25 +574,25 @@ public struct Reducer<State, Action, Environment> {
   /// on an identified array of elements.
   ///
   ///    ```swift
-  ///    // Global domain that holds a collection of local domains:
-  ///    struct AppState { var todos: IdentifiedArrayOf<Todo> }
-  ///    enum AppAction { case todo(id: Todo.ID, action: TodoAction) }
-  ///    struct AppEnvironment { var mainQueue: AnySchedulerOf<DispatchQueue> }
+  ///     // Global domain that holds a collection of local domains:
+  ///     struct AppState { var todos: IdentifiedArrayOf<Todo> }
+  ///     enum AppAction { case todo(id: Todo.ID, action: TodoAction) }
+  ///     struct AppEnvironment { var mainQueue: AnySchedulerOf<DispatchQueue> }
   ///
-  ///    // A reducer that works on a local domain:
-  ///    let todoReducer = Reducer<Todo, TodoAction, TodoEnvironment> { ... }
+  ///     // A reducer that works on a local domain:
+  ///     let todoReducer = Reducer<Todo, TodoAction, TodoEnvironment> { ... }
   ///
-  ///    // Pullback the local todo reducer so that it works on all of the app domain:
-  ///    let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
-  ///      todoReducer.forEach(
-  ///        state: \.todos,
-  ///        action: /AppAction.todo(id:action:),
-  ///        environment: { _ in TodoEnvironment() }
-  ///      ),
-  ///      Reducer { state, action, environment in
-  ///        ...
-  ///      }
-  ///    )
+  ///     // Pullback the local todo reducer so that it works on all of the app domain:
+  ///     let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
+  ///       todoReducer.forEach(
+  ///         state: \.todos,
+  ///         action: /AppAction.todo(id:action:),
+  ///         environment: { _ in TodoEnvironment() }
+  ///       ),
+  ///       Reducer { state, action, environment in
+  ///         ...
+  ///       }
+  ///     )
   ///    ```
   ///
   /// Take care when combining ``forEach(state:action:environment:breakpointOnNil:_:_:)-90ox5`` reducers into parent domains, as order matters. Always

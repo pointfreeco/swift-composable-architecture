@@ -7,42 +7,50 @@ import SwiftUI
 /// `Equatable`, their `==` do not return `true` when used with seemingly equal values. If we were
 /// to naively store these values in state, our tests may begin to fail.
 ///
-/// `TextState` solves this problem by providing an interface similar to `SwiftUI.Text` that can be
+/// ``TextState`` solves this problem by providing an interface similar to `SwiftUI.Text` that can be
 /// held in state and asserted against.
 ///
 /// Let's say you wanted to hold some dynamic, styled text content in your app state. You could use
-/// `TextState`:
+/// ``TextState``:
 ///
+///    ```swift
 ///     struct AppState: Equatable {
 ///       var label: TextState
 ///     }
+///    ```
 ///
 /// Your reducer can then assign a value to this state using an API similar to that of
 /// `SwiftUI.Text`.
 ///
+///    ```swift
 ///     state.label = TextState("Hello, ") + TextState(name).bold() + TextState("!")
+///    ```
 ///
 /// And your view store can render it directly:
 ///
+///    ```swift
 ///     var body: some View {
 ///       WithViewStore(self.store) { viewStore in
 ///         viewStore.label
 ///       }
 ///     }
+///    ```
 ///
 /// Certain SwiftUI APIs, like alerts and action sheets, take `Text` values and, not views. To
-/// convert `TextState` to `SwiftUI.Text` for this purpose, you can use the `Text` initializer:
+/// convert ``TextState`` to `SwiftUI.Text` for this purpose, you can use the `Text` initializer:
 ///
+///    ```swift
 ///     Alert(title: Text(viewStore.label))
+///    ```
 ///
 /// The Composable Architecture comes with a few convenience APIs for alerts and action sheets that
-/// wrap `TextState` under the hood. See `AlertState` and `ActionState` accordingly.
+/// wrap ``TextState`` under the hood. See ``AlertState`` and `ActionState` accordingly.
 ///
 /// In the future, should `SwiftUI.Text` and `SwiftUI.LocalizedStringKey` reliably conform to
-/// `Equatable`, `TextState` may be deprecated.
+/// `Equatable`, ``TextState`` may be deprecated.
 ///
-/// - Note: `TextState` does not support _all_ `LocalizedStringKey` permutations at this time
-///   (interpolated `SwiftUI.Image`s, for example. `TextState` also uses reflection to determine
+/// - Note: ``TextState`` does not support _all_ `LocalizedStringKey` permutations at this time
+///   (interpolated `SwiftUI.Image`s, for example. ``TextState`` also uses reflection to determine
 ///   `LocalizedStringKey` equatability, so be mindful of edge cases.
 public struct TextState: Equatable, Hashable {
   fileprivate var modifiers: [Modifier] = []

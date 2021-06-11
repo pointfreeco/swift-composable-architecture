@@ -21,19 +21,19 @@ public struct Effect<Output, Failure: Error>: Publisher {
   /// This initializer is useful for turning any publisher into an effect. For example:
   ///
   ///    ```swift
-  ///    Effect(
-  ///      NotificationCenter.default
-  ///        .publisher(for: UIApplication.userDidTakeScreenshotNotification)
-  ///    )
+  ///     Effect(
+  ///       NotificationCenter.default
+  ///         .publisher(for: UIApplication.userDidTakeScreenshotNotification)
+  ///     )
   ///    ```
   ///
   /// Alternatively, you can use the `.eraseToEffect()` method that is defined on the `Publisher`
   /// protocol:
   ///
   ///    ```swift
-  ///    NotificationCenter.default
-  ///      .publisher(for: UIApplication.userDidTakeScreenshotNotification)
-  ///      .eraseToEffect()
+  ///     NotificationCenter.default
+  ///       .publisher(for: UIApplication.userDidTakeScreenshotNotification)
+  ///       .eraseToEffect()
   ///    ```
   ///
   /// - Parameter publisher: A publisher.
@@ -83,23 +83,23 @@ public struct Effect<Output, Failure: Error>: Publisher {
   /// For example, to create an effect that delivers an integer after waiting a second:
   ///
   ///    ```swift
-  ///    Effect<Int, Never>.future { callback in
-  ///      DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-  ///        callback(.success(42))
-  ///      }
-  ///    }
+  ///     Effect<Int, Never>.future { callback in
+  ///       DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+  ///         callback(.success(42))
+  ///       }
+  ///     }
   ///    ```
   ///
   /// Note that you can only deliver a single value to the `callback`. If you send more they will be
   /// discarded:
   ///
   ///    ```swift
-  ///    Effect<Int, Never>.future { callback in
-  ///      DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-  ///        callback(.success(42))
-  ///        callback(.success(1729)) // Will not be emitted by the effect
-  ///      }
-  ///    }
+  ///     Effect<Int, Never>.future { callback in
+  ///       DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+  ///         callback(.success(42))
+  ///         callback(.success(1729)) // Will not be emitted by the effect
+  ///       }
+  ///     }
   ///    ```
   ///
   ///  If you need to deliver more than one value to the effect, you should use the ``Effect``
@@ -124,21 +124,21 @@ public struct Effect<Output, Failure: Error>: Publisher {
   /// For example, to load a user from some JSON on the disk, one can wrap that work in an effect:
   ///
   ///    ```swift
-  ///    Effect<User, Error>.result {
-  ///      let fileUrl = URL(
-  ///        fileURLWithPath: NSSearchPathForDirectoriesInDomains(
-  ///          .documentDirectory, .userDomainMask, true
-  ///        )[0]
-  ///      )
-  ///      .appendingPathComponent("user.json")
+  ///     Effect<User, Error>.result {
+  ///       let fileUrl = URL(
+  ///         fileURLWithPath: NSSearchPathForDirectoriesInDomains(
+  ///           .documentDirectory, .userDomainMask, true
+  ///         )[0]
+  ///       )
+  ///       .appendingPathComponent("user.json")
   ///
-  ///      let result = Result<User, Error> {
-  ///        let data = try Data(contentsOf: fileUrl)
-  ///        return try JSONDecoder().decode(User.self, from: $0)
-  ///      }
+  ///       let result = Result<User, Error> {
+  ///         let data = try Data(contentsOf: fileUrl)
+  ///         return try JSONDecoder().decode(User.self, from: $0)
+  ///       }
   ///
-  ///      return result
-  ///    }
+  ///       return result
+  ///     }
   ///    ```
   ///
   /// - Parameter attemptToFulfill: A closure encapsulating some work to execute in the real world.
@@ -159,23 +159,23 @@ public struct Effect<Output, Failure: Error>: Publisher {
   /// can request authorization, and once a status is received it can send that back to the effect:
   ///
   ///    ```swift
-  ///    Effect.run { subscriber in
-  ///      subscriber.send(MPMediaLibrary.authorizationStatus())
+  ///     Effect.run { subscriber in
+  ///       subscriber.send(MPMediaLibrary.authorizationStatus())
   ///
-  ///      guard MPMediaLibrary.authorizationStatus() == .notDetermined else {
-  ///        subscriber.send(completion: .finished)
-  ///        return AnyCancellable {}
-  ///      }
+  ///       guard MPMediaLibrary.authorizationStatus() == .notDetermined else {
+  ///         subscriber.send(completion: .finished)
+  ///         return AnyCancellable {}
+  ///       }
   ///
-  ///      MPMediaLibrary.requestAuthorization { status in
-  ///        subscriber.send(status)
-  ///        subscriber.send(completion: .finished)
-  ///      }
-  ///      return AnyCancellable {
-  ///        // Typically clean up resources that were created here, but this effect doesn't
-  ///        // have any.
-  ///      }
-  ///    }
+  ///       MPMediaLibrary.requestAuthorization { status in
+  ///         subscriber.send(status)
+  ///         subscriber.send(completion: .finished)
+  ///       }
+  ///       return AnyCancellable {
+  ///         // Typically clean up resources that were created here, but this effect doesn't
+  ///         // have any.
+  ///       }
+  ///     }
   ///    ```
   ///
   /// - Parameter work: A closure that accepts a ``Subscriber`` value and returns a cancellable. When
@@ -282,17 +282,17 @@ extension Effect where Failure == Swift.Error {
   /// For example, to load a user from some JSON on the disk, one can wrap that work in an effect:
   ///
   ///    ```swift
-  ///    Effect<User, Error>.catching {
-  ///      let fileUrl = URL(
+  ///     Effect<User, Error>.catching {
+  ///       let fileUrl = URL(
   ///        fileURLWithPath: NSSearchPathForDirectoriesInDomains(
-  ///          .documentDirectory, .userDomainMask, true
-  ///        )[0]
-  ///      )
-  ///      .appendingPathComponent("user.json")
+  ///           .documentDirectory, .userDomainMask, true
+  ///         )[0]
+  ///       )
+  ///       .appendingPathComponent("user.json")
   ///
-  ///      let data = try Data(contentsOf: fileUrl)
-  ///      return try JSONDecoder().decode(User.self, from: $0)
-  ///    }
+  ///       let data = try Data(contentsOf: fileUrl)
+  ///       return try JSONDecoder().decode(User.self, from: $0)
+  ///     }
   ///    ```
   ///
   /// - Parameter work: A closure encapsulating some work to execute in the real world.
@@ -309,10 +309,10 @@ extension Publisher {
   /// you need to convert that publisher to an effect so that you can return it from the reducer:
   ///
   ///    ```swift
-  ///    case .buttonTapped:
-  ///      return fetchUser(id: 1)
-  ///        .filter(\.isAdmin)
-  ///        .eraseToEffect()
+  ///     case .buttonTapped:
+  ///       return fetchUser(id: 1)
+  ///         .filter(\.isAdmin)
+  ///         .eraseToEffect()
   ///    ```
   ///
   /// - Returns: An effect that wraps `self`.
@@ -327,10 +327,10 @@ extension Publisher {
   /// action that handles both success and failure.
   ///
   ///    ```swift
-  ///    case .buttonTapped:
-  ///      return fetchUser(id: 1)
-  ///        .catchToEffect()
-  ///        .map(ProfileAction.userResponse)
+  ///     case .buttonTapped:
+  ///       return fetchUser(id: 1)
+  ///         .catchToEffect()
+  ///         .map(ProfileAction.userResponse)
   ///    ```
   ///
   /// - Returns: An effect that wraps `self`.
@@ -347,9 +347,9 @@ extension Publisher {
   /// into the system. It can automatically promote an effect to your reducer's domain.
   ///
   ///    ```swift
-  ///    case .buttonTapped:
-  ///      return analyticsClient.track("Button Tapped")
-  ///        .fireAndForget()
+  ///     case .buttonTapped:
+  ///       return analyticsClient.track("Button Tapped")
+  ///         .fireAndForget()
   ///    ```
   ///    
   /// - Parameters:
