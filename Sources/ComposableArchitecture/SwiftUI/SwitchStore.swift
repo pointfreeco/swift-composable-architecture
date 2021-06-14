@@ -32,14 +32,18 @@ import SwiftUI
 /// a debug breakpoint will be raised when an unhandled case is encountered. To fall back on a
 /// default view instead, introduce a `Default` view at the end of the `SwitchStore`:
 ///
-///    SwitchStore(self.store) {
-///      CaseLet(state: /MyState.first, action: MyAction.first, then: FirstView.init(store:))
-///      CaseLet(state: /MyState.second, action: MyAction.second, then: SecondView.init(store:))
+///     SwitchStore(self.store) {
+///       CaseLet(state: /MyState.first, action: MyAction.first, then: FirstView.init(store:))
+///       CaseLet(state: /MyState.second, action: MyAction.second, then: SecondView.init(store:))
 ///
-///      Default {
-///        Text("State is neither first nor second.")
-///      }
-///    }
+///       Default {
+///         Text("State is neither first nor second.")
+///       }
+///     }
+///
+/// - See also: `Reducer.pullback`, a method that aids in transforming reducers that operate on each
+///   case of an enum into reducers that operate on the entire enum.
+///
 public struct SwitchStore<State, Action, Content>: View where Content: View {
   public let store: Store<State, Action>
   public let content: () -> Content
@@ -54,7 +58,7 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
 public struct CaseLet<GlobalState, GlobalAction, LocalState, LocalAction, Content>: View
 where Content: View {
   @EnvironmentObject private var store: StoreObservableObject<GlobalState, GlobalAction>
-  let toLocalState: CasePath<GlobalState, LocalState>
+  let toLocalState: (GlobalState) -> LocalState?
   let fromLocalAction: (LocalAction) -> GlobalAction
   let content: (Store<LocalState, LocalAction>) -> Content
 
@@ -67,7 +71,7 @@ where Content: View {
   ///   - content: A function that is given a store of the given case's state and returns a view
   ///     that is visible only when the switch store's state matches.
   public init(
-    state toLocalState: CasePath<GlobalState, LocalState>,
+    state toLocalState: @escaping (GlobalState) -> LocalState?,
     action fromLocalAction: @escaping (LocalAction) -> GlobalAction,
     @ViewBuilder then content: @escaping (Store<LocalState, LocalAction>) -> Content
   ) {
@@ -79,7 +83,7 @@ where Content: View {
   public var body: some View {
     IfLetStore(
       self.store.wrappedValue.scope(
-        state: self.toLocalState.extract(from:),
+        state: self.toLocalState,
         action: self.fromLocalAction
       ),
       then: self.content
@@ -88,6 +92,10 @@ where Content: View {
 }
 
 /// A view that covers any cases that aren't addressed in a `SwitchStore`.
+///
+/// If you wish to use `SwitchStore` in a non-exhaustive manner (i.e. you do not want to provide
+/// a `CaseLet` for each case of the enum), then you must insert a `Default` view at the end of
+/// the `SwitchStore`'s body.
 public struct Default<Content>: View where Content: View {
   private let content: () -> Content
 
@@ -126,10 +134,9 @@ extension SwitchStore {
     self.init(store: store) {
       WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         let content = content().value
-        switch viewStore.state {
-        case content.0.toLocalState:
+        if content.0.toLocalState(viewStore.state) != nil {
           content.0
-        default:
+        } else {
           content.1
         }
       }
@@ -183,12 +190,11 @@ extension SwitchStore {
     self.init(store: store) {
       WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         let content = content().value
-        switch viewStore.state {
-        case content.0.toLocalState:
+        if content.0.toLocalState(viewStore.state) != nil {
           content.0
-        case content.1.toLocalState:
+        } else if content.1.toLocalState(viewStore.state) != nil {
           content.1
-        default:
+        } else {
           content.2
         }
       }
@@ -257,14 +263,13 @@ extension SwitchStore {
     self.init(store: store) {
       WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         let content = content().value
-        switch viewStore.state {
-        case content.0.toLocalState:
+        if content.0.toLocalState(viewStore.state) != nil {
           content.0
-        case content.1.toLocalState:
+        } else if content.1.toLocalState(viewStore.state) != nil {
           content.1
-        case content.2.toLocalState:
+        } else if content.2.toLocalState(viewStore.state) != nil {
           content.2
-        default:
+        } else {
           content.3
         }
       }
@@ -344,16 +349,15 @@ extension SwitchStore {
     self.init(store: store) {
       WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         let content = content().value
-        switch viewStore.state {
-        case content.0.toLocalState:
+        if content.0.toLocalState(viewStore.state) != nil {
           content.0
-        case content.1.toLocalState:
+        } else if content.1.toLocalState(viewStore.state) != nil {
           content.1
-        case content.2.toLocalState:
+        } else if content.2.toLocalState(viewStore.state) != nil {
           content.2
-        case content.3.toLocalState:
+        } else if content.3.toLocalState(viewStore.state) != nil {
           content.3
-        default:
+        } else {
           content.4
         }
       }
@@ -448,18 +452,17 @@ extension SwitchStore {
     self.init(store: store) {
       WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         let content = content().value
-        switch viewStore.state {
-        case content.0.toLocalState:
+        if content.0.toLocalState(viewStore.state) != nil {
           content.0
-        case content.1.toLocalState:
+        } else if content.1.toLocalState(viewStore.state) != nil {
           content.1
-        case content.2.toLocalState:
+        } else if content.2.toLocalState(viewStore.state) != nil {
           content.2
-        case content.3.toLocalState:
+        } else if content.3.toLocalState(viewStore.state) != nil {
           content.3
-        case content.4.toLocalState:
+        } else if content.4.toLocalState(viewStore.state) != nil {
           content.4
-        default:
+        } else {
           content.5
         }
       }
@@ -549,17 +552,16 @@ public struct _ExhaustivityCheckView<State, Action>: View {
       .padding()
       .background(Color.red.edgesIgnoringSafeArea(.all))
       .onAppear {
-        fputs(
+        breakpoint(
           """
           ---
           \(message)
           ---
-
-          """,
-          stderr
+          """
         )
-        breakpoint()
       }
+    #else
+      EmptyView()
     #endif
   }
 }

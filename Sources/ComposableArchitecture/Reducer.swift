@@ -264,16 +264,24 @@ public struct Reducer<State, Action, Environment> {
   }
 
   /// Transforms a reducer that works on local state, action, and environment into one that works on
-  /// global state, action and environment. It accomplishes this by providing 3 transformations to
-  /// the method:
+  /// global state, action and environment.
   ///
-  ///   * A case path that can extract/embed a piece of local state from the global state.
+  /// It accomplishes this by providing 3 transformations to the method:
+  ///
+  ///   * A case path that can extract/embed a piece of local state from the global state, which is
+  ///     typically an enum.
   ///   * A case path that can extract/embed a local action into a global action.
   ///   * A function that can transform the global environment into a local environment.
   ///
-  /// This operation is important for breaking down large reducers into small ones. When used with
-  /// the `combine` operator you can define many reducers that work on small pieces of domain, and
-  /// then _pull them back_ and _combine_ them into one big reducer that works on a large domain.
+  ///  This overload of `pullback` differs from the other in that it takes a `CasePath`
+  ///  transformation for the state instead of a `WritableKeyPath`. This makes it perfect for
+  ///  working on enum state as opposed to struct state. In particular, you can use this operator
+  ///  to pullback a reducer that operates on a single case of some state enum to work on the
+  ///  entire state enum.
+  ///
+  /// When used with the `combine` operator you can define many reducers that work each case of the
+  /// state enum, and then _pull them back_ and _combine_ them into one big reducer that works on a
+  /// large domain.
   ///
   ///     // Global domain that holds a local domain:
   ///     enum AppState { case loggedIn(LoggedInState), /* rest of state */ }
@@ -392,18 +400,18 @@ public struct Reducer<State, Action, Environment> {
   ///     the child domain is available.
   ///
   ///         SwitchStore(self.parentStore) {
-  ///           CaseLet(state: /ParentState.child, action: { .child($0) }) { childStore in
+  ///           CaseLet(state: /ParentState.child, action: ParentAction.child) { childStore in
   ///             // This destination only appears when child state matches
   ///             WithViewStore(childStore) { childViewStore in
   ///               // So this action can only be sent when child state is available
   ///               Button("Child Action") { childViewStore.send(.action) }
   ///             }
   ///           }
-///             ...
+  ///           ...
   ///         }
   ///
   /// - See also: `SwitchStore`, a SwiftUI helper for transforming a store on enum state into stores
-  ///   on each case.
+  ///   on each case of the enum.
   ///
   /// - Parameters:
   ///   - toLocalState: A case path that can extract/embed `State` from `GlobalState`.
@@ -422,38 +430,33 @@ public struct Reducer<State, Action, Environment> {
       guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
 
       guard var localState = toLocalState.extract(from: globalState) else {
-        #if DEBUG
-          if breakpointOnNil {
-            fputs(
-              """
-              ---
-              Warning: Reducer.pullback@\(file):\(line)
+        if breakpointOnNil {
+          breakpoint(
+            """
+            ---
+            Warning: Reducer.pullback@\(file):\(line)
 
-              "\(debugCaseOutput(localAction))" was received by a reducer when its state was \
-              unavailable. This is generally considered an application logic error, and can happen \
-              for a few reasons:
+            "\(debugCaseOutput(localAction))" was received by a reducer when its state was \
+            unavailable. This is generally considered an application logic error, and can happen \
+            for a few reasons:
 
-              * The reducer for a particular case of state was combined with or run from another \
-              reducer that set "\(State.self)" to another case before the reducer ran. Combine or \
-              run case-specific reducers before reducers that may set their state to another case. \
-              This ensures that case-specific reducers can handle their actions while their state \
-              is available.
+            * The reducer for a particular case of state was combined with or run from another \
+            reducer that set "\(State.self)" to another case before the reducer ran. Combine or \
+            run case-specific reducers before reducers that may set their state to another case. \
+            This ensures that case-specific reducers can handle their actions while their state \
+            is available.
 
-              * An in-flight effect emitted this action when state was unavailable. While it may \
-              be perfectly reasonable to ignore this action, you may want to cancel the associated \
-              effect before state is set to another case, especially if it is a long-living effect.
+            * An in-flight effect emitted this action when state was unavailable. While it may \
+            be perfectly reasonable to ignore this action, you may want to cancel the associated \
+            effect before state is set to another case, especially if it is a long-living effect.
 
-              * This action was sent to the store while state was another case. Make sure that \
-              actions for this reducer can only be sent to a view store when state is non-"nil".
-              In SwiftUI applications, use "SwitchStore".
-              ---
-
-              """,
-              stderr
-            )
-            breakpoint()
-          }
-        #endif
+            * This action was sent to the store while state was another case. Make sure that \
+            actions for this reducer can only be sent to a view store when state is non-"nil".
+            In SwiftUI applications, use "SwitchStore".
+            ---
+            """
+          )
+        }
         return .none
       }
       defer { globalState = toLocalState.embed(localState) }
@@ -621,37 +624,32 @@ public struct Reducer<State, Action, Environment> {
   > {
     .init { state, action, environment in
       guard state != nil else {
-        #if DEBUG
-          if breakpointOnNil {
-            fputs(
-              """
-              ---
-              Warning: Reducer.optional@\(file):\(line)
+        if breakpointOnNil {
+          breakpoint(
+            """
+            ---
+            Warning: Reducer.optional@\(file):\(line)
 
-              "\(debugCaseOutput(action))" was received by an optional reducer when its state was \
-              "nil". This is generally considered an application logic error, and can happen for a \
-              few reasons:
+            "\(debugCaseOutput(action))" was received by an optional reducer when its state was \
+            "nil". This is generally considered an application logic error, and can happen for a \
+            few reasons:
 
-              * The optional reducer was combined with or run from another reducer that set \
-              "\(State.self)" to "nil" before the optional reducer ran. Combine or run optional \
-              reducers before reducers that can set their state to "nil". This ensures that \
-              optional reducers can handle their actions while their state is still non-"nil".
+            * The optional reducer was combined with or run from another reducer that set \
+            "\(State.self)" to "nil" before the optional reducer ran. Combine or run optional \
+            reducers before reducers that can set their state to "nil". This ensures that \
+            optional reducers can handle their actions while their state is still non-"nil".
 
-              * An in-flight effect emitted this action while state was "nil". While it may be \
-              perfectly reasonable to ignore this action, you may want to cancel the associated \
-              effect before state is set to "nil", especially if it is a long-living effect.
+            * An in-flight effect emitted this action while state was "nil". While it may be \
+            perfectly reasonable to ignore this action, you may want to cancel the associated \
+            effect before state is set to "nil", especially if it is a long-living effect.
 
-              * This action was sent to the store while state was "nil". Make sure that actions \
-              for this reducer can only be sent to a view store when state is non-"nil". In \
-              SwiftUI applications, use "IfLetStore".
-              ---
-
-              """,
-              stderr
-            )
-            breakpoint()
-          }
-        #endif
+            * This action was sent to the store while state was "nil". Make sure that actions \
+            for this reducer can only be sent to a view store when state is non-"nil". In \
+            SwiftUI applications, use "IfLetStore".
+            ---
+            """
+          )
+        }
         return .none
       }
       return self.reducer(&state!, action, environment)
@@ -706,41 +704,36 @@ public struct Reducer<State, Action, Environment> {
         return .none
       }
       if index >= globalState[keyPath: toLocalState].endIndex {
-        #if DEBUG
-          if breakpointOnNil {
-            fputs(
-              """
-              ---
-              Warning: Reducer.forEach@\(file):\(line)
+        if breakpointOnNil {
+          breakpoint(
+            """
+            ---
+            Warning: Reducer.forEach@\(file):\(line)
 
-              "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at index \
-              \(index) when its state contained no element at this index. This is generally \
-              considered an application logic error, and can happen for a few reasons:
+            "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at index \
+            \(index) when its state contained no element at this index. This is generally \
+            considered an application logic error, and can happen for a few reasons:
 
-              * This "forEach" reducer was combined with or run from another reducer that removed \
-              the element at this index when it handled this action. To fix this make sure that \
-              this "forEach" reducer is run before any other reducers that can move or remove \
-              elements from state. This ensures that "forEach" reducers can handle their actions \
-              for the element at the intended index.
+            * This "forEach" reducer was combined with or run from another reducer that removed \
+            the element at this index when it handled this action. To fix this make sure that \
+            this "forEach" reducer is run before any other reducers that can move or remove \
+            elements from state. This ensures that "forEach" reducers can handle their actions \
+            for the element at the intended index.
 
-              * An in-flight effect emitted this action while state contained no element at this \
-              index. While it may be perfectly reasonable to ignore this action, you may want to \
-              cancel the associated effect when moving or removing an element. If your "forEach" \
-              reducer returns any long-living effects, you should use the identifier-based \
-              "forEach" instead.
+            * An in-flight effect emitted this action while state contained no element at this \
+            index. While it may be perfectly reasonable to ignore this action, you may want to \
+            cancel the associated effect when moving or removing an element. If your "forEach" \
+            reducer returns any long-living effects, you should use the identifier-based \
+            "forEach" instead.
 
-              * This action was sent to the store while its state contained no element at this \
-              index. To fix this make sure that actions for this reducer can only be sent to a \
-              view store when its state contains an element at this index. In SwiftUI \
-              applications, use "ForEachStore".
-              ---
-
-              """,
-              stderr
-            )
-            breakpoint()
-          }
-        #endif
+            * This action was sent to the store while its state contained no element at this \
+            index. To fix this make sure that actions for this reducer can only be sent to a \
+            view store when its state contains an element at this index. In SwiftUI \
+            applications, use "ForEachStore".
+            ---
+            """
+          )
+        }
         return .none
       }
       return self.reducer(
@@ -801,40 +794,35 @@ public struct Reducer<State, Action, Environment> {
     .init { globalState, globalAction, globalEnvironment in
       guard let (id, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
       if globalState[keyPath: toLocalState][id: id] == nil {
-        #if DEBUG
-          if breakpointOnNil {
-            fputs(
-              """
-              ---
-              Warning: Reducer.forEach@\(file):\(line)
+        if breakpointOnNil {
+          breakpoint(
+            """
+            ---
+            Warning: Reducer.forEach@\(file):\(line)
 
-              "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at id \(id) \
-              when its state contained no element at this id. This is generally considered an \
-              application logic error, and can happen for a few reasons:
+            "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at id \(id) \
+            when its state contained no element at this id. This is generally considered an \
+            application logic error, and can happen for a few reasons:
 
-              * This "forEach" reducer was combined with or run from another reducer that removed \
-              the element at this id when it handled this action. To fix this make sure that this \
-              "forEach" reducer is run before any other reducers that can move or remove elements \
-              from state. This ensures that "forEach" reducers can handle their actions for the \
-              element at the intended id.
+            * This "forEach" reducer was combined with or run from another reducer that removed \
+            the element at this id when it handled this action. To fix this make sure that this \
+            "forEach" reducer is run before any other reducers that can move or remove elements \
+            from state. This ensures that "forEach" reducers can handle their actions for the \
+            element at the intended id.
 
-              * An in-flight effect emitted this action while state contained no element at this \
-              id. It may be perfectly reasonable to ignore this action, but you also may want to \
-              cancel the effect it originated from when removing an element from the identified \
-              array, especially if it is a long-living effect.
+            * An in-flight effect emitted this action while state contained no element at this \
+            id. It may be perfectly reasonable to ignore this action, but you also may want to \
+            cancel the effect it originated from when removing an element from the identified \
+            array, especially if it is a long-living effect.
 
-              * This action was sent to the store while its state contained no element at this id. \
-              To fix this make sure that actions for this reducer can only be sent to a view store \
-              when its state contains an element at this id. In SwiftUI applications, use \
-              "ForEachStore".
-              ---
-
-              """,
-              stderr
-            )
-            breakpoint()
-          }
-        #endif
+            * This action was sent to the store while its state contained no element at this id. \
+            To fix this make sure that actions for this reducer can only be sent to a view store \
+            when its state contains an element at this id. In SwiftUI applications, use \
+            "ForEachStore".
+            ---
+            """
+          )
+        }
         return .none
       }
       return
@@ -876,39 +864,34 @@ public struct Reducer<State, Action, Environment> {
       guard let (key, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
 
       if globalState[keyPath: toLocalState][key] == nil {
-        #if DEBUG
-          if breakpointOnNil {
-            fputs(
-              """
-              ---
-              Warning: Reducer.forEach@\(file):\(line)
+        if breakpointOnNil {
+          breakpoint(
+            """
+            ---
+            Warning: Reducer.forEach@\(file):\(line)
 
-              "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at key \(key) \
-              when its state contained no element at this key. This is generally considered an \
-              application logic error, and can happen for a few reasons:
+            "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at key \(key) \
+            when its state contained no element at this key. This is generally considered an \
+            application logic error, and can happen for a few reasons:
 
-              * This "forEach" reducer was combined with or run from another reducer that removed \
-              the element at this key when it handled this action. To fix this make sure that this \
-              "forEach" reducer is run before any other reducers that can move or remove elements \
-              from state. This ensures that "forEach" reducers can handle their actions for the \
-              element at the intended key.
+            * This "forEach" reducer was combined with or run from another reducer that removed \
+            the element at this key when it handled this action. To fix this make sure that this \
+            "forEach" reducer is run before any other reducers that can move or remove elements \
+            from state. This ensures that "forEach" reducers can handle their actions for the \
+            element at the intended key.
 
-              * An in-flight effect emitted this action while state contained no element at this \
-              key. It may be perfectly reasonable to ignore this action, but you also may want to \
-              cancel the effect it originated from when removing a value from the dictionary, \
-              especially if it is a long-living effect.
+            * An in-flight effect emitted this action while state contained no element at this \
+            key. It may be perfectly reasonable to ignore this action, but you also may want to \
+            cancel the effect it originated from when removing a value from the dictionary, \
+            especially if it is a long-living effect.
 
-              * This action was sent to the store while its state contained no element at this \
-              key. To fix this make sure that actions for this reducer can only be sent to a view \
-              store when its state contains an element at this key.
-              ---
-
-              """,
-              stderr
-            )
-            breakpoint()
-          }
-        #endif
+            * This action was sent to the store while its state contained no element at this \
+            key. To fix this make sure that actions for this reducer can only be sent to a view \
+            store when its state contains an element at this key.
+            ---
+            """
+          )
+        }
         return .none
       }
       return self.reducer(
