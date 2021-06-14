@@ -4,13 +4,11 @@ import Dispatch
 import LoginCore
 import NewGameCore
 
-public enum AppState: Equatable {
-  case login(LoginState)
-  case newGame(NewGameState)
+public struct AppState: Equatable {
+  public var login: LoginState? = LoginState()
+  public var newGame: NewGameState?
 
-  public init() {
-    self = .login(.init())
-  }
+  public init() {}
 }
 
 public enum AppAction: Equatable {
@@ -32,8 +30,8 @@ public struct AppEnvironment {
 }
 
 public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
-  loginReducer.pullback(
-    state: /AppState.login,
+  loginReducer.optional().pullback(
+    state: \.login,
     action: /AppAction.login,
     environment: {
       LoginEnvironment(
@@ -42,8 +40,8 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
       )
     }
   ),
-  newGameReducer.pullback(
-    state: /AppState.newGame,
+  newGameReducer.optional().pullback(
+    state: \.newGame,
     action: /AppAction.newGame,
     environment: { _ in NewGameEnvironment() }
   ),
@@ -51,14 +49,19 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     switch action {
     case let .login(.twoFactor(.twoFactorResponse(.success(response)))),
       let .login(.loginResponse(.success(response))) where !response.twoFactorRequired:
-      state = .newGame(.init())
+      state.newGame = NewGameState()
+      state.login = nil
+      return .none
+
+    case .login:
       return .none
 
     case .newGame(.logoutButtonTapped):
-      state = .login(.init())
+      state.newGame = nil
+      state.login = LoginState()
       return .none
 
-    case .login, .newGame:
+    case .newGame:
       return .none
     }
   }

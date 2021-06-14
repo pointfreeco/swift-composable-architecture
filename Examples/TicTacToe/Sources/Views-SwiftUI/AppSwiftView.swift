@@ -12,21 +12,19 @@ public struct AppView: View {
     self.store = store
   }
 
-  public var body: some View {
-    SwitchStore(self.store) {
-      CaseLet(state: /AppState.login, action: AppAction.login) { loginStore in
-        NavigationView {
-          LoginView(store: loginStore)
-        }
-        .navigationViewStyle(StackNavigationViewStyle())
+  @ViewBuilder public var body: some View {
+    IfLetStore(self.store.scope(state: \.login, action: AppAction.login)) { store in
+      NavigationView {
+        LoginView(store: store)
       }
+      .navigationViewStyle(StackNavigationViewStyle())
+    }
 
-      CaseLet(state: /AppState.newGame, action: AppAction.newGame) { newGame in
-        NavigationView {
-          NewGameView(store: newGame)
-        }
-        .navigationViewStyle(StackNavigationViewStyle())
+    IfLetStore(self.store.scope(state: \.newGame, action: AppAction.newGame)) { store in
+      NavigationView {
+        NewGameView(store: store)
       }
+      .navigationViewStyle(StackNavigationViewStyle())
     }
   }
 }
