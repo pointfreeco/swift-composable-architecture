@@ -1,5 +1,5 @@
 /// Raises a debug breakpoint iff a debugger is attached.
-@inline(__always) func breakpoint() {
+@inline(__always) func breakpoint(_ message: @autoclosure () -> String = "") {
   #if DEBUG
     // https://github.com/bitstadium/HockeySDK-iOS/blob/c6e8d1e940299bec0c0585b1f7b86baf3b17fc82/Classes/BITHockeyHelper.m#L346-L370
     var name: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()]
@@ -17,6 +17,8 @@
     if isDebuggerAttached {
       fputs(
         """
+        \(message())
+
         Caught debug breakpoint. Type "continue" ("c") to resume execution.
 
         """,
