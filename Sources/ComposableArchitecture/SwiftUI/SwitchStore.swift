@@ -47,18 +47,19 @@ import SwiftUI
 public struct SwitchStore<State, Action, Content>: View where Content: View {
   public let store: Store<State, Action>
   public let content: () -> Content
-
-  init(
+  private let storeObservableObject: StoreObservableObject<State, Action>
+  public init(
     store: Store<State, Action>,
     @ViewBuilder content: @escaping () -> Content
   ) {
     self.store = store
     self.content = content
+    self.storeObservableObject = StoreObservableObject(store: store)
   }
 
   public var body: some View {
     self.content()
-      .environmentObject(StoreObservableObject(store: self.store))
+      .environmentObject(self.storeObservableObject)
   }
 }
 
