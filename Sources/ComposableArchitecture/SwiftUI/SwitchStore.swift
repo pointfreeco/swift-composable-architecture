@@ -48,7 +48,7 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
   public let store: Store<State, Action>
   public let content: () -> Content
   private let storeObservableObject: StoreObservableObject<State, Action>
-  public init(
+  init(
     store: Store<State, Action>,
     @ViewBuilder content: @escaping () -> Content
   ) {
