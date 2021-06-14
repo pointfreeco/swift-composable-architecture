@@ -2,8 +2,8 @@ import SwiftUI
 
 /// A view that can switch over a store of enum state and handle each case.
 ///
-/// An application may model parts of its state as an enum. For example, app state may be different
-/// depending on if a user is logged-in or not:
+/// An application may model parts of its state with enums. For example, app state may differ if a
+/// user is logged-in or not:
 ///
 ///     enum AppState {
 ///       case loggedIn(LoggedInState)
@@ -11,7 +11,7 @@ import SwiftUI
 ///     }
 ///
 /// In the view layer, a store on this state can switch over each case using a `SwitchStore` and
-/// a `CaseLet` per case:
+/// a `CaseLet` view per case:
 ///
 ///     struct AppView: View {
 ///       let store: Store<AppState, AppAction>
@@ -535,8 +535,12 @@ public struct _ExhaustivityCheckView<State, Action>: View {
         or provide a "Default" view at the end of the "SwitchStore".
         """
       VStack(spacing: 17) {
-        Image(systemName: "exclamationmark.triangle.fill")
-          .font(.largeTitle)
+        if #available(iOS 13, macOS 11, tvOS 13, watchOS 6, *) {
+          Image(systemName: "exclamationmark.triangle.fill")
+            .font(.largeTitle)
+        } else {
+          Text("⚠️")
+        }
 
         Text(message)
       }
