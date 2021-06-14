@@ -48,6 +48,14 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
   public let store: Store<State, Action>
   public let content: () -> Content
 
+  init(
+    store: Store<State, Action>,
+    @ViewBuilder content: @escaping () -> Content
+  ) {
+    self.store = store
+    self.content = content
+  }
+
   public var body: some View {
     self.content()
       .environmentObject(StoreObservableObject(store: self.store))
@@ -132,8 +140,8 @@ extension SwitchStore {
     >
   {
     self.init(store: store) {
-      WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        let content = content().value
+      let content = content().value
+      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toLocalState(viewStore.state) != nil {
           content.0
         } else {
@@ -188,8 +196,8 @@ extension SwitchStore {
     >
   {
     self.init(store: store) {
-      WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        let content = content().value
+      let content = content().value
+      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toLocalState(viewStore.state) != nil {
           content.0
         } else if content.1.toLocalState(viewStore.state) != nil {
@@ -222,8 +230,8 @@ extension SwitchStore {
       >
     >
   {
+    let content = content()
     self.init(store) {
-      let content = content()
       content.value.0
       content.value.1
       Default { _ExhaustivityCheckView<State, Action>(file: file, line: line) }
@@ -261,8 +269,8 @@ extension SwitchStore {
     >
   {
     self.init(store: store) {
-      WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        let content = content().value
+      let content = content().value
+      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toLocalState(viewStore.state) != nil {
           content.0
         } else if content.1.toLocalState(viewStore.state) != nil {
@@ -302,8 +310,8 @@ extension SwitchStore {
       >
     >
   {
+    let content = content()
     self.init(store) {
-      let content = content()
       content.value.0
       content.value.1
       content.value.2
@@ -347,8 +355,8 @@ extension SwitchStore {
     >
   {
     self.init(store: store) {
-      WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        let content = content().value
+      let content = content().value
+      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toLocalState(viewStore.state) != nil {
           content.0
         } else if content.1.toLocalState(viewStore.state) != nil {
@@ -399,8 +407,8 @@ extension SwitchStore {
       >
     >
   {
+    let content = content()
     self.init(store) {
-      let content = content()
       content.value.0
       content.value.1
       content.value.2
@@ -450,8 +458,8 @@ extension SwitchStore {
     >
   {
     self.init(store: store) {
-      WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        let content = content().value
+      let content = content().value
+      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toLocalState(viewStore.state) != nil {
           content.0
         } else if content.1.toLocalState(viewStore.state) != nil {
@@ -509,8 +517,8 @@ extension SwitchStore {
       >
     >
   {
+    let content = content()
     self.init(store) {
-      let content = content()
       content.value.0
       content.value.1
       content.value.2
@@ -537,13 +545,13 @@ public struct _ExhaustivityCheckView<State, Action>: View {
         Make sure that you exhaustively provide a "CaseLet" view for each case in "\(State.self)", \
         or provide a "Default" view at the end of the "SwitchStore".
         """
-      VStack(spacing: 17) {
-        if #available(iOS 13, macOS 11, tvOS 13, watchOS 6, *) {
-          Image(systemName: "exclamationmark.triangle.fill")
-            .font(.largeTitle)
-        } else {
-          Text("⚠️")
-        }
+      return VStack(spacing: 17) {
+        #if os(macOS)
+        Text("⚠️")
+        #else
+        Image(systemName: "exclamationmark.triangle.fill")
+          .font(.largeTitle)
+        #endif
 
         Text(message)
       }

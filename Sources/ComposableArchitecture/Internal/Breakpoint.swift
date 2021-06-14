@@ -17,8 +17,8 @@
     if isDebuggerAttached {
       fputs(
         """
-      \(message())
-      
+        \(message())
+
         Caught debug breakpoint. Type "continue" ("c") to resume execution.
 
         """,
