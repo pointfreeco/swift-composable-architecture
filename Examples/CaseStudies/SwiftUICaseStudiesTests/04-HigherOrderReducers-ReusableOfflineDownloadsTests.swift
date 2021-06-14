@@ -15,7 +15,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
     action: .self,
     environment: { $0 }
   )
-  let scheduler = DispatchQueue.testScheduler
+  let scheduler = DispatchQueue.test
 
   func testDownloadFlow() {
     let store = TestStore(

@@ -13,7 +13,7 @@ class VoiceMemosTests: XCTestCase {
       AudioRecorderClient.Action, AudioRecorderClient.Failure
     >()
 
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
     let store = TestStore(
       initialState: VoiceMemosState(),
       reducer: voiceMemosReducer,
@@ -140,7 +140,7 @@ class VoiceMemosTests: XCTestCase {
   }
 
   func testPlayMemoHappyPath() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
     let store = TestStore(
       initialState: VoiceMemosState(
         voiceMemos: [

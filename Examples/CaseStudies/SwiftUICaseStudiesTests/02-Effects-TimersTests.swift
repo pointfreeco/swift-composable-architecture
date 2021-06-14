@@ -4,7 +4,7 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 class TimersTests: XCTestCase {
-  let scheduler = DispatchQueue.testScheduler
+  let scheduler = DispatchQueue.test
 
   func testStart() {
     let store = TestStore(

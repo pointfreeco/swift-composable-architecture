@@ -55,7 +55,7 @@ class EffectsCancellationTests: XCTestCase {
   // test to fail, showing that we are exhaustively asserting that the effect truly is canceled and
   // will never emit.
   func testTrivia_CancelButtonCancelsRequest() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
     let store = TestStore(
       initialState: .init(),
       reducer: effectsCancellationReducer,
@@ -75,7 +75,7 @@ class EffectsCancellationTests: XCTestCase {
   }
 
   func testTrivia_PlusMinusButtonsCancelsRequest() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
     let store = TestStore(
       initialState: .init(),
       reducer: effectsCancellationReducer,
