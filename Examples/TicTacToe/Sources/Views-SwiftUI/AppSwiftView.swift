@@ -12,7 +12,7 @@ public struct AppView: View {
     self.store = store
   }
 
-  @ViewBuilder public var body: some View {
+  public var body: some View {
     SwitchStore(self.store) {
       CaseLet(state: /AppState.login, action: AppAction.login) { store in
         NavigationView {
