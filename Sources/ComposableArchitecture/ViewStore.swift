@@ -10,39 +10,39 @@ import SwiftUI
 /// view to be rendered:
 ///
 /// ```swift
-///  var body: some View {
-///    WithViewStore(self.store) { viewStore in
-///      VStack {
-///        Text("Current count: \(viewStore.count)")
-///        Button("Increment") { viewStore.send(.incrementButtonTapped) }
-///      }
-///    }
-///  }
+/// var body: some View {
+///   WithViewStore(self.store) { viewStore in
+///     VStack {
+///       Text("Current count: \(viewStore.count)")
+///       Button("Increment") { viewStore.send(.incrementButtonTapped) }
+///     }
+///   }
+/// }
 /// ```
 ///
 /// In UIKit applications a ``ViewStore`` can be created from a ``Store`` and then subscribed to for
 /// state updates:
 ///
 /// ```swift
-///  let store: Store<State, Action>
-///  let viewStore: ViewStore<State, Action>
+/// let store: Store<State, Action>
+/// let viewStore: ViewStore<State, Action>
 ///
-///  init(store: Store<State, Action>) {
-///    self.store = store
-///    self.viewStore = ViewStore(store)
-///  }
+/// init(store: Store<State, Action>) {
+///   self.store = store
+///   self.viewStore = ViewStore(store)
+/// }
 ///
-///  func viewDidLoad() {
-///    super.viewDidLoad()
+/// func viewDidLoad() {
+///   super.viewDidLoad()
 ///
-///    self.viewStore.publisher.count
-///      .sink { [weak self] in self?.countLabel.text = $0 }
-///      .store(in: &self.cancellables)
-///  }
+///   self.viewStore.publisher.count
+///     .sink { [weak self] in self?.countLabel.text = $0 }
+///     .store(in: &self.cancellables)
+/// }
 ///
-///  @objc func incrementButtonTapped() {
-///    self.viewStore.send(.incrementButtonTapped)
-///  }
+/// @objc func incrementButtonTapped() {
+///   self.viewStore.send(.incrementButtonTapped)
+/// }
 /// ```
 ///
 /// ### Thread safety
@@ -224,7 +224,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// ```swift
   /// typealias State = String
   /// enum Action { case alertDismissed }
-  /// 
+  ///
   /// .alert(
   ///   item: viewStore.binding(
   ///     send: .alertDismissed
