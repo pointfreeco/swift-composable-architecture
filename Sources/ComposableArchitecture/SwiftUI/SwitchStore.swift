@@ -124,10 +124,12 @@ public struct Default<Content>: View where Content: View {
 extension SwitchStore {
   public init<State1, Action1, Content1, DefaultContent>(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<(
-      CaseLet<State, Action, State1, Action1, Content1>,
-      Default<DefaultContent>
-    )>
+    @ViewBuilder content: @escaping () -> TupleView<
+      (
+        CaseLet<State, Action, State1, Action1, Content1>,
+        Default<DefaultContent>
+      )
+    >
   )
   where
     Content == WithViewStore<
@@ -176,11 +178,13 @@ extension SwitchStore {
 
   public init<State1, Action1, Content1, State2, Action2, Content2, DefaultContent>(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<(
-      CaseLet<State, Action, State1, Action1, Content1>,
-      CaseLet<State, Action, State2, Action2, Content2>,
-      Default<DefaultContent>
-    )>
+    @ViewBuilder content: @escaping () -> TupleView<
+      (
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>,
+        Default<DefaultContent>
+      )
+    >
   )
   where
     Content == WithViewStore<
@@ -211,10 +215,12 @@ extension SwitchStore {
 
   public init<State1, Action1, Content1, State2, Action2, Content2>(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<(
-      CaseLet<State, Action, State1, Action1, Content1>,
-      CaseLet<State, Action, State2, Action2, Content2>
-    )>,
+    @ViewBuilder content: @escaping () -> TupleView<
+      (
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>
+      )
+    >,
     file: StaticString = #file,
     line: UInt = #line
   )
@@ -225,7 +231,8 @@ extension SwitchStore {
       _ConditionalContent<
         _ConditionalContent<
           CaseLet<State, Action, State1, Action1, Content1>,
-          CaseLet<State, Action, State2, Action2, Content2>>,
+          CaseLet<State, Action, State2, Action2, Content2>
+        >,
         Default<_ExhaustivityCheckView<State, Action>>
       >
     >
@@ -245,12 +252,14 @@ extension SwitchStore {
     DefaultContent
   >(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<(
-      CaseLet<State, Action, State1, Action1, Content1>,
-      CaseLet<State, Action, State2, Action2, Content2>,
-      CaseLet<State, Action, State3, Action3, Content3>,
-      Default<DefaultContent>
-    )>
+    @ViewBuilder content: @escaping () -> TupleView<
+      (
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>,
+        CaseLet<State, Action, State3, Action3, Content3>,
+        Default<DefaultContent>
+      )
+    >
   )
   where
     Content == WithViewStore<
@@ -286,11 +295,13 @@ extension SwitchStore {
 
   public init<State1, Action1, Content1, State2, Action2, Content2, State3, Action3, Content3>(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<(
-      CaseLet<State, Action, State1, Action1, Content1>,
-      CaseLet<State, Action, State2, Action2, Content2>,
-      CaseLet<State, Action, State3, Action3, Content3>
-    )>,
+    @ViewBuilder content: @escaping () -> TupleView<
+      (
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>,
+        CaseLet<State, Action, State3, Action3, Content3>
+      )
+    >,
     file: StaticString = #file,
     line: UInt = #line
   )
@@ -327,13 +338,15 @@ extension SwitchStore {
     DefaultContent
   >(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<(
-      CaseLet<State, Action, State1, Action1, Content1>,
-      CaseLet<State, Action, State2, Action2, Content2>,
-      CaseLet<State, Action, State3, Action3, Content3>,
-      CaseLet<State, Action, State4, Action4, Content4>,
-      Default<DefaultContent>
-    )>
+    @ViewBuilder content: @escaping () -> TupleView<
+      (
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>,
+        CaseLet<State, Action, State3, Action3, Content3>,
+        CaseLet<State, Action, State4, Action4, Content4>,
+        Default<DefaultContent>
+      )
+    >
   )
   where
     Content == WithViewStore<
@@ -379,12 +392,14 @@ extension SwitchStore {
     State4, Action4, Content4
   >(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<(
-      CaseLet<State, Action, State1, Action1, Content1>,
-      CaseLet<State, Action, State2, Action2, Content2>,
-      CaseLet<State, Action, State3, Action3, Content3>,
-      CaseLet<State, Action, State4, Action4, Content4>
-    )>,
+    @ViewBuilder content: @escaping () -> TupleView<
+      (
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>,
+        CaseLet<State, Action, State3, Action3, Content3>,
+        CaseLet<State, Action, State4, Action4, Content4>
+      )
+    >,
     file: StaticString = #file,
     line: UInt = #line
   )
@@ -426,14 +441,16 @@ extension SwitchStore {
     DefaultContent
   >(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<(
-      CaseLet<State, Action, State1, Action1, Content1>,
-      CaseLet<State, Action, State2, Action2, Content2>,
-      CaseLet<State, Action, State3, Action3, Content3>,
-      CaseLet<State, Action, State4, Action4, Content4>,
-      CaseLet<State, Action, State5, Action5, Content5>,
-      Default<DefaultContent>
-    )>
+    @ViewBuilder content: @escaping () -> TupleView<
+      (
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>,
+        CaseLet<State, Action, State3, Action3, Content3>,
+        CaseLet<State, Action, State4, Action4, Content4>,
+        CaseLet<State, Action, State5, Action5, Content5>,
+        Default<DefaultContent>
+      )
+    >
   )
   where
     Content == WithViewStore<
@@ -485,13 +502,15 @@ extension SwitchStore {
     State5, Action5, Content5
   >(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<(
-      CaseLet<State, Action, State1, Action1, Content1>,
-      CaseLet<State, Action, State2, Action2, Content2>,
-      CaseLet<State, Action, State3, Action3, Content3>,
-      CaseLet<State, Action, State4, Action4, Content4>,
-      CaseLet<State, Action, State5, Action5, Content5>
-    )>,
+    @ViewBuilder content: @escaping () -> TupleView<
+      (
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>,
+        CaseLet<State, Action, State3, Action3, Content3>,
+        CaseLet<State, Action, State4, Action4, Content4>,
+        CaseLet<State, Action, State5, Action5, Content5>
+      )
+    >,
     file: StaticString = #file,
     line: UInt = #line
   )
@@ -547,10 +566,10 @@ public struct _ExhaustivityCheckView<State, Action>: View {
         """
       return VStack(spacing: 17) {
         #if os(macOS)
-        Text("⚠️")
+          Text("⚠️")
         #else
-        Image(systemName: "exclamationmark.triangle.fill")
-          .font(.largeTitle)
+          Image(systemName: "exclamationmark.triangle.fill")
+            .font(.largeTitle)
         #endif
 
         Text(message)
