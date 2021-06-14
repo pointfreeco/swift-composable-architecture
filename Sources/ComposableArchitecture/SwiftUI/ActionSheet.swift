@@ -13,6 +13,7 @@ import SwiftUI
 ///
 /// To use this API, you model all the action sheet actions in your domain's action enum:
 ///
+///    ```swift
 ///     enum AppAction: Equatable {
 ///       case cancelTapped
 ///       case deleteTapped
@@ -21,19 +22,23 @@ import SwiftUI
 ///
 ///       // Your other actions
 ///     }
+///    ```
 ///
 /// And you model the state for showing the action sheet in your domain's state, and it can start
 /// off in a `nil` state:
 ///
+///    ```swift
 ///     struct AppState: Equatable {
 ///       var actionSheet: ActionSheetState<AppAction>?
 ///
 ///       // Your other state
 ///     }
+///    ```
 ///
 /// Then, in the reducer you can construct an `ActionSheetState` value to represent the action
 /// sheet you want to show to the user:
 ///
+///    ```swift
 ///     let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, env in
 ///       switch action
 ///         case .cancelTapped:
@@ -60,15 +65,18 @@ import SwiftUI
 ///         return .none
 ///       }
 ///     }
+///    ```
 ///
 /// And then, in your view you can use the `.actionSheet(_:send:dismiss:)` method on `View` in order
 /// to present the action sheet in a way that works best with the Composable Architecture:
 ///
+///    ```swift
 ///     Button("Info") { viewStore.send(.infoTapped) }
 ///       .actionSheet(
 ///         self.store.scope(state: \.actionSheet),
 ///         dismiss: .cancelTapped
 ///       )
+///    ```
 ///
 /// This makes your reducer in complete control of when the action sheet is shown or dismissed, and
 /// makes it so that any choice made in the action sheet is automatically fed back into the reducer
@@ -76,6 +84,7 @@ import SwiftUI
 ///
 /// Even better, you can instantly write tests that your action sheet behavior works as expected:
 ///
+///    ```swift
 ///     let store = TestStore(
 ///       initialState: AppState(),
 ///       reducer: appReducer,
@@ -96,6 +105,7 @@ import SwiftUI
 ///       $0.actionSheet = nil
 ///       // Also verify that favoriting logic executed correctly
 ///     }
+///    ```
 ///
 @available(iOS 13, *)
 @available(macCatalyst 13, *)

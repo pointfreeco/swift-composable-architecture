@@ -1,12 +1,12 @@
 import Combine
 import Foundation
 
-/// The `Effect` type encapsulates a unit of work that can be run in the outside world, and can feed
-/// data back to the `Store`. It is the perfect place to do side effects, such as network requests,
+/// The ``Effect`` type encapsulates a unit of work that can be run in the outside world, and can feed
+/// data back to the ``Store``. It is the perfect place to do side effects, such as network requests,
 /// saving/loading from disk, creating timers, interacting with dependencies, and more.
 ///
-/// Effects are returned from reducers so that the `Store` can perform the effects after the reducer
-/// is done running. It is important to note that `Store` is not thread safe, and so all effects
+/// Effects are returned from reducers so that the ``Store`` can perform the effects after the reducer
+/// is done running. It is important to note that ``Store`` is not thread safe, and so all effects
 /// must receive values on the same thread, **and** if the store is being used to drive UI then it
 /// must receive values on the main thread.
 ///
@@ -20,17 +20,21 @@ public struct Effect<Output, Failure: Error>: Publisher {
   ///
   /// This initializer is useful for turning any publisher into an effect. For example:
   ///
+  ///    ```swift
   ///     Effect(
   ///       NotificationCenter.default
   ///         .publisher(for: UIApplication.userDidTakeScreenshotNotification)
   ///     )
+  ///    ```
   ///
   /// Alternatively, you can use the `.eraseToEffect()` method that is defined on the `Publisher`
   /// protocol:
   ///
+  ///    ```swift
   ///     NotificationCenter.default
   ///       .publisher(for: UIApplication.userDidTakeScreenshotNotification)
   ///       .eraseToEffect()
+  ///    ```
   ///
   /// - Parameter publisher: A publisher.
   public init<P: Publisher>(_ publisher: P) where P.Output == Output, P.Failure == Failure {
@@ -74,28 +78,32 @@ public struct Effect<Output, Failure: Error>: Publisher {
   /// Creates an effect that can supply a single value asynchronously in the future.
   ///
   /// This can be helpful for converting APIs that are callback-based into ones that deal with
-  /// `Effect`s.
+  /// ``Effect``s.
   ///
   /// For example, to create an effect that delivers an integer after waiting a second:
   ///
+  ///    ```swift
   ///     Effect<Int, Never>.future { callback in
   ///       DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
   ///         callback(.success(42))
   ///       }
   ///     }
+  ///    ```
   ///
   /// Note that you can only deliver a single value to the `callback`. If you send more they will be
   /// discarded:
   ///
+  ///    ```swift
   ///     Effect<Int, Never>.future { callback in
   ///       DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
   ///         callback(.success(42))
   ///         callback(.success(1729)) // Will not be emitted by the effect
   ///       }
   ///     }
+  ///    ```
   ///
-  ///  If you need to deliver more than one value to the effect, you should use the `Effect`
-  ///  initializer that accepts a `Subscriber` value.
+  ///  If you need to deliver more than one value to the effect, you should use the ``Effect``
+  ///  initializer that accepts a ``Subscriber`` value.
   ///
   /// - Parameter attemptToFulfill: A closure that takes a `callback` as an argument which can be
   ///   used to feed it `Result<Output, Failure>` values.
@@ -115,6 +123,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   ///
   /// For example, to load a user from some JSON on the disk, one can wrap that work in an effect:
   ///
+  ///    ```swift
   ///     Effect<User, Error>.result {
   ///       let fileUrl = URL(
   ///         fileURLWithPath: NSSearchPathForDirectoriesInDomains(
@@ -130,6 +139,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   ///
   ///       return result
   ///     }
+  ///    ```
   ///
   /// - Parameter attemptToFulfill: A closure encapsulating some work to execute in the real world.
   /// - Returns: An effect.
@@ -141,13 +151,14 @@ public struct Effect<Output, Failure: Error>: Publisher {
   /// a completion.
   ///
   /// This initializer is useful for bridging callback APIs, delegate APIs, and manager APIs to the
-  /// `Effect` type. One can wrap those APIs in an Effect so that its events are sent through the
+  /// ``Effect`` type. One can wrap those APIs in an Effect so that its events are sent through the
   /// effect, which allows the reducer to handle them.
   ///
   /// For example, one can create an effect to ask for access to `MPMediaLibrary`. It can start by
   /// sending the current status immediately, and then if the current status is `notDetermined` it
   /// can request authorization, and once a status is received it can send that back to the effect:
   ///
+  ///    ```swift
   ///     Effect.run { subscriber in
   ///       subscriber.send(MPMediaLibrary.authorizationStatus())
   ///
@@ -165,9 +176,10 @@ public struct Effect<Output, Failure: Error>: Publisher {
   ///         // have any.
   ///       }
   ///     }
+  ///    ```
   ///
-  /// - Parameter work: A closure that accepts a `Subscriber` value and returns a cancellable. When
-  ///   the `Effect` is completed, the cancellable will be used to clean up any resources created
+  /// - Parameter work: A closure that accepts a ``Subscriber`` value and returns a cancellable. When
+  ///   the ``Effect`` is completed, the cancellable will be used to clean up any resources created
   ///   when the effect was started.
   public static func run(
     _ work: @escaping (Effect.Subscriber) -> Cancellable
@@ -180,7 +192,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   ///
   /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
   ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
-  ///   Composable Architecture in functions like `Reducer.combine`.
+  ///   Composable Architecture in functions like ``Reducer/combine(_:)-1ern2``.
   ///
   ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
   ///
@@ -195,7 +207,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   ///
   /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
   ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
-  ///   Composable Architecture in functions like `Reducer.combine`.
+  ///   Composable Architecture in functions like `Reducer/combine(_:)-1ern2``.
   ///
   ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
   ///
@@ -269,6 +281,7 @@ extension Effect where Failure == Swift.Error {
   ///
   /// For example, to load a user from some JSON on the disk, one can wrap that work in an effect:
   ///
+  ///    ```swift
   ///     Effect<User, Error>.catching {
   ///       let fileUrl = URL(
   ///         fileURLWithPath: NSSearchPathForDirectoriesInDomains(
@@ -280,6 +293,7 @@ extension Effect where Failure == Swift.Error {
   ///       let data = try Data(contentsOf: fileUrl)
   ///       return try JSONDecoder().decode(User.self, from: $0)
   ///     }
+  ///    ```
   ///
   /// - Parameter work: A closure encapsulating some work to execute in the real world.
   /// - Returns: An effect.
@@ -289,31 +303,35 @@ extension Effect where Failure == Swift.Error {
 }
 
 extension Publisher {
-  /// Turns any publisher into an `Effect`.
+  /// Turns any publisher into an ``Effect``.
   ///
   /// This can be useful for when you perform a chain of publisher transformations in a reducer, and
   /// you need to convert that publisher to an effect so that you can return it from the reducer:
   ///
+  ///    ```swift
   ///     case .buttonTapped:
   ///       return fetchUser(id: 1)
   ///         .filter(\.isAdmin)
   ///         .eraseToEffect()
+  ///    ```
   ///
   /// - Returns: An effect that wraps `self`.
   public func eraseToEffect() -> Effect<Output, Failure> {
     Effect(self)
   }
 
-  /// Turns any publisher into an `Effect` that cannot fail by wrapping its output and failure in a
+  /// Turns any publisher into an ``Effect`` that cannot fail by wrapping its output and failure in a
   /// result.
   ///
   /// This can be useful when you are working with a failing API but want to deliver its data to an
   /// action that handles both success and failure.
   ///
+  ///    ```swift
   ///     case .buttonTapped:
   ///       return fetchUser(id: 1)
   ///         .catchToEffect()
   ///         .map(ProfileAction.userResponse)
+  ///    ```
   ///
   /// - Returns: An effect that wraps `self`.
   public func catchToEffect() -> Effect<Result<Output, Failure>, Never> {
@@ -322,16 +340,18 @@ extension Publisher {
       .eraseToEffect()
   }
 
-  /// Turns any publisher into an `Effect` for any output and failure type by ignoring all output
+  /// Turns any publisher into an ``Effect`` for any output and failure type by ignoring all output
   /// and any failure.
   ///
   /// This is useful for times you want to fire off an effect but don't want to feed any data back
   /// into the system. It can automatically promote an effect to your reducer's domain.
   ///
+  ///    ```swift
   ///     case .buttonTapped:
   ///       return analyticsClient.track("Button Tapped")
   ///         .fireAndForget()
-  ///
+  ///    ```
+  ///    
   /// - Parameters:
   ///   - outputType: An output type.
   ///   - failureType: A failure type.

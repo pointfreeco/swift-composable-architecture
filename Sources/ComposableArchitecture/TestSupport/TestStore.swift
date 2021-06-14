@@ -38,6 +38,7 @@
   ///
   /// For example, given a simple counter reducer:
   ///
+  ///    ```swift
   ///     struct CounterState {
   ///       var count = 0
   ///     }
@@ -58,9 +59,11 @@
   ///         return .none
   ///       }
   ///     }
+  ///    ```
   ///
   /// One can assert against its behavior over time:
   ///
+  ///    ```swift
   ///     class CounterTests: XCTestCase {
   ///       func testCounter() {
   ///         let store = TestStore(
@@ -73,14 +76,16 @@
   ///         }
   ///       }
   ///     }
+  ///    ```
   ///
   /// Note that in the trailing closure of `.send(.incrementButtonTapped)` we are given a single
   /// mutable value of the state before the action was sent, and it is our job to mutate the value
   /// to match the state after the action was sent. In this case the `count` field changes to `1`.
   ///
   /// For a more complex example, consider the following bare-bones search feature that uses the
-  /// `.debounce` operator to wait for the user to stop typing before making a network request:
+  /// ``Effect/debounce(id:for:scheduler:options:)`` operator to wait for the user to stop typing before making a network request:
   ///
+  ///    ```swift
   ///     struct SearchState: Equatable {
   ///       var query = ""
   ///       var results: [String] = []
@@ -112,9 +117,11 @@
   ///           return .none
   ///         }
   ///     }
+  ///    ```swift
   ///
   /// It can be fully tested by controlling the environment's scheduler and effect:
   ///
+  ///    ```swift
   ///     // Create a test dispatch scheduler to control the timing of effects
   ///     let scheduler = DispatchQueue.test
   ///
@@ -153,6 +160,7 @@
   ///       // Assert that state updates accordingly
   ///       $0.results = ["Composable Architecture"]
   ///     }
+  ///    ```
   ///
   /// This test is proving that the debounced network requests are correctly canceled when we do not
   /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
@@ -618,7 +626,7 @@
 
       /// A step that captures a sub-sequence of steps.
       ///
-      /// - Parameter steps: An array of `Step`
+      /// - Parameter steps: An array of ``TestStore/Step``
       /// - Returns: A step that captures a sub-sequence of steps.
       public static func sequence(
         _ steps: [Step],
@@ -630,7 +638,7 @@
 
       /// A step that captures a sub-sequence of steps.
       ///
-      /// - Parameter steps: A variadic list of `Step`
+      /// - Parameter steps: A variadic list of ``TestStore/Step``
       /// - Returns: A step that captures a sub-sequence of steps.
       public static func sequence(
         _ steps: Step...,

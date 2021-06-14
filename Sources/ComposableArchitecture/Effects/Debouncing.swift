@@ -9,13 +9,15 @@ extension Effect {
   /// protection against typos by defining a new type that conforms to `Hashable`, such as an empty
   /// struct:
   ///
+  ///    ```swift
   ///     case let .textChanged(text):
   ///       struct SearchId: Hashable {}
   ///
   ///       return environment.search(text)
   ///         .map(Action.searchResponse)
   ///         .debounce(id: SearchId(), for: 0.5, scheduler: environment.mainQueue)
-  ///
+  ///    ```
+  ///    
   /// - Parameters:
   ///   - id: The effect's identifier.
   ///   - dueTime: The duration you want to debounce for.

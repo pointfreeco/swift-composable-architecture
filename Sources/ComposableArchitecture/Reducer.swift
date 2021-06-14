@@ -2,19 +2,19 @@ import CasePaths
 import Combine
 
 /// A reducer describes how to evolve the current state of an application to the next state, given
-/// an action, and describes what `Effect`s should be executed later by the store, if any.
+/// an action, and describes what ``Effect``s should be executed later by the store, if any.
 ///
 /// Reducers have 3 generics:
 ///
 ///   * `State`: A type that holds the current state of the application.
 ///   * `Action`: A type that holds all possible actions that cause the state of the application to
 ///     change.
-///   * `Environment`: A type that holds all dependencies needed in order to produce `Effect`s, such
+///   * `Environment`: A type that holds all dependencies needed in order to produce ``Effect``s, such
 ///     as API clients, analytics clients, random number generators, etc.
 ///
 /// - Note: The thread on which effects output is important. An effect's output is immediately sent
-///   back into the store, and `Store` is not thread safe. This means all effects must receive
-///   values on the same thread, **and** if the `Store` is being used to drive UI then all output
+///   back into the store, and ``Store`` is not thread safe. This means all effects must receive
+///   values on the same thread, **and** if the ``Store`` is being used to drive UI then all output
 ///   must be on the main thread. You can use the `Publisher` method `receive(on:)` for make the
 ///   effect output its values on the thread of your choice.
 public struct Reducer<State, Action, Environment> {
@@ -25,10 +25,10 @@ public struct Reducer<State, Action, Environment> {
   /// The reducer takes three arguments: state, action and environment. The state is `inout` so that
   /// you can make any changes to it directly inline. The reducer must return an effect, which
   /// typically would be constructed by using the dependencies inside the `environment` value. If
-  /// no effect needs to be executed, a `.none` effect can be returned.
+  /// no effect needs to be executed, a ``Effect/none`` effect can be returned.
   ///
   /// For example:
-  ///
+  ///    ```swift
   ///     struct MyState { var count = 0, text = "" }
   ///     enum MyAction { case buttonTapped, textChanged(String) }
   ///     struct MyEnvironment { var analyticsClient: AnalyticsClient }
@@ -44,6 +44,7 @@ public struct Reducer<State, Action, Environment> {
   ///         return .none
   ///       }
   ///     }
+  ///    ```
   ///
   /// - Parameter reducer: A function signature that takes state, action and
   ///   environment.
@@ -67,21 +68,22 @@ public struct Reducer<State, Action, Environment> {
   /// its state, it can make a difference if `reducerA` chooses to modify `reducerB`'s state
   /// _before_ or _after_ `reducerB` runs.
   ///
-  /// This is perhaps most easily seen when working with `optional` reducers, where the parent
+  /// This is perhaps most easily seen when working with ``Reducer/optional`` reducers, where the parent
   /// domain may listen to the child domain and `nil` out its state. If the parent reducer runs
   /// before the child reducer, then the child reducer will not be able to react to its own action.
   ///
-  /// Similar can be said for a `forEach` reducer. If the parent domain modifies the child
-  /// collection by moving, removing, or modifying an element before the `forEach` reducer runs, the
-  /// `forEach` reducer may perform its action against the wrong element, an element that no longer
+  /// Similar can be said for a ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87`` reducer. If the parent domain modifies the child
+  /// collection by moving, removing, or modifying an element before the ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87`` reducer runs, the
+  /// ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87`` reducer may perform its action against the wrong element, an element that no longer
   /// exists, or an element in an unexpected state.
   ///
   /// Running a parent reducer before a child reducer can be considered an application logic
   /// error, and can produce assertion failures. So you should almost always combine reducers in
   /// order from child to parent domain.
   ///
-  /// Here is an example of how you should combine an `optional` reducer with a parent domain:
+  /// Here is an example of how you should combine an ``Reducer/optional`` reducer with a parent domain:
   ///
+  ///    ```swift
   ///     let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
   ///       // Combined before parent so that it can react to `.dismiss` while state is non-`nil`.
   ///       childReducer.optional().pullback(
@@ -99,6 +101,7 @@ public struct Reducer<State, Action, Environment> {
   ///         }
   ///       },
   ///     )
+  ///    ```
   ///
   /// - Parameter reducers: A list of reducers.
   /// - Returns: A single reducer.
@@ -117,21 +120,22 @@ public struct Reducer<State, Action, Environment> {
   /// its state, it can make a difference if `reducerA` chooses to modify `reducerB`'s state
   /// _before_ or _after_ `reducerB` runs.
   ///
-  /// This is perhaps most easily seen when working with `optional` reducers, where the parent
+  /// This is perhaps most easily seen when working with ``Reducer/optional`` reducers, where the parent
   /// domain may listen to the child domain and `nil` out its state. If the parent reducer runs
   /// before the child reducer, then the child reducer will not be able to react to its own action.
   ///
-  /// Similar can be said for a `forEach` reducer. If the parent domain modifies the child
-  /// collection by moving, removing, or modifying an element before the `forEach` reducer runs, the
-  /// `forEach` reducer may perform its action against the wrong element, an element that no longer
+  /// Similar can be said for a ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87`` reducer. If the parent domain modifies the child
+  /// collection by moving, removing, or modifying an element before the ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87`` reducer runs, the
+  /// ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87`` reducer may perform its action against the wrong element, an element that no longer
   /// exists, or an element in an unexpected state.
   ///
   /// Running a parent reducer before a child reducer can be considered an application logic
   /// error, and can produce assertion failures. So you should almost always combine reducers in
   /// order from child to parent domain.
   ///
-  /// Here is an example of how you should combine an `optional` reducer with a parent domain:
+  /// Here is an example of how you should combine an ``Reducer/optional`` reducer with a parent domain:
   ///
+  ///    ```swift
   ///     let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
   ///       // Combined before parent so that it can react to `.dismiss` while state is non-`nil`.
   ///       childReducer.optional().pullback(
@@ -149,6 +153,7 @@ public struct Reducer<State, Action, Environment> {
   ///         }
   ///       },
   ///     )
+  ///    ```
   ///
   /// - Parameter reducers: An array of reducers.
   /// - Returns: A single reducer.
@@ -169,21 +174,22 @@ public struct Reducer<State, Action, Environment> {
   /// its state, it can make a difference if `reducerA` chooses to modify `reducerB`'s state
   /// _before_ or _after_ `reducerB` runs.
   ///
-  /// This is perhaps most easily seen when working with `optional` reducers, where the parent
+  /// This is perhaps most easily seen when working with ``Reducer/optional`` reducers, where the parent
   /// domain may listen to the child domain and `nil` out its state. If the parent reducer runs
   /// before the child reducer, then the child reducer will not be able to react to its own action.
   ///
-  /// Similar can be said for a `forEach` reducer. If the parent domain modifies the child
-  /// collection by moving, removing, or modifying an element before the `forEach` reducer runs, the
-  /// `forEach` reducer may perform its action against the wrong element, an element that no longer
+  /// Similar can be said for a ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87`` reducer. If the parent domain modifies the child
+  /// collection by moving, removing, or modifying an element before the ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87`` reducer runs, the
+  /// ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87`` reducer may perform its action against the wrong element, an element that no longer
   /// exists, or an element in an unexpected state.
   ///
   /// Running a parent reducer before a child reducer can be considered an application logic
   /// error, and can produce assertion failures. So you should almost always combine reducers in
   /// order from child to parent domain.
   ///
-  /// Here is an example of how you should combine an `optional` reducer with a parent domain:
+  /// Here is an example of how you should combine an ``Reducer/optional`` reducer with a parent domain:
   ///
+  ///    ```swift
   ///     let parentReducer: Reducer<ParentState, ParentAction, ParentEnvironment> =
   ///       // Run before parent so that it can react to `.dismiss` while state is non-`nil`.
   ///       childReducer
@@ -204,6 +210,7 @@ public struct Reducer<State, Action, Environment> {
   ///             }
   ///           }
   ///         )
+  ///   ```
   ///
   /// - Parameter other: Another reducer.
   /// - Returns: A single reducer.
@@ -220,9 +227,10 @@ public struct Reducer<State, Action, Environment> {
   ///   * A function that can transform the global environment into a local environment.
   ///
   /// This operation is important for breaking down large reducers into small ones. When used with
-  /// the `combine` operator you can define many reducers that work on small pieces of domain, and
+  /// the ``combine(_:)-1ern2`` operator you can define many reducers that work on small pieces of domain, and
   /// then _pull them back_ and _combine_ them into one big reducer that works on a large domain.
   ///
+  ///    ```swift
   ///     // Global domain that holds a local domain:
   ///     struct AppState { var settings: SettingsState, /* rest of state */ }
   ///     enum AppAction { case settings(SettingsAction), /* other actions */ }
@@ -241,6 +249,7 @@ public struct Reducer<State, Action, Environment> {
   ///
   ///       /* other reducers */
   ///     )
+  ///    ```
   ///
   /// - Parameters:
   ///   - toLocalState: A key path that can get/set `State` inside `GlobalState`.
@@ -475,10 +484,11 @@ public struct Reducer<State, Action, Environment> {
   /// Transforms a reducer that works on non-optional state into one that works on optional state by
   /// only running the non-optional reducer when state is non-nil.
   ///
-  /// Often used in tandem with `pullback` to transform a reducer on a non-optional child domain
+  /// Often used in tandem with ``pullback(state:action:environment:)`` to transform a reducer on a non-optional child domain
   /// into a reducer that can be combined with a reducer on a parent domain that contains some
   /// optional child domain:
   ///
+  ///    ```swift
   ///     // Global domain that holds an optional local domain:
   ///     struct AppState { var modal: ModalState? }
   ///     enum AppAction { case modal(ModalAction) }
@@ -498,6 +508,7 @@ public struct Reducer<State, Action, Environment> {
   ///         ...
   ///       }
   ///     )
+  ///    ```
   ///
   /// Take care when combining optional reducers into parent domains. An optional reducer cannot
   /// process actions in its domain when its state is `nil`. If a child action is sent to an
@@ -507,6 +518,7 @@ public struct Reducer<State, Action, Environment> {
   ///   * A parent reducer sets child state to `nil` when processing a child action and runs
   ///     _before_ the child reducer:
   ///
+  ///        ```swift
   ///         let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
   ///           // When combining reducers, the parent reducer runs first
   ///           Reducer { state, action, environment in
@@ -529,10 +541,12 @@ public struct Reducer<State, Action, Environment> {
   ///             // This action is never received here because child state is `nil` in the parent
   ///           ...
   ///         }
+  ///        ```
   ///
   ///     To ensure that a child reducer can process any action that a parent may use to `nil` out
   ///     its state, combine it _before_ the parent:
   ///
+  ///        ```swift
   ///         let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
   ///           // The child runs first
   ///           childReducer.optional().pullback(...),
@@ -541,9 +555,11 @@ public struct Reducer<State, Action, Environment> {
   ///             ...
   ///           }
   ///         )
+  ///        ```
   ///
   ///   * A child effect feeds a child action back into the store when child state is `nil`:
   ///
+  ///        ```swift
   ///         let childReducer = Reducer<
   ///           ChildState, ChildAction, ChildEnvironment
   ///         > { state, action environment in
@@ -559,11 +575,13 @@ public struct Reducer<State, Action, Environment> {
   ///           ...
   ///           }
   ///         }
+  ///        ```
   ///
   ///     It is perfectly reasonable to ignore the result of an effect when child state is `nil`,
   ///     for example one-off effects that you don't want to cancel. However, many long-living
   ///     effects _should_ be explicitly canceled when tearing down a child domain:
   ///
+  ///        ```swift
   ///         let childReducer = Reducer<
   ///           ChildState, ChildAction, ChildEnvironment
   ///         > { state, action environment in
@@ -583,18 +601,22 @@ public struct Reducer<State, Action, Environment> {
   ///           ...
   ///           }
   ///         }
+  ///        ```
   ///
   ///   * A view store sends a child action when child state is `nil`:
   ///
+  ///        ```swift
   ///         WithViewStore(self.parentStore) { parentViewStore in
   ///           // If child state is `nil`, it cannot process this action.
   ///           Button("Child Action") { parentViewStore.send(.child(.action)) }
   ///           ...
   ///         }
+  ///        ```
   ///
-  ///     Use `Store.scope` with `IfLetStore` or `Store.ifLet` to ensure that views can only send
+  ///     Use ``Store/scope(state:action:)-9iai9`` with ``IfLetStore`` or ``Store/ifLet(then:else:)`` to ensure that views can only send
   ///     child actions when the child domain is non-`nil`.
   ///
+  ///        ```swift
   ///         IfLetStore(
   ///           self.parentStore.scope(state: { $0.child }, action: { .child($0) }
   ///         ) { childStore in
@@ -605,10 +627,11 @@ public struct Reducer<State, Action, Environment> {
   ///           }
   ///           ...
   ///         }
+  ///        ```
   ///
-  /// - See also: `IfLetStore`, a SwiftUI helper for transforming a store on optional state into a
+  /// - See also: ``IfLetStore``, a SwiftUI helper for transforming a store on optional state into a
   ///   store on non-optional state.
-  /// - See also: `Store.ifLet`, a UIKit helper for doing imperative work with a store on optional
+  /// - See also: ``Store/ifLet(then:else:)``, a UIKit helper for doing imperative work with a store on optional
   ///   state.
   ///
   /// - Parameter breakpointOnNil: Raises `SIGTRAP` signal when an action is sent to the reducer
@@ -656,9 +679,9 @@ public struct Reducer<State, Action, Environment> {
     }
   }
 
-  /// A version of `pullback` that transforms a reducer that works on an element into one that works
+  /// A version of ``pullback(state:action:environment:)`` that transforms a reducer that works on an element into one that works
   /// on a collection of elements.
-  ///
+  ///    ```swift
   ///     // Global domain that holds a collection of local domains:
   ///     struct AppState { var todos: [Todo] }
   ///     enum AppAction { case todo(index: Int, action: TodoAction) }
@@ -678,9 +701,10 @@ public struct Reducer<State, Action, Environment> {
   ///         ...
   ///       }
   ///     )
+  ///    ```
   ///
-  /// Take care when combining `forEach` reducers into parent domains, as order matters. Always
-  /// combine `forEach` reducers _before_ parent reducers that can modify the collection.
+  /// Take care when combining ``forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87`` reducers into parent domains, as order matters. Always
+  /// combine ``forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87`` reducers _before_ parent reducers that can modify the collection.
   ///
   /// - Parameters:
   ///   - toLocalState: A key path that can get/set an array of `State` elements inside.
@@ -745,9 +769,10 @@ public struct Reducer<State, Action, Environment> {
     }
   }
 
-  /// A version of `pullback` that transforms a reducer that works on an element into one that works
+  /// A version of ``pullback(state:action:environment:)`` that transforms a reducer that works on an element into one that works
   /// on an identified array of elements.
   ///
+  ///    ```swift
   ///     // Global domain that holds a collection of local domains:
   ///     struct AppState { var todos: IdentifiedArrayOf<Todo> }
   ///     enum AppAction { case todo(id: Todo.ID, action: TodoAction) }
@@ -767,9 +792,10 @@ public struct Reducer<State, Action, Environment> {
   ///         ...
   ///       }
   ///     )
+  ///    ```
   ///
-  /// Take care when combining `forEach` reducers into parent domains, as order matters. Always
-  /// combine `forEach` reducers _before_ parent reducers that can modify the collection.
+  /// Take care when combining ``forEach(state:action:environment:breakpointOnNil:_:_:)-90ox5`` reducers into parent domains, as order matters. Always
+  /// combine ``forEach(state:action:environment:breakpointOnNil:_:_:)-90ox5`` reducers _before_ parent reducers that can modify the collection.
   ///
   /// - Parameters:
   ///   - toLocalState: A key path that can get/set a collection of `State` elements inside
@@ -836,11 +862,11 @@ public struct Reducer<State, Action, Environment> {
     }
   }
 
-  /// A version of `pullback` that transforms a reducer that works on an element into one that works
+  /// A version of ``pullback(state:action:environment:)`` that transforms a reducer that works on an element into one that works
   /// on a dictionary of element values.
   ///
-  /// Take care when combining `forEach` reducers into parent domains, as order matters. Always
-  /// combine `forEach` reducers _before_ parent reducers that can modify the dictionary.
+  /// Take care when combining ``forEach(state:action:environment:breakpointOnNil:_:_:)-xv1z`` reducers into parent domains, as order matters. Always
+  /// combine ``forEach(state:action:environment:breakpointOnNil:_:_:)-xv1z`` reducers _before_ parent reducers that can modify the dictionary.
   ///
   /// - Parameters:
   ///   - toLocalState: A key path that can get/set a dictionary of `State` values inside

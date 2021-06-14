@@ -5,7 +5,7 @@ import Foundation
 /// around to views that need to interact with the application.
 ///
 /// You will typically construct a single one of these at the root of your application, and then use
-/// the `scope` method to derive more focused stores that can be passed to subviews.
+/// the ``scope(state:action:)-9iai9`` method to derive more focused stores that can be passed to subviews.
 public final class Store<State, Action> {
   var state: CurrentValueSubject<State, Never>
   var effectCancellables: [UUID: AnyCancellable] = [:]
@@ -34,7 +34,7 @@ public final class Store<State, Action> {
   ///
   /// This can be useful for deriving new stores to hand to child views in an application. For
   /// example:
-  ///
+  ///    ```swift
   ///     // Application state made from local states.
   ///     struct AppState { var login: LoginState, ... }
   ///     struct AppAction { case login(LoginAction), ... }
@@ -53,7 +53,7 @@ public final class Store<State, Action> {
   ///         action: { AppAction.login($0) }
   ///       )
   ///     )
-  ///
+  ///    ```
   /// Scoping in this fashion allows you to better modularize your application. In this case,
   /// `LoginView` could be extracted to a module that has no access to `AppState` or `AppAction`.
   ///
@@ -63,7 +63,7 @@ public final class Store<State, Action> {
   /// For example, the above login domain could model a two screen login flow: a login form followed
   /// by a two-factor authentication screen. The second screen's domain might be nested in the
   /// first:
-  ///
+  ///    ```swift
   ///     struct LoginState: Equatable {
   ///       var email = ""
   ///       var password = ""
@@ -77,15 +77,15 @@ public final class Store<State, Action> {
   ///       case passwordChanged(String)
   ///       case twoFactorAuth(TwoFactorAuthAction)
   ///     }
-  ///
+  ///    ```
   /// The login view holds onto a store of this domain:
-  ///
+  ///    ```swift
   ///     struct LoginView: View {
   ///       let store: Store<LoginState, LoginAction>
   ///
   ///       var body: some View { ... }
   ///     }
-  ///
+  ///    ```
   /// If its body were to use a view store of the same domain, this would introduce a number of
   /// problems:
   ///
@@ -104,7 +104,7 @@ public final class Store<State, Action> {
   ///
   /// To avoid these issues, one can introduce a view-specific domain that slices off the subset of
   /// state and actions that a view cares about:
-  ///
+  ///    ```swift
   ///     extension LoginView {
   ///       struct State: Equatable {
   ///         var email: String
@@ -117,10 +117,10 @@ public final class Store<State, Action> {
   ///         case passwordChanged(String)
   ///       }
   ///     }
-  ///
+  ///    ```
   /// One can also introduce a couple helpers that transform feature state into view state and
   /// transform view actions into feature actions.
-  ///
+  ///    ```swift
   ///     extension LoginState {
   ///       var view: LoginView.State {
   ///         .init(email: self.email, password: self.password)
@@ -139,10 +139,11 @@ public final class Store<State, Action> {
   ///         }
   ///       }
   ///     }
+  ///    ```
   ///
   /// With these helpers defined, `LoginView` can now scope its store's feature domain into its view
   /// domain:
-  ///
+  ///    ```swift
   ///     var body: some View {
   ///       WithViewStore(
   ///         self.store.scope(state: { $0.view }, action: { $0.feature })
@@ -150,7 +151,7 @@ public final class Store<State, Action> {
   ///         ...
   ///       }
   ///     }
-  ///
+  ///    ```
   /// This view store is now incapable of reading any state but view state (and will not recompute
   /// when non-view state changes), and is incapable of sending any actions but view actions.
   ///
