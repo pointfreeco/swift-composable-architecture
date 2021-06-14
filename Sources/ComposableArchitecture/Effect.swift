@@ -351,7 +351,7 @@ extension Publisher {
   ///       return analyticsClient.track("Button Tapped")
   ///         .fireAndForget()
   ///    ```
-  ///    
+  ///
   /// - Parameters:
   ///   - outputType: An output type.
   ///   - failureType: A failure type.

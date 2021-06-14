@@ -42,7 +42,7 @@ import Foundation
 ///       }
 ///     }
 ///    ```
-///    
+///
 public struct IdentifiedArray<ID, Element>: MutableCollection, RandomAccessCollection
 where ID: Hashable {
   /// A key path to a value that identifies an element.

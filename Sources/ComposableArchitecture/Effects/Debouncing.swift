@@ -17,7 +17,7 @@ extension Effect {
   ///         .map(Action.searchResponse)
   ///         .debounce(id: SearchId(), for: 0.5, scheduler: environment.mainQueue)
   ///    ```
-  ///    
+  ///
   /// - Parameters:
   ///   - id: The effect's identifier.
   ///   - dueTime: The duration you want to debounce for.
