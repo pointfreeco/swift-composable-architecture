@@ -284,7 +284,7 @@ extension Effect where Failure == Swift.Error {
   ///    ```swift
   ///     Effect<User, Error>.catching {
   ///       let fileUrl = URL(
-  ///        fileURLWithPath: NSSearchPathForDirectoriesInDomains(
+  ///         fileURLWithPath: NSSearchPathForDirectoriesInDomains(
   ///           .documentDirectory, .userDomainMask, true
   ///         )[0]
   ///       )
