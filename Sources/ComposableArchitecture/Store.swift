@@ -46,7 +46,7 @@ import Foundation
 /// }
 /// ```
 ///
-/// And we can construct a view for each of these domains by applying ``scope(state:action:)-9iai9`` to a store that holds onto the full app domain in order to transform it into a store for each of these sub-domains:
+/// We can construct a view for each of these domains by applying ``scope(state:action:)-9iai9`` to a store that holds onto the full app domain in order to transform it into a store for each sub-domain:
 ///
 /// ```swift
 /// struct AppView: View {
