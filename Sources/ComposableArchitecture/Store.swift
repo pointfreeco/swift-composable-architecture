@@ -68,7 +68,7 @@ import Foundation
 ///
 /// ### Thread safety
 ///
-/// The `Store` class is not thread safe, and so all interactions with an instance of ``Store`` (including all of its scopes and derived ``ViewStore``s) must be done on the same thread. Further, if the store is powering a SwiftUI or UIKit view, as is customary, then all interactions must further be done on the _main_ thread.
+/// The `Store` class is not thread-safe, and so all interactions with an instance of ``Store`` (including all of its scopes and derived ``ViewStore``s) must be done on the same thread. Further, if the store is powering a SwiftUI or UIKit view, as is customary, then all interactions must be done on the _main_ thread.
 ///
 /// The reason stores are not thread safe is due to the fact that when an action is sent to a store, a reducer is run on the current state, and this process cannot be done from multiple threads. It is possible to make this process thread safe by introducing locks or queues, but this introduces new complications:
 ///
