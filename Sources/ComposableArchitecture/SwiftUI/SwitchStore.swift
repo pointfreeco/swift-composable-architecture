@@ -10,8 +10,8 @@ import SwiftUI
 ///       case loggedOut(LoggedOutState)
 ///     }
 ///
-/// In the view layer, a store on this state can switch over each case using a `SwitchStore` and
-/// a `CaseLet` view per case:
+/// In the view layer, a store on this state can switch over each case using a ``SwitchStore`` and
+/// a ``CaseLet`` view per case:
 ///
 ///     struct AppView: View {
 ///       let store: Store<AppState, AppAction>
@@ -28,9 +28,9 @@ import SwiftUI
 ///       }
 ///     }
 ///
-/// If a `SwitchStore` does not exhaustively handle every case with a corresponding `CaseLet` view,
-/// a debug breakpoint will be raised when an unhandled case is encountered. To fall back on a
-/// default view instead, introduce a `Default` view at the end of the `SwitchStore`:
+/// If a ``SwitchStore`` does not exhaustively handle every case with a corresponding ``CaseLet``
+/// view, a debug breakpoint will be raised when an unhandled case is encountered. To fall back on a
+/// default view instead, introduce a ``Default`` view at the end of the ``SwitchStore``:
 ///
 ///     SwitchStore(self.store) {
 ///       CaseLet(state: /MyState.first, action: MyAction.first, then: FirstView.init(store:))
@@ -41,8 +41,9 @@ import SwiftUI
 ///       }
 ///     }
 ///
-/// - See also: `Reducer.pullback`, a method that aids in transforming reducers that operate on each
-///   case of an enum into reducers that operate on the entire enum.
+/// - See also: ``Reducer/pullback(state:action:environment:breakpointOnNil:_:_:)``, a method that
+/// aids in transforming reducers that operate on each case of an enum into reducers that operate
+/// on the entire enum.
 ///
 public struct SwitchStore<State, Action, Content>: View where Content: View {
   public let store: Store<State, Action>
@@ -62,7 +63,7 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
   }
 }
 
-/// A view that handles a specific case of enum state in a `SwitchStore`.
+/// A view that handles a specific case of enum state in a ``SwitchStore``.
 public struct CaseLet<GlobalState, GlobalAction, LocalState, LocalAction, Content>: View
 where Content: View {
   @EnvironmentObject private var store: StoreObservableObject<GlobalState, GlobalAction>
@@ -70,7 +71,7 @@ where Content: View {
   public let fromLocalAction: (LocalAction) -> GlobalAction
   public let content: (Store<LocalState, LocalAction>) -> Content
 
-  /// Initializes a `CaseLet` view that computes content depending on if a store of enum state
+  /// Initializes a ``CaseLet`` view that computes content depending on if a store of enum state
   /// matches a particular case.
   ///
   /// - Parameters:
@@ -99,19 +100,19 @@ where Content: View {
   }
 }
 
-/// A view that covers any cases that aren't addressed in a `SwitchStore`.
+/// A view that covers any cases that aren't addressed in a ``SwitchStore``.
 ///
-/// If you wish to use `SwitchStore` in a non-exhaustive manner (i.e. you do not want to provide
-/// a `CaseLet` for each case of the enum), then you must insert a `Default` view at the end of
-/// the `SwitchStore`'s body.
+/// If you wish to use ``SwitchStore`` in a non-exhaustive manner (i.e. you do not want to provide
+/// a ``CaseLet`` for each case of the enum), then you must insert a ``Default`` view at the end of
+/// the ``SwitchStore``'s body.
 public struct Default<Content>: View where Content: View {
   private let content: () -> Content
 
-  /// Initializes a `Default` view that computes content depending on if a store of enum state does
-  /// not match a particular case.
+  /// Initializes a ``Default`` view that computes content depending on if a store of enum state
+  /// does not match a particular case.
   ///
   /// - Parameter content: A function that returns a view that is visible only when the switch
-  ///   store's state does not match a preceding `CaseLet` view.
+  ///   store's state does not match a preceding ``CaseLet`` view.
   public init(@ViewBuilder content: @escaping () -> Content) {
     self.content = content
   }
