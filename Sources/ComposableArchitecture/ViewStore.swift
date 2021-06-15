@@ -235,9 +235,11 @@ public final class ViewStore<State, Action>: ObservableObject {
     self.binding(send: { _ in action })
   }
 
-  @available(iOS 15.0, *)
+  @available(iOS 15.0, macOS 12.0, macCatalyst 15, tvOS 15, watchOS 15, *)
   public func send(_ action: Action, `while`: @escaping (State) -> Bool) async {
     self.send(action)
+
+
 
     var cancellable: Cancellable?
 
