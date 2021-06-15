@@ -239,23 +239,21 @@ public final class ViewStore<State, Action>: ObservableObject {
   public func send(_ action: Action, `while`: @escaping (State) -> Bool) async {
     self.send(action)
 
-    async {
-      var cancellable: Cancellable?
+    var cancellable: Cancellable?
 
-      await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-        cancellable = self.publisher
-          .map(`while`)
-          .filter { !$0 }
-          .prefix(1)
-          .sink(
-            receiveCompletion: { _ in
-            continuation.resume(returning: ())
-            _ = cancellable
-            cancellable = nil
-          },
-            receiveValue: { _ in }
-          )
-      }
+    await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
+      cancellable = self.publisher
+        .map(`while`)
+        .filter { !$0 }
+        .prefix(1)
+        .sink(
+          receiveCompletion: { _ in
+          continuation.resume(returning: ())
+          _ = cancellable
+          cancellable = nil
+        },
+          receiveValue: { _ in }
+        )
     }
   }
 }
