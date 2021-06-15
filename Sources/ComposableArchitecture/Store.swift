@@ -70,7 +70,7 @@ import Foundation
 ///
 /// The `Store` class is not thread-safe, and so all interactions with an instance of ``Store`` (including all of its scopes and derived ``ViewStore``s) must be done on the same thread. Further, if the store is powering a SwiftUI or UIKit view, as is customary, then all interactions must be done on the _main_ thread.
 ///
-/// The reason stores are not thread safe is due to the fact that when an action is sent to a store, a reducer is run on the current state, and this process cannot be done from multiple threads. It is possible to make this process thread safe by introducing locks or queues, but this introduces new complications:
+/// The reason stores are not thread-safe is due to the fact that when an action is sent to a store, a reducer is run on the current state, and this process cannot be done from multiple threads. It is possible to make this process thread-safe by introducing locks or queues, but this introduces new complications:
 ///
 /// * If done simply with `DispatchQueue.main.async` you will incur a thread hop even when you are already on the main thread. This can lead to unexpected behavior in UIKit and SwiftUI, where sometimes you are required to do work synchronously, such as in animation blocks.
 /// * It is possible to create a scheduler that performs its work immediately when on the main thread and otherwise uses `DispatchQueue.main.async` (e.g. see ReactiveSwift's [UIScheduler](https://github.com/ReactiveCocoa/ReactiveSwift/blob/f97db218c0236b0c6ef74d32adb3d578792969c0/Sources/Scheduler.swift)). This introduces a lot more complexity, and should probably not be adopted without having a very good reason.
