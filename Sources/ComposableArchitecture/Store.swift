@@ -30,7 +30,7 @@ import Foundation
 ///
 /// The most important operation defined on ``Store`` is the ``scope(state:action:)-9iai9`` method, which allows you to transform a store into one that deals with local state and actions. This is necessary for passing stores to subviews that only care about a small portion of the entire application's domain.
 ///
-/// For example, if an application has a tab view at its root with a tab for activity, search and profile, then we can model the domain like this:
+/// For example, if an application has a tab view at its root with tabs for activity, search, and profile, then we can model the domain like this:
 ///
 /// ```swift
 /// struct AppState {
