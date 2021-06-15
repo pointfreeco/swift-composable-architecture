@@ -79,7 +79,7 @@ import Foundation
 ///
 /// This approach makes the fewest number of assumptions about how effects are created and transformed, and prevents unnecessary thread hops and re-dispatching. It also provides some testing benefits. If your effects are not responsible for their own scheduling, then in tests all of the effects would run synchronously and immediately. You would not be able to test how multiple in-flight effects interleave with each other and affect the state of your application. However, by leaving scheduling out of the ``Store`` we get to test these aspects of our effects if we so desire, or we can ignore if we prefer. We have that flexibility.
 ///
-/// See also: ``ViewStore`` to understand how once observes changes to the state in a ``Store`` and sends user actions.
+/// See also: ``ViewStore`` to understand how one observes changes to the state in a ``Store`` and sends user actions.
 public final class Store<State, Action> {
   var state: CurrentValueSubject<State, Never>
   var effectCancellables: [UUID: AnyCancellable] = [:]
