@@ -5,7 +5,8 @@ import Foundation
 /// around to views that need to interact with the application.
 ///
 /// You will typically construct a single one of these at the root of your application, and then use
-/// the ``scope(state:action:)-9iai9`` method to derive more focused stores that can be passed to subviews:
+/// the ``scope(state:action:)-9iai9`` method to derive more focused stores that can be passed to
+/// subviews:
 ///
 /// ```swift
 /// @main
@@ -28,9 +29,13 @@ import Foundation
 ///
 /// ### Scoping
 ///
-/// The most important operation defined on ``Store`` is the ``scope(state:action:)-9iai9`` method, which allows you to transform a store into one that deals with local state and actions. This is necessary for passing stores to subviews that only care about a small portion of the entire application's domain.
+/// The most important operation defined on ``Store`` is the ``scope(state:action:)-9iai9`` method,
+/// which allows you to transform a store into one that deals with local state and actions. This is
+/// necessary for passing stores to subviews that only care about a small portion of the entire
+/// application's domain.
 ///
-/// For example, if an application has a tab view at its root with tabs for activity, search, and profile, then we can model the domain like this:
+/// For example, if an application has a tab view at its root with tabs for activity, search, and
+/// profile, then we can model the domain like this:
 ///
 /// ```swift
 /// struct AppState {
@@ -46,7 +51,9 @@ import Foundation
 /// }
 /// ```
 ///
-/// We can construct a view for each of these domains by applying ``scope(state:action:)-9iai9`` to a store that holds onto the full app domain in order to transform it into a store for each sub-domain:
+/// We can construct a view for each of these domains by applying ``scope(state:action:)-9iai9``
+/// to a store that holds onto the full app domain in order to transform it into a store for each
+/// sub-domain:
 ///
 /// ```swift
 /// struct AppView: View {
@@ -68,18 +75,42 @@ import Foundation
 ///
 /// ### Thread safety
 ///
-/// The `Store` class is not thread-safe, and so all interactions with an instance of ``Store`` (including all of its scopes and derived ``ViewStore``s) must be done on the same thread. Further, if the store is powering a SwiftUI or UIKit view, as is customary, then all interactions must be done on the _main_ thread.
+/// The `Store` class is not thread-safe, and so all interactions with an instance of ``Store``
+/// (including all of its scopes and derived ``ViewStore``s) must be done on the same thread.
+/// Further, if the store is powering a SwiftUI or UIKit view, as is customary, then all
+/// interactions must be done on the _main_ thread.
 ///
-/// The reason stores are not thread-safe is due to the fact that when an action is sent to a store, a reducer is run on the current state, and this process cannot be done from multiple threads. It is possible to make this process thread-safe by introducing locks or queues, but this introduces new complications:
+/// The reason stores are not thread-safe is due to the fact that when an action is sent to a store,
+/// a reducer is run on the current state, and this process cannot be done from multiple threads.
+/// It is possible to make this process thread-safe by introducing locks or queues, but this
+/// introduces new complications:
 ///
-/// * If done simply with `DispatchQueue.main.async` you will incur a thread hop even when you are already on the main thread. This can lead to unexpected behavior in UIKit and SwiftUI, where sometimes you are required to do work synchronously, such as in animation blocks.
-/// * It is possible to create a scheduler that performs its work immediately when on the main thread and otherwise uses `DispatchQueue.main.async` (e.g. see ReactiveSwift's [UIScheduler](https://github.com/ReactiveCocoa/ReactiveSwift/blob/f97db218c0236b0c6ef74d32adb3d578792969c0/Sources/Scheduler.swift)). This introduces a lot more complexity, and should probably not be adopted without having a very good reason.
+/// * If done simply with `DispatchQueue.main.async` you will incur a thread hop even when you are
+/// already on the main thread. This can lead to unexpected behavior in UIKit and SwiftUI, where
+/// sometimes you are required to do work synchronously, such as in animation blocks.
 ///
-/// This is why we require all actions be sent from the same thread. This requirement is in the same spirit of how `URLSession` and other Apple APIs are designed. Those APIs tend to deliver their outputs on whatever thread is most convenient for them, and then it is your responsibility to dispatch back to the main queue if that's what you need. The Composable Architecture makes you responsible for making sure to send actions on the main thread. If you are using an effect that may deliver its output on a non-main thread, you must explicitly perform `.receive(on:)` in order to force it back on the main thread.
+/// * It is possible to create a scheduler that performs its work immediately when on the main
+/// thread and otherwise uses `DispatchQueue.main.async` (e.g. see ReactiveSwift's [UIScheduler](https://github.com/ReactiveCocoa/ReactiveSwift/blob/f97db218c0236b0c6ef74d32adb3d578792969c0/Sources/Scheduler.swift)). This introduces a lot more complexity, and should probably not be adopted without having a very
+/// good reason.
 ///
-/// This approach makes the fewest number of assumptions about how effects are created and transformed, and prevents unnecessary thread hops and re-dispatching. It also provides some testing benefits. If your effects are not responsible for their own scheduling, then in tests all of the effects would run synchronously and immediately. You would not be able to test how multiple in-flight effects interleave with each other and affect the state of your application. However, by leaving scheduling out of the ``Store`` we get to test these aspects of our effects if we so desire, or we can ignore if we prefer. We have that flexibility.
+/// This is why we require all actions be sent from the same thread. This requirement is in the same
+/// spirit of how `URLSession` and other Apple APIs are designed. Those APIs tend to deliver their
+/// outputs on whatever thread is most convenient for them, and then it is your responsibility to
+/// dispatch back to the main queue if that's what you need. The Composable Architecture makes you
+/// responsible for making sure to send actions on the main thread. If you are using an effect that
+/// may deliver its output on a non-main thread, you must explicitly perform `.receive(on:)` in
+/// order to force it back on the main thread.
 ///
-/// See also: ``ViewStore`` to understand how one observes changes to the state in a ``Store`` and sends user actions.
+/// This approach makes the fewest number of assumptions about how effects are created and
+/// transformed, and prevents unnecessary thread hops and re-dispatching. It also provides some
+/// testing benefits. If your effects are not responsible for their own scheduling, then in tests
+/// all of the effects would run synchronously and immediately. You would not be able to test how
+/// multiple in-flight effects interleave with each other and affect the state of your application.
+/// However, by leaving scheduling out of the ``Store`` we get to test these aspects of our effects
+/// if we so desire, or we can ignore if we prefer. We have that flexibility.
+///
+/// See also: ``ViewStore`` to understand how one observes changes to the state in a ``Store`` and
+/// sends user actions.
 public final class Store<State, Action> {
   var state: CurrentValueSubject<State, Never>
   var effectCancellables: [UUID: AnyCancellable] = [:]
