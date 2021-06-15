@@ -57,8 +57,8 @@ struct FocusDemoView: View {
   @FocusState var focus: FocusDemoState.Field?
 
   var body: some View {
-//    WithViewStore(self.store) { viewStore in
-      Form {
+    WithViewStore(self.store) { viewStore in
+      VStack {
         TextField("Email", text: .constant(""))
           .focused(self.$focus, equals: .email)
         
@@ -70,17 +70,16 @@ struct FocusDemoView: View {
 
         Section {
           Button("Focus email") {
-            self.focus = .email
-//            viewStore.send(.focusEmailButtonTapped)
+            viewStore.send(.focusEmailButtonTapped)
           }
           Button("Focus Name") {
-//            viewStore.send(.focusEmailButtonTapped)
+            viewStore.send(.focusNameButtonTapped)
           }
           Button("Focus Password") {
-//            viewStore.send(.focusPasswordButtonTapped)
+            viewStore.send(.focusPasswordButtonTapped)
           }
           Button("Focus None") {
-//            viewStore.send(.focusNoneButtonTapped)
+            viewStore.send(.focusNoneButtonTapped)
           }
         }
 
@@ -94,7 +93,7 @@ struct FocusDemoView: View {
       .onChange(of: self.focus) {
         viewStore.send(.binding(.set(\.focusedField, $0)))
       }
-//    }
+    }
   }
 }
 
