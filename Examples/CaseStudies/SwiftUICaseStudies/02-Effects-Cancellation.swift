@@ -28,8 +28,6 @@ enum EffectsCancellationAction: Equatable {
   case triviaResponse(Result<String, NumbersApiError>)
 }
 
-struct TriviaApiError: Error, Equatable {}
-
 struct EffectsCancellationEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
   var numberFact: (Int) -> Effect<String, NumbersApiError>

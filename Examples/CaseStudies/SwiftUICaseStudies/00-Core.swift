@@ -279,22 +279,6 @@ func liveNumberFact(for n: Int) -> Effect<String, NumbersApiError> {
     .eraseToEffect()
 }
 
-// This is the "live" trivia dependency that reaches into the outside world to fetch trivia.
-// Typically this live implementation of the dependency would live in its own module so that the
-// main feature doesn't need to compile it.
-func liveTrivia(for n: Int) -> Effect<String, TriviaApiError> {
-  URLSession.shared.dataTaskPublisher(for: URL(string: "http://numbersapi.com/\(n)/trivia")!)
-    .map { data, _ in String.init(decoding: data, as: UTF8.self) }
-    .catch { _ in
-      // Sometimes numbersapi.com can be flakey, so if it ever fails we will just
-      // default to a mock response.
-      Just("\(n) is a good number Brent")
-        .delay(for: 1, scheduler: DispatchQueue.main)
-    }
-    .setFailureType(to: TriviaApiError.self)
-    .eraseToEffect()
-}
-
 private func liveFetchNumber() -> Effect<Int, Never> {
   Deferred { Just(Int.random(in: 1...1_000)) }
     .delay(for: 1, scheduler: DispatchQueue.main)

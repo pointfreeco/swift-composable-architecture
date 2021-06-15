@@ -175,7 +175,7 @@ extension WebSocketClient {
     send: @escaping (AnyHashable, URLSessionWebSocketTask.Message) -> Effect<NSError?, Never> = {
       _, _ in fatalError()
     },
-    sendPing: @escaping (AnyHashable) -> Effect<NSError?, Never> = { _in in fatalError() }
+    sendPing: @escaping (AnyHashable) -> Effect<NSError?, Never> = { _ in fatalError() }
   ) -> Self {
     Self(
       cancel: cancel,
