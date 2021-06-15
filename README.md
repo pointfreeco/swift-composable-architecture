@@ -16,6 +16,7 @@ The Composable Architecture (TCA, for short) is a library for building applicati
 * [Installation](#installation)
 * [Documentation](#documentation)
 * [Help](#help)
+* [Translations](#translations)
 * [Credits and thanks](#credits-and-thanks)
 * [Other libraries](#other-libraries)
 
