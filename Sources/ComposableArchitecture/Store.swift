@@ -5,7 +5,112 @@ import Foundation
 /// around to views that need to interact with the application.
 ///
 /// You will typically construct a single one of these at the root of your application, and then use
-/// the ``scope(state:action:)-9iai9`` method to derive more focused stores that can be passed to subviews.
+/// the ``scope(state:action:)-9iai9`` method to derive more focused stores that can be passed to
+/// subviews:
+///
+/// ```swift
+/// @main
+/// struct MyApp: App {
+///   var body: some Scene {
+///     WindowGroup {
+///       RootView(
+///         store: Store(
+///           initialState: AppState(),
+///           reducer: appReducer,
+///           environment: AppEnvironment(
+///             ...
+///           )
+///         )
+///       )
+///     }
+///   }
+/// }
+/// ```
+///
+/// ### Scoping
+///
+/// The most important operation defined on ``Store`` is the ``scope(state:action:)-9iai9`` method,
+/// which allows you to transform a store into one that deals with local state and actions. This is
+/// necessary for passing stores to subviews that only care about a small portion of the entire
+/// application's domain.
+///
+/// For example, if an application has a tab view at its root with tabs for activity, search, and
+/// profile, then we can model the domain like this:
+///
+/// ```swift
+/// struct AppState {
+///   var activity: ActivityState
+///   var profile: ProfileState
+///   var search: SearchState
+/// }
+///
+/// enum AppAction {
+///   case activity(ActivityState)
+///   case profile(ProfileState)
+///   case search(SearchState)
+/// }
+/// ```
+///
+/// We can construct a view for each of these domains by applying ``scope(state:action:)-9iai9``
+/// to a store that holds onto the full app domain in order to transform it into a store for each
+/// sub-domain:
+///
+/// ```swift
+/// struct AppView: View {
+///   let store: Store<AppState, AppAction>
+///
+///   var body: some View {
+///     TabView {
+///       ActivityView(store: self.store.scope(state: \.activity, action: AppAction.activity))
+///         .tabItem { Text("Activity") }
+///
+///       SearchView(store: self.store.scope(state: \.search, action: AppAction.search))
+///         .tabItem { Text("Search") }
+///
+///       ProfileView(store: self.store.scope(state: \.profile, action: AppAction.profile))
+///         .tabItem { Text("Profile") }
+///     }
+///   }
+/// ```
+///
+/// ### Thread safety
+///
+/// The `Store` class is not thread-safe, and so all interactions with an instance of ``Store``
+/// (including all of its scopes and derived ``ViewStore``s) must be done on the same thread.
+/// Further, if the store is powering a SwiftUI or UIKit view, as is customary, then all
+/// interactions must be done on the _main_ thread.
+///
+/// The reason stores are not thread-safe is due to the fact that when an action is sent to a store,
+/// a reducer is run on the current state, and this process cannot be done from multiple threads.
+/// It is possible to make this process thread-safe by introducing locks or queues, but this
+/// introduces new complications:
+///
+/// * If done simply with `DispatchQueue.main.async` you will incur a thread hop even when you are
+/// already on the main thread. This can lead to unexpected behavior in UIKit and SwiftUI, where
+/// sometimes you are required to do work synchronously, such as in animation blocks.
+///
+/// * It is possible to create a scheduler that performs its work immediately when on the main
+/// thread and otherwise uses `DispatchQueue.main.async` (e.g. see CombineScheduler's [UIScheduler](https://github.com/pointfreeco/combine-schedulers/blob/main/Sources/CombineSchedulers/UIScheduler.swift)). This introduces a lot more complexity, and should probably not be adopted without having a very
+/// good reason.
+///
+/// This is why we require all actions be sent from the same thread. This requirement is in the same
+/// spirit of how `URLSession` and other Apple APIs are designed. Those APIs tend to deliver their
+/// outputs on whatever thread is most convenient for them, and then it is your responsibility to
+/// dispatch back to the main queue if that's what you need. The Composable Architecture makes you
+/// responsible for making sure to send actions on the main thread. If you are using an effect that
+/// may deliver its output on a non-main thread, you must explicitly perform `.receive(on:)` in
+/// order to force it back on the main thread.
+///
+/// This approach makes the fewest number of assumptions about how effects are created and
+/// transformed, and prevents unnecessary thread hops and re-dispatching. It also provides some
+/// testing benefits. If your effects are not responsible for their own scheduling, then in tests
+/// all of the effects would run synchronously and immediately. You would not be able to test how
+/// multiple in-flight effects interleave with each other and affect the state of your application.
+/// However, by leaving scheduling out of the ``Store`` we get to test these aspects of our effects
+/// if we so desire, or we can ignore if we prefer. We have that flexibility.
+///
+/// See also: ``ViewStore`` to understand how one observes changes to the state in a ``Store`` and
+/// sends user actions.
 public final class Store<State, Action> {
   var state: CurrentValueSubject<State, Never>
   var effectCancellables: [UUID: AnyCancellable] = [:]
@@ -34,26 +139,28 @@ public final class Store<State, Action> {
   ///
   /// This can be useful for deriving new stores to hand to child views in an application. For
   /// example:
-  ///    ```swift
-  ///     // Application state made from local states.
-  ///     struct AppState { var login: LoginState, ... }
-  ///     struct AppAction { case login(LoginAction), ... }
   ///
-  ///     // A store that runs the entire application.
-  ///     let store = Store(
-  ///       initialState: AppState(),
-  ///       reducer: appReducer,
-  ///       environment: AppEnvironment()
-  ///     )
+  /// ```swift
+  /// // Application state made from local states.
+  /// struct AppState { var login: LoginState, ... }
+  /// struct AppAction { case login(LoginAction), ... }
   ///
-  ///     // Construct a login view by scoping the store to one that works with only login domain.
-  ///     LoginView(
-  ///       store: store.scope(
-  ///         state: { $0.login },
-  ///         action: { AppAction.login($0) }
-  ///       )
-  ///     )
-  ///    ```
+  /// // A store that runs the entire application.
+  /// let store = Store(
+  ///   initialState: AppState(),
+  ///   reducer: appReducer,
+  ///   environment: AppEnvironment()
+  /// )
+  ///
+  /// // Construct a login view by scoping the store to one that works with only login domain.
+  /// LoginView(
+  ///   store: store.scope(
+  ///     state: \.login,
+  ///     action: AppAction.login
+  ///   )
+  /// )
+  /// ```
+  ///
   /// Scoping in this fashion allows you to better modularize your application. In this case,
   /// `LoginView` could be extracted to a module that has no access to `AppState` or `AppAction`.
   ///
@@ -63,29 +170,32 @@ public final class Store<State, Action> {
   /// For example, the above login domain could model a two screen login flow: a login form followed
   /// by a two-factor authentication screen. The second screen's domain might be nested in the
   /// first:
-  ///    ```swift
-  ///     struct LoginState: Equatable {
-  ///       var email = ""
-  ///       var password = ""
-  ///       var twoFactorAuth: TwoFactorAuthState?
-  ///     }
   ///
-  ///     enum LoginAction: Equatable {
-  ///       case emailChanged(String)
-  ///       case loginButtonTapped
-  ///       case loginResponse(Result<TwoFactorAuthState, LoginError>)
-  ///       case passwordChanged(String)
-  ///       case twoFactorAuth(TwoFactorAuthAction)
-  ///     }
-  ///    ```
+  /// ```swift
+  /// struct LoginState: Equatable {
+  ///   var email = ""
+  ///   var password = ""
+  ///   var twoFactorAuth: TwoFactorAuthState?
+  /// }
+  ///
+  /// enum LoginAction: Equatable {
+  ///   case emailChanged(String)
+  ///   case loginButtonTapped
+  ///   case loginResponse(Result<TwoFactorAuthState, LoginError>)
+  ///   case passwordChanged(String)
+  ///   case twoFactorAuth(TwoFactorAuthAction)
+  /// }
+  /// ```
+  ///
   /// The login view holds onto a store of this domain:
-  ///    ```swift
-  ///     struct LoginView: View {
-  ///       let store: Store<LoginState, LoginAction>
+  /// ```swift
+  /// struct LoginView: View {
+  ///   let store: Store<LoginState, LoginAction>
   ///
-  ///       var body: some View { ... }
-  ///     }
-  ///    ```
+  ///   var body: some View { ... }
+  /// }
+  /// ```
+  ///
   /// If its body were to use a view store of the same domain, this would introduce a number of
   /// problems:
   ///
@@ -104,54 +214,59 @@ public final class Store<State, Action> {
   ///
   /// To avoid these issues, one can introduce a view-specific domain that slices off the subset of
   /// state and actions that a view cares about:
-  ///    ```swift
-  ///     extension LoginView {
-  ///       struct State: Equatable {
-  ///         var email: String
-  ///         var password: String
-  ///       }
   ///
-  ///       enum Action: Equatable {
-  ///         case emailChanged(String)
-  ///         case loginButtonTapped
-  ///         case passwordChanged(String)
-  ///       }
-  ///     }
-  ///    ```
+  /// ```swift
+  /// extension LoginView {
+  ///   struct State: Equatable {
+  ///     var email: String
+  ///     var password: String
+  ///   }
+  ///
+  ///   enum Action: Equatable {
+  ///     case emailChanged(String)
+  ///     case loginButtonTapped
+  ///     case passwordChanged(String)
+  ///   }
+  /// }
+  /// ```
+  ///
   /// One can also introduce a couple helpers that transform feature state into view state and
   /// transform view actions into feature actions.
-  ///    ```swift
-  ///     extension LoginState {
-  ///       var view: LoginView.State {
-  ///         .init(email: self.email, password: self.password)
-  ///       }
-  ///     }
   ///
-  ///     extension LoginView.Action {
-  ///       var feature: LoginAction {
-  ///         switch self {
-  ///         case let .emailChanged(email)
-  ///           return .emailChanged(email)
-  ///         case .loginButtonTapped:
-  ///           return .loginButtonTapped
-  ///         case let .passwordChanged(password)
-  ///           return .passwordChanged(password)
-  ///         }
-  ///       }
+  /// ```swift
+  /// extension LoginState {
+  ///   var view: LoginView.State {
+  ///     .init(email: self.email, password: self.password)
+  ///   }
+  /// }
+  ///
+  /// extension LoginView.Action {
+  ///   var feature: LoginAction {
+  ///     switch self {
+  ///     case let .emailChanged(email)
+  ///       return .emailChanged(email)
+  ///     case .loginButtonTapped:
+  ///       return .loginButtonTapped
+  ///     case let .passwordChanged(password)
+  ///       return .passwordChanged(password)
   ///     }
-  ///    ```
+  ///   }
+  /// }
+  /// ```
   ///
   /// With these helpers defined, `LoginView` can now scope its store's feature domain into its view
   /// domain:
-  ///    ```swift
-  ///     var body: some View {
-  ///       WithViewStore(
-  ///         self.store.scope(state: { $0.view }, action: { $0.feature })
-  ///       ) { viewStore in
-  ///         ...
-  ///       }
-  ///     }
-  ///    ```
+  ///
+  /// ```swift
+  ///  var body: some View {
+  ///    WithViewStore(
+  ///      self.store.scope(state: \.view, action: \.feature)
+  ///    ) { viewStore in
+  ///      ...
+  ///    }
+  ///  }
+  /// ```
+  ///
   /// This view store is now incapable of reading any state but view state (and will not recompute
   /// when non-view state changes), and is incapable of sending any actions but view actions.
   ///
