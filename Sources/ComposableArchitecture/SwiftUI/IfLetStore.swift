@@ -2,35 +2,35 @@ import SwiftUI
 
 /// A view that safely unwraps a store of optional state in order to show one of two views.
 ///
-/// When the underlying state is non-`nil`, the `then` closure will be performed with a ``Store`` that
-/// holds onto non-optional state, and otherwise the `else` closure will be performed.
+/// When the underlying state is non-`nil`, the `then` closure will be performed with a ``Store``
+/// that holds onto non-optional state, and otherwise the `else` closure will be performed.
 ///
 /// This is useful for deciding between two views to show depending on an optional piece of state:
 ///
-///    ```swift
-///     IfLetStore(
-///       store.scope(state: \SearchState.results, action: SearchAction.results),
-///       then: SearchResultsView.init(store:),
-///       else: { Text("Loading search results...") }
-///     )
-///    ```
+/// ```swift
+/// IfLetStore(
+///   store.scope(state: \SearchState.results, action: SearchAction.results),
+///   then: SearchResultsView.init(store:),
+///   else: { Text("Loading search results...") }
+/// )
+/// ```
 ///
-///  And for performing navigation when a piece of state becomes non-`nil`:
+/// And for performing navigation when a piece of state becomes non-`nil`:
 ///
-///    ```swift
-///      NavigationLink(
-///        destination: IfLetStore(
-///          self.store.scope(state: \.detail, action: AppAction.detail),
-///          then: DetailView.init(store:)
-///        ),
-///        isActive: viewStore.binding(
-///          get: \.isGameActive,
-///          send: { $0 ? .startButtonTapped : .detailDismissed }
-///        )
-///      ) {
-///        Text("Start!")
-///      }
-///    ```
+/// ```swift
+/// NavigationLink(
+///   destination: IfLetStore(
+///     self.store.scope(state: \.detail, action: AppAction.detail),
+///     then: DetailView.init(store:)
+///   ),
+///   isActive: viewStore.binding(
+///     get: \.isGameActive,
+///     send: { $0 ? .startButtonTapped : .detailDismissed }
+///   )
+/// ) {
+///   Text("Start!")
+/// }
+/// ```
 ///
 public struct IfLetStore<State, Action, Content>: View where Content: View {
   private let content: (ViewStore<State?, Action>) -> Content

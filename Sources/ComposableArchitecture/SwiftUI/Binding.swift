@@ -8,134 +8,134 @@ import SwiftUI
 ///
 /// For example, a settings screen may model its state with the following struct:
 ///
-///    ```swift
-///     struct SettingsState {
-///       var digest = Digest.daily
-///       var displayName = ""
-///       var enableNotifications = false
-///       var protectMyPosts = false
-///       var sendEmailNotifications = false
-///       var sendMobileNotifications = false
-///     }
-///    ```
+/// ```swift
+/// struct SettingsState {
+///   var digest = Digest.daily
+///   var displayName = ""
+///   var enableNotifications = false
+///   var protectMyPosts = false
+///   var sendEmailNotifications = false
+///   var sendMobileNotifications = false
+/// }
+/// ```
 ///
 /// Each of these fields should be editable, and in the Composable Architecture this means that each
 /// field requires a corresponding action that can be sent to the store. Typically this comes in the
 /// form of an enum with a case per field:
 ///
-///    ```swift
-///     enum SettingsAction {
-///       case digestChanged(Digest)
-///       case displayNameChanged(String)
-///       case enableNotificationsChanged(Bool)
-///       case protectMyPostsChanged(Bool)
-///       case sendEmailNotificationsChanged(Bool)
-///       case sendMobileNotificationsChanged(Bool)
-///     }
-///    ```
+/// ```swift
+/// enum SettingsAction {
+///   case digestChanged(Digest)
+///   case displayNameChanged(String)
+///   case enableNotificationsChanged(Bool)
+///   case protectMyPostsChanged(Bool)
+///   case sendEmailNotificationsChanged(Bool)
+///   case sendMobileNotificationsChanged(Bool)
+/// }
+/// ```
 ///
 /// And we're not even done yet. In the reducer we must now handle each action, which simply
 /// replaces the state at each field with a new value:
 ///
-///    ```swift
-///     let settingsReducer = Reducer<
-///       SettingsState, SettingsAction, SettingsEnvironment
-///     > { state, action, environment in
-///       switch action {
-///       case let digestChanged(digest):
-///         state.digest = digest
-///         return .none
+/// ```swift
+/// let settingsReducer = Reducer<
+///   SettingsState, SettingsAction, SettingsEnvironment
+/// > { state, action, environment in
+///   switch action {
+///   case let digestChanged(digest):
+///     state.digest = digest
+///     return .none
 ///
-///       case let displayNameChanged(displayName):
-///         state.displayName = displayName
-///         return .none
+///   case let displayNameChanged(displayName):
+///     state.displayName = displayName
+///     return .none
 ///
-///       case let enableNotificationsChanged(isOn):
-///         state.enableNotifications = isOn
-///         return .none
+///   case let enableNotificationsChanged(isOn):
+///     state.enableNotifications = isOn
+///     return .none
 ///
-///       case let protectMyPostsChanged(isOn):
-///         state.protectMyPosts = isOn
-///         return .none
+///   case let protectMyPostsChanged(isOn):
+///     state.protectMyPosts = isOn
+///     return .none
 ///
-///       case let sendEmailNotificationsChanged(isOn):
-///         state.sendEmailNotifications = isOn
-///         return .none
+///   case let sendEmailNotificationsChanged(isOn):
+///     state.sendEmailNotifications = isOn
+///     return .none
 ///
-///       case let sendMobileNotificationsChanged(isOn):
-///         state.sendMobileNotifications = isOn
-///         return .none
-///       }
-///     }
-///    ```
+///   case let sendMobileNotificationsChanged(isOn):
+///     state.sendMobileNotifications = isOn
+///     return .none
+///   }
+/// }
+/// ```
 ///
 /// This is a _lot_ of boilerplate for something that should be simple. Luckily, we can dramatically
 /// eliminate this boilerplate using ``BindingAction``. First, we can collapse all of these
 /// field-mutating actions into a single case that holds a ``BindingAction`` generic over the
 /// reducer's root `SettingsState`:
 ///
-///    ```swift
-///     enum SettingsAction {
-///       case binding(BindingAction<SettingsState>)
-///     }
-///    ```
+/// ```swift
+/// enum SettingsAction {
+///   case binding(BindingAction<SettingsState>)
+/// }
+/// ```
 ///
 /// And then, we can simplify the settings reducer by allowing the `binding` method to handle these
 /// field mutations for us:
 ///
-///    ```swift
-///     let settingsReducer = Reducer<
-///       SettingsState, SettingsAction, SettingsEnvironment
-///     > {
-///       switch action {
-///       case .binding:
-///         return .none
-///       }
-///     }
-///     .binding(action: /SettingsAction.binding)
-///    ```
+/// ```swift
+/// let settingsReducer = Reducer<
+///   SettingsState, SettingsAction, SettingsEnvironment
+/// > {
+///   switch action {
+///   case .binding:
+///     return .none
+///   }
+/// }
+/// .binding(action: /SettingsAction.binding)
+/// ```
 ///
 /// Binding actions are constructed and sent to the store by providing a writable key path from root
 /// state to the field being mutated. There is even a view store helper that simplifies this work.
 /// You can derive a binding by specifying the key path and binding action case:
 ///
-///    ```swift
-///     TextField(
-///       "Display name",
-///       text: viewStore.binding(keyPath: \.displayName, send: SettingsAction.binding)
-///     )
-///    ```
+/// ```swift
+/// TextField(
+///   "Display name",
+///   text: viewStore.binding(keyPath: \.displayName, send: SettingsAction.binding)
+/// )
+/// ```
 ///
 /// Should you need to layer additional functionality over these bindings, your reducer can pattern
 /// match the action for a given key path:
 ///
-///    ```swift
-///     case .binding(\.displayName):
-///       // Validate display name
+/// ```swift
+/// case .binding(\.displayName):
+///   // Validate display name
 ///
-///     case .binding(\.enableNotifications):
-///       // Return an authorization request effect
-///    ```
+/// case .binding(\.enableNotifications):
+///   // Return an authorization request effect
+/// ```
 ///
 /// Binding actions can also be tested in much the same way regular actions are tested. Rather than
 /// send a specific action describing how a binding changed, such as `displayNameChanged("Blob")`,
-/// you will send a ``Reducer/binding(action:)`` action that describes which key path is being set to what value, such
-/// as `.binding(.set(\.displayName, "Blob"))`:
+/// you will send a ``Reducer/binding(action:)`` action that describes which key path is being set
+/// to what value, such as `.binding(.set(\.displayName, "Blob"))`:
 ///
-///    ```swift
-///     let store = TestStore(
-///       initialState: SettingsState(),
-///       reducer: settingsReducer,
-///       environment: SettingsEnvironment(...)
-///     )
+/// ```swift
+/// let store = TestStore(
+///   initialState: SettingsState(),
+///   reducer: settingsReducer,
+///   environment: SettingsEnvironment(...)
+/// )
 ///
-///     store.send(.binding(.set(\.displayName, "Blob"))) {
-///       $0.displayName = "Blob"
-///     }
-///     store.send(.binding(.set(\.protectMyPosts, true))) {
-///       $0.protectMyPosts = true
-///     )
-///    ```
+/// store.send(.binding(.set(\.displayName, "Blob"))) {
+///   $0.displayName = "Blob"
+/// }
+/// store.send(.binding(.set(\.protectMyPosts, true))) {
+///   $0.protectMyPosts = true
+/// )
+/// ```
 ///
 public struct BindingAction<Root>: Equatable {
   public let keyPath: PartialKeyPath<Root>
@@ -199,22 +199,22 @@ extension Reducer {
   /// For example, a settings screen may gather its binding actions into a single ``BindingAction``
   /// case:
   ///
-  ///    ```swift
-  ///     enum SettingsAction {
-  ///       ...
-  ///       case binding(BindingAction<SettingsState>)
-  ///     }
-  ///    ```
+  /// ```swift
+  /// enum SettingsAction {
+  ///   ...
+  ///   case binding(BindingAction<SettingsState>)
+  /// }
+  /// ```
   ///
   /// The reducer can then be enhanced to automatically handle these mutations for you by tacking on
   /// the ``binding(action:)`` method:
   ///
-  ///    ```swift
-  ///     let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvironment {
-  ///       ...
-  ///     }
-  ///     .binding(action: /SettingsAction.binding)
-  ///    ```
+  /// ```swift
+  /// let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvironment {
+  ///   ...
+  /// }
+  /// .binding(action: /SettingsAction.binding)
+  /// ```
   ///
   /// - Parameter toBindingAction: A case path from this reducer's `Action` type to a
   ///   `BindingAction` over this reducer's `State`.
@@ -235,15 +235,15 @@ extension ViewStore {
   ///
   /// For example, a text field binding can be created like this:
   ///
-  ///    ```swift
-  ///     struct State { var text = "" }
-  ///     enum Action { case binding(BindingAction<State>) }
+  /// ```swift
+  /// struct State { var text = "" }
+  /// enum Action { case binding(BindingAction<State>) }
   ///
-  ///     TextField(
-  ///       "Enter text",
-  ///       text: viewStore.binding(keyPath: \.text, Action.binding)
-  ///     )
-  ///    ```
+  /// TextField(
+  ///   "Enter text",
+  ///   text: viewStore.binding(keyPath: \.text, Action.binding)
+  /// )
+  /// ```
   ///
   /// - Parameters:
   ///   - keyPath: A writable key path from the view store's state to a mutable field
