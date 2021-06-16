@@ -234,28 +234,6 @@ public final class ViewStore<State, Action>: ObservableObject {
   public func binding(send action: Action) -> Binding<State> {
     self.binding(send: { _ in action })
   }
-
-  @available(iOS 15.0, macOS 12.0, macCatalyst 15, tvOS 15, watchOS 15, *)
-  public func send(_ action: Action, `while`: @escaping (State) -> Bool) async {
-    self.send(action)
-
-    var cancellable: Cancellable?
-
-    await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-      cancellable = self.publisher
-        .map(`while`)
-        .filter { !$0 }
-        .prefix(1)
-        .sink(
-          receiveCompletion: { _ in
-          continuation.resume(returning: ())
-          _ = cancellable
-          cancellable = nil
-        },
-          receiveValue: { _ in }
-        )
-    }
-  }
 }
 
 extension ViewStore where State: Equatable {

@@ -1,5 +1,58 @@
+import Combine
 import ComposableArchitecture
 import SwiftUI
+
+
+class PullToRefreshViewModel: ObservableObject {
+  @Published var count = 0
+
+  func getFact() async {
+
+  }
+}
+
+struct VanillaPullToRefreshView: View {
+  @ObservedObject var viewModel: PullToRefreshViewModel
+
+  // TODO: cancellation
+
+  var body: some View {
+    List {
+
+    }
+  }
+}
+
+struct VanillaPullToRefresh_Previews: PreviewProvider {
+  static var previews: some View {
+    VanillaPullToRefreshView()
+  }
+}
+
+
+
+extension ViewStore {
+  @available(iOS 15.0, macOS 12.0, macCatalyst 15, tvOS 15, watchOS 15, *)
+  func send(_ action: Action, `while`: @escaping (State) -> Bool) async {
+    self.send(action)
+
+    var cancellable: Cancellable?
+
+    await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
+      cancellable = self.publisher
+        .filter { !`while`($0) }
+        .prefix(1)
+        .sink(
+          receiveCompletion: { _ in
+          continuation.resume(returning: ())
+          _ = cancellable
+          cancellable = nil
+        },
+          receiveValue: { _ in }
+        )
+    }
+  }
+}
 
 struct PullToRefreshState: Equatable {
   var count = 0
