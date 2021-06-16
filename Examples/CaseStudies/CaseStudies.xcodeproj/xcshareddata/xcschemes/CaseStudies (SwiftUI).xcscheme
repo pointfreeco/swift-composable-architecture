@@ -60,6 +60,13 @@
             ReferencedContainer = "container:CaseStudies.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "SWIFT_DEBUG_CONCURRENCY_ENABLE_COOPERATIVE_QUEUES"
+            value = "NO"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

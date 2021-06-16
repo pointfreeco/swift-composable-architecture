@@ -2,12 +2,29 @@ import Combine
 import ComposableArchitecture
 import SwiftUI
 
-
 class PullToRefreshViewModel: ObservableObject {
   @Published var count = 0
+  @Published var fact: String? = nil
+  @Published var isLoading = false
+  @Published var isCancelled = false
 
   func getFact() async {
+    self.fact = nil
 
+    do {
+      await Task.sleep(2_000_000_000)
+      let (data, _) = try await URLSession.shared.data(
+        from: .init(string: "http://numbersapi.com/\(self.count)/trivia")!
+      )
+      try Task.checkCancellation()
+      self.fact = String(decoding: data, as: UTF8.self)
+    } catch {
+    }
+  }
+
+  func cancelButtonTapped() {
+    self.isCancelled = true
+    self.isLoading = false
   }
 }
 
@@ -18,17 +35,31 @@ struct VanillaPullToRefreshView: View {
 
   var body: some View {
     List {
+      HStack {
+        Button("-") { self.viewModel.count -= 1 }
+        Text("\(self.viewModel.count)")
+        Button("+") { self.viewModel.count += 1 }
+      }
+      .buttonStyle(.plain)
 
+      if let fact = self.viewModel.fact {
+        Text(fact)
+      }
+    }
+    .refreshable {
+      await self.viewModel.getFact()
     }
   }
 }
 
 struct VanillaPullToRefresh_Previews: PreviewProvider {
   static var previews: some View {
-    VanillaPullToRefreshView()
+    VanillaPullToRefreshView(viewModel: .init())
   }
 }
 
+
+// ---------------------
 
 
 extension ViewStore {
