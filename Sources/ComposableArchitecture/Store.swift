@@ -90,7 +90,9 @@ import Foundation
 /// sometimes you are required to do work synchronously, such as in animation blocks.
 ///
 /// * It is possible to create a scheduler that performs its work immediately when on the main
-/// thread and otherwise uses `DispatchQueue.main.async` (e.g. see CombineScheduler's [UIScheduler](https://github.com/pointfreeco/combine-schedulers/blob/main/Sources/CombineSchedulers/UIScheduler.swift)). This introduces a lot more complexity, and should probably not be adopted without having a very
+/// thread and otherwise uses `DispatchQueue.main.async` (e.g. see CombineScheduler's
+/// [UIScheduler](https://github.com/pointfreeco/combine-schedulers/blob/main/Sources/CombineSchedulers/UIScheduler.swift)).
+/// This introduces a lot more complexity, and should probably not be adopted without having a very
 /// good reason.
 ///
 /// This is why we require all actions be sent from the same thread. This requirement is in the same

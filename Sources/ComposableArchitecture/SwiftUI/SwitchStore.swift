@@ -5,41 +5,47 @@ import SwiftUI
 /// An application may model parts of its state with enums. For example, app state may differ if a
 /// user is logged-in or not:
 ///
-///     enum AppState {
-///       case loggedIn(LoggedInState)
-///       case loggedOut(LoggedOutState)
-///     }
+/// ```swift
+/// enum AppState {
+///   case loggedIn(LoggedInState)
+///   case loggedOut(LoggedOutState)
+/// }
+/// ```
 ///
 /// In the view layer, a store on this state can switch over each case using a ``SwitchStore`` and
 /// a ``CaseLet`` view per case:
 ///
-///     struct AppView: View {
-///       let store: Store<AppState, AppAction>
+/// ```swift
+/// struct AppView: View {
+///   let store: Store<AppState, AppAction>
 ///
-///       var body: some View {
-///         SwitchStore(self.store) {
-///           CaseLet(state: /AppState.loggedIn, action: AppAction.loggedIn) { loggedInStore in
-///             LoggedInView(store: loggedInStore)
-///           }
-///           CaseLet(state: /AppState.loggedOut, action: AppAction.loggedOut) { loggedOutStore in
-///             LoggedOutView(store: loggedOutStore)
-///           }
-///         }
+///   var body: some View {
+///     SwitchStore(self.store) {
+///       CaseLet(state: /AppState.loggedIn, action: AppAction.loggedIn) { loggedInStore in
+///         LoggedInView(store: loggedInStore)
+///       }
+///       CaseLet(state: /AppState.loggedOut, action: AppAction.loggedOut) { loggedOutStore in
+///         LoggedOutView(store: loggedOutStore)
 ///       }
 ///     }
+///   }
+/// }
+/// ```
 ///
 /// If a ``SwitchStore`` does not exhaustively handle every case with a corresponding ``CaseLet``
 /// view, a debug breakpoint will be raised when an unhandled case is encountered. To fall back on a
 /// default view instead, introduce a ``Default`` view at the end of the ``SwitchStore``:
 ///
-///     SwitchStore(self.store) {
-///       CaseLet(state: /MyState.first, action: MyAction.first, then: FirstView.init(store:))
-///       CaseLet(state: /MyState.second, action: MyAction.second, then: SecondView.init(store:))
+/// ```swift
+/// SwitchStore(self.store) {
+///   CaseLet(state: /MyState.first, action: MyAction.first, then: FirstView.init(store:))
+///   CaseLet(state: /MyState.second, action: MyAction.second, then: SecondView.init(store:))
 ///
-///       Default {
-///         Text("State is neither first nor second.")
-///       }
-///     }
+///   Default {
+///     Text("State is neither first nor second.")
+///   }
+/// }
+/// ```
 ///
 /// - See also: ``Reducer/pullback(state:action:environment:breakpointOnNil:_:_:)``, a method that
 /// aids in transforming reducers that operate on each case of an enum into reducers that operate
