@@ -5,7 +5,7 @@ import XCTest
 @testable import Search
 
 class SearchTests: XCTestCase {
-  let scheduler = DispatchQueue.testScheduler
+  let scheduler = DispatchQueue.test
 
   func testSearchAndClearQuery() {
     let store = TestStore(

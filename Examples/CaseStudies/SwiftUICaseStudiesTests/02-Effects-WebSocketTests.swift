@@ -101,7 +101,7 @@ class WebSocketTests: XCTestCase {
     let socketSubject = PassthroughSubject<WebSocketClient.Action, Never>()
     let pingSubject = PassthroughSubject<NSError?, Never>()
 
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
     let store = TestStore(
       initialState: .init(),
       reducer: webSocketReducer,
