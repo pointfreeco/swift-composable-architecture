@@ -9,8 +9,29 @@ struct FocusDemoState: Equatable {
   }
 }
 
-enum FocusDemoAction {
-  case binding(BindingAction<FocusDemoState>)
+enum FocusAction<Focus> {
+  case set(Focus?)
+}
+extension FocusAction: Equatable where Focus: Equatable {}
+extension FocusAction: Hashable where Focus: Hashable {}
+
+extension Reducer {
+  func focus<Focus>(
+    state toFocusState: WritableKeyPath<State, Focus?>,
+    action extractFocusAction: @escaping (Action) -> FocusAction<Focus>?
+  ) -> Self {
+    Self { state, action, environment in
+      guard case let .some(.set(focus)) = extractFocusAction(action)
+      else { return .none }
+      state[keyPath: toFocusState] = focus
+      return .none
+    }
+    .combined(with: self)
+  }
+}
+
+enum FocusDemoAction: Equatable {
+  case focus(FocusAction<FocusDemoState.Field>)
   case focusEmailButtonTapped
   case focusNameButtonTapped
   case focusNoneButtonTapped
@@ -23,7 +44,7 @@ let focusDemoReducer = Reducer<
   Void
 > { state, action, environment in
   switch action {
-  case .binding:
+  case .focus:
     return .none
 
   case .focusEmailButtonTapped:
@@ -43,7 +64,7 @@ let focusDemoReducer = Reducer<
     return .none
   }
 }
-  .binding(action: /FocusDemoAction.binding)
+  .focus(state: \.focusedField, action: /FocusDemoAction.focus)
 
 struct FocusDemoView: View {
   let store: Store<FocusDemoState, FocusDemoAction>
@@ -91,11 +112,15 @@ struct FocusDemoView: View {
         self.focus = $0
       }
       .onChange(of: self.focus) {
-        viewStore.send(.binding(.set(\.focusedField, $0)))
+        viewStore.send(.focus(.set($0)))
       }
     }
   }
 }
+
+//extension View {
+//  func focus<Focus: Hashable>(_ focus: Focus?, )
+//}
 
 struct FocusDemoView_Previews: PreviewProvider {
   static var previews: some View {

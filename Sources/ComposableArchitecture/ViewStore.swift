@@ -239,8 +239,6 @@ public final class ViewStore<State, Action>: ObservableObject {
   public func send(_ action: Action, `while`: @escaping (State) -> Bool) async {
     self.send(action)
 
-
-
     var cancellable: Cancellable?
 
     await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
