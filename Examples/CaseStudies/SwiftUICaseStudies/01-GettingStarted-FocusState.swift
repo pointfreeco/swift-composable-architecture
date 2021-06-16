@@ -108,19 +108,25 @@ struct FocusDemoView: View {
           Text("Current focus: \(viewStore.focusedField?.rawValue ?? "None")")
         }
       }
-      .onChange(of: viewStore.focusedField) {
-        self.focus = $0
-      }
-      .onChange(of: self.focus) {
-        viewStore.send(.focus(.set($0)))
-      }
+      .focus(
+        self.store.scope(state: \.focusedField, action: FocusDemoAction.focus),
+        self.$focus
+      )
     }
   }
 }
 
-//extension View {
-//  func focus<Focus: Hashable>(_ focus: Focus?, )
-//}
+extension View {
+  func focus<Focus: Hashable>(
+    _ store: Store<Focus?, FocusAction<Focus>>,
+    _ focus: FocusState<Focus?>.Binding
+  ) -> some View {
+    let viewStore = ViewStore(store)
+    return self
+      .onChange(of: viewStore.state) { focus.wrappedValue = $0 }
+      .onChange(of: focus.wrappedValue) { viewStore.send(.set($0)) }
+  }
+}
 
 struct FocusDemoView_Previews: PreviewProvider {
   static var previews: some View {
