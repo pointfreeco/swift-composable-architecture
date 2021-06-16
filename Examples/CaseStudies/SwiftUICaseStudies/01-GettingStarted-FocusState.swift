@@ -9,19 +9,13 @@ struct FocusDemoState: Equatable {
   }
 }
 
-enum FocusAction<Focus> {
-  case set(Focus?)
-}
-extension FocusAction: Equatable where Focus: Equatable {}
-extension FocusAction: Hashable where Focus: Hashable {}
-
 extension Reducer {
   func focus<Focus>(
     state toFocusState: WritableKeyPath<State, Focus?>,
-    action extractFocusAction: @escaping (Action) -> FocusAction<Focus>?
+    action extractFocusAction: @escaping (Action) -> Focus?
   ) -> Self {
     Self { state, action, environment in
-      guard case let .some(.set(focus)) = extractFocusAction(action)
+      guard case let .some(focus) = extractFocusAction(action)
       else { return .none }
       state[keyPath: toFocusState] = focus
       return .none
@@ -31,11 +25,7 @@ extension Reducer {
 }
 
 enum FocusDemoAction: Equatable {
-  case focus(FocusAction<FocusDemoState.Field>)
-  case focusEmailButtonTapped
-  case focusNameButtonTapped
-  case focusNoneButtonTapped
-  case focusPasswordButtonTapped
+  case focus(FocusDemoState.Field?)
 }
 
 let focusDemoReducer = Reducer<
@@ -45,22 +35,6 @@ let focusDemoReducer = Reducer<
 > { state, action, environment in
   switch action {
   case .focus:
-    return .none
-
-  case .focusEmailButtonTapped:
-    state.focusedField = .email
-    return .none
-
-  case .focusNameButtonTapped:
-    state.focusedField = .name
-    return .none
-
-  case .focusNoneButtonTapped:
-    state.focusedField = nil
-    return .none
-
-  case .focusPasswordButtonTapped:
-    state.focusedField = .password
     return .none
   }
 }
@@ -91,16 +65,16 @@ struct FocusDemoView: View {
 
         Section {
           Button("Focus email") {
-            viewStore.send(.focusEmailButtonTapped)
+            viewStore.send(.focus(.email))
           }
           Button("Focus Name") {
-            viewStore.send(.focusNameButtonTapped)
+            viewStore.send(.focus(.name))
           }
           Button("Focus Password") {
-            viewStore.send(.focusPasswordButtonTapped)
+            viewStore.send(.focus(.password))
           }
           Button("Focus None") {
-            viewStore.send(.focusNoneButtonTapped)
+            viewStore.send(.focus(nil))
           }
         }
 
@@ -118,13 +92,13 @@ struct FocusDemoView: View {
 
 extension View {
   func focus<Focus: Hashable>(
-    _ store: Store<Focus?, FocusAction<Focus>>,
+    _ store: Store<Focus?, Focus?>,
     _ focus: FocusState<Focus?>.Binding
   ) -> some View {
     let viewStore = ViewStore(store)
     return self
       .onChange(of: viewStore.state) { focus.wrappedValue = $0 }
-      .onChange(of: focus.wrappedValue) { viewStore.send(.set($0)) }
+      .onChange(of: focus.wrappedValue) { viewStore.send($0) }
   }
 }
 
