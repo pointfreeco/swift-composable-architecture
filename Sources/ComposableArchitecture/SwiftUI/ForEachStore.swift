@@ -166,6 +166,41 @@ where Data: Collection, ID: Hashable, Content: View {
       }
     }
   }
+  
+  /// Initializes a structure that computes views on demand from a store on a collection of data and
+  /// an identified action.
+  ///
+  /// - Parameters:
+  ///   - store: A store on an dictionary of data and an hashable action.
+  ///   - content: A function that can generate content given a store of an element.
+  public init<EachContent: View>(
+    _ store: Store<Dictionary<ID, EachState>, (ID, EachAction)>,
+    @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
+  )
+  where
+    EachContent: View,
+    Data == Dictionary<ID, EachState>,
+    Content == WithViewStore<[ID], (ID, EachAction), ForEach<[ID], ID, EachContent>>
+  {
+    self.data = store.state.value
+    self.content = {
+      WithViewStore(store.scope(state: { Array($0.keys) })) { viewStore in
+        ForEach(viewStore.state, id: \.self) { id -> EachContent in
+          // NB: We cache elements here to avoid a potential crash where SwiftUI may re-evaluate
+          //     views for elements no longer in the collection.
+          //
+          // Feedback filed: https://gist.github.com/stephencelis/cdf85ae8dab437adc998fb0204ed9a6b
+          let element = store.state.value[id]!
+          return content(
+            store.scope(
+              state: { $0[id] ?? element },
+              action: { (id, $0) }
+            )
+          )
+        }
+      }
+    }
+  }
 
   public var body: some View {
     self.content()
