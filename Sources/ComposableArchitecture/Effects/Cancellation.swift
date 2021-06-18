@@ -5,10 +5,11 @@ extension Effect {
   /// Turns an effect into one that is capable of being canceled.
   ///
   /// To turn an effect into a cancellable one you must provide an identifier, which is used in
-  /// `Effect.cancel(id:)` to identify which in-flight effect should be canceled. Any hashable
+  /// ``Effect/cancel(id:)`` to identify which in-flight effect should be canceled. Any hashable
   /// value can be used for the identifier, such as a string, but you can add a bit of protection
   /// against typos by defining a new type that conforms to `Hashable`, such as an empty struct:
   ///
+  ///    ```swift
   ///     struct LoadUserId: Hashable {}
   ///
   ///     case .reloadButtonTapped:
@@ -20,6 +21,7 @@ extension Effect {
   ///     case .cancelButtonTapped:
   ///       // Cancel any in-flight requests to load the user
   ///       return .cancel(id: LoadUserId())
+  ///    ```
   ///
   /// - Parameters:
   ///   - id: The effect's identifier.

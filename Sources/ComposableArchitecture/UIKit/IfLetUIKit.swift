@@ -12,6 +12,7 @@ extension Store {
   /// to navigate to can be held as an optional value in the parent, and when that value goes from
   /// `nil` to non-`nil`, or non-`nil` to `nil`, you can update the navigation stack accordingly:
   ///
+  ///    ```swift
   ///     class ParentViewController: UIViewController {
   ///       let store: Store<ParentState, ParentAction>
   ///       var cancellables: Set<AnyCancellable> = []
@@ -35,6 +36,7 @@ extension Store {
   ///           .store(in: &self.cancellables)
   ///       }
   ///     }
+  ///    ```
   ///
   /// - Parameters:
   ///   - unwrap: A function that is called with a store of non-optional state when the store's

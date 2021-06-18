@@ -15,13 +15,14 @@ extension Effect where Failure == Never {
   /// we can see how effects emit. However, because `Timer.publish` takes a concrete `RunLoop` as
   /// its scheduler, we can't substitute in a `TestScheduler` during tests`.
   ///
-  /// That is why we provide the `Effect.timer` effect. It allows you to create a timer that works
+  /// That is why we provide the ``Effect/timer(id:every:tolerance:on:options:)`` effect. It allows you to create a timer that works
   /// with any scheduler, not just a run loop, which means you can use a `DispatchQueue` or
   /// `RunLoop` when running your live app, but use a `TestScheduler` in tests.
   ///
   /// To start and stop a timer in your feature you can create the timer effect from an action
-  /// and then use the `.cancel(id:)` effect to stop the timer:
+  /// and then use the ``Effect/cancel(id:)`` effect to stop the timer:
   ///
+  ///    ```swift
   ///     struct AppState {
   ///       var count = 0
   ///     }
@@ -49,34 +50,37 @@ extension Effect where Failure == Never {
   ///         state.count += 1
   ///         return .none
   ///     }
+  ///    ```
   ///
   /// Then to test the timer in this feature you can use a test scheduler to advance time:
   ///
-  ///   func testTimer() {
-  ///     let scheduler = DispatchQueue.test
+  ///    ```swift
+  ///     func testTimer() {
+  ///       let scheduler = DispatchQueue.test
   ///
-  ///     let store = TestStore(
-  ///       initialState: .init(),
-  ///       reducer: appReducer,
-  ///       envirnoment: .init(
-  ///         mainQueue: scheduler.eraseToAnyScheduler()
+  ///       let store = TestStore(
+  ///         initialState: .init(),
+  ///         reducer: appReducer,
+  ///         envirnoment: .init(
+  ///           mainQueue: scheduler.eraseToAnyScheduler()
+  ///         )
   ///       )
-  ///     )
   ///
-  ///     store.send(.startButtonTapped)
+  ///       store.send(.startButtonTapped)
   ///
-  ///     scheduler.advance(by: .seconds(1))
-  ///     store.receive(.timerTicked) { $0.count = 1 }
+  ///       scheduler.advance(by: .seconds(1))
+  ///       store.receive(.timerTicked) { $0.count = 1 }
   ///
-  ///     scheduler.advance(by: .seconds(5))
-  ///     store.receive(.timerTicked) { $0.count = 2 }
-  ///     store.receive(.timerTicked) { $0.count = 3 }
-  ///     store.receive(.timerTicked) { $0.count = 4 }
-  ///     store.receive(.timerTicked) { $0.count = 5 }
-  ///     store.receive(.timerTicked) { $0.count = 6 }
+  ///       scheduler.advance(by: .seconds(5))
+  ///       store.receive(.timerTicked) { $0.count = 2 }
+  ///       store.receive(.timerTicked) { $0.count = 3 }
+  ///       store.receive(.timerTicked) { $0.count = 4 }
+  ///       store.receive(.timerTicked) { $0.count = 5 }
+  ///       store.receive(.timerTicked) { $0.count = 6 }
   ///
-  ///     store.send(.stopButtonTapped)
-  ///   }
+  ///       store.send(.stopButtonTapped)
+  ///     }
+  ///    ```
   ///
   /// - Note: This effect is only meant to be used with features built in the Composable
   ///   Architecture, and returned from a reducer. If you want a testable alternative to

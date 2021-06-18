@@ -1,14 +1,15 @@
 import Combine
 import SwiftUI
 
-/// A `ViewStore` is an object that can observe state changes and send actions. They are most
+/// A ``ViewStore`` is an object that can observe state changes and send actions. They are most
 /// commonly used in views, such as SwiftUI views, UIView or UIViewController, but they can be
 /// used anywhere it makes sense to observe state and send actions.
 ///
-/// In SwiftUI applications, a `ViewStore` is accessed most commonly using the `WithViewStore` view.
+/// In SwiftUI applications, a ``ViewStore`` is accessed most commonly using the ``WithViewStore`` view.
 /// It can be initialized with a store and a closure that is handed a view store and must return a
 /// view to be rendered:
 ///
+///    ```swift
 ///     var body: some View {
 ///       WithViewStore(self.store) { viewStore in
 ///         VStack {
@@ -17,10 +18,11 @@ import SwiftUI
 ///         }
 ///       }
 ///     }
-///
-/// In UIKit applications a `ViewStore` can be created from a `Store` and then subscribed to for
+///    ```
+/// In UIKit applications a ``ViewStore`` can be created from a ``Store`` and then subscribed to for
 /// state updates:
 ///
+///    ```swift
 ///     let store: Store<State, Action>
 ///     let viewStore: ViewStore<State, Action>
 ///
@@ -40,6 +42,7 @@ import SwiftUI
 ///     @objc func incrementButtonTapped() {
 ///       self.viewStore.send(.incrementButtonTapped)
 ///     }
+///    ```
 ///
 @dynamicMemberLookup
 public final class ViewStore<State, Action>: ObservableObject {
@@ -85,10 +88,10 @@ public final class ViewStore<State, Action>: ObservableObject {
 
   /// Sends an action to the store.
   ///
-  /// `ViewStore` is not thread safe and you should only send actions to it from the main thread.
+  /// ``ViewStore`` is not thread safe and you should only send actions to it from the main thread.
   /// If you are wanting to send actions on background threads due to the fact that the reducer
   /// is performing computationally expensive work, then a better way to handle this is to wrap
-  /// that work in an `Effect` that is performed on a background thread so that the result can
+  /// that work in an ``Effect`` that is performed on a background thread so that the result can
   /// be fed back into the store.
   ///
   /// - Parameter action: An action.
@@ -100,11 +103,12 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// actions to the store.
   ///
   /// The method is useful for dealing with SwiftUI components that work with two-way `Binding`s
-  /// since the `Store` does not allow directly writing its state; it only allows reading state and
+  /// since the ``Store`` does not allow directly writing its state; it only allows reading state and
   /// sending actions.
   ///
   /// For example, a text field binding can be created like this:
   ///
+  ///    ```swift
   ///     struct State { var name = "" }
   ///     enum Action { case nameChanged(String) }
   ///
@@ -115,6 +119,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///         send: { Action.nameChanged($0) }
   ///       )
   ///     )
+  ///    ```
   ///
   /// - Parameters:
   ///   - get: A function to get the state for the binding from the view
@@ -144,11 +149,12 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// actions to the store.
   ///
   /// The method is useful for dealing with SwiftUI components that work with two-way `Binding`s
-  /// since the `Store` does not allow directly writing its state; it only allows reading state and
+  /// since the ``Store`` does not allow directly writing its state; it only allows reading state and
   /// sending actions.
   ///
   /// For example, an alert binding can be dealt with like this:
   ///
+  ///    ```swift
   ///     struct State { var alert: String? }
   ///     enum Action { case alertDismissed }
   ///
@@ -158,6 +164,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///         send: .alertDismissed
   ///       )
   ///     ) { alert in Alert(title: Text(alert.message)) }
+  ///    ```
   ///
   /// - Parameters:
   ///   - get: A function to get the state for the binding from the view store's full state.
@@ -174,11 +181,12 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// actions to the store.
   ///
   /// The method is useful for dealing with SwiftUI components that work with two-way `Binding`s
-  /// since the `Store` does not allow directly writing its state; it only allows reading state and
+  /// since the ``Store`` does not allow directly writing its state; it only allows reading state and
   /// sending actions.
   ///
   /// For example, a text field binding can be created like this:
   ///
+  ///    ```swift
   ///     typealias State = String
   ///     enum Action { case nameChanged(String) }
   ///
@@ -188,6 +196,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///         send: { Action.nameChanged($0) }
   ///       )
   ///     )
+  ///    ```
   ///
   /// - Parameters:
   ///   - localStateToViewAction: A function that transforms the binding's value
@@ -203,11 +212,12 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// actions to the store.
   ///
   /// The method is useful for dealing with SwiftUI components that work with two-way `Binding`s
-  /// since the `Store` does not allow directly writing its state; it only allows reading state and
+  /// since the ``Store`` does not allow directly writing its state; it only allows reading state and
   /// sending actions.
   ///
   /// For example, an alert binding can be dealt with like this:
   ///
+  ///    ```swift
   ///     typealias State = String
   ///     enum Action { case alertDismissed }
   ///
@@ -216,6 +226,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///         send: .alertDismissed
   ///       )
   ///     ) { title in Alert(title: Text(title)) }
+  ///    ```
   ///
   /// - Parameters:
   ///   - action: The action to send when the binding is written to.

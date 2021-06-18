@@ -1,16 +1,20 @@
 import CasePaths
 import Dispatch
 
-/// Determines how the string description of an action should be printed when using the `.debug()`
+/// Determines how the string description of an action should be printed when using the ``Reducer/debug(prefix:state:action:environment:)``
 /// higher-order reducer.
 public enum ActionFormat {
   /// Prints the action in a single line by only specifying the labels of the associated values:
   ///
+  ///    ```swift
   ///     Action.screenA(.row(index:, action: .textChanged(query:)))
+  ///    ```
+  ///
   case labelsOnly
   /// Prints the action in a multiline, pretty-printed format, including all the labels of
   /// any associated values, as well as the data held in the associated values:
   ///
+  ///    ```swift
   ///     Action.screenA(
   ///       ScreenA.row(
   ///         index: 1,
@@ -19,6 +23,8 @@ public enum ActionFormat {
   ///         )
   ///       )
   ///     )
+  ///    ```
+  ///
   case prettyPrint
 }
 
@@ -31,7 +37,7 @@ extension Reducer {
   ///   - prefix: A string with which to prefix all debug messages.
   ///   - toDebugEnvironment: A function that transforms an environment into a debug environment by
   ///     describing a print function and a queue to print from. Defaults to a function that ignores
-  ///     the environment and returns a default `DebugEnvironment` that uses Swift's `print`
+  ///     the environment and returns a default ``DebugEnvironment`` that uses Swift's `print`
   ///     function and a background queue.
   /// - Returns: A reducer that prints debug messages for all received actions.
   public func debug(
@@ -58,7 +64,7 @@ extension Reducer {
   ///   - prefix: A string with which to prefix all debug messages.
   ///   - toDebugEnvironment: A function that transforms an environment into a debug environment by
   ///     describing a print function and a queue to print from. Defaults to a function that ignores
-  ///     the environment and returns a default `DebugEnvironment` that uses Swift's `print`
+  ///     the environment and returns a default ``DebugEnvironment`` that uses Swift's `print`
   ///     function and a background queue.
   /// - Returns: A reducer that prints debug messages for all received actions.
   public func debugActions(
@@ -87,7 +93,7 @@ extension Reducer {
   ///   - toLocalAction: A case path that filters actions that are printed.
   ///   - toDebugEnvironment: A function that transforms an environment into a debug environment by
   ///     describing a print function and a queue to print from. Defaults to a function that ignores
-  ///     the environment and returns a default `DebugEnvironment` that uses Swift's `print`
+  ///     the environment and returns a default ``DebugEnvironment`` that uses Swift's `print`
   ///     function and a background queue.
   /// - Returns: A reducer that prints debug messages for all received actions.
   public func debug<LocalState, LocalAction>(
