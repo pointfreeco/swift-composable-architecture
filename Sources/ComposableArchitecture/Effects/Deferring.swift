@@ -3,15 +3,7 @@ import Combine
 extension Effect {
   /// Returns an effect that will be executed after given `dueTime`.
   ///
-  /// To create a deferred effect, you must provide an identifier, which is used to
-  /// identify which in-flight effect should be canceled. Any hashable
-  /// value can be used for the identifier, such as a string, but you can add a bit of protection
-  /// against typos by defining a new type that conforms to `Hashable`, such as an empty struct:
-  ///
-  ///
   ///     case let .textChanged(text):
-  ///       struct SearchId: Hashable {}
-  ///
   ///       return environment.search(text)
   ///         .map(Action.searchResponse)
   ///         .deferred(for: 0.5, scheduler: environment.mainQueue)

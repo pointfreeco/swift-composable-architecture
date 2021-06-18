@@ -2,15 +2,14 @@ import Combine
 import ComposableArchitecture
 import XCTest
 
-final class EffectDeferTests: XCTestCase {
+final class EffectDeferredTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
   
-  func testDefer() {
+  func testDeferred() {
     let scheduler = DispatchQueue.test
     var values: [Int] = []
     
     func runDeferredEffect(value: Int) {
-      struct CancelToken: Hashable {}
       Just(value)
         .eraseToEffect()
         .deferred(for: 1, scheduler: scheduler)
@@ -50,14 +49,12 @@ final class EffectDeferTests: XCTestCase {
     XCTAssertEqual(values, [1, 2, 3])
   }
   
-  func testDeferIsLazy() {
+  func testDeferredIsLazy() {
     let scheduler = DispatchQueue.test
     var values: [Int] = []
     var effectRuns = 0
     
     func runDeferredEffect(value: Int) {
-      struct CancelToken: Hashable {}
-      
       Deferred { () -> Just<Int> in
         effectRuns += 1
         return Just(value)
