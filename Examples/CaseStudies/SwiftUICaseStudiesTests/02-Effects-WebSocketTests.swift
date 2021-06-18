@@ -13,7 +13,7 @@ class WebSocketTests: XCTestCase {
       initialState: .init(),
       reducer: webSocketReducer,
       environment: WebSocketEnvironment(
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
+        mainQueue: .immediate,
         webSocket: .mock(
           open: { _, _, _ in socketSubject.eraseToEffect() },
           receive: { _ in receiveSubject.eraseToEffect() },
@@ -61,7 +61,7 @@ class WebSocketTests: XCTestCase {
       initialState: .init(),
       reducer: webSocketReducer,
       environment: WebSocketEnvironment(
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
+        mainQueue: .immediate,
         webSocket: .mock(
           open: { _, _, _ in socketSubject.eraseToEffect() },
           receive: { _ in receiveSubject.eraseToEffect() },
@@ -142,7 +142,7 @@ class WebSocketTests: XCTestCase {
       initialState: .init(),
       reducer: webSocketReducer,
       environment: WebSocketEnvironment(
-        mainQueue: DispatchQueue.immediateScheduler.eraseToAnyScheduler(),
+        mainQueue: .immediate,
         webSocket: .mock(
           cancel: { _, _, _ in .fireAndForget { socketSubject.send(completion: .finished) } },
           open: { _, _, _ in socketSubject.eraseToEffect() },
@@ -175,7 +175,7 @@ extension WebSocketClient {
     send: @escaping (AnyHashable, URLSessionWebSocketTask.Message) -> Effect<NSError?, Never> = {
       _, _ in fatalError()
     },
-    sendPing: @escaping (AnyHashable) -> Effect<NSError?, Never> = { _in in fatalError() }
+    sendPing: @escaping (AnyHashable) -> Effect<NSError?, Never> = { _ in fatalError() }
   ) -> Self {
     Self(
       cancel: cancel,

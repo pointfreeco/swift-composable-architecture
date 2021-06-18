@@ -66,7 +66,7 @@ final class CountersTableViewController: UITableViewController {
     self.navigationController?.pushViewController(
       CounterViewController(
         store: self.store.scope(
-          state: { $0.counters[indexPath.row] },
+          state: \.counters[indexPath.row],
           action: { .counter(index: indexPath.row, action: $0) }
         )
       ),

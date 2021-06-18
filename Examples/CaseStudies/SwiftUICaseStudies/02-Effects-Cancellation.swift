@@ -28,8 +28,6 @@ enum EffectsCancellationAction: Equatable {
   case triviaResponse(Result<String, NumbersApiError>)
 }
 
-struct TriviaApiError: Error, Equatable {}
-
 struct EffectsCancellationEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
   var numberFact: (Int) -> Effect<String, NumbersApiError>
@@ -91,7 +89,7 @@ struct EffectsCancellationView: View {
         ) {
           Stepper(
             value: viewStore.binding(
-              get: { $0.count }, send: EffectsCancellationAction.stepperChanged)
+              get: \.count, send: EffectsCancellationAction.stepperChanged)
           ) {
             Text("\(viewStore.count)")
           }
@@ -127,7 +125,7 @@ struct EffectsCancellation_Previews: PreviewProvider {
           initialState: EffectsCancellationState(),
           reducer: effectsCancellationReducer,
           environment: EffectsCancellationEnvironment(
-            mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+            mainQueue: .main,
             numberFact: liveNumberFact(for:)
           )
         )
