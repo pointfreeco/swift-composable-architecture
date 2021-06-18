@@ -14,12 +14,12 @@ extension Effect {
   ///
   ///       return environment.search(text)
   ///         .map(Action.searchResponse)
-  ///         .delay(for: 0.5, scheduler: environment.mainQueue)
+  ///         .deferred(for: 0.5, scheduler: environment.mainQueue)
   ///
   /// - Parameters:
-  ///   - upstream: the effect you want to delay.
-  ///   - dueTime: The duration you want to delay for.
-  ///   - scheduler: The scheduler you want to deliver the delay output to.
+  ///   - upstream: the effect you want to defer.
+  ///   - dueTime: The duration you want to defer for.
+  ///   - scheduler: The scheduler you want to deliver the defer output to.
   ///   - options: Scheduler options that customize the effect's delivery of elements.
   /// - Returns: An effect that will be executed after `dueTime`
   public func deferred<S: Scheduler>(

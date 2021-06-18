@@ -2,14 +2,14 @@ import Combine
 import ComposableArchitecture
 import XCTest
 
-final class EffectDelayTests: XCTestCase {
+final class EffectDeferTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
   
-  func testDelay() {
+  func testDefer() {
     let scheduler = DispatchQueue.test
     var values: [Int] = []
     
-    func runDelayedEffect(value: Int) {
+    func runDeferredEffect(value: Int) {
       struct CancelToken: Hashable {}
       Just(value)
         .eraseToEffect()
@@ -18,7 +18,7 @@ final class EffectDelayTests: XCTestCase {
         .store(in: &self.cancellables)
     }
     
-    runDelayedEffect(value: 1)
+    runDeferredEffect(value: 1)
     
     // Nothing emits right away.
     XCTAssertEqual(values, [])
@@ -27,17 +27,17 @@ final class EffectDelayTests: XCTestCase {
     scheduler.advance(by: 0.5)
     XCTAssertEqual(values, [])
     
-    // Run another delayed effect.
-    runDelayedEffect(value: 2)
+    // Run another deferred effect.
+    runDeferredEffect(value: 2)
     
-    // Waiting half the time emits first delayed effect received.
+    // Waiting half the time emits first deferred effect received.
     scheduler.advance(by: 0.5)
     XCTAssertEqual(values, [1])
     
-    // Run another delayed effect.
-    runDelayedEffect(value: 3)
+    // Run another deferred effect.
+    runDeferredEffect(value: 3)
     
-    // Waiting half the time emits second delayed effect received.
+    // Waiting half the time emits second deferred effect received.
     scheduler.advance(by: 0.5)
     XCTAssertEqual(values, [1, 2])
     
@@ -50,12 +50,12 @@ final class EffectDelayTests: XCTestCase {
     XCTAssertEqual(values, [1, 2, 3])
   }
   
-  func testDelayIsLazy() {
+  func testDeferIsLazy() {
     let scheduler = DispatchQueue.test
     var values: [Int] = []
     var effectRuns = 0
     
-    func runDelayedEffect(value: Int) {
+    func runDeferredEffect(value: Int) {
       struct CancelToken: Hashable {}
       
       Deferred { () -> Just<Int> in
@@ -68,7 +68,7 @@ final class EffectDelayTests: XCTestCase {
       .store(in: &self.cancellables)
     }
     
-    runDelayedEffect(value: 1)
+    runDeferredEffect(value: 1)
     
     XCTAssertEqual(values, [])
     XCTAssertEqual(effectRuns, 0)
