@@ -1,4 +1,4 @@
-Sources/ComposableArchitecture/Store.swiftimport Combine
+import Combine
 import Foundation
 
 /// A store represents the runtime that powers the application. It is the object that you will pass
@@ -164,7 +164,7 @@ public final class Store<State, Action> {
     var isSending = false
     let localStore = Store<LocalState, LocalAction>(
       initialState: toLocalState(self.state.value),
-      reducer: { localState, localAction in
+      reducer: .init { localState, localAction, _ in
         isSending = true
         defer { isSending = false }
         self.send(fromLocalAction(localAction))
@@ -186,41 +186,6 @@ public final class Store<State, Action> {
   /// - Parameter toLocalState: A function that transforms `State` into `LocalState`.
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<LocalState>(
-    state toLocalState: @escaping (State) -> LocalState
-  ) -> Store<LocalState, Action> {
-    self.scope(state: toLocalState, action: { $0 })
-  }
-
-  /// Scopes the store to one that exposes local state & local actions, where LocalState is Equatable
-
-  public func scope<LocalState: Equatable, LocalAction>(
-    state toLocalState: @escaping (State) -> LocalState,
-    action fromLocalAction: @escaping (LocalAction) -> Action
-  ) -> Store<LocalState, LocalAction> {
-    let localStore = Store<LocalState, LocalAction>(
-      initialState: toLocalState(self.state.value),
-      reducer: { localState, localAction in
-        self.send(fromLocalAction(localAction))
-        let newLocalState = toLocalState(self.state.value)
-        guard newLocalState != localState else { return .none }
-        localState = newLocalState
-        return .none
-      }
-    )
-    localStore.parentCancellable = self.state
-      .sink { [weak localStore] newValue in
-        let newLocalState = toLocalState(newValue)
-        guard localStore?.state.value != newLocalState else { return }
-        localStore?.state.value = newLocalState
-      }
-    return localStore
-  }
-
-  /// Scopes the store to one that exposes local state, where LocalState is Equatable
-  ///
-  /// - Parameter toLocalState: A function that transforms `State` into `LocalState`.
-  /// - Returns: A new store with its domain (state and action) transformed.
-  public func scope<LocalState: Equatable>(
     state toLocalState: @escaping (State) -> LocalState
   ) -> Store<LocalState, Action> {
     self.scope(state: toLocalState, action: { $0 })
