@@ -38,129 +38,130 @@
   ///
   /// For example, given a simple counter reducer:
   ///
-  ///    ```swift
-  ///     struct CounterState {
-  ///       var count = 0
-  ///     }
+  /// ```swift
+  /// struct CounterState {
+  ///   var count = 0
+  /// }
   ///
-  ///     enum CounterAction: Equatable {
-  ///       case decrementButtonTapped
-  ///       case incrementButtonTapped
-  ///     }
+  /// enum CounterAction: Equatable {
+  ///   case decrementButtonTapped
+  ///   case incrementButtonTapped
+  /// }
   ///
-  ///     let counterReducer = Reducer<CounterState, CounterAction, Void> { state, action, _ in
-  ///       switch action {
-  ///       case .decrementButtonTapped:
-  ///         state.count -= 1
-  ///         return .none
+  /// let counterReducer = Reducer<CounterState, CounterAction, Void> { state, action, _ in
+  ///   switch action {
+  ///   case .decrementButtonTapped:
+  ///     state.count -= 1
+  ///     return .none
   ///
-  ///       case .incrementButtonTapped:
-  ///         state.count += 1
-  ///         return .none
-  ///       }
-  ///     }
-  ///    ```
+  ///   case .incrementButtonTapped:
+  ///     state.count += 1
+  ///     return .none
+  ///   }
+  /// }
+  /// ```
   ///
   /// One can assert against its behavior over time:
   ///
-  ///    ```swift
-  ///     class CounterTests: XCTestCase {
-  ///       func testCounter() {
-  ///         let store = TestStore(
-  ///           initialState: .init(count: 0),     // GIVEN counter state of 0
-  ///           reducer: counterReducer,
-  ///           environment: ()
-  ///         )
-  ///         store.send(.incrementButtonTapped) { // WHEN the increment button is tapped
-  ///           $0.count = 1                       // THEN the count should be 1
-  ///         }
-  ///       }
+  /// ```swift
+  /// class CounterTests: XCTestCase {
+  ///   func testCounter() {
+  ///     let store = TestStore(
+  ///       initialState: .init(count: 0),     // GIVEN counter state of 0
+  ///       reducer: counterReducer,
+  ///       environment: ()
+  ///     )
+  ///     store.send(.incrementButtonTapped) { // WHEN the increment button is tapped
+  ///       $0.count = 1                       // THEN the count should be 1
   ///     }
-  ///    ```
+  ///   }
+  /// }
+  /// ```
   ///
   /// Note that in the trailing closure of `.send(.incrementButtonTapped)` we are given a single
   /// mutable value of the state before the action was sent, and it is our job to mutate the value
   /// to match the state after the action was sent. In this case the `count` field changes to `1`.
   ///
   /// For a more complex example, consider the following bare-bones search feature that uses the
-  /// ``Effect/debounce(id:for:scheduler:options:)`` operator to wait for the user to stop typing before making a network request:
+  /// ``Effect/debounce(id:for:scheduler:options:)`` operator to wait for the user to stop typing
+  /// before making a network request:
   ///
-  ///    ```swift
-  ///     struct SearchState: Equatable {
-  ///       var query = ""
-  ///       var results: [String] = []
+  /// ```swift
+  /// struct SearchState: Equatable {
+  ///   var query = ""
+  ///   var results: [String] = []
+  /// }
+  ///
+  /// enum SearchAction: Equatable {
+  ///   case queryChanged(String)
+  ///   case response([String])
+  /// }
+  ///
+  /// struct SearchEnvironment {
+  ///   var mainQueue: AnySchedulerOf<DispatchQueue>
+  ///   var request: (String) -> Effect<[String], Never>
+  /// }
+  ///
+  /// let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
+  ///   state, action, environment in
+  ///
+  ///     struct SearchId: Hashable {}
+  ///
+  ///     switch action {
+  ///     case let .queryChanged(query):
+  ///       state.query = query
+  ///       return environment.request(self.query)
+  ///         .debounce(id: SearchId(), for: 0.5, scheduler: environment.mainQueue)
+  ///
+  ///     case let .response(results):
+  ///       state.results = results
+  ///       return .none
   ///     }
-  ///
-  ///     enum SearchAction: Equatable {
-  ///       case queryChanged(String)
-  ///       case response([String])
-  ///     }
-  ///
-  ///     struct SearchEnvironment {
-  ///       var mainQueue: AnySchedulerOf<DispatchQueue>
-  ///       var request: (String) -> Effect<[String], Never>
-  ///     }
-  ///
-  ///     let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
-  ///       state, action, environment in
-  ///
-  ///         struct SearchId: Hashable {}
-  ///
-  ///         switch action {
-  ///         case let .queryChanged(query):
-  ///           state.query = query
-  ///           return environment.request(self.query)
-  ///             .debounce(id: SearchId(), for: 0.5, scheduler: environment.mainQueue)
-  ///
-  ///         case let .response(results):
-  ///           state.results = results
-  ///           return .none
-  ///         }
-  ///     }
-  ///    ```swift
+  /// }
+  /// ```
   ///
   /// It can be fully tested by controlling the environment's scheduler and effect:
   ///
-  ///    ```swift
-  ///     // Create a test dispatch scheduler to control the timing of effects
-  ///     let scheduler = DispatchQueue.test
+  /// ```swift
+  /// // Create a test dispatch scheduler to control the timing of effects
+  /// let scheduler = DispatchQueue.test
   ///
-  ///     let store = TestStore(
-  ///       initialState: SearchState(),
-  ///       reducer: searchReducer,
-  ///       environment: SearchEnvironment(
-  ///         // Wrap the test scheduler in a type-erased scheduler
-  ///         mainQueue: scheduler.eraseToAnyScheduler(),
-  ///         // Simulate a search response with one item
-  ///         request: { _ in Effect(value: ["Composable Architecture"]) }
-  ///       )
-  ///     )
+  /// let store = TestStore(
+  ///   initialState: SearchState(),
+  ///   reducer: searchReducer,
+  ///   environment: SearchEnvironment(
+  ///     // Wrap the test scheduler in a type-erased scheduler
+  ///     mainQueue: scheduler.eraseToAnyScheduler(),
+  ///     // Simulate a search response with one item
+  ///     request: { _ in Effect(value: ["Composable Architecture"]) }
+  ///   )
+  /// )
   ///
-  ///     // Change the query
-  ///     store.send(.searchFieldChanged("c") {
-  ///       // Assert that state updates accordingly
-  ///       $0.query = "c"
-  ///     }
+  /// // Change the query
+  /// store.send(.searchFieldChanged("c") {
+  ///   // Assert that state updates accordingly
+  ///   $0.query = "c"
+  /// }
   ///
-  ///     // Advance the scheduler by a period shorter than the debounce
-  ///     scheduler.advance(by: 0.25)
+  /// // Advance the scheduler by a period shorter than the debounce
+  /// scheduler.advance(by: 0.25)
   ///
-  ///     // Change the query again
-  ///     store.send(.searchFieldChanged("co") {
-  ///       $0.query = "co"
-  ///     }
+  /// // Change the query again
+  /// store.send(.searchFieldChanged("co") {
+  ///   $0.query = "co"
+  /// }
   ///
-  ///     // Advance the scheduler by a period shorter than the debounce
-  ///     scheduler.advance(by: 0.25)
-  ///     // Advance the scheduler to the debounce
-  ///     scheduler.advance(by: 0.25)
+  /// // Advance the scheduler by a period shorter than the debounce
+  /// scheduler.advance(by: 0.25)
+  /// // Advance the scheduler to the debounce
+  /// scheduler.advance(by: 0.25)
   ///
-  ///     // Assert that the expected response is received
-  ///     store.receive(.response(["Composable Architecture"])) {
-  ///       // Assert that state updates accordingly
-  ///       $0.results = ["Composable Architecture"]
-  ///     }
-  ///    ```
+  /// // Assert that the expected response is received
+  /// store.receive(.response(["Composable Architecture"])) {
+  ///   // Assert that state updates accordingly
+  ///   $0.results = ["Composable Architecture"]
+  /// }
+  /// ```
   ///
   /// This test is proving that the debounced network requests are correctly canceled when we do not
   /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
@@ -549,7 +550,7 @@
       self.scope(state: toLocalState, action: { $0 })
     }
 
-    /// A single step of a `TestStore` assertion.
+    /// A single step of a ``TestStore`` assertion.
     public struct Step {
       fileprivate let type: StepType
       fileprivate let file: StaticString
