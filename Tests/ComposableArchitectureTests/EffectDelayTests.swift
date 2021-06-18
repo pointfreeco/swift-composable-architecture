@@ -13,7 +13,7 @@ final class EffectDelayTests: XCTestCase {
       struct CancelToken: Hashable {}
       Just(value)
         .eraseToEffect()
-        .delay(id: CancelToken(), for: 1, scheduler: scheduler)
+        .deferred(for: 1, scheduler: scheduler)
         .sink { values.append($0) }
         .store(in: &self.cancellables)
     }
@@ -63,7 +63,7 @@ final class EffectDelayTests: XCTestCase {
         return Just(value)
       }
       .eraseToEffect()
-      .delay(id: CancelToken(), for: 1, scheduler: scheduler)
+      .deferred(for: 1, scheduler: scheduler)
       .sink { values.append($0) }
       .store(in: &self.cancellables)
     }

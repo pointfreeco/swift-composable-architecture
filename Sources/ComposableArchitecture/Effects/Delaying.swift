@@ -3,7 +3,7 @@ import Combine
 extension Effect {
   /// Returns an effect that will be executed after given `dueTime`.
   ///
-  /// To create a delayed effect, you must provide an identifier, which is used to
+  /// To create a deferred effect, you must provide an identifier, which is used to
   /// identify which in-flight effect should be canceled. Any hashable
   /// value can be used for the identifier, such as a string, but you can add a bit of protection
   /// against typos by defining a new type that conforms to `Hashable`, such as an empty struct:
@@ -14,17 +14,15 @@ extension Effect {
   ///
   ///       return environment.search(text)
   ///         .map(Action.searchResponse)
-  ///         .delay(id: SearchId(), for: 0.5, scheduler: environment.mainQueue)
+  ///         .delay(for: 0.5, scheduler: environment.mainQueue)
   ///
   /// - Parameters:
   ///   - upstream: the effect you want to delay.
-  ///   - id: The effect's identifier.
   ///   - dueTime: The duration you want to delay for.
   ///   - scheduler: The scheduler you want to deliver the delay output to.
   ///   - options: Scheduler options that customize the effect's delivery of elements.
   /// - Returns: An effect that will be executed after `dueTime`
-  public func delay<S: Scheduler>(
-    id: AnyHashable,
+  public func deferred<S: Scheduler>(
     for dueTime: S.SchedulerTimeType.Stride,
     scheduler: S,
     options: S.SchedulerOptions? = nil
@@ -34,7 +32,6 @@ extension Effect {
       .delay(for: dueTime, scheduler: scheduler, options: options)
       .flatMap { self }
       .eraseToEffect()
-      .cancellable(id: id, cancelInFlight: false)
   }
 }
 
