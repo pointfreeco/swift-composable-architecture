@@ -29,13 +29,12 @@ extension Effect {
     scheduler: S,
     options: S.SchedulerOptions? = nil
   ) -> Effect {
-    pending(
-      id: id,
-      for: dueTime,
-      scheduler: scheduler,
-      options: options,
-      cancelInFlight: false
-    )
+    Just(())
+      .setFailureType(to: Failure.self)
+      .delay(for: dueTime, scheduler: scheduler, options: options)
+      .flatMap { upstream }
+      .eraseToEffect()
+      .cancellable(id: id, cancelInFlight: false)
   }
 }
 
