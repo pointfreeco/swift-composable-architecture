@@ -469,7 +469,7 @@ public struct Reducer<State, Action, Environment> {
     .init { globalState, globalAction, globalEnvironment in
       guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
 
-      guard var localState = toLocalState.extract(from: globalState) else {
+      guard let localState = toLocalState.extract(from: globalState) else {
         if breakpointOnNil {
           breakpoint(
             """
@@ -499,10 +499,17 @@ public struct Reducer<State, Action, Environment> {
         }
         return .none
       }
-      defer { globalState = toLocalState.embed(localState) }
+      
+      var wrappedState = StateWrapper(localState)
+      
+      defer {
+        if wrappedState.stateDidChange {
+          globalState = toLocalState.embed(wrappedState.state)
+        }
+      }
 
       let effects = self.run(
-        &localState,
+        &wrappedState.state,
         localAction,
         toLocalEnvironment(globalEnvironment)
       )
@@ -511,7 +518,7 @@ public struct Reducer<State, Action, Environment> {
       return effects
     }
   }
-
+  
   /// Transforms a reducer that works on non-optional state into one that works on optional state by
   /// only running the non-optional reducer when state is non-nil.
   ///
@@ -989,5 +996,18 @@ public struct Reducer<State, Action, Environment> {
     _ environment: Environment
   ) -> Effect<Action, Never> {
     self.reducer(&state, action, environment)
+  }
+  
+  /// This wrapper is used to check if the state was modified by the reducer.
+  private struct StateWrapper {
+    var state: State {
+      didSet { stateDidChange = true }
+    }
+    private(set) var stateDidChange: Bool
+    
+    init(_ state: State) {
+      self.state = state
+      self.stateDidChange = false
+    }
   }
 }
