@@ -75,6 +75,36 @@ public struct Effect<Output, Failure: Error>: Publisher {
     Empty(completeImmediately: true).eraseToEffect()
   }
 
+  @available(iOS 15, macCatalyst 15, macOS 12, tvOS 15, watchOS 8, *)
+  public static func async(
+    priority: Task.Priority? = nil,
+    operation: @escaping @Sendable () async -> Output
+  ) -> Effect
+  where Failure == Never {
+    Effect.future { callback in
+      _Concurrency.async(priority: priority) {
+        callback(.success(await operation()))
+      }
+    }
+  }
+
+  @available(iOS 15, macCatalyst 15, macOS 12, tvOS 15, watchOS 8, *)
+  public static func async(
+    priority: Task.Priority? = nil,
+    operation: @escaping @Sendable () async throws -> Output
+  ) -> Effect
+  where Failure == Error {
+    Effect.future { callback in
+      _Concurrency.async(priority: priority) {
+        do {
+          callback(.success(try await operation()))
+        } catch {
+          callback(.failure(error))
+        }
+      }
+    }
+  }
+
   /// Creates an effect that can supply a single value asynchronously in the future.
   ///
   /// This can be helpful for converting APIs that are callback-based into ones that deal with

@@ -26,6 +26,27 @@ final class EffectTests: XCTestCase {
       .store(in: &self.cancellables)
   }
 
+  func testAsync() {
+    if #available(iOS 15, macCatalyst 15, macOS 12, tvOS 15, watchOS 8, *) {
+      Effect.async { 42 }
+        .sink {
+          XCTAssertEqual($0, 42)
+        }
+        .store(in: &self.cancellables)
+
+      let error = NSError(domain: "co.pointfree", code: -1, userInfo: nil)
+      Effect<Int, Error>.async { throw error }
+        .sink(
+          receiveCompletion: { completion in
+            guard case let .failure(failure as NSError) = completion else { return XCTFail() }
+            XCTAssertEqual(failure, error)
+          },
+          receiveValue: { _ in XCTFail() }
+        )
+        .store(in: &self.cancellables)
+    }
+  }
+
   func testConcatenate() {
     var values: [Int] = []
 
