@@ -14,7 +14,9 @@ extension FactClient {
   // main feature doesn't need to compile it.
   static let live = Self(
     fetch: { number in
-    URLSession.shared.dataTaskPublisher(for: URL(string: "http://numbersapi.com/\(number)/trivia")!)
+      URLSession.shared.dataTaskPublisher(
+        for: URL(string: "http://numbersapi.com/\(number)/trivia")!
+      )
       .map { data, _ in String(decoding: data, as: UTF8.self) }
       .catch { _ in
         // Sometimes numbersapi.com can be flakey, so if it ever fails we will just
@@ -24,7 +26,7 @@ extension FactClient {
       }
       .setFailureType(to: Error.self)
       .eraseToEffect()
-  })
+    })
 }
 
 extension FactClient {
@@ -32,7 +34,7 @@ extension FactClient {
   // to prove do not need the dependency.
   static let unimplemented = Self(
     fetch: { _ in
-    XCTFail("\(Self.self).fact is unimplemented.")
-    return .none
-  })
+      XCTFail("\(Self.self).fact is unimplemented.")
+      return .none
+    })
 }
