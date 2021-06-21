@@ -5,40 +5,46 @@ import SwiftUI
 class PullToRefreshViewModel: ObservableObject {
   @Published var count = 0
   @Published var fact: String? = nil
-  @Published var isLoading = false
-  @Published var isCancelled = false
 
-  func getFact() async {
-    self.fact = nil
+  func incrementButtonTapped() {
+    self.count += 1
+  }
+
+  func decrementButtonTapped() {
+    self.count -= 1
+  }
+
+  @MainActor func getFact() async {
+    withAnimation {
+      self.fact = nil
+    }
+
+    await Task.sleep(2_000_000_000)
 
     do {
-      await Task.sleep(2_000_000_000)
       let (data, _) = try await URLSession.shared.data(
         from: .init(string: "http://numbersapi.com/\(self.count)/trivia")!
       )
-      try Task.checkCancellation()
-      self.fact = String(decoding: data, as: UTF8.self)
+      withAnimation {
+        self.fact = String(decoding: data, as: UTF8.self)
+      }
     } catch {
+      // TODO: do some error handling
     }
   }
-
-  func cancelButtonTapped() {
-    self.isCancelled = true
-    self.isLoading = false
-  }
 }
+
+// TODO: cancellation
 
 struct VanillaPullToRefreshView: View {
   @ObservedObject var viewModel: PullToRefreshViewModel
 
-  // TODO: cancellation
-
   var body: some View {
     List {
       HStack {
-        Button("-") { self.viewModel.count -= 1 }
+        Button("-") { self.viewModel.decrementButtonTapped() }
         Text("\(self.viewModel.count)")
-        Button("+") { self.viewModel.count += 1 }
+        Button("+") { self.viewModel.incrementButtonTapped() }
       }
       .buttonStyle(.plain)
 
@@ -69,18 +75,20 @@ extension ViewStore {
 
     var cancellable: Cancellable?
 
-    await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-      cancellable = self.publisher
-        .filter { !`while`($0) }
-        .prefix(1)
-        .sink(
-          receiveCompletion: { _ in
-          continuation.resume(returning: ())
-          _ = cancellable
-          cancellable = nil
-        },
-          receiveValue: { _ in }
-        )
+    await withTaskCancellationHandler(handler: { [cancellable] in cancellable?.cancel() }) {
+      await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
+        cancellable = self.publisher
+          .filter { !`while`($0) }
+          .prefix(1)
+          .sink(
+            receiveCompletion: { _ in
+            continuation.resume(returning: ())
+            _ = cancellable
+            cancellable = nil
+          },
+            receiveValue: { _ in }
+          )
+      }
     }
   }
 }
