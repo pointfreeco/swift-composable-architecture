@@ -4,7 +4,7 @@ import XCTest
 @testable import Todos
 
 class TodosTests: XCTestCase {
-  let scheduler = DispatchQueue.testScheduler
+  let scheduler = DispatchQueue.test
 
   func testAddTodo() {
     let store = TestStore(
