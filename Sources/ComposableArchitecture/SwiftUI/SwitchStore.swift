@@ -857,7 +857,7 @@ extension SwitchStore {
           _ConditionalContent<
             _ConditionalContent<
               CaseLet<State, Action, State1, Action1, Content1>,
-                CaseLet<State, Action, State2, Action2, Content2>
+              CaseLet<State, Action, State2, Action2, Content2>
             >,
             _ConditionalContent<
               CaseLet<State, Action, State3, Action3, Content3>,
@@ -940,7 +940,7 @@ extension SwitchStore {
           _ConditionalContent<
             _ConditionalContent<
               CaseLet<State, Action, State1, Action1, Content1>,
-                CaseLet<State, Action, State2, Action2, Content2>
+              CaseLet<State, Action, State2, Action2, Content2>
             >,
             _ConditionalContent<
               CaseLet<State, Action, State3, Action3, Content3>,
