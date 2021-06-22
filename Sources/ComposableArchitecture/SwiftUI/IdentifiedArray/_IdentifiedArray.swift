@@ -1,4 +1,4 @@
-public struct IdentifiedArray<ID, Element> where ID: Hashable{
+public struct _IdentifiedArray<ID, Element> where ID: Hashable{
   @usableFromInline
   let id: KeyPath<Element, ID>
 
@@ -36,7 +36,7 @@ public struct IdentifiedArray<ID, Element> where ID: Hashable{
   }
 }
 
-extension IdentifiedArray: Collection {
+extension _IdentifiedArray: Collection {
   @inlinable
   @inline(__always)
   public var startIndex: Int { 0 }
@@ -56,9 +56,9 @@ extension IdentifiedArray: Collection {
   }
 }
 
-extension IdentifiedArray: RandomAccessCollection {}
+extension _IdentifiedArray: RandomAccessCollection {}
 
-extension IdentifiedArray: MutableCollection {
+extension _IdentifiedArray: MutableCollection {
   @inlinable
   @inline(__always)
   public subscript(position: Int) -> Element {
@@ -83,7 +83,7 @@ extension IdentifiedArray: MutableCollection {
   }
 }
 
-extension IdentifiedArray: RangeReplaceableCollection where Element: Identifiable, ID == Element.ID {
+extension _IdentifiedArray: RangeReplaceableCollection where Element: Identifiable, ID == Element.ID {
   @inlinable
   public init() {
     self.id = \.id
@@ -127,27 +127,27 @@ extension IdentifiedArray: RangeReplaceableCollection where Element: Identifiabl
   }
 }
 
-extension IdentifiedArray: ExpressibleByArrayLiteral where Element: Identifiable, ID == Element.ID {
+extension _IdentifiedArray: ExpressibleByArrayLiteral where Element: Identifiable, ID == Element.ID {
   @inlinable
   public init(arrayLiteral elements: Element...) {
     self.init(elements)
   }
 }
 
-extension IdentifiedArray: Equatable where Element: Equatable {}
+extension _IdentifiedArray: Equatable where Element: Equatable {}
 
-extension IdentifiedArray: Hashable where Element: Hashable {}
+extension _IdentifiedArray: Hashable where Element: Hashable {}
 
-extension IdentifiedArray: CustomReflectable {
+extension _IdentifiedArray: CustomReflectable {
   public var customMirror: Mirror {
     Mirror(self, unlabeledChildren: Array(self), displayStyle: .collection)
   }
 }
 
-extension IdentifiedArray: CustomStringConvertible {
+extension _IdentifiedArray: CustomStringConvertible {
   public var description: String {
     Array(self).description
   }
 }
 
-public typealias IdentifiedArrayOf<Element> = IdentifiedArray<Element.ID, Element> where Element: Identifiable
+public typealias _IdentifiedArrayOf<Element> = _IdentifiedArray<Element.ID, Element> where Element: Identifiable

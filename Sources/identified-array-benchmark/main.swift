@@ -126,52 +126,52 @@ var benchmark = Benchmark(title: "Identified Benchmark")
 //  }
 //}
 
-//benchmark.addSimple(
-//  title: "Array<Int> append",
-//  input: [Int].self
-//) { input in
-//  var array: [Int] = []
-//  for i in input {
-//    array.append(i)
-//  }
-//  precondition(array.count == input.count)
-//  blackHole(array)
-//}
-//
-//benchmark.addSimple(
-//  title: "OrderedSet<Int> append",
-//  input: [Int].self
-//) { input in
-//  var set: OrderedSet<Int> = []
-//  for i in input {
-//    set.append(i)
-//  }
-//  precondition(set.count == input.count)
-//  blackHole(set)
-//}
-//
-//benchmark.addSimple(
-//  title: "IdentifiedArray<Int, Int> append",
-//  input: [Int].self
-//) { input in
-//  var array: IdentifiedArray<Int, Int> = []
-//  for i in input {
-//    array.append(i)
-//  }
-//  precondition(array.count == input.count)
-//  blackHole(array)
-//}
-//
-//benchmark.addSimple(
-//  title: "IdentifiedArray<Int> append",
-//  input: [Int].self
-//) { input in
-//  var array: _IdentifiedArray<Int> = []
-//  for i in input {
-//    array.append(i)
-//  }
-//  precondition(array.count == input.count)
-//  blackHole(array)
-//}
+benchmark.addSimple(
+  title: "Array<Int> append",
+  input: [Int].self
+) { input in
+  var array: [Int] = []
+  for i in input {
+    array.append(i)
+  }
+  precondition(array.count == input.count)
+  blackHole(array)
+}
+
+benchmark.addSimple(
+  title: "OrderedSet<Int> append",
+  input: [Int].self
+) { input in
+  var set: OrderedSet<Int> = []
+  for i in input {
+    set.append(i)
+  }
+  precondition(set.count == input.count)
+  blackHole(set)
+}
+
+benchmark.addSimple(
+  title: "IdentifiedArray<Int, Int> append",
+  input: [Int].self
+) { input in
+  var array: IdentifiedArray<Int, Int> = []
+  for i in input {
+    array.append(i)
+  }
+  precondition(array.count == input.count)
+  blackHole(array)
+}
+
+benchmark.addSimple(
+  title: "IdentifiedArray<Int> append",
+  input: [Int].self
+) { input in
+  var array: _IdentifiedArray<Int, Int> = []
+  for i in input {
+    array.append(i)
+  }
+  precondition(array.count == input.count)
+  blackHole(array)
+}
 
 benchmark.main()

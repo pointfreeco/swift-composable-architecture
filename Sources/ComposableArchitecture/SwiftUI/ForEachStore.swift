@@ -139,12 +139,12 @@ where Data: Collection, ID: Hashable, Content: View {
   ///   - store: A store on an identified array of data and an identified action.
   ///   - content: A function that can generate content given a store of an element.
   public init<EachContent: View>(
-    _ store: Store<IdentifiedArray<ID, EachState>, (ID, EachAction)>,
+    _ store: Store<_IdentifiedArray<ID, EachState>, (ID, EachAction)>,
     @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
   )
   where
     EachContent: View,
-    Data == IdentifiedArray<ID, EachState>,
+    Data == _IdentifiedArray<ID, EachState>,
     Content == WithViewStore<
       ContiguousArray<ID>, (ID, EachAction), ForEach<ContiguousArray<ID>, ID, EachContent>
     >
