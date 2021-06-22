@@ -10,9 +10,9 @@ enum Filter: LocalizedStringKey, CaseIterable, Hashable {
 struct AppState: Equatable {
   var editMode: EditMode = .inactive
   var filter: Filter = .all
-  var todos: IdentifiedArrayOf<Todo> = []
+  var todos: IdentifiedArray<Todo> = []
 
-  var filteredTodos: IdentifiedArrayOf<Todo> {
+  var filteredTodos: IdentifiedArray<Todo> {
     switch filter {
     case .active: return self.todos.filter { !$0.isComplete }
     case .all: return self.todos
@@ -152,7 +152,7 @@ struct AppView: View {
   }
 }
 
-extension IdentifiedArray where ID == UUID, Element == Todo {
+extension IdentifiedArray where Element == Todo {
   fileprivate mutating func sortCompleted() {
     // Simulate stable sort
     self = IdentifiedArray(
@@ -165,7 +165,7 @@ extension IdentifiedArray where ID == UUID, Element == Todo {
   }
 }
 
-extension IdentifiedArray where ID == UUID, Element == Todo {
+extension IdentifiedArray where Element == Todo {
   static let mock: Self = [
     Todo(
       description: "Check Mail",
