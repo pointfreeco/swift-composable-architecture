@@ -10,9 +10,9 @@ enum Filter: LocalizedStringKey, CaseIterable, Hashable {
 struct AppState: Equatable {
   var editMode: EditMode = .inactive
   var filter: Filter = .all
-  var todos: IdentifiedArray<Todo> = []
+  var todos: IdentifiedArrayOf<Todo> = []
 
-  var filteredTodos: IdentifiedArray<Todo> {
+  var filteredTodos: IdentifiedArrayOf<Todo> {
     switch filter {
     case .active: return self.todos.filter { !$0.isComplete }
     case .all: return self.todos
@@ -72,7 +72,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
         .eraseToEffect()
 
     case .sortCompletedTodos:
-      state.todos.sortCompleted()
+      state.todos.sort(by: { !$0.isComplete && $1.isComplete })
       return .none
 
     case .todo(id: _, action: .checkBoxToggled):
@@ -152,20 +152,7 @@ struct AppView: View {
   }
 }
 
-extension IdentifiedArray where Element == Todo {
-  fileprivate mutating func sortCompleted() {
-    // Simulate stable sort
-    self = IdentifiedArray(
-      self.enumerated()
-        .sorted(by: { lhs, rhs in
-          (rhs.element.isComplete && !lhs.element.isComplete) || lhs.offset < rhs.offset
-        })
-        .map(\.element)
-    )
-  }
-}
-
-extension IdentifiedArray where Element == Todo {
+extension IdentifiedArray where ID == UUID, Element == Todo {
   static let mock: Self = [
     Todo(
       description: "Check Mail",
