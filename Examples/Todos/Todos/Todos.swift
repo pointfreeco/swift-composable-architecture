@@ -152,7 +152,7 @@ struct AppView: View {
   }
 }
 
-extension IdentifiedArray where ID == UUID, Element == Todo {
+extension IdentifiedArray where Element == Todo {
   static let mock: Self = [
     Todo(
       description: "Check Mail",

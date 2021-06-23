@@ -47,7 +47,19 @@ import SwiftUI
 extension IdentifiedArray {
   @inlinable
   public mutating func move(fromOffsets source: IndexSet, toOffset destination: Int) {
-    fatalError()
+    var removed: Self = []
+    var removedBeforeDestinationCount = 0
+
+    removed.reserveCapacity(source.count)
+    for index in source.reversed() {
+      removed.append(self.remove(at: index))
+      if destination > index {
+        removedBeforeDestinationCount += 1
+      }
+    }
+    for element in removed {
+      self.insert(element, at: destination - removedBeforeDestinationCount)
+    }
   }
 }
 #endif

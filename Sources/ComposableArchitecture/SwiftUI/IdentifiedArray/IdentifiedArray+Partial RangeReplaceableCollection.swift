@@ -52,7 +52,12 @@ extension IdentifiedArray {
   @inlinable
   public mutating func removeSubrange<R>(_ bounds: R)
   where R: RangeExpression, R.Bound == Int {
-    self._dictionary.removeSubrange(bounds.relative(to: self))
+    self._dictionary.removeSubrange(bounds)
+  }
+
+  @inlinable
+  public mutating func reserveCapacity(_ minimumCapacity: Int) {
+    self._dictionary.reserveCapacity(minimumCapacity)
   }
 }
 
@@ -62,7 +67,9 @@ import SwiftUI
 extension IdentifiedArray {
   @inlinable
   public mutating func remove(atOffsets offsets: IndexSet) {
-    fatalError()
+    for range in offsets.rangeView.reversed() {
+      self.removeSubrange(range)
+    }
   }
 }
 #endif

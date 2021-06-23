@@ -26,20 +26,14 @@ public struct IdentifiedArray<Element> where Element: Identifiable {
   }
 
   @inlinable
-  @inline(__always)
-  public func index(id: ID) -> Int? {
-    self._dictionary.index(forKey: id)
-  }
-
-  @inlinable
   public func contains(_ element: Element) -> Bool {
     self._dictionary[element.id] != nil
   }
 
   @inlinable
-  @discardableResult
-  public mutating func remove(id: ID) -> Element? {
-    self._dictionary.removeValue(forKey: id)
+  @inline(__always)
+  public func index(id: ID) -> Int? {
+    self._dictionary.index(forKey: id)
   }
 
   @inlinable
@@ -47,4 +41,13 @@ public struct IdentifiedArray<Element> where Element: Identifiable {
   public mutating func remove(_ member: Element) -> Element? {
     self._dictionary.removeValue(forKey: member.id)
   }
+
+  @inlinable
+  @discardableResult
+  public mutating func remove(id: ID) -> Element? {
+    self._dictionary.removeValue(forKey: id)
+  }
 }
+
+@available(*, unavailable, renamed: "run")
+public typealias IdentifiedArrayOf<Element> = IdentifiedArray<Element> where Element: Identifiable

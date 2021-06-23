@@ -16,6 +16,7 @@ extension IdentifiedArray {
       return
     }
     self.init()
+    self._dictionary.reserveCapacity(elements.underestimatedCount)
     self.append(contentsOf: elements)
   }
 
