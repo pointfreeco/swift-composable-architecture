@@ -5,65 +5,56 @@
 // - eliminate overloads by using more correct subscript
 // - vanilla use case?
 
+import OrderedCollections
+
 public struct IdentifiedArrayOf<Element> where Element: Identifiable {
   public typealias ID = Element.ID
 
   @usableFromInline
-  var _ids: ContiguousArray<ID>
-
-  @usableFromInline
-  var _elements: [ID: Element]
+  var _dictionary: OrderedDictionary<ID, Element>
 
   @inlinable
   public init<C>(
     _ elements: C
   ) where C: RandomAccessCollection, C.Element == Element {
-    let count = elements.count
-    self._ids = .init()
-    self._ids.reserveCapacity(count)
-    self._elements = .init(minimumCapacity: count)
-    for element in elements {
-      self._ids.append(element.id)
-      self._elements[element.id] = self._elements[element.id] ?? element
-    }
+    self._dictionary = .init(uniqueKeysWithValues: zip(elements.map { $0.id }, elements))
   }
 
   @inlinable
   @inline(__always)
-  public var ids: ContiguousArray<ID> { self._ids }
+  public var ids: OrderedSet<ID> { self._dictionary.keys }
 
   @inlinable
   @inline(__always)
   public subscript(id id: ID) -> Element? {
-    _read { yield self._elements[id] }
-    _modify { yield &self._elements[id] }
+    _read { yield self._dictionary[id] }
+    _modify { yield &self._dictionary[id] }
   }
 
   @inlinable
   public func contains(_ element: Element) -> Bool {
-    self._elements[element.id] != nil
+    self._dictionary[element.id] != nil
   }
 
   @discardableResult
   @inlinable
   public mutating func remove(id: ID) -> Element? {
-    self._ids.removeAll(where: { $0 == id })
-    return self._elements.removeValue(forKey: id)
+    self._dictionary.removeValue(forKey: id)
   }
 }
 
 extension IdentifiedArrayOf: Collection {
   @inlinable
   @inline(__always)
-  public var startIndex: Int { self._ids.startIndex }
+  public var startIndex: Int { self._dictionary.keys.startIndex }
 
   @inlinable
   @inline(__always)
-  public var endIndex: Int { self._ids.endIndex }
+  public var endIndex: Int { self._dictionary.keys.endIndex }
 
   @inlinable
   @inline(__always)
-  public func index(after i: Int) -> Int { self._ids.index(after: i) }
+  public func index(after i: Int) -> Int { self._dictionary.keys.index(after: i) }
 }
 
 extension IdentifiedArrayOf: RandomAccessCollection {}
@@ -73,14 +64,16 @@ extension IdentifiedArrayOf: MutableCollection {
   @inline(__always)
   public subscript(position: Int) -> Element {
     _read {
-      yield self._elements[self._ids[position]]!
+      yield self._dictionary[offset: position].value
     }
     _modify {
-      let id = self._ids[position]
-      var element = self._elements[id]!
+      let pair = self._dictionary[offset: position]
+      var element = pair.value
       yield &element
-      self._ids[position] = element.id
-      self._elements[element.id] = element
+      if element.id != pair.key {
+        self._dictionary.removeValue(forKey: element.id)
+        self._dictionary.updateValue(element, forKey: element.id, insertingAt: position)
+      }
     }
   }
 }
@@ -88,8 +81,7 @@ extension IdentifiedArrayOf: MutableCollection {
 extension IdentifiedArrayOf: RangeReplaceableCollection {
   @inlinable
   public init() {
-    self._ids = .init()
-    self._elements = .init()
+    self._dictionary = .init()
   }
 
   // MARK: correctness overloads
@@ -99,35 +91,30 @@ extension IdentifiedArrayOf: RangeReplaceableCollection {
     _ subrange: Range<Int>,
     with newElements: C
   ) where C: Collection, Element == C.Element {
-    let oldIds = self._ids[subrange]
-    self._ids.replaceSubrange(subrange, with: newElements.map { $0.id })
+    self._dictionary.removeSubrange(subrange)
+    var index = subrange.startIndex
     for element in newElements {
-      self._elements[element.id] = self._elements[element.id] ?? element
-    }
-    for id in oldIds where !self._ids.contains(id) {
-      self._elements.removeValue(forKey: id)
+      self._dictionary.updateValue(element, forKey: element.id, insertingAt: index)
+      index += 1
     }
   }
 
   @inlinable
   public mutating func reserveCapacity(_ minimumCapacity: Int) {
-    self._ids.reserveCapacity(minimumCapacity)
-    self._elements.reserveCapacity(minimumCapacity)
+    self._dictionary.reserveCapacity(minimumCapacity)
   }
 
   // MARK: performance overloads
 
   @inlinable
   public mutating func append(_ newElement: Element) {
-    self._ids.append(newElement.id)
-    self._elements[newElement.id] = self._elements[newElement.id] ?? newElement
+    self._dictionary[newElement.id] = self._dictionary[newElement.id] ?? newElement
   }
 
   @inlinable
   @discardableResult
   public mutating func removeFirst() -> Element {
-    let id = self._ids.removeFirst()
-    return self._ids.contains(id) ? self._elements[id]! : self._elements.removeValue(forKey: id)!
+    self._dictionary.removeFirst().value
   }
 }
 

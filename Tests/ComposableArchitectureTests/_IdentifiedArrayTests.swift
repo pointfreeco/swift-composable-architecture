@@ -13,7 +13,6 @@ final class IdentifiedArrayOfTests: XCTestCase {
       User(id: 3, name: "Blob Sr."),
       User(id: 2, name: "Blob Jr."),
       User(id: 1, name: "Blob"),
-      User(id: 2, name: "Blob Jr."),
     ]
 
     dump(array)
@@ -32,7 +31,6 @@ final class IdentifiedArrayOfTests: XCTestCase {
         User(id: 4, name: "Flob IV"),
         User(id: 5, name: "Flob V"),
         User(id: 1, name: "Blob"),
-        User(id: 2, name: "Blob Jr."),
       ]
     )
   }
