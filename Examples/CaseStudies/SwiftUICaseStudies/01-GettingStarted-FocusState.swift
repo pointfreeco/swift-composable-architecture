@@ -9,21 +9,6 @@ struct FocusDemoState: Equatable {
   }
 }
 
-extension Reducer {
-  func focus<Focus>(
-    state toFocusState: WritableKeyPath<State, Focus?>,
-    action extractFocusAction: @escaping (Action) -> Focus?
-  ) -> Self {
-    Self { state, action, environment in
-      guard case let .some(focus) = extractFocusAction(action)
-      else { return .none }
-      state[keyPath: toFocusState] = focus
-      return .none
-    }
-    .combined(with: self)
-  }
-}
-
 enum FocusDemoAction: Equatable {
   case focus(FocusDemoState.Field?)
 }
@@ -34,21 +19,14 @@ let focusDemoReducer = Reducer<
   Void
 > { state, action, environment in
   switch action {
-  case .focus:
+  case let .focus(focus):
+    state.focusedField = focus
     return .none
   }
 }
-  .focus(state: \.focusedField, action: /FocusDemoAction.focus)
 
 struct FocusDemoView: View {
   let store: Store<FocusDemoState, FocusDemoAction>
-  @ObservedObject var viewStore: ViewStore<FocusDemoState, FocusDemoAction>
-
-  init(store: Store<FocusDemoState, FocusDemoAction>) {
-    self.store = store
-    self.viewStore = ViewStore(self.store)
-  }
-
   @FocusState var focus: FocusDemoState.Field?
 
   var body: some View {
@@ -82,23 +60,34 @@ struct FocusDemoView: View {
           Text("Current focus: \(viewStore.focusedField?.rawValue ?? "None")")
         }
       }
-      .focus(
-        self.store.scope(state: \.focusedField, action: FocusDemoAction.focus),
-        self.$focus
-      )
     }
+    .synchronize(
+      self.store.scope(state: \.focusedField, action: FocusDemoAction.focus),
+      with: self.$focus
+    )
   }
 }
 
 extension View {
-  func focus<Focus: Hashable>(
-    _ store: Store<Focus?, Focus?>,
-    _ focus: FocusState<Focus?>.Binding
+  func synchronize<Value: Hashable>(
+    _ store: Store<Value, Value>,
+    with binding: FocusState<Value>.Binding
   ) -> some View {
-    let viewStore = ViewStore(store)
-    return self
-      .onChange(of: viewStore.state) { focus.wrappedValue = $0 }
-      .onChange(of: focus.wrappedValue) { viewStore.send($0) }
+    self.synchronize(
+      store,
+      with: Binding(get: { binding.wrappedValue }, set: { binding.wrappedValue = $0 })
+    )
+  }
+
+  func synchronize<Value: Equatable>(
+    _ store: Store<Value, Value>,
+    with binding: Binding<Value>
+  ) -> some View {
+    WithViewStore(store) { viewStore in
+      self
+        .onChange(of: viewStore.state) { binding.wrappedValue = $0 }
+        .onChange(of: binding.wrappedValue) { viewStore.send($0) }
+    }
   }
 }
 
