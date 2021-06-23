@@ -49,9 +49,7 @@ where ID: Hashable {
   public let id: KeyPath<Element, ID>
 
   /// A raw array of each element's identifier.
-  @usableFromInline internal var _ids: [ID]
-
-  public var ids: [ID] { self._ids }
+  public var ids: ContiguousArray<ID>
 
   /// A raw array of the underlying elements.
   public var elements: [Element] { Array(self) }
@@ -66,12 +64,11 @@ where ID: Hashable {
   /// - Parameters:
   ///   - elements: A sequence of elements.
   ///   - id: A key path to a value that identifies an element.
-  @inlinable
   public init<S>(_ elements: S, id: KeyPath<Element, ID>) where S: Sequence, S.Element == Element {
     self.id = id
 
     let idsAndElements = elements.map { (id: $0[keyPath: id], element: $0) }
-    self._ids = idsAndElements.map { $0.id }
+    self.ids = .init(idsAndElements.map { $0.id })
     self.dictionary = Dictionary(idsAndElements, uniquingKeysWith: { $1 })
   }
 
@@ -83,7 +80,17 @@ where ID: Hashable {
     self.init([], id: id)
   }
 
+  @inlinable
+  public func contains(_ element: Element) -> Bool {
+    self.dictionary[element[keyPath: self.id]] != nil
+  }
+
+  @inlinable
+  @inline(__always)
   public var startIndex: Int { self.ids.startIndex }
+
+  @inlinable
+  @inline(__always)
   public var endIndex: Int { self.ids.endIndex }
 
   public func index(after i: Int) -> Int {
@@ -96,28 +103,10 @@ where ID: Hashable {
 
   @inlinable
   @inline(__always)
-  public var count: Int {
-    self._ids.count
-  }
-
   public subscript(position: Int) -> Element {
     // NB: `_read` crashes Xcode Preview compilation.
-    get {
-      self.dictionary[self.ids[position]]!
-      
-    }
-    _modify {
-//      print(self.ids[position])
-//      print(self.dictionary[self.ids[position]]![keyPath: self.id])
-//
-      yield &self.dictionary[self.ids[position]]!
-//      self._ids[position] = self.dictionary[self.ids[position]]![keyPath: self.id]
-//      print("---")
-//
-//      print(self.ids[position])
-//      print(self.dictionary[self.ids[position]]![keyPath: self.id])
-//
-    }
+    get { self.dictionary[self.ids[position]]! }
+    _modify { yield &self.dictionary[self.ids[position]]! }
   }
 
   #if DEBUG
@@ -175,7 +164,7 @@ where ID: Hashable {
   public mutating func insert(_ newElement: Element, at i: Int) {
     let id = newElement[keyPath: self.id]
     self.dictionary[id] = newElement
-    self._ids.insert(id, at: i)
+    self.ids.insert(id, at: i)
   }
 
   public mutating func insert<C>(
@@ -186,36 +175,30 @@ where ID: Hashable {
     }
   }
 
-  @inlinable
-  public mutating func append(_ newElement: Element) {
-    let id = newElement[keyPath: self.id]
-    self._ids.append(id)
-    self.dictionary[id] = newElement
-  }
-
   /// Removes and returns the element with the specified identifier.
   ///
   /// - Parameter id: The identifier of the element to remove.
   /// - Returns: The removed element.
   @discardableResult
-  public mutating func remove(id: ID) -> Element {
+  @inlinable
+  public mutating func remove(id: ID) -> Element? {
     let element = self.dictionary[id]
-    assert(element != nil, "Unexpectedly found nil while removing an identified element.")
+//    assert(element != nil, "Unexpectedly found nil while removing an identified element.")
     self.dictionary[id] = nil
-    self._ids.removeAll(where: { $0 == id })
-    return element!
+    self.ids.removeAll(where: { $0 == id })
+    return element
   }
 
   @discardableResult
   public mutating func remove(at position: Int) -> Element {
-    self.remove(id: self._ids.remove(at: position))
+    self.remove(id: self.ids.remove(at: position))!
   }
 
   public mutating func removeAll(where shouldBeRemoved: (Element) throws -> Bool) rethrows {
     var ids: [ID] = []
     for (index, id) in zip(self.ids.indices, self.ids).reversed() {
       if try shouldBeRemoved(self.dictionary[id]!) {
-        self._ids.remove(at: index)
+        self.ids.remove(at: index)
         ids.append(id)
       }
     }
@@ -231,17 +214,17 @@ where ID: Hashable {
   }
 
   public mutating func move(fromOffsets source: IndexSet, toOffset destination: Int) {
-    self._ids.move(fromOffsets: source, toOffset: destination)
+    self.ids.move(fromOffsets: source, toOffset: destination)
   }
 
   public mutating func sort(by areInIncreasingOrder: (Element, Element) throws -> Bool) rethrows {
-    try self._ids.sort {
+    try self.ids.sort {
       try areInIncreasingOrder(self.dictionary[$0]!, self.dictionary[$1]!)
     }
   }
 
   public mutating func shuffle<T>(using generator: inout T) where T: RandomNumberGenerator {
-    self._ids.shuffle(using: &generator)
+    ids.shuffle(using: &generator)
   }
 
   public mutating func shuffle() {
@@ -250,7 +233,7 @@ where ID: Hashable {
   }
 
   public mutating func reverse() {
-    self._ids.reverse()
+    ids.reverse()
   }
 }
 
@@ -260,11 +243,11 @@ extension IdentifiedArray: CustomDebugStringConvertible {
   }
 }
 
-//extension IdentifiedArray: CustomReflectable {
-//  public var customMirror: Mirror {
-//    Mirror(reflecting: self.elements)
-//  }
-//}
+extension IdentifiedArray: CustomReflectable {
+  public var customMirror: Mirror {
+    Mirror(reflecting: self.elements)
+  }
+}
 
 extension IdentifiedArray: CustomStringConvertible {
   public var description: String {
@@ -289,21 +272,18 @@ extension IdentifiedArray: Equatable where Element: Equatable {}
 extension IdentifiedArray: Hashable where Element: Hashable {}
 
 extension IdentifiedArray where Element: Comparable {
-  @inlinable
   public mutating func sort() {
     sort(by: <)
   }
 }
 
 extension IdentifiedArray: ExpressibleByArrayLiteral where Element: Identifiable, ID == Element.ID {
-  @inlinable
   public init(arrayLiteral elements: Element...) {
     self.init(elements)
   }
 }
 
 extension IdentifiedArray where Element: Identifiable, ID == Element.ID {
-  @inlinable
   public init<S>(_ elements: S) where S: Sequence, S.Element == Element {
     self.init(elements, id: \.id)
   }
@@ -315,11 +295,12 @@ where Element: Identifiable, ID == Element.ID {
     self.init([], id: \.id)
   }
 
+  @inlinable
   public mutating func replaceSubrange<C, R>(_ subrange: R, with newElements: C)
   where C: Collection, R: RangeExpression, Element == C.Element, Index == R.Bound {
     let replacingIds = self.ids[subrange]
     let newIds = newElements.map { $0.id }
-    self._ids.replaceSubrange(subrange, with: newIds)
+    ids.replaceSubrange(subrange, with: newIds)
 
     for element in newElements {
       self.dictionary[element.id] = element
@@ -331,6 +312,6 @@ where Element: Identifiable, ID == Element.ID {
   }
 }
 
-/// A convenience type to specify an `IdentifiedArray` by an identifiable element.
-public typealias IdentifiedArrayOf<Element> = IdentifiedArray<Element.ID, Element>
-where Element: Identifiable
+///// A convenience type to specify an `IdentifiedArray` by an identifiable element.
+//public typealias IdentifiedArrayOf<Element> = IdentifiedArray<Element.ID, Element>
+//where Element: Identifiable

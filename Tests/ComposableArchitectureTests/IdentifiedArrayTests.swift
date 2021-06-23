@@ -2,7 +2,17 @@ import XCTest
 
 @testable import ComposableArchitecture
 
+extension Int: Identifiable { public var id: Self { self } }
+
 final class IdentifiedArrayTests: XCTestCase {
+  func testStuff() {
+    var array = IdentifiedArray(0 ..< 100)
+    for _ in 0 ..< 100 {
+      array.removeFirst()
+    }
+    precondition(array.isEmpty)
+  }
+
   func testIdSubscript() {
     struct User: Equatable, Identifiable {
       let id: Int
@@ -134,7 +144,7 @@ final class IdentifiedArrayTests: XCTestCase {
     ]
 
     array.replaceSubrange(
-      0...1,
+      0..<2,
       with: [
         User(id: 4, name: "Flob IV"),
         User(id: 5, name: "Flob V"),

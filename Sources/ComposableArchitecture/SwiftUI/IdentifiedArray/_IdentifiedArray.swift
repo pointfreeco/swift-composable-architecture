@@ -1,6 +1,12 @@
-public struct _IdentifiedArray<ID, Element> where ID: Hashable{
-  @usableFromInline
-  let id: KeyPath<Element, ID>
+// - inlining
+// - remove key path and rely on identifiable
+// - overloads for simpler code paths
+// - swift-collections-benchmark
+// - eliminate overloads by using more correct subscript
+// - vanilla use case?
+
+public struct IdentifiedArrayOf<Element> where Element: Identifiable {
+  public typealias ID = Element.ID
 
   @usableFromInline
   var _ids: ContiguousArray<ID>
@@ -8,14 +14,19 @@ public struct _IdentifiedArray<ID, Element> where ID: Hashable{
   @usableFromInline
   var _elements: [ID: Element]
 
-  #warning("TODO")
-//  public init<S>(_ elements: S, id: KeyPath<Element, ID>) where S: Sequence, S.Element == Element {
-//    self.id = id
-//
-//    let idsAndElements = elements.map { (id: $0[keyPath: id], element: $0) }
-//    self.ids = idsAndElements.map { $0.id }
-//    self.dictionary = Dictionary(idsAndElements, uniquingKeysWith: { $1 })
-//  }
+  @inlinable
+  public init<C>(
+    _ elements: C
+  ) where C: RandomAccessCollection, C.Element == Element {
+    let count = elements.count
+    self._ids = .init()
+    self._ids.reserveCapacity(count)
+    self._elements = .init(minimumCapacity: count)
+    for element in elements {
+      self._ids.append(element.id)
+      self._elements[element.id] = self._elements[element.id] ?? element
+    }
+  }
 
   @inlinable
   @inline(__always)
@@ -28,6 +39,11 @@ public struct _IdentifiedArray<ID, Element> where ID: Hashable{
     _modify { yield &self._elements[id] }
   }
 
+  @inlinable
+  public func contains(_ element: Element) -> Bool {
+    self._elements[element.id] != nil
+  }
+
   @discardableResult
   @inlinable
   public mutating func remove(id: ID) -> Element? {
@@ -36,29 +52,23 @@ public struct _IdentifiedArray<ID, Element> where ID: Hashable{
   }
 }
 
-extension _IdentifiedArray: Collection {
+extension IdentifiedArrayOf: Collection {
   @inlinable
   @inline(__always)
-  public var startIndex: Int { 0 }
+  public var startIndex: Int { self._ids.startIndex }
 
   @inlinable
   @inline(__always)
-  public var endIndex: Int { _ids.count }
+  public var endIndex: Int { self._ids.endIndex }
 
   @inlinable
   @inline(__always)
-  public func index(after i: Int) -> Int { i + 1 }
-
-  @inlinable
-  @inline(__always)
-  public var count: Int {
-    self._ids.count
-  }
+  public func index(after i: Int) -> Int { self._ids.index(after: i) }
 }
 
-extension _IdentifiedArray: RandomAccessCollection {}
+extension IdentifiedArrayOf: RandomAccessCollection {}
 
-extension _IdentifiedArray: MutableCollection {
+extension IdentifiedArrayOf: MutableCollection {
   @inlinable
   @inline(__always)
   public subscript(position: Int) -> Element {
@@ -69,42 +79,35 @@ extension _IdentifiedArray: MutableCollection {
       let id = self._ids[position]
       var element = self._elements[id]!
       yield &element
-      self._ids[position] = element[keyPath: self.id]
-      self._elements[element[keyPath: self.id]] = element
+      self._ids[position] = element.id
+      self._elements[element.id] = element
     }
-  }
-
-  // MARK: performance overloads
-
-  @inlinable
-  public mutating func append(_ newElement: Element) {
-    self._ids.append(newElement[keyPath: self.id])
-    self._elements[newElement[keyPath: self.id]] = newElement
   }
 }
 
-extension _IdentifiedArray: RangeReplaceableCollection where Element: Identifiable, ID == Element.ID {
+extension IdentifiedArrayOf: RangeReplaceableCollection {
   @inlinable
   public init() {
-    self.id = \.id
     self._ids = .init()
     self._elements = .init()
   }
 
+  // MARK: correctness overloads
+
   @inlinable
-  public init<C: RandomAccessCollection>(_ elements: C) where C.Element == Element {
-    self.id = \.id
-    let count = elements.count
-    self._ids = .init()
-    self._ids.reserveCapacity(count)
-    self._elements = .init(minimumCapacity: count)
-    for element in elements {
-      self._ids.append(element[keyPath: self.id])
-      self._elements[element[keyPath: self.id]] = element
+  public mutating func replaceSubrange<C>(
+    _ subrange: Range<Int>,
+    with newElements: C
+  ) where C: Collection, Element == C.Element {
+    let oldIds = self._ids[subrange]
+    self._ids.replaceSubrange(subrange, with: newElements.map { $0.id })
+    for element in newElements {
+      self._elements[element.id] = self._elements[element.id] ?? element
+    }
+    for id in oldIds where !self._ids.contains(id) {
+      self._elements.removeValue(forKey: id)
     }
   }
-
-  // MARK: performance/correctness overloads
 
   @inlinable
   public mutating func reserveCapacity(_ minimumCapacity: Int) {
@@ -112,42 +115,74 @@ extension _IdentifiedArray: RangeReplaceableCollection where Element: Identifiab
     self._elements.reserveCapacity(minimumCapacity)
   }
 
+  // MARK: performance overloads
+
   @inlinable
-  public mutating func replaceSubrange<C>(
-    _ subrange: Range<Int>,
-    with newElements: C
-  ) where C: Collection, Element == C.Element {
-    for id in self._ids[subrange] {
-      self._elements.removeValue(forKey: id)
-    }
-    self._ids.replaceSubrange(subrange, with: newElements.map { $0[keyPath: self.id] })
-    for element in newElements {
-      self._elements[element[keyPath: self.id]] = element
-    }
+  public mutating func append(_ newElement: Element) {
+    self._ids.append(newElement.id)
+    self._elements[newElement.id] = self._elements[newElement.id] ?? newElement
+  }
+
+  @inlinable
+  @discardableResult
+  public mutating func removeFirst() -> Element {
+    let id = self._ids.removeFirst()
+    return self._ids.contains(id) ? self._elements[id]! : self._elements.removeValue(forKey: id)!
   }
 }
 
-extension _IdentifiedArray: ExpressibleByArrayLiteral where Element: Identifiable, ID == Element.ID {
+extension IdentifiedArrayOf: ExpressibleByArrayLiteral {
   @inlinable
   public init(arrayLiteral elements: Element...) {
     self.init(elements)
   }
 }
 
-extension _IdentifiedArray: Equatable where Element: Equatable {}
+extension IdentifiedArrayOf: CustomDebugStringConvertible, CustomStringConvertible {
+  public var debugDescription: String {
+    self._makeCollectionDescription()
+  }
 
-extension _IdentifiedArray: Hashable where Element: Hashable {}
+  public var description: String {
+    self._makeCollectionDescription()
+  }
 
-extension _IdentifiedArray: CustomReflectable {
+  private func _makeCollectionDescription() -> String {
+    var result = "["
+    var first = true
+    for item in self {
+      if first {
+        first = false
+      } else {
+        result += ", "
+      }
+      debugPrint(item, terminator: "", to: &result)
+    }
+    result += "]"
+    return result
+  }
+}
+
+extension IdentifiedArrayOf: CustomReflectable {
   public var customMirror: Mirror {
     Mirror(self, unlabeledChildren: Array(self), displayStyle: .collection)
   }
 }
 
-extension _IdentifiedArray: CustomStringConvertible {
-  public var description: String {
-    Array(self).description
+extension IdentifiedArrayOf: Decodable where Element: Decodable {
+  @inlinable
+  public init(from decoder: Decoder) throws {
+    try self.init(ContiguousArray(from: decoder))
   }
 }
 
-public typealias _IdentifiedArrayOf<Element> = _IdentifiedArray<Element.ID, Element> where Element: Identifiable
+extension IdentifiedArrayOf: Encodable where Element: Encodable {
+  @inlinable
+  public func encode(to encoder: Encoder) throws {
+    try ContiguousArray(self).encode(to: encoder)
+  }
+}
+
+extension IdentifiedArrayOf: Equatable where Element: Equatable {}
+
+extension IdentifiedArrayOf: Hashable where Element: Hashable {}
