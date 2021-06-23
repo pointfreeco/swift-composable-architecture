@@ -47,22 +47,7 @@ import SwiftUI
 extension IdentifiedArray {
   @inlinable
   public mutating func move(fromOffsets source: IndexSet, toOffset destination: Int) {
-    guard var i = self.indices.first(where: source.contains) else { return }
-    var j = self.index(after: i)
-    while j != self.endIndex {
-      if !source.contains(j) {
-        swapAt(i, j)
-        formIndex(after: &i)
-      }
-      formIndex(after: &j)
-    }
-    let suffix = self[i...]
-    self.removeSubrange(i...)
-    var destination = destination
-    for element in suffix {
-      self.insert(element, at: destination)
-      formIndex(after: &destination)
-    }
+    fatalError()
   }
 }
 #endif

@@ -62,16 +62,7 @@ import SwiftUI
 extension IdentifiedArray {
   @inlinable
   public mutating func remove(atOffsets offsets: IndexSet) {
-    guard var i = self.indices.first(where: offsets.contains) else { return }
-    var j = self.index(after: i)
-    while j != self.endIndex {
-      if !offsets.contains(j) {
-        swapAt(i, j)
-        formIndex(after: &i)
-      }
-      formIndex(after: &j)
-    }
-    self.removeSubrange(i...)
+    fatalError()
   }
 }
 #endif
