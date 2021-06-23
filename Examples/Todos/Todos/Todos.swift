@@ -10,9 +10,9 @@ enum Filter: LocalizedStringKey, CaseIterable, Hashable {
 struct AppState: Equatable {
   var editMode: EditMode = .inactive
   var filter: Filter = .all
-  var todos: IdentifiedArrayOf<Todo> = []
+  var todos: IdentifiedArray<Todo> = []
 
-  var filteredTodos: IdentifiedArrayOf<Todo> {
+  var filteredTodos: IdentifiedArray<Todo> {
     switch filter {
     case .active: return self.todos.filter { !$0.isComplete }
     case .all: return self.todos
