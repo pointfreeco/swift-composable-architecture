@@ -32,6 +32,7 @@
 		CAC7EBA92677FE4700F6D7D7 /* 02-Effects-PullToRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAC7EBA82677FE4700F6D7D7 /* 02-Effects-PullToRefresh.swift */; };
 		CAE962FD24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndActionSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAE962FC24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndActionSheets.swift */; };
 		CAF069D024ACC5AF00A1AAEF /* 00-Core.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF069CF24ACC5AF00A1AAEF /* 00-Core.swift */; };
+		CAF56D3C2683AC640054C3ED /* RefreshableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF56D3B2683AC640054C3ED /* RefreshableTests.swift */; };
 		CAF88E7324B8E26D00539345 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF88E7224B8E26D00539345 /* AppDelegate.swift */; };
 		CAF88E7524B8E26D00539345 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF88E7424B8E26D00539345 /* RootView.swift */; };
 		CAF88E7724B8E26E00539345 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CAF88E7624B8E26E00539345 /* Assets.xcassets */; };
@@ -174,6 +175,7 @@
 		CAC7EBA82677FE4700F6D7D7 /* 02-Effects-PullToRefresh.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-PullToRefresh.swift"; sourceTree = "<group>"; };
 		CAE962FC24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndActionSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-AlertsAndActionSheets.swift"; sourceTree = "<group>"; };
 		CAF069CF24ACC5AF00A1AAEF /* 00-Core.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "00-Core.swift"; sourceTree = "<group>"; };
+		CAF56D3B2683AC640054C3ED /* RefreshableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshableTests.swift; sourceTree = "<group>"; };
 		CAF88E7024B8E26D00539345 /* tvOSCaseStudies.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = tvOSCaseStudies.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CAF88E7224B8E26D00539345 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CAF88E7424B8E26D00539345 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -442,6 +444,7 @@
 				DC634B242448D15B00DAA016 /* 04-HigherOrderReducers-ReusableFavoritingTests.swift */,
 				CA0C51FA245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift */,
 				CA0C0C4624B89BEC00CBDD8A /* 04-HigherOrderReducers-LifecycleTests.swift */,
+				CAF56D3B2683AC640054C3ED /* RefreshableTests.swift */,
 			);
 			path = SwiftUICaseStudiesTests;
 			sourceTree = "<group>";
@@ -799,6 +802,7 @@
 				CAA9ADC424465AB00003A984 /* 02-Effects-BasicsTests.swift in Sources */,
 				4F5AC11F24ECC7E4009DC50B /* 01-GettingStarted-SharedStateTests.swift in Sources */,
 				CAA9ADCC2446615B0003A984 /* 02-Effects-LongLivingTests.swift in Sources */,
+				CAF56D3C2683AC640054C3ED /* RefreshableTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

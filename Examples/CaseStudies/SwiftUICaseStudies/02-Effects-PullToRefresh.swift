@@ -2,9 +2,22 @@ import Combine
 import ComposableArchitecture
 import SwiftUI
 
+func sleep() async throws {
+  _ = try await URLSession.shared.data(
+    from: URL(string: "https://laggard.herokuapp.com/delay/2000")!
+  )
+}
+
 class PullToRefreshViewModel: ObservableObject {
   @Published var count = 0
   @Published var fact: String? = nil
+  @Published var handle: Task.Handle<(), Error>?
+
+  let fetch: (Int) async throws -> String
+
+  init(fetch: @escaping (Int) async throws -> String) {
+    self.fetch = fetch
+  }
 
   func incrementButtonTapped() {
     self.count += 1
@@ -19,18 +32,38 @@ class PullToRefreshViewModel: ObservableObject {
       self.fact = nil
     }
 
-    await Task.sleep(2_000_000_000)
+    // TODO: is this necessary?
+//    self.handle?.cancel()
+
+    self.handle = async {
+//      try await sleep()
+
+//      let (data, _) = try await URLSession.shared.data(
+//        from: .init(string: "http://numbersapi.com/\(self.count)/trivia")!
+//      )
+//      withAnimation {
+      self.fact = try await self.fetch(self.count)
+//      String(decoding: data, as: UTF8.self)
+//      }
+    }
 
     do {
-      let (data, _) = try await URLSession.shared.data(
-        from: .init(string: "http://numbersapi.com/\(self.count)/trivia")!
-      )
-      withAnimation {
-        self.fact = String(decoding: data, as: UTF8.self)
-      }
+      try await self.handle?.get()
+//      self.handle = nil // TODO: talk about this
     } catch {
       // TODO: do some error handling
     }
+  }
+
+  func cancelButtonTapped() {
+//    withAnimation {
+      self.handle?.cancel()
+      self.handle = nil
+//    }
+  }
+
+  var isLoading: Bool {
+    self.handle != nil
   }
 }
 
@@ -50,6 +83,10 @@ struct VanillaPullToRefreshView: View {
 
       if let fact = self.viewModel.fact {
         Text(fact)
+      } else if self.viewModel.isLoading {
+        Button(action: { self.viewModel.cancelButtonTapped() }) {
+          Text("Cancel")
+        }
       }
     }
     .refreshable {
@@ -60,38 +97,23 @@ struct VanillaPullToRefreshView: View {
 
 struct VanillaPullToRefresh_Previews: PreviewProvider {
   static var previews: some View {
-    VanillaPullToRefreshView(viewModel: .init())
+    VanillaPullToRefreshView(
+      viewModel: .init(
+        fetch: {
+      String(
+        decoding: try await URLSession.shared.data(
+          from: .init(string: "http://numbersapi.com/\($0)/trivia")!
+        ).0,
+        as: UTF8.self
+      )
+    }
+      )
+    )
   }
 }
 
 
 // ---------------------
-
-
-extension ViewStore {
-  @available(iOS 15.0, macOS 12.0, macCatalyst 15, tvOS 15, watchOS 15, *)
-  func send(_ action: Action, `while`: @escaping (State) -> Bool) async {
-    self.send(action)
-
-    var cancellable: Cancellable?
-
-    await withTaskCancellationHandler(handler: { [cancellable] in cancellable?.cancel() }) {
-      await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-        cancellable = self.publisher
-          .filter { !`while`($0) }
-          .prefix(1)
-          .sink(
-            receiveCompletion: { _ in
-            continuation.resume(returning: ())
-            _ = cancellable
-            cancellable = nil
-          },
-            receiveValue: { _ in }
-          )
-      }
-    }
-  }
-}
 
 struct PullToRefreshState: Equatable {
   var count = 0
@@ -99,7 +121,8 @@ struct PullToRefreshState: Equatable {
   var isLoading = false
 }
 
-enum PullToRefreshAction {
+enum PullToRefreshAction: Equatable {
+  case cancelButtonTapped
   case decrementButtonTapped
   case incrementButtonTapped
   case numberFactResponse(Result<String, NumbersApiError>)
@@ -116,7 +139,13 @@ let pullToRefreshReducer = Reducer<
   PullToRefreshAction,
   PullToRefreshEnvironment
 > { state, action, environment in
+  struct CancelId: Hashable {}
+
   switch action {
+  case .cancelButtonTapped:
+    state.isLoading = false
+    return .cancel(id: CancelId())
+
   case .decrementButtonTapped:
     state.count -= 1
     state.fact = nil
@@ -143,6 +172,7 @@ let pullToRefreshReducer = Reducer<
       .delay(for: 2, scheduler: environment.mainQueue.animation())
       .catchToEffect()
       .map(PullToRefreshAction.numberFactResponse)
+      .cancellable(id: CancelId())
   }
 }
   .debug()
@@ -162,6 +192,10 @@ struct PullToRefreshView: View {
 
         if let fact = viewStore.fact {
           Text(fact)
+        } else if viewStore.isLoading {
+          Button(action: { viewStore.send(.cancelButtonTapped, animation: .default) }) {
+            Text("Cancel")
+          }
         }
       }
       .refreshable {
@@ -183,5 +217,30 @@ struct PullToRefresh_Previews: PreviewProvider {
         )
       )
     )
+  }
+}
+
+extension ViewStore {
+  @available(iOS 15.0, macOS 12.0, macCatalyst 15, tvOS 15, watchOS 15, *)
+  func send(_ action: Action, `while`: @escaping (State) -> Bool) async {
+    self.send(action)
+
+    var cancellable: Cancellable?
+
+    await withTaskCancellationHandler(handler: { [cancellable] in cancellable?.cancel() }) {
+      await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
+        cancellable = self.publisher
+          .filter { !`while`($0) }
+          .prefix(1)
+          .sink(
+            receiveCompletion: { _ in
+            continuation.resume(returning: ())
+            _ = cancellable
+            cancellable = nil
+          },
+            receiveValue: { _ in }
+          )
+      }
+    }
   }
 }
