@@ -16,6 +16,7 @@ The Composable Architecture (TCA, for short) is a library for building applicati
 * [Installation](#installation)
 * [Documentation](#documentation)
 * [Help](#help)
+* [Translations](#translations)
 * [Credits and thanks](#credits-and-thanks)
 * [Other libraries](#other-libraries)
 
@@ -258,7 +259,7 @@ let appView = AppView(
     initialState: AppState(),
     reducer: appReducer,
     environment: AppEnvironment(
-      mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
+      mainQueue: .main,
       numberFact: { number in Effect(value: "\(number) is a good number Brent") }
     )
   )
@@ -387,7 +388,7 @@ If you are interested in contributing a wrapper library for a framework that we 
 
     1. If done simply with `DispatchQueue.main.async` you will incur a thread hop even when you are already on the main thread. This can lead to unexpected behavior in UIKit and SwiftUI, where sometimes you are required to do work synchronously, such as in animation blocks.
 
-    2. It is possible to create a scheduler that performs its work immediately when on the main thread and otherwise uses `DispatchQueue.main.async` (_e.g._ see ReactiveSwift's [`UIScheduler`](https://github.com/ReactiveCocoa/ReactiveSwift/blob/f97db218c0236b0c6ef74d32adb3d578792969c0/Sources/Scheduler.swift)). This introduces a lot more complexity, and should probably not be adopted without having a very good reason.
+    2. It is possible to create a scheduler that performs its work immediately when on the main thread and otherwise uses `DispatchQueue.main.async` (_e.g._ see [CombineScheduler](https://github.com/pointfreeco/combine-schedulers)'s [`UIScheduler`](https://github.com/pointfreeco/combine-schedulers/blob/main/Sources/CombineSchedulers/UIScheduler.swift)). This introduces a lot more complexity, and should probably not be adopted without having a very good reason.
 
     This is why we require all actions be sent from the same thread. This requirement is in the same spirit of how `URLSession` and other Apple APIs are designed. Those APIs tend to deliver their outputs on whatever thread is most convenient for them, and then it is your responsibility to dispatch back to the main queue if that's what you need. The Composable Architecture makes you responsible for making sure to send actions on the main thread. If you are using an effect that may deliver its output on a non-main thread, you must explicitly perform `.receive(on:)` in order to force it back on the main thread.
 
@@ -435,6 +436,7 @@ If you want to discuss the Composable Architecture or have a question about how 
 ## Translations
 
 - A Korean translation of this README is available [here](https://gist.github.com/pilgwon/ea05e2207ab68bdd1f49dff97b293b17).
+- An Indonesian translation of this README is available [here](https://gist.github.com/wendyliga/792ea9ac5cc887f59de70a9e39cc7343).
 
 If you'd like to contribute a translation, please [open a PR](https://github.com/pointfreeco/swift-composable-architecture/edit/main/README.md) with a link to a [Gist](https://gist.github.com)!
 

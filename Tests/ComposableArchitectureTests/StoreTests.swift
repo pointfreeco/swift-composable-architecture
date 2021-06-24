@@ -436,49 +436,4 @@ final class StoreTests: XCTestCase {
 
     XCTAssertEqual(emissions, [0, 3])
   }
-
-  func testSyncEffectsFromEnvironment() {
-    enum Action: Equatable {
-      // subscribes to a long living effect, potentially feeding data
-      // back into the store
-      case onAppear
-
-      // Talks to the environment, eventually feeding data back into the store
-      case onUserAction
-
-      // External event coming in from the environment, updating state
-      case externalAction
-    }
-
-    struct Environment {
-      var externalEffects = PassthroughSubject<Action, Never>()
-    }
-
-    let counterReducer = Reducer<Int, Action, Environment> { state, action, env in
-      switch action {
-      case .onAppear:
-        return env.externalEffects.eraseToEffect()
-      case .onUserAction:
-        return .fireAndForget {
-          // This would actually do something async in the environment
-          // that feeds back eventually via the `externalEffectPublisher`
-          // Here we send an action sync, which could e.g. happen for an error case, ..
-          env.externalEffects.send(.externalAction)
-        }
-      case .externalAction:
-        state += 1
-      }
-      return .none
-    }
-    let parentStore = Store(initialState: 1, reducer: counterReducer, environment: Environment())
-    let parentViewStore = ViewStore(parentStore)
-
-    // subscribes to a long living publisher of actions
-    parentViewStore.send(.onAppear)
-
-    parentViewStore.send(.onUserAction)
-
-    // State should be at 2 now
-    XCTAssertEqual(parentStore.state.value, 2)
-  }
 }

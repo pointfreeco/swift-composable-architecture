@@ -10,7 +10,7 @@ class TestStoreTests: XCTestCase {
       case a, b1, b2, b3, c1, c2, c3, d
     }
 
-    let testScheduler = DispatchQueue.test
+    let mainQueue = DispatchQueue.test
 
     let reducer = Reducer<State, Action, AnySchedulerOf<DispatchQueue>> { _, action, scheduler in
       switch action {
@@ -42,12 +42,12 @@ class TestStoreTests: XCTestCase {
     let store = TestStore(
       initialState: State(),
       reducer: reducer,
-      environment: testScheduler.eraseToAnyScheduler()
+      environment: mainQueue.eraseToAnyScheduler()
     )
 
     store.send(.a)
 
-    testScheduler.advance(by: 1)
+    mainQueue.advance(by: 1)
 
     store.receive(.b1)
     store.receive(.b2)

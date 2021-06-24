@@ -116,7 +116,7 @@ struct AnimationsView: View {
             "Big mode",
             isOn:
               viewStore
-              .binding(get: { $0.isCircleScaled }, send: AnimationsAction.circleScaleToggleChanged)
+              .binding(get: \.isCircleScaled, send: AnimationsAction.circleScaleToggleChanged)
               .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.1))
           )
           .padding()
@@ -137,7 +137,7 @@ struct AnimationsView_Previews: PreviewProvider {
             initialState: AnimationsState(circleCenter: CGPoint(x: 50, y: 50)),
             reducer: animationsReducer,
             environment: AnimationsEnvironment(
-              mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+              mainQueue: .main
             )
           )
         )
@@ -149,7 +149,7 @@ struct AnimationsView_Previews: PreviewProvider {
             initialState: AnimationsState(circleCenter: CGPoint(x: 50, y: 50)),
             reducer: animationsReducer,
             environment: AnimationsEnvironment(
-              mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+              mainQueue: .main
             )
           )
         )

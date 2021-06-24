@@ -69,12 +69,14 @@ struct NavigateAndLoadView: View {
           NavigationLink(
             destination: IfLetStore(
               self.store.scope(
-                state: { $0.optionalCounter }, action: NavigateAndLoadAction.optionalCounter),
+                state: \.optionalCounter,
+                action: NavigateAndLoadAction.optionalCounter
+              ),
               then: CounterView.init(store:),
               else: { ActivityIndicator() }
             ),
             isActive: viewStore.binding(
-              get: { $0.isNavigationActive },
+              get: \.isNavigationActive,
               send: NavigateAndLoadAction.setNavigation(isActive:)
             )
           ) {
@@ -97,7 +99,7 @@ struct NavigateAndLoadView_Previews: PreviewProvider {
           initialState: NavigateAndLoadState(),
           reducer: navigateAndLoadReducer,
           environment: NavigateAndLoadEnvironment(
-            mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+            mainQueue: .main
           )
         )
       )

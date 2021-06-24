@@ -1,46 +1,55 @@
 import Combine
 import SwiftUI
 
-/// A `ViewStore` is an object that can observe state changes and send actions. They are most
+/// A ``ViewStore`` is an object that can observe state changes and send actions. They are most
 /// commonly used in views, such as SwiftUI views, UIView or UIViewController, but they can be
 /// used anywhere it makes sense to observe state and send actions.
 ///
-/// In SwiftUI applications, a `ViewStore` is accessed most commonly using the `WithViewStore` view.
-/// It can be initialized with a store and a closure that is handed a view store and must return a
-/// view to be rendered:
+/// In SwiftUI applications, a ``ViewStore`` is accessed most commonly using the ``WithViewStore``
+/// view. It can be initialized with a store and a closure that is handed a view store and must
+/// return a view to be rendered:
 ///
-///     var body: some View {
-///       WithViewStore(self.store) { viewStore in
-///         VStack {
-///           Text("Current count: \(viewStore.count)")
-///           Button("Increment") { viewStore.send(.incrementButtonTapped) }
-///         }
-///       }
+/// ```swift
+/// var body: some View {
+///   WithViewStore(self.store) { viewStore in
+///     VStack {
+///       Text("Current count: \(viewStore.count)")
+///       Button("Increment") { viewStore.send(.incrementButtonTapped) }
 ///     }
+///   }
+/// }
+/// ```
 ///
-/// In UIKit applications a `ViewStore` can be created from a `Store` and then subscribed to for
+/// In UIKit applications a ``ViewStore`` can be created from a ``Store`` and then subscribed to for
 /// state updates:
 ///
-///     let store: Store<State, Action>
-///     let viewStore: ViewStore<State, Action>
+/// ```swift
+/// let store: Store<State, Action>
+/// let viewStore: ViewStore<State, Action>
 ///
-///     init(store: Store<State, Action>) {
-///       self.store = store
-///       self.viewStore = ViewStore(store)
-///     }
+/// init(store: Store<State, Action>) {
+///   self.store = store
+///   self.viewStore = ViewStore(store)
+/// }
 ///
-///     func viewDidLoad() {
-///       super.viewDidLoad()
+/// func viewDidLoad() {
+///   super.viewDidLoad()
 ///
-///       self.viewStore.publisher.count
-///         .sink { [weak self] in self?.countLabel.text = $0 }
-///         .store(in: &self.cancellables)
-///     }
+///   self.viewStore.publisher.count
+///     .sink { [weak self] in self?.countLabel.text = $0 }
+///     .store(in: &self.cancellables)
+/// }
 ///
-///     @objc func incrementButtonTapped() {
-///       self.viewStore.send(.incrementButtonTapped)
-///     }
+/// @objc func incrementButtonTapped() {
+///   self.viewStore.send(.incrementButtonTapped)
+/// }
+/// ```
 ///
+/// ### Thread safety
+///
+/// The ``ViewStore`` class is not thread-safe, and all interactions with it must happen on the main
+/// thread. See the documentation of the ``Store`` class for more information why this decision was
+/// made.
 @dynamicMemberLookup
 public final class ViewStore<State, Action>: ObservableObject {
   /// A publisher of state.
@@ -87,10 +96,10 @@ public final class ViewStore<State, Action>: ObservableObject {
 
   /// Sends an action to the store.
   ///
-  /// `ViewStore` is not thread safe and you should only send actions to it from the main thread.
+  /// ``ViewStore`` is not thread safe and you should only send actions to it from the main thread.
   /// If you are wanting to send actions on background threads due to the fact that the reducer
   /// is performing computationally expensive work, then a better way to handle this is to wrap
-  /// that work in an `Effect` that is performed on a background thread so that the result can
+  /// that work in an ``Effect`` that is performed on a background thread so that the result can
   /// be fed back into the store.
   ///
   /// - Parameter action: An action.
@@ -102,21 +111,23 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// actions to the store.
   ///
   /// The method is useful for dealing with SwiftUI components that work with two-way `Binding`s
-  /// since the `Store` does not allow directly writing its state; it only allows reading state and
-  /// sending actions.
+  /// since the ``Store`` does not allow directly writing its state; it only allows reading state
+  /// and sending actions.
   ///
   /// For example, a text field binding can be created like this:
   ///
-  ///     struct State { var name = "" }
-  ///     enum Action { case nameChanged(String) }
+  /// ```swift
+  /// struct State { var name = "" }
+  /// enum Action { case nameChanged(String) }
   ///
-  ///     TextField(
-  ///       "Enter name",
-  ///       text: viewStore.binding(
-  ///         get: { $0.name },
-  ///         send: { Action.nameChanged($0) }
-  ///       )
-  ///     )
+  /// TextField(
+  ///   "Enter name",
+  ///   text: viewStore.binding(
+  ///     get: { $0.name },
+  ///     send: { Action.nameChanged($0) }
+  ///   )
+  /// )
+  /// ```
   ///
   /// - Parameters:
   ///   - get: A function to get the state for the binding from the view
@@ -146,20 +157,22 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// actions to the store.
   ///
   /// The method is useful for dealing with SwiftUI components that work with two-way `Binding`s
-  /// since the `Store` does not allow directly writing its state; it only allows reading state and
-  /// sending actions.
+  /// since the ``Store`` does not allow directly writing its state; it only allows reading state
+  /// and sending actions.
   ///
   /// For example, an alert binding can be dealt with like this:
   ///
-  ///     struct State { var alert: String? }
-  ///     enum Action { case alertDismissed }
+  /// ```swift
+  /// struct State { var alert: String? }
+  /// enum Action { case alertDismissed }
   ///
-  ///     .alert(
-  ///       item: self.store.binding(
-  ///         get: { $0.alert },
-  ///         send: .alertDismissed
-  ///       )
-  ///     ) { alert in Alert(title: Text(alert.message)) }
+  /// .alert(
+  ///   item: self.store.binding(
+  ///     get: { $0.alert },
+  ///     send: .alertDismissed
+  ///   )
+  /// ) { alert in Alert(title: Text(alert.message)) }
+  /// ```
   ///
   /// - Parameters:
   ///   - get: A function to get the state for the binding from the view store's full state.
@@ -176,20 +189,22 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// actions to the store.
   ///
   /// The method is useful for dealing with SwiftUI components that work with two-way `Binding`s
-  /// since the `Store` does not allow directly writing its state; it only allows reading state and
-  /// sending actions.
+  /// since the ``Store`` does not allow directly writing its state; it only allows reading state
+  /// and sending actions.
   ///
   /// For example, a text field binding can be created like this:
   ///
-  ///     typealias State = String
-  ///     enum Action { case nameChanged(String) }
+  /// ```swift
+  /// typealias State = String
+  /// enum Action { case nameChanged(String) }
   ///
-  ///     TextField(
-  ///       "Enter name",
-  ///       text: viewStore.binding(
-  ///         send: { Action.nameChanged($0) }
-  ///       )
-  ///     )
+  /// TextField(
+  ///   "Enter name",
+  ///   text: viewStore.binding(
+  ///     send: { Action.nameChanged($0) }
+  ///   )
+  /// )
+  /// ```
   ///
   /// - Parameters:
   ///   - localStateToViewAction: A function that transforms the binding's value
@@ -205,19 +220,21 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// actions to the store.
   ///
   /// The method is useful for dealing with SwiftUI components that work with two-way `Binding`s
-  /// since the `Store` does not allow directly writing its state; it only allows reading state and
-  /// sending actions.
+  /// since the ``Store`` does not allow directly writing its state; it only allows reading state
+  /// and sending actions.
   ///
   /// For example, an alert binding can be dealt with like this:
   ///
-  ///     typealias State = String
-  ///     enum Action { case alertDismissed }
+  /// ```swift
+  /// typealias State = String
+  /// enum Action { case alertDismissed }
   ///
-  ///     .alert(
-  ///       item: viewStore.binding(
-  ///         send: .alertDismissed
-  ///       )
-  ///     ) { title in Alert(title: Text(title)) }
+  /// .alert(
+  ///   item: viewStore.binding(
+  ///     send: .alertDismissed
+  ///   )
+  /// ) { title in Alert(title: Text(title)) }
+  /// ```
   ///
   /// - Parameters:
   ///   - action: The action to send when the binding is written to.

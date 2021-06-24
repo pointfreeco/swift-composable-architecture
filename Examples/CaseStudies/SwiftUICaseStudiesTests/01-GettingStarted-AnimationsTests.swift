@@ -5,7 +5,7 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 class AnimationTests: XCTestCase {
-  let scheduler = DispatchQueue.testScheduler
+  let scheduler = DispatchQueue.test
 
   func testRainbow() {
     let store = TestStore(

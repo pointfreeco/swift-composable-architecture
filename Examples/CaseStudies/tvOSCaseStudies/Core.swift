@@ -16,6 +16,6 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
   focusReducer.pullback(
     state: \.focus,
     action: /RootAction.focus,
-    environment: { $0.focus }
+    environment: \.focus
   )
 )

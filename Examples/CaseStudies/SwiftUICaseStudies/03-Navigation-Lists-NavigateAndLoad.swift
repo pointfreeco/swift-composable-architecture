@@ -87,13 +87,15 @@ struct NavigateAndLoadListView: View {
             NavigationLink(
               destination: IfLetStore(
                 self.store.scope(
-                  state: { $0.selection?.value }, action: NavigateAndLoadListAction.counter),
+                  state: \.selection?.value,
+                  action: NavigateAndLoadListAction.counter
+                ),
                 then: CounterView.init(store:),
                 else: { ActivityIndicator() }
               ),
               tag: row.id,
               selection: viewStore.binding(
-                get: { $0.selection?.id },
+                get: \.selection?.id,
                 send: NavigateAndLoadListAction.setNavigation(selection:)
               )
             ) {
@@ -121,7 +123,7 @@ struct NavigateAndLoadListView_Previews: PreviewProvider {
           ),
           reducer: navigateAndLoadListReducer,
           environment: NavigateAndLoadListEnvironment(
-            mainQueue: DispatchQueue.main.eraseToAnyScheduler()
+            mainQueue: .main
           )
         )
       )

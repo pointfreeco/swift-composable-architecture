@@ -5,7 +5,9 @@ PLATFORM_WATCHOS = watchOS Simulator,name=Apple Watch Series 4 - 44mm
 
 default: test
 
-test:
+test-all: test-library test-examples
+
+test-library:
 	xcodebuild test \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_IOS)"
@@ -18,6 +20,8 @@ test:
 	xcodebuild \
 		-scheme ComposableArchitecture_watchOS \
 		-destination platform="$(PLATFORM_WATCHOS)"
+
+test-examples:
 	xcodebuild test \
 		-scheme "CaseStudies (SwiftUI)" \
 		-destination platform="$(PLATFORM_IOS)"
