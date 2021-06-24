@@ -434,6 +434,6 @@ final class StoreTests: XCTestCase {
 
     viewStore.send(0)
 
-    XCTAssertEqual(emissions, [0, 1, 2, 3])
+    XCTAssertEqual(emissions, [0, 3])
   }
 }
