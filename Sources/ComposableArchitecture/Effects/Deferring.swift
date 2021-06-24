@@ -3,10 +3,12 @@ import Combine
 extension Effect {
   /// Returns an effect that will be executed after given `dueTime`.
   ///
-  ///     case let .textChanged(text):
-  ///       return environment.search(text)
-  ///         .map(Action.searchResponse)
-  ///         .deferred(for: 0.5, scheduler: environment.mainQueue)
+  /// ```swift
+  /// case let .textChanged(text):
+  ///   return environment.search(text)
+  ///     .map(Action.searchResponse)
+  ///     .deferred(for: 0.5, scheduler: environment.mainQueue)
+  /// ```
   ///
   /// - Parameters:
   ///   - upstream: the effect you want to defer.
@@ -26,4 +28,3 @@ extension Effect {
       .eraseToEffect()
   }
 }
-
