@@ -1,3 +1,4 @@
+import OrderedCollections
 import SwiftUI
 
 /// A Composable Architecture-friendly wrapper around `ForEach` that simplifies working with
@@ -139,13 +140,17 @@ where Data: Collection, ID: Hashable, Content: View {
   ///   - store: A store on an identified array of data and an identified action.
   ///   - content: A function that can generate content given a store of an element.
   public init<EachContent: View>(
-    _ store: Store<IdentifiedArray<ID, EachState>, (ID, EachAction)>,
+    _ store: Store<IdentifiedArray<EachState>, (ID, EachAction)>,
     @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
   )
   where
+    EachState: Identifiable,
+  ID == EachState.ID,
     EachContent: View,
-    Data == IdentifiedArray<ID, EachState>,
-    Content == WithViewStore<[ID], (ID, EachAction), ForEach<[ID], ID, EachContent>>
+    Data == IdentifiedArray<EachState>,
+    Content == WithViewStore<
+      OrderedSet<ID>, (ID, EachAction), ForEach<OrderedSet<ID>, ID, EachContent>
+    >
   {
     self.data = store.state.value
     self.content = {

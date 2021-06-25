@@ -19,6 +19,7 @@ let package = Package(
   dependencies: [
     .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.4.0"),
     .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.1.3"),
+    .package(url: "https://github.com/pointfreeco/swift-identified-collections", .branch("main")),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.1.0"),
   ],
   targets: [
@@ -27,7 +28,8 @@ let package = Package(
       dependencies: [
         "CasePaths",
         "CombineSchedulers",
-        "XCTestDynamicOverlay",
+        "IdentifiedCollections",
+        "XCTestDynamicOverlay"
       ]
     ),
     .testTarget(

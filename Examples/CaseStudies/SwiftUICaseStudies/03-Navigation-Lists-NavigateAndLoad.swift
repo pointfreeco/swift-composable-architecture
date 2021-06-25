@@ -9,7 +9,7 @@ private let readMe = """
   """
 
 struct NavigateAndLoadListState: Equatable {
-  var rows: IdentifiedArrayOf<Row> = [
+  var rows: IdentifiedArray<Row> = [
     .init(count: 1, id: UUID()),
     .init(count: 42, id: UUID()),
     .init(count: 100, id: UUID()),
