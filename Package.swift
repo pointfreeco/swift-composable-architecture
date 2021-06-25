@@ -18,7 +18,7 @@ let package = Package(
   ],
   dependencies: [
     .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.4.0"),
-    .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.1.3"),
+    .package(url: "https://github.com/pointfreeco/swift-case-paths", .branch("performance-2"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.1.0"),
   ],
   targets: [
