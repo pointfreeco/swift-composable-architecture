@@ -13,86 +13,48 @@ import SwiftUI
 ///
 /// To use this API, you model all the action sheet actions in your domain's action enum:
 ///
-///    ```swift
-///     enum AppAction: Equatable {
-///       case cancelTapped
-///       case deleteTapped
-///       case favoriteTapped
-///       case infoTapped
+/// ```swift
+/// enum AppAction: Equatable {
+///   case cancelTapped
+///   case deleteTapped
+///   case favoriteTapped
+///   case infoTapped
 ///
-///       // Your other actions
-///     }
-///    ```
+///   // Your other actions
+/// }
+/// ```
 ///
 /// And you model the state for showing the action sheet in your domain's state, and it can start
 /// off in a `nil` state:
 ///
-///    ```swift
-///     struct AppState: Equatable {
-///       var actionSheet: ActionSheetState<AppAction>?
+/// ```swift
+/// struct AppState: Equatable {
+///   var actionSheet: ActionSheetState<AppAction>?
 ///
-///       // Your other state
-///     }
-///    ```
+///   // Your other state
+/// }
+/// ```
 ///
 /// Then, in the reducer you can construct an `ActionSheetState` value to represent the action
 /// sheet you want to show to the user:
 ///
-///    ```swift
-///     let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, env in
-///       switch action
-///         case .cancelTapped:
-///           state.actionSheet = nil
-///           return .none
+/// ```swift
+/// let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, env in
+///   switch action
+///     case .cancelTapped:
+///       state.actionSheet = nil
+///       return .none
 ///
-///         case .deleteTapped:
-///           state.actionSheet = nil
-///           // Do deletion logic...
+///     case .deleteTapped:
+///       state.actionSheet = nil
+///       // Do deletion logic...
 ///
-///         case .favoriteTapped:
-///           state.actionSheet = nil
-///           // Do favoriting logic
+///     case .favoriteTapped:
+///       state.actionSheet = nil
+///       // Do favoriting logic
 ///
-///         case .infoTapped:
-///           state.actionSheet = .init(
-///             title: "What would you like to do?",
-///             buttons: [
-///               .default(TextState("Favorite"), send: .favoriteTapped),
-///               .destructive(TextState("Delete"), send: .deleteTapped),
-///               .cancel(),
-///             ]
-///           )
-///         return .none
-///       }
-///     }
-///    ```
-///
-/// And then, in your view you can use the `.actionSheet(_:send:dismiss:)` method on `View` in order
-/// to present the action sheet in a way that works best with the Composable Architecture:
-///
-///    ```swift
-///     Button("Info") { viewStore.send(.infoTapped) }
-///       .actionSheet(
-///         self.store.scope(state: \.actionSheet),
-///         dismiss: .cancelTapped
-///       )
-///    ```
-///
-/// This makes your reducer in complete control of when the action sheet is shown or dismissed, and
-/// makes it so that any choice made in the action sheet is automatically fed back into the reducer
-/// so that you can handle its logic.
-///
-/// Even better, you can instantly write tests that your action sheet behavior works as expected:
-///
-///    ```swift
-///     let store = TestStore(
-///       initialState: AppState(),
-///       reducer: appReducer,
-///       environment: .mock
-///     )
-///
-///     store.send(.infoTapped) {
-///       $0.actionSheet = .init(
+///     case .infoTapped:
+///       state.actionSheet = .init(
 ///         title: "What would you like to do?",
 ///         buttons: [
 ///           .default(TextState("Favorite"), send: .favoriteTapped),
@@ -100,12 +62,50 @@ import SwiftUI
 ///           .cancel(),
 ///         ]
 ///       )
-///     }
-///     store.send(.favoriteTapped) {
-///       $0.actionSheet = nil
-///       // Also verify that favoriting logic executed correctly
-///     }
-///    ```
+///     return .none
+///   }
+/// }
+/// ```
+///
+/// And then, in your view you can use the `.actionSheet(_:send:dismiss:)` method on `View` in order
+/// to present the action sheet in a way that works best with the Composable Architecture:
+///
+/// ```swift
+/// Button("Info") { viewStore.send(.infoTapped) }
+///   .actionSheet(
+///     self.store.scope(state: \.actionSheet),
+///     dismiss: .cancelTapped
+///   )
+/// ```
+///
+/// This makes your reducer in complete control of when the action sheet is shown or dismissed, and
+/// makes it so that any choice made in the action sheet is automatically fed back into the reducer
+/// so that you can handle its logic.
+///
+/// Even better, you can instantly write tests that your action sheet behavior works as expected:
+///
+/// ```swift
+/// let store = TestStore(
+///   initialState: AppState(),
+///   reducer: appReducer,
+///   environment: .mock
+/// )
+///
+/// store.send(.infoTapped) {
+///   $0.actionSheet = .init(
+///     title: "What would you like to do?",
+///     buttons: [
+///       .default(TextState("Favorite"), send: .favoriteTapped),
+///       .destructive(TextState("Delete"), send: .deleteTapped),
+///       .cancel(),
+///     ]
+///   )
+/// }
+/// store.send(.favoriteTapped) {
+///   $0.actionSheet = nil
+///   // Also verify that favoriting logic executed correctly
+/// }
+/// ```
 ///
 @available(iOS 13, *)
 @available(macCatalyst 13, *)

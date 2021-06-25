@@ -72,7 +72,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
         .eraseToEffect()
 
     case .sortCompletedTodos:
-      state.todos.sortCompleted()
+      state.todos.sort { $1.isComplete && !$0.isComplete }
       return .none
 
     case .todo(id: _, action: .checkBoxToggled):
@@ -152,20 +152,7 @@ struct AppView: View {
   }
 }
 
-extension IdentifiedArray where ID == UUID, Element == Todo {
-  fileprivate mutating func sortCompleted() {
-    // Simulate stable sort
-    self = IdentifiedArray(
-      self.enumerated()
-        .sorted(by: { lhs, rhs in
-          (rhs.element.isComplete && !lhs.element.isComplete) || lhs.offset < rhs.offset
-        })
-        .map(\.element)
-    )
-  }
-}
-
-extension IdentifiedArray where ID == UUID, Element == Todo {
+extension IdentifiedArray where Element == Todo, ID == Element.ID {
   static let mock: Self = [
     Todo(
       description: "Check Mail",

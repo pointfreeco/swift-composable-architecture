@@ -1,3 +1,4 @@
+import OrderedCollections
 import SwiftUI
 
 /// A Composable Architecture-friendly wrapper around `ForEach` that simplifies working with
@@ -9,65 +10,66 @@ import SwiftUI
 ///
 /// For example, a todos app may define the domain and logic associated with an individual todo:
 ///
-///    ```swift
-///     struct TodoState: Equatable, Identifiable {
-///       let id: UUID
-///       var description = ""
-///       var isComplete = false
-///     }
-///     enum TodoAction {
-///       case isCompleteToggled(Bool)
-///       case descriptionChanged(String)
-///     }
-///     struct TodoEnvironment {}
-///     let todoReducer = Reducer<TodoState, TodoAction, TodoEnvironment { ... }
-///    ```
+/// ```swift
+/// struct TodoState: Equatable, Identifiable {
+///   let id: UUID
+///   var description = ""
+///   var isComplete = false
+/// }
+/// enum TodoAction {
+///   case isCompleteToggled(Bool)
+///   case descriptionChanged(String)
+/// }
+/// struct TodoEnvironment {}
+/// let todoReducer = Reducer<TodoState, TodoAction, TodoEnvironment { ... }
+/// ```
 ///
 /// As well as a view with a domain-specific store:
 ///
-///    ```swift
-///     struct TodoView: View {
-///       let store: Store<TodoState, TodoAction>
-///       var body: some View { ... }
-///     }
-///    ```
+/// ```swift
+/// struct TodoView: View {
+///   let store: Store<TodoState, TodoAction>
+///   var body: some View { ... }
+/// }
+/// ```
 ///
 /// For a parent domain to work with a collection of todos, it can hold onto this collection in
 /// state:
 ///
-///    ```swift
-///     struct AppState: Equatable {
-///       var todos: IdentifiedArrayOf<TodoState> = []
-///     }
-///    ```
+/// ```swift
+/// struct AppState: Equatable {
+///   var todos: IdentifiedArrayOf<TodoState> = []
+/// }
+/// ```
 ///
 /// Define a case to handle actions sent to the child domain:
 ///
-///    ```swift
-///     enum AppAction {
-///       case todo(id: TodoState.ID, action: TodoAction)
-///     }
-///    ```
+/// ```swift
+/// enum AppAction {
+///   case todo(id: TodoState.ID, action: TodoAction)
+/// }
+/// ```
 ///
-/// Enhance its reducer using ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87``:
+/// Enhance its reducer using
+/// ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87``:
 ///
-///    ```swift
-///     let appReducer = todoReducer.forEach(
-///       state: \.todos,
-///       action: /AppAction.todo(id:action:),
-///       environment: { _ in TodoEnvironment() }
-///     )
-///    ```
+/// ```swift
+/// let appReducer = todoReducer.forEach(
+///   state: \.todos,
+///   action: /AppAction.todo(id:action:),
+///   environment: { _ in TodoEnvironment() }
+/// )
+/// ```
 ///
 /// And finally render a list of `TodoView`s using ``ForEachStore``:
 ///
-///    ```swift
-///     ForEachStore(
-///       self.store.scope(state: \.todos, AppAction.todo(id:action:))
-///     ) { todoStore in
-///       TodoView(store: todoStore)
-///     }
-///    ```
+/// ```swift
+/// ForEachStore(
+///   self.store.scope(state: \.todos, AppAction.todo(id:action:))
+/// ) { todoStore in
+///   TodoView(store: todoStore)
+/// }
+/// ```
 ///
 public struct ForEachStore<EachState, EachAction, Data, ID, Content>: DynamicViewContent
 where Data: Collection, ID: Hashable, Content: View {
@@ -144,7 +146,9 @@ where Data: Collection, ID: Hashable, Content: View {
   where
     EachContent: View,
     Data == IdentifiedArray<ID, EachState>,
-    Content == WithViewStore<[ID], (ID, EachAction), ForEach<[ID], ID, EachContent>>
+    Content == WithViewStore<
+      OrderedSet<ID>, (ID, EachAction), ForEach<OrderedSet<ID>, ID, EachContent>
+    >
   {
     self.data = store.state.value
     self.content = {

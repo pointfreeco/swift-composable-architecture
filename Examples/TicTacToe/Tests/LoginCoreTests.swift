@@ -56,7 +56,7 @@ class LoginCoreTests: XCTestCase {
   }
 
   func testFlow_DismissEarly_TwoFactor_Integration() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
 
     let store = TestStore(
       initialState: LoginState(),

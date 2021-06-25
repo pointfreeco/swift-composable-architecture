@@ -13,63 +13,63 @@ import SwiftUI
 ///
 /// To use this API, you model all the alert actions in your domain's action enum:
 ///
-///    ```swift
-///     enum AppAction: Equatable {
-///       case cancelTapped
-///       case confirmTapped
-///       case deleteTapped
+/// ```swift
+/// enum AppAction: Equatable {
+///   case cancelTapped
+///   case confirmTapped
+///   case deleteTapped
 ///
-///       // Your other actions
-///     }
-///    ```
+///   // Your other actions
+/// }
+/// ```
 ///
 /// And you model the state for showing the alert in your domain's state, and it can start off
 /// `nil`:
 ///
-///    ```swift
-///     struct AppState: Equatable {
-///       var alert: AlertState<AppAction>?
+/// ```swift
+/// struct AppState: Equatable {
+///   var alert: AlertState<AppAction>?
 ///
-///       // Your other state
-///     }
-///    ```
+///   // Your other state
+/// }
+/// ```
 ///
 /// Then, in the reducer you can construct an ``AlertState`` value to represent the alert you want
 /// to show to the user:
 ///
-///    ```swift
-///     let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, env in
-///       switch action
-///         case .cancelTapped:
-///           state.alert = nil
-///           return .none
+/// ```swift
+/// let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, env in
+///   switch action
+///     case .cancelTapped:
+///       state.alert = nil
+///       return .none
 ///
-///         case .confirmTapped:
-///           state.alert = nil
-///           // Do deletion logic...
+///     case .confirmTapped:
+///       state.alert = nil
+///       // Do deletion logic...
 ///
-///         case .deleteTapped:
-///           state.alert = .init(
-///             title: TextState("Delete"),
-///             message: TextState("Are you sure you want to delete this? It cannot be undone."),
-///             primaryButton: .default(TextState("Confirm"), send: .confirmTapped),
-///             secondaryButton: .cancel()
-///           )
-///         return .none
-///       }
-///     }
-///    ```
+///     case .deleteTapped:
+///       state.alert = .init(
+///         title: TextState("Delete"),
+///         message: TextState("Are you sure you want to delete this? It cannot be undone."),
+///         primaryButton: .default(TextState("Confirm"), send: .confirmTapped),
+///         secondaryButton: .cancel()
+///       )
+///     return .none
+///   }
+/// }
+/// ```
 ///
 /// And then, in your view you can use the `.alert(_:send:dismiss:)` method on `View` in order
 /// to present the alert in a way that works best with the Composable Architecture:
 ///
-///    ```swift
-///     Button("Delete") { viewStore.send(.deleteTapped) }
-///       .alert(
-///         self.store.scope(state: \.alert),
-///         dismiss: .cancelTapped
-///       )
-///    ```
+/// ```swift
+/// Button("Delete") { viewStore.send(.deleteTapped) }
+///   .alert(
+///     self.store.scope(state: \.alert),
+///     dismiss: .cancelTapped
+///   )
+/// ```
 ///
 /// This makes your reducer in complete control of when the alert is shown or dismissed, and makes
 /// it so that any choice made in the alert is automatically fed back into the reducer so that you
@@ -77,26 +77,26 @@ import SwiftUI
 ///
 /// Even better, you can instantly write tests that your alert behavior works as expected:
 ///
-///    ```swift
-///     let store = TestStore(
-///       initialState: AppState(),
-///       reducer: appReducer,
-///       environment: .mock
-///     )
+/// ```swift
+/// let store = TestStore(
+///   initialState: AppState(),
+///   reducer: appReducer,
+///   environment: .mock
+/// )
 ///
-///     store.send(.deleteTapped) {
-///       $0.alert = .init(
-///         title: TextState("Delete"),
-///         message: TextState("Are you sure you want to delete this? It cannot be undone."),
-///         primaryButton: .default(TextState("Confirm"), send: .confirmTapped),
-///         secondaryButton: .cancel(send: .cancelTapped)
-///       )
-///     }
-///     store.send(.deleteTapped) {
-///       $0.alert = nil
-///       // Also verify that delete logic executed correctly
-///     }
-///    ```
+/// store.send(.deleteTapped) {
+///   $0.alert = .init(
+///     title: TextState("Delete"),
+///     message: TextState("Are you sure you want to delete this? It cannot be undone."),
+///     primaryButton: .default(TextState("Confirm"), send: .confirmTapped),
+///     secondaryButton: .cancel(send: .cancelTapped)
+///   )
+/// }
+/// store.send(.deleteTapped) {
+///   $0.alert = nil
+///   // Also verify that delete logic executed correctly
+/// }
+/// ```
 ///
 public struct AlertState<Action> {
   public let id = UUID()

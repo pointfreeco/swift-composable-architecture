@@ -10,70 +10,70 @@
     /// For example, let's say we have a very simple counter application, where a user can increment
     /// and decrement a number. The state and actions are simple enough:
     ///
-    ///    ```swift
-    ///     struct CounterState: Equatable {
-    ///       var count = 0
-    ///     }
+    /// ```swift
+    /// struct CounterState: Equatable {
+    ///   var count = 0
+    /// }
     ///
-    ///     enum CounterAction: Equatable {
-    ///       case decrementButtonTapped
-    ///       case incrementButtonTapped
-    ///     }
-    ///    ```
+    /// enum CounterAction: Equatable {
+    ///   case decrementButtonTapped
+    ///   case incrementButtonTapped
+    /// }
+    /// ```
     ///
     /// Let's throw in a side effect. If the user attempts to decrement the counter below zero, the
     /// application should refuse and play an alert sound instead.
     ///
     /// We can model playing a sound in the environment with an effect:
     ///
-    ///    ```swift
-    ///     struct CounterEnvironment {
-    ///       let playAlertSound: () -> Effect<Never, Never>
-    ///     }
-    ///    ```
+    /// ```swift
+    /// struct CounterEnvironment {
+    ///   let playAlertSound: () -> Effect<Never, Never>
+    /// }
+    /// ```
     ///
     /// Now that we've defined the domain, we can describe the logic in a reducer:
     ///
-    ///    ```swift
-    ///     let counterReducer = Reducer<
-    ///       CounterState, CounterAction, CounterEnvironment
-    ///     > { state, action, environment in
-    ///       switch action {
-    ///       case .decrementButtonTapped:
-    ///         if state > 0 {
-    ///           state.count -= 0
-    ///           return .none
-    ///         } else {
-    ///           return environment.playAlertSound()
-    ///             .fireAndForget()
-    ///         }
-    ///
-    ///       case .incrementButtonTapped:
-    ///         state.count += 1
-    ///         return .non
-    ///       }
+    /// ```swift
+    /// let counterReducer = Reducer<
+    ///   CounterState, CounterAction, CounterEnvironment
+    /// > { state, action, environment in
+    ///   switch action {
+    ///   case .decrementButtonTapped:
+    ///     if state > 0 {
+    ///       state.count -= 0
+    ///       return .none
+    ///     } else {
+    ///       return environment.playAlertSound()
+    ///         .fireAndForget()
     ///     }
-    ///    ```
+    ///
+    ///   case .incrementButtonTapped:
+    ///     state.count += 1
+    ///     return .non
+    ///   }
+    /// }
+    /// ```
     ///
     /// Let's say we want to write a test for the increment path. We can see in the reducer that it
     /// should never play an alert, so we can configure the environment with an effect that will
     /// fail if it ever executes:
     ///
-    ///    ```swift
-    ///     func testIncrement() {
-    ///       let store = TestStore(
-    ///         initialState: CounterState(count: 0)
-    ///         reducer: counterReducer,
-    ///         environment: CounterEnvironment(
-    ///           playSound: .failing("playSound")
-    ///         )
-    ///       )
+    /// ```swift
+    /// func testIncrement() {
+    ///   let store = TestStore(
+    ///     initialState: CounterState(count: 0)
+    ///     reducer: counterReducer,
+    ///     environment: CounterEnvironment(
+    ///       playSound: .failing("playSound")
+    ///     )
+    ///   )
     ///
-    ///       store.send(.increment) {
-    ///         $0.count = 1
-    ///       }
-    ///     }
-    ///    ```
+    ///   store.send(.increment) {
+    ///     $0.count = 1
+    ///   }
+    /// }
+    /// ```
     ///
     /// By using a `.failing` effect in our environment we have strengthened the assertion and made
     /// the test easier to understand at the same time. We can see, without consulting the reducer
