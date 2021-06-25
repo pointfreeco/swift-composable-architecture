@@ -845,15 +845,14 @@ public struct Reducer<State, Action, Environment> {
   ///     generally considered a logic error, as a child reducer cannot process a child action
   ///     for unavailable child state.
   /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
-  public func forEach<GlobalState, GlobalAction, GlobalEnvironment>(
-    state toLocalState: WritableKeyPath<GlobalState, IdentifiedArray<State>>,
-    action toLocalAction: CasePath<GlobalAction, (State.ID, Action)>,
+  public func forEach<GlobalState, GlobalAction, GlobalEnvironment, ID>(
+    state toLocalState: WritableKeyPath<GlobalState, IdentifiedArray<ID, State>>,
+    action toLocalAction: CasePath<GlobalAction, (ID, Action)>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
     breakpointOnNil: Bool = true,
     _ file: StaticString = #file,
     _ line: UInt = #line
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment>
-  where State: Identifiable {
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
     .init { globalState, globalAction, globalEnvironment in
       guard let (id, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
       if globalState[keyPath: toLocalState][id: id] == nil {

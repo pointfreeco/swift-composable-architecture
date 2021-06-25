@@ -1,12 +1,6 @@
 import Combine
 import SwiftUI
 
-// NB: Deprecated after TODO:
-
-@available(*, unavailable, renamed: "IdentifiedArray")
-public typealias IdentifiedArrayOf<Element> = IdentifiedArray<Element>
-where Element: Identifiable
-
 // NB: Deprecated after 0.17.0:
 
 extension IfLetStore {
