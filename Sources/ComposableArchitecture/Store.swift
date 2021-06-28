@@ -280,9 +280,12 @@ public final class Store<State, Action> {
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> Store<LocalState, LocalAction> {
+    var isSending = false
     let localStore = Store<LocalState, LocalAction>(
       initialState: toLocalState(self.state.value),
       reducer: .init { localState, localAction, _ in
+        isSending = true
+        defer { isSending = false }
         self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
         return .none
@@ -290,7 +293,11 @@ public final class Store<State, Action> {
       environment: ()
     )
     localStore.parentCancellable = self.state
-      .sink { [weak localStore] newValue in localStore?.state.value = toLocalState(newValue) }
+      .dropFirst()
+      .sink { [weak localStore] newValue in
+        guard !isSending else { return }
+        localStore?.state.value = toLocalState(newValue)
+      }
     return localStore
   }
 
@@ -420,15 +427,20 @@ public struct StorePublisher<State>: Publisher {
   public typealias Output = State
   public typealias Failure = Never
 
+  private let isDuplicate: (State, State) -> Bool
   public let upstream: AnyPublisher<State, Never>
 
   public func receive<S>(subscriber: S)
   where S: Subscriber, Failure == S.Failure, Output == S.Input {
-    self.upstream.subscribe(subscriber)
+    self.upstream.removeDuplicates(by: isDuplicate).subscribe(subscriber)
   }
 
-  init<P>(_ upstream: P) where P: Publisher, Failure == P.Failure, Output == P.Output {
+  init<P>(
+    _ upstream: P,
+    removeDuplicates isDuplicate: @escaping (State, State) -> Bool
+  ) where P: Publisher, Failure == P.Failure, Output == P.Output {
     self.upstream = upstream.eraseToAnyPublisher()
+    self.isDuplicate = isDuplicate
   }
 
   /// Returns the resulting publisher of a given key path.
@@ -436,6 +448,6 @@ public struct StorePublisher<State>: Publisher {
     dynamicMember keyPath: KeyPath<State, LocalState>
   ) -> StorePublisher<LocalState>
   where LocalState: Equatable {
-    .init(self.upstream.map(keyPath).removeDuplicates())
+    .init(self.upstream.map(keyPath), removeDuplicates: ==)
   }
 }
