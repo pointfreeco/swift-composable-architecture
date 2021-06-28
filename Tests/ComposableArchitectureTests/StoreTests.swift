@@ -435,7 +435,6 @@ final class StoreTests: XCTestCase {
     viewStore.send(0)
 
     XCTAssertEqual(emissions, [0, 3])
-  }
 
   func testSyncEffectsFromEnvironment() {
     enum Action: Equatable {

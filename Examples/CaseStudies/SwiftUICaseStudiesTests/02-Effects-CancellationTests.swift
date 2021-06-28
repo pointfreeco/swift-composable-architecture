@@ -10,8 +10,8 @@ class EffectsCancellationTests: XCTestCase {
       initialState: .init(),
       reducer: effectsCancellationReducer,
       environment: .init(
-        mainQueue: .immediate,
-        numberFact: { n in Effect(value: "\(n) is a good number Brent") }
+        fact: .init(fetch: { n in Effect(value: "\(n) is a good number Brent") }),
+        mainQueue: .immediate
       )
     )
 
@@ -35,15 +35,15 @@ class EffectsCancellationTests: XCTestCase {
       initialState: .init(),
       reducer: effectsCancellationReducer,
       environment: .init(
-        mainQueue: .immediate,
-        numberFact: { _ in Fail(error: NumbersApiError()).eraseToEffect() }
+        fact: .init(fetch: { _ in Fail(error: FactClient.Error()).eraseToEffect() }),
+        mainQueue: .immediate
       )
     )
 
     store.send(.triviaButtonTapped) {
       $0.isTriviaRequestInFlight = true
     }
-    store.receive(.triviaResponse(.failure(NumbersApiError()))) {
+    store.receive(.triviaResponse(.failure(FactClient.Error()))) {
       $0.isTriviaRequestInFlight = false
     }
   }
@@ -55,13 +55,13 @@ class EffectsCancellationTests: XCTestCase {
   // test to fail, showing that we are exhaustively asserting that the effect truly is canceled and
   // will never emit.
   func testTrivia_CancelButtonCancelsRequest() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
     let store = TestStore(
       initialState: .init(),
       reducer: effectsCancellationReducer,
       environment: .init(
-        mainQueue: scheduler.eraseToAnyScheduler(),
-        numberFact: { n in Effect(value: "\(n) is a good number Brent") }
+        fact: .init(fetch: { n in Effect(value: "\(n) is a good number Brent") }),
+        mainQueue: scheduler.eraseToAnyScheduler()
       )
     )
 
@@ -75,13 +75,13 @@ class EffectsCancellationTests: XCTestCase {
   }
 
   func testTrivia_PlusMinusButtonsCancelsRequest() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
     let store = TestStore(
       initialState: .init(),
       reducer: effectsCancellationReducer,
       environment: .init(
-        mainQueue: scheduler.eraseToAnyScheduler(),
-        numberFact: { n in Effect(value: "\(n) is a good number Brent") }
+        fact: .init(fetch: { n in Effect(value: "\(n) is a good number Brent") }),
+        mainQueue: scheduler.eraseToAnyScheduler()
       )
     )
 

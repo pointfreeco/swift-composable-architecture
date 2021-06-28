@@ -17,6 +17,7 @@
 		CA410EE0247A15FE00E41798 /* 02-Effects-WebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA410EDF247A15FE00E41798 /* 02-Effects-WebSocket.swift */; };
 		CA410EE2247C73B400E41798 /* 02-Effects-WebSocketTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA410EE1247C73B400E41798 /* 02-Effects-WebSocketTests.swift */; };
 		CA50BE6024A8F46500FE7DBA /* 01-GettingStarted-AlertsAndActionSheetsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA50BE5F24A8F46500FE7DBA /* 01-GettingStarted-AlertsAndActionSheetsTests.swift */; };
+		CA5ECF92267A79F0002067FF /* FactClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5ECF91267A79F0002067FF /* FactClient.swift */; };
 		CA6AC2642451135C00C71CB3 /* ReusableComponents-Download.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6AC2602451135C00C71CB3 /* ReusableComponents-Download.swift */; };
 		CA6AC2652451135C00C71CB3 /* CircularProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6AC2612451135C00C71CB3 /* CircularProgressView.swift */; };
 		CA6AC2662451135C00C71CB3 /* DownloadComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6AC2622451135C00C71CB3 /* DownloadComponent.swift */; };
@@ -157,6 +158,7 @@
 		CA410EDF247A15FE00E41798 /* 02-Effects-WebSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-WebSocket.swift"; sourceTree = "<group>"; };
 		CA410EE1247C73B400E41798 /* 02-Effects-WebSocketTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-WebSocketTests.swift"; sourceTree = "<group>"; };
 		CA50BE5F24A8F46500FE7DBA /* 01-GettingStarted-AlertsAndActionSheetsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-AlertsAndActionSheetsTests.swift"; sourceTree = "<group>"; };
+		CA5ECF91267A79F0002067FF /* FactClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FactClient.swift; sourceTree = "<group>"; };
 		CA6AC2602451135C00C71CB3 /* ReusableComponents-Download.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ReusableComponents-Download.swift"; sourceTree = "<group>"; };
 		CA6AC2612451135C00C71CB3 /* CircularProgressView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircularProgressView.swift; sourceTree = "<group>"; };
 		CA6AC2622451135C00C71CB3 /* DownloadComponent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DownloadComponent.swift; sourceTree = "<group>"; };
@@ -413,6 +415,7 @@
 				DCE63B70245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift */,
 				DCC68EE22447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift */,
 				DC2E370C24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift */,
+				CA5ECF91267A79F0002067FF /* FactClient.swift */,
 				DC89C41824460F95006900B9 /* SceneDelegate.swift */,
 				DC89C41C24460F96006900B9 /* Assets.xcassets */,
 				CA6AC25F2451131C00C71CB3 /* 04-HigherOrderReducers-ResuableOfflineDownloads */,
@@ -749,6 +752,7 @@
 				DC89C44724461431006900B9 /* ActivityIndicator.swift in Sources */,
 				CAA9ADC624465C810003A984 /* 02-Effects-Cancellation.swift in Sources */,
 				DC2E370D24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift in Sources */,
+				CA5ECF92267A79F0002067FF /* FactClient.swift in Sources */,
 				DC9EB4172450CBD2005F413B /* UIViewRepresented.swift in Sources */,
 				DC89C41924460F95006900B9 /* SceneDelegate.swift in Sources */,
 				CA6AC2652451135C00C71CB3 /* CircularProgressView.swift in Sources */,
