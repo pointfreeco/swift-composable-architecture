@@ -64,16 +64,16 @@ final class ViewStoreTests: XCTestCase {
     XCTAssertEqual(0, subEqualityChecks)
     viewStore4.send(())
     XCTAssertEqual(4, equalityChecks)
+    XCTAssertEqual(4, subEqualityChecks)
+    viewStore4.send(())
+    XCTAssertEqual(8, equalityChecks)
     XCTAssertEqual(8, subEqualityChecks)
     viewStore4.send(())
     XCTAssertEqual(12, equalityChecks)
-    XCTAssertEqual(20, subEqualityChecks)
+    XCTAssertEqual(12, subEqualityChecks)
     viewStore4.send(())
-    XCTAssertEqual(20, equalityChecks)
-    XCTAssertEqual(32, subEqualityChecks)
-    viewStore4.send(())
-    XCTAssertEqual(28, equalityChecks)
-    XCTAssertEqual(44, subEqualityChecks)
+    XCTAssertEqual(16, equalityChecks)
+    XCTAssertEqual(16, subEqualityChecks)
   }
 }
 
