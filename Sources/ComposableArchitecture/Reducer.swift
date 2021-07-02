@@ -848,7 +848,7 @@ public struct Reducer<State, Action, Environment> {
   public func forEach<GlobalState, GlobalAction, GlobalEnvironment, ID>(
     state toLocalState: WritableKeyPath<GlobalState, IdentifiedArray<ID, State>>,
     action toLocalAction: CasePath<GlobalAction, (ID, Action)>,
-    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+    environment toLocalEnvironment: @escaping (ID, GlobalEnvironment) -> Environment,
     breakpointOnNil: Bool = true,
     _ file: StaticString = #file,
     _ line: UInt = #line
@@ -893,7 +893,7 @@ public struct Reducer<State, Action, Environment> {
         .reducer(
           &globalState[keyPath: toLocalState][id: id]!,
           localAction,
-          toLocalEnvironment(globalEnvironment)
+          toLocalEnvironment(id, globalEnvironment)
         )
         .map { toLocalAction.embed((id, $0)) }
     }
