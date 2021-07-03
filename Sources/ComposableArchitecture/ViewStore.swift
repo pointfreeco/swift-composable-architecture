@@ -79,8 +79,9 @@ public final class ViewStore<State, Action>: ObservableObject {
     self.viewCancellable = store.state
       .removeDuplicates(by: isDuplicate)
       .sink { [weak self] in
-        self?._state.send($0)
-        self?.objectWillChange.send()
+        guard let self = self else { return }
+        self._state.send($0)
+        self.objectWillChange.send()
       }
   }
 
