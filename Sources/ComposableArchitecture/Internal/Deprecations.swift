@@ -187,14 +187,14 @@ extension WithViewStore {
 
 // NB: Deprecated after 0.1.3:
 
-extension Effect {
-  @available(*, unavailable, renamed: "run")
-  public static func async(
-    _ work: @escaping (Effect.Subscriber) -> Cancellable
-  ) -> Self {
-    self.run(work)
-  }
-}
+//extension Effect {
+//  @available(*, unavailable, renamed: "run")
+//  public static func async(
+//    _ work: @escaping (Effect.Subscriber) -> Cancellable
+//  ) -> Self {
+//    self.run(work)
+//  }
+//}
 
 extension Effect where Failure == Swift.Error {
   @available(*, unavailable, renamed: "catching")

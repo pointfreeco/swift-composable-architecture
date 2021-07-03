@@ -49,7 +49,7 @@ class PullToRefreshViewModel: ObservableObject {
 
     do {
       try await self.handle?.get()
-//      self.handle = nil // TODO: talk about this
+      self.handle = nil
     } catch {
       // TODO: do some error handling
     }
@@ -199,7 +199,9 @@ struct PullToRefreshView: View {
         }
       }
       .refreshable {
-        await viewStore.send(.refresh, while: \.isLoading)
+        // await viewStore.send(.refresh, while: \.isLoading)
+
+        // await viewStore.send(.refresh, receive: /PullToRefreshAction.numberFactResponse)
       }
     }
   }

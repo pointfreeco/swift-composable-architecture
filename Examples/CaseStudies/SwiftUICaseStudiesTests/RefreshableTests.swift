@@ -52,7 +52,10 @@ class RefreshableTests: XCTestCase {
 
   func testVanilla2() async {
     let viewModel = PullToRefreshViewModel(
-      fetch: { "\($0) is a good number."}
+      fetch: {
+      await Task.sleep(1_000_000)
+      return "\($0) is a good number."
+    }
     )
 
     viewModel.incrementButtonTapped()
@@ -61,9 +64,35 @@ class RefreshableTests: XCTestCase {
     let handle = async {
       await viewModel.getFact()
     }
+    await Task.sleep(500_000)
     XCTAssertEqual(viewModel.isLoading, true)
-
     await handle.get()
+    XCTAssertEqual(viewModel.isLoading, false)
+
+    XCTAssertEqual(viewModel.fact, "1 is a good number.")
+    XCTAssertEqual(viewModel.isLoading, false)
+  }
+
+  func testVanilla3() async {
+    let viewModel = PullToRefreshViewModel(
+      fetch: {
+      await Task.sleep(1_000_000)
+      return "\($0) is a good number."
+    }
+    )
+
+    viewModel.incrementButtonTapped()
+    XCTAssertEqual(viewModel.count, 1)
+
+    let handle = async {
+      await viewModel.getFact()
+    }
+    await Task.sleep(500_000)
+    XCTAssertEqual(viewModel.isLoading, true)
+    viewModel.cancelButtonTapped()
+    XCTAssertEqual(viewModel.isLoading, false)
+    await handle.get()
+
     XCTAssertEqual(viewModel.fact, "1 is a good number.")
     XCTAssertEqual(viewModel.isLoading, false)
   }
