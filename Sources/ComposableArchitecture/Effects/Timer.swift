@@ -22,65 +22,65 @@ extension Effect where Failure == Never {
   /// To start and stop a timer in your feature you can create the timer effect from an action
   /// and then use the ``Effect/cancel(id:)`` effect to stop the timer:
   ///
-  ///    ```swift
-  ///     struct AppState {
-  ///       var count = 0
-  ///     }
+  /// ```swift
+  /// struct AppState {
+  ///   var count = 0
+  /// }
   ///
-  ///     enum AppAction {
-  ///       case startButtonTapped, stopButtonTapped, timerTicked
-  ///     }
+  /// enum AppAction {
+  ///   case startButtonTapped, stopButtonTapped, timerTicked
+  /// }
   ///
-  ///     struct AppEnvironment {
-  ///       var mainQueue: AnySchedulerOf<DispatchQueue>
-  ///     }
+  /// struct AppEnvironment {
+  ///   var mainQueue: AnySchedulerOf<DispatchQueue>
+  /// }
   ///
-  ///     let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, env in
-  ///       struct TimerId: Hashable {}
+  /// let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, env in
+  ///   struct TimerId: Hashable {}
   ///
-  ///       switch action {
-  ///       case .startButtonTapped:
-  ///         return Effect.timer(id: TimerId(), every: 1, on: env.mainQueue)
-  ///           .map { _ in .timerTicked }
+  ///   switch action {
+  ///   case .startButtonTapped:
+  ///     return Effect.timer(id: TimerId(), every: 1, on: env.mainQueue)
+  ///       .map { _ in .timerTicked }
   ///
-  ///       case .stopButtonTapped:
-  ///         return .cancel(id: TimerId())
+  ///   case .stopButtonTapped:
+  ///     return .cancel(id: TimerId())
   ///
-  ///       case let .timerTicked:
-  ///         state.count += 1
-  ///         return .none
-  ///     }
-  ///    ```
+  ///   case let .timerTicked:
+  ///     state.count += 1
+  ///     return .none
+  /// }
+  /// ```
   ///
   /// Then to test the timer in this feature you can use a test scheduler to advance time:
   ///
-  ///    ```swift
-  ///     func testTimer() {
-  ///       let scheduler = DispatchQueue.test
+  /// ```swift
+  /// func testTimer() {
+  ///   let scheduler = DispatchQueue.test
   ///
-  ///       let store = TestStore(
-  ///         initialState: .init(),
-  ///         reducer: appReducer,
-  ///         envirnoment: .init(
-  ///           mainQueue: scheduler.eraseToAnyScheduler()
-  ///         )
-  ///       )
+  ///   let store = TestStore(
+  ///     initialState: .init(),
+  ///     reducer: appReducer,
+  ///     environment: .init(
+  ///       mainQueue: scheduler.eraseToAnyScheduler()
+  ///     )
+  ///   )
   ///
-  ///       store.send(.startButtonTapped)
+  ///   store.send(.startButtonTapped)
   ///
-  ///       scheduler.advance(by: .seconds(1))
-  ///       store.receive(.timerTicked) { $0.count = 1 }
+  ///   scheduler.advance(by: .seconds(1))
+  ///   store.receive(.timerTicked) { $0.count = 1 }
   ///
-  ///       scheduler.advance(by: .seconds(5))
-  ///       store.receive(.timerTicked) { $0.count = 2 }
-  ///       store.receive(.timerTicked) { $0.count = 3 }
-  ///       store.receive(.timerTicked) { $0.count = 4 }
-  ///       store.receive(.timerTicked) { $0.count = 5 }
-  ///       store.receive(.timerTicked) { $0.count = 6 }
+  ///   scheduler.advance(by: .seconds(5))
+  ///   store.receive(.timerTicked) { $0.count = 2 }
+  ///   store.receive(.timerTicked) { $0.count = 3 }
+  ///   store.receive(.timerTicked) { $0.count = 4 }
+  ///   store.receive(.timerTicked) { $0.count = 5 }
+  ///   store.receive(.timerTicked) { $0.count = 6 }
   ///
-  ///       store.send(.stopButtonTapped)
-  ///     }
-  ///    ```
+  ///   store.send(.stopButtonTapped)
+  /// }
+  /// ```
   ///
   /// - Note: This effect is only meant to be used with features built in the Composable
   ///   Architecture, and returned from a reducer. If you want a testable alternative to
