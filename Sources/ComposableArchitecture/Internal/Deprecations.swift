@@ -5,7 +5,7 @@ import SwiftUI
 // NB: Deprecated after 0.21.0:
 
 extension Reducer {
-  @available(*, deprecated, message: "This method no longer takes a CasePath. Pass the case path's `extract(from:)` method directly.")
+  @available(*, deprecated, message: "This method no longer takes a CasePath. Pass a case path expression directly, or pass the case path’s `extract(from:)` method.")
   @_disfavoredOverload
   public func binding(action toBindingAction: CasePath<Action, BindingAction<State>>) -> Self {
     Self { state, action, environment in
