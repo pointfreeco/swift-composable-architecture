@@ -167,7 +167,7 @@
   /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
   /// not expect it would cause a test failure.
   ///
-  public final class TestStore<State, LocalState, Action: Equatable, LocalAction, Environment> {
+  public final class TestStore<State, LocalState, Action, LocalAction, Environment> {
     public var environment: Environment
 
     private let file: StaticString
@@ -359,7 +359,7 @@
       file: StaticString = #file,
       line: UInt = #line,
       _ update: @escaping (inout LocalState) throws -> Void = { _ in }
-    ) {
+    ) where Action: Equatable {
       guard !self.receivedActions.isEmpty else {
         XCTFail(
           """
@@ -414,7 +414,7 @@
       _ steps: Step...,
       file: StaticString = #file,
       line: UInt = #line
-    ) {
+    ) where Action: Equatable {
       assert(steps, file: file, line: line)
     }
 
@@ -423,7 +423,7 @@
       _ steps: [Step],
       file: StaticString = #file,
       line: UInt = #line
-    ) {
+    ) where Action: Equatable {
 
       func assert(step: Step) {
         switch step.type {
