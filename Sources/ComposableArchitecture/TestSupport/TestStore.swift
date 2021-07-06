@@ -354,12 +354,44 @@
       }
     }
 
+    private func expectedStateShouldMatch(
+      expected: LocalState,
+      actual: LocalState,
+      file: StaticString,
+      line: UInt
+    ) {
+      if expected != actual {
+        let diff =
+          debugDiff(expected, actual)
+          .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
+          ?? """
+          Expected:
+          \(String(describing: expected).indent(by: 2))
+
+          Actual:
+          \(String(describing: actual).indent(by: 2))
+          """
+
+        XCTFail(
+          """
+          State change does not match expectation: …
+
+          \(diff)
+          """,
+          file: file,
+          line: line
+        )
+      }
+    }
+  }
+
+  extension TestStore where LocalState: Equatable, Action: Equatable {
     public func receive(
       _ expectedAction: Action,
       file: StaticString = #file,
       line: UInt = #line,
       _ update: @escaping (inout LocalState) throws -> Void = { _ in }
-    ) where Action: Equatable {
+    ) {
       guard !self.receivedActions.isEmpty else {
         XCTFail(
           """
@@ -414,7 +446,7 @@
       _ steps: Step...,
       file: StaticString = #file,
       line: UInt = #line
-    ) where Action: Equatable {
+    ) {
       assert(steps, file: file, line: line)
     }
 
@@ -423,7 +455,7 @@
       _ steps: [Step],
       file: StaticString = #file,
       line: UInt = #line
-    ) where Action: Equatable {
+    ) {
 
       func assert(step: Step) {
         switch step.type {
@@ -477,36 +509,6 @@
       steps.forEach(assert(step:))
 
       self.completed()
-    }
-
-    private func expectedStateShouldMatch(
-      expected: LocalState,
-      actual: LocalState,
-      file: StaticString,
-      line: UInt
-    ) {
-      if expected != actual {
-        let diff =
-          debugDiff(expected, actual)
-          .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
-          ?? """
-          Expected:
-          \(String(describing: expected).indent(by: 2))
-
-          Actual:
-          \(String(describing: actual).indent(by: 2))
-          """
-
-        XCTFail(
-          """
-          State change does not match expectation: …
-
-          \(diff)
-          """,
-          file: file,
-          line: line
-        )
-      }
     }
   }
 
