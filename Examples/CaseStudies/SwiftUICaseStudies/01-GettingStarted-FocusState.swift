@@ -10,6 +10,7 @@ struct FocusDemoState: Equatable {
 }
 
 enum FocusDemoAction: Equatable {
+  case binding(BindingAction<FocusDemoState>)
   case focus(FocusDemoState.Field?)
 }
 
@@ -19,11 +20,14 @@ let focusDemoReducer = Reducer<
   Void
 > { state, action, environment in
   switch action {
+  case .binding:
+    return .none
   case let .focus(focus):
     state.focusedField = focus
     return .none
   }
 }
+  .binding(action: /FocusDemoAction.binding)
 
 struct FocusDemoView: View {
   let store: Store<FocusDemoState, FocusDemoAction>
@@ -60,11 +64,14 @@ struct FocusDemoView: View {
           Text("Current focus: \(viewStore.focusedField?.rawValue ?? "None")")
         }
       }
+//      .synchronize(
+//        viewStore.binding(get: \.focusedField, send: <#T##(LocalState) -> Action#>)
+//      )
     }
-    .synchronize(
-      self.store.scope(state: \.focusedField, action: FocusDemoAction.focus),
-      with: self.$focus
-    )
+//    .synchronize(
+//      self.store.scope(state: \.focusedField, action: FocusDemoAction.focus),
+//      with: self.$focus
+//    )
   }
 }
 
@@ -75,7 +82,10 @@ extension View {
   ) -> some View {
     self.synchronize(
       store,
-      with: Binding(get: { binding.wrappedValue }, set: { binding.wrappedValue = $0 })
+      with: Binding(
+        get: { binding.wrappedValue },
+        set: { binding.wrappedValue = $0 }
+      )
     )
   }
 
@@ -88,6 +98,15 @@ extension View {
         .onChange(of: viewStore.state) { binding.wrappedValue = $0 }
         .onChange(of: binding.wrappedValue) { viewStore.send($0) }
     }
+  }
+
+  func synchronize<Value: Equatable>(
+    _ a: Binding<Value>,
+    with b: Binding<Value>
+  ) -> some View {
+    self
+      .onChange(of: a.wrappedValue) { a.wrappedValue = $0 }
+      .onChange(of: b.wrappedValue) { b.wrappedValue = $0 }
   }
 }
 

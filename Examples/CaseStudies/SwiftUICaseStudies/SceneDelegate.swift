@@ -13,8 +13,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     self.window?.rootViewController = UIHostingController(
       rootView:
 //        FocusDemoView_Previews.previews
-//       PullToRefresh_Previews.previews
-      VanillaPullToRefresh_Previews.previews
+       PullToRefresh_Previews.previews
+//      VanillaPullToRefresh_Previews.previews
       
 //        RootView(
 //        store: .init(

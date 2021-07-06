@@ -9,8 +9,8 @@ class RefreshableTests: XCTestCase {
       initialState: .init(),
       reducer: pullToRefreshReducer,
       environment: .init(
-        mainQueue: .immediate,
-        numberFact: { .init(value: "\($0) is a good number.") }
+        fact: .init { .init(value: "\($0) is a good number.") },
+        mainQueue: .immediate
       )
     )
 
@@ -21,7 +21,7 @@ class RefreshableTests: XCTestCase {
       $0.isLoading = true
     }
     // Explain why it's ok to have this duplication of string
-    store.receive(.numberFactResponse(.success("1 is a good number."))) {
+    store.receive(.factResponse(.success("1 is a good number."))) {
       $0.isLoading = false
       $0.fact = "1 is a good number."
     }
@@ -34,14 +34,11 @@ class RefreshableTests: XCTestCase {
       initialState: .init(),
       reducer: pullToRefreshReducer,
       environment: .init(
-        mainQueue: mainQueue.eraseToAnyScheduler(),
-        numberFact: { .init(value: "\($0) is a good number.") }
+        fact: .init { .init(value: "\($0) is a good number.") },
+        mainQueue: mainQueue.eraseToAnyScheduler()
       )
     )
 
-    store.send(.incrementButtonTapped) {
-      $0.count = 1
-    }
     store.send(.refresh) {
       $0.isLoading = true
     }

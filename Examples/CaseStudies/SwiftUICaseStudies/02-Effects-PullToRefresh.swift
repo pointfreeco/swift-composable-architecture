@@ -1,4 +1,5 @@
 import Combine
+import CombineSchedulers
 import ComposableArchitecture
 import SwiftUI
 
@@ -56,10 +57,8 @@ class PullToRefreshViewModel: ObservableObject {
   }
 
   func cancelButtonTapped() {
-//    withAnimation {
-      self.handle?.cancel()
-      self.handle = nil
-//    }
+    self.handle?.cancel()
+    self.handle = nil
   }
 
   var isLoading: Bool {
@@ -125,13 +124,13 @@ enum PullToRefreshAction: Equatable {
   case cancelButtonTapped
   case decrementButtonTapped
   case incrementButtonTapped
-  case numberFactResponse(Result<String, NumbersApiError>)
+  case factResponse(Result<String, FactClient.Error>)
   case refresh
 }
 
 struct PullToRefreshEnvironment {
+  var fact: FactClient
   var mainQueue: AnySchedulerOf<DispatchQueue>
-  var numberFact: (Int) -> Effect<String, NumbersApiError>
 }
 
 let pullToRefreshReducer = Reducer<
@@ -156,23 +155,23 @@ let pullToRefreshReducer = Reducer<
     state.fact = nil
     return .none
 
-  case let .numberFactResponse(.success(fact)):
+  case let .factResponse(.success(fact)):
     state.fact = fact
     state.isLoading = false
     return .none
 
-  case .numberFactResponse(.failure):
+  case .factResponse(.failure):
     state.isLoading = false
     return .none
 
   case .refresh:
     state.fact = nil
     state.isLoading = true
-    return environment.numberFact(state.count)
+    return environment.fact.fetch(state.count)
       .delay(for: 2, scheduler: environment.mainQueue.animation())
       .catchToEffect()
-      .map(PullToRefreshAction.numberFactResponse)
-      .cancellable(id: CancelId())
+      .map(PullToRefreshAction.factResponse)
+      .cancellable(id: CancelId()) // TODO: canel in flight?
   }
 }
   .debug()
@@ -199,9 +198,8 @@ struct PullToRefreshView: View {
         }
       }
       .refreshable {
-        // await viewStore.send(.refresh, while: \.isLoading)
-
-        // await viewStore.send(.refresh, receive: /PullToRefreshAction.numberFactResponse)
+//        viewStore.send(.refresh)
+        await viewStore.send(.refresh, while: \.isLoading)
       }
     }
   }
@@ -214,8 +212,8 @@ struct PullToRefresh_Previews: PreviewProvider {
         initialState: .init(),
         reducer: pullToRefreshReducer,
         environment: PullToRefreshEnvironment(
-          mainQueue: .main,
-          numberFact: liveNumberFact(for:)
+          fact: .live,
+          mainQueue: .main
         )
       )
     )
@@ -224,25 +222,33 @@ struct PullToRefresh_Previews: PreviewProvider {
 
 extension ViewStore {
   @available(iOS 15.0, macOS 12.0, macCatalyst 15, tvOS 15, watchOS 15, *)
-  func send(_ action: Action, `while`: @escaping (State) -> Bool) async {
+  func send(
+    _ action: Action,
+    `while`: @escaping (State) -> Bool,
+    onCancel: Action? = nil
+  ) async {
     self.send(action)
 
     var cancellable: Cancellable?
-
-    await withTaskCancellationHandler(handler: { [cancellable] in cancellable?.cancel() }) {
+//
+//    await withTaskCancellationHandler(
+//      handler: { [cancellable] in
+//      cancellable?.cancel()
+//      if let onCancel = onCancel {
+//        self.send(onCancel)
+//      }
+//    }
+//    ) {
       await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
         cancellable = self.publisher
           .filter { !`while`($0) }
           .prefix(1)
-          .sink(
-            receiveCompletion: { _ in
+          .sink { _ in
             continuation.resume(returning: ())
             _ = cancellable
-            cancellable = nil
-          },
-            receiveValue: { _ in }
-          )
+//            cancellable = nil
+          }
       }
-    }
+//    }
   }
 }
