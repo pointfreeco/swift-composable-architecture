@@ -1,5 +1,21 @@
+import CasePaths
 import Combine
 import SwiftUI
+
+// NB: Deprecated after 0.21.0:
+
+extension Reducer {
+  @available(*, deprecated, message: "This method no longer takes a CasePath. Pass the case path's `extract(from:)` method directly.")
+  @_disfavoredOverload
+  public func binding(action toBindingAction: CasePath<Action, BindingAction<State>>) -> Self {
+    Self { state, action, environment in
+      toBindingAction.extract(from: action)?.set(&state)
+      return .none
+    }
+    .combined(with: self)
+  }
+}
+
 
 // NB: Deprecated after 0.17.0:
 
