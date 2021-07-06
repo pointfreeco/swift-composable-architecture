@@ -223,9 +223,8 @@ extension Reducer {
   public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self {
     Self { state, action, environment in
       toBindingAction(action)?.set(&state)
-      return .none
+      return self.run(&state, action, environment)
     }
-    .combined(with: self)
   }
 }
 
