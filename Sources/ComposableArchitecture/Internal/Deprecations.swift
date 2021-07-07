@@ -2,34 +2,6 @@ import CasePaths
 import Combine
 import SwiftUI
 
-// NB: Deprecated after 0.21.0:
-
-extension Reducer {
-  @available(*, deprecated, message: "This method no longer takes a CasePath. Pass a case path expression directly, or pass the case path’s `extract(from:)` method.")
-  @_disfavoredOverload
-  public func binding(action toBindingAction: CasePath<Action, BindingAction<State>>) -> Self {
-    Self { state, action, environment in
-      toBindingAction.extract(from: action)?.set(&state)
-      return .none
-    }
-    .combined(with: self)
-  }
-}
-
-
-// NB: Deprecated after 0.17.0:
-
-extension IfLetStore {
-  @available(*, deprecated, message: "'else' now takes a view builder closure")
-  public init<IfContent, ElseContent>(
-    _ store: Store<State?, Action>,
-    @ViewBuilder then ifContent: @escaping (Store<State, Action>) -> IfContent,
-    else elseContent: @escaping @autoclosure () -> ElseContent
-  ) where Content == _ConditionalContent<IfContent, ElseContent> {
-    self.init(store, then: ifContent, else: elseContent)
-  }
-}
-
 // NB: Deprecated after 0.13.0:
 
 @available(*, deprecated, renamed: "BindingAction")
@@ -38,7 +10,7 @@ public typealias FormAction = BindingAction
 extension Reducer {
   @available(*, deprecated, renamed: "binding")
   public func form(action toFormAction: CasePath<Action, BindingAction<State>>) -> Self {
-    self.binding(action: toFormAction)
+    self.binding(action: toFormAction.extract(from:))
   }
 }
 
