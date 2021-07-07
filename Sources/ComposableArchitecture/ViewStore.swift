@@ -72,17 +72,17 @@ public final class ViewStore<State, Action>: ObservableObject {
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool
   ) {
     self.publisher = StorePublisher(store.state, removeDuplicates: isDuplicate)
-    self._state =  { store.state.value }
+    self._state = { store.state.value }
     self._send = store.send
     self.viewCancellable = store.state
       .dropFirst()
       .removeDuplicates(by: isDuplicate)
       .sink { [weak self] _ in self?.objectWillChange.send() }
   }
-  
+
   let _state: () -> State
   let _send: (Action) -> Void
-  
+
   /// The current state.
   public var state: State { _state() }
 
