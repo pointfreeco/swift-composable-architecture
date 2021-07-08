@@ -34,7 +34,7 @@ struct NestedState: Equatable, Identifiable {
 
 indirect enum NestedAction: Equatable {
   case append
-  case node(id: UUID, action: NestedAction)
+  case node(id: NestedState.ID, action: NestedAction)
   case remove(IndexSet)
   case rename(String)
 }
@@ -51,11 +51,13 @@ let nestedReducer = Reducer<
     state.children.append(NestedState(id: environment.uuid()))
     return .none
 
-  case let .node(id, action):
-    guard var child = state.children[id: id] else { return .none }
-    defer { state.children[id: id] = child }
-    return self.run(&child, action, environment)
-      .map { .node(id: id, action: $0) }
+  case .node:
+    return self.forEach(
+      state: \.children,
+      action: /NestedAction.node(id:action:),
+      environment: { $0 }
+    )
+    .run(&state, action, environment)
 
   case let .remove(indexSet):
     state.children.remove(atOffsets: indexSet)
