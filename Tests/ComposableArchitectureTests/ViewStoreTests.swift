@@ -64,16 +64,16 @@ final class ViewStoreTests: XCTestCase {
     XCTAssertEqual(0, subEqualityChecks)
     viewStore4.send(())
     XCTAssertEqual(4, equalityChecks)
+    XCTAssertEqual(4, subEqualityChecks)
+    viewStore4.send(())
+    XCTAssertEqual(8, equalityChecks)
     XCTAssertEqual(8, subEqualityChecks)
     viewStore4.send(())
     XCTAssertEqual(12, equalityChecks)
-    XCTAssertEqual(20, subEqualityChecks)
+    XCTAssertEqual(12, subEqualityChecks)
     viewStore4.send(())
-    XCTAssertEqual(20, equalityChecks)
-    XCTAssertEqual(32, subEqualityChecks)
-    viewStore4.send(())
-    XCTAssertEqual(28, equalityChecks)
-    XCTAssertEqual(44, subEqualityChecks)
+    XCTAssertEqual(16, equalityChecks)
+    XCTAssertEqual(16, subEqualityChecks)
   }
 
   func testAccessViewStoreStateInPublisherSink() {
@@ -96,6 +96,28 @@ final class ViewStoreTests: XCTestCase {
     viewStore.send(())
 
     XCTAssertEqual([0, 1, 2, 3], results)
+  }
+
+  func testWillSet() {
+    let reducer = Reducer<Int, Void, Void> { count, _, _ in
+      count += 1
+      return .none
+    }
+
+    let store = Store(initialState: 0, reducer: reducer, environment: ())
+    let viewStore = ViewStore(store)
+
+    var results: [Int] = []
+
+    viewStore.objectWillChange
+      .sink { _ in results.append(viewStore.state) }
+      .store(in: &self.cancellables)
+
+    viewStore.send(())
+    viewStore.send(())
+    viewStore.send(())
+
+    XCTAssertEqual([0, 1, 2], results)
   }
 }
 
