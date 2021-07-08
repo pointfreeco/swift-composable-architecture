@@ -61,6 +61,11 @@ public final class ViewStore<State, Action>: ObservableObject {
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
 
+  /// The current state.
+  public var state: State { self.store.state.value }
+
+  private let store: Store<State, Action>
+  
   /// Initializes a view store from a store.
   ///
   /// - Parameters:
@@ -72,19 +77,12 @@ public final class ViewStore<State, Action>: ObservableObject {
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool
   ) {
     self.publisher = StorePublisher(store.state, removeDuplicates: isDuplicate)
-    self._state = { store.state.value }
-    self._send = store.send
+    self.store = store
     self.viewCancellable = store.state
       .dropFirst()
       .removeDuplicates(by: isDuplicate)
       .sink { [weak self] _ in self?.objectWillChange.send() }
   }
-
-  let _state: () -> State
-  let _send: (Action) -> Void
-
-  /// The current state.
-  public var state: State { _state() }
 
   /// Returns the resulting value of a given key path.
   public subscript<LocalState>(dynamicMember keyPath: KeyPath<State, LocalState>) -> LocalState {
@@ -101,7 +99,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///
   /// - Parameter action: An action.
   public func send(_ action: Action) {
-    self._send(action)
+    self.store.send(action)
   }
 
   /// Derives a binding from the store that prevents direct writes to state and instead sends
