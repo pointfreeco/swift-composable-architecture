@@ -65,7 +65,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   public var state: State { self.store.state.value }
 
   private let store: Store<State, Action>
-  
+
   /// Initializes a view store from a store.
   ///
   /// - Parameters:
