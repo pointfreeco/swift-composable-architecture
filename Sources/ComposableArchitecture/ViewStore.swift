@@ -55,12 +55,13 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// A publisher of state.
   public let publisher: StorePublisher<State>
 
-  private let _state: CurrentValueSubject<State, Never>
-  private var viewCancellable: AnyCancellable?
-
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
+
+  private let _send: (Action) -> Void
+  private let _state: CurrentValueSubject<State, Never>
+  private var viewCancellable: AnyCancellable?
 
   /// Initializes a view store from a store.
   ///
@@ -72,16 +73,16 @@ public final class ViewStore<State, Action>: ObservableObject {
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool
   ) {
-    self._state = CurrentValueSubject(store.state.value)
     self._send = store.send
+    self._state = CurrentValueSubject(store.state.value)
 
     self.publisher = StorePublisher(self._state)
     self.viewCancellable = store.state
       .removeDuplicates(by: isDuplicate)
       .sink { [weak self] in
         guard let self = self else { return }
-        self._state.send($0)
         self.objectWillChange.send()
+        self._state.send($0)
       }
   }
 
@@ -89,8 +90,6 @@ public final class ViewStore<State, Action>: ObservableObject {
   public var state: State {
     self._state.value
   }
-
-  let _send: (Action) -> Void
 
   /// Returns the resulting value of a given key path.
   public subscript<LocalState>(dynamicMember keyPath: KeyPath<State, LocalState>) -> LocalState {
@@ -247,14 +246,14 @@ public final class ViewStore<State, Action>: ObservableObject {
   }
 }
 
-public extension ViewStore where State: Equatable {
-  convenience init(_ store: Store<State, Action>) {
+extension ViewStore where State: Equatable {
+  public convenience init(_ store: Store<State, Action>) {
     self.init(store, removeDuplicates: ==)
   }
 }
 
-public extension ViewStore where State == Void {
-  convenience init(_ store: Store<Void, Action>) {
+extension ViewStore where State == Void {
+  public convenience init(_ store: Store<Void, Action>) {
     self.init(store, removeDuplicates: ==)
   }
 }
