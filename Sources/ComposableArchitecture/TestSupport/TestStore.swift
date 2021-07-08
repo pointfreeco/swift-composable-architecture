@@ -167,7 +167,7 @@
   /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
   /// not expect it would cause a test failure.
   ///
-  public final class TestStore<State, LocalState, Action: Equatable, LocalAction, Environment> {
+  public final class TestStore<State, LocalState, Action, LocalAction, Environment> {
     public var environment: Environment
 
     private let file: StaticString
@@ -354,6 +354,38 @@
       }
     }
 
+    private func expectedStateShouldMatch(
+      expected: LocalState,
+      actual: LocalState,
+      file: StaticString,
+      line: UInt
+    ) {
+      if expected != actual {
+        let diff =
+          debugDiff(expected, actual)
+          .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
+          ?? """
+          Expected:
+          \(String(describing: expected).indent(by: 2))
+
+          Actual:
+          \(String(describing: actual).indent(by: 2))
+          """
+
+        XCTFail(
+          """
+          State change does not match expectation: …
+
+          \(diff)
+          """,
+          file: file,
+          line: line
+        )
+      }
+    }
+  }
+
+  extension TestStore where LocalState: Equatable, Action: Equatable {
     public func receive(
       _ expectedAction: Action,
       file: StaticString = #file,
@@ -477,36 +509,6 @@
       steps.forEach(assert(step:))
 
       self.completed()
-    }
-
-    private func expectedStateShouldMatch(
-      expected: LocalState,
-      actual: LocalState,
-      file: StaticString,
-      line: UInt
-    ) {
-      if expected != actual {
-        let diff =
-          debugDiff(expected, actual)
-          .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
-          ?? """
-          Expected:
-          \(String(describing: expected).indent(by: 2))
-
-          Actual:
-          \(String(describing: actual).indent(by: 2))
-          """
-
-        XCTFail(
-          """
-          State change does not match expectation: …
-
-          \(diff)
-          """,
-          file: file,
-          line: line
-        )
-      }
     }
   }
 
