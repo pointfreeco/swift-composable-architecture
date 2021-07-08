@@ -14,7 +14,7 @@ let package = Package(
     .library(
       name: "ComposableArchitecture",
       targets: ["ComposableArchitecture"]
-    ),
+    )
   ],
   dependencies: [
     .package(name: "Benchmark", url: "https://github.com/google/swift-benchmark", from: "0.1.0"),
@@ -34,7 +34,7 @@ let package = Package(
     .testTarget(
       name: "ComposableArchitectureTests",
       dependencies: [
-        "ComposableArchitecture",
+        "ComposableArchitecture"
       ]
     ),
     .target(
@@ -43,6 +43,6 @@ let package = Package(
         "ComposableArchitecture",
         .product(name: "Benchmark", package: "Benchmark"),
       ]
-    )
+    ),
   ]
 )
