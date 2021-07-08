@@ -24,6 +24,7 @@ jobs:
       - name: Run tests
         run: make test-library
       - name: Run benchmark
+        if: ${{ matrix.xcode != 11.3 }}
         run: make benchmark
 
   examples:
