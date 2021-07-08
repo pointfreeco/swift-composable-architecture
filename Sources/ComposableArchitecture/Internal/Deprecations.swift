@@ -5,14 +5,14 @@ import SwiftUI
 // NB: Deprecated after 0.17.0:
 
 extension IfLetStore {
- @available(*, deprecated, message: "'else' now takes a view builder closure")
- public init<IfContent, ElseContent>(
-   _ store: Store<State?, Action>,
-   @ViewBuilder then ifContent: @escaping (Store<State, Action>) -> IfContent,
-   else elseContent: @escaping @autoclosure () -> ElseContent
- ) where Content == _ConditionalContent<IfContent, ElseContent> {
-   self.init(store, then: ifContent, else: elseContent)
- }
+  @available(*, deprecated, message: "'else' now takes a view builder closure")
+  public init<IfContent, ElseContent>(
+    _ store: Store<State?, Action>,
+    @ViewBuilder then ifContent: @escaping (Store<State, Action>) -> IfContent,
+    else elseContent: @escaping @autoclosure () -> ElseContent
+  ) where Content == _ConditionalContent<IfContent, ElseContent> {
+    self.init(store, then: ifContent, else: elseContent)
+  }
 }
 
 // NB: Deprecated after 0.13.0:
