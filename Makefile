@@ -45,8 +45,8 @@ test-examples:
 		-destination platform="$(PLATFORM_IOS)"
 
 benchmark:
-	swift run swift-composable-architecture-benchmark \
-		--configuration release
+	swift run --configuration release \
+		swift-composable-architecture-benchmark
 
 format:
 	swift format --in-place --recursive \
