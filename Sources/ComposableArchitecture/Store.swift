@@ -416,20 +416,17 @@ public struct StorePublisher<State>: Publisher {
   public typealias Output = State
   public typealias Failure = Never
 
-  private let isDuplicate: (State, State) -> Bool
   public let upstream: AnyPublisher<State, Never>
 
   public func receive<S>(subscriber: S)
   where S: Subscriber, Failure == S.Failure, Output == S.Input {
-    self.upstream.removeDuplicates(by: isDuplicate).subscribe(subscriber)
+    self.upstream.subscribe(subscriber)
   }
 
   init<P>(
-    _ upstream: P,
-    removeDuplicates isDuplicate: @escaping (State, State) -> Bool
+    _ upstream: P
   ) where P: Publisher, Failure == P.Failure, Output == P.Output {
     self.upstream = upstream.eraseToAnyPublisher()
-    self.isDuplicate = isDuplicate
   }
 
   /// Returns the resulting publisher of a given key path.
@@ -437,6 +434,6 @@ public struct StorePublisher<State>: Publisher {
     dynamicMember keyPath: KeyPath<State, LocalState>
   ) -> StorePublisher<LocalState>
   where LocalState: Equatable {
-    .init(self.upstream.map(keyPath), removeDuplicates: ==)
+    .init(self.upstream.map(keyPath).removeDuplicates())
   }
 }

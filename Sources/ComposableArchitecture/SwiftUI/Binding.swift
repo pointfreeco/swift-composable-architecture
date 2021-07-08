@@ -1,4 +1,3 @@
-import CasePaths
 import SwiftUI
 
 /// An action that describes simple mutations to some root state at a writable key path.
@@ -140,7 +139,7 @@ import SwiftUI
 public struct BindingAction<Root>: Equatable {
   public let keyPath: PartialKeyPath<Root>
 
-  fileprivate let set: (inout Root) -> Void
+  let set: (inout Root) -> Void
   private let value: Any
   private let valueIsEqualTo: (Any) -> Bool
 
@@ -216,16 +215,16 @@ extension Reducer {
   /// .binding(action: /SettingsAction.binding)
   /// ```
   ///
-  /// - Parameter toBindingAction: A case path from this reducer's `Action` type to a
-  ///   `BindingAction` over this reducer's `State`.
+  /// - Parameter toBindingAction: A function that extracts a `BindingAction<State>` from an
+  /// `Action`. Typically this is done by using the prefix operator `/` to automatically derive
+  /// an extraction function from any case of any enum.
   /// - Returns: A reducer that applies ``BindingAction`` mutations to `State` before running this
   ///   reducer's logic.
-  public func binding(action toBindingAction: CasePath<Action, BindingAction<State>>) -> Self {
+  public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self {
     Self { state, action, environment in
-      toBindingAction.extract(from: action)?.set(&state)
-      return .none
+      toBindingAction(action)?.set(&state)
+      return self.run(&state, action, environment)
     }
-    .combined(with: self)
   }
 }
 

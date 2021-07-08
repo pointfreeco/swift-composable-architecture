@@ -29,7 +29,7 @@ enum AppAction: Equatable {
   case filterPicked(Filter)
   case move(IndexSet, Int)
   case sortCompletedTodos
-  case todo(id: UUID, action: TodoAction)
+  case todo(id: Todo.ID, action: TodoAction)
 }
 
 struct AppEnvironment {
@@ -152,7 +152,7 @@ struct AppView: View {
   }
 }
 
-extension IdentifiedArray where ID == UUID, Element == Todo {
+extension IdentifiedArray where ID == Todo.ID, Element == Todo {
   fileprivate mutating func sortCompleted() {
     // Simulate stable sort
     self = IdentifiedArray(
@@ -163,9 +163,7 @@ extension IdentifiedArray where ID == UUID, Element == Todo {
         .map(\.element)
     )
   }
-}
 
-extension IdentifiedArray where ID == UUID, Element == Todo {
   static let mock: Self = [
     Todo(
       description: "Check Mail",

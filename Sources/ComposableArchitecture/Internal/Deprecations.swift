@@ -1,5 +1,113 @@
+import CasePaths
 import Combine
 import SwiftUI
+
+// NB: Deprecated after 0.20.0:
+
+extension Reducer {
+  @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead")
+  public func forEach<GlobalState, GlobalAction, GlobalEnvironment>(
+    state toLocalState: WritableKeyPath<GlobalState, [State]>,
+    action toLocalAction: CasePath<GlobalAction, (Int, Action)>,
+    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+    breakpointOnNil: Bool = true,
+    _ file: StaticString = #file,
+    _ line: UInt = #line
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+    .init { globalState, globalAction, globalEnvironment in
+      guard let (index, localAction) = toLocalAction.extract(from: globalAction) else {
+        return .none
+      }
+      if index >= globalState[keyPath: toLocalState].endIndex {
+        if breakpointOnNil {
+          breakpoint(
+            """
+            ---
+            Warning: Reducer.forEach@\(file):\(line)
+
+            "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at index \
+            \(index) when its state contained no element at this index. This is generally \
+            considered an application logic error, and can happen for a few reasons:
+
+            * This "forEach" reducer was combined with or run from another reducer that removed \
+            the element at this index when it handled this action. To fix this make sure that \
+            this "forEach" reducer is run before any other reducers that can move or remove \
+            elements from state. This ensures that "forEach" reducers can handle their actions \
+            for the element at the intended index.
+
+            * An in-flight effect emitted this action while state contained no element at this \
+            index. While it may be perfectly reasonable to ignore this action, you may want to \
+            cancel the associated effect when moving or removing an element. If your "forEach" \
+            reducer returns any long-living effects, you should use the identifier-based \
+            "forEach" instead.
+
+            * This action was sent to the store while its state contained no element at this \
+            index. To fix this make sure that actions for this reducer can only be sent to a \
+            view store when its state contains an element at this index. In SwiftUI \
+            applications, use "ForEachStore".
+            ---
+            """
+          )
+        }
+        return .none
+      }
+      return self.run(
+        &globalState[keyPath: toLocalState][index],
+        localAction,
+        toLocalEnvironment(globalEnvironment)
+      )
+      .map { toLocalAction.embed((index, $0)) }
+    }
+  }
+}
+
+extension ForEachStore {
+  @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead")
+  public init<EachContent>(
+    _ store: Store<Data, (Data.Index, EachAction)>,
+    id: KeyPath<EachState, ID>,
+    @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
+  )
+  where
+    Data == [EachState],
+    EachContent: View,
+    Content == WithViewStore<
+      [ID], (Data.Index, EachAction), ForEach<[(offset: Int, element: ID)], ID, EachContent>
+    >
+  {
+    let data = store.state.value
+    self.data = data
+    self.content = {
+      WithViewStore(store.scope(state: { $0.map { $0[keyPath: id] } })) { viewStore in
+        ForEach(Array(viewStore.state.enumerated()), id: \.element) { index, _ in
+          content(
+            store.scope(
+              state: { index < $0.endIndex ? $0[index] : data[index] },
+              action: { (index, $0) }
+            )
+          )
+        }
+      }
+    }
+  }
+
+  @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead")
+  public init<EachContent>(
+    _ store: Store<Data, (Data.Index, EachAction)>,
+    @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
+  )
+  where
+    Data == [EachState],
+    EachContent: View,
+    Content == WithViewStore<
+      [ID], (Data.Index, EachAction), ForEach<[(offset: Int, element: ID)], ID, EachContent>
+    >,
+    EachState: Identifiable,
+    EachState.ID == ID
+  {
+    self.init(store, id: \.id, content: content)
+  }
+}
 
 // NB: Deprecated after 0.17.0:
 
@@ -22,7 +130,7 @@ public typealias FormAction = BindingAction
 extension Reducer {
   @available(*, deprecated, renamed: "binding")
   public func form(action toFormAction: CasePath<Action, BindingAction<State>>) -> Self {
-    self.binding(action: toFormAction)
+    self.binding(action: toFormAction.extract(from:))
   }
 }
 
@@ -139,66 +247,5 @@ extension Reducer {
   @available(*, deprecated, renamed: "optional()")
   public var optional: Reducer<State?, Action, Environment> {
     self.optional()
-  }
-}
-
-// NB: Deprecated after 0.1.4:
-
-extension Reducer {
-  @available(*, unavailable, renamed: "debug(_:environment:)")
-  public func debug(
-    prefix: String,
-    environment toDebugEnvironment: @escaping (Environment) -> DebugEnvironment = { _ in
-      DebugEnvironment()
-    }
-  ) -> Reducer {
-    self.debug(prefix, state: { $0 }, action: .self, environment: toDebugEnvironment)
-  }
-
-  @available(*, unavailable, renamed: "debugActions(_:environment:)")
-  public func debugActions(
-    prefix: String,
-    environment toDebugEnvironment: @escaping (Environment) -> DebugEnvironment = { _ in
-      DebugEnvironment()
-    }
-  ) -> Reducer {
-    self.debug(prefix, state: { _ in () }, action: .self, environment: toDebugEnvironment)
-  }
-
-  @available(*, unavailable, renamed: "debug(_:state:action:environment:)")
-  public func debug<LocalState, LocalAction>(
-    prefix: String,
-    state toLocalState: @escaping (State) -> LocalState,
-    action toLocalAction: CasePath<Action, LocalAction>,
-    environment toDebugEnvironment: @escaping (Environment) -> DebugEnvironment = { _ in
-      DebugEnvironment()
-    }
-  ) -> Reducer {
-    self.debug(prefix, state: toLocalState, action: toLocalAction, environment: toDebugEnvironment)
-  }
-}
-
-extension WithViewStore {
-  @available(*, unavailable, renamed: "debug(_:)")
-  public func debug(prefix: String) -> Self {
-    self.debug(prefix)
-  }
-}
-
-// NB: Deprecated after 0.1.3:
-
-extension Effect {
-  @available(*, unavailable, renamed: "run")
-  public static func async(
-    _ work: @escaping (Effect.Subscriber) -> Cancellable
-  ) -> Self {
-    self.run(work)
-  }
-}
-
-extension Effect where Failure == Swift.Error {
-  @available(*, unavailable, renamed: "catching")
-  public static func sync(_ work: @escaping () throws -> Output) -> Self {
-    self.catching(work)
   }
 }
