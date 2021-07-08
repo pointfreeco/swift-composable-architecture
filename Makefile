@@ -44,6 +44,10 @@ test-examples:
 		-scheme VoiceMemos \
 		-destination platform="$(PLATFORM_IOS)"
 
+benchmark:
+	swift run --configuration release \
+		swift-composable-architecture-benchmark
+
 format:
 	swift format --in-place --recursive \
 		./Examples ./Package.swift ./Sources ./Tests
