@@ -38,7 +38,7 @@ let package = Package(
       ]
     ),
     .target(
-      name: "swift-composable-architecture-benchmarks",
+      name: "swift-composable-architecture-benchmark",
       dependencies: [
         "ComposableArchitecture",
         .product(name: "Benchmark", package: "Benchmark"),
