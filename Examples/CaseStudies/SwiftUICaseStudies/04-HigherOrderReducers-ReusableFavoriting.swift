@@ -151,12 +151,12 @@ let episodeReducer = Reducer<EpisodeState, EpisodeAction, EpisodeEnvironment>.em
 )
 
 struct EpisodesState: Equatable {
-  var episodes: [EpisodeState] = []
+  var episodes: IdentifiedArrayOf<EpisodeState> = []
   var episodeSelection: EpisodeState?
 }
 
 enum EpisodesAction: Equatable {
-  case episode(index: Int, action: EpisodeAction)
+  case episode(id: EpisodeState.ID, action: EpisodeAction)
   case episodeSelection(EpisodeAction)
 }
 
@@ -168,7 +168,7 @@ struct EpisodesEnvironment {
 let episodesReducer: Reducer<EpisodesState, EpisodesAction, EpisodesEnvironment> =
   episodeReducer.forEach(
     state: \EpisodesState.episodes,
-    action: /EpisodesAction.episode(index:action:),
+    action: /EpisodesAction.episode(id:action:),
     environment: { EpisodeEnvironment(favorite: $0.favorite, mainQueue: $0.mainQueue) }
   )
 
@@ -179,7 +179,7 @@ struct EpisodesView: View {
     Form {
       Section(header: Text(template: readMe, .caption)) {
         ForEachStore(
-          self.store.scope(state: \.episodes, action: EpisodesAction.episode(index:action:))
+          self.store.scope(state: \.episodes, action: EpisodesAction.episode(id:action:))
         ) { rowStore in
           EpisodeView(store: rowStore)
             .buttonStyle(BorderlessButtonStyle())
@@ -228,8 +228,8 @@ func favorite<ID>(id: ID, isFavorite: Bool) -> Effect<Bool, Error> {
   }
 }
 
-extension Array where Element == EpisodeState {
-  static let mocks = [
+extension IdentifiedArray where ID == EpisodeState.ID, Element == EpisodeState {
+  static let mocks: Self = [
     EpisodeState(id: UUID(), isFavorite: false, title: "Functions"),
     EpisodeState(id: UUID(), isFavorite: false, title: "Side Effects"),
     EpisodeState(id: UUID(), isFavorite: false, title: "Algebraic Data Types"),
