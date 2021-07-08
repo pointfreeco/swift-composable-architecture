@@ -59,7 +59,8 @@ class ReusableComponentsFavoritingTests: XCTestCase {
 
     self.scheduler.advance()
     store.receive(
-      .episode(id: episodes[2].id, action: .favorite(.response(.failure(FavoriteError(error: error)))))
+      .episode(
+        id: episodes[2].id, action: .favorite(.response(.failure(FavoriteError(error: error)))))
     ) {
       $0.episodes[2].alert = .init(
         title: .init("The operation couldn’t be completed. (co.pointfree error -1.)")
