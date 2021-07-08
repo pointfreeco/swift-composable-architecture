@@ -72,22 +72,19 @@ public final class ViewStore<State, Action>: ObservableObject {
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool
   ) {
     self.publisher = StorePublisher(store.state, removeDuplicates: isDuplicate)
-    self.state = store.state.value
+    self._state = { store.state.value }
     self._send = store.send
     self.viewCancellable = store.state
       .dropFirst()
       .removeDuplicates(by: isDuplicate)
-      .sink { [weak self] in self?.state = $0 }
+      .sink { [weak self] _ in self?.objectWillChange.send() }
   }
+
+  let _state: () -> State
+  let _send: (Action) -> Void
 
   /// The current state.
-  public private(set) var state: State {
-    willSet {
-      self.objectWillChange.send()
-    }
-  }
-
-  let _send: (Action) -> Void
+  public var state: State { _state() }
 
   /// Returns the resulting value of a given key path.
   public subscript<LocalState>(dynamicMember keyPath: KeyPath<State, LocalState>) -> LocalState {
