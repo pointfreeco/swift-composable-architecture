@@ -227,6 +227,28 @@ final class IdentifiedArrayTests: XCTestCase {
       XCTAssertEqual([1, 3, 5, 4, 2], array.ids)
     }
   #endif
+  
+  func testSwapAt() {
+    struct User: Equatable, Identifiable {
+      let id: Int
+      var name: String
+    }
+
+    var swapped = IdentifiedArrayOf<User>([
+      User(id: 0, name: "Blob"),
+      User(id: 1, name: "Blob Jr."),
+    ])
+
+    swapped.swapAt(0, 1)
+
+    let recreated = IdentifiedArrayOf<User>([
+      User(id: 1, name: "Blob Jr."),
+      User(id: 0, name: "Blob"),
+    ])
+
+    XCTAssertEqual(swapped, recreated)
+    XCTAssertEqual(swapped.ids, recreated.ids)
+  }
 
   func testReverse() {
     var array: IdentifiedArray = [

@@ -218,6 +218,10 @@ where ID: Hashable {
     self.shuffle(using: &rng)
   }
 
+  public mutating func swapAt(_ i: Index, _ j: Index) {
+    self.ids.swapAt(i, j)
+  }
+
   public mutating func reverse() {
     ids.reverse()
   }
