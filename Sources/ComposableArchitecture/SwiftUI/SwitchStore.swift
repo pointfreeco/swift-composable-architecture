@@ -1184,7 +1184,7 @@ public struct _ExhaustivityCheckView<State, Action>: View {
         )
       }
     #else
-      EmptyView()
+      return EmptyView()
     #endif
   }
 }

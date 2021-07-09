@@ -55,11 +55,13 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// A publisher of state.
   public let publisher: StorePublisher<State>
 
-  private var viewCancellable: AnyCancellable?
-
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
+
+  private let _send: (Action) -> Void
+  private let _state: CurrentValueSubject<State, Never>
+  private var viewCancellable: AnyCancellable?
 
   /// Initializes a view store from a store.
   ///
@@ -71,25 +73,27 @@ public final class ViewStore<State, Action>: ObservableObject {
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool
   ) {
-    let publisher = store.state.removeDuplicates(by: isDuplicate)
-    self.publisher = StorePublisher(publisher)
-    self.state = store.state.value
     self._send = store.send
-    self.viewCancellable = publisher.sink { [weak self] in self?.state = $0 }
+    self._state = CurrentValueSubject(store.state.value)
+
+    self.publisher = StorePublisher(self._state)
+    self.viewCancellable = store.state
+      .removeDuplicates(by: isDuplicate)
+      .sink { [weak self] in
+        guard let self = self else { return }
+        self.objectWillChange.send()
+        self._state.send($0)
+      }
   }
 
   /// The current state.
-  public private(set) var state: State {
-    willSet {
-      self.objectWillChange.send()
-    }
+  public var state: State {
+    self._state.value
   }
-
-  let _send: (Action) -> Void
 
   /// Returns the resulting value of a given key path.
   public subscript<LocalState>(dynamicMember keyPath: KeyPath<State, LocalState>) -> LocalState {
-    self.state[keyPath: keyPath]
+    self._state.value[keyPath: keyPath]
   }
 
   /// Sends an action to the store.
@@ -138,7 +142,7 @@ public final class ViewStore<State, Action>: ObservableObject {
     send localStateToViewAction: @escaping (LocalState) -> Action
   ) -> Binding<LocalState> {
     Binding(
-      get: { get(self.state) },
+      get: { get(self._state.value) },
       set: { newLocalState, transaction in
         if transaction.animation != nil {
           withTransaction(transaction) {

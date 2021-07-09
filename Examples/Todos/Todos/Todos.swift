@@ -29,7 +29,7 @@ enum AppAction: Equatable {
   case filterPicked(Filter)
   case move(IndexSet, Int)
   case sortCompletedTodos
-  case todo(id: UUID, action: TodoAction)
+  case todo(id: Todo.ID, action: TodoAction)
 }
 
 struct AppEnvironment {
@@ -152,7 +152,7 @@ struct AppView: View {
   }
 }
 
-extension IdentifiedArray where Element == Todo, ID == Element.ID {
+extension IdentifiedArray where ID == Todo.ID, Element == Todo {
   static let mock: Self = [
     Todo(
       description: "Check Mail",

@@ -27,15 +27,14 @@ extension Reducer {
 }
 
 struct NestedState: Equatable, Identifiable {
-  var children: [NestedState] = []
+  var children: IdentifiedArrayOf<NestedState> = []
   let id: UUID
   var description: String = ""
 }
 
 indirect enum NestedAction: Equatable {
   case append
-  case exclaim
-  case node(index: Int, action: NestedAction)
+  case node(id: NestedState.ID, action: NestedAction)
   case remove(IndexSet)
   case rename(String)
 }
@@ -52,24 +51,21 @@ let nestedReducer = Reducer<
     state.children.append(NestedState(id: environment.uuid()))
     return .none
 
-  case .exclaim:
-    state.description += "!"
-    return .none
-
-  case let .node(index, action):
-    return self.run(&state.children[index], action, environment)
-      .map { .node(index: index, action: $0) }
+  case .node:
+    return self.forEach(
+      state: \.children,
+      action: /NestedAction.node(id:action:),
+      environment: { $0 }
+    )
+    .run(&state, action, environment)
 
   case let .remove(indexSet):
     state.children.remove(atOffsets: indexSet)
     return .none
 
   case let .rename(name):
-    struct ExclaimId: Hashable {}
-
     state.description = name
-    return Effect(value: .exclaim)
-      .debounce(id: ExclaimId(), for: 1, scheduler: DispatchQueue.main)
+    return .none
   }
 }
 
@@ -82,7 +78,7 @@ struct NestedView: View {
         Section(header: Text(template: readMe, .caption)) {
 
           ForEachStore(
-            self.store.scope(state: \.children, action: NestedAction.node(index:action:))
+            self.store.scope(state: \.children, action: NestedAction.node(id:action:))
           ) { childStore in
             WithViewStore(childStore) { childViewStore in
               HStack {

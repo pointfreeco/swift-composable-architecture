@@ -1,4 +1,4 @@
-// swift-tools-version:5.2
+// swift-tools-version:5.1
 
 import PackageDescription
 
@@ -17,7 +17,6 @@ let package = Package(
     )
   ],
   dependencies: [
-    .package(name: "Benchmark", url: "https://github.com/google/swift-benchmark", from: "0.1.0"),
     .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.4.0"),
     .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.1.3"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", .branch("main")),
@@ -27,23 +26,16 @@ let package = Package(
     .target(
       name: "ComposableArchitecture",
       dependencies: [
-        .product(name: "CasePaths", package: "swift-case-paths"),
-        .product(name: "CombineSchedulers", package: "combine-schedulers"),
-        .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
-        .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
+        "CasePaths",
+        "CombineSchedulers",
+        "IdentifiedCollections",
+        "XCTestDynamicOverlay",
       ]
     ),
     .testTarget(
       name: "ComposableArchitectureTests",
       dependencies: [
         "ComposableArchitecture"
-      ]
-    ),
-    .target(
-      name: "swift-composable-architecture-benchmark",
-      dependencies: [
-        "ComposableArchitecture",
-        .product(name: "Benchmark", package: "Benchmark"),
       ]
     ),
   ]
