@@ -5,9 +5,6 @@ import Speech
 #if DEBUG
   extension SpeechClient {
     static func mock(
-      cancelTask: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
-        fatalError("cancelTask is not implemented in this mock.")
-      },
       finishTask: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in
         fatalError("finishTask is not implemented in this mock.")
       },
@@ -19,7 +16,6 @@ import Speech
       }
     ) -> Self {
       Self(
-        cancelTask: cancelTask,
         finishTask: finishTask,
         recognitionTask: recognitionTask,
         requestAuthorization: requestAuthorization
