@@ -39,10 +39,7 @@ extension Effect {
         .delay(
           for: scheduler.now.distance(to: throttleTime.advanced(by: interval)), scheduler: scheduler
         )
-        .handleEvents(receiveOutput: { _ in
-          throttleTimes[id] = scheduler.now
-          throttleValues[id] = nil
-        })
+        .handleEvents(receiveOutput: { _ in throttleTimes[id] = scheduler.now })
         .setFailureType(to: Failure.self)
         .eraseToAnyPublisher()
     }
