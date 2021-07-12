@@ -50,7 +50,7 @@ class TodosTests: XCTestCase {
     store.send(
       .todo(id: state.todos[0].id, action: .textFieldChanged("Learn Composable Architecture"))
     ) {
-      $0.todos[0].description = "Learn Composable Architecture"
+      $0.todos[id: state.todos[0].id]?.description = "Learn Composable Architecture"
     }
   }
 
@@ -79,7 +79,7 @@ class TodosTests: XCTestCase {
     )
 
     store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
-      $0.todos[0].isComplete = true
+      $0.todos[id: state.todos[0].id]?.isComplete = true
     }
     self.scheduler.advance(by: 1)
     store.receive(.sortCompletedTodos) {
@@ -115,11 +115,11 @@ class TodosTests: XCTestCase {
     )
 
     store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
-      $0.todos[0].isComplete = true
+      $0.todos[id: state.todos[0].id]?.isComplete = true
     }
     self.scheduler.advance(by: 0.5)
     store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
-      $0.todos[0].isComplete = false
+      $0.todos[id: state.todos[0].id]?.isComplete = false
     }
     self.scheduler.advance(by: 1)
     store.receive(.sortCompletedTodos)
@@ -264,7 +264,7 @@ class TodosTests: XCTestCase {
       $0.filter = .completed
     }
     store.send(.todo(id: state.todos[1].id, action: .textFieldChanged("Did this already"))) {
-      $0.todos[1].description = "Did this already"
+      $0.todos[id: state.todos[1].id]?.description = "Did this already"
     }
   }
 }

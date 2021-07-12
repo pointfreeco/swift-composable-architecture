@@ -3,7 +3,7 @@ PLATFORM_MACOS = macOS
 PLATFORM_TVOS = tvOS Simulator,name=Apple TV 4K (at 1080p)
 PLATFORM_WATCHOS = watchOS Simulator,name=Apple Watch Series 4 - 44mm
 
-default: test
+default: test-all
 
 test-all: test-library test-examples
 

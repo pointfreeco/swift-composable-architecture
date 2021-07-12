@@ -36,17 +36,17 @@ class ReusableComponentsFavoritingTests: XCTestCase {
 
     let error = NSError(domain: "co.pointfree", code: -1, userInfo: nil)
     store.send(.episode(id: episodes[0].id, action: .favorite(.buttonTapped))) {
-      $0.episodes[0].isFavorite = true
+      $0.episodes[id: episodes[0].id]?.isFavorite = true
     }
 
     self.scheduler.advance()
     store.receive(.episode(id: episodes[0].id, action: .favorite(.response(.success(true)))))
 
     store.send(.episode(id: episodes[1].id, action: .favorite(.buttonTapped))) {
-      $0.episodes[1].isFavorite = true
+      $0.episodes[id: episodes[1].id]?.isFavorite = true
     }
     store.send(.episode(id: episodes[1].id, action: .favorite(.buttonTapped))) {
-      $0.episodes[1].isFavorite = false
+      $0.episodes[id: episodes[1].id]?.isFavorite = false
     }
 
     self.scheduler.advance()
@@ -54,7 +54,7 @@ class ReusableComponentsFavoritingTests: XCTestCase {
 
     store.environment.favorite = { _, _ in .future { $0(.failure(error)) } }
     store.send(.episode(id: episodes[2].id, action: .favorite(.buttonTapped))) {
-      $0.episodes[2].isFavorite = true
+      $0.episodes[id: episodes[2].id]?.isFavorite = true
     }
 
     self.scheduler.advance()
@@ -62,14 +62,14 @@ class ReusableComponentsFavoritingTests: XCTestCase {
       .episode(
         id: episodes[2].id, action: .favorite(.response(.failure(FavoriteError(error: error)))))
     ) {
-      $0.episodes[2].alert = .init(
+      $0.episodes[id: episodes[2].id]?.alert = .init(
         title: .init("The operation couldn’t be completed. (co.pointfree error -1.)")
       )
     }
 
     store.send(.episode(id: episodes[2].id, action: .favorite(.alertDismissed))) {
-      $0.episodes[2].alert = nil
-      $0.episodes[2].isFavorite = false
+      $0.episodes[id: episodes[2].id]?.alert = nil
+      $0.episodes[id: episodes[2].id]?.isFavorite = false
     }
   }
 }
