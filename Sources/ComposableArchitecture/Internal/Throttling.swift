@@ -26,19 +26,23 @@ extension Effect {
         return Just(value).setFailureType(to: Failure.self).eraseToAnyPublisher()
       }
 
+      let value = latest ? value : (throttleValues[id] as! Output? ?? value)
+      throttleValues[id] = value
+
       guard throttleTime.distance(to: scheduler.now) < interval else {
         throttleTimes[id] = scheduler.now
         throttleValues[id] = nil
         return Just(value).setFailureType(to: Failure.self).eraseToAnyPublisher()
       }
 
-      let value = latest ? value : (throttleValues[id] as! Output? ?? value)
-      throttleValues[id] = value
-
       return Just(value)
         .delay(
           for: scheduler.now.distance(to: throttleTime.advanced(by: interval)), scheduler: scheduler
         )
+        .handleEvents(receiveOutput: { _ in
+          throttleTimes[id] = scheduler.now
+          throttleValues[id] = nil
+        })
         .setFailureType(to: Failure.self)
         .eraseToAnyPublisher()
     }
