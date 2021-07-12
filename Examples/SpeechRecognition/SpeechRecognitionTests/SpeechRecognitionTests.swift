@@ -8,14 +8,15 @@ class SpeechRecognitionTests: XCTestCase {
   let recognitionTaskSubject = PassthroughSubject<SpeechClient.Action, SpeechClient.Error>()
 
   func testDenyAuthorization() {
+    var speechClient = SpeechClient.failing
+    speechClient.requestAuthorization = { Effect(value: .denied) }
+
     let store = TestStore(
       initialState: .init(),
       reducer: appReducer,
       environment: AppEnvironment(
         mainQueue: .immediate,
-        speechClient: .mock(
-          requestAuthorization: { Effect(value: .denied) }
-        )
+        speechClient: speechClient
       )
     )
 
@@ -36,14 +37,15 @@ class SpeechRecognitionTests: XCTestCase {
   }
 
   func testRestrictedAuthorization() {
+    var speechClient = SpeechClient.failing
+    speechClient.requestAuthorization = { Effect(value: .restricted) }
+
     let store = TestStore(
       initialState: .init(),
       reducer: appReducer,
       environment: AppEnvironment(
         mainQueue: .immediate,
-        speechClient: .mock(
-          requestAuthorization: { Effect(value: .restricted) }
-        )
+        speechClient: speechClient
       )
     )
 
@@ -58,18 +60,19 @@ class SpeechRecognitionTests: XCTestCase {
   }
 
   func testAllowAndRecord() {
+    var speechClient = SpeechClient.failing
+    speechClient.finishTask = { _ in
+      .fireAndForget { self.recognitionTaskSubject.send(completion: .finished) }
+    }
+    speechClient.recognitionTask = { _, _ in self.recognitionTaskSubject.eraseToEffect() }
+    speechClient.requestAuthorization = { Effect(value: .authorized) }
+
     let store = TestStore(
       initialState: .init(),
       reducer: appReducer,
       environment: AppEnvironment(
         mainQueue: .immediate,
-        speechClient: .mock(
-          finishTask: { _ in
-            .fireAndForget { self.recognitionTaskSubject.send(completion: .finished) }
-          },
-          recognitionTask: { _, _ in self.recognitionTaskSubject.eraseToEffect() },
-          requestAuthorization: { Effect(value: .authorized) }
-        )
+        speechClient: speechClient
       )
     )
 
@@ -107,15 +110,16 @@ class SpeechRecognitionTests: XCTestCase {
   }
 
   func testAudioSessionFailure() {
+    var speechClient = SpeechClient.failing
+    speechClient.recognitionTask = { _, _ in self.recognitionTaskSubject.eraseToEffect() }
+    speechClient.requestAuthorization = { Effect(value: .authorized) }
+
     let store = TestStore(
       initialState: .init(),
       reducer: appReducer,
       environment: AppEnvironment(
         mainQueue: .immediate,
-        speechClient: .mock(
-          recognitionTask: { _, _ in self.recognitionTaskSubject.eraseToEffect() },
-          requestAuthorization: { Effect(value: .authorized) }
-        )
+        speechClient: speechClient
       )
     )
 
@@ -136,15 +140,16 @@ class SpeechRecognitionTests: XCTestCase {
   }
 
   func testAudioEngineFailure() {
+    var speechClient = SpeechClient.failing
+    speechClient.recognitionTask = { _, _ in self.recognitionTaskSubject.eraseToEffect() }
+    speechClient.requestAuthorization = { Effect(value: .authorized) }
+
     let store = TestStore(
       initialState: .init(),
       reducer: appReducer,
       environment: AppEnvironment(
         mainQueue: .immediate,
-        speechClient: .mock(
-          recognitionTask: { _, _ in self.recognitionTaskSubject.eraseToEffect() },
-          requestAuthorization: { Effect(value: .authorized) }
-        )
+        speechClient: speechClient
       )
     )
 

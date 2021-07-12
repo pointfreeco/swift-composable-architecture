@@ -9,15 +9,16 @@ import XCTest
 
 class TwoFactorSwiftUITests: XCTestCase {
   func testFlow_Success() {
+    var authenticationClient = AuthenticationClient.failing
+    authenticationClient.twoFactor = { _ in
+      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
+    }
+
     let store = TestStore(
       initialState: TwoFactorState(token: "deadbeefdeadbeef"),
       reducer: twoFactorReducer,
       environment: TwoFactorEnvironment(
-        authenticationClient: .mock(
-          twoFactor: { _ in
-            Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
-          }
-        ),
+        authenticationClient: authenticationClient,
         mainQueue: .immediate
       )
     )
@@ -52,15 +53,14 @@ class TwoFactorSwiftUITests: XCTestCase {
   }
 
   func testFlow_Failure() {
+    var authenticationClient = AuthenticationClient.failing
+    authenticationClient.twoFactor = { _ in Effect(error: .invalidTwoFactor) }
+
     let store = TestStore(
       initialState: TwoFactorState(token: "deadbeefdeadbeef"),
       reducer: twoFactorReducer,
       environment: TwoFactorEnvironment(
-        authenticationClient: .mock(
-          twoFactor: { _ in
-            Effect(error: .invalidTwoFactor)
-          }
-        ),
+        authenticationClient: authenticationClient,
         mainQueue: .immediate
       )
     )
