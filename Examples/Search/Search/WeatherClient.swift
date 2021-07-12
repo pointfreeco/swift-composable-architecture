@@ -65,17 +65,10 @@ extension WeatherClient {
 // MARK: - Mock API implementations
 
 extension WeatherClient {
-  static func mock(
-    searchLocation: @escaping (String) -> Effect<[Location], Failure> = { _ in
-      fatalError("Unmocked")
-    },
-    weather: @escaping (Int) -> Effect<LocationWeather, Failure> = { _ in fatalError("Unmocked") }
-  ) -> Self {
-    Self(
-      searchLocation: searchLocation,
-      weather: weather
-    )
-  }
+  static let failing = Self(
+    searchLocation: { _ in .failing("WeatherClient.searchLocation") },
+    weather: { _ in .failing("WeatherClient.weather") }
+  )
 }
 
 // MARK: - Private helpers

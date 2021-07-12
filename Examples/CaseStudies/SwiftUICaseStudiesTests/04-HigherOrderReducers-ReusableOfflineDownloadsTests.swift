@@ -18,6 +18,9 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   let scheduler = DispatchQueue.test
 
   func testDownloadFlow() {
+    var downloadClient = DownloadClient.failing
+    downloadClient.download = { _, _ in self.downloadSubject.eraseToEffect() }
+
     let store = TestStore(
       initialState: DownloadComponentState(
         id: 1,
@@ -26,9 +29,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       ),
       reducer: reducer,
       environment: DownloadComponentEnvironment(
-        downloadClient: .mock(
-          download: { _, _ in self.downloadSubject.eraseToEffect() }
-        ),
+        downloadClient: downloadClient,
         mainQueue: self.scheduler.eraseToAnyScheduler()
       )
     )
@@ -52,6 +53,9 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   }
 
   func testDownloadThrottling() {
+    var downloadClient = DownloadClient.failing
+    downloadClient.download = { _, _ in self.downloadSubject.eraseToEffect() }
+
     let store = TestStore(
       initialState: DownloadComponentState(
         id: 1,
@@ -60,9 +64,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       ),
       reducer: reducer,
       environment: DownloadComponentEnvironment(
-        downloadClient: .mock(
-          download: { _, _ in self.downloadSubject.eraseToEffect() }
-        ),
+        downloadClient: downloadClient,
         mainQueue: self.scheduler.eraseToAnyScheduler()
       )
     )
@@ -91,6 +93,12 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   }
 
   func testCancelDownloadFlow() {
+    var downloadClient = DownloadClient.failing
+    downloadClient.cancel = { _ in
+      .fireAndForget { self.downloadSubject.send(completion: .finished) }
+    }
+    downloadClient.download = { _, _ in self.downloadSubject.eraseToEffect() }
+
     let store = TestStore(
       initialState: DownloadComponentState(
         id: 1,
@@ -99,10 +107,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       ),
       reducer: reducer,
       environment: DownloadComponentEnvironment(
-        downloadClient: .mock(
-          cancel: { _ in .fireAndForget { self.downloadSubject.send(completion: .finished) } },
-          download: { _, _ in self.downloadSubject.eraseToEffect() }
-        ),
+        downloadClient: downloadClient,
         mainQueue: self.scheduler.eraseToAnyScheduler()
       )
     )
@@ -128,6 +133,12 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   }
 
   func testDownloadFinishesWhileTryingToCancel() {
+    var downloadClient = DownloadClient.failing
+    downloadClient.cancel = { _ in
+      .fireAndForget { self.downloadSubject.send(completion: .finished) }
+    }
+    downloadClient.download = { _, _ in self.downloadSubject.eraseToEffect() }
+
     let store = TestStore(
       initialState: DownloadComponentState(
         id: 1,
@@ -136,10 +147,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       ),
       reducer: reducer,
       environment: DownloadComponentEnvironment(
-        downloadClient: .mock(
-          cancel: { _ in .fireAndForget { self.downloadSubject.send(completion: .finished) } },
-          download: { _, _ in self.downloadSubject.eraseToEffect() }
-        ),
+        downloadClient: downloadClient,
         mainQueue: self.scheduler.eraseToAnyScheduler()
       )
     )
@@ -166,6 +174,12 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   }
 
   func testDeleteDownloadFlow() {
+    var downloadClient = DownloadClient.failing
+    downloadClient.cancel = { _ in
+      .fireAndForget { self.downloadSubject.send(completion: .finished) }
+    }
+    downloadClient.download = { _, _ in self.downloadSubject.eraseToEffect() }
+
     let store = TestStore(
       initialState: DownloadComponentState(
         id: 1,
@@ -174,10 +188,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       ),
       reducer: reducer,
       environment: DownloadComponentEnvironment(
-        downloadClient: .mock(
-          cancel: { _ in .fireAndForget { self.downloadSubject.send(completion: .finished) } },
-          download: { _, _ in self.downloadSubject.eraseToEffect() }
-        ),
+        downloadClient: downloadClient,
         mainQueue: self.scheduler.eraseToAnyScheduler()
       )
     )
@@ -198,13 +209,8 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 }
 
 extension DownloadClient {
-  static func mock(
-    cancel: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
-    download: @escaping (AnyHashable, URL) -> Effect<Action, Error> = { _, _ in fatalError() }
-  ) -> Self {
-    Self(
-      cancel: cancel,
-      download: download
-    )
-  }
+  static let failing = Self(
+    cancel: { _ in .failing("DownloadClient.cancel") },
+    download: { _, _ in .failing("DownloadClient.download") }
+  )
 }

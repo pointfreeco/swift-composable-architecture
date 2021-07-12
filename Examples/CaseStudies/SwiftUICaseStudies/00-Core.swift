@@ -202,7 +202,7 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
         .init(
           date: env.date,
           environment: .init(fetchNumber: env.fetchNumber),
-          mainQueue: { env.mainQueue },
+          mainQueue: env.mainQueue,
           uuid: env.uuid
         )
       }
