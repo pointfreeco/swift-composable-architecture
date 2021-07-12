@@ -119,6 +119,23 @@ final class ViewStoreTests: XCTestCase {
 
     XCTAssertEqual([0, 1, 2], results)
   }
+
+  func testPublisherOwnsViewStore() {
+    let reducer = Reducer<Int, Void, Void> { count, _, _ in
+      count += 1
+      return .none
+    }
+    let store = Store(initialState: 0, reducer: reducer, environment: ())
+
+    var results: [Int] = []
+    ViewStore(store)
+      .publisher
+      .sink { results.append($0) }
+      .store(in: &self.cancellables)
+
+    ViewStore(store).send(())
+    XCTAssertEqual(results, [0, 1])
+  }
 }
 
 private struct State: Equatable {
