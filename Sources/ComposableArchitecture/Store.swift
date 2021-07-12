@@ -417,16 +417,32 @@ public struct StorePublisher<State>: Publisher {
   public typealias Failure = Never
 
   public let upstream: AnyPublisher<State, Never>
+  public let viewStore: Any
+
+  init<Action>(viewStore: ViewStore<State, Action>) {
+    self.viewStore = viewStore
+    self.upstream = viewStore._state.eraseToAnyPublisher()
+  }
 
   public func receive<S>(subscriber: S)
   where S: Subscriber, Failure == S.Failure, Output == S.Input {
-    self.upstream.subscribe(subscriber)
+    let s = AnySubscriber<Output, Failure>(
+      receiveSubscription: subscriber.receive(subscription:),
+      receiveValue: subscriber.receive(_:),
+      receiveCompletion: { [viewStore = self.viewStore] in
+      subscriber.receive(completion: $0)
+      _ = viewStore
+    }
+    )
+    self.upstream.subscribe(s)
   }
 
   init<P>(
-    _ upstream: P
+    _ upstream: P,
+    viewStore: Any
   ) where P: Publisher, Failure == P.Failure, Output == P.Output {
     self.upstream = upstream.eraseToAnyPublisher()
+    self.viewStore = viewStore
   }
 
   /// Returns the resulting publisher of a given key path.
@@ -434,6 +450,6 @@ public struct StorePublisher<State>: Publisher {
     dynamicMember keyPath: KeyPath<State, LocalState>
   ) -> StorePublisher<LocalState>
   where LocalState: Equatable {
-    .init(self.upstream.map(keyPath).removeDuplicates())
+      .init(self.upstream.map(keyPath).removeDuplicates(), viewStore: self.viewStore)
   }
 }
