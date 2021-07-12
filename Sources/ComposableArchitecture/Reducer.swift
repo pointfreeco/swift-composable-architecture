@@ -512,6 +512,109 @@ public struct Reducer<State, Action, Environment> {
     }
   }
 
+  /// Transforms a reducer that works on local state, action, and environment into one that works on
+  /// global state, action and environment. It accomplishes this by providing 4 transformations to
+  /// the method:
+  ///
+  ///   * A writable key path that can get/set a piece of enum state from the global state.
+  ///   * A case path that can extract/embed a local state into a enum state.
+  ///   * A case path that can extract/embed a local action into a global action.
+  ///   * A function that can transform the global environment into a local environment.
+  ///
+  /// This operation is important for breaking down large reducers into small ones. When used with
+  /// the ``combine(_:)-1ern2`` operator you can define many reducers that work on small pieces of
+  /// domain, and then _pull them back_ and _combine_ them into one big reducer that works on a
+  /// large domain.
+  ///
+  ///    ```swift
+  ///     enum SettingsEnumState {
+  ///       case loading
+  ///       case content(SettingsState)
+  ///     }
+  ///
+  ///     // Global domain that holds a local domain:
+  ///     struct AppState { var settings: SettingsEnumState, /* rest of state */ }
+  ///     enum AppAction { case settings(SettingsAction), /* other actions */ }
+  ///     struct AppEnvironment { var settings: SettingsEnvironment, /* rest of dependencies */ }
+  ///
+  ///     // A reducer that works on the local domain:
+  ///     let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvironment> { ... }
+  ///
+  ///     // Pullback the settings reducer so that it works on all of the app domain:
+  ///     let appReducer: Reducer<AppState, AppAction, AppEnvironment> = .combine(
+  ///       settingsReducer.pullback(
+  ///         state: \.settings,
+  ///         matching: /SettingsEnumState.content,
+  ///         action: /AppAction.settings,
+  ///         environment: { $0.settings }
+  ///       ),
+  ///
+  ///       /* other reducers */
+  ///     )
+  ///    ```
+  ///
+  /// - Parameters:
+  ///   - toLocalState: A key path that can get/set `EnumState` inside `GlobalState`.
+  ///   - matching: A case path that can extract/embed `LocalState` from `EnumState`
+  ///   - toLocalAction: A case path that can extract/embed `Action` from `GlobalAction`.
+  ///   - toLocalEnvironment: A function that transforms `GlobalEnvironment` into `Environment`.
+  /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
+  func pullback<GlobalState, GlobalAction, GlobalEnvironment, EnumState>(
+    state toLocalState: WritableKeyPath<GlobalState, EnumState>,
+    matching casePath: CasePath<EnumState, State>,
+    action toLocalAction: CasePath<GlobalAction, Action>,
+    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+    breakpointOnNil: Bool = true,
+    _ file: StaticString = #file,
+    _ line: UInt = #line
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+    .init { globalState, globalAction, globalEnvironment in
+      guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
+
+      guard var localState = casePath.extract(from: globalState[keyPath: toLocalState]) else {
+        if breakpointOnNil {
+          breakpoint(
+            """
+            ---
+            Warning: Reducer.pullback@\(file):\(line)
+
+            "\(debugCaseOutput(localAction))" was received by a reducer when its state was \
+            unavailable. This is generally considered an application logic error, and can happen \
+            for a few reasons:
+
+            * The reducer for a particular case of state was combined with or run from another \
+            reducer that set "\(State.self)" to another case before the reducer ran. Combine or \
+            run case-specific reducers before reducers that may set their state to another case. \
+            This ensures that case-specific reducers can handle their actions while their state \
+            is available.
+
+            * An in-flight effect emitted this action when state was unavailable. While it may \
+            be perfectly reasonable to ignore this action, you may want to cancel the associated \
+            effect before state is set to another case, especially if it is a long-living effect.
+
+            * This action was sent to the store while state was another case. Make sure that \
+            actions for this reducer can only be sent to a view store when state is non-"nil".
+            In SwiftUI applications, use "SwitchStore".
+            ---
+            """
+          )
+        }
+        return .none
+      }
+
+      defer { globalState[keyPath: toLocalState] = casePath.embed(localState) }
+
+      let effects = self.run(
+        &localState,
+        localAction,
+        toLocalEnvironment(globalEnvironment)
+      )
+      .map(toLocalAction.embed)
+
+      return effects
+    }
+  }
+
   /// Transforms a reducer that works on non-optional state into one that works on optional state by
   /// only running the non-optional reducer when state is non-nil.
   ///
