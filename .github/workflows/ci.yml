@@ -14,8 +14,6 @@ jobs:
     strategy:
       matrix:
         xcode:
-          - 11.3
-          - 11.7
           - 12.4
     steps:
       - uses: actions/checkout@v2
@@ -32,7 +30,6 @@ jobs:
     strategy:
       matrix:
         xcode:
-          - 11.7
           - 12.4
     steps:
       - uses: actions/checkout@v2
