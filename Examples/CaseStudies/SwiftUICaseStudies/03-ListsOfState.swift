@@ -80,7 +80,7 @@ struct CounterRowView: View {
             store: self.store.scope(state: \.counter, action: NavigationAction.isActive)
           )
         },
-        tag: /CounterRowState.Route.counter,
+        tag: .counter,
         selection: self.store.scope(state: \.route)
       )
     }

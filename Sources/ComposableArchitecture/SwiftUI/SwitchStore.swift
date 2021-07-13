@@ -1197,7 +1197,7 @@ private class StoreObservableObject<State, Action>: ObservableObject {
   }
 }
 
-private func enumTag<Case>(_ `case`: Case) -> UInt32? {
+func enumTag<Case>(_ `case`: Case) -> UInt32? {
   let metadataPtr = unsafeBitCast(type(of: `case`), to: UnsafeRawPointer.self)
   let kind = metadataPtr.load(as: Int.self)
   let isEnumOrOptional = kind == 0x201 || kind == 0x202
@@ -1207,7 +1207,7 @@ private func enumTag<Case>(_ `case`: Case) -> UInt32? {
   return withUnsafePointer(to: `case`) { vwt.getEnumTag($0, metadataPtr) }
 }
 
-private struct EnumValueWitnessTable {
+struct EnumValueWitnessTable {
   let f1, f2, f3, f4, f5, f6, f7, f8: UnsafeRawPointer
   let f9, f10: Int
   let f11, f12: UInt32

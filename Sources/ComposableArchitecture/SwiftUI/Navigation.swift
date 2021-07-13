@@ -155,13 +155,13 @@ where
 
   public init(
     @ViewBuilder destination: () -> Destination,
-    tag: @escaping (Route) -> Void?,
+    tag: Route,
     selection: Store<Route?, NavigationAction<Action>>,
     @ViewBuilder label: @escaping () -> Label
   ) where State == Void {
     self.destination = destination()
     self.label = label
-    self.selection = selection.scope(state: { $0.flatMap(tag) != nil })
+    self.selection = selection.scope(state: { enumTag($0) == enumTag(tag) })
   }
 
   public init<Content>(
@@ -222,7 +222,7 @@ extension NavigationLinkStore where Label == Text {
   public init(
     titleKey: LocalizedStringKey,
     @ViewBuilder destination: () -> Destination,
-    tag: @escaping (Route) -> Void?,
+    tag: Route,
     selection: Store<Route?, NavigationAction<Action>>
   ) where State == Void {
     self.init(
@@ -236,7 +236,7 @@ extension NavigationLinkStore where Label == Text {
   public init<S>(
     title: S,
     @ViewBuilder destination: () -> Destination,
-    tag: @escaping (Route) -> Void?,
+    tag: Route,
     selection: Store<Route?, NavigationAction<Action>>
   ) where State == Void, S: StringProtocol {
     self.init(
