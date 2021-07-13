@@ -1,5 +1,8 @@
 import SwiftUI
 
+// TODO: does .task cancel its work when pushing away from a view? or just when popping?
+
+// TODO: remove this and use PresentationAction
 public enum NavigationAction<Action> {
   case isActive(Action)
   case setNavigation(isActive: Bool)
@@ -65,7 +68,7 @@ extension Reducer {
 
   public func navigates<Route, LocalState, LocalAction, LocalEnvironment>(
     _ localReducer: Reducer<LocalState, LocalAction, LocalEnvironment>,
-    tag: CasePath<Route, Void>, // TODO: Can this be `Route`?
+    tag: Route,
     selection: WritableKeyPath<State, Route?>,
     state toLocalState: WritableKeyPath<State, LocalState>,
     action toNavigationAction: CasePath<Action, NavigationAction<LocalAction>>,
@@ -73,7 +76,7 @@ extension Reducer {
   ) -> Self {
     let id = UUID()
     return Self { state, action, environment in
-      let wasPresented = state[keyPath: selection].flatMap(tag.extract(from:)) != nil
+      let wasPresented = enumTag(state[keyPath: selection]) == enumTag(tag)
       var effects: [Effect<Action, Never>] = []
 
       effects.append(
@@ -94,10 +97,10 @@ extension Reducer {
       switch toNavigationAction.extract(from: action) {
       case .some(.setNavigation(isActive: true))
         where state[keyPath: selection] == nil:
-        state[keyPath: selection] = nil
+        state[keyPath: selection] = tag
 
       case .some(.setNavigation(isActive: false))
-        where state[keyPath: selection].flatMap(tag.extract(from:)) != nil:
+        where enumTag(state[keyPath: selection]) == enumTag(tag):
         state[keyPath: selection] = nil
 
       default:
@@ -247,7 +250,7 @@ where
 
 extension NavigationLinkStore where Label == Text {
   public init<Content>(
-    titleKey: LocalizedStringKey,
+    title: Text,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Content,
     tag: @escaping (Route) -> State?,
     selection: Store<Route?, NavigationAction<Action>>
@@ -256,26 +259,12 @@ extension NavigationLinkStore where Label == Text {
       destination: destination,
       tag: tag,
       selection: selection,
-      label: { Text(titleKey) }
-    )
-  }
-
-  public init<Content, S>(
-    title: S,
-    @ViewBuilder destination: @escaping (Store<State, Action>) -> Content,
-    tag: @escaping (Route) -> State?,
-    selection: Store<Route?, NavigationAction<Action>>
-  ) where Destination == IfLetStore<State, Action, Content?>, S: StringProtocol {
-    self.init(
-      destination: destination,
-      tag: tag,
-      selection: selection,
-      label: { Text(title) }
+      label: { title }
     )
   }
 
   public init(
-    titleKey: LocalizedStringKey,
+    title: Text,
     @ViewBuilder destination: () -> Destination,
     tag: Route,
     selection: Store<Route?, NavigationAction<Action>>
@@ -284,46 +273,30 @@ extension NavigationLinkStore where Label == Text {
       destination: destination,
       tag: tag,
       selection: selection,
-      label: { Text(titleKey) }
-    )
-  }
-
-  public init<S>(
-    title: S,
-    @ViewBuilder destination: () -> Destination,
-    tag: Route,
-    selection: Store<Route?, NavigationAction<Action>>
-  ) where State == Void, S: StringProtocol {
-    self.init(
-      destination: destination,
-      tag: tag,
-      selection: selection,
-      label: { Text(title) }
+      label: { title }
     )
   }
 
   public init<Content>(
-    titleKey: LocalizedStringKey,
+    title: Text,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Content,
     ifLet selection: Store<State?, NavigationAction<Action>>
   ) where Route == State, Destination == IfLetStore<State, Action, Content?> {
     self.init(
       destination: destination,
       ifLet: selection,
-      label: { Text(titleKey) }
+      label: { title }
     )
   }
 
-  public init<Content, S>(
-    title: S,
-    @ViewBuilder destination: @escaping (Store<State, Action>) -> Content,
-    ifLet selection: Store<State?, NavigationAction<Action>>
-  ) where Route == State, Destination == IfLetStore<State, Action, Content?>, S: StringProtocol {
-    self.init(
-      destination: destination,
-      ifLet: selection,
-      label: { Text(title) }
-    )
+  public init(
+    title: Text,
+    @ViewBuilder destination: () -> Destination,
+    isActive: Store<Bool, NavigationAction<Action>>
+  ) where Route == Bool, State == Void {
+    self.destination = destination()
+    self.label = { title }
+    self.selection = isActive
   }
 }
 

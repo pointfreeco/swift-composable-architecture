@@ -65,18 +65,17 @@ struct CounterRowView: View {
   let store: Store<CounterRowState, NavigationAction<CounterAction>>
 
   var body: some View {
+
     WithViewStore(self.store) { viewStore in
-      NavigationLinkStore(
-//        title: "\(viewStore.counter.count)",
-        destination: {
+      NavigationLinkStore.init(
+        title: Text("\(viewStore.counter.count)"),
+        destination: { 
           CounterView(
             store: self.store.scope(state: \.counter, action: NavigationAction.isActive)
           )
         },
         isActive: self.store.scope(state: \.isActive)
-      ) {
-        Text("\(viewStore.counter.count)")
-      }
+      )
     }
   }
 }

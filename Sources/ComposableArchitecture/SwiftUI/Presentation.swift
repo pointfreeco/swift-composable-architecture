@@ -2,12 +2,14 @@ import SwiftUI
 
 public enum PresentationAction<Action> {
   case dismiss
-  case isPresented(Action)
+  case isPresented(Action) // isActive
   case present
 }
 
 extension PresentationAction: Equatable where Action: Equatable {}
 extension PresentationAction: Hashable where Action: Hashable {}
+
+// TODO: do we need isActive versions
 
 extension Reducer {
   public func presents<LocalState, LocalAction, LocalEnvironment>(
