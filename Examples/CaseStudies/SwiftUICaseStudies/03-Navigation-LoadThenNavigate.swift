@@ -17,8 +17,7 @@ struct LoadThenNavigateState: Equatable {
 }
 
 enum LoadThenNavigateAction: Equatable {
-  case optionalCounter(CounterAction)
-  case setNavigation(isActive: Bool)
+  case optionalCounter(NavigationAction<CounterAction>)
   case setNavigationIsActiveDelayCompleted
 }
 
@@ -27,37 +26,30 @@ struct LoadThenNavigateEnvironment {
 }
 
 let loadThenNavigateReducer =
-  counterReducer
-  .optional()
-  .pullback(
+  Reducer<
+    LoadThenNavigateState, LoadThenNavigateAction, LoadThenNavigateEnvironment
+  > { state, action, environment in
+    switch action {
+    case .optionalCounter(.setNavigation(isActive: true)):
+      state.isActivityIndicatorVisible = true
+      return Effect(value: .setNavigationIsActiveDelayCompleted)
+        .delay(for: 1, scheduler: environment.mainQueue)
+        .eraseToEffect()
+
+    case .setNavigationIsActiveDelayCompleted:
+      state.isActivityIndicatorVisible = false
+      state.optionalCounter = CounterState()
+      return .none
+
+    case .optionalCounter:
+      return .none
+    }
+  }
+  .navigates(
+    counterReducer,
     state: \.optionalCounter,
     action: /LoadThenNavigateAction.optionalCounter,
     environment: { _ in CounterEnvironment() }
-  )
-  .combined(
-    with: Reducer<
-      LoadThenNavigateState, LoadThenNavigateAction, LoadThenNavigateEnvironment
-    > { state, action, environment in
-      switch action {
-      case .setNavigation(isActive: true):
-        state.isActivityIndicatorVisible = true
-        return Effect(value: .setNavigationIsActiveDelayCompleted)
-          .delay(for: 1, scheduler: environment.mainQueue)
-          .eraseToEffect()
-
-      case .setNavigation(isActive: false):
-        state.optionalCounter = nil
-        return .none
-
-      case .setNavigationIsActiveDelayCompleted:
-        state.isActivityIndicatorVisible = false
-        state.optionalCounter = CounterState()
-        return .none
-
-      case .optionalCounter:
-        return .none
-      }
-    }
   )
 
 struct LoadThenNavigateView: View {
@@ -67,17 +59,11 @@ struct LoadThenNavigateView: View {
     WithViewStore(self.store) { viewStore in
       Form {
         Section(header: Text(readMe)) {
-          NavigationLink(
-            destination: IfLetStore(
-              self.store.scope(
-                state: \.optionalCounter,
-                action: LoadThenNavigateAction.optionalCounter
-              ),
-              then: CounterView.init(store:)
-            ),
-            isActive: viewStore.binding(
-              get: \.isNavigationActive,
-              send: LoadThenNavigateAction.setNavigation(isActive:)
+          NavigationLinkStore(
+            destination: CounterView.init(store:),
+            ifLet: self.store.scope(
+              state: \.optionalCounter,
+              action: LoadThenNavigateAction.optionalCounter
             )
           ) {
             HStack {

@@ -70,6 +70,7 @@
 		DC89C45124462DE7006900B9 /* 03-Navigation-Lists-LoadThenNavigate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C45024462DE7006900B9 /* 03-Navigation-Lists-LoadThenNavigate.swift */; };
 		DC89C45324465452006900B9 /* 03-Navigation-Lists-NavigateAndLoad.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C45224465451006900B9 /* 03-Navigation-Lists-NavigateAndLoad.swift */; };
 		DC89C45524465C44006900B9 /* 02-Effects-Timers.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C45424465C44006900B9 /* 02-Effects-Timers.swift */; };
+		DC950B72269E2BEA00A39FEA /* 03-ListsOfState.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC950B71269E2BEA00A39FEA /* 03-ListsOfState.swift */; };
 		DC9EB4172450CBD2005F413B /* UIViewRepresented.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9EB4162450CBD2005F413B /* UIViewRepresented.swift */; };
 		DCAC2A4F2452352E0094DEF5 /* 04-HigherOrderReducers-ElmLikeSubscriptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAC2A4E2452352E0094DEF5 /* 04-HigherOrderReducers-ElmLikeSubscriptions.swift */; };
 		DCC68EAB244666AF0037F998 /* 03-Navigation-Sheet-PresentAndLoad.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EAA244666AF0037F998 /* 03-Navigation-Sheet-PresentAndLoad.swift */; };
@@ -220,6 +221,7 @@
 		DC89C45024462DE7006900B9 /* 03-Navigation-Lists-LoadThenNavigate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Navigation-Lists-LoadThenNavigate.swift"; sourceTree = "<group>"; };
 		DC89C45224465451006900B9 /* 03-Navigation-Lists-NavigateAndLoad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Navigation-Lists-NavigateAndLoad.swift"; sourceTree = "<group>"; };
 		DC89C45424465C44006900B9 /* 02-Effects-Timers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-Timers.swift"; sourceTree = "<group>"; };
+		DC950B71269E2BEA00A39FEA /* 03-ListsOfState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-ListsOfState.swift"; sourceTree = "<group>"; };
 		DC9EB4162450CBD2005F413B /* UIViewRepresented.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIViewRepresented.swift; sourceTree = "<group>"; };
 		DCAC2A4E2452352E0094DEF5 /* 04-HigherOrderReducers-ElmLikeSubscriptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-ElmLikeSubscriptions.swift"; sourceTree = "<group>"; };
 		DCC68EAA244666AF0037F998 /* 03-Navigation-Sheet-PresentAndLoad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Navigation-Sheet-PresentAndLoad.swift"; sourceTree = "<group>"; };
@@ -404,6 +406,7 @@
 				DC89C45424465C44006900B9 /* 02-Effects-Timers.swift */,
 				CA410EDF247A15FE00E41798 /* 02-Effects-WebSocket.swift */,
 				CA27C0B6245780CE00CB1E59 /* 03-Effects-SystemEnvironment.swift */,
+				DC950B71269E2BEA00A39FEA /* 03-ListsOfState.swift */,
 				DC89C45024462DE7006900B9 /* 03-Navigation-Lists-LoadThenNavigate.swift */,
 				DC89C45224465451006900B9 /* 03-Navigation-Lists-NavigateAndLoad.swift */,
 				DC89C448244618D5006900B9 /* 03-Navigation-LoadThenNavigate.swift */,
@@ -765,6 +768,7 @@
 				DCC68EDD2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift in Sources */,
 				DCC68EAB244666AF0037F998 /* 03-Navigation-Sheet-PresentAndLoad.swift in Sources */,
 				CAE962FD24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndActionSheets.swift in Sources */,
+				DC950B72269E2BEA00A39FEA /* 03-ListsOfState.swift in Sources */,
 				CA25E5D224463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift in Sources */,
 				DC88D8A6245341EC0077F427 /* 01-GettingStarted-Animations.swift in Sources */,
 				DC89C44D244621A5006900B9 /* 03-Navigation-NavigateAndLoad.swift in Sources */,

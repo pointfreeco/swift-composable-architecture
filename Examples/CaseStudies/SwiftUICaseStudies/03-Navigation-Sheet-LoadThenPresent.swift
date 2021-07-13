@@ -17,9 +17,8 @@ struct LoadThenPresentState: Equatable {
 }
 
 enum LoadThenPresentAction {
-  case optionalCounter(CounterAction)
-  case setSheet(isPresented: Bool)
-  case setSheetIsPresentedDelayCompleted
+  case optionalCounter(PresentationAction<CounterAction>)
+  case presentDelayCompleted
 }
 
 struct LoadThenPresentEnvironment {
@@ -27,37 +26,30 @@ struct LoadThenPresentEnvironment {
 }
 
 let loadThenPresentReducer =
-  counterReducer
-  .optional()
-  .pullback(
+  Reducer<
+    LoadThenPresentState, LoadThenPresentAction, LoadThenPresentEnvironment
+  > { state, action, environment in
+    switch action {
+    case .optionalCounter(.present):
+      state.isActivityIndicatorVisible = true
+      return Effect(value: .presentDelayCompleted)
+        .delay(for: 1, scheduler: environment.mainQueue)
+        .eraseToEffect()
+
+    case .optionalCounter:
+      return .none
+
+    case .presentDelayCompleted:
+      state.isActivityIndicatorVisible = false
+      state.optionalCounter = CounterState()
+      return .none
+    }
+  }
+  .presents(
+    counterReducer,
     state: \.optionalCounter,
     action: /LoadThenPresentAction.optionalCounter,
     environment: { _ in CounterEnvironment() }
-  )
-  .combined(
-    with: Reducer<
-      LoadThenPresentState, LoadThenPresentAction, LoadThenPresentEnvironment
-    > { state, action, environment in
-      switch action {
-      case .setSheet(isPresented: true):
-        state.isActivityIndicatorVisible = true
-        return Effect(value: .setSheetIsPresentedDelayCompleted)
-          .delay(for: 1, scheduler: environment.mainQueue)
-          .eraseToEffect()
-
-      case .setSheet(isPresented: false):
-        state.optionalCounter = nil
-        return .none
-
-      case .setSheetIsPresentedDelayCompleted:
-        state.isActivityIndicatorVisible = false
-        state.optionalCounter = CounterState()
-        return .none
-
-      case .optionalCounter:
-        return .none
-      }
-    }
   )
 
 struct LoadThenPresentView: View {
@@ -67,7 +59,7 @@ struct LoadThenPresentView: View {
     WithViewStore(self.store) { viewStore in
       Form {
         Section(header: Text(readMe)) {
-          Button(action: { viewStore.send(.setSheet(isPresented: true)) }) {
+          Button(action: { viewStore.send(.optionalCounter(.present)) }) {
             HStack {
               Text("Load optional counter")
               if viewStore.isActivityIndicatorVisible {
@@ -79,18 +71,19 @@ struct LoadThenPresentView: View {
         }
       }
       .sheet(
-        isPresented: viewStore.binding(
-          get: \.isSheetPresented,
-          send: LoadThenPresentAction.setSheet(isPresented:)
+        ifLet: store.scope(
+          state: \.optionalCounter,
+          action: LoadThenPresentAction.optionalCounter
         )
-      ) {
-        IfLetStore(
-          self.store.scope(
-            state: \.optionalCounter,
-            action: LoadThenPresentAction.optionalCounter
-          ),
-          then: CounterView.init(store:)
-        )
+      ) { store in
+        NavigationView {
+          CounterView(store: store)
+            .navigationBarItems(
+              trailing: Button(action: { viewStore.send(.optionalCounter(.dismiss)) }) {
+                Image(systemName: "xmark")
+              }
+            )
+        }
       }
       .navigationBarTitle("Load and present")
     }
