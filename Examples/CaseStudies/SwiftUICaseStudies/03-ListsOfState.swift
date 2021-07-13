@@ -4,11 +4,7 @@ import SwiftUI
 struct CounterRowState: Identifiable, Equatable {
   var counter = CounterState()
   let id: UUID
-  var route: Route?
-
-  enum Route: Equatable {
-    case counter
-  }
+  var isActive = false
 }
 
 let counterRowReducer =
@@ -18,17 +14,14 @@ let counterRowReducer =
     switch action {
     case .isActive:
       return .none
-    case .setNavigation(isActive: true):
-      state.route = .counter
-      return .none
+
     case .setNavigation:
       return .none
     }
   }
   .navigates(
     counterReducer,
-    tag: /CounterRowState.Route.counter,
-    selection: \.route,
+    isActive: \.isActive,
     state: \.counter,
     action: /.self,
     environment: { CounterEnvironment() }
@@ -74,15 +67,16 @@ struct CounterRowView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       NavigationLinkStore(
-        title: "\(viewStore.counter.count)",
+//        title: "\(viewStore.counter.count)",
         destination: {
           CounterView(
             store: self.store.scope(state: \.counter, action: NavigationAction.isActive)
           )
         },
-        tag: .counter,
-        selection: self.store.scope(state: \.route)
-      )
+        isActive: self.store.scope(state: \.isActive)
+      ) {
+        Text("\(viewStore.counter.count)")
+      }
     }
   }
 }

@@ -65,7 +65,7 @@ extension Reducer {
 
   public func navigates<Route, LocalState, LocalAction, LocalEnvironment>(
     _ localReducer: Reducer<LocalState, LocalAction, LocalEnvironment>,
-    tag: CasePath<Route, Void>,
+    tag: CasePath<Route, Void>, // TODO: Can this be `Route`?
     selection: WritableKeyPath<State, Route?>,
     state toLocalState: WritableKeyPath<State, LocalState>,
     action toNavigationAction: CasePath<Action, NavigationAction<LocalAction>>,
@@ -125,6 +125,51 @@ extension Reducer {
       environment: toLocalEnvironment
     )
   }
+
+  public func navigates<LocalState, LocalAction, LocalEnvironment>(
+    _ localReducer: Reducer<LocalState, LocalAction, LocalEnvironment>,
+    isActive: WritableKeyPath<State, Bool>,
+    state toLocalState: WritableKeyPath<State, LocalState>,
+    action toNavigationAction: CasePath<Action, NavigationAction<LocalAction>>,
+    environment toLocalEnvironment: @escaping (Environment) -> LocalEnvironment
+  ) -> Self {
+    let id = UUID()
+    return Self { state, action, environment in
+      let wasPresented = state[keyPath: isActive]
+      var effects: [Effect<Action, Never>] = []
+
+      effects.append(
+        localReducer
+          .pullback(
+            state: toLocalState,
+            action: toNavigationAction.appending(path: /NavigationAction.isActive),
+            environment: toLocalEnvironment
+          )
+          .run(&state, action, environment)
+          .cancellable(id: id)
+      )
+
+      effects.append(
+        self.run(&state, action, environment)
+      )
+
+      switch toNavigationAction.extract(from: action) {
+      case .some(.setNavigation(isActive: true)) where !state[keyPath: isActive]:
+        state[keyPath: isActive] = true
+
+      case .some(.setNavigation(isActive: false)) where state[keyPath: isActive]:
+        state[keyPath: isActive] = false
+
+      default:
+        break
+      }
+      if wasPresented && !state[keyPath: isActive] {
+        effects.append(.cancel(id: id))
+      }
+
+      return .merge(effects)
+    }
+  }
 }
 
 public struct NavigationLinkStore<Route, State, Action, Label, Destination>: View
@@ -162,6 +207,16 @@ where
     self.destination = destination()
     self.label = label
     self.selection = selection.scope(state: { enumTag($0) == enumTag(tag) })
+  }
+
+  public init(
+    @ViewBuilder destination: () -> Destination,
+    isActive: Store<Bool, NavigationAction<Action>>,
+    @ViewBuilder label: @escaping () -> Label
+  ) where Route == Bool, State == Void {
+    self.destination = destination()
+    self.label = label
+    self.selection = isActive
   }
 
   public init<Content>(
