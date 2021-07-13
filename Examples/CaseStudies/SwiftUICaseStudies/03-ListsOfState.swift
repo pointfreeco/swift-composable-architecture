@@ -4,11 +4,10 @@ import SwiftUI
 struct CounterRowState: Identifiable, Equatable {
   var counter = CounterState()
   let id: UUID
-  var isActive = false
+  var route: Route?
 
-  var selection: Void? {
-    get { self.isActive ? () : nil }
-    set { self.isActive = newValue != nil }
+  enum Route: Equatable {
+    case counter
   }
 }
 
@@ -19,15 +18,17 @@ let counterRowReducer =
     switch action {
     case .isActive:
       return .none
-    case let .setNavigation(isActive):
-      state.isActive = isActive
+    case .setNavigation(isActive: true):
+      state.route = .counter
+      return .none
+    case .setNavigation:
       return .none
     }
   }
   .navigates(
     counterReducer,
-    tag: /.self,
-    selection: \.selection,
+    tag: /CounterRowState.Route.counter,
+    selection: \.route,
     state: \.counter,
     action: /.self,
     environment: { CounterEnvironment() }
@@ -67,6 +68,25 @@ let counterListReducer = counterRowReducer
     }
   )
 
+struct CounterRowView: View {
+  let store: Store<CounterRowState, NavigationAction<CounterAction>>
+
+  var body: some View {
+    WithViewStore(self.store) { viewStore in
+      NavigationLinkStore(
+        title: "\(viewStore.counter.count)",
+        destination: {
+          CounterView(
+            store: self.store.scope(state: \.counter, action: NavigationAction.isActive)
+          )
+        },
+        tag: /CounterRowState.Route.counter,
+        selection: self.store.scope(state: \.route)
+      )
+    }
+  }
+}
+
 struct CounterListView: View {
   let store: Store<CounterListState, CounterListAction>
 
@@ -77,21 +97,9 @@ struct CounterListView: View {
           ForEachStore(
             self.store.scope(
               state: \.counters, action: CounterListAction.counterRow(id:action:)
-            )
-          ) { counterStore in
-            WithViewStore(counterStore) { counterViewStore in
-              NavigationLink(
-                "\(counterViewStore.counter.count)",
-                destination: CounterView(
-                  store: counterStore.scope(state: \.counter, action: NavigationAction.isActive)
-                ),
-                isActive: counterViewStore.binding(
-                  get: \.isActive,
-                  send: NavigationAction.setNavigation(isActive:)
-                )
-              )
-            }
-          }
+            ),
+            content: CounterRowView.init(store:)
+          )
         }
         .navigationBarItems(
           trailing: Button(action: { viewStore.send(.addButtonTapped, animation: .default) }) {

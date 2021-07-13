@@ -138,30 +138,30 @@ where
 
   public init<Content>(
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Content,
-    tag: CasePath<Route, State>,
+    tag: @escaping (Route) -> State?,
     selection: Store<Route?, NavigationAction<Action>>,
     @ViewBuilder label: @escaping () -> Label
   ) where Destination == IfLetStore<State, Action, Content?> {
     self.destination = IfLetStore<State, Action, Content?>(
       selection.scope(
-        state: { $0.flatMap(tag.extract(from:)) },
+        state: { $0.flatMap(tag) },
         action: NavigationAction.isActive
       ),
       then: destination
     )
     self.label = label
-    self.selection = selection.scope(state: { $0.flatMap(tag.extract(from:)) != nil })
+    self.selection = selection.scope(state: { $0.flatMap(tag) != nil })
   }
 
   public init(
     @ViewBuilder destination: () -> Destination,
-    tag: CasePath<Route, Void>,
+    tag: @escaping (Route) -> Void?,
     selection: Store<Route?, NavigationAction<Action>>,
     @ViewBuilder label: @escaping () -> Label
   ) where State == Void {
     self.destination = destination()
     self.label = label
-    self.selection = selection.scope(state: { $0.flatMap(tag.extract(from:)) != nil })
+    self.selection = selection.scope(state: { $0.flatMap(tag) != nil })
   }
 
   public init<Content>(
@@ -171,7 +171,7 @@ where
   ) where Route == State, Destination == IfLetStore<State, Action, Content?> {
     self.init(
       destination: destination,
-      tag: /.self,
+      tag: { $0 },
       selection: selection,
       label: label
     )
@@ -194,7 +194,7 @@ extension NavigationLinkStore where Label == Text {
   public init<Content>(
     titleKey: LocalizedStringKey,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Content,
-    tag: CasePath<Route, State>,
+    tag: @escaping (Route) -> State?,
     selection: Store<Route?, NavigationAction<Action>>
   ) where Destination == IfLetStore<State, Action, Content?> {
     self.init(
@@ -208,7 +208,7 @@ extension NavigationLinkStore where Label == Text {
   public init<Content, S>(
     title: S,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Content,
-    tag: CasePath<Route, State>,
+    tag: @escaping (Route) -> State?,
     selection: Store<Route?, NavigationAction<Action>>
   ) where Destination == IfLetStore<State, Action, Content?>, S: StringProtocol {
     self.init(
@@ -222,7 +222,7 @@ extension NavigationLinkStore where Label == Text {
   public init(
     titleKey: LocalizedStringKey,
     @ViewBuilder destination: () -> Destination,
-    tag: CasePath<Route, Void>,
+    tag: @escaping (Route) -> Void?,
     selection: Store<Route?, NavigationAction<Action>>
   ) where State == Void {
     self.init(
@@ -236,7 +236,7 @@ extension NavigationLinkStore where Label == Text {
   public init<S>(
     title: S,
     @ViewBuilder destination: () -> Destination,
-    tag: CasePath<Route, Void>,
+    tag: @escaping (Route) -> Void?,
     selection: Store<Route?, NavigationAction<Action>>
   ) where State == Void, S: StringProtocol {
     self.init(
