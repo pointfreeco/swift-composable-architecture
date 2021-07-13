@@ -6,24 +6,24 @@ import Dispatch
 public enum ActionFormat {
   /// Prints the action in a single line by only specifying the labels of the associated values:
   ///
-  ///    ```swift
-  ///     Action.screenA(.row(index:, action: .textChanged(query:)))
-  ///    ```
+  /// ```swift
+  /// Action.screenA(.row(index:, action: .textChanged(query:)))
+  /// ```
   ///
   case labelsOnly
   /// Prints the action in a multiline, pretty-printed format, including all the labels of
   /// any associated values, as well as the data held in the associated values:
   ///
-  ///    ```swift
-  ///     Action.screenA(
-  ///       ScreenA.row(
-  ///         index: 1,
-  ///         action: RowAction.textChanged(
-  ///           query: "Hi"
-  ///         )
-  ///       )
+  /// ```swift
+  /// Action.screenA(
+  ///   ScreenA.row(
+  ///     index: 1,
+  ///     action: RowAction.textChanged(
+  ///       query: "Hi"
   ///     )
-  ///    ```
+  ///   )
+  /// )
+  /// ```
   ///
   case prettyPrint
 }
