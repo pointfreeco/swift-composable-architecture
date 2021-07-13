@@ -1,4 +1,3 @@
-import Benchmark
 import ComposableArchitecture
 
 let counterReducer = Reducer<Int, Bool, Void> { state, action, _ in
@@ -10,33 +9,47 @@ let counterReducer = Reducer<Int, Bool, Void> { state, action, _ in
   return .none
 }
 
-let store1 = Store(initialState: 0, reducer: counterReducer, environment: ())
-let store2 = store1.scope { $0 }
-let store3 = store2.scope { $0 }
-let store4 = store3.scope { $0 }
+benchmarkSuite("Scoping") { suite in
+  
+  suite.addStudy("Deep scoping") { study in
+    
+    study.setBaseline("No scope") { measure in
+      let store1 = Store(initialState: 0, reducer: counterReducer, environment: ())
+      let viewStore = ViewStore(store1)
+      measure(.start)
+      viewStore.send(true)
+    }
+    
+    study.addCase("Scope (1)") { measure in
+      let store1 = Store(initialState: 0, reducer: counterReducer, environment: ())
+      let store2 = store1.scope { $0 }
 
-let viewStore1 = ViewStore(store1)
-let viewStore2 = ViewStore(store2)
-let viewStore3 = ViewStore(store3)
-let viewStore4 = ViewStore(store4)
+      let viewStore = ViewStore(store2)
+      measure(.start)
+      viewStore.send(true)
+    }
+    
+    study.addCase("Scope (2)") { measure in
+      let store1 = Store(initialState: 0, reducer: counterReducer, environment: ())
+      let store2 = store1.scope { $0 }
+      let store3 = store2.scope { $0 }
 
-benchmark("Scoping (1)") {
-  viewStore1.send(true)
-}
-viewStore1.send(false)
+      let viewStore = ViewStore(store3)
+      measure(.start)
+      viewStore.send(true)
+    }
+    
+    study.addCase("Scope (3)") { measure in
+      let store1 = Store(initialState: 0, reducer: counterReducer, environment: ())
+      let store2 = store1.scope { $0 }
+      let store3 = store2.scope { $0 }
+      let store4 = store3.scope { $0 }
 
-benchmark("Scoping (2)") {
-  viewStore2.send(true)
-}
-viewStore1.send(false)
-
-benchmark("Scoping (3)") {
-  viewStore3.send(true)
-}
-viewStore1.send(false)
-
-benchmark("Scoping (4)") {
-  viewStore4.send(true)
+      let viewStore = ViewStore(store4)
+      measure(.start)
+      viewStore.send(true)
+    }
+  }
 }
 
 Benchmark.main()
