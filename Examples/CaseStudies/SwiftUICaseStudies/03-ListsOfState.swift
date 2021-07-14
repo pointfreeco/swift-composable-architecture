@@ -67,7 +67,7 @@ struct CounterRowView: View {
   var body: some View {
 
     WithViewStore(self.store) { viewStore in
-      NavigationLinkStore.init(
+      NavigationLinkStore(
         title: Text("\(viewStore.counter.count)"),
         destination: { 
           CounterView(

@@ -20,7 +20,7 @@ extension Reducer {
           /*
            .pullback(
              state: selection.appending(path: tag),
-             action: toNavigationAction.appending(path: /NavigationAction.isActive),
+             action: toPresentationAction.appending(path: /NavigationAction.isActive),
              environment: toLocalEnvironment
            )
            */
@@ -62,7 +62,7 @@ extension Reducer {
     tag: Route,
     selection: WritableKeyPath<State, Route?>,
     state toLocalState: WritableKeyPath<State, LocalState>,
-    action toNavigationAction: CasePath<Action, PresentationAction<LocalAction>>,
+    action toPresentationAction: CasePath<Action, PresentationAction<LocalAction>>,
     environment toLocalEnvironment: @escaping (Environment) -> LocalEnvironment
   ) -> Self {
     let id = UUID()
@@ -74,7 +74,7 @@ extension Reducer {
         localReducer
           .pullback(
             state: toLocalState,
-            action: toNavigationAction.appending(path: /PresentationAction.isPresented),
+            action: toPresentationAction.appending(path: /PresentationAction.isPresented),
             environment: toLocalEnvironment
           )
           .run(&state, action, environment)
@@ -85,7 +85,7 @@ extension Reducer {
         self.run(&state, action, environment)
       )
 
-      switch toNavigationAction.extract(from: action) {
+      switch toPresentationAction.extract(from: action) {
       case .some(.present)
         where state[keyPath: selection] == nil:
         state[keyPath: selection] = tag
@@ -108,14 +108,14 @@ extension Reducer {
   public func navigates<LocalState, LocalAction, LocalEnvironment>(
     _ localReducer: Reducer<LocalState, LocalAction, LocalEnvironment>,
     state toLocalState: WritableKeyPath<State, LocalState?>,
-    action toNavigationAction: CasePath<Action, PresentationAction<LocalAction>>,
+    action toPresentationAction: CasePath<Action, PresentationAction<LocalAction>>,
     environment toLocalEnvironment: @escaping (Environment) -> LocalEnvironment
   ) -> Self {
     self.navigates(
       localReducer,
       tag: /.self,
       selection: toLocalState,
-      action: toNavigationAction,
+      action: toPresentationAction,
       environment: toLocalEnvironment
     )
   }
@@ -124,7 +124,7 @@ extension Reducer {
     _ localReducer: Reducer<LocalState, LocalAction, LocalEnvironment>,
     isActive: WritableKeyPath<State, Bool>,
     state toLocalState: WritableKeyPath<State, LocalState>,
-    action toNavigationAction: CasePath<Action, PresentationAction<LocalAction>>,
+    action toPresentationAction: CasePath<Action, PresentationAction<LocalAction>>,
     environment toLocalEnvironment: @escaping (Environment) -> LocalEnvironment
   ) -> Self {
     let id = UUID()
@@ -136,7 +136,7 @@ extension Reducer {
         localReducer
           .pullback(
             state: toLocalState,
-            action: toNavigationAction.appending(path: /PresentationAction.isPresented),
+            action: toPresentationAction.appending(path: /PresentationAction.isPresented),
             environment: toLocalEnvironment
           )
           .run(&state, action, environment)
@@ -147,7 +147,7 @@ extension Reducer {
         self.run(&state, action, environment)
       )
 
-      switch toNavigationAction.extract(from: action) {
+      switch toPresentationAction.extract(from: action) {
       case .some(.present) where !state[keyPath: isActive]:
         state[keyPath: isActive] = true
 
