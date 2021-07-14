@@ -104,6 +104,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
     state.messageToSend = ""
 
     return environment.webSocket.send(WebSocketId(), .string(messageToSend))
+      .receive(on: environment.mainQueue)
       .eraseToEffect()
       .map(WebSocketAction.sendResponse)
 

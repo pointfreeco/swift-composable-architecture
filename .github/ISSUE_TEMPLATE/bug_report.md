@@ -25,9 +25,10 @@ Give a clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Environment**
- - Xcode [e.g. 11.4.1]
- - Swift [e.g. 5.2.2]
- - OS (if applicable): [e.g. iOS 13]
+  - swift-composable-architecture version [e.g. 0.20.0]
+  - Xcode [e.g. 12.4]
+  - Swift [e.g. 5.4]
+  - OS: [e.g. iOS 14]
 
 **Additional context**
 Add any more context about the problem here.
