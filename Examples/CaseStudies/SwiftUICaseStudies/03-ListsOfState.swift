@@ -9,13 +9,13 @@ struct CounterRowState: Identifiable, Equatable {
 
 let counterRowReducer =
   Reducer<
-    CounterRowState, NavigationAction<CounterAction>, Void
+    CounterRowState, PresentationAction<CounterAction>, Void
   > { state, action, environment in
     switch action {
-    case .isActive:
+    case .isPresented:
       return .none
 
-    case .setNavigation:
+    case .dismiss, .present:
       return .none
     }
   }
@@ -33,7 +33,7 @@ struct CounterListState: Equatable {
 
 enum CounterListAction {
   case addButtonTapped
-  case counterRow(id: CounterRowState.ID, action: NavigationAction<CounterAction>)
+  case counterRow(id: CounterRowState.ID, action: PresentationAction<CounterAction>)
 }
 
 struct CounterListEnvironment {
@@ -62,7 +62,7 @@ let counterListReducer = counterRowReducer
   )
 
 struct CounterRowView: View {
-  let store: Store<CounterRowState, NavigationAction<CounterAction>>
+  let store: Store<CounterRowState, PresentationAction<CounterAction>>
 
   var body: some View {
 
@@ -71,7 +71,7 @@ struct CounterRowView: View {
         title: Text("\(viewStore.counter.count)"),
         destination: { 
           CounterView(
-            store: self.store.scope(state: \.counter, action: NavigationAction.isActive)
+            store: self.store.scope(state: \.counter, action: PresentationAction.isPresented)
           )
         },
         isActive: self.store.scope(state: \.isActive)

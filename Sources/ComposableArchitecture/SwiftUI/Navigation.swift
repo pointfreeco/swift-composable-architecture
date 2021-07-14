@@ -2,21 +2,12 @@ import SwiftUI
 
 // TODO: does .task cancel its work when pushing away from a view? or just when popping?
 
-// TODO: remove this and use PresentationAction
-public enum NavigationAction<Action> {
-  case isActive(Action)
-  case setNavigation(isActive: Bool)
-}
-
-extension NavigationAction: Equatable where Action: Equatable {}
-extension NavigationAction: Hashable where Action: Hashable {}
-
 extension Reducer {
   public func navigates<Route, LocalState, LocalAction, LocalEnvironment>(
     _ localReducer: Reducer<LocalState, LocalAction, LocalEnvironment>,
     tag: CasePath<Route, LocalState>,
     selection: WritableKeyPath<State, Route?>,
-    action toNavigationAction: CasePath<Action, NavigationAction<LocalAction>>,
+    action toPresentationAction: CasePath<Action, PresentationAction<LocalAction>>,
     environment toLocalEnvironment: @escaping (Environment) -> LocalEnvironment
   ) -> Self {
     let id = UUID()
@@ -41,7 +32,7 @@ extension Reducer {
           .optional()
           .pullback(
             state: selection,
-            action: toNavigationAction.appending(path: /NavigationAction.isActive),
+            action: toPresentationAction.appending(path: /PresentationAction.isPresented),
             environment: { $0 }
           )
           .run(&state, action, environment)
@@ -54,7 +45,7 @@ extension Reducer {
       )
 
       if state[keyPath: selection].flatMap(tag.extract(from:)) != nil,
-         case .some(.setNavigation(isActive: false)) = toNavigationAction.extract(from: action)
+         case .some(.dismiss) = toPresentationAction.extract(from: action)
       {
         state[keyPath: selection] = nil
       }
@@ -71,7 +62,7 @@ extension Reducer {
     tag: Route,
     selection: WritableKeyPath<State, Route?>,
     state toLocalState: WritableKeyPath<State, LocalState>,
-    action toNavigationAction: CasePath<Action, NavigationAction<LocalAction>>,
+    action toNavigationAction: CasePath<Action, PresentationAction<LocalAction>>,
     environment toLocalEnvironment: @escaping (Environment) -> LocalEnvironment
   ) -> Self {
     let id = UUID()
@@ -83,7 +74,7 @@ extension Reducer {
         localReducer
           .pullback(
             state: toLocalState,
-            action: toNavigationAction.appending(path: /NavigationAction.isActive),
+            action: toNavigationAction.appending(path: /PresentationAction.isPresented),
             environment: toLocalEnvironment
           )
           .run(&state, action, environment)
@@ -95,11 +86,11 @@ extension Reducer {
       )
 
       switch toNavigationAction.extract(from: action) {
-      case .some(.setNavigation(isActive: true))
+      case .some(.present)
         where state[keyPath: selection] == nil:
         state[keyPath: selection] = tag
 
-      case .some(.setNavigation(isActive: false))
+      case .some(.dismiss)
         where enumTag(state[keyPath: selection]) == enumTag(tag):
         state[keyPath: selection] = nil
 
@@ -117,7 +108,7 @@ extension Reducer {
   public func navigates<LocalState, LocalAction, LocalEnvironment>(
     _ localReducer: Reducer<LocalState, LocalAction, LocalEnvironment>,
     state toLocalState: WritableKeyPath<State, LocalState?>,
-    action toNavigationAction: CasePath<Action, NavigationAction<LocalAction>>,
+    action toNavigationAction: CasePath<Action, PresentationAction<LocalAction>>,
     environment toLocalEnvironment: @escaping (Environment) -> LocalEnvironment
   ) -> Self {
     self.navigates(
@@ -133,7 +124,7 @@ extension Reducer {
     _ localReducer: Reducer<LocalState, LocalAction, LocalEnvironment>,
     isActive: WritableKeyPath<State, Bool>,
     state toLocalState: WritableKeyPath<State, LocalState>,
-    action toNavigationAction: CasePath<Action, NavigationAction<LocalAction>>,
+    action toNavigationAction: CasePath<Action, PresentationAction<LocalAction>>,
     environment toLocalEnvironment: @escaping (Environment) -> LocalEnvironment
   ) -> Self {
     let id = UUID()
@@ -145,7 +136,7 @@ extension Reducer {
         localReducer
           .pullback(
             state: toLocalState,
-            action: toNavigationAction.appending(path: /NavigationAction.isActive),
+            action: toNavigationAction.appending(path: /PresentationAction.isPresented),
             environment: toLocalEnvironment
           )
           .run(&state, action, environment)
@@ -157,10 +148,10 @@ extension Reducer {
       )
 
       switch toNavigationAction.extract(from: action) {
-      case .some(.setNavigation(isActive: true)) where !state[keyPath: isActive]:
+      case .some(.present) where !state[keyPath: isActive]:
         state[keyPath: isActive] = true
 
-      case .some(.setNavigation(isActive: false)) where state[keyPath: isActive]:
+      case .some(.dismiss) where state[keyPath: isActive]:
         state[keyPath: isActive] = false
 
       default:
@@ -182,18 +173,18 @@ where
 {
   let destination: Destination
   let label: () -> Label
-  let selection: Store<Bool, NavigationAction<Action>>
+  let selection: Store<Bool, PresentationAction<Action>>
 
   public init<Content>(
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Content,
     tag: @escaping (Route) -> State?,
-    selection: Store<Route?, NavigationAction<Action>>,
+    selection: Store<Route?, PresentationAction<Action>>,
     @ViewBuilder label: @escaping () -> Label
   ) where Destination == IfLetStore<State, Action, Content?> {
     self.destination = IfLetStore<State, Action, Content?>(
       selection.scope(
         state: { $0.flatMap(tag) },
-        action: NavigationAction.isActive
+        action: PresentationAction.isPresented
       ),
       then: destination
     )
@@ -204,7 +195,7 @@ where
   public init(
     @ViewBuilder destination: () -> Destination,
     tag: Route,
-    selection: Store<Route?, NavigationAction<Action>>,
+    selection: Store<Route?, PresentationAction<Action>>,
     @ViewBuilder label: @escaping () -> Label
   ) where State == Void {
     self.destination = destination()
@@ -214,7 +205,7 @@ where
 
   public init(
     @ViewBuilder destination: () -> Destination,
-    isActive: Store<Bool, NavigationAction<Action>>,
+    isActive: Store<Bool, PresentationAction<Action>>,
     @ViewBuilder label: @escaping () -> Label
   ) where Route == Bool, State == Void {
     self.destination = destination()
@@ -224,7 +215,7 @@ where
 
   public init<Content>(
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Content,
-    ifLet selection: Store<State?, NavigationAction<Action>>,
+    ifLet selection: Store<State?, PresentationAction<Action>>,
     @ViewBuilder label: @escaping () -> Label
   ) where Route == State, Destination == IfLetStore<State, Action, Content?> {
     self.init(
@@ -240,7 +231,7 @@ where
       NavigationLink(
         destination: self.destination,
         isActive: viewStore
-          .binding(send: NavigationAction.setNavigation(isActive:))
+          .binding(send: { $0 ? .present : .dismiss })
           .removeDuplicates(),
         label: self.label
       )
@@ -253,7 +244,7 @@ extension NavigationLinkStore where Label == Text {
     title: Text,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Content,
     tag: @escaping (Route) -> State?,
-    selection: Store<Route?, NavigationAction<Action>>
+    selection: Store<Route?, PresentationAction<Action>>
   ) where Destination == IfLetStore<State, Action, Content?> {
     self.init(
       destination: destination,
@@ -267,7 +258,7 @@ extension NavigationLinkStore where Label == Text {
     title: Text,
     @ViewBuilder destination: () -> Destination,
     tag: Route,
-    selection: Store<Route?, NavigationAction<Action>>
+    selection: Store<Route?, PresentationAction<Action>>
   ) where State == Void {
     self.init(
       destination: destination,
@@ -280,7 +271,7 @@ extension NavigationLinkStore where Label == Text {
   public init<Content>(
     title: Text,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Content,
-    ifLet selection: Store<State?, NavigationAction<Action>>
+    ifLet selection: Store<State?, PresentationAction<Action>>
   ) where Route == State, Destination == IfLetStore<State, Action, Content?> {
     self.init(
       destination: destination,
@@ -292,7 +283,7 @@ extension NavigationLinkStore where Label == Text {
   public init(
     title: Text,
     @ViewBuilder destination: () -> Destination,
-    isActive: Store<Bool, NavigationAction<Action>>
+    isActive: Store<Bool, PresentationAction<Action>>
   ) where Route == Bool, State == Void {
     self.destination = destination()
     self.label = { title }

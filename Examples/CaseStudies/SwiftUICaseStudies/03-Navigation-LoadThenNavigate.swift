@@ -17,7 +17,7 @@ struct LoadThenNavigateState: Equatable {
 }
 
 enum LoadThenNavigateAction: Equatable {
-  case optionalCounter(NavigationAction<CounterAction>)
+  case optionalCounter(PresentationAction<CounterAction>)
   case setNavigationIsActiveDelayCompleted
 }
 
@@ -30,7 +30,7 @@ let loadThenNavigateReducer =
     LoadThenNavigateState, LoadThenNavigateAction, LoadThenNavigateEnvironment
   > { state, action, environment in
     switch action {
-    case .optionalCounter(.setNavigation(isActive: true)):
+    case .optionalCounter(.present):
       state.isActivityIndicatorVisible = true
       return Effect(value: .setNavigationIsActiveDelayCompleted)
         .delay(for: 1, scheduler: environment.mainQueue)
