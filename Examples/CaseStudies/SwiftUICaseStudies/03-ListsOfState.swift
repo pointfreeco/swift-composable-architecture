@@ -12,7 +12,7 @@ let counterRowReducer =
     CounterRowState, PresentationAction<CounterAction>, Void
   > { state, action, environment in
     switch action {
-    case .isPresented:
+    case .presented:
       return .none
 
     case .dismiss, .present:
@@ -71,7 +71,7 @@ struct CounterRowView: View {
         title: Text("\(viewStore.counter.count)"),
         destination: { 
           CounterView(
-            store: self.store.scope(state: \.counter, action: PresentationAction.isPresented)
+            store: self.store.scope(state: \.counter, action: PresentationAction.presented)
           )
         },
         isActive: self.store.scope(state: \.isActive)

@@ -32,7 +32,7 @@ extension Reducer {
           .optional()
           .pullback(
             state: selection,
-            action: toPresentationAction.appending(path: /PresentationAction.isPresented),
+            action: toPresentationAction.appending(path: /PresentationAction.presented),
             environment: { $0 }
           )
           .run(&state, action, environment)
@@ -74,7 +74,7 @@ extension Reducer {
         localReducer
           .pullback(
             state: toLocalState,
-            action: toPresentationAction.appending(path: /PresentationAction.isPresented),
+            action: toPresentationAction.appending(path: /PresentationAction.presented),
             environment: toLocalEnvironment
           )
           .run(&state, action, environment)
@@ -136,7 +136,7 @@ extension Reducer {
         localReducer
           .pullback(
             state: toLocalState,
-            action: toPresentationAction.appending(path: /PresentationAction.isPresented),
+            action: toPresentationAction.appending(path: /PresentationAction.presented),
             environment: toLocalEnvironment
           )
           .run(&state, action, environment)
@@ -184,7 +184,7 @@ where
     self.destination = IfLetStore<State, Action, Content?>(
       selection.scope(
         state: { $0.flatMap(tag) },
-        action: PresentationAction.isPresented
+        action: PresentationAction.presented
       ),
       then: destination
     )

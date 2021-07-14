@@ -2,7 +2,7 @@ import SwiftUI
 
 public enum PresentationAction<Action> {
   case dismiss
-  case isPresented(Action) // isActive
+  case presented(Action) // isActive
   case present
 }
 
@@ -28,7 +28,7 @@ extension Reducer {
           .optional()
           .pullback(
             state: toLocalState,
-            action: toPresentationAction.appending(path: /PresentationAction.isPresented),
+            action: toPresentationAction.appending(path: /PresentationAction.presented),
             environment: toLocalEnvironment
           )
           .run(&state, action, environment)
@@ -61,7 +61,7 @@ extension View {
     WithViewStore(store.scope(state: { $0 != nil })) { viewStore in
       self.sheet(isPresented: viewStore.binding(send: { $0 ? .present : .dismiss })) {
         IfLetStore(
-          store.scope(state: Optional.cacheLastSome, action: PresentationAction.isPresented),
+          store.scope(state: Optional.cacheLastSome, action: PresentationAction.presented),
           then: content
         )
       }
@@ -78,7 +78,7 @@ extension View {
     WithViewStore(store.scope(state: { $0 != nil })) { viewStore in
       self.fullScreenCover(isPresented: viewStore.binding(send: { $0 ? .present : .dismiss })) {
         IfLetStore(
-          store.scope(state: Optional.cacheLastSome, action: PresentationAction.isPresented),
+          store.scope(state: Optional.cacheLastSome, action: PresentationAction.presented),
           then: content
         )
       }
@@ -94,7 +94,7 @@ extension View {
     WithViewStore(store.scope(state: { $0 != nil })) { viewStore in
       self.popover(isPresented: viewStore.binding(send: { $0 ? .present : .dismiss })) {
         IfLetStore(
-          store.scope(state: Optional.cacheLastSome, action: PresentationAction.isPresented),
+          store.scope(state: Optional.cacheLastSome, action: PresentationAction.presented),
           then: content
         )
       }

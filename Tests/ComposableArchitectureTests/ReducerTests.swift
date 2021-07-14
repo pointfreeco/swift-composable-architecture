@@ -294,7 +294,7 @@ final class ReducerTests: XCTestCase {
     store.send(.state1(.child(.present))) {
       $0.state1.child = .init()
     }
-    store.send(.state1(.child(.isPresented(.onAppear))))
+    store.send(.state1(.child(.presented(.onAppear))))
 
     store.send(.state2(.child(.present))) {
       $0.state2.child = .init()
@@ -305,7 +305,7 @@ final class ReducerTests: XCTestCase {
 
     mainQueue.advance()
     // TODO: why does this take so long?
-    store.receive(.state1(.child(.isPresented(.response(42))))) {
+    store.receive(.state1(.child(.presented(.response(42))))) {
       $0.state1.child?.count = 42
     }
   }
