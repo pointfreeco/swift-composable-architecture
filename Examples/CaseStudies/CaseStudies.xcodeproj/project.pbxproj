@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		2AA20D9326A0BC4800C2E123 /* RefreshableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AA20D9226A0BC4800C2E123 /* RefreshableTests.swift */; };
 		2AC9838926A0ABFF00A5812A /* Refreshable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC9838826A0ABFE00A5812A /* Refreshable.swift */; };
+		4BD5EB2726A0C24700CC723B /* ComposableRefreshable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BD5EB2626A0C24700CC723B /* ComposableRefreshable.swift */; };
 		4F5AC11F24ECC7E4009DC50B /* 01-GettingStarted-SharedStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5AC11E24ECC7E4009DC50B /* 01-GettingStarted-SharedStateTests.swift */; };
 		CA0C0C4724B89BEC00CBDD8A /* 04-HigherOrderReducers-LifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0C0C4624B89BEC00CBDD8A /* 04-HigherOrderReducers-LifecycleTests.swift */; };
 		CA0C51FB245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0C51FA245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift */; };
@@ -152,6 +153,7 @@
 /* Begin PBXFileReference section */
 		2AA20D9226A0BC4800C2E123 /* RefreshableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshableTests.swift; sourceTree = "<group>"; };
 		2AC9838826A0ABFE00A5812A /* Refreshable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Refreshable.swift; sourceTree = "<group>"; };
+		4BD5EB2626A0C24700CC723B /* ComposableRefreshable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposableRefreshable.swift; sourceTree = "<group>"; };
 		4F5AC11E24ECC7E4009DC50B /* 01-GettingStarted-SharedStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-SharedStateTests.swift"; sourceTree = "<group>"; };
 		CA0C0C4624B89BEC00CBDD8A /* 04-HigherOrderReducers-LifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-LifecycleTests.swift"; sourceTree = "<group>"; };
 		CA0C51FA245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift"; sourceTree = "<group>"; };
@@ -425,6 +427,7 @@
 				CA6AC25F2451131C00C71CB3 /* 04-HigherOrderReducers-ResuableOfflineDownloads */,
 				DC89C44524461416006900B9 /* Internal */,
 				2AC9838826A0ABFE00A5812A /* Refreshable.swift */,
+				4BD5EB2626A0C24700CC723B /* ComposableRefreshable.swift */,
 			);
 			path = SwiftUICaseStudies;
 			sourceTree = "<group>";
@@ -764,6 +767,7 @@
 				CA6AC2652451135C00C71CB3 /* CircularProgressView.swift in Sources */,
 				CA6AC2642451135C00C71CB3 /* ReusableComponents-Download.swift in Sources */,
 				CA6AC2662451135C00C71CB3 /* DownloadComponent.swift in Sources */,
+				4BD5EB2726A0C24700CC723B /* ComposableRefreshable.swift in Sources */,
 				CA3E4C5B24B4FA0E00447C0B /* 04-HigherOrderReducers-Lifecycle.swift in Sources */,
 				DC5B505125C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift in Sources */,
 				CAA9ADC22446587C0003A984 /* 02-Effects-Basics.swift in Sources */,
