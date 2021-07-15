@@ -3,17 +3,20 @@ import SwiftUI
 class LoginViewModel: ObservableObject {
   @Published var username = ""
   @Published var password = ""
-//  @FocusState var focusedField: LoginForm.Field?
+  @Published var focusedField: LoginForm.Field?
 
-  func signInButtonTapped(focusedField: inout LoginForm.Field?) async {
+  func signInButtonTapped() async {
     if username.isEmpty {
       focusedField = .username
     } else if password.isEmpty {
       focusedField = .password
     } else {
-//      focusedField = nil
-
-      //handleLogin(username, password)
+      focusedField = nil
+      do {
+        // try await handleLogin(username, password)
+      } catch {
+        self.focusedField = .username
+      }
     }
   }
 }
@@ -46,13 +49,21 @@ struct LoginForm: View {
 
 
         Task {
-          await viewModel.signInButtonTapped(focusedField: &focusedField)
+          await viewModel.signInButtonTapped()
         }
 
 //        if let focusedField = viewModel.signInButtonTapped() {
 //          self.focusedField = focusedField
 //        }
       }
+      
+      Text("\(String(describing: self.viewModel.focusedField))")
+    }
+    .onChange(of: self.viewModel.focusedField) { newValue in
+      self.focusedField = newValue
+    }
+    .onChange(of: self.focusedField) { newValue in
+      self.viewModel.focusedField = newValue
     }
   }
 }
