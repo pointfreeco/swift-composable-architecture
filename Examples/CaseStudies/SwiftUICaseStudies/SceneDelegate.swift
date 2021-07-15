@@ -11,7 +11,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
   ) {
     self.window = (scene as? UIWindowScene).map(UIWindow.init(windowScene:))
     self.window?.rootViewController = UIHostingController(
-      rootView: VanillaPullToRefreshView(viewModel: .init())
+      rootView:
+        VanillaPullToRefreshView(
+          viewModel: .init(
+            fetch: {
+              await Task.sleep(2 * NSEC_PER_SEC)
+              return String(
+                decoding: try await URLSession.shared.data(
+                  from: .init(string: "http://numbersapi.com/\($0)/trivia")!
+                ).0,
+                as: UTF8.self
+              )
+            }
+          )
+        )
 //        RootView(
 //        store: .init(
 //          initialState: RootState(),

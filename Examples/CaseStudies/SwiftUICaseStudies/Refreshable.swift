@@ -4,7 +4,16 @@ class PullToRefreshViewModel: ObservableObject {
   @Published var count = 0
   @Published var fact: String? = nil
 
-  var task: Task<Void, Error>?
+  @Published private var task: Task<String, Error>?
+
+  let fetch: (Int) async throws -> String
+  init(fetch: @escaping (Int) async throws -> String) {
+    self.fetch = fetch
+  }
+
+  var isLoading: Bool {
+    self.task != nil
+  }
 
   func incrementButtonTapped() {
     self.count += 1
@@ -14,27 +23,20 @@ class PullToRefreshViewModel: ObservableObject {
     self.count -= 1
   }
 
-  @MainActor func getFact() async {
+  @MainActor
+  func getFact() async {
     self.fact = nil
 
-    self.task = Task<Void, Error> {
-      await Task.sleep(2 * NSEC_PER_SEC)
-      let (data, _) = try await URLSession.shared.data(
-        from: .init(string: "http://numbersapi.com/\(self.count)/trivia")!
-      )
-      let fact = String(decoding: data, as: UTF8.self)
+    self.task = Task<String, Error> {
+      try await self.fetch(self.count)
+    }
+    defer { self.task = nil }
+
+    do {
+      let fact = try await self.task?.value
       withAnimation {
         self.fact = fact
       }
-    }
-
-    do {
-      try await self.task?.value
-
-//      let fact = try await self.task?.value
-//      withAnimation {
-//        self.fact = fact
-//      }
     } catch {
       // TODO: do some error handling
     }
@@ -56,16 +58,16 @@ struct VanillaPullToRefreshView: View {
         Text("\(self.viewModel.count)")
         Button("+") { self.viewModel.incrementButtonTapped() }
       }
+      .buttonStyle(.plain)
 
       if let fact = self.viewModel.fact {
         Text(fact)
-      }
-
-      Button("Cancel") {
-        self.viewModel.cancelButtonTapped()
+      } else if self.viewModel.isLoading {
+        Button("Cancel") {
+          self.viewModel.cancelButtonTapped()
+        }
       }
     }
-    .buttonStyle(.plain)
     .refreshable {
       await self.viewModel.getFact()
     }
@@ -74,6 +76,18 @@ struct VanillaPullToRefreshView: View {
 
 struct VanillaPullToRefreshView_Previews: PreviewProvider {
   static var previews: some View {
-    VanillaPullToRefreshView(viewModel: .init())
+    VanillaPullToRefreshView(
+      viewModel: .init(
+        fetch: {
+          await Task.sleep(2 * NSEC_PER_SEC)
+          return String(
+            decoding: try await URLSession.shared.data(
+              from: .init(string: "http://numbersapi.com/\($0)/trivia")!
+            ).0,
+            as: UTF8.self
+          )
+        }
+      )
+    )
   }
 }
