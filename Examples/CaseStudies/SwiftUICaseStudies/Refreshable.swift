@@ -5,6 +5,11 @@ class PullToRefreshViewModel: ObservableObject {
   @Published var fact: String? = nil
   
   @Published private var task: Task<String, Error>?
+  let fetch: (Int) async throws -> String
+
+  init(fetch: @escaping (Int) async throws -> String) {
+    self.fetch = fetch
+  }
   
   var isLoading: Bool {
     self.task != nil
@@ -23,12 +28,9 @@ class PullToRefreshViewModel: ObservableObject {
     self.fact = nil
     
     self.task = Task<String, Error> {
-      await Task.sleep(2 * NSEC_PER_SEC)
-
-      let (data, _) = try await URLSession.shared.data(from: .init(string: "http://numbersapi.com/\(self.count)/trivia")!)
-      
-      return String(decoding: data, as: UTF8.self)
+      try await self.fetch(self.count)
     }
+    defer { self.task = nil }
 
     do {
       let fact = try await task?.value
@@ -61,7 +63,8 @@ struct VanillaPullToRefreshView: View {
 
       if let fact = self.viewModel.fact {
         Text(fact)
-      } else if self.viewModel.isLoading {
+      }
+      if self.viewModel.isLoading {
         Button("Cancel") {
           self.viewModel.cancelButtonTapped()
         }
@@ -75,6 +78,16 @@ struct VanillaPullToRefreshView: View {
 
 struct VanillaPullToRefreshView_Previews: PreviewProvider {
   static var previews: some View {
-    VanillaPullToRefreshView(viewModel: .init())
+    VanillaPullToRefreshView(
+      viewModel: .init(
+        fetch: { count in
+          await Task.sleep(2 * NSEC_PER_SEC)
+
+          let (data, _) = try await URLSession.shared.data(from: .init(string: "http://numbersapi.com/\(count)/trivia")!)
+
+          return String(decoding: data, as: UTF8.self)
+        }
+      )
+    )
   }
 }
