@@ -277,7 +277,8 @@ public final class Store<State, Action> {
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<LocalState, LocalAction>(
     state toLocalState: @escaping (State) -> LocalState,
-    action fromLocalAction: @escaping (LocalAction) -> Action
+    action fromLocalAction: @escaping (LocalAction) -> Action,
+    removeDuplicates isDuplicate: ((LocalState, LocalState) -> Bool)? = nil
   ) -> Store<LocalState, LocalAction> {
     var isSending = false
     let localStore = Store<LocalState, LocalAction>(
@@ -295,7 +296,14 @@ public final class Store<State, Action> {
       .dropFirst()
       .sink { [weak localStore] newValue in
         guard !isSending else { return }
-        localStore?.state.value = toLocalState(newValue)
+        let newLocalState = toLocalState(newValue)
+        guard let previousState = localStore?.state.value, let isDuplicate = isDuplicate else {
+            localStore?.state.value = newLocalState
+            return
+        }
+        if !isDuplicate(newLocalState, previousState) {
+            localStore?.state.value = newLocalState
+        }
       }
     return localStore
   }

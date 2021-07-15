@@ -435,6 +435,7 @@ final class StoreTests: XCTestCase {
     viewStore.send(0)
 
     XCTAssertEqual(emissions, [0, 3])
+  }
 
   func testSyncEffectsFromEnvironment() {
     enum Action: Equatable {
@@ -548,5 +549,46 @@ final class StoreTests: XCTestCase {
       .button,
       .child(2)
     ])
+  }
+
+  func testScopingRemovesDuplicatesWithProvidedClosure() {
+    struct State: Equatable {
+      var place: String
+    }
+    enum Action: Equatable {
+      case noop
+      case updatePlace(String)
+    }
+    let reducer = Reducer<State, Action, Void> { state, action, _ in
+      switch action {
+      case .noop:
+        return .none
+      case let .updatePlace(place):
+        state.place = place
+        return .none
+      }
+    }
+    let parentStore = Store(initialState: .init(place: "New York"), reducer: reducer, environment: ())
+    let childStore: Store<State, Action> = parentStore.scope(
+      state: { $0 },
+      action: { $0 },
+      removeDuplicates: ==
+    )
+    var scopeCount: Int = 0
+    let leafStore: Store<State, Action> = childStore.scope(
+      state: { parentState -> State in
+        scopeCount += 1
+        return parentState
+      },
+      action: { $0 },
+      removeDuplicates: ==
+    )
+    XCTAssertEqual(scopeCount, 1)
+    parentStore.send(.noop)
+    XCTAssertEqual(scopeCount, 1)
+    parentStore.send(.updatePlace("Washington"))
+    XCTAssertEqual(scopeCount, 2)
+    childStore.send(.noop)
+    leafStore.send(.noop)
   }
 }
