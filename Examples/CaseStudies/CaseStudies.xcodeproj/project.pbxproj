@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2AC9838926A0ABFF00A5812A /* Refreshable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC9838826A0ABFE00A5812A /* Refreshable.swift */; };
 		4F5AC11F24ECC7E4009DC50B /* 01-GettingStarted-SharedStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5AC11E24ECC7E4009DC50B /* 01-GettingStarted-SharedStateTests.swift */; };
 		CA0C0C4724B89BEC00CBDD8A /* 04-HigherOrderReducers-LifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0C0C4624B89BEC00CBDD8A /* 04-HigherOrderReducers-LifecycleTests.swift */; };
 		CA0C51FB245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0C51FA245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift */; };
@@ -148,6 +149,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2AC9838826A0ABFE00A5812A /* Refreshable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Refreshable.swift; sourceTree = "<group>"; };
 		4F5AC11E24ECC7E4009DC50B /* 01-GettingStarted-SharedStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-SharedStateTests.swift"; sourceTree = "<group>"; };
 		CA0C0C4624B89BEC00CBDD8A /* 04-HigherOrderReducers-LifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-LifecycleTests.swift"; sourceTree = "<group>"; };
 		CA0C51FA245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift"; sourceTree = "<group>"; };
@@ -420,6 +422,7 @@
 				DC89C41C24460F96006900B9 /* Assets.xcassets */,
 				CA6AC25F2451131C00C71CB3 /* 04-HigherOrderReducers-ResuableOfflineDownloads */,
 				DC89C44524461416006900B9 /* Internal */,
+				2AC9838826A0ABFE00A5812A /* Refreshable.swift */,
 			);
 			path = SwiftUICaseStudies;
 			sourceTree = "<group>";
@@ -774,6 +777,7 @@
 				CAA9ADCA2446605B0003A984 /* 02-Effects-LongLiving.swift in Sources */,
 				DC89C45124462DE7006900B9 /* 03-Navigation-Lists-LoadThenNavigate.swift in Sources */,
 				DC89C45524465C44006900B9 /* 02-Effects-Timers.swift in Sources */,
+				2AC9838926A0ABFF00A5812A /* Refreshable.swift in Sources */,
 				CA410EE0247A15FE00E41798 /* 02-Effects-WebSocket.swift in Sources */,
 				CA7BC8EE245CCFE4001FB69F /* 01-GettingStarted-SharedState.swift in Sources */,
 			);
