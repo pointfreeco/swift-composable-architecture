@@ -1,9 +1,11 @@
+import Combine
 import ComposableArchitecture
 import SwiftUI
 
 struct PullToRefreshState: Equatable {
   var count = 0
   var fact: String?
+  var isLoading = false
 }
 
 enum PullToRefreshAction {
@@ -29,13 +31,16 @@ let pullToRefreshReducer = Reducer<
   
   switch action {
   case .cancelButtonTapped:
+    state.isLoading = false
     return .cancel(id: CancelId())
     
   case let .factResponse(.success(fact)):
+    state.isLoading = false
     state.fact = fact
     return .none
     
   case .factResponse(.failure):
+    state.isLoading = false
     // TODO: do some error handling
     return .none
     
@@ -48,9 +53,11 @@ let pullToRefreshReducer = Reducer<
     return .none
     
   case .refresh:
+    state.fact = nil
+    state.isLoading = true
     return environment.fact.fetch(state.count)
 //      .receive(on: environment.mainQueue)
-      .delay(for: 2, scheduler: environment.mainQueue)
+      .delay(for: 2, scheduler: environment.mainQueue.animation())
       .catchToEffect()
       .map(PullToRefreshAction.factResponse)
       .cancellable(id: CancelId())
@@ -73,10 +80,37 @@ struct PullToRefreshView: View {
         if let fact = viewStore.fact {
           Text(fact)
         }
+        if viewStore.isLoading {
+          Button("Cancel") {
+            viewStore.send(.cancelButtonTapped, animation: .default)
+          }
+        }
       }
       .refreshable {
-        viewStore.send(.refresh)
+        await viewStore.send(.refresh, while: \.isLoading)
       }
+    }
+  }
+}
+
+extension ViewStore {
+  func send(
+    _ action: Action,
+    `while` isInFlight: @escaping (State) -> Bool
+  ) async {
+    self.send(action)
+
+    await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
+      var cancellable: Cancellable?
+
+      cancellable = self.publisher
+        .filter { !isInFlight($0) }
+        .prefix(1)
+        .sink { _ in
+          continuation.resume()
+          _ = cancellable
+        }
+
     }
   }
 }
