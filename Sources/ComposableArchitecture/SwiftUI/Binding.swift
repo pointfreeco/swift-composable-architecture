@@ -258,4 +258,29 @@ extension ViewStore {
       send: { action(.set(keyPath, $0)) }
     )
   }
+
+  /// Derives a binding from the store that mutates state by wrapping a ``BindingAction`` with the
+  /// store's action type.
+  ///
+  /// For example, a text field binding can be created like this:
+  ///
+  /// ```swift
+  /// struct State { var text = "" }
+  /// enum Action { case binding(BindingAction<State>) }
+  ///
+  /// TextField(
+  ///   "Enter text",
+  ///   text: viewStore.binding(Action.binding).text
+  /// )
+  /// ```
+  ///
+  /// - Parameter action: A function that wraps a binding action in the view store's action type.
+  /// - Returns: A binding.
+  public func binding(_ action: @escaping (BindingAction<State>) -> Action) -> Binding<State>
+  where State: Equatable {
+    self.binding(
+      get: { $0 },
+      send: { action(.set(\.self, $0)) }
+    )
+  }
 }

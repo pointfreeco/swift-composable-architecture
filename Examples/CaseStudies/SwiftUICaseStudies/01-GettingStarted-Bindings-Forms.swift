@@ -56,7 +56,7 @@ struct BindingFormView: View {
           HStack {
             TextField(
               "Type here",
-              text: viewStore.binding(keyPath: \.text, send: BindingFormAction.binding)
+              text: viewStore.binding(BindingFormAction.binding).text
             )
             .disableAutocorrection(true)
             .foregroundColor(viewStore.toggleIsOn ? .gray : .primary)
@@ -64,12 +64,12 @@ struct BindingFormView: View {
           }
           .disabled(viewStore.toggleIsOn)
 
-          Toggle(isOn: viewStore.binding(keyPath: \.toggleIsOn, send: BindingFormAction.binding)) {
+          Toggle(isOn: viewStore.binding(BindingFormAction.binding).toggleIsOn) {
             Text("Disable other controls")
           }
 
           Stepper(
-            value: viewStore.binding(keyPath: \.stepCount, send: BindingFormAction.binding),
+            value: viewStore.binding(BindingFormAction.binding).stepCount,
             in: 0...100
           ) {
             Text("Max slider value: \(viewStore.stepCount)")
@@ -81,7 +81,7 @@ struct BindingFormView: View {
             Text("Slider value: \(Int(viewStore.sliderValue))")
               .font(Font.body.monospacedDigit())
             Slider(
-              value: viewStore.binding(keyPath: \.sliderValue, send: BindingFormAction.binding),
+              value: viewStore.binding(BindingFormAction.binding).sliderValue,
               in: 0...Double(viewStore.stepCount)
             )
           }

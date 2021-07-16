@@ -356,8 +356,7 @@ public final class Store<State, Action> {
   ///
   /// - Parameter toLocalState: A function that transforms a publisher of `State` into a publisher
   ///   of `LocalState`.
-  /// - Returns: A publisher of stores with its domain (state and action)
-  ///   transformed.
+  /// - Returns: A publisher of stores with its domain (state and action) transformed.
   public func publisherScope<P: Publisher, LocalState>(
     state toLocalState: @escaping (AnyPublisher<State, Never>) -> P
   ) -> AnyPublisher<Store<LocalState, Action>, Never>
