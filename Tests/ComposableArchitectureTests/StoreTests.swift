@@ -505,15 +505,5 @@ final class StoreTests: XCTestCase {
       .button,
       .child(2)
     ])
-
-    //    // demonstrates that `.child(2)` hangs out in the buffer:
-    //    parentStore.send(.button)
-    //    parentStore.send(.button)
-    //    XCTAssertEqual(handledActions, [
-    //      .button,
-    //      .child(2),
-    //      .button,
-    //    ])
   }
-
 }
