@@ -1,21 +1,85 @@
 import Combine
 import Foundation
 
+/*
+
+  0.22
+    Backwards compat
+    - introduce .stream { } helpers on Effect so that people can use async/await
+    - introduce Effect.init that takes an async sequence
+
+ 1.0
+   - Make Effect an AsyncSequence
+   - Make store, view store and test store run off of async sequence too
+   - introduce `publisher.eraseToEffect()` to convert their publishers to new Effect
 
 
 
-      extension Result where Failure == Error {
-        init(_ catching: () async throws -> Success) async {
-          do {
-            self = .success(try await catching())
-          } catch {
-            self = .failure(error)
-          }
-        }
+ Effect.future { callback in
+  callback(.success(42))
+ }
+
+ */
+
+
+struct _Effect<Output, Failure: Error> {
+  // TODO: use enum output | failure | completed
+  let run: (@escaping (Result<Output, Failure>) -> Void) -> Void
+}
+
+#if canImport(Combine)
+extension _Effect: Publisher {
+  func receive<S>(subscriber: S) where S : Subscriber, Failure == S.Failure, Output == S.Input {
+    self.run { result in
+      switch result {
+      case let .success(output):
+        // TODO: what to do here
+        let demand = subscriber.receive(output)
+      case let .failure(error):
+        subscriber.receive(completion: .failure(error))
       }
+    }
+  }
+}
+#endif
 
-      // Usage:
-      //   await Result { try await URLSession.shared.data(from: ...) }
+#if canImport(_Concurrency)
+extension _Effect: AsyncSequence {
+  __consuming func makeAsyncIterator() -> _Iterator {
+    fatalError()
+  }
+
+  typealias AsyncIterator = _Iterator
+  typealias Element = Output
+
+  struct _Iterator: AsyncIteratorProtocol {
+    typealias Element = Output
+    mutating func next() async throws -> Output? {
+      nil
+    }
+  }
+
+
+}
+#endif
+
+
+@available(iOSApplicationExtension 15.0, *)
+func foo(e: _Effect<Int, Never>) {
+  let tmp = e.map { await $0 }
+}
+
+
+
+extension Result where Failure == Error {
+  init(_ catching: () async throws -> Success) async {
+    do {
+      self = .success(try await catching())
+    } catch {
+      self = .failure(error)
+    }
+  }
+}
 
 
 
@@ -34,7 +98,7 @@ struct FactClient {
 
 @available(iOS 15.0, *)
 extension Effect {
-  static func async(
+  static func task(
     operation: @escaping () async -> Output
   ) -> Effect<Output, Failure>
   where Failure == Never {
@@ -77,26 +141,27 @@ let reducer = Reducer<String, Action, FactClient> { state, action, environment i
     return .none
   case .tapped:
 
-    return .async {
+    return .task {
       await .response(Result { try await environment.fetch(42) })
     }
 
+    return .throwingStream { continuation in
+      struct Foo: Error {}
+      throw Foo()
+    }
+    .catch { Action.response(.failure($0)) }
+
+
       return .stream { continuation in
-
-        async let x = ""
-        async let y = ""
-        _ = (
-          continuation.yield(.response(.success(await x))),
-          continuation.yield(.response(.success(await y)))
-        )
-
         continuation.yield(.started)
         defer { continuation.yield(.finished) }
 
-        continuation.yield(
-          await .response(Result { try await environment.fetch(42) })
-        )
+//        continuation.yield(
+//          await .response(Result { try await environment.fetch(42) })
+//          await .repsonse(.success(try environment.fetch(42)))
+//        )
       }
+//      .catchToEffect()
 
   case let .response(.success(fact)):
     state = fact
@@ -125,18 +190,36 @@ extension Effect where Failure == Never {
       .eraseToEffect()
   }
 }
+
 @available(iOS 15, *)
-extension Effect where Failure == Error {
+extension Effect  {
+
+  struct Continuation<Output> {
+    fileprivate let continuation: AsyncThrowingStream<Output, Error>.Continuation
+    func yield(_ output: Output) {
+      self.continuation.yield(output)
+    }
+    func finish() {
+      self.continuation.finish(throwing: nil)
+    }
+  }
+
   static func throwingStream(
-    _ build: @escaping (AsyncThrowingStream<Output, Failure>.Continuation) async throws -> Void
-  ) -> Self {
+    _ build: @escaping (Continuation<Output>) async throws -> Void
+  ) -> Effect<Output, Error> {
     AsyncThrowingStream(Output.self) { continuation in
       Task {
-        try await build(continuation)
-        continuation.finish()
+        // TODO: error is being swalled
+        try await build(Continuation(continuation: continuation))
       }
     }
       .publisher
+      .eraseToEffect()
+  }
+
+  func `catch`(`catch`: @escaping (Error) -> Output) -> Effect<Output, Never> {
+    self
+      .catch { Just(`catch`($0)) }
       .eraseToEffect()
   }
 }
