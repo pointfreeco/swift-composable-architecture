@@ -10,7 +10,10 @@ class EffectsCancellationTests: XCTestCase {
       initialState: .init(),
       reducer: effectsCancellationReducer,
       environment: .init(
-        fact: .init(fetch: { n in Effect(value: "\(n) is a good number Brent") }),
+        fact: .init(
+          asyncFetch: { "\($0) is a good number Brent" },
+          fetch: { n in Effect(value: "\(n) is a good number Brent") }
+        ),
         mainQueue: .immediate
       )
     )
@@ -35,7 +38,10 @@ class EffectsCancellationTests: XCTestCase {
       initialState: .init(),
       reducer: effectsCancellationReducer,
       environment: .init(
-        fact: .init(fetch: { _ in Fail(error: FactClient.Error()).eraseToEffect() }),
+        fact: .init(
+          asyncFetch: { _ in throw FactClient.Error() },
+          fetch: { _ in Fail(error: FactClient.Error()).eraseToEffect() }
+        ),
         mainQueue: .immediate
       )
     )
@@ -60,7 +66,10 @@ class EffectsCancellationTests: XCTestCase {
       initialState: .init(),
       reducer: effectsCancellationReducer,
       environment: .init(
-        fact: .init(fetch: { n in Effect(value: "\(n) is a good number Brent") }),
+        fact: .init(
+          asyncFetch: { "\($0) is a good number Brent" },
+          fetch: { n in Effect(value: "\(n) is a good number Brent") }
+        ),
         mainQueue: scheduler.eraseToAnyScheduler()
       )
     )
@@ -80,7 +89,10 @@ class EffectsCancellationTests: XCTestCase {
       initialState: .init(),
       reducer: effectsCancellationReducer,
       environment: .init(
-        fact: .init(fetch: { n in Effect(value: "\(n) is a good number Brent") }),
+        fact: .init(
+          asyncFetch: { "\($0) is a good number Brent" },
+          fetch: { n in Effect(value: "\(n) is a good number Brent") }
+        ),
         mainQueue: scheduler.eraseToAnyScheduler()
       )
     )

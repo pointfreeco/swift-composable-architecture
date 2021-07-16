@@ -1,8 +1,10 @@
 import Combine
 import ComposableArchitecture
 import XCTestDynamicOverlay
+import AVFAudio
 
 struct FactClient {
+  var asyncFetch: (Int) async throws -> String
   var fetch: (Int) -> Effect<String, Error>
 
   struct Error: Swift.Error, Equatable {}
@@ -13,6 +15,17 @@ extension FactClient {
   // Typically this live implementation of the dependency would live in its own module so that the
   // main feature doesn't need to compile it.
   static let live = Self(
+    asyncFetch: { number in
+      do {
+        let (data, _) = try await URLSession.shared.data(
+          from: URL(string: "http://numbersapi.com/\(number)/trivia")!
+        )
+        return String(decoding: data, as: UTF8.self)
+      } catch {
+        await Task.sleep(NSEC_PER_SEC)
+        return "\(number) is a good number."
+      }
+    },
     fetch: { number in
       URLSession.shared.dataTaskPublisher(
         for: URL(string: "http://numbersapi.com/\(number)/trivia")!
@@ -34,6 +47,10 @@ extension FactClient {
     // This is the "failing" fact dependency that is useful to plug into tests that you want
     // to prove do not need the dependency.
     static let failing = Self(
+      asyncFetch: { _ in
+        struct Unimplemented: Swift.Error {}
+        throw Unimplemented()
+      },
       fetch: { _ in
         XCTFail("\(Self.self).fact is unimplemented.")
         return .none

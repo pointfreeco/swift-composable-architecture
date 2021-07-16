@@ -1,78 +1,8 @@
 import Combine
 import Foundation
 
-/*
-
-  0.22
-    Backwards compat
-    - introduce .stream { } helpers on Effect so that people can use async/await
-    - introduce Effect.init that takes an async sequence
-
- 1.0
-   - Make Effect an AsyncSequence
-   - Make store, view store and test store run off of async sequence too
-   - introduce `publisher.eraseToEffect()` to convert their publishers to new Effect
-
-
-
- Effect.future { callback in
-  callback(.success(42))
- }
-
- */
-
-
-struct _Effect<Output, Failure: Error> {
-  // TODO: use enum output | failure | completed
-  let run: (@escaping (Result<Output, Failure>) -> Void) -> Void
-}
-
-#if canImport(Combine)
-extension _Effect: Publisher {
-  func receive<S>(subscriber: S) where S : Subscriber, Failure == S.Failure, Output == S.Input {
-    self.run { result in
-      switch result {
-      case let .success(output):
-        // TODO: what to do here
-        let demand = subscriber.receive(output)
-      case let .failure(error):
-        subscriber.receive(completion: .failure(error))
-      }
-    }
-  }
-}
-#endif
-
-#if canImport(_Concurrency)
-extension _Effect: AsyncSequence {
-  __consuming func makeAsyncIterator() -> _Iterator {
-    fatalError()
-  }
-
-  typealias AsyncIterator = _Iterator
-  typealias Element = Output
-
-  struct _Iterator: AsyncIteratorProtocol {
-    typealias Element = Output
-    mutating func next() async throws -> Output? {
-      nil
-    }
-  }
-
-
-}
-#endif
-
-
-@available(iOSApplicationExtension 15.0, *)
-func foo(e: _Effect<Int, Never>) {
-  let tmp = e.map { await $0 }
-}
-
-
-
 extension Result where Failure == Error {
-  init(_ catching: () async throws -> Success) async {
+  public init(_ catching: () async throws -> Success) async {
     do {
       self = .success(try await catching())
     } catch {
@@ -81,38 +11,23 @@ extension Result where Failure == Error {
   }
 }
 
-
-
-
 @available(iOS 15.0, *)
-struct FactClient {
-  var fetch: (Int) async throws -> String
-
-  static let live = Self(
-    fetch: { count in
-      let (data, _) = try await URLSession.shared.data(from: .init(string: "http://numbersapi.com/42/trivia")!)
-      return String.init(decoding: data, as: UTF8.self)
-    }
-  )
-}
-
-@available(iOS 15.0, *)
-extension Effect {
-  static func task(
+extension Effect where Failure == Never {
+  public static func task(
     operation: @escaping () async -> Output
-  ) -> Effect<Output, Failure>
-  where Failure == Never {
+  ) -> Effect<Output, Failure> {
     .future { callback in
       Task {
         callback(.success(await operation()))
       }
     }
   }
-
-  static func asyncThrowing(
+}
+@available(iOS 15.0, *)
+extension Effect {
+  public static func throwingTask(
     operation: @escaping () async throws -> Output
-  ) -> Effect<Output, Failure>
-  where Failure == Error {
+  ) -> Effect<Output, Error> {
     .future { callback in
       Task {
         do {
@@ -125,58 +40,12 @@ extension Effect {
   }
 }
 
-enum Action {
-  case finished
-  case started
-  case tapped
-  case response(Result<String, Error>)
-}
-
-@available(iOS 15, *)
-let reducer = Reducer<String, Action, FactClient> { state, action, environment in
-  switch action {
-  case .finished:
-    return .none
-  case .started:
-    return .none
-  case .tapped:
-
-    return .task {
-      await .response(Result { try await environment.fetch(42) })
-    }
-
-    return .throwingStream { continuation in
-      struct Foo: Error {}
-      throw Foo()
-    }
-    .catch { Action.response(.failure($0)) }
-
-
-      return .stream { continuation in
-        continuation.yield(.started)
-        defer { continuation.yield(.finished) }
-
-//        continuation.yield(
-//          await .response(Result { try await environment.fetch(42) })
-//          await .repsonse(.success(try environment.fetch(42)))
-//        )
-      }
-//      .catchToEffect()
-
-  case let .response(.success(fact)):
-    state = fact
-    return .none
-
-  case .response(.failure):
-    return .none
-  }
-}
 
 
 
 @available(iOS 15, *)
 extension Effect where Failure == Never {
-  static func stream(
+  public static func stream(
     _ build: @escaping (AsyncStream<Output>.Continuation) async -> Void
   ) -> Self {
     AsyncStream(Output.self) { continuation in
@@ -194,17 +63,17 @@ extension Effect where Failure == Never {
 @available(iOS 15, *)
 extension Effect  {
 
-  struct Continuation<Output> {
+  public struct Continuation<Output> {
     fileprivate let continuation: AsyncThrowingStream<Output, Error>.Continuation
-    func yield(_ output: Output) {
+    public func yield(_ output: Output) {
       self.continuation.yield(output)
     }
-    func finish() {
+    public func finish() {
       self.continuation.finish(throwing: nil)
     }
   }
 
-  static func throwingStream(
+  public static func throwingStream(
     _ build: @escaping (Continuation<Output>) async throws -> Void
   ) -> Effect<Output, Error> {
     AsyncThrowingStream(Output.self) { continuation in
@@ -217,146 +86,10 @@ extension Effect  {
       .eraseToEffect()
   }
 
-  func `catch`(`catch`: @escaping (Error) -> Output) -> Effect<Output, Never> {
+  public func `catch`(`catch`: @escaping (Error) -> Output) -> Effect<Output, Never> {
     self
       .catch { Just(`catch`($0)) }
       .eraseToEffect()
-  }
-}
-
-// AsyncSequence -> Publisher
-@available(iOS 15.0, macOS 12.0, *)
-public struct AsyncSequencePublisher<AsyncSequenceType> : Publisher where AsyncSequenceType : AsyncSequence {
-  public typealias Output = AsyncSequenceType.Element
-  public typealias Failure = Error
-
-  let sequence: AsyncSequenceType
-
-  public init(_ sequence: AsyncSequenceType) {
-    self.sequence = sequence
-  }
-
-  fileprivate class ASPSubscription<S> : Subscription
-  where S : Subscriber, S.Failure == Error, S.Input == AsyncSequenceType.Element {
-    private var taskHandle: Task<(), Never>?
-    private let innerActor = Inner()
-
-    /// Ideally this wouldn't be needed and the ASPSubscriber could be an actor itself but due to issues in Xcode 13 beta 1 and 2
-    /// continuations can't safely be resumed from actor contexts so this separate actor is needed to manage the demand and th
-    /// continuation but to return it instead of resuming it directly. The callers of `add(demand:)` and
-    /// `getContinuationToFireOnCancelation` shoudl always resume the returned value immediately
-    private actor Inner {
-      var demand: Subscribers.Demand = .none
-      var demandUpdatedContinuation: CheckedContinuation<Void, Never>?
-
-      /// Returns immediately if there is demand for an additional item from the subscriber or awaits an increase in demand
-      /// then will return when there is some demand (or the task has been cancelled and the continuation fired)
-      fileprivate func waitUntilReadyForMore() async {
-        if demand > 0 {
-          demand -= 1
-          return
-        }
-
-        let _: Void = await withCheckedContinuation { continuation in
-          demandUpdatedContinuation = continuation
-        }
-      }
-
-      /// Update the tracked demand for the publisher
-      /// - Parameter demand: The additional demand for the publisher
-      /// - Returns: A continuation that must be resumed off the actor context immediatly
-      func add(demand: Subscribers.Demand) -> CheckedContinuation<Void, Never>? {
-        defer { demandUpdatedContinuation = nil }
-        self.demand += demand
-        guard demand > 0 else { return nil }
-        return demandUpdatedContinuation
-      }
-
-
-      /// This is used to prevent being permanently stuck awaiting the continuation if the task has been cancelled
-      /// - Returns: Continuation to resume to allow cancellation to complete
-      func getContinuationToFireOnCancelation()  -> CheckedContinuation<Void, Never>? {
-        defer { demandUpdatedContinuation = nil }
-        return demandUpdatedContinuation
-      }
-    }
-
-    /// Kicks off the main loop over the async sequence. Does the main work within the for loop over the async seqence
-    /// - Parameters:
-    ///   - seq: The AsyncSequence that is the source
-    ///   - sub: The Subscriber to this Subscription
-    private func mainLoop(seq: AsyncSequenceType, sub: S) {
-      // taskHandle is kept for cancelation
-      taskHandle = Task {
-        do {
-          try await withTaskCancellationHandler {
-            Task.detached {
-              let cont = await self.innerActor.getContinuationToFireOnCancelation()
-              cont?.resume()
-            }
-          } operation: {
-            for try await element in seq {
-              // Check for demand before providing the first item
-              await self.innerActor.waitUntilReadyForMore()
-
-              try Task.checkCancellation()
-//              guard !Task.isCancelled else { return } // Exit if cancelled
-
-              let newDemand = sub.receive(element) // Pass on the item
-              let cont = await self.innerActor.add(demand: newDemand)
-              assert(cont == nil,
-                     "If we are't waiting on the demand the continuation will always be nil")
-              // cont should always be nil as it will only be set when this loop is
-              // waiting on demand
-              cont?.resume()
-
-            }
-            // Finished the AsyncSequence so finish the subcription
-            sub.receive(completion: .finished)
-            return
-          }
-        } catch {
-          // Cancel means the subscriber shouldn't get more, even errors so exit
-          if error is CancellationError { return }
-          sub.receive(completion: .failure(error))
-        }
-      }
-    }
-
-    init(sequence: AsyncSequenceType, subscriber: S) {
-      self.mainLoop(seq: sequence, sub: subscriber)
-    }
-
-    func request(_ demand: Subscribers.Demand) {
-      Task {
-        let cont = await innerActor.add(demand: demand)
-        cont?.resume()
-      }
-    }
-
-    func cancel() {
-      // Part of the Cancellable / Publisher API - Stop the main loop
-      taskHandle?.cancel()
-    }
-
-    deinit {
-      cancel()
-    }
-  }
-
-  public func receive<S>(subscriber: S)
-  where S : Subscriber, Error == S.Failure, AsyncSequenceType.Element == S.Input {
-    let subscription = ASPSubscription(sequence: sequence, subscriber: subscriber)
-    subscriber.receive(subscription: subscription)
-  }
-}
-
-@available(iOS 15.0, macOS 12.0, *)
-extension AsyncSequence {
-  ///  Returns a Combine publisher for the sequence - Not recomended for production. Structured Concurrency demonstration
-  ///  not performance tested
-  public var publisher: AsyncSequencePublisher<Self> {
-    AsyncSequencePublisher(self)
   }
 }
 
@@ -730,3 +463,53 @@ extension Publisher {
       .eraseToEffect()
   }
 }
+
+
+
+
+//@available(iOS 15.0, *)
+//struct FactClient {
+//  var fetch: (Int) async throws -> String
+//
+//  static let live = Self(
+//    fetch: { count in
+//      let (data, _) = try await URLSession.shared.data(from: .init(string: "http://numbersapi.com/42/trivia")!)
+//      return String.init(decoding: data, as: UTF8.self)
+//    }
+//  )
+//}
+//enum Action {
+//  case loaded
+//  case loading
+//  case tapped
+//  case response(Result<String, Error>)
+//}
+//
+//@available(iOS 15, *)
+//let reducer = Reducer<String, Action, FactClient> { state, action, environment in
+//  switch action {
+//  case .loaded:
+//    return .none
+//  case .loading:
+//    return .none
+//  case .tapped:
+//    return .task {
+//      await .response(Result { try await environment.fetch(42) })
+//    }
+//
+//      return .throwingStream { continuation in
+//        continuation.yield(.loading)
+//        defer { continuation.yield(.loaded) }
+//
+//        continuation.yield(.response(.success(try await environment.fetch(42))))
+//      }
+//      .catch { Action.response(.failure($0)) }
+//
+//  case let .response(.success(fact)):
+//    state = fact
+//    return .none
+//
+//  case .response(.failure):
+//    return .none
+//  }
+//}
