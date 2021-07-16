@@ -437,7 +437,7 @@ final class StoreTests: XCTestCase {
     XCTAssertEqual(emissions, [0, 3])
   }
 
-  func testBufferedActionExternal() {
+  func testBufferedActionProcessing() {
     struct ChildState: Equatable {
       var count: Int?
     }
@@ -499,7 +499,6 @@ final class StoreTests: XCTestCase {
 
     XCTAssertEqual(handledActions, [])
 
-    // failing case
     parentStore.send(.button)
     XCTAssertEqual(handledActions, [
       .button,
