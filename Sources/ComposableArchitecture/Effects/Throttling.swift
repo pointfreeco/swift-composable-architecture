@@ -2,7 +2,7 @@ import Combine
 import Dispatch
 
 extension Effect {
-  /// Turns an effect into one that can be throttled.
+  /// Throttles an effect so that it only publishes one output per given interval.
   ///
   /// - Parameters:
   ///   - id: The effect's identifier.
@@ -13,7 +13,7 @@ extension Effect {
   ///     `false`, the publisher emits the first element received during the interval.
   /// - Returns: An effect that emits either the most-recent or first element received during the
   ///   specified interval.
-  func throttle<S>(
+  public func throttle<S>(
     id: AnyHashable,
     for interval: S.SchedulerTimeType.Stride,
     scheduler: S,
@@ -26,19 +26,20 @@ extension Effect {
         return Just(value).setFailureType(to: Failure.self).eraseToAnyPublisher()
       }
 
+      let value = latest ? value : (throttleValues[id] as! Output? ?? value)
+      throttleValues[id] = value
+
       guard throttleTime.distance(to: scheduler.now) < interval else {
         throttleTimes[id] = scheduler.now
         throttleValues[id] = nil
         return Just(value).setFailureType(to: Failure.self).eraseToAnyPublisher()
       }
 
-      let value = latest ? value : (throttleValues[id] as! Output? ?? value)
-      throttleValues[id] = value
-
       return Just(value)
         .delay(
           for: scheduler.now.distance(to: throttleTime.advanced(by: interval)), scheduler: scheduler
         )
+        .handleEvents(receiveOutput: { _ in throttleTimes[id] = scheduler.now })
         .setFailureType(to: Failure.self)
         .eraseToAnyPublisher()
     }

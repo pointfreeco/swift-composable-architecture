@@ -372,8 +372,8 @@ public final class Store<State, Action> {
     self.isSending = true
     var currentState = self.state.value
     defer {
-      self.state.value = currentState
       self.isSending = false
+      self.state.value = currentState
     }
 
     while !self.bufferedActions.isEmpty {
@@ -407,41 +407,5 @@ public final class Store<State, Action> {
   public var actionless: Store<State, Never> {
     func absurd<A>(_ never: Never) -> A {}
     return self.scope(state: { $0 }, action: absurd)
-  }
-}
-
-extension Store where State: Equatable {
-    /// Returns an "actionless" store by erasing action to `Never`.
-    public var actionless: Store<State, Never> {
-        func absurd<A>(_ never: Never) -> A {}
-        return self.scope(state: { $0 }, action: absurd)
-    }
-}
-
-/// A publisher of store state.
-@dynamicMemberLookup
-public struct StorePublisher<State>: Publisher {
-  public typealias Output = State
-  public typealias Failure = Never
-
-  public let upstream: AnyPublisher<State, Never>
-
-  public func receive<S>(subscriber: S)
-  where S: Subscriber, Failure == S.Failure, Output == S.Input {
-    self.upstream.subscribe(subscriber)
-  }
-
-  init<P>(
-    _ upstream: P
-  ) where P: Publisher, Failure == P.Failure, Output == P.Output {
-    self.upstream = upstream.eraseToAnyPublisher()
-  }
-
-  /// Returns the resulting publisher of a given key path.
-  public subscript<LocalState>(
-    dynamicMember keyPath: KeyPath<State, LocalState>
-  ) -> StorePublisher<LocalState>
-  where LocalState: Equatable {
-    .init(self.upstream.map(keyPath).removeDuplicates())
   }
 }

@@ -480,4 +480,73 @@ final class StoreTests: XCTestCase {
     // State should be at 2 now
     XCTAssertEqual(parentStore.state.value, 2)
   }
+
+  func testBufferedActionProcessing() {
+    struct ChildState: Equatable {
+      var count: Int?
+    }
+
+    let childReducer = Reducer<ChildState, Int?, Void> { state, action, _ in
+      state.count = action
+      return .none
+    }
+
+    struct ParentState: Equatable {
+      var count: Int?
+      var child: ChildState?
+    }
+
+    enum ParentAction: Equatable {
+      case button
+      case child(Int?)
+    }
+
+    var handledActions: [ParentAction] = []
+    let parentReducer = Reducer.combine([
+      childReducer
+        .optional()
+        .pullback(
+          state: \.child,
+          action: /ParentAction.child,
+          environment: {}
+        ),
+      Reducer<ParentState, ParentAction, Void> { state, action, _ in
+        handledActions.append(action)
+
+        switch action {
+        case .button:
+          state.child = .init(count: nil)
+          return .none
+
+        case .child(let childCount):
+          state.count = childCount
+          return .none
+        }
+      },
+    ])
+
+    let parentStore = Store(
+      initialState: .init(),
+      reducer: parentReducer,
+      environment: ()
+    )
+
+    parentStore
+      .scope(
+        state: \.child,
+        action: ParentAction.child
+      )
+      .ifLet { childStore in
+        ViewStore(childStore).send(2)
+      }
+      .store(in: &cancellables)
+
+    XCTAssertEqual(handledActions, [])
+
+    parentStore.send(.button)
+    XCTAssertEqual(handledActions, [
+      .button,
+      .child(2)
+    ])
+  }
 }

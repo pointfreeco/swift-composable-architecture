@@ -52,15 +52,12 @@ import SwiftUI
 /// made.
 @dynamicMemberLookup
 public final class ViewStore<State, Action>: ObservableObject {
-  /// A publisher of state.
-  public let publisher: StorePublisher<State>
-
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
 
   private let _send: (Action) -> Void
-  private let _state: CurrentValueSubject<State, Never>
+  fileprivate let _state: CurrentValueSubject<State, Never>
   private var viewCancellable: AnyCancellable?
 
   /// Initializes a view store from a store.
@@ -76,7 +73,6 @@ public final class ViewStore<State, Action>: ObservableObject {
     self._send = store.send
     self._state = CurrentValueSubject(store.state.value)
 
-    self.publisher = StorePublisher(self._state)
     self.viewCancellable = store.state
       .removeDuplicates(by: isDuplicate)
       .sink { [weak self] in
@@ -84,6 +80,11 @@ public final class ViewStore<State, Action>: ObservableObject {
         self.objectWillChange.send()
         self._state.send($0)
       }
+  }
+
+  /// A publisher of state.
+  public var publisher: StorePublisher<State> {
+    StorePublisher(viewStore: self)
   }
 
   /// The current state.
@@ -255,5 +256,50 @@ extension ViewStore where State: Equatable {
 extension ViewStore where State == Void {
   public convenience init(_ store: Store<Void, Action>) {
     self.init(store, removeDuplicates: ==)
+  }
+}
+
+/// A publisher of store state.
+@dynamicMemberLookup
+public struct StorePublisher<State>: Publisher {
+  public typealias Output = State
+  public typealias Failure = Never
+
+  public let upstream: AnyPublisher<State, Never>
+  public let viewStore: Any
+
+  fileprivate init<Action>(viewStore: ViewStore<State, Action>) {
+    self.viewStore = viewStore
+    self.upstream = viewStore._state.eraseToAnyPublisher()
+  }
+
+  public func receive<S>(subscriber: S)
+  where S: Subscriber, Failure == S.Failure, Output == S.Input {
+    self.upstream.subscribe(
+      AnySubscriber(
+        receiveSubscription: subscriber.receive(subscription:),
+        receiveValue: subscriber.receive(_:),
+        receiveCompletion: { [viewStore = self.viewStore] in
+          subscriber.receive(completion: $0)
+          _ = viewStore
+        }
+      )
+    )
+  }
+
+  private init<P>(
+    upstream: P,
+    viewStore: Any
+  ) where P: Publisher, Failure == P.Failure, Output == P.Output {
+    self.upstream = upstream.eraseToAnyPublisher()
+    self.viewStore = viewStore
+  }
+
+  /// Returns the resulting publisher of a given key path.
+  public subscript<LocalState>(
+    dynamicMember keyPath: KeyPath<State, LocalState>
+  ) -> StorePublisher<LocalState>
+  where LocalState: Equatable {
+    .init(upstream: self.upstream.map(keyPath).removeDuplicates(), viewStore: self.viewStore)
   }
 }

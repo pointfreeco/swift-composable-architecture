@@ -72,19 +72,9 @@ public struct AuthenticationClient {
 
 #if DEBUG
   extension AuthenticationClient {
-    public static func mock(
-      login: @escaping (LoginRequest) -> Effect<AuthenticationResponse, AuthenticationError> = {
-        _ in
-        fatalError()
-      },
-      twoFactor: @escaping (TwoFactorRequest) -> Effect<
-        AuthenticationResponse, AuthenticationError
-      > =
-        { _ in
-          fatalError()
-        }
-    ) -> Self {
-      Self(login: login, twoFactor: twoFactor)
-    }
+    public static let failing = Self(
+      login: { _ in .failing("AuthenticationClient.login") },
+      twoFactor: { _ in .failing("AuthenticationClient.twoFactor") }
+    )
   }
 #endif
