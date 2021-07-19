@@ -365,6 +365,63 @@ public final class Store<State, Action> {
     self.publisherScope(state: toLocalState, action: { $0 })
   }
 
+  /// Scopes the store to one that exposes optional local state, but only forwards non-nil values.
+  ///
+  /// - Parameters:
+  ///   - initialLocalState: Initial local state must be provided because `toLocalState` might produce a nil value.
+  ///   - toLocalState: A function that transforms `State` into optional `LocalState`.
+  ///   - fromLocalAction: A function that transforms `LocalAction` into `Action`.
+  /// - Returns: A new store with its domain (state and action) transformed. Only forwards non-nil states.
+  func compactScope<LocalState, LocalAction>(
+    initialLocalState: LocalState,
+    state toLocalState: @escaping (State) -> LocalState?,
+    action fromLocalAction: @escaping (LocalAction) -> Action
+  ) -> Store<LocalState, LocalAction> {
+
+    var isSending = false
+    let localStore = Store<LocalState, LocalAction>(
+      initialState: initialLocalState,
+      reducer: .init { localState, localAction, _ in
+        isSending = true
+        defer { isSending = false }
+        // Only perform actions if local state is not nil
+        if toLocalState(self.state.value) != nil {
+          self.send(fromLocalAction(localAction))
+          // Only forward local state if resulting state is not nil
+          if let newLocalState = toLocalState(self.state.value) {
+            localState = newLocalState
+          }
+        }
+        return .none
+      },
+      environment: ()
+    )
+    localStore.parentCancellable = self.state
+      .dropFirst()
+      .sink { [weak localStore] newValue in
+        guard !isSending else { return }
+        guard let localStore = localStore else { return }
+
+        // Only forward changes that produce non-nil state
+        if let newLocalState = toLocalState(newValue) {
+          localStore.state.value = newLocalState
+        }
+      }
+    return localStore
+  }
+  /// Scopes the store to one that exposes optional local state, but only forwards non-nil values.
+  ///
+  /// - Parameters:
+  ///   - initialLocalState: Initial local state must be provided because `toLocalState` might produce a nil value.
+  ///   - toLocalState: A function that transforms `State` into optional `LocalState`.
+  /// - Returns: A new store with its domain (state and action) transformed. Only forwards non-nil states.
+  func compactScope<LocalState>(
+    initialLocalState: LocalState,
+    state toLocalState: @escaping (State) -> LocalState?
+  ) -> Store<LocalState, Action> {
+    self.compactScope(initialLocalState: initialLocalState, state: toLocalState, action: { $0 })
+  }
+
   func send(_ action: Action) {
     self.bufferedActions.append(action)
     guard !self.isSending else { return }

@@ -90,6 +90,68 @@ final class StoreTests: XCTestCase {
     XCTAssertEqual(values, [0, 1])
   }
 
+
+  func testCompactScopedStoreReceivesUpdatesFromParent() {
+    let counterReducer = Reducer<Int, Void, Void> { state, _, _ in
+      state += 1
+      return .none
+    }
+    let nilWhenSt2: (Int) -> String? = { $0 < 2 ? String($0) : nil }
+
+    let parentStore = Store(initialState: 0, reducer: counterReducer, environment: ())
+    let childStore = parentStore.compactScope(initialLocalState: "0", state: nilWhenSt2)
+    let parentViewStore = ViewStore(parentStore)
+
+    var values: [String] = []
+    childStore.state
+      .sink(receiveValue: { values.append($0) })
+      .store(in: &self.cancellables)
+
+    XCTAssertEqual(values, ["0"])
+
+    parentViewStore.send(())
+
+    XCTAssertEqual(values, ["0", "1"])
+
+    parentViewStore.send(())
+
+    // Child store does not receive update because scope is nil.
+    XCTAssertEqual(values, ["0", "1"])
+  }
+
+  func testCompactedParentStoreReceivesUpdatesFromChild() {
+    let counterReducer = Reducer<Int, Void, Void> { state, _, _ in
+      state += 1
+      return .none
+    }
+
+    let nilWhenSt2: (Int) -> String? = { $0 < 2 ? String($0) : nil }
+
+    let parentStore = Store(initialState: 0, reducer: counterReducer, environment: ())
+    let childStore = parentStore.compactScope(initialLocalState: "0", state: nilWhenSt2)
+    let childViewStore = ViewStore(childStore)
+
+    var values: [Int] = []
+    parentStore.state
+      .sink(receiveValue: { values.append($0) })
+      .store(in: &self.cancellables)
+
+    XCTAssertEqual(values, [0])
+
+    childViewStore.send(())
+
+    XCTAssertEqual(values, [0, 1])
+
+    childViewStore.send(())
+
+    XCTAssertEqual(values, [0, 1, 2])
+
+    childViewStore.send(())
+
+    // Local store can not send actions if local scope is nil.
+    XCTAssertEqual(values, [0, 1, 2])
+  }
+
   func testScopeWithPublisherTransform() {
     let counterReducer = Reducer<Int, Int, Void> { state, action, _ in
       state = action
