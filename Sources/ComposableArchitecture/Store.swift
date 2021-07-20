@@ -113,6 +113,93 @@ import Foundation
 ///
 /// See also: ``ViewStore`` to understand how one observes changes to the state in a ``Store`` and
 /// sends user actions.
+
+public final class _Store<State, Action> {
+  let _send: (Action) -> Void
+  let _state: () -> State
+  let subject: PassthroughSubject<Void, Never>
+
+  private init(
+    _send: @escaping (Action) -> Void,
+    _state: @escaping () -> State,
+    subject: PassthroughSubject<Void, Never>
+  ) {
+    self._send = _send
+    self._state = _state
+    self.subject = subject
+  }
+
+  public init<Environment>(
+    initialState: State,
+    reducer: Reducer<State, Action, Environment>,
+    environment: Environment
+  ) {
+    let state = CurrentValueSubject<State, Never>(initialState)
+    self._state = { state.value }
+
+    let subject = PassthroughSubject<Void, Never>()
+
+    var effectCancellables: [UUID: AnyCancellable] = [:]
+    var isSending = false
+    var bufferedActions: [Action] = []
+
+    var send: ((Action) -> Void)!
+    send = { action in
+      bufferedActions.append(action)
+      guard !isSending else { return }
+
+      isSending = true
+      var currentState = state.value
+      defer {
+        isSending = false
+        state.value = currentState
+        subject.send()
+      }
+
+      while !bufferedActions.isEmpty {
+        let action = bufferedActions.removeFirst()
+        let effect = reducer(&currentState, action, environment)
+
+        var didComplete = false
+        let uuid = UUID()
+        let effectCancellable = effect.sink(
+          receiveCompletion: { _ in
+            didComplete = true
+            effectCancellables[uuid] = nil
+          },
+          receiveValue: { action in
+            send(action)
+          }
+        )
+
+        if !didComplete {
+          effectCancellables[uuid] = effectCancellable
+        }
+      }
+    }
+    self._send = send
+    self.subject = subject
+  }
+
+  public func scope<LocalState, LocalAction>(
+    state toLocalState: @escaping (State) -> LocalState,
+    action fromLocalAction: @escaping (LocalAction) -> Action
+  ) -> _Store<LocalState, LocalAction> {
+    .init(
+      _send: { self._send(fromLocalAction($0)) },
+      _state: { toLocalState(self._state()) },
+      subject: self.subject
+    )
+  }
+
+  public func scope<LocalState>(
+    state toLocalState: @escaping (State) -> LocalState
+  ) -> _Store<LocalState, Action> {
+    self.scope(state: toLocalState, action: { $0 })
+  }
+
+}
+
 public final class Store<State, Action> {
   var state: CurrentValueSubject<State, Never>
   var effectCancellables: [UUID: AnyCancellable] = [:]
