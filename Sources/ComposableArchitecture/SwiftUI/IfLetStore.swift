@@ -51,8 +51,11 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
     self.store = store
     self.content = { viewStore in
-      if let state = viewStore.state {
-        return ViewBuilder.buildEither(first: ifContent(store.scope(state: { $0 ?? state })))
+      if viewStore.state != nil {
+        let unwrapper = Optional<State>.lastWrappedValue
+        // Force unwrap is safe here because first value from scope is non-nil and scoped store
+        // is dismanteled after last nil value.
+        return ViewBuilder.buildEither(first: ifContent(store.scope(state: { unwrapper($0)! })))
       } else {
         return ViewBuilder.buildEither(second: elseContent())
       }
@@ -72,8 +75,11 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
   ) where Content == IfContent? {
     self.store = store
     self.content = { viewStore in
-      viewStore.state.map { state in
-        ifContent(store.scope(state: { $0 ?? state }))
+      viewStore.state.map { _ in
+        let unwrapper = Optional<State>.lastWrappedValue
+        // Force unwrap is safe here because first value from scope is non-nil and scoped store
+        // is dismanteled after last nil value.
+        return ifContent(store.scope(state: { unwrapper($0)! }))
       }
     }
   }
@@ -84,5 +90,15 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
       removeDuplicates: { ($0 != nil) == ($1 != nil) },
       content: self.content
     )
+  }
+}
+
+extension Optional {
+  static var lastWrappedValue: (Self) -> Self {
+    var lastWrapped: Wrapped?
+    return {
+      lastWrapped = $0 ?? lastWrapped
+      return lastWrapped
+    }
   }
 }
