@@ -44,12 +44,7 @@ extension Effect {
             for: scheduler.now.distance(to: throttleTime.advanced(by: interval)), scheduler: scheduler
           )
           .handleEvents(
-            receiveOutput: { _ in
-              throttleLock.lock()
-              defer { throttleLock.unlock() }
-
-              throttleTimes[id] = scheduler.now
-            }
+            receiveOutput: { _ in throttleLock.sync { throttleTimes[id] = scheduler.now } }
           )
           .setFailureType(to: Failure.self)
           .eraseToAnyPublisher()
