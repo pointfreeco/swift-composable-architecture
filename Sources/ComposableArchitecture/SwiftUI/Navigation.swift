@@ -4,7 +4,7 @@ import SwiftUI
 
 extension Reducer {
   public func navigates<Route, LocalState, LocalAction, LocalEnvironment>(
-    _ localReducer: Reducer<LocalState, LocalAction, LocalEnvironment>,
+    destination: Reducer<LocalState, LocalAction, LocalEnvironment>,
     tag: CasePath<Route, LocalState>,
     selection: WritableKeyPath<State, Route?>,
     action toPresentationAction: CasePath<Action, PresentationAction<LocalAction>>,
@@ -12,18 +12,13 @@ extension Reducer {
   ) -> Self {
     let id = UUID()
     return Self { state, action, environment in
-      let wasPresented = state[keyPath: selection].flatMap(tag.extract(from:)) != nil
+      let previousTag = state[keyPath: selection].flatMap(tag.extract(from:)) != nil
+        ? state[keyPath: selection].flatMap(enumTag)
+        : nil
       var effects: [Effect<Action, Never>] = []
 
       effects.append(
-        localReducer
-          /*
-           .pullback(
-             state: selection.appending(path: tag),
-             action: toPresentationAction.appending(path: /NavigationAction.isActive),
-             environment: toLocalEnvironment
-           )
-           */
+        destination
           .pullback(
             state: tag,
             action: /.self,
@@ -44,12 +39,16 @@ extension Reducer {
           .run(&state, action, environment)
       )
 
-      if state[keyPath: selection].flatMap(tag.extract(from:)) != nil,
-         case .some(.dismiss) = toPresentationAction.extract(from: action)
+      if
+        let route = state[keyPath: selection],
+        tag.extract(from: route) != nil,
+        case .some(.dismiss) = toPresentationAction.extract(from: action)
       {
         state[keyPath: selection] = nil
       }
-      if wasPresented && state[keyPath: selection] == nil {
+      if
+        let previousTag = previousTag,
+        previousTag != state[keyPath: selection].flatMap(enumTag) {
         effects.append(.cancel(id: id))
       }
 
@@ -58,7 +57,7 @@ extension Reducer {
   }
 
   public func navigates<Route, LocalState, LocalAction, LocalEnvironment>(
-    _ localReducer: Reducer<LocalState, LocalAction, LocalEnvironment>,
+    destination: Reducer<LocalState, LocalAction, LocalEnvironment>,
     tag: Route,
     selection: WritableKeyPath<State, Route?>,
     state toLocalState: WritableKeyPath<State, LocalState>,
@@ -66,12 +65,13 @@ extension Reducer {
     environment toLocalEnvironment: @escaping (Environment) -> LocalEnvironment
   ) -> Self {
     let id = UUID()
+    let destinationTag = enumTag(tag)
     return Self { state, action, environment in
-      let wasPresented = enumTag(state[keyPath: selection]) == enumTag(tag)
+      let wasPresented = enumTag(state[keyPath: selection]) == destinationTag
       var effects: [Effect<Action, Never>] = []
 
       effects.append(
-        localReducer
+        destination
           .pullback(
             state: toLocalState,
             action: toPresentationAction.appending(path: /PresentationAction.presented),
@@ -97,7 +97,7 @@ extension Reducer {
       default:
         break
       }
-      if wasPresented && state[keyPath: selection] == nil {
+      if wasPresented && enumTag(state[keyPath: selection]) != destinationTag {
         effects.append(.cancel(id: id))
       }
 
@@ -106,13 +106,13 @@ extension Reducer {
   }
 
   public func navigates<LocalState, LocalAction, LocalEnvironment>(
-    _ localReducer: Reducer<LocalState, LocalAction, LocalEnvironment>,
+    destination: Reducer<LocalState, LocalAction, LocalEnvironment>,
     state toLocalState: WritableKeyPath<State, LocalState?>,
     action toPresentationAction: CasePath<Action, PresentationAction<LocalAction>>,
     environment toLocalEnvironment: @escaping (Environment) -> LocalEnvironment
   ) -> Self {
     self.navigates(
-      localReducer,
+      destination: destination,
       tag: /.self,
       selection: toLocalState,
       action: toPresentationAction,
@@ -121,7 +121,7 @@ extension Reducer {
   }
 
   public func navigates<LocalState, LocalAction, LocalEnvironment>(
-    _ localReducer: Reducer<LocalState, LocalAction, LocalEnvironment>,
+    destination: Reducer<LocalState, LocalAction, LocalEnvironment>,
     isActive: WritableKeyPath<State, Bool>,
     state toLocalState: WritableKeyPath<State, LocalState>,
     action toPresentationAction: CasePath<Action, PresentationAction<LocalAction>>,
@@ -133,7 +133,7 @@ extension Reducer {
       var effects: [Effect<Action, Never>] = []
 
       effects.append(
-        localReducer
+        destination
           .pullback(
             state: toLocalState,
             action: toPresentationAction.appending(path: /PresentationAction.presented),

@@ -20,7 +20,7 @@ let counterRowReducer =
     }
   }
   .navigates(
-    counterReducer,
+    destination: counterReducer,
     isActive: \.isActive,
     state: \.counter,
     action: /.self,

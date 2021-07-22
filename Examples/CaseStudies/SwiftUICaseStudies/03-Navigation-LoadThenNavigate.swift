@@ -46,7 +46,7 @@ let loadThenNavigateReducer =
     }
   }
   .navigates(
-    counterReducer,
+    destination: counterReducer,
     state: \.optionalCounter,
     action: /LoadThenNavigateAction.optionalCounter,
     environment: { _ in CounterEnvironment() }
