@@ -158,7 +158,7 @@ class LoginViewController: UIViewController {
       .store(in: &self.cancellables)
 
     self.store
-      .scope(state: \.twoFactor, action: LoginAction.twoFactor)
+      .scope(state: \.twoFactor, action: { .twoFactor(.presented($0)) })
       .ifLet(
         then: { [weak self] twoFactorStore in
           self?.navigationController?.pushViewController(
@@ -203,11 +203,11 @@ extension LoginAction {
     case let .emailChanged(email):
       self = .emailChanged(email ?? "")
     case .loginButtonTapped:
-      self = .loginButtonTapped
+      self = .twoFactor(.present)
     case let .passwordChanged(password):
       self = .passwordChanged(password ?? "")
     case .twoFactorDismissed:
-      self = .twoFactorDismissed
+      self = .twoFactor(.dismiss)
     }
   }
 }

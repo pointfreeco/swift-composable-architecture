@@ -32,9 +32,7 @@ public struct LoginView: View {
   enum ViewAction {
     case alertDismissed
     case emailChanged(String)
-    case loginButtonTapped
     case passwordChanged(String)
-    case twoFactorDismissed
   }
 
   public init(store: Store<LoginState, LoginAction>) {
@@ -74,15 +72,9 @@ public struct LoginView: View {
             .textFieldStyle(RoundedBorderTextFieldStyle())
           }
 
-          NavigationLink(
-            destination: IfLetStore(
-              self.store.scope(state: \.twoFactor, action: LoginAction.twoFactor),
-              then: TwoFactorView.init(store:)
-            ),
-            isActive: viewStore.binding(
-              get: \.isTwoFactorActive,
-              send: { $0 ? .loginButtonTapped : .twoFactorDismissed }
-            )
+          NavigationLinkStore(
+            destination: TwoFactorView.init(store:),
+            ifLet: self.store.scope(state: \.twoFactor, action: LoginAction.twoFactor)
           ) {
             Text("Log in")
 
@@ -106,12 +98,8 @@ extension LoginAction {
     switch action {
     case .alertDismissed:
       self = .alertDismissed
-    case .twoFactorDismissed:
-      self = .twoFactorDismissed
     case let .emailChanged(email):
       self = .emailChanged(email)
-    case .loginButtonTapped:
-      self = .loginButtonTapped
     case let .passwordChanged(password):
       self = .passwordChanged(password)
     }

@@ -23,7 +23,6 @@ public struct NewGameView: View {
   }
 
   enum ViewAction {
-    case gameDismissed
     case letsPlayButtonTapped
     case logoutButtonTapped
     case oPlayerNameChanged(String)
@@ -63,15 +62,9 @@ public struct NewGameView: View {
             .textFieldStyle(RoundedBorderTextFieldStyle())
           }
 
-          NavigationLink(
-            destination: IfLetStore(
-              self.store.scope(state: \.game, action: NewGameAction.game),
-              then: GameView.init(store:)
-            ),
-            isActive: viewStore.binding(
-              get: \.isGameActive,
-              send: { $0 ? .letsPlayButtonTapped : .gameDismissed }
-            )
+          NavigationLinkStore(
+            destination: GameView.init(store:),
+            ifLet: self.store.scope(state: \.game, action: NewGameAction.game)
           ) {
             Text("Let's play!")
           }
@@ -88,8 +81,6 @@ public struct NewGameView: View {
 extension NewGameAction {
   init(action: NewGameView.ViewAction) {
     switch action {
-    case .gameDismissed:
-      self = .gameDismissed
     case .letsPlayButtonTapped:
       self = .letsPlayButtonTapped
     case .logoutButtonTapped:
