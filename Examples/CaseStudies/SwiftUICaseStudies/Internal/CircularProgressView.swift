@@ -13,7 +13,7 @@ struct CircularProgressView: View {
       .stroke(style: StrokeStyle(lineWidth: 2, lineCap: .round))
       .foregroundColor(Color.black)
       .rotationEffect(Angle(degrees: -90))
-      .animation(.easeIn)
+      .animation(.easeIn, value: self.value)
   }
 }
 

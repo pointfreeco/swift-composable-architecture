@@ -3,7 +3,6 @@ import ComposableArchitecture
 import Speech
 
 struct SpeechClient {
-  var cancelTask: (AnyHashable) -> Effect<Never, Never>
   var finishTask: (AnyHashable) -> Effect<Never, Never>
   var recognitionTask: (AnyHashable, SFSpeechAudioBufferRecognitionRequest) -> Effect<Action, Error>
   var requestAuthorization: () -> Effect<SFSpeechRecognizerAuthorizationStatus, Never>

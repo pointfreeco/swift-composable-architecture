@@ -90,7 +90,9 @@ import Foundation
 /// sometimes you are required to do work synchronously, such as in animation blocks.
 ///
 /// * It is possible to create a scheduler that performs its work immediately when on the main
-/// thread and otherwise uses `DispatchQueue.main.async` (e.g. see CombineScheduler's [UIScheduler](https://github.com/pointfreeco/combine-schedulers/blob/main/Sources/CombineSchedulers/UIScheduler.swift)). This introduces a lot more complexity, and should probably not be adopted without having a very
+/// thread and otherwise uses `DispatchQueue.main.async` (e.g. see CombineScheduler's
+/// [UIScheduler](https://github.com/pointfreeco/combine-schedulers/blob/main/Sources/CombineSchedulers/UIScheduler.swift)).
+/// This introduces a lot more complexity, and should probably not be adopted without having a very
 /// good reason.
 ///
 /// This is why we require all actions be sent from the same thread. This requirement is in the same
@@ -117,7 +119,6 @@ public final class Store<State, Action> {
   private var isSending = false
   private var parentCancellable: AnyCancellable?
   private let reducer: (inout State, Action) -> Effect<Action, Never>
-  private var synchronousActionsToSend: [Action] = []
   private var bufferedActions: [Action] = []
 
   /// Initializes a store from an initial state, a reducer, and an environment.
@@ -278,9 +279,12 @@ public final class Store<State, Action> {
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> Store<LocalState, LocalAction> {
+    var isSending = false
     let localStore = Store<LocalState, LocalAction>(
       initialState: toLocalState(self.state.value),
       reducer: .init { localState, localAction, _ in
+        isSending = true
+        defer { isSending = false }
         self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
         return .none
@@ -288,7 +292,11 @@ public final class Store<State, Action> {
       environment: ()
     )
     localStore.parentCancellable = self.state
-      .sink { [weak localStore] newValue in localStore?.state.value = toLocalState(newValue) }
+      .dropFirst()
+      .sink { [weak localStore] newValue in
+        guard !isSending else { return }
+        localStore?.state.value = toLocalState(newValue)
+      }
     return localStore
   }
 
@@ -358,41 +366,31 @@ public final class Store<State, Action> {
   }
 
   func send(_ action: Action) {
-    if !self.isSending {
-      self.synchronousActionsToSend.append(action)
-    } else {
-      self.bufferedActions.append(action)
-      return
+    self.bufferedActions.append(action)
+    guard !self.isSending else { return }
+
+    self.isSending = true
+    var currentState = self.state.value
+    defer {
+      self.isSending = false
+      self.state.value = currentState
     }
 
-    while !self.synchronousActionsToSend.isEmpty || !self.bufferedActions.isEmpty {
-      let action =
-        !self.synchronousActionsToSend.isEmpty
-        ? self.synchronousActionsToSend.removeFirst()
-        : self.bufferedActions.removeFirst()
-
-      self.isSending = true
-      let effect = self.reducer(&self.state.value, action)
-      self.isSending = false
+    while !self.bufferedActions.isEmpty {
+      let action = self.bufferedActions.removeFirst()
+      let effect = self.reducer(&currentState, action)
 
       var didComplete = false
       let uuid = UUID()
-
-      var isProcessingEffects = true
       let effectCancellable = effect.sink(
         receiveCompletion: { [weak self] _ in
           didComplete = true
           self?.effectCancellables[uuid] = nil
         },
         receiveValue: { [weak self] action in
-          if isProcessingEffects {
-            self?.synchronousActionsToSend.append(action)
-          } else {
-            self?.send(action)
-          }
+          self?.send(action)
         }
       )
-      isProcessingEffects = false
 
       if !didComplete {
         self.effectCancellables[uuid] = effectCancellable
@@ -409,31 +407,5 @@ public final class Store<State, Action> {
   public var actionless: Store<State, Never> {
     func absurd<A>(_ never: Never) -> A {}
     return self.scope(state: { $0 }, action: absurd)
-  }
-}
-
-/// A publisher of store state.
-@dynamicMemberLookup
-public struct StorePublisher<State>: Publisher {
-  public typealias Output = State
-  public typealias Failure = Never
-
-  public let upstream: AnyPublisher<State, Never>
-
-  public func receive<S>(subscriber: S)
-  where S: Subscriber, Failure == S.Failure, Output == S.Input {
-    self.upstream.subscribe(subscriber)
-  }
-
-  init<P>(_ upstream: P) where P: Publisher, Failure == P.Failure, Output == P.Output {
-    self.upstream = upstream.eraseToAnyPublisher()
-  }
-
-  /// Returns the resulting publisher of a given key path.
-  public subscript<LocalState>(
-    dynamicMember keyPath: KeyPath<State, LocalState>
-  ) -> StorePublisher<LocalState>
-  where LocalState: Equatable {
-    .init(self.upstream.map(keyPath).removeDuplicates())
   }
 }

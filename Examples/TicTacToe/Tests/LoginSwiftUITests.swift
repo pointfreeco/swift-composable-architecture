@@ -9,15 +9,16 @@ import XCTest
 
 class LoginSwiftUITests: XCTestCase {
   func testFlow_Success() {
+    var authenticationClient = AuthenticationClient.failing
+    authenticationClient.login = { _ in
+      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
+    }
+
     let store = TestStore(
       initialState: LoginState(),
       reducer: loginReducer,
       environment: LoginEnvironment(
-        authenticationClient: .mock(
-          login: { _ in
-            Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
-          }
-        ),
+        authenticationClient: authenticationClient,
         mainQueue: .immediate
       )
     )
@@ -43,15 +44,16 @@ class LoginSwiftUITests: XCTestCase {
   }
 
   func testFlow_Success_TwoFactor() {
+    var authenticationClient = AuthenticationClient.failing
+    authenticationClient.login = { _ in
+      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: true))
+    }
+
     let store = TestStore(
       initialState: LoginState(),
       reducer: loginReducer,
       environment: LoginEnvironment(
-        authenticationClient: .mock(
-          login: { _ in
-            Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: true))
-          }
-        ),
+        authenticationClient: authenticationClient,
         mainQueue: .immediate
       )
     )
@@ -81,13 +83,14 @@ class LoginSwiftUITests: XCTestCase {
   }
 
   func testFlow_Failure() {
+    var authenticationClient = AuthenticationClient.failing
+    authenticationClient.login = { _ in Effect(error: .invalidUserPassword) }
+
     let store = TestStore(
       initialState: LoginState(),
       reducer: loginReducer,
       environment: LoginEnvironment(
-        authenticationClient: .mock(
-          login: { _ in Effect(error: .invalidUserPassword) }
-        ),
+        authenticationClient: authenticationClient,
         mainQueue: .immediate
       )
     )
