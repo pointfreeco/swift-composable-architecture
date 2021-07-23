@@ -22,20 +22,20 @@ class LoginSwiftUITests: XCTestCase {
         mainQueue: .immediate
       )
     )
-    .scope(state: LoginView.ViewState.init, action: LoginAction.init)
+    let viewStore = store.scope(state: LoginView.ViewState.init, action: LoginAction.init)
 
-    store.send(.emailChanged("blob@pointfree.co")) {
+    viewStore.send(.emailChanged("blob@pointfree.co")) {
       $0.email = "blob@pointfree.co"
     }
-    store.send(.passwordChanged("password")) {
+    viewStore.send(.passwordChanged("password")) {
       $0.password = "password"
       $0.isLoginButtonDisabled = false
     }
-    store.send(.loginButtonTapped) {
+    store.send(.twoFactor(.present)) {
       $0.isActivityIndicatorVisible = true
       $0.isFormDisabled = true
     }
-    store.receive(
+    viewStore.receive(
       .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
     ) {
       $0.isActivityIndicatorVisible = false

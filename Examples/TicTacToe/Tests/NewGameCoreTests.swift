@@ -20,17 +20,17 @@ class NewGameCoreTests: XCTestCase {
     self.store.send(.letsPlayButtonTapped) {
       $0.game = GameState(oPlayerName: "Blob Sr.", xPlayerName: "Blob Jr.")
     }
-    self.store.send(.game(.cellTapped(row: 0, column: 0))) {
+    self.store.send(.game(.presented(.cellTapped(row: 0, column: 0)))) {
       $0.game!.board[0][0] = .x
       $0.game!.currentPlayer = .o
     }
-    self.store.send(.game(.quitButtonTapped)) {
+    self.store.send(.game(.presented(.quitButtonTapped))) {
       $0.game = nil
     }
     self.store.send(.letsPlayButtonTapped) {
       $0.game = GameState(oPlayerName: "Blob Sr.", xPlayerName: "Blob Jr.")
     }
-    self.store.send(.gameDismissed) {
+    self.store.send(.game(.dismiss)) {
       $0.game = nil
     }
     self.store.send(.logoutButtonTapped)

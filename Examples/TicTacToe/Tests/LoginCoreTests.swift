@@ -31,7 +31,7 @@ class LoginCoreTests: XCTestCase {
       $0.password = "password"
       $0.isFormValid = true
     }
-    store.send(.loginButtonTapped) {
+    store.send(.twoFactor(.present)) {
       $0.isLoginRequestInFlight = true
     }
     store.receive(
@@ -40,16 +40,18 @@ class LoginCoreTests: XCTestCase {
       $0.isLoginRequestInFlight = false
       $0.twoFactor = TwoFactorState(token: "deadbeefdeadbeef")
     }
-    store.send(.twoFactor(.codeChanged("1234"))) {
+    store.send(.twoFactor(.presented(.codeChanged("1234")))) {
       $0.twoFactor?.code = "1234"
       $0.twoFactor?.isFormValid = true
     }
-    store.send(.twoFactor(.submitButtonTapped)) {
+    store.send(.twoFactor(.presented(.submitButtonTapped))) {
       $0.twoFactor?.isTwoFactorRequestInFlight = true
     }
     store.receive(
       .twoFactor(
-        .twoFactorResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
+        .presented(
+          .twoFactorResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
+        )
       )
     ) {
       $0.twoFactor?.isTwoFactorRequestInFlight = false
@@ -82,7 +84,7 @@ class LoginCoreTests: XCTestCase {
       $0.password = "password"
       $0.isFormValid = true
     }
-    store.send(.loginButtonTapped) {
+    store.send(.twoFactor(.present)) {
       $0.isLoginRequestInFlight = true
     }
     scheduler.advance()
@@ -92,14 +94,14 @@ class LoginCoreTests: XCTestCase {
       $0.isLoginRequestInFlight = false
       $0.twoFactor = TwoFactorState(token: "deadbeefdeadbeef")
     }
-    store.send(.twoFactor(.codeChanged("1234"))) {
+    store.send(.twoFactor(.presented(.codeChanged("1234")))) {
       $0.twoFactor?.code = "1234"
       $0.twoFactor?.isFormValid = true
     }
-    store.send(.twoFactor(.submitButtonTapped)) {
+    store.send(.twoFactor(.presented(.submitButtonTapped))) {
       $0.twoFactor?.isTwoFactorRequestInFlight = true
     }
-    store.send(.twoFactorDismissed) {
+    store.send(.twoFactor(.dismiss)) {
       $0.twoFactor = nil
     }
   }

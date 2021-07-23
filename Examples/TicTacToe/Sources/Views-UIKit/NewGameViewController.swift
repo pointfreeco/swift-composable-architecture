@@ -9,13 +9,11 @@ class NewGameViewController: UIViewController {
   private var cancellables: Set<AnyCancellable> = []
 
   struct ViewState: Equatable {
-    let isGameActive: Bool
     let isLetsPlayButtonEnabled: Bool
     let oPlayerName: String?
     let xPlayerName: String?
 
     public init(state: NewGameState) {
-      self.isGameActive = state.game != nil
       self.isLetsPlayButtonEnabled = !state.oPlayerName.isEmpty && !state.xPlayerName.isEmpty
       self.oPlayerName = state.oPlayerName
       self.xPlayerName = state.xPlayerName

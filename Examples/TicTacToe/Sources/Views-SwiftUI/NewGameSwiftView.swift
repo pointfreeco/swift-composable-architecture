@@ -9,13 +9,11 @@ public struct NewGameView: View {
   let store: Store<NewGameState, NewGameAction>
 
   struct ViewState: Equatable {
-    var isGameActive: Bool
     var isLetsPlayButtonDisabled: Bool
     var oPlayerName: String
     var xPlayerName: String
 
     init(state: NewGameState) {
-      self.isGameActive = state.game != nil
       self.isLetsPlayButtonDisabled = state.oPlayerName.isEmpty || state.xPlayerName.isEmpty
       self.oPlayerName = state.oPlayerName
       self.xPlayerName = state.xPlayerName
