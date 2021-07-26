@@ -121,6 +121,7 @@ struct RootView: View {
               )
             )
 
+            #if compiler(>=5.5)
             NavigationLink(
               "Refreshable",
               destination: RefreshableView(
@@ -130,6 +131,7 @@ struct RootView: View {
                 )
               )
             )
+            #endif
 
             NavigationLink(
               "Timers",
