@@ -35,7 +35,7 @@ extension ViewStore {
   ///     return environment.fetch()
   ///       .map(Action.receivedResponse)
   ///
-  ///   case let .receivedResponse(responsne):
+  ///   case let .receivedResponse(response):
   ///     state.isLoading = false
   ///     state.response = response
   ///     return .none
