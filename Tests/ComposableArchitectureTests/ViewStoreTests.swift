@@ -136,6 +136,64 @@ final class ViewStoreTests: XCTestCase {
     ViewStore(store).send(())
     XCTAssertEqual(results, [0, 1])
   }
+
+  #if compiler(>=5.5)
+  @available(iOS 15, *)
+  func testSendWhile() async {
+    enum Action {
+      case response
+      case tapped
+    }
+    let reducer = Reducer<Bool, Action, Void> { state, action, environment in
+      switch action {
+      case .response:
+        state = false
+        return .none
+      case .tapped:
+        state = true
+        return Effect(value: .response)
+          .receive(on: DispatchQueue.main)
+          .eraseToEffect()
+      }
+    }
+
+    let store = Store(initialState: false, reducer: reducer, environment: ())
+    let viewStore = ViewStore(store)
+
+    XCTAssertEqual(viewStore.state, false)
+    await viewStore.send(.tapped, while: { $0 })
+    XCTAssertEqual(viewStore.state, false)
+  }
+
+  @available(iOS 15, *)
+  func testSuspend() async {
+    enum Action {
+      case response
+      case tapped
+    }
+    let reducer = Reducer<Bool, Action, Void> { state, action, environment in
+      switch action {
+      case .response:
+        state = false
+        return .none
+      case .tapped:
+        state = true
+        return Effect(value: .response)
+          .receive(on: DispatchQueue.main)
+          .eraseToEffect()
+      }
+    }
+
+    let store = Store(initialState: false, reducer: reducer, environment: ())
+    let viewStore = ViewStore(store)
+
+    XCTAssertEqual(viewStore.state, false)
+    viewStore.send(.tapped)
+    XCTAssertEqual(viewStore.state, true)
+    await viewStore.suspend(while: { $0 })
+    XCTAssertEqual(viewStore.state, false)
+  }
+  #endif
 }
 
 private struct State: Equatable {
