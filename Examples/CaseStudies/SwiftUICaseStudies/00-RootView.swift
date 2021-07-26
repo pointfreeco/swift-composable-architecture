@@ -122,15 +122,15 @@ struct RootView: View {
             )
 
             #if compiler(>=5.5)
-            NavigationLink(
-              "Refreshable",
-              destination: RefreshableView(
-                store: self.store.scope(
-                  state: \.refreshable,
-                  action: RootAction.refreshable
+              NavigationLink(
+                "Refreshable",
+                destination: RefreshableView(
+                  store: self.store.scope(
+                    state: \.refreshable,
+                    action: RootAction.refreshable
+                  )
                 )
               )
-            )
             #endif
 
             NavigationLink(

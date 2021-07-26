@@ -73,50 +73,51 @@ let refreshableReducer = Reducer<
 }
 
 #if compiler(>=5.5)
-struct RefreshableView: View {
-  let store: Store<RefreshableState, RefreshableAction>
+  struct RefreshableView: View {
+    let store: Store<RefreshableState, RefreshableAction>
 
-  var body: some View {
-    WithViewStore(self.store) { viewStore in
-      List {
-        Text(template: readMe, .body)
+    var body: some View {
+      WithViewStore(self.store) { viewStore in
+        List {
+          Text(template: readMe, .body)
 
-        HStack {
-          Button("-") { viewStore.send(.decrementButtonTapped) }
-          Text("\(viewStore.count)")
-          Button("+") { viewStore.send(.incrementButtonTapped) }
-        }
-        .buttonStyle(.plain)
+          HStack {
+            Button("-") { viewStore.send(.decrementButtonTapped) }
+            Text("\(viewStore.count)")
+            Button("+") { viewStore.send(.incrementButtonTapped) }
+          }
+          .buttonStyle(.plain)
 
-        if let fact = viewStore.fact {
-          Text(fact)
-            .bold()
-        }
-        if viewStore.isLoading {
-          Button("Cancel") {
-            viewStore.send(.cancelButtonTapped, animation: .default)
+          if let fact = viewStore.fact {
+            Text(fact)
+              .bold()
+          }
+          if viewStore.isLoading {
+            Button("Cancel") {
+              viewStore.send(.cancelButtonTapped, animation: .default)
+            }
           }
         }
-      }
-      .refreshable {
-        await viewStore.send(.refresh, while: \.isLoading)
+        .refreshable {
+          await
+          viewStore.send(.refresh, while: \.isLoading)
+        }
       }
     }
   }
-}
 
-struct Refreshable_Previews: PreviewProvider {
-  static var previews: some View {
-    RefreshableView(
-      store: .init(
-        initialState: .init(),
-        reducer: refreshableReducer,
-        environment: .init(
-          fact: .live,
-          mainQueue: .main
+  struct Refreshable_Previews: PreviewProvider {
+    static var previews: some View {
+      RefreshableView(
+        store: .init(
+          initialState: .init(),
+          reducer: refreshableReducer,
+          environment: .init(
+            fact: .live,
+            mainQueue: .main
+          )
         )
       )
-    )
+    }
   }
-}
 #endif
