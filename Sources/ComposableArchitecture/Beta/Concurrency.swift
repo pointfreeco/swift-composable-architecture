@@ -108,7 +108,8 @@ extension ViewStore {
 
   /// Suspends while a predicate on state is `true`.
   ///
-  ///   - predicate: A predicate on `State` that determines for how long this method should suspend.
+  /// - Parameter predicate: A predicate on `State` that determines for how long this method should
+  /// suspend.
   public func suspend(while predicate: @escaping (State) -> Bool) async {
     var cancellable: Cancellable?
     try? await withTaskCancellationHandler(
