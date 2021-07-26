@@ -6,8 +6,8 @@ private var readMe = """
   Architecture. Use the "-" and "+" buttons to count up and down, and then pull down to request \
   a fact about that number.
 
-  There is an overload of the `.send` method that allows you to suspend and await until a piece \
-  of state changes to true. You can use this method to communicate to SwiftUI that you are \
+  There is an overload of the `.send` method that allows you to suspend and await while a piece \
+  of state is true. You can use this method to communicate to SwiftUI that you are \
   currently fetching data so that it knows to continue showing the loading indicator.
   """
 
