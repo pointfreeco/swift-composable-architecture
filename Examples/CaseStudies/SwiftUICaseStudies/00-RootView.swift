@@ -122,6 +122,16 @@ struct RootView: View {
             )
 
             NavigationLink(
+              "Refreshable",
+              destination: RefreshableView(
+                store: self.store.scope(
+                  state: \.refreshable,
+                  action: RootAction.refreshable
+                )
+              )
+            )
+
+            NavigationLink(
               "Timers",
               destination: TimersView(
                 store: self.store.scope(
