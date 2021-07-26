@@ -49,7 +49,11 @@ benchmark:
 		swift-composable-architecture-benchmark
 
 format:
-	swift format --in-place --recursive \
+	swift format \
+		--ignore-unparsable-files \
+		--in-place \
+		--parallel \
+		--recursive \
 		./Examples ./Package.swift ./Sources ./Tests
 
 .PHONY: format test-all test-swift test-workspace
