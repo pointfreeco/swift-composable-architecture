@@ -52,7 +52,6 @@ format:
 	swift format \
 		--ignore-unparsable-files \
 		--in-place \
-		--parallel \
 		--recursive \
 		./Examples ./Package.swift ./Sources ./Tests
 
