@@ -1,9 +1,6 @@
 name: Format
 
 on:
-  pull_request:
-    branches:
-      - '*'
   push:
     branches:
       - main
