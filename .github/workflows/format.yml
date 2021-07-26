@@ -1,6 +1,9 @@
 name: Format
 
 on:
+  pull_request:
+    branches:
+      - '*'
   push:
     branches:
       - main
@@ -19,7 +22,7 @@ jobs:
         run: make format
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: Run swift-format
+          commit_message: Run swift-format --ignore-unparsable-files
           branch: 'main'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
