@@ -104,7 +104,6 @@ struct RefreshableView: View {
     }
   }
 }
-#endif
 
 struct Refreshable_Previews: PreviewProvider {
   static var previews: some View {
@@ -120,3 +119,4 @@ struct Refreshable_Previews: PreviewProvider {
     )
   }
 }
+#endif
