@@ -545,10 +545,12 @@ final class StoreTests: XCTestCase {
     XCTAssertEqual(handledActions, [])
 
     parentStore.send(.button)
-    XCTAssertEqual(handledActions, [
-      .button,
-      .child(2)
-    ])
+    XCTAssertEqual(
+      handledActions,
+      [
+        .button,
+        .child(2),
+      ])
   }
 
   func testScopingRemovesDuplicatesWithProvidedClosure() {

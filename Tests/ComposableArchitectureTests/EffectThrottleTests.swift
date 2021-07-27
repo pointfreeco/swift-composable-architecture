@@ -26,10 +26,14 @@ final class EffectThrottleTests: XCTestCase {
 
     runThrottledEffect(value: 1)
 
+    scheduler.advance()
+
     // A value emits right away.
     XCTAssertEqual(values, [1])
 
     runThrottledEffect(value: 2)
+
+    scheduler.advance()
 
     // A second value is throttled.
     XCTAssertEqual(values, [1])
@@ -76,10 +80,14 @@ final class EffectThrottleTests: XCTestCase {
 
     runThrottledEffect(value: 1)
 
+    scheduler.advance()
+
     // A value emits right away.
     XCTAssertEqual(values, [1])
 
     runThrottledEffect(value: 2)
+
+    scheduler.advance()
 
     // A second value is throttled.
     XCTAssertEqual(values, [1])
@@ -124,12 +132,16 @@ final class EffectThrottleTests: XCTestCase {
 
     runThrottledEffect(value: 1)
 
+    scheduler.advance()
+
     // A value emits right away.
     XCTAssertEqual(values, [1])
 
     scheduler.advance(by: 2)
 
     runThrottledEffect(value: 2)
+
+    scheduler.advance()
 
     // A second value is emitted right away.
     XCTAssertEqual(values, [1, 2])
@@ -155,6 +167,8 @@ final class EffectThrottleTests: XCTestCase {
     }
 
     runThrottledEffect(value: 1)
+
+    scheduler.advance()
 
     // A value emits right away.
     XCTAssertEqual(values, [1])

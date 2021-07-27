@@ -29,6 +29,8 @@
 		CAA9ADC824465D950003A984 /* 02-Effects-CancellationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA9ADC724465D950003A984 /* 02-Effects-CancellationTests.swift */; };
 		CAA9ADCA2446605B0003A984 /* 02-Effects-LongLiving.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA9ADC92446605B0003A984 /* 02-Effects-LongLiving.swift */; };
 		CAA9ADCC2446615B0003A984 /* 02-Effects-LongLivingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA9ADCB2446615B0003A984 /* 02-Effects-LongLivingTests.swift */; };
+		CABC4F3926AEE00C00D5FA2C /* 02-Effects-Refreshable.swift in Sources */ = {isa = PBXBuildFile; fileRef = CABC4F3826AEE00C00D5FA2C /* 02-Effects-Refreshable.swift */; };
+		CABC4F3B26AEE20200D5FA2C /* 02-Effects-RefreshableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CABC4F3A26AEE20200D5FA2C /* 02-Effects-RefreshableTests.swift */; };
 		CAE962FD24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndActionSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAE962FC24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndActionSheets.swift */; };
 		CAF069D024ACC5AF00A1AAEF /* 00-Core.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF069CF24ACC5AF00A1AAEF /* 00-Core.swift */; };
 		CAF88E7324B8E26D00539345 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF88E7224B8E26D00539345 /* AppDelegate.swift */; };
@@ -170,6 +172,8 @@
 		CAA9ADC724465D950003A984 /* 02-Effects-CancellationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-CancellationTests.swift"; sourceTree = "<group>"; };
 		CAA9ADC92446605B0003A984 /* 02-Effects-LongLiving.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-LongLiving.swift"; sourceTree = "<group>"; };
 		CAA9ADCB2446615B0003A984 /* 02-Effects-LongLivingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-LongLivingTests.swift"; sourceTree = "<group>"; };
+		CABC4F3826AEE00C00D5FA2C /* 02-Effects-Refreshable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-Refreshable.swift"; sourceTree = "<group>"; };
+		CABC4F3A26AEE20200D5FA2C /* 02-Effects-RefreshableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-RefreshableTests.swift"; sourceTree = "<group>"; };
 		CAE962FC24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndActionSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-AlertsAndActionSheets.swift"; sourceTree = "<group>"; };
 		CAF069CF24ACC5AF00A1AAEF /* 00-Core.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "00-Core.swift"; sourceTree = "<group>"; };
 		CAF88E7024B8E26D00539345 /* tvOSCaseStudies.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = tvOSCaseStudies.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -401,6 +405,7 @@
 				CAA9ADC12446587C0003A984 /* 02-Effects-Basics.swift */,
 				CAA9ADC524465C810003A984 /* 02-Effects-Cancellation.swift */,
 				CAA9ADC92446605B0003A984 /* 02-Effects-LongLiving.swift */,
+				CABC4F3826AEE00C00D5FA2C /* 02-Effects-Refreshable.swift */,
 				DC89C45424465C44006900B9 /* 02-Effects-Timers.swift */,
 				CA410EDF247A15FE00E41798 /* 02-Effects-WebSocket.swift */,
 				CA27C0B6245780CE00CB1E59 /* 03-Effects-SystemEnvironment.swift */,
@@ -434,11 +439,12 @@
 				CAA9ADC324465AB00003A984 /* 02-Effects-BasicsTests.swift */,
 				CAA9ADC724465D950003A984 /* 02-Effects-CancellationTests.swift */,
 				CAA9ADCB2446615B0003A984 /* 02-Effects-LongLivingTests.swift */,
+				CABC4F3A26AEE20200D5FA2C /* 02-Effects-RefreshableTests.swift */,
 				DC07231624465D1E003A8B65 /* 02-Effects-TimersTests.swift */,
 				CA410EE1247C73B400E41798 /* 02-Effects-WebSocketTests.swift */,
+				CA0C0C4624B89BEC00CBDD8A /* 04-HigherOrderReducers-LifecycleTests.swift */,
 				DC634B242448D15B00DAA016 /* 04-HigherOrderReducers-ReusableFavoritingTests.swift */,
 				CA0C51FA245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift */,
-				CA0C0C4624B89BEC00CBDD8A /* 04-HigherOrderReducers-LifecycleTests.swift */,
 			);
 			path = SwiftUICaseStudiesTests;
 			sourceTree = "<group>";
@@ -763,6 +769,7 @@
 				CAA9ADC22446587C0003A984 /* 02-Effects-Basics.swift in Sources */,
 				DC89C41B24460F95006900B9 /* 00-RootView.swift in Sources */,
 				DCC68EDD2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift in Sources */,
+				CABC4F3926AEE00C00D5FA2C /* 02-Effects-Refreshable.swift in Sources */,
 				DCC68EAB244666AF0037F998 /* 03-Navigation-Sheet-PresentAndLoad.swift in Sources */,
 				CAE962FD24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndActionSheets.swift in Sources */,
 				CA25E5D224463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift in Sources */,
@@ -788,6 +795,7 @@
 				DC634B252448D15B00DAA016 /* 04-HigherOrderReducers-ReusableFavoritingTests.swift in Sources */,
 				CAA9ADC824465D950003A984 /* 02-Effects-CancellationTests.swift in Sources */,
 				CA410EE2247C73B400E41798 /* 02-Effects-WebSocketTests.swift in Sources */,
+				CABC4F3B26AEE20200D5FA2C /* 02-Effects-RefreshableTests.swift in Sources */,
 				CA34170824A4E89500FAF950 /* 01-GettingStarted-AnimationsTests.swift in Sources */,
 				CA0C0C4724B89BEC00CBDD8A /* 04-HigherOrderReducers-LifecycleTests.swift in Sources */,
 				DC07231724465D1E003A8B65 /* 02-Effects-TimersTests.swift in Sources */,
