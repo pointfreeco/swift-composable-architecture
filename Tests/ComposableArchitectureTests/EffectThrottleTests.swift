@@ -19,7 +19,12 @@ final class EffectThrottleTests: XCTestCase {
         return Just(value)
       }
       .eraseToEffect()
-      .throttle(id: CancelToken(), for: 1, scheduler: scheduler.eraseToAnyScheduler(), latest: true)
+      .throttle(
+        id: CancelToken(),
+        for: 1,
+        scheduler: scheduler.eraseToAnyScheduler(),
+        strategy: .latest
+      )
       .sink { values.append($0) }
       .store(in: &self.cancellables)
     }
@@ -72,7 +77,10 @@ final class EffectThrottleTests: XCTestCase {
       }
       .eraseToEffect()
       .throttle(
-        id: CancelToken(), for: 1, scheduler: scheduler.eraseToAnyScheduler(), latest: false
+        id: CancelToken(),
+        for: 1,
+        scheduler: scheduler.eraseToAnyScheduler(),
+        strategy: .first
       )
       .sink { values.append($0) }
       .store(in: &self.cancellables)
@@ -126,6 +134,76 @@ final class EffectThrottleTests: XCTestCase {
     XCTAssertEqual(values, [1, 2, 6])
   }
 
+  func testThrottleCollect() {
+    var values: [[Int]] = []
+    var effectRuns = 0
+
+    func runThrottledEffect(value: Int) {
+      struct CancelToken: Hashable {}
+
+      Deferred { () -> Just<Int> in
+        effectRuns += 1
+        return Just(value)
+      }
+      .eraseToEffect()
+      .throttle(
+        id: CancelToken(),
+        for: 1,
+        scheduler: scheduler.eraseToAnyScheduler(),
+        strategy: .collect
+      )
+      .sink { values.append($0) }
+      .store(in: &self.cancellables)
+    }
+
+    runThrottledEffect(value: 1)
+
+    scheduler.advance()
+
+    // A collected value emits right away.
+    XCTAssertEqual(values, [[1]])
+
+    runThrottledEffect(value: 2)
+
+    scheduler.advance()
+
+    // A second collected value is throttled.
+    XCTAssertEqual(values, [[1]])
+
+    scheduler.advance(by: 0.25)
+
+    runThrottledEffect(value: 3)
+
+    scheduler.advance(by: 0.25)
+
+    runThrottledEffect(value: 4)
+
+    scheduler.advance(by: 0.25)
+
+    runThrottledEffect(value: 5)
+
+    scheduler.advance(by: 0.25)
+
+    // The second (throttled) collected value emits.
+    XCTAssertEqual(values, [[1], [2, 3, 4, 5]])
+
+    scheduler.advance(by: 0.25)
+
+    runThrottledEffect(value: 6)
+
+    scheduler.advance(by: 0.50)
+
+    // A third collected value is throttled.
+    XCTAssertEqual(values, [[1], [2, 3, 4, 5]])
+
+    runThrottledEffect(value: 7)
+
+    scheduler.advance(by: 0.25)
+
+    // The third (throttled) collected value emits.
+    XCTAssertEqual(values, [[1], [2, 3, 4, 5], [6, 7]])
+  }
+
   func testThrottleAfterInterval() {
     var values: [Int] = []
     var effectRuns = 0
@@ -138,7 +216,12 @@ final class EffectThrottleTests: XCTestCase {
         return Just(value)
       }
       .eraseToEffect()
-      .throttle(id: CancelToken(), for: 1, scheduler: scheduler.eraseToAnyScheduler(), latest: true)
+      .throttle(
+        id: CancelToken(),
+        for: 1,
+        scheduler: scheduler.eraseToAnyScheduler(),
+        strategy: .first
+      )
       .sink { values.append($0) }
       .store(in: &self.cancellables)
     }
@@ -182,7 +265,7 @@ final class EffectThrottleTests: XCTestCase {
       }
       .eraseToEffect()
       .throttle(
-        id: CancelToken(), for: 1, scheduler: scheduler.eraseToAnyScheduler(), latest: false
+        id: CancelToken(), for: 1, scheduler: scheduler.eraseToAnyScheduler(), strategy: .first
       )
       .sink { values.append($0) }
       .store(in: &self.cancellables)
