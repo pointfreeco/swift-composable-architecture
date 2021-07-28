@@ -196,7 +196,7 @@ extension AlertState.Button {
     _ label: LocalizedStringKey,
     send action: Action? = nil
   ) -> Self {
-    Self(action: action, type: .cancel(label: .init(label)))
+    Self(action: action.map(AlertState.ButtonAction.send), type: .cancel(label: .init(label)))
   }
 
   @available(*, deprecated, message: "'label' should be 'TextState'")
@@ -205,7 +205,7 @@ extension AlertState.Button {
     _ label: LocalizedStringKey,
     send action: Action? = nil
   ) -> Self {
-    Self(action: action, type: .default(label: .init(label)))
+    Self(action: action.map(AlertState.ButtonAction.send), type: .default(label: .init(label)))
   }
 
   @available(*, deprecated, message: "'label' should be 'TextState'")
@@ -214,7 +214,7 @@ extension AlertState.Button {
     _ label: LocalizedStringKey,
     send action: Action? = nil
   ) -> Self {
-    Self(action: action, type: .destructive(label: .init(label)))
+    Self(action: action.map(AlertState.ButtonAction.send), type: .destructive(label: .init(label)))
   }
 }
 

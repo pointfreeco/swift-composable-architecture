@@ -57,8 +57,8 @@ import SwiftUI
 ///       state.actionSheet = .init(
 ///         title: "What would you like to do?",
 ///         buttons: [
-///           .default(TextState("Favorite"), send: .favoriteTapped),
-///           .destructive(TextState("Delete"), send: .deleteTapped),
+///           .default(TextState("Favorite"), action: .send(.favoriteTapped)),
+///           .destructive(TextState("Delete"), action: .send(.deleteTapped)),
 ///           .cancel(),
 ///         ]
 ///       )
@@ -157,19 +157,6 @@ extension ActionSheetState: Equatable where Action: Equatable {
     lhs.title == rhs.title
       && lhs.message == rhs.message
       && lhs.buttons == rhs.buttons
-  }
-}
-
-@available(iOS 13, *)
-@available(macCatalyst 13, *)
-@available(macOS, unavailable)
-@available(tvOS 13, *)
-@available(watchOS 6, *)
-extension ActionSheetState: Hashable where Action: Hashable {
-  public func hash(into hasher: inout Hasher) {
-    hasher.combine(self.title)
-    hasher.combine(self.message)
-    hasher.combine(self.buttons)
   }
 }
 
