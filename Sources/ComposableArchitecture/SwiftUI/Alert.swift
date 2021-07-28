@@ -129,7 +129,15 @@ public struct AlertState<Action> {
 
   public struct Button {
     public var action: Action?
+    public var animation: Animation??
     public var type: `Type`
+    
+    public func send(_ action: Action, withAnimation animation: Animation?) -> Self {
+      var button = self
+      button.action = action
+      button.animation = animation
+      return button
+    }
 
     public static func cancel(
       _ label: TextState,
@@ -222,11 +230,24 @@ extension AlertState.Button.`Type`: Equatable {}
 extension AlertState.Button: Equatable where Action: Equatable {}
 
 extension AlertState.Button.`Type`: Hashable {}
-extension AlertState.Button: Hashable where Action: Hashable {}
+extension AlertState.Button: Hashable where Action: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.action)
+    hasher.combine(self.type)
+  }
+}
 
 extension AlertState.Button {
   func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.Alert.Button {
-    let action = { if let action = self.action { send(action) } }
+    let action = {
+      if let action = self.action {
+        if let animation = self.animation {
+          SwiftUI.withAnimation(animation) { send(action) }
+        } else {
+          send(action)
+        }
+      }
+    }
     switch self.type {
     case let .cancel(.some(label)):
       return .cancel(Text(label), action: action)
