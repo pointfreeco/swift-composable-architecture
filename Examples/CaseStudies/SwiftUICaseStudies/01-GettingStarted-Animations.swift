@@ -46,11 +46,11 @@ struct AnimationsState: Equatable {
 }
 
 enum AnimationsAction: Equatable {
-  case alertButtonTapped
   case circleScaleToggleChanged(Bool)
   case dismissAlert
   case rainbowButtonTapped
   case resetButtonTapped
+  case resetConfirmationButtonTapped
   case setColor(Color)
   case tapped(CGPoint)
 }
@@ -63,10 +63,6 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
   state, action, environment in
 
   switch action {
-  case .alertButtonTapped:
-    state = .init()
-    return .none
-    
   case let .circleScaleToggleChanged(isScaled):
     state.isCircleScaled = isScaled
     return .none
@@ -85,10 +81,17 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
   case .resetButtonTapped:
     state.alert = .init(
       title: .init("Reset state?"),
-      primaryButton: .destructive(.init("Reset"))
-        .send(.alertButtonTapped, withAnimation: .default),
+      primaryButton: .destructive(
+        .init("Reset"),
+        send: .resetConfirmationButtonTapped,
+        animation: .default
+      ),
       secondaryButton: .cancel()
     )
+    return .none
+    
+  case .resetConfirmationButtonTapped:
+    state = .init()
     return .none
 
   case let .setColor(color):

@@ -131,39 +131,36 @@ public struct AlertState<Action> {
     public var action: Action?
     public var animation: Animation??
     public var type: `Type`
-    
-    public func send(_ action: Action, withAnimation animation: Animation?) -> Self {
-      var button = self
-      button.action = action
-      button.animation = animation
-      return button
-    }
 
     public static func cancel(
       _ label: TextState,
-      send action: Action? = nil
+      send action: Action? = nil,
+      animation: Animation? = nil
     ) -> Self {
-      Self(action: action, type: .cancel(label: label))
+      Self(action: action, animation: animation, type: .cancel(label: label))
     }
 
     public static func cancel(
-      send action: Action? = nil
+      send action: Action? = nil,
+      animation: Animation? = nil
     ) -> Self {
-      Self(action: action, type: .cancel(label: nil))
+      Self(action: action, animation: animation, type: .cancel(label: nil))
     }
 
     public static func `default`(
       _ label: TextState,
-      send action: Action? = nil
+      send action: Action? = nil,
+      animation: Animation? = nil
     ) -> Self {
-      Self(action: action, type: .default(label: label))
+      Self(action: action, animation: animation, type: .default(label: label))
     }
 
     public static func destructive(
       _ label: TextState,
-      send action: Action? = nil
+      send action: Action? = nil,
+      animation: Animation? = nil
     ) -> Self {
-      Self(action: action, type: .destructive(label: label))
+      Self(action: action, animation: animation, type: .destructive(label: label))
     }
 
     public enum `Type` {
