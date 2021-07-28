@@ -27,6 +27,7 @@ struct RootState {
   var nested = NestedState.mock
   var optionalBasics = OptionalBasicsState()
   var presentAndLoad = PresentAndLoadState()
+  var refreshable = RefreshableState()
   var shared = SharedState()
   var timers = TimersState()
   var twoCounters = TwoCountersState()
@@ -57,6 +58,7 @@ enum RootAction {
   case optionalBasics(OptionalBasicsAction)
   case onAppear
   case presentAndLoad(PresentAndLoadAction)
+  case refreshable(RefreshableAction)
   case shared(SharedStateAction)
   case timers(TimersAction)
   case twoCounters(TwoCountersAction)
@@ -236,6 +238,14 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       state: \.presentAndLoad,
       action: /RootAction.presentAndLoad,
       environment: { .init(mainQueue: $0.mainQueue) }
+    ),
+  refreshableReducer
+    .pullback(
+      state: \.refreshable,
+      action: /RootAction.refreshable,
+      environment: {
+        .init(fact: $0.fact, mainQueue: $0.mainQueue)
+      }
     ),
   sharedStateReducer
     .pullback(

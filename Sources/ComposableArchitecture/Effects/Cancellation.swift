@@ -74,6 +74,24 @@ extension Effect {
       }
     }
   }
+
+  /// An effect that will cancel multiple currently in-flight effects with the given identifiers.
+  ///
+  /// - Parameter ids: A variadic list of effect identifiers.
+  /// - Returns: A new effect that will cancel any currently in-flight effects with the given
+  ///   identifiers.
+  public static func cancel(ids: AnyHashable...) -> Effect {
+    .cancel(ids: ids)
+  }
+
+  /// An effect that will cancel multiple currently in-flight effects with the given identifiers.
+  ///
+  /// - Parameter ids: An array of effect identifiers.
+  /// - Returns: A new effect that will cancel any currently in-flight effects with the given
+  ///   identifiers.
+  public static func cancel(ids: [AnyHashable]) -> Effect {
+    .merge(ids.map(Effect.cancel(id:)))
+  }
 }
 
 var cancellationCancellables: [AnyHashable: Set<AnyCancellable>] = [:]

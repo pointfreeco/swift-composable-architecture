@@ -26,10 +26,14 @@ final class EffectThrottleTests: XCTestCase {
 
     runThrottledEffect(value: 1)
 
+    scheduler.advance()
+
     // A value emits right away.
     XCTAssertEqual(values, [1])
 
     runThrottledEffect(value: 2)
+
+    scheduler.advance()
 
     // A second value is throttled.
     XCTAssertEqual(values, [1])
@@ -76,10 +80,14 @@ final class EffectThrottleTests: XCTestCase {
 
     runThrottledEffect(value: 1)
 
+    scheduler.advance()
+
     // A value emits right away.
     XCTAssertEqual(values, [1])
 
     runThrottledEffect(value: 2)
+
+    scheduler.advance()
 
     // A second value is throttled.
     XCTAssertEqual(values, [1])
@@ -96,13 +104,26 @@ final class EffectThrottleTests: XCTestCase {
 
     runThrottledEffect(value: 5)
 
-    // A third value is throttled.
-    XCTAssertEqual(values, [1])
+    scheduler.advance(by: 0.25)
+
+    // The second (throttled) value emits.
+    XCTAssertEqual(values, [1, 2])
 
     scheduler.advance(by: 0.25)
 
-    // The first throttled value emits.
+    runThrottledEffect(value: 6)
+
+    scheduler.advance(by: 0.50)
+
+    // A third value is throttled.
     XCTAssertEqual(values, [1, 2])
+
+    runThrottledEffect(value: 7)
+
+    scheduler.advance(by: 0.25)
+
+    // The third (throttled) value emits.
+    XCTAssertEqual(values, [1, 2, 6])
   }
 
   func testThrottleAfterInterval() {
@@ -124,6 +145,8 @@ final class EffectThrottleTests: XCTestCase {
 
     runThrottledEffect(value: 1)
 
+    scheduler.advance()
+
     // A value emits right away.
     XCTAssertEqual(values, [1])
 
@@ -131,8 +154,19 @@ final class EffectThrottleTests: XCTestCase {
 
     runThrottledEffect(value: 2)
 
+    scheduler.advance()
+
     // A second value is emitted right away.
     XCTAssertEqual(values, [1, 2])
+
+    scheduler.advance(by: 2)
+
+    runThrottledEffect(value: 3)
+
+    scheduler.advance()
+
+    // A third value is emitted right away.
+    XCTAssertEqual(values, [1, 2, 3])
   }
 
   func testThrottleEmitsFirstValueOnce() {
@@ -155,6 +189,8 @@ final class EffectThrottleTests: XCTestCase {
     }
 
     runThrottledEffect(value: 1)
+
+    scheduler.advance()
 
     // A value emits right away.
     XCTAssertEqual(values, [1])

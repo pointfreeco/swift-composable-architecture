@@ -51,8 +51,15 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
     self.store = store
     self.content = { viewStore in
-      if let state = viewStore.state {
-        return ViewBuilder.buildEither(first: ifContent(store.scope(state: { $0 ?? state })))
+      if var state = viewStore.state {
+        return ViewBuilder.buildEither(
+          first: ifContent(
+            store.scope {
+              state = $0 ?? state
+              return state
+            }
+          )
+        )
       } else {
         return ViewBuilder.buildEither(second: elseContent())
       }
@@ -72,8 +79,15 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
   ) where Content == IfContent? {
     self.store = store
     self.content = { viewStore in
-      viewStore.state.map { state in
-        ifContent(store.scope(state: { $0 ?? state }))
+      if var state = viewStore.state {
+        return ifContent(
+          store.scope {
+            state = $0 ?? state
+            return state
+          }
+        )
+      } else {
+        return nil
       }
     }
   }

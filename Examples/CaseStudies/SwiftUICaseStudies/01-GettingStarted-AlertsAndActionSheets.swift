@@ -48,8 +48,8 @@ let alertAndSheetReducer = Reducer<
       message: .init("This is an action sheet."),
       buttons: [
         .cancel(),
-        .default(.init("Increment"), send: .incrementButtonTapped),
-        .default(.init("Decrement"), send: .decrementButtonTapped),
+        .default(.init("Increment"), action: .send(.incrementButtonTapped)),
+        .default(.init("Decrement"), action: .send(.decrementButtonTapped)),
       ]
     )
     return .none
@@ -66,7 +66,7 @@ let alertAndSheetReducer = Reducer<
       title: .init("Alert!"),
       message: .init("This is an alert"),
       primaryButton: .cancel(),
-      secondaryButton: .default(.init("Increment"), send: .incrementButtonTapped)
+      secondaryButton: .default(.init("Increment"), action: .send(.incrementButtonTapped))
     )
     return .none
 
