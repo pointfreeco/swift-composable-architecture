@@ -209,7 +209,7 @@ extension Reducer {
   /// the ``binding(action:)`` method:
   ///
   /// ```swift
-  /// let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvironment {
+  /// let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvironment> {
   ///   ...
   /// }
   /// .binding(action: /SettingsAction.binding)
