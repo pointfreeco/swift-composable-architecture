@@ -46,7 +46,7 @@ let loadThenPresentReducer =
     }
   }
   .presents(
-    counterReducer,
+    destination: counterReducer,
     state: \.optionalCounter,
     action: /LoadThenPresentAction.optionalCounter,
     environment: { _ in CounterEnvironment() }

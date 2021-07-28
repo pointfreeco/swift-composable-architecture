@@ -12,28 +12,28 @@ extension PresentationAction: Hashable where Action: Hashable {}
 // TODO: do we need isActive versions
 
 extension Reducer {
-  public func presents<LocalState, LocalAction, LocalEnvironment>(
-    _ localReducer: Reducer<LocalState, LocalAction, LocalEnvironment>,
-    state toLocalState: WritableKeyPath<State, LocalState?>,
-    action toPresentationAction: CasePath<Action, PresentationAction<LocalAction>>,
-    environment toLocalEnvironment: @escaping (Environment) -> LocalEnvironment
+  public func presents<DestinationState, DestinationAction, DestinationEnvironment>(
+    destination: Reducer<DestinationState, DestinationAction, DestinationEnvironment>,
+    onDismiss: DestinationAction? = nil,
+    state toDestinationState: WritableKeyPath<State, DestinationState?>,
+    action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
+    environment toDestinationEnvironment: @escaping (Environment) -> DestinationEnvironment
   ) -> Self {
-    let id = UUID()
     return Self { state, action, environment in
-      let wasPresented = state[keyPath: toLocalState] != nil
+      let wasPresented = state[keyPath: toDestinationState] != nil
       var effects: [Effect<Action, Never>] = []
 
       effects.append(
-        localReducer
+        destination
           .optional()
           .pullback(
-            state: toLocalState,
+            state: toDestinationState,
             action: toPresentationAction.appending(path: /PresentationAction.presented),
-            environment: toLocalEnvironment
+            environment: toDestinationEnvironment
           )
           .run(&state, action, environment)
-          .cancellable(id: id)
       )
+      let updatedDestinationState = state[keyPath: toDestinationState]
 
       effects.append(
         self
@@ -41,10 +41,22 @@ extension Reducer {
       )
 
       if case .some(.dismiss) = toPresentationAction.extract(from: action) {
-        state[keyPath: toLocalState] = nil
+        state[keyPath: toDestinationState] = nil
       }
-      if wasPresented && state[keyPath: toLocalState] == nil {
-        effects.append(.cancel(id: id))
+      if
+        let onDismiss = onDismiss,
+        wasPresented,
+        state[keyPath: toDestinationState] == nil,
+        var finalDestinationState = updatedDestinationState
+      {
+        effects.append(
+          destination.run(
+            &finalDestinationState,
+            onDismiss,
+            toDestinationEnvironment(environment)
+          )
+            .map(toPresentationAction.appending(path: /PresentationAction.presented).embed(_:))
+        )
       }
 
       return .merge(effects)

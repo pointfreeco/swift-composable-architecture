@@ -3,17 +3,18 @@ import SwiftUI
 // TODO: does .task cancel its work when pushing away from a view? or just when popping?
 
 extension Reducer {
-  public func navigates<Route, LocalState, LocalAction, LocalEnvironment>(
-    destination: Reducer<LocalState, LocalAction, LocalEnvironment>,
-    tag: CasePath<Route, LocalState>,
+  public func navigates<Route, DestinationState, DestinationAction, DestinationEnvironment>(
+    destination: Reducer<DestinationState, DestinationAction, DestinationEnvironment>,
+    tag: CasePath<Route, DestinationState>,
     selection: WritableKeyPath<State, Route?>,
-    action toPresentationAction: CasePath<Action, PresentationAction<LocalAction>>,
-    environment toLocalEnvironment: @escaping (Environment) -> LocalEnvironment
+    onDismiss: DestinationAction? = nil,
+    action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
+    environment toDestinationEnvironment: @escaping (Environment) -> DestinationEnvironment
   ) -> Self {
-    let id = UUID()
-    return Self { state, action, environment in
-      let previousTag = state[keyPath: selection].flatMap(tag.extract(from:)) != nil
-        ? state[keyPath: selection].flatMap(enumTag)
+    Self { state, action, environment in
+      let previousSelection = state[keyPath: selection]
+      let previousTag = previousSelection.flatMap(tag.extract(from:)) != nil
+        ? previousSelection.flatMap(enumTag)
         : nil
       var effects: [Effect<Action, Never>] = []
 
@@ -22,7 +23,7 @@ extension Reducer {
           .pullback(
             state: tag,
             action: /.self,
-            environment: toLocalEnvironment
+            environment: toDestinationEnvironment
           )
           .optional()
           .pullback(
@@ -31,8 +32,8 @@ extension Reducer {
             environment: { $0 }
           )
           .run(&state, action, environment)
-          .cancellable(id: id)
       )
+      let updatedDestinationState = state[keyPath: selection].flatMap(tag.extract(from:))
 
       effects.append(
         self
@@ -47,24 +48,34 @@ extension Reducer {
         state[keyPath: selection] = nil
       }
       if
+        let onDismiss = onDismiss,
+        var finalDestinationState = updatedDestinationState,
         let previousTag = previousTag,
-        previousTag != state[keyPath: selection].flatMap(enumTag) {
-        effects.append(.cancel(id: id))
+        previousTag != state[keyPath: selection].flatMap(enumTag)
+      {
+        effects.append(
+          destination.run(
+            &finalDestinationState,
+            onDismiss,
+            toDestinationEnvironment(environment)
+          )
+            .map(toPresentationAction.appending(path: /PresentationAction.presented).embed(_:))
+        )
       }
 
       return .merge(effects)
     }
   }
 
-  public func navigates<Route, LocalState, LocalAction, LocalEnvironment>(
-    destination: Reducer<LocalState, LocalAction, LocalEnvironment>,
+  public func navigates<Route, DestinationState, DestinationAction, DestinationEnvironment>(
+    destination: Reducer<DestinationState, DestinationAction, DestinationEnvironment>,
     tag: Route,
     selection: WritableKeyPath<State, Route?>,
-    state toLocalState: WritableKeyPath<State, LocalState>,
-    action toPresentationAction: CasePath<Action, PresentationAction<LocalAction>>,
-    environment toLocalEnvironment: @escaping (Environment) -> LocalEnvironment
+    onDismiss: DestinationAction? = nil,
+    state toDestinationState: WritableKeyPath<State, DestinationState>,
+    action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
+    environment toDestinationEnvironment: @escaping (Environment) -> DestinationEnvironment
   ) -> Self {
-    let id = UUID()
     let destinationTag = enumTag(tag)
     return Self { state, action, environment in
       let wasPresented = enumTag(state[keyPath: selection]) == destinationTag
@@ -73,12 +84,11 @@ extension Reducer {
       effects.append(
         destination
           .pullback(
-            state: toLocalState,
+            state: toDestinationState,
             action: toPresentationAction.appending(path: /PresentationAction.presented),
-            environment: toLocalEnvironment
+            environment: toDestinationEnvironment
           )
           .run(&state, action, environment)
-          .cancellable(id: id)
       )
 
       effects.append(
@@ -97,37 +107,50 @@ extension Reducer {
       default:
         break
       }
-      if wasPresented && enumTag(state[keyPath: selection]) != destinationTag {
-        effects.append(.cancel(id: id))
+      if
+        let onDismiss = onDismiss,
+        wasPresented,
+        enumTag(state[keyPath: selection]) != destinationTag
+      {
+        effects.append(
+          destination.run(
+            &state[keyPath: toDestinationState],
+            onDismiss,
+            toDestinationEnvironment(environment)
+          )
+            .map(toPresentationAction.appending(path: /PresentationAction.presented).embed(_:))
+        )
       }
 
       return .merge(effects)
     }
   }
 
-  public func navigates<LocalState, LocalAction, LocalEnvironment>(
-    destination: Reducer<LocalState, LocalAction, LocalEnvironment>,
-    state toLocalState: WritableKeyPath<State, LocalState?>,
-    action toPresentationAction: CasePath<Action, PresentationAction<LocalAction>>,
-    environment toLocalEnvironment: @escaping (Environment) -> LocalEnvironment
+  public func navigates<DestinationState, DestinationAction, DestinationEnvironment>(
+    destination: Reducer<DestinationState, DestinationAction, DestinationEnvironment>,
+    onDismiss: DestinationAction? = nil,
+    state toDestinationState: WritableKeyPath<State, DestinationState?>,
+    action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
+    environment toDestinationEnvironment: @escaping (Environment) -> DestinationEnvironment
   ) -> Self {
     self.navigates(
       destination: destination,
       tag: /.self,
-      selection: toLocalState,
+      selection: toDestinationState,
+      onDismiss: onDismiss,
       action: toPresentationAction,
-      environment: toLocalEnvironment
+      environment: toDestinationEnvironment
     )
   }
 
-  public func navigates<LocalState, LocalAction, LocalEnvironment>(
-    destination: Reducer<LocalState, LocalAction, LocalEnvironment>,
+  public func navigates<DestinationState, DestinationAction, DestinationEnvironment>(
+    destination: Reducer<DestinationState, DestinationAction, DestinationEnvironment>,
     isActive: WritableKeyPath<State, Bool>,
-    state toLocalState: WritableKeyPath<State, LocalState>,
-    action toPresentationAction: CasePath<Action, PresentationAction<LocalAction>>,
-    environment toLocalEnvironment: @escaping (Environment) -> LocalEnvironment
+    onDismiss: DestinationAction? = nil,
+    state toDestinationState: WritableKeyPath<State, DestinationState>,
+    action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
+    environment toDestinationEnvironment: @escaping (Environment) -> DestinationEnvironment
   ) -> Self {
-    let id = UUID()
     return Self { state, action, environment in
       let wasPresented = state[keyPath: isActive]
       var effects: [Effect<Action, Never>] = []
@@ -135,12 +158,11 @@ extension Reducer {
       effects.append(
         destination
           .pullback(
-            state: toLocalState,
+            state: toDestinationState,
             action: toPresentationAction.appending(path: /PresentationAction.presented),
-            environment: toLocalEnvironment
+            environment: toDestinationEnvironment
           )
           .run(&state, action, environment)
-          .cancellable(id: id)
       )
 
       effects.append(
@@ -157,8 +179,15 @@ extension Reducer {
       default:
         break
       }
-      if wasPresented && !state[keyPath: isActive] {
-        effects.append(.cancel(id: id))
+      if let onDismiss = onDismiss, wasPresented, !state[keyPath: isActive] {
+        effects.append(
+          destination.run(
+            &state[keyPath: toDestinationState],
+            onDismiss,
+            toDestinationEnvironment(environment)
+          )
+            .map(toPresentationAction.appending(path: /PresentationAction.presented).embed(_:))
+        )
       }
 
       return .merge(effects)
