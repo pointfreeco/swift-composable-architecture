@@ -51,10 +51,6 @@ let package = Package(
         "NewGameSwiftUI",
       ]
     ),
-//    .testTarget(
-//      name: "AppSwiftUITests",
-//      dependencies: ["AppSwiftUI"]
-//    ),
     .target(
       name: "AppUIKit",
       dependencies: [
