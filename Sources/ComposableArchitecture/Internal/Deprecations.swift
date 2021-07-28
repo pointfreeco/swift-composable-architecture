@@ -2,6 +2,41 @@ import CasePaths
 import Combine
 import SwiftUI
 
+// NB: Deprecated after 0.23.0:
+
+extension AlertState.Button {
+  @available(*, deprecated, renamed: "cancel(_:action:)")
+  public static func cancel(
+    _ label: TextState,
+    send action: Action?
+  ) -> Self {
+    Self(action: action.map(AlertState.ButtonAction.send), type: .cancel(label: label))
+  }
+
+  @available(*, deprecated, renamed: "cancel(action:)")
+  public static func cancel(
+    send action: Action?
+  ) -> Self {
+    Self(action: action.map(AlertState.ButtonAction.send), type: .cancel(label: nil))
+  }
+
+  @available(*, deprecated, renamed: "default(_:action:)")
+  public static func `default`(
+    _ label: TextState,
+    send action: Action?
+  ) -> Self {
+    Self(action: action.map(AlertState.ButtonAction.send), type: .default(label: label))
+  }
+
+  @available(*, deprecated, renamed: "destructive(_:action:)")
+  public static func destructive(
+    _ label: TextState,
+    send action: Action?
+  ) -> Self {
+    Self(action: action.map(AlertState.ButtonAction.send), type: .destructive(label: label))
+  }
+}
+
 // NB: Deprecated after 0.20.0:
 
 extension Reducer {

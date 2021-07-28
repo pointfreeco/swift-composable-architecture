@@ -157,33 +157,6 @@ public struct AlertState<Action> {
     ) -> Self {
       Self(action: action, type: .destructive(label: label))
     }
-
-    public static func cancel(
-      _ label: TextState,
-      send action: Action?
-    ) -> Self {
-      Self(action: action.map(ButtonAction.send), type: .cancel(label: label))
-    }
-
-    public static func cancel(
-      send action: Action?
-    ) -> Self {
-      Self(action: action.map(ButtonAction.send), type: .cancel(label: nil))
-    }
-
-    public static func `default`(
-      _ label: TextState,
-      send action: Action?
-    ) -> Self {
-      Self(action: action.map(ButtonAction.send), type: .default(label: label))
-    }
-
-    public static func destructive(
-      _ label: TextState,
-      send action: Action?
-    ) -> Self {
-      Self(action: action.map(ButtonAction.send), type: .destructive(label: label))
-    }
   }
 
   public struct ButtonAction {
