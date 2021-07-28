@@ -39,10 +39,10 @@ let package = Package(
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
       ]
     ),
-//    .testTarget(
-//      name: "AppCoreTests",
-//      dependencies: ["AppCore"]
-//    ),
+    .testTarget(
+      name: "AppCoreTests",
+      dependencies: ["AppCore"]
+    ),
     .target(
       name: "AppSwiftUI",
       dependencies: [
@@ -166,10 +166,10 @@ let package = Package(
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
       ]
     ),
-//    .testTarget(
-//      name: "TwoFactorCoreTests",
-//      dependencies: ["TwoFactorCore"]
-//    ),
+    .testTarget(
+      name: "TwoFactorCoreTests",
+      dependencies: ["TwoFactorCore"]
+    ),
     .target(
       name: "TwoFactorSwiftUI",
       dependencies: ["TwoFactorCore"]

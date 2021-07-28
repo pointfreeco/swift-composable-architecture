@@ -2,7 +2,7 @@ import ComposableArchitecture
 import GameCore
 import XCTest
 
-class GameSwiftUITests: XCTestCase {
+class GameCoreTests: XCTestCase {
   let store = TestStore(
     initialState: GameState(
       oPlayerName: "Blob Jr.",

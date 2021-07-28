@@ -22,6 +22,7 @@
 		CA0A5771242AA3A900BA537D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CA0A579E242AA7F800BA537D /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		DCB9E9FD26B207CD00497C03 /* tic-tac-toe */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "tic-tac-toe"; sourceTree = "<group>"; };
+		DCB9EA3D26B2188200497C03 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +52,7 @@
 			isa = PBXGroup;
 			children = (
 				DCB9E9FD26B207CD00497C03 /* tic-tac-toe */,
+				DCB9EA3D26B2188200497C03 /* README.md */,
 				CA0A5771242AA3A900BA537D /* Info.plist */,
 				CA0A5769242AA3A900BA537D /* Assets.xcassets */,
 				DC9193F72420104100A5BE1F /* Products */,

@@ -32,6 +32,16 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "AppCoreTests"
+               BuildableName = "AppCoreTests"
+               BlueprintName = "AppCoreTests"
+               ReferencedContainer = "container:tic-tac-toe">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "GameCoreTests"
                BuildableName = "GameCoreTests"
                BlueprintName = "GameCoreTests"
@@ -85,6 +95,16 @@
                BlueprintIdentifier = "NewGameSwiftUITests"
                BuildableName = "NewGameSwiftUITests"
                BlueprintName = "NewGameSwiftUITests"
+               ReferencedContainer = "container:tic-tac-toe">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "TwoFactorCoreTests"
+               BuildableName = "TwoFactorCoreTests"
+               BlueprintName = "TwoFactorCoreTests"
                ReferencedContainer = "container:tic-tac-toe">
             </BuildableReference>
          </TestableReference>
