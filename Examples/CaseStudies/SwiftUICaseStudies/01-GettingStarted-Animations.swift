@@ -66,7 +66,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
   case let .circleScaleToggleChanged(isScaled):
     state.isCircleScaled = isScaled
     return .none
-    
+
   case .dismissAlert:
     state.alert = nil
     return .none
@@ -77,7 +77,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
         .map { (output: .setColor($0), duration: 1) },
       scheduler: environment.mainQueue.animation(.linear)
     )
-    
+
   case .resetButtonTapped:
     state.alert = .init(
       title: .init("Reset state?"),
@@ -89,7 +89,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
       secondaryButton: .cancel()
     )
     return .none
-    
+
   case .resetConfirmationButtonTapped:
     state = .init()
     return .none
