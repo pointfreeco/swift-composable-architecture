@@ -253,12 +253,38 @@ extension AlertState: Equatable where Action: Equatable {
   }
 }
 
+extension AlertState: Hashable where Action: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.title)
+    hasher.combine(self.message)
+    hasher.combine(self.primaryButton)
+    hasher.combine(self.secondaryButton)
+  }
+}
+
 extension AlertState: Identifiable {}
 
 extension AlertState.ButtonAction: Equatable where Action: Equatable {}
 extension AlertState.ButtonAction.ActionType: Equatable where Action: Equatable {}
 extension AlertState.ButtonType: Equatable {}
 extension AlertState.Button: Equatable where Action: Equatable {}
+
+extension AlertState.ButtonAction: Hashable where Action: Hashable {}
+extension AlertState.ButtonAction.ActionType: Hashable where Action: Hashable {
+  func hash(into hasher: inout Hasher) {
+    switch self {
+    case let .send(action), let .animatedSend(action, animation: _):
+      hasher.combine(action)
+    }
+  }
+}
+extension AlertState.ButtonType: Hashable {}
+extension AlertState.Button: Hashable where Action: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.action)
+    hasher.combine(self.type)
+  }
+}
 
 extension AlertState.Button {
   func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.Alert.Button {

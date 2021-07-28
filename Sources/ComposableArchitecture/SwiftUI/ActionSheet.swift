@@ -165,6 +165,19 @@ extension ActionSheetState: Equatable where Action: Equatable {
 @available(macOS, unavailable)
 @available(tvOS 13, *)
 @available(watchOS 6, *)
+extension ActionSheetState: Hashable where Action: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.title)
+    hasher.combine(self.message)
+    hasher.combine(self.buttons)
+  }
+}
+
+@available(iOS 13, *)
+@available(macCatalyst 13, *)
+@available(macOS, unavailable)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
 extension ActionSheetState: Identifiable {}
 
 extension View {
