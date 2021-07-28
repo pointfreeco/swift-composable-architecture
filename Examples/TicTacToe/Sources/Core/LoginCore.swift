@@ -20,6 +20,8 @@ public enum LoginAction: Equatable {
   case emailChanged(String)
   case passwordChanged(String)
   case loginResponse(Result<AuthenticationResponse, AuthenticationError>)
+  case onAppear
+  case timerTick
   case twoFactor(PresentationAction<TwoFactorAction>)
 }
 
@@ -64,9 +66,17 @@ public let loginReducer = Reducer<
     state.isLoginRequestInFlight = false
     return .none
 
+  case .onAppear:
+    struct TimerId: Hashable {}
+    return Effect.timer(id: TimerId(), every: 1, on: environment.mainQueue)
+      .map { _ in .timerTick }
+
   case let .passwordChanged(password):
     state.password = password
     state.isFormValid = !state.email.isEmpty && !state.password.isEmpty
+    return .none
+
+  case .timerTick:
     return .none
 
   case .twoFactor(.present):
@@ -83,6 +93,7 @@ public let loginReducer = Reducer<
 }
 .navigates(
   destination: twoFactorReducer,
+  onDismiss: .onDismiss,
   state: \.twoFactor,
   action: /LoginAction.twoFactor,
   environment: {

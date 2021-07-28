@@ -15,6 +15,53 @@ extension Reducer {
   public func presents<DestinationState, DestinationAction, DestinationEnvironment>(
     destination: Reducer<DestinationState, DestinationAction, DestinationEnvironment>,
     onDismiss: DestinationAction? = nil,
+    state toDestinationState: CasePath<State, DestinationState>,
+    action toDestinationAction: CasePath<Action, DestinationAction>,
+    environment toDestinationEnvironment: @escaping (Environment) -> DestinationEnvironment
+  ) -> Self {
+    return Self { state, action, environment in
+      let wasPresented = toDestinationState.extract(from: state) != nil
+      var effects: [Effect<Action, Never>] = []
+
+      effects.append(
+        destination
+          .pullback(
+            state: toDestinationState,
+            action: toDestinationAction,
+            environment: toDestinationEnvironment
+          )
+          .run(&state, action, environment)
+      )
+      let updatedDestinationState = toDestinationState.extract(from: state)
+
+      effects.append(
+        self
+          .run(&state, action, environment)
+      )
+
+      if
+        let onDismiss = onDismiss,
+        wasPresented,
+        toDestinationState.extract(from: state) == nil,
+        var finalDestinationState = updatedDestinationState
+      {
+        effects.append(
+          destination.run(
+            &finalDestinationState,
+            onDismiss,
+            toDestinationEnvironment(environment)
+          )
+          .map(toDestinationAction.embed(_:))
+        )
+      }
+
+      return .merge(effects)
+    }
+  }
+
+  public func presents<DestinationState, DestinationAction, DestinationEnvironment>(
+    destination: Reducer<DestinationState, DestinationAction, DestinationEnvironment>,
+    onDismiss: DestinationAction? = nil,
     state toDestinationState: WritableKeyPath<State, DestinationState?>,
     action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
     environment toDestinationEnvironment: @escaping (Environment) -> DestinationEnvironment
@@ -55,7 +102,7 @@ extension Reducer {
             onDismiss,
             toDestinationEnvironment(environment)
           )
-            .map(toPresentationAction.appending(path: /PresentationAction.presented).embed(_:))
+          .map(toPresentationAction.appending(path: /PresentationAction.presented).embed(_:))
         )
       }
 

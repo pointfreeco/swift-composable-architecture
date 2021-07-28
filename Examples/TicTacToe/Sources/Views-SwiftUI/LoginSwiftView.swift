@@ -32,6 +32,7 @@ public struct LoginView: View {
   enum ViewAction {
     case alertDismissed
     case emailChanged(String)
+    case onAppear
     case passwordChanged(String)
   }
 
@@ -87,6 +88,7 @@ public struct LoginView: View {
         .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
         .disabled(viewStore.isFormDisabled)
         .padding(.horizontal)
+        .onAppear { viewStore.send(.onAppear) }
       }
     }
     .navigationBarTitle("Login")
@@ -100,6 +102,8 @@ extension LoginAction {
       self = .alertDismissed
     case let .emailChanged(email):
       self = .emailChanged(email)
+    case .onAppear:
+      self = .onAppear
     case let .passwordChanged(password):
       self = .passwordChanged(password)
     }

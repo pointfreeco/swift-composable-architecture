@@ -60,6 +60,7 @@ extension Reducer {
             toDestinationEnvironment(environment)
           )
             .map(toPresentationAction.appending(path: /PresentationAction.presented).embed(_:))
+          // TODO: Could fireAndForget() here, or custom annotation in handleEvents(receiveValue:)
         )
       }
 

@@ -19,12 +19,9 @@ public struct TwoFactorState: Equatable {
 public enum TwoFactorAction: Equatable {
   case alertDismissed
   case codeChanged(String)
+  case onDismiss
   case submitButtonTapped
   case twoFactorResponse(Result<AuthenticationResponse, AuthenticationError>)
-}
-
-public struct TwoFactorTearDownToken: Hashable {
-  public init() {}
 }
 
 public struct TwoFactorEnvironment {
@@ -43,6 +40,8 @@ public struct TwoFactorEnvironment {
 public let twoFactorReducer = Reducer<TwoFactorState, TwoFactorAction, TwoFactorEnvironment> {
   state, action, environment in
 
+  struct RequestId: Hashable {}
+
   switch action {
   case .alertDismissed:
     state.alert = nil
@@ -53,6 +52,9 @@ public let twoFactorReducer = Reducer<TwoFactorState, TwoFactorAction, TwoFactor
     state.isFormValid = code.count >= 4
     return .none
 
+  case .onDismiss:
+    return .cancel(id: RequestId())
+
   case .submitButtonTapped:
     state.isTwoFactorRequestInFlight = true
     return environment.authenticationClient
@@ -60,7 +62,7 @@ public let twoFactorReducer = Reducer<TwoFactorState, TwoFactorAction, TwoFactor
       .receive(on: environment.mainQueue)
       .catchToEffect()
       .map(TwoFactorAction.twoFactorResponse)
-      .cancellable(id: TwoFactorTearDownToken())
+      .cancellable(id: RequestId())
 
   case let .twoFactorResponse(.failure(error)):
     state.alert = .init(title: TextState(error.localizedDescription))

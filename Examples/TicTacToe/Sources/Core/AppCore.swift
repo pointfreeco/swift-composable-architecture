@@ -29,38 +29,38 @@ public struct AppEnvironment {
   }
 }
 
-public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
-  loginReducer.pullback(
-    state: /AppState.login,
-    action: /AppAction.login,
-    environment: {
-      LoginEnvironment(
-        authenticationClient: $0.authenticationClient,
-        mainQueue: $0.mainQueue
-      )
-    }
-  ),
-  newGameReducer.pullback(
-    state: /AppState.newGame,
-    action: /AppAction.newGame,
-    environment: { _ in NewGameEnvironment() }
-  ),
-  Reducer { state, action, _ in
-    switch action {
-    case let .login(.twoFactor(.presented(.twoFactorResponse(.success(response))))),
-      let .login(.loginResponse(.success(response))) where !response.twoFactorRequired:
-      state = .newGame(.init())
-      return .none
+public let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, _ in
+  switch action {
+  case let .login(.twoFactor(.presented(.twoFactorResponse(.success(response))))),
+       let .login(.loginResponse(.success(response))) where !response.twoFactorRequired:
+    state = .newGame(.init())
+    return .none
 
-    case .login:
-      return .none
+  case .login:
+    return .none
 
-    case .newGame(.logoutButtonTapped):
-      state = .login(.init())
-      return .none
+  case .newGame(.logoutButtonTapped):
+    state = .login(.init())
+    return .none
 
-    case .newGame:
-      return .none
-    }
+  case .newGame:
+    return .none
   }
+}
+.presents(
+  destination: loginReducer,
+  state: /AppState.login,
+  action: /AppAction.login,
+  environment: {
+    LoginEnvironment(
+      authenticationClient: $0.authenticationClient,
+      mainQueue: $0.mainQueue
+    )
+  }
+)
+.presents(
+  destination: newGameReducer,
+  state: /AppState.newGame,
+  action: /AppAction.newGame,
+  environment: { _ in NewGameEnvironment() }
 )
