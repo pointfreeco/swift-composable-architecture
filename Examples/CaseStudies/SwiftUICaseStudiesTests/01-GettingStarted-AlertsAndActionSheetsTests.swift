@@ -43,8 +43,8 @@ class AlertsAndActionSheetsTests: XCTestCase {
         message: .init("This is an action sheet."),
         buttons: [
           .cancel(),
-          .default(.init("Increment"), action: send(.incrementButtonTapped)),
-          .default(.init("Decrement"), action: send(.decrementButtonTapped)),
+          .default(.init("Increment"), action: .send(.incrementButtonTapped)),
+          .default(.init("Decrement"), action: .send(.decrementButtonTapped)),
         ]
       )
     }
