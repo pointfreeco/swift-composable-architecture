@@ -45,7 +45,12 @@ extension Effect {
             scheduler: scheduler
           )
           .handleEvents(
-            receiveOutput: { _ in throttleLock.sync { throttleTimes[id] = scheduler.now } }
+            receiveOutput: { _ in
+                throttleLock.sync {
+                    throttleTimes[id] = scheduler.now
+                    throttleValues[id] = nil
+                }
+            }
           )
           .setFailureType(to: Failure.self)
           .eraseToAnyPublisher()
