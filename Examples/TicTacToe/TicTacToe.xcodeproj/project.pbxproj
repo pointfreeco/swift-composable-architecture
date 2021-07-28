@@ -19,7 +19,6 @@
 		CA0A5761242AA3A800BA537D /* TicTacToe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TicTacToe.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CA0A5765242AA3A800BA537D /* TicTacToeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TicTacToeApp.swift; sourceTree = "<group>"; };
 		CA0A5769242AA3A900BA537D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		CA0A5771242AA3A900BA537D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CA0A579E242AA7F800BA537D /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		DCB9E9FD26B207CD00497C03 /* tic-tac-toe */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "tic-tac-toe"; sourceTree = "<group>"; };
 		DCB9EA3D26B2188200497C03 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -53,7 +52,6 @@
 			children = (
 				DCB9E9FD26B207CD00497C03 /* tic-tac-toe */,
 				DCB9EA3D26B2188200497C03 /* README.md */,
-				CA0A5771242AA3A900BA537D /* Info.plist */,
 				CA0A5769242AA3A900BA537D /* Assets.xcassets */,
 				DC9193F72420104100A5BE1F /* Products */,
 				CA6AC25C2450FDB800C71CB3 /* Sources */,
@@ -158,7 +156,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -176,7 +173,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
