@@ -52,7 +52,7 @@ import SwiftUI
 ///       state.alert = .init(
 ///         title: TextState("Delete"),
 ///         message: TextState("Are you sure you want to delete this? It cannot be undone."),
-///         primaryButton: .default(TextState("Confirm"), send: .confirmTapped),
+///         primaryButton: .default(TextState("Confirm"), action: .send(.confirmTapped)),
 ///         secondaryButton: .cancel()
 ///       )
 ///     return .none
@@ -88,8 +88,8 @@ import SwiftUI
 ///   $0.alert = .init(
 ///     title: TextState("Delete"),
 ///     message: TextState("Are you sure you want to delete this? It cannot be undone."),
-///     primaryButton: .default(TextState("Confirm"), send: .confirmTapped),
-///     secondaryButton: .cancel(send: .cancelTapped)
+///     primaryButton: .default(TextState("Confirm"), action: .send(.confirmTapped)),
+///     secondaryButton: .cancel(action: .send(.cancelTapped))
 ///   )
 /// }
 /// store.send(.deleteTapped) {
@@ -128,46 +128,58 @@ public struct AlertState<Action> {
   }
 
   public struct Button {
-    public var action: Action?
-    public var animation: Animation??
-    public var type: `Type`
+    public var action: ButtonAction?
+    public var type: ButtonType
 
     public static func cancel(
       _ label: TextState,
-      send action: Action? = nil,
-      animation: Animation? = nil
+      action: ButtonAction? = nil
     ) -> Self {
-      Self(action: action, animation: animation, type: .cancel(label: label))
+      Self(action: action, type: .cancel(label: label))
     }
 
     public static func cancel(
-      send action: Action? = nil,
-      animation: Animation? = nil
+      action: ButtonAction? = nil
     ) -> Self {
-      Self(action: action, animation: animation, type: .cancel(label: nil))
+      Self(action: action, type: .cancel(label: nil))
     }
 
     public static func `default`(
       _ label: TextState,
-      send action: Action? = nil,
-      animation: Animation? = nil
+      action: ButtonAction? = nil
     ) -> Self {
-      Self(action: action, animation: animation, type: .default(label: label))
+      Self(action: action, type: .default(label: label))
     }
 
     public static func destructive(
       _ label: TextState,
-      send action: Action? = nil,
-      animation: Animation? = nil
+      action: ButtonAction? = nil
     ) -> Self {
-      Self(action: action, animation: animation, type: .destructive(label: label))
+      Self(action: action, type: .destructive(label: label))
+    }
+  }
+
+  public struct ButtonAction {
+    let type: ActionType
+
+    public static func send(_ action: Action) -> Self {
+      .init(type: .send(action))
     }
 
-    public enum `Type` {
-      case cancel(label: TextState?)
-      case `default`(label: TextState)
-      case destructive(label: TextState)
+    public static func send(_ action: Action, animation: Animation?) -> Self {
+      .init(type: .animatedSend(action, animation: animation))
     }
+
+    enum ActionType {
+      case send(Action)
+      case animatedSend(Action, animation: Animation?)
+    }
+  }
+
+  public enum ButtonType {
+    case cancel(label: TextState?)
+    case `default`(label: TextState)
+    case destructive(label: TextState)
   }
 }
 
@@ -213,6 +225,7 @@ extension AlertState: Equatable where Action: Equatable {
       && lhs.secondaryButton == rhs.secondaryButton
   }
 }
+
 extension AlertState: Hashable where Action: Hashable {
   public func hash(into hasher: inout Hasher) {
     hasher.combine(self.title)
@@ -221,12 +234,24 @@ extension AlertState: Hashable where Action: Hashable {
     hasher.combine(self.secondaryButton)
   }
 }
+
 extension AlertState: Identifiable {}
 
-extension AlertState.Button.`Type`: Equatable {}
+extension AlertState.ButtonAction: Equatable where Action: Equatable {}
+extension AlertState.ButtonAction.ActionType: Equatable where Action: Equatable {}
+extension AlertState.ButtonType: Equatable {}
 extension AlertState.Button: Equatable where Action: Equatable {}
 
-extension AlertState.Button.`Type`: Hashable {}
+extension AlertState.ButtonAction: Hashable where Action: Hashable {}
+extension AlertState.ButtonAction.ActionType: Hashable where Action: Hashable {
+  func hash(into hasher: inout Hasher) {
+    switch self {
+    case let .send(action), let .animatedSend(action, animation: _):
+      hasher.combine(action)
+    }
+  }
+}
+extension AlertState.ButtonType: Hashable {}
 extension AlertState.Button: Hashable where Action: Hashable {
   public func hash(into hasher: inout Hasher) {
     hasher.combine(self.action)
@@ -237,12 +262,13 @@ extension AlertState.Button: Hashable where Action: Hashable {
 extension AlertState.Button {
   func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.Alert.Button {
     let action = {
-      if let action = self.action {
-        if let animation = self.animation {
-          SwiftUI.withAnimation(animation) { send(action) }
-        } else {
-          send(action)
-        }
+      switch self.action?.type {
+      case .none:
+        return
+      case let .some(.send(action)):
+        send(action)
+      case let .some(.animatedSend(action, animation: animation)):
+        withAnimation(animation) { send(action) }
       }
     }
     switch self.type {

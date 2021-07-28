@@ -83,8 +83,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
       title: .init("Reset state?"),
       primaryButton: .destructive(
         .init("Reset"),
-        send: .resetConfirmationButtonTapped,
-        animation: .default
+        action: .send(.resetConfirmationButtonTapped, animation: .default)
       ),
       secondaryButton: .cancel()
     )
