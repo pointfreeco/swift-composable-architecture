@@ -129,33 +129,38 @@ public struct AlertState<Action> {
 
   public struct Button {
     public var action: Action?
+    public var animation: Animation??
     public var type: `Type`
 
     public static func cancel(
       _ label: TextState,
-      send action: Action? = nil
+      send action: Action? = nil,
+      animation: Animation? = nil
     ) -> Self {
-      Self(action: action, type: .cancel(label: label))
+      Self(action: action, animation: animation, type: .cancel(label: label))
     }
 
     public static func cancel(
-      send action: Action? = nil
+      send action: Action? = nil,
+      animation: Animation? = nil
     ) -> Self {
-      Self(action: action, type: .cancel(label: nil))
+      Self(action: action, animation: animation, type: .cancel(label: nil))
     }
 
     public static func `default`(
       _ label: TextState,
-      send action: Action? = nil
+      send action: Action? = nil,
+      animation: Animation? = nil
     ) -> Self {
-      Self(action: action, type: .default(label: label))
+      Self(action: action, animation: animation, type: .default(label: label))
     }
 
     public static func destructive(
       _ label: TextState,
-      send action: Action? = nil
+      send action: Action? = nil,
+      animation: Animation? = nil
     ) -> Self {
-      Self(action: action, type: .destructive(label: label))
+      Self(action: action, animation: animation, type: .destructive(label: label))
     }
 
     public enum `Type` {
@@ -222,11 +227,24 @@ extension AlertState.Button.`Type`: Equatable {}
 extension AlertState.Button: Equatable where Action: Equatable {}
 
 extension AlertState.Button.`Type`: Hashable {}
-extension AlertState.Button: Hashable where Action: Hashable {}
+extension AlertState.Button: Hashable where Action: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.action)
+    hasher.combine(self.type)
+  }
+}
 
 extension AlertState.Button {
   func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.Alert.Button {
-    let action = { if let action = self.action { send(action) } }
+    let action = {
+      if let action = self.action {
+        if let animation = self.animation {
+          SwiftUI.withAnimation(animation) { send(action) }
+        } else {
+          send(action)
+        }
+      }
+    }
     switch self.type {
     case let .cancel(.some(label)):
       return .cancel(Text(label), action: action)
