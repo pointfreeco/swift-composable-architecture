@@ -97,10 +97,9 @@
 			isa = PBXGroup;
 			children = (
 				DC5BDF2A245891B7009C65A3 /* swift-composable-architecture */,
+				DC5BDCAB24589177009C65A3 /* Products */,
 				DC5BDCAC24589177009C65A3 /* VoiceMemos */,
 				DC5BDCC324589179009C65A3 /* VoiceMemosTests */,
-				DC5BDCAB24589177009C65A3 /* Products */,
-				DC5BDF2B24589263009C65A3 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -134,13 +133,6 @@
 				DC5BDCC424589179009C65A3 /* VoiceMemosTests.swift */,
 			);
 			path = VoiceMemosTests;
-			sourceTree = "<group>";
-		};
-		DC5BDF2B24589263009C65A3 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		DC5BDF3424589389009C65A3 /* AudioRecorderClient */ = {

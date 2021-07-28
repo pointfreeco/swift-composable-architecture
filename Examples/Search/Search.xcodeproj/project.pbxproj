@@ -85,7 +85,6 @@
 			isa = PBXGroup;
 			children = (
 				DC85B4A7242D07A6009784B0 /* swift-composable-architecture */,
-				CA86E4C424253CE200357AD9 /* Frameworks */,
 				CA86E49824253C2500357AD9 /* Products */,
 				CA86E49924253C2500357AD9 /* Search */,
 				CA86E4B024253C2700357AD9 /* SearchTests */,
@@ -120,13 +119,6 @@
 				CA86E4B124253C2700357AD9 /* SearchTests.swift */,
 			);
 			path = SearchTests;
-			sourceTree = "<group>";
-		};
-		CA86E4C424253CE200357AD9 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

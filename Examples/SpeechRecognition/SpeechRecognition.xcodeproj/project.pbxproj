@@ -89,10 +89,9 @@
 			isa = PBXGroup;
 			children = (
 				CA23322F2447AE0300B818EB /* swift-composable-architecture */,
+				CA23320B2447ACFA00B818EB /* Products */,
 				CA23320C2447ACFA00B818EB /* SpeechRecognition */,
 				CA2332232447ACFC00B818EB /* SpeechRecognitionTests */,
-				CA23320B2447ACFA00B818EB /* Products */,
-				CA2332322447AE1000B818EB /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -123,13 +122,6 @@
 				CA2332242447ACFC00B818EB /* SpeechRecognitionTests.swift */,
 			);
 			path = SpeechRecognitionTests;
-			sourceTree = "<group>";
-		};
-		CA2332322447AE1000B818EB /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		CACC04252447DBA3000C5725 /* SpeechClient */ = {
