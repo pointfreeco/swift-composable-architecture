@@ -486,12 +486,12 @@ public struct Reducer<State, Action, Environment> {
             This ensures that case-specific reducers can handle their actions while their state \
             is available.
 
-            * An in-flight effect emitted this action when state was unavailable. While it may \
-            be perfectly reasonable to ignore this action, you may want to cancel the associated \
+            * An in-flight effect emitted this action when state was unavailable. While it may be \
+            perfectly reasonable to ignore this action, you may want to cancel the associated \
             effect before state is set to another case, especially if it is a long-living effect.
 
             * This action was sent to the store while state was another case. Make sure that \
-            actions for this reducer can only be sent to a view store when state is non-"nil".
+            actions for this reducer can only be sent to a view store when state is non-"nil". \
             In SwiftUI applications, use "SwitchStore".
             ---
             """
@@ -691,16 +691,16 @@ public struct Reducer<State, Action, Environment> {
 
             * The optional reducer was combined with or run from another reducer that set \
             "\(State.self)" to "nil" before the optional reducer ran. Combine or run optional \
-            reducers before reducers that can set their state to "nil". This ensures that \
-            optional reducers can handle their actions while their state is still non-"nil".
+            reducers before reducers that can set their state to "nil". This ensures that optional \
+            reducers can handle their actions while their state is still non-"nil".
 
             * An in-flight effect emitted this action while state was "nil". While it may be \
             perfectly reasonable to ignore this action, you may want to cancel the associated \
             effect before state is set to "nil", especially if it is a long-living effect.
 
-            * This action was sent to the store while state was "nil". Make sure that actions \
-            for this reducer can only be sent to a view store when state is non-"nil". In \
-            SwiftUI applications, use "IfLetStore".
+            * This action was sent to the store while state was "nil". Make sure that actions for \
+            this reducer can only be sent to a view store when state is non-"nil". In SwiftUI \
+            applications, use "IfLetStore".
             ---
             """
           )
@@ -769,9 +769,9 @@ public struct Reducer<State, Action, Environment> {
             ---
             Warning: Reducer.forEach@\(file):\(line)
 
-            "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at id \(id) \
-            when its state contained no element at this id. This is generally considered an \
-            application logic error, and can happen for a few reasons:
+            "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at id \(id) when \
+            its state contained no element at this id. This is generally considered an application \
+            logic error, and can happen for a few reasons:
 
             * This "forEach" reducer was combined with or run from another reducer that removed \
             the element at this id when it handled this action. To fix this make sure that this \
@@ -779,10 +779,10 @@ public struct Reducer<State, Action, Environment> {
             from state. This ensures that "forEach" reducers can handle their actions for the \
             element at the intended id.
 
-            * An in-flight effect emitted this action while state contained no element at this \
-            id. It may be perfectly reasonable to ignore this action, but you also may want to \
-            cancel the effect it originated from when removing an element from the identified \
-            array, especially if it is a long-living effect.
+            * An in-flight effect emitted this action while state contained no element at this id. \
+            It may be perfectly reasonable to ignore this action, but you also may want to cancel \
+            the effect it originated from when removing an element from the identified array, \
+            especially if it is a long-living effect.
 
             * This action was sent to the store while its state contained no element at this id. \
             To fix this make sure that actions for this reducer can only be sent to a view store \
