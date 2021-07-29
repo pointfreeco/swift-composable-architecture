@@ -7,39 +7,43 @@ import UIKit
 @available(tvOS 13, *)
 @available(watchOS, unavailable)
 extension UIAlertController {
-  /// UIAlertController convenience initializer from AlertState
+  /// Creates a `UIAlertController` from `AlertState`.
   ///
-  ///     class ParentViewController: UIViewController {
-  ///        let store: Store<ParentState, ParentAction>
-  ///        let viewStore: ViewStore<ViewState, ViewAction>
-  ///        var cancellables: Set<AnyCancellable> = []
-  ///        private weak var alertView: UIAlertController?
-  ///        ...
-  ///        func viewDidLoad() {
-  ///          ...
-  ///          viewStore.publisher
-  ///            .settingsAlert
-  ///            .sink { [weak self] alert in
-  ///              guard let self = self else { return }
-  ///              if let alert = alert {
-  ///                let alertView = UIAlertController(state: alert, send: {
-  ///                  self.viewStore.send(.settings($0))
-  ///                })
-  ///                self.present(alertView, animated: true, completion: nil)
-  ///                self.alertView = alertView
-  ///              } else {
-  ///                self.alertView?.dismiss(animated: true, completion: nil)
-  ///                self.alertView = nil
-  ///              }
-  ///            }
-  ///          .store(in: &cancellables)
-  ///        }
-  ///     }
+  /// ```swift
+  /// class ParentViewController: UIViewController {
+  ///   let store: Store<ParentState, ParentAction>
+  ///   let viewStore: ViewStore<ViewState, ViewAction>
+  ///   private var cancellables: Set<AnyCancellable> = []
+  ///   private weak var alertController: UIAlertController?
+  ///   ...
+  ///   func viewDidLoad() {
+  ///     ...
+  ///     viewStore.publisher
+  ///       .settingsAlert
+  ///       .sink { [weak self] alert in
+  ///         guard let self = self else { return }
+  ///         if let alert = alert {
+  ///           let alertController = UIAlertController(state: alert, send: {
+  ///             self.viewStore.send(.settings($0))
+  ///           })
+  ///           self.present(alertController, animated: true, completion: nil)
+  ///           self.alertController = alertController
+  ///         } else {
+  ///           self.alertController?.dismiss(animated: true, completion: nil)
+  ///           self.alertController = nil
+  ///         }
+  ///       }
+  ///       .store(in: &cancellables)
+  ///   }
+  /// }
+  /// ```
   ///
-  /// - Parameter state: The state of an alert that can be shown to the user.
-  /// - Parameter send: A function that wraps a alert action in the view store's action type.
+  /// - Parameters:
+  ///   - state: The state of an alert that can be shown to the user.
+  ///   - send: A function that wraps an alert action in the view store's action type.
   public convenience init<Action>(
-    state: AlertState<Action>, send: @escaping (Action) -> Void
+    state: AlertState<Action>,
+    send: @escaping (Action) -> Void
   ) {
     self.init(
       title: String(state: state.title),
@@ -54,10 +58,12 @@ extension UIAlertController {
       self.addAction(secondaryButton.toUIAlertAction(send: send))
     }
   }
-  /// UIAlertController convenience initializer from ActionSheetState
+  
+  /// Creates a `UIAlertController` from `ActionSheetState`.
   ///
-  /// - Parameter state: The state of an action sheet that can be shown to the user.
-  /// - Parameter send: A function that wraps a alert action in the view store's action type.
+  /// - Parameters:
+  ///   - state: The state of an action sheet that can be shown to the user.
+  ///   - send: A function that wraps a alert action in the view store's action type.
   public convenience init<Action>(
     state: ActionSheetState<Action>, send: @escaping (Action) -> Void
   ) {
