@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
   name: "tic-tac-toe",
   platforms: [
-    .iOS(.v14),
+    .iOS(.v14)
   ],
   products: [
     .library(name: "AppCore", targets: ["AppCore"]),
@@ -27,7 +27,7 @@ let package = Package(
     .library(name: "TwoFactorUIKit", targets: ["TwoFactorUIKit"]),
   ],
   dependencies: [
-    .package(name: "swift-composable-architecture", path: "../../.."),
+    .package(name: "swift-composable-architecture", path: "../../..")
   ],
   targets: [
     .target(
@@ -63,7 +63,7 @@ let package = Package(
     .target(
       name: "AuthenticationClient",
       dependencies: [
-        .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+        .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
       ]
     ),
     .target(
@@ -74,7 +74,7 @@ let package = Package(
     .target(
       name: "GameCore",
       dependencies: [
-        .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+        .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
       ]
     ),
     .testTarget(

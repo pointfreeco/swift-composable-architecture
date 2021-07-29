@@ -1,6 +1,6 @@
-import ComposableArchitecture
 import AppCore
 import AuthenticationClient
+import ComposableArchitecture
 import XCTest
 
 class AppCoreTests: XCTestCase {
