@@ -364,7 +364,6 @@
 			children = (
 				DC89C43824460FC7006900B9 /* swift-composable-architecture */,
 				DC89C43924460FFF006900B9 /* README.md */,
-				DC89C43A2446106D006900B9 /* Frameworks */,
 				DC89C41424460F95006900B9 /* Products */,
 				DC89C41524460F95006900B9 /* SwiftUICaseStudies */,
 				DC89C42C24460F96006900B9 /* SwiftUICaseStudiesTests */,
@@ -447,13 +446,6 @@
 				CA0C51FA245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift */,
 			);
 			path = SwiftUICaseStudiesTests;
-			sourceTree = "<group>";
-		};
-		DC89C43A2446106D006900B9 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		DC89C44524461416006900B9 /* Internal */ = {

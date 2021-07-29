@@ -60,6 +60,7 @@
 		CA86E4AD24253C2700357AD9 /* SearchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SearchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CA86E4B124253C2700357AD9 /* SearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTests.swift; sourceTree = "<group>"; };
 		DC85B4A7242D07A6009784B0 /* swift-composable-architecture */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "swift-composable-architecture"; path = ../..; sourceTree = "<group>"; };
+		DCB9EA3E26B21EC800497C03 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,7 +86,7 @@
 			isa = PBXGroup;
 			children = (
 				DC85B4A7242D07A6009784B0 /* swift-composable-architecture */,
-				CA86E4C424253CE200357AD9 /* Frameworks */,
+				DCB9EA3E26B21EC800497C03 /* README.md */,
 				CA86E49824253C2500357AD9 /* Products */,
 				CA86E49924253C2500357AD9 /* Search */,
 				CA86E4B024253C2700357AD9 /* SearchTests */,
@@ -120,13 +121,6 @@
 				CA86E4B124253C2700357AD9 /* SearchTests.swift */,
 			);
 			path = SearchTests;
-			sourceTree = "<group>";
-		};
-		CA86E4C424253CE200357AD9 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

@@ -83,7 +83,6 @@
 			isa = PBXGroup;
 			children = (
 				DC85B441242D0286009784B0 /* swift-composable-architecture */,
-				DCF6E2CE24296752002F8A8F /* Frameworks */,
 				DCBCB77124290F6C00DE1F59 /* Products */,
 				DCBCB77224290F6C00DE1F59 /* Todos */,
 				DCBCB78924290F6D00DE1F59 /* TodosTests */,
@@ -117,13 +116,6 @@
 				DCBCB78A24290F6D00DE1F59 /* TodosTests.swift */,
 			);
 			path = TodosTests;
-			sourceTree = "<group>";
-		};
-		DCF6E2CE24296752002F8A8F /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

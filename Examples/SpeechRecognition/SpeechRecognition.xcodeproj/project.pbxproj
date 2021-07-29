@@ -64,6 +64,7 @@
 		CACC04232447D96D000C5725 /* Live.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Live.swift; sourceTree = "<group>"; };
 		CACC04262447DBAF000C5725 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		CACC04282447DF0B000C5725 /* Failing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Failing.swift; sourceTree = "<group>"; };
+		DCB9EA3F26B21ED000497C03 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,10 +90,10 @@
 			isa = PBXGroup;
 			children = (
 				CA23322F2447AE0300B818EB /* swift-composable-architecture */,
+				DCB9EA3F26B21ED000497C03 /* README.md */,
+				CA23320B2447ACFA00B818EB /* Products */,
 				CA23320C2447ACFA00B818EB /* SpeechRecognition */,
 				CA2332232447ACFC00B818EB /* SpeechRecognitionTests */,
-				CA23320B2447ACFA00B818EB /* Products */,
-				CA2332322447AE1000B818EB /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -123,13 +124,6 @@
 				CA2332242447ACFC00B818EB /* SpeechRecognitionTests.swift */,
 			);
 			path = SpeechRecognitionTests;
-			sourceTree = "<group>";
-		};
-		CA2332322447AE1000B818EB /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		CACC04252447DBA3000C5725 /* SpeechClient */ = {
