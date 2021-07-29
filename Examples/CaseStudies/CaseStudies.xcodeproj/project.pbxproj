@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		2AA20D9326A0BC4800C2E123 /* RefreshableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AA20D9226A0BC4800C2E123 /* RefreshableTests.swift */; };
 		2AB2D05926A0D844002D21CF /* FocusState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AB2D05826A0D844002D21CF /* FocusState.swift */; };
+		2AB2D05B26A0E44F002D21CF /* ComposableFocusState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AB2D05A26A0E44F002D21CF /* ComposableFocusState.swift */; };
 		2AC9838926A0ABFF00A5812A /* Refreshable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC9838826A0ABFE00A5812A /* Refreshable.swift */; };
 		4BD5EB2726A0C24700CC723B /* ComposableRefreshable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BD5EB2626A0C24700CC723B /* ComposableRefreshable.swift */; };
 		4F5AC11F24ECC7E4009DC50B /* 01-GettingStarted-SharedStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5AC11E24ECC7E4009DC50B /* 01-GettingStarted-SharedStateTests.swift */; };
@@ -154,6 +155,7 @@
 /* Begin PBXFileReference section */
 		2AA20D9226A0BC4800C2E123 /* RefreshableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshableTests.swift; sourceTree = "<group>"; };
 		2AB2D05826A0D844002D21CF /* FocusState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusState.swift; sourceTree = "<group>"; };
+		2AB2D05A26A0E44F002D21CF /* ComposableFocusState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposableFocusState.swift; sourceTree = "<group>"; };
 		2AC9838826A0ABFE00A5812A /* Refreshable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Refreshable.swift; sourceTree = "<group>"; };
 		4BD5EB2626A0C24700CC723B /* ComposableRefreshable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposableRefreshable.swift; sourceTree = "<group>"; };
 		4F5AC11E24ECC7E4009DC50B /* 01-GettingStarted-SharedStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-SharedStateTests.swift"; sourceTree = "<group>"; };
@@ -431,6 +433,7 @@
 				2AC9838826A0ABFE00A5812A /* Refreshable.swift */,
 				4BD5EB2626A0C24700CC723B /* ComposableRefreshable.swift */,
 				2AB2D05826A0D844002D21CF /* FocusState.swift */,
+				2AB2D05A26A0E44F002D21CF /* ComposableFocusState.swift */,
 			);
 			path = SwiftUICaseStudies;
 			sourceTree = "<group>";
@@ -787,6 +790,7 @@
 				2AB2D05926A0D844002D21CF /* FocusState.swift in Sources */,
 				CAA9ADCA2446605B0003A984 /* 02-Effects-LongLiving.swift in Sources */,
 				DC89C45124462DE7006900B9 /* 03-Navigation-Lists-LoadThenNavigate.swift in Sources */,
+				2AB2D05B26A0E44F002D21CF /* ComposableFocusState.swift in Sources */,
 				DC89C45524465C44006900B9 /* 02-Effects-Timers.swift in Sources */,
 				2AC9838926A0ABFF00A5812A /* Refreshable.swift in Sources */,
 				CA410EE0247A15FE00E41798 /* 02-Effects-WebSocket.swift in Sources */,

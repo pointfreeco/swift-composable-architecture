@@ -11,7 +11,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
   ) {
     self.window = (scene as? UIWindowScene).map(UIWindow.init(windowScene:))
     self.window?.rootViewController = UIHostingController(
-      rootView: LoginForm(viewModel: .init())
+      rootView: TcaLoginView(
+        store: .init(
+          initialState: .init(),
+          reducer: loginReducer,
+          environment: .init()
+        )
+      )
+
+        //LoginForm(viewModel: .init())
 
 //        VanillaPullToRefreshView(
 //        viewModel: .init(

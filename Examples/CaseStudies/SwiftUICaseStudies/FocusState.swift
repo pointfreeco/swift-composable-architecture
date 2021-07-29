@@ -59,11 +59,32 @@ struct LoginForm: View {
       
       Text("\(String(describing: self.viewModel.focusedField))")
     }
-    .onChange(of: self.viewModel.focusedField) { newValue in
-      self.focusedField = newValue
-    }
-    .onChange(of: self.focusedField) { newValue in
-      self.viewModel.focusedField = newValue
-    }
+//    .onChange(of: self.viewModel.focusedField) { newValue in
+//      self.focusedField = newValue
+//    }
+//    .onChange(of: self.focusedField) { newValue in
+//      self.viewModel.focusedField = newValue
+//    }
+    .synchronize(self.$viewModel.focusedField, self.$focusedField)
+  }
+}
+
+extension View {
+  func synchronize<Value: Equatable>(
+    _ first: Binding<Value>,
+    _ second: Binding<Value>
+  ) -> some View {
+    self
+      .onChange(of: first.wrappedValue) { second.wrappedValue = $0 }
+      .onChange(of: second.wrappedValue) { first.wrappedValue = $0 }
+  }
+
+  func synchronize<Value: Equatable>(
+    _ first: Binding<Value>,
+    _ second: FocusState<Value>.Binding
+  ) -> some View {
+    self
+      .onChange(of: first.wrappedValue) { second.wrappedValue = $0 }
+      .onChange(of: second.wrappedValue) { first.wrappedValue = $0 }
   }
 }
