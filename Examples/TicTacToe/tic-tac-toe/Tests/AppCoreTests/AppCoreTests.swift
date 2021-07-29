@@ -19,18 +19,18 @@ class AppCoreTests: XCTestCase {
     )
 
     store.send(.login(.emailChanged("blob@pointfree.co"))) {
-      try (/AppState.login).update(&$0) {
+      try (/AppState.login).modify(&$0) {
         $0.email = "blob@pointfree.co"
       }
     }
     store.send(.login(.passwordChanged("bl0bbl0b"))) {
-      try (/AppState.login).update(&$0) {
+      try (/AppState.login).modify(&$0) {
         $0.password = "bl0bbl0b"
         $0.isFormValid = true
       }
     }
     store.send(.login(.loginButtonTapped)) {
-      try (/AppState.login).update(&$0) {
+      try (/AppState.login).modify(&$0) {
         $0.isLoginRequestInFlight = true
       }
     }
@@ -40,7 +40,7 @@ class AppCoreTests: XCTestCase {
       $0 = .newGame(.init())
     }
     store.send(.newGame(.oPlayerNameChanged("Blob Sr."))) {
-      try (/AppState.newGame).update(&$0) {
+      try (/AppState.newGame).modify(&$0) {
         $0.oPlayerName = "Blob Sr."
       }
     }
@@ -67,41 +67,41 @@ class AppCoreTests: XCTestCase {
     )
 
     store.send(.login(.emailChanged("blob@pointfree.co"))) {
-      try (/AppState.login).update(&$0) {
+      try (/AppState.login).modify(&$0) {
         $0.email = "blob@pointfree.co"
       }
     }
 
     store.send(.login(.passwordChanged("bl0bbl0b"))) {
-      try (/AppState.login).update(&$0) {
+      try (/AppState.login).modify(&$0) {
         $0.password = "bl0bbl0b"
         $0.isFormValid = true
       }
     }
 
     store.send(.login(.loginButtonTapped)) {
-      try (/AppState.login).update(&$0) {
+      try (/AppState.login).modify(&$0) {
         $0.isLoginRequestInFlight = true
       }
     }
     store.receive(
       .login(.loginResponse(.success(.init(token: "deadbeef", twoFactorRequired: true))))
     ) {
-      try (/AppState.login).update(&$0) {
+      try (/AppState.login).modify(&$0) {
         $0.isLoginRequestInFlight = false
         $0.twoFactor = .init(token: "deadbeef")
       }
     }
 
     store.send(.login(.twoFactor(.codeChanged("1234")))) {
-      try (/AppState.login).update(&$0) {
+      try (/AppState.login).modify(&$0) {
         $0.twoFactor?.code = "1234"
         $0.twoFactor?.isFormValid = true
       }
     }
 
     store.send(.login(.twoFactor(.submitButtonTapped))) {
-      try (/AppState.login).update(&$0) {
+      try (/AppState.login).modify(&$0) {
         $0.twoFactor?.isTwoFactorRequestInFlight = true
       }
     }
@@ -112,13 +112,5 @@ class AppCoreTests: XCTestCase {
     ) {
       $0 = .newGame(.init())
     }
-  }
-}
-
-extension CasePath {
-  func update(_ root: inout Root, perform: (inout Value) throws -> Void) throws {
-    var value = try XCTUnwrap(self.extract(from: root))
-    try perform(&value)
-    root = self.embed(value)
   }
 }
