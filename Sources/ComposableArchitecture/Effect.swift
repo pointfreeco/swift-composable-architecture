@@ -362,7 +362,7 @@ extension Publisher {
   ) -> Effect<NewOutput, NewFailure> {
     return
       self
-      .flatMap { _ in Empty() }
+      .flatMap { _ in Empty<NewOutput, Failure>() }
       .catch { _ in Empty() }
       .eraseToEffect()
   }
