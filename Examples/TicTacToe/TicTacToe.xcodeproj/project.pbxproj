@@ -38,13 +38,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		CA6AC25C2450FDB800C71CB3 /* Sources */ = {
+		CA6AC25C2450FDB800C71CB3 /* App */ = {
 			isa = PBXGroup;
 			children = (
 				CA0A579E242AA7F800BA537D /* RootView.swift */,
 				CA0A5765242AA3A800BA537D /* TicTacToeApp.swift */,
+				CA0A5769242AA3A900BA537D /* Assets.xcassets */,
 			);
-			path = Sources;
+			path = App;
 			sourceTree = "<group>";
 		};
 		DC9193ED2420104100A5BE1F = {
@@ -52,9 +53,8 @@
 			children = (
 				DCB9E9FD26B207CD00497C03 /* tic-tac-toe */,
 				DCB9EA3D26B2188200497C03 /* README.md */,
-				CA0A5769242AA3A900BA537D /* Assets.xcassets */,
+				CA6AC25C2450FDB800C71CB3 /* App */,
 				DC9193F72420104100A5BE1F /* Products */,
-				CA6AC25C2450FDB800C71CB3 /* Sources */,
 			);
 			sourceTree = "<group>";
 		};
@@ -156,6 +156,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -173,6 +174,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
