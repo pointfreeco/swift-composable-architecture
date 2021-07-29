@@ -13,55 +13,63 @@ import SwiftUI
 ///
 /// To use this API, you model all the alert actions in your domain's action enum:
 ///
-///     enum AppAction: Equatable {
-///       case cancelTapped
-///       case confirmTapped
-///       case deleteTapped
+/// ```swift
+/// enum AppAction: Equatable {
+///   case cancelTapped
+///   case confirmTapped
+///   case deleteTapped
 ///
-///       // Your other actions
-///     }
+///   // Your other actions
+/// }
+/// ```
 ///
 /// And you model the state for showing the alert in your domain's state, and it can start off
 /// `nil`:
 ///
-///     struct AppState: Equatable {
-///       var alert: AlertState<AppAction>?
+/// ```swift
+/// struct AppState: Equatable {
+///   var alert: AlertState<AppAction>?
 ///
-///       // Your other state
-///     }
+///   // Your other state
+/// }
+/// ```
 ///
-/// Then, in the reducer you can construct an `AlertState` value to represent the alert you want
+/// Then, in the reducer you can construct an ``AlertState`` value to represent the alert you want
 /// to show to the user:
 ///
-///     let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, env in
-///       switch action
-///         case .cancelTapped:
-///           state.alert = nil
-///           return .none
+/// ```swift
+/// let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, env in
+///   switch action
+///     case .cancelTapped:
+///       state.alert = nil
+///       return .none
 ///
-///         case .confirmTapped:
-///           state.alert = nil
-///           // Do deletion logic...
+///     case .confirmTapped:
+///       state.alert = nil
+///       // Do deletion logic...
 ///
-///         case .deleteTapped:
-///           state.alert = .init(
-///             title: TextState("Delete"),
-///             message: TextState("Are you sure you want to delete this? It cannot be undone."),
-///             primaryButton: .default(TextState("Confirm"), send: .confirmTapped),
-///             secondaryButton: .cancel()
-///           )
-///         return .none
-///       }
-///     }
+///     case .deleteTapped:
+///       state.alert = .init(
+///         title: TextState("Delete"),
+///         message: TextState("Are you sure you want to delete this? It cannot be undone."),
+///         primaryButton: .default(TextState("Confirm"), action: .send(.confirmTapped)),
+///         secondaryButton: .cancel()
+///       )
+///     return .none
+///   }
+/// }
+/// ```
 ///
 /// And then, in your view you can use the `.alert(_:send:dismiss:)` method on `View` in order
 /// to present the alert in a way that works best with the Composable Architecture:
 ///
-///     Button("Delete") { viewStore.send(.deleteTapped) }
-///       .alert(
-///         self.store.scope(state: \.alert),
-///         dismiss: .cancelTapped
-///       )
+/// ```swift
+/// Button("Delete") { viewStore.send(.deleteTapped) }
+///   .alert(
+///     self.store.scope(state: \.alert),
+///     dismiss: .cancelTapped
+///   )
+/// ```
 ///
 /// This makes your reducer in complete control of when the alert is shown or dismissed, and makes
 /// it so that any choice made in the alert is automatically fed back into the reducer so that you
@@ -69,24 +77,26 @@ import SwiftUI
 ///
 /// Even better, you can instantly write tests that your alert behavior works as expected:
 ///
-///     let store = TestStore(
-///       initialState: AppState(),
-///       reducer: appReducer,
-///       environment: .mock
-///     )
+/// ```swift
+/// let store = TestStore(
+///   initialState: AppState(),
+///   reducer: appReducer,
+///   environment: .mock
+/// )
 ///
-///     store.send(.deleteTapped) {
-///       $0.alert = .init(
-///         title: TextState("Delete"),
-///         message: TextState("Are you sure you want to delete this? It cannot be undone."),
-///         primaryButton: .default(TextState("Confirm"), send: .confirmTapped),
-///         secondaryButton: .cancel(send: .cancelTapped)
-///       )
-///     }
-///     store.send(.deleteTapped) {
-///       $0.alert = nil
-///       // Also verify that delete logic executed correctly
-///     }
+/// store.send(.deleteTapped) {
+///   $0.alert = .init(
+///     title: TextState("Delete"),
+///     message: TextState("Are you sure you want to delete this? It cannot be undone."),
+///     primaryButton: .default(TextState("Confirm"), action: .send(.confirmTapped)),
+///     secondaryButton: .cancel(action: .send(.cancelTapped))
+///   )
+/// }
+/// store.send(.deleteTapped) {
+///   $0.alert = nil
+///   // Also verify that delete logic executed correctly
+/// }
+/// ```
 ///
 public struct AlertState<Action> {
   public let id = UUID()
@@ -118,41 +128,58 @@ public struct AlertState<Action> {
   }
 
   public struct Button {
-    public var action: Action?
-    public var type: `Type`
+    public var action: ButtonAction?
+    public var type: ButtonType
 
     public static func cancel(
       _ label: TextState,
-      send action: Action? = nil
+      action: ButtonAction? = nil
     ) -> Self {
       Self(action: action, type: .cancel(label: label))
     }
 
     public static func cancel(
-      send action: Action? = nil
+      action: ButtonAction? = nil
     ) -> Self {
       Self(action: action, type: .cancel(label: nil))
     }
 
     public static func `default`(
       _ label: TextState,
-      send action: Action? = nil
+      action: ButtonAction? = nil
     ) -> Self {
       Self(action: action, type: .default(label: label))
     }
 
     public static func destructive(
       _ label: TextState,
-      send action: Action? = nil
+      action: ButtonAction? = nil
     ) -> Self {
       Self(action: action, type: .destructive(label: label))
     }
+  }
 
-    public enum `Type` {
-      case cancel(label: TextState?)
-      case `default`(label: TextState)
-      case destructive(label: TextState)
+  public struct ButtonAction {
+    let type: ActionType
+
+    public static func send(_ action: Action) -> Self {
+      .init(type: .send(action))
     }
+
+    public static func send(_ action: Action, animation: Animation?) -> Self {
+      .init(type: .animatedSend(action, animation: animation))
+    }
+
+    enum ActionType {
+      case send(Action)
+      case animatedSend(Action, animation: Animation?)
+    }
+  }
+
+  public enum ButtonType {
+    case cancel(label: TextState?)
+    case `default`(label: TextState)
+    case destructive(label: TextState)
   }
 }
 
@@ -198,6 +225,7 @@ extension AlertState: Equatable where Action: Equatable {
       && lhs.secondaryButton == rhs.secondaryButton
   }
 }
+
 extension AlertState: Hashable where Action: Hashable {
   public func hash(into hasher: inout Hasher) {
     hasher.combine(self.title)
@@ -206,17 +234,43 @@ extension AlertState: Hashable where Action: Hashable {
     hasher.combine(self.secondaryButton)
   }
 }
+
 extension AlertState: Identifiable {}
 
-extension AlertState.Button.`Type`: Equatable {}
+extension AlertState.ButtonAction: Equatable where Action: Equatable {}
+extension AlertState.ButtonAction.ActionType: Equatable where Action: Equatable {}
+extension AlertState.ButtonType: Equatable {}
 extension AlertState.Button: Equatable where Action: Equatable {}
 
-extension AlertState.Button.`Type`: Hashable {}
-extension AlertState.Button: Hashable where Action: Hashable {}
+extension AlertState.ButtonAction: Hashable where Action: Hashable {}
+extension AlertState.ButtonAction.ActionType: Hashable where Action: Hashable {
+  func hash(into hasher: inout Hasher) {
+    switch self {
+    case let .send(action), let .animatedSend(action, animation: _):
+      hasher.combine(action)
+    }
+  }
+}
+extension AlertState.ButtonType: Hashable {}
+extension AlertState.Button: Hashable where Action: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.action)
+    hasher.combine(self.type)
+  }
+}
 
 extension AlertState.Button {
   func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.Alert.Button {
-    let action = { if let action = self.action { send(action) } }
+    let action = {
+      switch self.action?.type {
+      case .none:
+        return
+      case let .some(.send(action)):
+        send(action)
+      case let .some(.animatedSend(action, animation: animation)):
+        withAnimation(animation) { send(action) }
+      }
+    }
     switch self.type {
     case let .cancel(.some(label)):
       return .cancel(Text(label), action: action)

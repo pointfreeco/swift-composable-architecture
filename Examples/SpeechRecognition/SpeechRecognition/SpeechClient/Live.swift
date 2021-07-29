@@ -4,12 +4,6 @@ import Speech
 
 extension SpeechClient {
   static let live = SpeechClient(
-    cancelTask: { id in
-      .fireAndForget {
-        dependencies[id]?.cancel()
-        dependencies[id] = nil
-      }
-    },
     finishTask: { id in
       .fireAndForget {
         dependencies[id]?.finish()

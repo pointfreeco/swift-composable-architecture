@@ -6,7 +6,7 @@ import XCTest
 
 class LifecycleTests: XCTestCase {
   func testLifecycle() {
-    let scheduler = DispatchQueue.testScheduler
+    let scheduler = DispatchQueue.test
 
     let store = TestStore(
       initialState: .init(),

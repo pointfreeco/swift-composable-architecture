@@ -3,7 +3,7 @@ PLATFORM_MACOS = macOS
 PLATFORM_TVOS = tvOS Simulator,name=Apple TV 4K (at 1080p)
 PLATFORM_WATCHOS = watchOS Simulator,name=Apple Watch Series 4 - 44mm
 
-default: test
+default: test-all
 
 test-all: test-library test-examples
 
@@ -44,8 +44,15 @@ test-examples:
 		-scheme VoiceMemos \
 		-destination platform="$(PLATFORM_IOS)"
 
+benchmark:
+	swift run --configuration release \
+		swift-composable-architecture-benchmark
+
 format:
-	swift format --in-place --recursive \
+	swift format \
+		--ignore-unparsable-files \
+		--in-place \
+		--recursive \
 		./Examples ./Package.swift ./Sources ./Tests
 
 .PHONY: format test-all test-swift test-workspace
