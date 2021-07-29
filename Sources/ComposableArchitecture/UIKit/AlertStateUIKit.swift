@@ -6,8 +6,8 @@ import UIKit
 @available(macOS, unavailable)
 @available(tvOS 13, *)
 @available(watchOS, unavailable)
-extension AlertState {
-  /// UIKit helper generating UIAlertController from corresponding AlertState
+extension UIAlertController {
+  /// UIAlertController convenience initializer from AlertState
   ///
   ///     class ParentViewController: UIViewController {
   ///        let store: Store<ParentState, ParentAction>
@@ -22,7 +22,7 @@ extension AlertState {
   ///            .sink { [weak self] alert in
   ///              guard let self = self else { return }
   ///              if let alert = alert {
-  ///                let alertView = alert.toUIAlertController(send: {
+  ///                let alertView = UIAlertController(state: alert, send: {
   ///                  self.viewStore.send(.settings($0))
   ///                })
   ///                self.present(alertView, animated: true, completion: nil)
@@ -36,23 +36,39 @@ extension AlertState {
   ///        }
   ///     }
   ///
+  /// - Parameter state: The state of an alert that can be shown to the user.
   /// - Parameter send: A function that wraps a alert action in the view store's action type.
-  /// - Returns: UIAlertController ready to presented by UIViewController.
-  public func toUIAlertController(send: @escaping (Action) -> Void) -> UIAlertController {
-    let alertController = UIAlertController(
-      title: String(state: self.title),
-      message: self.message.map { String(state: $0) },
+  public convenience init<Action>(
+    state: AlertState<Action>, send: @escaping (Action) -> Void
+  ) {
+    self.init(
+      title: String(state: state.title),
+      message: state.message.map { String(state: $0) },
       preferredStyle: .alert)
 
-    if let primaryButton = self.primaryButton {
-      alertController.addAction(primaryButton.toUIAlertAction(send: send))
+    if let primaryButton = state.primaryButton {
+      self.addAction(primaryButton.toUIAlertAction(send: send))
     }
 
-    if let secondaryButton = self.secondaryButton {
-      alertController.addAction(secondaryButton.toUIAlertAction(send: send))
+    if let secondaryButton = state.secondaryButton {
+      self.addAction(secondaryButton.toUIAlertAction(send: send))
     }
+  }
+  /// UIAlertController convenience initializer from ActionSheetState
+  ///
+  /// - Parameter state: The state of an action sheet that can be shown to the user.
+  /// - Parameter send: A function that wraps a alert action in the view store's action type.
+  public convenience init<Action>(
+    state: ActionSheetState<Action>, send: @escaping (Action) -> Void
+  ) {
+    self.init(
+      title: String(state: state.title),
+      message: state.message.map { String(state: $0) },
+      preferredStyle: .actionSheet)
 
-    return alertController
+    state.buttons.forEach { button in
+      self.addAction(button.toUIAlertAction(send: send))
+    }
   }
 }
 
@@ -63,7 +79,15 @@ extension AlertState {
 @available(watchOS, unavailable)
 extension AlertState.Button {
   func toUIAlertAction(send: @escaping (Action) -> Void) -> UIAlertAction {
-    let action = { if let action = self.action { send(action) } }
+    let action = {
+      switch self.action?.type {
+      case .none:
+        return
+      case let .some(.send(action)),
+        let .some(.animatedSend(action, animation: _)):  // Doesn't support animation in UIKit
+        send(action)
+      }
+    }
     switch self.type {
     case let .cancel(.some(title)):
       return UIAlertAction(title: String(state: title), style: .cancel, handler: { _ in action() })
