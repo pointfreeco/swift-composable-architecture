@@ -121,6 +121,9 @@ public final class Store<State, Action> {
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   private var bufferedActions: [Action] = []
 
+  /// The current state.
+  public var currentState: State { state.value }
+
   /// Initializes a store from an initial state, a reducer, and an environment.
   ///
   /// - Parameters:

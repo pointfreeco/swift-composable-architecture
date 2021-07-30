@@ -6,6 +6,15 @@ import XCTest
 final class StoreTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
+  func testCurrentStateEqualsState() {
+    let reducer = Reducer<Double, Void, Void> { _, _, _ in .none }
+    let store = Store(initialState: .pi, reducer: reducer, environment: ())
+
+    XCTAssertEqual(store.currentState, store.state.value)
+    store.state.value = 2 * .pi
+    XCTAssertEqual(store.currentState, store.state.value)
+  }
+
   func testCancellableIsRemovedOnImmediatelyCompletingEffect() {
     let reducer = Reducer<Void, Void, Void> { _, _, _ in .none }
     let store = Store(initialState: (), reducer: reducer, environment: ())
