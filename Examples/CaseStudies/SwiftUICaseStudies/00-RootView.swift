@@ -81,6 +81,16 @@ struct RootView: View {
             )
 
             NavigationLink(
+              "Focus State",
+              destination: FocusDemoView(
+                store: self.store.scope(
+                  state: \.focusDemo,
+                  action: RootAction.focusDemo
+                )
+              )
+            )
+
+            NavigationLink(
               "Animations",
               destination: AnimationsView(
                 store: self.store.scope(
