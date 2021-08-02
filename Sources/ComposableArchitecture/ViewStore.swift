@@ -47,9 +47,10 @@ import SwiftUI
 ///
 /// ### Thread safety
 ///
-/// The ``ViewStore`` class is not thread-safe, and all interactions with it must happen on the same
-/// thread its store runs on, which is typically the main thread for UI-based applications. See the
-/// documentation of the ``Store`` class for more information as to why this decision was made.
+/// The ``ViewStore`` class is not thread-safe, and all interactions with it (and the store it was
+/// derived from) must happen on the same thread. Further, for SwiftUI applications, all
+/// interactions must happen on _main_ thread. See the documentation of the ``Store`` class for more
+/// information as to why this decision was made.
 @dynamicMemberLookup
 public final class ViewStore<State, Action>: ObservableObject {
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
