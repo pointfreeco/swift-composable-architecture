@@ -138,60 +138,72 @@ final class ViewStoreTests: XCTestCase {
   }
 
   #if compiler(>=5.5)
-    @available(iOS 15, *)
-    func testSendWhile() async {
-      enum Action {
-        case response
-        case tapped
-      }
-      let reducer = Reducer<Bool, Action, Void> { state, action, environment in
-        switch action {
-        case .response:
-          state = false
-          return .none
-        case .tapped:
-          state = true
-          return Effect(value: .response)
-            .receive(on: DispatchQueue.main)
-            .eraseToEffect()
+    func testSendWhile() {
+      guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
+
+      let expectation = self.expectation(description: "await")
+      Task { @MainActor in
+        enum Action {
+          case response
+          case tapped
         }
+        let reducer = Reducer<Bool, Action, Void> { state, action, environment in
+          switch action {
+          case .response:
+            state = false
+            return .none
+          case .tapped:
+            state = true
+            return Effect(value: .response)
+              .receive(on: DispatchQueue.main)
+              .eraseToEffect()
+          }
+        }
+
+        let store = Store(initialState: false, reducer: reducer, environment: ())
+        let viewStore = ViewStore(store)
+
+        XCTAssertEqual(viewStore.state, false)
+        await viewStore.send(.tapped, while: { $0 })
+        XCTAssertEqual(viewStore.state, false)
+        expectation.fulfill()
       }
-
-      let store = Store(initialState: false, reducer: reducer, environment: ())
-      let viewStore = ViewStore(store)
-
-      XCTAssertEqual(viewStore.state, false)
-      await viewStore.send(.tapped, while: { $0 })
-      XCTAssertEqual(viewStore.state, false)
+      self.wait(for: [expectation], timeout: 1)
     }
 
-    @available(iOS 15, *)
-    func testSuspend() async {
-      enum Action {
-        case response
-        case tapped
-      }
-      let reducer = Reducer<Bool, Action, Void> { state, action, environment in
-        switch action {
-        case .response:
-          state = false
-          return .none
-        case .tapped:
-          state = true
-          return Effect(value: .response)
-            .receive(on: DispatchQueue.main)
-            .eraseToEffect()
+    func testSuspend() {
+      guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
+
+      let expectation = self.expectation(description: "await")
+      Task { @MainActor in
+        enum Action {
+          case response
+          case tapped
         }
+        let reducer = Reducer<Bool, Action, Void> { state, action, environment in
+          switch action {
+          case .response:
+            state = false
+            return .none
+          case .tapped:
+            state = true
+            return Effect(value: .response)
+              .receive(on: DispatchQueue.main)
+              .eraseToEffect()
+          }
+        }
+
+        let store = Store(initialState: false, reducer: reducer, environment: ())
+        let viewStore = ViewStore(store)
+
+        XCTAssertEqual(viewStore.state, false)
+        viewStore.send(.tapped)
+        XCTAssertEqual(viewStore.state, true)
+        await viewStore.suspend(while: { $0 })
+        XCTAssertEqual(viewStore.state, false)
+        expectation.fulfill()
       }
-
-      let store = Store(initialState: false, reducer: reducer, environment: ())
-      let viewStore = ViewStore(store)
-
-      XCTAssertEqual(viewStore.state, false)
-      viewStore.send(.tapped)
-      XCTAssertEqual(viewStore.state, true)
-      await viewStore.suspend(while: { $0 })
-      XCTAssertEqual(viewStore.state, false)
+      self.wait(for: [expectation], timeout: 1)
     }
   #endif
 }
