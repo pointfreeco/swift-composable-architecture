@@ -80,6 +80,7 @@ struct RootView: View {
               )
             )
 
+            #if compiler(>=5.5)
             NavigationLink(
               "Focus State",
               destination: FocusDemoView(
@@ -89,6 +90,7 @@ struct RootView: View {
                 )
               )
             )
+            #endif
 
             NavigationLink(
               "Animations",

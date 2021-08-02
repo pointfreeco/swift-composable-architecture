@@ -43,6 +43,7 @@ let focusDemoReducer = Reducer<
 }
 .binding(action: /FocusDemoAction.binding)
 
+#if compiler(>=5.5)
 struct FocusDemoView: View {
   let store: Store<FocusDemoState, FocusDemoAction>
   @FocusState var focusedField: FocusDemoState.Field?
@@ -106,3 +107,4 @@ struct FocusDemo_Previews: PreviewProvider {
     }
   }
 }
+#endif
