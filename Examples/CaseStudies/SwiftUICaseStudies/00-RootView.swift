@@ -81,15 +81,15 @@ struct RootView: View {
             )
 
             #if compiler(>=5.5)
-            NavigationLink(
-              "Focus State",
-              destination: FocusDemoView(
-                store: self.store.scope(
-                  state: \.focusDemo,
-                  action: RootAction.focusDemo
+              NavigationLink(
+                "Focus State",
+                destination: FocusDemoView(
+                  store: self.store.scope(
+                    state: \.focusDemo,
+                    action: RootAction.focusDemo
+                  )
                 )
               )
-            )
             #endif
 
             NavigationLink(
