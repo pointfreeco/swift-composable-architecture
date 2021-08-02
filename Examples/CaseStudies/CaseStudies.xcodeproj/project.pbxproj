@@ -13,6 +13,7 @@
 		CA25E5D224463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA25E5D124463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift */; };
 		CA27C0B7245780CE00CB1E59 /* 03-Effects-SystemEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA27C0B6245780CE00CB1E59 /* 03-Effects-SystemEnvironment.swift */; };
 		CA34170824A4E89500FAF950 /* 01-GettingStarted-AnimationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA34170724A4E89500FAF950 /* 01-GettingStarted-AnimationsTests.swift */; };
+		CA3E421F26B8337500581ABC /* 01-GettingStarted-FocusState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA3E421E26B8337500581ABC /* 01-GettingStarted-FocusState.swift */; };
 		CA3E4C5B24B4FA0E00447C0B /* 04-HigherOrderReducers-Lifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA3E4C5A24B4FA0E00447C0B /* 04-HigherOrderReducers-Lifecycle.swift */; };
 		CA410EE0247A15FE00E41798 /* 02-Effects-WebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA410EDF247A15FE00E41798 /* 02-Effects-WebSocket.swift */; };
 		CA410EE2247C73B400E41798 /* 02-Effects-WebSocketTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA410EE1247C73B400E41798 /* 02-Effects-WebSocketTests.swift */; };
@@ -156,6 +157,7 @@
 		CA25E5D124463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Bindings-Basics.swift"; sourceTree = "<group>"; };
 		CA27C0B6245780CE00CB1E59 /* 03-Effects-SystemEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Effects-SystemEnvironment.swift"; sourceTree = "<group>"; };
 		CA34170724A4E89500FAF950 /* 01-GettingStarted-AnimationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-AnimationsTests.swift"; sourceTree = "<group>"; };
+		CA3E421E26B8337500581ABC /* 01-GettingStarted-FocusState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-FocusState.swift"; sourceTree = "<group>"; };
 		CA3E4C5A24B4FA0E00447C0B /* 04-HigherOrderReducers-Lifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-Lifecycle.swift"; sourceTree = "<group>"; };
 		CA410EDF247A15FE00E41798 /* 02-Effects-WebSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-WebSocket.swift"; sourceTree = "<group>"; };
 		CA410EE1247C73B400E41798 /* 02-Effects-WebSocketTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-WebSocketTests.swift"; sourceTree = "<group>"; };
@@ -399,6 +401,7 @@
 				DC5B505025C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift */,
 				DCC68EE02447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift */,
 				DC89C4432446111B006900B9 /* 01-GettingStarted-Counter.swift */,
+				CA3E421E26B8337500581ABC /* 01-GettingStarted-FocusState.swift */,
 				DCC68EDC2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift */,
 				CA7BC8ED245CCFE4001FB69F /* 01-GettingStarted-SharedState.swift */,
 				CAA9ADC12446587C0003A984 /* 02-Effects-Basics.swift */,
@@ -744,6 +747,7 @@
 				DC89C45324465452006900B9 /* 03-Navigation-Lists-NavigateAndLoad.swift in Sources */,
 				CAF069D024ACC5AF00A1AAEF /* 00-Core.swift in Sources */,
 				DCC68EE32447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift in Sources */,
+				CA3E421F26B8337500581ABC /* 01-GettingStarted-FocusState.swift in Sources */,
 				DCC68EDF2447BC810037F998 /* TemplateText.swift in Sources */,
 				DCAC2A4F2452352E0094DEF5 /* 04-HigherOrderReducers-ElmLikeSubscriptions.swift in Sources */,
 				CA6AC2672451135C00C71CB3 /* DownloadClient.swift in Sources */,
