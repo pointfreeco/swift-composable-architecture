@@ -138,7 +138,7 @@ final class ViewStoreTests: XCTestCase {
   }
 
   #if compiler(>=5.5)
-    @available(iOS 15, *)
+    @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
     func testSendWhile() async {
       enum Action {
         case response
@@ -165,7 +165,7 @@ final class ViewStoreTests: XCTestCase {
       XCTAssertEqual(viewStore.state, false)
     }
 
-    @available(iOS 15, *)
+    @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
     func testSuspend() async {
       enum Action {
         case response
