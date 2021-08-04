@@ -86,7 +86,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
   }
 )
 
-.debugActions(actionFormat: .labelsOnly)
+.debug()
 
 struct AppView: View {
   let store: Store<AppState, AppAction>

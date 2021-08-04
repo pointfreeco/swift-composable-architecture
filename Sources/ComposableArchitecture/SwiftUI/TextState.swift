@@ -1,3 +1,4 @@
+import CustomDump
 import SwiftUI
 
 /// An equatable description of SwiftUI `Text`. Useful for storing rich text in state for the
@@ -269,7 +270,7 @@ extension String {
   }
 }
 
-extension LocalizedStringKey: CustomDebugOutputConvertible {
+extension LocalizedStringKey: CustomDumpStringConvertible {
   // NB: `LocalizedStringKey` conforms to `Equatable` but returns false for equivalent format
   //     strings. To account for this we reflect on it to extract and string-format its storage.
   func formatted(
@@ -306,13 +307,13 @@ extension LocalizedStringKey: CustomDebugOutputConvertible {
     return String(format: format, locale: locale, arguments: arguments)
   }
 
-  public var debugOutput: String {
+  public var customDumpDescription: String {
     self.formatted().debugDescription
   }
 }
 
-extension TextState: CustomDebugOutputConvertible {
-  public var debugOutput: String {
+extension TextState: CustomDumpStringConvertible {
+  public var customDumpDescription: String {
     func debugOutputHelp(_ textState: Self) -> String {
       var output: String
       switch textState.storage {

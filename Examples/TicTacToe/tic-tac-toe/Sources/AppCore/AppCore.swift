@@ -64,3 +64,4 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     }
   }
 )
+.debug()
