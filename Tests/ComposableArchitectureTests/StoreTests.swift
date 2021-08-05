@@ -593,4 +593,59 @@ final class StoreTests: XCTestCase {
     childStore.send(.noop)
     leafStore.send(.noop)
   }
+
+  func testOldStateReplaysInViewStoreSubscriber() {
+    struct State: Equatable {
+      var city: String
+      var country: String
+    }
+
+    enum Action: Equatable {
+      case updateCity(String)
+      case updateCountry(String)
+    }
+
+    let reducer = Reducer<State, Action, Void> { state, action, _ in
+      switch action {
+      case let .updateCity(city):
+        state.city = city
+        return .none
+      case let .updateCountry(country):
+        state.country = country
+        return .none
+      }
+    }
+
+    let store = Store(
+      initialState: .init(city: "New York", country: "USA"),
+      reducer: reducer,
+      environment: ()
+    )
+    let viewStore = ViewStore(store)
+
+    viewStore.publisher.city
+      .sink { city in
+        // After we get the first update, let's update the country to "UK"
+        if city == "London" {
+          viewStore.send(.updateCountry("UK"))
+        }
+      }
+      .store(in: &cancellables)
+
+    var seenCountries = [String]()
+    viewStore.publisher.country
+      .sink { country in
+        seenCountries.append(country)
+      }
+      .store(in: &cancellables)
+
+    // Send the initial update to make city "London"
+    viewStore.send(.updateCity("London"))
+
+    // Test that we only see two updates:
+    // 1) "USA"
+    // 2) "UK"
+    // Sometimes, we get a third update with "USA" again.... why!?
+    XCTAssertEqual(seenCountries, ["USA", "UK"])
+  }
 }
