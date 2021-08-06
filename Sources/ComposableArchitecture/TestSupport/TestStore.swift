@@ -1,8 +1,8 @@
 #if DEBUG
   import Combine
+  import CustomDump
   import Foundation
   import XCTestDynamicOverlay
-import CustomDump
 
   /// A testable runtime for a reducer.
   ///
