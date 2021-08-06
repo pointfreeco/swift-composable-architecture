@@ -249,86 +249,86 @@ final class DebugTests: XCTestCase {
   }
 
   #if compiler(<5.5)
-  func testNestedDump() {
-    struct User {
-      var id: UUID
-      var name: String
-      var createdAt: Date
-      var favoritePrimes: [Int]
-      var friends: [User]
-    }
+    func testNestedDump() {
+      struct User {
+        var id: UUID
+        var name: String
+        var createdAt: Date
+        var favoritePrimes: [Int]
+        var friends: [User]
+      }
 
-    enum AppState {
-      case loggedOut(login: String, password: String)
-      case loggedIn(User)
-    }
+      enum AppState {
+        case loggedOut(login: String, password: String)
+        case loggedIn(User)
+      }
 
-    XCTAssertEqual(
-      debugOutput(
+      XCTAssertEqual(
+        debugOutput(
+          AppState.loggedIn(
+            User(
+              id: UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!,
+              name: "Blob",
+              createdAt: Date(timeIntervalSinceReferenceDate: 0),
+              favoritePrimes: [7, 11],
+              friends: [
+                User(
+                  id: UUID(uuidString: "CAFEBEEF-CAFE-BEEF-CAFE-BEEFCAFEBEEF")!,
+                  name: "Blob Jr.",
+                  createdAt: Date(timeIntervalSinceReferenceDate: 60 * 60 * 24 * 365),
+                  favoritePrimes: [2, 3, 5],
+                  friends: []
+                ),
+                User(
+                  id: UUID(uuidString: "D00DBEEF-D00D-BEEF-D00D-BEEFD00DBEEF")!,
+                  name: "Blob Sr.",
+                  createdAt: Date(timeIntervalSinceReferenceDate: 60 * 60 * 48 * 365),
+                  favoritePrimes: [23],
+                  friends: []
+                ),
+              ]
+            )
+          )
+        ),
+        """
         AppState.loggedIn(
           User(
-            id: UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!,
+            id: DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF,
             name: "Blob",
-            createdAt: Date(timeIntervalSinceReferenceDate: 0),
-            favoritePrimes: [7, 11],
+            createdAt: 2001-01-01T00:00:00Z,
+            favoritePrimes: [
+              7,
+              11,
+            ],
             friends: [
               User(
-                id: UUID(uuidString: "CAFEBEEF-CAFE-BEEF-CAFE-BEEFCAFEBEEF")!,
+                id: CAFEBEEF-CAFE-BEEF-CAFE-BEEFCAFEBEEF,
                 name: "Blob Jr.",
-                createdAt: Date(timeIntervalSinceReferenceDate: 60 * 60 * 24 * 365),
-                favoritePrimes: [2, 3, 5],
-                friends: []
+                createdAt: 2002-01-01T00:00:00Z,
+                favoritePrimes: [
+                  2,
+                  3,
+                  5,
+                ],
+                friends: [
+                ]
               ),
               User(
-                id: UUID(uuidString: "D00DBEEF-D00D-BEEF-D00D-BEEFD00DBEEF")!,
+                id: D00DBEEF-D00D-BEEF-D00D-BEEFD00DBEEF,
                 name: "Blob Sr.",
-                createdAt: Date(timeIntervalSinceReferenceDate: 60 * 60 * 48 * 365),
-                favoritePrimes: [23],
-                friends: []
+                createdAt: 2003-01-01T00:00:00Z,
+                favoritePrimes: [
+                  23,
+                ],
+                friends: [
+                ]
               ),
             ]
           )
         )
-      ),
-      """
-      AppState.loggedIn(
-        User(
-          id: DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF,
-          name: "Blob",
-          createdAt: 2001-01-01T00:00:00Z,
-          favoritePrimes: [
-            7,
-            11,
-          ],
-          friends: [
-            User(
-              id: CAFEBEEF-CAFE-BEEF-CAFE-BEEFCAFEBEEF,
-              name: "Blob Jr.",
-              createdAt: 2002-01-01T00:00:00Z,
-              favoritePrimes: [
-                2,
-                3,
-                5,
-              ],
-              friends: [
-              ]
-            ),
-            User(
-              id: D00DBEEF-D00D-BEEF-D00D-BEEFD00DBEEF,
-              name: "Blob Sr.",
-              createdAt: 2003-01-01T00:00:00Z,
-              favoritePrimes: [
-                23,
-              ],
-              friends: [
-              ]
-            ),
-          ]
-        )
+        """
       )
-      """
-    )
-  }
+    }
   #endif
 
   func testRecursiveOutput() {
