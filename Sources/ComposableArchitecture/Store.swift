@@ -293,6 +293,7 @@ public final class Store<State, Action> {
     )
     localStore.parentCancellable = self.state
       .dropFirst()
+      .removeDuplicates(by: isEqual)
       .sink { [weak localStore] newValue in
         guard !isSending else { return }
         localStore?.state.value = toLocalState(newValue)
@@ -408,4 +409,25 @@ public final class Store<State, Action> {
     func absurd<A>(_ never: Never) -> A {}
     return self.scope(state: { $0 }, action: absurd)
   }
+}
+
+enum Box<T> {}
+
+protocol AnyEquatable {
+  static func isEqual(_ lhs: Any, _ rhs: Any) -> Bool
+}
+
+extension Box: AnyEquatable where T: Equatable {
+  static func isEqual(_ lhs: Any, _ rhs: Any) -> Bool {
+    guard let lhs = lhs as? T, let rhs = rhs as? T else { return false }
+    return lhs == rhs
+  }
+}
+
+func isEqual(_ lhs: Any, _ rhs: Any) -> Bool {
+  func open<LHS>(_: LHS.Type) -> Bool? {
+    (Box<LHS>.self as? AnyEquatable.Type)?.isEqual(lhs, rhs)
+  }
+  if let isEqual = _openExistential(type(of: lhs), do: open) { return isEqual }
+  return false
 }
