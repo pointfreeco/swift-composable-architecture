@@ -248,6 +248,7 @@ final class DebugTests: XCTestCase {
     )
   }
 
+  #if compiler(<5.5)
   func testNestedDump() {
     struct User {
       var id: UUID
@@ -328,6 +329,7 @@ final class DebugTests: XCTestCase {
       """
     )
   }
+  #endif
 
   func testRecursiveOutput() {
     class Foo {
