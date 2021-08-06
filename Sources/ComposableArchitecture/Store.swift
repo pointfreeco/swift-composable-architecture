@@ -350,6 +350,7 @@ public final class Store<State, Action> {
           }
         return localStore
       }
+      .removeDuplicates(by: isEqual)
       .eraseToAnyPublisher()
   }
 
