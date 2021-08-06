@@ -104,10 +104,10 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// This means you can either use the value passed to the closure or you can reach into
   /// `viewStore.state` directly.
   ///
-  /// - Note: that due to a bug in Combine (or feature?), the order you `.sink` on a publisher has
-  /// no bearing on the order the `.sink` closures are called. This means the work performed
-  /// inside `viewStore.publisher.sink` closures should be completely independent of each other.
-  /// Later closures cannot assume that earlier ones have already run.
+  /// - Note: Due to a bug in Combine (or feature?), the order you `.sink` on a publisher has no
+  ///   bearing on the order the `.sink` closures are called. This means the work performed inside
+  ///   `viewStore.publisher.sink` closures should be completely independent of each other.
+  ///   Later closures cannot assume that earlier ones have already run.
   public var publisher: StorePublisher<State> {
     StorePublisher(viewStore: self)
   }
