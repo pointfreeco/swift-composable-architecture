@@ -270,10 +270,8 @@ extension String {
   }
 }
 
-extension LocalizedStringKey: CustomDumpStringConvertible {
-  // NB: `LocalizedStringKey` conforms to `Equatable` but returns false for equivalent format
-  //     strings. To account for this we reflect on it to extract and string-format its storage.
-  func formatted(
+extension LocalizedStringKey {
+  fileprivate func formatted(
     locale: Locale? = nil,
     tableName: String? = nil,
     bundle: Bundle? = nil,
@@ -305,10 +303,6 @@ extension LocalizedStringKey: CustomDumpStringConvertible {
       comment: comment.map(String.init) ?? ""
     )
     return String(format: format, locale: locale, arguments: arguments)
-  }
-
-  public var customDumpDescription: String {
-    self.formatted().debugDescription
   }
 }
 
