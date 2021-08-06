@@ -271,6 +271,8 @@ extension String {
 }
 
 extension LocalizedStringKey {
+  // NB: `LocalizedStringKey` conforms to `Equatable` but returns false for equivalent format
+  //     strings. To account for this we reflect on it to extract and string-format its storage.
   fileprivate func formatted(
     locale: Locale? = nil,
     tableName: String? = nil,
