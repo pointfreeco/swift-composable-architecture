@@ -83,7 +83,31 @@ public final class ViewStore<State, Action>: ObservableObject {
       }
   }
 
-  /// A publisher of state.
+  /// A publisher that emits when state changes.
+  ///
+  /// This publisher supports dynamic member lookup so that you can pluck out a specific field in
+  /// the state:
+  ///
+  /// ```swift
+  /// viewStore.publisher.alert
+  ///   .sink { ... }
+  /// ```
+  ///
+  /// When the emission happens the ``ViewStore``'s state has been updated, and so the following
+  /// precondition will pass:
+  ///
+  /// ```swift
+  /// viewStore.publisher
+  ///   .sink { precondition($0 == viewStore.state) }
+  /// ```
+  ///
+  /// This means you can either use the value passed to the closure or you can reach into
+  /// `viewStore.state` directly.
+  ///
+  /// - Note: Due to a bug in Combine (or feature?), the order you `.sink` on a publisher has no
+  ///   bearing on the order the `.sink` closures are called. This means the work performed inside
+  ///   `viewStore.publisher.sink` closures should be completely independent of each other.
+  ///   Later closures cannot assume that earlier ones have already run.
   public var publisher: StorePublisher<State> {
     StorePublisher(viewStore: self)
   }
