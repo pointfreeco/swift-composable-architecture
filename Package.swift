@@ -29,8 +29,8 @@ let package = Package(
       name: "ComposableArchitecture",
       dependencies: [
         .product(name: "CasePaths", package: "swift-case-paths"),
-        .product(name: "CustomDump", package: "swift-custom-dump"),
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
+        .product(name: "CustomDump", package: "swift-custom-dump"),
         .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
       ]
