@@ -34,6 +34,10 @@ import SwiftUI
 
     /// Wraps an asynchronous unit of work in an effect.
     ///
+    /// This initializer is useful for bridging async functions to the ``Effect`` type. One can wrap
+    /// those functions in an Effect so that its results are sent through the effect, which allows
+    /// the reducer to handle them.
+    ///
     /// - Parameters:
     ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
     ///     `Task.currentPriority`.
@@ -64,6 +68,23 @@ import SwiftUI
         }
         return cancellable
       }
+//      var task: Task<Void, Never>?
+//      return .future { callback in
+//        task = Task(priority: priority) {
+//          do {
+//            try Task.checkCancellation()
+//            let output = try await operation()
+//            try Task.checkCancellation()
+//            callback(.success(output))
+//          } catch is CancellationError {
+//            return
+//          } catch {
+//            callback(.failure(error))
+//          }
+//        }
+//      }
+//      .handleEvents(receiveCancel: { task?.cancel() })
+//      .eraseToEffect()
     }
   }
 
