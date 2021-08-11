@@ -230,10 +230,11 @@ final class EffectTests: XCTestCase {
     guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
 
     let expectation = self.expectation(description: "Complete")
+    struct MyError: Error {}
     var result: Error?
     Effect<Int, Error>.task {
       expectation.fulfill()
-      throw CancellationError()
+      throw MyError()
     }
     .sink(
       receiveCompletion: {
@@ -251,42 +252,30 @@ final class EffectTests: XCTestCase {
     XCTAssertNotNil(result)
   }
 
-  func testThrowingTask_() {
+  func testCancellingTask() {
     guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
 
     @Sendable func work() async throws -> Int {
       var task: Task<Int, Error>!
-
       task = Task {
-        await Task.sleep(NSEC_PER_SEC)
+        try Task.checkCancellation()
         return 42
       }
       task.cancel()
-      try Task.checkCancellation()
       return try await task.value
     }
 
     let expectation = self.expectation(description: "Complete")
-    var result: Error?
     Effect<Int, Error>.task {
       try await work()
     }
+    .print()
     .sink(
-      receiveCompletion: {
-        switch $0 {
-        case .finished:
-          XCTFail()
-        case let .failure(error):
-          result = error
-        }
-      },
+      receiveCompletion: { _ in expectation.fulfill() },
       receiveValue: { _ in XCTFail() }
     )
     .store(in: &self.cancellables)
     self.wait(for: [expectation], timeout: 0)
-    XCTAssertNotNil(result)
   }
   #endif
-
-
 }
