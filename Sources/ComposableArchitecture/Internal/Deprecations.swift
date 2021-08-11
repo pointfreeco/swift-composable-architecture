@@ -46,7 +46,7 @@ extension Reducer {
     action toLocalAction: CasePath<GlobalAction, (Int, Action)>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
     breakpointOnNil: Bool = true,
-    _ file: StaticString = #file,
+    _ file: StaticString = #fileID,
     _ line: UInt = #line
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
     .init { globalState, globalAction, globalEnvironment in
