@@ -19,35 +19,31 @@ import SwiftUI
 ///     [here](https://gist.github.com/mbrandonw/dee2ceac2c316a1619cfdf1dc7945f66)).
 public struct WithViewStore<State, Action, Content> {
   private let content: (ViewStore<State, Action>) -> Content
-  private let file: StaticString
-  private let line: UInt
-  private var prefix: String?
-  private var previousState: (State) -> State?
+  #if DEBUG
+    private let file: StaticString
+    private let line: UInt
+    private var prefix: String?
+    private var previousState: (State) -> State?
+  #endif
   @ObservedObject private var viewStore: ViewStore<State, Action>
 
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute views from store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store.
-  ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
-  ///     equal, repeat view computations are removed,
-  ///   - content: A function that can generate content from a view store.
-  public init(
+  init(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
+    content: @escaping (ViewStore<State, Action>) -> Content
   ) {
     self.content = content
-    self.file = file
-    self.line = line
-    var previousState: State? = nil
-    self.previousState = { currentState in
-      defer { previousState = currentState }
-      return previousState
-    }
+    #if DEBUG
+      self.file = file
+      self.line = line
+      var previousState: State? = nil
+      self.previousState = { currentState in
+        defer { previousState = currentState }
+        return previousState
+      }
+    #endif
     self.viewStore = ViewStore(store, removeDuplicates: isDuplicate)
   }
 
@@ -57,7 +53,9 @@ public struct WithViewStore<State, Action, Content> {
   /// - Returns: A structure that prints debug messages for all computations.
   public func debug(_ prefix: String = "") -> Self {
     var view = self
-    view.prefix = prefix
+    #if DEBUG
+      view.prefix = prefix
+    #endif
     return view
   }
 
@@ -90,7 +88,35 @@ public struct WithViewStore<State, Action, Content> {
   }
 }
 
-extension WithViewStore where State: Equatable {
+extension WithViewStore where Content: View {
+  /// Initializes a structure that transforms a store into an observable view store in order to
+  /// compute views from store state.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
+  ///     equal, repeat view computations are removed,
+  ///   - content: A function that can generate content from a view store.
+  public init(
+    _ store: Store<State, Action>,
+    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.content = content
+    self.file = file
+    self.line = line
+    var previousState: State? = nil
+    self.previousState = { currentState in
+      defer { previousState = currentState }
+      return previousState
+    }
+    self.viewStore = ViewStore(store, removeDuplicates: isDuplicate)
+  }
+}
+
+extension WithViewStore where State: Equatable, Content: View {
   /// Initializes a structure that transforms a store into an observable view store in order to
   /// compute views from equatable store state.
   ///
@@ -107,7 +133,7 @@ extension WithViewStore where State: Equatable {
   }
 }
 
-extension WithViewStore where State == Void {
+extension WithViewStore where State == Void, Content: View {
   /// Initializes a structure that transforms a store into an observable view store in order to
   /// compute views from equatable store state.
   ///
@@ -139,7 +165,41 @@ extension WithViewStore: DynamicViewContent where State: Collection, Content: Dy
 }
 
 #if compiler(>=5.3)
-  import SwiftUI
+  @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
+  extension WithViewStore where State: Equatable, Content: Scene {
+    /// Initializes a structure that transforms a store into an observable view store in order to
+    /// compute scenes from equatable store state.
+    ///
+    /// - Parameters:
+    ///   - store: A store of equatable state.
+    ///   - content: A function that can generate content from a view store.
+    public init(
+      _ store: Store<State, Action>,
+      file: StaticString = #fileID,
+      line: UInt = #line,
+      @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content
+    ) {
+      self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+    }
+  }
+
+  @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
+  extension WithViewStore where State == Void, Content: Scene {
+    /// Initializes a structure that transforms a store into an observable view store in order to
+    /// compute scenes from equatable store state.
+    ///
+    /// - Parameters:
+    ///   - store: A store of equatable state.
+    ///   - content: A function that can generate content from a view store.
+    public init(
+      _ store: Store<State, Action>,
+      file: StaticString = #fileID,
+      line: UInt = #line,
+      @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content
+    ) {
+      self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+    }
+  }
 
   @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
   extension WithViewStore: Scene where Content: Scene {
