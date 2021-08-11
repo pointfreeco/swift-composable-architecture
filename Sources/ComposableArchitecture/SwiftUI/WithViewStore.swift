@@ -62,7 +62,8 @@ public struct WithViewStore<State, Action, Content> {
   fileprivate var _body: Content {
     #if DEBUG
       if let prefix = self.prefix {
-        let difference = self.previousState(self.viewStore.state)
+        let difference =
+          self.previousState(self.viewStore.state)
           .map {
             debugDiff($0, self.viewStore.state).map { "(Changed state)\n\($0)" }
               ?? "(No difference in state detected)"

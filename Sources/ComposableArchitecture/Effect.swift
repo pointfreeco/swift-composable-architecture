@@ -356,7 +356,7 @@ extension Publisher {
   ///   - transform: A mapping function that converts `Result<Output,Failure>` to another type.
   /// - Returns: An effect that wraps `self`.
   public func catchToEffect<T>(
-    _ transform: @escaping (Result<Output,Failure>) -> T
+    _ transform: @escaping (Result<Output, Failure>) -> T
   ) -> Effect<T, Never> {
     self
       .map { transform(.success($0)) }
