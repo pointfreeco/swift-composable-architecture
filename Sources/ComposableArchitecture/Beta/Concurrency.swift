@@ -3,6 +3,67 @@ import SwiftUI
 
 #if compiler(>=5.5)
   @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+  extension Effect {
+    /// Wraps an asynchronous unit of work in an effect.
+    ///
+    /// This initializer is useful for bridging async functions to the
+    /// ``Effect`` type. One can wrap those APIs in an Effect so that its events are sent through the
+    /// effect, which allows the reducer to handle them.
+    ///
+    /// - Parameters:
+    ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
+    ///     `Task.currentPriority`.
+    ///   - operation: The operation to execute.
+    /// - Returns: An effect wrapping the given asynchronous work.
+    public static func task(
+      priority: TaskPriority? = nil,
+      operation: @escaping @Sendable () async -> Output
+    ) -> Self where Failure == Never {
+      var task: Task<Void, Never>?
+      return .future { callback in
+        task = Task(priority: priority) {
+          guard !Task.isCancelled else { return }
+          let output = await operation()
+          guard !Task.isCancelled else { return }
+          callback(.success(output))
+        }
+      }
+      .handleEvents(receiveCancel: { task?.cancel() })
+      .eraseToEffect()
+    }
+
+    /// Wraps an asynchronous unit of work in an effect.
+    ///
+    /// - Parameters:
+    ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
+    ///     `Task.currentPriority`.
+    ///   - operation: The operation to execute.
+    /// - Returns: An effect wrapping the given asynchronous work.
+    public static func task(
+      priority: TaskPriority? = nil,
+      operation: @escaping @Sendable () async throws -> Output
+    ) -> Self where Failure == Error {
+      var task: Task<Void, Never>?
+      return .future { callback in
+        task = Task(priority: priority) {
+          do {
+            guard !Task.isCancelled else { return }
+            let output = try await operation()
+            guard !Task.isCancelled else { return }
+            callback(.success(output))
+          } catch is CancellationError {
+            return
+          } catch {
+            callback(.failure(error))
+          }
+        }
+      }
+      .handleEvents(receiveCancel: { task?.cancel() })
+      .eraseToEffect()
+    }
+  }
+
+  @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
   extension ViewStore {
     /// Sends an action into the store and then suspends while a piece of state is `true`.
     ///
