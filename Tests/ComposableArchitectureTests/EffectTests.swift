@@ -226,29 +226,67 @@ final class EffectTests: XCTestCase {
       XCTAssertEqual(result, 42)
     }
 
-    func testThrowingTask() {
-      guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
+  func testThrowingTask() {
+    guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
 
-      let expectation = self.expectation(description: "Complete")
-      var result: Error?
-      Effect<Int, Error>.task {
-        expectation.fulfill()
-        throw CancellationError()
-      }
-      .sink(
-        receiveCompletion: {
-          switch $0 {
-          case .finished:
-            XCTFail()
-          case let .failure(error):
-            result = error
-          }
-        },
-        receiveValue: { _ in XCTFail() }
-      )
-      .store(in: &self.cancellables)
-      self.wait(for: [expectation], timeout: 0)
-      XCTAssertNotNil(result)
+    let expectation = self.expectation(description: "Complete")
+    var result: Error?
+    Effect<Int, Error>.task {
+      expectation.fulfill()
+      throw CancellationError()
     }
+    .sink(
+      receiveCompletion: {
+        switch $0 {
+        case .finished:
+          XCTFail()
+        case let .failure(error):
+          result = error
+        }
+      },
+      receiveValue: { _ in XCTFail() }
+    )
+    .store(in: &self.cancellables)
+    self.wait(for: [expectation], timeout: 0)
+    XCTAssertNotNil(result)
+  }
+
+  func testThrowingTask_() {
+    guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
+
+    @Sendable func work() async throws -> Int {
+      var task: Task<Int, Error>!
+
+      task = Task {
+        await Task.sleep(NSEC_PER_SEC)
+        return 42
+      }
+      task.cancel()
+      try Task.checkCancellation()
+      return try await task.value
+    }
+
+    let expectation = self.expectation(description: "Complete")
+    var result: Error?
+    Effect<Int, Error>.task {
+      try await work()
+    }
+    .sink(
+      receiveCompletion: {
+        switch $0 {
+        case .finished:
+          XCTFail()
+        case let .failure(error):
+          result = error
+        }
+      },
+      receiveValue: { _ in XCTFail() }
+    )
+    .store(in: &self.cancellables)
+    self.wait(for: [expectation], timeout: 0)
+    XCTAssertNotNil(result)
+  }
   #endif
+
+
 }

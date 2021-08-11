@@ -47,9 +47,9 @@ import SwiftUI
       return .future { callback in
         task = Task(priority: priority) {
           do {
-            guard !Task.isCancelled else { return }
+            try Task.checkCancellation()
             let output = try await operation()
-            guard !Task.isCancelled else { return }
+            try Task.checkCancellation()
             callback(.success(output))
           } catch is CancellationError {
             return
