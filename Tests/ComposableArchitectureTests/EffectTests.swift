@@ -7,7 +7,7 @@ final class EffectTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
   let scheduler = DispatchQueue.test
 
-  func testEraseToEffectWithError() {
+  func testCatchToEffect() {
     struct Error: Swift.Error, Equatable {}
 
     Future<Int, Error> { $0(.success(42)) }
