@@ -24,6 +24,30 @@ final class EffectTests: XCTestCase {
       .eraseToEffect()
       .sink { XCTAssertEqual($0, 42) }
       .store(in: &self.cancellables)
+
+    Future<Int, Error> { $0(.success(42)) }
+        .catchToEffect {
+            switch $0 {
+            case let .success(val):
+                return val
+            case .failure:
+                return -1
+            }
+        }
+        .sink { XCTAssertEqual($0, 42) }
+        .store(in: &self.cancellables)
+
+    Future<Int, Error> { $0(.failure(Error())) }
+        .catchToEffect {
+            switch $0 {
+            case let .success(val):
+                return val
+            case .failure:
+                return -1
+            }
+        }
+        .sink { XCTAssertEqual($0, -1) }
+        .store(in: &self.cancellables)
   }
 
   func testConcatenate() {

@@ -340,6 +340,34 @@ extension Publisher {
       .eraseToEffect()
   }
 
+  /// Turns any publisher into an ``Effect`` that cannot fail by wrapping its output and failure into
+  /// result and then applying passed in function to it.
+  ///
+  /// This is a convenience operator for writing `catchToEffect()` followed by a `map()` .
+  ///
+  /// ```swift
+  /// case .buttonTapped:
+  ///   return fetchUser(id: 1)
+  ///     .catchToEffect {
+  ///       switch $0 {
+  ///       case let .success(response):
+  ///         return ProfileAction.updatedUser(response)
+  ///       case let .failure(error):
+  ///         return ProfileAction.failedUserUpdate(error)
+  ///       }
+  ///     }
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - f: A mapping function that converts `Result<Output,Failure>` to another type.
+  /// - Returns: An effect that wraps `self`.
+  public func catchToEffect<T>(_ f: @escaping (Result<Output,Failure>) -> T) -> Effect<T,Never> {
+    self
+      .catchToEffect()
+      .map(f)
+      .eraseToEffect()
+  }
+
   /// Turns any publisher into an ``Effect`` for any output and failure type by ignoring all output
   /// and any failure.
   ///
