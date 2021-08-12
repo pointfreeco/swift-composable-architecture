@@ -1,4 +1,5 @@
 import SwiftUI
+import CustomDump
 
 /// An action that describes simple mutations to some root state at a writable key path.
 ///
@@ -188,6 +189,19 @@ public struct BindingAction<Root>: Equatable {
     bindingAction: Self
   ) -> Bool {
     keyPath == bindingAction.keyPath
+  }
+}
+
+extension BindingAction: CustomDumpReflectable {
+  public var customDumpMirror: Mirror {
+    .init(
+      self,
+      children: [
+        "keyPath": self.keyPath as Any,
+        "value": self.value as Any
+      ],
+      displayStyle: .struct
+    )
   }
 }
 
