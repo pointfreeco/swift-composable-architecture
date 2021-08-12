@@ -1,14 +1,21 @@
 import Combine
 import SwiftUI
 
+import OSLog
+
 #if compiler(>=5.5)
   @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
   extension Effect {
     /// Wraps an asynchronous unit of work in an effect.
     ///
-    /// This initializer is useful for bridging async functions to the ``Effect`` type. One can wrap
-    /// those functions in an Effect so that its results are sent through the effect, which allows
-    /// the reducer to handle them.
+    /// This function is useful for executing work in an asynchronous context and capture the result
+    /// in an ``Effect`` so that the reducer, a non-asynchronous context, can process it.
+    ///
+    /// ```swift
+    /// Effect.task {
+    ///   await
+    /// }
+    /// ```
     ///
     /// - Parameters:
     ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
@@ -34,9 +41,8 @@ import SwiftUI
 
     /// Wraps an asynchronous unit of work in an effect.
     ///
-    /// This initializer is useful for bridging async functions to the ``Effect`` type. One can wrap
-    /// those functions in an Effect so that its results are sent through the effect, which allows
-    /// the reducer to handle them.
+    /// This function is useful for executing work in an asynchronous context and capture the result
+    /// in an ``Effect`` so that the reducer, a non-asynchronous context, can process it.
     ///
     /// - Parameters:
     ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
@@ -47,44 +53,24 @@ import SwiftUI
       priority: TaskPriority? = nil,
       operation: @escaping @Sendable () async throws -> Output
     ) -> Self where Failure == Error {
-      .run { subscriber in
-        var task: Task<Void, Never>?
-        let cancellable = AnyCancellable {
-          task?.cancel()
-          subscriber.send(completion: .finished)
-        }
-        task = Task(priority: priority) {
+      Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
+        let subject = PassthroughSubject<Output, Failure>()
+        let task = Task(priority: priority) {
           do {
             try Task.checkCancellation()
             let output = try await operation()
             try Task.checkCancellation()
-            subscriber.send(output)
-            subscriber.send(completion: .finished)
+            subject.send(output)
+            subject.send(completion: .finished)
           } catch is CancellationError {
-            cancellable.cancel()
+            subject.send(completion: .finished)
           } catch {
-            subscriber.send(completion: .failure(error))
+            subject.send(completion: .failure(error))
           }
         }
-        return cancellable
+        return subject.handleEvents(receiveCancel: task.cancel)
       }
-//      var task: Task<Void, Never>?
-//      return .future { callback in
-//        task = Task(priority: priority) {
-//          do {
-//            try Task.checkCancellation()
-//            let output = try await operation()
-//            try Task.checkCancellation()
-//            callback(.success(output))
-//          } catch is CancellationError {
-//            return
-//          } catch {
-//            callback(.failure(error))
-//          }
-//        }
-//      }
-//      .handleEvents(receiveCancel: { task?.cancel() })
-//      .eraseToEffect()
+      .eraseToEffect()
     }
   }
 

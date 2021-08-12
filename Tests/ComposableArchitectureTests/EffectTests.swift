@@ -258,6 +258,7 @@ final class EffectTests: XCTestCase {
     @Sendable func work() async throws -> Int {
       var task: Task<Int, Error>!
       task = Task {
+        await Task.sleep(NSEC_PER_MSEC)
         try Task.checkCancellation()
         return 42
       }
@@ -269,13 +270,12 @@ final class EffectTests: XCTestCase {
     Effect<Int, Error>.task {
       try await work()
     }
-    .print()
     .sink(
       receiveCompletion: { _ in expectation.fulfill() },
       receiveValue: { _ in XCTFail() }
     )
     .store(in: &self.cancellables)
-    self.wait(for: [expectation], timeout: 0)
+    self.wait(for: [expectation], timeout: 0.2)
   }
   #endif
 }

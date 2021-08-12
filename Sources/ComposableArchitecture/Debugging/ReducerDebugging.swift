@@ -141,6 +141,8 @@ extension Reducer {
   }
 }
 
+import OSLog
+
 /// An environment for debug-printing reducers.
 public struct DebugEnvironment {
   public var printer: (String) -> Void
@@ -155,7 +157,7 @@ public struct DebugEnvironment {
   }
 
   public init(
-    printer: @escaping (String) -> Void = { print($0) }
+    printer: @escaping (String) -> Void = { os_log("%@", $0) }
   ) {
     self.init(printer: printer, queue: _queue)
   }
