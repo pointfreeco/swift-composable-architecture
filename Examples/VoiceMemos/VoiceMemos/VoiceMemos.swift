@@ -225,8 +225,7 @@ struct VoiceMemosView: View {
               }
             }
 
-            if
-              let duration = viewStore.currentRecording?.duration,
+            if let duration = viewStore.currentRecording?.duration,
               let formattedDuration = dateComponentsFormatter.string(from: duration)
             {
               Text(formattedDuration)

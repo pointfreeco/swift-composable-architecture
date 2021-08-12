@@ -105,7 +105,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     }
   }
 }
-  .debug(actionFormat: .labelsOnly)
+.debug(actionFormat: .labelsOnly)
 
 struct AuthorizationStateAlert: Equatable, Identifiable {
   var title: String
