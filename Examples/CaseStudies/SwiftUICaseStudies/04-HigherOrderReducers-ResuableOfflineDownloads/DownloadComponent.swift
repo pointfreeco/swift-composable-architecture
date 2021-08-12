@@ -154,7 +154,7 @@ struct DownloadComponent<ID: Equatable>: View {
             .accentColor(Color.black)
         } else if viewStore.mode == .startingToDownload {
           ZStack {
-            ActivityIndicator()
+            ProgressView()
 
             Rectangle()
               .frame(width: 6, height: 6)

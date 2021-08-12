@@ -111,7 +111,7 @@ struct EffectsBasicsView: View {
 
           Button("Number fact") { viewStore.send(.numberFactButtonTapped) }
           if viewStore.isNumberFactRequestInFlight {
-            ActivityIndicator()
+            ProgressView()
           }
 
           viewStore.numberFact.map(Text.init)

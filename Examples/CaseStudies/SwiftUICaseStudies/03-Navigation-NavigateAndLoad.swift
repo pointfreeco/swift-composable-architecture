@@ -73,7 +73,7 @@ struct NavigateAndLoadView: View {
                 action: NavigateAndLoadAction.optionalCounter
               ),
               then: CounterView.init(store:),
-              else: { ActivityIndicator() }
+              else: ProgressView.init
             ),
             isActive: viewStore.binding(
               get: \.isNavigationActive,

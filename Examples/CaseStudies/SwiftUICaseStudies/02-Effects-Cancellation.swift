@@ -97,7 +97,7 @@ struct EffectsCancellationView: View {
             HStack {
               Button("Cancel") { viewStore.send(.cancelButtonTapped) }
               Spacer()
-              ActivityIndicator()
+              ProgressView()
             }
           } else {
             Button("Number fact") { viewStore.send(.triviaButtonTapped) }

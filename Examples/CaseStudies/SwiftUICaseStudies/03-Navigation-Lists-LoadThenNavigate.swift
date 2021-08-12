@@ -111,7 +111,7 @@ struct LoadThenNavigateListView: View {
                 Text("Load optional counter that starts from \(row.count)")
                 if row.isActivityIndicatorVisible {
                   Spacer()
-                  ActivityIndicator()
+                  ProgressView()
                 }
               }
             }
