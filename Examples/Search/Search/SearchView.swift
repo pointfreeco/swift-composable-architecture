@@ -115,7 +115,7 @@ struct SearchView: View {
                     Text(location.title)
 
                     if viewStore.locationWeatherRequestInFlight?.id == location.id {
-                      ActivityIndicator()
+                      ProgressView()
                     }
                   }
                 }
