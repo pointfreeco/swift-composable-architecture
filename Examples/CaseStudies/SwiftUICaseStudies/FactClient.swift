@@ -1,7 +1,6 @@
 import Combine
 import ComposableArchitecture
 import XCTestDynamicOverlay
-import SwiftUI
 
 struct FactClient {
   var fetch: (Int) -> Effect<String, Error>
