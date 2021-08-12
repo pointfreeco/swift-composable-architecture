@@ -124,7 +124,7 @@ extension Reducer {
               let stateOutput =
                 LocalState.self == Void.self
                 ? ""
-                : difference(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
+                : diff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
               debugEnvironment.printer(
                 """
                 \(prefix.isEmpty ? "" : "\(prefix): ")received action:

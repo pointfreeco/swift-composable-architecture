@@ -367,7 +367,7 @@
     ) {
       if expected != actual {
         let diff =
-          difference(expected, actual)
+        diff(expected, actual)
           .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
           ?? """
           Expected:
@@ -409,7 +409,7 @@
       let (receivedAction, state) = self.receivedActions.removeFirst()
       if expectedAction != receivedAction {
         let diff =
-          difference(expectedAction, receivedAction)
+        diff(expectedAction, receivedAction)
           .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
           ?? """
           Expected:
