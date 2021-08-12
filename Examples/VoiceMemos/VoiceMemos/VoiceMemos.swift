@@ -34,15 +34,14 @@ enum VoiceMemosAction: Equatable {
   case finalRecordingTime(TimeInterval)
   case openSettingsButtonTapped
   case recordButtonTapped
-  case recordPermissionBlockCalled(Bool)
+  case recordPermissionResponse(Bool)
   case voiceMemo(id: VoiceMemo.ID, action: VoiceMemoAction)
 }
 
 struct VoiceMemosEnvironment {
   var audioPlayer: AudioPlayerClient
   var audioRecorder: AudioRecorderClient
-  var date: () -> Date
-  var mainQueue: AnySchedulerOf<DispatchQueue>
+  var mainRunLoop: AnySchedulerOf<RunLoop>
   var openSettings: Effect<Never, Never>
   var temporaryDirectory: () -> URL
   var uuid: () -> UUID
@@ -53,7 +52,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
     state: \.voiceMemos,
     action: /VoiceMemosAction.voiceMemo(id:action:),
     environment: {
-      VoiceMemoEnvironment(audioPlayerClient: $0.audioPlayer, mainQueue: $0.mainQueue)
+      VoiceMemoEnvironment(audioPlayerClient: $0.audioPlayer, mainRunLoop: $0.mainRunLoop)
     }),
   .init { state, action, environment in
     struct RecorderId: Hashable {}
@@ -64,14 +63,13 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
         .appendingPathComponent(environment.uuid().uuidString)
         .appendingPathExtension("m4a")
       state.currentRecording = .init(
-        date: environment.date(),
+        date: environment.mainRunLoop.now.date,
         url: url
       )
       return .merge(
         environment.audioRecorder.startRecording(RecorderId(), url)
-          .catchToEffect()
-          .map(VoiceMemosAction.audioRecorder),
-        Effect.timer(id: RecorderTimerId(), every: 1, tolerance: .zero, on: environment.mainQueue)
+          .catchToEffect(VoiceMemosAction.audioRecorder),
+        Effect.timer(id: RecorderTimerId(), every: 1, tolerance: .zero, on: environment.mainRunLoop)
           .map { _ in .currentRecordingTimerUpdated }
       )
     }
@@ -123,8 +121,8 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       switch state.audioRecorderPermission {
       case .undetermined:
         return environment.audioRecorder.requestRecordPermission()
-          .map(VoiceMemosAction.recordPermissionBlockCalled)
-          .receive(on: environment.mainQueue)
+          .map(VoiceMemosAction.recordPermissionResponse)
+          .receive(on: environment.mainRunLoop)
           .eraseToEffect()
 
       case .denied:
@@ -154,7 +152,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
         }
       }
 
-    case let .recordPermissionBlockCalled(permission):
+    case let .recordPermissionResponse(permission):
       state.audioRecorderPermission = permission ? .allowed : .denied
       if permission {
         return startRecording()
@@ -227,14 +225,15 @@ struct VoiceMemosView: View {
               }
             }
 
-            (viewStore.currentRecording?.duration).map { duration in
-              dateComponentsFormatter.string(from: duration).map {
-                Text($0)
-                  .font(Font.body.monospacedDigit().bold())
-                  .foregroundColor(.white)
-                  .colorMultiply(Color(Int(duration).isMultiple(of: 2) ? .systemRed : .label))
-                  .animation(.easeInOut(duration: 0.5))
-              }
+            if
+              let duration = viewStore.currentRecording?.duration,
+              let formattedDuration = dateComponentsFormatter.string(from: duration)
+            {
+              Text(formattedDuration)
+                .font(Font.body.monospacedDigit().bold())
+                .foregroundColor(.white)
+                .colorMultiply(Color(Int(duration).isMultiple(of: 2) ? .systemRed : .label))
+                .animation(.easeInOut(duration: 0.5))
             }
           }
           .padding()
@@ -282,8 +281,7 @@ struct VoiceMemos_Previews: PreviewProvider {
             startRecording: { _, _ in .none },
             stopRecording: { _ in .none }
           ),
-          date: Date.init,
-          mainQueue: .main,
+          mainRunLoop: .main,
           openSettings: .none,
           temporaryDirectory: { URL(fileURLWithPath: NSTemporaryDirectory()) },
           uuid: UUID.init

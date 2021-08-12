@@ -88,8 +88,7 @@ extension Reducer {
             return environment.downloadClient
               .download(state.id, state.url)
               .throttle(for: 1, scheduler: environment.mainQueue, latest: true)
-              .catchToEffect()
-              .map(DownloadComponentAction.downloadClient)
+              .catchToEffect(DownloadComponentAction.downloadClient)
 
           case .startingToDownload:
             state.alert = cancelAlert
@@ -155,7 +154,7 @@ struct DownloadComponent<ID: Equatable>: View {
             .accentColor(Color.black)
         } else if viewStore.mode == .startingToDownload {
           ZStack {
-            ActivityIndicator()
+            ProgressView()
 
             Rectangle()
               .frame(width: 6, height: 6)

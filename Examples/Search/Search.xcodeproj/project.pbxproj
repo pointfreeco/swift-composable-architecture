@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CA5C0ECA2425661800C1F9AB /* ActivityIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5C0EC92425661800C1F9AB /* ActivityIndicator.swift */; };
 		CA66690B242547B000A639B3 /* WeatherClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA66690A242547B000A639B3 /* WeatherClient.swift */; };
 		CA86E49D24253C2500357AD9 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA86E49C24253C2500357AD9 /* SceneDelegate.swift */; };
 		CA86E49F24253C2500357AD9 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA86E49E24253C2500357AD9 /* SearchView.swift */; };
@@ -50,7 +49,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		CA5C0EC92425661800C1F9AB /* ActivityIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityIndicator.swift; sourceTree = "<group>"; };
 		CA66690A242547B000A639B3 /* WeatherClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherClient.swift; sourceTree = "<group>"; };
 		CA86E49724253C2500357AD9 /* Search.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Search.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CA86E49C24253C2500357AD9 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -107,7 +105,6 @@
 			children = (
 				CA86E4A824253C2700357AD9 /* Info.plist */,
 				CA86E49E24253C2500357AD9 /* SearchView.swift */,
-				CA5C0EC92425661800C1F9AB /* ActivityIndicator.swift */,
 				CA86E49C24253C2500357AD9 /* SceneDelegate.swift */,
 				CA66690A242547B000A639B3 /* WeatherClient.swift */,
 				CA86E4A024253C2700357AD9 /* Assets.xcassets */,
@@ -231,7 +228,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CA5C0ECA2425661800C1F9AB /* ActivityIndicator.swift in Sources */,
 				CA66690B242547B000A639B3 /* WeatherClient.swift in Sources */,
 				CA86E49D24253C2500357AD9 /* SceneDelegate.swift in Sources */,
 				CA86E49F24253C2500357AD9 /* SearchView.swift in Sources */,
@@ -413,6 +409,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Search/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -432,6 +429,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Search/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

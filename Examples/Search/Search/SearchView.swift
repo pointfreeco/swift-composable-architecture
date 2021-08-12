@@ -49,8 +49,7 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
     return environment.weatherClient
       .weather(location.id)
       .receive(on: environment.mainQueue)
-      .catchToEffect()
-      .map(SearchAction.locationWeatherResponse)
+      .catchToEffect(SearchAction.locationWeatherResponse)
       .cancellable(id: SearchWeatherId(), cancelInFlight: true)
 
   case let .searchQueryChanged(query):
@@ -68,9 +67,8 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
 
     return environment.weatherClient
       .searchLocation(query)
-      .catchToEffect()
       .debounce(id: SearchLocationId(), for: 0.3, scheduler: environment.mainQueue)
-      .map(SearchAction.locationsResponse)
+      .catchToEffect(SearchAction.locationsResponse)
 
   case let .locationWeatherResponse(.failure(locationWeather)):
     state.locationWeather = nil
@@ -117,7 +115,7 @@ struct SearchView: View {
                     Text(location.title)
 
                     if viewStore.locationWeatherRequestInFlight?.id == location.id {
-                      ActivityIndicator()
+                      ProgressView()
                     }
                   }
                 }

@@ -67,7 +67,6 @@
 		DC89C41B24460F95006900B9 /* 00-RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C41A24460F95006900B9 /* 00-RootView.swift */; };
 		DC89C41D24460F96006900B9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC89C41C24460F96006900B9 /* Assets.xcassets */; };
 		DC89C4442446111B006900B9 /* 01-GettingStarted-Counter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C4432446111B006900B9 /* 01-GettingStarted-Counter.swift */; };
-		DC89C44724461431006900B9 /* ActivityIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C44624461431006900B9 /* ActivityIndicator.swift */; };
 		DC89C449244618D5006900B9 /* 03-Navigation-LoadThenNavigate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C448244618D5006900B9 /* 03-Navigation-LoadThenNavigate.swift */; };
 		DC89C44D244621A5006900B9 /* 03-Navigation-NavigateAndLoad.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C44C244621A5006900B9 /* 03-Navigation-NavigateAndLoad.swift */; };
 		DC89C45124462DE7006900B9 /* 03-Navigation-Lists-LoadThenNavigate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C45024462DE7006900B9 /* 03-Navigation-Lists-LoadThenNavigate.swift */; };
@@ -220,7 +219,6 @@
 		DC89C43824460FC7006900B9 /* swift-composable-architecture */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "swift-composable-architecture"; path = ../..; sourceTree = "<group>"; };
 		DC89C43924460FFF006900B9 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		DC89C4432446111B006900B9 /* 01-GettingStarted-Counter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Counter.swift"; sourceTree = "<group>"; };
-		DC89C44624461431006900B9 /* ActivityIndicator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ActivityIndicator.swift; sourceTree = "<group>"; };
 		DC89C448244618D5006900B9 /* 03-Navigation-LoadThenNavigate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Navigation-LoadThenNavigate.swift"; sourceTree = "<group>"; };
 		DC89C44C244621A5006900B9 /* 03-Navigation-NavigateAndLoad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Navigation-NavigateAndLoad.swift"; sourceTree = "<group>"; };
 		DC89C45024462DE7006900B9 /* 03-Navigation-Lists-LoadThenNavigate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Navigation-Lists-LoadThenNavigate.swift"; sourceTree = "<group>"; };
@@ -454,7 +452,6 @@
 		DC89C44524461416006900B9 /* Internal */ = {
 			isa = PBXGroup;
 			children = (
-				DC89C44624461431006900B9 /* ActivityIndicator.swift */,
 				CA6AC2612451135C00C71CB3 /* CircularProgressView.swift */,
 				DCC68EDE2447BC810037F998 /* TemplateText.swift */,
 				DC9EB4162450CBD2005F413B /* UIViewRepresented.swift */,
@@ -751,7 +748,6 @@
 				DCC68EDF2447BC810037F998 /* TemplateText.swift in Sources */,
 				DCAC2A4F2452352E0094DEF5 /* 04-HigherOrderReducers-ElmLikeSubscriptions.swift in Sources */,
 				CA6AC2672451135C00C71CB3 /* DownloadClient.swift in Sources */,
-				DC89C44724461431006900B9 /* ActivityIndicator.swift in Sources */,
 				CAA9ADC624465C810003A984 /* 02-Effects-Cancellation.swift in Sources */,
 				DC2E370D24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift in Sources */,
 				CA5ECF92267A79F0002067FF /* FactClient.swift in Sources */,
@@ -962,7 +958,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = UIKitCaseStudiesTests/Info.plist;
+				INFOPLIST_FILE = UIKitCaseStudies/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -982,7 +978,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = UIKitCaseStudiesTests/Info.plist;
+				INFOPLIST_FILE = UIKitCaseStudies/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1152,6 +1148,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = SwiftUICaseStudies/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1171,6 +1168,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = SwiftUICaseStudies/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

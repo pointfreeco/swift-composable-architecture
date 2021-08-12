@@ -37,7 +37,7 @@ enum VoiceMemoAction: Equatable {
 
 struct VoiceMemoEnvironment {
   var audioPlayerClient: AudioPlayerClient
-  var mainQueue: AnySchedulerOf<DispatchQueue>
+  var mainRunLoop: AnySchedulerOf<RunLoop>
 }
 
 let voiceMemoReducer = Reducer<VoiceMemo, VoiceMemoAction, VoiceMemoEnvironment> {
@@ -63,20 +63,14 @@ let voiceMemoReducer = Reducer<VoiceMemo, VoiceMemoAction, VoiceMemoEnvironment>
     switch memo.mode {
     case .notPlaying:
       memo.mode = .playing(progress: 0)
-      let start = environment.mainQueue.now
+      let start = environment.mainRunLoop.now
       return .merge(
-        Effect.timer(id: TimerId(), every: 0.5, on: environment.mainQueue)
-          .map {
-            .timerUpdated(
-              TimeInterval($0.dispatchTime.uptimeNanoseconds - start.dispatchTime.uptimeNanoseconds)
-                / TimeInterval(NSEC_PER_SEC)
-            )
-          },
+        Effect.timer(id: TimerId(), every: 0.5, on: environment.mainRunLoop)
+          .map { .timerUpdated($0.date.timeIntervalSince1970 - start.date.timeIntervalSince1970) },
 
         environment.audioPlayerClient
           .play(PlayerId(), memo.url)
-          .catchToEffect()
-          .map(VoiceMemoAction.audioPlayerClient)
+          .catchToEffect(VoiceMemoAction.audioPlayerClient)
           .cancellable(id: PlayerId())
       )
 

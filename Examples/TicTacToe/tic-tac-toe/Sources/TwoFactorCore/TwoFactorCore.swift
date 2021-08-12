@@ -57,8 +57,7 @@ public let twoFactorReducer = Reducer<TwoFactorState, TwoFactorAction, TwoFactor
     return environment.authenticationClient
       .twoFactor(TwoFactorRequest(code: state.code, token: state.token))
       .receive(on: environment.mainQueue)
-      .catchToEffect()
-      .map(TwoFactorAction.twoFactorResponse)
+      .catchToEffect(TwoFactorAction.twoFactorResponse)
       .cancellable(id: TwoFactorTearDownToken())
 
   case let .twoFactorResponse(.failure(error)):

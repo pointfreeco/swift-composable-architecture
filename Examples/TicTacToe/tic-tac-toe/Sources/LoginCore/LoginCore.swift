@@ -85,8 +85,7 @@ public let loginReducer = Reducer<LoginState, LoginAction, LoginEnvironment>.com
       return environment.authenticationClient
         .login(LoginRequest(email: state.email, password: state.password))
         .receive(on: environment.mainQueue)
-        .catchToEffect()
-        .map(LoginAction.loginResponse)
+        .catchToEffect(LoginAction.loginResponse)
 
     case .twoFactor:
       return .none
