@@ -7,7 +7,7 @@ final class EffectTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
   let scheduler = DispatchQueue.test
 
-  func testEraseToEffectWithError() {
+  func testCatchToEffect() {
     struct Error: Swift.Error, Equatable {}
 
     Future<Int, Error> { $0(.success(42)) }
@@ -23,6 +23,30 @@ final class EffectTests: XCTestCase {
     Future<Int, Never> { $0(.success(42)) }
       .eraseToEffect()
       .sink { XCTAssertEqual($0, 42) }
+      .store(in: &self.cancellables)
+
+    Future<Int, Error> { $0(.success(42)) }
+      .catchToEffect {
+        switch $0 {
+        case let .success(val):
+          return val
+        case .failure:
+          return -1
+        }
+      }
+      .sink { XCTAssertEqual($0, 42) }
+      .store(in: &self.cancellables)
+
+    Future<Int, Error> { $0(.failure(Error())) }
+      .catchToEffect {
+        switch $0 {
+        case let .success(val):
+          return val
+        case .failure:
+          return -1
+        }
+      }
+      .sink { XCTAssertEqual($0, -1) }
       .store(in: &self.cancellables)
   }
 

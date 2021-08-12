@@ -328,7 +328,7 @@ extension Publisher {
   ///
   /// ```swift
   /// case .buttonTapped:
-  ///   return fetchUser(id: 1)
+  ///   return environment.fetchUser(id: 1)
   ///     .catchToEffect()
   ///     .map(ProfileAction.userResponse)
   /// ```
@@ -337,6 +337,30 @@ extension Publisher {
   public func catchToEffect() -> Effect<Result<Output, Failure>, Never> {
     self.map(Result.success)
       .catch { Just(.failure($0)) }
+      .eraseToEffect()
+  }
+
+  /// Turns any publisher into an ``Effect`` that cannot fail by wrapping its output and failure
+  /// into a result and then applying passed in function to it.
+  ///
+  /// This is a convenience operator for writing ``Effect/catchToEffect()`` followed by a
+  /// ``Effect/map(_:)-28ghh``.
+  ///
+  /// ```swift
+  /// case .buttonTapped:
+  ///   return environment.fetchUser(id: 1)
+  ///     .catchToEffect(ProfileAction.userResponse)
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - transform: A mapping function that converts `Result<Output,Failure>` to another type.
+  /// - Returns: An effect that wraps `self`.
+  public func catchToEffect<T>(
+    _ transform: @escaping (Result<Output, Failure>) -> T
+  ) -> Effect<T, Never> {
+    self
+      .map { transform(.success($0)) }
+      .catch { Just(transform(.failure($0))) }
       .eraseToEffect()
   }
 
