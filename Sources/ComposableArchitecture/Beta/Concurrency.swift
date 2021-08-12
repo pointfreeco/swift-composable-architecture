@@ -1,11 +1,12 @@
 import Combine
 import SwiftUI
 
-import OSLog
-
 #if compiler(>=5.5)
   @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
   extension Effect {
+    // TODO: Document that this should only be used in live dependencies, since async work cannot
+    // currently be made synchronous
+    
     /// Wraps an asynchronous unit of work in an effect.
     ///
     /// This function is useful for executing work in an asynchronous context and capture the result
