@@ -88,8 +88,7 @@ extension Reducer {
             return environment.downloadClient
               .download(state.id, state.url)
               .throttle(for: 1, scheduler: environment.mainQueue, latest: true)
-              .catchToEffect()
-              .map(DownloadComponentAction.downloadClient)
+              .catchToEffect(DownloadComponentAction.downloadClient)
 
           case .startingToDownload:
             state.alert = cancelAlert

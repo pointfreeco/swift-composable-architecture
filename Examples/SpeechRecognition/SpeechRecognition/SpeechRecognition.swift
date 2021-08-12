@@ -98,15 +98,14 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
       request.shouldReportPartialResults = true
       request.requiresOnDeviceRecognition = false
       return environment.speechClient.recognitionTask(SpeechRecognitionId(), request)
-        .catchToEffect()
-        .map(AppAction.speech)
+        .catchToEffect(AppAction.speech)
 
     @unknown default:
       return .none
     }
   }
 }
-.debug()
+  .debug(actionFormat: .labelsOnly)
 
 struct AuthorizationStateAlert: Equatable, Identifiable {
   var title: String

@@ -46,8 +46,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
   var receiveSocketMessageEffect: Effect<WebSocketAction, Never> {
     return environment.webSocket.receive(WebSocketId())
       .receive(on: environment.mainQueue)
-      .catchToEffect()
-      .map(WebSocketAction.receivedSocketMessage)
+      .catchToEffect(WebSocketAction.receivedSocketMessage)
       .cancellable(id: WebSocketId())
   }
   var sendPingEffect: Effect<WebSocketAction, Never> {
