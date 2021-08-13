@@ -94,15 +94,14 @@ final class ReducerTests: XCTestCase {
   }
 
   func testDebug() {
-    enum Action: Equatable { case incr, noop }
-    struct State: Equatable { var count = 0 }
-
     var logs: [String] = []
     let logsExpectation = self.expectation(description: "logs")
     logsExpectation.expectedFulfillmentCount = 2
 
-    let reducer = Reducer<State, Action, Void> { state, action, _ in
+    let reducer = Reducer<DebugState, DebugAction, Void> { state, action, _ in
       switch action {
+      case .incrWithBool:
+        return .none
       case .incr:
         state.count += 1
         return .none
@@ -120,7 +119,7 @@ final class ReducerTests: XCTestCase {
     }
 
     let store = TestStore(
-      initialState: State(),
+      initialState: .init(),
       reducer: reducer,
       environment: ()
     )
@@ -134,16 +133,16 @@ final class ReducerTests: XCTestCase {
       [
         #"""
         [prefix]: received action:
-          Action.incr
-          State(
-        −   count: 0
+          DebugAction.incr
+          DebugState(
+        -   count: 0
         +   count: 1
-          )
+          )
 
         """#,
         #"""
         [prefix]: received action:
-          Action.noop
+          DebugAction.noop
           (No state changes)
 
         """#,
@@ -152,16 +151,15 @@ final class ReducerTests: XCTestCase {
   }
 
   func testDebug_ActionFormat_OnlyLabels() {
-    enum Action: Equatable { case incr(Bool) }
-    struct State: Equatable { var count = 0 }
-
     var logs: [String] = []
     let logsExpectation = self.expectation(description: "logs")
 
-    let reducer = Reducer<State, Action, Void> { state, action, _ in
+    let reducer = Reducer<DebugState, DebugAction, Void> { state, action, _ in
       switch action {
-      case let .incr(bool):
+      case let .incrWithBool(bool):
         state.count += bool ? 1 : 0
+        return .none
+      default:
         return .none
       }
     }
@@ -176,12 +174,12 @@ final class ReducerTests: XCTestCase {
 
     let viewStore = ViewStore(
       Store(
-        initialState: State(),
+        initialState: .init(),
         reducer: reducer,
         environment: ()
       )
     )
-    viewStore.send(.incr(true))
+    viewStore.send(.incrWithBool(true))
 
     self.wait(for: [logsExpectation], timeout: 2)
 
@@ -190,11 +188,11 @@ final class ReducerTests: XCTestCase {
       [
         #"""
         [prefix]: received action:
-          Action.incr
-          State(
-        −   count: 0
+          DebugAction.incrWithBool
+          DebugState(
+        -   count: 0
         +   count: 1
-          )
+          )
 
         """#
       ]
@@ -223,3 +221,6 @@ final class ReducerTests: XCTestCase {
     self.wait(for: [expectation], timeout: 0.1)
   }
 }
+
+enum DebugAction: Equatable { case incrWithBool(Bool), incr, noop }
+struct DebugState: Equatable { var count = 0 }

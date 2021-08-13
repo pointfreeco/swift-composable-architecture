@@ -310,11 +310,11 @@ extension LocalizedStringKey {
 
 extension TextState: CustomDumpStringConvertible {
   public var customDumpDescription: String {
-    func debugOutputHelp(_ textState: Self) -> String {
+    func dumpHelp(_ textState: Self) -> String {
       var output: String
       switch textState.storage {
       case let .concatenated(lhs, rhs):
-        output = debugOutputHelp(lhs) + debugOutputHelp(rhs)
+        output = dumpHelp(lhs) + dumpHelp(rhs)
       case let .localized(key, tableName, bundle, comment):
         output = key.formatted(tableName: tableName, bundle: bundle, comment: comment)
       case let .verbatim(string):
@@ -368,7 +368,7 @@ extension TextState: CustomDumpStringConvertible {
       return output
     }
 
-    let output = debugOutputHelp(self)
+    let output = dumpHelp(self)
     if output.contains("\n") {
       return #"""
         """
