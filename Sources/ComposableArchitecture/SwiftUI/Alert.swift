@@ -221,6 +221,10 @@ extension AlertState: CustomDumpReflectable {
   }
 }
 
+// TODO
+//extension AlertState.Button: CustomDumpReflectable {
+//}
+
 extension AlertState: Equatable where Action: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.title == rhs.title

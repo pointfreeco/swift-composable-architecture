@@ -368,10 +368,15 @@ extension TextState: CustomDumpStringConvertible {
       return output
     }
 
-    return #"""
-      \#(Self.self)(
-      \#(debugOutputHelp(self).indent(by: 2))
-      )
-      """#
+    let output = debugOutputHelp(self)
+    if output.contains("\n") {
+      return #"""
+        """
+        \#(output.indent(by: 2))
+          """
+        """#
+    } else {
+      return output.debugDescription
+    }
   }
 }
