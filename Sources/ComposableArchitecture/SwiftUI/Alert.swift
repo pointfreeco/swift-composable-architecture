@@ -221,9 +221,30 @@ extension AlertState: CustomDumpReflectable {
   }
 }
 
-// TODO
-//extension AlertState.Button: CustomDumpReflectable {
-//}
+extension AlertState.Button: CustomDumpReflectable {
+  public var customDumpMirror: Mirror {
+    let buttonLabel: TextState?
+    switch self.type {
+    case let .cancel(label):
+      buttonLabel = label
+    case let .default(label):
+      buttonLabel = label
+    case let .destructive(label):
+      buttonLabel = label
+    }
+
+    return Mirror(
+      self,
+      children: [
+        Mirror(reflecting: self.type).children.first!.label!: (
+          action: self.action,
+          label: buttonLabel
+        )
+      ],
+      displayStyle: .enum
+    )
+  }
+}
 
 extension AlertState: Equatable where Action: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
