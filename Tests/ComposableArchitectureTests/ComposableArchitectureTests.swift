@@ -169,24 +169,4 @@ final class ComposableArchitectureTests: XCTestCase {
     store.send(.cancel)
     scheduler.run()
   }
-
-  #if compiler(>=5.5)
-    func testAsync() {
-      guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
-
-      let reducer = Reducer<Int, Bool, () async -> Bool> { state, action, environment in
-        switch action {
-        case true:
-          state += 1
-          return .none
-        case false:
-          return .task { await environment() }
-        }
-      }
-
-      let store = TestStore(initialState: 0, reducer: reducer, environment: { true })
-      store.send(false)
-      store.receive(true) { $0 = 1 }
-    }
-  #endif
 }
