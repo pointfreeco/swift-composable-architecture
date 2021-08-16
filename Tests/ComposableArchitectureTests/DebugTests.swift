@@ -53,23 +53,23 @@ final class DebugTests: XCTestCase {
       dump,
       #"""
       """
-        <baseline-offset=10.5>Offset by 10.5</baseline-offset>
-        Headline
-        No font
-        <font-weight=light>Light font weight</font-weight>
-        No font weight
-        <foreground-color=red>Red</foreground-color>
-        No color
-        _Italic_
-        <kerning=2.5>Kerning of 2.5</kerning>
-        ~~Stricken~~
-        <s color=green>Stricken green</s>
-        Not stricken blue
-        <tracking=5.5>Tracking of 5.5</tracking>
-        <u>Underlined</u>
-        <u color=pink>Underlined pink</u>
-        Not underlined purple
-        """
+      <baseline-offset=10.5>Offset by 10.5</baseline-offset>
+      Headline
+      No font
+      <font-weight=light>Light font weight</font-weight>
+      No font weight
+      <foreground-color=red>Red</foreground-color>
+      No color
+      _Italic_
+      <kerning=2.5>Kerning of 2.5</kerning>
+      ~~Stricken~~
+      <s color=green>Stricken green</s>
+      Not stricken blue
+      <tracking=5.5>Tracking of 5.5</tracking>
+      <u>Underlined</u>
+      <u color=pink>Underlined pink</u>
+      Not underlined purple
+      """
       """#
     )
   }
