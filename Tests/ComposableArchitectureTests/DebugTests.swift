@@ -110,4 +110,18 @@ final class DebugTests: XCTestCase {
       "Action.screenA(.row(index:, action: .textChanged(query:)))"
     )
   }
+
+  func testBindingAction() {
+    var dump = ""
+    customDump(BindingAction.set(\CGSize.width, 50), to: &dump)
+    XCTAssertNoDifference(
+      dump,
+      #"""
+      BindingAction.set(
+        \CGSize.width,
+        50.0
+      )
+      """#
+    )
+  }
 }

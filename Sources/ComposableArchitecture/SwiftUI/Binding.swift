@@ -197,10 +197,9 @@ extension BindingAction: CustomDumpReflectable {
     .init(
       self,
       children: [
-        "keyPath": self.keyPath as Any,
-        "value": self.value as Any
+        "set": (self.keyPath, self.value)
       ],
-      displayStyle: .struct
+      displayStyle: .enum
     )
   }
 }

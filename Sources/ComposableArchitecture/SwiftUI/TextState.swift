@@ -308,8 +308,8 @@ extension LocalizedStringKey {
   }
 }
 
-extension TextState: CustomDumpStringConvertible {
-  public var customDumpDescription: String {
+extension TextState: CustomDumpRepresentable {
+  public var customDumpValue: Any {
     func dumpHelp(_ textState: Self) -> String {
       var output: String
       switch textState.storage {
@@ -368,8 +368,6 @@ extension TextState: CustomDumpStringConvertible {
       return output
     }
 
-    var out = ""
-    customDump(dumpHelp(self), to: &out)
-    return out
+    return dumpHelp(self)
   }
 }
