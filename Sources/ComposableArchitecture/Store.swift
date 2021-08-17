@@ -116,8 +116,8 @@ import Foundation
 public final class Store<State, Action> {
   var state: CurrentValueSubject<State, Never>
   var effectCancellables: [UUID: AnyCancellable] = [:]
+  var parentCancellable: AnyCancellable?
   private var isSending = false
-  private var parentCancellable: AnyCancellable?
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   private var bufferedActions: [Action] = []
 

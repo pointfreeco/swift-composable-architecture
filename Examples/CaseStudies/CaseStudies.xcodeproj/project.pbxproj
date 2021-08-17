@@ -24,6 +24,7 @@
 		CA6AC2662451135C00C71CB3 /* DownloadComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6AC2622451135C00C71CB3 /* DownloadComponent.swift */; };
 		CA6AC2672451135C00C71CB3 /* DownloadClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6AC2632451135C00C71CB3 /* DownloadClient.swift */; };
 		CA7BC8EE245CCFE4001FB69F /* 01-GettingStarted-SharedState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7BC8ED245CCFE4001FB69F /* 01-GettingStarted-SharedState.swift */; };
+		CA93F9DA26CC30F700FC7E67 /* NavContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA93F9D926CC30F700FC7E67 /* NavContentView.swift */; };
 		CAA9ADC22446587C0003A984 /* 02-Effects-Basics.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA9ADC12446587C0003A984 /* 02-Effects-Basics.swift */; };
 		CAA9ADC424465AB00003A984 /* 02-Effects-BasicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA9ADC324465AB00003A984 /* 02-Effects-BasicsTests.swift */; };
 		CAA9ADC624465C810003A984 /* 02-Effects-Cancellation.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA9ADC524465C810003A984 /* 02-Effects-Cancellation.swift */; };
@@ -167,6 +168,7 @@
 		CA6AC2622451135C00C71CB3 /* DownloadComponent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DownloadComponent.swift; sourceTree = "<group>"; };
 		CA6AC2632451135C00C71CB3 /* DownloadClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DownloadClient.swift; sourceTree = "<group>"; };
 		CA7BC8ED245CCFE4001FB69F /* 01-GettingStarted-SharedState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-SharedState.swift"; sourceTree = "<group>"; };
+		CA93F9D926CC30F700FC7E67 /* NavContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavContentView.swift; sourceTree = "<group>"; };
 		CAA9ADC12446587C0003A984 /* 02-Effects-Basics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-Basics.swift"; sourceTree = "<group>"; };
 		CAA9ADC324465AB00003A984 /* 02-Effects-BasicsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-BasicsTests.swift"; sourceTree = "<group>"; };
 		CAA9ADC524465C810003A984 /* 02-Effects-Cancellation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-Cancellation.swift"; sourceTree = "<group>"; };
@@ -422,6 +424,7 @@
 				DC2E370C24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift */,
 				CA5ECF91267A79F0002067FF /* FactClient.swift */,
 				DC89C41824460F95006900B9 /* SceneDelegate.swift */,
+				CA93F9D926CC30F700FC7E67 /* NavContentView.swift */,
 				DC89C41C24460F96006900B9 /* Assets.xcassets */,
 				CA6AC25F2451131C00C71CB3 /* 04-HigherOrderReducers-ResuableOfflineDownloads */,
 				DC89C44524461416006900B9 /* Internal */,
@@ -772,6 +775,7 @@
 				CA27C0B7245780CE00CB1E59 /* 03-Effects-SystemEnvironment.swift in Sources */,
 				CAA9ADCA2446605B0003A984 /* 02-Effects-LongLiving.swift in Sources */,
 				DC89C45124462DE7006900B9 /* 03-Navigation-Lists-LoadThenNavigate.swift in Sources */,
+				CA93F9DA26CC30F700FC7E67 /* NavContentView.swift in Sources */,
 				DC89C45524465C44006900B9 /* 02-Effects-Timers.swift in Sources */,
 				CA410EE0247A15FE00E41798 /* 02-Effects-WebSocket.swift in Sources */,
 				CA7BC8EE245CCFE4001FB69F /* 01-GettingStarted-SharedState.swift in Sources */,

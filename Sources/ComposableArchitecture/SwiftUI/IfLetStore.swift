@@ -85,6 +85,11 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
             state = $0 ?? state
             return state
           }
+          .transformSend { action, send in
+            if viewStore.state != nil {
+              send(action)
+            }
+          }
         )
       } else {
         return nil
