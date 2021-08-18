@@ -2,8 +2,6 @@ name: Format
 
 on:
   push:
-    branches:
-      - main
     branches-ignore:
       - '**'
 
