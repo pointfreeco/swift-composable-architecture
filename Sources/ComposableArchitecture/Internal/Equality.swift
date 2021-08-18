@@ -4,12 +4,15 @@ func isEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
   return memcmp(&lhs, &rhs, MemoryLayout<T>.size) == 0
     || (Box<T>.self as? AnyEquatable.Type)?.isEqual(lhs, rhs) == true
 }
+
 private protocol AnyEquatable {
-  static func isEqual<T>(_ lhs: T, _ rhs: T) -> Bool
+  static func isEqual(_ lhs: Any, _ rhs: Any) -> Bool
 }
-private enum Box<PossiblyEquatable> {}
-extension Box: AnyEquatable where PossiblyEquatable: Equatable {
-  static func isEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
-    lhs as? PossiblyEquatable == rhs as? PossiblyEquatable
+
+private enum Box<T> {}
+
+extension Box: AnyEquatable where T: Equatable {
+  static func isEqual(_ lhs: Any, _ rhs: Any) -> Bool {
+    lhs as? T == rhs as? T
   }
 }
