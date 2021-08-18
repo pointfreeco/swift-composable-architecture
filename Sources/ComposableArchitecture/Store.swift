@@ -286,7 +286,10 @@ public final class Store<State, Action> {
         isSending = true
         defer { isSending = false }
         self.send(fromLocalAction(localAction))
-        localState = toLocalState(self.state.value)
+        let newLocalState = toLocalState(self.state.value)
+        if !isEqual(localState, newLocalState) {
+          localState = newLocalState
+        }
         return .none
       },
       environment: ()
@@ -350,7 +353,6 @@ public final class Store<State, Action> {
           }
         return localStore
       }
-      .removeDuplicates(by: isEqual)
       .eraseToAnyPublisher()
   }
 
@@ -375,7 +377,9 @@ public final class Store<State, Action> {
     var currentState = self.state.value
     defer {
       self.isSending = false
-      self.state.value = currentState
+      if !isEqual(self.state.value, currentState) {
+        self.state.value = currentState
+      }
     }
 
     while !self.bufferedActions.isEmpty {
@@ -410,25 +414,4 @@ public final class Store<State, Action> {
     func absurd<A>(_ never: Never) -> A {}
     return self.scope(state: { $0 }, action: absurd)
   }
-}
-
-enum Box<T> {}
-
-protocol AnyEquatable {
-  static func isEqual(_ lhs: Any, _ rhs: Any) -> Bool
-}
-
-extension Box: AnyEquatable where T: Equatable {
-  static func isEqual(_ lhs: Any, _ rhs: Any) -> Bool {
-    guard let lhs = lhs as? T, let rhs = rhs as? T else { return false }
-    return lhs == rhs
-  }
-}
-
-func isEqual(_ lhs: Any, _ rhs: Any) -> Bool {
-  func open<LHS>(_: LHS.Type) -> Bool? {
-    (Box<LHS>.self as? AnyEquatable.Type)?.isEqual(lhs, rhs)
-  }
-  if let isEqual = _openExistential(type(of: lhs), do: open) { return isEqual }
-  return false
 }
