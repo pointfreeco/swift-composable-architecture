@@ -69,18 +69,27 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///     equal, repeat view computations are removed.
   public init(
     _ store: Store<State, Action>,
-    removeDuplicates isDuplicate: @escaping (State, State) -> Bool
+    removeDuplicates isDuplicate: ((State, State) -> Bool)? = nil
   ) {
     self._send = store.send
     self._state = CurrentValueSubject(store.state.value)
 
-    self.viewCancellable = store.state
-      .removeDuplicates(by: isDuplicate)
-      .sink { [weak self] in
-        guard let self = self else { return }
-        self.objectWillChange.send()
-        self._state.value = $0
-      }
+    if let isDuplicate = isDuplicate {
+      self.viewCancellable = store.state
+        .removeDuplicates(by: isDuplicate)
+        .sink { [weak self] in
+          guard let self = self else { return }
+          self.objectWillChange.send()
+          self._state.send($0)
+        }
+    } else {
+      self.viewCancellable = store.state
+        .sink { [weak self] in
+          guard let self = self else { return }
+          self.objectWillChange.send()
+          self._state.send($0)
+        }
+    }
   }
 
   /// A publisher that emits when state changes.
@@ -272,18 +281,6 @@ public final class ViewStore<State, Action>: ObservableObject {
   }
 }
 
-extension ViewStore where State: Equatable {
-  public convenience init(_ store: Store<State, Action>) {
-    self.init(store, removeDuplicates: ==)
-  }
-}
-
-extension ViewStore where State == Void {
-  public convenience init(_ store: Store<Void, Action>) {
-    self.init(store, removeDuplicates: ==)
-  }
-}
-
 /// A publisher of store state.
 @dynamicMemberLookup
 public struct StorePublisher<State>: Publisher {
@@ -323,8 +320,11 @@ public struct StorePublisher<State>: Publisher {
   /// Returns the resulting publisher of a given key path.
   public subscript<LocalState>(
     dynamicMember keyPath: KeyPath<State, LocalState>
-  ) -> StorePublisher<LocalState>
-  where LocalState: Equatable {
-    .init(upstream: self.upstream.map(keyPath).removeDuplicates(), viewStore: self.viewStore)
+  ) -> StorePublisher<LocalState> {
+    .init(
+      upstream: self.upstream.map(keyPath)
+        .removeDuplicates(by: isEqual),
+      viewStore: self.viewStore
+    )
   }
 }

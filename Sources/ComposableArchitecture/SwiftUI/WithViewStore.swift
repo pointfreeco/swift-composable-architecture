@@ -29,7 +29,7 @@ public struct WithViewStore<State, Action, Content> {
 
   fileprivate init(
     store: Store<State, Action>,
-    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
+    removeDuplicates isDuplicate: ((State, State) -> Bool)?,
     file: StaticString = #fileID,
     line: UInt = #line,
     content: @escaping (ViewStore<State, Action>) -> Content
@@ -100,7 +100,7 @@ extension WithViewStore: View where Content: View {
   ///   - content: A function that can generate content from a view store.
   public init(
     _ store: Store<State, Action>,
-    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
+    removeDuplicates isDuplicate: ((State, State) -> Bool)? = nil,
     file: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
@@ -116,40 +116,6 @@ extension WithViewStore: View where Content: View {
 
   public var body: Content {
     self._body
-  }
-}
-
-extension WithViewStore where State: Equatable, Content: View {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute views from equatable store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  public init(
-    _ store: Store<State, Action>,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
-  }
-}
-
-extension WithViewStore where State == Void, Content: View {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute views from equatable store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  public init(
-    _ store: Store<State, Action>,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
 
@@ -173,7 +139,7 @@ extension WithViewStore: Scene where Content: Scene {
   ///   - content: A function that can generate content from a view store.
   public init(
     _ store: Store<State, Action>,
-    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
+    removeDuplicates isDuplicate: ((State, State) -> Bool)? = nil,
     file: StaticString = #fileID,
     line: UInt = #line,
     @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content
@@ -189,41 +155,5 @@ extension WithViewStore: Scene where Content: Scene {
 
   public var body: Content {
     self._body
-  }
-}
-
-@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
-extension WithViewStore where State: Equatable, Content: Scene {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute scenes from equatable store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  public init(
-    _ store: Store<State, Action>,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
-  }
-}
-
-@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
-extension WithViewStore where State == Void, Content: Scene {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute scenes from equatable store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  public init(
-    _ store: Store<State, Action>,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }

@@ -18,7 +18,7 @@ final class ViewStoreTests: XCTestCase {
       environment: ()
     )
 
-    let viewStore = ViewStore(store)
+    let viewStore = ViewStore(store.scope { $0 })
 
     var emissionCount = 0
     viewStore.publisher
