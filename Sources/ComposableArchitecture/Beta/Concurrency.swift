@@ -109,9 +109,10 @@ import SwiftUI
   extension ViewStore {
     /// Sends an action into the store and then suspends while a piece of state is `true`.
     ///
-    /// This method can be used to interact with async/await code, allowing you to suspend while work
-    /// is being performed in an effect. One common example of this is using SwiftUI's `.refreshable`
-    /// method, which shows a loading indicator on the screen while work is being performed.
+    /// This method can be used to interact with async/await code, allowing you to suspend while
+    /// work is being performed in an effect. One common example of this is using SwiftUI's
+    /// `.refreshable` method, which shows a loading indicator on the screen while work is being
+    /// performed.
     ///
     /// For example, suppose we wanted to load some data from the network when a pull-to-refresh
     /// gesture is performed on a list. The domain and logic for this feature can be modeled like so:
@@ -173,17 +174,19 @@ import SwiftUI
     ///
     /// Here we've used the ``send(_:while:)`` method to suspend while the `isLoading` state is
     /// `true`. Once that piece of state flips back to `false` the method will resume, signaling to
-    /// `.refreshable` that the work has finished which will cause the loading indicator to disappear.
+    /// `.refreshable` that the work has finished which will cause the loading indicator to
+    /// disappear.
     ///
     /// **Note:** ``ViewStore`` is not thread safe and you should only send actions to it from the
-    /// main thread. If you are wanting to send actions on background threads due to the fact that the
-    /// reducer is performing computationally expensive work, then a better way to handle this is to
-    /// wrap that work in an ``Effect`` that is performed on a background thread so that the result
-    /// can be fed back into the store.
+    /// main thread. If you are wanting to send actions on background threads due to the fact that
+    /// the reducer is performing computationally expensive work, then a better way to handle this
+    /// is to wrap that work in an ``Effect`` that is performed on a background thread so that the
+    /// result can be fed back into the store.
     ///
     /// - Parameters:
     ///   - action: An action.
-    ///   - predicate: A predicate on `State` that determines for how long this method should suspend.
+    ///   - predicate: A predicate on `State` that determines for how long this method should
+    ///     suspend.
     public func send(
       _ action: Action,
       while predicate: @escaping (State) -> Bool
@@ -199,7 +202,8 @@ import SwiftUI
     /// - Parameters:
     ///   - action: An action.
     ///   - animation: The animation to perform when the action is sent.
-    ///   - predicate: A predicate on `State` that determines for how long this method should suspend.
+    ///   - predicate: A predicate on `State` that determines for how long this method should
+    ///     suspend.
     public func send(
       _ action: Action,
       animation: Animation?,
@@ -211,12 +215,12 @@ import SwiftUI
 
     /// Suspends while a predicate on state is `true`.
     ///
-    /// - Parameter predicate: A predicate on `State` that determines for how long this method should
-    /// suspend.
+    /// - Parameter predicate: A predicate on `State` that determines for how long this method
+    ///   should suspend.
     public func suspend(while predicate: @escaping (State) -> Bool) async {
-      var cancellable: Cancellable?
+      let cancellable = Box<AnyCancellable?>(wrappedValue: nil)
       try? await withTaskCancellationHandler(
-        handler: { [cancellable] in cancellable?.cancel() },
+        handler: { cancellable.wrappedValue?.cancel() },
         operation: {
           try Task.checkCancellation()
           try await withUnsafeThrowingContinuation {
@@ -225,7 +229,7 @@ import SwiftUI
               continuation.resume(throwing: CancellationError())
               return
             }
-            cancellable = self.publisher
+            cancellable.wrappedValue = self.publisher
               .filter { !predicate($0) }
               .prefix(1)
               .sink { _ in
@@ -235,6 +239,14 @@ import SwiftUI
           }
         }
       )
+    }
+  }
+
+  private class Box<Value> {
+    var wrappedValue: Value
+
+    init(wrappedValue: Value) {
+      self.wrappedValue = wrappedValue
     }
   }
 #endif
