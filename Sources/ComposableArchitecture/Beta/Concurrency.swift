@@ -220,9 +220,7 @@ import SwiftUI
     public func suspend(while predicate: @escaping (State) -> Bool) async {
       let cancellable = Box<AnyCancellable?>(wrappedValue: nil)
       try? await withTaskCancellationHandler(
-        handler: { [cancellable] in
-          cancellable.wrappedValue?.cancel()
-        },
+        handler: { [cancellable] in cancellable.wrappedValue?.cancel() },
         operation: {
           try Task.checkCancellation()
           try await withUnsafeThrowingContinuation {
