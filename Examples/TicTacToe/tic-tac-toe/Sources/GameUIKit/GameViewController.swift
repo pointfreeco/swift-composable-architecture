@@ -9,7 +9,7 @@ public final class GameViewController: UIViewController {
   private var cancellables: Set<AnyCancellable> = []
 
   struct ViewState: Equatable {
-    let board: [[String]]
+    let board: Three<Three<String>>
     let isGameEnabled: Bool
     let isPlayAgainButtonHidden: Bool
     let title: String?
