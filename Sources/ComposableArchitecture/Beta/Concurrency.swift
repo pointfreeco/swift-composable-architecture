@@ -218,35 +218,10 @@ import SwiftUI
     /// - Parameter predicate: A predicate on `State` that determines for how long this method
     ///   should suspend.
     public func suspend(while predicate: @escaping (State) -> Bool) async {
-      let cancellable = Box<AnyCancellable?>(wrappedValue: nil)
-      try? await withTaskCancellationHandler(
-        handler: { cancellable.wrappedValue?.cancel() },
-        operation: {
-          try Task.checkCancellation()
-          try await withUnsafeThrowingContinuation {
-            (continuation: UnsafeContinuation<Void, Error>) in
-            guard !Task.isCancelled else {
-              continuation.resume(throwing: CancellationError())
-              return
-            }
-            cancellable.wrappedValue = self.publisher
-              .filter { !predicate($0) }
-              .prefix(1)
-              .sink { _ in
-                continuation.resume()
-                _ = cancellable
-              }
-          }
-        }
-      )
-    }
-  }
-
-  private class Box<Value> {
-    var wrappedValue: Value
-
-    init(wrappedValue: Value) {
-      self.wrappedValue = wrappedValue
+      _ = await self.publisher
+        .values
+        .filter { !predicate($0) }
+        .first(where: { _ in true })
     }
   }
 #endif
