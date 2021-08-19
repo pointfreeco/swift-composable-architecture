@@ -78,7 +78,7 @@ public struct GameView: View {
     proxy: GeometryProxy,
     viewStore: ViewStore<ViewState, GameAction>
   ) -> some View {
-    Button.init(action: {
+    Button(action: {
       viewStore.send(.cellTapped(row: row, column: column))
     }) {
       Text(viewStore.board[row][column])
