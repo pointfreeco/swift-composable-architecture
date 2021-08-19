@@ -21,7 +21,7 @@ public enum Player: Equatable {
 }
 
 public struct GameState: Equatable {
-  public var board: [[Player?]] = .empty
+  public var board: Three<Three<Player?>> = .empty
   public var currentPlayer: Player = .x
   public var oPlayerName: String
   public var xPlayerName: String
@@ -74,12 +74,12 @@ public let gameReducer = Reducer<GameState, GameAction, GameEnvironment> { state
   }
 }
 
-extension Array where Element == [Player?] {
-  public static let empty: Self = [
-    [nil, nil, nil],
-    [nil, nil, nil],
-    [nil, nil, nil],
-  ]
+extension Three where Element == Three<Player?> {
+  public static let empty = Self(
+    .init(nil, nil, nil),
+    .init(nil, nil, nil),
+    .init(nil, nil, nil)
+  )
 
   public var isFilled: Bool {
     self.allSatisfy { row in row.allSatisfy { $0 != nil } }
