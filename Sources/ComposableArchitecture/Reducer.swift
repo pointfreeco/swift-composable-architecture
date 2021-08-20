@@ -463,8 +463,8 @@ public struct Reducer<State, Action, Environment> {
     action toLocalAction: CasePath<GlobalAction, Action>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
     breakpointOnNil: Bool = true,
-    _ file: StaticString = #fileID,
-    _ line: UInt = #line
+    file: StaticString = #fileID,
+    line: UInt = #line
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
     .init { globalState, globalAction, globalEnvironment in
       guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }

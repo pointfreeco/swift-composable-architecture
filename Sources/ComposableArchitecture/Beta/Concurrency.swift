@@ -220,8 +220,7 @@ import SwiftUI
     public func suspend(while predicate: @escaping (State) -> Bool) async {
       _ = await self.publisher
         .values
-        .filter { !predicate($0) }
-        .first(where: { _ in true })
+        .first(where: { !predicate($0) })
     }
   }
 #endif
