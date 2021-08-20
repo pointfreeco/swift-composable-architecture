@@ -21,10 +21,10 @@ private let readMe = """
   Instead, it introduces a new action to feed the random number back into the system.
   """
 
-extension Reducer {
+extension _Reducer where Effects == Effect<Action, Never> {
   static func strict(
     _ reducer: @escaping (inout State, Action) -> (Environment) -> Effect<Action, Never>
-  ) -> Reducer {
+  ) -> Self {
     Self { state, action, environment in
       reducer(&state, action)(environment)
     }

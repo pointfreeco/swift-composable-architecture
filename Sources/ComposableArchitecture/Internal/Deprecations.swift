@@ -39,7 +39,7 @@ extension AlertState.Button {
 
 // NB: Deprecated after 0.20.0:
 
-extension Reducer {
+extension _Reducer where Effects == Effect<Action, Never> {
   @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead")
   public func forEach<GlobalState, GlobalAction, GlobalEnvironment>(
     state toLocalState: WritableKeyPath<GlobalState, [State]>,
@@ -162,7 +162,7 @@ extension IfLetStore {
 @available(*, deprecated, renamed: "BindingAction")
 public typealias FormAction = BindingAction
 
-extension Reducer {
+extension _Reducer where Effects == Effect<Action, Never> {
   @available(*, deprecated, renamed: "binding")
   public func form(action toFormAction: CasePath<Action, BindingAction<State>>) -> Self {
     self.binding(action: toFormAction.extract(from:))
@@ -278,7 +278,7 @@ extension Store {
 
 // NB: Deprecated after 0.6.0:
 
-extension Reducer {
+extension _Reducer where Effects == Effect<Action, Never> {
   @available(*, deprecated, renamed: "optional()")
   public var optional: Reducer<State?, Action, Environment> {
     self.optional()

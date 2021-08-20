@@ -17,8 +17,8 @@ import Combine
 ///   values on the same thread, **and** if the ``Store`` is being used to drive UI then all output
 ///   must be on the main thread. You can use the `Publisher` method `receive(on:)` for make the
 ///   effect output its values on the thread of your choice.
-public struct Reducer<State, Action, Environment> {
-  private let reducer: (inout State, Action, Environment) -> Effect<Action, Never>
+public struct _Reducer<State, Action, Environment, Effects> {
+  private let reducer: (inout State, Action, Environment) -> Effects
 
   /// Initializes a reducer from a simple reducer function signature.
   ///
@@ -49,15 +49,29 @@ public struct Reducer<State, Action, Environment> {
   ///
   /// - Parameter reducer: A function signature that takes state, action and
   ///   environment.
-  public init(_ reducer: @escaping (inout State, Action, Environment) -> Effect<Action, Never>) {
+  public init(_ reducer: @escaping (inout State, Action, Environment) -> Effects) {
     self.reducer = reducer
   }
+}
 
+public protocol HasNone {
+  static var none: Self { get }
+}
+extension Effect: HasNone { }
+
+public extension _Reducer where Effects: HasNone {
   /// A reducer that performs no state mutations and returns no effects.
-  public static var empty: Reducer {
+  static var empty: Self {
     Self { _, _, _ in .none }
   }
+}
 
+public protocol HasMerge {
+  static func merge<S: Sequence>(_ elements: S) -> Self where S.Element == Self
+}
+extension Effect: HasMerge { }
+
+public extension _Reducer where Effects: HasMerge {
   /// Combines many reducers into a single one by running each one on state in order, and merging
   /// all of the effects.
   ///
@@ -111,7 +125,7 @@ public struct Reducer<State, Action, Environment> {
   ///
   /// - Parameter reducers: A list of reducers.
   /// - Returns: A single reducer.
-  public static func combine(_ reducers: Reducer...) -> Reducer {
+  static func combine(_ reducers: Self...) -> Self {
     .combine(reducers)
   }
 
@@ -168,7 +182,7 @@ public struct Reducer<State, Action, Environment> {
   ///
   /// - Parameter reducers: An array of reducers.
   /// - Returns: A single reducer.
-  public static func combine(_ reducers: [Reducer]) -> Reducer {
+  static func combine(_ reducers: [Self]) -> Self {
     Self { value, action, environment in
       .merge(reducers.map { $0.reducer(&value, action, environment) })
     }
@@ -230,10 +244,14 @@ public struct Reducer<State, Action, Environment> {
   ///
   /// - Parameter other: Another reducer.
   /// - Returns: A single reducer.
-  public func combined(with other: Reducer) -> Reducer {
+  func combined(with other: Self) -> Self {
     .combine(self, other)
   }
+}
 
+public typealias Reducer<State, Action, Environment> = _Reducer<State, Action, Environment, Effect<Action, Never>>
+
+public extension _Reducer where Effects == Effect<Action, Never> {
   /// Transforms a reducer that works on local state, action, and environment into one that works on
   /// global state, action and environment. It accomplishes this by providing 3 transformations to
   /// the method:
@@ -273,7 +291,7 @@ public struct Reducer<State, Action, Environment> {
   ///   - toLocalAction: A case path that can extract/embed `Action` from `GlobalAction`.
   ///   - toLocalEnvironment: A function that transforms `GlobalEnvironment` into `Environment`.
   /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
-  public func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
+  func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
     state toLocalState: WritableKeyPath<GlobalState, State>,
     action toLocalAction: CasePath<GlobalAction, Action>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment
@@ -458,7 +476,7 @@ public struct Reducer<State, Action, Environment> {
   ///   - toLocalAction: A case path that can extract/embed `Action` from `GlobalAction`.
   ///   - toLocalEnvironment: A function that transforms `GlobalEnvironment` into `Environment`.
   /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
-  public func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
+  func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
     state toLocalState: CasePath<GlobalState, State>,
     action toLocalAction: CasePath<GlobalAction, Action>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
@@ -670,7 +688,7 @@ public struct Reducer<State, Action, Environment> {
   ///   but state is `nil`. This is generally considered a logic error, as a child reducer cannot
   ///   process a child action for unavailable child state.
   /// - Returns: A reducer that works on optional state.
-  public func optional(
+  func optional(
     breakpointOnNil: Bool = true,
     file: StaticString = #fileID,
     line: UInt = #line
@@ -752,7 +770,7 @@ public struct Reducer<State, Action, Environment> {
   ///     generally considered a logic error, as a child reducer cannot process a child action
   ///     for unavailable child state.
   /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
-  public func forEach<GlobalState, GlobalAction, GlobalEnvironment, ID>(
+  func forEach<GlobalState, GlobalAction, GlobalEnvironment, ID>(
     state toLocalState: WritableKeyPath<GlobalState, IdentifiedArray<ID, State>>,
     action toLocalAction: CasePath<GlobalAction, (ID, Action)>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
@@ -823,7 +841,7 @@ public struct Reducer<State, Action, Environment> {
   ///     generally considered a logic error, as a child reducer cannot process a child action
   ///     for unavailable child state.
   /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
-  public func forEach<GlobalState, GlobalAction, GlobalEnvironment, Key>(
+  func forEach<GlobalState, GlobalAction, GlobalEnvironment, Key>(
     state toLocalState: WritableKeyPath<GlobalState, [Key: State]>,
     action toLocalAction: CasePath<GlobalAction, (Key, Action)>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
@@ -873,7 +891,9 @@ public struct Reducer<State, Action, Environment> {
       .map { toLocalAction.embed((key, $0)) }
     }
   }
+}
 
+public extension _Reducer {
   /// Runs the reducer.
   ///
   /// - Parameters:
@@ -881,19 +901,45 @@ public struct Reducer<State, Action, Environment> {
   ///   - action: An action.
   ///   - environment: An environment.
   /// - Returns: An effect that can emit zero or more actions.
-  public func run(
+  func run(
     _ state: inout State,
     _ action: Action,
     _ environment: Environment
-  ) -> Effect<Action, Never> {
+  ) -> Effects {
     self.reducer(&state, action, environment)
   }
 
-  public func callAsFunction(
+  func callAsFunction(
     _ state: inout State,
     _ action: Action,
     _ environment: Environment
-  ) -> Effect<Action, Never> {
+  ) -> Effects {
     self.reducer(&state, action, environment)
+  }
+}
+
+public extension _Reducer {
+  /// interpret a possibly simple `_Reducer` (`self`) in terms of an alternative (possibly more complex) `Environment` and `Effects`. To do this, provide a function (`localEnv`) which shows how to extract `Environment` from any other set of possibly larger dependencies (`GlobalEnvironment`). Also, provide a function which, given those larger dependencies, provides a mapping from this reducer’s `Effects` type into an alternative effects type (`NewEffects`).
+  /// - Parameters:
+  ///   - localEnv: a function that provides a mapping from some new environment type to this reducer’s `Environment` type
+  ///   - effects: a function that uses the expanded environment to convert this reducer’s `Effects` into a new effects type (`NewEffects`)
+  /// - Returns: a new reducer of type `_Reducer<State, Action, GlobalEnvironment, NewEffects>`
+  func interpret<GlobalEnvironment, NewEffects>(
+    localEnv: @escaping (GlobalEnvironment) -> Environment,
+    newEffects: @escaping (GlobalEnvironment, Effects) -> NewEffects
+  ) -> _Reducer<State, Action, GlobalEnvironment, NewEffects> {
+    .init { state, action, env in
+      let localEnv = localEnv(env)
+      return newEffects(env, self(&state, action, localEnv))
+    }
+  }
+
+  func replaceError<E: Error>(with action: Action) -> _Reducer<State, Action, Environment, Effect<Action, Never>> where Effects == Effect<Action, E> {
+    interpret(
+      localEnv: { $0 },
+      newEffects: { _, effect in
+        effect.replaceError(with: action).eraseToEffect()
+      }
+    )
   }
 }

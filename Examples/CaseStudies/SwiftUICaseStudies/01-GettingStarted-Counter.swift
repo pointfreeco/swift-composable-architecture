@@ -20,16 +20,34 @@ enum CounterAction: Equatable {
 
 struct CounterEnvironment {}
 
-let counterReducer = Reducer<CounterState, CounterAction, CounterEnvironment> { state, action, _ in
-  switch action {
-  case .decrementButtonTapped:
-    state.count -= 1
-    return .none
-  case .incrementButtonTapped:
-    state.count += 1
-    return .none
+let counterReducer = _Reducer.combine(
+  Reducer<CounterState, CounterAction, CounterEnvironment> { state, action, _ in
+    switch action {
+    case .decrementButtonTapped:
+      state.count -= 1
+      return .none
+    case .incrementButtonTapped:
+      state.count += 1
+      return .none
+    }
+  },
+  _Reducer<CounterState, CounterAction, (), CounterAnalyticsEvent> { state, action, _ in
+    switch action {
+    case .incrementButtonTapped:
+      return .init(message: "increment tapped", userID: 1234)
+    case .decrementButtonTapped:
+      return .init(message: "decrement tapped", userID: 1234)
+    }
   }
-}
+  .interpret(
+    localEnv: { (_: CounterEnvironment) in () },
+    newEffects: { _, analyticsEvent in
+      Effect<CounterAction, Never>.fireAndForget {
+        print("\(analyticsEvent.userID): \(analyticsEvent.message)")
+      }
+    }
+  )
+)
 
 struct CounterView: View {
   let store: Store<CounterState, CounterAction>
@@ -74,3 +92,27 @@ struct CounterView_Previews: PreviewProvider {
     }
   }
 }
+
+// MARK: - counter analytics
+
+private struct CounterAnalyticsEvent {
+  var message: String
+  var userID: Int
+}
+
+private let analyticsReducer = _Reducer<CounterState, CounterAction, (), CounterAnalyticsEvent> { state, action, _ in
+  switch action {
+  case .incrementButtonTapped:
+    return .init(message: "increment tapped", userID: 1234)
+  case .decrementButtonTapped:
+    return .init(message: "decrement tapped", userID: 1234)
+  }
+}
+.interpret(
+  localEnv: { (_: CounterEnvironment) in () },
+  newEffects: { _, analyticsEvent in
+    Effect<CounterAction, Never>.fireAndForget {
+      print("\(analyticsEvent.userID): \(analyticsEvent.message)")
+    }
+  }
+)

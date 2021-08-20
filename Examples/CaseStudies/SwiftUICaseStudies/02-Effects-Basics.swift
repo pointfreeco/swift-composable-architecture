@@ -45,42 +45,98 @@ struct EffectsBasicsEnvironment {
 
 // MARK: - Feature business logic
 
-let effectsBasicsReducer = Reducer<
-  EffectsBasicsState, EffectsBasicsAction, EffectsBasicsEnvironment
+enum EffectsBasicsEffect {
+  case reIncrementAfter(delay: Int)
+  case fetchFact(for: Int)
+}
+
+let effectsBasicsDefunc = _Reducer<
+  EffectsBasicsState, EffectsBasicsAction, (), EffectsBasicsEffect?
 > { state, action, environment in
   switch action {
   case .decrementButtonTapped:
     state.count -= 1
     state.numberFact = nil
     // Return an effect that re-increments the count after 1 second.
-    return Effect(value: EffectsBasicsAction.incrementButtonTapped)
-      .delay(for: 1, scheduler: environment.mainQueue)
-      .eraseToEffect()
+    return .reIncrementAfter(delay: 1)
 
   case .incrementButtonTapped:
     state.count += 1
     state.numberFact = nil
-    return .none
+    return nil
 
   case .numberFactButtonTapped:
     state.isNumberFactRequestInFlight = true
     state.numberFact = nil
     // Return an effect that fetches a number fact from the API and returns the
     // value back to the reducer's `numberFactResponse` action.
-    return environment.fact.fetch(state.count)
-      .receive(on: environment.mainQueue)
-      .catchToEffect(EffectsBasicsAction.numberFactResponse)
+    return .fetchFact(for: state.count)
 
   case let .numberFactResponse(.success(response)):
     state.isNumberFactRequestInFlight = false
     state.numberFact = response
-    return .none
+    return nil
 
   case .numberFactResponse(.failure):
     state.isNumberFactRequestInFlight = false
-    return .none
+    return nil
   }
 }
+
+let effectsBasicsReducer = effectsBasicsDefunc.interpret(
+  localEnv: { (_: EffectsBasicsEnvironment) in () },
+  newEffects: { environment, effect -> Effect<EffectsBasicsAction, Never> in
+    switch effect {
+    case .fetchFact(for: let intValue):
+      return environment.fact.fetch(intValue)
+        .receive(on: environment.mainQueue)
+        .catchToEffect(EffectsBasicsAction.numberFactResponse)
+    case .reIncrementAfter(delay: let delayValue):
+      return Effect(value: EffectsBasicsAction.incrementButtonTapped)
+        .delay(for: 1, scheduler: environment.mainQueue)
+        .eraseToEffect()
+    case nil:
+      return .none
+    }
+  }
+)
+
+//let effectsBasicsReducer = Reducer<
+//  EffectsBasicsState, EffectsBasicsAction, EffectsBasicsEnvironment
+//> { state, action, environment in
+//  switch action {
+//  case .decrementButtonTapped:
+//    state.count -= 1
+//    state.numberFact = nil
+//    // Return an effect that re-increments the count after 1 second.
+//    return Effect(value: EffectsBasicsAction.incrementButtonTapped)
+//      .delay(for: 1, scheduler: environment.mainQueue)
+//      .eraseToEffect()
+//
+//  case .incrementButtonTapped:
+//    state.count += 1
+//    state.numberFact = nil
+//    return .none
+//
+//  case .numberFactButtonTapped:
+//    state.isNumberFactRequestInFlight = true
+//    state.numberFact = nil
+//    // Return an effect that fetches a number fact from the API and returns the
+//    // value back to the reducer's `numberFactResponse` action.
+//    return environment.fact.fetch(state.count)
+//      .receive(on: environment.mainQueue)
+//      .catchToEffect(EffectsBasicsAction.numberFactResponse)
+//
+//  case let .numberFactResponse(.success(response)):
+//    state.isNumberFactRequestInFlight = false
+//    state.numberFact = response
+//    return .none
+//
+//  case .numberFactResponse(.failure):
+//    state.isNumberFactRequestInFlight = false
+//    return .none
+//  }
+//}
 
 // MARK: - Feature view
 

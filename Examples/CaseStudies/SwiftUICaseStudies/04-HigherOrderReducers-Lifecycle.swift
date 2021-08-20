@@ -11,7 +11,7 @@ private let readMe = """
   are sent to the store.
   """
 
-extension Reducer {
+extension _Reducer where Effects == Effect<Action, Never> {
   public func lifecycle(
     onAppear: @escaping (Environment) -> Effect<Action, Never>,
     onDisappear: @escaping (Environment) -> Effect<Never, Never>

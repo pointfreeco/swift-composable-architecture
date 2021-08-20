@@ -1,7 +1,7 @@
 import Combine
 import os.signpost
 
-extension Reducer {
+extension _Reducer where Effects == Effect<Action, Never> {
   /// Instruments the reducer with
   /// [signposts](https://developer.apple.com/documentation/os/logging/recording_performance_data).
   /// Each invocation of the reducer will be measured by an interval, and the lifecycle of its

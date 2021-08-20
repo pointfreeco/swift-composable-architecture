@@ -9,10 +9,10 @@ private let readMe = """
   inspired by Elm's `subscriptions` API.
   """
 
-extension Reducer {
+extension _Reducer where Effects == Effect<Action, Never> {
   static func subscriptions(
     _ subscriptions: @escaping (State, Environment) -> [AnyHashable: Effect<Action, Never>]
-  ) -> Reducer {
+  ) -> Self {
     var activeSubscriptions: [AnyHashable: Effect<Action, Never>] = [:]
 
     return Reducer { state, _, environment in

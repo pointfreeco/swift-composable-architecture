@@ -47,12 +47,12 @@ struct DownloadComponentEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
-extension Reducer {
+extension _Reducer where Effects == Effect<Action, Never> {
   func downloadable<ID: Hashable>(
     state: WritableKeyPath<State, DownloadComponentState<ID>>,
     action: CasePath<Action, DownloadComponentAction>,
     environment: @escaping (Environment) -> DownloadComponentEnvironment
-  ) -> Reducer {
+  ) -> Self {
     .combine(
       Reducer<DownloadComponentState<ID>, DownloadComponentAction, DownloadComponentEnvironment> {
         state, action, environment in

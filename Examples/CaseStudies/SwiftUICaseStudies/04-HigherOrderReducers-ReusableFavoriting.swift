@@ -50,13 +50,13 @@ struct FavoriteError: Equatable, Error, Identifiable {
   static func == (lhs: Self, rhs: Self) -> Bool { lhs.id == rhs.id }
 }
 
-extension Reducer {
+extension _Reducer where Effects == Effect<Action, Never> {
   /// Enhances a reducer with favoriting logic.
   func favorite<ID>(
     state: WritableKeyPath<State, FavoriteState<ID>>,
     action: CasePath<Action, FavoriteAction>,
     environment: @escaping (Environment) -> FavoriteEnvironment<ID>
-  ) -> Reducer where ID: Hashable {
+  ) -> Self where ID: Hashable {
     .combine(
       self,
       Reducer<FavoriteState<ID>, FavoriteAction, FavoriteEnvironment> {
