@@ -27,7 +27,7 @@ class TodosTests: XCTestCase {
       )
     }
   }
-  
+
   func testEditTodo() {
     let state = AppState(
       todos: [
@@ -53,7 +53,7 @@ class TodosTests: XCTestCase {
       $0.todos[id: state.todos[0].id]?.description = "Learn Composable Architecture"
     }
   }
-  
+
   func testCompleteTodo() {
     let state = AppState(
       todos: [
@@ -89,7 +89,7 @@ class TodosTests: XCTestCase {
       ]
     }
   }
-  
+
   func testCompleteTodoDebounces() {
     let state = AppState(
       todos: [
@@ -124,7 +124,7 @@ class TodosTests: XCTestCase {
     self.scheduler.advance(by: 1)
     store.receive(.sortCompletedTodos)
   }
-  
+
   func testClearCompleted() {
     let state = AppState(
       todos: [
@@ -155,7 +155,7 @@ class TodosTests: XCTestCase {
       ]
     }
   }
-  
+
   func testDelete() {
     let state = AppState(
       todos: [
@@ -192,7 +192,7 @@ class TodosTests: XCTestCase {
       ]
     }
   }
-  
+
   func testEditModeMoving() {
     let state = AppState(
       todos: [
@@ -235,7 +235,7 @@ class TodosTests: XCTestCase {
     self.scheduler.advance(by: .milliseconds(100))
     store.receive(.sortCompletedTodos)
   }
-  
+
   func testFilteredEdit() {
     let state = AppState(
       todos: [

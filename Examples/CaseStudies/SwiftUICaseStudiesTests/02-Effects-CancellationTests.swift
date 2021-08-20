@@ -47,7 +47,7 @@ class EffectsCancellationTests: XCTestCase {
       $0.isTriviaRequestInFlight = false
     }
   }
-  
+
   // NB: This tests that the cancel button really does cancel the in-flight API request.
   //
   // To see the real power of this test, try replacing the `.cancel` effect with a `.none` effect

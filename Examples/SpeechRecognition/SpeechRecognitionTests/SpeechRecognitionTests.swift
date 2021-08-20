@@ -138,7 +138,7 @@ class SpeechRecognitionTests: XCTestCase {
 
     self.recognitionTaskSubject.send(completion: .finished)
   }
-  
+
   func testAudioEngineFailure() {
     var speechClient = SpeechClient.failing
     speechClient.recognitionTask = { _, _ in self.recognitionTaskSubject.eraseToEffect() }
