@@ -199,27 +199,3 @@ extension URL: CustomDebugOutputConvertible {
     }
   #endif
 #endif
-
-#if DEBUG
-#if canImport(UserNotifications)
-import UserNotifications
-extension UNAuthorizationStatus: CustomDebugStringConvertible {
-  public var debugDescription: String {
-    switch self {
-    case .notDetermined:
-      return "notDetermined"
-    case .denied:
-      return "denied"
-    case .authorized:
-      return "authorized"
-    case .provisional:
-      return "provisional"
-    case .ephemeral:
-      return "ephemeral"
-    @unknown default:
-      return "@unknown"
-    }
-  }
-}
-#endif
-#endif

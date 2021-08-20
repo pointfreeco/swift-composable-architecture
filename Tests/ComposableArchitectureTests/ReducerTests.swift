@@ -50,11 +50,9 @@ final class ReducerTests: XCTestCase {
     store.send(.increment) {
       $0 = 2
     }
-
     // Waiting a second causes the fast effect to fire.
     scheduler.advance(by: 1)
     XCTAssertEqual(fastValue, 42)
-
     // Waiting one more second causes the slow effect to fire. This proves that the effects
     // are merged together, as opposed to concatenated.
     scheduler.advance(by: 1)
