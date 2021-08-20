@@ -201,7 +201,7 @@ extension View {
 
     WithViewStore(store, removeDuplicates: { $0?.id == $1?.id }) { viewStore in
       self.actionSheet(item: viewStore.binding(send: dismiss)) { state in
-        state.toSwiftUI(send: { viewStore.send($0) })
+        state.toSwiftUI(send: viewStore.send)
       }
     }
   }
