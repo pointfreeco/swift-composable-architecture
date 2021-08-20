@@ -463,8 +463,8 @@ public struct Reducer<State, Action, Environment> {
     action toLocalAction: CasePath<GlobalAction, Action>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
     breakpointOnNil: Bool = true,
-    _ file: StaticString = #fileID,
-    _ line: UInt = #line
+    file: StaticString = #fileID,
+    line: UInt = #line
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
     .init { globalState, globalAction, globalEnvironment in
       guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
@@ -672,8 +672,8 @@ public struct Reducer<State, Action, Environment> {
   /// - Returns: A reducer that works on optional state.
   public func optional(
     breakpointOnNil: Bool = true,
-    _ file: StaticString = #fileID,
-    _ line: UInt = #line
+    file: StaticString = #fileID,
+    line: UInt = #line
   ) -> Reducer<
     State?, Action, Environment
   > {
@@ -757,8 +757,8 @@ public struct Reducer<State, Action, Environment> {
     action toLocalAction: CasePath<GlobalAction, (ID, Action)>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
     breakpointOnNil: Bool = true,
-    _ file: StaticString = #fileID,
-    _ line: UInt = #line
+    file: StaticString = #fileID,
+    line: UInt = #line
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
     .init { globalState, globalAction, globalEnvironment in
       guard let (id, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
@@ -828,8 +828,8 @@ public struct Reducer<State, Action, Environment> {
     action toLocalAction: CasePath<GlobalAction, (Key, Action)>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
     breakpointOnNil: Bool = true,
-    _ file: StaticString = #fileID,
-    _ line: UInt = #line
+    file: StaticString = #fileID,
+    line: UInt = #line
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
     .init { globalState, globalAction, globalEnvironment in
       guard let (key, localAction) = toLocalAction.extract(from: globalAction) else { return .none }

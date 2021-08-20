@@ -46,8 +46,8 @@ extension Reducer {
     action toLocalAction: CasePath<GlobalAction, (Int, Action)>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
     breakpointOnNil: Bool = true,
-    _ file: StaticString = #fileID,
-    _ line: UInt = #line
+    file: StaticString = #fileID,
+    line: UInt = #line
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
     .init { globalState, globalAction, globalEnvironment in
       guard let (index, localAction) = toLocalAction.extract(from: globalAction) else {
