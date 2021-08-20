@@ -162,7 +162,7 @@ extension SwitchStore {
 
   public init<State1, Action1, Content1>(
     _ store: Store<State, Action>,
-    file: StaticString = #file,
+    file: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: @escaping () -> CaseLet<State, Action, State1, Action1, Content1>
   )
@@ -221,7 +221,7 @@ extension SwitchStore {
 
   public init<State1, Action1, Content1, State2, Action2, Content2>(
     _ store: Store<State, Action>,
-    file: StaticString = #file,
+    file: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: @escaping () -> TupleView<
       (
@@ -301,7 +301,7 @@ extension SwitchStore {
 
   public init<State1, Action1, Content1, State2, Action2, Content2, State3, Action3, Content3>(
     _ store: Store<State, Action>,
-    file: StaticString = #file,
+    file: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: @escaping () -> TupleView<
       (
@@ -398,7 +398,7 @@ extension SwitchStore {
     State4, Action4, Content4
   >(
     _ store: Store<State, Action>,
-    file: StaticString = #file,
+    file: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: @escaping () -> TupleView<
       (
@@ -508,7 +508,7 @@ extension SwitchStore {
     State5, Action5, Content5
   >(
     _ store: Store<State, Action>,
-    file: StaticString = #file,
+    file: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: @escaping () -> TupleView<
       (
@@ -631,7 +631,7 @@ extension SwitchStore {
     State6, Action6, Content6
   >(
     _ store: Store<State, Action>,
-    file: StaticString = #file,
+    file: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: @escaping () -> TupleView<
       (
@@ -767,7 +767,7 @@ extension SwitchStore {
     State7, Action7, Content7
   >(
     _ store: Store<State, Action>,
-    file: StaticString = #file,
+    file: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: @escaping () -> TupleView<
       (
@@ -916,7 +916,7 @@ extension SwitchStore {
     State8, Action8, Content8
   >(
     _ store: Store<State, Action>,
-    file: StaticString = #file,
+    file: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: @escaping () -> TupleView<
       (
@@ -1078,7 +1078,7 @@ extension SwitchStore {
     State9, Action9, Content9
   >(
     _ store: Store<State, Action>,
-    file: StaticString = #file,
+    file: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: @escaping () -> TupleView<
       (

@@ -14,8 +14,8 @@ extension Effect {
   ///   struct SearchId: Hashable {}
   ///
   ///   return environment.search(text)
-  ///     .map(Action.searchResponse)
   ///     .debounce(id: SearchId(), for: 0.5, scheduler: environment.mainQueue)
+  ///     .map(Action.searchResponse)
   /// ```
   ///
   /// - Parameters:
@@ -33,7 +33,7 @@ extension Effect {
     Just(())
       .setFailureType(to: Failure.self)
       .delay(for: dueTime, scheduler: scheduler, options: options)
-      .flatMap { self }
+      .flatMap { self.receive(on: scheduler) }
       .eraseToEffect()
       .cancellable(id: id, cancelInFlight: true)
   }

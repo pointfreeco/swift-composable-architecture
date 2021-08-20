@@ -32,70 +32,90 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "DC91954324201A8700A5BE1F"
-               BuildableName = "GameCoreTests.xctest"
+               BlueprintIdentifier = "AppCoreTests"
+               BuildableName = "AppCoreTests"
+               BlueprintName = "AppCoreTests"
+               ReferencedContainer = "container:tic-tac-toe">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "GameCoreTests"
+               BuildableName = "GameCoreTests"
                BlueprintName = "GameCoreTests"
-               ReferencedContainer = "container:TicTacToe.xcodeproj">
+               ReferencedContainer = "container:tic-tac-toe">
             </BuildableReference>
          </TestableReference>
          <TestableReference
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "DC91956524201A8E00A5BE1F"
-               BuildableName = "GameSwiftUITests.xctest"
+               BlueprintIdentifier = "GameSwiftUITests"
+               BuildableName = "GameSwiftUITests"
                BlueprintName = "GameSwiftUITests"
-               ReferencedContainer = "container:TicTacToe.xcodeproj">
+               ReferencedContainer = "container:tic-tac-toe">
             </BuildableReference>
          </TestableReference>
          <TestableReference
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "DC919471242013DB00A5BE1F"
-               BuildableName = "LoginCoreTests.xctest"
+               BlueprintIdentifier = "LoginCoreTests"
+               BuildableName = "LoginCoreTests"
                BlueprintName = "LoginCoreTests"
-               ReferencedContainer = "container:TicTacToe.xcodeproj">
+               ReferencedContainer = "container:tic-tac-toe">
             </BuildableReference>
          </TestableReference>
          <TestableReference
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "DC9194B92420142700A5BE1F"
-               BuildableName = "LoginSwiftUITests.xctest"
+               BlueprintIdentifier = "LoginSwiftUITests"
+               BuildableName = "LoginSwiftUITests"
                BlueprintName = "LoginSwiftUITests"
-               ReferencedContainer = "container:TicTacToe.xcodeproj">
+               ReferencedContainer = "container:tic-tac-toe">
             </BuildableReference>
          </TestableReference>
          <TestableReference
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "DC9194FF24201A7800A5BE1F"
-               BuildableName = "NewGameCoreTests.xctest"
+               BlueprintIdentifier = "NewGameCoreTests"
+               BuildableName = "NewGameCoreTests"
                BlueprintName = "NewGameCoreTests"
-               ReferencedContainer = "container:TicTacToe.xcodeproj">
+               ReferencedContainer = "container:tic-tac-toe">
             </BuildableReference>
          </TestableReference>
          <TestableReference
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "DC91952124201A8100A5BE1F"
-               BuildableName = "NewGameSwiftUITests.xctest"
+               BlueprintIdentifier = "NewGameSwiftUITests"
+               BuildableName = "NewGameSwiftUITests"
                BlueprintName = "NewGameSwiftUITests"
-               ReferencedContainer = "container:TicTacToe.xcodeproj">
+               ReferencedContainer = "container:tic-tac-toe">
             </BuildableReference>
          </TestableReference>
          <TestableReference
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "DCAF10CF242027D400483288"
-               BuildableName = "TwoFactorSwiftUITests.xctest"
+               BlueprintIdentifier = "TwoFactorCoreTests"
+               BuildableName = "TwoFactorCoreTests"
+               BlueprintName = "TwoFactorCoreTests"
+               ReferencedContainer = "container:tic-tac-toe">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "TwoFactorSwiftUITests"
+               BuildableName = "TwoFactorSwiftUITests"
                BlueprintName = "TwoFactorSwiftUITests"
-               ReferencedContainer = "container:TicTacToe.xcodeproj">
+               ReferencedContainer = "container:tic-tac-toe">
             </BuildableReference>
          </TestableReference>
       </Testables>
