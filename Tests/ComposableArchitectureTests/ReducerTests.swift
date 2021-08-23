@@ -3,6 +3,7 @@ import CombineSchedulers
 import ComposableArchitecture
 import XCTest
 import os.signpost
+import CustomDump
 
 final class ReducerTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
@@ -128,16 +129,14 @@ final class ReducerTests: XCTestCase {
 
     self.wait(for: [logsExpectation], timeout: 2)
 
-    XCTAssertEqual(
+    XCTAssertNoDifference(
       logs,
       [
         #"""
         [prefix]: received action:
           DebugAction.incr
-          DebugState(
-        -   count: 0
-        +   count: 1
-          )
+        - DebugState(count: 0)
+        + DebugState(count: 1)
 
         """#,
         #"""
@@ -183,16 +182,14 @@ final class ReducerTests: XCTestCase {
 
     self.wait(for: [logsExpectation], timeout: 2)
 
-    XCTAssertEqual(
+    XCTAssertNoDifference(
       logs,
       [
         #"""
         [prefix]: received action:
           DebugAction.incrWithBool
-          DebugState(
-        -   count: 0
-        +   count: 1
-          )
+        - DebugState(count: 0)
+        + DebugState(count: 1)
 
         """#
       ]
