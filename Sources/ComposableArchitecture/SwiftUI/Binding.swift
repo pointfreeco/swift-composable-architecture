@@ -355,7 +355,7 @@ extension ViewStore {
   {
     self.binding(
       get: { $0[keyPath: keyPath].wrappedValue },
-      send: { .binding(.set(keyPath.appending(path: \.wrappedValue), $0)) }
+      send: { .binding(.set(keyPath, $0)) }
     )
   }
 }
