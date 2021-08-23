@@ -151,7 +151,7 @@ public struct BindingAction<Root>: Equatable {
   ///   - value: A value to assign at the given key path.
   /// - Returns: An action that describes simple mutations to some root state at a writable key
   ///   path.
-  // TODO: deprecate
+  @available(*, deprecated)
   public static func set<Value>(
     _ keyPath: WritableKeyPath<Root, Value>,
     _ value: Value
@@ -248,7 +248,7 @@ extension Reducer {
   /// an extraction function from any case of any enum.
   /// - Returns: A reducer that applies ``BindingAction`` mutations to `State` before running this
   ///   reducer's logic.
-  // TODO: deprecate
+  @available(*, deprecated)
   public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self {
     Self { state, action, environment in
       toBindingAction(action)?.set(&state)
@@ -277,7 +277,7 @@ extension ViewStore {
   ///   - keyPath: A writable key path from the view store's state to a mutable field
   ///   - action: A function that wraps a binding action in the view store's action type.
   /// - Returns: A binding.
-  // TODO: deprecate
+  @available(*, deprecated)
   public func binding<LocalState>(
     keyPath: WritableKeyPath<State, LocalState>,
     send action: @escaping (BindingAction<State>) -> Action
