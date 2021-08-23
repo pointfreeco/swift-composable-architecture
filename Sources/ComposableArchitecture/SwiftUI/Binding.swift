@@ -293,6 +293,7 @@ extension ViewStore {
 
 
 @propertyWrapper
+@dynamicMemberLookup
 public struct BindableState<Value> {
   public var wrappedValue: Value
 
@@ -303,6 +304,12 @@ public struct BindableState<Value> {
   public var projectedValue: Self {
     get { self }
     set { self = newValue }
+  }
+
+  public subscript<Subject>(
+    dynamicMember keyPath: WritableKeyPath<Value, Subject>
+  ) -> BindableState<Subject> {
+    .init(wrappedValue: self.wrappedValue[keyPath: keyPath])
   }
 }
 
