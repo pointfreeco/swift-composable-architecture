@@ -314,7 +314,7 @@ extension ViewStore {
   public func binding<Value>(
     keyPath: WritableKeyPath<State, BindableState<Value>>,
     send action: @escaping (BindingAction<State>) -> Action
-  ) -> Binding<Value> where Value: Hashable {
+  ) -> Binding<Value> where Value: Equatable {
     self.binding(
       get: { $0[keyPath: keyPath].wrappedValue },
       send: { action(.set(keyPath, $0)) }
@@ -349,7 +349,7 @@ extension ViewStore {
     keyPath: WritableKeyPath<State, BindableState<Value>>
   ) -> Binding<Value>
   where
-    Value: Hashable,
+    Value: Equatable,
     Action: BindableAction,
     Action.State == State
   {
@@ -365,7 +365,7 @@ extension ViewStore {
   public subscript<Value>(
     dynamicMember keyPath: WritableKeyPath<State, BindableState<Value>>
   ) -> Binding<Value>
-  where Action: BindableAction, Action.State == State, Value: Hashable {
+  where Action: BindableAction, Action.State == State, Value: Equatable {
     self.binding(
       get: { $0[keyPath: keyPath].wrappedValue },
       send: { .binding(.set(keyPath, $0)) }
