@@ -82,7 +82,7 @@ where Data: Collection, ID: Hashable, Content: View {
   /// - Parameters:
   ///   - store: A store on an identified array of data and an identified action.
   ///   - content: A function that can generate content given a store of an element.
-  public init<EachContent: View>(
+  public init<EachContent>(
     _ store: Store<IdentifiedArray<ID, EachState>, (ID, EachAction)>,
     @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
   )
