@@ -293,10 +293,14 @@ extension ViewStore {
 
 
 @propertyWrapper
-struct BindableState<Value> {
-  var wrappedValue: Value
+public struct BindableState<Value> {
+  public var wrappedValue: Value
 
-  var projectedValue: Self {
+  public init(wrappedValue: Value) {
+    self.wrappedValue = wrappedValue
+  }
+
+  public var projectedValue: Self {
     get { self }
     set { self = newValue }
   }
@@ -307,7 +311,7 @@ extension BindableState: Equatable where Value: Equatable {}
 
 
 extension ViewStore {
-  func binding<Value>(
+  public func binding<Value>(
     keyPath: WritableKeyPath<State, BindableState<Value>>,
     send action: @escaping (BindingAction<State>) -> Action
   ) -> Binding<Value> where Value: Hashable {
@@ -326,7 +330,7 @@ public protocol BindableAction {
 
 
 extension Reducer where Action: BindableAction, State == Action.State {
-  func binding() -> Self {
+  public func binding() -> Self {
     Self { state, action, environment in
       guard let bindingAction = (/Action.binding).extract(from: action)
       else {
@@ -341,7 +345,7 @@ extension Reducer where Action: BindableAction, State == Action.State {
 
 
 extension ViewStore {
-  func binding<Value>(
+  public func binding<Value>(
     keyPath: WritableKeyPath<State, BindableState<Value>>
   ) -> Binding<Value>
   where
@@ -358,7 +362,7 @@ extension ViewStore {
 
 
 extension ViewStore {
-  subscript<Value>(
+  public subscript<Value>(
     dynamicMember keyPath: WritableKeyPath<State, BindableState<Value>>
   ) -> Binding<Value>
   where Action: BindableAction, Action.State == State, Value: Hashable {
