@@ -366,7 +366,7 @@
       line: UInt
     ) {
       if expected != actual {
-        let diff =
+        let difference =
         diff(expected, actual)
           .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
           ?? """
@@ -381,7 +381,7 @@
           """
           State change does not match expectation: …
 
-          \(diff)
+          \(difference)
           """,
           file: file,
           line: line
@@ -408,7 +408,7 @@
       }
       let (receivedAction, state) = self.receivedActions.removeFirst()
       if expectedAction != receivedAction {
-        let diff =
+        let difference =
         diff(expectedAction, receivedAction)
           .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
           ?? """
@@ -423,7 +423,7 @@
           """
           Received unexpected action: …
 
-          \(diff)
+          \(difference)
           """,
           file: file, line: line
         )
