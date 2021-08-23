@@ -166,7 +166,7 @@ public struct BindingAction<Root>: Equatable {
   }
 
 
-  static func set<Value>(
+  public static func set<Value>(
     _ keyPath: WritableKeyPath<Root, BindableState<Value>>,
     _ value: Value
   ) -> Self where Value: Equatable {
