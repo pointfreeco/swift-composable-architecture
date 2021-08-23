@@ -82,7 +82,7 @@ extension Three where Element == Three<Player?> {
   )
 
   public var isFilled: Bool {
-    self.allSatisfy { row in row.allSatisfy { $0 != nil } }
+    self.allSatisfy { $0.allSatisfy { $0 != nil } }
   }
 
   func hasWin(_ player: Player) -> Bool {

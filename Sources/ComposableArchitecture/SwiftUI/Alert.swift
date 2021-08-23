@@ -1,4 +1,5 @@
 import SwiftUI
+import CustomDump
 
 /// A data type that describes the state of an alert that can be shown to the user. The `Action`
 /// generic is the type of actions that can be sent from tapping on a button in the alert.
@@ -205,15 +206,43 @@ extension View {
   }
 }
 
-extension AlertState: CustomDebugOutputConvertible {
-  public var debugOutput: String {
-    let fields = (
-      title: self.title,
-      message: self.message,
-      primaryButton: self.primaryButton,
-      secondaryButton: self.secondaryButton
+extension AlertState: CustomDumpReflectable {
+  public var customDumpMirror: Mirror {
+    Mirror(
+      self,
+      children: [
+        "title": self.title,
+        "message": self.message as Any,
+        "primaryButton": self.primaryButton as Any,
+        "secondaryButton": self.secondaryButton as Any
+      ],
+      displayStyle: .struct
     )
-    return "\(Self.self)\(ComposableArchitecture.debugOutput(fields))"
+  }
+}
+
+extension AlertState.Button: CustomDumpReflectable {
+  public var customDumpMirror: Mirror {
+    let buttonLabel: TextState?
+    switch self.type {
+    case let .cancel(label):
+      buttonLabel = label
+    case let .default(label):
+      buttonLabel = label
+    case let .destructive(label):
+      buttonLabel = label
+    }
+
+    return Mirror(
+      self,
+      children: [
+        Mirror(reflecting: self.type).children.first!.label!: (
+          action: self.action,
+          label: buttonLabel
+        )
+      ],
+      displayStyle: .enum
+    )
   }
 }
 

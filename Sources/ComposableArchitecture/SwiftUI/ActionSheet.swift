@@ -1,3 +1,4 @@
+import CustomDump
 import SwiftUI
 
 /// A data type that describes the state of an action sheet that can be shown to the user. The
@@ -136,14 +137,17 @@ public struct ActionSheetState<Action> {
 @available(macOS, unavailable)
 @available(tvOS 13, *)
 @available(watchOS 6, *)
-extension ActionSheetState: CustomDebugOutputConvertible {
-  public var debugOutput: String {
-    let fields = (
-      title: self.title,
-      message: self.message,
-      buttons: self.buttons
+extension ActionSheetState: CustomDumpReflectable {
+  public var customDumpMirror: Mirror {
+    Mirror(
+      self,
+      children: [
+        "title": self.title,
+        "message": self.message as Any,
+        "buttons": self.buttons
+      ],
+      displayStyle: .struct
     )
-    return "\(Self.self)\(ComposableArchitecture.debugOutput(fields))"
   }
 }
 

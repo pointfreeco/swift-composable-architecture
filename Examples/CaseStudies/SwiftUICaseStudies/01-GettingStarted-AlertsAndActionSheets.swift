@@ -88,7 +88,6 @@ let alertAndSheetReducer = Reducer<
     return .none
   }
 }
-.debug()
 
 struct AlertAndSheetView: View {
   let store: Store<AlertAndSheetState, AlertAndSheetAction>
