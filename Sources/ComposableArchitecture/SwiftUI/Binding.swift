@@ -309,7 +309,12 @@ public struct BindableState<Value> {
   public subscript<Subject>(
     dynamicMember keyPath: WritableKeyPath<Value, Subject>
   ) -> BindableState<Subject> {
-    .init(wrappedValue: self.wrappedValue[keyPath: keyPath])
+    get {
+      .init(wrappedValue: self.wrappedValue[keyPath: keyPath])
+    }
+    set {
+      self.wrappedValue[keyPath: keyPath] = newValue.wrappedValue
+    }
   }
 }
 
