@@ -47,9 +47,10 @@ import SwiftUI
 ///
 /// ### Thread safety
 ///
-/// The ``ViewStore`` class is not thread-safe, and all interactions with it must happen on the main
-/// thread. See the documentation of the ``Store`` class for more information why this decision was
-/// made.
+/// The ``ViewStore`` class is not thread-safe, and all interactions with it (and the store it was
+/// derived from) must happen on the same thread. Further, for SwiftUI applications, all
+/// interactions must happen on the _main_ thread. See the documentation of the ``Store`` class for
+/// more information as to why this decision was made.
 @dynamicMemberLookup
 public final class ViewStore<State, Action>: ObservableObject {
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
@@ -78,11 +79,35 @@ public final class ViewStore<State, Action>: ObservableObject {
       .sink { [weak self] in
         guard let self = self else { return }
         self.objectWillChange.send()
-        self._state.send($0)
+        self._state.value = $0
       }
   }
 
-  /// A publisher of state.
+  /// A publisher that emits when state changes.
+  ///
+  /// This publisher supports dynamic member lookup so that you can pluck out a specific field in
+  /// the state:
+  ///
+  /// ```swift
+  /// viewStore.publisher.alert
+  ///   .sink { ... }
+  /// ```
+  ///
+  /// When the emission happens the ``ViewStore``'s state has been updated, and so the following
+  /// precondition will pass:
+  ///
+  /// ```swift
+  /// viewStore.publisher
+  ///   .sink { precondition($0 == viewStore.state) }
+  /// ```
+  ///
+  /// This means you can either use the value passed to the closure or you can reach into
+  /// `viewStore.state` directly.
+  ///
+  /// - Note: Due to a bug in Combine (or feature?), the order you `.sink` on a publisher has no
+  ///   bearing on the order the `.sink` closures are called. This means the work performed inside
+  ///   `viewStore.publisher.sink` closures should be completely independent of each other.
+  ///   Later closures cannot assume that earlier ones have already run.
   public var publisher: StorePublisher<State> {
     StorePublisher(viewStore: self)
   }

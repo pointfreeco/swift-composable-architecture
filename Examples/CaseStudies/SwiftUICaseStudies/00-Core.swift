@@ -15,6 +15,7 @@ struct RootState {
   var effectsCancellation = EffectsCancellationState()
   var effectsTimers = TimersState()
   var episodes = EpisodesState(episodes: .mocks)
+  var focusDemo = FocusDemoState()
   var lifecycle = LifecycleDemoState()
   var loadThenNavigate = LoadThenNavigateState()
   var loadThenNavigateList = LoadThenNavigateListState()
@@ -45,6 +46,7 @@ enum RootAction {
   case effectsBasics(EffectsBasicsAction)
   case effectsCancellation(EffectsCancellationAction)
   case episodes(EpisodesAction)
+  case focusDemo(FocusDemoAction)
   case lifecycle(LifecycleDemoAction)
   case loadThenNavigate(LoadThenNavigateAction)
   case loadThenNavigateList(LoadThenNavigateListAction)
@@ -160,6 +162,12 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       action: /RootAction.episodes,
       environment: { .init(favorite: $0.favorite, mainQueue: $0.mainQueue) }
     ),
+  focusDemoReducer
+    .pullback(
+      state: \.focusDemo,
+      action: /RootAction.focusDemo,
+      environment: { _ in .init() }
+    ),
   lifecycleDemoReducer
     .pullback(
       state: \.lifecycle,
@@ -272,6 +280,7 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       environment: { .init(mainQueue: $0.mainQueue, webSocket: $0.webSocket) }
     )
 )
+.debug()
 .signpost()
 
 private func liveFetchNumber() -> Effect<Int, Never> {
