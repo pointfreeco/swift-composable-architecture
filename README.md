@@ -437,6 +437,7 @@ If you want to discuss the Composable Architecture or have a question about how 
 
 The following translations of this README have been contributed by members of the community:
 
+* [French](https://gist.github.com/nikitamounier/0e93eb832cf389db12f9a69da030a2dc)
 * [Korean](https://gist.github.com/pilgwon/ea05e2207ab68bdd1f49dff97b293b17)
 * [Indonesian](https://gist.github.com/wendyliga/792ea9ac5cc887f59de70a9e39cc7343)
 * [Italian](https://gist.github.com/Bellaposa/5114e6d4d55fdb1388e8186886d48958)

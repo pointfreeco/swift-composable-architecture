@@ -79,7 +79,7 @@ public final class ViewStore<State, Action>: ObservableObject {
       .sink { [weak self] in
         guard let self = self else { return }
         self.objectWillChange.send()
-        self._state.send($0)
+        self._state.value = $0
       }
   }
 

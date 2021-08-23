@@ -72,7 +72,7 @@ struct LoadThenPresentView: View {
               Text("Load optional counter")
               if viewStore.isActivityIndicatorVisible {
                 Spacer()
-                ActivityIndicator()
+                ProgressView()
               }
             }
           }

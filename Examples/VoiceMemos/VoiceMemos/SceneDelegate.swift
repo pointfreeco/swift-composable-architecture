@@ -19,8 +19,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
           environment: VoiceMemosEnvironment(
             audioPlayer: .live,
             audioRecorder: .live,
-            date: Date.init,
-            mainQueue: .main,
+            mainRunLoop: .main,
             openSettings: .fireAndForget {
               UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
             },

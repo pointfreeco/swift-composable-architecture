@@ -9,6 +9,10 @@ public struct Three<Element> {
     self.second = second
     self.third = third
   }
+
+  public func map<T>(_ transform: (Element) -> T) -> Three<T> {
+    .init(transform(self.first), transform(self.second), transform(self.third))
+  }
 }
 
 extension Three: MutableCollection {
@@ -34,10 +38,6 @@ extension Three: MutableCollection {
   public var startIndex: Int { 0 }
   public var endIndex: Int { 3 }
   public func index(after i: Int) -> Int { i + 1 }
-
-  public func map<T>(_ transform: (Element) -> T) -> Three<T> {
-    .init(transform(self.first), transform(self.second), transform(self.third))
-  }
 }
 
 extension Three: RandomAccessCollection {}

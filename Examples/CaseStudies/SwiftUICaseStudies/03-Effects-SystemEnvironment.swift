@@ -123,7 +123,7 @@ struct MultipleDependenciesView: View {
             Spacer()
 
             if viewStore.isFetchInFlight {
-              ActivityIndicator()
+              ProgressView()
             }
           }
         }

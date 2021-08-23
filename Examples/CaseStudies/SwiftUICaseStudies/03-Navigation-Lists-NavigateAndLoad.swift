@@ -91,7 +91,7 @@ struct NavigateAndLoadListView: View {
                   action: NavigateAndLoadListAction.counter
                 ),
                 then: CounterView.init(store:),
-                else: { ActivityIndicator() }
+                else: ProgressView.init
               ),
               tag: row.id,
               selection: viewStore.binding(

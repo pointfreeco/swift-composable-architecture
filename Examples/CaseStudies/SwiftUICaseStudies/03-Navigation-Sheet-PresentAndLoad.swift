@@ -81,7 +81,7 @@ struct PresentAndLoadView: View {
             action: PresentAndLoadAction.optionalCounter
           ),
           then: CounterView.init(store:),
-          else: { ActivityIndicator() }
+          else: ProgressView.init
         )
       }
       .navigationBarTitle("Present and load")
