@@ -7,16 +7,16 @@ private let readMe = """
   """
 
 struct FocusDemoState: Equatable {
-  var focusedField: Field? = nil
-  var password: String = ""
-  var username: String = ""
+  @BindableState var focusedField: Field? = nil
+  @BindableState var password: String = ""
+  @BindableState var username: String = ""
 
   enum Field: String, Hashable {
     case username, password
   }
 }
 
-enum FocusDemoAction: Equatable {
+enum FocusDemoAction: BindableAction, Equatable {
   case binding(BindingAction<FocusDemoState>)
   case signInButtonTapped
 }
@@ -41,7 +41,7 @@ let focusDemoReducer = Reducer<
     return .none
   }
 }
-.binding(action: /FocusDemoAction.binding)
+.binding()
 
 #if compiler(>=5.5)
   struct FocusDemoView: View {
@@ -54,17 +54,11 @@ let focusDemoReducer = Reducer<
           Text(template: readMe, .caption)
 
           VStack {
-            TextField(
-              "Username",
-              text: viewStore.binding(keyPath: \.username, send: FocusDemoAction.binding)
-            )
-            .focused($focusedField, equals: .username)
+            TextField("Username", text: viewStore.$username)
+              .focused($focusedField, equals: .username)
 
-            SecureField(
-              "Password",
-              text: viewStore.binding(keyPath: \.password, send: FocusDemoAction.binding)
-            )
-            .focused($focusedField, equals: .password)
+            SecureField("Password", text: viewStore.$password)
+              .focused($focusedField, equals: .password)
 
             Button("Sign In") {
               viewStore.send(.signInButtonTapped)
@@ -74,10 +68,7 @@ let focusDemoReducer = Reducer<
           Spacer()
         }
         .padding()
-        .synchronize(
-          viewStore.binding(keyPath: \.focusedField, send: FocusDemoAction.binding),
-          self.$focusedField
-        )
+        .synchronize(viewStore.$focusedField, self.$focusedField)
       }
       .navigationBarTitle("Focus demo")
     }
