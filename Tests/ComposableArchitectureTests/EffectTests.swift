@@ -222,7 +222,7 @@ final class EffectTests: XCTestCase {
       }
       .sink(receiveValue: { result = $0 })
       .store(in: &self.cancellables)
-      self.wait(for: [expectation], timeout: 0)
+      self.wait(for: [expectation], timeout: 1)
       XCTAssertEqual(result, 42)
     }
 
