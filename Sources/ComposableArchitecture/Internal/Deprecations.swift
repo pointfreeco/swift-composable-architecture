@@ -2,6 +2,48 @@ import CasePaths
 import Combine
 import SwiftUI
 
+// NB: Deprecated after 0.25.0:
+
+extension BindingAction {
+  @available(*, deprecated)
+  public static func set<Value>(
+    _ keyPath: WritableKeyPath<Root, Value>,
+    _ value: Value
+  ) -> Self
+  where Value: Equatable {
+    .init(
+      keyPath: keyPath,
+      set: { $0[keyPath: keyPath] = value },
+      value: value,
+      valueIsEqualTo: { $0 as? Value == value }
+    )
+  }
+}
+
+extension Reducer {
+  @available(*, deprecated)
+  public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self {
+    Self { state, action, environment in
+      toBindingAction(action)?.set(&state)
+      return self.run(&state, action, environment)
+    }
+  }
+}
+
+extension ViewStore {
+  @available(*, deprecated)
+  public func binding<LocalState>(
+    keyPath: WritableKeyPath<State, LocalState>,
+    send action: @escaping (BindingAction<State>) -> Action
+  ) -> Binding<LocalState>
+  where LocalState: Equatable {
+    self.binding(
+      get: { $0[keyPath: keyPath] },
+      send: { action(.set(keyPath, $0)) }
+    )
+  }
+}
+
 // NB: Deprecated after 0.23.0:
 
 extension AlertState.Button {

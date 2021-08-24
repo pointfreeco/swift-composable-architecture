@@ -141,8 +141,8 @@ public struct BindingAction<Root>: Equatable {
   public let keyPath: PartialKeyPath<Root>
 
   let set: (inout Root) -> Void
-  private let value: Any
-  private let valueIsEqualTo: (Any) -> Bool
+  let value: Any
+  let valueIsEqualTo: (Any) -> Bool
 
   /// Returns an action that describes simple mutations to some root state at a writable key path.
   ///
@@ -151,21 +151,6 @@ public struct BindingAction<Root>: Equatable {
   ///   - value: A value to assign at the given key path.
   /// - Returns: An action that describes simple mutations to some root state at a writable key
   ///   path.
-  @available(*, deprecated)
-  public static func set<Value>(
-    _ keyPath: WritableKeyPath<Root, Value>,
-    _ value: Value
-  ) -> Self
-  where Value: Equatable {
-    .init(
-      keyPath: keyPath,
-      set: { $0[keyPath: keyPath] = value },
-      value: value,
-      valueIsEqualTo: { $0 as? Value == value }
-    )
-  }
-
-
   public static func set<Value>(
     _ keyPath: WritableKeyPath<Root, BindableState<Value>>,
     _ value: Value
@@ -177,7 +162,6 @@ public struct BindingAction<Root>: Equatable {
       valueIsEqualTo: { $0 as? Value == value }
     )
   }
-
 
   /// Transforms a binding action over some root state to some other type of root state given a key
   /// path.
@@ -219,7 +203,7 @@ extension BindingAction: CustomDumpReflectable {
   }
 }
 
-extension Reducer {
+extension Reducer where Action: BindableAction, State == Action.State {
   /// Returns a reducer that applies ``BindingAction`` mutations to `State` before running this
   /// reducer's logic.
   ///
@@ -248,10 +232,14 @@ extension Reducer {
   /// an extraction function from any case of any enum.
   /// - Returns: A reducer that applies ``BindingAction`` mutations to `State` before running this
   ///   reducer's logic.
-  @available(*, deprecated)
-  public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self {
+  public func binding() -> Self {
     Self { state, action, environment in
-      toBindingAction(action)?.set(&state)
+      guard let bindingAction = (/Action.binding).extract(from: action)
+      else {
+        return self.run(&state, action, environment)
+      }
+
+      bindingAction.set(&state)
       return self.run(&state, action, environment)
     }
   }
@@ -277,20 +265,31 @@ extension ViewStore {
   ///   - keyPath: A writable key path from the view store's state to a mutable field
   ///   - action: A function that wraps a binding action in the view store's action type.
   /// - Returns: A binding.
-  @available(*, deprecated)
-  public func binding<LocalState>(
-    keyPath: WritableKeyPath<State, LocalState>,
+  // TODO: deprecate this?
+  public func binding<Value>(
+    keyPath: WritableKeyPath<State, BindableState<Value>>,
     send action: @escaping (BindingAction<State>) -> Action
-  ) -> Binding<LocalState>
-  where LocalState: Equatable {
+  ) -> Binding<Value> where Value: Equatable {
     self.binding(
-      get: { $0[keyPath: keyPath] },
+      get: { $0[keyPath: keyPath].wrappedValue },
       send: { action(.set(keyPath, $0)) }
     )
   }
+
+  public func binding<Value>(
+    keyPath: WritableKeyPath<State, BindableState<Value>>
+  ) -> Binding<Value>
+  where
+    Value: Equatable,
+    Action: BindableAction,
+    Action.State == State
+  {
+    self.binding(
+      get: { $0[keyPath: keyPath].wrappedValue },
+      send: { .binding(.set(keyPath, $0)) }
+    )
+  }
 }
-
-
 
 @propertyWrapper
 @dynamicMemberLookup
@@ -318,60 +317,12 @@ public struct BindableState<Value> {
   }
 }
 
-
 extension BindableState: Equatable where Value: Equatable {}
-
-
-extension ViewStore {
-  public func binding<Value>(
-    keyPath: WritableKeyPath<State, BindableState<Value>>,
-    send action: @escaping (BindingAction<State>) -> Action
-  ) -> Binding<Value> where Value: Equatable {
-    self.binding(
-      get: { $0[keyPath: keyPath].wrappedValue },
-      send: { action(.set(keyPath, $0)) }
-    )
-  }
-}
-
 
 public protocol BindableAction {
   associatedtype State
   static func binding(_: BindingAction<State>) -> Self
 }
-
-
-extension Reducer where Action: BindableAction, State == Action.State {
-  public func binding() -> Self {
-    Self { state, action, environment in
-      guard let bindingAction = (/Action.binding).extract(from: action)
-      else {
-        return self.run(&state, action, environment)
-      }
-
-      bindingAction.set(&state)
-      return self.run(&state, action, environment)
-    }
-  }
-}
-
-
-extension ViewStore {
-  public func binding<Value>(
-    keyPath: WritableKeyPath<State, BindableState<Value>>
-  ) -> Binding<Value>
-  where
-    Value: Equatable,
-    Action: BindableAction,
-    Action.State == State
-  {
-    self.binding(
-      get: { $0[keyPath: keyPath].wrappedValue },
-      send: { .binding(.set(keyPath, $0)) }
-    )
-  }
-}
-
 
 extension ViewStore {
   public subscript<Value>(
