@@ -129,10 +129,10 @@ import SwiftUI
 /// match the action for a given key path:
 ///
 /// ```swift
-/// case .binding(\.displayName):
+/// case .binding(\.$displayName):
 ///   // Validate display name
 ///
-/// case .binding(\.enableNotifications):
+/// case .binding(\.$enableNotifications):
 ///   // Return an authorization request effect
 /// ```
 ///
@@ -301,7 +301,7 @@ public struct BindingAction<Root>: Equatable {
   }
 
   public static func ~= <Value>(
-    keyPath: WritableKeyPath<Root, Value>,
+    keyPath: WritableKeyPath<Root, BindableState<Value>>,
     bindingAction: Self
   ) -> Bool {
     keyPath == bindingAction.keyPath

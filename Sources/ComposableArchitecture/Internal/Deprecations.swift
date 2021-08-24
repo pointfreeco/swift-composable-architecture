@@ -5,7 +5,7 @@ import SwiftUI
 // NB: Deprecated after 0.25.0:
 
 extension BindingAction {
-  @available(*, deprecated, message: "Values are now wrapped in `BindableState`")
+  @available(*, deprecated, message: "Values are now wrapped in 'BindableState'")
   public static func set<Value>(
     _ keyPath: WritableKeyPath<Root, Value>,
     _ value: Value
@@ -17,6 +17,14 @@ extension BindingAction {
       value: value,
       valueIsEqualTo: { $0 as? Value == value }
     )
+  }
+
+  @available(*, deprecated, message: "Values are now wrapped in 'BindableState'")
+  public static func ~= <Value>(
+    keyPath: WritableKeyPath<Root, Value>,
+    bindingAction: Self
+  ) -> Bool {
+    keyPath == bindingAction.keyPath
   }
 }
 
@@ -31,7 +39,7 @@ extension Reducer {
 }
 
 extension ViewStore {
-  @available(*, deprecated, message: "Bindings are now derived using `BindableState`")
+  @available(*, deprecated, message: "Bindings are now derived using 'BindableState'")
   public func binding<LocalState>(
     keyPath: WritableKeyPath<State, LocalState>,
     send action: @escaping (BindingAction<State>) -> Action

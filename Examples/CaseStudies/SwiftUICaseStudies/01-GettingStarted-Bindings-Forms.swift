@@ -33,7 +33,7 @@ let bindingFormReducer = Reducer<
 > {
   state, action, _ in
   switch action {
-  case .binding(\.stepCount):
+  case .binding(\.$stepCount):
     state.sliderValue = .minimum(state.sliderValue, Double(state.stepCount))
     return .none
 
