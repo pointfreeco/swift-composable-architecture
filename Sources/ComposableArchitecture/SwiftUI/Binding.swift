@@ -199,6 +199,12 @@ extension BindableState: CustomReflectable {
   }
 }
 
+extension BindableState: CustomDumpReflectable {
+  public var customDumpValue: Any {
+    self.wrappedValue
+  }
+}
+
 /// An action type that exposes a `binding` case for the purpose of reducing.
 ///
 /// Used in conjunction with ``BindableState`` to safely eliminate the boilerplate typically
@@ -273,8 +279,8 @@ public struct BindingAction<Root>: Equatable {
     _ value: Value
   ) -> Self where Value: Equatable {
     .init(
-      keyPath: keyPath.appending(path: \.wrappedValue),
-      set: { $0[keyPath: keyPath] = .init(wrappedValue: value) },
+      keyPath: keyPath,
+      set: { $0[keyPath: keyPath].wrappedValue = value },
       value: value,
       valueIsEqualTo: { $0 as? Value == value }
     )
