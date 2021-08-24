@@ -199,7 +199,7 @@ extension BindableState: CustomReflectable {
   }
 }
 
-extension BindableState: CustomDumpReflectable {
+extension BindableState: CustomDumpRepresentable {
   public var customDumpValue: Any {
     self.wrappedValue
   }
