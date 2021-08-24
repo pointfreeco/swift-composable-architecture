@@ -8,7 +8,7 @@ final class DebugTests: XCTestCase {
   func testTextState() {
     var dump = ""
     customDump(TextState("Hello, world!"), to: &dump)
-    XCTAssertEqual(
+    XCTAssertNoDifference(
       dump,
       """
       "Hello, world!"
@@ -22,7 +22,7 @@ final class DebugTests: XCTestCase {
       + TextState("!"),
       to: &dump
     )
-    XCTAssertEqual(
+    XCTAssertNoDifference(
       dump,
       """
       "Hello, _**world**_!"
@@ -49,7 +49,7 @@ final class DebugTests: XCTestCase {
         + TextState("\n") + TextState("Not underlined purple").underline(false, color: .pink),
       to: &dump
     )
-    XCTAssertEqual(
+    XCTAssertNoDifference(
       dump,
       #"""
       """
@@ -90,22 +90,22 @@ final class DebugTests: XCTestCase {
       }
     }
 
-    XCTAssertEqual(
+    XCTAssertNoDifference(
       debugCaseOutput(Action.action1(true, label: "Blob")),
       "Action.action1(_:, label:)"
     )
 
-    XCTAssertEqual(
+    XCTAssertNoDifference(
       debugCaseOutput(Action.action2(true, 1, "Blob")),
       "Action.action2(_:, _:, _:)"
     )
 
-    XCTAssertEqual(
+    XCTAssertNoDifference(
       debugCaseOutput(Action.screenA(.row(index: 1, action: .tapped))),
       "Action.screenA(.row(index:, action: .tapped))"
     )
 
-    XCTAssertEqual(
+    XCTAssertNoDifference(
       debugCaseOutput(Action.screenA(.row(index: 1, action: .textChanged(query: "Hi")))),
       "Action.screenA(.row(index:, action: .textChanged(query:)))"
     )
