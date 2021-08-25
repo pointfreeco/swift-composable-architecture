@@ -332,7 +332,7 @@ The Composable Architecture comes with a number of tools to aid in debugging.
             description: "Milk",
             id: 5834811A-83B4-4E5E-BCD3-8A38F6BDCA90
           ),
-          (… 2 unchanged)
+          … (2 unchanged)
         ]
       )
     ```
