@@ -26,7 +26,7 @@ DOC_WARNINGS := $(shell xcodebuild clean docbuild \
 	-destination platform="$(PLATFORM_MACOS)" \
 	-quiet \
 	2>&1 \
-	| grep 'warning: ' \
+	| grep "couldn't be resolved to known documentation" \
 	| sed 's|$(PWD)|.|g' \
 	| tr '\n' '\1')
 test-docs:
