@@ -1,9 +1,9 @@
 import Combine
 import CombineSchedulers
 import ComposableArchitecture
+import CustomDump
 import XCTest
 import os.signpost
-import CustomDump
 
 final class ReducerTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
@@ -219,5 +219,8 @@ final class ReducerTests: XCTestCase {
   }
 }
 
-enum DebugAction: Equatable { case incrWithBool(Bool), incr, noop }
+enum DebugAction: Equatable {
+  case incrWithBool(Bool)
+  case incr, noop
+}
 struct DebugState: Equatable { var count = 0 }

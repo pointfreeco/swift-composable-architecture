@@ -1,5 +1,5 @@
-import CustomDump
 import Combine
+import CustomDump
 import XCTest
 
 @testable import ComposableArchitecture
@@ -18,8 +18,8 @@ final class DebugTests: XCTestCase {
     dump = ""
     customDump(
       TextState("Hello, ")
-      + TextState("world").bold().italic()
-      + TextState("!"),
+        + TextState("world").bold().italic()
+        + TextState("!"),
       to: &dump
     )
     XCTAssertNoDifference(
