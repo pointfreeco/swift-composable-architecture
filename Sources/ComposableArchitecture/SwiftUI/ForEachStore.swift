@@ -51,7 +51,7 @@ import SwiftUI
 /// ```
 ///
 /// Enhance its reducer using
-/// ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87``:
+/// ``Reducer/forEach(state:action:environment:breakpointOnNil:file:line:)-7h573``:
 ///
 /// ```swift
 /// let appReducer = todoReducer.forEach(
