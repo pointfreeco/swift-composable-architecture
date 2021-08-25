@@ -75,10 +75,11 @@ public struct Reducer<State, Action, Environment> {
   /// action.
   ///
   /// Similar can be said for a
-  /// ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87`` reducer. If the
+  /// ``Reducer/forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer. If the
   /// parent domain modifies the child collection by moving, removing, or modifying an element
-  /// before the ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87`` reducer
-  /// runs, the ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87`` reducer may
+  /// before the ``Reducer/forEach(state:action:environment:breakpointOnNil:file:line:)-7h573``
+  /// reducer runs, the
+  /// ``Reducer/forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer may
   /// perform its action against the wrong element, an element that no longer exists, or an element
   /// in an unexpected state.
   ///
@@ -132,10 +133,11 @@ public struct Reducer<State, Action, Environment> {
   /// action.
   ///
   /// Similar can be said for a
-  /// ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87`` reducer. If the
+  /// ``Reducer/forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer. If the
   /// parent domain modifies the child collection by moving, removing, or modifying an element
-  /// before the ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87`` reducer
-  /// runs, the ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87`` reducer may
+  /// before the ``Reducer/forEach(state:action:environment:breakpointOnNil:file:line:)-7h573``
+  /// reducer runs, the
+  /// ``Reducer/forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer may
   /// perform its action against the wrong element, an element that no longer exists, or an element
   /// in an unexpected state.
   ///
@@ -191,10 +193,11 @@ public struct Reducer<State, Action, Environment> {
   /// action.
   ///
   /// Similar can be said for a
-  /// ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87`` reducer. If the
+  /// ``Reducer/forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer. If the
   /// parent domain modifies the child collection by moving, removing, or modifying an element
-  /// before the ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87`` reducer
-  /// runs, the ``Reducer/forEach(state:action:environment:breakpointOnNil:_:_:)-3ic87`` reducer may
+  /// before the ``Reducer/forEach(state:action:environment:breakpointOnNil:file:line:)-7h573``
+  /// reducer runs, the
+  /// ``Reducer/forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer may
   /// perform its action against the wrong element, an element that no longer exists, or an element
   /// in an unexpected state.
   ///
@@ -305,7 +308,7 @@ public struct Reducer<State, Action, Environment> {
   /// operator to pullback a reducer that operates on a single case of some state enum to work on
   /// the entire state enum.
   ///
-  /// When used with the ``combine(_:)-994ake`` operator you can define many reducers that work each
+  /// When used with the ``combine(_:)-994ak`` operator you can define many reducers that work each
   /// case of the state enum, and then _pull them back_ and _combine_ them into one big reducer that
   /// works on a large domain.
   ///
@@ -736,10 +739,11 @@ public struct Reducer<State, Action, Environment> {
   /// )
   /// ```
   ///
-  /// Take care when combining ``forEach(state:action:environment:breakpointOnNil:_:_:)-90ox5``
-  /// reducers into parent domains, as order matters. Always combine
-  /// ``forEach(state:action:environment:breakpointOnNil:_:_:)-90ox5`` reducers _before_ parent
-  /// reducers that can modify the collection.
+  /// Take care when combining
+  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducers into parent
+  /// domains, as order matters. Always combine
+  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducers _before_
+  /// parent reducers that can modify the collection.
   ///
   /// - Parameters:
   ///   - toLocalState: A key path that can get/set a collection of `State` elements inside
@@ -808,10 +812,11 @@ public struct Reducer<State, Action, Environment> {
   /// A version of ``pullback(state:action:environment:)`` that transforms a reducer that works on
   /// an element into one that works on a dictionary of element values.
   ///
-  /// Take care when combining ``forEach(state:action:environment:breakpointOnNil:_:_:)-xv1z``
+  /// Take care when combining
+  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-1h7qx``
   /// reducers into parent domains, as order matters. Always combine
-  /// ``forEach(state:action:environment:breakpointOnNil:_:_:)-xv1z`` reducers _before_ parent
-  /// reducers that can modify the dictionary.
+  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-1h7qx`` reducers _before_
+  /// parent reducers that can modify the dictionary.
   ///
   /// - Parameters:
   ///   - toLocalState: A key path that can get/set a dictionary of `State` values inside
