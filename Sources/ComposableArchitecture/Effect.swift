@@ -110,12 +110,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   public static func future(
     _ attemptToFulfill: @escaping (@escaping (Result<Output, Failure>) -> Void) -> Void
   ) -> Effect {
-    Deferred {
-      Future { callback in
-        attemptToFulfill { result in callback(result) }
-      }
-    }
-    .eraseToEffect()
+    Deferred { Future(attemptToFulfill) }.eraseToEffect()
   }
 
   /// Initializes an effect that lazily executes some work in the real world and synchronously sends
