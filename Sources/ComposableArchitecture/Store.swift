@@ -45,9 +45,9 @@ import Foundation
 /// }
 ///
 /// enum AppAction {
-///   case activity(ActivityState)
-///   case profile(ProfileState)
-///   case search(SearchState)
+///   case activity(ActivityAction)
+///   case profile(ProfileAction)
+///   case search(SearchAction)
 /// }
 /// ```
 ///
