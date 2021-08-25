@@ -2,8 +2,8 @@ name: Format
 
 on:
   push:
-    branches-ignore:
-      - '**'
+    branches:
+      - main
 
 jobs:
   swift_format:
