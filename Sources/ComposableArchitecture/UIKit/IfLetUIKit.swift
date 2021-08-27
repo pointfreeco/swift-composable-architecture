@@ -49,32 +49,14 @@ extension Store {
     then unwrap: @escaping (Store<Wrapped, Action>) -> Void,
     else: @escaping () -> Void = {}
   ) -> Cancellable where State == Wrapped? {
-    let elseCancellable =
-      self
-      .publisherScope(
-        state: { state in
-          state
-            .removeDuplicates(by: { ($0 != nil) == ($1 != nil) })
+    return self.state
+      .removeDuplicates(by: { ($0 != nil) == ($1 != nil) })
+      .sink { state in
+        if let state = state {
+          unwrap(self.scope(state: { $0 ?? state }))
+        } else {
+          `else`()
         }
-      )
-      .sink { store in
-        if store.state.value == nil { `else`() }
       }
-
-    let unwrapCancellable =
-      self
-      .publisherScope(
-        state: { state in
-          state
-            .removeDuplicates(by: { ($0 != nil) == ($1 != nil) })
-            .compactMap { $0 }
-        }
-      )
-      .sink(receiveValue: unwrap)
-
-    return AnyCancellable {
-      elseCancellable.cancel()
-      unwrapCancellable.cancel()
-    }
   }
 }
