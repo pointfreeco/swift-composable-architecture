@@ -52,11 +52,16 @@ extension Store {
     return self.state
       .removeDuplicates(by: { ($0 != nil) == ($1 != nil) })
       .sink { state in
-        if let state = state {
-          unwrap(self.scope(state: { $0 ?? state }))
+        if var state = state {
+          unwrap(self.scope {
+            state = $0 ?? state
+            return state
+          })
         } else {
           `else`()
         }
       }
   }
 }
+
+
