@@ -331,23 +331,15 @@ public final class Store<State, Action> {
     }
 
     return toLocalState(self.state.eraseToAnyPublisher())
-      .map { localState in
-        let localStore = Store<LocalState, LocalAction>(
-          initialState: localState,
-          reducer: .init { localState, localAction, _ in
-            self.send(fromLocalAction(localAction))
-            localState = extractLocalState(self.state.value) ?? localState
-            return .none
+      .map { initialState in
+        var localState = initialState
+        return self.scope(
+          state: { state in
+            localState = extractLocalState(state) ?? localState
+            return localState
           },
-          environment: ()
+          action: fromLocalAction
         )
-
-        localStore.parentCancellable = self.state
-          .sink { [weak localStore] state in
-            guard let localStore = localStore else { return }
-            localStore.state.value = extractLocalState(state) ?? localStore.state.value
-          }
-        return localStore
       }
       .eraseToAnyPublisher()
   }
