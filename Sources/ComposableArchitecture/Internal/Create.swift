@@ -23,7 +23,7 @@
 import Combine
 import Darwin
 
-private class DemandBuffer<S: Subscriber> {
+class DemandBuffer<S: Subscriber> {
   private var buffer = [S.Input]()
   private let subscriber: S
   private var completion: Subscribers.Completion<S.Failure>?
