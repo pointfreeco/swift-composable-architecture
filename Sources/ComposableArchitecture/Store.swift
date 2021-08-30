@@ -322,13 +322,20 @@ public final class Store<State, Action> {
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> AnyPublisher<Store<LocalState, LocalAction>, Never>
   where P.Output == LocalState, P.Failure == Never {
+
+    func extractLocalState(_ state: State) -> LocalState? {
+      var localState: LocalState?
+      _ = toLocalState(Just(state).eraseToAnyPublisher())
+        .sink { localState = $0 }
+      return localState
+    }
+
     return toLocalState(self.state.eraseToAnyPublisher())
       .map { initialState in
         var localState = initialState
         return self.scope(
           state: { state in
-            _ = toLocalState(Just(state).eraseToAnyPublisher())
-              .sink { localState = $0 }
+            localState = extractLocalState(state) ?? localState
             return localState
           },
           action: fromLocalAction
