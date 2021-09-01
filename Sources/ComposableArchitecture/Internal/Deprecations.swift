@@ -8,7 +8,7 @@ extension Store {
   @available(
     *, deprecated,
     message:
-      "If you use 'publisherScope', please open a discussion on GitHub and let us know how: https://github.com/pointfreeco/swift-composable-architecture/discussions/new"
+      "If you use this method, please open a discussion on GitHub and let us know how: https://github.com/pointfreeco/swift-composable-architecture/discussions/new"
   )
   public func publisherScope<P: Publisher, LocalState, LocalAction>(
     state toLocalState: @escaping (AnyPublisher<State, Never>) -> P,
@@ -48,7 +48,7 @@ extension Store {
   @available(
     *, deprecated,
     message:
-      "If you use 'publisherScope', please open a discussion on GitHub and let us know how: https://github.com/pointfreeco/swift-composable-architecture/discussions/new"
+      "If you use this method, please open a discussion on GitHub and let us know how: https://github.com/pointfreeco/swift-composable-architecture/discussions/new"
   )
   public func publisherScope<P: Publisher, LocalState>(
     state toLocalState: @escaping (AnyPublisher<State, Never>) -> P
