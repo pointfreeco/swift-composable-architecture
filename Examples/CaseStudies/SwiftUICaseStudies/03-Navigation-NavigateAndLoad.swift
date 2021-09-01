@@ -42,7 +42,8 @@ let navigateAndLoadReducer =
       case .setNavigation(isActive: true):
         state.isNavigationActive = true
         return Effect(value: .setNavigationIsActiveDelayCompleted)
-          .deferred(for: 1, scheduler: environment.mainQueue)
+          .delay(for: 1, scheduler: environment.mainQueue)
+          .eraseToEffect()
           .cancellable(id: CancelId())
 
       case .setNavigation(isActive: false):
