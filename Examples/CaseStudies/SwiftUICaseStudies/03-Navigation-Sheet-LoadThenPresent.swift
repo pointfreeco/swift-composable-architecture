@@ -17,6 +17,7 @@ struct LoadThenPresentState: Equatable {
 }
 
 enum LoadThenPresentAction {
+  case onDisappear
   case optionalCounter(CounterAction)
   case setSheet(isPresented: Bool)
   case setSheetIsPresentedDelayCompleted
@@ -38,12 +39,20 @@ let loadThenPresentReducer =
     with: Reducer<
       LoadThenPresentState, LoadThenPresentAction, LoadThenPresentEnvironment
     > { state, action, environment in
+
+      struct CancelId: Hashable {}
+
       switch action {
+
+      case .onDisappear:
+        return .cancel(id: CancelId())
+
       case .setSheet(isPresented: true):
         state.isActivityIndicatorVisible = true
         return Effect(value: .setSheetIsPresentedDelayCompleted)
           .delay(for: 1, scheduler: environment.mainQueue)
           .eraseToEffect()
+          .cancellable(id: CancelId())
 
       case .setSheet(isPresented: false):
         state.optionalCounter = nil
@@ -93,6 +102,7 @@ struct LoadThenPresentView: View {
         )
       }
       .navigationBarTitle("Load and present")
+      .onDisappear { viewStore.send(.onDisappear) }
     }
   }
 }

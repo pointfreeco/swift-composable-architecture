@@ -26,6 +26,7 @@ struct LoadThenNavigateListState: Equatable {
 
 enum LoadThenNavigateListAction: Equatable {
   case counter(CounterAction)
+  case onDisappear
   case setNavigation(selection: UUID?)
   case setNavigationSelectionDelayCompleted(UUID)
 }
@@ -56,6 +57,9 @@ let loadThenNavigateListReducer =
       switch action {
       case .counter:
         return .none
+
+      case .onDisappear:
+        return .cancel(id: CancelId())
 
       case let .setNavigation(selection: .some(navigatedId)):
         for row in state.rows {
@@ -119,6 +123,7 @@ struct LoadThenNavigateListView: View {
         }
       }
       .navigationBarTitle("Load then navigate")
+      .onDisappear { viewStore.send(.onDisappear) }
     }
   }
 }
