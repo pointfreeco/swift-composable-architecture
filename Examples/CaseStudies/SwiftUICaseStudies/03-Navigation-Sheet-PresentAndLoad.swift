@@ -40,7 +40,8 @@ let presentAndLoadReducer =
       case .setSheet(isPresented: true):
         state.isSheetPresented = true
         return Effect(value: .setSheetIsPresentedDelayCompleted)
-          .deferred(for: 1, scheduler: environment.mainQueue)
+          .delay(for: 1, scheduler: environment.mainQueue)
+          .eraseToEffect()
           .cancellable(id: CancelId())
 
       case .setSheet(isPresented: false):
