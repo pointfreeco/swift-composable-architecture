@@ -1,7 +1,54 @@
 import AVFoundation
+import Combine
 import ComposableArchitecture
 
 extension AudioPlayerClient {
+  static var _live: Self {
+    class Delegate: NSObject, AVAudioPlayerDelegate {
+      let subscriber: Effect<Action, Failure>.Subscriber
+
+      init(subscriber: Effect<Action, Failure>.Subscriber) {
+        self.subscriber = subscriber
+      }
+
+      func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        self.subscriber.send(.didFinishPlaying(successfully: flag))
+      }
+
+      func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: Error?) {
+        self.subscriber.send(completion: .failure(.decodeErrorDidOccur))
+      }
+    }
+
+    var player = AVAudioPlayer()
+
+    return .init(
+      play: { id, url in
+        .run { subscriber in
+          let delegate = Delegate(subscriber: subscriber)
+
+          do {
+            player = try AVAudioPlayer(contentsOf: url)
+            player.delegate = delegate
+            player.play()
+          } catch {
+            subscriber.send(completion: .failure(.couldntCreateAudioPlayer))
+          }
+
+          return AnyCancellable {
+            _ = delegate
+            player.stop()
+          }
+        }
+      },
+      stop: { id in
+        .fireAndForget {
+          player.pause()
+        }
+      }
+    )
+  }
+
   static let live = AudioPlayerClient(
     play: { id, url in
       .future { callback in
