@@ -1,8 +1,8 @@
 import CasePaths
 import Dispatch
 
-/// Determines how the string description of an action should be printed when using the ``Reducer/debug(prefix:state:action:environment:)``
-/// higher-order reducer.
+/// Determines how the string description of an action should be printed when using the
+/// ``Reducer/debug(_:state:action:actionFormat:environment:)`` higher-order reducer.
 public enum ActionFormat {
   /// Prints the action in a single line by only specifying the labels of the associated values:
   ///

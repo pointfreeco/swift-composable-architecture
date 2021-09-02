@@ -19,7 +19,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 
   func testDownloadFlow() {
     var downloadClient = DownloadClient.failing
-    downloadClient.download = { _, _ in self.downloadSubject.eraseToEffect() }
+    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
 
     let store = TestStore(
       initialState: DownloadComponentState(
@@ -54,7 +54,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 
   func testDownloadThrottling() {
     var downloadClient = DownloadClient.failing
-    downloadClient.download = { _, _ in self.downloadSubject.eraseToEffect() }
+    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
 
     let store = TestStore(
       initialState: DownloadComponentState(
@@ -94,10 +94,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 
   func testCancelDownloadFlow() {
     var downloadClient = DownloadClient.failing
-    downloadClient.cancel = { _ in
-      .fireAndForget { self.downloadSubject.send(completion: .finished) }
-    }
-    downloadClient.download = { _, _ in self.downloadSubject.eraseToEffect() }
+    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
 
     let store = TestStore(
       initialState: DownloadComponentState(
@@ -134,10 +131,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 
   func testDownloadFinishesWhileTryingToCancel() {
     var downloadClient = DownloadClient.failing
-    downloadClient.cancel = { _ in
-      .fireAndForget { self.downloadSubject.send(completion: .finished) }
-    }
-    downloadClient.download = { _, _ in self.downloadSubject.eraseToEffect() }
+    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
 
     let store = TestStore(
       initialState: DownloadComponentState(
@@ -175,10 +169,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 
   func testDeleteDownloadFlow() {
     var downloadClient = DownloadClient.failing
-    downloadClient.cancel = { _ in
-      .fireAndForget { self.downloadSubject.send(completion: .finished) }
-    }
-    downloadClient.download = { _, _ in self.downloadSubject.eraseToEffect() }
+    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
 
     let store = TestStore(
       initialState: DownloadComponentState(
@@ -210,7 +201,6 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 
 extension DownloadClient {
   static let failing = Self(
-    cancel: { _ in .failing("DownloadClient.cancel") },
-    download: { _, _ in .failing("DownloadClient.download") }
+    download: { _ in .failing("DownloadClient.download") }
   )
 }

@@ -35,6 +35,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
+      - name: Compile documentation
+        run: make test-docs
       - name: Run tests
         run: make test-library
       - name: Run benchmark

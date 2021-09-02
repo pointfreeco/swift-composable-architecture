@@ -323,9 +323,7 @@ The Composable Architecture comes with a number of tools to aid in debugging.
 
     ``` diff
     received action:
-      AppAction.todoCheckboxTapped(
-        index: 0
-      )
+      AppAction.todoCheckboxTapped(id: UUID(5834811A-83B4-4E5E-BCD3-8A38F6BDCA90))
       AppState(
         todos: [
           Todo(
@@ -334,16 +332,7 @@ The Composable Architecture comes with a number of tools to aid in debugging.
             description: "Milk",
             id: 5834811A-83B4-4E5E-BCD3-8A38F6BDCA90
           ),
-          Todo(
-            isComplete: false,
-            description: "Eggs",
-            id: AB3C7921-8262-4412-AA93-9DC5575C1107
-          ),
-          Todo(
-            isComplete: true,
-            description: "Hand Soap",
-            id: 06E94D88-D726-42EF-BA8B-7B4478179D19
-          ),
+          … (2 unchanged)
         ]
       )
     ```

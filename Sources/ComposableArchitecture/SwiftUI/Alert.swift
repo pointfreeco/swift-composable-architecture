@@ -1,5 +1,5 @@
-import SwiftUI
 import CustomDump
+import SwiftUI
 
 /// A data type that describes the state of an alert that can be shown to the user. The `Action`
 /// generic is the type of actions that can be sent from tapping on a button in the alert.
@@ -214,7 +214,7 @@ extension AlertState: CustomDumpReflectable {
         "title": self.title,
         "message": self.message as Any,
         "primaryButton": self.primaryButton as Any,
-        "secondaryButton": self.secondaryButton as Any
+        "secondaryButton": self.secondaryButton as Any,
       ],
       displayStyle: .struct
     )
