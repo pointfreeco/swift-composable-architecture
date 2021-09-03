@@ -14,13 +14,17 @@ public struct ObservedViewStore<State, Action>: DynamicProperty {
     $wrappedValue
   }
 
-  func projectedBinding<Value>(for keyPath: WritableKeyPath<State, BindableState<Value>>) -> Binding<Value> where Action: BindableAction, Action.State == State, Value: Equatable {
+  func projectedBinding<Value>(for keyPath: WritableKeyPath<State, BindableState<Value>>) -> Binding<Value>
+    where Action: BindableAction, Action.State == State, Value: Equatable
+  {
     return $wrappedValue[binding: keyPath]
   }
 }
 
-extension ViewStore  {
-  func projectedBinding<Value>(for keyPath: WritableKeyPath<State, BindableState<Value>>) -> Binding<Value>? where Action: BindableAction, Action.State == State, Value: Equatable {
+extension ViewStore {
+  func projectedBinding<Value>(for keyPath: WritableKeyPath<State, BindableState<Value>>) -> Binding<Value>?
+    where Action: BindableAction, Action.State == State, Value: Equatable
+  {
     self.observedViewStore?.projectedBinding(for: keyPath)
   }
 
