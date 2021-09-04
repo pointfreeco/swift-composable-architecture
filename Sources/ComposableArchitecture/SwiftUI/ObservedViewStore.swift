@@ -6,7 +6,7 @@ public struct ObservedViewStore<State, Action>: DynamicProperty {
   @ObservedObject public var wrappedValue: ViewStore<State, Action>
 
   public init(wrappedValue viewStore: ViewStore<State, Action>) {
-    self._wrappedValue = .init(wrappedValue: viewStore)
+    self.wrappedValue = viewStore
     viewStore.observedViewStore = self
   }
 
