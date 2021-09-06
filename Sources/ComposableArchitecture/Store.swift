@@ -390,7 +390,6 @@ public final class Store<State, Action> {
 
       let effectCancellable = effect.sink(
         receiveCompletion: { [weak self] _ in
-          //
           #if DEBUG
           if Thread.current.threadDictionary[uuid] == nil {
             breakpoint(
