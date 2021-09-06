@@ -314,7 +314,7 @@ import SwiftUI
     /// when the domain contains ``BindableState`` and ``BindableAction``.
     ///
     /// For example, we can model an app that can bind a number to a stepper and make a network
-    /// request to fetch a fact for that number with the following domain:
+    /// request to fetch a number fact with the following domain:
     ///
     /// ```swift
     /// struct AppState: Equatable {
