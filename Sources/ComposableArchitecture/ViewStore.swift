@@ -60,7 +60,8 @@ public final class ViewStore<State, Action>: ObservableObject {
   private let _send: (Action) -> Void
   fileprivate let _state: CurrentValueSubject<State, Never>
   private var viewCancellable: AnyCancellable?
-
+  var observedSelf: ObservedViewStore<State, Action>?
+  
   /// Initializes a view store from a store.
   ///
   /// - Parameters:
