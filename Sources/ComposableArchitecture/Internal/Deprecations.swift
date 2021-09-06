@@ -2,6 +2,106 @@ import CasePaths
 import Combine
 import SwiftUI
 
+// NB: Deprecated after 0.25.0:
+
+#if compiler(>=5.4)
+  extension BindingAction {
+    @available(*, deprecated, message: "Values are now wrapped in 'BindableState'")
+    public static func set<Value>(
+      _ keyPath: WritableKeyPath<Root, Value>,
+      _ value: Value
+    ) -> Self
+    where Value: Equatable {
+      .init(
+        keyPath: keyPath,
+        set: { $0[keyPath: keyPath] = value },
+        value: value,
+        valueIsEqualTo: { $0 as? Value == value }
+      )
+    }
+
+    @available(*, deprecated, message: "Values are now wrapped in 'BindableState'")
+    public static func ~= <Value>(
+      keyPath: WritableKeyPath<Root, Value>,
+      bindingAction: Self
+    ) -> Bool {
+      keyPath == bindingAction.keyPath
+    }
+  }
+
+  extension Reducer {
+    @available(*, deprecated, message: "'Reducer.binding()' no longer takes an explicit extract function and instead relies on 'BindableAction'")
+    public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self {
+      Self { state, action, environment in
+        toBindingAction(action)?.set(&state)
+        return self.run(&state, action, environment)
+      }
+    }
+  }
+
+  extension ViewStore {
+    @available(*, deprecated, message: "Bindings are now derived using 'BindableState' and 'BindableAction'")
+    public func binding<LocalState>(
+      keyPath: WritableKeyPath<State, LocalState>,
+      send action: @escaping (BindingAction<State>) -> Action
+    ) -> Binding<LocalState>
+    where LocalState: Equatable {
+      self.binding(
+        get: { $0[keyPath: keyPath] },
+        send: { action(.set(keyPath, $0)) }
+      )
+    }
+  }
+#else
+  extension BindingAction {
+    @available(*, deprecated, message: "Values are now wrapped in 'BindableState'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'.")
+    public static func set<Value>(
+      _ keyPath: WritableKeyPath<Root, Value>,
+      _ value: Value
+    ) -> Self
+    where Value: Equatable {
+      .init(
+        keyPath: keyPath,
+        set: { $0[keyPath: keyPath] = value },
+        value: value,
+        valueIsEqualTo: { $0 as? Value == value }
+      )
+    }
+
+    @available(*, deprecated, message: "Values are now wrapped in 'BindableState'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'.")
+    public static func ~= <Value>(
+      keyPath: WritableKeyPath<Root, Value>,
+      bindingAction: Self
+    ) -> Bool {
+      keyPath == bindingAction.keyPath
+    }
+  }
+
+  extension Reducer {
+    @available(*, deprecated, message: "'Reducer.binding()' no longer takes an explicit extract function and instead relies on 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'Reducer.binding()' and 'BindableAction'.")
+    public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self {
+      Self { state, action, environment in
+        toBindingAction(action)?.set(&state)
+        return self.run(&state, action, environment)
+      }
+    }
+  }
+
+  extension ViewStore {
+    @available(*, deprecated, message: "Bindings are now derived using 'BindableState' and 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'BindableState' and 'BindableAction'.")
+    public func binding<LocalState>(
+      keyPath: WritableKeyPath<State, LocalState>,
+      send action: @escaping (BindingAction<State>) -> Action
+    ) -> Binding<LocalState>
+    where LocalState: Equatable {
+      self.binding(
+        get: { $0[keyPath: keyPath] },
+        send: { action(.set(keyPath, $0)) }
+      )
+    }
+  }
+#endif
+
 // NB: Deprecated after 0.23.0:
 
 extension AlertState.Button {
