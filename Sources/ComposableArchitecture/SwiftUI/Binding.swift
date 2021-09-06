@@ -4,8 +4,8 @@ import SwiftUI
 // NB: `BindableAction` can produce crashes in Xcode 12.4 (Swift 5.3) and earlier due to an enum
 //     protocol witness bug: https://bugs.swift.org/browse/SR-14041
 #if compiler(>=5.4)
-  /// A property wrapper type that can designate properties of app state that can be directly bindable
-  /// in SwiftUI views.
+  /// A property wrapper type that can designate properties of app state that can be directly
+  /// bindable in SwiftUI views.
   ///
   /// Along with an action type that conforms to the ``BindableAction`` protocol, this type can be
   /// used to safely eliminate the boilerplate that is typically incurred when working with multiple
@@ -25,9 +25,9 @@ import SwiftUI
   /// }
   /// ```
   ///
-  /// The majority of these fields should be editable by the view, and in the Composable Architecture
-  /// this means that each field requires a corresponding action that can be sent to the store.
-  /// Typically this comes in the form of an enum with a case per field:
+  /// The majority of these fields should be editable by the view, and in the Composable
+  /// Architecture this means that each field requires a corresponding action that can be sent to
+  /// the store. Typically this comes in the form of an enum with a case per field:
   ///
   /// ```swift
   /// enum SettingsAction {
@@ -75,10 +75,11 @@ import SwiftUI
   /// }
   /// ```
   ///
-  /// This is a _lot_ of boilerplate for something that should be simple. Luckily, we can dramatically
-  /// eliminate this boilerplate using `BindableState` and ``BindableAction``.
+  /// This is a _lot_ of boilerplate for something that should be simple. Luckily, we can
+  /// dramatically eliminate this boilerplate using `BindableState` and ``BindableAction``.
   ///
-  /// First, we can annotate each bindable value of state with the `@BindableState` property wrapper:
+  /// First, we can annotate each bindable value of state with the `@BindableState` property
+  /// wrapper:
   ///
   /// ```swift
   /// struct SettingsState {
@@ -96,9 +97,9 @@ import SwiftUI
   /// text fields. Notably, the `isLoading` property is _not_ annotated as being bindable, which
   /// prevents the view from mutating this value directly.
   ///
-  /// Next, we can conform the action type to ``BindableAction`` by collapsing all of the individual,
-  /// field-mutating actions into a single case that holds a ``BindingAction`` generic over the
-  /// reducer's `SettingsState`:
+  /// Next, we can conform the action type to ``BindableAction`` by collapsing all of the
+  /// individual, field-mutating actions into a single case that holds a ``BindingAction`` generic
+  /// over the reducer's `SettingsState`:
   ///
   /// ```swift
   /// enum SettingsAction: BindableAction {
@@ -106,8 +107,8 @@ import SwiftUI
   /// }
   /// ```
   ///
-  /// And then, we can simplify the settings reducer by allowing the `binding` method to handle these
-  /// field mutations for us:
+  /// And then, we can simplify the settings reducer by allowing the `binding` method to handle
+  /// these field mutations for us:
   ///
   /// ```swift
   /// let settingsReducer = Reducer<
@@ -122,14 +123,15 @@ import SwiftUI
   /// ```
   ///
   /// Binding actions are constructed and sent to the store through the projected value of the
-  /// bindable state property wrapper in a syntax that is as familiar and succinct as vanilla SwiftUI:
+  /// bindable state property wrapper in a syntax that is as familiar and succinct as vanilla
+  /// SwiftUI:
   ///
   /// ```swift
   /// TextField("Display name", text: viewStore.$displayName)
   /// ```
   ///
-  /// Should you need to layer additional functionality over these bindings, your reducer can pattern
-  /// match the action for a given key path:
+  /// Should you need to layer additional functionality over these bindings, your reducer can
+  /// pattern match the action for a given key path:
   ///
   /// ```swift
   /// case .binding(\.$displayName):
@@ -139,10 +141,10 @@ import SwiftUI
   ///   // Return an authorization request effect
   /// ```
   ///
-  /// Binding actions can also be tested in much the same way regular actions are tested. Rather than
-  /// send a specific action describing how a binding changed, such as `displayNameChanged("Blob")`,
-  /// you will send a ``Reducer/binding(action:)`` action that describes which key path is being set
-  /// to what value, such as `.set(\.$displayName, "Blob")`:
+  /// Binding actions can also be tested in much the same way regular actions are tested. Rather
+  /// than send a specific action describing how a binding changed, such as
+  /// `displayNameChanged("Blob")`, you will send a ``Reducer/binding(action:)`` action that
+  /// describes which key path is being set to what value, such as `.set(\.$displayName, "Blob")`:
   ///
   /// ```swift
   /// let store = TestStore(
@@ -161,12 +163,24 @@ import SwiftUI
   @dynamicMemberLookup
   @propertyWrapper
   public struct BindableState<Value> {
+    /// The underlying value wrapped by the bindable state.
     public var wrappedValue: Value
 
+    /// Creates bindable state from the value of another bindable state.
     public init(wrappedValue: Value) {
       self.wrappedValue = wrappedValue
     }
 
+    /// A projection can be used to derive bindings from a view store via dynamic member lookup.
+    ///
+    /// Use the projected value to derive bindings from a view store with properties annotated with
+    /// `@BindableState`. To get the `projectedValue`, prefix the property with `$`:
+    ///
+    /// ```swift
+    /// TextField("Display name", text: viewStore.$displayName)
+    /// ```
+    ///
+    /// See ``BindableState`` for more details.
     public var projectedValue: Self {
       get { self }
       set { self = newValue }
@@ -289,8 +303,8 @@ import SwiftUI
       )
     }
 
-    /// Transforms a binding action over some root state to some other type of root state given a key
-    /// path.
+    /// Transforms a binding action over some root state to some other type of root state given a
+    /// key path.
     ///
     /// - Parameter keyPath: A key path from a new type of root state to the original root state.
     /// - Returns: A binding action over a new type of root state.
@@ -309,6 +323,18 @@ import SwiftUI
       lhs.keyPath == rhs.keyPath && lhs.valueIsEqualTo(rhs.value)
     }
 
+    /// Matches a binding action by its key path.
+    ///
+    /// Implicitly invoked when switching on a reducer's action and pattern matching on a binding
+    /// action directly to do further work:
+    ///
+    /// ```swift
+    /// case .binding(\.$displayName): // Invokes the `~=` operator.
+    ///   // Validate display name
+    ///
+    /// case .binding(\.$enableNotifications):
+    ///   // Return an authorization request effect
+    /// ```
     public static func ~= <Value>(
       keyPath: WritableKeyPath<Root, BindableState<Value>>,
       bindingAction: Self
@@ -333,8 +359,8 @@ import SwiftUI
     /// Returns a reducer that applies ``BindingAction`` mutations to `State` before running this
     /// reducer's logic.
     ///
-    /// For example, a settings screen may gather its binding actions into a single ``BindingAction``
-    /// case by conforming to ``BindableAction``:
+    /// For example, a settings screen may gather its binding actions into a single
+    /// ``BindingAction`` case by conforming to ``BindableAction``:
     ///
     /// ```swift
     /// enum SettingsAction: BindableAction {
@@ -343,8 +369,8 @@ import SwiftUI
     /// }
     /// ```
     ///
-    /// The reducer can then be enhanced to automatically handle these mutations for you by tacking on
-    /// the ``binding()`` method:
+    /// The reducer can then be enhanced to automatically handle these mutations for you by tacking
+    /// on the ``binding()`` method:
     ///
     /// ```swift
     /// let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvironment> {
