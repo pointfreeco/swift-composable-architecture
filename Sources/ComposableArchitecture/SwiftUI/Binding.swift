@@ -349,8 +349,10 @@ import SwiftUI
     /// }
     /// ```
     ///
-    /// The view may want to limit the state and actions it has access to by introducing domains
-    /// that pluck out only the state needed and embeds on the actions needed.
+    /// The view may want to limit the state and actions it has access to by introducing a
+    /// view-specific domain that contains only the state and actions the view needs. Not only will
+    /// this minimize the number of times a view's `body` is computed, it will prevent the view
+    /// from accessing state or sending actions outside its purview.
     ///
     /// ```swift
     /// extension AppView {
