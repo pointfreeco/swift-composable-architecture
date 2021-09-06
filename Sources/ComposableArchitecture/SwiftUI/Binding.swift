@@ -186,6 +186,10 @@ import SwiftUI
       set { self = newValue }
     }
 
+    /// Returns bindable state to the resulting value of a given key path.
+    ///
+    /// - Parameter keyPath: A key path to a specific resulting value.
+    /// - Returns: A new bindable state.
     public subscript<Subject>(
       dynamicMember keyPath: WritableKeyPath<Value, Subject>
     ) -> BindableState<Subject> {
