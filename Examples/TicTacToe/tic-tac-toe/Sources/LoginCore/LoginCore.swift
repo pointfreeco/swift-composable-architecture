@@ -5,19 +5,18 @@ import TwoFactorCore
 
 public struct LoginState: Equatable {
   public var alert: AlertState<LoginAction>?
-  public var email = ""
+  @BindableState public var email = ""
   public var isFormValid = false
   public var isLoginRequestInFlight = false
-  public var password = ""
+  @BindableState public var password = ""
   public var twoFactor: TwoFactorState?
 
   public init() {}
 }
 
-public enum LoginAction: Equatable {
+public enum LoginAction: BindableAction, Equatable {
   case alertDismissed
-  case emailChanged(String)
-  case passwordChanged(String)
+  case binding(BindingAction<LoginState>)
   case loginButtonTapped
   case loginResponse(Result<AuthenticationResponse, AuthenticationError>)
   case twoFactor(TwoFactorAction)
@@ -58,8 +57,7 @@ public let loginReducer = Reducer<LoginState, LoginAction, LoginEnvironment>.com
       state.alert = nil
       return .none
 
-    case let .emailChanged(email):
-      state.email = email
+    case .binding:
       state.isFormValid = !state.email.isEmpty && !state.password.isEmpty
       return .none
 
@@ -73,11 +71,6 @@ public let loginReducer = Reducer<LoginState, LoginAction, LoginEnvironment>.com
     case let .loginResponse(.failure(error)):
       state.alert = .init(title: TextState(error.localizedDescription))
       state.isLoginRequestInFlight = false
-      return .none
-
-    case let .passwordChanged(password):
-      state.password = password
-      state.isFormValid = !state.email.isEmpty && !state.password.isEmpty
       return .none
 
     case .loginButtonTapped:
@@ -95,4 +88,5 @@ public let loginReducer = Reducer<LoginState, LoginAction, LoginEnvironment>.com
       return .cancel(id: TwoFactorTearDownToken())
     }
   }
+    .binding()
 )

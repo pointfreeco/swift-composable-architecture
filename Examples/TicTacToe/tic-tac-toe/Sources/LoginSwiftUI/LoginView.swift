@@ -10,11 +10,11 @@ public struct LoginView: View {
 
   struct ViewState: Equatable {
     var alert: AlertState<LoginAction>?
-    var email: String
+    @BindableState var email: String
     var isActivityIndicatorVisible: Bool
     var isFormDisabled: Bool
     var isLoginButtonDisabled: Bool
-    var password: String
+    @BindableState var password: String
     var isTwoFactorActive: Bool
 
     init(state: LoginState) {
@@ -28,11 +28,10 @@ public struct LoginView: View {
     }
   }
 
-  enum ViewAction {
+  enum ViewAction: BindableAction {
     case alertDismissed
-    case emailChanged(String)
+    case binding(BindingAction<ViewState>)
     case loginButtonTapped
-    case passwordChanged(String)
     case twoFactorDismissed
   }
 
@@ -54,23 +53,17 @@ public struct LoginView: View {
 
           VStack(alignment: .leading) {
             Text("Email")
-            TextField(
-              "blob@pointfree.co",
-              text: viewStore.binding(get: \.email, send: ViewAction.emailChanged)
-            )
-            .autocapitalization(.none)
-            .keyboardType(.emailAddress)
-            .textContentType(.emailAddress)
-            .textFieldStyle(RoundedBorderTextFieldStyle())
+            TextField("blob@pointfree.co", text: viewStore.$email)
+              .autocapitalization(.none)
+              .keyboardType(.emailAddress)
+              .textContentType(.emailAddress)
+              .textFieldStyle(RoundedBorderTextFieldStyle())
           }
 
           VStack(alignment: .leading) {
             Text("Password")
-            SecureField(
-              "••••••••",
-              text: viewStore.binding(get: \.password, send: ViewAction.passwordChanged)
-            )
-            .textFieldStyle(RoundedBorderTextFieldStyle())
+            SecureField("••••••••", text: viewStore.$password)
+              .textFieldStyle(RoundedBorderTextFieldStyle())
           }
 
           NavigationLink(
@@ -100,19 +93,28 @@ public struct LoginView: View {
   }
 }
 
+extension LoginState {
+  var view: LoginView.ViewState {
+    get { .init(state: self) }
+    set {
+      // handle bindable actions only:
+      self.email = newValue.email
+      self.password = newValue.password
+    }
+  }
+}
+
 extension LoginAction {
   init(action: LoginView.ViewAction) {
     switch action {
     case .alertDismissed:
       self = .alertDismissed
-    case .twoFactorDismissed:
-      self = .twoFactorDismissed
-    case let .emailChanged(email):
-      self = .emailChanged(email)
+    case let .binding(bindingAction):
+      self = .binding(bindingAction.pullback(\LoginState.view))
     case .loginButtonTapped:
       self = .loginButtonTapped
-    case let .passwordChanged(password):
-      self = .passwordChanged(password)
+    case .twoFactorDismissed:
+      self = .twoFactorDismissed
     }
   }
 }
