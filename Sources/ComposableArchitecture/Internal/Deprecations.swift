@@ -30,8 +30,13 @@ import SwiftUI
   }
 
   extension Reducer {
-    @available(*, deprecated, message: "'Reducer.binding()' no longer takes an explicit extract function and instead relies on 'BindableAction'")
-    public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self {
+    @available(
+      *, deprecated,
+      message:
+        "'Reducer.binding()' no longer takes an explicit extract function and instead relies on 'BindableAction'"
+    )
+    public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self
+    {
       Self { state, action, environment in
         toBindingAction(action)?.set(&state)
         return self.run(&state, action, environment)
@@ -40,7 +45,9 @@ import SwiftUI
   }
 
   extension ViewStore {
-    @available(*, deprecated, message: "Bindings are now derived using 'BindableState' and 'BindableAction'")
+    @available(
+      *, deprecated, message: "Bindings are now derived using 'BindableState' and 'BindableAction'"
+    )
     public func binding<LocalState>(
       keyPath: WritableKeyPath<State, LocalState>,
       send action: @escaping (BindingAction<State>) -> Action
@@ -54,7 +61,11 @@ import SwiftUI
   }
 #else
   extension BindingAction {
-    @available(*, deprecated, message: "Values are now wrapped in 'BindableState'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'.")
+    @available(
+      *, deprecated,
+      message:
+        "Values are now wrapped in 'BindableState'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'."
+    )
     public static func set<Value>(
       _ keyPath: WritableKeyPath<Root, Value>,
       _ value: Value
@@ -68,7 +79,11 @@ import SwiftUI
       )
     }
 
-    @available(*, deprecated, message: "Values are now wrapped in 'BindableState'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'.")
+    @available(
+      *, deprecated,
+      message:
+        "Values are now wrapped in 'BindableState'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'."
+    )
     public static func ~= <Value>(
       keyPath: WritableKeyPath<Root, Value>,
       bindingAction: Self
@@ -78,8 +93,13 @@ import SwiftUI
   }
 
   extension Reducer {
-    @available(*, deprecated, message: "'Reducer.binding()' no longer takes an explicit extract function and instead relies on 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'Reducer.binding()' and 'BindableAction'.")
-    public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self {
+    @available(
+      *, deprecated,
+      message:
+        "'Reducer.binding()' no longer takes an explicit extract function and instead relies on 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'Reducer.binding()' and 'BindableAction'."
+    )
+    public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self
+    {
       Self { state, action, environment in
         toBindingAction(action)?.set(&state)
         return self.run(&state, action, environment)
@@ -88,7 +108,11 @@ import SwiftUI
   }
 
   extension ViewStore {
-    @available(*, deprecated, message: "Bindings are now derived using 'BindableState' and 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'BindableState' and 'BindableAction'.")
+    @available(
+      *, deprecated,
+      message:
+        "Bindings are now derived using 'BindableState' and 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'BindableState' and 'BindableAction'."
+    )
     public func binding<LocalState>(
       keyPath: WritableKeyPath<State, LocalState>,
       send action: @escaping (BindingAction<State>) -> Action
