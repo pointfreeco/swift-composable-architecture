@@ -226,6 +226,12 @@ import SwiftUI
     }
   }
 
+  extension BindableState: CustomDebugStringConvertible where Value: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        self.wrappedValue.debugDescription
+    }
+  }
+
   /// An action type that exposes a `binding` case for the purpose of reducing.
   ///
   /// Used in conjunction with ``BindableState`` to safely eliminate the boilerplate typically
