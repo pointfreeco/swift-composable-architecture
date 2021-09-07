@@ -310,6 +310,107 @@ import SwiftUI
     /// Transforms a binding action over some root state to some other type of root state given a
     /// key path.
     ///
+    /// Useful in transforming binding actions on view state into binding actions on reducer state
+    /// when the domain contains ``BindableState`` and ``BindableAction``.
+    ///
+    /// For example, we can model an app that can bind a number to a stepper and make a network
+    /// request to fetch a number fact with the following domain:
+    ///
+    /// ```swift
+    /// struct AppState: Equatable {
+    ///   @BindableState var count = 0
+    ///   var fact: String?
+    ///   ...
+    /// }
+    ///
+    /// enum AppAction: BindableAction {
+    ///   case binding(BindingAction<AppState>
+    ///   case factButtonTapped
+    ///   case factResponse(String?)
+    ///   ...
+    /// }
+    ///
+    /// struct AppEnvironment {
+    ///   var numberFact: (Int) -> Effect<String, Error>
+    ///   ...
+    /// }
+    ///
+    /// let appReducer = Reducer<AppState, AppAction, AppEnvironment> {
+    ///   ...
+    /// }
+    /// .binding()
+    ///
+    /// struct AppView: View {
+    ///   let store: Store
+    ///
+    ///   var view: some View {
+    ///     ...
+    ///   }
+    /// }
+    /// ```
+    ///
+    /// The view may want to limit the state and actions it has access to by introducing a
+    /// view-specific domain that contains only the state and actions the view needs. Not only will
+    /// this minimize the number of times a view's `body` is computed, it will prevent the view
+    /// from accessing state or sending actions outside its purview.
+    ///
+    /// ```swift
+    /// extension AppView {
+    ///   struct ViewState: Equatable {
+    ///     var count: Int
+    ///     let fact: String?
+    ///     // no access to any other state on `AppState`, like child domains
+    ///   }
+    ///
+    ///   enum ViewAction: BindableAction {
+    ///     case binding(BindingAction<ViewState>)
+    ///     case factButtonTapped
+    ///     // no access to any other action on `AppAction`, like `factResponse`
+    ///   }
+    /// }
+    /// ```
+    ///
+    /// And in order to transform `BindingAction<ViewState>` into `BindingAction<AppState>`, we
+    /// need a writable key path from `AppState` to `ViewState`, which we can get by defining a
+    /// computed property with a getter and setter, where the setter can communicate any updates to
+    /// bindable view state to the store:
+    ///
+    /// ```swift
+    /// extension AppState {
+    ///   var view: AppView.ViewState {
+    ///     get { .init(count: self.count, fact: self.fact) }
+    ///     set { self.count = newValue.count }
+    ///   }
+    /// }
+    /// ```
+    ///
+    /// Finally, in the view we can use ``Store/scope(state:action:)-9iai9`` to pluck out view
+    /// state, embed view actions, and transform binding actions between domains:
+    ///
+    /// ```swift
+    /// var body: some View {
+    ///   WithViewStore(
+    ///     self.store.scope(
+    ///       state: { .init(count: $0.count, fact: $0.fact) }
+    ///       action: {
+    ///         switch $0 {
+    ///         case let .binding(action):
+    ///           return .binding(action.pullback(\.view)) // transform binding action
+    ///         case .factButtonTapped:
+    ///           return .factButtonTapped
+    ///         }
+    ///       }
+    ///     )
+    ///   ) { viewStore in
+    ///     ...
+    ///   }
+    /// }
+    /// ```
+    ///
+    /// This is a lot, though both state and action transformations could be pulled out to their own
+    /// helpers. Importantly, the view has whittled away its domain and can only read state it has
+    /// access to, and send actions it has access to.
+    ///
     /// - Parameter keyPath: A key path from a new type of root state to the original root state.
     /// - Returns: A binding action over a new type of root state.
     public func pullback<NewRoot>(
