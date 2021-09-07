@@ -9,7 +9,7 @@ import SwiftUI
     @available(
       *, deprecated,
       message:
-        "Wrap values in 'BindableState' and use key paths to that 'BindableState', like '\.$value'"
+        "For improved safety, values must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\.$value'"
     )
     public static func set<Value>(
       _ keyPath: WritableKeyPath<Root, Value>,
@@ -27,7 +27,7 @@ import SwiftUI
     @available(
       *, deprecated,
       message:
-        "Wrap values in 'BindableState' and use key paths to that 'BindableState', like '\.$value'"
+        "For improved safety, values must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\.$value'"
     )
     public static func ~= <Value>(
       keyPath: WritableKeyPath<Root, Value>,
@@ -56,7 +56,7 @@ import SwiftUI
     @available(
       *, deprecated,
       message:
-        "Derive view store bindings via dynamic member lookup (for example, 'viewStore.$value') by wrapping values in 'BindableState' and conforming the action type to 'BindableAction'"
+        "View store bindings must be derived via dynamic member lookup (for example, 'viewStore.$value') from values wrapped in 'BindableState' and an action type that conforms to 'BindableAction'"
     )
     public func binding<LocalState>(
       keyPath: WritableKeyPath<State, LocalState>,
@@ -74,7 +74,7 @@ import SwiftUI
     @available(
       *, deprecated,
       message:
-        "Wrap values in 'BindableState' and use key paths to that 'BindableState', like '\.$value'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'."
+        "For improved safety, values must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\.$value'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'."
     )
     public static func set<Value>(
       _ keyPath: WritableKeyPath<Root, Value>,
@@ -92,7 +92,7 @@ import SwiftUI
     @available(
       *, deprecated,
       message:
-        "Wrap values in 'BindableState' and use key paths to that 'BindableState', like '\.$value'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'."
+        "For improved safety, values must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\.$value'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'."
     )
     public static func ~= <Value>(
       keyPath: WritableKeyPath<Root, Value>,
@@ -121,7 +121,7 @@ import SwiftUI
     @available(
       *, deprecated,
       message:
-        "Derive view store bindings via dynamic member lookup (for example, 'viewStore.$value') by wrapping values in 'BindableState' and conforming the action type to 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'Reducer.binding()' and 'BindableAction'."
+        "View store bindings must be derived via dynamic member lookup (for example, 'viewStore.$value') from values wrapped in 'BindableState' and an action type that conforms to 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'BindableState' and 'BindableAction'."
     )
     public func binding<LocalState>(
       keyPath: WritableKeyPath<State, LocalState>,
