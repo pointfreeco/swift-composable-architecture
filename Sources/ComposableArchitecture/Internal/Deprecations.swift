@@ -9,7 +9,7 @@ import SwiftUI
     @available(
       *, deprecated,
       message:
-        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\.$value'"
+        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\\.$value'"
     )
     public static func set<Value>(
       _ keyPath: WritableKeyPath<Root, Value>,
@@ -27,7 +27,7 @@ import SwiftUI
     @available(
       *, deprecated,
       message:
-        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\.$value'"
+        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\\.$value'"
     )
     public static func ~= <Value>(
       keyPath: WritableKeyPath<Root, Value>,
@@ -74,7 +74,7 @@ import SwiftUI
     @available(
       *, deprecated,
       message:
-        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\.$value'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'."
+        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\\.$value'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'."
     )
     public static func set<Value>(
       _ keyPath: WritableKeyPath<Root, Value>,
@@ -92,7 +92,7 @@ import SwiftUI
     @available(
       *, deprecated,
       message:
-        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\.$value'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'."
+        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\\.$value'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'."
     )
     public static func ~= <Value>(
       keyPath: WritableKeyPath<Root, Value>,
