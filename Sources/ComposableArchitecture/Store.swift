@@ -288,7 +288,7 @@ public final class Store<State, Action> {
       reducer: .init { localState, localAction, _ in
         isSending = true
         defer { isSending = false }
-        self.send(fromLocalAction(localAction), isFromViewStore: true)
+        self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
         return .none
       },
@@ -337,7 +337,7 @@ public final class Store<State, Action> {
         let localStore = Store<LocalState, LocalAction>(
           initialState: localState,
           reducer: .init { localState, localAction, _ in
-            self.send(fromLocalAction(localAction), isFromViewStore: true)
+            self.send(fromLocalAction(localAction))
             localState = extractLocalState(self.state.value) ?? localState
             return .none
           },
@@ -367,7 +367,7 @@ public final class Store<State, Action> {
     self.publisherScope(state: toLocalState, action: { $0 })
   }
 
-  func send(_ action: Action, isFromViewStore: Bool) {
+  func send(_ action: Action, isFromViewStore: Bool = true) {
     self.threadCheck(status: .send(action, isFromViewStore: isFromViewStore))
 
     self.bufferedActions.append(action)
