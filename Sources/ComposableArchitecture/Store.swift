@@ -121,7 +121,7 @@ public final class Store<State, Action> {
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   private var bufferedActions: [Action] = []
   #if DEBUG
-  private var initialThread = Thread.current
+  private let initialThread = Thread.current
   #endif
 
   /// Initializes a store from an initial state, a reducer, and an environment.
