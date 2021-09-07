@@ -384,36 +384,36 @@ public final class Store<State, Action> {
       let uuid = UUID()
 
       #if DEBUG
-      let initalThread = Thread.current
-      initalThread.threadDictionary[uuid] = true
+        let initalThread = Thread.current
+        initalThread.threadDictionary[uuid] = true
       #endif
 
       let effectCancellable = effect.sink(
         receiveCompletion: { [weak self] _ in
           #if DEBUG
-          if Thread.current.threadDictionary[uuid] == nil {
-            breakpoint(
-            """
-            ---
-            Warning: Store.send
+            if Thread.current.threadDictionary[uuid] == nil {
+              breakpoint(
+                """
+                ---
+                Warning: Store.send
 
-            The Store class is not thread-safe, and so all interactions with an instance of Store
-            (including all of its scopes and derived ViewStores) must be done on the same thread.
+                The Store class is not thread-safe, and so all interactions with an instance of Store
+                (including all of its scopes and derived ViewStores) must be done on the same thread.
 
-            \(debugCaseOutput(action)) has produced an Effect that was completed on a different thread \
-            from the one it was executed on.
-              
-            Starting thread: \(initalThread)
-            Final thread: \(Thread.current)
-              
-            Possible fixes for this are:
+                \(debugCaseOutput(action)) has produced an Effect that was completed on a different thread \
+                from the one it was executed on.
+                  
+                Starting thread: \(initalThread)
+                Final thread: \(Thread.current)
+                  
+                Possible fixes for this are:
 
-            * Add a .receive(on:) to the Effect to ensure it completes on this Stores correct thread.
-            """
-            )
-          }
+                * Add a .receive(on:) to the Effect to ensure it completes on this Stores correct thread.
+                """
+              )
+            }
 
-          Thread.current.threadDictionary[uuid] = nil
+            Thread.current.threadDictionary[uuid] = nil
           #endif
 
           didComplete = true
