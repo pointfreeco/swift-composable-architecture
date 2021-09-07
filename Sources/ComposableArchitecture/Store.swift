@@ -121,7 +121,7 @@ public final class Store<State, Action> {
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   private var bufferedActions: [Action] = []
   #if DEBUG
-  private var thread = Thread.current
+  private var initialThread = Thread.current
   #endif
 
   /// Initializes a store from an initial state, a reducer, and an environment.
@@ -422,7 +422,7 @@ public final class Store<State, Action> {
   @inline(__always)
   private func threadCheck(status: ThreadCheckStatus) {
     #if DEBUG
-    guard self.thread != Thread.current
+    guard self.initialThread != Thread.current
     else { return }
 
     let message: String
@@ -433,7 +433,7 @@ public final class Store<State, Action> {
         wrong thread. Make sure to use ".receive(on:)" on any effects that execute on background \
         threads to receive their output on the initial thread.
         """
-      
+
     case let .send(action, isFromViewStore: true):
       message = """
         "ViewStore.send(\(debugCaseOutput(action)))" was called on the wrong thread. Make \
@@ -458,7 +458,7 @@ public final class Store<State, Action> {
 
       \(message)
 
-        Initial thread: \(self.thread)
+        Initial thread: \(self.initialThread)
         Current thread: \(Thread.current)
 
       The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
