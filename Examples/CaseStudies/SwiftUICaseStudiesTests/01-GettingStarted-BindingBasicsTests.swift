@@ -12,17 +12,17 @@ class BindingFormTests: XCTestCase {
       environment: BindingFormEnvironment()
     )
 
-    store.send(.binding(.set(\.sliderValue, 2))) {
+    store.send(.set(\.$sliderValue, 2)) {
       $0.sliderValue = 2
     }
-    store.send(.binding(.set(\.stepCount, 1))) {
+    store.send(.set(\.$stepCount, 1)) {
       $0.sliderValue = 1
       $0.stepCount = 1
     }
-    store.send(.binding(.set(\.text, "Blob"))) {
+    store.send(.set(\.$text, "Blob")) {
       $0.text = "Blob"
     }
-    store.send(.binding(.set(\.toggleIsOn, true))) {
+    store.send(.set(\.$toggleIsOn, true)) {
       $0.toggleIsOn = true
     }
     store.send(.resetButtonTapped) {

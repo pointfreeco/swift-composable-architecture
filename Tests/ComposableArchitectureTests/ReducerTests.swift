@@ -1,9 +1,9 @@
 import Combine
 import CombineSchedulers
 import ComposableArchitecture
+import CustomDump
 import XCTest
 import os.signpost
-import CustomDump
 
 final class ReducerTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
@@ -16,7 +16,7 @@ final class ReducerTests: XCTestCase {
 
     var state = 0
     _ = reducer.run(&state, (), ())
-    XCTAssertEqual(state, 1)
+    XCTAssertNoDifference(state, 1)
   }
 
   func testCombine_EffectsAreMerged() {
@@ -53,11 +53,11 @@ final class ReducerTests: XCTestCase {
     }
     // Waiting a second causes the fast effect to fire.
     scheduler.advance(by: 1)
-    XCTAssertEqual(fastValue, 42)
+    XCTAssertNoDifference(fastValue, 42)
     // Waiting one more second causes the slow effect to fire. This proves that the effects
     // are merged together, as opposed to concatenated.
     scheduler.advance(by: 1)
-    XCTAssertEqual(slowValue, 1729)
+    XCTAssertNoDifference(slowValue, 1729)
   }
 
   func testCombine() {
@@ -219,5 +219,8 @@ final class ReducerTests: XCTestCase {
   }
 }
 
-enum DebugAction: Equatable { case incrWithBool(Bool), incr, noop }
+enum DebugAction: Equatable {
+  case incrWithBool(Bool)
+  case incr, noop
+}
 struct DebugState: Equatable { var count = 0 }

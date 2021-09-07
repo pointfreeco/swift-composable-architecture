@@ -144,7 +144,7 @@ extension ActionSheetState: CustomDumpReflectable {
       children: [
         "title": self.title,
         "message": self.message as Any,
-        "buttons": self.buttons
+        "buttons": self.buttons,
       ],
       displayStyle: .struct
     )

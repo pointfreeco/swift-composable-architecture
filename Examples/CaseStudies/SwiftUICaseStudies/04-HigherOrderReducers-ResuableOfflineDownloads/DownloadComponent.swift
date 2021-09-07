@@ -60,8 +60,7 @@ extension Reducer {
         case .alert(.cancelButtonTapped):
           state.mode = .notDownloaded
           state.alert = nil
-          return environment.downloadClient.cancel(state.id)
-            .fireAndForget()
+          return .cancel(id: state.id)
 
         case .alert(.deleteButtonTapped):
           state.alert = nil
@@ -86,9 +85,10 @@ extension Reducer {
           case .notDownloaded:
             state.mode = .startingToDownload
             return environment.downloadClient
-              .download(state.id, state.url)
+              .download(state.url)
               .throttle(for: 1, scheduler: environment.mainQueue, latest: true)
               .catchToEffect(DownloadComponentAction.downloadClient)
+              .cancellable(id: state.id)
 
           case .startingToDownload:
             state.alert = cancelAlert
