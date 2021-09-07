@@ -41,7 +41,7 @@ import SwiftUI
     @available(
       *, deprecated,
       message:
-        "'Reducer.binding()' no longer takes an explicit extract function and instead relies on 'Action' conforming to 'BindableAction'"
+        "'Reducer.binding()' no longer takes an explicit extract function and instead the reducer's 'Action' type must conform to 'BindableAction'"
     )
     public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self
     {
@@ -56,7 +56,7 @@ import SwiftUI
     @available(
       *, deprecated,
       message:
-        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. Bindings are now derived via dynamic member lookup to that 'BindableState' (for example, 'viewStore.$value'). For dynamic member lookup to be available, the view store's action type must also conform to 'BindableAction'."
+        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. Bindings are now derived via dynamic member lookup to that 'BindableState' (for example, 'viewStore.$value'). For dynamic member lookup to be available, the view store's 'Action' type must also conform to 'BindableAction'."
     )
     public func binding<LocalState>(
       keyPath: WritableKeyPath<State, LocalState>,
@@ -106,7 +106,7 @@ import SwiftUI
     @available(
       *, deprecated,
       message:
-        "'Reducer.binding()' no longer takes an explicit extract function and instead relies on 'Action' conforming to 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'Reducer.binding()' and 'BindableAction'."
+        "'Reducer.binding()' no longer takes an explicit extract function and instead the reducer's 'Action' type must conform to 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'Reducer.binding()' and 'BindableAction'."
     )
     public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self
     {
@@ -121,7 +121,7 @@ import SwiftUI
     @available(
       *, deprecated,
       message:
-        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. Bindings are now derived via dynamic member lookup to that 'BindableState' (for example, 'viewStore.$value'). For dynamic member lookup to be available, the view store's action type must also conform to 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'BindableState' and 'BindableAction'."
+        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. Bindings are now derived via dynamic member lookup to that 'BindableState' (for example, 'viewStore.$value'). For dynamic member lookup to be available, the view store's 'Action' type must also conform to 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'BindableState' and 'BindableAction'."
     )
     public func binding<LocalState>(
       keyPath: WritableKeyPath<State, LocalState>,
