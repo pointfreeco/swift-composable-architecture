@@ -6,7 +6,11 @@ import SwiftUI
 
 #if compiler(>=5.4)
   extension BindingAction {
-    @available(*, deprecated, message: "Values are now wrapped in 'BindableState'")
+    @available(
+      *, deprecated,
+      message:
+        "Wrap values in 'BindableState' and use key paths to the projected values, like '\.$value'"
+    )
     public static func set<Value>(
       _ keyPath: WritableKeyPath<Root, Value>,
       _ value: Value
@@ -20,7 +24,11 @@ import SwiftUI
       )
     }
 
-    @available(*, deprecated, message: "Values are now wrapped in 'BindableState'")
+    @available(
+      *, deprecated,
+      message:
+        "Wrap values in 'BindableState' and use key paths to the projected values, like '\.$value'"
+    )
     public static func ~= <Value>(
       keyPath: WritableKeyPath<Root, Value>,
       bindingAction: Self
@@ -33,7 +41,7 @@ import SwiftUI
     @available(
       *, deprecated,
       message:
-        "'Reducer.binding()' no longer takes an explicit extract function and instead relies on 'BindableAction'"
+        "'Reducer.binding()' no longer takes an explicit extract function and instead relies on 'Action' conforming to 'BindableAction'"
     )
     public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self
     {
@@ -46,7 +54,9 @@ import SwiftUI
 
   extension ViewStore {
     @available(
-      *, deprecated, message: "Bindings are now derived using 'BindableState' and 'BindableAction'"
+      *, deprecated,
+      message:
+        "Derive view store bindings via dynamic member lookup (for example, 'viewStore.$value') by wrapping values in 'BindableState' and conforming the action type to 'BindableAction'"
     )
     public func binding<LocalState>(
       keyPath: WritableKeyPath<State, LocalState>,
@@ -64,7 +74,7 @@ import SwiftUI
     @available(
       *, deprecated,
       message:
-        "Values are now wrapped in 'BindableState'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'."
+        "Wrap values in 'BindableState' and use key paths to the projected values, like '\.$value'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'."
     )
     public static func set<Value>(
       _ keyPath: WritableKeyPath<Root, Value>,
@@ -82,7 +92,7 @@ import SwiftUI
     @available(
       *, deprecated,
       message:
-        "Values are now wrapped in 'BindableState'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'."
+        "Wrap values in 'BindableState' and use key paths to the projected values, like '\.$value'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'."
     )
     public static func ~= <Value>(
       keyPath: WritableKeyPath<Root, Value>,
@@ -96,7 +106,7 @@ import SwiftUI
     @available(
       *, deprecated,
       message:
-        "'Reducer.binding()' no longer takes an explicit extract function and instead relies on 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'Reducer.binding()' and 'BindableAction'."
+        "'Reducer.binding()' no longer takes an explicit extract function and instead relies on 'Action' conforming to 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'Reducer.binding()' and 'BindableAction'."
     )
     public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self
     {
@@ -111,7 +121,7 @@ import SwiftUI
     @available(
       *, deprecated,
       message:
-        "Bindings are now derived using 'BindableState' and 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'BindableState' and 'BindableAction'."
+        "Derive view store bindings via dynamic member lookup (for example, 'viewStore.$value') by wrapping values in 'BindableState' and conforming the action type to 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'Reducer.binding()' and 'BindableAction'."
     )
     public func binding<LocalState>(
       keyPath: WritableKeyPath<State, LocalState>,
