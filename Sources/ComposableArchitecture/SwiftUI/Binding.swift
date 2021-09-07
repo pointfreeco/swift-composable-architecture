@@ -228,7 +228,7 @@ import SwiftUI
 
   extension BindableState: CustomDebugStringConvertible where Value: CustomDebugStringConvertible {
     public var debugDescription: String {
-        self.wrappedValue.debugDescription
+      self.wrappedValue.debugDescription
     }
   }
 
