@@ -433,14 +433,15 @@ public final class Store<State, Action> {
         wrong thread. Make sure to use ".receive(on:)" on any effects that execute on background \
         threads to receive their output on the initial thread.
         """
-
-    case let .send(action, isFromViewStore: isFromViewStore):
-      message = isFromViewStore
-      ? """
+      
+    case let .send(action, isFromViewStore: true):
+      message = """
         "ViewStore.send(\(debugCaseOutput(action)))" was called on the wrong thread. Make \
         sure that "ViewStore.send" is always called on the initial thread.
         """
-      : """
+
+    case let .send(action, isFromViewStore: false):
+      message = """
         An effect emitted the action "\(debugCaseOutput(action))" from the wrong thread. Make sure \
         to use ".receive(on:)" on any effects that execute on background threads to receive their \
         output on the initial thread.
