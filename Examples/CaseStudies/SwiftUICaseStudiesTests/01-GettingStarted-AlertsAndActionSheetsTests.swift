@@ -17,7 +17,7 @@ class AlertsAndActionSheetsTests: XCTestCase {
       $0.alert = .init(
         title: .init("Alert!"),
         message: .init("This is an alert"),
-        primaryButton: .cancel(),
+        primaryButton: .cancel(action: .send(.alertCancelTapped)),
         secondaryButton: .default(.init("Increment"), action: .send(.incrementButtonTapped))
       )
     }
@@ -42,7 +42,7 @@ class AlertsAndActionSheetsTests: XCTestCase {
         title: .init("Action sheet"),
         message: .init("This is an action sheet."),
         buttons: [
-          .cancel(),
+          .cancel(action: .send(.actionSheetCancelTapped)),
           .default(.init("Increment"), action: .send(.incrementButtonTapped)),
           .default(.init("Decrement"), action: .send(.decrementButtonTapped)),
         ]
