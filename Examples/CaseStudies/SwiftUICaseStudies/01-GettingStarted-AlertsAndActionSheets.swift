@@ -26,10 +26,8 @@ struct AlertAndSheetState: Equatable {
 
 enum AlertAndSheetAction: Equatable {
   case actionSheetButtonTapped
-  case actionSheetCancelTapped
   case actionSheetDismissed
   case alertButtonTapped
-  case alertCancelTapped
   case alertDismissed
   case decrementButtonTapped
   case incrementButtonTapped
@@ -47,14 +45,11 @@ let alertAndSheetReducer = Reducer<
       title: .init("Action sheet"),
       message: .init("This is an action sheet."),
       buttons: [
-        .cancel(action: .send(.actionSheetCancelTapped)),
+        .cancel(),
         .default(.init("Increment"), action: .send(.incrementButtonTapped)),
         .default(.init("Decrement"), action: .send(.decrementButtonTapped)),
       ]
     )
-    return .none
-
-  case .actionSheetCancelTapped:
     return .none
 
   case .actionSheetDismissed:
@@ -65,12 +60,9 @@ let alertAndSheetReducer = Reducer<
     state.alert = .init(
       title: .init("Alert!"),
       message: .init("This is an alert"),
-      primaryButton: .cancel(action: .send(.alertCancelTapped)),
+      primaryButton: .cancel(),
       secondaryButton: .default(.init("Increment"), action: .send(.incrementButtonTapped))
     )
-    return .none
-
-  case .alertCancelTapped:
     return .none
 
   case .alertDismissed:
