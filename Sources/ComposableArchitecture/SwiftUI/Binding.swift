@@ -404,8 +404,9 @@ import SwiftUI
     /// With this property defined it is now possible to transform a `BindingAction<ViewState>` into
     /// a `BindingAction<AppState>`, which means we can transform a `ViewAction` into an
     /// `AppAction`. This is where `pullback` comes into play: we can unwrap the view action's
-    /// binding action on view state and transform it with `pullback` to work with app state. We
-    /// will route any other view actions to their reducer equivalents:
+    /// binding action on view state and transform it with `pullback` to work with app state. We can
+    /// define a helper that performs this transformation, as well as route any other view actions
+    /// to their reducer equivalents:
     ///
     /// ```swift
     /// extension AppAction {
