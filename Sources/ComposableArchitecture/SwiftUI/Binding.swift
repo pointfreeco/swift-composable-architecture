@@ -143,7 +143,7 @@ import SwiftUI
   ///
   /// Binding actions can also be tested in much the same way regular actions are tested. Rather
   /// than send a specific action describing how a binding changed, such as
-  /// `displayNameChanged("Blob")`, you will send a ``Reducer/binding(action:)`` action that
+  /// `.displayNameChanged("Blob")`, you will send a ``Reducer/binding(action:)`` action that
   /// describes which key path is being set to what value, such as `.set(\.$displayName, "Blob")`:
   ///
   /// ```swift
@@ -242,7 +242,7 @@ import SwiftUI
     }
   }
 
-  /// An action type that exposes a `binding` case for the purpose of reducing.
+  /// An action type that exposes a `binding` case that holds a ``BindingAction``.
   ///
   /// Used in conjunction with ``BindableState`` to safely eliminate the boilerplate typically
   /// associated with mutating multiple fields in state.
@@ -329,8 +329,8 @@ import SwiftUI
     /// Useful in transforming binding actions on view state into binding actions on reducer state
     /// when the domain contains ``BindableState`` and ``BindableAction``.
     ///
-    /// For example, we can model an app that can bind a number to a stepper and make a network
-    /// request to fetch a number fact with the following domain:
+    /// For example, we can model an app that can bind an integer count to a stepper and make a
+    /// network request to fetch a fact about that integer with the following domain:
     ///
     /// ```swift
     /// struct AppState: Equatable {
@@ -368,12 +368,13 @@ import SwiftUI
     /// The view may want to limit the state and actions it has access to by introducing a
     /// view-specific domain that contains only the state and actions the view needs. Not only will
     /// this minimize the number of times a view's `body` is computed, it will prevent the view
-    /// from accessing state or sending actions outside its purview.
+    /// from accessing state or sending actions outside its purview. We can define it with its own
+    /// bindable state and bindable action:
     ///
     /// ```swift
     /// extension AppView {
     ///   struct ViewState: Equatable {
-    ///     var count: Int
+    ///     @BindableState var count: Int
     ///     let fact: String?
     ///     // no access to any other state on `AppState`, like child domains
     ///   }
@@ -386,10 +387,10 @@ import SwiftUI
     /// }
     /// ```
     ///
-    /// And in order to transform `BindingAction<ViewState>` into `BindingAction<AppState>`, we
-    /// need a writable key path from `AppState` to `ViewState`, which we can get by defining a
-    /// computed property with a getter and setter, where the setter can communicate any updates to
-    /// bindable view state to the store:
+    /// In order to transform a `BindingAction<ViewState>` sent from the view domain into a
+    /// `BindingAction<AppState>`, we need a writable key path from `AppState` to `ViewState`. We
+    /// can synthesize one by defining a computed property on `AppState` with a getter and a setter.
+    /// The setter should communicate any mutations to bindable state back to the parent state:
     ///
     /// ```swift
     /// extension AppState {
@@ -400,32 +401,43 @@ import SwiftUI
     /// }
     /// ```
     ///
-    /// Finally, in the view we can use ``Store/scope(state:action:)-9iai9`` to pluck out view
-    /// state, embed view actions, and transform binding actions between domains:
+    /// With this property defined it is now possible to transform a `BindingAction<ViewState>` into
+    /// a `BindingAction<AppState>`, which means we can transform a `ViewAction` into an
+    /// `AppAction`. This is where `pullback` comes into play: we can unwrap the view action's
+    /// binding action on view state and transform it with `pullback` to work with app state. We can
+    /// define a helper that performs this transformation, as well as route any other view actions
+    /// to their reducer equivalents:
     ///
     /// ```swift
-    /// var body: some View {
-    ///   WithViewStore(
-    ///     self.store.scope(
-    ///       state: { .init(count: $0.count, fact: $0.fact) }
-    ///       action: {
-    ///         switch $0 {
-    ///         case let .binding(action):
-    ///           return .binding(action.pullback(\.view)) // transform binding action
-    ///         case .factButtonTapped:
-    ///           return .factButtonTapped
-    ///         }
-    ///       }
-    ///     )
-    ///   ) { viewStore in
-    ///     ...
+    /// extension AppAction {
+    ///   static func view(_ viewAction: AppView.ViewAction) -> Self {
+    ///     switch viewAction {
+    ///     case let .binding(action):
+    ///       // transform view binding actions into app binding actions
+    ///       return .binding(action.pullback(\.view))
+    ///
+    ///     case let .factButtonTapped
+    ///       // route `ViewAction.factButtonTapped` to `AppAction.factButtonTapped`
+    ///       return .factButtonTapped
+    ///     }
     ///   }
     /// }
     /// ```
     ///
-    /// This is a lot, though both state and action transformations could be pulled out to their own
-    /// helpers. Importantly, the view has whittled away its domain and can only read state it has
-    /// access to, and send actions it has access to.
+    /// Finally, in the view we can invoke ``Store/scope(state:action:)-9iai9`` with these domain
+    /// transformations to leverage the view store's binding helpers:
+    ///
+    /// ```swift
+    /// WithViewStore(
+    ///   self.store.scope(state: \.view, action: AppAction.view)
+    /// ) { viewStore in
+    ///   Stepper("\(viewStore.count)", viewStore.$count)
+    ///   Button("Get number fact") { viewStore.send(.factButtonTapped) }
+    ///   if let fact = viewStore.fact {
+    ///     Text(fact)
+    ///   }
+    /// }
+    /// ```
     ///
     /// - Parameter keyPath: A key path from a new type of root state to the original root state.
     /// - Returns: A binding action over a new type of root state.
