@@ -44,7 +44,7 @@ extension _Reducer {
 }
 
 extension Reducers {
-  public struct AndThen<Reducer1, Reducer2>: _Reducer // CombineWith
+  public struct Combined<Reducer1, Reducer2>: _Reducer
   where
     Reducer1: _Reducer,
     Reducer2: _Reducer,
@@ -54,7 +54,8 @@ extension Reducers {
     public let reducer1: Reducer1
     public let reducer2: Reducer2
 
-    public func reduce(into state: inout Reducer1.State, action: Reducer1.Action) -> Effect<Reducer1.Action, Never> {
+    public func reduce(into state: inout Reducer1.State, action: Reducer1.Action)
+    -> Effect<Reducer1.Action, Never> {
       .merge(
         self.reducer1.reduce(into: &state, action: action),
         self.reducer2.reduce(into: &state, action: action)
@@ -64,9 +65,9 @@ extension Reducers {
 }
 
 extension _Reducer {
-  public func andThen<Next>(_ next: Next) -> Reducers.AndThen<Self, Next>
-  where Next: _Reducer, Next.State == Self.State, Next.Action == Self.Action {
-    .init(reducer1: self, reducer2: next)
+  public func combined<Other>(with other: Other) -> Reducers.Combined<Self, Other>
+  where Other: _Reducer, Other.State == Self.State, Other.Action == Self.Action {
+    .init(reducer1: self, reducer2: other)
   }
 }
 
@@ -100,3 +101,6 @@ extension _Reducer {
 
 // @Dependency
 // @EnvironmentDependecy
+
+// dependencies as actors
+// @MainActor class Store
