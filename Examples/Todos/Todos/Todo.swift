@@ -3,29 +3,28 @@ import Foundation
 import SwiftUI
 
 struct Todo: Equatable, Identifiable {
-  var description = ""
+  @BindableState var description = ""
   let id: UUID
   var isComplete = false
 }
 
-enum TodoAction: Equatable {
+enum TodoAction: Equatable, BindableAction {
+  case binding(BindingAction<Todo>)
   case checkBoxToggled
-  case textFieldChanged(String)
 }
 
 struct TodoEnvironment {}
 
 let todoReducer = Reducer<Todo, TodoAction, TodoEnvironment> { todo, action, _ in
   switch action {
+  case .binding:
+    return .none
+
   case .checkBoxToggled:
     todo.isComplete.toggle()
     return .none
-
-  case let .textFieldChanged(description):
-    todo.description = description
-    return .none
   }
-}
+}.binding()
 
 struct TodoView: View {
   let store: Store<Todo, TodoAction>
@@ -38,10 +37,7 @@ struct TodoView: View {
         }
         .buttonStyle(PlainButtonStyle())
 
-        TextField(
-          "Untitled Todo",
-          text: viewStore.binding(get: \.description, send: TodoAction.textFieldChanged)
-        )
+        TextField("Untitled Todo", text: viewStore.$description)
       }
       .foregroundColor(viewStore.isComplete ? .gray : nil)
     }
