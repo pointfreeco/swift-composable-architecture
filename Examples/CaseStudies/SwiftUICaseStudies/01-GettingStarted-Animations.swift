@@ -42,11 +42,11 @@ struct AnimationsState: Equatable {
   var alert: AlertState<AnimationsAction>? = nil
   var circleCenter = CGPoint(x: 50, y: 50)
   var circleColor = Color.white
-  var isCircleScaled = false
+  @BindableState var isCircleScaled = false
 }
 
-enum AnimationsAction: Equatable {
-  case circleScaleToggleChanged(Bool)
+enum AnimationsAction: Equatable, BindableAction {
+  case binding(BindingAction<AnimationsState>)
   case dismissAlert
   case rainbowButtonTapped
   case resetButtonTapped
@@ -63,8 +63,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
   state, action, environment in
 
   switch action {
-  case let .circleScaleToggleChanged(isScaled):
-    state.isCircleScaled = isScaled
+  case .binding:
     return .none
 
   case .dismissAlert:
@@ -101,7 +100,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
     state.circleCenter = point
     return .none
   }
-}
+}.binding()
 
 struct AnimationsView: View {
   @Environment(\.colorScheme) var colorScheme
@@ -137,9 +136,7 @@ struct AnimationsView: View {
           )
           Toggle(
             "Big mode",
-            isOn:
-              viewStore
-              .binding(get: \.isCircleScaled, send: AnimationsAction.circleScaleToggleChanged)
+            isOn: viewStore.$isCircleScaled
               .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.1))
           )
           .padding()
