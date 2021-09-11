@@ -15,11 +15,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     let rootView = AppView(
       store: Store(
         initialState: AppState(),
-        reducer: appReducer,
-        environment: AppEnvironment(
-          mainQueue: .main,
-          uuid: UUID.init
-        )
+        reducer: appReducer
       )
     )
 

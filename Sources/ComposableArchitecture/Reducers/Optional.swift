@@ -1,13 +1,11 @@
 extension _Reducer {
   @inlinable
   public func optional(
-    breakpointOnNil: Bool = true,
     file: StaticString = #fileID,
     line: UInt = #line
   ) -> Reducers.Optional<Self> {
     .init(
       self,
-      breakpointOnNil: breakpointOnNil,
       file: file,
       line: line
     )
@@ -18,19 +16,18 @@ extension Reducers {
   public struct Optional<WrappedReducer>: _Reducer
   where WrappedReducer: _Reducer {
     public let wrappedReducer: WrappedReducer
-    public let breakpointOnNil: Bool
     public let file: StaticString
     public let line: UInt
+
+    @Dependency(\.breakpointsEnabled) public var breakpointOnNil
 
     @inlinable
     public init(
       _ wrappedReducer: WrappedReducer,
-      breakpointOnNil: Bool = true,
       file: StaticString = #fileID,
       line: UInt = #line
     ) {
       self.wrappedReducer = wrappedReducer
-      self.breakpointOnNil = breakpointOnNil
       self.file = file
       self.line = line
     }
@@ -39,7 +36,7 @@ extension Reducers {
     public func reduce(into state: inout WrappedReducer.State?, action: WrappedReducer.Action)
     -> Effect<WrappedReducer.Action, Never> {
       guard state != nil else {
-        if breakpointOnNil {
+        if self.breakpointOnNil {
           breakpoint(
             """
             ---

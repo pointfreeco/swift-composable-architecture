@@ -114,6 +114,7 @@ import Foundation
 /// See also: ``ViewStore`` to understand how one observes changes to the state in a ``Store`` and
 /// sends user actions.
 public final class Store<State, Action> {
+  @usableFromInline
   var state: CurrentValueSubject<State, Never>
   var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
@@ -137,6 +138,14 @@ public final class Store<State, Action> {
   ) {
     self.state = CurrentValueSubject(initialState)
     self.reducer = { state, action in reducer.run(&state, action, environment) }
+  }
+
+  public init<R>(
+    initialState: State,
+    reducer: R
+  ) where R: _Reducer, R.State == State, R.Action == Action {
+    self.state = CurrentValueSubject(initialState)
+    self.reducer = reducer.reduce(into:action:)
   }
 
   /// Scopes the store to one that exposes local state and actions.
@@ -282,22 +291,19 @@ public final class Store<State, Action> {
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> Store<LocalState, LocalAction> {
-    var isSending = false
+    let reducer = Reducers.Scoped(
+      store: self,
+      toLocalState: toLocalState,
+      fromLocalAction: fromLocalAction
+    )
     let localStore = Store<LocalState, LocalAction>(
       initialState: toLocalState(self.state.value),
-      reducer: .init { localState, localAction, _ in
-        isSending = true
-        defer { isSending = false }
-        self.send(fromLocalAction(localAction))
-        localState = toLocalState(self.state.value)
-        return .none
-      },
-      environment: ()
+      reducer: reducer
     )
     localStore.parentCancellable = self.state
       .dropFirst()
       .sink { [weak localStore] newValue in
-        guard !isSending else { return }
+        guard !reducer.isSending else { return }
         localStore?.state.value = toLocalState(newValue)
       }
     return localStore
@@ -367,6 +373,7 @@ public final class Store<State, Action> {
     self.publisherScope(state: toLocalState, action: { $0 })
   }
 
+  @usableFromInline
   func send(_ action: Action, isFromViewStore: Bool = true) {
     self.threadCheck(status: .send(action, isFromViewStore: isFromViewStore))
 

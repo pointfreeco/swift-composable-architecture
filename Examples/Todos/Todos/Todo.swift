@@ -13,17 +13,17 @@ enum TodoAction: Equatable {
   case textFieldChanged(String)
 }
 
-struct TodoEnvironment {}
+struct TodoReducer: _Reducer {
+  func reduce(into state: inout Todo, action: TodoAction) -> Effect<TodoAction, Never> {
+    switch action {
+    case .checkBoxToggled:
+      state.isComplete.toggle()
+      return .none
 
-let todoReducer = Reducer<Todo, TodoAction, TodoEnvironment> { todo, action, _ in
-  switch action {
-  case .checkBoxToggled:
-    todo.isComplete.toggle()
-    return .none
-
-  case let .textFieldChanged(description):
-    todo.description = description
-    return .none
+    case let .textFieldChanged(description):
+      state.description = description
+      return .none
+    }
   }
 }
 

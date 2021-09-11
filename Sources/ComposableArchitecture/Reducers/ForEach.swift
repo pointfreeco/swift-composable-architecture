@@ -3,7 +3,6 @@ extension _Reducer {
   public func forEach<GlobalState, GlobalAction, ID>(
     state toArrayState: WritableKeyPath<GlobalState, IdentifiedArray<ID, Self.State>>,
     action toElementAction: CasePath<GlobalAction, (ID, Self.Action)>,
-    breakpointOnNil: Bool = true,
     file: StaticString = #fileID,
     line: UInt = #line
   ) -> Reducers.ForEach<Self, GlobalState, GlobalAction, ID> {
@@ -11,7 +10,6 @@ extension _Reducer {
       self,
       state: toArrayState,
       action: toElementAction,
-      breakpointOnNil: breakpointOnNil,
       file: file,
       line: line
     )
@@ -24,33 +22,33 @@ extension Reducers {
     public let elementReducer: ElementReducer
     public let toArrayState: WritableKeyPath<State, IdentifiedArray<ID, ElementReducer.State>>
     public let toElementAction: CasePath<Action, (ID, ElementReducer.Action)>
-    public let breakpointOnNil: Bool
     public let file: StaticString
     public let line: UInt
+
+    @Dependency(\.breakpointsEnabled) public var breakpointOnNil
 
     @inlinable
     public init(
       _ elementReducer: ElementReducer,
       state toArrayState: WritableKeyPath<State, IdentifiedArray<ID, ElementReducer.State>>,
       action toElementAction: CasePath<Action, (ID, ElementReducer.Action)>,
-      breakpointOnNil: Bool = true,
       file: StaticString = #fileID,
       line: UInt = #line
     ) {
       self.elementReducer = elementReducer
       self.toArrayState = toArrayState
       self.toElementAction = toElementAction
-      self.breakpointOnNil = breakpointOnNil
       self.file = file
       self.line = line
     }
 
     @inlinable
     public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-      guard let (id, elementAction) = toElementAction.extract(from: action) else { return .none }
+      guard let (id, elementAction) = self.toElementAction.extract(from: action)
+      else { return .none }
 
-      if state[keyPath: toArrayState][id: id] == nil {
-        if breakpointOnNil {
+      if state[keyPath: self.toArrayState][id: id] == nil {
+        if self.breakpointOnNil {
           breakpoint(
             """
             ---
@@ -84,10 +82,10 @@ extension Reducers {
       return
         self
         .elementReducer.reduce(
-          into: &state[keyPath: toArrayState][id: id]!,
+          into: &state[keyPath: self.toArrayState][id: id]!,
           action: elementAction
         )
-        .map { toElementAction.embed((id, $0)) }
+        .map { self.toElementAction.embed((id, $0)) }
     }
   }
 }

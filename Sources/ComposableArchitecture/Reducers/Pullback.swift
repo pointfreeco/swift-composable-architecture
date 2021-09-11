@@ -11,7 +11,6 @@ extension _Reducer {
   public func pullback<GlobalState, GlobalAction>(
     state toLocalState: CasePath<GlobalState, Self.State>,
     action toLocalAction: CasePath<GlobalAction, Self.Action>,
-    breakpointOnNil: Bool = true,
     file: StaticString = #fileID,
     line: UInt = #line
   ) -> Reducers.PullbackEnum<Self, GlobalState, GlobalAction> {
@@ -19,7 +18,6 @@ extension _Reducer {
       self,
       state: toLocalState,
       action: toLocalAction,
-      breakpointOnNil: breakpointOnNil,
       file: file,
       line: line
     )
@@ -46,9 +44,9 @@ extension Reducers {
 
     @inlinable
     public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-      guard let localAction = toLocalAction.extract(from: action) else { return .none }
-      return self.localReducer.reduce(into: &state[keyPath: toLocalState], action: localAction)
-        .map(toLocalAction.embed)
+      guard let localAction = self.toLocalAction.extract(from: action) else { return .none }
+      return self.localReducer.reduce(into: &state[keyPath: self.toLocalState], action: localAction)
+        .map(self.toLocalAction.embed)
         .eraseToEffect()
     }
   }
@@ -58,33 +56,32 @@ extension Reducers {
     public let localReducer: LocalReducer
     public let toLocalState: CasePath<State, LocalReducer.State>
     public let toLocalAction: CasePath<Action, LocalReducer.Action>
-    public let breakpointOnNil: Bool
     public let file: StaticString
     public let line: UInt
+
+    @Dependency(\.breakpointsEnabled) public var breakpointOnNil
 
     @inlinable
     public init(
       _ localReducer: LocalReducer,
       state toLocalState: CasePath<State, LocalReducer.State>,
       action toLocalAction: CasePath<Action, LocalReducer.Action>,
-      breakpointOnNil: Bool = true,
       file: StaticString = #fileID,
       line: UInt = #line
     ) {
       self.localReducer = localReducer
       self.toLocalState = toLocalState
       self.toLocalAction = toLocalAction
-      self.breakpointOnNil = breakpointOnNil
       self.file = file
       self.line = line
     }
 
     @inlinable
     public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-      guard let localAction = toLocalAction.extract(from: action) else { return .none }
+      guard let localAction = self.toLocalAction.extract(from: action) else { return .none }
 
-      guard var localState = toLocalState.extract(from: state) else {
-        if breakpointOnNil {
+      guard var localState = self.toLocalState.extract(from: state) else {
+        if self.breakpointOnNil {
           breakpoint(
             """
             ---
@@ -113,9 +110,9 @@ extension Reducers {
         }
         return .none
       }
-      defer { state = toLocalState.embed(localState) }
+      defer { state = self.toLocalState.embed(localState) }
       return self.localReducer.reduce(into: &localState, action: localAction)
-        .map(toLocalAction.embed)
+        .map(self.toLocalAction.embed)
     }
   }
 }
