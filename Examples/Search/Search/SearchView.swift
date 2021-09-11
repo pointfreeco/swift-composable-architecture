@@ -13,14 +13,14 @@ struct SearchState: Equatable {
   var locations: [Location] = []
   var locationWeather: LocationWeather?
   var locationWeatherRequestInFlight: Location?
-  var searchQuery = ""
+  @BindableState var searchQuery = ""
 }
 
-enum SearchAction: Equatable {
+enum SearchAction: Equatable, BindableAction {
+  case binding(BindingAction<SearchState>)
   case locationsResponse(Result<[Location], WeatherClient.Failure>)
   case locationTapped(Location)
   case locationWeatherResponse(Result<LocationWeather, WeatherClient.Failure>)
-  case searchQueryChanged(String)
 }
 
 struct SearchEnvironment {
@@ -33,6 +33,28 @@ struct SearchEnvironment {
 let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
   state, action, environment in
   switch action {
+  case .binding(\.$searchQuery):
+    struct SearchLocationId: Hashable {}
+
+    // Changes to state.searchQuery have already been applied via `.binding()`
+    let query = state.searchQuery
+
+    // When the query is cleared we can clear the search results, but we have to make sure to cancel
+    // any in-flight search requests too, otherwise we may get data coming in later.
+    guard !query.isEmpty else {
+      state.locations = []
+      state.locationWeather = nil
+      return .cancel(id: SearchLocationId())
+    }
+
+    return environment.weatherClient
+      .searchLocation(query)
+      .debounce(id: SearchLocationId(), for: 0.3, scheduler: environment.mainQueue)
+      .catchToEffect(SearchAction.locationsResponse)
+
+  case .binding:
+    return .none
+
   case .locationsResponse(.failure):
     state.locations = []
     return .none
@@ -52,24 +74,6 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
       .catchToEffect(SearchAction.locationWeatherResponse)
       .cancellable(id: SearchWeatherId(), cancelInFlight: true)
 
-  case let .searchQueryChanged(query):
-    struct SearchLocationId: Hashable {}
-
-    state.searchQuery = query
-
-    // When the query is cleared we can clear the search results, but we have to make sure to cancel
-    // any in-flight search requests too, otherwise we may get data coming in later.
-    guard !query.isEmpty else {
-      state.locations = []
-      state.locationWeather = nil
-      return .cancel(id: SearchLocationId())
-    }
-
-    return environment.weatherClient
-      .searchLocation(query)
-      .debounce(id: SearchLocationId(), for: 0.3, scheduler: environment.mainQueue)
-      .catchToEffect(SearchAction.locationsResponse)
-
   case let .locationWeatherResponse(.failure(locationWeather)):
     state.locationWeather = nil
     state.locationWeatherRequestInFlight = nil
@@ -80,7 +84,7 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
     state.locationWeatherRequestInFlight = nil
     return .none
   }
-}
+}.binding()
 
 // MARK: - Search feature view
 
@@ -96,11 +100,7 @@ struct SearchView: View {
 
           HStack {
             Image(systemName: "magnifyingglass")
-            TextField(
-              "New York, San Francisco, ...",
-              text: viewStore.binding(
-                get: \.searchQuery, send: SearchAction.searchQueryChanged)
-            )
+            TextField("New York, San Francisco, ...", text: viewStore.$searchQuery)
             .textFieldStyle(RoundedBorderTextFieldStyle())
             .autocapitalization(.none)
             .disableAutocorrection(true)
