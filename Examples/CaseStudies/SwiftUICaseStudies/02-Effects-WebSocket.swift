@@ -13,7 +13,7 @@ private let readMe = """
 struct WebSocketState: Equatable {
   var alert: AlertState<WebSocketAction>?
   var connectivityState = ConnectivityState.disconnected
-  var messageToSend = ""
+  @BindableState var messageToSend = ""
   var receivedMessages: [String] = []
 
   enum ConnectivityState: String {
@@ -23,10 +23,10 @@ struct WebSocketState: Equatable {
   }
 }
 
-enum WebSocketAction: Equatable {
+enum WebSocketAction: Equatable, BindableAction {
   case alertDismissed
+  case binding(BindingAction<WebSocketState>)
   case connectButtonTapped
-  case messageToSendChanged(String)
   case pingResponse(NSError?)
   case receivedSocketMessage(Result<WebSocketClient.Message, NSError>)
   case sendButtonTapped
@@ -62,6 +62,9 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
     state.alert = nil
     return .none
 
+  case .binding:
+    return .none
+
   case .connectButtonTapped:
     switch state.connectivityState {
     case .connected, .connecting:
@@ -76,10 +79,6 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
         .eraseToEffect()
         .cancellable(id: WebSocketId())
     }
-
-  case let .messageToSendChanged(message):
-    state.messageToSend = message
-    return .none
 
   case .pingResponse:
     // Ping the socket again in 10 seconds
@@ -132,7 +131,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
       sendPingEffect
     )
   }
-}
+}.binding()
 
 struct WebSocketView: View {
   let store: Store<WebSocketState, WebSocketAction>
@@ -144,11 +143,7 @@ struct WebSocketView: View {
           .padding([.bottom])
 
         HStack {
-          TextField(
-            "Message to send",
-            text: viewStore.binding(
-              get: \.messageToSend, send: WebSocketAction.messageToSendChanged)
-          )
+          TextField("Message to send", text: viewStore.$messageToSend)
 
           Button(
             viewStore.connectivityState == .connected
