@@ -18,14 +18,14 @@ class SearchTests: XCTestCase {
     )
 
     store.environment.weatherClient.searchLocation = { _ in Effect(value: mockLocations) }
-    store.send(.searchQueryChanged("S")) {
+    store.send(.binding(.set(\.$searchQuery, "S"))) {
       $0.searchQuery = "S"
     }
     self.scheduler.advance(by: 0.3)
     store.receive(.locationsResponse(.success(mockLocations))) {
       $0.locations = mockLocations
     }
-    store.send(.searchQueryChanged("")) {
+    store.send(.binding(.set(\.$searchQuery, ""))) {
       $0.locations = []
       $0.searchQuery = ""
     }
@@ -42,7 +42,7 @@ class SearchTests: XCTestCase {
     )
 
     store.environment.weatherClient.searchLocation = { _ in Effect(error: .init()) }
-    store.send(.searchQueryChanged("S")) {
+    store.send(.binding(.set(\.$searchQuery, "S"))) {
       $0.searchQuery = "S"
     }
     self.scheduler.advance(by: 0.3)
@@ -62,11 +62,11 @@ class SearchTests: XCTestCase {
       )
     )
 
-    store.send(.searchQueryChanged("S")) {
+    store.send(.binding(.set(\.$searchQuery, "S"))) {
       $0.searchQuery = "S"
     }
     self.scheduler.advance(by: 0.2)
-    store.send(.searchQueryChanged("")) {
+    store.send(.binding(.set(\.$searchQuery, ""))) {
       $0.searchQuery = ""
     }
     self.scheduler.run()
