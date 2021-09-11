@@ -1,5 +1,6 @@
 private enum MainQueueKey: DependencyKey {
-  static var defaultValue = AnySchedulerOf<DispatchQueue>.main
+  static let defaultValue = AnySchedulerOf<DispatchQueue>.main
+  static let testValue = AnySchedulerOf<DispatchQueue>.failing
 }
 
 extension DependencyValues {
