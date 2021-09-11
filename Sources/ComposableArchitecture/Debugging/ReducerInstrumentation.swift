@@ -86,6 +86,7 @@ extension Publisher where Failure == Never {
   }
 }
 
+@usableFromInline
 func debugCaseOutput(_ value: Any) -> String {
   func debugCaseOutputHelp(_ value: Any) -> String {
     let mirror = Mirror(reflecting: value)
