@@ -41,6 +41,10 @@ struct AppReducer: _Reducer {
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.uuid) var uuid
 
+  static let main = TodoReducer.main
+    .forEach(state: \.todos, action: /AppAction.todo(id:action:))
+    .combined(with: AppReducer())
+
   func reduce(into state: inout AppState, action: AppAction) -> Effect<AppAction, Never> {
     switch action {
     case .addTodoButtonTapped:
@@ -73,7 +77,7 @@ struct AppReducer: _Reducer {
       state.todos.sort { $1.isComplete && !$0.isComplete }
       return .none
 
-    case .todo(id: _, action: .checkBoxToggled):
+    case .todo(id: _, action: .binding(\.$isComplete)):
       struct TodoCompletionId: Hashable {}
       return Effect(value: .sortCompletedTodos)
         .debounce(id: TodoCompletionId(), for: 1, scheduler: self.mainQueue.animation())
@@ -83,10 +87,6 @@ struct AppReducer: _Reducer {
     }
   }
 }
-
-let appReducer = TodoReducer().forEach(state: \.todos, action: /AppAction.todo(id:action:))
-  .combined(with: AppReducer())
-//  .debug()
 
 struct AppView: View {
   let store: Store<AppState, AppAction>
@@ -177,7 +177,7 @@ struct AppView_Previews: PreviewProvider {
     AppView(
       store: Store(
         initialState: AppState(todos: .mock),
-        reducer: appReducer
+        reducer: AppReducer.main
       )
     )
   }
