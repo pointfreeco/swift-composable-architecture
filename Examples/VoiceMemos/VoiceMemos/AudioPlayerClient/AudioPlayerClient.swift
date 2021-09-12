@@ -14,3 +14,13 @@ struct AudioPlayerClient {
     case decodeErrorDidOccur
   }
 }
+
+enum AudioPlayerClientKey: DependencyKey {
+  static var defaultValue = AudioPlayerClient.live
+}
+extension DependencyValues {
+  var audioPlayer: AudioPlayerClient {
+    get { self[AudioPlayerClientKey.self] }
+    set { self[AudioPlayerClientKey.self] = newValue }
+  }
+}

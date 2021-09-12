@@ -38,38 +38,37 @@ enum VoiceMemosAction: Equatable {
   case voiceMemo(id: VoiceMemo.ID, action: VoiceMemoAction)
 }
 
-struct VoiceMemosEnvironment {
-  var audioPlayer: AudioPlayerClient
-  var audioRecorder: AudioRecorderClient
-  var mainRunLoop: AnySchedulerOf<RunLoop>
-  var openSettings: Effect<Never, Never>
-  var temporaryDirectory: () -> URL
-  var uuid: () -> UUID
-}
+struct VoiceMemosReducer: _Reducer {
+  @Dependency(\.audioPlayer) var audioPlayer
+  @Dependency(\.audioRecorder) var audioRecorder
+  @Dependency(\.mainRunLoop) var mainRunLoop
+  @Dependency(\.openSettings) var openSettings
+  @Dependency(\.temporaryDirectory) var temporaryDirectory
+  @Dependency(\.uuid) var uuid
 
-let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnvironment>.combine(
-  voiceMemoReducer.forEach(
-    state: \.voiceMemos,
-    action: /VoiceMemosAction.voiceMemo(id:action:),
-    environment: {
-      VoiceMemoEnvironment(audioPlayerClient: $0.audioPlayer, mainRunLoop: $0.mainRunLoop)
-    }),
-  .init { state, action, environment in
+  static let main = VoiceMemoReducer()
+    .forEach(state: \VoiceMemosState.voiceMemos, action: /VoiceMemosAction.voiceMemo(id:action:))
+    .combined(with: VoiceMemosReducer())
+
+  func reduce(
+    into state: inout VoiceMemosState,
+    action: VoiceMemosAction
+  ) -> Effect<VoiceMemosAction, Never> {
     struct RecorderId: Hashable {}
     struct RecorderTimerId: Hashable {}
 
     func startRecording() -> Effect<VoiceMemosAction, Never> {
-      let url = environment.temporaryDirectory()
-        .appendingPathComponent(environment.uuid().uuidString)
+      let url = self.temporaryDirectory()
+        .appendingPathComponent(self.uuid().uuidString)
         .appendingPathExtension("m4a")
       state.currentRecording = .init(
-        date: environment.mainRunLoop.now.date,
+        date: self.mainRunLoop.now.date,
         url: url
       )
       return .merge(
-        environment.audioRecorder.startRecording(RecorderId(), url)
+        self.audioRecorder.startRecording(RecorderId(), url)
           .catchToEffect(VoiceMemosAction.audioRecorder),
-        Effect.timer(id: RecorderTimerId(), every: 1, tolerance: .zero, on: environment.mainRunLoop)
+        Effect.timer(id: RecorderTimerId(), every: 1, tolerance: .zero, on: self.mainRunLoop)
           .map { _ in .currentRecordingTimerUpdated }
       )
     }
@@ -114,15 +113,15 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       return .none
 
     case .openSettingsButtonTapped:
-      return environment.openSettings
+      return self.openSettings
         .fireAndForget()
 
     case .recordButtonTapped:
       switch state.audioRecorderPermission {
       case .undetermined:
-        return environment.audioRecorder.requestRecordPermission()
+        return self.audioRecorder.requestRecordPermission()
           .map(VoiceMemosAction.recordPermissionResponse)
-          .receive(on: environment.mainRunLoop)
+          .receive(on: self.mainRunLoop)
           .eraseToEffect()
 
       case .denied:
@@ -142,11 +141,11 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
           state.currentRecording?.mode = .encoding
           return .concatenate(
             .cancel(id: RecorderTimerId()),
-            environment.audioRecorder.currentTime(RecorderId())
+            self.audioRecorder.currentTime(RecorderId())
               .compactMap { $0 }
               .map(VoiceMemosAction.finalRecordingTime)
               .eraseToEffect(),
-            environment.audioRecorder.stopRecording(RecorderId())
+            self.audioRecorder.stopRecording(RecorderId())
               .fireAndForget()
           )
         }
@@ -179,7 +178,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       return .none
     }
   }
-)
+}
 
 struct VoiceMemosView: View {
   let store: Store<VoiceMemosState, VoiceMemosAction>
@@ -270,23 +269,32 @@ struct VoiceMemos_Previews: PreviewProvider {
             ),
           ]
         ),
-        reducer: voiceMemosReducer,
-        environment: VoiceMemosEnvironment(
-          audioPlayer: .live,
-          // NB: AVAudioRecorder doesn't work in previews, so we stub out the dependency here.
-          audioRecorder: .init(
-            currentTime: { _ in Effect(value: 10) },
-            requestRecordPermission: { Effect(value: true) },
-            startRecording: { _, _ in .none },
-            stopRecording: { _ in .none }
-          ),
-          mainRunLoop: .main,
-          openSettings: .none,
-          temporaryDirectory: { URL(fileURLWithPath: NSTemporaryDirectory()) },
-          uuid: UUID.init
-        )
+        reducer: VoiceMemosReducer()
       )
     )
     .environment(\.colorScheme, .dark)
+  }
+}
+
+enum OpenSettingsKey: DependencyKey {
+  static var defaultValue = Effect<Never, Never>.fireAndForget {
+    UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+  }
+}
+extension DependencyValues {
+  var openSettings: Effect<Never, Never> {
+    get { self[OpenSettingsKey.self] }
+    set { self[OpenSettingsKey.self] = newValue }
+  }
+}
+enum TemporaryDirectoryKey: DependencyKey {
+  static var defaultValue = {
+    URL(fileURLWithPath: NSTemporaryDirectory())
+  }
+}
+extension DependencyValues {
+  var temporaryDirectory: () -> URL {
+    get { self[TemporaryDirectoryKey.self] }
+    set { self[TemporaryDirectoryKey.self] = newValue }
   }
 }

@@ -32,11 +32,6 @@ enum AppAction: Equatable {
   case todo(id: Todo.ID, action: TodoAction)
 }
 
-struct AppEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-  var uuid: () -> UUID
-}
-
 struct AppReducer: _Reducer {
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.uuid) var uuid

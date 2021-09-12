@@ -35,67 +35,69 @@ enum VoiceMemoAction: Equatable {
   case titleTextFieldChanged(String)
 }
 
-struct VoiceMemoEnvironment {
-  var audioPlayerClient: AudioPlayerClient
-  var mainRunLoop: AnySchedulerOf<RunLoop>
-}
+struct VoiceMemoReducer: _Reducer {
+  @Dependency(\.audioPlayer) var audioPlayerClient
+  @Dependency(\.mainRunLoop) var mainRunLoop
 
-let voiceMemoReducer = Reducer<VoiceMemo, VoiceMemoAction, VoiceMemoEnvironment> {
-  memo, action, environment in
-  struct PlayerId: Hashable {}
-  struct TimerId: Hashable {}
+  func reduce(
+    into state: inout VoiceMemo,
+    action: VoiceMemoAction
+  ) -> Effect<VoiceMemoAction, Never> {
+    struct PlayerId: Hashable {}
+    struct TimerId: Hashable {}
 
-  switch action {
-  case .audioPlayerClient(.success(.didFinishPlaying)), .audioPlayerClient(.failure):
-    memo.mode = .notPlaying
-    return .cancel(id: TimerId())
+    switch action {
+    case .audioPlayerClient(.success(.didFinishPlaying)), .audioPlayerClient(.failure):
+      state.mode = .notPlaying
+      return .cancel(id: TimerId())
 
-  case .delete:
-    return .merge(
-      environment.audioPlayerClient
-        .stop(PlayerId())
-        .fireAndForget(),
-      .cancel(id: PlayerId()),
-      .cancel(id: TimerId())
-    )
-
-  case .playButtonTapped:
-    switch memo.mode {
-    case .notPlaying:
-      memo.mode = .playing(progress: 0)
-      let start = environment.mainRunLoop.now
+    case .delete:
       return .merge(
-        Effect.timer(id: TimerId(), every: 0.5, on: environment.mainRunLoop)
-          .map { .timerUpdated($0.date.timeIntervalSince1970 - start.date.timeIntervalSince1970) },
-
-        environment.audioPlayerClient
-          .play(PlayerId(), memo.url)
-          .catchToEffect(VoiceMemoAction.audioPlayerClient)
-          .cancellable(id: PlayerId())
-      )
-
-    case .playing:
-      memo.mode = .notPlaying
-      return .concatenate(
-        .cancel(id: TimerId()),
-        environment.audioPlayerClient
+        self.audioPlayerClient
           .stop(PlayerId())
-          .fireAndForget()
+          .fireAndForget(),
+        .cancel(id: PlayerId()),
+        .cancel(id: TimerId())
       )
-    }
 
-  case let .timerUpdated(time):
-    switch memo.mode {
-    case .notPlaying:
-      break
-    case let .playing(progress: progress):
-      memo.mode = .playing(progress: time / memo.duration)
-    }
-    return .none
+    case .playButtonTapped:
+      switch state.mode {
+      case .notPlaying:
+        state.mode = .playing(progress: 0)
+        let start = self.mainRunLoop.now
+        return .merge(
+          Effect.timer(id: TimerId(), every: 0.5, on: self.mainRunLoop)
+            .map { .timerUpdated($0.date.timeIntervalSince1970 - start.date.timeIntervalSince1970) },
 
-  case let .titleTextFieldChanged(text):
-    memo.title = text
-    return .none
+          self.audioPlayerClient
+            .play(PlayerId(), state.url)
+            .catchToEffect(VoiceMemoAction.audioPlayerClient)
+            .cancellable(id: PlayerId())
+        )
+
+      case .playing:
+        state.mode = .notPlaying
+        return .concatenate(
+          .cancel(id: TimerId()),
+          self.audioPlayerClient
+            .stop(PlayerId())
+            .fireAndForget()
+        )
+      }
+
+    case let .timerUpdated(time):
+      switch state.mode {
+      case .notPlaying:
+        break
+      case .playing:
+        state.mode = .playing(progress: time / state.duration)
+      }
+      return .none
+
+    case let .titleTextFieldChanged(text):
+      state.title = text
+      return .none
+    }
   }
 }
 

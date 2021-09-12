@@ -18,3 +18,13 @@ struct AudioRecorderClient {
     case encodeErrorDidOccur
   }
 }
+
+enum AudioRecorderKey: DependencyKey {
+  static var defaultValue = AudioRecorderClient.live
+}
+extension DependencyValues {
+  var audioRecorder: AudioRecorderClient {
+    get { self[AudioRecorderKey.self] }
+    set { self[AudioRecorderKey.self] = newValue }
+  }
+}
