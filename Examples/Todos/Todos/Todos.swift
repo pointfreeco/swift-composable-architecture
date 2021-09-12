@@ -44,6 +44,7 @@ struct AppReducer: _Reducer {
   static let main = TodoReducer.main
     .forEach(state: \.todos, action: /AppAction.todo(id:action:))
     .combined(with: AppReducer())
+    .debug()
 
   func reduce(into state: inout AppState, action: AppAction) -> Effect<AppAction, Never> {
     switch action {
