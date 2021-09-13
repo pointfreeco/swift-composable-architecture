@@ -31,8 +31,10 @@ extension Reducers {
     @inlinable
     public func reduce(into state: inout Upstream.State, action: Upstream.Action)
     -> Effect<Upstream.Action, Never> {
-      // TODO: push and pop dependency context
+      DependencyValues.shared.push()
+      defer { DependencyValues.shared.pop() }
       DependencyValues.shared[keyPath: self.keyPath] = value
+
       return self.upstream.reduce(into: &state, action: action)
     }
   }

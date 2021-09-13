@@ -1,6 +1,7 @@
 import AVFoundation
 import ComposableArchitecture
 import SwiftUI
+import XCTestDynamicOverlay
 
 struct VoiceMemosState: Equatable {
   var alert: AlertState<VoiceMemosAction>?
@@ -39,7 +40,6 @@ enum VoiceMemosAction: Equatable {
 }
 
 struct VoiceMemosReducer: _Reducer {
-  @Dependency(\.audioPlayer) var audioPlayer
   @Dependency(\.audioRecorder) var audioRecorder
   @Dependency(\.mainRunLoop) var mainRunLoop
   @Dependency(\.openSettings) var openSettings
@@ -271,6 +271,7 @@ struct VoiceMemos_Previews: PreviewProvider {
           ]
         ),
         reducer: VoiceMemosReducer()
+          .dependency(\.audioRecorder, .failing)
       )
     )
     .environment(\.colorScheme, .dark)
@@ -281,6 +282,7 @@ enum OpenSettingsKey: DependencyKey {
   static var defaultValue = Effect<Never, Never>.fireAndForget {
     UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
   }
+  static let testValue = Effect<Never, Never>.failing("OpenSettings is unimplemented")
 }
 extension DependencyValues {
   var openSettings: Effect<Never, Never> {
@@ -291,6 +293,10 @@ extension DependencyValues {
 enum TemporaryDirectoryKey: DependencyKey {
   static var defaultValue = {
     URL(fileURLWithPath: NSTemporaryDirectory())
+  }
+  static let testValue: () -> URL = {
+    XCTFail("TemporaryDirectory is unimplemented")
+    return URL(string: "/")!
   }
 }
 extension DependencyValues {

@@ -4,7 +4,8 @@ import XCTest
 @testable import ComposableArchitecture
 
 enum IntKey: DependencyKey {
-  static var defaultValue = 0
+  static let defaultValue = -1
+  static let testValue = 0
 }
 extension DependencyValues {
   var int: Int {
@@ -30,6 +31,9 @@ final class _ReducerTests: XCTestCase {
 
       func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
         print("AppReducer.int", self.int)
+        self.mainQueue.schedule(after: .init(.now()+10)) {
+          print("AppReducer HI!")
+        }
         switch action {
         case .decr:
           state.count -= 1
@@ -67,19 +71,13 @@ final class _ReducerTests: XCTestCase {
     }
 
     let appReducer = AppReducer()
-      .dependency(\.mainQueue, .immediate)
-      .dependency(\.int, 42)
       .combined(
         with: Child1Reducer()
-          .dependency(\.int, 1729)
           .pullback(state: \.child1, action: /AppReducer.Action.child1)
+          .dependency(\.int, 1729)
       )
-
-    // TODO: how to override environments?
-//    appReducer
-//      .dependency(\.mainQueue, .immediate)
-//      .dependency(\.int, 100)
-//      .reduce(into: &<#T##AppReducer.State#>, action: <#T##AppReducer.Action#>)
+      .dependency(\.mainQueue, .immediate)
+      .dependency(\.int, 42)
 
     var state = AppReducer.State()
     _ = appReducer.reduce(into: &state, action: .incr)

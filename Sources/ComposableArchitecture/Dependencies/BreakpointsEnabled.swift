@@ -1,5 +1,6 @@
 private enum BreakpointsEnabledKey: DependencyKey {
-  static var defaultValue = true
+  static let defaultValue = true
+  static let testValue = true
 }
 
 extension DependencyValues {

@@ -34,6 +34,10 @@ extension AudioPlayerClient {
   )
 }
 
+extension AudioPlayerClientKey: DependencyKey {
+  static let defaultValue = AudioPlayerClient.live
+}
+
 private var dependencies: [AnyHashable: AudioPlayerClientDelegate] = [:]
 
 private class AudioPlayerClientDelegate: NSObject, AVAudioPlayerDelegate {

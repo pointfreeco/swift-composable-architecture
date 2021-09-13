@@ -19,8 +19,8 @@ struct AudioRecorderClient {
   }
 }
 
-enum AudioRecorderKey: DependencyKey {
-  static var defaultValue = AudioRecorderClient.live
+enum AudioRecorderKey: DependencyStub {
+  static var testValue = AudioRecorderClient.failing
 }
 extension DependencyValues {
   var audioRecorder: AudioRecorderClient {

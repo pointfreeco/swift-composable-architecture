@@ -9,8 +9,7 @@ class TodosTests: XCTestCase {
   func testAddTodo() {
     let store = _TestStore(
       initialState: AppState(),
-      reducer: appReducer
-        .dependency(\.mainQueue, self.scheduler.eraseToAnyScheduler())
+      reducer: AppReducer.main
         .dependency(\.uuid, .incrementing)
     )
 
@@ -38,13 +37,11 @@ class TodosTests: XCTestCase {
     )
     let store = _TestStore(
       initialState: state,
-      reducer: appReducer
-        .dependency(\.mainQueue, self.scheduler.eraseToAnyScheduler())
-        .dependency(\.uuid, .incrementing)
+      reducer: AppReducer.main
     )
 
     store.send(
-      .todo(id: state.todos[0].id, action: .textFieldChanged("Learn Composable Architecture"))
+      .todo(id: state.todos[0].id, action: .set(\.$description, "Learn Composable Architecture"))
     ) {
       $0.todos[id: state.todos[0].id]?.description = "Learn Composable Architecture"
     }
@@ -67,12 +64,11 @@ class TodosTests: XCTestCase {
     )
     let store = _TestStore(
       initialState: state,
-      reducer: appReducer
+      reducer: AppReducer.main
         .dependency(\.mainQueue, self.scheduler.eraseToAnyScheduler())
-        .dependency(\.uuid, .incrementing)
     )
 
-    store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
+    store.send(.todo(id: state.todos[0].id, action: .set(\.$isComplete, true))) {
       $0.todos[id: state.todos[0].id]?.isComplete = true
     }
     self.scheduler.advance(by: 1)
@@ -101,16 +97,15 @@ class TodosTests: XCTestCase {
     )
     let store = _TestStore(
       initialState: state,
-      reducer: appReducer
+      reducer: AppReducer.main
         .dependency(\.mainQueue, self.scheduler.eraseToAnyScheduler())
-        .dependency(\.uuid, .incrementing)
     )
 
-    store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
+    store.send(.todo(id: state.todos[0].id, action: .set(\.$isComplete, true))) {
       $0.todos[id: state.todos[0].id]?.isComplete = true
     }
     self.scheduler.advance(by: 0.5)
-    store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
+    store.send(.todo(id: state.todos[0].id, action: .set(\.$isComplete, false))) {
       $0.todos[id: state.todos[0].id]?.isComplete = false
     }
     self.scheduler.advance(by: 1)
@@ -134,9 +129,7 @@ class TodosTests: XCTestCase {
     )
     let store = _TestStore(
       initialState: state,
-      reducer: appReducer
-        .dependency(\.mainQueue, self.scheduler.eraseToAnyScheduler())
-        .dependency(\.uuid, .incrementing)
+      reducer: AppReducer.main
     )
 
     store.send(.clearCompletedButtonTapped) {
@@ -168,9 +161,7 @@ class TodosTests: XCTestCase {
     )
     let store = _TestStore(
       initialState: state,
-      reducer: appReducer
-        .dependency(\.mainQueue, self.scheduler.eraseToAnyScheduler())
-        .dependency(\.uuid, .incrementing)
+      reducer: AppReducer.main
     )
 
     store.send(.delete([1])) {
@@ -203,9 +194,8 @@ class TodosTests: XCTestCase {
     )
     let store = _TestStore(
       initialState: state,
-      reducer: appReducer
+      reducer: AppReducer.main
         .dependency(\.mainQueue, self.scheduler.eraseToAnyScheduler())
-        .dependency(\.uuid, .incrementing)
     )
 
     store.send(.editModeChanged(.active)) {
@@ -239,15 +229,13 @@ class TodosTests: XCTestCase {
     )
     let store = _TestStore(
       initialState: state,
-      reducer: appReducer
-        .dependency(\.mainQueue, self.scheduler.eraseToAnyScheduler())
-        .dependency(\.uuid, .incrementing)
+      reducer: AppReducer.main
     )
 
     store.send(.filterPicked(.completed)) {
       $0.filter = .completed
     }
-    store.send(.todo(id: state.todos[1].id, action: .textFieldChanged("Did this already"))) {
+    store.send(.todo(id: state.todos[1].id, action: .set(\.$description, "Did this already"))) {
       $0.todos[id: state.todos[1].id]?.description = "Did this already"
     }
   }

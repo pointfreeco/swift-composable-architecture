@@ -8,7 +8,8 @@ extension DependencyValues {
 }
 
 private enum UUIDKey: DependencyKey {
-  static var defaultValue = UUIDDependency.live
+  static let defaultValue = UUIDDependency.live
+  static let testValue = UUIDDependency.failing
 }
 
 public struct UUIDDependency {

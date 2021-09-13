@@ -18,6 +18,11 @@ private class TestReducer<Upstream>: _Reducer where Upstream: _Reducer {
     self.snapshotState = initialState
   }
 
+  deinit {
+    // TODO: should the store hold onto DependencyValues?
+    DependencyValues.shared = .init()
+  }
+
   func reduce(into state: inout Upstream.State, action: TestAction) -> Effect<TestAction, Never> {
     let effects: Effect<Upstream.Action, Never>
     switch action.origin {
@@ -70,21 +75,32 @@ private class TestReducer<Upstream>: _Reducer where Upstream: _Reducer {
   }
 }
 
-public final class _TestStore<Reducer> where Reducer: _Reducer {
+public final class _TestStore<State, Action> {
   private let file: StaticString
   private var line: UInt
-  private let reducer: TestReducer<Reducer>
-  private var store: Store<Reducer.State, TestReducer<Reducer>.TestAction>!
+  private let reducer: TestReducer<AnyReducer<State, Action>>
+  private var store: Store<State, TestReducer<AnyReducer<State, Action>>.TestAction>!
 
-  public init(
-    initialState: Reducer.State,
+  public init<Reducer>(
+    initialState: State,
     reducer: Reducer,
     file: StaticString = #file,
     line: UInt = #line
-  ) {
+  )
+  where
+    Reducer: _Reducer,
+    Reducer.State == State,
+    Reducer.Action == Action
+  {
     self.file = file
     self.line = line
-    self.reducer = TestReducer(reducer, initialState: initialState)
+
+    self.reducer = TestReducer(
+      reducer
+        .dependency(\.isTesting, true)
+        .eraseToAnyReducer(),
+      initialState: initialState
+    )
     self.store = Store(initialState: initialState, reducer: self.reducer)
   }
 
@@ -133,12 +149,12 @@ public final class _TestStore<Reducer> where Reducer: _Reducer {
   }
 }
 
-extension _TestStore where Reducer.State: Equatable {
+extension _TestStore where State: Equatable {
   public func send(
-    _ action: Reducer.Action,
+    _ action: Action,
     file: StaticString = #file,
     line: UInt = #line,
-    _ update: @escaping (inout Reducer.State) throws -> Void = { _ in }
+    _ update: @escaping (inout State) throws -> Void = { _ in }
   ) {
     if !self.reducer.receivedActions.isEmpty {
       var actions = ""
@@ -178,8 +194,8 @@ extension _TestStore where Reducer.State: Equatable {
   }
 
   private func expectedStateShouldMatch(
-    expected: Reducer.State,
-    actual: Reducer.State,
+    expected: State,
+    actual: State,
     file: StaticString,
     line: UInt
   ) {
@@ -208,12 +224,12 @@ extension _TestStore where Reducer.State: Equatable {
   }
 }
 
-extension _TestStore where Reducer.State: Equatable, Reducer.Action: Equatable {
+extension _TestStore where State: Equatable, Action: Equatable {
   public func receive(
-    _ expectedAction: Reducer.Action,
+    _ expectedAction: Action,
     file: StaticString = #file,
     line: UInt = #line,
-    _ update: @escaping (inout Reducer.State) throws -> Void = { _ in }
+    _ update: @escaping (inout State) throws -> Void = { _ in }
   ) {
     guard !self.reducer.receivedActions.isEmpty else {
       XCTFail(

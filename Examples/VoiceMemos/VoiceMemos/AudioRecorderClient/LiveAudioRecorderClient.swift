@@ -65,6 +65,10 @@ extension AudioRecorderClient {
   )
 }
 
+extension AudioRecorderKey: DependencyKey {
+  static let defaultValue = AudioRecorderClient.live
+}
+
 private class AudioRecorderClientDelegate: NSObject, AVAudioRecorderDelegate {
   let recorder: AVAudioRecorder
   let didFinishRecording: (Bool) -> Void

@@ -31,7 +31,8 @@ extension _Reducer {
 }
 
 public enum DebugLoggingQueue: DependencyKey {
-  public static var defaultValue = AnySchedulerOf<DispatchQueue>(_debugLoggingQueue)
+  public static let defaultValue = AnySchedulerOf<DispatchQueue>(_debugLoggingQueue)
+  public static let testValue = AnySchedulerOf<DispatchQueue>.immediate
 }
 public let _debugLoggingQueue = DispatchQueue(
   label: "co.pointfree.ComposableArchitecture.DebugEnvironment",
@@ -44,7 +45,8 @@ extension DependencyValues {
   }
 }
 public enum DebugLogger: DependencyKey {
-  public static var defaultValue: (String) -> Void = { print($0) }
+  public static let defaultValue: (String) -> Void = { print($0) }
+  public static let testValue: (String) -> Void = { print($0) }
 }
 extension DependencyValues {
   public var debugLogger: (String) -> Void {
