@@ -289,28 +289,31 @@ extension AlertState.Button: Hashable where Action: Hashable {
 }
 
 extension AlertState.Button {
-  func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.Alert.Button {
-    let action = {
-      switch self.action?.type {
-      case .none:
-        return
-      case let .some(.send(action)):
-        send(action)
-      case let .some(.animatedSend(action, animation: animation)):
-        withAnimation(animation) { send(action) }
-      }
+    /// Convenience to allow third parties to build on top of this type
+    /// For example a macOS app could use this to build a sheet and normal SwiftUI.Button<Text> instead
+    public func buttonAction(send: @escaping (Action) -> Void) -> () -> Void {
+        switch self.action?.type {
+        case .none:
+            return {}
+        case let .some(.send(action)):
+            return { send(action) }
+        case let .some(.animatedSend(action, animation: animation)):
+            return { withAnimation(animation) { send(action) } }
+        }
     }
-    switch self.type {
-    case let .cancel(.some(label)):
-      return .cancel(Text(label), action: action)
-    case .cancel(.none):
-      return .cancel(action)
-    case let .default(label):
-      return .default(Text(label), action: action)
-    case let .destructive(label):
-      return .destructive(Text(label), action: action)
+
+    func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.Alert.Button {
+        switch self.type {
+        case let .cancel(.some(label)):
+            return .cancel(Text(label), action: buttonAction(send: send))
+        case .cancel(.none):
+            return .cancel(buttonAction(send: send))
+        case let .default(label):
+            return .default(Text(label), action: buttonAction(send: send))
+        case let .destructive(label):
+            return .destructive(Text(label), action: buttonAction(send: send))
+        }
     }
-  }
 }
 
 extension AlertState {
