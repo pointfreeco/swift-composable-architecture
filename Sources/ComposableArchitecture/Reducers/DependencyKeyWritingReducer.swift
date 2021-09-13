@@ -31,12 +31,9 @@ extension Reducers {
     @inlinable
     public func reduce(into state: inout Upstream.State, action: Upstream.Action)
     -> Effect<Upstream.Action, Never> {
-
-      let dependencyValues = Thread.current.threadDictionary["currentDependencyValues"] as! DependencyValues
-      dependencyValues.push()
-      defer { dependencyValues.pop() }
-      dependencyValues[keyPath: self.keyPath] = value
-
+      DependencyValues.shared.push()
+      defer { DependencyValues.shared.pop() }
+      DependencyValues.shared[keyPath: self.keyPath] = value
       return self.upstream.reduce(into: &state, action: action)
     }
   }
