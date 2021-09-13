@@ -94,29 +94,6 @@ let focusDemoReducer = Reducer<
     }
   }
 
-struct SynchronizeViewModifier<Value: Equatable>: ViewModifier {
-  @Environment(\.self) var values
-
-  @Binding var value: Value
-  let keyPath: WritableKeyPath<EnvironmentValues, Value>
-
-  func body(content: Content) -> some View {
-    content
-      .onChange(of: self.values[keyPath: self.keyPath]) { self.value = $0 }
-      .environment(self.keyPath, self.value)
-      .onAppear { self.value = self.values[keyPath: self.keyPath] }
-  }
-}
-
-extension View {
-  func synchronize<Value: Equatable>(
-    _ first: Binding<Value>,
-    _ second: WritableKeyPath<EnvironmentValues, Value>
-  ) -> some View {
-    self.modifier(SynchronizeViewModifier(value: first, keyPath: second))
-  }
-}
-
   extension View {
     func synchronize<Value: Equatable>(
       _ first: Binding<Value>,
@@ -140,3 +117,27 @@ extension View {
     }
   }
 #endif
+
+
+struct SynchronizeViewModifier<Value: Equatable>: ViewModifier {
+  @Environment(\.self) var values
+
+  @Binding var value: Value
+  let keyPath: WritableKeyPath<EnvironmentValues, Value>
+
+  func body(content: Content) -> some View {
+    content
+      .onChange(of: self.values[keyPath: self.keyPath]) { self.value = $0 }
+      .environment(self.keyPath, self.value)
+      .onAppear { self.value = self.values[keyPath: self.keyPath] }
+  }
+}
+
+extension View {
+  func synchronize<Value: Equatable>(
+    _ first: Binding<Value>,
+    _ second: WritableKeyPath<EnvironmentValues, Value>
+  ) -> some View {
+    self.modifier(SynchronizeViewModifier(value: first, keyPath: second))
+  }
+}

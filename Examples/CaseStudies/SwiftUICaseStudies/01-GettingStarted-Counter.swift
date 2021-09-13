@@ -11,9 +11,11 @@ private let readMe = """
 
 struct CounterState: Equatable {
   var count = 0
+  @BindableState var colorScheme: ColorScheme = .light
 }
 
-enum CounterAction: Equatable {
+enum CounterAction: BindableAction, Equatable {
+  case binding(BindingAction<CounterState>)
   case decrementButtonTapped
   case incrementButtonTapped
 }
@@ -22,6 +24,9 @@ struct CounterEnvironment {}
 
 let counterReducer = Reducer<CounterState, CounterAction, CounterEnvironment> { state, action, _ in
   switch action {
+  case .binding:
+    return .none
+
   case .decrementButtonTapped:
     state.count -= 1
     return .none
@@ -30,6 +35,7 @@ let counterReducer = Reducer<CounterState, CounterAction, CounterEnvironment> { 
     return .none
   }
 }
+.binding()
 
 struct CounterView: View {
   let store: Store<CounterState, CounterAction>
@@ -40,8 +46,12 @@ struct CounterView: View {
         Button("−") { viewStore.send(.decrementButtonTapped) }
         Text("\(viewStore.count)")
           .font(Font.body.monospacedDigit())
-        Button("+") { viewStore.send(.incrementButtonTapped) }
+        Button("+") {
+          viewStore.send(.incrementButtonTapped)
+          viewStore.$colorScheme.wrappedValue = viewStore.$colorScheme.wrappedValue == .light ? .dark : .light
+        }
       }
+      .synchronize(viewStore.$colorScheme, \.colorScheme)
     }
   }
 }
