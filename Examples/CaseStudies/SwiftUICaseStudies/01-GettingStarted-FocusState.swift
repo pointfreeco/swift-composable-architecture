@@ -7,6 +7,7 @@ private let readMe = """
   """
 
 struct FocusDemoState: Equatable {
+  @BindableState var colorScheme: ColorScheme = .light
   @BindableState var focusedField: Field? = nil
   @BindableState var password: String = ""
   @BindableState var username: String = ""
@@ -48,8 +49,20 @@ let focusDemoReducer = Reducer<
     let store: Store<FocusDemoState, FocusDemoAction>
     @FocusState var focusedField: FocusDemoState.Field?
 
+    @Environment(\.colorScheme) var colorScheme
+
+    @ObservedObject var viewStore: ViewStore<FocusDemoState, FocusDemoAction>
+    init(store: Store<FocusDemoState, FocusDemoAction>) {
+      self.store = store
+      self.viewStore = ViewStore(self.store)
+    }
+
+    @State var otherColorScheme: ColorScheme = .light
+
     var body: some View {
-      WithViewStore(self.store) { viewStore in
+
+        NavigationView {
+//      WithViewStore(self.store) { viewStore in
         VStack(alignment: .leading, spacing: 32) {
           Text(template: readMe, .caption)
 
@@ -61,8 +74,13 @@ let focusDemoReducer = Reducer<
               .focused($focusedField, equals: .password)
 
             Button("Sign In") {
+              viewStore.$colorScheme.wrappedValue = viewStore.$colorScheme.wrappedValue == .dark ? .light : .dark
               viewStore.send(.signInButtonTapped)
             }
+
+//            Button("Change") {
+//              self.otherColorScheme = self.otherColorScheme == .light ? .dark : .light
+//            }
           }
 
           Spacer()
@@ -71,8 +89,33 @@ let focusDemoReducer = Reducer<
         .synchronize(viewStore.$focusedField, self.$focusedField)
       }
       .navigationBarTitle("Focus demo")
+//      .environment(\.colorScheme, self.otherColorScheme)
+//      .synchronize(viewStore.$colorScheme, \.colorScheme)
     }
   }
+
+struct SynchronizeViewModifier<Value: Equatable>: ViewModifier {
+  @Environment(\.self) var values
+
+  @Binding var value: Value
+  let keyPath: WritableKeyPath<EnvironmentValues, Value>
+
+  func body(content: Content) -> some View {
+    content
+      .onChange(of: self.values[keyPath: self.keyPath]) { self.value = $0 }
+      .environment(self.keyPath, self.value)
+      .onAppear { self.value = self.values[keyPath: self.keyPath] }
+  }
+}
+
+extension View {
+  func synchronize<Value: Equatable>(
+    _ first: Binding<Value>,
+    _ second: WritableKeyPath<EnvironmentValues, Value>
+  ) -> some View {
+    self.modifier(SynchronizeViewModifier(value: first, keyPath: second))
+  }
+}
 
   extension View {
     func synchronize<Value: Equatable>(
@@ -87,15 +130,13 @@ let focusDemoReducer = Reducer<
 
   struct FocusDemo_Previews: PreviewProvider {
     static var previews: some View {
-      NavigationView {
-        FocusDemoView(
-          store: Store(
-            initialState: .init(),
-            reducer: focusDemoReducer,
-            environment: .init()
-          )
+      FocusDemoView(
+        store: Store(
+          initialState: .init(),
+          reducer: focusDemoReducer,
+          environment: .init()
         )
-      }
+      )
     }
   }
 #endif
