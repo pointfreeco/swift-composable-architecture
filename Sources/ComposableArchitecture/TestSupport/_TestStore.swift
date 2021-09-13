@@ -75,11 +75,24 @@ private class TestReducer<Upstream>: _Reducer where Upstream: _Reducer {
   }
 }
 
+@dynamicMemberLookup
 public final class _TestStore<State, Action> {
   private let file: StaticString
   private var line: UInt
   private let reducer: TestReducer<AnyReducer<State, Action>>
   private var store: Store<State, TestReducer<AnyReducer<State, Action>>.TestAction>!
+
+  public subscript<Value>(
+    dynamicMember keyPath: ReferenceWritableKeyPath<DependencyValues, Value>
+  ) -> Value {
+    get { DependencyValues.shared[keyPath: keyPath] }
+    set { DependencyValues.shared[keyPath: keyPath] = newValue }
+  }
+
+  public var dependencies: DependencyValues {
+    get { DependencyValues.shared }
+    set { DependencyValues.shared = newValue }
+  }
 
   public init<Reducer>(
     initialState: State,

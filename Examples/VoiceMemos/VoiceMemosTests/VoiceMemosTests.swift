@@ -18,19 +18,20 @@ class VoiceMemosTests: XCTestCase {
     let store = _TestStore(
       initialState: VoiceMemosState(),
       reducer: VoiceMemosReducer.main
-        .dependency(\.audioRecorder.currentTime) { _ in Effect(value: 2.5) }
-        .dependency(\.audioRecorder.requestRecordPermission) { Effect(value: true) }
-        .dependency(\.audioRecorder.startRecording) { _, _ in audioRecorderSubject.eraseToEffect() }
-        .dependency(\.audioRecorder.stopRecording) { _ in
-          .fireAndForget {
-            audioRecorderSubject.send(.didFinishRecording(successfully: true))
-            audioRecorderSubject.send(completion: .finished)
-          }
-        }
-        .dependency(\.mainRunLoop, self.mainRunLoop.eraseToAnyScheduler())
-        .dependency(\.temporaryDirectory) { URL(fileURLWithPath: "/tmp") }
-        .dependency(\.uuid, .init { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! })
     )
+
+    store.dependencies.audioRecorder.currentTime = { _ in Effect(value: 2.5) }
+    store.dependencies.audioRecorder.requestRecordPermission = { Effect(value: true) }
+    store.dependencies.audioRecorder.startRecording = { _, _ in audioRecorderSubject.eraseToEffect() }
+    store.dependencies.audioRecorder.stopRecording = { _ in
+      .fireAndForget {
+        audioRecorderSubject.send(.didFinishRecording(successfully: true))
+        audioRecorderSubject.send(completion: .finished)
+      }
+    }
+    store.dependencies.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
+    store.dependencies.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
+    store.dependencies.uuid = .init { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! }
 
     store.send(.recordButtonTapped)
     mainRunLoop.advance()
