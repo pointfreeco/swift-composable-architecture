@@ -15,6 +15,10 @@ private enum UUIDKey: DependencyKey {
 public struct UUIDDependency {
   public var uuid: () -> UUID
 
+  public init(uuid: @escaping () -> UUID) {
+    self.uuid = uuid
+  }
+
   public static let live = Self(uuid: UUID.init)
 
   public static let failing = Self {

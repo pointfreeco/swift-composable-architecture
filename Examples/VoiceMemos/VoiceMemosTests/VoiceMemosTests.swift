@@ -1,106 +1,102 @@
-//import Combine
-//import ComposableArchitecture
-//import XCTest
-//
-//@testable import VoiceMemos
-//
-//class VoiceMemosTests: XCTestCase {
-//  let mainRunLoop = RunLoop.test
-//
-//  func testRecordMemoHappyPath() {
-//    // NB: Combine's concatenation behavior is different in 13.3
-//    guard #available(iOS 13.4, *) else { return }
-//
-//    let audioRecorderSubject = PassthroughSubject<
-//      AudioRecorderClient.Action, AudioRecorderClient.Failure
-//    >()
-//
-//    var environment = VoiceMemosEnvironment.failing
-//    environment.audioRecorder.currentTime = { _ in Effect(value: 2.5) }
-//    environment.audioRecorder.requestRecordPermission = { Effect(value: true) }
-//    environment.audioRecorder.startRecording = { _, _ in
-//      audioRecorderSubject.eraseToEffect()
-//    }
-//    environment.audioRecorder.stopRecording = { _ in
-//      .fireAndForget {
-//        audioRecorderSubject.send(.didFinishRecording(successfully: true))
-//        audioRecorderSubject.send(completion: .finished)
-//      }
-//    }
-//    environment.mainRunLoop = mainRunLoop.eraseToAnyScheduler()
-//    environment.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
-//    environment.uuid = { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! }
-//
-//    let store = TestStore(
-//      initialState: VoiceMemosState(),
-//      reducer: voiceMemosReducer,
-//      environment: environment
-//    )
-//
-//    store.send(.recordButtonTapped)
-//    mainRunLoop.advance()
-//    store.receive(.recordPermissionResponse(true)) {
-//      $0.audioRecorderPermission = .allowed
-//      $0.currentRecording = .init(
-//        date: Date(timeIntervalSince1970: 0),
-//        mode: .recording,
-//        url: URL(string: "file:///tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")!
-//      )
-//    }
-//    mainRunLoop.advance(by: 1)
-//    store.receive(.currentRecordingTimerUpdated) {
-//      $0.currentRecording!.duration = 1
-//    }
-//    mainRunLoop.advance(by: 1)
-//    store.receive(.currentRecordingTimerUpdated) {
-//      $0.currentRecording!.duration = 2
-//    }
-//    mainRunLoop.advance(by: 0.5)
-//    store.send(.recordButtonTapped) {
-//      $0.currentRecording!.mode = .encoding
-//    }
-//    store.receive(.finalRecordingTime(2.5)) {
-//      $0.currentRecording!.duration = 2.5
-//    }
-//    store.receive(.audioRecorder(.success(.didFinishRecording(successfully: true)))) {
-//      $0.currentRecording = nil
-//      $0.voiceMemos = [
-//        VoiceMemo(
-//          date: Date(timeIntervalSince1970: 0),
-//          duration: 2.5,
-//          mode: .notPlaying,
-//          title: "",
-//          url: URL(string: "file:///tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")!
-//        )
-//      ]
-//    }
-//  }
-//
-//  func testPermissionDenied() {
-//    var didOpenSettings = false
-//
-//    var environment = VoiceMemosEnvironment.failing
-//    environment.audioRecorder.requestRecordPermission = { Effect(value: false) }
-//    environment.mainRunLoop = .immediate
-//    environment.openSettings = .fireAndForget { didOpenSettings = true }
-//
-//    let store = TestStore(
-//      initialState: VoiceMemosState(),
-//      reducer: voiceMemosReducer,
-//      environment: environment
-//    )
-//
-//    store.send(.recordButtonTapped)
-//    store.receive(.recordPermissionResponse(false)) {
-//      $0.alert = .init(title: .init("Permission is required to record voice memos."))
-//      $0.audioRecorderPermission = .denied
-//    }
-//    store.send(.alertDismissed) {
-//      $0.alert = nil
-//    }
-//    store.send(.openSettingsButtonTapped)
-//    XCTAssert(didOpenSettings)
-//  }
+import Combine
+import ComposableArchitecture
+import XCTest
+
+@testable import VoiceMemos
+
+class VoiceMemosTests: XCTestCase {
+  let mainRunLoop = RunLoop.test
+
+  func testRecordMemoHappyPath() {
+    // NB: Combine's concatenation behavior is different in 13.3
+    guard #available(iOS 13.4, *) else { return }
+
+    let audioRecorderSubject = PassthroughSubject<
+      AudioRecorderClient.Action, AudioRecorderClient.Failure
+    >()
+
+    let store = _TestStore(
+      initialState: VoiceMemosState(),
+      reducer: VoiceMemosReducer.main
+        .dependency(\.audioRecorder.currentTime) { _ in Effect(value: 2.5) }
+        .dependency(\.audioRecorder.requestRecordPermission) { Effect(value: true) }
+        .dependency(\.audioRecorder.startRecording) { _, _ in audioRecorderSubject.eraseToEffect() }
+        .dependency(\.audioRecorder.stopRecording) { _ in
+          .fireAndForget {
+            audioRecorderSubject.send(.didFinishRecording(successfully: true))
+            audioRecorderSubject.send(completion: .finished)
+          }
+        }
+        .dependency(\.mainRunLoop, self.mainRunLoop.eraseToAnyScheduler())
+        .dependency(\.temporaryDirectory) { URL(fileURLWithPath: "/tmp") }
+        .dependency(\.uuid, .init { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! })
+    )
+
+    store.send(.recordButtonTapped)
+    mainRunLoop.advance()
+    store.receive(.recordPermissionResponse(true)) {
+      $0.audioRecorderPermission = .allowed
+      $0.currentRecording = .init(
+        date: Date(timeIntervalSince1970: 0),
+        mode: .recording,
+        url: URL(string: "file:///tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")!
+      )
+    }
+    mainRunLoop.advance(by: 1)
+    store.receive(.currentRecordingTimerUpdated) {
+      $0.currentRecording!.duration = 1
+    }
+    mainRunLoop.advance(by: 1)
+    store.receive(.currentRecordingTimerUpdated) {
+      $0.currentRecording!.duration = 2
+    }
+    mainRunLoop.advance(by: 0.5)
+    store.send(.recordButtonTapped) {
+      try (/Optional.some).modify(&$0.currentRecording) {
+        $0.mode = .encoding
+      }
+    }
+    store.receive(.finalRecordingTime(2.5)) {
+      try (/Optional.some).modify(&$0.currentRecording) {
+        $0.duration = 2.5
+      }
+    }
+    store.receive(.audioRecorder(.success(.didFinishRecording(successfully: true)))) {
+      $0.currentRecording = nil
+      $0.voiceMemos = [
+        VoiceMemo(
+          date: Date(timeIntervalSince1970: 0),
+          duration: 2.5,
+          mode: .notPlaying,
+          title: "",
+          url: URL(string: "file:///tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")!
+        )
+      ]
+    }
+  }
+
+  func testPermissionDenied() {
+    var didOpenSettings = false
+
+    let store = _TestStore(
+      initialState: VoiceMemosState(),
+      reducer: VoiceMemosReducer.main
+        .dependency(\.audioRecorder.requestRecordPermission) { Effect(value: false) }
+        .dependency(\.mainRunLoop, .immediate)
+        .dependency(\.openSettings, .fireAndForget { didOpenSettings = true })
+    )
+
+    store.send(.recordButtonTapped)
+    store.receive(.recordPermissionResponse(false)) {
+      $0.alert = .init(title: .init("Permission is required to record voice memos."))
+      $0.audioRecorderPermission = .denied
+    }
+    store.send(.alertDismissed) {
+      $0.alert = nil
+    }
+    store.send(.openSettingsButtonTapped)
+    XCTAssert(didOpenSettings)
+  }
 //
 //  func testRecordMemoFailure() {
 //    let audioRecorderSubject = PassthroughSubject<
@@ -303,8 +299,8 @@
 //      $0.voiceMemos = []
 //    }
 //  }
-//}
-//
+}
+
 //extension VoiceMemosEnvironment {
 //  static let failing = Self(
 //    audioPlayer: .failing,

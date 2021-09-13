@@ -48,8 +48,8 @@ final class _ReducerTests: XCTestCase {
     }
 
     struct Child1Reducer: _Reducer {
-      @Dependency(\.mainQueue) var mainQueue
       @Dependency(\.int) var int
+      @Dependency(\.mainQueue) var mainQueue
 
       enum Action {
         case decr, incr
