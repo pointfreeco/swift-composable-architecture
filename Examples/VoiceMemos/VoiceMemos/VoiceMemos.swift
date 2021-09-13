@@ -48,7 +48,8 @@ struct VoiceMemosReducer: _Reducer {
 
   static let main = VoiceMemoReducer()
     .forEach(state: \VoiceMemosState.voiceMemos, action: /VoiceMemosAction.voiceMemo(id:action:))
-    .combined(with: VoiceMemosReducer())
+    .combined(with: Self())
+    .debug()
 
   func reduce(
     into state: inout VoiceMemosState,

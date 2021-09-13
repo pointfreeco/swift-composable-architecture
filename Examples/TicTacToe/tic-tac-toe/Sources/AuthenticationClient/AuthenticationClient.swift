@@ -70,11 +70,19 @@ public struct AuthenticationClient {
   }
 }
 
-#if DEBUG
-  extension AuthenticationClient {
-    public static let failing = Self(
-      login: { _ in .failing("AuthenticationClient.login") },
-      twoFactor: { _ in .failing("AuthenticationClient.twoFactor") }
-    )
+extension AuthenticationClient {
+  public static let failing = Self(
+    login: { _ in .failing("AuthenticationClient.login") },
+    twoFactor: { _ in .failing("AuthenticationClient.twoFactor") }
+  )
+}
+
+enum AuthenticationClientClient: DependencyKey {
+  static var defaultValue = AuthenticationClient.failing
+}
+extension DependencyValues {
+  var authenticationClient: AuthenticationClient {
+    get { self[AuthenticationClientClient.self] }
+    set { self[AuthenticationClientClient.self] = newValue }
   }
-#endif
+}
