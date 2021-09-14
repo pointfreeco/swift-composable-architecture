@@ -1,8 +1,8 @@
 extension Reducers {
-  public class Scoped<State, Action, LocalState, LocalAction>: _Reducer {
-    public let store: Store<State, Action>
-    public let toLocalState: (State) -> LocalState
-    public let fromLocalAction: (LocalAction) -> Action
+  class Scoped<State, Action, LocalState, LocalAction>: _Reducer {
+    let store: Store<State, Action>
+    let toLocalState: (State) -> LocalState
+    let fromLocalAction: (LocalAction) -> Action
 
     @usableFromInline
     init(
@@ -19,8 +19,7 @@ extension Reducers {
     var isSending = false
 
     @inlinable
-    public func reduce(into state: inout LocalState, action: LocalAction)
-    -> Effect<LocalAction, Never> {
+    func reduce(into state: inout LocalState, action: LocalAction) -> Effect<LocalAction, Never> {
       self.isSending = true
       defer { self.isSending = false }
       self.store.send(self.fromLocalAction(action))

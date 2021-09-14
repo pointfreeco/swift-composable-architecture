@@ -30,31 +30,6 @@ extension _Reducer {
   }
 }
 
-public enum DebugLoggingQueue: DependencyKey {
-  public static let defaultValue = AnySchedulerOf<DispatchQueue>(_debugLoggingQueue)
-  public static let testValue = AnySchedulerOf<DispatchQueue>.immediate
-}
-public let _debugLoggingQueue = DispatchQueue(
-  label: "co.pointfree.ComposableArchitecture.DebugEnvironment",
-  qos: .background
-)
-extension DependencyValues {
-  public var debugLoggingQueue: AnySchedulerOf<DispatchQueue> {
-    get { self[DebugLoggingQueue.self] }
-    set { self[DebugLoggingQueue.self] = newValue }
-  }
-}
-public enum DebugLogger: DependencyKey {
-  public static let defaultValue: (String) -> Void = { print($0) }
-  public static let testValue: (String) -> Void = { print($0) }
-}
-extension DependencyValues {
-  public var debugLogger: (String) -> Void {
-    get { self[DebugLogger.self] }
-    set { self[DebugLogger.self] = newValue }
-  }
-}
-
 public struct ReducerDebug<Upstream, LocalState, LocalAction>: _Reducer
 where
   Upstream: _Reducer
@@ -121,3 +96,30 @@ where
     #endif
   }
 }
+
+public enum DebugLoggingQueue: DependencyKey {
+  public static let defaultValue = AnySchedulerOf<DispatchQueue>(_debugLoggingQueue)
+  public static let testValue = AnySchedulerOf<DispatchQueue>.immediate
+}
+extension DependencyValues {
+  public var debugLoggingQueue: AnySchedulerOf<DispatchQueue> {
+    get { self[DebugLoggingQueue.self] }
+    set { self[DebugLoggingQueue.self] = newValue }
+  }
+}
+
+public enum DebugLogger: DependencyKey {
+  public static let defaultValue: (String) -> Void = { print($0) }
+  public static let testValue: (String) -> Void = { print($0) }
+}
+extension DependencyValues {
+  public var debugLogger: (String) -> Void {
+    get { self[DebugLogger.self] }
+    set { self[DebugLogger.self] = newValue }
+  }
+}
+
+public let _debugLoggingQueue = DispatchQueue(
+  label: "co.pointfree.ComposableArchitecture.DebugEnvironment",
+  qos: .utility
+)
