@@ -18,14 +18,8 @@ public enum NewGameAction: Equatable {
   case xPlayerNameChanged(String)
 }
 
-public struct NewGameEnvironment {
-  public init() {}
-}
-
 public struct NewGameReducer: _Reducer {
-  public init() {}
-  
-  public static let main = GameReducer()
+  public static let main = GameReducer.main
     .optional()
     .pullback(state: \.game, action: /NewGameAction.game)
     .combined(with: Self())

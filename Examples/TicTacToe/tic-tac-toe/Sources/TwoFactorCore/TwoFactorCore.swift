@@ -30,8 +30,7 @@ public struct TwoFactorReducer: _Reducer {
   @Dependency(\.authenticationClient) var authenticationClient
   @Dependency(\.mainQueue) var mainQueue
 
-  public init() {
-  }
+  public static let main = Self()
 
   public func reduce(
     into state: inout TwoFactorState,

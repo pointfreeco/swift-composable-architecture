@@ -45,12 +45,8 @@ public enum GameAction: Equatable {
   case quitButtonTapped
 }
 
-public struct GameEnvironment {
-  public init() {}
-}
-
 public struct GameReducer: _Reducer {
-  public init() {}
+  public static let main = Self()
   
   public func reduce(
     into state: inout GameState,

@@ -17,8 +17,6 @@ public enum AppAction: Equatable {
 }
 
 public struct AppReducer: _Reducer {
-  public init() {}
-
   public static let main = LoginReducer.main
     .pullback(state: /AppState.login, action: /AppAction.login)
     .combined(

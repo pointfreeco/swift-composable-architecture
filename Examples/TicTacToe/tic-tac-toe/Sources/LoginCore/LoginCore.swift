@@ -28,9 +28,7 @@ public struct LoginReducer: _Reducer {
   @Dependency(\.authenticationClient) var authenticationClient
   @Dependency(\.mainQueue) var mainQueue
 
-  public init() {}
-
-  public static let main = TwoFactorReducer()
+  public static let main = TwoFactorReducer.main
     .optional()
     .pullback(state: \.twoFactor, action: /LoginAction.twoFactor)
     .combined(with: Self())

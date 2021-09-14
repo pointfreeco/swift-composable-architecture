@@ -89,7 +89,7 @@ struct TwoFactorView_Previews: PreviewProvider {
       TwoFactorView(
         store: Store(
           initialState: TwoFactorState(token: "deadbeef"),
-          reducer: TwoFactorReducer()
+          reducer: TwoFactorReducer.main
         )
       )
     }
