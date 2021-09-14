@@ -2,6 +2,15 @@ import CasePaths
 import Combine
 import SwiftUI
 
+// NB: Deprecated after 0.27.0:
+
+extension AlertState.Button {
+  @available(*, deprecated, message: "Cancel buttons must be given an explicit label as their first argument")
+  public static func cancel(action: AlertState.ButtonAction? = nil) -> Self {
+    .init(action: action, label: TextState("Cancel"), role: .cancel)
+  }
+}
+
 // NB: Deprecated after 0.25.0:
 
 #if compiler(>=5.4)
@@ -144,14 +153,14 @@ extension AlertState.Button {
     _ label: TextState,
     send action: Action?
   ) -> Self {
-    Self(action: action.map(AlertState.ButtonAction.send), type: .cancel(label: label))
+    .cancel(label, action: action.map(AlertState.ButtonAction.send))
   }
 
   @available(*, deprecated, renamed: "cancel(action:)")
   public static func cancel(
     send action: Action?
   ) -> Self {
-    Self(action: action.map(AlertState.ButtonAction.send), type: .cancel(label: nil))
+    .cancel(action: action.map(AlertState.ButtonAction.send))
   }
 
   @available(*, deprecated, renamed: "default(_:action:)")
@@ -159,7 +168,7 @@ extension AlertState.Button {
     _ label: TextState,
     send action: Action?
   ) -> Self {
-    Self(action: action.map(AlertState.ButtonAction.send), type: .default(label: label))
+    .default(label, action: action.map(AlertState.ButtonAction.send))
   }
 
   @available(*, deprecated, renamed: "destructive(_:action:)")
@@ -167,7 +176,7 @@ extension AlertState.Button {
     _ label: TextState,
     send action: Action?
   ) -> Self {
-    Self(action: action.map(AlertState.ButtonAction.send), type: .destructive(label: label))
+    .destructive(label, action: action.map(AlertState.ButtonAction.send))
   }
 }
 
@@ -365,7 +374,7 @@ extension AlertState.Button {
     _ label: LocalizedStringKey,
     send action: Action? = nil
   ) -> Self {
-    Self(action: action.map(AlertState.ButtonAction.send), type: .cancel(label: .init(label)))
+    .cancel(.init(label), send: action)
   }
 
   @available(*, deprecated, message: "'label' should be 'TextState'")
@@ -374,7 +383,7 @@ extension AlertState.Button {
     _ label: LocalizedStringKey,
     send action: Action? = nil
   ) -> Self {
-    Self(action: action.map(AlertState.ButtonAction.send), type: .default(label: .init(label)))
+    .default(.init(label), send: action)
   }
 
   @available(*, deprecated, message: "'label' should be 'TextState'")
@@ -383,7 +392,7 @@ extension AlertState.Button {
     _ label: LocalizedStringKey,
     send action: Action? = nil
   ) -> Self {
-    Self(action: action.map(AlertState.ButtonAction.send), type: .destructive(label: .init(label)))
+    .destructive(.init(label), send: action)
   }
 }
 

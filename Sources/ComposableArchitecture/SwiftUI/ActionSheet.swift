@@ -118,18 +118,39 @@ public struct ActionSheetState<Action> {
   public var buttons: [Button]
   public var message: TextState?
   public var title: TextState
+  public var titleVisibility: Visibility
 
   public init(
     title: TextState,
+    titleVisibility: Visibility = .automatic,
     message: TextState? = nil,
     buttons: [Button]
   ) {
     self.buttons = buttons
     self.message = message
     self.title = title
+    self.titleVisibility = titleVisibility
   }
 
   public typealias Button = AlertState<Action>.Button
+
+  public enum Visibility {
+    case automatic
+    case hidden
+    case visible
+
+    @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+    var toSwiftUI: SwiftUI.Visibility {
+      switch self {
+      case .automatic:
+        return .automatic
+      case .hidden:
+        return .hidden
+      case .visible:
+        return .visible
+      }
+    }
+  }
 }
 
 @available(iOS 13, *)
@@ -204,8 +225,19 @@ extension View {
   ) -> some View {
 
     WithViewStore(store, removeDuplicates: { $0?.id == $1?.id }) { viewStore in
-      self.actionSheet(item: viewStore.binding(send: dismiss)) { state in
-        state.toSwiftUI(send: viewStore.send)
+      if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
+        self.confirmationDialog(
+          (viewStore.state?.title).map { Text($0) } ?? Text(""),
+          isPresented: viewStore.binding(send: dismiss).isPresent(),
+          titleVisibility: viewStore.state?.titleVisibility.toSwiftUI ?? .automatic,
+          presenting: viewStore.state,
+          actions: { $0.toSwiftUIActions(send: viewStore.send) },
+          message: { $0.message.map { Text($0) } }
+        )
+      } else {
+        self.actionSheet(item: viewStore.binding(send: dismiss)) { state in
+          state.toSwiftUIActionSheet(send: viewStore.send)
+        }
       }
     }
   }
@@ -217,12 +249,20 @@ extension View {
 @available(tvOS 13, *)
 @available(watchOS 6, *)
 extension ActionSheetState {
-  fileprivate func toSwiftUI(send: @escaping (Action) -> Void) -> SwiftUI.ActionSheet {
+  @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+  @ViewBuilder
+  fileprivate func toSwiftUIActions(send: @escaping (Action) -> Void) -> some View {
+    ForEach(self.buttons.indices, id: \.self) {
+      self.buttons[$0].toSwiftUIButton(send: send)
+    }
+  }
+
+  fileprivate func toSwiftUIActionSheet(send: @escaping (Action) -> Void) -> SwiftUI.ActionSheet {
     SwiftUI.ActionSheet(
       title: Text(self.title),
       message: self.message.map { Text($0) },
       buttons: self.buttons.map {
-        $0.toSwiftUI(send: send)
+        $0.toSwiftUIAlertButton(send: send)
       }
     )
   }
