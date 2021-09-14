@@ -1,3 +1,5 @@
+// TODO: move file to root directory
+
 // TODO: other names? DependencyStubKey, DependencyTestKey,
 public protocol DependencyStub {
   // TODO: Should Value be Dependency?
@@ -32,7 +34,10 @@ public class DependencyValues {
       let id = ObjectIdentifier(key)
       guard let dependency = self.storage.last?[id]
       else {
+
+
         func open<T>(_: T.Type) -> Any? {
+          // TODO: check if in previews too
           let isTesting = self.storage.last?[ObjectIdentifier(IsTestingKey.self)] as? Bool ?? false
           guard !isTesting
           else { return nil }
