@@ -266,7 +266,6 @@ import SwiftUI
       dynamicMember keyPath: WritableKeyPath<State, BindableState<Value>>
     ) -> Binding<Value>
     where Action: BindableAction, Action.State == State, Value: Equatable {
-      self.projectedBinding(for: keyPath) ??
       self.binding(
         get: { $0[keyPath: keyPath].wrappedValue },
         send: { .binding(.set(keyPath, $0)) }
