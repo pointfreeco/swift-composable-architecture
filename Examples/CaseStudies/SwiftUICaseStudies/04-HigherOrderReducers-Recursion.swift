@@ -29,14 +29,14 @@ extension Reducer {
 struct NestedState: Equatable, Identifiable {
   var children: IdentifiedArrayOf<NestedState> = []
   let id: UUID
-  @BindableState var description: String = ""
+  var description: String = ""
 }
 
-indirect enum NestedAction: Equatable, BindableAction {
+indirect enum NestedAction: Equatable {
   case append
-  case binding(BindingAction<NestedState>)
   case node(id: NestedState.ID, action: NestedAction)
   case remove(IndexSet)
+  case rename(String)
 }
 
 struct NestedEnvironment {
@@ -51,9 +51,6 @@ let nestedReducer = Reducer<
     state.children.append(NestedState(id: environment.uuid()))
     return .none
 
-  case .binding:
-    return .none
-
   case .node:
     return self.forEach(
       state: \.children,
@@ -65,8 +62,12 @@ let nestedReducer = Reducer<
   case let .remove(indexSet):
     state.children.remove(atOffsets: indexSet)
     return .none
+
+  case let .rename(name):
+    state.description = name
+    return .none
   }
-}.binding()
+}
 
 struct NestedView: View {
   let store: Store<NestedState, NestedAction>
@@ -81,7 +82,10 @@ struct NestedView: View {
           ) { childStore in
             WithViewStore(childStore) { childViewStore in
               HStack {
-                TextField("Untitled", text: childViewStore.$description)
+                TextField(
+                  "Untitled",
+                  text: childViewStore.binding(get: \.description, send: NestedAction.rename)
+                )
 
                 Spacer()
 
