@@ -34,7 +34,7 @@ class WebSocketTests: XCTestCase {
     }
 
     // Send a message
-    store.send(.binding(.set(\.$messageToSend, "Hi"))) {
+    store.send(.messageToSendChanged("Hi")) {
       $0.messageToSend = "Hi"
     }
     store.send(.sendButtonTapped) {
@@ -83,7 +83,7 @@ class WebSocketTests: XCTestCase {
     }
 
     // Send a message
-    store.send(.binding(.set(\.$messageToSend, "Hi"))) {
+    store.send(.messageToSendChanged("Hi")) {
       $0.messageToSend = "Hi"
     }
     store.send(.sendButtonTapped) {
