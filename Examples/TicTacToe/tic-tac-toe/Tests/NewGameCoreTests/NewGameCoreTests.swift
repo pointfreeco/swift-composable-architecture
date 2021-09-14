@@ -4,10 +4,9 @@ import NewGameCore
 import XCTest
 
 class NewGameCoreTests: XCTestCase {
-  let store = TestStore(
+  let store = _TestStore(
     initialState: NewGameState(),
-    reducer: newGameReducer,
-    environment: NewGameEnvironment()
+    reducer: NewGameReducer.main
   )
 
   func testFlow_NewGame_Integration() {

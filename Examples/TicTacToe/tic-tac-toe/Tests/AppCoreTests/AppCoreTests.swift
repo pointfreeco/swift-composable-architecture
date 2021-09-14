@@ -5,18 +5,15 @@ import XCTest
 
 class AppCoreTests: XCTestCase {
   func testIntegration() {
-    var authenticationClient = AuthenticationClient.failing
-    authenticationClient.login = { _ in
+    let store = _TestStore(
+      initialState: .init(),
+      reducer: AppReducer.main
+    )
+
+    store.dependencies.authenticationClient.login = { _ in
       .init(value: .init(token: "deadbeef", twoFactorRequired: false))
     }
-    let store = TestStore(
-      initialState: .init(),
-      reducer: appReducer,
-      environment: .init(
-        authenticationClient: authenticationClient,
-        mainQueue: .immediate
-      )
-    )
+    store.dependencies.mainQueue = .immediate
 
     store.send(.login(.emailChanged("blob@pointfree.co"))) {
       try (/AppState.login).modify(&$0) {
@@ -50,21 +47,18 @@ class AppCoreTests: XCTestCase {
   }
 
   func testIntegration_TwoFactor() {
-    var authenticationClient = AuthenticationClient.failing
-    authenticationClient.login = { _ in
+    let store = _TestStore(
+      initialState: .init(),
+      reducer: AppReducer.main
+    )
+    
+    store.dependencies.authenticationClient.login = { _ in
       .init(value: .init(token: "deadbeef", twoFactorRequired: true))
     }
-    authenticationClient.twoFactor = { _ in
+    store.dependencies.authenticationClient.twoFactor = { _ in
       .init(value: .init(token: "deadbeef", twoFactorRequired: false))
     }
-    let store = TestStore(
-      initialState: .init(),
-      reducer: appReducer,
-      environment: .init(
-        authenticationClient: authenticationClient,
-        mainQueue: .immediate
-      )
-    )
+    store.dependencies.mainQueue = .immediate
 
     store.send(.login(.emailChanged("blob@pointfree.co"))) {
       try (/AppState.login).modify(&$0) {

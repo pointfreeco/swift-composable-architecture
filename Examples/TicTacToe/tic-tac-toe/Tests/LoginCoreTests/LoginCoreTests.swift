@@ -6,22 +6,18 @@ import XCTest
 
 class LoginCoreTests: XCTestCase {
   func testFlow_Success_TwoFactor_Integration() {
-    var authenticationClient = AuthenticationClient.failing
-    authenticationClient.login = { _ in
+    let store = _TestStore(
+      initialState: LoginState(),
+      reducer: LoginReducer.main
+    )
+
+    store.dependencies.authenticationClient.login = { _ in
       Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: true))
     }
-    authenticationClient.twoFactor = { _ in
+    store.dependencies.authenticationClient.twoFactor = { _ in
       Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
     }
-
-    let store = TestStore(
-      initialState: LoginState(),
-      reducer: loginReducer,
-      environment: LoginEnvironment(
-        authenticationClient: authenticationClient,
-        mainQueue: .immediate
-      )
-    )
+    store.dependencies.mainQueue = .immediate
 
     store.send(.emailChanged("2fa@pointfree.co")) {
       $0.email = "2fa@pointfree.co"
@@ -56,23 +52,20 @@ class LoginCoreTests: XCTestCase {
   }
 
   func testFlow_DismissEarly_TwoFactor_Integration() {
-    var authenticationClient = AuthenticationClient.failing
-    authenticationClient.login = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: true))
-    }
-    authenticationClient.twoFactor = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
-    }
     let scheduler = DispatchQueue.test
 
-    let store = TestStore(
+    let store = _TestStore(
       initialState: LoginState(),
-      reducer: loginReducer,
-      environment: LoginEnvironment(
-        authenticationClient: authenticationClient,
-        mainQueue: scheduler.eraseToAnyScheduler()
-      )
+      reducer: LoginReducer.main
     )
+
+    store.dependencies.authenticationClient.login = { _ in
+      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: true))
+    }
+    store.dependencies.authenticationClient.twoFactor = { _ in
+      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
+    }
+    store.dependencies.mainQueue = scheduler.eraseToAnyScheduler()
 
     store.send(.emailChanged("2fa@pointfree.co")) {
       $0.email = "2fa@pointfree.co"

@@ -5,18 +5,16 @@ import XCTest
 
 class TwoFactorCoreTests: XCTestCase {
   func testFlow_Success() {
-    let store = TestStore(
+    let store = _TestStore(
       initialState: TwoFactorState(token: "deadbeefdeadbeef"),
-      reducer: twoFactorReducer,
-      environment: TwoFactorEnvironment(
-        authenticationClient: .failing,
-        mainQueue: .immediate
-      )
+      reducer: TwoFactorReducer()
     )
 
-    store.environment.authenticationClient.twoFactor = { _ in
+    store.dependencies.mainQueue = .immediate
+    store.dependencies.authenticationClient.twoFactor = { _ in
       Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
     }
+
     store.send(.codeChanged("1")) {
       $0.code = "1"
     }
@@ -41,16 +39,13 @@ class TwoFactorCoreTests: XCTestCase {
   }
 
   func testFlow_Failure() {
-    let store = TestStore(
+    let store = _TestStore(
       initialState: TwoFactorState(token: "deadbeefdeadbeef"),
-      reducer: twoFactorReducer,
-      environment: TwoFactorEnvironment(
-        authenticationClient: .failing,
-        mainQueue: .immediate
-      )
+      reducer: TwoFactorReducer()
     )
 
-    store.environment.authenticationClient.twoFactor = { _ in
+    store.dependencies.mainQueue = .immediate
+    store.dependencies.authenticationClient.twoFactor = { _ in
       Effect(error: .invalidTwoFactor)
     }
 

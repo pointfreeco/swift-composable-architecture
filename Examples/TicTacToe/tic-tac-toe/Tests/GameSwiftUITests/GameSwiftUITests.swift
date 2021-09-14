@@ -5,13 +5,12 @@ import XCTest
 @testable import GameSwiftUI
 
 class GameSwiftUITests: XCTestCase {
-  let store = TestStore(
+  let store = _TestStore(
     initialState: GameState(
       oPlayerName: "Blob Jr.",
       xPlayerName: "Blob Sr."
     ),
-    reducer: gameReducer,
-    environment: GameEnvironment()
+    reducer: GameReducer()
   )
   .scope(state: GameView.ViewState.init)
 
