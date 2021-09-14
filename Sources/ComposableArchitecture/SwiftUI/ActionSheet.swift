@@ -139,17 +139,19 @@ public struct ActionSheetState<Action> {
     case hidden
     case visible
 
-    @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-    var toSwiftUI: SwiftUI.Visibility {
-      switch self {
-      case .automatic:
-        return .automatic
-      case .hidden:
-        return .hidden
-      case .visible:
-        return .visible
+    #if compiler(>=5.5)
+      @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+      var toSwiftUI: SwiftUI.Visibility {
+        switch self {
+        case .automatic:
+          return .automatic
+        case .hidden:
+          return .hidden
+        case .visible:
+          return .visible
+        }
       }
-    }
+    #endif
   }
 }
 
@@ -225,20 +227,26 @@ extension View {
   ) -> some View {
 
     WithViewStore(store, removeDuplicates: { $0?.id == $1?.id }) { viewStore in
-      if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
-        self.confirmationDialog(
-          (viewStore.state?.title).map { Text($0) } ?? Text(""),
-          isPresented: viewStore.binding(send: dismiss).isPresent(),
-          titleVisibility: viewStore.state?.titleVisibility.toSwiftUI ?? .automatic,
-          presenting: viewStore.state,
-          actions: { $0.toSwiftUIActions(send: viewStore.send) },
-          message: { $0.message.map { Text($0) } }
-        )
-      } else {
+      #if compiler(>=5.5)
+        if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
+          self.confirmationDialog(
+            (viewStore.state?.title).map { Text($0) } ?? Text(""),
+            isPresented: viewStore.binding(send: dismiss).isPresent(),
+            titleVisibility: viewStore.state?.titleVisibility.toSwiftUI ?? .automatic,
+            presenting: viewStore.state,
+            actions: { $0.toSwiftUIActions(send: viewStore.send) },
+            message: { $0.message.map { Text($0) } }
+          )
+        } else {
+          self.actionSheet(item: viewStore.binding(send: dismiss)) { state in
+            state.toSwiftUIActionSheet(send: viewStore.send)
+          }
+        }
+      #else
         self.actionSheet(item: viewStore.binding(send: dismiss)) { state in
           state.toSwiftUIActionSheet(send: viewStore.send)
         }
-      }
+      #endif
     }
   }
 }
@@ -249,13 +257,15 @@ extension View {
 @available(tvOS 13, *)
 @available(watchOS 6, *)
 extension ActionSheetState {
-  @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-  @ViewBuilder
-  fileprivate func toSwiftUIActions(send: @escaping (Action) -> Void) -> some View {
-    ForEach(self.buttons.indices, id: \.self) {
-      self.buttons[$0].toSwiftUIButton(send: send)
+  #if compiler(>=5.5)
+    @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+    @ViewBuilder
+    fileprivate func toSwiftUIActions(send: @escaping (Action) -> Void) -> some View {
+      ForEach(self.buttons.indices, id: \.self) {
+        self.buttons[$0].toSwiftUIButton(send: send)
+      }
     }
-  }
+  #endif
 
   fileprivate func toSwiftUIActionSheet(send: @escaping (Action) -> Void) -> SwiftUI.ActionSheet {
     SwiftUI.ActionSheet(

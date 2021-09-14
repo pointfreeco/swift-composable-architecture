@@ -185,15 +185,17 @@ public struct AlertState<Action> {
     case cancel
     case destructive
 
-    @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-    var toSwiftUI: SwiftUI.ButtonRole {
-      switch self {
-      case .cancel:
-        return .cancel
-      case .destructive:
-        return .destructive
+    #if compiler(>=5.5)
+      @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+      var toSwiftUI: SwiftUI.ButtonRole {
+        switch self {
+        case .cancel:
+          return .cancel
+        case .destructive:
+          return .destructive
+        }
       }
-    }
+    #endif
   }
 }
 
@@ -211,19 +213,25 @@ extension View {
     dismiss: Action
   ) -> some View {
     WithViewStore(store, removeDuplicates: { $0?.id == $1?.id }) { viewStore in
-      if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
-        self.alert(
-          (viewStore.state?.title).map { Text($0) } ?? Text(""),
-          isPresented: viewStore.binding(send: dismiss).isPresent(),
-          presenting: viewStore.state,
-          actions: { $0.toSwiftUIActions(send: viewStore.send) },
-          message: { $0.message.map { Text($0) } }
-        )
-      } else {
+      #if compiler(>=5.5)
+        if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
+          self.alert(
+            (viewStore.state?.title).map { Text($0) } ?? Text(""),
+            isPresented: viewStore.binding(send: dismiss).isPresent(),
+            presenting: viewStore.state,
+            actions: { $0.toSwiftUIActions(send: viewStore.send) },
+            message: { $0.message.map { Text($0) } }
+          )
+        } else {
+          self.alert(item: viewStore.binding(send: dismiss)) { state in
+            state.toSwiftUIAlert(send: viewStore.send)
+          }
+        }
+      #else
         self.alert(item: viewStore.binding(send: dismiss)) { state in
           state.toSwiftUIAlert(send: viewStore.send)
         }
-      }
+      #endif
     }
   }
 }
@@ -324,25 +332,29 @@ extension AlertState.Button {
     }
   }
 
-  @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-  func toSwiftUIButton(send: @escaping (Action) -> Void) -> some View {
-    SwiftUI.Button(
-      role: self.role?.toSwiftUI,
-      action: self.toSwiftUIAction(send: send)
-    ) {
-      Text(self.label)
+  #if compiler(>=5.5)
+    @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+    func toSwiftUIButton(send: @escaping (Action) -> Void) -> some View {
+      SwiftUI.Button(
+        role: self.role?.toSwiftUI,
+        action: self.toSwiftUIAction(send: send)
+      ) {
+        Text(self.label)
+      }
     }
-  }
+  #endif
 }
 
 extension AlertState {
-  @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-  @ViewBuilder
-  fileprivate func toSwiftUIActions(send: @escaping (Action) -> Void) -> some View {
-    ForEach(self.buttons.indices, id: \.self) {
-      self.buttons[$0].toSwiftUIButton(send: send)
+  #if compiler(>=5.5)
+    @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+    @ViewBuilder
+    fileprivate func toSwiftUIActions(send: @escaping (Action) -> Void) -> some View {
+      ForEach(self.buttons.indices, id: \.self) {
+        self.buttons[$0].toSwiftUIButton(send: send)
+      }
     }
-  }
+  #endif
 
   fileprivate func toSwiftUIAlert(send: @escaping (Action) -> Void) -> SwiftUI.Alert {
     if self.buttons.count == 2 {
