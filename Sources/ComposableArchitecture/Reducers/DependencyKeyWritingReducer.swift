@@ -1,4 +1,5 @@
 import SwiftUI
+
 extension _Reducer {
   @inlinable
   public func dependency<Value>(
@@ -31,10 +32,11 @@ extension Reducers {
     @inlinable
     public func reduce(into state: inout Upstream.State, action: Upstream.Action)
     -> Effect<Upstream.Action, Never> {
-      DependencyValues.shared.push()
-      defer { DependencyValues.shared.pop() }
-      DependencyValues.shared[keyPath: self.keyPath] = value
-      return self.upstream.reduce(into: &state, action: action)
+
+      DependencyValues.shared.withDependencies {
+        $0[keyPath: self.keyPath] = value
+        return self.upstream.reduce(into: &state, action: action)
+      }
     }
   }
 }

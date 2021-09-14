@@ -7,6 +7,7 @@ public protocol DependencyStub {
   // TODO: Should this also have a previewValue? noopValue?
 }
 
+// TODO: rename to DependenyLiveKey?
 public protocol DependencyKey: DependencyStub {
   // TODO: liveValue?
   static var defaultValue: Value { get }
@@ -17,16 +18,13 @@ public class DependencyValues {
   @usableFromInline
   static var shared = DependencyValues()
 
-  var storage: [[ObjectIdentifier: Any]] = [[:]]
+  private var storage: [[ObjectIdentifier: Any]] = [[:]]
 
   @usableFromInline
-  func push() {
+  func withDependencies<Result>(_ transform: (DependencyValues) -> Result) -> Result {
     self.storage.append(self.storage.last!)
-  }
-
-  @usableFromInline
-  func pop() {
-    self.storage.removeLast()
+    defer { self.storage.removeLast() }
+    return transform(Self.shared)
   }
 
   public subscript<Key: DependencyStub>(key: Key.Type) -> Key.Value {
@@ -48,7 +46,7 @@ public class DependencyValues {
         return dependency
       }
       guard let value = dependency as? Key.Value
-      else { fatalError() }
+      else { fatalError("TODO: message") }
       return value
     }
     set {
@@ -66,15 +64,13 @@ public struct Dependency<Value> {
   }
 
   public var wrappedValue: Value {
-    get {
-      DependencyValues.shared[keyPath: self.keyPath]
-    }
+    DependencyValues.shared[keyPath: self.keyPath]
   }
 }
 
-enum Box<T> {}
+private enum Box<T> {}
 
-protocol AnyDependencyKey {
+private protocol AnyDependencyKey {
   static func defaultValue() -> Any
 }
 
