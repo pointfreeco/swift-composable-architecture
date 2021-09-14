@@ -1,3 +1,5 @@
+import CombineSchedulers
+
 private enum MainQueueKey: DependencyKey {
   static let defaultValue = AnySchedulerOf<DispatchQueue>.main
   static let testValue = AnySchedulerOf<DispatchQueue>.failing
