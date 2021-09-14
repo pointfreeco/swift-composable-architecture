@@ -123,14 +123,7 @@ struct LoginView_Previews: PreviewProvider {
       LoginView(
         store: Store(
           initialState: LoginState(),
-          reducer: loginReducer,
-          environment: LoginEnvironment(
-            authenticationClient: AuthenticationClient(
-              login: { _ in Effect(value: .init(token: "deadbeef", twoFactorRequired: false)) },
-              twoFactor: { _ in Effect(value: .init(token: "deadbeef", twoFactorRequired: false)) }
-            ),
-            mainQueue: .main
-          )
+          reducer: LoginReducer.main
         )
       )
     }

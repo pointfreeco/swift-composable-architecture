@@ -24,35 +24,21 @@ public enum LoginAction: Equatable {
   case twoFactorDismissed
 }
 
-public struct LoginEnvironment {
-  public var authenticationClient: AuthenticationClient
-  public var mainQueue: AnySchedulerOf<DispatchQueue>
+public struct LoginReducer: _Reducer {
+  @Dependency(\.authenticationClient) var authenticationClient
+  @Dependency(\.mainQueue) var mainQueue
 
-  public init(
-    authenticationClient: AuthenticationClient,
-    mainQueue: AnySchedulerOf<DispatchQueue>
-  ) {
-    self.authenticationClient = authenticationClient
-    self.mainQueue = mainQueue
-  }
-}
+  public init() {}
 
-public let loginReducer = Reducer<LoginState, LoginAction, LoginEnvironment>.combine(
-  twoFactorReducer
+  public static let main = TwoFactorReducer()
     .optional()
-    .pullback(
-      state: \.twoFactor,
-      action: /LoginAction.twoFactor,
-      environment: {
-        TwoFactorEnvironment(
-          authenticationClient: $0.authenticationClient,
-          mainQueue: $0.mainQueue
-        )
-      }
-    ),
-
-  .init {
-    state, action, environment in
+    .pullback(state: \.twoFactor, action: /LoginAction.twoFactor)
+    .combined(with: Self())
+  
+  public func reduce(
+    into state: inout LoginState,
+    action: LoginAction
+  ) -> Effect<LoginAction, Never> {
     switch action {
     case .alertDismissed:
       state.alert = nil
@@ -82,9 +68,9 @@ public let loginReducer = Reducer<LoginState, LoginAction, LoginEnvironment>.com
 
     case .loginButtonTapped:
       state.isLoginRequestInFlight = true
-      return environment.authenticationClient
+      return self.authenticationClient
         .login(LoginRequest(email: state.email, password: state.password))
-        .receive(on: environment.mainQueue)
+        .receive(on: self.mainQueue)
         .catchToEffect(LoginAction.loginResponse)
 
     case .twoFactor:
@@ -95,4 +81,4 @@ public let loginReducer = Reducer<LoginState, LoginAction, LoginEnvironment>.com
       return .cancel(id: TwoFactorTearDownToken())
     }
   }
-)
+}

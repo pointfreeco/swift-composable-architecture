@@ -77,12 +77,12 @@ extension AuthenticationClient {
   )
 }
 
-enum AuthenticationClientClient: DependencyKey {
-  static var defaultValue = AuthenticationClient.failing
+public enum AuthenticationClientKey: DependencyStub {
+  public static var testValue = AuthenticationClient.failing
 }
 extension DependencyValues {
-  var authenticationClient: AuthenticationClient {
-    get { self[AuthenticationClientClient.self] }
-    set { self[AuthenticationClientClient.self] = newValue }
+  public var authenticationClient: AuthenticationClient {
+    get { self[AuthenticationClientKey.self] }
+    set { self[AuthenticationClientKey.self] = newValue }
   }
 }

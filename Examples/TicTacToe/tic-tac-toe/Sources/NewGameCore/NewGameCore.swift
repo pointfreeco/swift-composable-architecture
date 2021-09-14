@@ -22,16 +22,18 @@ public struct NewGameEnvironment {
   public init() {}
 }
 
-public let newGameReducer = Reducer<NewGameState, NewGameAction, NewGameEnvironment>.combine(
-  gameReducer
+public struct NewGameReducer: _Reducer {
+  public init() {}
+  
+  public static let main = GameReducer()
     .optional()
-    .pullback(
-      state: \.game,
-      action: /NewGameAction.game,
-      environment: { _ in GameEnvironment() }
-    ),
+    .pullback(state: \.game, action: /NewGameAction.game)
+    .combined(with: Self())
 
-  .init { state, action, _ in
+  public func reduce(
+    into state: inout NewGameState,
+    action: NewGameAction
+  ) -> Effect<NewGameAction, Never> {
     switch action {
     case .game(.quitButtonTapped):
       state.game = nil
@@ -63,4 +65,4 @@ public let newGameReducer = Reducer<NewGameState, NewGameAction, NewGameEnvironm
       return .none
     }
   }
-)
+}

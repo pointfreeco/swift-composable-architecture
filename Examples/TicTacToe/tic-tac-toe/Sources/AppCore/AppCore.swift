@@ -16,36 +16,19 @@ public enum AppAction: Equatable {
   case newGame(NewGameAction)
 }
 
-public struct AppEnvironment {
-  public var authenticationClient: AuthenticationClient
-  public var mainQueue: AnySchedulerOf<DispatchQueue>
+public struct AppReducer: _Reducer {
+  public init() {}
 
-  public init(
-    authenticationClient: AuthenticationClient,
-    mainQueue: AnySchedulerOf<DispatchQueue>
-  ) {
-    self.authenticationClient = authenticationClient
-    self.mainQueue = mainQueue
-  }
-}
+  public static let main = LoginReducer.main
+    .pullback(state: /AppState.login, action: /AppAction.login)
+    .combined(
+      with: NewGameReducer.main
+        .pullback(state: /AppState.newGame, action: /AppAction.newGame)
+    )
+    .combined(with: Self())
+    .debug()
 
-public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
-  loginReducer.pullback(
-    state: /AppState.login,
-    action: /AppAction.login,
-    environment: {
-      LoginEnvironment(
-        authenticationClient: $0.authenticationClient,
-        mainQueue: $0.mainQueue
-      )
-    }
-  ),
-  newGameReducer.pullback(
-    state: /AppState.newGame,
-    action: /AppAction.newGame,
-    environment: { _ in NewGameEnvironment() }
-  ),
-  Reducer { state, action, _ in
+  public func reduce(into state: inout AppState, action: AppAction) -> Effect<AppAction, Never> {
     switch action {
     case let .login(.twoFactor(.twoFactorResponse(.success(response)))),
       let .login(.loginResponse(.success(response))) where !response.twoFactorRequired:
@@ -63,5 +46,4 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
       return .none
     }
   }
-)
-.debug()
+}

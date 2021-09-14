@@ -107,8 +107,7 @@ struct NewGame_Previews: PreviewProvider {
       NewGameView(
         store: Store(
           initialState: NewGameState(),
-          reducer: newGameReducer,
-          environment: NewGameEnvironment()
+          reducer: NewGameReducer.main
         )
       )
     }

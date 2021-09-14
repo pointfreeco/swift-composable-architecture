@@ -49,28 +49,35 @@ public struct GameEnvironment {
   public init() {}
 }
 
-public let gameReducer = Reducer<GameState, GameAction, GameEnvironment> { state, action, _ in
-  switch action {
-  case let .cellTapped(row, column):
-    guard
-      state.board[row][column] == nil,
-      !state.board.hasWinner
-    else { return .none }
+public struct GameReducer: _Reducer {
+  public init() {}
+  
+  public func reduce(
+    into state: inout GameState,
+    action: GameAction
+  ) -> Effect<GameAction, Never> {
+    switch action {
+    case let .cellTapped(row, column):
+      guard
+        state.board[row][column] == nil,
+        !state.board.hasWinner
+      else { return .none }
 
-    state.board[row][column] = state.currentPlayer
+      state.board[row][column] = state.currentPlayer
 
-    if !state.board.hasWinner {
-      state.currentPlayer.toggle()
+      if !state.board.hasWinner {
+        state.currentPlayer.toggle()
+      }
+
+      return .none
+
+    case .playAgainButtonTapped:
+      state = GameState(oPlayerName: state.oPlayerName, xPlayerName: state.xPlayerName)
+      return .none
+
+    case .quitButtonTapped:
+      return .none
     }
-
-    return .none
-
-  case .playAgainButtonTapped:
-    state = GameState(oPlayerName: state.oPlayerName, xPlayerName: state.xPlayerName)
-    return .none
-
-  case .quitButtonTapped:
-    return .none
   }
 }
 
