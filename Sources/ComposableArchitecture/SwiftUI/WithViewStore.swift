@@ -26,7 +26,7 @@ public struct WithViewStore<State, Action, Content> {
     private var prefix: String?
     private var previousState: (State) -> State?
   #endif
-  @ObservedViewStore private var viewStore: ViewStore<State, Action>
+  @ObservedObject private var viewStore: ViewStore<State, Action>
 
   fileprivate init(
     store: Store<State, Action>,
