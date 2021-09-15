@@ -253,7 +253,7 @@ extension View {
             }
           }
         #endif
-      #else
+      #elseif !os(macOS)
         self.actionSheet(item: viewStore.binding(send: dismiss)) { state in
           state.toSwiftUIActionSheet(send: viewStore.send)
         }
