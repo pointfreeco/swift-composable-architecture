@@ -5,12 +5,12 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
-class AlertsAndActionSheetsTests: XCTestCase {
+class AlertsAndConfirmationDialogsTests: XCTestCase {
   func testAlert() {
     let store = TestStore(
-      initialState: AlertAndSheetState(),
-      reducer: alertAndSheetReducer,
-      environment: AlertAndSheetEnvironment()
+      initialState: AlertAndConfirmationDialogState(),
+      reducer: alertAndConfirmationDialogReducer,
+      environment: AlertAndConfirmationDialogEnvironment()
     )
 
     store.send(.alertButtonTapped) {
@@ -30,19 +30,20 @@ class AlertsAndActionSheetsTests: XCTestCase {
     }
   }
 
-  func testActionSheet() {
+  func testConfirmationDialog() {
     let store = TestStore(
-      initialState: AlertAndSheetState(),
-      reducer: alertAndSheetReducer,
-      environment: AlertAndSheetEnvironment()
+      initialState: AlertAndConfirmationDialogState(),
+      reducer: alertAndConfirmationDialogReducer,
+      environment: AlertAndConfirmationDialogEnvironment()
     )
 
-    store.send(.actionSheetButtonTapped) {
-      $0.actionSheet = .init(
-        title: .init("Action sheet"),
-        message: .init("This is an action sheet."),
+    store.send(.confirmationDialogButtonTapped) {
+      $0.confirmationDialog = .init(
+        title: .init("Confirmation dialog"),
+        titleVisibility: .visible,
+        message: .init("This is a confirmation dialog."),
         buttons: [
-          .cancel(),
+          .cancel(.init("Cancel")),
           .default(.init("Increment"), action: .send(.incrementButtonTapped)),
           .default(.init("Decrement"), action: .send(.decrementButtonTapped)),
         ]
@@ -52,8 +53,8 @@ class AlertsAndActionSheetsTests: XCTestCase {
       $0.alert = .init(title: .init("Incremented!"))
       $0.count = 1
     }
-    store.send(.actionSheetDismissed) {
-      $0.actionSheet = nil
+    store.send(.confirmationDialogDismissed) {
+      $0.confirmationDialog = nil
     }
   }
 }

@@ -185,7 +185,7 @@ public struct AlertState<Action> {
     case cancel
     case destructive
 
-    #if compiler(>=5.5)
+    #if compiler(>=5.5) && canImport(_Concurrency)
       @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
       var toSwiftUI: SwiftUI.ButtonRole {
         switch self {
@@ -213,7 +213,7 @@ extension View {
     dismiss: Action
   ) -> some View {
     WithViewStore(store, removeDuplicates: { $0?.id == $1?.id }) { viewStore in
-      #if compiler(>=5.5)
+      #if compiler(>=5.5) && canImport(_Concurrency)
         if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
           self.alert(
             (viewStore.state?.title).map { Text($0) } ?? Text(""),
@@ -256,12 +256,35 @@ extension AlertState.Button: CustomDumpReflectable {
       self,
       children: [
         self.role.map { "\($0)" } ?? "default": (
-          action: self.action,
-          label: self.label
+          self.label,
+          action: self.action
         )
       ],
       displayStyle: .enum
     )
+  }
+}
+
+extension AlertState.ButtonAction: CustomDumpReflectable {
+  public var customDumpMirror: Mirror {
+    switch self.type {
+    case let .send(action):
+      return Mirror(
+        self,
+        children: [
+          "send": action
+        ],
+        displayStyle: .enum
+      )
+    case let .animatedSend(action, animation):
+      return Mirror(
+        self,
+        children: [
+          "send": (action, animation: animation)
+        ],
+        displayStyle: .enum
+      )
+    }
   }
 }
 
@@ -332,7 +355,7 @@ extension AlertState.Button {
     }
   }
 
-  #if compiler(>=5.5)
+  #if compiler(>=5.5) && canImport(_Concurrency)
     @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
     func toSwiftUIButton(send: @escaping (Action) -> Void) -> some View {
       SwiftUI.Button(
@@ -346,7 +369,7 @@ extension AlertState.Button {
 }
 
 extension AlertState {
-  #if compiler(>=5.5)
+  #if compiler(>=5.5) && canImport(_Concurrency)
     @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
     @ViewBuilder
     fileprivate func toSwiftUIActions(send: @escaping (Action) -> Void) -> some View {

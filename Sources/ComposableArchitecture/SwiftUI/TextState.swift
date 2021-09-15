@@ -37,15 +37,15 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// Certain SwiftUI APIs, like alerts and action sheets, take `Text` values and, not views. To
-/// convert ``TextState`` to `SwiftUI.Text` for this purpose, you can use the `Text` initializer:
+/// Certain SwiftUI APIs, like alerts and confirmation dialogs, take `Text` values and, not views.
+/// To convert ``TextState`` to `SwiftUI.Text` for this purpose, you can use the `Text` initializer:
 ///
 /// ```swift
 /// Alert(title: Text(viewStore.label))
 /// ```
 ///
-/// The Composable Architecture comes with a few convenience APIs for alerts and action sheets that
-/// wrap ``TextState`` under the hood. See ``AlertState`` and `ActionState` accordingly.
+/// The Composable Architecture comes with a few convenience APIs for alerts and dialogs that wrap
+/// ``TextState`` under the hood. See ``AlertState`` and `ActionState` accordingly.
 ///
 /// In the future, should `SwiftUI.Text` and `SwiftUI.LocalizedStringKey` reliably conform to
 /// `Equatable`, ``TextState`` may be deprecated.

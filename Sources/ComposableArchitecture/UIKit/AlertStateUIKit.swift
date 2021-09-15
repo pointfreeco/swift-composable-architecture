@@ -55,13 +55,13 @@
       }
     }
 
-    /// Creates a `UIAlertController` from `ActionSheetState`.
+    /// Creates a `UIAlertController` from `ConfirmationDialogState`.
     ///
     /// - Parameters:
-    ///   - state: The state of an action sheet that can be shown to the user.
-    ///   - send: A function that wraps a alert action in the view store's action type.
+    ///   - state: The state of dialog that can be shown to the user.
+    ///   - send: A function that wraps a dialog action in the view store's action type.
     public convenience init<Action>(
-      state: ActionSheetState<Action>, send: @escaping (Action) -> Void
+      state: ConfirmationDialogState<Action>, send: @escaping (Action) -> Void
     ) {
       self.init(
         title: String(state: state.title),

@@ -11,6 +11,27 @@ extension AlertState.Button {
   }
 }
 
+@available(iOS 13, *)
+@available(macOS 12, *)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
+@available(*, deprecated, renamed: "ConfirmationDialogState")
+public typealias ActionSheetState = ConfirmationDialogState
+
+extension View {
+  @available(iOS 13, *)
+  @available(macOS 12, *)
+  @available(tvOS 13, *)
+  @available(watchOS 6, *)
+  @available(*, deprecated, renamed: "confirmationDialog")
+  public func actionSheet<Action>(
+    _ store: Store<ConfirmationDialogState<Action>?, Action>,
+    dismiss: Action
+  ) -> some View {
+    self.confirmationDialog(store, dismiss: dismiss)
+  }
+}
+
 // NB: Deprecated after 0.25.0:
 
 #if compiler(>=5.4)
