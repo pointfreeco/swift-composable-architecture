@@ -247,9 +247,11 @@ extension View {
             message: { $0.message.map { Text($0) } }
           )
         } else {
-          self.actionSheet(item: viewStore.binding(send: dismiss)) { state in
-            state.toSwiftUIActionSheet(send: viewStore.send)
-          }
+          #if !os(macOS)
+            self.actionSheet(item: viewStore.binding(send: dismiss)) { state in
+              state.toSwiftUIActionSheet(send: viewStore.send)
+            }
+          #endif
         }
       #elseif !os(macOS)
         self.actionSheet(item: viewStore.binding(send: dismiss)) { state in
