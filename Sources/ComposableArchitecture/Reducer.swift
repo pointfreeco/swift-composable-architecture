@@ -1,6 +1,83 @@
 import CasePaths
 import Combine
 
+#if DEBUG // Extensions for making Reducers "Injectable"
+/// Generic logger for debugging.
+private func INLog(_ items: Any...) {
+    if getenv("INJECTION_DETAIL") != nil {
+        print(items.map { "\($0)" }.joined(separator: " "))
+    }
+}
+/// Low level function type of symbol for Swift function recieving generic.
+private typealias FunctionTakingGenericValue = @convention(c) (
+    _ valuePtr : UnsafeRawPointer?, _ outPtr: UnsafeMutableRawPointer,
+    _ metaType: UnsafeRawPointer, _ witnessTable: UnsafeRawPointer?) -> ()
+
+/**
+ This can be used to call a Swift function with a generic value
+ argument when you have a pointer to the value and its type.
+ See: https://www.youtube.com/watch?v=ctS8FzqcRug
+ */
+private func thunkToGeneric(funcPtr: FunctionTakingGenericValue,
+    valuePtr: UnsafeRawPointer?, outPtr: UnsafeMutableRawPointer,
+    type: Any.Type, witnessTable: UnsafeRawPointer? = nil) {
+    funcPtr(valuePtr, outPtr, unsafeBitCast(type, to:
+                UnsafeRawPointer.self), witnessTable)
+}
+
+/// This function copies a reducer funtion into an Any?
+/// but without being too fussy about the precise type
+/// as types in generic may also have been injected.
+func forceType<T>(value: T, out: inout Any?) {
+    out = value
+}
+
+/// Get C level function pointer to forceType Swift function.
+private let RTLD_DEFAULT = UnsafeMutableRawPointer(bitPattern: -2)
+private let forceTypeSymbol = "$s22ComposableArchitecture9forceType5value3outyx_ypSgztlF"
+private let forceTypeCPointer = unsafeBitCast(
+    dlsym(RTLD_DEFAULT, forceTypeSymbol)!,
+    to: FunctionTakingGenericValue.self)
+
+/// Symbol for reducer currently being initialised.
+private var currentInjectable: String?
+/// Where new versions of Reducer functions are retained by injectable symbol.
+private var reducerOverrides = [String: [(Any.Type) -> Any]]()
+#endif // Extensions for making Reducers "Injectable"
+
+/// Wrap reducers you want to be able to inject  in a call to this function.
+/// Overrides are grouped by the symbol name of the one-time initialiser
+/// of the top level variable being initialised in the order they are encountered.
+public func MakeInjectable<T>(reducer: @autoclosure () -> T) -> T {
+    #if DEBUG
+    var info = Dl_info()
+    let save = currentInjectable
+    defer { currentInjectable = save }
+    if let from = Thread.callStackReturnAddresses[1].pointerValue,
+        dladdr(from, &info) != 0, let sname = info.dli_sname {
+        let callerSymbol = String(cString: sname)
+        if reducerOverrides.index(forKey: callerSymbol) == nil ||
+            strstr(info.dli_fname, "/eval") != nil {
+            INLog("Initialising", callerSymbol, "from",
+                 URL(fileURLWithPath: String(cString: info.dli_fname)).lastPathComponent)
+            currentInjectable = callerSymbol
+            reducerOverrides[callerSymbol] = []
+
+            let regsel = Selector(("registerInjectableTCAReducer:"))
+            if let impl = class_getMethodImplementation(NSObject.self, regsel) {
+                typealias registerImpl = @convention(c)
+                    (AnyClass, Selector, NSString) -> Void
+                let callable = unsafeBitCast(impl, to: registerImpl.self)
+                callable(NSObject.self, regsel, callerSymbol as NSString)
+            } else {
+                print("Please update your InjectionIII.app from https://github.com/johnno1962/InjectionIII/releases")
+            }
+        }
+    }
+    #endif
+    return reducer()
+}
+
 /// A reducer describes how to evolve the current state of an application to the next state, given
 /// an action, and describes what ``Effect``s should be executed later by the store, if any.
 ///
@@ -18,7 +95,49 @@ import Combine
 ///   must be on the main thread. You can use the `Publisher` method `receive(on:)` for make the
 ///   effect output its values on the thread of your choice.
 public struct Reducer<State, Action, Environment> {
-  private let reducer: (inout State, Action, Environment) -> Effect<Action, Never>
+    #if DEBUG // Extensions for making Reducers "Injectable"
+    typealias ReducerFunc = (inout State, Action, Environment)
+                             -> Effect<Action, Never>
+    /// Has value when reducer can be/has been injected.
+    private var overidden: (callerSymbol: String, index: Int)?
+    /// Fallback underlying storage.
+    private var _reducer: (inout State, Action, Environment) -> Effect<Action, Never>
+    /// Intercept all gets for the reducer function to perhpas replace with injected.
+    private var reducer: (inout State, Action, Environment) -> Effect<Action, Never> {
+        set {
+            if let ci = currentInjectable {
+                INLog("Overriding",
+                     "\(ci)[\(reducerOverrides[ci]!.count)]",
+                     type(of: newValue))
+                overidden = (ci, reducerOverrides[ci]!.count)
+                reducerOverrides[ci]!.append({
+                    (desiredType: Any.Type) -> Any in
+                    var reducer = newValue
+                    var anyReducer: Any?
+                    // Need to force the type as Reducer
+                    // types may be in the injected file.
+                    thunkToGeneric(funcPtr: forceTypeCPointer,
+                                   valuePtr: &reducer,
+                                   outPtr: &anyReducer,
+                                   type: desiredType)
+                    return anyReducer!
+                })
+            }
+            _reducer = newValue
+        }
+        get {
+            if true, let override = overidden.flatMap({
+                reducerOverrides[$0.callerSymbol]![$0.index] }) {
+                let reducer = override(ReducerFunc.self)
+                INLog("Overridden", overidden!, type(of: reducer))
+                return reducer as! ReducerFunc
+            }
+            return _reducer
+        }
+    }
+    #else
+    private var reducer: (inout State, Action, Environment) -> Effect<Action, Never>
+    #endif
 
   /// Initializes a reducer from a simple reducer function signature.
   ///
@@ -50,6 +169,9 @@ public struct Reducer<State, Action, Environment> {
   /// - Parameter reducer: A function signature that takes state, action and
   ///   environment.
   public init(_ reducer: @escaping (inout State, Action, Environment) -> Effect<Action, Never>) {
+    #if DEBUG
+    self._reducer = reducer
+    #endif
     self.reducer = reducer
   }
 
