@@ -57,7 +57,6 @@ let alertAndConfirmationDialogReducer = Reducer<
   case .confirmationDialogButtonTapped:
     state.confirmationDialog = .init(
       title: .init("Confirmation dialog"),
-      titleVisibility: .visible,
       message: .init("This is a confirmation dialog."),
       buttons: [
         .cancel(.init("Cancel")),

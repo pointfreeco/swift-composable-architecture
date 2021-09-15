@@ -40,7 +40,6 @@ class AlertsAndConfirmationDialogsTests: XCTestCase {
     store.send(.confirmationDialogButtonTapped) {
       $0.confirmationDialog = .init(
         title: .init("Confirmation dialog"),
-        titleVisibility: .visible,
         message: .init("This is a confirmation dialog."),
         buttons: [
           .cancel(.init("Cancel")),
