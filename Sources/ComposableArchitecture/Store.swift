@@ -5,7 +5,7 @@ import Foundation
 /// around to views that need to interact with the application.
 ///
 /// You will typically construct a single one of these at the root of your application, and then use
-/// the ``scope(state:action:)-9iai9`` method to derive more focused stores that can be passed to
+/// the ``scope(state:action:)`` method to derive more focused stores that can be passed to
 /// subviews:
 ///
 /// ```swift
@@ -29,8 +29,8 @@ import Foundation
 ///
 /// ### Scoping
 ///
-/// The most important operation defined on ``Store`` is the ``scope(state:action:)-9iai9`` method,
-/// which allows you to transform a store into one that deals with local state and actions. This is
+/// The most important operation defined on ``Store`` is the ``scope(state:action:)`` method, which
+/// allows you to transform a store into one that deals with local state and actions. This is
 /// necessary for passing stores to subviews that only care about a small portion of the entire
 /// application's domain.
 ///
@@ -51,8 +51,8 @@ import Foundation
 /// }
 /// ```
 ///
-/// We can construct a view for each of these domains by applying ``scope(state:action:)-9iai9``
-/// to a store that holds onto the full app domain in order to transform it into a store for each
+/// We can construct a view for each of these domains by applying ``scope(state:action:)`` to a
+/// store that holds onto the full app domain in order to transform it into a store for each
 /// sub-domain:
 ///
 /// ```swift
