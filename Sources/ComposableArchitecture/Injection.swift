@@ -12,12 +12,16 @@ public func MakeInjectable<T>(reducer: @autoclosure () -> T) -> T {
     var info = Dl_info()
     let save = currentInjectable
     defer { currentInjectable = save }
-    if let callerAddress =
-        Thread.callStackReturnAddresses[1].pointerValue,
+    var callStack = Thread.callStackReturnAddresses
+    while !callStack.isEmpty,
+          let callerAddress = callStack.remove(at: 0).pointerValue,
         dladdr(callerAddress, &info) != 0,
         let nearestSymbol = info.dli_sname {
         let callerSymbol = String(cString: nearestSymbol)
-        // If this symbol is not initialised or injecting.
+        guard callerSymbol.hasSuffix("_WZ") else {
+            continue // This is not initialisation of top level var
+        }
+        // If this callerSymbol is not initialised or injecting.
         if reducerOverrides.index(forKey: callerSymbol) == nil ||
             strstr(info.dli_fname, "/eval") != nil {
             INLog("Initialising", callerSymbol, "from",
@@ -55,6 +59,7 @@ public func MakeInjectable<T>(reducer: @autoclosure () -> T) -> T {
 
             notifyInjectionIII()
         }
+        break
     }
     #endif
     return reducer()
