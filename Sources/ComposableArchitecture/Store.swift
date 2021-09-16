@@ -121,6 +121,7 @@ public final class Store<State, Action> {
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   private var bufferedActions: [Action] = []
   #if DEBUG
+    private let id = UUID()
     private let initialThread = Thread.current
   #endif
 
@@ -137,6 +138,7 @@ public final class Store<State, Action> {
   ) {
     self.state = CurrentValueSubject(initialState)
     self.reducer = { state, action in reducer.run(&state, action, environment) }
+    Thread.current.threadDictionary[id] = true
   }
 
   /// Scopes the store to one that exposes local state and actions.
@@ -422,7 +424,7 @@ public final class Store<State, Action> {
   @inline(__always)
   private func threadCheck(status: ThreadCheckStatus) {
     #if DEBUG
-      guard self.initialThread != Thread.current
+      guard Thread.current.threadDictionary[id] as? Bool == true
       else { return }
 
       let message: String
