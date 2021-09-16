@@ -438,8 +438,8 @@ public final class Store<State, Action> {
 
       case .scope:
         message = """
-          "ViewStore.scope" was called on the wrong thread. Make sure that "ViewStore.scope" is \
-          always called on the same thread the store was created on.
+          "Store.scope" was called on the wrong thread. Make sure that "Store.scope" is always \
+          called on the same thread the store was created on.
           """
 
       case let .send(action, isFromViewStore: true):
