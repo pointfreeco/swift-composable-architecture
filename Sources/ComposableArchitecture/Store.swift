@@ -121,20 +121,61 @@ public final class Store<State, Action> {
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   private var bufferedActions: [Action] = []
   #if DEBUG
-    private let initialThread = Thread.current
+    private let shouldCheckIfThreadIsMainThread: Bool
   #endif
 
-  /// Initializes a store from an initial state, a reducer, and an environment.
+  /// Initializes a store from an initial state, a reducer, and an environment,
+  /// that should run on the main thread.
   ///
   /// - Parameters:
   ///   - initialState: The state to start the application in.
   ///   - reducer: The reducer that powers the business logic of the application.
   ///   - environment: The environment of dependencies for the application.
-  public init<Environment>(
+  ///
+  /// - Note: Use ``uncheckedThreadStore(initialState:reducer:environment:)`` if
+  /// the store receives actions on an arbitrary serial queue.
+  public convenience init<Environment>(
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
     environment: Environment
   ) {
+    self.init(
+      initialState: initialState,
+      reducer: reducer,
+      environment: environment,
+      shouldCheckIfThreadIsMainThread: true
+    )
+  }
+  
+  /// Initializes a store from an initial state, a reducer, and an environment, without
+  /// thread safety runtime checks.
+  ///
+  /// - Parameters:
+  ///   - initialState: The state to start the application in.
+  ///   - reducer: The reducer that powers the business logic of the application.
+  ///   - environment: The environment of dependencies for the application.
+  public static func uncheckedThreadStore<Environment>(
+    initialState: State,
+    reducer: Reducer<State, Action, Environment>,
+    environment: Environment
+  ) -> Self {
+    self.init(
+      initialState: initialState,
+      reducer: reducer,
+      environment: environment,
+      shouldCheckIfThreadIsMainThread: false
+    )
+  }
+
+  private init<Environment>(
+    initialState: State,
+    reducer: Reducer<State, Action, Environment>,
+    environment: Environment,
+    shouldCheckIfThreadIsMainThread: Bool
+  ) {
+    #if DEBUG
+    self.shouldCheckIfThreadIsMainThread = shouldCheckIfThreadIsMainThread
+    #endif
     self.state = CurrentValueSubject(initialState)
     self.reducer = { state, action in reducer.run(&state, action, environment) }
   }
@@ -293,7 +334,8 @@ public final class Store<State, Action> {
         localState = toLocalState(self.state.value)
         return .none
       },
-      environment: ()
+      environment: (),
+      shouldCheckIfThreadIsMainThread: shouldCheckIfThreadIsMainThread
     )
     localStore.parentCancellable = self.state
       .dropFirst()
@@ -342,7 +384,8 @@ public final class Store<State, Action> {
             localState = extractLocalState(self.state.value) ?? localState
             return .none
           },
-          environment: ()
+          environment: (),
+          shouldCheckIfThreadIsMainThread: self.shouldCheckIfThreadIsMainThread
         )
 
         localStore.parentCancellable = self.state
@@ -424,9 +467,9 @@ public final class Store<State, Action> {
   @inline(__always)
   private func threadCheck(status: ThreadCheckStatus) {
     #if DEBUG
-      guard self.initialThread != Thread.current
-      else { return }
-
+      guard shouldCheckIfThreadIsMainThread else { return }
+      if Thread.current.isMainThread { return }
+    
       let message: String
       switch status {
       case let .effectCompletion(action):
@@ -466,8 +509,7 @@ public final class Store<State, Action> {
 
         \(message)
 
-          Store created on: \(self.initialThread)
-          Action sent on: \(Thread.current)
+          Action sent on: \(Thread.current) instead of \(Thread.main)
 
         The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
         (including all of its scopes and derived view stores) must be done on the same thread.
