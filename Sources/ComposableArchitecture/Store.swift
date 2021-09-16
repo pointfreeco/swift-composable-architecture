@@ -132,7 +132,7 @@ public final class Store<State, Action> {
   ///   - reducer: The reducer that powers the business logic of the application.
   ///   - environment: The environment of dependencies for the application.
   ///
-  /// - Note: Use ``uncheckedThreadStore(initialState:reducer:environment:)`` if
+  /// - Note: Use ``withUncheckedThread(initialState:reducer:environment:)`` if
   /// the store receives actions on an arbitrary serial queue.
   public convenience init<Environment>(
     initialState: State,
@@ -154,7 +154,7 @@ public final class Store<State, Action> {
   ///   - initialState: The state to start the application in.
   ///   - reducer: The reducer that powers the business logic of the application.
   ///   - environment: The environment of dependencies for the application.
-  public static func uncheckedThreadStore<Environment>(
+  public static func withUncheckedThread<Environment>(
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
     environment: Environment
