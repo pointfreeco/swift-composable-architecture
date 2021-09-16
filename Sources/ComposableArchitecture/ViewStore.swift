@@ -167,18 +167,8 @@ public final class ViewStore<State, Action>: ObservableObject {
     get: @escaping (State) -> LocalState,
     send localStateToViewAction: @escaping (LocalState) -> Action
   ) -> Binding<LocalState> {
-    Binding(
-      get: { get(self._state.value) },
-      set: { newLocalState, transaction in
-        if transaction.animation != nil {
-          withTransaction(transaction) {
-            self.send(localStateToViewAction(newLocalState))
-          }
-        } else {
-          self.send(localStateToViewAction(newLocalState))
-        }
-      }
-    )
+    ObservedObject(wrappedValue: self)
+      .projectedValue[get: .init(rawValue: get), send: .init(rawValue: localStateToViewAction)]
   }
 
   /// Derives a binding from the store that prevents direct writes to state and instead sends
@@ -328,3 +318,48 @@ public struct StorePublisher<State>: Publisher {
     .init(upstream: self.upstream.map(keyPath).removeDuplicates(), viewStore: self.viewStore)
   }
 }
+
+private struct HashableWrapper<Value>: Hashable {
+  let rawValue: Value
+  static func == (lhs: Self, rhs: Self) -> Bool { false }
+  func hash(into hasher: inout Hasher) {}
+}
+
+extension ObservableObject {
+  fileprivate subscript<State, Action, LocalState>(
+    get state: HashableWrapper<(State) -> LocalState>,
+    send action: HashableWrapper<(LocalState) -> Action>
+  ) -> LocalState where Self == ViewStore<State, Action> {
+    get { state.rawValue(self.state) }
+    set { self.send(action.rawValue(newValue)) }
+  }
+}
+
+//final class WrappedState<LocalState>: ObservableObject {
+//  private let get: () -> LocalState
+//  private let set: (LocalState) -> Void
+//
+//  init<State, Action>(
+//    viewStore: ViewStore<State, Action>,
+//    get toLocalState: @escaping (State) -> LocalState,
+//    send localStateToViewAction: @escaping (LocalState) -> Action
+//  ) {
+//    let initialState = toLocalState(viewStore._state.value)
+//    self.get = { [weak viewStore] in
+//      if let viewStore = viewStore { return toLocalState(viewStore._state.value) }
+//      else { return initialState }
+//    }
+//    self.set = { [weak viewStore] newValue in
+//      viewStore?.send(localStateToViewAction(newValue))
+//    }
+//  }
+//
+//  private var state: LocalState {
+//    get { self.get() }
+//    set { self.set(newValue) }
+//  }
+//
+//  var binding: Binding<LocalState> {
+//    ObservedObject(wrappedValue: self).projectedValue.state
+//  }
+//}
