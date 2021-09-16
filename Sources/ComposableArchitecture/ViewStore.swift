@@ -167,18 +167,7 @@ public final class ViewStore<State, Action>: ObservableObject {
     get: @escaping (State) -> LocalState,
     send localStateToViewAction: @escaping (LocalState) -> Action
   ) -> Binding<LocalState> {
-    Binding(
-      get: { get(self._state.value) },
-      set: { newLocalState, transaction in
-        if transaction.animation != nil {
-          withTransaction(transaction) {
-            self.send(localStateToViewAction(newLocalState))
-          }
-        } else {
-          self.send(localStateToViewAction(newLocalState))
-        }
-      }
-    )
+    WrappedState(viewStore: self, get: get, send: localStateToViewAction).binding
   }
 
   /// Derives a binding from the store that prevents direct writes to state and instead sends
@@ -269,6 +258,31 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// - Returns: A binding.
   public func binding(send action: Action) -> Binding<State> {
     self.binding(send: { _ in action })
+  }
+}
+
+extension ViewStore {
+  private class WrappedState<LocalState>: ObservableObject {
+    private let get: () -> LocalState
+    private let set: (LocalState) -> Void
+
+    init(
+      viewStore: ViewStore<State, Action>,
+      get toLocalState: @escaping (State) -> LocalState,
+      send localStateToViewAction: @escaping (LocalState) -> Action
+    ) {
+      self.get = { toLocalState(viewStore._state.value) }
+      self.set = { viewStore.send(localStateToViewAction($0)) }
+    }
+
+    var state: LocalState {
+      get { self.get() }
+      set { self.set(newValue) }
+    }
+
+    var binding: Binding<LocalState> {
+      ObservedObject(wrappedValue: self).projectedValue.state
+    }
   }
 }
 
