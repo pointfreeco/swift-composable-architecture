@@ -10,8 +10,8 @@ import Foundation
 public func MakeInjectable<T>(reducer: @autoclosure () -> T) -> T {
     #if DEBUG
     var info = Dl_info()
-    let save = currentInjectable
-    defer { currentInjectable = save }
+    let save = currentCallerSymbol
+    defer { currentCallerSymbol = save }
     var callStack = Thread.callStackReturnAddresses
     while !callStack.isEmpty,
           let callerAddress = callStack.remove(at: 0).pointerValue,
@@ -21,14 +21,14 @@ public func MakeInjectable<T>(reducer: @autoclosure () -> T) -> T {
         guard callerSymbol.hasSuffix("_WZ") else {
             continue // This is not initialisation of top level var
         }
-        // If this callerSymbol is not initialised or injecting.
-        if reducerOverrides.index(forKey: callerSymbol) == nil ||
+        // If this callerSymbol is not initialised or injecting...
+        if reducerOverrideStore.index(forKey: callerSymbol) == nil ||
             strstr(info.dli_fname, "/eval") != nil {
             INLog("Initialising", callerSymbol, "from",
                   URL(fileURLWithPath: String(cString:
                     info.dli_fname)).lastPathComponent)
-            currentInjectable = callerSymbol
-            reducerOverrides[callerSymbol] = []
+            currentCallerSymbol = callerSymbol
+            reducerOverrideStore[callerSymbol] = []
 
             let start = Date.timeIntervalSinceReferenceDate
             func notifyInjectionIII() {
@@ -74,9 +74,9 @@ private func INLog(_ items: Any...) {
 }
 
 /// Symbol for reducer currently being initialised.
-private var currentInjectable: String?
+private var currentCallerSymbol: String?
 /// Where new versions of Reducer functions are retained by injectable symbol.
-private var reducerOverrides = [String: [(Any.Type) -> Any]]()
+private var reducerOverrideStore = [String: [(Any.Type) -> Any]]()
 
 /// Low level C function type of symbol for Swift function receiving generic.
 private typealias FunctionTakingGenericValue = @convention(c) (
@@ -95,9 +95,9 @@ private func thunkToGeneric(funcPtr: FunctionTakingGenericValue,
                 UnsafeRawPointer.self), witnessTable)
 }
 
-/// This function copies a reducer function into an Any?
-/// but without being too fussy about the precise type
-/// as types in Reducer may also have been injected.
+/// This function copies a reducer function into an Any? correctly
+/// but without being too fussy about the precise type as types in
+/// generics arguments of Reducer may also have been injected.
 func forceType<T>(value: T, out: inout Any?) {
     out = value
 }
@@ -115,37 +115,42 @@ extension Reducer {
     /// Stored by the one-time initialiser symbol associated
     /// with the xxxReducer variable being initialised and
     /// and index in order each Reducer is initialised.
-    struct OverrideAddress {
+    struct ReducerFunctionKey {
         typealias ReducerFunc = (inout State, Action, Environment)
-                                 -> Effect<Action, Never>
+            -> Effect<Action, Never>
+
+        /// Symbol of one-time initialiser of top level variable inside which this is created
         let callerSymbol: String
+        /// Sequence number inside scope of the above callerSymbol
         let index: Int
+
         /// Store/update for later at current callerSymbol/index as an address
         static func store(reducer: @escaping ReducerFunc) -> Self? {
-            if let callerSymbol = currentInjectable {
-                let index = reducerOverrides[callerSymbol]!.count
-                INLog("Overriding", "\(callerSymbol)[\(index)]", type(of: reducer))
-                reducerOverrides[callerSymbol]!.append({
-                    (desiredType: Any.Type) -> Any in
-                    var reducer = reducer
-                    var anyReducer: Any?
-                    // Need to force the type as Reducer
-                    // types may be in the injected file.
-                    thunkToGeneric(funcPtr: forceTypeCPointer,
-                                   valuePtr: &reducer,
-                                   outPtr: &anyReducer,
-                                   type: desiredType)
-                    return anyReducer!
-                })
-                return Self.init(callerSymbol: callerSymbol, index: index)
+            guard let callerSymbol = currentCallerSymbol else { return nil }
+
+            let index = reducerOverrideStore[callerSymbol]!.count
+            INLog("Overriding", "\(callerSymbol)[\(index)]", type(of: reducer))
+            let reducerGetter = {
+                (desiredType: Any.Type) -> Any in
+                var reducer = reducer
+                var anyReducer: Any?
+                // Need to force the type as Reducer
+                // types may be in the injected file.
+                thunkToGeneric(funcPtr: forceTypeCPointer,
+                               valuePtr: &reducer,
+                               outPtr: &anyReducer,
+                               type: desiredType)
+                return anyReducer!
             }
-            return nil
+
+            reducerOverrideStore[callerSymbol]!.append(reducerGetter)
+            return Self.init(callerSymbol: callerSymbol, index: index)
         }
+
         /// Use callerSymbol/index to retieve closure retaining the reducer function
         func lastStored() -> ReducerFunc {
-            let stored = reducerOverrides[callerSymbol]![index]
-            let anyReducer = stored(ReducerFunc.self)
-            INLog("Overridden", self, type(of: anyReducer))
+            let reducerGetter = reducerOverrideStore[callerSymbol]![index]
+            let anyReducer = reducerGetter(ReducerFunc.self)
             return anyReducer as! ReducerFunc
         }
     }
