@@ -19,43 +19,18 @@ import Combine
 ///   effect output its values on the thread of your choice.
 public struct Reducer<State, Action, Environment> {
     #if DEBUG // Extensions for making Reducers "Injectable"
-    typealias ReducerFunc = (inout State, Action, Environment)
-                             -> Effect<Action, Never>
-    /// Has value when reducer can be/has been injected.
-    private var overidden: (callerSymbol: String, index: Int)?
+    /// Has value when reducer when wrapped in MakeInjectable() and can be/has been injected.
+    private var overidden: OverrideAddress?
     /// Fallback underlying storage.
     private var _reducer: (inout State, Action, Environment) -> Effect<Action, Never>
-    /// Intercept all gets for the reducer function to perhpas replace with injected.
+    /// Intercept all gets for the reducer function to perhaps replace with injected.
     private var reducer: (inout State, Action, Environment) -> Effect<Action, Never> {
         set {
-            if let ci = currentInjectable {
-                INLog("Overriding",
-                     "\(ci)[\(reducerOverrides[ci]!.count)]",
-                     type(of: newValue))
-                overidden = (ci, reducerOverrides[ci]!.count)
-                reducerOverrides[ci]!.append({
-                    (desiredType: Any.Type) -> Any in
-                    var reducer = newValue
-                    var anyReducer: Any?
-                    // Need to force the type as Reducer
-                    // types may be in the injected file.
-                    thunkToGeneric(funcPtr: forceTypeCPointer,
-                                   valuePtr: &reducer,
-                                   outPtr: &anyReducer,
-                                   type: desiredType)
-                    return anyReducer!
-                })
-            }
             _reducer = newValue
+            overidden = OverrideAddress.store(reducer: newValue)
         }
         get {
-            if true, let override = overidden.flatMap({
-                reducerOverrides[$0.callerSymbol]![$0.index] }) {
-                let reducer = override(ReducerFunc.self)
-                INLog("Overridden", overidden!, type(of: reducer))
-                return reducer as! ReducerFunc
-            }
-            return _reducer
+            return overidden?.lastStored() ?? _reducer
         }
     }
     #else
