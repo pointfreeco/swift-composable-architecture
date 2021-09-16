@@ -137,7 +137,7 @@ final class ViewStoreTests: XCTestCase {
     XCTAssertNoDifference(results, [0, 1])
   }
 
-  #if compiler(>=5.5)
+  #if compiler(>=5.5) && canImport(_Concurrency)
     func testSendWhile() {
       guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
 
