@@ -121,7 +121,6 @@ public final class Store<State, Action> {
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   private var bufferedActions: [Action] = []
   #if DEBUG
-    private let id = UUID()
     private let initialThread = Thread.current
   #endif
 
@@ -138,7 +137,6 @@ public final class Store<State, Action> {
   ) {
     self.state = CurrentValueSubject(initialState)
     self.reducer = { state, action in reducer.run(&state, action, environment) }
-    Thread.current.threadDictionary[id] = true
   }
 
   /// Scopes the store to one that exposes local state and actions.
@@ -284,6 +282,7 @@ public final class Store<State, Action> {
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> Store<LocalState, LocalAction> {
+    self.threadCheck(status: .scope)
     var isSending = false
     let localStore = Store<LocalState, LocalAction>(
       initialState: toLocalState(self.state.value),
@@ -418,35 +417,42 @@ public final class Store<State, Action> {
 
   private enum ThreadCheckStatus {
     case effectCompletion(Action)
+    case scope
     case send(Action, isFromViewStore: Bool)
   }
 
   @inline(__always)
   private func threadCheck(status: ThreadCheckStatus) {
     #if DEBUG
-      guard Thread.current.threadDictionary[id] as? Bool == true
+      guard self.initialThread != Thread.current
       else { return }
 
       let message: String
       switch status {
       case let .effectCompletion(action):
         message = """
-          An effect returned from the action "\(debugCaseOutput(action))" completed on the \
-          wrong thread. Make sure to use ".receive(on:)" on any effects that execute on background \
+          An effect returned from the action "\(debugCaseOutput(action))" completed on the wrong \
+          thread. Make sure to use ".receive(on:)" on any effects that execute on background \
           threads to receive their output on the same thread the store was created on.
+          """
+
+      case .scope:
+        message = """
+          "ViewStore.scope" was called on the wrong thread. Make sure that "ViewStore.scope" is \
+          always called on the same thread the store was created on.
           """
 
       case let .send(action, isFromViewStore: true):
         message = """
-          "ViewStore.send(\(debugCaseOutput(action)))" was called on the wrong thread. Make \
-          sure that "ViewStore.send" is always called on the same thread the store was created on.
+          "ViewStore.send(\(debugCaseOutput(action)))" was called on the wrong thread. Make sure \
+          that "ViewStore.send" is always called on the same thread the store was created on.
           """
 
       case let .send(action, isFromViewStore: false):
         message = """
-          An effect emitted the action "\(debugCaseOutput(action))" from the wrong thread. Make sure \
-          to use ".receive(on:)" on any effects that execute on background threads to receive their \
-          output on the same thread the store was created on.
+          An effect emitted the action "\(debugCaseOutput(action))" from the wrong thread. Make \
+          sure to use ".receive(on:)" on any effects that execute on background threads to receive \
+          their output on the same thread the store was created on.
           """
       }
 
