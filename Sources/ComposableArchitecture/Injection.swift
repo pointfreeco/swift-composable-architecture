@@ -42,17 +42,17 @@ public func MakeInjectable<T>(reducer: @autoclosure () -> T) -> T {
                     callable(NSObject(), regsel, callerSymbol as NSString)
                 } else {
                     // Allow time for xxOSInjection.bundle to load
-                    if Date.timeIntervalSinceReferenceDate - start > 30.0 {
+                    if Date.timeIntervalSinceReferenceDate - start < 30.0 {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                            notifyInjectionIII()
+                        }
+                    } else if objc_getClass("InjectionClient") != nil {
                         print("""
                             Please update your InjectionIII.app from
                             https://github.com/johnno1962/InjectionIII/releases
                             and load the injection bundle or add Swift Package:
                             https://github.com/johnno1962/HotReloading
                             """)
-                    } else {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                            notifyInjectionIII()
-                        }
                     }
                 }
             }
