@@ -59,6 +59,7 @@ public final class ViewStore<State, Action>: ObservableObject {
 
   private let _send: (Action) -> Void
   fileprivate let _state: CurrentValueSubject<State, Never>
+  private lazy var observedObjectWrapper = ObservedObject(wrappedValue: self).projectedValue
   private var viewCancellable: AnyCancellable?
 
   /// Initializes a view store from a store.
@@ -167,8 +168,10 @@ public final class ViewStore<State, Action>: ObservableObject {
     get: @escaping (State) -> LocalState,
     send localStateToViewAction: @escaping (LocalState) -> Action
   ) -> Binding<LocalState> {
-    ObservedObject(wrappedValue: self)
-      .projectedValue[get: .init(rawValue: get), send: .init(rawValue: localStateToViewAction)]
+    self.observedObjectWrapper[
+      get: .init(rawValue: get),
+      send: .init(rawValue: localStateToViewAction)
+    ]
   }
 
   /// Derives a binding from the store that prevents direct writes to state and instead sends
