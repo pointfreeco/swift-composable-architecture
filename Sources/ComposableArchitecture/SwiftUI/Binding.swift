@@ -265,18 +265,11 @@ import SwiftUI
     public subscript<Value>(
       dynamicMember keyPath: WritableKeyPath<State, BindableState<Value>>
     ) -> Binding<Value>
-      where Action: BindableAction, Action.State == State, Value: Equatable
-    {
-      ObservedObject(wrappedValue: self).projectedValue[bindable: keyPath]
-    }
-
-    private subscript<Value>(
-      bindable keyPath: WritableKeyPath<State, BindableState<Value>>
-    ) -> Value
-      where Action: BindableAction, Action.State == State, Value: Equatable
-    {
-      get { self.state[keyPath: keyPath].wrappedValue }
-      set { self.send(.binding(.set(keyPath, newValue))) }
+    where Action: BindableAction, Action.State == State, Value: Equatable {
+      self.binding(
+        get: { $0[keyPath: keyPath].wrappedValue },
+        send: { .binding(.set(keyPath, $0)) }
+      )
     }
   }
 
