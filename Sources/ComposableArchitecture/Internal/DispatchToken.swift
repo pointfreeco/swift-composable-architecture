@@ -1,16 +1,13 @@
 import Foundation
-struct DispatchToken: Hashable {
+final class DispatchToken: Hashable {
   static let specificKey = DispatchSpecificKey<Set<DispatchToken>>()
-  
-  var id: UUID
-  var queueDescription: String
+  let queueDescription: String
   
   init?(dispatchQueue: DispatchQueue) {
     guard dispatchQueue != .main else { return nil }
-    self.id = UUID()
     self.queueDescription = "\(dispatchQueue)"
   }
   
-  static func == (lhs: DispatchToken, rhs: DispatchToken) -> Bool { lhs.id == rhs.id }
-  func hash(into hasher: inout Hasher) { hasher.combine(id) }
+  static func == (lhs: DispatchToken, rhs: DispatchToken) -> Bool { lhs === rhs }
+  func hash(into hasher: inout Hasher) { }
 }
