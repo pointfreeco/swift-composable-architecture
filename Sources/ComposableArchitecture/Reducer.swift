@@ -1,5 +1,6 @@
 import CasePaths
 import Combine
+import OSLog
 
 /// A reducer describes how to evolve the current state of an application to the next state, given
 /// an action, and describes what ``Effect``s should be executed later by the store, if any.
@@ -471,30 +472,36 @@ public struct Reducer<State, Action, Environment> {
 
       guard var localState = toLocalState.extract(from: globalState) else {
         if breakpointOnNil {
-          breakpoint(
+          os_log(
+            .fault, dso: rw.dso, log: rw.log,
             """
-            ---
-            Warning: Reducer.pullback@\(file):\(line)
+            A reducer pulled back from "%@:%d" received an action when local state was \
+            unavailable. …
 
-            "\(debugCaseOutput(localAction))" was received by a reducer when its state was \
-            unavailable. This is generally considered an application logic error, and can happen \
-            for a few reasons:
+              Action:
+                %@
 
-            * The reducer for a particular case of state was combined with or run from another \
-            reducer that set "\(State.self)" to another case before the reducer ran. Combine or \
-            run case-specific reducers before reducers that may set their state to another case. \
-            This ensures that case-specific reducers can handle their actions while their state \
-            is available.
+            This is generally considered an application logic error, and can happen for a few \
+            reasons:
 
-            * An in-flight effect emitted this action when state was unavailable. While it may be \
+            • The reducer for a particular case of state was combined with or run from another \
+            reducer that set "%@" to another case before the reducer ran. Combine or run \
+            case-specific reducers before reducers that may set their state to another case. This \
+            ensures that case-specific reducers can handle their actions while their state is \
+            available.
+
+            • An in-flight effect emitted this action when state was unavailable. While it may be \
             perfectly reasonable to ignore this action, you may want to cancel the associated \
             effect before state is set to another case, especially if it is a long-living effect.
 
-            * This action was sent to the store while state was another case. Make sure that \
+            • This action was sent to the store while state was another case. Make sure that \
             actions for this reducer can only be sent to a view store when state is non-"nil". \
             In SwiftUI applications, use "SwitchStore".
-            ---
-            """
+            """,
+            "\(file)",
+            line,
+            debugCaseOutput(localAction),
+            "\(State.self)"
           )
         }
         return .none
@@ -679,29 +686,34 @@ public struct Reducer<State, Action, Environment> {
     .init { state, action, environment in
       guard state != nil else {
         if breakpointOnNil {
-          breakpoint(
+          os_log(
+            .fault, dso: rw.dso, log: rw.log,
             """
-            ---
-            Warning: Reducer.optional@\(file):\(line)
+            An "optional" reducer at "%@:%d" received an action when state was "nil". …
 
-            "\(debugCaseOutput(action))" was received by an optional reducer when its state was \
-            "nil". This is generally considered an application logic error, and can happen for a \
-            few reasons:
+              Action:
+                %@
 
-            * The optional reducer was combined with or run from another reducer that set \
-            "\(State.self)" to "nil" before the optional reducer ran. Combine or run optional \
-            reducers before reducers that can set their state to "nil". This ensures that optional \
-            reducers can handle their actions while their state is still non-"nil".
+            This is generally considered an application logic error, and can happen for a few \
+            reasons:
 
-            * An in-flight effect emitted this action while state was "nil". While it may be \
+            • The optional reducer was combined with or run from another reducer that set \
+            "%@" to "nil" before the optional reducer ran. Combine or run optional reducers before \
+            reducers that can set their state to "nil". This ensures that optional reducers can \
+            handle their actions while their state is still non-"nil".
+
+            • An in-flight effect emitted this action while state was "nil". While it may be \
             perfectly reasonable to ignore this action, you may want to cancel the associated \
             effect before state is set to "nil", especially if it is a long-living effect.
 
-            * This action was sent to the store while state was "nil". Make sure that actions for \
+            • This action was sent to the store while state was "nil". Make sure that actions for \
             this reducer can only be sent to a view store when state is non-"nil". In SwiftUI \
             applications, use "IfLetStore".
-            ---
-            """
+            """,
+            "\(file)",
+            line,
+            debugCaseOutput(action),
+            "\(State.self)"
           )
         }
         return .none
@@ -764,32 +776,40 @@ public struct Reducer<State, Action, Environment> {
       guard let (id, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
       if globalState[keyPath: toLocalState][id: id] == nil {
         if breakpointOnNil {
-          breakpoint(
+          os_log(
+            .fault, dso: rw.dso, log: rw.log,
             """
-            ---
-            Warning: Reducer.forEach@\(file):\(line)
+            A "forEach" reducer at "%@:%d" received an action when state contained no element with \
+            that id. …
 
-            "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at id \(id) when \
-            its state contained no element at this id. This is generally considered an application \
-            logic error, and can happen for a few reasons:
+              Action:
+                %@
+              ID:
+                %@
 
-            * This "forEach" reducer was combined with or run from another reducer that removed \
+            This is generally considered an application logic error, and can happen for a few \
+            reasons:
+
+            • This "forEach" reducer was combined with or run from another reducer that removed \
             the element at this id when it handled this action. To fix this make sure that this \
             "forEach" reducer is run before any other reducers that can move or remove elements \
             from state. This ensures that "forEach" reducers can handle their actions for the \
             element at the intended id.
 
-            * An in-flight effect emitted this action while state contained no element at this id. \
+            • An in-flight effect emitted this action while state contained no element at this id. \
             It may be perfectly reasonable to ignore this action, but you also may want to cancel \
             the effect it originated from when removing an element from the identified array, \
             especially if it is a long-living effect.
 
-            * This action was sent to the store while its state contained no element at this id. \
+            • This action was sent to the store while its state contained no element at this id. \
             To fix this make sure that actions for this reducer can only be sent to a view store \
             when its state contains an element at this id. In SwiftUI applications, use \
             "ForEachStore".
-            ---
-            """
+            """,
+            "\(file)",
+            line,
+            debugCaseOutput(localAction),
+            "\(id)"
           )
         }
         return .none
@@ -837,31 +857,39 @@ public struct Reducer<State, Action, Environment> {
 
       if globalState[keyPath: toLocalState][key] == nil {
         if breakpointOnNil {
-          breakpoint(
+          os_log(
+            .fault, dso: rw.dso, log: rw.log,
             """
-            ---
-            Warning: Reducer.forEach@\(file):\(line)
+            A "forEach" reducer at "%@:%d" received an action when state contained no value at \
+            that key. …
 
-            "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at key \(key) \
-            when its state contained no element at this key. This is generally considered an \
-            application logic error, and can happen for a few reasons:
+              Action:
+                %@
+              Key:
+                %@
 
-            * This "forEach" reducer was combined with or run from another reducer that removed \
+            This is generally considered an application logic error, and can happen for a few \
+            reasons:
+
+            • This "forEach" reducer was combined with or run from another reducer that removed \
             the element at this key when it handled this action. To fix this make sure that this \
             "forEach" reducer is run before any other reducers that can move or remove elements \
             from state. This ensures that "forEach" reducers can handle their actions for the \
             element at the intended key.
 
-            * An in-flight effect emitted this action while state contained no element at this \
+            • An in-flight effect emitted this action while state contained no element at this \
             key. It may be perfectly reasonable to ignore this action, but you also may want to \
             cancel the effect it originated from when removing a value from the dictionary, \
             especially if it is a long-living effect.
 
-            * This action was sent to the store while its state contained no element at this \
+            • This action was sent to the store while its state contained no element at this \
             key. To fix this make sure that actions for this reducer can only be sent to a view \
             store when its state contains an element at this key.
-            ---
-            """
+            """,
+            "\(file)",
+            line,
+            debugCaseOutput(localAction),
+            "\(key)"
           )
         }
         return .none
