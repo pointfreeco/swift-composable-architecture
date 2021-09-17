@@ -315,7 +315,7 @@ public final class Store<State, Action> {
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> Store<LocalState, LocalAction> {
-    self.threadCheck(status: .scope)
+    self.queueCheck(status: .scope)
     var isSending = false
     let localStore = Store<LocalState, LocalAction>(
       initialState: toLocalState(self.state.value),
@@ -404,7 +404,7 @@ public final class Store<State, Action> {
   }
 
   func send(_ action: Action, isFromViewStore: Bool = true) {
-    self.threadCheck(status: .send(action, isFromViewStore: isFromViewStore))
+    self.queueCheck(status: .send(action, isFromViewStore: isFromViewStore))
 
     self.bufferedActions.append(action)
     guard !self.isSending else { return }
@@ -424,7 +424,7 @@ public final class Store<State, Action> {
       let uuid = UUID()
       let effectCancellable = effect.sink(
         receiveCompletion: { [weak self] _ in
-          self?.threadCheck(status: .effectCompletion(action))
+          self?.queueCheck(status: .effectCompletion(action))
           didComplete = true
           self?.effectCancellables[uuid] = nil
         },
@@ -450,14 +450,14 @@ public final class Store<State, Action> {
     return self.scope(state: { $0 }, action: absurd)
   }
 
-  private enum ThreadCheckStatus {
+  private enum QueueCheckStatus {
     case effectCompletion(Action)
     case scope
     case send(Action, isFromViewStore: Bool)
   }
 
   @inline(__always)
-  private func threadCheck(status: ThreadCheckStatus) {
+  private func queueCheck(status: QueueCheckStatus) {
     #if DEBUG
     
       if let dispatchToken = dispatchToken {
