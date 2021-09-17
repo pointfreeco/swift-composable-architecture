@@ -470,11 +470,15 @@ public final class Store<State, Action> {
         return
       }
     
-      let queueDescription = DispatchQueue.getSpecific(key: DispatchToken.specificKey)?
-                                          .first?
-                                          .queueDescription
-                             ?? "\(DispatchQueue.main)"
-    
+      let queueDescription: String
+      if let token = DispatchQueue.getSpecific(key: DispatchToken.specificKey)?.first {
+        queueDescription = token.queueDescription
+      } else if Thread.isMainThread {
+        queueDescription = "\(DispatchQueue.main)"
+      } else {
+        queueDescription = "Unknown queue"
+      }
+      
       let message: String
       switch status {
       case let .effectCompletion(action):
