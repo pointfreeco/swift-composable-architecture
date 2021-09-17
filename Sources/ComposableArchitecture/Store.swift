@@ -450,7 +450,7 @@ public final class Store<State, Action> {
       case let .send(action, originatingAction: nil):
         message = """
           "ViewStore.send(\(debugCaseOutput(action)))" was called on a non-main thread. Make sure \
-          that "ViewStore.send" is always called on the main thread..
+          that "ViewStore.send" is always called on the main thread.
           """
 
       case let .send(action, originatingAction: .some(originatingAction)):
