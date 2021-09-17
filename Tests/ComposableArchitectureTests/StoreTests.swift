@@ -447,4 +447,19 @@ final class StoreTests: XCTestCase {
         .child(2),
       ])
   }
+
+  func testNonMainQueueStore() {
+    for _ in 1...100 {
+      DispatchQueue.global().async {
+        let viewStore = ViewStore(Store<Int, ()>(initialState: 0, reducer: .empty, environment: ()))
+        viewStore.send(())
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
+          viewStore.send(())
+        }
+      }
+    }
+
+    // Allow asychnronous code run for a bit to make sure the warning breakpoint is never tripped.
+    _ = XCTWaiter.wait(for: [.init()], timeout: 1)
+  }
 }
