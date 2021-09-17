@@ -56,7 +56,7 @@ extension Store {
   where P.Output == LocalState, P.Failure == Never {
     self.publisherScope(state: toLocalState, action: { $0 })
   }
-}  
+}
 
 extension ViewStore {
   @available(
