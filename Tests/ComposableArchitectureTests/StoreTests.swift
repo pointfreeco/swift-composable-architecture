@@ -90,36 +90,6 @@ final class StoreTests: XCTestCase {
     XCTAssertNoDifference(values, [0, 1])
   }
 
-  func testScopeWithPublisherTransform() {
-    let counterReducer = Reducer<Int, Int, Void> { state, action, _ in
-      state = action
-      return .none
-    }
-    let parentStore = Store(initialState: 0, reducer: counterReducer, environment: ())
-
-    var outputs: [String] = []
-
-    parentStore
-      .publisherScope(state: { $0.map { "\($0)" }.removeDuplicates() })
-      .sink { childStore in
-        childStore.state
-          .sink { outputs.append($0) }
-          .store(in: &self.cancellables)
-      }
-      .store(in: &self.cancellables)
-
-    parentStore.send(0)
-    XCTAssertNoDifference(outputs, ["0"])
-    parentStore.send(0)
-    XCTAssertNoDifference(outputs, ["0"])
-    parentStore.send(1)
-    XCTAssertNoDifference(outputs, ["0", "1"])
-    parentStore.send(1)
-    XCTAssertNoDifference(outputs, ["0", "1"])
-    parentStore.send(2)
-    XCTAssertNoDifference(outputs, ["0", "1", "2"])
-  }
-
   func testScopeCallCount() {
     let counterReducer = Reducer<Int, Void, Void> { state, _, _ in state += 1
       return .none
@@ -249,36 +219,6 @@ final class StoreTests: XCTestCase {
     let store = Store(initialState: 0, reducer: reducer, environment: ())
     store.send(.incr)
     XCTAssertNoDifference(ViewStore(store).state, 100_000)
-  }
-
-  func testPublisherScope() {
-    let appReducer = Reducer<Int, Bool, Void> { state, action, _ in
-      state += action ? 1 : 0
-      return .none
-    }
-
-    let parentStore = Store(initialState: 0, reducer: appReducer, environment: ())
-
-    var outputs: [Int] = []
-
-    parentStore
-      .publisherScope { $0.removeDuplicates() }
-      .sink { outputs.append($0.state.value) }
-      .store(in: &self.cancellables)
-
-    XCTAssertNoDifference(outputs, [0])
-
-    parentStore.send(true)
-    XCTAssertNoDifference(outputs, [0, 1])
-
-    parentStore.send(false)
-    XCTAssertNoDifference(outputs, [0, 1])
-    parentStore.send(false)
-    XCTAssertNoDifference(outputs, [0, 1])
-    parentStore.send(false)
-    XCTAssertNoDifference(outputs, [0, 1])
-    parentStore.send(false)
-    XCTAssertNoDifference(outputs, [0, 1])
   }
 
   func testIfLetAfterScope() {

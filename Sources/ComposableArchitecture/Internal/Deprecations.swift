@@ -4,6 +4,60 @@ import SwiftUI
 
 // NB: Deprecated after 0.27.1:
 
+extension Store {
+  @available(
+    *, deprecated,
+    message:
+      "If you use this method, please open a discussion on GitHub and let us know how: https://github.com/pointfreeco/swift-composable-architecture/discussions/new"
+  )
+  public func publisherScope<P: Publisher, LocalState, LocalAction>(
+    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P,
+    action fromLocalAction: @escaping (LocalAction) -> Action
+  ) -> AnyPublisher<Store<LocalState, LocalAction>, Never>
+  where P.Output == LocalState, P.Failure == Never {
+
+    func extractLocalState(_ state: State) -> LocalState? {
+      var localState: LocalState?
+      _ = toLocalState(Just(state).eraseToAnyPublisher())
+        .sink { localState = $0 }
+      return localState
+    }
+
+    return toLocalState(self.state.eraseToAnyPublisher())
+      .map { localState in
+        let localStore = Store<LocalState, LocalAction>(
+          initialState: localState,
+          reducer: .init { localState, localAction, _ in
+            self.send(fromLocalAction(localAction))
+            localState = extractLocalState(self.state.value) ?? localState
+            return .none
+          },
+          environment: ()
+        )
+
+        localStore.parentCancellable = self.state
+          .sink { [weak localStore] state in
+            guard let localStore = localStore else { return }
+            localStore.state.value = extractLocalState(state) ?? localStore.state.value
+          }
+        return localStore
+      }
+      .eraseToAnyPublisher()
+  }
+
+  @available(
+    *, deprecated,
+    message:
+      "If you use this method, please open a discussion on GitHub and let us know how: https://github.com/pointfreeco/swift-composable-architecture/discussions/new"
+  )
+  public func publisherScope<P: Publisher, LocalState>(
+    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P
+  ) -> AnyPublisher<Store<LocalState, Action>, Never>
+  where P.Output == LocalState, P.Failure == Never {
+    self.publisherScope(state: toLocalState, action: { $0 })
+  }
+}  
+
 extension ViewStore {
   @available(
     *, deprecated,
