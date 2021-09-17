@@ -121,7 +121,7 @@ public final class Store<State, Action> {
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   var state: CurrentValueSubject<State, Never>
   #if DEBUG
-  private let isMainQueueStore: Bool
+  private let mainQueueChecksEnabled: Bool
   #endif
 
   /// Initializes a store from an initial state, a reducer, and an environment.
@@ -130,16 +130,44 @@ public final class Store<State, Action> {
   ///   - initialState: The state to start the application in.
   ///   - reducer: The reducer that powers the business logic of the application.
   ///   - environment: The environment of dependencies for the application.
-  public init<Environment>(
+  public convenience init<Environment>(
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
     environment: Environment
+  ) {
+    self.init(
+      initialState: initialState,
+      reducer: reducer,
+      environment: environment,
+      mainQueueChecksEnabled: true
+    )
+    self.threadCheck(status: .`init`)
+  }
+
+  public static func unchecked<Environment>(
+    initialState: State,
+    reducer: Reducer<State, Action, Environment>,
+    environment: Environment
+  ) -> Self {
+    Self(
+      initialState: initialState,
+      reducer: reducer,
+      environment: environment,
+      mainQueueChecksEnabled: false
+    )
+  }
+
+  private init<Environment>(
+    initialState: State,
+    reducer: Reducer<State, Action, Environment>,
+    environment: Environment,
+    mainQueueChecksEnabled: Bool
   ) {
     self.state = CurrentValueSubject(initialState)
     self.reducer = { state, action in reducer.run(&state, action, environment) }
 
     #if DEBUG
-    self.isMainQueueStore = isMainQueue
+    self.mainQueueChecksEnabled = mainQueueChecksEnabled
     #endif
   }
 
@@ -367,6 +395,7 @@ public final class Store<State, Action> {
 
   private enum ThreadCheckStatus {
     case effectCompletion(Action)
+    case `init`
     case scope
     case send(Action, originatingAction: Action?)
   }
@@ -374,7 +403,7 @@ public final class Store<State, Action> {
   @inline(__always)
   private func threadCheck(status: ThreadCheckStatus) {
     #if DEBUG
-      guard self.isMainQueueStore && !isMainQueue
+      guard self.mainQueueChecksEnabled && !isMainQueue
       else { return }
 
       let message: String
@@ -383,26 +412,37 @@ public final class Store<State, Action> {
         message = """
           An effect returned from the action "\(debugCaseOutput(action))" completed on a non-main \
           thread. Make sure to use ".receive(on:)" on any effects that execute on background \
-          threads to receive their output on the main thread.
+          threads to receive their output on the main thread, or create this store via \
+          "Store.unchecked" to disable the main thread checker.
+          """
+
+      case .`init`:
+        message = """
+          "Store.init" was called on a non-main thread. Make sure that stores are initialized on \
+          the main thread, or create this store via "Store.unchecked" to disable the main thread \
+          checker.
           """
 
       case .scope:
         message = """
           "Store.scope" was called on a non-main thread. Make sure that "Store.scope" is always \
-          called on the main thread.
+          called on the main thread, or create this store via "Store.unchecked" to disable the \
+          main thread checker.
           """
 
       case let .send(action, originatingAction: nil):
         message = """
           "ViewStore.send(\(debugCaseOutput(action)))" was called on a non-main thread. Make sure \
-          that "ViewStore.send" is always called on the main thread.
+          that "ViewStore.send" is always called on the main thread, or create this store via \
+          "Store.unchecked" to disable the main thread checker.
           """
 
       case let .send(action, originatingAction: .some(originatingAction)):
         message = """
           An effect returned from "\(debugCaseOutput(originatingAction))" emitted the action \
           "\(debugCaseOutput(action))" on a non-main thread. Make sure to use ".receive(on:)" on \
-          any effects that execute on background threads to receive their output on the main thread.
+          any effects that execute on background threads to receive their output on the main \
+          thread, or create this store via "Store.unchecked" to disable the main thread checker.
           """
       }
     
