@@ -76,9 +76,9 @@ import Foundation
 /// ### Thread safety
 ///
 /// The `Store` class is not thread-safe, and so all interactions with an instance of ``Store``
-/// (including all of its scopes and derived ``ViewStore``s) must be done on the same thread.
-/// Further, if the store is powering a SwiftUI or UIKit view, as is customary, then all
-/// interactions must be done on the _main_ thread.
+/// (including all of its scopes and derived ``ViewStore``s) must be done on the same thread the
+/// store was created on. Further, if the store is powering a SwiftUI or UIKit view, as is
+/// customary, then all interactions must be done on the _main_ thread.
 ///
 /// The reason stores are not thread-safe is due to the fact that when an action is sent to a store,
 /// a reducer is run on the current state, and this process cannot be done from multiple threads.
@@ -110,6 +110,21 @@ import Foundation
 /// multiple in-flight effects interleave with each other and affect the state of your application.
 /// However, by leaving scheduling out of the ``Store`` we get to test these aspects of our effects
 /// if we so desire, or we can ignore if we prefer. We have that flexibility.
+///
+/// #### Thread safety checks
+///
+/// The store performs some basic thread safety checks in order to help catch mistakes. Stores
+/// constructed via the initializer ``Store/init(initialState:reducer:environment:)`` are assumed
+/// to run only on the main thread, and so a check is executed immediately to make sure that is the
+/// case. Further, all actions sent to the store and all scopes (see ``Store/scope(state:action:)``)
+/// of the store are also checked to make sure that work is performed on the main thread.
+///
+/// If you need a store that runs on a non-main thread, which should be very rare and you should
+/// have a very good reason to do so, then you can consturct a store via the
+/// ``Store/unchecked(initialState:reducer:environment:)`` static method to opt out of all main
+/// thread checks.
+///
+/// ---
 ///
 /// See also: ``ViewStore`` to understand how one observes changes to the state in a ``Store`` and
 /// sends user actions.
@@ -144,6 +159,13 @@ public final class Store<State, Action> {
     self.threadCheck(status: .`init`)
   }
 
+  /// Initializes a store from an initial state, a reducer, and an environment, and the main thread
+  /// check is disabled for all interactions with this store.
+  ///
+  /// - Parameters:
+  ///   - initialState: The state to start the application in.
+  ///   - reducer: The reducer that powers the business logic of the application.
+  ///   - environment: The environment of dependencies for the application.
   public static func unchecked<Environment>(
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
@@ -155,20 +177,6 @@ public final class Store<State, Action> {
       environment: environment,
       mainQueueChecksEnabled: false
     )
-  }
-
-  private init<Environment>(
-    initialState: State,
-    reducer: Reducer<State, Action, Environment>,
-    environment: Environment,
-    mainQueueChecksEnabled: Bool
-  ) {
-    self.state = CurrentValueSubject(initialState)
-    self.reducer = { state, action in reducer.run(&state, action, environment) }
-
-    #if DEBUG
-    self.mainQueueChecksEnabled = mainQueueChecksEnabled
-    #endif
   }
 
   /// Scopes the store to one that exposes local state and actions.
@@ -462,6 +470,20 @@ public final class Store<State, Action> {
         ---
         """
       )
+    #endif
+  }
+
+  private init<Environment>(
+    initialState: State,
+    reducer: Reducer<State, Action, Environment>,
+    environment: Environment,
+    mainQueueChecksEnabled: Bool
+  ) {
+    self.state = CurrentValueSubject(initialState)
+    self.reducer = { state, action in reducer.run(&state, action, environment) }
+
+    #if DEBUG
+    self.mainQueueChecksEnabled = mainQueueChecksEnabled
     #endif
   }
 }
