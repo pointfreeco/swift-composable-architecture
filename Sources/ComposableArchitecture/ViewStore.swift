@@ -58,7 +58,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
 
   private let _send: (Action) -> Void
-  fileprivate let _state: CurrentValueSubject<State, Never>
+  fileprivate let _state: CurrentValueRelay<State>
   private var viewCancellable: AnyCancellable?
 
   /// Initializes a view store from a store.
@@ -72,7 +72,7 @@ public final class ViewStore<State, Action>: ObservableObject {
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool
   ) {
     self._send = { store.send($0) }
-    self._state = CurrentValueSubject(store.state.value)
+    self._state = CurrentValueRelay(store.state.value)
 
     self.viewCancellable = store.state
       .removeDuplicates(by: isDuplicate)
