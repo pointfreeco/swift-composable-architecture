@@ -121,7 +121,7 @@ public final class Store<State, Action> {
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   private var bufferedActions: [Action] = []
   #if DEBUG
-  private let dispatchToken: UUID?
+    private let dispatchToken: UUID?
   #endif
 
   /// Initializes a store from an initial state, a reducer, an environment, and a dispatch queue.
@@ -140,16 +140,15 @@ public final class Store<State, Action> {
     environment: Environment,
     dispatchQueue: DispatchQueue = .main
   ) {
-    
-    let token: UUID?
-    if dispatchQueue != DispatchQueue.main {
-      token = UUID()
-      var tokens = dispatchQueue.getSpecific(key: storeDispatchSpecificKey) ?? []
-      tokens.insert(token!)
-      dispatchQueue.setSpecific(key: storeDispatchSpecificKey, value: tokens)
-    } else {
-      token = nil
-    }
+    var token: UUID? = nil
+    #if DEBUG
+      if dispatchQueue != DispatchQueue.main {
+        token = UUID()
+        var tokens = dispatchQueue.getSpecific(key: storeDispatchSpecificKey) ?? []
+        tokens.insert(token!)
+        dispatchQueue.setSpecific(key: storeDispatchSpecificKey, value: tokens)
+      }
+    #endif
     
     self.init(
       initialState: initialState,
