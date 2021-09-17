@@ -114,12 +114,12 @@ import Foundation
 /// See also: ``ViewStore`` to understand how one observes changes to the state in a ``Store`` and
 /// sends user actions.
 public final class Store<State, Action> {
-  var state: CurrentValueSubject<State, Never>
+  private var bufferedActions: [Action] = []
   var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
-  private var parentCancellable: AnyCancellable?
+  var parentCancellable: AnyCancellable?
   private let reducer: (inout State, Action) -> Effect<Action, Never>
-  private var bufferedActions: [Action] = []
+  var state: CurrentValueSubject<State, Never>
   #if DEBUG
     private let initialThread = Thread.current
   #endif
