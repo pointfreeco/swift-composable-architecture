@@ -71,7 +71,7 @@ public final class ViewStore<State, Action>: ObservableObject {
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool
   ) {
-    self._send = { store.send($0) }
+    self._send = { store.send($0, originatingFrom: nil) }
     self._state = CurrentValueSubject(store.state.value)
 
     self.viewCancellable = store.state

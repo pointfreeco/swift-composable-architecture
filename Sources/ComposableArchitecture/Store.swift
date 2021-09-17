@@ -121,7 +121,7 @@ public final class Store<State, Action> {
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   private var bufferedActions: [Action] = []
   #if DEBUG
-    private let initialThread = Thread.current
+  private let isMainThreadStore: Bool
   #endif
 
   /// Initializes a store from an initial state, a reducer, and an environment.
@@ -137,6 +137,11 @@ public final class Store<State, Action> {
   ) {
     self.state = CurrentValueSubject(initialState)
     self.reducer = { state, action in reducer.run(&state, action, environment) }
+
+    #if DEBUG
+    DispatchQueue.main.setSpecific(key: mainQueueKey, value: value)
+    self.isMainThreadStore = DispatchQueue.getSpecific(key: mainQueueKey) == value
+    #endif
   }
 
   /// Scopes the store to one that exposes local state and actions.
@@ -289,7 +294,7 @@ public final class Store<State, Action> {
       reducer: .init { localState, localAction, _ in
         isSending = true
         defer { isSending = false }
-        self.send(fromLocalAction(localAction))
+        self.send(fromLocalAction(localAction), originatingFrom: nil)
         localState = toLocalState(self.state.value)
         return .none
       },
@@ -338,7 +343,7 @@ public final class Store<State, Action> {
         let localStore = Store<LocalState, LocalAction>(
           initialState: localState,
           reducer: .init { localState, localAction, _ in
-            self.send(fromLocalAction(localAction))
+            self.send(fromLocalAction(localAction), originatingFrom: nil)
             localState = extractLocalState(self.state.value) ?? localState
             return .none
           },
@@ -368,8 +373,8 @@ public final class Store<State, Action> {
     self.publisherScope(state: toLocalState, action: { $0 })
   }
 
-  func send(_ action: Action, isFromViewStore: Bool = true) {
-    self.threadCheck(status: .send(action, isFromViewStore: isFromViewStore))
+  func send(_ action: Action, originatingFrom originatingAction: Action?) {
+    self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
     self.bufferedActions.append(action)
     guard !self.isSending else { return }
@@ -393,8 +398,8 @@ public final class Store<State, Action> {
           didComplete = true
           self?.effectCancellables[uuid] = nil
         },
-        receiveValue: { [weak self] action in
-          self?.send(action, isFromViewStore: false)
+        receiveValue: { [weak self] effectAction in
+          self?.send(effectAction, originatingFrom: action)
         }
       )
 
@@ -418,62 +423,64 @@ public final class Store<State, Action> {
   private enum ThreadCheckStatus {
     case effectCompletion(Action)
     case scope
-    case send(Action, isFromViewStore: Bool)
+    case send(Action, originatingAction: Action?)
   }
 
   @inline(__always)
   private func threadCheck(status: ThreadCheckStatus) {
     #if DEBUG
-      guard self.initialThread != Thread.current
+      guard self.isMainThreadStore && DispatchQueue.getSpecific(key: mainQueueKey) != value
       else { return }
 
       let message: String
       switch status {
       case let .effectCompletion(action):
         message = """
-          An effect returned from the action "\(debugCaseOutput(action))" completed on the wrong \
+          An effect returned from the action "\(debugCaseOutput(action))" completed on a non-main \
           thread. Make sure to use ".receive(on:)" on any effects that execute on background \
-          threads to receive their output on the same thread the store was created on.
+          threads to receive their output on the main thread.
           """
 
       case .scope:
         message = """
-          "Store.scope" was called on the wrong thread. Make sure that "Store.scope" is always \
-          called on the same thread the store was created on.
+          "Store.scope" was called on a non-main thread. Make sure that "Store.scope" is always \
+          called on the main thread.
           """
 
-      case let .send(action, isFromViewStore: true):
+      case let .send(action, originatingAction: nil):
         message = """
-          "ViewStore.send(\(debugCaseOutput(action)))" was called on the wrong thread. Make sure \
-          that "ViewStore.send" is always called on the same thread the store was created on.
+          "ViewStore.send(\(debugCaseOutput(action)))" was called on a non-main thread. Make sure \
+          that "ViewStore.send" is always called on the main thread..
           """
 
-      case let .send(action, isFromViewStore: false):
+      case let .send(action, originatingAction: .some(originatingAction)):
         message = """
-          An effect emitted the action "\(debugCaseOutput(action))" from the wrong thread. Make \
-          sure to use ".receive(on:)" on any effects that execute on background threads to receive \
-          their output on the same thread the store was created on.
+          An effect returned from "\(debugCaseOutput(originatingAction))" emitted the action \
+          "\(debugCaseOutput(action))" on a non-main thread. Make sure to use ".receive(on:)" on \
+          any effects that execute on background threads to receive their output on the main thread.
           """
       }
-
+    
       breakpoint(
         """
         ---
         Warning:
 
-        The store was interacted with on a thread that is different from the thread the store was \
-        created on:
+        A store created on the main thread was interacted with on a non-main thread:
+
+          Thread: \(Thread.current)
 
         \(message)
 
-          Store created on: \(self.initialThread)
-          Action sent on: \(Thread.current)
-
         The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
-        (including all of its scopes and derived view stores) must be done on the same thread.
+        (including all of its scopes and derived view stores) must be done on the main thread.
         ---
         """
       )
     #endif
   }
 }
+
+private let mainQueueKey = DispatchSpecificKey<UInt8>()
+private let value: UInt8 = 0
+private var setSpecific: () = { DispatchQueue.main.setSpecific(key: mainQueueKey, value: value) }()
