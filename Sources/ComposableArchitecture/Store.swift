@@ -121,7 +121,7 @@ public final class Store<State, Action> {
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   private var bufferedActions: [Action] = []
   #if DEBUG
-  private let isMainThreadStore: Bool
+  private let isMainQueueStore: Bool
   #endif
 
   /// Initializes a store from an initial state, a reducer, and an environment.
@@ -140,7 +140,7 @@ public final class Store<State, Action> {
 
     #if DEBUG
     DispatchQueue.main.setSpecific(key: mainQueueKey, value: mainQueueValue)
-    self.isMainThreadStore = DispatchQueue.getSpecific(key: mainQueueKey) == mainQueueValue
+    self.isMainQueueStore = DispatchQueue.getSpecific(key: mainQueueKey) == mainQueueValue
     #endif
   }
 
@@ -429,7 +429,7 @@ public final class Store<State, Action> {
   @inline(__always)
   private func threadCheck(status: ThreadCheckStatus) {
     #if DEBUG
-      guard self.isMainThreadStore && DispatchQueue.getSpecific(key: mainQueueKey) != mainQueueValue
+      guard self.isMainQueueStore && DispatchQueue.getSpecific(key: mainQueueKey) != mainQueueValue
       else { return }
 
       let message: String
