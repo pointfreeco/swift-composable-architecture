@@ -112,14 +112,18 @@ final class DebugTests: XCTestCase {
   }
 
   func testBindingAction() {
+    struct State {
+      @BindableState var width = 0
+    }
+
     var dump = ""
-    customDump(BindingAction.set(\CGSize.width, 50), to: &dump)
+    customDump(BindingAction.set(\State.$width, 50), to: &dump)
     XCTAssertNoDifference(
       dump,
       #"""
       BindingAction.set(
-        \CGSize.width,
-        50.0
+        WritableKeyPath<State, BindableState<Int>>,
+        50
       )
       """#
     )
