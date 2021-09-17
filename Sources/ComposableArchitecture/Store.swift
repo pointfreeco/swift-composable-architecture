@@ -121,7 +121,7 @@ public final class Store<State, Action> {
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   private var bufferedActions: [Action] = []
   #if DEBUG
-    private let dispatchToken: UUID?
+    private let dispatchToken: DispatchToken?
   #endif
 
   /// Initializes a store from an initial state, a reducer, an environment, and a dispatch queue.
@@ -130,7 +130,7 @@ public final class Store<State, Action> {
   ///   - initialState: The state to start the application in.
   ///   - reducer: The reducer that powers the business logic of the application.
   ///   - environment: The environment of dependencies for the application.
-  ///   - dispatchQueue: Some dispatch queue onto which the store is assumed to process
+  ///   - boundTo: Some dispatch queue onto which the store is assumed to process
   ///   operations. If no queue is specified, the store should run on the main queue.
   ///
   /// - Note: You are responsible for dispatching store's operations on the correct queue.
@@ -138,16 +138,18 @@ public final class Store<State, Action> {
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
     environment: Environment,
-    dispatchQueue: DispatchQueue = .main
+    boundTo dispatchQueue: DispatchQueue = .main
   ) {
-    var token: UUID? = nil
+    
     #if DEBUG
-      if dispatchQueue != DispatchQueue.main {
-        token = UUID()
-        var tokens = dispatchQueue.getSpecific(key: storeDispatchSpecificKey) ?? []
-        tokens.insert(token!)
-        dispatchQueue.setSpecific(key: storeDispatchSpecificKey, value: tokens)
-      }
+    let token = DispatchToken(dispatchQueue: dispatchQueue)
+    if let token = token {
+      var tokens = dispatchQueue.getSpecific(key: DispatchToken.specificKey) ?? []
+      tokens.insert(token)
+      dispatchQueue.setSpecific(key: DispatchToken.specificKey, value: tokens)
+    }
+    #else
+    let token: DispatchToken? = nil
     #endif
     
     self.init(
@@ -162,7 +164,7 @@ public final class Store<State, Action> {
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
     environment: Environment,
-    dispatchToken: UUID?
+    dispatchToken: DispatchToken?
   ) {
     #if DEBUG
     self.dispatchToken = dispatchToken
@@ -460,7 +462,7 @@ public final class Store<State, Action> {
     #if DEBUG
     
       if let dispatchToken = dispatchToken {
-        if let set = DispatchQueue.getSpecific(key: storeDispatchSpecificKey),
+        if let set = DispatchQueue.getSpecific(key: DispatchToken.specificKey),
            set.contains(dispatchToken) {
           return
         }
@@ -468,32 +470,37 @@ public final class Store<State, Action> {
         return
       }
     
+      let queueDescription = DispatchQueue.getSpecific(key: DispatchToken.specificKey)?
+                                          .first?
+                                          .queueDescription
+                             ?? "\(DispatchQueue.main)"
+    
       let message: String
       switch status {
       case let .effectCompletion(action):
         message = """
           An effect returned from the action "\(debugCaseOutput(action))" completed on the wrong \
-          thread. Make sure to use ".receive(on:)" on any effects that execute on background \
-          threads to receive their output on the same thread the store was created on.
+          queue. Make sure to use ".receive(on:)" on any effects that execute on background \
+          queues to receive their output on the same queue the store was bound to.
           """
 
       case .scope:
         message = """
-          "Store.scope" was called on the wrong thread. Make sure that "Store.scope" is always \
-          called on the same thread the store was created on.
+          "Store.scope" was called on the wrong queue. Make sure that "Store.scope" is always \
+          called on the same queue the store was bound to.
           """
 
       case let .send(action, isFromViewStore: true):
         message = """
-          "ViewStore.send(\(debugCaseOutput(action)))" was called on the wrong thread. Make sure \
-          that "ViewStore.send" is always called on the same thread the store was created on.
+          "ViewStore.send(\(debugCaseOutput(action)))" was called on the wrong queue. Make sure \
+          that "ViewStore.send" is always called on the same queue the store was bound to.
           """
 
       case let .send(action, isFromViewStore: false):
         message = """
-          An effect emitted the action "\(debugCaseOutput(action))" from the wrong thread. Make \
-          sure to use ".receive(on:)" on any effects that execute on background threads to receive \
-          their output on the same thread the store was created on.
+          An effect emitted the action "\(debugCaseOutput(action))" from the wrong queue. Make \
+          sure to use ".receive(on:)" on any effects that execute on background queues to receive \
+          their output on the same queue the store was bound to.
           """
       }
 
@@ -502,20 +509,20 @@ public final class Store<State, Action> {
         ---
         Warning:
 
-        The store was interacted with on a thread that is different from the thread the store was \
-        created on:
+        The store was interacted with on a queue that is different from the queue the store was \
+        bound to:
 
         \(message)
-
-          Action sent on: \(Thread.current) instead of \(Thread.main)
+        
+          Store bound to: \(self.dispatchToken?.queueDescription ?? "\(DispatchQueue.main)")
+          Interaction realized on: \(queueDescription)
 
         The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
-        (including all of its scopes and derived view stores) must be done on the same thread.
+        (including all of its scopes and derived view stores) must be done on the same dispatch \
+        queue.
         ---
         """
       )
     #endif
   }
 }
-
-private let storeDispatchSpecificKey = DispatchSpecificKey<Set<UUID>>()

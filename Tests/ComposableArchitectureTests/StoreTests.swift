@@ -536,7 +536,7 @@ final class StoreTests: XCTestCase {
       initialState: 0,
       reducer: reducer,
       environment: (),
-      dispatchQueue: queue
+      boundTo: queue
     )
     let viewStore = ViewStore(store)
     queue.async {
