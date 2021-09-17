@@ -121,49 +121,41 @@ public final class Store<State, Action> {
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   private var bufferedActions: [Action] = []
   #if DEBUG
-    private let shouldCheckIfThreadIsMainThread: Bool
+  private let dispatchToken: UUID?
   #endif
 
-  /// Initializes a store from an initial state, a reducer, and an environment,
-  /// that should run on the main thread.
+  /// Initializes a store from an initial state, a reducer, an environment, and a dispatch queue.
   ///
   /// - Parameters:
   ///   - initialState: The state to start the application in.
   ///   - reducer: The reducer that powers the business logic of the application.
   ///   - environment: The environment of dependencies for the application.
+  ///   - dispatchQueue: Some dispatch queue onto which the store is assumed to process
+  ///   operations. If no queue is specified, the store should run on the main queue.
   ///
-  /// - Note: Use ``withUncheckedThread(initialState:reducer:environment:)`` if
-  /// the store receives actions on an arbitrary serial queue.
+  /// - Note: You are responsible for dispatching store's operations on the correct queue.
   public convenience init<Environment>(
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
-    environment: Environment
+    environment: Environment,
+    dispatchQueue: DispatchQueue = .main
   ) {
+    
+    let token: UUID?
+    if dispatchQueue != DispatchQueue.main {
+      token = UUID()
+      var tokens = dispatchQueue.getSpecific(key: storeDispatchSpecificKey) ?? []
+      tokens.insert(token!)
+      dispatchQueue.setSpecific(key: storeDispatchSpecificKey, value: tokens)
+    } else {
+      token = nil
+    }
+    
     self.init(
       initialState: initialState,
       reducer: reducer,
       environment: environment,
-      shouldCheckIfThreadIsMainThread: true
-    )
-  }
-  
-  /// Initializes a store from an initial state, a reducer, and an environment, without
-  /// thread safety runtime checks.
-  ///
-  /// - Parameters:
-  ///   - initialState: The state to start the application in.
-  ///   - reducer: The reducer that powers the business logic of the application.
-  ///   - environment: The environment of dependencies for the application.
-  public static func withUncheckedThread<Environment>(
-    initialState: State,
-    reducer: Reducer<State, Action, Environment>,
-    environment: Environment
-  ) -> Self {
-    self.init(
-      initialState: initialState,
-      reducer: reducer,
-      environment: environment,
-      shouldCheckIfThreadIsMainThread: false
+      dispatchToken: token
     )
   }
 
@@ -171,10 +163,10 @@ public final class Store<State, Action> {
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
     environment: Environment,
-    shouldCheckIfThreadIsMainThread: Bool
+    dispatchToken: UUID?
   ) {
     #if DEBUG
-    self.shouldCheckIfThreadIsMainThread = shouldCheckIfThreadIsMainThread
+    self.dispatchToken = dispatchToken
     #endif
     self.state = CurrentValueSubject(initialState)
     self.reducer = { state, action in reducer.run(&state, action, environment) }
@@ -335,7 +327,7 @@ public final class Store<State, Action> {
         return .none
       },
       environment: (),
-      shouldCheckIfThreadIsMainThread: shouldCheckIfThreadIsMainThread
+      dispatchToken: dispatchToken
     )
     localStore.parentCancellable = self.state
       .dropFirst()
@@ -385,7 +377,7 @@ public final class Store<State, Action> {
             return .none
           },
           environment: (),
-          shouldCheckIfThreadIsMainThread: self.shouldCheckIfThreadIsMainThread
+          dispatchToken: self.dispatchToken
         )
 
         localStore.parentCancellable = self.state
@@ -467,8 +459,15 @@ public final class Store<State, Action> {
   @inline(__always)
   private func threadCheck(status: ThreadCheckStatus) {
     #if DEBUG
-      guard shouldCheckIfThreadIsMainThread else { return }
-      if Thread.current.isMainThread { return }
+    
+      if let dispatchToken = dispatchToken {
+        if let set = DispatchQueue.getSpecific(key: storeDispatchSpecificKey),
+           set.contains(dispatchToken) {
+          return
+        }
+      } else if Thread.current.isMainThread {
+        return
+      }
     
       let message: String
       switch status {
@@ -519,3 +518,5 @@ public final class Store<State, Action> {
     #endif
   }
 }
+
+private let storeDispatchSpecificKey = DispatchSpecificKey<Set<UUID>>()
