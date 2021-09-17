@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import OSLog
 
 /// A store represents the runtime that powers the application. It is the object that you will pass
 /// around to views that need to interact with the application.
@@ -409,59 +410,59 @@ public final class Store<State, Action> {
       let message: String
       switch status {
       case let .effectCompletion(action):
-        message = """
-          An effect returned from the action "\(debugCaseOutput(action))" completed on a non-main \
+        os_log(.fault, dso: rwDso, log: rwLog, """
+          An effect returned from the action "%@" completed on a non-main \
           thread. Make sure to use ".receive(on:)" on any effects that execute on background \
           threads to receive their output on the main thread, or create this store via \
           "Store.unchecked" to disable the main thread checker.
-          """
+          """, debugCaseOutput(action))
 
       case .`init`:
-        message = """
+        os_log(.fault, dso: rwDso, log: rwLog, """
           "Store.init" was called on a non-main thread. Make sure that stores are initialized on \
           the main thread, or create this store via "Store.unchecked" to disable the main thread \
           checker.
-          """
+          """)
 
       case .scope:
-        message = """
+        os_log(.fault, dso: rwDso, log: rwLog, """
           "Store.scope" was called on a non-main thread. Make sure that "Store.scope" is always \
           called on the main thread, or create this store via "Store.unchecked" to disable the \
           main thread checker.
-          """
+          """)
 
       case let .send(action, originatingAction: nil):
-        message = """
-          "ViewStore.send(\(debugCaseOutput(action)))" was called on a non-main thread. Make sure \
+        os_log(.fault, dso: rwDso, log: rwLog, """
+          "ViewStore.send(%@)" was called on a non-main thread. Make sure \
           that "ViewStore.send" is always called on the main thread, or create this store via \
           "Store.unchecked" to disable the main thread checker.
-          """
+          """, debugCaseOutput(action))
 
       case let .send(action, originatingAction: .some(originatingAction)):
-        message = """
-          An effect returned from "\(debugCaseOutput(originatingAction))" emitted the action \
-          "\(debugCaseOutput(action))" on a non-main thread. Make sure to use ".receive(on:)" on \
+        os_log(.fault, dso: rwDso, log: rwLog, """
+          An effect returned from "%@" emitted the action \
+          "%@" on a non-main thread. Make sure to use ".receive(on:)" on \
           any effects that execute on background threads to receive their output on the main \
           thread, or create this store via "Store.unchecked" to disable the main thread checker.
-          """
+          """, debugCaseOutput(originatingAction), debugCaseOutput(action))
       }
     
-      breakpoint(
-        """
-        ---
-        Warning:
-
-        A store created on the main thread was interacted with on a non-main thread:
-
-          Thread: \(Thread.current)
-
-        \(message)
-
-        The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
-        (including all of its scopes and derived view stores) must be done on the main thread.
-        ---
-        """
-      )
+//      breakpoint(
+//        """
+//        ---
+//        Warning:
+//
+//        A store created on the main thread was interacted with on a non-main thread:
+//
+//          Thread: \(Thread.current)
+//
+//        \(message)
+//
+//        The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
+//        (including all of its scopes and derived view stores) must be done on the main thread.
+//        ---
+//        """
+//      )
     #endif
   }
 }
