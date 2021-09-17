@@ -193,8 +193,12 @@ import SwiftUI
     public subscript<Subject>(
       dynamicMember keyPath: WritableKeyPath<Value, Subject>
     ) -> BindableState<Subject> {
-      get { .init(wrappedValue: self.wrappedValue[keyPath: keyPath]) }
-      set { self.wrappedValue[keyPath: keyPath] = newValue.wrappedValue }
+      get {
+        .init(wrappedValue: self.wrappedValue[keyPath: keyPath])
+      }
+      set {
+        self.wrappedValue[keyPath: keyPath] = newValue.wrappedValue
+      }
     }
   }
 
@@ -282,7 +286,8 @@ import SwiftUI
       dynamicMember keyPath: WritableKeyPath<State, BindableState<Value>>
     ) -> Binding<Value>
     where Action: BindableAction, Action.State == State, Value: Equatable {
-      self.binding(
+      
+      return self.binding(
         get: { $0[keyPath: keyPath].wrappedValue },
         send: { .binding(.set(keyPath, $0)) }
       )
@@ -472,7 +477,9 @@ import SwiftUI
       keyPath: WritableKeyPath<Root, BindableState<Value>>,
       bindingAction: Self
     ) -> Bool {
-      keyPath == bindingAction.keyPath
+      print(keyPath)
+      print(bindingAction.keyPath)
+      return keyPath == bindingAction.keyPath
     }
   }
 
