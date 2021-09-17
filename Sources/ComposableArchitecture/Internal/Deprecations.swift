@@ -2,7 +2,7 @@ import CasePaths
 import Combine
 import SwiftUI
 
-// NB: Deprecated after 0.25.0:
+// NB: Deprecated after 0.27.1:
 
 extension Store {
   @available(
@@ -57,6 +57,140 @@ extension Store {
     self.publisherScope(state: toLocalState, action: { $0 })
   }
 }
+
+// NB: Deprecated after 0.25.0:
+
+#if compiler(>=5.4)
+  extension BindingAction {
+    @available(
+      *, deprecated,
+      message:
+        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\\.$value'"
+    )
+    public static func set<Value>(
+      _ keyPath: WritableKeyPath<Root, Value>,
+      _ value: Value
+    ) -> Self
+    where Value: Equatable {
+      .init(
+        keyPath: keyPath,
+        set: { $0[keyPath: keyPath] = value },
+        value: value,
+        valueIsEqualTo: { $0 as? Value == value }
+      )
+    }
+
+    @available(
+      *, deprecated,
+      message:
+        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\\.$value'"
+    )
+    public static func ~= <Value>(
+      keyPath: WritableKeyPath<Root, Value>,
+      bindingAction: Self
+    ) -> Bool {
+      keyPath == bindingAction.keyPath
+    }
+  }
+
+  extension Reducer {
+    @available(
+      *, deprecated,
+      message:
+        "'Reducer.binding()' no longer takes an explicit extract function and instead the reducer's 'Action' type must conform to 'BindableAction'"
+    )
+    public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self
+    {
+      Self { state, action, environment in
+        toBindingAction(action)?.set(&state)
+        return self.run(&state, action, environment)
+      }
+    }
+  }
+
+  extension ViewStore {
+    @available(
+      *, deprecated,
+      message:
+        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. Bindings are now derived via dynamic member lookup to that 'BindableState' (for example, 'viewStore.$value'). For dynamic member lookup to be available, the view store's 'Action' type must also conform to 'BindableAction'."
+    )
+    public func binding<LocalState>(
+      keyPath: WritableKeyPath<State, LocalState>,
+      send action: @escaping (BindingAction<State>) -> Action
+    ) -> Binding<LocalState>
+    where LocalState: Equatable {
+      self.binding(
+        get: { $0[keyPath: keyPath] },
+        send: { action(.set(keyPath, $0)) }
+      )
+    }
+  }
+#else
+  extension BindingAction {
+    @available(
+      *, deprecated,
+      message:
+        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\\.$value'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'."
+    )
+    public static func set<Value>(
+      _ keyPath: WritableKeyPath<Root, Value>,
+      _ value: Value
+    ) -> Self
+    where Value: Equatable {
+      .init(
+        keyPath: keyPath,
+        set: { $0[keyPath: keyPath] = value },
+        value: value,
+        valueIsEqualTo: { $0 as? Value == value }
+      )
+    }
+
+    @available(
+      *, deprecated,
+      message:
+        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\\.$value'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'."
+    )
+    public static func ~= <Value>(
+      keyPath: WritableKeyPath<Root, Value>,
+      bindingAction: Self
+    ) -> Bool {
+      keyPath == bindingAction.keyPath
+    }
+  }
+
+  extension Reducer {
+    @available(
+      *, deprecated,
+      message:
+        "'Reducer.binding()' no longer takes an explicit extract function and instead the reducer's 'Action' type must conform to 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'Reducer.binding()' and 'BindableAction'."
+    )
+    public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self
+    {
+      Self { state, action, environment in
+        toBindingAction(action)?.set(&state)
+        return self.run(&state, action, environment)
+      }
+    }
+  }
+
+  extension ViewStore {
+    @available(
+      *, deprecated,
+      message:
+        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. Bindings are now derived via dynamic member lookup to that 'BindableState' (for example, 'viewStore.$value'). For dynamic member lookup to be available, the view store's 'Action' type must also conform to 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'BindableState' and 'BindableAction'."
+    )
+    public func binding<LocalState>(
+      keyPath: WritableKeyPath<State, LocalState>,
+      send action: @escaping (BindingAction<State>) -> Action
+    ) -> Binding<LocalState>
+    where LocalState: Equatable {
+      self.binding(
+        get: { $0[keyPath: keyPath] },
+        send: { action(.set(keyPath, $0)) }
+      )
+    }
+  }
+#endif
 
 // NB: Deprecated after 0.23.0:
 
@@ -197,146 +331,5 @@ extension ForEachStore {
     EachState.ID == ID
   {
     self.init(store, id: \.id, content: content)
-  }
-}
-
-// NB: Deprecated after 0.17.0:
-
-extension IfLetStore {
-  @available(*, deprecated, message: "'else' now takes a view builder closure")
-  public init<IfContent, ElseContent>(
-    _ store: Store<State?, Action>,
-    @ViewBuilder then ifContent: @escaping (Store<State, Action>) -> IfContent,
-    else elseContent: @escaping @autoclosure () -> ElseContent
-  ) where Content == _ConditionalContent<IfContent, ElseContent> {
-    self.init(store, then: ifContent, else: elseContent)
-  }
-}
-
-// NB: Deprecated after 0.13.0:
-
-@available(*, deprecated, renamed: "BindingAction")
-public typealias FormAction = BindingAction
-
-extension Reducer {
-  @available(*, deprecated, renamed: "binding")
-  public func form(action toFormAction: CasePath<Action, BindingAction<State>>) -> Self {
-    self.binding(action: toFormAction.extract(from:))
-  }
-}
-
-// NB: Deprecated after 0.10.0:
-
-@available(iOS 13, *)
-@available(macCatalyst 13, *)
-@available(macOS, unavailable)
-@available(tvOS 13, *)
-@available(watchOS 6, *)
-extension ActionSheetState {
-  @available(*, deprecated, message: "'title' and 'message' should be 'TextState'")
-  @_disfavoredOverload
-  public init(
-    title: LocalizedStringKey,
-    message: LocalizedStringKey? = nil,
-    buttons: [Button]
-  ) {
-    self.init(
-      title: .init(title),
-      message: message.map { .init($0) },
-      buttons: buttons
-    )
-  }
-}
-
-extension AlertState {
-  @available(*, deprecated, message: "'title' and 'message' should be 'TextState'")
-  @_disfavoredOverload
-  public init(
-    title: LocalizedStringKey,
-    message: LocalizedStringKey? = nil,
-    dismissButton: Button? = nil
-  ) {
-    self.init(
-      title: .init(title),
-      message: message.map { .init($0) },
-      dismissButton: dismissButton
-    )
-  }
-
-  @available(*, deprecated, message: "'title' and 'message' should be 'TextState'")
-  @_disfavoredOverload
-  public init(
-    title: LocalizedStringKey,
-    message: LocalizedStringKey? = nil,
-    primaryButton: Button,
-    secondaryButton: Button
-  ) {
-    self.init(
-      title: .init(title),
-      message: message.map { .init($0) },
-      primaryButton: primaryButton,
-      secondaryButton: secondaryButton
-    )
-  }
-}
-
-extension AlertState.Button {
-  @available(*, deprecated, message: "'label' should be 'TextState'")
-  @_disfavoredOverload
-  public static func cancel(
-    _ label: LocalizedStringKey,
-    send action: Action? = nil
-  ) -> Self {
-    Self(action: action.map(AlertState.ButtonAction.send), type: .cancel(label: .init(label)))
-  }
-
-  @available(*, deprecated, message: "'label' should be 'TextState'")
-  @_disfavoredOverload
-  public static func `default`(
-    _ label: LocalizedStringKey,
-    send action: Action? = nil
-  ) -> Self {
-    Self(action: action.map(AlertState.ButtonAction.send), type: .default(label: .init(label)))
-  }
-
-  @available(*, deprecated, message: "'label' should be 'TextState'")
-  @_disfavoredOverload
-  public static func destructive(
-    _ label: LocalizedStringKey,
-    send action: Action? = nil
-  ) -> Self {
-    Self(action: action.map(AlertState.ButtonAction.send), type: .destructive(label: .init(label)))
-  }
-}
-
-// NB: Deprecated after 0.9.0:
-
-extension Store {
-  @_disfavoredOverload
-  @available(*, deprecated, renamed: "publisherScope(state:)")
-  public func scope<P: Publisher, LocalState>(
-    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P
-  ) -> AnyPublisher<Store<LocalState, Action>, Never>
-  where P.Output == LocalState, P.Failure == Never {
-    self.publisherScope(state: toLocalState)
-  }
-
-  @_disfavoredOverload
-  @available(*, deprecated, renamed: "publisherScope(state:action:)")
-  public func scope<P: Publisher, LocalState, LocalAction>(
-    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P,
-    action fromLocalAction: @escaping (LocalAction) -> Action
-  ) -> AnyPublisher<Store<LocalState, LocalAction>, Never>
-  where P.Output == LocalState, P.Failure == Never {
-    self.publisherScope(state: toLocalState, action: fromLocalAction)
-  }
-}
-
-// NB: Deprecated after 0.6.0:
-
-extension Reducer {
-  @available(*, deprecated, renamed: "optional()")
-  public var optional: Reducer<State?, Action, Environment> {
-    self.optional()
   }
 }

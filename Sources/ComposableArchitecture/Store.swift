@@ -5,7 +5,7 @@ import Foundation
 /// around to views that need to interact with the application.
 ///
 /// You will typically construct a single one of these at the root of your application, and then use
-/// the ``scope(state:action:)-9iai9`` method to derive more focused stores that can be passed to
+/// the ``scope(state:action:)`` method to derive more focused stores that can be passed to
 /// subviews:
 ///
 /// ```swift
@@ -29,8 +29,8 @@ import Foundation
 ///
 /// ### Scoping
 ///
-/// The most important operation defined on ``Store`` is the ``scope(state:action:)-9iai9`` method,
-/// which allows you to transform a store into one that deals with local state and actions. This is
+/// The most important operation defined on ``Store`` is the ``scope(state:action:)`` method, which
+/// allows you to transform a store into one that deals with local state and actions. This is
 /// necessary for passing stores to subviews that only care about a small portion of the entire
 /// application's domain.
 ///
@@ -51,8 +51,8 @@ import Foundation
 /// }
 /// ```
 ///
-/// We can construct a view for each of these domains by applying ``scope(state:action:)-9iai9``
-/// to a store that holds onto the full app domain in order to transform it into a store for each
+/// We can construct a view for each of these domains by applying ``scope(state:action:)`` to a
+/// store that holds onto the full app domain in order to transform it into a store for each
 /// sub-domain:
 ///
 /// ```swift
@@ -114,12 +114,15 @@ import Foundation
 /// See also: ``ViewStore`` to understand how one observes changes to the state in a ``Store`` and
 /// sends user actions.
 public final class Store<State, Action> {
-  private var bufferedActions: [Action] = []
+  var state: CurrentValueSubject<State, Never>
   var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
-  var parentCancellable: AnyCancellable?
+  private var parentCancellable: AnyCancellable?
   private let reducer: (inout State, Action) -> Effect<Action, Never>
-  var state: CurrentValueSubject<State, Never>
+  private var bufferedActions: [Action] = []
+  #if DEBUG
+    private let initialThread = Thread.current
+  #endif
 
   /// Initializes a store from an initial state, a reducer, and an environment.
   ///
@@ -279,6 +282,7 @@ public final class Store<State, Action> {
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> Store<LocalState, LocalAction> {
+    self.threadCheck(status: .scope)
     var isSending = false
     let localStore = Store<LocalState, LocalAction>(
       initialState: toLocalState(self.state.value),
@@ -310,7 +314,9 @@ public final class Store<State, Action> {
     self.scope(state: toLocalState, action: { $0 })
   }
 
-  func send(_ action: Action) {
+  func send(_ action: Action, isFromViewStore: Bool = true) {
+    self.threadCheck(status: .send(action, isFromViewStore: isFromViewStore))
+
     self.bufferedActions.append(action)
     guard !self.isSending else { return }
 
@@ -329,11 +335,12 @@ public final class Store<State, Action> {
       let uuid = UUID()
       let effectCancellable = effect.sink(
         receiveCompletion: { [weak self] _ in
+          self?.threadCheck(status: .effectCompletion(action))
           didComplete = true
           self?.effectCancellables[uuid] = nil
         },
         receiveValue: { [weak self] action in
-          self?.send(action)
+          self?.send(action, isFromViewStore: false)
         }
       )
 
@@ -352,5 +359,67 @@ public final class Store<State, Action> {
   public var actionless: Store<State, Never> {
     func absurd<A>(_ never: Never) -> A {}
     return self.scope(state: { $0 }, action: absurd)
+  }
+
+  private enum ThreadCheckStatus {
+    case effectCompletion(Action)
+    case scope
+    case send(Action, isFromViewStore: Bool)
+  }
+
+  @inline(__always)
+  private func threadCheck(status: ThreadCheckStatus) {
+    #if DEBUG
+      guard self.initialThread != Thread.current
+      else { return }
+
+      let message: String
+      switch status {
+      case let .effectCompletion(action):
+        message = """
+          An effect returned from the action "\(debugCaseOutput(action))" completed on the wrong \
+          thread. Make sure to use ".receive(on:)" on any effects that execute on background \
+          threads to receive their output on the same thread the store was created on.
+          """
+
+      case .scope:
+        message = """
+          "Store.scope" was called on the wrong thread. Make sure that "Store.scope" is always \
+          called on the same thread the store was created on.
+          """
+
+      case let .send(action, isFromViewStore: true):
+        message = """
+          "ViewStore.send(\(debugCaseOutput(action)))" was called on the wrong thread. Make sure \
+          that "ViewStore.send" is always called on the same thread the store was created on.
+          """
+
+      case let .send(action, isFromViewStore: false):
+        message = """
+          An effect emitted the action "\(debugCaseOutput(action))" from the wrong thread. Make \
+          sure to use ".receive(on:)" on any effects that execute on background threads to receive \
+          their output on the same thread the store was created on.
+          """
+      }
+
+      breakpoint(
+        """
+        ---
+        Warning:
+
+        The store was interacted with on a thread that is different from the thread the store was \
+        created on:
+
+        \(message)
+
+          Store created on: \(self.initialThread)
+          Action sent on: \(Thread.current)
+
+        The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
+        (including all of its scopes and derived view stores) must be done on the same thread.
+        ---
+        """
+      )
+    #endif
   }
 }

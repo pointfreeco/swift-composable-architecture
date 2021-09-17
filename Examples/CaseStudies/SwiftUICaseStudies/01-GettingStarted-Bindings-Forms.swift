@@ -3,24 +3,25 @@ import SwiftUI
 
 private let readMe = """
   This file demonstrates how to handle two-way bindings in the Composable Architecture using \
-  binding actions.
+  bindable state and actions.
 
-  Binding actions allow you to eliminate the boilerplate caused by needing to have a unique action \
-  for every UI control. Instead, all UI bindings can be consolidated into a single `binding` \
-  action that holds onto a `BindingAction` value.
+  Bindable state and actions allow you to safely eliminate the boilerplate caused by needing to \
+  have a unique action for every UI control. Instead, all UI bindings can be consolidated into a \
+  single `binding` action that holds onto a `BindingAction` value, and all bindable state can be \
+  safeguarded with the `BindableState` property wrapper.
 
   It is instructive to compare this case study to the "Binding Basics" case study.
   """
 
 // The state for this screen holds a bunch of values that will drive
 struct BindingFormState: Equatable {
-  var sliderValue = 5.0
-  var stepCount = 10
-  var text = ""
-  var toggleIsOn = false
+  @BindableState var sliderValue = 5.0
+  @BindableState var stepCount = 10
+  @BindableState var text = ""
+  @BindableState var toggleIsOn = false
 }
 
-enum BindingFormAction: Equatable {
+enum BindingFormAction: BindableAction, Equatable {
   case binding(BindingAction<BindingFormState>)
   case resetButtonTapped
 }
@@ -32,7 +33,7 @@ let bindingFormReducer = Reducer<
 > {
   state, action, _ in
   switch action {
-  case .binding(\.stepCount):
+  case .binding(\.$stepCount):
     state.sliderValue = .minimum(state.sliderValue, Double(state.stepCount))
     return .none
 
@@ -44,7 +45,7 @@ let bindingFormReducer = Reducer<
     return .none
   }
 }
-.binding(action: /BindingFormAction.binding)
+.binding()
 
 struct BindingFormView: View {
   let store: Store<BindingFormState, BindingFormAction>
@@ -54,24 +55,17 @@ struct BindingFormView: View {
       Form {
         Section(header: Text(template: readMe, .caption)) {
           HStack {
-            TextField(
-              "Type here",
-              text: viewStore.binding(keyPath: \.text, send: BindingFormAction.binding)
-            )
-            .disableAutocorrection(true)
-            .foregroundColor(viewStore.toggleIsOn ? .gray : .primary)
+            TextField("Type here", text: viewStore.$text)
+              .disableAutocorrection(true)
+              .foregroundColor(viewStore.toggleIsOn ? .gray : .primary)
+
             Text(alternate(viewStore.text))
           }
           .disabled(viewStore.toggleIsOn)
 
-          Toggle(isOn: viewStore.binding(keyPath: \.toggleIsOn, send: BindingFormAction.binding)) {
-            Text("Disable other controls")
-          }
+          Toggle("Disable other controls", isOn: viewStore.$toggleIsOn)
 
-          Stepper(
-            value: viewStore.binding(keyPath: \.stepCount, send: BindingFormAction.binding),
-            in: 0...100
-          ) {
+          Stepper(value: viewStore.$stepCount, in: 0...100) {
             Text("Max slider value: \(viewStore.stepCount)")
               .font(Font.body.monospacedDigit())
           }
@@ -80,10 +74,8 @@ struct BindingFormView: View {
           HStack {
             Text("Slider value: \(Int(viewStore.sliderValue))")
               .font(Font.body.monospacedDigit())
-            Slider(
-              value: viewStore.binding(keyPath: \.sliderValue, send: BindingFormAction.binding),
-              in: 0...Double(viewStore.stepCount)
-            )
+
+            Slider(value: viewStore.$sliderValue, in: 0...Double(viewStore.stepCount))
           }
           .disabled(viewStore.toggleIsOn)
         }
