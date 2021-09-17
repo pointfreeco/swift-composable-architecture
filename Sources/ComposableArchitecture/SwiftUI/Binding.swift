@@ -122,12 +122,11 @@ import SwiftUI
   /// .binding()
   /// ```
   ///
-  /// Binding actions are constructed and sent to the store through the projected value of the
-  /// bindable state property wrapper in a syntax that is as familiar and succinct as vanilla
-  /// SwiftUI:
+  /// Binding actions are constructed and sent to the store by calling ``ViewStore/binding(_:)``
+  /// with a key path to the bindable state:
   ///
   /// ```swift
-  /// TextField("Display name", text: viewStore.$displayName)
+  /// TextField("Display name", text: viewStore.binding(\.$displayName))
   /// ```
   ///
   /// Should you need to layer additional functionality over these bindings, your reducer can
@@ -171,13 +170,13 @@ import SwiftUI
       self.wrappedValue = wrappedValue
     }
 
-    /// A projection can be used to derive bindings from a view store via dynamic member lookup.
+    /// A projection that can be used to derive bindings from a view store.
     ///
     /// Use the projected value to derive bindings from a view store with properties annotated with
     /// `@BindableState`. To get the `projectedValue`, prefix the property with `$`:
     ///
     /// ```swift
-    /// TextField("Display name", text: viewStore.$displayName)
+    /// TextField("Display name", text: viewStore.binding(\.$displayName))
     /// ```
     ///
     /// See ``BindableState`` for more details.
@@ -193,12 +192,8 @@ import SwiftUI
     public subscript<Subject>(
       dynamicMember keyPath: WritableKeyPath<Value, Subject>
     ) -> BindableState<Subject> {
-      get {
-        .init(wrappedValue: self.wrappedValue[keyPath: keyPath])
-      }
-      set {
-        self.wrappedValue[keyPath: keyPath] = newValue.wrappedValue
-      }
+      get { .init(wrappedValue: self.wrappedValue[keyPath: keyPath]) }
+      set { self.wrappedValue[keyPath: keyPath] = newValue.wrappedValue }
     }
   }
 
@@ -282,12 +277,11 @@ import SwiftUI
     ///
     /// - Parameter keyPath: A key path to a specific bindable state.
     /// - Returns: A new binding.
-    public subscript<Value>(
-      dynamicMember keyPath: WritableKeyPath<State, BindableState<Value>>
+    public func binding<Value>(
+      _ keyPath: WritableKeyPath<State, BindableState<Value>>
     ) -> Binding<Value>
     where Action: BindableAction, Action.State == State, Value: Equatable {
-      
-      return self.binding(
+      self.binding(
         get: { $0[keyPath: keyPath].wrappedValue },
         send: { .binding(.set(keyPath, $0)) }
       )
@@ -436,7 +430,7 @@ import SwiftUI
     /// WithViewStore(
     ///   self.store.scope(state: \.view, action: AppAction.view)
     /// ) { viewStore in
-    ///   Stepper("\(viewStore.count)", viewStore.$count)
+    ///   Stepper("\(viewStore.count)", viewStore.binding(\.$count))
     ///   Button("Get number fact") { viewStore.send(.factButtonTapped) }
     ///   if let fact = viewStore.fact {
     ///     Text(fact)
@@ -477,9 +471,7 @@ import SwiftUI
       keyPath: WritableKeyPath<Root, BindableState<Value>>,
       bindingAction: Self
     ) -> Bool {
-      print(keyPath)
-      print(bindingAction.keyPath)
-      return keyPath == bindingAction.keyPath
+      keyPath == bindingAction.keyPath
     }
   }
 

@@ -7,12 +7,7 @@ final class BindingTests: XCTestCase {
       @BindableState var nested = Nested()
 
       struct Nested: Equatable {
-        @BindableState var field = ""
-        var more = More()
-
-        struct More: Equatable {
-          var more =  ""
-        }
+        var field = ""
       }
     }
 
@@ -33,11 +28,9 @@ final class BindingTests: XCTestCase {
 
     let store = Store(initialState: .init(), reducer: reducer, environment: ())
 
-    // TODO: `let` breaks this, fix with reference writable key path
     let viewStore = ViewStore(store)
 
-     viewStore.$nested.$field.wrappedValue.wrappedValue = "Hello"
-//    viewStore.$nested.more.more.wrappedValue = "Hello"
+    viewStore.binding(\.$nested.field).wrappedValue = "Hello"
 
     XCTAssertNoDifference(viewStore.state, .init(nested: .init(field: "Hello!")))
   }
