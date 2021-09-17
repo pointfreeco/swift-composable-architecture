@@ -411,39 +411,64 @@ public final class Store<State, Action> {
       switch status {
       case let .effectCompletion(action):
         os_log(.fault, dso: rwDso, log: rwLog, """
+          A store created on the main thread was interacted with on a non-main thread: …
+
           An effect returned from the action "%@" completed on a non-main \
           thread. Make sure to use ".receive(on:)" on any effects that execute on background \
           threads to receive their output on the main thread, or create this store via \
           "Store.unchecked" to disable the main thread checker.
+
+          The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
+          (including all of its scopes and derived view stores) must be done on the main thread.
           """, debugCaseOutput(action))
 
       case .`init`:
         os_log(.fault, dso: rwDso, log: rwLog, """
+          A store created on the main thread was interacted with on a non-main thread: …
+
           "Store.init" was called on a non-main thread. Make sure that stores are initialized on \
           the main thread, or create this store via "Store.unchecked" to disable the main thread \
           checker.
+
+          The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
+          (including all of its scopes and derived view stores) must be done on the main thread.
           """)
 
       case .scope:
         os_log(.fault, dso: rwDso, log: rwLog, """
+          A store created on the main thread was interacted with on a non-main thread: …
+
           "Store.scope" was called on a non-main thread. Make sure that "Store.scope" is always \
           called on the main thread, or create this store via "Store.unchecked" to disable the \
           main thread checker.
+
+          The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
+          (including all of its scopes and derived view stores) must be done on the main thread.
           """)
 
       case let .send(action, originatingAction: nil):
         os_log(.fault, dso: rwDso, log: rwLog, """
+          A store created on the main thread was interacted with on a non-main thread: …
+
           "ViewStore.send(%@)" was called on a non-main thread. Make sure \
           that "ViewStore.send" is always called on the main thread, or create this store via \
           "Store.unchecked" to disable the main thread checker.
+
+          The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
+          (including all of its scopes and derived view stores) must be done on the main thread.
           """, debugCaseOutput(action))
 
       case let .send(action, originatingAction: .some(originatingAction)):
         os_log(.fault, dso: rwDso, log: rwLog, """
+          A store created on the main thread was interacted with on a non-main thread: …
+
           An effect returned from "%@" emitted the action \
           "%@" on a non-main thread. Make sure to use ".receive(on:)" on \
           any effects that execute on background threads to receive their output on the main \
           thread, or create this store via "Store.unchecked" to disable the main thread checker.
+
+          The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
+          (including all of its scopes and derived view stores) must be done on the main thread.
           """, debugCaseOutput(originatingAction), debugCaseOutput(action))
       }
     
