@@ -374,7 +374,7 @@ public final class Store<State, Action> {
   @inline(__always)
   private func threadCheck(status: ThreadCheckStatus) {
     #if DEBUG
-      guard self.isMainQueueStore && isMainQueue
+      guard self.isMainQueueStore && !isMainQueue
       else { return }
 
       let message: String
