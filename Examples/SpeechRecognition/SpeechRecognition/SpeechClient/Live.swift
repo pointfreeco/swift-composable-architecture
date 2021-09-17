@@ -7,8 +7,6 @@ extension SpeechClient {
     var audioEngine: AVAudioEngine?
     var inputNode: AVAudioInputNode?
     var recognitionTask: SFSpeechRecognitionTask?
-    var speechRecognizer: SFSpeechRecognizer?
-    var speechRecognizerDelegate: SpeechRecognizerDelegate?
 
     return Self(
       finishTask: {
@@ -20,21 +18,21 @@ extension SpeechClient {
       },
       recognitionTask: { request in
         Effect.run { subscriber in
-          let cancellable = AnyCancellable {
-            audioEngine?.stop()
-            inputNode?.removeTap(onBus: 0)
-            recognitionTask?.cancel()
-//            dependencies[id]?.cancel()
-//            dependencies[id] = nil
-          }
-
-          speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))!
-          speechRecognizerDelegate = SpeechRecognizerDelegate(
+          let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))!
+          let speechRecognizerDelegate = SpeechRecognizerDelegate(
             availabilityDidChange: { available in
               subscriber.send(.availabilityDidChange(isAvailable: available))
             }
           )
-          speechRecognizer?.delegate = speechRecognizerDelegate
+          speechRecognizer.delegate = speechRecognizerDelegate
+
+          let cancellable = AnyCancellable {
+            audioEngine?.stop()
+            inputNode?.removeTap(onBus: 0)
+            recognitionTask?.cancel()
+            _ = speechRecognizer
+            _ = speechRecognizerDelegate
+          }
 
           audioEngine = AVAudioEngine()
           let audioSession = AVAudioSession.sharedInstance()
@@ -47,7 +45,7 @@ extension SpeechClient {
           }
           inputNode = audioEngine!.inputNode
 
-          recognitionTask = speechRecognizer!.recognitionTask(with: request) { result, error in
+          recognitionTask = speechRecognizer.recognitionTask(with: request) { result, error in
             switch (result, error) {
             case let (.some(result), _):
               subscriber.send(.taskResult(SpeechRecognitionResult(result)))
