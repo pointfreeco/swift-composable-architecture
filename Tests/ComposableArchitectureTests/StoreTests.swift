@@ -451,7 +451,13 @@ final class StoreTests: XCTestCase {
   func testNonMainQueueStore() {
     for _ in 1...100 {
       DispatchQueue.global().async {
-        let viewStore = ViewStore(Store<Int, ()>(initialState: 0, reducer: .empty, environment: ()))
+        let viewStore = ViewStore(
+          Store.unchecked(
+            initialState: 0,
+            reducer: Reducer<Int, Void, Void>.empty,
+            environment: ()
+          )
+        )
         viewStore.send(())
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
           viewStore.send(())
