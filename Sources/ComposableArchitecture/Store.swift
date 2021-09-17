@@ -407,7 +407,6 @@ public final class Store<State, Action> {
       guard self.mainQueueChecksEnabled && !isMainQueue
       else { return }
 
-      let message: String
       switch status {
       case let .effectCompletion(action):
         os_log(.fault, dso: rwDso, log: rwLog, """
@@ -471,23 +470,6 @@ public final class Store<State, Action> {
           (including all of its scopes and derived view stores) must be done on the main thread.
           """, debugCaseOutput(originatingAction), debugCaseOutput(action))
       }
-    
-//      breakpoint(
-//        """
-//        ---
-//        Warning:
-//
-//        A store created on the main thread was interacted with on a non-main thread:
-//
-//          Thread: \(Thread.current)
-//
-//        \(message)
-//
-//        The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
-//        (including all of its scopes and derived view stores) must be done on the main thread.
-//        ---
-//        """
-//      )
     #endif
   }
 }
