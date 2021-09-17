@@ -2,7 +2,7 @@ import CasePaths
 import Combine
 import SwiftUI
 
-// NB: Deprecated after 0.27.0:
+// NB: Deprecated after 0.27.1:
 
 extension AlertState.Button {
   @available(*, deprecated, message: "Cancel buttons must be given an explicit label as their first argument")
@@ -29,6 +29,77 @@ extension View {
     dismiss: Action
   ) -> some View {
     self.confirmationDialog(store, dismiss: dismiss)
+  }
+}
+
+extension Store {
+  @available(
+    *, deprecated,
+    message:
+      "If you use this method, please open a discussion on GitHub and let us know how: https://github.com/pointfreeco/swift-composable-architecture/discussions/new"
+  )
+  public func publisherScope<P: Publisher, LocalState, LocalAction>(
+    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P,
+    action fromLocalAction: @escaping (LocalAction) -> Action
+  ) -> AnyPublisher<Store<LocalState, LocalAction>, Never>
+  where P.Output == LocalState, P.Failure == Never {
+
+    func extractLocalState(_ state: State) -> LocalState? {
+      var localState: LocalState?
+      _ = toLocalState(Just(state).eraseToAnyPublisher())
+        .sink { localState = $0 }
+      return localState
+    }
+
+    return toLocalState(self.state.eraseToAnyPublisher())
+      .map { localState in
+        let localStore = Store<LocalState, LocalAction>(
+          initialState: localState,
+          reducer: .init { localState, localAction, _ in
+            self.send(fromLocalAction(localAction))
+            localState = extractLocalState(self.state.value) ?? localState
+            return .none
+          },
+          environment: ()
+        )
+
+        localStore.parentCancellable = self.state
+          .sink { [weak localStore] state in
+            guard let localStore = localStore else { return }
+            localStore.state.value = extractLocalState(state) ?? localStore.state.value
+          }
+        return localStore
+      }
+      .eraseToAnyPublisher()
+  }
+
+  @available(
+    *, deprecated,
+    message:
+      "If you use this method, please open a discussion on GitHub and let us know how: https://github.com/pointfreeco/swift-composable-architecture/discussions/new"
+  )
+  public func publisherScope<P: Publisher, LocalState>(
+    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P
+  ) -> AnyPublisher<Store<LocalState, Action>, Never>
+  where P.Output == LocalState, P.Failure == Never {
+    self.publisherScope(state: toLocalState, action: { $0 })
+  }
+}  
+
+extension ViewStore {
+  @available(
+    *, deprecated,
+    message:
+      "Dynamic member lookup is no longer supported for bindable state. Instead of dot-chaining on the view store, e.g. 'viewStore.$value', invoke the 'binding' method on view store with a key path to the value, e.g. 'viewStore.binding(\\.$value)'. For more on this change, see: https://github.com/pointfreeco/swift-composable-architecture/pull/810"
+  )
+  public subscript<Value>(
+    dynamicMember keyPath: WritableKeyPath<State, BindableState<Value>>
+  ) -> Binding<Value>
+  where Action: BindableAction, Action.State == State, Value: Equatable {
+    self.binding(
+      get: { $0[keyPath: keyPath].wrappedValue },
+      send: { .binding(.set(keyPath, $0)) }
+    )
   }
 }
 
@@ -86,7 +157,7 @@ extension View {
     @available(
       *, deprecated,
       message:
-        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. Bindings are now derived via dynamic member lookup to that 'BindableState' (for example, 'viewStore.$value'). For dynamic member lookup to be available, the view store's 'Action' type must also conform to 'BindableAction'."
+        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. Bindings are now derived via 'ViewStore.binding' with a key path to that 'BindableState' (for example, 'viewStore.binding(\\.$value)'). For dynamic member lookup to be available, the view store's 'Action' type must also conform to 'BindableAction'."
     )
     public func binding<LocalState>(
       keyPath: WritableKeyPath<State, LocalState>,
@@ -151,7 +222,7 @@ extension View {
     @available(
       *, deprecated,
       message:
-        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. Bindings are now derived via dynamic member lookup to that 'BindableState' (for example, 'viewStore.$value'). For dynamic member lookup to be available, the view store's 'Action' type must also conform to 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'BindableState' and 'BindableAction'."
+        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. Bindings are now derived via 'ViewStore.binding' with a key path to that 'BindableState' (for example, 'viewStore.binding(\\.$value)'). For dynamic member lookup to be available, the view store's 'Action' type must also conform to 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'BindableState' and 'BindableAction'."
     )
     public func binding<LocalState>(
       keyPath: WritableKeyPath<State, LocalState>,
