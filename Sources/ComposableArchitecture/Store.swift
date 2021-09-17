@@ -373,7 +373,7 @@ public final class Store<State, Action> {
     self.publisherScope(state: toLocalState, action: { $0 })
   }
 
-  func send(_ action: Action, originatingFrom originatingAction: Action?) {
+  func send(_ action: Action, originatingFrom originatingAction: Action? = nil) {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
     self.bufferedActions.append(action)
