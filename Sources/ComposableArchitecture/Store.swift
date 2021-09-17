@@ -139,8 +139,8 @@ public final class Store<State, Action> {
     self.reducer = { state, action in reducer.run(&state, action, environment) }
 
     #if DEBUG
-    DispatchQueue.main.setSpecific(key: mainQueueKey, value: value)
-    self.isMainThreadStore = DispatchQueue.getSpecific(key: mainQueueKey) == value
+    DispatchQueue.main.setSpecific(key: mainQueueKey, value: mainQueueValue)
+    self.isMainThreadStore = DispatchQueue.getSpecific(key: mainQueueKey) == mainQueueValue
     #endif
   }
 
@@ -429,7 +429,7 @@ public final class Store<State, Action> {
   @inline(__always)
   private func threadCheck(status: ThreadCheckStatus) {
     #if DEBUG
-      guard self.isMainThreadStore && DispatchQueue.getSpecific(key: mainQueueKey) != value
+      guard self.isMainThreadStore && DispatchQueue.getSpecific(key: mainQueueKey) != mainQueueValue
       else { return }
 
       let message: String
@@ -482,5 +482,4 @@ public final class Store<State, Action> {
 }
 
 private let mainQueueKey = DispatchSpecificKey<UInt8>()
-private let value: UInt8 = 0
-private var setSpecific: () = { DispatchQueue.main.setSpecific(key: mainQueueKey, value: value) }()
+private let mainQueueValue: UInt8 = 0
