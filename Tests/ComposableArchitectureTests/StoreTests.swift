@@ -459,7 +459,8 @@ final class StoreTests: XCTestCase {
       }
     }
 
-    // Allow asychnronous code run for a bit to make sure the warning breakpoint is never tripped.
+    // Allow asychnronous code to run for a bit to make sure the warning breakpoint is
+    // never tripped.
     _ = XCTWaiter.wait(for: [.init()], timeout: 1)
   }
 }
