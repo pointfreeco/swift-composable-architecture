@@ -53,15 +53,14 @@ extension Store {
       .removeDuplicates(by: { ($0 != nil) == ($1 != nil) })
       .sink { state in
         if var state = state {
-          unwrap(self.scope {
-            state = $0 ?? state
-            return state
-          })
+          unwrap(
+            self.scope {
+              state = $0 ?? state
+              return state
+            })
         } else {
           `else`()
         }
       }
   }
 }
-
-

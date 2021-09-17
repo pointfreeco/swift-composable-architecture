@@ -55,7 +55,7 @@ struct BindingFormView: View {
       Form {
         Section(header: Text(template: readMe, .caption)) {
           HStack {
-            TextField("Type here", text: viewStore.$text)
+            TextField("Type here", text: viewStore.binding(\.$text))
               .disableAutocorrection(true)
               .foregroundColor(viewStore.toggleIsOn ? .gray : .primary)
 
@@ -63,9 +63,9 @@ struct BindingFormView: View {
           }
           .disabled(viewStore.toggleIsOn)
 
-          Toggle("Disable other controls", isOn: viewStore.$toggleIsOn)
+          Toggle("Disable other controls", isOn: viewStore.binding(\.$toggleIsOn))
 
-          Stepper(value: viewStore.$stepCount, in: 0...100) {
+          Stepper(value: viewStore.binding(\.$stepCount), in: 0...100) {
             Text("Max slider value: \(viewStore.stepCount)")
               .font(Font.body.monospacedDigit())
           }
@@ -75,7 +75,7 @@ struct BindingFormView: View {
             Text("Slider value: \(Int(viewStore.sliderValue))")
               .font(Font.body.monospacedDigit())
 
-            Slider(value: viewStore.$sliderValue, in: 0...Double(viewStore.stepCount))
+            Slider(value: viewStore.binding(\.$sliderValue), in: 0...Double(viewStore.stepCount))
           }
           .disabled(viewStore.toggleIsOn)
         }

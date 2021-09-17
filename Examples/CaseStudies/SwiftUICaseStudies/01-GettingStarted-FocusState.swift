@@ -54,10 +54,10 @@ let focusDemoReducer = Reducer<
           Text(template: readMe, .caption)
 
           VStack {
-            TextField("Username", text: viewStore.$username)
+            TextField("Username", text: viewStore.binding(\.$username))
               .focused($focusedField, equals: .username)
 
-            SecureField("Password", text: viewStore.$password)
+            SecureField("Password", text: viewStore.binding(\.$password))
               .focused($focusedField, equals: .password)
 
             Button("Sign In") {
@@ -68,7 +68,7 @@ let focusDemoReducer = Reducer<
           Spacer()
         }
         .padding()
-        .synchronize(viewStore.$focusedField, self.$focusedField)
+        .synchronize(viewStore.binding(\.$focusedField), self.$focusedField)
       }
       .navigationBarTitle("Focus demo")
     }
