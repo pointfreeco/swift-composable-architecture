@@ -124,23 +124,48 @@ public final class Store<State, Action> {
     private let dispatchToken: DispatchToken?
   #endif
 
-  /// Initializes a store from an initial state, a reducer, an environment, and a dispatch queue.
+  /// Initializes a store from an initial state, a reducer, and an environment.
   ///
   /// - Parameters:
   ///   - initialState: The state to start the application in.
   ///   - reducer: The reducer that powers the business logic of the application.
   ///   - environment: The environment of dependencies for the application.
-  ///   - boundTo: Some dispatch queue onto which the store is assumed to process
-  ///   operations. If no queue is specified, the store should run on the main queue.
   ///
-  /// - Note: You are responsible for dispatching store's operations on the correct queue.
+  /// - Note: This store should operate on the main queue. You can use the factory
+  /// ``boundTo(dispatchQueue:initialState:reducer:environment:)`` to instantiate
+  /// a store you intend to run on some arbitrary serial queue.
   public convenience init<Environment>(
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
-    environment: Environment,
-    boundTo dispatchQueue: DispatchQueue = .main
-  ) {
-    
+    environment: Environment
+  ){
+    self.init(
+      initialState: initialState,
+      reducer: reducer,
+      environment: environment,
+      dispatchToken: nil
+    )
+  }
+  
+  /// Initializes a store from an initial state, a reducer, and an environment, that operate
+  /// on some dispatch queue.
+  ///
+  /// - Parameters:
+  ///   - dispatchQueue: Some dispatchQueue the store interact on.
+  ///   - initialState: The state to start the application in.
+  ///   - reducer: The reducer that powers the business logic of the application.
+  ///   - environment: The environment of dependencies for the application.
+  ///
+  /// - Note: This factory is only a declaration of intent to operate on a dispatch queue.
+  /// This only enables runtime checks that interactions with the store happen on the specified
+  /// queue for debug builds, and you are responsible for dispatching these interactions on the
+  /// correct queue.
+  public static func boundTo<Environment>(
+    dispatchQueue: DispatchQueue,
+    initialState: State,
+    reducer: Reducer<State, Action, Environment>,
+    environment: Environment
+  ) -> Self {
     #if DEBUG
     let token = DispatchToken(dispatchQueue: dispatchQueue)
     if let token = token {
@@ -151,8 +176,7 @@ public final class Store<State, Action> {
     #else
     let token: DispatchToken? = nil
     #endif
-    
-    self.init(
+    return self.init(
       initialState: initialState,
       reducer: reducer,
       environment: environment,

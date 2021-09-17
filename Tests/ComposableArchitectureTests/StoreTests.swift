@@ -511,38 +511,28 @@ final class StoreTests: XCTestCase {
   func testBackgroundDispatchQueue() {
     let queue = DispatchQueue(label: "co.pointfree.swift-composable-architecture_test-dispatch")
     
-    enum Action {
-      case action
-      case onReceive
-    }
     let expectation = XCTestExpectation(description: "Receive action on arbitrary queue")
     
-    let reducer = Reducer<Int, Action, Void> {
-      state, action, _ in
-      switch action {
-      case .action:
-        return Effect(value: .onReceive)
-          .receive(on: queue.eraseToAnyScheduler())
-          .eraseToEffect()
-      case .onReceive:
-        state += 1
-        defer {
-          expectation.fulfill()
-        }
-        return .none
-      }
+    let reducer = Reducer<Int, Void, Void> {
+      state, _, _ in
+      state += 1
+      return .none
     }
-    let store = Store(
+    
+    let store = Store.bound(
+      dispatchQueue: queue,
       initialState: 0,
       reducer: reducer,
-      environment: (),
-      boundTo: queue
+      environment: ()
     )
-    let viewStore = ViewStore(store)
+    
     queue.async {
-      viewStore.send(.action)
+      let viewStore = ViewStore(store)
+      viewStore.send(())
+      XCTAssertEqual(viewStore.state, 1)
+      expectation.fulfill()
     }
+    
     wait(for: [expectation], timeout: 0.01)
-    XCTAssertEqual(viewStore.state, 1)
   }
 }
