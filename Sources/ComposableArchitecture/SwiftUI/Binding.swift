@@ -350,7 +350,6 @@ public struct BindingAction<Root>: Equatable {
       keyPath == bindingAction.keyPath
     }
   }
-}
 #endif
 
 extension BindingAction {
