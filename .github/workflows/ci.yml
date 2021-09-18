@@ -33,6 +33,7 @@ jobs:
     strategy:
       matrix:
         xcode:
+          - 12.4
           - 12.5
           - '13.0'
     steps:
