@@ -14,7 +14,7 @@ public func MakeInjectable<T>(reducer: @autoclosure () -> T) -> T {
     defer { currentCallerSymbol = save }
     var callStack = Thread.callStackReturnAddresses
     while !callStack.isEmpty,
-          let callerAddress = callStack.remove(at: 0).pointerValue,
+          let callerAddress = callStack.removeFirst().pointerValue,
         dladdr(callerAddress, &info) != 0,
         let nearestSymbol = info.dli_sname {
         let callerSymbol = String(cString: nearestSymbol)
