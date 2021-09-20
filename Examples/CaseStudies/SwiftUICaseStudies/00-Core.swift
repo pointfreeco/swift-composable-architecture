@@ -7,7 +7,9 @@ struct RootState {
   var alertAndActionSheet = AlertAndSheetState()
   var animation = AnimationsState()
   var bindingBasics = BindingBasicsState()
-  var bindingForm = BindingFormState()
+  #if compiler(>=5.4)
+    var bindingForm = BindingFormState()
+  #endif
   var clock = ClockState()
   var counter = CounterState()
   var dieRoll = DieRollState()
@@ -15,7 +17,9 @@ struct RootState {
   var effectsCancellation = EffectsCancellationState()
   var effectsTimers = TimersState()
   var episodes = EpisodesState(episodes: .mocks)
-  var focusDemo = FocusDemoState()
+  #if compiler(>=5.5)
+    var focusDemo = FocusDemoState()
+  #endif
   var lifecycle = LifecycleDemoState()
   var loadThenNavigate = LoadThenNavigateState()
   var loadThenNavigateList = LoadThenNavigateListState()
@@ -39,14 +43,18 @@ enum RootAction {
   case alertAndActionSheet(AlertAndSheetAction)
   case animation(AnimationsAction)
   case bindingBasics(BindingBasicsAction)
-  case bindingForm(BindingFormAction)
+  #if compiler(>=5.4)
+    case bindingForm(BindingFormAction)
+  #endif
   case clock(ClockAction)
   case counter(CounterAction)
   case dieRoll(DieRollAction)
   case effectsBasics(EffectsBasicsAction)
   case effectsCancellation(EffectsCancellationAction)
   case episodes(EpisodesAction)
-  case focusDemo(FocusDemoAction)
+  #if compiler(>=5.5)
+    case focusDemo(FocusDemoAction)
+  #endif
   case lifecycle(LifecycleDemoAction)
   case loadThenNavigate(LoadThenNavigateAction)
   case loadThenNavigateList(LoadThenNavigateListAction)
@@ -120,12 +128,19 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       action: /RootAction.bindingBasics,
       environment: { _ in .init() }
     ),
-  bindingFormReducer
-    .pullback(
-      state: \.bindingForm,
-      action: /RootAction.bindingForm,
-      environment: { _ in .init() }
-    ),
+  .init { state, action, environment in
+    #if compiler(>=5.4)
+      return bindingFormReducer
+        .pullback(
+          state: \.bindingForm,
+          action: /RootAction.bindingForm,
+          environment: { _ in .init() }
+        )
+        .run(&state, action, environment)
+    #else
+      return .none
+    #endif
+  },
   clockReducer
     .pullback(
       state: \.clock,
@@ -162,12 +177,19 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       action: /RootAction.episodes,
       environment: { .init(favorite: $0.favorite, mainQueue: $0.mainQueue) }
     ),
-  focusDemoReducer
-    .pullback(
-      state: \.focusDemo,
-      action: /RootAction.focusDemo,
-      environment: { _ in .init() }
-    ),
+  .init { state, action, environment in
+    #if compiler(>=5.5)
+      return focusDemoReducer
+        .pullback(
+          state: \.focusDemo,
+          action: /RootAction.focusDemo,
+          environment: { _ in .init() }
+        )
+        .run(&state, action, environment)
+    #else
+      return .none
+    #endif
+  },
   lifecycleDemoReducer
     .pullback(
       state: \.lifecycle,
