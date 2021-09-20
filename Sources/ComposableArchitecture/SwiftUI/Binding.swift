@@ -287,20 +287,29 @@ import SwiftUI
       )
     }
   }
+#endif
 
-  /// An action that describes simple mutations to some root state at a writable key path.
-  ///
-  /// Used in conjunction with ``BindableState`` and ``BindableAction`` to safely eliminate the
-  /// boilerplate typically associated with mutating multiple fields in state.
-  ///
-  /// See the documentation for ``BindableState`` for more details.
-  public struct BindingAction<Root>: Equatable {
-    public let keyPath: PartialKeyPath<Root>
+/// An action that describes simple mutations to some root state at a writable key path.
+///
+/// Used in conjunction with ``BindableState`` and ``BindableAction`` to safely eliminate the
+/// boilerplate typically associated with mutating multiple fields in state.
+///
+/// See the documentation for ``BindableState`` for more details.
+public struct BindingAction<Root>: Equatable {
+  public let keyPath: PartialKeyPath<Root>
 
-    let set: (inout Root) -> Void
-    let value: Any
-    let valueIsEqualTo: (Any) -> Bool
+  let set: (inout Root) -> Void
+  let value: Any
+  let valueIsEqualTo: (Any) -> Bool
 
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.keyPath == rhs.keyPath && lhs.valueIsEqualTo(rhs.value)
+  }
+}
+
+
+#if compiler(>=5.4)
+  extension BindingAction {
     /// Returns an action that describes simple mutations to some root state at a writable key path
     /// to bindable state.
     ///
@@ -322,139 +331,6 @@ import SwiftUI
       )
     }
 
-    /// Transforms a binding action over some root state to some other type of root state given a
-    /// key path.
-    ///
-    /// Useful in transforming binding actions on view state into binding actions on reducer state
-    /// when the domain contains ``BindableState`` and ``BindableAction``.
-    ///
-    /// For example, we can model an app that can bind an integer count to a stepper and make a
-    /// network request to fetch a fact about that integer with the following domain:
-    ///
-    /// ```swift
-    /// struct AppState: Equatable {
-    ///   @BindableState var count = 0
-    ///   var fact: String?
-    ///   ...
-    /// }
-    ///
-    /// enum AppAction: BindableAction {
-    ///   case binding(BindingAction<AppState>
-    ///   case factButtonTapped
-    ///   case factResponse(String?)
-    ///   ...
-    /// }
-    ///
-    /// struct AppEnvironment {
-    ///   var numberFact: (Int) -> Effect<String, Error>
-    ///   ...
-    /// }
-    ///
-    /// let appReducer = Reducer<AppState, AppAction, AppEnvironment> {
-    ///   ...
-    /// }
-    /// .binding()
-    ///
-    /// struct AppView: View {
-    ///   let store: Store
-    ///
-    ///   var view: some View {
-    ///     ...
-    ///   }
-    /// }
-    /// ```
-    ///
-    /// The view may want to limit the state and actions it has access to by introducing a
-    /// view-specific domain that contains only the state and actions the view needs. Not only will
-    /// this minimize the number of times a view's `body` is computed, it will prevent the view
-    /// from accessing state or sending actions outside its purview. We can define it with its own
-    /// bindable state and bindable action:
-    ///
-    /// ```swift
-    /// extension AppView {
-    ///   struct ViewState: Equatable {
-    ///     @BindableState var count: Int
-    ///     let fact: String?
-    ///     // no access to any other state on `AppState`, like child domains
-    ///   }
-    ///
-    ///   enum ViewAction: BindableAction {
-    ///     case binding(BindingAction<ViewState>)
-    ///     case factButtonTapped
-    ///     // no access to any other action on `AppAction`, like `factResponse`
-    ///   }
-    /// }
-    /// ```
-    ///
-    /// In order to transform a `BindingAction<ViewState>` sent from the view domain into a
-    /// `BindingAction<AppState>`, we need a writable key path from `AppState` to `ViewState`. We
-    /// can synthesize one by defining a computed property on `AppState` with a getter and a setter.
-    /// The setter should communicate any mutations to bindable state back to the parent state:
-    ///
-    /// ```swift
-    /// extension AppState {
-    ///   var view: AppView.ViewState {
-    ///     get { .init(count: self.count, fact: self.fact) }
-    ///     set { self.count = newValue.count }
-    ///   }
-    /// }
-    /// ```
-    ///
-    /// With this property defined it is now possible to transform a `BindingAction<ViewState>` into
-    /// a `BindingAction<AppState>`, which means we can transform a `ViewAction` into an
-    /// `AppAction`. This is where `pullback` comes into play: we can unwrap the view action's
-    /// binding action on view state and transform it with `pullback` to work with app state. We can
-    /// define a helper that performs this transformation, as well as route any other view actions
-    /// to their reducer equivalents:
-    ///
-    /// ```swift
-    /// extension AppAction {
-    ///   static func view(_ viewAction: AppView.ViewAction) -> Self {
-    ///     switch viewAction {
-    ///     case let .binding(action):
-    ///       // transform view binding actions into app binding actions
-    ///       return .binding(action.pullback(\.view))
-    ///
-    ///     case let .factButtonTapped
-    ///       // route `ViewAction.factButtonTapped` to `AppAction.factButtonTapped`
-    ///       return .factButtonTapped
-    ///     }
-    ///   }
-    /// }
-    /// ```
-    ///
-    /// Finally, in the view we can invoke ``Store/scope(state:action:)`` with these domain
-    /// transformations to leverage the view store's binding helpers:
-    ///
-    /// ```swift
-    /// WithViewStore(
-    ///   self.store.scope(state: \.view, action: AppAction.view)
-    /// ) { viewStore in
-    ///   Stepper("\(viewStore.count)", viewStore.binding(\.$count))
-    ///   Button("Get number fact") { viewStore.send(.factButtonTapped) }
-    ///   if let fact = viewStore.fact {
-    ///     Text(fact)
-    ///   }
-    /// }
-    /// ```
-    ///
-    /// - Parameter keyPath: A key path from a new type of root state to the original root state.
-    /// - Returns: A binding action over a new type of root state.
-    public func pullback<NewRoot>(
-      _ keyPath: WritableKeyPath<NewRoot, Root>
-    ) -> BindingAction<NewRoot> {
-      .init(
-        keyPath: (keyPath as AnyKeyPath).appending(path: self.keyPath) as! PartialKeyPath<NewRoot>,
-        set: { self.set(&$0[keyPath: keyPath]) },
-        value: self.value,
-        valueIsEqualTo: self.valueIsEqualTo
-      )
-    }
-
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-      lhs.keyPath == rhs.keyPath && lhs.valueIsEqualTo(rhs.value)
-    }
-
     /// Matches a binding action by its key path.
     ///
     /// Implicitly invoked when switching on a reducer's action and pattern matching on a binding
@@ -474,19 +350,152 @@ import SwiftUI
       keyPath == bindingAction.keyPath
     }
   }
+#endif
 
-  extension BindingAction: CustomDumpReflectable {
-    public var customDumpMirror: Mirror {
-      .init(
-        self,
-        children: [
-          "set": (self.keyPath, self.value)
-        ],
-        displayStyle: .enum
-      )
-    }
+extension BindingAction {
+  /// Transforms a binding action over some root state to some other type of root state given a
+  /// key path.
+  ///
+  /// Useful in transforming binding actions on view state into binding actions on reducer state
+  /// when the domain contains ``BindableState`` and ``BindableAction``.
+  ///
+  /// For example, we can model an app that can bind an integer count to a stepper and make a
+  /// network request to fetch a fact about that integer with the following domain:
+  ///
+  /// ```swift
+  /// struct AppState: Equatable {
+  ///   @BindableState var count = 0
+  ///   var fact: String?
+  ///   ...
+  /// }
+  ///
+  /// enum AppAction: BindableAction {
+  ///   case binding(BindingAction<AppState>
+  ///   case factButtonTapped
+  ///   case factResponse(String?)
+  ///   ...
+  /// }
+  ///
+  /// struct AppEnvironment {
+  ///   var numberFact: (Int) -> Effect<String, Error>
+  ///   ...
+  /// }
+  ///
+  /// let appReducer = Reducer<AppState, AppAction, AppEnvironment> {
+  ///   ...
+  /// }
+  /// .binding()
+  ///
+  /// struct AppView: View {
+  ///   let store: Store
+  ///
+  ///   var view: some View {
+  ///     ...
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// The view may want to limit the state and actions it has access to by introducing a
+  /// view-specific domain that contains only the state and actions the view needs. Not only will
+  /// this minimize the number of times a view's `body` is computed, it will prevent the view
+  /// from accessing state or sending actions outside its purview. We can define it with its own
+  /// bindable state and bindable action:
+  ///
+  /// ```swift
+  /// extension AppView {
+  ///   struct ViewState: Equatable {
+  ///     @BindableState var count: Int
+  ///     let fact: String?
+  ///     // no access to any other state on `AppState`, like child domains
+  ///   }
+  ///
+  ///   enum ViewAction: BindableAction {
+  ///     case binding(BindingAction<ViewState>)
+  ///     case factButtonTapped
+  ///     // no access to any other action on `AppAction`, like `factResponse`
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// In order to transform a `BindingAction<ViewState>` sent from the view domain into a
+  /// `BindingAction<AppState>`, we need a writable key path from `AppState` to `ViewState`. We
+  /// can synthesize one by defining a computed property on `AppState` with a getter and a setter.
+  /// The setter should communicate any mutations to bindable state back to the parent state:
+  ///
+  /// ```swift
+  /// extension AppState {
+  ///   var view: AppView.ViewState {
+  ///     get { .init(count: self.count, fact: self.fact) }
+  ///     set { self.count = newValue.count }
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// With this property defined it is now possible to transform a `BindingAction<ViewState>` into
+  /// a `BindingAction<AppState>`, which means we can transform a `ViewAction` into an
+  /// `AppAction`. This is where `pullback` comes into play: we can unwrap the view action's
+  /// binding action on view state and transform it with `pullback` to work with app state. We can
+  /// define a helper that performs this transformation, as well as route any other view actions
+  /// to their reducer equivalents:
+  ///
+  /// ```swift
+  /// extension AppAction {
+  ///   static func view(_ viewAction: AppView.ViewAction) -> Self {
+  ///     switch viewAction {
+  ///     case let .binding(action):
+  ///       // transform view binding actions into app binding actions
+  ///       return .binding(action.pullback(\.view))
+  ///
+  ///     case let .factButtonTapped
+  ///       // route `ViewAction.factButtonTapped` to `AppAction.factButtonTapped`
+  ///       return .factButtonTapped
+  ///     }
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// Finally, in the view we can invoke ``Store/scope(state:action:)`` with these domain
+  /// transformations to leverage the view store's binding helpers:
+  ///
+  /// ```swift
+  /// WithViewStore(
+  ///   self.store.scope(state: \.view, action: AppAction.view)
+  /// ) { viewStore in
+  ///   Stepper("\(viewStore.count)", viewStore.binding(\.$count))
+  ///   Button("Get number fact") { viewStore.send(.factButtonTapped) }
+  ///   if let fact = viewStore.fact {
+  ///     Text(fact)
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// - Parameter keyPath: A key path from a new type of root state to the original root state.
+  /// - Returns: A binding action over a new type of root state.
+  public func pullback<NewRoot>(
+    _ keyPath: WritableKeyPath<NewRoot, Root>
+  ) -> BindingAction<NewRoot> {
+    .init(
+      keyPath: (keyPath as AnyKeyPath).appending(path: self.keyPath) as! PartialKeyPath<NewRoot>,
+      set: { self.set(&$0[keyPath: keyPath]) },
+      value: self.value,
+      valueIsEqualTo: self.valueIsEqualTo
+    )
   }
+}
 
+extension BindingAction: CustomDumpReflectable {
+  public var customDumpMirror: Mirror {
+    .init(
+      self,
+      children: [
+        "set": (self.keyPath, self.value)
+      ],
+      displayStyle: .enum
+    )
+  }
+}
+
+#if compiler(>=5.4)
   extension Reducer where Action: BindableAction, State == Action.State {
     /// Returns a reducer that applies ``BindingAction`` mutations to `State` before running this
     /// reducer's logic.
