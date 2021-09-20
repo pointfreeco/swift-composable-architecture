@@ -37,7 +37,8 @@ enum AlertAndConfirmationDialogAction: Equatable {
 struct AlertAndConfirmationDialogEnvironment {}
 
 let alertAndConfirmationDialogReducer = Reducer<
-  AlertAndConfirmationDialogState, AlertAndConfirmationDialogAction, AlertAndConfirmationDialogEnvironment
+  AlertAndConfirmationDialogState, AlertAndConfirmationDialogAction,
+  AlertAndConfirmationDialogEnvironment
 > { state, action, _ in
 
   switch action {

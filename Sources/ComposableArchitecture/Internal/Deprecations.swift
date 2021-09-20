@@ -5,7 +5,9 @@ import SwiftUI
 // NB: Deprecated after 0.27.1:
 
 extension AlertState.Button {
-  @available(*, deprecated, message: "Cancel buttons must be given an explicit label as their first argument")
+  @available(
+    *, deprecated, message: "Cancel buttons must be given an explicit label as their first argument"
+  )
   public static func cancel(action: AlertState.ButtonAction? = nil) -> Self {
     .init(action: action, label: TextState("Cancel"), role: .cancel)
   }

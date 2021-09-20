@@ -47,7 +47,7 @@ final class DebugTests: XCTestCase {
           message: .init("Something went wrong..."),
           buttons: [
             .destructive(.init("Destroy"), action: .send(true, animation: .default)),
-            .cancel(.init("Cancel"), action: .send(false))
+            .cancel(.init("Cancel"), action: .send(false)),
           ]
         ),
         to: &dump
