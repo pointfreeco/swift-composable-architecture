@@ -447,10 +447,10 @@ final class StoreTests: XCTestCase {
         .child(2),
       ])
   }
-  
+
   func testNonMainQueueStore() {
     var expectations: [XCTestExpectation] = []
-    for i in 1 ... 100 {
+    for i in 1...100 {
       let expectation = XCTestExpectation(description: "\(i)th iteration is complete")
       expectations.append(expectation)
       DispatchQueue.global().async {

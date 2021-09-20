@@ -136,7 +136,7 @@ public final class Store<State, Action> {
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   var state: CurrentValueSubject<State, Never>
   #if DEBUG
-  private let mainQueueChecksEnabled: Bool
+    private let mainQueueChecksEnabled: Bool
   #endif
 
   /// Initializes a store from an initial state, a reducer, and an environment.
@@ -453,7 +453,7 @@ public final class Store<State, Action> {
           thread, or create this store via "Store.unchecked" to disable the main thread checker.
           """
       }
-    
+
       breakpoint(
         """
         ---
@@ -483,7 +483,7 @@ public final class Store<State, Action> {
     self.reducer = { state, action in reducer.run(&state, action, environment) }
 
     #if DEBUG
-    self.mainQueueChecksEnabled = mainQueueChecksEnabled
+      self.mainQueueChecksEnabled = mainQueueChecksEnabled
     #endif
   }
 }
