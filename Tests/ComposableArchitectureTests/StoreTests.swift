@@ -457,7 +457,7 @@ final class StoreTests: XCTestCase {
         let viewStore = ViewStore(
           Store.unchecked(
             initialState: 0,
-            reducer: Reducer<Int, Void, Void> {
+            reducer: Reducer<Int, Void, XCTestExpectation> {
               state, _, _ in
               state += 1
               if state == 2 {
@@ -465,7 +465,7 @@ final class StoreTests: XCTestCase {
               }
               return .none
             },
-            environment: ()
+            environment: expectation
           )
         )
         viewStore.send(())
