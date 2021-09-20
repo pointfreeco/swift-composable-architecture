@@ -167,18 +167,8 @@ public final class ViewStore<State, Action>: ObservableObject {
     get: @escaping (State) -> LocalState,
     send localStateToViewAction: @escaping (LocalState) -> Action
   ) -> Binding<LocalState> {
-    Binding(
-      get: { get(self._state.value) },
-      set: { newLocalState, transaction in
-        if transaction.animation != nil {
-          withTransaction(transaction) {
-            self.send(localStateToViewAction(newLocalState))
-          }
-        } else {
-          self.send(localStateToViewAction(newLocalState))
-        }
-      }
-    )
+    ObservedObject(wrappedValue: self)
+      .projectedValue[get: .init(rawValue: get), send: .init(rawValue: localStateToViewAction)]
   }
 
   /// Derives a binding from the store that prevents direct writes to state and instead sends
@@ -270,6 +260,14 @@ public final class ViewStore<State, Action>: ObservableObject {
   public func binding(send action: Action) -> Binding<State> {
     self.binding(send: { _ in action })
   }
+
+  private subscript<LocalState>(
+    get state: HashableWrapper<(State) -> LocalState>,
+    send action: HashableWrapper<(LocalState) -> Action>
+  ) -> LocalState {
+    get { state.rawValue(self.state) }
+    set { self.send(action.rawValue(newValue)) }
+  }
 }
 
 extension ViewStore where State: Equatable {
@@ -327,4 +325,10 @@ public struct StorePublisher<State>: Publisher {
   where LocalState: Equatable {
     .init(upstream: self.upstream.map(keyPath).removeDuplicates(), viewStore: self.viewStore)
   }
+}
+
+private struct HashableWrapper<Value>: Hashable {
+  let rawValue: Value
+  static func == (lhs: Self, rhs: Self) -> Bool { false }
+  func hash(into hasher: inout Hasher) {}
 }
