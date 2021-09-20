@@ -307,7 +307,6 @@ public struct BindingAction<Root>: Equatable {
   }
 }
 
-
 #if compiler(>=5.4)
   extension BindingAction {
     /// Returns an action that describes simple mutations to some root state at a writable key path
