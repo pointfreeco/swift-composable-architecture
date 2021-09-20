@@ -120,7 +120,7 @@ import Foundation
 /// of the store are also checked to make sure that work is performed on the main thread.
 ///
 /// If you need a store that runs on a non-main thread, which should be very rare and you should
-/// have a very good reason to do so, then you can consturct a store via the
+/// have a very good reason to do so, then you can construct a store via the
 /// ``Store/unchecked(initialState:reducer:environment:)`` static method to opt out of all main
 /// thread checks.
 ///
