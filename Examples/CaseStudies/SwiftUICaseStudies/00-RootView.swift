@@ -73,11 +73,11 @@ struct RootView: View {
             )
 
             NavigationLink(
-              "Alerts and Action Sheets",
-              destination: AlertAndSheetView(
+              "Alerts and Confirmation Dialogs",
+              destination: AlertAndConfirmationDialogView(
                 store: self.store.scope(
-                  state: \.alertAndActionSheet,
-                  action: RootAction.alertAndActionSheet
+                  state: \.alertAndConfirmationDialog,
+                  action: RootAction.alertAndConfirmationDialog
                 )
               )
             )

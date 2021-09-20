@@ -4,6 +4,34 @@ import SwiftUI
 
 // NB: Deprecated after 0.27.1:
 
+extension AlertState.Button {
+  @available(*, deprecated, message: "Cancel buttons must be given an explicit label as their first argument")
+  public static func cancel(action: AlertState.ButtonAction? = nil) -> Self {
+    .init(action: action, label: TextState("Cancel"), role: .cancel)
+  }
+}
+
+@available(iOS 13, *)
+@available(macOS 12, *)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
+@available(*, deprecated, renamed: "ConfirmationDialogState")
+public typealias ActionSheetState = ConfirmationDialogState
+
+extension View {
+  @available(iOS 13, *)
+  @available(macOS 12, *)
+  @available(tvOS 13, *)
+  @available(watchOS 6, *)
+  @available(*, deprecated, renamed: "confirmationDialog")
+  public func actionSheet<Action>(
+    _ store: Store<ConfirmationDialogState<Action>?, Action>,
+    dismiss: Action
+  ) -> some View {
+    self.confirmationDialog(store, dismiss: dismiss)
+  }
+}
+
 extension Store {
   @available(
     *, deprecated,
@@ -219,14 +247,14 @@ extension AlertState.Button {
     _ label: TextState,
     send action: Action?
   ) -> Self {
-    Self(action: action.map(AlertState.ButtonAction.send), type: .cancel(label: label))
+    .cancel(label, action: action.map(AlertState.ButtonAction.send))
   }
 
   @available(*, deprecated, renamed: "cancel(action:)")
   public static func cancel(
     send action: Action?
   ) -> Self {
-    Self(action: action.map(AlertState.ButtonAction.send), type: .cancel(label: nil))
+    .cancel(action: action.map(AlertState.ButtonAction.send))
   }
 
   @available(*, deprecated, renamed: "default(_:action:)")
@@ -234,7 +262,7 @@ extension AlertState.Button {
     _ label: TextState,
     send action: Action?
   ) -> Self {
-    Self(action: action.map(AlertState.ButtonAction.send), type: .default(label: label))
+    .default(label, action: action.map(AlertState.ButtonAction.send))
   }
 
   @available(*, deprecated, renamed: "destructive(_:action:)")
@@ -242,7 +270,7 @@ extension AlertState.Button {
     _ label: TextState,
     send action: Action?
   ) -> Self {
-    Self(action: action.map(AlertState.ButtonAction.send), type: .destructive(label: label))
+    .destructive(label, action: action.map(AlertState.ButtonAction.send))
   }
 }
 
