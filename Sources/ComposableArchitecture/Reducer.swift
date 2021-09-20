@@ -69,26 +69,25 @@ public struct Reducer<State, Action, Environment> {
   /// its state, it can make a difference if `reducerA` chooses to modify `reducerB`'s state
   /// _before_ or _after_ `reducerB` runs.
   ///
-  /// This is perhaps most easily seen when working with ``Reducer/optional`` reducers, where the
-  /// parent domain may listen to the child domain and `nil` out its state. If the parent reducer
-  /// runs before the child reducer, then the child reducer will not be able to react to its own
-  /// action.
+  /// This is perhaps most easily seen when working with ``optional(breakpointOnNil:file:line:)``
+  /// reducers, where the parent domain may listen to the child domain and `nil` out its state. If
+  /// the parent reducer runs before the child reducer, then the child reducer will not be able to
+  /// react to its own action.
   ///
   /// Similar can be said for a
-  /// ``Reducer/forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer. If the
-  /// parent domain modifies the child collection by moving, removing, or modifying an element
-  /// before the ``Reducer/forEach(state:action:environment:breakpointOnNil:file:line:)-7h573``
-  /// reducer runs, the
-  /// ``Reducer/forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer may
-  /// perform its action against the wrong element, an element that no longer exists, or an element
-  /// in an unexpected state.
+  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer. If the parent
+  /// domain modifies the child collection by moving, removing, or modifying an element before the
+  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer runs, the
+  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer may perform its
+  /// action against the wrong element, an element that no longer exists, or an element in an
+  /// unexpected state.
   ///
   /// Running a parent reducer before a child reducer can be considered an application logic
   /// error, and can produce assertion failures. So you should almost always combine reducers in
   /// order from child to parent domain.
   ///
-  /// Here is an example of how you should combine an ``Reducer/optional`` reducer with a parent
-  /// domain:
+  /// Here is an example of how you should combine an ``optional(breakpointOnNil:file:line:)``
+  /// reducer with a parent domain:
   ///
   /// ```swift
   /// let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
@@ -127,26 +126,25 @@ public struct Reducer<State, Action, Environment> {
   /// its state, it can make a difference if `reducerA` chooses to modify `reducerB`'s state
   /// _before_ or _after_ `reducerB` runs.
   ///
-  /// This is perhaps most easily seen when working with ``Reducer/optional`` reducers, where the
-  /// parent domain may listen to the child domain and `nil` out its state. If the parent reducer
-  /// runs before the child reducer, then the child reducer will not be able to react to its own
-  /// action.
+  /// This is perhaps most easily seen when working with ``optional(breakpointOnNil:file:line:)``
+  /// reducers, where the parent domain may listen to the child domain and `nil` out its state. If
+  /// the parent reducer runs before the child reducer, then the child reducer will not be able to
+  /// react to its own action.
   ///
   /// Similar can be said for a
-  /// ``Reducer/forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer. If the
-  /// parent domain modifies the child collection by moving, removing, or modifying an element
-  /// before the ``Reducer/forEach(state:action:environment:breakpointOnNil:file:line:)-7h573``
-  /// reducer runs, the
-  /// ``Reducer/forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer may
-  /// perform its action against the wrong element, an element that no longer exists, or an element
-  /// in an unexpected state.
+  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer. If the parent
+  /// domain modifies the child collection by moving, removing, or modifying an element before the
+  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer runs, the
+  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer may perform its
+  /// action against the wrong element, an element that no longer exists, or an element in an
+  /// unexpected state.
   ///
   /// Running a parent reducer before a child reducer can be considered an application logic error,
   /// and can produce assertion failures. So you should almost always combine reducers in order from
   /// child to parent domain.
   ///
-  /// Here is an example of how you should combine an ``Reducer/optional`` reducer with a parent
-  /// domain:
+  /// Here is an example of how you should combine an ``optional(breakpointOnNil:file:line:)``
+  /// reducer with a parent domain:
   ///
   /// ```swift
   /// let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
@@ -187,17 +185,16 @@ public struct Reducer<State, Action, Environment> {
   /// its state, it can make a difference if `reducerA` chooses to modify `reducerB`'s state
   /// _before_ or _after_ `reducerB` runs.
   ///
-  /// This is perhaps most easily seen when working with ``Reducer/optional`` reducers, where the
-  /// parent domain may listen to the child domain and `nil` out its state. If the parent reducer
-  /// runs before the child reducer, then the child reducer will not be able to react to its own
-  /// action.
+  /// This is perhaps most easily seen when working with ``optional(breakpointOnNil:file:line:)``
+  /// reducers, where the parent domain may listen to the child domain and `nil` out its state. If
+  /// the parent reducer runs before the child reducer, then the child reducer will not be able to
+  /// react to its own action.
   ///
   /// Similar can be said for a
-  /// ``Reducer/forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer. If the
+  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer. If the
   /// parent domain modifies the child collection by moving, removing, or modifying an element
-  /// before the ``Reducer/forEach(state:action:environment:breakpointOnNil:file:line:)-7h573``
-  /// reducer runs, the
-  /// ``Reducer/forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer may
+  /// before the ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer
+  /// runs, the ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer may
   /// perform its action against the wrong element, an element that no longer exists, or an element
   /// in an unexpected state.
   ///
@@ -205,8 +202,8 @@ public struct Reducer<State, Action, Environment> {
   /// and can produce assertion failures. So you should almost always combine reducers in order from
   /// child to parent domain.
   ///
-  /// Here is an example of how you should combine an ``Reducer/optional`` reducer with a parent
-  /// domain:
+  /// Here is an example of how you should combine an ``optional(breakpointOnNil:file:line:)``
+  /// reducer with a parent domain:
   ///
   /// ```swift
   /// let parentReducer: Reducer<ParentState, ParentAction, ParentEnvironment> =
@@ -437,8 +434,8 @@ public struct Reducer<State, Action, Environment> {
   ///     }
   ///     ```
   ///
-  ///     Use ``Store/scope(state:action:)-9iai9`` with ``SwitchStore`` to ensure that views can
-  ///     only send child actions when the child domain is available.
+  ///     Use ``Store/scope(state:action:)`` with ``SwitchStore`` to ensure that views can only send
+  ///     child actions when the child domain is available.
   ///
   ///     ```swift
   ///     SwitchStore(self.parentStore) {
@@ -647,9 +644,8 @@ public struct Reducer<State, Action, Environment> {
   ///     }
   ///     ```
   ///
-  ///     Use ``Store/scope(state:action:)-9iai9`` with ``IfLetStore`` or
-  ///     ``Store/ifLet(then:else:)`` to ensure that views can only send child actions when the
-  ///     child domain is non-`nil`.
+  ///     Use ``Store/scope(state:action:)`` with ``IfLetStore`` or ``Store/ifLet(then:else:)`` to
+  ///     ensure that views can only send child actions when the child domain is non-`nil`.
   ///
   ///     ```swift
   ///     IfLetStore(

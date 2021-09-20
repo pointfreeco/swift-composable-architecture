@@ -90,36 +90,6 @@ final class StoreTests: XCTestCase {
     XCTAssertNoDifference(values, [0, 1])
   }
 
-  func testScopeWithPublisherTransform() {
-    let counterReducer = Reducer<Int, Int, Void> { state, action, _ in
-      state = action
-      return .none
-    }
-    let parentStore = Store(initialState: 0, reducer: counterReducer, environment: ())
-
-    var outputs: [String] = []
-
-    parentStore
-      .publisherScope(state: { $0.map { "\($0)" }.removeDuplicates() })
-      .sink { childStore in
-        childStore.state
-          .sink { outputs.append($0) }
-          .store(in: &self.cancellables)
-      }
-      .store(in: &self.cancellables)
-
-    parentStore.send(0)
-    XCTAssertNoDifference(outputs, ["0"])
-    parentStore.send(0)
-    XCTAssertNoDifference(outputs, ["0"])
-    parentStore.send(1)
-    XCTAssertNoDifference(outputs, ["0", "1"])
-    parentStore.send(1)
-    XCTAssertNoDifference(outputs, ["0", "1"])
-    parentStore.send(2)
-    XCTAssertNoDifference(outputs, ["0", "1", "2"])
-  }
-
   func testScopeCallCount() {
     let counterReducer = Reducer<Int, Void, Void> { state, _, _ in state += 1
       return .none
@@ -249,36 +219,6 @@ final class StoreTests: XCTestCase {
     let store = Store(initialState: 0, reducer: reducer, environment: ())
     store.send(.incr)
     XCTAssertNoDifference(ViewStore(store).state, 100_000)
-  }
-
-  func testPublisherScope() {
-    let appReducer = Reducer<Int, Bool, Void> { state, action, _ in
-      state += action ? 1 : 0
-      return .none
-    }
-
-    let parentStore = Store(initialState: 0, reducer: appReducer, environment: ())
-
-    var outputs: [Int] = []
-
-    parentStore
-      .publisherScope { $0.removeDuplicates() }
-      .sink { outputs.append($0.state.value) }
-      .store(in: &self.cancellables)
-
-    XCTAssertNoDifference(outputs, [0])
-
-    parentStore.send(true)
-    XCTAssertNoDifference(outputs, [0, 1])
-
-    parentStore.send(false)
-    XCTAssertNoDifference(outputs, [0, 1])
-    parentStore.send(false)
-    XCTAssertNoDifference(outputs, [0, 1])
-    parentStore.send(false)
-    XCTAssertNoDifference(outputs, [0, 1])
-    parentStore.send(false)
-    XCTAssertNoDifference(outputs, [0, 1])
   }
 
   func testIfLetAfterScope() {
@@ -553,44 +493,73 @@ final class StoreTests: XCTestCase {
       ])
   }
 
-  func testScopingRemovesDuplicatesWithProvidedClosure() {
-    struct State: Equatable {
-      var place: String
-    }
-    enum Action: Equatable {
-      case noop
-      case updatePlace(String)
-    }
-    let reducer = Reducer<State, Action, Void> { state, action, _ in
-      switch action {
-      case .noop:
-        return .none
-      case let .updatePlace(place):
-        state.place = place
-        return .none
+  func testNonMainQueueStore() {
+    var expectations: [XCTestExpectation] = []
+    for i in 1...100 {
+      let expectation = XCTestExpectation(description: "\(i)th iteration is complete")
+      expectations.append(expectation)
+      DispatchQueue.global().async {
+        let viewStore = ViewStore(
+          Store.unchecked(
+            initialState: 0,
+            reducer: Reducer<Int, Void, XCTestExpectation> { state, _, expectation in
+              state += 1
+              if state == 2 {
+                return .fireAndForget { expectation.fulfill() }
+              }
+              return .none
+            },
+            environment: expectation
+          )
+        )
+        viewStore.send(())
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
+          viewStore.send(())
+        }
       }
     }
-    let parentStore = Store(initialState: .init(place: "New York"), reducer: reducer, environment: ())
-    let childStore: Store<State, Action> = parentStore.scope(
-      state: { $0 },
-      action: { $0 },
-      removeDuplicates: ==
-    )
-    var scopeCount: Int = 0
-    let leafStore: Store<State, Action> = childStore.scope(
-      state: { parentState -> State in
-        scopeCount += 1
-        return parentState
-      },
-      action: { $0 },
-      removeDuplicates: ==
-    )
-    XCTAssertEqual(scopeCount, 1)
-    parentStore.send(.noop)
-    XCTAssertEqual(scopeCount, 1)
-    parentStore.send(.updatePlace("Washington"))
-    XCTAssertEqual(scopeCount, 2)
-    childStore.send(.noop)
-    leafStore.send(.noop)
+
+    wait(for: expectations, timeout: 1)
+  }
+
+  func testScopingRemovesDuplicatesWithProvidedClosure() {
+      struct State: Equatable {
+        var place: String
+      }
+      enum Action: Equatable {
+        case noop
+        case updatePlace(String)
+      }
+      let reducer = Reducer<State, Action, Void> { state, action, _ in
+        switch action {
+        case .noop:
+          return .none
+        case let .updatePlace(place):
+          state.place = place
+          return .none
+        }
+      }
+      let parentStore = Store(initialState: .init(place: "New York"), reducer: reducer, environment: ())
+      let childStore: Store<State, Action> = parentStore.scope(
+        state: { $0 },
+        action: { $0 },
+        removeDuplicates: ==
+      )
+      var scopeCount: Int = 0
+      let leafStore: Store<State, Action> = childStore.scope(
+        state: { parentState -> State in
+          scopeCount += 1
+          return parentState
+        },
+        action: { $0 },
+        removeDuplicates: ==
+      )
+      XCTAssertEqual(scopeCount, 1)
+      parentStore.send(.noop)
+      XCTAssertEqual(scopeCount, 1)
+      parentStore.send(.updatePlace("Washington"))
+      XCTAssertEqual(scopeCount, 2)
+      childStore.send(.noop)
+      leafStore.send(.noop)
   }
 }
