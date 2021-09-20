@@ -130,7 +130,8 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     ),
   .init { state, action, environment in
     #if compiler(>=5.4)
-      return bindingFormReducer
+      return
+        bindingFormReducer
         .pullback(
           state: \.bindingForm,
           action: /RootAction.bindingForm,
@@ -179,7 +180,8 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     ),
   .init { state, action, environment in
     #if compiler(>=5.5)
-      return focusDemoReducer
+      return
+        focusDemoReducer
         .pullback(
           state: \.focusDemo,
           action: /RootAction.focusDemo,
