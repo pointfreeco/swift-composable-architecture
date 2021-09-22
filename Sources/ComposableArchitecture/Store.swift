@@ -411,7 +411,7 @@ public final class Store<State, Action> {
   @inline(__always)
   private func threadCheck(status: ThreadCheckStatus) {
     #if DEBUG
-      guard self.mainQueueChecksEnabled && !isMainQueue
+      guard self.mainQueueChecksEnabled && !Thread.current.isMainThread
       else { return }
 
       let message: String
@@ -487,13 +487,3 @@ public final class Store<State, Action> {
     #endif
   }
 }
-
-private let mainQueueKey = DispatchSpecificKey<UInt8>()
-private let mainQueueValue: UInt8 = 0
-private var isMainQueue: Bool {
-  _ = setSpecific
-  return DispatchQueue.getSpecific(key: mainQueueKey) == mainQueueValue
-}
-private var setSpecific: () = {
-  DispatchQueue.main.setSpecific(key: mainQueueKey, value: mainQueueValue)
-}()
