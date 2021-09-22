@@ -411,7 +411,7 @@ public final class Store<State, Action> {
   @inline(__always)
   private func threadCheck(status: ThreadCheckStatus) {
     #if DEBUG
-      guard self.mainThreadChecksEnabled && !Thread.current.isMainThread
+      guard self.mainThreadChecksEnabled && !Thread.isMainThread
       else { return }
 
       let message: String
