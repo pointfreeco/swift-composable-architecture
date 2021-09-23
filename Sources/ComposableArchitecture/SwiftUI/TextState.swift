@@ -1,5 +1,6 @@
 import CustomDump
 import SwiftUI
+import CasePaths
 
 /// An equatable description of SwiftUI `Text`. Useful for storing rich text in state for the
 /// purpose of rendering in a view hierarchy.
@@ -68,6 +69,7 @@ public struct TextState: Equatable, Hashable {
     case strikethrough(active: Bool, color: Color?)
     case tracking(CGFloat)
     case underline(active: Bool, color: Color?)
+    case multilineTextAlignment(TextAlignment)
   }
 
   fileprivate enum Storage: Equatable, Hashable {
@@ -204,6 +206,12 @@ extension TextState {
     `self`.modifiers.append(.underline(active: active, color: color))
     return `self`
   }
+
+  public func multilineTextAlignment(_ alignment: TextAlignment)  -> Self {
+    var `self` = self
+    `self`.modifiers.append(.multilineTextAlignment(alignment))
+    return `self`
+  }
 }
 
 extension Text {
@@ -239,6 +247,8 @@ extension Text {
         return text.tracking(tracking)
       case let .underline(active, color):
         return text.underline(active, color: color)
+      case .multilineTextAlignment:
+        return text // applied in view body
       }
     }
   }
@@ -246,7 +256,11 @@ extension Text {
 
 extension TextState: View {
   public var body: some View {
-    Text(self)
+    if let alignment = modifiers.compactMap(/Modifier.multilineTextAlignment).first {
+      Text(self).multilineTextAlignment(alignment)
+    } else {
+      Text(self)
+    }
   }
 }
 
@@ -361,7 +375,8 @@ extension TextState: CustomDumpRepresentable {
           .fontWeight(.none),
           .foregroundColor(.none),
           .strikethrough(active: false, color: _),
-          .underline(active: false, color: _):
+          .underline(active: false, color: _),
+          .multilineTextAlignment(_):
           break
         }
       }
