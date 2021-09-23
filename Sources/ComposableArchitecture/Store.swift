@@ -136,7 +136,7 @@ public final class Store<State, Action> {
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   var state: CurrentValueSubject<State, Never>
   #if DEBUG
-    private let mainQueueChecksEnabled: Bool
+    private let mainThreadChecksEnabled: Bool
   #endif
 
   /// Initializes a store from an initial state, a reducer, and an environment.
@@ -154,7 +154,7 @@ public final class Store<State, Action> {
       initialState: initialState,
       reducer: reducer,
       environment: environment,
-      mainQueueChecksEnabled: true
+      mainThreadChecksEnabled: true
     )
     self.threadCheck(status: .`init`)
   }
@@ -175,7 +175,7 @@ public final class Store<State, Action> {
       initialState: initialState,
       reducer: reducer,
       environment: environment,
-      mainQueueChecksEnabled: false
+      mainThreadChecksEnabled: false
     )
   }
 
@@ -411,7 +411,7 @@ public final class Store<State, Action> {
   @inline(__always)
   private func threadCheck(status: ThreadCheckStatus) {
     #if DEBUG
-      guard self.mainQueueChecksEnabled && !isMainQueue
+      guard self.mainThreadChecksEnabled && !Thread.isMainThread
       else { return }
 
       let message: String
@@ -477,23 +477,13 @@ public final class Store<State, Action> {
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
     environment: Environment,
-    mainQueueChecksEnabled: Bool
+    mainThreadChecksEnabled: Bool
   ) {
     self.state = CurrentValueSubject(initialState)
     self.reducer = { state, action in reducer.run(&state, action, environment) }
 
     #if DEBUG
-      self.mainQueueChecksEnabled = mainQueueChecksEnabled
+      self.mainThreadChecksEnabled = mainThreadChecksEnabled
     #endif
   }
 }
-
-private let mainQueueKey = DispatchSpecificKey<UInt8>()
-private let mainQueueValue: UInt8 = 0
-private var isMainQueue: Bool {
-  _ = setSpecific
-  return DispatchQueue.getSpecific(key: mainQueueKey) == mainQueueValue
-}
-private var setSpecific: () = {
-  DispatchQueue.main.setSpecific(key: mainQueueKey, value: mainQueueValue)
-}()
