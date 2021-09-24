@@ -90,25 +90,28 @@ where Data: Collection, ID: Hashable, Content: View {
     EachContent: View,
     Data == IdentifiedArray<ID, EachState>,
     Content == WithViewStore<
-      OrderedSet<ID>, (ID, EachAction), ForEach<OrderedSet<ID>, ID, EachContent>
+      OrderedSet<ID>, (ID, EachAction), ForEach<OrderedSet<ID>, ID, _IdentifiedView<EachContent>>
     >
   {
     self.data = store.state.value
     self.content = {
       WithViewStore(store.scope(state: { $0.ids })) { viewStore in
-        ForEach(viewStore.state, id: \.self) { id -> EachContent in
+        ForEach(viewStore.state, id: \.self) { id -> _IdentifiedView<EachContent> in
           // NB: We cache elements here to avoid a potential crash where SwiftUI may re-evaluate
           //     views for elements no longer in the collection.
           //
           // Feedback filed: https://gist.github.com/stephencelis/cdf85ae8dab437adc998fb0204ed9a6b
           var element = store.state.value[id: id]!
-          return content(
-            store.scope(
-              state: {
-                element = $0[id: id] ?? element
-                return element
-              },
-              action: { (id, $0) }
+          return .init(
+            id: id,
+            content: content(
+              store.scope(
+                state: {
+                  element = $0[id: id] ?? element
+                  return element
+                },
+                action: { (id, $0) }
+              )
             )
           )
         }
@@ -118,5 +121,18 @@ where Data: Collection, ID: Hashable, Content: View {
 
   public var body: some View {
     self.content()
+  }
+}
+
+public struct _IdentifiedView<Content>: View, Equatable where Content: View {
+  fileprivate let id: AnyHashable
+  fileprivate let content: Content
+
+  public var body: some View {
+    self.content
+  }
+
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.id == rhs.id
   }
 }
