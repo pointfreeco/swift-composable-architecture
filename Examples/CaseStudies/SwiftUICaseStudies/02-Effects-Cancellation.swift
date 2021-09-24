@@ -58,8 +58,7 @@ let effectsCancellationReducer = Reducer<
 
     return environment.fact.fetch(state.count)
       .receive(on: environment.mainQueue)
-      .catchToEffect()
-      .map(EffectsCancellationAction.triviaResponse)
+      .catchToEffect(EffectsCancellationAction.triviaResponse)
       .cancellable(id: TriviaRequestId())
 
   case let .triviaResponse(.success(response)):
@@ -98,7 +97,7 @@ struct EffectsCancellationView: View {
             HStack {
               Button("Cancel") { viewStore.send(.cancelButtonTapped) }
               Spacer()
-              ActivityIndicator()
+              ProgressView()
             }
           } else {
             Button("Number fact") { viewStore.send(.triviaButtonTapped) }

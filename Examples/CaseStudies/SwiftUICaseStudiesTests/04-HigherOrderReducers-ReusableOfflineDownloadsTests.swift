@@ -18,6 +18,9 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   let scheduler = DispatchQueue.test
 
   func testDownloadFlow() {
+    var downloadClient = DownloadClient.failing
+    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
+
     let store = TestStore(
       initialState: DownloadComponentState(
         id: 1,
@@ -26,9 +29,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       ),
       reducer: reducer,
       environment: DownloadComponentEnvironment(
-        downloadClient: .mock(
-          download: { _, _ in self.downloadSubject.eraseToEffect() }
-        ),
+        downloadClient: downloadClient,
         mainQueue: self.scheduler.eraseToAnyScheduler()
       )
     )
@@ -52,6 +53,9 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   }
 
   func testDownloadThrottling() {
+    var downloadClient = DownloadClient.failing
+    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
+
     let store = TestStore(
       initialState: DownloadComponentState(
         id: 1,
@@ -60,9 +64,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       ),
       reducer: reducer,
       environment: DownloadComponentEnvironment(
-        downloadClient: .mock(
-          download: { _, _ in self.downloadSubject.eraseToEffect() }
-        ),
+        downloadClient: downloadClient,
         mainQueue: self.scheduler.eraseToAnyScheduler()
       )
     )
@@ -91,6 +93,9 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   }
 
   func testCancelDownloadFlow() {
+    var downloadClient = DownloadClient.failing
+    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
+
     let store = TestStore(
       initialState: DownloadComponentState(
         id: 1,
@@ -99,10 +104,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       ),
       reducer: reducer,
       environment: DownloadComponentEnvironment(
-        downloadClient: .mock(
-          cancel: { _ in .fireAndForget { self.downloadSubject.send(completion: .finished) } },
-          download: { _, _ in self.downloadSubject.eraseToEffect() }
-        ),
+        downloadClient: downloadClient,
         mainQueue: self.scheduler.eraseToAnyScheduler()
       )
     )
@@ -114,8 +116,8 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
     store.send(.buttonTapped) {
       $0.alert = .init(
         title: .init("Do you want to cancel downloading this map?"),
-        primaryButton: .destructive(.init("Cancel"), send: .cancelButtonTapped),
-        secondaryButton: .default(.init("Nevermind"), send: .nevermindButtonTapped)
+        primaryButton: .destructive(.init("Cancel"), action: .send(.cancelButtonTapped)),
+        secondaryButton: .default(.init("Nevermind"), action: .send(.nevermindButtonTapped))
       )
     }
 
@@ -128,6 +130,9 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   }
 
   func testDownloadFinishesWhileTryingToCancel() {
+    var downloadClient = DownloadClient.failing
+    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
+
     let store = TestStore(
       initialState: DownloadComponentState(
         id: 1,
@@ -136,10 +141,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       ),
       reducer: reducer,
       environment: DownloadComponentEnvironment(
-        downloadClient: .mock(
-          cancel: { _ in .fireAndForget { self.downloadSubject.send(completion: .finished) } },
-          download: { _, _ in self.downloadSubject.eraseToEffect() }
-        ),
+        downloadClient: downloadClient,
         mainQueue: self.scheduler.eraseToAnyScheduler()
       )
     )
@@ -151,8 +153,8 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
     store.send(.buttonTapped) {
       $0.alert = .init(
         title: .init("Do you want to cancel downloading this map?"),
-        primaryButton: .destructive(.init("Cancel"), send: .cancelButtonTapped),
-        secondaryButton: .default(.init("Nevermind"), send: .nevermindButtonTapped)
+        primaryButton: .destructive(.init("Cancel"), action: .send(.cancelButtonTapped)),
+        secondaryButton: .default(.init("Nevermind"), action: .send(.nevermindButtonTapped))
       )
     }
 
@@ -166,6 +168,9 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   }
 
   func testDeleteDownloadFlow() {
+    var downloadClient = DownloadClient.failing
+    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
+
     let store = TestStore(
       initialState: DownloadComponentState(
         id: 1,
@@ -174,10 +179,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       ),
       reducer: reducer,
       environment: DownloadComponentEnvironment(
-        downloadClient: .mock(
-          cancel: { _ in .fireAndForget { self.downloadSubject.send(completion: .finished) } },
-          download: { _, _ in self.downloadSubject.eraseToEffect() }
-        ),
+        downloadClient: downloadClient,
         mainQueue: self.scheduler.eraseToAnyScheduler()
       )
     )
@@ -185,8 +187,8 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
     store.send(.buttonTapped) {
       $0.alert = .init(
         title: .init("Do you want to delete this map from your offline storage?"),
-        primaryButton: .destructive(.init("Delete"), send: .deleteButtonTapped),
-        secondaryButton: .default(.init("Nevermind"), send: .nevermindButtonTapped)
+        primaryButton: .destructive(.init("Delete"), action: .send(.deleteButtonTapped)),
+        secondaryButton: .default(.init("Nevermind"), action: .send(.nevermindButtonTapped))
       )
     }
 
@@ -198,13 +200,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 }
 
 extension DownloadClient {
-  static func mock(
-    cancel: @escaping (AnyHashable) -> Effect<Never, Never> = { _ in fatalError() },
-    download: @escaping (AnyHashable, URL) -> Effect<Action, Error> = { _, _ in fatalError() }
-  ) -> Self {
-    Self(
-      cancel: cancel,
-      download: download
-    )
-  }
+  static let failing = Self(
+    download: { _ in .failing("DownloadClient.download") }
+  )
 }

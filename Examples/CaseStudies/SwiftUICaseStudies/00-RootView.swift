@@ -40,15 +40,17 @@ struct RootView: View {
               )
             )
 
-            NavigationLink(
-              "Form bindings",
-              destination: BindingFormView(
-                store: self.store.scope(
-                  state: \.bindingForm,
-                  action: RootAction.bindingForm
+            #if compiler(>=5.4)
+              NavigationLink(
+                "Form bindings",
+                destination: BindingFormView(
+                  store: self.store.scope(
+                    state: \.bindingForm,
+                    action: RootAction.bindingForm
+                  )
                 )
               )
-            )
+            #endif
 
             NavigationLink(
               "Optional state",
@@ -71,14 +73,26 @@ struct RootView: View {
             )
 
             NavigationLink(
-              "Alerts and Action Sheets",
-              destination: AlertAndSheetView(
+              "Alerts and Confirmation Dialogs",
+              destination: AlertAndConfirmationDialogView(
                 store: self.store.scope(
-                  state: \.alertAndActionSheet,
-                  action: RootAction.alertAndActionSheet
+                  state: \.alertAndConfirmationDialog,
+                  action: RootAction.alertAndConfirmationDialog
                 )
               )
             )
+
+            #if compiler(>=5.5)
+              NavigationLink(
+                "Focus State",
+                destination: FocusDemoView(
+                  store: self.store.scope(
+                    state: \.focusDemo,
+                    action: RootAction.focusDemo
+                  )
+                )
+              )
+            #endif
 
             NavigationLink(
               "Animations",
@@ -120,6 +134,18 @@ struct RootView: View {
                 )
               )
             )
+
+            #if compiler(>=5.5)
+              NavigationLink(
+                "Refreshable",
+                destination: RefreshableView(
+                  store: self.store.scope(
+                    state: \.refreshable,
+                    action: RootAction.refreshable
+                  )
+                )
+              )
+            #endif
 
             NavigationLink(
               "Timers",

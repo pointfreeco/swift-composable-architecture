@@ -47,19 +47,19 @@ import SwiftUI
 ///
 /// ### Thread safety
 ///
-/// The ``ViewStore`` class is not thread-safe, and all interactions with it must happen on the main
-/// thread. See the documentation of the ``Store`` class for more information why this decision was
-/// made.
+/// The ``ViewStore`` class is not thread-safe, and all interactions with it (and the store it was
+/// derived from) must happen on the same thread. Further, for SwiftUI applications, all
+/// interactions must happen on the _main_ thread. See the documentation of the ``Store`` class for
+/// more information as to why this decision was made.
 @dynamicMemberLookup
 public final class ViewStore<State, Action>: ObservableObject {
-  /// A publisher of state.
-  public let publisher: StorePublisher<State>
-
-  private var viewCancellable: AnyCancellable?
-
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
+
+  private let _send: (Action) -> Void
+  fileprivate let _state: CurrentValueRelay<State>
+  private var viewCancellable: AnyCancellable?
 
   /// Initializes a view store from a store.
   ///
@@ -71,27 +71,55 @@ public final class ViewStore<State, Action>: ObservableObject {
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool
   ) {
-    self.publisher = StorePublisher(store.state, removeDuplicates: isDuplicate)
-    self.state = store.state.value
-    self._send = store.send
+    self._send = { store.send($0) }
+    self._state = CurrentValueRelay(store.state.value)
+
     self.viewCancellable = store.state
-      .dropFirst()
       .removeDuplicates(by: isDuplicate)
-      .sink { [weak self] in self?.state = $0 }
+      .sink { [weak self] in
+        guard let self = self else { return }
+        self.objectWillChange.send()
+        self._state.value = $0
+      }
+  }
+
+  /// A publisher that emits when state changes.
+  ///
+  /// This publisher supports dynamic member lookup so that you can pluck out a specific field in
+  /// the state:
+  ///
+  /// ```swift
+  /// viewStore.publisher.alert
+  ///   .sink { ... }
+  /// ```
+  ///
+  /// When the emission happens the ``ViewStore``'s state has been updated, and so the following
+  /// precondition will pass:
+  ///
+  /// ```swift
+  /// viewStore.publisher
+  ///   .sink { precondition($0 == viewStore.state) }
+  /// ```
+  ///
+  /// This means you can either use the value passed to the closure or you can reach into
+  /// `viewStore.state` directly.
+  ///
+  /// - Note: Due to a bug in Combine (or feature?), the order you `.sink` on a publisher has no
+  ///   bearing on the order the `.sink` closures are called. This means the work performed inside
+  ///   `viewStore.publisher.sink` closures should be completely independent of each other.
+  ///   Later closures cannot assume that earlier ones have already run.
+  public var publisher: StorePublisher<State> {
+    StorePublisher(viewStore: self)
   }
 
   /// The current state.
-  public private(set) var state: State {
-    willSet {
-      self.objectWillChange.send()
-    }
+  public var state: State {
+    self._state.value
   }
-
-  let _send: (Action) -> Void
 
   /// Returns the resulting value of a given key path.
   public subscript<LocalState>(dynamicMember keyPath: KeyPath<State, LocalState>) -> LocalState {
-    self.state[keyPath: keyPath]
+    self._state.value[keyPath: keyPath]
   }
 
   /// Sends an action to the store.
@@ -139,18 +167,8 @@ public final class ViewStore<State, Action>: ObservableObject {
     get: @escaping (State) -> LocalState,
     send localStateToViewAction: @escaping (LocalState) -> Action
   ) -> Binding<LocalState> {
-    Binding(
-      get: { get(self.state) },
-      set: { newLocalState, transaction in
-        if transaction.animation != nil {
-          withTransaction(transaction) {
-            self.send(localStateToViewAction(newLocalState))
-          }
-        } else {
-          self.send(localStateToViewAction(newLocalState))
-        }
-      }
-    )
+    ObservedObject(wrappedValue: self)
+      .projectedValue[get: .init(rawValue: get), send: .init(rawValue: localStateToViewAction)]
   }
 
   /// Derives a binding from the store that prevents direct writes to state and instead sends
@@ -242,6 +260,14 @@ public final class ViewStore<State, Action>: ObservableObject {
   public func binding(send action: Action) -> Binding<State> {
     self.binding(send: { _ in action })
   }
+
+  private subscript<LocalState>(
+    get state: HashableWrapper<(State) -> LocalState>,
+    send action: HashableWrapper<(LocalState) -> Action>
+  ) -> LocalState {
+    get { state.rawValue(self.state) }
+    set { self.send(action.rawValue(newValue)) }
+  }
 }
 
 extension ViewStore where State: Equatable {
@@ -254,4 +280,55 @@ extension ViewStore where State == Void {
   public convenience init(_ store: Store<Void, Action>) {
     self.init(store, removeDuplicates: ==)
   }
+}
+
+/// A publisher of store state.
+@dynamicMemberLookup
+public struct StorePublisher<State>: Publisher {
+  public typealias Output = State
+  public typealias Failure = Never
+
+  public let upstream: AnyPublisher<State, Never>
+  public let viewStore: Any
+
+  fileprivate init<Action>(viewStore: ViewStore<State, Action>) {
+    self.viewStore = viewStore
+    self.upstream = viewStore._state.eraseToAnyPublisher()
+  }
+
+  public func receive<S>(subscriber: S)
+  where S: Subscriber, Failure == S.Failure, Output == S.Input {
+    self.upstream.subscribe(
+      AnySubscriber(
+        receiveSubscription: subscriber.receive(subscription:),
+        receiveValue: subscriber.receive(_:),
+        receiveCompletion: { [viewStore = self.viewStore] in
+          subscriber.receive(completion: $0)
+          _ = viewStore
+        }
+      )
+    )
+  }
+
+  private init<P>(
+    upstream: P,
+    viewStore: Any
+  ) where P: Publisher, Failure == P.Failure, Output == P.Output {
+    self.upstream = upstream.eraseToAnyPublisher()
+    self.viewStore = viewStore
+  }
+
+  /// Returns the resulting publisher of a given key path.
+  public subscript<LocalState>(
+    dynamicMember keyPath: KeyPath<State, LocalState>
+  ) -> StorePublisher<LocalState>
+  where LocalState: Equatable {
+    .init(upstream: self.upstream.map(keyPath).removeDuplicates(), viewStore: self.viewStore)
+  }
+}
+
+private struct HashableWrapper<Value>: Hashable {
+  let rawValue: Value
+  static func == (lhs: Self, rhs: Self) -> Bool { false }
+  func hash(into hasher: inout Hasher) {}
 }

@@ -25,13 +25,13 @@ final class ViewStoreTests: XCTestCase {
       .sink { _ in emissionCount += 1 }
       .store(in: &self.cancellables)
 
-    XCTAssertEqual(emissionCount, 1)
+    XCTAssertNoDifference(emissionCount, 1)
     viewStore.send(())
-    XCTAssertEqual(emissionCount, 1)
+    XCTAssertNoDifference(emissionCount, 1)
     viewStore.send(())
-    XCTAssertEqual(emissionCount, 1)
+    XCTAssertNoDifference(emissionCount, 1)
     viewStore.send(())
-    XCTAssertEqual(emissionCount, 1)
+    XCTAssertNoDifference(emissionCount, 1)
   }
 
   func testEqualityChecks() {
@@ -60,21 +60,183 @@ final class ViewStoreTests: XCTestCase {
     viewStore3.publisher.substate.sink { _ in }.store(in: &self.cancellables)
     viewStore4.publisher.substate.sink { _ in }.store(in: &self.cancellables)
 
-    XCTAssertEqual(0, equalityChecks)
-    XCTAssertEqual(0, subEqualityChecks)
+    XCTAssertNoDifference(0, equalityChecks)
+    XCTAssertNoDifference(0, subEqualityChecks)
     viewStore4.send(())
-    XCTAssertEqual(4, equalityChecks)
-    XCTAssertEqual(8, subEqualityChecks)
+    XCTAssertNoDifference(4, equalityChecks)
+    XCTAssertNoDifference(4, subEqualityChecks)
     viewStore4.send(())
-    XCTAssertEqual(12, equalityChecks)
-    XCTAssertEqual(20, subEqualityChecks)
+    XCTAssertNoDifference(8, equalityChecks)
+    XCTAssertNoDifference(8, subEqualityChecks)
     viewStore4.send(())
-    XCTAssertEqual(20, equalityChecks)
-    XCTAssertEqual(32, subEqualityChecks)
+    XCTAssertNoDifference(12, equalityChecks)
+    XCTAssertNoDifference(12, subEqualityChecks)
     viewStore4.send(())
-    XCTAssertEqual(28, equalityChecks)
-    XCTAssertEqual(44, subEqualityChecks)
+    XCTAssertNoDifference(16, equalityChecks)
+    XCTAssertNoDifference(16, subEqualityChecks)
   }
+
+  func testAccessViewStoreStateInPublisherSink() {
+    let reducer = Reducer<Int, Void, Void> { count, _, _ in
+      count += 1
+      return .none
+    }
+
+    let store = Store(initialState: 0, reducer: reducer, environment: ())
+    let viewStore = ViewStore(store)
+
+    var results: [Int] = []
+
+    viewStore.publisher
+      .sink { _ in results.append(viewStore.state) }
+      .store(in: &self.cancellables)
+
+    viewStore.send(())
+    viewStore.send(())
+    viewStore.send(())
+
+    XCTAssertNoDifference([0, 1, 2, 3], results)
+  }
+
+  func testWillSet() {
+    let reducer = Reducer<Int, Void, Void> { count, _, _ in
+      count += 1
+      return .none
+    }
+
+    let store = Store(initialState: 0, reducer: reducer, environment: ())
+    let viewStore = ViewStore(store)
+
+    var results: [Int] = []
+
+    viewStore.objectWillChange
+      .sink { _ in results.append(viewStore.state) }
+      .store(in: &self.cancellables)
+
+    viewStore.send(())
+    viewStore.send(())
+    viewStore.send(())
+
+    XCTAssertNoDifference([0, 1, 2], results)
+  }
+
+  func testPublisherOwnsViewStore() {
+    let reducer = Reducer<Int, Void, Void> { count, _, _ in
+      count += 1
+      return .none
+    }
+    let store = Store(initialState: 0, reducer: reducer, environment: ())
+
+    var results: [Int] = []
+    ViewStore(store)
+      .publisher
+      .sink { results.append($0) }
+      .store(in: &self.cancellables)
+
+    ViewStore(store).send(())
+    XCTAssertNoDifference(results, [0, 1])
+  }
+
+  func testStorePublisherSubscriptionOrder() {
+    let reducer = Reducer<Int, Void, Void> { count, _, _ in
+      count += 1
+      return .none
+    }
+    let store = Store(initialState: 0, reducer: reducer, environment: ())
+    let viewStore = ViewStore(store)
+
+    var results: [Int] = []
+
+    viewStore.publisher
+      .sink { _ in results.append(0) }
+      .store(in: &self.cancellables)
+
+    viewStore.publisher
+      .sink { _ in results.append(1) }
+      .store(in: &self.cancellables)
+
+    viewStore.publisher
+      .sink { _ in results.append(2) }
+      .store(in: &self.cancellables)
+
+    XCTAssertNoDifference(results, [0, 1, 2])
+
+    for _ in 0..<9 {
+      viewStore.send(())
+    }
+
+    XCTAssertNoDifference(results, Array(repeating: [0, 1, 2], count: 10).flatMap { $0 })
+  }
+
+  #if compiler(>=5.5) && canImport(_Concurrency)
+    func testSendWhile() {
+      guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
+
+      let expectation = self.expectation(description: "await")
+      Task { @MainActor in
+        enum Action {
+          case response
+          case tapped
+        }
+        let reducer = Reducer<Bool, Action, Void> { state, action, environment in
+          switch action {
+          case .response:
+            state = false
+            return .none
+          case .tapped:
+            state = true
+            return Effect(value: .response)
+              .receive(on: DispatchQueue.main)
+              .eraseToEffect()
+          }
+        }
+
+        let store = Store(initialState: false, reducer: reducer, environment: ())
+        let viewStore = ViewStore(store)
+
+        XCTAssertNoDifference(viewStore.state, false)
+        await viewStore.send(.tapped, while: { $0 })
+        XCTAssertNoDifference(viewStore.state, false)
+        expectation.fulfill()
+      }
+      self.wait(for: [expectation], timeout: 1)
+    }
+
+    func testSuspend() {
+      guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
+
+      let expectation = self.expectation(description: "await")
+      Task { @MainActor in
+        enum Action {
+          case response
+          case tapped
+        }
+        let reducer = Reducer<Bool, Action, Void> { state, action, environment in
+          switch action {
+          case .response:
+            state = false
+            return .none
+          case .tapped:
+            state = true
+            return Effect(value: .response)
+              .receive(on: DispatchQueue.main)
+              .eraseToEffect()
+          }
+        }
+
+        let store = Store(initialState: false, reducer: reducer, environment: ())
+        let viewStore = ViewStore(store)
+
+        XCTAssertNoDifference(viewStore.state, false)
+        viewStore.send(.tapped)
+        XCTAssertNoDifference(viewStore.state, true)
+        await viewStore.suspend(while: { $0 })
+        XCTAssertNoDifference(viewStore.state, false)
+        expectation.fulfill()
+      }
+      self.wait(for: [expectation], timeout: 1)
+    }
+  #endif
 }
 
 private struct State: Equatable {

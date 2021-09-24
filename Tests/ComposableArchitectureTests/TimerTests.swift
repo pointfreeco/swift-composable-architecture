@@ -15,16 +15,16 @@ final class TimerTests: XCTestCase {
       .store(in: &self.cancellables)
 
     scheduler.advance(by: 1)
-    XCTAssertEqual(count, 1)
+    XCTAssertNoDifference(count, 1)
 
     scheduler.advance(by: 1)
-    XCTAssertEqual(count, 2)
+    XCTAssertNoDifference(count, 2)
 
     scheduler.advance(by: 1)
-    XCTAssertEqual(count, 3)
+    XCTAssertNoDifference(count, 3)
 
     scheduler.advance(by: 3)
-    XCTAssertEqual(count, 6)
+    XCTAssertNoDifference(count, 6)
   }
 
   func testInterleavingTimer() {
@@ -45,17 +45,17 @@ final class TimerTests: XCTestCase {
     .store(in: &self.cancellables)
 
     scheduler.advance(by: 1)
-    XCTAssertEqual(count2, 0)
-    XCTAssertEqual(count3, 0)
+    XCTAssertNoDifference(count2, 0)
+    XCTAssertNoDifference(count3, 0)
     scheduler.advance(by: 1)
-    XCTAssertEqual(count2, 1)
-    XCTAssertEqual(count3, 0)
+    XCTAssertNoDifference(count2, 1)
+    XCTAssertNoDifference(count3, 0)
     scheduler.advance(by: 1)
-    XCTAssertEqual(count2, 1)
-    XCTAssertEqual(count3, 1)
+    XCTAssertNoDifference(count2, 1)
+    XCTAssertNoDifference(count3, 1)
     scheduler.advance(by: 1)
-    XCTAssertEqual(count2, 2)
-    XCTAssertEqual(count3, 1)
+    XCTAssertNoDifference(count2, 2)
+    XCTAssertNoDifference(count3, 1)
   }
 
   func testTimerCancellation() {
@@ -74,11 +74,11 @@ final class TimerTests: XCTestCase {
 
     scheduler.advance(by: 2)
 
-    XCTAssertEqual(firstCount, 1)
+    XCTAssertNoDifference(firstCount, 1)
 
     scheduler.advance(by: 2)
 
-    XCTAssertEqual(firstCount, 2)
+    XCTAssertNoDifference(firstCount, 2)
 
     Effect.timer(id: CancelToken(), every: .seconds(2), on: scheduler)
       .handleEvents(receiveOutput: { _ in secondCount += 1 })
@@ -88,13 +88,13 @@ final class TimerTests: XCTestCase {
 
     scheduler.advance(by: 2)
 
-    XCTAssertEqual(firstCount, 2)
-    XCTAssertEqual(secondCount, 1)
+    XCTAssertNoDifference(firstCount, 2)
+    XCTAssertNoDifference(secondCount, 1)
 
     scheduler.advance(by: 2)
 
-    XCTAssertEqual(firstCount, 2)
-    XCTAssertEqual(secondCount, 2)
+    XCTAssertNoDifference(firstCount, 2)
+    XCTAssertNoDifference(secondCount, 2)
   }
 
   func testTimerCompletion() {
@@ -108,15 +108,15 @@ final class TimerTests: XCTestCase {
       .store(in: &self.cancellables)
 
     scheduler.advance(by: 1)
-    XCTAssertEqual(count, 1)
+    XCTAssertNoDifference(count, 1)
 
     scheduler.advance(by: 1)
-    XCTAssertEqual(count, 2)
+    XCTAssertNoDifference(count, 2)
 
     scheduler.advance(by: 1)
-    XCTAssertEqual(count, 3)
+    XCTAssertNoDifference(count, 3)
 
     scheduler.run()
-    XCTAssertEqual(count, 3)
+    XCTAssertNoDifference(count, 3)
   }
 }

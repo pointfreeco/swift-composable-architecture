@@ -29,7 +29,7 @@ enum AppAction: Equatable {
   case filterPicked(Filter)
   case move(IndexSet, Int)
   case sortCompletedTodos
-  case todo(id: UUID, action: TodoAction)
+  case todo(id: Todo.ID, action: TodoAction)
 }
 
 struct AppEnvironment {
@@ -72,7 +72,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
         .eraseToEffect()
 
     case .sortCompletedTodos:
-      state.todos.sortCompleted()
+      state.todos.sort { $1.isComplete && !$0.isComplete }
       return .none
 
     case .todo(id: _, action: .checkBoxToggled):
@@ -85,8 +85,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     }
   }
 )
-
-.debugActions(actionFormat: .labelsOnly)
+.debug()
 
 struct AppView: View {
   let store: Store<AppState, AppAction>
@@ -152,20 +151,7 @@ struct AppView: View {
   }
 }
 
-extension IdentifiedArray where ID == UUID, Element == Todo {
-  fileprivate mutating func sortCompleted() {
-    // Simulate stable sort
-    self = IdentifiedArray(
-      self.enumerated()
-        .sorted(by: { lhs, rhs in
-          (rhs.element.isComplete && !lhs.element.isComplete) || lhs.offset < rhs.offset
-        })
-        .map(\.element)
-    )
-  }
-}
-
-extension IdentifiedArray where ID == UUID, Element == Todo {
+extension IdentifiedArray where ID == Todo.ID, Element == Todo {
   static let mock: Self = [
     Todo(
       description: "Check Mail",

@@ -1,5 +1,6 @@
 #if DEBUG
   import Combine
+  import CustomDump
   import Foundation
   import XCTestDynamicOverlay
 
@@ -167,7 +168,7 @@
   /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
   /// not expect it would cause a test failure.
   ///
-  public final class TestStore<State, LocalState, Action: Equatable, LocalAction, Environment> {
+  public final class TestStore<State, LocalState, Action, LocalAction, Environment> {
     public var environment: Environment
 
     private let file: StaticString
@@ -235,12 +236,14 @@
 
     private func completed() {
       if !self.receivedActions.isEmpty {
+        var actions = ""
+        customDump(self.receivedActions.map(\.action), to: &actions)
         XCTFail(
           """
           The store received \(self.receivedActions.count) unexpected \
           action\(self.receivedActions.count == 1 ? "" : "s") after this one: …
 
-          Unhandled actions: \(debugOutput(self.receivedActions.map { $0.action }))
+          Unhandled actions: \(actions)
           """,
           file: self.file, line: self.line
         )
@@ -320,12 +323,14 @@
       _ update: @escaping (inout LocalState) throws -> Void = { _ in }
     ) {
       if !self.receivedActions.isEmpty {
+        var actions = ""
+        customDump(self.receivedActions.map(\.action), to: &actions)
         XCTFail(
           """
           Must handle \(self.receivedActions.count) received \
           action\(self.receivedActions.count == 1 ? "" : "s") before sending an action: …
 
-          Unhandled actions: \(debugOutput(self.receivedActions.map { $0.action }))
+          Unhandled actions: \(actions)
           """,
           file: file, line: line
         )
@@ -354,6 +359,38 @@
       }
     }
 
+    private func expectedStateShouldMatch(
+      expected: LocalState,
+      actual: LocalState,
+      file: StaticString,
+      line: UInt
+    ) {
+      if expected != actual {
+        let difference =
+          diff(expected, actual, format: .proportional)
+          .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
+          ?? """
+          Expected:
+          \(String(describing: expected).indent(by: 2))
+
+          Actual:
+          \(String(describing: actual).indent(by: 2))
+          """
+
+        XCTFail(
+          """
+          State change does not match expectation: …
+
+          \(difference)
+          """,
+          file: file,
+          line: line
+        )
+      }
+    }
+  }
+
+  extension TestStore where LocalState: Equatable, Action: Equatable {
     public func receive(
       _ expectedAction: Action,
       file: StaticString = #file,
@@ -371,8 +408,8 @@
       }
       let (receivedAction, state) = self.receivedActions.removeFirst()
       if expectedAction != receivedAction {
-        let diff =
-          debugDiff(expectedAction, receivedAction)
+        let difference =
+          diff(expectedAction, receivedAction, format: .proportional)
           .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
           ?? """
           Expected:
@@ -386,7 +423,7 @@
           """
           Received unexpected action: …
 
-          \(diff)
+          \(difference)
           """,
           file: file, line: line
         )
@@ -435,12 +472,14 @@
 
         case let .environment(work):
           if !self.receivedActions.isEmpty {
+            var actions = ""
+            customDump(self.receivedActions.map(\.action), to: &actions)
             XCTFail(
               """
               Must handle \(self.receivedActions.count) received \
               action\(self.receivedActions.count == 1 ? "" : "s") before performing this work: …
 
-              Unhandled actions: \(debugOutput(self.receivedActions.map { $0.action }))
+              Unhandled actions: \(actions)
               """,
               file: step.file, line: step.line
             )
@@ -453,12 +492,14 @@
 
         case let .do(work):
           if !receivedActions.isEmpty {
+            var actions = ""
+            customDump(self.receivedActions.map(\.action), to: &actions)
             XCTFail(
               """
               Must handle \(self.receivedActions.count) received \
               action\(self.receivedActions.count == 1 ? "" : "s") before performing this work: …
 
-              Unhandled actions: \(debugOutput(self.receivedActions.map { $0.action }))
+              Unhandled actions: \(actions)
               """,
               file: step.file, line: step.line
             )
@@ -477,36 +518,6 @@
       steps.forEach(assert(step:))
 
       self.completed()
-    }
-
-    private func expectedStateShouldMatch(
-      expected: LocalState,
-      actual: LocalState,
-      file: StaticString,
-      line: UInt
-    ) {
-      if expected != actual {
-        let diff =
-          debugDiff(expected, actual)
-          .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
-          ?? """
-          Expected:
-          \(String(describing: expected).indent(by: 2))
-
-          Actual:
-          \(String(describing: actual).indent(by: 2))
-          """
-
-        XCTFail(
-          """
-          State change does not match expectation: …
-
-          \(diff)
-          """,
-          file: file,
-          line: line
-        )
-      }
     }
   }
 

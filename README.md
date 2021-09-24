@@ -46,7 +46,7 @@ The Composable Architecture was designed over the course of many episodes on [Po
 You can watch all of the episodes [here](https://www.pointfree.co/collections/composable-architecture), as well as a dedicated, multipart tour of the architecture from scratch: [part 1](https://www.pointfree.co/collections/composable-architecture/a-tour-of-the-composable-architecture/ep100-a-tour-of-the-composable-architecture-part-1), [part 2](https://www.pointfree.co/collections/composable-architecture/a-tour-of-the-composable-architecture/ep101-a-tour-of-the-composable-architecture-part-2), [part 3](https://www.pointfree.co/collections/composable-architecture/a-tour-of-the-composable-architecture/ep102-a-tour-of-the-composable-architecture-part-3) and [part 4](https://www.pointfree.co/collections/composable-architecture/a-tour-of-the-composable-architecture/ep103-a-tour-of-the-composable-architecture-part-4).
 
 <a href="https://www.pointfree.co/collections/composable-architecture">
-  <img alt="video poster image" src="https://i.vimeocdn.com/video/850265054.jpg" width="600">
+  <img alt="video poster image" src="https://d3rccdn33rt8ze.cloudfront.net/episodes/0069.jpeg" width="600">
 </a>
 
 ## Examples
@@ -323,9 +323,7 @@ The Composable Architecture comes with a number of tools to aid in debugging.
 
     ``` diff
     received action:
-      AppAction.todoCheckboxTapped(
-        index: 0
-      )
+      AppAction.todoCheckboxTapped(id: UUID(5834811A-83B4-4E5E-BCD3-8A38F6BDCA90))
       AppState(
         todos: [
           Todo(
@@ -334,16 +332,7 @@ The Composable Architecture comes with a number of tools to aid in debugging.
             description: "Milk",
             id: 5834811A-83B4-4E5E-BCD3-8A38F6BDCA90
           ),
-          Todo(
-            isComplete: false,
-            description: "Eggs",
-            id: AB3C7921-8262-4412-AA93-9DC5575C1107
-          ),
-          Todo(
-            isComplete: true,
-            description: "Hand Soap",
-            id: 06E94D88-D726-42EF-BA8B-7B4478179D19
-          ),
+          … (2 unchanged)
         ]
       )
     ```
@@ -435,8 +424,12 @@ If you want to discuss the Composable Architecture or have a question about how 
 
 ## Translations
 
-- A Korean translation of this README is available [here](https://gist.github.com/pilgwon/ea05e2207ab68bdd1f49dff97b293b17).
-- An Indonesian translation of this README is available [here](https://gist.github.com/wendyliga/792ea9ac5cc887f59de70a9e39cc7343).
+The following translations of this README have been contributed by members of the community:
+
+* [French](https://gist.github.com/nikitamounier/0e93eb832cf389db12f9a69da030a2dc)
+* [Korean](https://gist.github.com/pilgwon/ea05e2207ab68bdd1f49dff97b293b17)
+* [Indonesian](https://gist.github.com/wendyliga/792ea9ac5cc887f59de70a9e39cc7343)
+* [Italian](https://gist.github.com/Bellaposa/5114e6d4d55fdb1388e8186886d48958)
 
 If you'd like to contribute a translation, please [open a PR](https://github.com/pointfreeco/swift-composable-architecture/edit/main/README.md) with a link to a [Gist](https://gist.github.com)!
 

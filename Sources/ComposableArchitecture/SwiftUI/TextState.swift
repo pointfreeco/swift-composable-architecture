@@ -1,3 +1,4 @@
+import CustomDump
 import SwiftUI
 
 /// An equatable description of SwiftUI `Text`. Useful for storing rich text in state for the
@@ -36,15 +37,15 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// Certain SwiftUI APIs, like alerts and action sheets, take `Text` values and, not views. To
-/// convert ``TextState`` to `SwiftUI.Text` for this purpose, you can use the `Text` initializer:
+/// Certain SwiftUI APIs, like alerts and confirmation dialogs, take `Text` values and, not views.
+/// To convert ``TextState`` to `SwiftUI.Text` for this purpose, you can use the `Text` initializer:
 ///
 /// ```swift
 /// Alert(title: Text(viewStore.label))
 /// ```
 ///
-/// The Composable Architecture comes with a few convenience APIs for alerts and action sheets that
-/// wrap ``TextState`` under the hood. See ``AlertState`` and `ActionState` accordingly.
+/// The Composable Architecture comes with a few convenience APIs for alerts and dialogs that wrap
+/// ``TextState`` under the hood. See ``AlertState`` and `ActionState` accordingly.
 ///
 /// In the future, should `SwiftUI.Text` and `SwiftUI.LocalizedStringKey` reliably conform to
 /// `Equatable`, ``TextState`` may be deprecated.
@@ -269,10 +270,10 @@ extension String {
   }
 }
 
-extension LocalizedStringKey: CustomDebugOutputConvertible {
+extension LocalizedStringKey {
   // NB: `LocalizedStringKey` conforms to `Equatable` but returns false for equivalent format
   //     strings. To account for this we reflect on it to extract and string-format its storage.
-  func formatted(
+  fileprivate func formatted(
     locale: Locale? = nil,
     tableName: String? = nil,
     bundle: Bundle? = nil,
@@ -305,19 +306,15 @@ extension LocalizedStringKey: CustomDebugOutputConvertible {
     )
     return String(format: format, locale: locale, arguments: arguments)
   }
-
-  public var debugOutput: String {
-    self.formatted().debugDescription
-  }
 }
 
-extension TextState: CustomDebugOutputConvertible {
-  public var debugOutput: String {
-    func debugOutputHelp(_ textState: Self) -> String {
+extension TextState: CustomDumpRepresentable {
+  public var customDumpValue: Any {
+    func dumpHelp(_ textState: Self) -> String {
       var output: String
       switch textState.storage {
       case let .concatenated(lhs, rhs):
-        output = debugOutputHelp(lhs) + debugOutputHelp(rhs)
+        output = dumpHelp(lhs) + dumpHelp(rhs)
       case let .localized(key, tableName, bundle, comment):
         output = key.formatted(tableName: tableName, bundle: bundle, comment: comment)
       case let .verbatim(string):
@@ -371,10 +368,6 @@ extension TextState: CustomDebugOutputConvertible {
       return output
     }
 
-    return #"""
-      \#(Self.self)(
-      \#(debugOutputHelp(self).indent(by: 2))
-      )
-      """#
+    return dumpHelp(self)
   }
 }
