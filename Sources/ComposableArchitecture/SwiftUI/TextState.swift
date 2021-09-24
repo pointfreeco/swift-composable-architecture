@@ -256,7 +256,7 @@ extension Text {
 
 extension TextState: View {
   public var body: some View {
-    if let alignment = modifiers.compactMap(/Modifier.multilineTextAlignment).first {
+    if let alignment = modifiers.compactMap(/Modifier.multilineTextAlignment).last {
       Text(self).multilineTextAlignment(alignment)
     } else {
       Text(self)
