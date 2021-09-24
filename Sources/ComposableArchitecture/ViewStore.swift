@@ -272,6 +272,12 @@ public final class ViewStore<State, Action>: ObservableObject {
   }
 }
 
+//extension ViewStore: Equatable {
+//  public static func == (lhs: ViewStore, rhs: ViewStore) -> Bool {
+//    lhs.isDuplicate(lhs.state, rhs.state)
+//  }
+//}
+
 extension ViewStore where State: Equatable {
   public convenience init(_ store: Store<State, Action>) {
     self.init(store, removeDuplicates: ==)

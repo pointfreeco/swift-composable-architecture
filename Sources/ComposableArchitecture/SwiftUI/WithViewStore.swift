@@ -231,8 +231,8 @@ extension WithViewStore where State == Void, Content: Scene {
   }
 }
 
-extension WithViewStore: Equatable {
-  public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.viewStore.isDuplicate(lhs.viewStore.state, rhs.viewStore.state)
-  }
-}
+//extension WithViewStore: Equatable {
+//  public static func == (lhs: Self, rhs: Self) -> Bool {
+//    lhs.viewStore == rhs.viewStore
+//  }
+//}

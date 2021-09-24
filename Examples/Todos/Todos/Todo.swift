@@ -28,23 +28,25 @@ let todoReducer = Reducer<Todo, TodoAction, TodoEnvironment> { todo, action, _ i
 }
 
 struct TodoView: View {
-  let store: Store<Todo, TodoAction>
+  @ObservedObject var viewStore: ViewStore<Todo, TodoAction>
+
+  init(store: Store<Todo, TodoAction>) {
+    self.viewStore = ViewStore(store)
+  }
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
-      HStack {
-        Button(action: { viewStore.send(.checkBoxToggled) }) {
-          Image(systemName: viewStore.isComplete ? "checkmark.square" : "square")
-        }
-        .buttonStyle(PlainButtonStyle())
-
-        TextField(
-          "Untitled Todo",
-          text: viewStore.binding(get: \.description, send: TodoAction.textFieldChanged)
-        )
+    let _ = Self._printChanges()
+    HStack {
+      Button(action: { viewStore.send(.checkBoxToggled) }) {
+        Image(systemName: viewStore.isComplete ? "checkmark.square" : "square")
       }
-      .foregroundColor(viewStore.isComplete ? .gray : nil)
+      .buttonStyle(PlainButtonStyle())
+
+      TextField(
+        "Untitled Todo",
+        text: viewStore.binding(get: \.description, send: TodoAction.textFieldChanged)
+      )
     }
-    .debug("TodoView")
+    .foregroundColor(viewStore.isComplete ? .gray : nil)
   }
 }
