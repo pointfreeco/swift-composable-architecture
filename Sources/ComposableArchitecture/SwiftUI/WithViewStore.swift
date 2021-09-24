@@ -230,3 +230,9 @@ extension WithViewStore where State == Void, Content: Scene {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
+
+extension WithViewStore: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.viewStore.isDuplicate(lhs.viewStore.state, rhs.viewStore.state)
+  }
+}
