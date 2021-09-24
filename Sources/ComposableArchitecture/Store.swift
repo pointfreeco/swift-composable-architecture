@@ -487,3 +487,9 @@ public final class Store<State, Action> {
     #endif
   }
 }
+
+extension Store: Equatable where State: Equatable {
+  public static func == (lhs: Store, rhs: Store) -> Bool {
+    lhs.state.value == rhs.state.value
+  }
+}
