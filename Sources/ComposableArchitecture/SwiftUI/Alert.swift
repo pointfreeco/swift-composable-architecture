@@ -330,7 +330,7 @@ extension AlertState.Button: Hashable where Action: Hashable {
 }
 
 extension AlertState.Button {
-  func toSwiftUIAction(send: @escaping (Action) -> Void) -> () -> Void {
+  public func toSwiftUIAction(send: @escaping (Action) -> Void) -> () -> Void {
     return {
       switch self.action?.type {
       case .none:
