@@ -201,6 +201,8 @@ import SwiftUI
 
   extension BindableState: Hashable where Value: Hashable {}
 
+  extension BindableState: Sendable where Value: Sendable {}
+
   extension BindableState: Decodable where Value: Decodable {
     public init(from decoder: Decoder) throws {
       do {
@@ -267,7 +269,10 @@ import SwiftUI
       _ keyPath: WritableKeyPath<State, BindableState<Value>>,
       _ value: Value
     ) -> Self
-    where Value: Equatable {
+    where
+      Value: Equatable,
+      Value: Sendable
+    {
       self.binding(.set(keyPath, value))
     }
   }
@@ -277,10 +282,16 @@ import SwiftUI
     ///
     /// - Parameter keyPath: A key path to a specific bindable state.
     /// - Returns: A new binding.
+    @MainActor
     public func binding<Value>(
       _ keyPath: WritableKeyPath<State, BindableState<Value>>
     ) -> Binding<Value>
-    where Action: BindableAction, Action.State == State, Value: Equatable {
+    where
+      Action: BindableAction,
+      Action.State == State,
+      Value: Equatable,
+      Value: Sendable
+    {
       self.binding(
         get: { $0[keyPath: keyPath].wrappedValue },
         send: { .binding(.set(keyPath, $0)) }
@@ -295,12 +306,12 @@ import SwiftUI
 /// boilerplate typically associated with mutating multiple fields in state.
 ///
 /// See the documentation for ``BindableState`` for more details.
-public struct BindingAction<Root>: Equatable {
+public struct BindingAction<Root>: Equatable, Sendable {
   public let keyPath: PartialKeyPath<Root>
 
-  let set: (inout Root) -> Void
-  let value: Any
-  let valueIsEqualTo: (Any) -> Bool
+  let set: @Sendable (inout Root) -> Void
+  let value: Sendable
+  let valueIsEqualTo: @Sendable (Sendable) -> Bool
 
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.keyPath == rhs.keyPath && lhs.valueIsEqualTo(rhs.value)
@@ -321,7 +332,11 @@ public struct BindingAction<Root>: Equatable {
     public static func set<Value>(
       _ keyPath: WritableKeyPath<Root, BindableState<Value>>,
       _ value: Value
-    ) -> Self where Value: Equatable {
+    ) -> Self
+    where
+      Value: Equatable,
+      Value: Sendable
+    {
       .init(
         keyPath: keyPath,
         set: { $0[keyPath: keyPath].wrappedValue = value },
