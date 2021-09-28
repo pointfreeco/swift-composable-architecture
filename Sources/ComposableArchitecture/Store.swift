@@ -130,7 +130,7 @@ import Foundation
 /// sends user actions.
 public final class Store<State, Action> {
   @usableFromInline
-  private var bufferedActions: [Action] = []
+  var bufferedActions: [Action] = []
   var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
   var parentCancellable: AnyCancellable?
@@ -166,6 +166,11 @@ public final class Store<State, Action> {
   ) where R: _Reducer, R.State == State, R.Action == Action {
     self.state = CurrentValueSubject(initialState)
     self.reducer = reducer.reduce(into:action:)
+    #if DEBUG
+    self.mainThreadChecksEnabled = true
+    #else
+    self.mainThreadChecksEnabled = false
+    #endif
     self.threadCheck(status: .`init`)
   }
 
@@ -361,47 +366,9 @@ public final class Store<State, Action> {
     self.scope(state: toLocalState, action: { $0 })
   }
 
+  @usableFromInline
   func send(_ action: Action, originatingFrom originatingAction: Action? = nil) {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
-
-    return toLocalState(self.state.eraseToAnyPublisher())
-      .map { localState in
-        let localStore = Store<LocalState, LocalAction>(
-          initialState: localState,
-          reducer: .init { localState, localAction, _ in
-            self.send(fromLocalAction(localAction))
-            localState = extractLocalState(self.state.value) ?? localState
-            return .none
-          },
-          environment: ()
-        )
-
-        localStore.parentCancellable = self.state
-          .sink { [weak localStore] state in
-            guard let localStore = localStore else { return }
-            localStore.state.value = extractLocalState(state) ?? localStore.state.value
-          }
-        return localStore
-      }
-      .eraseToAnyPublisher()
-  }
-
-  /// Scopes the store to a publisher of stores of more local state and local actions.
-  ///
-  /// - Parameter toLocalState: A function that transforms a publisher of `State` into a publisher
-  ///   of `LocalState`.
-  /// - Returns: A publisher of stores with its domain (state and action)
-  ///   transformed.
-  public func publisherScope<P: Publisher, LocalState>(
-    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P
-  ) -> AnyPublisher<Store<LocalState, Action>, Never>
-  where P.Output == LocalState, P.Failure == Never {
-    self.publisherScope(state: toLocalState, action: { $0 })
-  }
-
-  @usableFromInline
-  func send(_ action: Action, isFromViewStore: Bool = true) {
-    self.threadCheck(status: .send(action, isFromViewStore: isFromViewStore))
 
     self.bufferedActions.append(action)
     guard !self.isSending else { return }
