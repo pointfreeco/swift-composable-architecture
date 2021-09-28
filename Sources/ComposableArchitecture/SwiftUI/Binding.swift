@@ -369,7 +369,7 @@ extension BindingAction {
   /// }
   ///
   /// enum AppAction: BindableAction {
-  ///   case binding(BindingAction<AppState>
+  ///   case binding(BindingAction<AppState>)
   ///   case factButtonTapped
   ///   case factResponse(String?)
   ///   ...
