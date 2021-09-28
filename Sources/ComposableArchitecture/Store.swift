@@ -5,7 +5,7 @@ import Foundation
 /// around to views that need to interact with the application.
 ///
 /// You will typically construct a single one of these at the root of your application, and then use
-/// the ``scope(state:action:)-9iai9`` method to derive more focused stores that can be passed to
+/// the ``scope(state:action:)`` method to derive more focused stores that can be passed to
 /// subviews:
 ///
 /// ```swift
@@ -29,8 +29,8 @@ import Foundation
 ///
 /// ### Scoping
 ///
-/// The most important operation defined on ``Store`` is the ``scope(state:action:)-9iai9`` method,
-/// which allows you to transform a store into one that deals with local state and actions. This is
+/// The most important operation defined on ``Store`` is the ``scope(state:action:)`` method, which
+/// allows you to transform a store into one that deals with local state and actions. This is
 /// necessary for passing stores to subviews that only care about a small portion of the entire
 /// application's domain.
 ///
@@ -51,8 +51,8 @@ import Foundation
 /// }
 /// ```
 ///
-/// We can construct a view for each of these domains by applying ``scope(state:action:)-9iai9``
-/// to a store that holds onto the full app domain in order to transform it into a store for each
+/// We can construct a view for each of these domains by applying ``scope(state:action:)`` to a
+/// store that holds onto the full app domain in order to transform it into a store for each
 /// sub-domain:
 ///
 /// ```swift
@@ -76,9 +76,9 @@ import Foundation
 /// ### Thread safety
 ///
 /// The `Store` class is not thread-safe, and so all interactions with an instance of ``Store``
-/// (including all of its scopes and derived ``ViewStore``s) must be done on the same thread.
-/// Further, if the store is powering a SwiftUI or UIKit view, as is customary, then all
-/// interactions must be done on the _main_ thread.
+/// (including all of its scopes and derived ``ViewStore``s) must be done on the same thread the
+/// store was created on. Further, if the store is powering a SwiftUI or UIKit view, as is
+/// customary, then all interactions must be done on the _main_ thread.
 ///
 /// The reason stores are not thread-safe is due to the fact that when an action is sent to a store,
 /// a reducer is run on the current state, and this process cannot be done from multiple threads.
@@ -111,18 +111,33 @@ import Foundation
 /// However, by leaving scheduling out of the ``Store`` we get to test these aspects of our effects
 /// if we so desire, or we can ignore if we prefer. We have that flexibility.
 ///
+/// #### Thread safety checks
+///
+/// The store performs some basic thread safety checks in order to help catch mistakes. Stores
+/// constructed via the initializer ``Store/init(initialState:reducer:environment:)`` are assumed
+/// to run only on the main thread, and so a check is executed immediately to make sure that is the
+/// case. Further, all actions sent to the store and all scopes (see ``Store/scope(state:action:)``)
+/// of the store are also checked to make sure that work is performed on the main thread.
+///
+/// If you need a store that runs on a non-main thread, which should be very rare and you should
+/// have a very good reason to do so, then you can construct a store via the
+/// ``Store/unchecked(initialState:reducer:environment:)`` static method to opt out of all main
+/// thread checks.
+///
+/// ---
+///
 /// See also: ``ViewStore`` to understand how one observes changes to the state in a ``Store`` and
 /// sends user actions.
 public final class Store<State, Action> {
   @usableFromInline
-  var state: CurrentValueSubject<State, Never>
+  private var bufferedActions: [Action] = []
   var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
-  private var parentCancellable: AnyCancellable?
+  var parentCancellable: AnyCancellable?
   private let reducer: (inout State, Action) -> Effect<Action, Never>
-  private var bufferedActions: [Action] = []
+  var state: CurrentValueSubject<State, Never>
   #if DEBUG
-    private let initialThread = Thread.current
+    private let mainThreadChecksEnabled: Bool
   #endif
 
   /// Initializes a store from an initial state, a reducer, and an environment.
@@ -131,13 +146,18 @@ public final class Store<State, Action> {
   ///   - initialState: The state to start the application in.
   ///   - reducer: The reducer that powers the business logic of the application.
   ///   - environment: The environment of dependencies for the application.
-  public init<Environment>(
+  public convenience init<Environment>(
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
     environment: Environment
   ) {
-    self.state = CurrentValueSubject(initialState)
-    self.reducer = { state, action in reducer.run(&state, action, environment) }
+    self.init(
+      initialState: initialState,
+      reducer: reducer,
+      environment: environment,
+      mainThreadChecksEnabled: true
+    )
+    self.threadCheck(status: .`init`)
   }
 
   public init<R>(
@@ -146,6 +166,27 @@ public final class Store<State, Action> {
   ) where R: _Reducer, R.State == State, R.Action == Action {
     self.state = CurrentValueSubject(initialState)
     self.reducer = reducer.reduce(into:action:)
+    self.threadCheck(status: .`init`)
+  }
+
+  /// Initializes a store from an initial state, a reducer, and an environment, and the main thread
+  /// check is disabled for all interactions with this store.
+  ///
+  /// - Parameters:
+  ///   - initialState: The state to start the application in.
+  ///   - reducer: The reducer that powers the business logic of the application.
+  ///   - environment: The environment of dependencies for the application.
+  public static func unchecked<Environment>(
+    initialState: State,
+    reducer: Reducer<State, Action, Environment>,
+    environment: Environment
+  ) -> Self {
+    Self(
+      initialState: initialState,
+      reducer: reducer,
+      environment: environment,
+      mainThreadChecksEnabled: false
+    )
   }
 
   /// Scopes the store to one that exposes local state and actions.
@@ -291,6 +332,7 @@ public final class Store<State, Action> {
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> Store<LocalState, LocalAction> {
+    self.threadCheck(status: .scope)
     let reducer = Reducers.Scoped(
       store: self,
       toLocalState: toLocalState,
@@ -319,24 +361,8 @@ public final class Store<State, Action> {
     self.scope(state: toLocalState, action: { $0 })
   }
 
-  /// Scopes the store to a publisher of stores of more local state and local actions.
-  ///
-  /// - Parameters:
-  ///   - toLocalState: A function that transforms a publisher of `State` into a publisher of
-  ///     `LocalState`.
-  ///   - fromLocalAction: A function that transforms `LocalAction` into `Action`.
-  /// - Returns: A publisher of stores with its domain (state and action) transformed.
-  public func publisherScope<P: Publisher, LocalState, LocalAction>(
-    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P,
-    action fromLocalAction: @escaping (LocalAction) -> Action
-  ) -> AnyPublisher<Store<LocalState, LocalAction>, Never>
-  where P.Output == LocalState, P.Failure == Never {
-    func extractLocalState(_ state: State) -> LocalState? {
-      var localState: LocalState?
-      _ = toLocalState(Just(state).eraseToAnyPublisher())
-        .sink { localState = $0 }
-      return localState
-    }
+  func send(_ action: Action, originatingFrom originatingAction: Action? = nil) {
+    self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
     return toLocalState(self.state.eraseToAnyPublisher())
       .map { localState in
@@ -399,8 +425,8 @@ public final class Store<State, Action> {
           didComplete = true
           self?.effectCancellables[uuid] = nil
         },
-        receiveValue: { [weak self] action in
-          self?.send(action, isFromViewStore: false)
+        receiveValue: { [weak self] effectAction in
+          self?.send(effectAction, originatingFrom: action)
         }
       )
 
@@ -423,35 +449,54 @@ public final class Store<State, Action> {
 
   private enum ThreadCheckStatus {
     case effectCompletion(Action)
-    case send(Action, isFromViewStore: Bool)
+    case `init`
+    case scope
+    case send(Action, originatingAction: Action?)
   }
 
   @inline(__always)
   private func threadCheck(status: ThreadCheckStatus) {
     #if DEBUG
-      guard self.initialThread != Thread.current
+      guard self.mainThreadChecksEnabled && !Thread.isMainThread
       else { return }
 
       let message: String
       switch status {
       case let .effectCompletion(action):
         message = """
-          An effect returned from the action "\(debugCaseOutput(action))" completed on the \
-          wrong thread. Make sure to use ".receive(on:)" on any effects that execute on background \
-          threads to receive their output on the initial thread.
+          An effect returned from the action "\(debugCaseOutput(action))" completed on a non-main \
+          thread. Make sure to use ".receive(on:)" on any effects that execute on background \
+          threads to receive their output on the main thread, or create this store via \
+          "Store.unchecked" to disable the main thread checker.
           """
 
-      case let .send(action, isFromViewStore: true):
+      case .`init`:
         message = """
-          "ViewStore.send(\(debugCaseOutput(action)))" was called on the wrong thread. Make \
-          sure that "ViewStore.send" is always called on the initial thread.
+          "Store.init" was called on a non-main thread. Make sure that stores are initialized on \
+          the main thread, or create this store via "Store.unchecked" to disable the main thread \
+          checker.
           """
 
-      case let .send(action, isFromViewStore: false):
+      case .scope:
         message = """
-          An effect emitted the action "\(debugCaseOutput(action))" from the wrong thread. Make sure \
-          to use ".receive(on:)" on any effects that execute on background threads to receive their \
-          output on the initial thread.
+          "Store.scope" was called on a non-main thread. Make sure that "Store.scope" is always \
+          called on the main thread, or create this store via "Store.unchecked" to disable the \
+          main thread checker.
+          """
+
+      case let .send(action, originatingAction: nil):
+        message = """
+          "ViewStore.send(\(debugCaseOutput(action)))" was called on a non-main thread. Make sure \
+          that "ViewStore.send" is always called on the main thread, or create this store via \
+          "Store.unchecked" to disable the main thread checker.
+          """
+
+      case let .send(action, originatingAction: .some(originatingAction)):
+        message = """
+          An effect returned from "\(debugCaseOutput(originatingAction))" emitted the action \
+          "\(debugCaseOutput(action))" on a non-main thread. Make sure to use ".receive(on:)" on \
+          any effects that execute on background threads to receive their output on the main \
+          thread, or create this store via "Store.unchecked" to disable the main thread checker.
           """
       }
 
@@ -460,19 +505,31 @@ public final class Store<State, Action> {
         ---
         Warning:
 
-        The store was interacted with on a thread that is different from the thread the store was \
-        created on:
+        A store created on the main thread was interacted with on a non-main thread:
+
+          Thread: \(Thread.current)
 
         \(message)
 
-          Initial thread: \(self.initialThread)
-          Current thread: \(Thread.current)
-
         The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
-        (including all of its scopes and derived view stores) must be done on the same thread.
+        (including all of its scopes and derived view stores) must be done on the main thread.
         ---
         """
       )
+    #endif
+  }
+
+  private init<Environment>(
+    initialState: State,
+    reducer: Reducer<State, Action, Environment>,
+    environment: Environment,
+    mainThreadChecksEnabled: Bool
+  ) {
+    self.state = CurrentValueSubject(initialState)
+    self.reducer = { state, action in reducer.run(&state, action, environment) }
+
+    #if DEBUG
+      self.mainThreadChecksEnabled = mainThreadChecksEnabled
     #endif
   }
 }
