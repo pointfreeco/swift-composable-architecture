@@ -21,6 +21,19 @@ test-library:
 		-scheme ComposableArchitecture_watchOS \
 		-destination platform="$(PLATFORM_WATCHOS)"
 
+DOC_WARNINGS := $(shell xcodebuild clean docbuild \
+	-scheme ComposableArchitecture \
+	-destination platform="$(PLATFORM_MACOS)" \
+	-quiet \
+	2>&1 \
+	| grep "couldn't be resolved to known documentation" \
+	| sed 's|$(PWD)|.|g' \
+	| tr '\n' '\1')
+test-docs:
+	@test "$(DOC_WARNINGS)" = "" \
+		|| (echo "xcodebuild docbuild failed:\n\n$(DOC_WARNINGS)" | tr '\1' '\n' \
+		&& exit 1)
+
 test-examples:
 	xcodebuild test \
 		-scheme "CaseStudies (SwiftUI)" \

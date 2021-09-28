@@ -1,8 +1,8 @@
 import CasePaths
 import Dispatch
 
-/// Determines how the string description of an action should be printed when using the ``Reducer/debug(prefix:state:action:environment:)``
-/// higher-order reducer.
+/// Determines how the string description of an action should be printed when using the
+/// ``Reducer/debug(_:state:action:actionFormat:environment:)`` higher-order reducer.
 public enum ActionFormat {
   /// Prints the action in a single line by only specifying the labels of the associated values:
   ///
@@ -115,14 +115,16 @@ extension Reducer {
         return .merge(
           .fireAndForget {
             debugEnvironment.queue.async {
-              let actionOutput =
-                actionFormat == .prettyPrint
-                ? debugOutput(localAction).indent(by: 2)
-                : debugCaseOutput(localAction).indent(by: 2)
+              var actionOutput = ""
+              if actionFormat == .prettyPrint {
+                customDump(localAction, to: &actionOutput, indent: 2)
+              } else {
+                actionOutput.write(debugCaseOutput(localAction).indent(by: 2))
+              }
               let stateOutput =
                 LocalState.self == Void.self
                 ? ""
-                : debugDiff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
+                : diff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
               debugEnvironment.printer(
                 """
                 \(prefix.isEmpty ? "" : "\(prefix): ")received action:
