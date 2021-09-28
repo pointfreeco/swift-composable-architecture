@@ -165,8 +165,8 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// - Returns: A binding.
   @MainActor
   public func binding<LocalState>(
-    get: @Sendable @escaping (State) -> LocalState,
-    send localStateToViewAction: @Sendable @escaping (LocalState) -> Action
+    get: @escaping (State) -> LocalState,
+    send localStateToViewAction: @escaping (LocalState) -> Action
   ) -> Binding<LocalState> {
     ObservedObject(wrappedValue: self)
       .projectedValue[get: .init(rawValue: get), send: .init(rawValue: localStateToViewAction)]
@@ -199,10 +199,9 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// - Returns: A binding.
   @MainActor
   public func binding<LocalState>(
-    get: @Sendable @escaping (State) -> LocalState,
+    get: @escaping (State) -> LocalState,
     send action: Action
-  ) -> Binding<LocalState>
-  where Action: Sendable {
+  ) -> Binding<LocalState> {
     self.binding(get: get, send: { _ in action })
   }
 
@@ -233,7 +232,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// - Returns: A binding.
   @MainActor
   public func binding(
-    send localStateToViewAction: @Sendable @escaping (State) -> Action
+    send localStateToViewAction: @escaping (State) -> Action
   ) -> Binding<State> {
     self.binding(get: { $0 }, send: localStateToViewAction)
   }
@@ -262,14 +261,14 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///   - action: The action to send when the binding is written to.
   /// - Returns: A binding.
   @MainActor
-  public func binding(send action: Action) -> Binding<State>
-  where Action: Sendable {
+  public func binding(send action: Action) -> Binding<State> {
     self.binding(send: { _ in action })
   }
 
+  @MainActor
   private subscript<LocalState>(
-    get state: HashableWrapper<State, LocalState>,
-    send action: HashableWrapper<LocalState, Action>
+    get state: HashableWrapper<(State) -> LocalState>,
+    send action: HashableWrapper<(LocalState) -> Action>
   ) -> LocalState {
     get { state.rawValue(self.state) }
     set { self.send(action.rawValue(newValue)) }
@@ -333,8 +332,10 @@ public struct StorePublisher<State>: Publisher {
   }
 }
 
-private struct HashableWrapper<Arguments, Result>: Hashable {
-  let rawValue: @Sendable (Arguments) -> Result
-  static func == (lhs: Self, rhs: Self) -> Bool { false }
-  func hash(into hasher: inout Hasher) {}
+@MainActor
+private struct HashableWrapper<Value>: Hashable {
+  let rawValue: Value
+  nonisolated static func == (lhs: Self, rhs: Self) -> Bool { false }
+  nonisolated var hashValue: Int { 0 }
+  nonisolated func hash(into hasher: inout Hasher) {}
 }

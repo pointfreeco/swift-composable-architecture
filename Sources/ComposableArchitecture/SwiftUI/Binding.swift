@@ -201,8 +201,6 @@ import SwiftUI
 
   extension BindableState: Hashable where Value: Hashable {}
 
-  extension BindableState: Sendable where Value: Sendable {}
-
   extension BindableState: Decodable where Value: Decodable {
     public init(from decoder: Decoder) throws {
       do {
@@ -269,10 +267,7 @@ import SwiftUI
       _ keyPath: WritableKeyPath<State, BindableState<Value>>,
       _ value: Value
     ) -> Self
-    where
-      Value: Equatable,
-      Value: Sendable
-    {
+    where Value: Equatable {
       self.binding(.set(keyPath, value))
     }
   }
@@ -286,12 +281,7 @@ import SwiftUI
     public func binding<Value>(
       _ keyPath: WritableKeyPath<State, BindableState<Value>>
     ) -> Binding<Value>
-    where
-      Action: BindableAction,
-      Action.State == State,
-      Value: Equatable,
-      Value: Sendable
-    {
+    where Action: BindableAction, Action.State == State, Value: Equatable {
       self.binding(
         get: { $0[keyPath: keyPath].wrappedValue },
         send: { .binding(.set(keyPath, $0)) }
@@ -306,12 +296,12 @@ import SwiftUI
 /// boilerplate typically associated with mutating multiple fields in state.
 ///
 /// See the documentation for ``BindableState`` for more details.
-public struct BindingAction<Root>: Equatable, Sendable {
+public struct BindingAction<Root>: Equatable {
   public let keyPath: PartialKeyPath<Root>
 
-  let set: @Sendable (inout Root) -> Void
-  let value: Sendable
-  let valueIsEqualTo: @Sendable (Sendable) -> Bool
+  let set: (inout Root) -> Void
+  let value: Any
+  let valueIsEqualTo: (Any) -> Bool
 
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.keyPath == rhs.keyPath && lhs.valueIsEqualTo(rhs.value)
@@ -332,11 +322,7 @@ public struct BindingAction<Root>: Equatable, Sendable {
     public static func set<Value>(
       _ keyPath: WritableKeyPath<Root, BindableState<Value>>,
       _ value: Value
-    ) -> Self
-    where
-      Value: Equatable,
-      Value: Sendable
-    {
+    ) -> Self where Value: Equatable {
       .init(
         keyPath: keyPath,
         set: { $0[keyPath: keyPath].wrappedValue = value },

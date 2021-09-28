@@ -234,8 +234,7 @@ extension View {
   public func confirmationDialog<Action>(
     _ store: Store<ConfirmationDialogState<Action>?, Action>,
     dismiss: Action
-  ) -> some View
-  where Action: Sendable {
+  ) -> some View {
     WithViewStore(store, removeDuplicates: { $0?.id == $1?.id }) { viewStore in
       #if compiler(>=5.5) && canImport(_Concurrency)
         if #available(iOS 15, tvOS 15, watchOS 8, *) {

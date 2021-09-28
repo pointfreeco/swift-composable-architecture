@@ -30,8 +30,7 @@ extension View {
   public func actionSheet<Action>(
     _ store: Store<ConfirmationDialogState<Action>?, Action>,
     dismiss: Action
-  ) -> some View
-  where Action: Sendable {
+  ) -> some View {
     self.confirmationDialog(store, dismiss: dismiss)
   }
 }
@@ -91,23 +90,23 @@ extension Store {
 }
 
 #if compiler(>=5.4)
-//  extension ViewStore {
-//    @available(
-//      *, deprecated,
-//      message:
-//        "Dynamic member lookup is no longer supported for bindable state. Instead of dot-chaining on the view store, e.g. 'viewStore.$value', invoke the 'binding' method on view store with a key path to the value, e.g. 'viewStore.binding(\\.$value)'. For more on this change, see: https://github.com/pointfreeco/swift-composable-architecture/pull/810"
-//    )
-//    @MainActor
-//    public subscript<Value>(
-//      dynamicMember keyPath: WritableKeyPath<State, BindableState<Value>>
-//    ) -> Binding<Value>
-//    where Action: BindableAction, Action.State == State, Value: Equatable {
-//      self.binding(
-//        get: { $0[keyPath: keyPath].wrappedValue },
-//        send: { .binding(.set(keyPath, $0)) }
-//      )
-//    }
-//  }
+  extension ViewStore {
+    @available(
+      *, deprecated,
+      message:
+        "Dynamic member lookup is no longer supported for bindable state. Instead of dot-chaining on the view store, e.g. 'viewStore.$value', invoke the 'binding' method on view store with a key path to the value, e.g. 'viewStore.binding(\\.$value)'. For more on this change, see: https://github.com/pointfreeco/swift-composable-architecture/pull/810"
+    )
+    @MainActor
+    public subscript<Value>(
+      dynamicMember keyPath: WritableKeyPath<State, BindableState<Value>>
+    ) -> Binding<Value>
+    where Action: BindableAction, Action.State == State, Value: Equatable {
+      self.binding(
+        get: { $0[keyPath: keyPath].wrappedValue },
+        send: { .binding(.set(keyPath, $0)) }
+      )
+    }
+  }
 #endif
 
 // NB: Deprecated after 0.25.0:
@@ -160,24 +159,24 @@ extension Store {
     }
   }
 
-//  extension ViewStore {
-//    @available(
-//      *, deprecated,
-//      message:
-//        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. Bindings are now derived via 'ViewStore.binding' with a key path to that 'BindableState' (for example, 'viewStore.binding(\\.$value)'). For dynamic member lookup to be available, the view store's 'Action' type must also conform to 'BindableAction'."
-//    )
-//    @MainActor
-//    public func binding<LocalState>(
-//      keyPath: WritableKeyPath<State, LocalState>,
-//      send action: @escaping (BindingAction<State>) -> Action
-//    ) -> Binding<LocalState>
-//    where LocalState: Equatable {
-//      self.binding(
-//        get: { $0[keyPath: keyPath] },
-//        send: { action(.set(keyPath, $0)) }
-//      )
-//    }
-//  }
+  extension ViewStore {
+    @available(
+      *, deprecated,
+      message:
+        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. Bindings are now derived via 'ViewStore.binding' with a key path to that 'BindableState' (for example, 'viewStore.binding(\\.$value)'). For dynamic member lookup to be available, the view store's 'Action' type must also conform to 'BindableAction'."
+    )
+    @MainActor
+    public func binding<LocalState>(
+      keyPath: WritableKeyPath<State, LocalState>,
+      send action: @escaping (BindingAction<State>) -> Action
+    ) -> Binding<LocalState>
+    where LocalState: Equatable {
+      self.binding(
+        get: { $0[keyPath: keyPath] },
+        send: { action(.set(keyPath, $0)) }
+      )
+    }
+  }
 #else
   extension BindingAction {
     @available(
