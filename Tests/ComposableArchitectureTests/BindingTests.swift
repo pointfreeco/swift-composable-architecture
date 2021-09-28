@@ -3,6 +3,7 @@
   import XCTest
 
   final class BindingTests: XCTestCase {
+    @MainActor
     func testNestedBindableState() {
       struct State: Equatable {
         @BindableState var nested = Nested()
