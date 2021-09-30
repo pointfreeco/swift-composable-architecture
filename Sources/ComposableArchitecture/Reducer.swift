@@ -463,7 +463,6 @@ public struct Reducer<State, Action, Environment> {
     state toLocalState: CasePath<GlobalState, State>,
     action toLocalAction: CasePath<GlobalAction, Action>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
-    breakpointOnNil: Bool = true,
     file: StaticString = #fileID,
     line: UInt = #line
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
@@ -471,7 +470,7 @@ public struct Reducer<State, Action, Environment> {
       guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
 
       guard var localState = toLocalState.extract(from: globalState) else {
-        if breakpointOnNil {
+        #if DEBUG
           os_log(
             .fault, dso: rw.dso, log: rw.log,
             """
@@ -503,7 +502,7 @@ public struct Reducer<State, Action, Environment> {
             debugCaseOutput(localAction),
             "\(State.self)"
           )
-        }
+        #endif
         return .none
       }
       defer { globalState = toLocalState.embed(localState) }
@@ -677,7 +676,6 @@ public struct Reducer<State, Action, Environment> {
   ///   process a child action for unavailable child state.
   /// - Returns: A reducer that works on optional state.
   public func optional(
-    breakpointOnNil: Bool = true,
     file: StaticString = #fileID,
     line: UInt = #line
   ) -> Reducer<
@@ -685,7 +683,7 @@ public struct Reducer<State, Action, Environment> {
   > {
     .init { state, action, environment in
       guard state != nil else {
-        if breakpointOnNil {
+        #if DEBUG
           os_log(
             .fault, dso: rw.dso, log: rw.log,
             """
@@ -715,7 +713,7 @@ public struct Reducer<State, Action, Environment> {
             debugCaseOutput(action),
             "\(State.self)"
           )
-        }
+        #endif
         return .none
       }
       return self.reducer(&state!, action, environment)
@@ -768,14 +766,13 @@ public struct Reducer<State, Action, Environment> {
     state toLocalState: WritableKeyPath<GlobalState, IdentifiedArray<ID, State>>,
     action toLocalAction: CasePath<GlobalAction, (ID, Action)>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
-    breakpointOnNil: Bool = true,
     file: StaticString = #fileID,
     line: UInt = #line
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
     .init { globalState, globalAction, globalEnvironment in
       guard let (id, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
       if globalState[keyPath: toLocalState][id: id] == nil {
-        if breakpointOnNil {
+        #if DEBUG
           os_log(
             .fault, dso: rw.dso, log: rw.log,
             """
@@ -811,7 +808,7 @@ public struct Reducer<State, Action, Environment> {
             debugCaseOutput(localAction),
             "\(id)"
           )
-        }
+        #endif
         return .none
       }
       return
@@ -848,7 +845,6 @@ public struct Reducer<State, Action, Environment> {
     state toLocalState: WritableKeyPath<GlobalState, [Key: State]>,
     action toLocalAction: CasePath<GlobalAction, (Key, Action)>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
-    breakpointOnNil: Bool = true,
     file: StaticString = #fileID,
     line: UInt = #line
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
@@ -856,7 +852,7 @@ public struct Reducer<State, Action, Environment> {
       guard let (key, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
 
       if globalState[keyPath: toLocalState][key] == nil {
-        if breakpointOnNil {
+        #if DEBUG
           os_log(
             .fault, dso: rw.dso, log: rw.log,
             """
@@ -891,7 +887,7 @@ public struct Reducer<State, Action, Environment> {
             debugCaseOutput(localAction),
             "\(key)"
           )
-        }
+        #endif
         return .none
       }
       return self.reducer(
