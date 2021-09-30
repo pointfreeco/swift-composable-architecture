@@ -77,7 +77,6 @@ struct OptionalBasicsView: View {
           )
         }
       }
-      .onAppear { viewStore.send(.optionalCounter(.incrementButtonTapped)) }
     }
     .navigationBarTitle("Optional state")
   }
