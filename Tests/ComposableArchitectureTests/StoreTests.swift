@@ -449,9 +449,24 @@ final class StoreTests: XCTestCase {
   }
 
   func testNonMainQueueStore() {
-    for _ in 1...100 {
+    var expectations: [XCTestExpectation] = []
+    for i in 1...100 {
+      let expectation = XCTestExpectation(description: "\(i)th iteration is complete")
+      expectations.append(expectation)
       DispatchQueue.global().async {
-        let viewStore = ViewStore(Store<Int, ()>(initialState: 0, reducer: .empty, environment: ()))
+        let viewStore = ViewStore(
+          Store.unchecked(
+            initialState: 0,
+            reducer: Reducer<Int, Void, XCTestExpectation> { state, _, expectation in
+              state += 1
+              if state == 2 {
+                return .fireAndForget { expectation.fulfill() }
+              }
+              return .none
+            },
+            environment: expectation
+          )
+        )
         viewStore.send(())
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
           viewStore.send(())
@@ -459,8 +474,6 @@ final class StoreTests: XCTestCase {
       }
     }
 
-    // Allow asychnronous code to run for a bit to make sure the warning breakpoint is
-    // never tripped.
-    _ = XCTWaiter.wait(for: [.init()], timeout: 1)
+    wait(for: expectations, timeout: 1)
   }
 }

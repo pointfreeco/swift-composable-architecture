@@ -63,13 +63,15 @@ public struct WithViewStore<State, Action, Content> {
   fileprivate var _body: Content {
     #if DEBUG
       if let prefix = self.prefix {
+        var stateDump = ""
+        customDump(self.viewStore.state, to: &stateDump, indent: 2)
         let difference =
           self.previousState(self.viewStore.state)
           .map {
             diff($0, self.viewStore.state).map { "(Changed state)\n\($0)" }
               ?? "(No difference in state detected)"
           }
-          ?? "(Initial state)\n\(customDump(self.viewStore.state, indent: 2))"
+          ?? "(Initial state)\n\(stateDump)"
         func typeName(_ type: Any.Type) -> String {
           var name = String(reflecting: type)
           if let index = name.firstIndex(of: ".") {

@@ -1,49 +1,49 @@
-import ComposableArchitecture
-import SwiftUI
-
-private let readMe = """
-  This demonstrates how to make use of SwiftUI's `@FocusState` in the Composable Architecture. \
-  If you tap the "Sign in" button while a field is empty, the focus will be changed to that field.
-  """
-
-struct FocusDemoState: Equatable {
-  @BindableState var focusedField: Field? = nil
-  @BindableState var password: String = ""
-  @BindableState var username: String = ""
-
-  enum Field: String, Hashable {
-    case username, password
-  }
-}
-
-enum FocusDemoAction: BindableAction, Equatable {
-  case binding(BindingAction<FocusDemoState>)
-  case signInButtonTapped
-}
-
-struct FocusDemoEnvironment {}
-
-let focusDemoReducer = Reducer<
-  FocusDemoState,
-  FocusDemoAction,
-  FocusDemoEnvironment
-> { state, action, _ in
-  switch action {
-  case .binding:
-    return .none
-
-  case .signInButtonTapped:
-    if state.username.isEmpty {
-      state.focusedField = .username
-    } else if state.password.isEmpty {
-      state.focusedField = .password
-    }
-    return .none
-  }
-}
-.binding()
-
 #if compiler(>=5.5)
+  import ComposableArchitecture
+  import SwiftUI
+
+  private let readMe = """
+    This demonstrates how to make use of SwiftUI's `@FocusState` in the Composable Architecture. \
+    If you tap the "Sign in" button while a field is empty, the focus will be changed to that field.
+    """
+
+  struct FocusDemoState: Equatable {
+    @BindableState var focusedField: Field? = nil
+    @BindableState var password: String = ""
+    @BindableState var username: String = ""
+
+    enum Field: String, Hashable {
+      case username, password
+    }
+  }
+
+  enum FocusDemoAction: BindableAction, Equatable {
+    case binding(BindingAction<FocusDemoState>)
+    case signInButtonTapped
+  }
+
+  struct FocusDemoEnvironment {}
+
+  let focusDemoReducer = Reducer<
+    FocusDemoState,
+    FocusDemoAction,
+    FocusDemoEnvironment
+  > { state, action, _ in
+    switch action {
+    case .binding:
+      return .none
+
+    case .signInButtonTapped:
+      if state.username.isEmpty {
+        state.focusedField = .username
+      } else if state.password.isEmpty {
+        state.focusedField = .password
+      }
+      return .none
+    }
+  }
+  .binding()
+
   struct FocusDemoView: View {
     let store: Store<FocusDemoState, FocusDemoAction>
     @FocusState var focusedField: FocusDemoState.Field?
