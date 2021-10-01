@@ -371,8 +371,14 @@ public final class Store<State, Action> {
     self.isSending = true
     var currentState = self.state.value
     defer {
-      self.isSending = false
       self.state.value = currentState
+      self.isSending = false
+      // if new actions were added synchronously
+      // as part of state publisher updates,
+      // process them now
+      if !self.bufferedActions.isEmpty {
+        send(self.bufferedActions.removeFirst())
+      }
     }
 
     while !self.bufferedActions.isEmpty {
