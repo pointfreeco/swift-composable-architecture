@@ -472,7 +472,7 @@ public final class Store<State, Action> {
         os_log(
           .fault, dso: rw.dso, log: rw.log,
           """
-          "ViewStore.send was called on a non-main thread with: %@ …
+          "ViewStore.send" was called on a non-main thread with: %@ …
 
           Make sure that "ViewStore.send" is always called on the main thread, or create your \
           store via "Store.unchecked" to opt out of the main thread checker.
