@@ -1,7 +1,9 @@
 import CasePaths
 import Combine
-import OSLog
 import SwiftUI
+#if DEBUG
+  import OSLog
+#endif
 
 // NB: Deprecated after 0.27.1:
 

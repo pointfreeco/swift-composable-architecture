@@ -1,6 +1,6 @@
-import OSLog
-
 #if DEBUG
+  import OSLog
+
   // NB: Xcode runtime warnings offer a much better experience than traditional assertions and
   //     breakpoints, but Apple provides no means of creating custom runtime warnings ourselves.
   //     To work around this, we hook into SwiftUI's runtime issue delivery mechanism, instead.

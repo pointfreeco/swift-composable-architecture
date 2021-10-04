@@ -1,6 +1,8 @@
 import Combine
 import Foundation
-import OSLog
+#if DEBUG
+  import OSLog
+#endif
 
 /// A store represents the runtime that powers the application. It is the object that you will pass
 /// around to views that need to interact with the application.

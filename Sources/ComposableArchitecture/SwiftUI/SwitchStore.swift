@@ -1,5 +1,7 @@
-import OSLog
 import SwiftUI
+#if DEBUG
+  import OSLog
+#endif
 
 /// A view that can switch over a store of enum state and handle each case.
 ///
