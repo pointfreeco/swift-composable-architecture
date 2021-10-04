@@ -377,7 +377,7 @@ public final class Store<State, Action> {
       // as part of state publisher updates,
       // process them now
       if !self.bufferedActions.isEmpty {
-        send(self.bufferedActions.removeFirst())
+        send(self.bufferedActions.removeLast())
       }
     }
 
