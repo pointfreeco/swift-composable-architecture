@@ -11,14 +11,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
   ) {
     self.window = (scene as? UIWindowScene).map(UIWindow.init(windowScene:))
     self.window?.rootViewController = UIHostingController(
-      rootView: ContentView_Previews.previews
-//        RootView(
-//        store: .init(
-//          initialState: RootState(),
-//          reducer: rootReducer,
-//          environment: .live
-//        )
-//      )
+      rootView:
+        //ContentView_Previews.previews
+        RootView(
+        store: .init(
+          initialState: RootState(),
+          reducer: rootReducer,
+          environment: .live
+        )
+      )
     )
     self.window?.makeKeyAndVisible()
   }

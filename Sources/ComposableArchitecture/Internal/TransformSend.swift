@@ -9,7 +9,7 @@ extension Store {
       reducer: .init { localState, localAction, _ in
         isSending = true
         defer { isSending = false }
-        transform(localAction, self.send)
+        transform(localAction, { self.send($0) })
         localState = self.state.value
         return .none
       },

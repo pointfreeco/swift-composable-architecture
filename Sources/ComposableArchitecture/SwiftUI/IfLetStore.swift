@@ -80,16 +80,36 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
     self.store = store
     self.content = { viewStore in
       if var state = viewStore.state {
-        return ifContent(
-          store.scope {
-            state = $0 ?? state
-            return state
-          }
-          .transformSend { action, send in
-            if viewStore.state != nil {
-              send(action)
+
+        let ifLetStore = Store<State, Action>(
+          initialState: state,
+          reducer: .init { state, action, _ in
+            var wasNil = false
+            if store.state.value == nil {
+              store.state.value = state
+              wasNil = true
             }
-          }
+            store.send(action)
+            state = store.state.value ?? state
+            if wasNil {
+              store.state.value = nil
+            }
+            return .none
+          },
+          environment: ()
+        )
+
+        return ifContent(
+          ifLetStore
+//          store.scope {
+//            state = $0 ?? state
+//            return state
+//          }
+//          .transformSend { action, send in
+//            if viewStore.state != nil {
+//              send(action)
+//            }
+//          }
         )
       } else {
         return nil

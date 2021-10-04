@@ -70,7 +70,8 @@ struct OptionalBasicsView: View {
                 CounterView(store: store)
                   .buttonStyle(BorderlessButtonStyle())
               }
-            },
+            }
+            ,
             else: {
               Text(template: "`CounterState` is `nil`", .body)
             }

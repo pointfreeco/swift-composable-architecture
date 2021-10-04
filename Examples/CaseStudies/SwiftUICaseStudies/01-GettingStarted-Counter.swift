@@ -16,6 +16,7 @@ struct CounterState: Equatable {
 enum CounterAction: Equatable {
   case decrementButtonTapped
   case incrementButtonTapped
+  case onDismiss
 }
 
 struct CounterEnvironment {}
@@ -27,6 +28,9 @@ let counterReducer = Reducer<CounterState, CounterAction, CounterEnvironment> { 
     return .none
   case .incrementButtonTapped:
     state.count += 1
+    return .none
+
+  case .onDismiss:
     return .none
   }
 }
@@ -42,6 +46,7 @@ struct CounterView: View {
           .font(Font.body.monospacedDigit())
         Button("+") { viewStore.send(.incrementButtonTapped) }
       }
+      .onDisappear { viewStore.send(.onDismiss) }
     }
   }
 }
