@@ -8,13 +8,9 @@
     """
 
   struct FocusDemoState: Equatable {
-    @BindableState var focusedField: Field? = nil
+    @BindableState var focusedField: PartialKeyPath<Self>? = nil
     @BindableState var password: String = ""
     @BindableState var username: String = ""
-
-    enum Field: String, Hashable {
-      case username, password
-    }
   }
 
   enum FocusDemoAction: BindableAction, Equatable {
@@ -35,9 +31,9 @@
 
     case .signInButtonTapped:
       if state.username.isEmpty {
-        state.focusedField = .username
+        state.focusedField = \.username
       } else if state.password.isEmpty {
-        state.focusedField = .password
+        state.focusedField = \.password
       }
       return .none
     }
@@ -46,7 +42,7 @@
 
   struct FocusDemoView: View {
     let store: Store<FocusDemoState, FocusDemoAction>
-    @FocusState var focusedField: FocusDemoState.Field?
+    @FocusState var focusedField: PartialKeyPath<FocusDemoState>?
 
     var body: some View {
       WithViewStore(self.store) { viewStore in
@@ -55,10 +51,10 @@
 
           VStack {
             TextField("Username", text: viewStore.binding(\.$username))
-              .focused($focusedField, equals: .username)
+              .focused($focusedField, equals: \.username)
 
             SecureField("Password", text: viewStore.binding(\.$password))
-              .focused($focusedField, equals: .password)
+              .focused($focusedField, equals: \.password)
 
             Button("Sign In") {
               viewStore.send(.signInButtonTapped)
