@@ -18,7 +18,24 @@ import Combine
 ///   must be on the main thread. You can use the `Publisher` method `receive(on:)` for make the
 ///   effect output its values on the thread of your choice.
 public struct Reducer<State, Action, Environment> {
-  private let reducer: (inout State, Action, Environment) -> Effect<Action, Never>
+    #if DEBUG // Extensions for making Reducers "Injectable"
+    /// Has value when reducer when wrapped in MakeInjectable() and can be/has been injected.
+    private var overidden: ReducerFunctionKey?
+    /// Fallback underlying storage.
+    private var _reducer: (inout State, Action, Environment) -> Effect<Action, Never>
+    /// Intercept all gets for the reducer function to perhaps replace with injected.
+    private var reducer: (inout State, Action, Environment) -> Effect<Action, Never> {
+        set {
+            _reducer = newValue
+            overidden = ReducerFunctionKey.store(reducer: newValue)
+        }
+        get {
+            return overidden?.lastStored() ?? _reducer
+        }
+    }
+    #else
+    private let reducer: (inout State, Action, Environment) -> Effect<Action, Never>
+    #endif
 
   /// Initializes a reducer from a simple reducer function signature.
   ///
@@ -50,6 +67,9 @@ public struct Reducer<State, Action, Environment> {
   /// - Parameter reducer: A function signature that takes state, action and
   ///   environment.
   public init(_ reducer: @escaping (inout State, Action, Environment) -> Effect<Action, Never>) {
+    #if DEBUG
+    self._reducer = reducer
+    #endif
     self.reducer = reducer
   }
 
