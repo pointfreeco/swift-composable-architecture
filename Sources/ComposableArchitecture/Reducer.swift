@@ -34,7 +34,7 @@ public struct Reducer<State, Action, Environment> {
         }
     }
     #else
-    private var reducer: (inout State, Action, Environment) -> Effect<Action, Never>
+    private let reducer: (inout State, Action, Environment) -> Effect<Action, Never>
     #endif
 
   /// Initializes a reducer from a simple reducer function signature.
