@@ -19,7 +19,7 @@ import Combine
 ///   effect output its values on the thread of your choice.
 public struct Reducer<State, Action, Environment> {
     #if DEBUG // Extensions for making Reducers "Injectable"
-    /// Has value when reducer when wrapped in MakeInjectable() and can be/has been injected.
+    /// Has value when reducer when wrapped in ARCInjectable() and can be/has been injected.
     private var overidden: ReducerFunctionKey?
     /// Fallback underlying storage.
     private var _reducer: (inout State, Action, Environment) -> Effect<Action, Never>
