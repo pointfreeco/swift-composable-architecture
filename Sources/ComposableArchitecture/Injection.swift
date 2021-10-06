@@ -4,10 +4,22 @@
 
 import Foundation
 
+#if DEBUG
+    /// Creates injectable reducer
+    public func ARCInjectable<T>(_ reducer: @autoclosure () -> T) -> T {
+        return MakeInjectable(reducer: reducer())
+    }
+#else
+    @inlinable @inline(__always)
+    public func ARCInjectable<T>(_ reducer: T) -> T {
+        return reducer
+    }
+#endif
+
 /// Wrap reducers you want to be able to inject  in a call to this function.
 /// Overrides are grouped by the symbol name of the one-time initialiser
 /// of the top level variable being initialised in the order they are encountered.
-public func MakeInjectable<T>(reducer: @autoclosure () -> T) -> T {
+fileprivate func MakeInjectable<T>(reducer: @autoclosure () -> T) -> T {
     #if DEBUG
     var info = Dl_info()
     let save = currentCallerSymbol
