@@ -133,6 +133,7 @@ public final class Store<State, Action> {
   var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
   var parentCancellable: AnyCancellable?
+  var parentStoreID: ObjectIdentifier?
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   var state: CurrentValueSubject<State, Never>
   #if DEBUG
@@ -341,6 +342,7 @@ public final class Store<State, Action> {
         guard !isSending else { return }
         localStore?.state.value = toLocalState(newValue)
       }
+    localStore.parentStoreID = ObjectIdentifier(self)
     return localStore
   }
 
@@ -388,6 +390,11 @@ public final class Store<State, Action> {
         self.effectCancellables[uuid] = effectCancellable
       }
     }
+  }
+  
+  /// Checks if the current store is a parent for the passed store
+  public func isParent<LocalState, LocalAction>(for store: Store<LocalState, LocalAction>) -> Bool {
+    store.parentStoreID == ObjectIdentifier(self)
   }
 
   /// Returns a "stateless" store by erasing state to `Void`.
