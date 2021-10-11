@@ -133,7 +133,7 @@ public final class Store<State, Action> {
   var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
   var parentCancellable: AnyCancellable?
-  var parentStoreID: ObjectIdentifier?
+  weak var parent: _ParentTracking?
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   var state: CurrentValueSubject<State, Never>
   #if DEBUG
@@ -342,7 +342,7 @@ public final class Store<State, Action> {
         guard !isSending else { return }
         localStore?.state.value = toLocalState(newValue)
       }
-    localStore.parentStoreID = ObjectIdentifier(self)
+    localStore.parent = self
     return localStore
   }
 
@@ -393,8 +393,20 @@ public final class Store<State, Action> {
   }
   
   /// Checks if the current store is a parent for the passed store
+  public func isDirectParent<LocalState, LocalAction>(for store: Store<LocalState, LocalAction>) -> Bool {
+    store.parent === self
+  }
+  
+  /// Checks if the current store is a parent for the passed store
   public func isParent<LocalState, LocalAction>(for store: Store<LocalState, LocalAction>) -> Bool {
-    store.parentStoreID == ObjectIdentifier(self)
+    var parentTracking = store.parent
+    
+    repeat {
+      if parentTracking === self { return true }
+      parentTracking = parentTracking?.parent
+    } while parentTracking != nil
+    
+    return false
   }
 
   /// Returns a "stateless" store by erasing state to `Void`.
@@ -494,3 +506,11 @@ public final class Store<State, Action> {
     #endif
   }
 }
+
+// MARK: - Parent tracking
+
+protocol _ParentTracking: AnyObject {
+  var parent: _ParentTracking? { get }
+}
+
+extension Store: _ParentTracking {}
