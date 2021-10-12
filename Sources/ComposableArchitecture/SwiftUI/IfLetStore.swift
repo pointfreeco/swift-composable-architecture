@@ -32,6 +32,7 @@ import SwiftUI
 /// }
 /// ```
 ///
+/// > Note: ``IfLetStore`` will ignore actions sent from the view when its state is `nil`.
 public struct IfLetStore<State, Action, Content>: View where Content: View {
   private let content: (ViewStore<State?, Action>) -> Content
   private let store: Store<State?, Action>
@@ -91,7 +92,9 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
                 } else {
                   print("""
                     An "IfLetStore" view sent the action \(debugCaseOutput(action)) when its state \
-                    was "nil". SwiftUI may have written to a binding after the view went away.
+                    was "nil". SwiftUI may have written to a binding after the view went away. If \
+                    you sent an action from ".onDisappear" then you must handle that action in the
+                    parent domain.
                     """)
                 }
               }
