@@ -48,12 +48,16 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
   public init<IfContent, ElseContent>(
     _ store: Store<State?, Action>,
     @ViewBuilder then ifContent: @escaping (Store<State, Action>) -> IfContent,
-    @ViewBuilder else elseContent: @escaping () -> ElseContent
+    @ViewBuilder else elseContent: @escaping () -> ElseContent,
+    file: StaticString = #fileID,
+    line: UInt = #line
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
     self.store = store
     self.content = { viewStore in
       if let state = viewStore.state {
-        return ViewBuilder.buildEither(first: ifContent(store.unwrapped(initialState: state)))
+        return ViewBuilder.buildEither(
+          first: ifContent(store.unwrapped(initialState: state, file: file, line: line))
+        )
       } else {
         return ViewBuilder.buildEither(second: elseContent())
       }
@@ -69,7 +73,9 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
   ///     is visible only when the optional state is non-`nil`.
   public init<IfContent>(
     _ store: Store<State?, Action>,
-    @ViewBuilder then ifContent: @escaping (Store<State, Action>) -> IfContent
+    @ViewBuilder then ifContent: @escaping (Store<State, Action>) -> IfContent,
+    file: StaticString = #fileID,
+    line: UInt = #line
   ) where Content == IfContent? {
     self.store = store
     self.content = { viewStore in
@@ -91,8 +97,11 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
 }
 
 private extension Store {
-  func unwrapped<Wrapped>(initialState: Wrapped)
-  -> Store<Wrapped, Action> where State == Wrapped? {
+  func unwrapped<Wrapped>(
+    initialState: Wrapped,
+    file: StaticString,
+    line: UInt
+  ) -> Store<Wrapped, Action> where State == Wrapped? {
     var state = initialState
     return self.scope(
       state: { $0 },
@@ -103,10 +112,10 @@ private extension Store {
         } else {
           print(
             """
-            An "IfLetStore" view sent the action \(debugCaseOutput(action)) when its state \
-            was "nil". SwiftUI may have written to a binding after the view went away. If \
-            you sent an action from ".onDisappear" then you must handle that action in the
-            parent domain.
+            [ComposableArchitecture] "IfLetStore<\(State.self), \(Action.self)>"@\(file):\(line) \
+            received "\(debugCaseOutput(action))" when state was "nil". SwiftUI may have written \
+            to a view store binding after the view went away. If this action was sent from \
+            "onDisappear", the reducer that set state to "nil" must handle it.
             """
           )
         }
