@@ -105,6 +105,26 @@ where Content: View {
   }
 }
 
+extension CaseLet where GlobalAction == LocalAction {
+  /// Initializes a ``CaseLet`` view that computes content depending on if a store of enum state
+  /// matches a particular case.
+  ///
+  /// - Parameters:
+  ///   - toLocalState: A case path that can extract a case of switch store state.
+  ///   - content: A function that is given a store of the given case's state and returns a view
+  ///     that is visible only when the switch store's state matches.
+  public init(
+    state toLocalState: @escaping (GlobalState) -> LocalState?,
+    @ViewBuilder then content: @escaping (Store<LocalState, LocalAction>) -> Content
+  ) {
+    self.init(
+      state: toLocalState,
+      action: { $0 },
+      then: content
+    )
+  }
+}
+
 /// A view that covers any cases that aren't addressed in a ``SwitchStore``.
 ///
 /// If you wish to use ``SwitchStore`` in a non-exhaustive manner (i.e. you do not want to provide
