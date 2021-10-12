@@ -80,7 +80,7 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
     self.store = store
     self.content = { viewStore in
       if let state = viewStore.state {
-        return ifContent(store.unwrapped(initialState: state))
+        return ifContent(store.unwrapped(initialState: state, file: file, line: line))
       } else {
         return nil
       }
