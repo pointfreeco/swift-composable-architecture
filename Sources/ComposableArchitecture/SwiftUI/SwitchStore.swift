@@ -80,7 +80,8 @@ where Content: View {
   /// matches a particular case.
   ///
   /// - Parameters:
-  ///   - toLocalState: A case path that can extract a case of switch store state.
+  ///   - toLocalState: A function that can extract a case of switch store state, which can be
+  ///     specified using case path literal syntax, _e.g._ `/State.case`.
   ///   - fromLocalAction: A function that can embed a case action in a switch store action.
   ///   - content: A function that is given a store of the given case's state and returns a view
   ///     that is visible only when the switch store's state matches.
@@ -110,7 +111,8 @@ extension CaseLet where GlobalAction == LocalAction {
   /// matches a particular case.
   ///
   /// - Parameters:
-  ///   - toLocalState: A case path that can extract a case of switch store state.
+  ///   - toLocalState: A function that can extract a case of switch store state, which can be
+  ///     specified using case path literal syntax, _e.g._ `/State.case`.
   ///   - content: A function that is given a store of the given case's state and returns a view
   ///     that is visible only when the switch store's state matches.
   public init(
