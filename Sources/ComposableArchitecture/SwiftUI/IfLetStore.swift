@@ -52,15 +52,8 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
     self.store = store
     self.content = { viewStore in
-      if var state = viewStore.state {
-        return ViewBuilder.buildEither(
-          first: ifContent(
-            store.scope {
-              state = $0 ?? state
-              return state
-            }
-          )
-        )
+      if let state = viewStore.state {
+        return ViewBuilder.buildEither(first: ifContent(store.unwrapped(initialState: state)))
       } else {
         return ViewBuilder.buildEither(second: elseContent())
       }
@@ -80,32 +73,8 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
   ) where Content == IfContent? {
     self.store = store
     self.content = { viewStore in
-      if var state = viewStore.state {
-        return ifContent(
-          store
-            .scope(
-              state: { $0 },
-              action: { $0 },
-              send: { state, action, send in
-                if state != nil {
-                  send(action)
-                } else {
-                  print("""
-                    An "IfLetStore" view sent the action \(debugCaseOutput(action)) when its state \
-                    was "nil". SwiftUI may have written to a binding after the view went away. If \
-                    you sent an action from ".onDisappear" then you must handle that action in the
-                    parent domain.
-                    """)
-                }
-              }
-            )
-            .scope(
-              state: {
-                state = $0 ?? state
-                return state
-              }
-            )
-        )
+      if let state = viewStore.state {
+        return ifContent(store.unwrapped(initialState: state))
       } else {
         return nil
       }
@@ -117,6 +86,37 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
       self.store,
       removeDuplicates: { ($0 != nil) == ($1 != nil) },
       content: self.content
+    )
+  }
+}
+
+private extension Store {
+  func unwrapped<Wrapped>(initialState: Wrapped)
+  -> Store<Wrapped, Action> where State == Wrapped? {
+    var state = initialState
+    return self.scope(
+      state: { $0 },
+      action: { $0 },
+      send: { state, action, send in
+        if state != nil {
+          send(action)
+        } else {
+          print(
+            """
+            An "IfLetStore" view sent the action \(debugCaseOutput(action)) when its state \
+            was "nil". SwiftUI may have written to a binding after the view went away. If \
+            you sent an action from ".onDisappear" then you must handle that action in the
+            parent domain.
+            """
+          )
+        }
+      }
+    )
+    .scope(
+      state: {
+        state = $0 ?? state
+        return state
+      }
     )
   }
 }
