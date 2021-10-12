@@ -322,26 +322,11 @@ public final class Store<State, Action> {
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> Store<LocalState, LocalAction> {
-    self.threadCheck(status: .scope)
-    var isSending = false
-    let localStore = Store<LocalState, LocalAction>(
-      initialState: toLocalState(self.state.value),
-      reducer: .init { localState, localAction, _ in
-        isSending = true
-        defer { isSending = false }
-        self.send(fromLocalAction(localAction))
-        localState = toLocalState(self.state.value)
-        return .none
-      },
-      environment: ()
+    self.scope(
+      state: toLocalState,
+      action: fromLocalAction,
+      send: { _, action, send in send(action) }
     )
-    localStore.parentCancellable = self.state
-      .dropFirst()
-      .sink { [weak localStore] newValue in
-        guard !isSending else { return }
-        localStore?.state.value = toLocalState(newValue)
-      }
-    return localStore
   }
 
   /// Scopes the store to one that exposes local state.
@@ -351,7 +336,11 @@ public final class Store<State, Action> {
   public func scope<LocalState>(
     state toLocalState: @escaping (State) -> LocalState
   ) -> Store<LocalState, Action> {
-    self.scope(state: toLocalState, action: { $0 })
+    self.scope(
+      state: toLocalState,
+      action: { $0 },
+      send: { _, action, send in send(action) }
+    )
   }
 
   func send(_ action: Action, originatingFrom originatingAction: Action? = nil) {
@@ -485,5 +474,34 @@ public final class Store<State, Action> {
     #if DEBUG
       self.mainThreadChecksEnabled = mainThreadChecksEnabled
     #endif
+  }
+}
+
+extension Store {
+  func scope<LocalState, LocalAction>(
+    state toLocalState: @escaping (State) -> LocalState,
+    action fromLocalAction: @escaping (LocalAction) -> Action,
+    send transformSend: @escaping (LocalState, LocalAction, (LocalAction) -> Void) -> Void
+  ) -> Store<LocalState, LocalAction> {
+    self.threadCheck(status: .scope)
+    var isSending = false
+    let localStore = Store<LocalState, LocalAction>(
+      initialState: toLocalState(self.state.value),
+      reducer: .init { localState, localAction, _ in
+        isSending = true
+        defer { isSending = false }
+        transformSend(localState, localAction, { self.send(fromLocalAction($0)) })
+        localState = toLocalState(self.state.value)
+        return .none
+      },
+      environment: ()
+    )
+    localStore.parentCancellable = self.state
+      .dropFirst()
+      .sink { [weak localStore] newValue in
+        guard !isSending else { return }
+        localStore?.state.value = toLocalState(newValue)
+      }
+    return localStore
   }
 }

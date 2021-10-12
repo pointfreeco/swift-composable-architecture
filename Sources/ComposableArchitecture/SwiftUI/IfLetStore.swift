@@ -81,10 +81,27 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
     self.content = { viewStore in
       if var state = viewStore.state {
         return ifContent(
-          store.scope {
-            state = $0 ?? state
-            return state
-          }
+          store
+            .scope(
+              state: { $0 },
+              action: { $0 },
+              send: { state, action, send in
+                if state != nil {
+                  send(action)
+                } else {
+                  print("""
+                    An "IfLetStore" view sent the action \(debugCaseOutput(action)) when its state \
+                    was "nil". SwiftUI may have written to a binding after the view went away.
+                    """)
+                }
+              }
+            )
+            .scope(
+              state: {
+                state = $0 ?? state
+                return state
+              }
+            )
         )
       } else {
         return nil
