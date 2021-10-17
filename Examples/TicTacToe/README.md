@@ -1,6 +1,6 @@
 # Tic-Tac-Toe
 
-This example demonstrates how to build a full, moderately complex application in the Composable Architecture. It is based off the Tic-Tac-Toe examples used to demonstrate [RIBs](https://github.com/uber/RIBs) from Uber ([see here](https://github.com/uber/RIBs/tree/master/ios/tutorials)) and [Workflows](https://github.com/square/workflow) from Square ([see here](https://github.com/square/workflow/tree/master/swift/Samples/TicTacToe)).
+This example demonstrates how to build a full, moderately complex application in the Composable Architecture. It is based off the Tic-Tac-Toe examples used to demonstrate [RIBs](https://github.com/uber/RIBs) from Uber ([see here](https://github.com/uber/RIBs/tree/master/ios/tutorials)) and [Workflows](https://github.com/square/workflow) from Square ([see here](https://github.com/square/workflow-swift/tree/main/Samples/TicTacToe)).
 
 It shows many real-world use cases and best practices that we encounter when building applications:
 
