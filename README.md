@@ -137,8 +137,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
   case .numberFactButtonTapped:
     return environment.numberFact(state.count)
       .receive(on: environment.mainQueue)
-      .catchToEffect()
-      .map(AppAction.numberFactResponse)
+      .catchToEffect(AppAction.numberFactResponse)
 
   case let .numberFactResponse(.success(fact)):
     state.numberFactAlert = fact
