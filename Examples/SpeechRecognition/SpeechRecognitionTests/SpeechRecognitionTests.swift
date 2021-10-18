@@ -78,8 +78,10 @@ class SpeechRecognitionTests: XCTestCase {
 
     let result = SpeechRecognitionResult(
       bestTranscription: Transcription(
+        averagePauseDuration: 0.1,
         formattedString: "Hello",
-        segments: []
+        segments: [],
+        speakingRate: 1
       ),
       transcriptions: [],
       isFinal: false
