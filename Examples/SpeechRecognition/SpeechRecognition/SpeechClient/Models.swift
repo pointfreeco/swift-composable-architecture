@@ -8,13 +8,12 @@ struct SpeechRecognitionResult: Equatable {
   var bestTranscription: Transcription
   var transcriptions: [Transcription]
   var isFinal: Bool
+  var speechRecognitionMetadata: SpeechRecognitionMetadata?
 }
 
 struct Transcription: Equatable {
-  var averagePauseDuration: TimeInterval
   var formattedString: String
   var segments: [TranscriptionSegment]
-  var speakingRate: Double
 }
 
 struct TranscriptionSegment: Equatable {
@@ -24,6 +23,13 @@ struct TranscriptionSegment: Equatable {
   var substring: String
   var substringRange: NSRange
   var timestamp: TimeInterval
+}
+
+struct SpeechRecognitionMetadata: Equatable {
+  var averagePauseDuration: TimeInterval
+  var speakingRate: Double
+  var speechDuration: TimeInterval
+  var speechStartTimestamp: TimeInterval
   var voiceAnalytics: VoiceAnalytics?
 }
 
@@ -44,15 +50,15 @@ extension SpeechRecognitionResult {
     self.bestTranscription = Transcription(speechRecognitionResult.bestTranscription)
     self.transcriptions = speechRecognitionResult.transcriptions.map(Transcription.init)
     self.isFinal = speechRecognitionResult.isFinal
+    self.speechRecognitionMetadata = speechRecognitionResult.speechRecognitionMetadata
+      .map(SpeechRecognitionMetadata.init)
   }
 }
 
 extension Transcription {
   init(_ transcription: SFTranscription) {
-    self.averagePauseDuration = transcription.averagePauseDuration
     self.formattedString = transcription.formattedString
     self.segments = transcription.segments.map(TranscriptionSegment.init)
-    self.speakingRate = transcription.speakingRate
   }
 }
 
@@ -64,7 +70,16 @@ extension TranscriptionSegment {
     self.substring = transcriptionSegment.substring
     self.substringRange = transcriptionSegment.substringRange
     self.timestamp = transcriptionSegment.timestamp
-    self.voiceAnalytics = transcriptionSegment.voiceAnalytics.map(VoiceAnalytics.init)
+  }
+}
+
+extension SpeechRecognitionMetadata {
+  init(_ speechRecognitionMetadata: SFSpeechRecognitionMetadata) {
+    self.averagePauseDuration = speechRecognitionMetadata.averagePauseDuration
+    self.speakingRate = speechRecognitionMetadata.speakingRate
+    self.speechDuration = speechRecognitionMetadata.speechDuration
+    self.speechStartTimestamp = speechRecognitionMetadata.speechStartTimestamp
+    self.voiceAnalytics = speechRecognitionMetadata.voiceAnalytics.map(VoiceAnalytics.init)
   }
 }
 
