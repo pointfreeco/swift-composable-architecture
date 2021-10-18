@@ -118,7 +118,7 @@ struct VoiceMemoView: View {
           Rectangle()
             .foregroundColor(Color(.systemGray5))
             .frame(width: proxy.size.width * CGFloat(self.viewStore.mode.progress ?? 0))
-            .animation(.linear(duration: 0.5))
+            .animation(.linear(duration: 0.5), value: self.viewStore.mode.progress)
         }
 
         HStack {

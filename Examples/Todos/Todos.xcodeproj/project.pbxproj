@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		CA93D060249BF4D000A6F65D /* Todo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA93D05F249BF4D000A6F65D /* Todo.swift */; };
 		DC1394322469E57000EE1157 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC1394312469E57000EE1157 /* ComposableArchitecture */; };
-		DCBCB77624290F6C00DE1F59 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCBCB77524290F6C00DE1F59 /* SceneDelegate.swift */; };
+		DCBCB77624290F6C00DE1F59 /* TodosApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCBCB77524290F6C00DE1F59 /* TodosApp.swift */; };
 		DCBCB77A24290F6D00DE1F59 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DCBCB77924290F6D00DE1F59 /* Assets.xcassets */; };
 		DCBCB78B24290F6D00DE1F59 /* TodosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCBCB78A24290F6D00DE1F59 /* TodosTests.swift */; };
 		DCBCB79B24290FEB00DE1F59 /* Todos.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCBCB79A24290FEB00DE1F59 /* Todos.swift */; };
@@ -49,10 +49,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		23EDBE6A271CD8C7004F7430 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		CA93D05F249BF4D000A6F65D /* Todo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Todo.swift; sourceTree = "<group>"; };
 		DC85B441242D0286009784B0 /* swift-composable-architecture */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "swift-composable-architecture"; path = ../..; sourceTree = "<group>"; };
 		DCBCB77024290F6C00DE1F59 /* Todos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Todos.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		DCBCB77524290F6C00DE1F59 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		DCBCB77524290F6C00DE1F59 /* TodosApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodosApp.swift; sourceTree = "<group>"; };
 		DCBCB77924290F6D00DE1F59 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DCBCB78124290F6D00DE1F59 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DCBCB78624290F6D00DE1F59 /* TodosTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TodosTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -83,6 +84,7 @@
 			isa = PBXGroup;
 			children = (
 				DC85B441242D0286009784B0 /* swift-composable-architecture */,
+				23EDBE6A271CD8C7004F7430 /* README.md */,
 				DCBCB77124290F6C00DE1F59 /* Products */,
 				DCBCB77224290F6C00DE1F59 /* Todos */,
 				DCBCB78924290F6D00DE1F59 /* TodosTests */,
@@ -102,9 +104,9 @@
 			isa = PBXGroup;
 			children = (
 				DCBCB78124290F6D00DE1F59 /* Info.plist */,
-				DCBCB77524290F6C00DE1F59 /* SceneDelegate.swift */,
 				CA93D05F249BF4D000A6F65D /* Todo.swift */,
 				DCBCB79A24290FEB00DE1F59 /* Todos.swift */,
+				DCBCB77524290F6C00DE1F59 /* TodosApp.swift */,
 				DCBCB77924290F6D00DE1F59 /* Assets.xcassets */,
 			);
 			path = Todos;
@@ -226,7 +228,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCBCB77624290F6C00DE1F59 /* SceneDelegate.swift in Sources */,
+				DCBCB77624290F6C00DE1F59 /* TodosApp.swift in Sources */,
 				CA93D060249BF4D000A6F65D /* Todo.swift in Sources */,
 				DCBCB79B24290FEB00DE1F59 /* Todos.swift in Sources */,
 			);
