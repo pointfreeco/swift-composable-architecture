@@ -217,7 +217,7 @@ extension Text {
     case let .verbatim(content):
       text = .init(verbatim: content)
     }
-    self = state.modifiers.reduce(text) { text, modifier in
+    var modifiedText = state.modifiers.reduce(text) { text, modifier in
       switch modifier {
       case let .baselineOffset(baselineOffset):
         return text.baselineOffset(baselineOffset)
@@ -241,6 +241,24 @@ extension Text {
         return text.underline(active, color: color)
       }
     }
+    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+      modifiedText = state.accessibilityModifiers.reduce(modifiedText) { text, modifier in
+        switch modifier {
+        case let .accessibilityLabel(value):
+          switch value {
+          case let .verbatim(string):
+            return text.accessibilityLabel(string)
+          case let .localized(key, tableName, bundle, comment):
+            return text.accessibilityLabel(Text(key, tableName: tableName, bundle: bundle, comment: comment))
+          }
+        case let .accessibilityTextContentType(type):
+          return text.accessibilityTextContentType(type)
+        case let .accessibilityHeading(level):
+          return text.accessibilityHeading(level)
+        }
+      }
+    }
+    self = modifiedText
   }
 }
 
@@ -369,5 +387,92 @@ extension TextState: CustomDumpRepresentable {
     }
 
     return dumpHelp(self)
+  }
+}
+
+// MARK: - iOS 15 Accessibility
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension TextState {
+  public func accessibilityLabel(_ string: String) -> Self {
+    var `self` = self
+    `self`.accessibilityModifiers.append(.accessibilityLabel(.init(string)))
+    return `self`
+  }
+
+  public func accessibilityLabel<S:StringProtocol>(_ string: S) -> Self {
+    var `self` = self
+    `self`.accessibilityModifiers.append(.accessibilityLabel(.init(string)))
+    return `self`
+  }
+
+  public func accessibilityLabel(_ key: LocalizedStringKey, tableName: String? = nil, bundle: Bundle? = nil, comment: StaticString? = nil) -> Self {
+    var `self` = self
+    `self`.accessibilityModifiers.append(.accessibilityLabel(.init(key, tableName: tableName, bundle: bundle, comment: comment)))
+    return `self`
+  }
+
+  public func accessibilityTextContentType(_ type: AccessibilityTextContentType) -> Self {
+    var `self` = self
+    `self`.accessibilityModifiers.append(.accessibilityTextContentType(type))
+    return `self`
+  }
+
+  public func accessibilityHeading(_ headingLevel: AccessibilityHeadingLevel) -> Self {
+    var `self` = self
+    `self`.accessibilityModifiers.append(.accessibilityHeading(headingLevel))
+    return `self`
+  }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+fileprivate enum AccessibilityModifier {
+  case accessibilityLabel(LabelValue)
+  case accessibilityTextContentType(AccessibilityTextContentType)
+  case accessibilityHeading(AccessibilityHeadingLevel)
+
+  @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+  enum LabelValue {
+    case localized(LocalizedStringKey, tableName: String?, bundle: Bundle?, comment: StaticString?)
+    case verbatim(String)
+  }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension AccessibilityModifier.LabelValue {
+  public init(_ content: String) {
+    self = .verbatim(content)
+  }
+
+  public init<S:StringProtocol>(_ content: S) {
+    self.init(String(content))
+  }
+
+  public init(
+    _ key: LocalizedStringKey,
+    tableName: String? = nil,
+    bundle: Bundle? = nil,
+    comment: StaticString? = nil
+  ) {
+    self = .localized(key, tableName: tableName, bundle: bundle, comment: comment)
+  }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension TextState {
+  // In order to create computed properties for extensions
+  // we need a key to store and access the stored property
+  private struct AssociatedObjectKeys {
+    static var accessibilityModifiers = "TextStateAssociatedObjectKey_accessibilityModifiers"
+  }
+
+  fileprivate var accessibilityModifiers: [AccessibilityModifier] {
+    set {
+      // Computed properties get stored as associated objects
+      objc_setAssociatedObject(self, &AssociatedObjectKeys.accessibilityModifiers, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN)
+    }
+    get {
+      objc_getAssociatedObject(self, &AssociatedObjectKeys.accessibilityModifiers) as! [AccessibilityModifier]
+    }
   }
 }
