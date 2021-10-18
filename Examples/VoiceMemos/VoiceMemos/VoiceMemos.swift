@@ -232,7 +232,7 @@ struct VoiceMemosView: View {
                 .font(Font.body.monospacedDigit().bold())
                 .foregroundColor(.white)
                 .colorMultiply(Color(Int(duration).isMultiple(of: 2) ? .systemRed : .label))
-                .animation(.easeInOut(duration: 0.5))
+                .animation(.easeInOut(duration: 0.5), value: duration)
             }
           }
           .padding()
