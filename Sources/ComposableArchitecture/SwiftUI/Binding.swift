@@ -329,6 +329,21 @@ public struct BindingAction<Root>: Equatable {
         valueIsEqualTo: { $0 as? Value == value }
       )
     }
+      
+    public static func append<Element>(
+      _ keyPath: WritableKeyPath<Root, BindableState<[Element]>>,
+      _ element: Element
+      ) -> Self {
+        .init(
+        keyPath: keyPath,
+        set: {
+            let value = $0[keyPath: keyPath].wrappedValue
+            $0[keyPath: keyPath].wrappedValue = value + [element]
+        },
+        value: element,
+        valueIsEqualTo: { _ in false }
+          )
+      }
 
     /// Matches a binding action by its key path.
     ///
