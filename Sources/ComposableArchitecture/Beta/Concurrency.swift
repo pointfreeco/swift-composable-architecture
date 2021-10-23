@@ -103,6 +103,36 @@ import SwiftUI
       }
       .eraseToEffect()
     }
+      
+      /// Wraps an asynchronous unit of work that returns no value in an effect.
+      ///
+      /// This function is useful for executing one-off work in an asynchronous context that can execute and be forgetten about.
+      /// - Parameters:
+      ///   - priority: Priority of the underlying task.
+      ///   - work: The work to execute.
+      /// - Returns: An effect wrapping the given asynchronous work.
+      static func fireAndForget(priority: Task.Priority?, _ work: @escaping () async -> Void) -> Effect {
+          Deferred { () -> AnyPublisher<Output, Failure> in
+              // create a future with void and never types
+              Future<Void, Never> { seal in
+                  Task(priority: priority) {
+                      // execute the async work and fulfill the seal
+                      await work()
+                      seal(.success(()))
+                  }
+              }
+              // use flatmap to change the above future to the correct types
+              .flatMap { _ -> AnyPublisher<Output, Failure> in
+                  // can't use `Empty` due to a bug in iOS 13.2, for more info see
+                  Just<Output?>(nil)
+                      .setFailureType(to: Failure.self)
+                      .compactMap { $0 }
+                      .eraseToAnyPublisher()
+              }
+              .eraseToAnyPublisher()
+          }
+          .eraseToEffect()
+      }
   }
 
   @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
