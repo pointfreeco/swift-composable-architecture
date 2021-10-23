@@ -111,7 +111,7 @@ import SwiftUI
       ///   - priority: Priority of the underlying task.
       ///   - work: The work to execute.
       /// - Returns: An effect wrapping the given asynchronous work.
-      static func fireAndForget(priority: Task.Priority?, _ work: @Sendable @escaping () async -> Void) -> Effect {
+      static func fireAndForget(priority: TaskPriority?, _ work: @Sendable @escaping () async -> Void) -> Effect {
           Deferred { () -> AnyPublisher<Output, Failure> in
               // create a future with void and never types
               Future<Void, Never> { seal in
