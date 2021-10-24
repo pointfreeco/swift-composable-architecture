@@ -68,6 +68,9 @@ public struct TextState: Equatable, Hashable {
     case strikethrough(active: Bool, color: Color?)
     case tracking(CGFloat)
     case underline(active: Bool, color: Color?)
+    case accessibilityLabel(AccessibilityLabelValue)
+    case accessibilityTextContentType(AccessibilityTextContentType)
+    case accessibilityHeading(AccessibilityHeadingLevel)
   }
 
   fileprivate enum Storage: Equatable, Hashable {
@@ -121,6 +124,8 @@ public struct TextState: Equatable, Hashable {
     }
   }
 }
+
+// MARK: - API
 
 extension TextState {
   public init(verbatim content: String) {
@@ -206,6 +211,134 @@ extension TextState {
   }
 }
 
+// MARK: Accessibility
+
+extension TextState {
+  public enum AccessibilityLabelValue: Equatable, Hashable {
+    case localized(LocalizedStringKey, tableName: String?, bundle: Bundle?, comment: StaticString?)
+    case verbatim(String)
+
+    public init(_ content: String) {
+      self = .verbatim(content)
+    }
+
+    @_disfavoredOverload
+    public init<S:StringProtocol>(_ content: S) {
+      self.init(String(content))
+    }
+
+    public init(
+      _ key: LocalizedStringKey,
+      tableName: String? = nil,
+      bundle: Bundle? = nil,
+      comment: StaticString? = nil
+    ) {
+      self = .localized(key, tableName: tableName, bundle: bundle, comment: comment)
+    }
+
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+      switch (lhs, rhs) {
+
+      case let (.localized(lk, lt, lb, lc), .localized(rk, rt, rb, rc)):
+        return lk.formatted(tableName: lt, bundle: lb, comment: lc)
+          == rk.formatted(tableName: rt, bundle: rb, comment: rc)
+
+      case let (.verbatim(lhs), .verbatim(rhs)):
+        return lhs == rhs
+
+      case let (.localized(key, tableName, bundle, comment), .verbatim(string)),
+        let (.verbatim(string), .localized(key, tableName, bundle, comment)):
+        return key.formatted(tableName: tableName, bundle: bundle, comment: comment) == string
+      }
+    }
+
+    public func hash(into hasher: inout Hasher) {
+      enum Key {
+        case localized
+        case verbatim
+      }
+
+      switch self {
+      case let .localized(key, tableName, bundle, comment):
+        hasher.combine(Key.localized)
+        hasher.combine(key.formatted(tableName: tableName, bundle: bundle, comment: comment))
+
+      case let .verbatim(string):
+        hasher.combine(Key.verbatim)
+        hasher.combine(string)
+      }
+    }
+  }
+
+  public enum AccessibilityTextContentType: Equatable, Hashable {
+    case console, fileSystem, messaging, narrative, plain, sourceCode, spreadsheet, wordProcessing
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    var toSwiftUI: SwiftUI.AccessibilityTextContentType {
+      switch self {
+      case .console: return .console
+      case .fileSystem: return .fileSystem
+      case .messaging: return .messaging
+      case .narrative: return .narrative
+      case .plain: return .plain
+      case .sourceCode: return .sourceCode
+      case .spreadsheet: return .spreadsheet
+      case .wordProcessing: return .wordProcessing
+      }
+    }
+  }
+
+  public enum AccessibilityHeadingLevel: Equatable, Hashable {
+    case h1, h2, h3, h4, h5, h6, unspecified
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    var toSwiftUI: SwiftUI.AccessibilityHeadingLevel {
+      switch self {
+      case .h1: return .h1
+      case .h2: return .h2
+      case .h3: return .h3
+      case .h4: return .h4
+      case .h5: return .h5
+      case .h6: return .h6
+      case .unspecified: return .unspecified
+      }
+    }
+  }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension TextState {
+  public func accessibilityLabel(_ string: String) -> Self {
+    var `self` = self
+    `self`.modifiers.append(.accessibilityLabel(.init(string)))
+    return `self`
+  }
+
+  public func accessibilityLabel<S:StringProtocol>(_ string: S) -> Self {
+    var `self` = self
+    `self`.modifiers.append(.accessibilityLabel(.init(string)))
+    return `self`
+  }
+
+  public func accessibilityLabel(_ key: LocalizedStringKey, tableName: String? = nil, bundle: Bundle? = nil, comment: StaticString? = nil) -> Self {
+    var `self` = self
+    `self`.modifiers.append(.accessibilityLabel(.init(key, tableName: tableName, bundle: bundle, comment: comment)))
+    return `self`
+  }
+
+  public func accessibilityTextContentType(_ type: AccessibilityTextContentType) -> Self {
+    var `self` = self
+    `self`.modifiers.append(.accessibilityTextContentType(type))
+    return `self`
+  }
+
+  public func accessibilityHeading(_ headingLevel: AccessibilityHeadingLevel) -> Self {
+    var `self` = self
+    `self`.modifiers.append(.accessibilityHeading(headingLevel))
+    return `self`
+  }
+}
+
 extension Text {
   public init(_ state: TextState) {
     let text: Text
@@ -217,7 +350,7 @@ extension Text {
     case let .verbatim(content):
       text = .init(verbatim: content)
     }
-    var modifiedText = state.modifiers.reduce(text) { text, modifier in
+    self = state.modifiers.reduce(text) { text, modifier in
       switch modifier {
       case let .baselineOffset(baselineOffset):
         return text.baselineOffset(baselineOffset)
@@ -239,26 +372,31 @@ extension Text {
         return text.tracking(tracking)
       case let .underline(active, color):
         return text.underline(active, color: color)
-      }
-    }
-    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-      modifiedText = state.accessibilityModifiers.reduce(modifiedText) { text, modifier in
-        switch modifier {
-        case let .accessibilityLabel(value):
+      case let .accessibilityLabel(value):
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
           switch value {
           case let .verbatim(string):
             return text.accessibilityLabel(string)
           case let .localized(key, tableName, bundle, comment):
             return text.accessibilityLabel(Text(key, tableName: tableName, bundle: bundle, comment: comment))
           }
-        case let .accessibilityTextContentType(type):
-          return text.accessibilityTextContentType(type)
-        case let .accessibilityHeading(level):
-          return text.accessibilityHeading(level)
+        } else {
+          return text
+        }
+      case let .accessibilityTextContentType(type):
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+          return text.accessibilityTextContentType(type.toSwiftUI)
+        } else {
+          return text
+        }
+      case let .accessibilityHeading(level):
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+          return text.accessibilityHeading(level.toSwiftUI)
+        } else {
+          return text
         }
       }
     }
-    self = modifiedText
   }
 }
 
@@ -326,6 +464,8 @@ extension LocalizedStringKey {
   }
 }
 
+// MARK: - CustomDumpRepresentable
+
 extension TextState: CustomDumpRepresentable {
   public var customDumpValue: Any {
     func dumpHelp(_ textState: Self) -> String {
@@ -381,98 +521,18 @@ extension TextState: CustomDumpRepresentable {
           .strikethrough(active: false, color: _),
           .underline(active: false, color: _):
           break
+        // TODO: Handle custom dump accessibility output
+        case let .accessibilityLabel(value):
+          return output
+        case let .accessibilityHeading(headingLevel):
+          return output
+        case let .accessibilityTextContentType(type):
+          return output
         }
       }
       return output
     }
 
     return dumpHelp(self)
-  }
-}
-
-// MARK: - iOS 15 Accessibility
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension TextState {
-  public func accessibilityLabel(_ string: String) -> Self {
-    var `self` = self
-    `self`.accessibilityModifiers.append(.accessibilityLabel(.init(string)))
-    return `self`
-  }
-
-  public func accessibilityLabel<S:StringProtocol>(_ string: S) -> Self {
-    var `self` = self
-    `self`.accessibilityModifiers.append(.accessibilityLabel(.init(string)))
-    return `self`
-  }
-
-  public func accessibilityLabel(_ key: LocalizedStringKey, tableName: String? = nil, bundle: Bundle? = nil, comment: StaticString? = nil) -> Self {
-    var `self` = self
-    `self`.accessibilityModifiers.append(.accessibilityLabel(.init(key, tableName: tableName, bundle: bundle, comment: comment)))
-    return `self`
-  }
-
-  public func accessibilityTextContentType(_ type: AccessibilityTextContentType) -> Self {
-    var `self` = self
-    `self`.accessibilityModifiers.append(.accessibilityTextContentType(type))
-    return `self`
-  }
-
-  public func accessibilityHeading(_ headingLevel: AccessibilityHeadingLevel) -> Self {
-    var `self` = self
-    `self`.accessibilityModifiers.append(.accessibilityHeading(headingLevel))
-    return `self`
-  }
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-fileprivate enum AccessibilityModifier {
-  case accessibilityLabel(LabelValue)
-  case accessibilityTextContentType(AccessibilityTextContentType)
-  case accessibilityHeading(AccessibilityHeadingLevel)
-
-  @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-  enum LabelValue {
-    case localized(LocalizedStringKey, tableName: String?, bundle: Bundle?, comment: StaticString?)
-    case verbatim(String)
-  }
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension AccessibilityModifier.LabelValue {
-  public init(_ content: String) {
-    self = .verbatim(content)
-  }
-
-  public init<S:StringProtocol>(_ content: S) {
-    self.init(String(content))
-  }
-
-  public init(
-    _ key: LocalizedStringKey,
-    tableName: String? = nil,
-    bundle: Bundle? = nil,
-    comment: StaticString? = nil
-  ) {
-    self = .localized(key, tableName: tableName, bundle: bundle, comment: comment)
-  }
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension TextState {
-  // In order to create computed properties for extensions
-  // we need a key to store and access the stored property
-  private struct AssociatedObjectKeys {
-    static var accessibilityModifiers = "TextStateAssociatedObjectKey_accessibilityModifiers"
-  }
-
-  fileprivate var accessibilityModifiers: [AccessibilityModifier] {
-    set {
-      // Computed properties get stored as associated objects
-      objc_setAssociatedObject(self, &AssociatedObjectKeys.accessibilityModifiers, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN)
-    }
-    get {
-      objc_getAssociatedObject(self, &AssociatedObjectKeys.accessibilityModifiers) as! [AccessibilityModifier]
-    }
   }
 }
