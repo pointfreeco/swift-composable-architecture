@@ -165,7 +165,7 @@ public struct AlertState<Action> {
   }
 
   public struct ButtonAction {
-    let type: ActionType
+    public let type: ActionType
 
     public static func send(_ action: Action) -> Self {
       .init(type: .send(action))
@@ -175,7 +175,7 @@ public struct AlertState<Action> {
       .init(type: .animatedSend(action, animation: animation))
     }
 
-    enum ActionType {
+    public enum ActionType {
       case send(Action)
       case animatedSend(Action, animation: Animation?)
     }
@@ -313,7 +313,7 @@ extension AlertState.Button: Equatable where Action: Equatable {}
 
 extension AlertState.ButtonAction: Hashable where Action: Hashable {}
 extension AlertState.ButtonAction.ActionType: Hashable where Action: Hashable {
-  func hash(into hasher: inout Hasher) {
+  public func hash(into hasher: inout Hasher) {
     switch self {
     case let .send(action), let .animatedSend(action, animation: _):
       hasher.combine(action)
