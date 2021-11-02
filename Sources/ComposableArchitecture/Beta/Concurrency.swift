@@ -103,6 +103,59 @@ import SwiftUI
       }
       .eraseToEffect()
     }
+
+    /// Wraps an asynchronous unit of work in an effect with exact failure type.
+    ///
+    /// This function is useful for executing work in an asynchronous context and capture the output
+    /// and failure in an ``Effect`` so that the reducer, a non-asynchronous context, can process it.
+    ///
+    /// ```swift
+    ///enum ApiError: Error {
+    ///  case canNotLoad
+    ///}
+    ///
+    ///func getAnswer() -> Effect<String, ApiError> {
+    ///  Effect.task {
+    ///    do {
+    ///      let (data, _) = try await URLSession.shared.data(from: .init(string: "http://numbersapi.com/42")!)
+    ///      return .success(String(decoding: data, as: UTF8.self))
+    ///    } catch {
+    ///      return .failure(.canNotLoad)
+    ///    }
+    ///  }
+    ///}
+    /// ```
+    ///
+    /// Note that due to the lack of tools to control the execution of asynchronous work in Swift,
+    /// it is not recommended to use this function in reducers directly. Doing so will introduce
+    /// thread hops into your effects that will make testing difficult. You will be responsible for
+    /// adding explicit expectations to wait for small amounts of time so that effects can deliver
+    /// their output.
+    ///
+    /// Instead, this function is most helpful for calling `async`/`await` functions from the live
+    /// implementation of dependencies, such as `URLSession.data`, `MKLocalSearch.start` and more.
+    ///
+    /// - Parameters:
+    ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
+    ///     `Task.currentPriority`.
+    ///   - operation: The operation to execute which returns a result instead of throwing.
+    /// - Returns: An effect wrapping the given asynchronous work.
+    public static func taskResult(
+      priority: TaskPriority? = nil,
+      operation: @escaping @Sendable () async -> Result<Output, Failure>
+    ) -> Self {
+      var task: Task<Void, Never>?
+      return .future { callback in
+        task = Task(priority: priority) {
+          guard !Task.isCancelled else { return }
+          let result = await operation()
+          guard !Task.isCancelled else { return }
+          callback(result)
+        }
+      }
+      .handleEvents(receiveCancel: { task?.cancel() })
+      .eraseToEffect()
+    }
   }
 
   @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
@@ -223,4 +276,6 @@ import SwiftUI
         .first(where: { !predicate($0) })
     }
   }
+
 #endif
+

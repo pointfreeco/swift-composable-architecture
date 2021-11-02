@@ -277,5 +277,61 @@ final class EffectTests: XCTestCase {
       .store(in: &self.cancellables)
       self.wait(for: [expectation], timeout: 1)
     }
+
+  func testTaskWithResultSuccess() {
+    guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
+
+    let expectation = self.expectation(description: "Complete")
+
+    struct MyError: Error {}
+    var result: Int?
+
+    Effect<Int, MyError>.taskResult {
+      expectation.fulfill()
+      return .success(42)
+    }
+    .sink(
+      receiveCompletion: {
+        switch $0 {
+        case .failure:
+          XCTFail()
+        case .finished:
+          break
+        }
+      },
+      receiveValue: { result = $0 }
+    )
+    .store(in: &self.cancellables)
+    self.wait(for: [expectation], timeout: 1)
+    XCTAssertEqual(result, 42)
+  }
+
+  func testTaskWithResultFailure() {
+    guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
+
+    let expectation = self.expectation(description: "Complete")
+
+    struct MyError: Error {}
+    var result: MyError?
+
+    Effect<Int, MyError>.taskResult {
+      expectation.fulfill()
+      return .failure(MyError())
+    }
+    .sink(
+      receiveCompletion: {
+        switch $0 {
+        case .finished:
+          XCTFail()
+        case let .failure(error):
+          result = error
+        }
+      },
+      receiveValue: { _ in XCTFail() }
+    )
+    .store(in: &self.cancellables)
+    self.wait(for: [expectation], timeout: 1)
+    XCTAssertNotNil(result)
+  }
   #endif
 }
