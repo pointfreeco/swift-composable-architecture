@@ -274,7 +274,7 @@
       }
     }
 
-    private struct LongLivingEffect: Hashable {
+    struct LongLivingEffect: Hashable {
       let id = UUID()
       let file: StaticString
       let line: UInt
@@ -348,7 +348,7 @@
       } catch {
         XCTFail("Threw error: \(error)", file: file, line: line)
       }
-      self.expectedStateShouldMatch(
+      Self.expectedStateShouldMatch(
         expected: expectedState,
         actual: self.toLocalState(self.snapshotState),
         file: file,
@@ -359,7 +359,7 @@
       }
     }
 
-    private func expectedStateShouldMatch(
+    static func expectedStateShouldMatch(
       expected: LocalState,
       actual: LocalState,
       file: StaticString,
@@ -434,7 +434,7 @@
       } catch {
         XCTFail("Threw error: \(error)", file: file, line: line)
       }
-      expectedStateShouldMatch(
+      Self.expectedStateShouldMatch(
         expected: expectedState,
         actual: self.toLocalState(state),
         file: file,
@@ -669,7 +669,7 @@
       }
     }
 
-    private struct TestAction {
+    struct TestAction {
       let origin: Origin
       let file: StaticString
       let line: UInt
