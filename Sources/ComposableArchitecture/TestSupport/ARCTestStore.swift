@@ -3,9 +3,8 @@
   import Foundation
   import XCTestDynamicOverlay
 
-  
   public final class ARCTestStore<State, LocalState, Action: Equatable, LocalAction, Environment> {
-    typealias TestStoreType = TestStore<State, LocalState, Action, LocalAction, Environment>
+    public typealias TestStoreType = TestStore<State, LocalState, Action, LocalAction, Environment>
     public var environment: Environment
 
     private let file: StaticString
@@ -165,6 +164,51 @@
       if "\(self.file)" == "\(file)" {
         self.line = line
       }
+    }
+      
+      /// Asserts against a script of actions.
+      public func assert(
+        _ steps: TestStoreType.Step...,
+        file: StaticString = #file,
+        line: UInt = #line
+      ) {
+          assert(steps, file: file, line: line)
+      }
+      
+      /// Asserts against an array of actions.
+    public func assert(
+      _ steps: [TestStoreType.Step],
+      file: StaticString = #file,
+      line: UInt = #line
+    ) {
+        func assert(step: TestStoreType.Step) {
+            switch step.type {
+            case let .send(action, update):
+                self.send(action, file: step.file, line: step.line, update)
+                
+            case let .receive(expectedAction, update):
+                self.receive(expectedAction, file: step.file, line: step.line, update)
+                
+            case let .environment(work):
+                do {
+                    try work(&self.environment)
+                } catch {
+                    XCTFail("Threw error: \(error)", file: step.file, line: step.line)
+                }
+                
+            case let .do(work):
+                do {
+                    try work()
+                } catch {
+                    XCTFail("Threw error: \(error)", file: step.file, line: step.line)
+                }
+                
+            case let .sequence(subSteps):
+                subSteps.forEach(assert(step:))
+            }
+        }
+        
+        steps.forEach(assert(step:))
     }
       
     private func verifyUpdateBlockMatchesState(

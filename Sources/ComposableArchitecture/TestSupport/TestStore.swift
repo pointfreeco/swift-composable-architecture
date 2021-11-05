@@ -563,11 +563,11 @@
 
     /// A single step of a ``TestStore`` assertion.
     public struct Step {
-      fileprivate let type: StepType
-      fileprivate let file: StaticString
-      fileprivate let line: UInt
+      internal let type: StepType
+      internal let file: StaticString
+      internal let line: UInt
 
-      private init(
+      internal init(
         _ type: StepType,
         file: StaticString = #file,
         line: UInt = #line
@@ -660,7 +660,7 @@
         Step(.sequence(steps), file: file, line: line)
       }
 
-      fileprivate indirect enum StepType {
+      internal indirect enum StepType {
         case send(LocalAction, (inout LocalState) throws -> Void)
         case receive(Action, (inout LocalState) throws -> Void)
         case environment((inout Environment) throws -> Void)
