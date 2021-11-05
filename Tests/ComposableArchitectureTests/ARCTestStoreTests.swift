@@ -1,5 +1,5 @@
 import Combine
-import ComposableArchitecture
+@testable import ComposableArchitecture
 import XCTest
 
 class ARCTestStoreTests: XCTestCase {
@@ -43,7 +43,7 @@ class ARCTestStoreTests: XCTestCase {
     
     func test_verify_state_changes_without_exhaustivity() {
         let testScheduler = DispatchQueue.test
-        let store = ARCTestStore(
+        let store = NonExhaustiveTestStore(
             initialState: State(),
             reducer: reducer,
             environment: testScheduler.eraseToAnyScheduler()
@@ -57,7 +57,7 @@ class ARCTestStoreTests: XCTestCase {
     
     func test_verify_state_changes_once_after_many_actions_were_processed() {
         let testScheduler = DispatchQueue.test
-        let store = ARCTestStore(
+        let store = NonExhaustiveTestStore(
             initialState: State(),
             reducer: reducer,
             environment: testScheduler.eraseToAnyScheduler()
@@ -76,7 +76,7 @@ class ARCTestStoreTests: XCTestCase {
     
     func test_verify_received_actions() {
         let testScheduler = DispatchQueue.test
-        let store = ARCTestStore(
+        let store = NonExhaustiveTestStore(
             initialState: State(),
             reducer: reducer,
             environment: testScheduler.eraseToAnyScheduler()

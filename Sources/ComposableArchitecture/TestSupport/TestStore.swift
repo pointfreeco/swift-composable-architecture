@@ -181,7 +181,7 @@
     private var store: Store<State, TestAction>!
     private let toLocalState: (State) -> LocalState
 
-    private init(
+    internal init(
       environment: Environment,
       file: StaticString,
       fromLocalAction: @escaping (LocalAction) -> Action,
@@ -234,7 +234,7 @@
       self.completed()
     }
 
-    private func completed() {
+    internal func completed() {
       if !self.receivedActions.isEmpty {
         var actions = ""
         customDump(self.receivedActions.map(\.action), to: &actions)

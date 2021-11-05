@@ -3,20 +3,20 @@
   import Foundation
   import XCTestDynamicOverlay
 
-  public final class ARCTestStore<State, LocalState, Action: Equatable, LocalAction, Environment> {
-    public typealias TestStoreType = TestStore<State, LocalState, Action, LocalAction, Environment>
-    public var environment: Environment
+  internal final class NonExhaustiveTestStore<State, LocalState, Action: Equatable, LocalAction, Environment> {
+    internal typealias TCATestStoreType = TestStore<State, LocalState, Action, LocalAction, Environment>
+    internal var environment: Environment
 
     private let file: StaticString
     private let fromLocalAction: (LocalAction) -> Action
     private var line: UInt
-    private var longLivingEffects: Set<TestStoreType.LongLivingEffect> = []
+    private var longLivingEffects: Set<TCATestStoreType.LongLivingEffect> = []
     private var receivedActions: [(action: Action, state: State)] = []
     private let reducer: Reducer<State, Action, Environment>
-    private var store: Store<State, TestStoreType.TestAction>!
+    private var store: Store<State, TCATestStoreType.TestAction>!
     private let toLocalState: (State) -> LocalState
 
-    private init(
+    internal init(
       environment: Environment,
       file: StaticString,
       fromLocalAction: @escaping (LocalAction) -> Action,
@@ -34,7 +34,7 @@
 
       self.store = Store(
         initialState: initialState,
-        reducer: Reducer<State, TestStoreType.TestAction, Void> { [unowned self] state, action, _ in
+        reducer: Reducer<State, TCATestStoreType.TestAction, Void> { [unowned self] state, action, _ in
           let effects: Effect<Action, Never>
           switch action.origin {
           case let .send(localAction):
@@ -45,7 +45,7 @@
             self.receivedActions.append((action, state))
           }
 
-          let effect = TestStoreType.LongLivingEffect(file: action.file, line: action.line)
+          let effect = TCATestStoreType.LongLivingEffect(file: action.file, line: action.line)
           return
             effects
             .handleEvents(
@@ -91,14 +91,8 @@
     }
   }
 
-  extension ARCTestStore where State == LocalState, Action == LocalAction {
-    /// Initializes a test store from an initial state, a reducer, and an initial environment.
-    ///
-    /// - Parameters:
-    ///   - initialState: The state to start the test from.
-    ///   - reducer: A reducer.
-    ///   - environment: The environment to start the test from.
-    public convenience init(
+  extension NonExhaustiveTestStore where State == LocalState, Action == LocalAction {
+    internal convenience init(
       initialState: State,
       reducer: Reducer<State, Action, Environment>,
       environment: Environment,
@@ -117,8 +111,8 @@
     }
   }
 
-  extension ARCTestStore where LocalState: Equatable {
-    public func send(
+  extension NonExhaustiveTestStore where LocalState: Equatable {
+    internal func send(
       _ action: LocalAction,
       file: StaticString = #file,
       line: UInt = #line,
@@ -138,7 +132,7 @@
       }
     }
       
-    public func receive(
+    internal func receive(
       _ action: Action,
       file: StaticString = #file,
       line: UInt = #line,
@@ -166,22 +160,20 @@
       }
     }
       
-      /// Asserts against a script of actions.
-      public func assert(
-        _ steps: TestStoreType.Step...,
+      internal func assert(
+        _ steps: TCATestStoreType.Step...,
         file: StaticString = #file,
         line: UInt = #line
       ) {
           assert(steps, file: file, line: line)
       }
       
-      /// Asserts against an array of actions.
-    public func assert(
-      _ steps: [TestStoreType.Step],
+    internal func assert(
+      _ steps: [TCATestStoreType.Step],
       file: StaticString = #file,
       line: UInt = #line
     ) {
-        func assert(step: TestStoreType.Step) {
+        func assert(step: TCATestStoreType.Step) {
             switch step.type {
             case let .send(action, update):
                 self.send(action, file: step.file, line: step.line, update)
@@ -238,7 +230,7 @@
           XCTFail("Threw error: \(error)", file: file, line: line)
         }
 
-        TestStoreType.expectedStateShouldMatch(
+        TCATestStoreType.expectedStateShouldMatch(
           expected: stateAfterApplyingUpdate,
           actual: stateAfterReducerApplication,
           file: file,
@@ -247,22 +239,11 @@
     }
   }
 
-  extension ARCTestStore {
-    /// Scopes a store to assert against more local state and actions.
-    ///
-    /// Useful for testing view store-specific state and actions.
-    ///
-    /// - Parameters:
-    ///   - toLocalState: A function that transforms the reducer's state into more local state. This
-    ///     state will be asserted against as it is mutated by the reducer. Useful for testing view
-    ///     store state transformations.
-    ///   - fromLocalAction: A function that wraps a more local action in the reducer's action.
-    ///     Local actions can be "sent" to the store, while any reducer action may be received.
-    ///     Useful for testing view store action transformations.
-    public func scope<S, A>(
+  extension NonExhaustiveTestStore {
+    internal func scope<S, A>(
       state toLocalState: @escaping (LocalState) -> S,
       action fromLocalAction: @escaping (A) -> LocalAction
-    ) -> ARCTestStore<State, S, Action, A, Environment> {
+    ) -> NonExhaustiveTestStore<State, S, Action, A, Environment> {
       .init(
         environment: self.environment,
         file: self.file,
@@ -274,16 +255,9 @@
       )
     }
 
-    /// Scopes a store to assert against more local state.
-    ///
-    /// Useful for testing view store-specific state.
-    ///
-    /// - Parameter toLocalState: A function that transforms the reducer's state into more local
-    ///   state. This state will be asserted against as it is mutated by the reducer. Useful for
-    ///   testing view store state transformations.
-    public func scope<S>(
+    internal func scope<S>(
       state toLocalState: @escaping (LocalState) -> S
-    ) -> ARCTestStore<State, S, Action, LocalAction, Environment> {
+    ) -> NonExhaustiveTestStore<State, S, Action, LocalAction, Environment> {
       self.scope(state: toLocalState, action: { $0 })
     }
   }
