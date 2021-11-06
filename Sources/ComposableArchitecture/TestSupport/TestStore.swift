@@ -177,9 +177,9 @@
     private var longLivingEffects: Set<LongLivingEffect> = []
     private var receivedActions: [(action: Action, state: State)] = []
     private let reducer: Reducer<State, Action, Environment>
-    private var snapshotState: State
+    internal private(set) var snapshotState: State
     private var store: Store<State, TestAction>!
-    private let toLocalState: (State) -> LocalState
+    internal let toLocalState: (State) -> LocalState
 
     internal init(
       environment: Environment,

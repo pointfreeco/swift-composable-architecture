@@ -15,6 +15,7 @@
     private let reducer: Reducer<State, Action, Environment>
     private var store: Store<State, TCATestStoreType.TestAction>!
     private let toLocalState: (State) -> LocalState
+    internal private(set) var snapshotState: State
 
     internal init(
       environment: Environment,
@@ -31,6 +32,7 @@
       self.line = line
       self.reducer = reducer
       self.toLocalState = toLocalState
+      self.snapshotState = initialState
 
       self.store = Store(
         initialState: initialState,
@@ -39,9 +41,11 @@
           switch action.origin {
           case let .send(localAction):
             effects = self.reducer.run(&state, self.fromLocalAction(localAction), self.environment)
+            self.snapshotState = state
 
           case let .receive(action):
             effects = self.reducer.run(&state, action, self.environment)
+            self.snapshotState = state
             self.receivedActions.append((action, state))
           }
 
@@ -63,7 +67,7 @@
       )
     }
 
-    public func assertEffectCompleted() {
+    internal func assertEffectCompleted() {
       for effect in self.longLivingEffects {
         XCTFail(
           """
