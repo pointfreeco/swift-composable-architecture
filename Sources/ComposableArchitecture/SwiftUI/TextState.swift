@@ -273,36 +273,40 @@ extension TextState {
   public enum AccessibilityTextContentType: Equatable, Hashable {
     case console, fileSystem, messaging, narrative, plain, sourceCode, spreadsheet, wordProcessing
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    var toSwiftUI: SwiftUI.AccessibilityTextContentType {
-      switch self {
-      case .console: return .console
-      case .fileSystem: return .fileSystem
-      case .messaging: return .messaging
-      case .narrative: return .narrative
-      case .plain: return .plain
-      case .sourceCode: return .sourceCode
-      case .spreadsheet: return .spreadsheet
-      case .wordProcessing: return .wordProcessing
+    #if compiler(>=5.5.1)
+      @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+      var toSwiftUI: SwiftUI.AccessibilityTextContentType {
+        switch self {
+        case .console: return .console
+        case .fileSystem: return .fileSystem
+        case .messaging: return .messaging
+        case .narrative: return .narrative
+        case .plain: return .plain
+        case .sourceCode: return .sourceCode
+        case .spreadsheet: return .spreadsheet
+        case .wordProcessing: return .wordProcessing
+        }
       }
-    }
+    #endif
   }
 
   public enum AccessibilityHeadingLevel: Equatable, Hashable {
     case h1, h2, h3, h4, h5, h6, unspecified
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    var toSwiftUI: SwiftUI.AccessibilityHeadingLevel {
-      switch self {
-      case .h1: return .h1
-      case .h2: return .h2
-      case .h3: return .h3
-      case .h4: return .h4
-      case .h5: return .h5
-      case .h6: return .h6
-      case .unspecified: return .unspecified
+    #if compiler(>=5.5.1)
+      @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+      var toSwiftUI: SwiftUI.AccessibilityHeadingLevel {
+        switch self {
+        case .h1: return .h1
+        case .h2: return .h2
+        case .h3: return .h3
+        case .h4: return .h4
+        case .h5: return .h5
+        case .h6: return .h6
+        case .unspecified: return .unspecified
+        }
       }
-    }
+    #endif
   }
 }
 
@@ -372,6 +376,7 @@ extension Text {
         return text.tracking(tracking)
       case let .underline(active, color):
         return text.underline(active, color: color)
+      #if compiler(>=5.5.1)
       case let .accessibilityLabel(value):
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
           switch value {
@@ -395,6 +400,12 @@ extension Text {
         } else {
           return text
         }
+      #else
+      case .accessibilityLabel,
+          .accessibilityTextContentType,
+          .accessibilityHeading:
+        return text
+      #endif
       }
     }
   }
