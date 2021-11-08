@@ -177,11 +177,11 @@
     private var longLivingEffects: Set<LongLivingEffect> = []
     private var receivedActions: [(action: Action, state: State)] = []
     private let reducer: Reducer<State, Action, Environment>
-    private var snapshotState: State
+    internal private(set) var snapshotState: State
     private var store: Store<State, TestAction>!
-    private let toLocalState: (State) -> LocalState
+    internal let toLocalState: (State) -> LocalState
 
-    private init(
+    internal init(
       environment: Environment,
       file: StaticString,
       fromLocalAction: @escaping (LocalAction) -> Action,
@@ -234,7 +234,7 @@
       self.completed()
     }
 
-    private func completed() {
+    internal func completed() {
       if !self.receivedActions.isEmpty {
         var actions = ""
         customDump(self.receivedActions.map(\.action), to: &actions)
@@ -274,7 +274,7 @@
       }
     }
 
-    private struct LongLivingEffect: Hashable {
+    struct LongLivingEffect: Hashable {
       let id = UUID()
       let file: StaticString
       let line: UInt
@@ -348,7 +348,7 @@
       } catch {
         XCTFail("Threw error: \(error)", file: file, line: line)
       }
-      self.expectedStateShouldMatch(
+      Self.expectedStateShouldMatch(
         expected: expectedState,
         actual: self.toLocalState(self.snapshotState),
         file: file,
@@ -359,7 +359,7 @@
       }
     }
 
-    private func expectedStateShouldMatch(
+    static func expectedStateShouldMatch(
       expected: LocalState,
       actual: LocalState,
       file: StaticString,
@@ -434,7 +434,7 @@
       } catch {
         XCTFail("Threw error: \(error)", file: file, line: line)
       }
-      expectedStateShouldMatch(
+      Self.expectedStateShouldMatch(
         expected: expectedState,
         actual: self.toLocalState(state),
         file: file,
@@ -563,11 +563,11 @@
 
     /// A single step of a ``TestStore`` assertion.
     public struct Step {
-      fileprivate let type: StepType
-      fileprivate let file: StaticString
-      fileprivate let line: UInt
+      internal let type: StepType
+      internal let file: StaticString
+      internal let line: UInt
 
-      private init(
+      internal init(
         _ type: StepType,
         file: StaticString = #file,
         line: UInt = #line
@@ -660,7 +660,7 @@
         Step(.sequence(steps), file: file, line: line)
       }
 
-      fileprivate indirect enum StepType {
+      internal indirect enum StepType {
         case send(LocalAction, (inout LocalState) throws -> Void)
         case receive(Action, (inout LocalState) throws -> Void)
         case environment((inout Environment) throws -> Void)
@@ -669,7 +669,7 @@
       }
     }
 
-    private struct TestAction {
+    struct TestAction {
       let origin: Origin
       let file: StaticString
       let line: UInt
