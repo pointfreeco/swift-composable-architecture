@@ -13,7 +13,7 @@ final class ComposableArchitectureTests: XCTestCase {
       case squareNow
     }
 
-    let counterReducer = Reducer<Int, CounterAction, AnySchedulerOf<DispatchQueue>> {
+    let counterReducer = Reducer<Int, CounterAction, AnySchedulerOf<DispatchQueue>, Never> {
       state, action, scheduler in
       switch action {
       case .incrAndSquareLater:
@@ -87,7 +87,7 @@ final class ComposableArchitectureTests: XCTestCase {
 
     enum Action { case end, incr, start }
 
-    let reducer = Reducer<Int, Action, Environment> { state, action, environment in
+    let reducer = Reducer<Int, Action, Environment, Never> { state, action, environment in
       switch action {
       case .end:
         return environment.stopEffect.fireAndForget()
@@ -129,7 +129,7 @@ final class ComposableArchitectureTests: XCTestCase {
       let mainQueue: AnySchedulerOf<DispatchQueue>
     }
 
-    let reducer = Reducer<Int, Action, Environment> { state, action, environment in
+    let reducer = Reducer<Int, Action, Environment, Never> { state, action, environment in
       struct CancelId: Hashable {}
 
       switch action {

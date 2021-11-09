@@ -54,9 +54,17 @@ public struct Reducer<State, Action, Environment, Failure: Error> {
     self.reducer = reducer
   }
 
+//	public static func errored(_ reducer: @escaping (inout State, Action, Environment) -> Effect<Action, Failure>) -> Self {
+//
+//	}
+
+	public static func clean(_ reducer: @escaping (inout State, Action, Environment) -> Effect<Action, Never>) -> Reducer<State, Action, Environment, Never> {
+		return .init(reducer)
+	}
+
   /// A reducer that performs no state mutations and returns no effects.
   public static var empty: Reducer {
-    Self { _, _, _ in .none }
+		Self { _, _, _ in .none }
   }
 
   /// Combines many reducers into a single one by running each one on state in order, and merging
@@ -459,59 +467,59 @@ public struct Reducer<State, Action, Environment, Failure: Error> {
   ///   - toLocalAction: A case path that can extract/embed `Action` from `GlobalAction`.
   ///   - toLocalEnvironment: A function that transforms `GlobalEnvironment` into `Environment`.
   /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
-//  public func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
-//    state toLocalState: CasePath<GlobalState, State>,
-//    action toLocalAction: CasePath<GlobalAction, Action>,
-//    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
-//    breakpointOnNil: Bool = true,
-//    file: StaticString = #fileID,
-//    line: UInt = #line
-//  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
-//    .init { globalState, globalAction, globalEnvironment in
-//      guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
-//
-//      guard var localState = toLocalState.extract(from: globalState) else {
-//        if breakpointOnNil {
-//          breakpoint(
-//            """
-//            ---
-//            Warning: Reducer.pullback@\(file):\(line)
-//
-//            "\(debugCaseOutput(localAction))" was received by a reducer when its state was \
-//            unavailable. This is generally considered an application logic error, and can happen \
-//            for a few reasons:
-//
-//            * The reducer for a particular case of state was combined with or run from another \
-//            reducer that set "\(State.self)" to another case before the reducer ran. Combine or \
-//            run case-specific reducers before reducers that may set their state to another case. \
-//            This ensures that case-specific reducers can handle their actions while their state \
-//            is available.
-//
-//            * An in-flight effect emitted this action when state was unavailable. While it may be \
-//            perfectly reasonable to ignore this action, you may want to cancel the associated \
-//            effect before state is set to another case, especially if it is a long-living effect.
-//
-//            * This action was sent to the store while state was another case. Make sure that \
-//            actions for this reducer can only be sent to a view store when state is non-"nil". \
-//            In SwiftUI applications, use "SwitchStore".
-//            ---
-//            """
-//          )
-//        }
-//        return .none
-//      }
-//      defer { globalState = toLocalState.embed(localState) }
-//
-//      let effects = self.run(
-//        &localState,
-//        localAction,
-//        toLocalEnvironment(globalEnvironment)
-//      )
-//      .map(toLocalAction.embed)
-//
-//      return effects
-//    }
-//  }
+  public func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
+    state toLocalState: CasePath<GlobalState, State>,
+    action toLocalAction: CasePath<GlobalAction, Action>,
+    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+    breakpointOnNil: Bool = true,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment, Failure> {
+    .init { globalState, globalAction, globalEnvironment in
+      guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
+
+      guard var localState = toLocalState.extract(from: globalState) else {
+        if breakpointOnNil {
+          breakpoint(
+            """
+            ---
+            Warning: Reducer.pullback@\(file):\(line)
+
+            "\(debugCaseOutput(localAction))" was received by a reducer when its state was \
+            unavailable. This is generally considered an application logic error, and can happen \
+            for a few reasons:
+
+            * The reducer for a particular case of state was combined with or run from another \
+            reducer that set "\(State.self)" to another case before the reducer ran. Combine or \
+            run case-specific reducers before reducers that may set their state to another case. \
+            This ensures that case-specific reducers can handle their actions while their state \
+            is available.
+
+            * An in-flight effect emitted this action when state was unavailable. While it may be \
+            perfectly reasonable to ignore this action, you may want to cancel the associated \
+            effect before state is set to another case, especially if it is a long-living effect.
+
+            * This action was sent to the store while state was another case. Make sure that \
+            actions for this reducer can only be sent to a view store when state is non-"nil". \
+            In SwiftUI applications, use "SwitchStore".
+            ---
+            """
+          )
+        }
+        return .none
+      }
+      defer { globalState = toLocalState.embed(localState) }
+
+      let effects = self.run(
+        &localState,
+        localAction,
+        toLocalEnvironment(globalEnvironment)
+      )
+      .map(toLocalAction.embed)
+
+      return effects
+    }
+  }
 
   /// Transforms a reducer that works on non-optional state into one that works on optional state by
   /// only running the non-optional reducer when state is non-nil.

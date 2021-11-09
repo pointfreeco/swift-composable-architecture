@@ -12,7 +12,7 @@ class TestStoreTests: XCTestCase {
 
     let mainQueue = DispatchQueue.test
 
-    let reducer = Reducer<State, Action, AnySchedulerOf<DispatchQueue>> { _, action, scheduler in
+    let reducer = Reducer<State, Action, AnySchedulerOf<DispatchQueue>, Never> { _, action, scheduler in
       switch action {
       case .a:
         return .merge(

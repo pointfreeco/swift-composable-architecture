@@ -16,7 +16,7 @@
         case binding(BindingAction<State>)
       }
 
-      let reducer = Reducer<State, Action, ()> { state, action, _ in
+      let reducer = Reducer<State, Action, (), Never> { state, action, _ in
         switch action {
         case .binding(\.$nested.field):
           state.nested.field += "!"

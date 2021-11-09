@@ -6,7 +6,7 @@ final class MemoryManagementTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
   func testOwnership_ScopeHoldsOntoParent() {
-    let counterReducer = Reducer<Int, Void, Void> { state, _, _ in
+    let counterReducer = Reducer<Int, Void, Void, Never> { state, _, _ in
       state += 1
       return .none
     }
@@ -24,7 +24,7 @@ final class MemoryManagementTests: XCTestCase {
   }
 
   func testOwnership_ViewStoreHoldsOntoStore() {
-    let counterReducer = Reducer<Int, Void, Void> { state, _, _ in
+    let counterReducer = Reducer<Int, Void, Void, Never> { state, _, _ in
       state += 1
       return .none
     }
