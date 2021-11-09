@@ -217,6 +217,56 @@ final class ReducerTests: XCTestCase {
       .store(in: &self.cancellables)
     self.wait(for: [expectation], timeout: 0.1)
   }
+
+	func testReducerError() {
+		enum SomeErrorType: Error { case test }
+		let reducer = Reducer<Int, Void, Void, Error> { state, _, _ in
+			return Effect(error: SomeErrorType.test)
+		}
+		var state = 0
+		let effect = reducer.run(&state, (), ())
+		var recievedErr = false
+		effect.sink { err in
+			recievedErr = true
+		} receiveValue: { _ in }
+		.store(in: &self.cancellables)
+
+		XCTAssertEqual(recievedErr, true)
+	}
+
+	func testReducerCatch() {
+		enum SomeErrorType: Error { case test }
+		enum Action { case a, b }
+		let reducer = Reducer<Int, Action, Void, Error> { state, action, _ in
+			switch action {
+			case .a:
+				state += 1
+				return .none
+			case .b:
+				return Effect(error: SomeErrorType.test)
+			}
+		}.catch({ _ in .a })
+
+		var state = 0
+		let effect = reducer.run(&state, .b, ())
+		var recievedAction = false
+		effect.sink { value in
+			recievedAction = true
+			XCTAssertEqual(value, .a)
+		}.store(in: &self.cancellables)
+
+		XCTAssert((reducer as Any) is Reducer<Int, Action, Void, Never>)
+		XCTAssertEqual(recievedAction, true)
+	}
+
+	func testReducerAssertNoFailure() {
+		let reducer = Reducer<Int, Void, Void, Error> { state, _, _ in
+			state += 1
+			return Effect(value: ())
+		}.assertNoFailure()
+
+		XCTAssert((reducer as Any) is Reducer<Int, Void, Void, Never>)
+	}
 }
 
 enum DebugAction: Equatable {

@@ -54,14 +54,6 @@ public struct Reducer<State, Action, Environment, Failure: Error> {
     self.reducer = reducer
   }
 
-//	public static func errored(_ reducer: @escaping (inout State, Action, Environment) -> Effect<Action, Failure>) -> Self {
-//
-//	}
-
-	public static func clean(_ reducer: @escaping (inout State, Action, Environment) -> Effect<Action, Never>) -> Reducer<State, Action, Environment, Never> {
-		return .init(reducer)
-	}
-
   /// A reducer that performs no state mutations and returns no effects.
   public static var empty: Reducer {
 		Self { _, _, _ in .none }
@@ -906,4 +898,26 @@ public struct Reducer<State, Action, Environment, Failure: Error> {
   ) -> Effect<Action, Failure> {
     self.reducer(&state, action, environment)
   }
+}
+
+extension Reducer {
+	/// Performs the equivalent of Publisher.assertNoFailure for the Reducer type
+	public func assertNoFailure() -> Reducer<State, Action, Environment, Never> {
+		return Reducer<State, Action, Environment, Never> { state, action, environment in
+			return self.run(&state, action, environment)
+				.assertNoFailure()
+				.eraseToEffect()
+		}
+	}
+}
+
+extension Reducer where Failure: Error {
+	/// Performs the equivalent of Publisher.catch for the Reducer type
+	public func `catch`(_ handler: @escaping (Error) -> Action) -> Reducer<State, Action, Environment, Never> {
+		return Reducer<State, Action, Environment, Never> { state, action, environment in
+			return self.run(&state, action, environment)
+				.catch { Just(handler($0)).eraseToEffect() }
+				.eraseToEffect()
+		}
+	}
 }
