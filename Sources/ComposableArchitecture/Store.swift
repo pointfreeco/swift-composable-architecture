@@ -147,7 +147,7 @@ public final class Store<State, Action> {
   ///   - environment: The environment of dependencies for the application.
   public convenience init<Environment>(
     initialState: State,
-    reducer: Reducer<State, Action, Environment>,
+    reducer: Reducer<State, Action, Environment, Never>,
     environment: Environment
   ) {
     self.init(
@@ -168,7 +168,7 @@ public final class Store<State, Action> {
   ///   - environment: The environment of dependencies for the application.
   public static func unchecked<Environment>(
     initialState: State,
-    reducer: Reducer<State, Action, Environment>,
+    reducer: Reducer<State, Action, Environment, Never>,
     environment: Environment
   ) -> Self {
     Self(
@@ -475,7 +475,7 @@ public final class Store<State, Action> {
 
   private init<Environment>(
     initialState: State,
-    reducer: Reducer<State, Action, Environment>,
+    reducer: Reducer<State, Action, Environment, Never>,
     environment: Environment,
     mainThreadChecksEnabled: Bool
   ) {

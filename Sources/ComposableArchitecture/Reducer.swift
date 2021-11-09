@@ -1,5 +1,6 @@
 import CasePaths
 import Combine
+import Foundation
 
 /// A reducer describes how to evolve the current state of an application to the next state, given
 /// an action, and describes what ``Effect``s should be executed later by the store, if any.
@@ -17,8 +18,8 @@ import Combine
 ///   values on the same thread, **and** if the ``Store`` is being used to drive UI then all output
 ///   must be on the main thread. You can use the `Publisher` method `receive(on:)` for make the
 ///   effect output its values on the thread of your choice.
-public struct Reducer<State, Action, Environment> {
-  private let reducer: (inout State, Action, Environment) -> Effect<Action, Never>
+public struct Reducer<State, Action, Environment, Failure: Error> {
+  private let reducer: (inout State, Action, Environment) -> Effect<Action, Failure>
 
   /// Initializes a reducer from a simple reducer function signature.
   ///
@@ -49,7 +50,7 @@ public struct Reducer<State, Action, Environment> {
   ///
   /// - Parameter reducer: A function signature that takes state, action and
   ///   environment.
-  public init(_ reducer: @escaping (inout State, Action, Environment) -> Effect<Action, Never>) {
+  public init(_ reducer: @escaping (inout State, Action, Environment) -> Effect<Action, Failure>) {
     self.reducer = reducer
   }
 
@@ -277,7 +278,7 @@ public struct Reducer<State, Action, Environment> {
     state toLocalState: WritableKeyPath<GlobalState, State>,
     action toLocalAction: CasePath<GlobalAction, Action>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment, Failure> {
     .init { globalState, globalAction, globalEnvironment in
       guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
       return self.reducer(
@@ -458,59 +459,59 @@ public struct Reducer<State, Action, Environment> {
   ///   - toLocalAction: A case path that can extract/embed `Action` from `GlobalAction`.
   ///   - toLocalEnvironment: A function that transforms `GlobalEnvironment` into `Environment`.
   /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
-  public func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
-    state toLocalState: CasePath<GlobalState, State>,
-    action toLocalAction: CasePath<GlobalAction, Action>,
-    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
-    breakpointOnNil: Bool = true,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
-    .init { globalState, globalAction, globalEnvironment in
-      guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
-
-      guard var localState = toLocalState.extract(from: globalState) else {
-        if breakpointOnNil {
-          breakpoint(
-            """
-            ---
-            Warning: Reducer.pullback@\(file):\(line)
-
-            "\(debugCaseOutput(localAction))" was received by a reducer when its state was \
-            unavailable. This is generally considered an application logic error, and can happen \
-            for a few reasons:
-
-            * The reducer for a particular case of state was combined with or run from another \
-            reducer that set "\(State.self)" to another case before the reducer ran. Combine or \
-            run case-specific reducers before reducers that may set their state to another case. \
-            This ensures that case-specific reducers can handle their actions while their state \
-            is available.
-
-            * An in-flight effect emitted this action when state was unavailable. While it may be \
-            perfectly reasonable to ignore this action, you may want to cancel the associated \
-            effect before state is set to another case, especially if it is a long-living effect.
-
-            * This action was sent to the store while state was another case. Make sure that \
-            actions for this reducer can only be sent to a view store when state is non-"nil". \
-            In SwiftUI applications, use "SwitchStore".
-            ---
-            """
-          )
-        }
-        return .none
-      }
-      defer { globalState = toLocalState.embed(localState) }
-
-      let effects = self.run(
-        &localState,
-        localAction,
-        toLocalEnvironment(globalEnvironment)
-      )
-      .map(toLocalAction.embed)
-
-      return effects
-    }
-  }
+//  public func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
+//    state toLocalState: CasePath<GlobalState, State>,
+//    action toLocalAction: CasePath<GlobalAction, Action>,
+//    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+//    breakpointOnNil: Bool = true,
+//    file: StaticString = #fileID,
+//    line: UInt = #line
+//  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+//    .init { globalState, globalAction, globalEnvironment in
+//      guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
+//
+//      guard var localState = toLocalState.extract(from: globalState) else {
+//        if breakpointOnNil {
+//          breakpoint(
+//            """
+//            ---
+//            Warning: Reducer.pullback@\(file):\(line)
+//
+//            "\(debugCaseOutput(localAction))" was received by a reducer when its state was \
+//            unavailable. This is generally considered an application logic error, and can happen \
+//            for a few reasons:
+//
+//            * The reducer for a particular case of state was combined with or run from another \
+//            reducer that set "\(State.self)" to another case before the reducer ran. Combine or \
+//            run case-specific reducers before reducers that may set their state to another case. \
+//            This ensures that case-specific reducers can handle their actions while their state \
+//            is available.
+//
+//            * An in-flight effect emitted this action when state was unavailable. While it may be \
+//            perfectly reasonable to ignore this action, you may want to cancel the associated \
+//            effect before state is set to another case, especially if it is a long-living effect.
+//
+//            * This action was sent to the store while state was another case. Make sure that \
+//            actions for this reducer can only be sent to a view store when state is non-"nil". \
+//            In SwiftUI applications, use "SwitchStore".
+//            ---
+//            """
+//          )
+//        }
+//        return .none
+//      }
+//      defer { globalState = toLocalState.embed(localState) }
+//
+//      let effects = self.run(
+//        &localState,
+//        localAction,
+//        toLocalEnvironment(globalEnvironment)
+//      )
+//      .map(toLocalAction.embed)
+//
+//      return effects
+//    }
+//  }
 
   /// Transforms a reducer that works on non-optional state into one that works on optional state by
   /// only running the non-optional reducer when state is non-nil.
@@ -674,7 +675,7 @@ public struct Reducer<State, Action, Environment> {
     file: StaticString = #fileID,
     line: UInt = #line
   ) -> Reducer<
-    State?, Action, Environment
+    State?, Action, Environment, Failure
   > {
     .init { state, action, environment in
       guard state != nil else {
@@ -759,7 +760,7 @@ public struct Reducer<State, Action, Environment> {
     breakpointOnNil: Bool = true,
     file: StaticString = #fileID,
     line: UInt = #line
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment, Failure> {
     .init { globalState, globalAction, globalEnvironment in
       guard let (id, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
       if globalState[keyPath: toLocalState][id: id] == nil {
@@ -831,7 +832,7 @@ public struct Reducer<State, Action, Environment> {
     breakpointOnNil: Bool = true,
     file: StaticString = #fileID,
     line: UInt = #line
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment, Failure> {
     .init { globalState, globalAction, globalEnvironment in
       guard let (key, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
 
@@ -886,7 +887,7 @@ public struct Reducer<State, Action, Environment> {
     _ state: inout State,
     _ action: Action,
     _ environment: Environment
-  ) -> Effect<Action, Never> {
+  ) -> Effect<Action, Failure> {
     self.reducer(&state, action, environment)
   }
 
@@ -894,7 +895,7 @@ public struct Reducer<State, Action, Environment> {
     _ state: inout State,
     _ action: Action,
     _ environment: Environment
-  ) -> Effect<Action, Never> {
+  ) -> Effect<Action, Failure> {
     self.reducer(&state, action, environment)
   }
 }

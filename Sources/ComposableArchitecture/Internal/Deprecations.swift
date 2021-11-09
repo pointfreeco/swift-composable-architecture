@@ -34,59 +34,59 @@ extension View {
   }
 }
 
-extension Store {
-  @available(
-    *, deprecated,
-    message:
-      "If you use this method, please open a discussion on GitHub and let us know how: https://github.com/pointfreeco/swift-composable-architecture/discussions/new"
-  )
-  public func publisherScope<P: Publisher, LocalState, LocalAction>(
-    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P,
-    action fromLocalAction: @escaping (LocalAction) -> Action
-  ) -> AnyPublisher<Store<LocalState, LocalAction>, Never>
-  where P.Output == LocalState, P.Failure == Never {
-
-    func extractLocalState(_ state: State) -> LocalState? {
-      var localState: LocalState?
-      _ = toLocalState(Just(state).eraseToAnyPublisher())
-        .sink { localState = $0 }
-      return localState
-    }
-
-    return toLocalState(self.state.eraseToAnyPublisher())
-      .map { localState in
-        let localStore = Store<LocalState, LocalAction>(
-          initialState: localState,
-          reducer: .init { localState, localAction, _ in
-            self.send(fromLocalAction(localAction))
-            localState = extractLocalState(self.state.value) ?? localState
-            return .none
-          },
-          environment: ()
-        )
-
-        localStore.parentCancellable = self.state
-          .sink { [weak localStore] state in
-            guard let localStore = localStore else { return }
-            localStore.state.value = extractLocalState(state) ?? localStore.state.value
-          }
-        return localStore
-      }
-      .eraseToAnyPublisher()
-  }
-
-  @available(
-    *, deprecated,
-    message:
-      "If you use this method, please open a discussion on GitHub and let us know how: https://github.com/pointfreeco/swift-composable-architecture/discussions/new"
-  )
-  public func publisherScope<P: Publisher, LocalState>(
-    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P
-  ) -> AnyPublisher<Store<LocalState, Action>, Never>
-  where P.Output == LocalState, P.Failure == Never {
-    self.publisherScope(state: toLocalState, action: { $0 })
-  }
-}
+//extension Store {
+//  @available(
+//    *, deprecated,
+//    message:
+//      "If you use this method, please open a discussion on GitHub and let us know how: https://github.com/pointfreeco/swift-composable-architecture/discussions/new"
+//  )
+//  public func publisherScope<P: Publisher, LocalState, LocalAction>(
+//    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P,
+//    action fromLocalAction: @escaping (LocalAction) -> Action
+//  ) -> AnyPublisher<Store<LocalState, LocalAction>, Never>
+//  where P.Output == LocalState, P.Failure == Never {
+//
+//    func extractLocalState(_ state: State) -> LocalState? {
+//      var localState: LocalState?
+//      _ = toLocalState(Just(state).eraseToAnyPublisher())
+//        .sink { localState = $0 }
+//      return localState
+//    }
+//
+//    return toLocalState(self.state.eraseToAnyPublisher())
+//      .map { localState in
+//        let localStore = Store<LocalState, LocalAction>(
+//          initialState: localState,
+//          reducer: .init { localState, localAction, _ in
+//            self.send(fromLocalAction(localAction))
+//            localState = extractLocalState(self.state.value) ?? localState
+//            return .none
+//          },
+//          environment: ()
+//        )
+//
+//        localStore.parentCancellable = self.state
+//          .sink { [weak localStore] state in
+//            guard let localStore = localStore else { return }
+//            localStore.state.value = extractLocalState(state) ?? localStore.state.value
+//          }
+//        return localStore
+//      }
+//      .eraseToAnyPublisher()
+//  }
+//
+//  @available(
+//    *, deprecated,
+//    message:
+//      "If you use this method, please open a discussion on GitHub and let us know how: https://github.com/pointfreeco/swift-composable-architecture/discussions/new"
+//  )
+//  public func publisherScope<P: Publisher, LocalState>(
+//    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P
+//  ) -> AnyPublisher<Store<LocalState, Action>, Never>
+//  where P.Output == LocalState, P.Failure == Never {
+//    self.publisherScope(state: toLocalState, action: { $0 })
+//  }
+//}
 
 #if compiler(>=5.4)
   extension ViewStore {
@@ -278,62 +278,62 @@ extension AlertState.Button {
 
 // NB: Deprecated after 0.20.0:
 
-extension Reducer {
-  @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead")
-  public func forEach<GlobalState, GlobalAction, GlobalEnvironment>(
-    state toLocalState: WritableKeyPath<GlobalState, [State]>,
-    action toLocalAction: CasePath<GlobalAction, (Int, Action)>,
-    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
-    breakpointOnNil: Bool = true,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
-    .init { globalState, globalAction, globalEnvironment in
-      guard let (index, localAction) = toLocalAction.extract(from: globalAction) else {
-        return .none
-      }
-      if index >= globalState[keyPath: toLocalState].endIndex {
-        if breakpointOnNil {
-          breakpoint(
-            """
-            ---
-            Warning: Reducer.forEach@\(file):\(line)
-
-            "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at index \
-            \(index) when its state contained no element at this index. This is generally \
-            considered an application logic error, and can happen for a few reasons:
-
-            * This "forEach" reducer was combined with or run from another reducer that removed \
-            the element at this index when it handled this action. To fix this make sure that \
-            this "forEach" reducer is run before any other reducers that can move or remove \
-            elements from state. This ensures that "forEach" reducers can handle their actions \
-            for the element at the intended index.
-
-            * An in-flight effect emitted this action while state contained no element at this \
-            index. While it may be perfectly reasonable to ignore this action, you may want to \
-            cancel the associated effect when moving or removing an element. If your "forEach" \
-            reducer returns any long-living effects, you should use the identifier-based \
-            "forEach" instead.
-
-            * This action was sent to the store while its state contained no element at this \
-            index. To fix this make sure that actions for this reducer can only be sent to a \
-            view store when its state contains an element at this index. In SwiftUI \
-            applications, use "ForEachStore".
-            ---
-            """
-          )
-        }
-        return .none
-      }
-      return self.run(
-        &globalState[keyPath: toLocalState][index],
-        localAction,
-        toLocalEnvironment(globalEnvironment)
-      )
-      .map { toLocalAction.embed((index, $0)) }
-    }
-  }
-}
+//extension Reducer {
+//  @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead")
+//  public func forEach<GlobalState, GlobalAction, GlobalEnvironment>(
+//    state toLocalState: WritableKeyPath<GlobalState, [State]>,
+//    action toLocalAction: CasePath<GlobalAction, (Int, Action)>,
+//    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+//    breakpointOnNil: Bool = true,
+//    file: StaticString = #fileID,
+//    line: UInt = #line
+//  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment, Failure> {
+//    .init { globalState, globalAction, globalEnvironment in
+//      guard let (index, localAction) = toLocalAction.extract(from: globalAction) else {
+//        return .none
+//      }
+//      if index >= globalState[keyPath: toLocalState].endIndex {
+//        if breakpointOnNil {
+//          breakpoint(
+//            """
+//            ---
+//            Warning: Reducer.forEach@\(file):\(line)
+//
+//            "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at index \
+//            \(index) when its state contained no element at this index. This is generally \
+//            considered an application logic error, and can happen for a few reasons:
+//
+//            * This "forEach" reducer was combined with or run from another reducer that removed \
+//            the element at this index when it handled this action. To fix this make sure that \
+//            this "forEach" reducer is run before any other reducers that can move or remove \
+//            elements from state. This ensures that "forEach" reducers can handle their actions \
+//            for the element at the intended index.
+//
+//            * An in-flight effect emitted this action while state contained no element at this \
+//            index. While it may be perfectly reasonable to ignore this action, you may want to \
+//            cancel the associated effect when moving or removing an element. If your "forEach" \
+//            reducer returns any long-living effects, you should use the identifier-based \
+//            "forEach" instead.
+//
+//            * This action was sent to the store while its state contained no element at this \
+//            index. To fix this make sure that actions for this reducer can only be sent to a \
+//            view store when its state contains an element at this index. In SwiftUI \
+//            applications, use "ForEachStore".
+//            ---
+//            """
+//          )
+//        }
+//        return .none
+//      }
+//      return self.run(
+//        &globalState[keyPath: toLocalState][index],
+//        localAction,
+//        toLocalEnvironment(globalEnvironment)
+//      )
+//      .map { toLocalAction.embed((index, $0)) }
+//    }
+//  }
+//}
 
 extension ForEachStore {
   @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead")

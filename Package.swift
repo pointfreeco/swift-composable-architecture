@@ -41,6 +41,12 @@ let package = Package(
         "ComposableArchitecture"
       ]
     ),
+		.testTarget(
+			name: "FailingReducerTests",
+			dependencies: [
+				"ComposableArchitecture"
+			]
+		),
     .target(
       name: "swift-composable-architecture-benchmark",
       dependencies: [
