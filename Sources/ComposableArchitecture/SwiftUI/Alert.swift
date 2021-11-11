@@ -100,38 +100,44 @@ import SwiftUI
 /// ```
 ///
 public struct AlertState<Action> {
-  public let id = UUID()
+  public let id: UUID
   public var buttons: [Button]
   public var message: TextState?
   public var title: TextState
 
   @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
   public init(
+    id: UUID = UUID(),
     title: TextState,
     message: TextState? = nil,
     buttons: [Button]
   ) {
+    self.id = id
     self.title = title
     self.message = message
     self.buttons = buttons
   }
 
   public init(
+    id: UUID = UUID(),
     title: TextState,
     message: TextState? = nil,
     dismissButton: Button? = nil
   ) {
+    self.id = id
     self.title = title
     self.message = message
     self.buttons = dismissButton.map { [$0] } ?? []
   }
 
   public init(
+    id: UUID = UUID(),
     title: TextState,
     message: TextState? = nil,
     primaryButton: Button,
     secondaryButton: Button
   ) {
+    self.id = id
     self.title = title
     self.message = message
     self.buttons = [primaryButton, secondaryButton]
@@ -161,6 +167,21 @@ public struct AlertState<Action> {
       action: ButtonAction? = nil
     ) -> Self {
       Self(action: action, label: label, role: .destructive)
+    }
+
+    static func mappedAction<Action, LocalAction>(
+      _ role: AlertState<Action>.ButtonRole?,
+      label: TextState,
+      action: AlertState<LocalAction>.ButtonAction?
+    ) -> AlertState<LocalAction>.Button {
+      switch role {
+      case .cancel:
+        return .cancel(label, action: action)
+      case .destructive:
+        return .destructive(label, action: action)
+      case .none:
+        return .default(label, action: action)
+      }
     }
   }
 
@@ -196,6 +217,62 @@ public struct AlertState<Action> {
         }
       }
     #endif
+  }
+
+  public func map<LocalAction>(
+    action: @escaping (Action) -> LocalAction
+  ) -> AlertState<LocalAction> {
+    func map(buttonAction: AlertState<Action>.ButtonAction) -> AlertState<LocalAction>.ButtonAction {
+      switch buttonAction.type {
+      case let .send(sentAction):
+          return .send(action(sentAction))
+      case let .animatedSend(sentAction, animation):
+          return .send(action(sentAction), animation: animation)
+      }
+    }
+    if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
+      return AlertState<LocalAction>(
+        id: id,
+        title: title,
+        message: message,
+        buttons: buttons.map {
+          .mappedAction(
+            $0.role,
+            label: $0.label,
+            action: $0.action.map(map(buttonAction:))
+          )
+        }
+      )
+    } else {
+      if buttons.count >= 2 {
+        return AlertState<LocalAction>(
+          title: title,
+          message: message,
+          primaryButton: .mappedAction(
+            buttons[0].role,
+            label: buttons[0].label,
+            action: buttons[0].action.map(map(buttonAction:))
+          ),
+          secondaryButton: .mappedAction(
+            buttons[1].role,
+            label: buttons[1].label,
+            action: buttons[1].action.map(map(buttonAction:))
+          )
+        )
+      } else if buttons.count == 1 {
+        return AlertState<LocalAction>(
+          title: title,
+          message: message,
+          dismissButton: .mappedAction(
+            buttons[0].role,
+            label: buttons[0].label,
+            action: buttons[0].action.map(map(buttonAction:))
+          )
+        )
+      } else {
+        return AlertState<LocalAction>(title: title, message: message, dismissButton: nil)
+      }
+    }
   }
 }
 
