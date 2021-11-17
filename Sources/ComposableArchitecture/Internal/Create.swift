@@ -30,11 +30,11 @@ final class DemandBuffer<S: Subscriber> {
   private var demandState = Demand()
   private let lock: os_unfair_lock_t
 
-	init(subscriber: S) {
-		self.subscriber = subscriber
-		self.lock = os_unfair_lock_t.allocate(capacity: 1)
-		self.lock.initialize(to: os_unfair_lock())
-	}
+  init(subscriber: S) {
+    self.subscriber = subscriber
+    self.lock = os_unfair_lock_t.allocate(capacity: 1)
+    self.lock.initialize(to: os_unfair_lock())
+  }
 
   deinit {
     self.lock.deinitialize(count: 1)
@@ -95,12 +95,12 @@ final class DemandBuffer<S: Subscriber> {
       return sentDemand
     }
   }
-	
-	struct Demand {
-		var processed: Subscribers.Demand = .none
-		var requested: Subscribers.Demand = .none
-		var sent: Subscribers.Demand = .none
-	}
+
+  struct Demand {
+    var processed: Subscribers.Demand = .none
+    var requested: Subscribers.Demand = .none
+    var sent: Subscribers.Demand = .none
+  }
 }
 
 extension AnyPublisher {
@@ -139,7 +139,7 @@ extension Publishers.Create {
       callback: @escaping (Effect<Output, Failure>.Subscriber) -> Cancellable,
       downstream: Downstream
     ) {
-			self.buffer = DemandBuffer(subscriber: downstream)
+      self.buffer = DemandBuffer(subscriber: downstream)
 
       let cancellable = callback(
         .init(
