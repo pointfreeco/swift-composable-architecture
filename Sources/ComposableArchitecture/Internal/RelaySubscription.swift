@@ -10,12 +10,8 @@ import Combine
 final class RelaySubscription<Downstream: Subscriber>: Subscription {
 	var demandBuffer: DemandBuffer<Downstream>?
 	
-	convenience init(downstream: Downstream) {
-		self.init(demandBuffer: DemandBuffer(downstream))
-	}
-	
-	init(demandBuffer: DemandBuffer<Downstream>?) {
-		self.demandBuffer = demandBuffer
+	init(downstream: Downstream) {
+		demandBuffer = DemandBuffer(subscriber: downstream)
 	}
 	
 	func forwardValueToBuffer(_ value: Downstream.Input) {

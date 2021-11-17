@@ -1,28 +1,30 @@
 import Combine
 import Foundation
 
-struct DidChangeValueRelay<Value>: Publisher {
+final class DidChangeValueRelay<Value>: Publisher {
 	typealias Failure = Never
 	typealias Output = (oldValue: Value?, newValue: Value)
 
 	@RelayBinding private var source: Value
-	@RelayBinding private var subscriptions: [RelaySubscription<AnySubscriber<Output, Failure>>]
+	private var subscriptions: [RelaySubscription<AnySubscriber<Output, Failure>>] = []
+	private var _receive: (AnySubscriber<Output, Never>) -> Void = { _ in }
 
   var value: Value {
     get { source }
-		nonmutating set { self.send(newValue, oldValue: source) }
+		set { self.send(newValue, oldValue: source) }
   }
 
   init(_ value: Value) {
 		_source = RelayBinding(value)
-		_subscriptions = RelayBinding([])
+		_receive = {[weak self] in
+			let subscription = RelaySubscription(downstream: $0)
+			$0.receive(subscription: subscription)
+			self?.subscriptions.append(subscription)
+		}
   }
 
-  func receive<S>(subscriber: S)
-  where S: Subscriber, Never == S.Failure, Output == S.Input {
-    let subscription = RelaySubscription(downstream: AnySubscriber(subscriber))
-    subscriber.receive(subscription: subscription)
-		self.subscriptions.append(subscription)
+  func receive<S>(subscriber: S) where S: Subscriber, Never == S.Failure, Output == S.Input {
+		_receive(AnySubscriber(subscriber))
   }
 	
 	func map<T>(get: @escaping (Value) -> T, set: @escaping (inout Value, T) -> Void) -> DidChangeValueRelay<T> {
@@ -35,28 +37,15 @@ struct DidChangeValueRelay<Value>: Publisher {
 					set(&_source.wrappedValue, $0)
 				}
 			),
-			subscriptions: RelayBinding(
-				get: { [] },
-				set: {[_subscriptions] in
-					_subscriptions.wrappedValue += $0.map {
-						RelaySubscription(
-							demandBuffer: $0.demandBuffer?.map { subscriber in
-								AnySubscriber(
-									receiveSubscription: subscriber.receive(subscription:),
-									receiveValue: { subscriber.receive(($0.map(get), get($1))) },
-									receiveCompletion: subscriber.receive(completion:)
-								)
-							} value: {[_source] in
-								var newValue = _source.wrappedValue
-								set(&newValue, $0.newValue)
-								var oldValue = _source.wrappedValue
-								$0.oldValue.map { set(&oldValue, $0) }
-								return (oldValue, newValue)
-							}
-						)
-					}
-				}
-			)
+			receive: {[_receive] subscriber in
+				_receive(
+					AnySubscriber(
+						receiveSubscription: { subscriber.receive(subscription: $0) },
+						receiveValue: { subscriber.receive(($0.map(get), get($1))) },
+						receiveCompletion: { subscriber.receive(completion: $0) }
+					)
+				)
+			}
 		)
 	}
 
@@ -67,8 +56,8 @@ struct DidChangeValueRelay<Value>: Publisher {
     }
   }
 	
-	private init(source: RelayBinding<Value>, subscriptions: RelayBinding<[RelaySubscription<AnySubscriber<Output, Failure>>]>) {
+	private init(source: RelayBinding<Value>, receive: @escaping (AnySubscriber<Output, Never>) -> Void) {
 		self._source = source
-		self._subscriptions = subscriptions
+		self._receive = receive
 	}
 }
