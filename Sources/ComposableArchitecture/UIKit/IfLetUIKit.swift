@@ -49,13 +49,12 @@ extension Store {
     then unwrap: @escaping (Store<Wrapped, Action>) -> Void,
     else: @escaping () -> Void = {}
   ) -> Cancellable where State == Wrapped? {
-    return self.state
-      .removeDuplicates(by: { ($0 != nil) == ($1 != nil) })
+		return RemoveDublicatesRelay(relay: self.state, isDuplicate: { ($0 != nil) == ($1 != nil) })
       .sink { state in
-        if var state = state {
+				if var state = state {
           unwrap(
             self.scope {
-              state = $0 ?? state
+							state = $0 ?? state
               return state
             })
         } else {

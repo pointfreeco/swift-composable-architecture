@@ -58,7 +58,7 @@ final class StoreTests: XCTestCase {
 
     var values: [String] = []
     childStore.state
-      .sink(receiveValue: { values.append($0) })
+			.sink(receiveValue: { values.append($0.newValue) })
       .store(in: &self.cancellables)
 
     XCTAssertNoDifference(values, ["0"])
@@ -80,7 +80,7 @@ final class StoreTests: XCTestCase {
 
     var values: [Int] = []
     parentStore.state
-      .sink(receiveValue: { values.append($0) })
+			.sink(receiveValue: { values.append($0.newValue) })
       .store(in: &self.cancellables)
 
     XCTAssertNoDifference(values, [0])

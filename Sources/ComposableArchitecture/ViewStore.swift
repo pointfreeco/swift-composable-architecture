@@ -55,11 +55,10 @@ import SwiftUI
 public final class ViewStore<State, Action>: ObservableObject {
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
-  public private(set) lazy var objectWillChange = ObservableObjectPublisher()
+	public var objectWillChange: ObjectWillChangePublisher { ObjectWillChangePublisher(relay: _state) }
 
   private let _send: (Action) -> Void
-  fileprivate let _state: CurrentValueRelay<State>
-  private var viewCancellable: AnyCancellable?
+	fileprivate let _state: RemoveDublicatesRelay<State>
 
   /// Initializes a view store from a store.
   ///
@@ -72,15 +71,7 @@ public final class ViewStore<State, Action>: ObservableObject {
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool
   ) {
     self._send = { store.send($0) }
-    self._state = CurrentValueRelay(store.state.value)
-
-    self.viewCancellable = store.state
-      .removeDuplicates(by: isDuplicate)
-      .sink { [weak self] in
-        guard let self = self else { return }
-        self.objectWillChange.send()
-        self._state.value = $0
-      }
+		self._state = RemoveDublicatesRelay(relay: store.state, isDuplicate: isDuplicate)
   }
 
   /// A publisher that emits when state changes.
@@ -270,6 +261,18 @@ public final class ViewStore<State, Action>: ObservableObject {
   }
 }
 
+extension ViewStore {
+	public struct ObjectWillChangePublisher: Publisher {
+		public typealias Output = Void
+		public typealias Failure = Never
+		let relay: RemoveDublicatesRelay<State>
+		
+		public func receive<S>(subscriber: S) where S : Subscriber, Never == S.Failure, Void == S.Input {
+			relay.map({ _ in () }).subscribe(subscriber)
+		}
+	}
+}
+
 extension ViewStore where State: Equatable {
   public convenience init(_ store: Store<State, Action>) {
     self.init(store, removeDuplicates: ==)
@@ -288,12 +291,13 @@ public struct StorePublisher<State>: Publisher {
   public typealias Output = State
   public typealias Failure = Never
 
-  public let upstream: AnyPublisher<State, Never>
+	public var upstream: AnyPublisher<State, Never> { relay.eraseToAnyPublisher() }
+	private let relay: RemoveDublicatesRelay<State>
   public let viewStore: Any
 
   fileprivate init<Action>(viewStore: ViewStore<State, Action>) {
     self.viewStore = viewStore
-    self.upstream = viewStore._state.eraseToAnyPublisher()
+		self.relay = viewStore.objectWillChange.relay
   }
 
   public func receive<S>(subscriber: S)
@@ -310,11 +314,11 @@ public struct StorePublisher<State>: Publisher {
     )
   }
 
-  private init<P>(
-    upstream: P,
+  private init(
+		relay: RemoveDublicatesRelay<State>,
     viewStore: Any
-  ) where P: Publisher, Failure == P.Failure, Output == P.Output {
-    self.upstream = upstream.eraseToAnyPublisher()
+  ) {
+    self.relay = relay
     self.viewStore = viewStore
   }
 
@@ -323,7 +327,10 @@ public struct StorePublisher<State>: Publisher {
     dynamicMember keyPath: KeyPath<State, LocalState>
   ) -> StorePublisher<LocalState>
   where LocalState: Equatable {
-    .init(upstream: self.upstream.map(keyPath).removeDuplicates(), viewStore: self.viewStore)
+    .init(
+			relay: RemoveDublicatesRelay(relay: self.relay.relay.map(get: { $0[keyPath: keyPath] }, set: {_, _ in }), isDuplicate: ==),
+			viewStore: self.viewStore
+		)
   }
 }
 

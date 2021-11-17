@@ -53,7 +53,7 @@ extension Store {
       return localState
     }
 
-    return toLocalState(self.state.eraseToAnyPublisher())
+		return toLocalState(self.state.map(\.newValue).eraseToAnyPublisher())
       .map { localState in
         let localStore = Store<LocalState, LocalAction>(
           initialState: localState,
@@ -68,7 +68,7 @@ extension Store {
         localStore.parentCancellable = self.state
           .sink { [weak localStore] state in
             guard let localStore = localStore else { return }
-            localStore.state.value = extractLocalState(state) ?? localStore.state.value
+						localStore.state.value = extractLocalState(state.newValue) ?? localStore.state.value
           }
         return localStore
       }

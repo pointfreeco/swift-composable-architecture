@@ -30,10 +30,8 @@ final class DemandBuffer<S: Subscriber> {
   private var demandState = Demand()
   private let lock: os_unfair_lock_t
 
-  init(subscriber: S) {
-    self.subscriber = subscriber
-    self.lock = os_unfair_lock_t.allocate(capacity: 1)
-    self.lock.initialize(to: os_unfair_lock())
+	convenience init(_ subscriber: S) {
+		self.init(subscriber: subscriber)
   }
 
   deinit {
@@ -65,6 +63,10 @@ final class DemandBuffer<S: Subscriber> {
   func demand(_ demand: Subscribers.Demand) -> Subscribers.Demand {
     flush(adding: demand)
   }
+	
+	func map<T: Subscriber>(subscriber: (S) -> T, value: (S.Input) -> T.Input) -> DemandBuffer<T> where T.Failure == S.Failure {
+		DemandBuffer<T>(buffer: buffer.map(value), subscriber: subscriber(self.subscriber), completion: completion, demandState: demandState)
+	}
 
   private func flush(adding newDemand: Subscribers.Demand? = nil) -> Subscribers.Demand {
     self.lock.sync {
@@ -95,12 +97,21 @@ final class DemandBuffer<S: Subscriber> {
       return sentDemand
     }
   }
+	
+	private init(buffer: [S.Input] = [S.Input](), subscriber: S, completion: Subscribers.Completion<S.Failure>? = nil, demandState: Demand = Demand()) {
+		self.buffer = buffer
+		self.subscriber = subscriber
+		self.completion = completion
+		self.demandState = demandState
+		self.lock = os_unfair_lock_t.allocate(capacity: 1)
+		self.lock.initialize(to: os_unfair_lock())
+	}
+}
 
-  struct Demand {
-    var processed: Subscribers.Demand = .none
-    var requested: Subscribers.Demand = .none
-    var sent: Subscribers.Demand = .none
-  }
+private struct Demand {
+	var processed: Subscribers.Demand = .none
+	var requested: Subscribers.Demand = .none
+	var sent: Subscribers.Demand = .none
 }
 
 extension AnyPublisher {
@@ -139,7 +150,7 @@ extension Publishers.Create {
       callback: @escaping (Effect<Output, Failure>.Subscriber) -> Cancellable,
       downstream: Downstream
     ) {
-      self.buffer = DemandBuffer(subscriber: downstream)
+      self.buffer = DemandBuffer(downstream)
 
       let cancellable = callback(
         .init(

@@ -134,7 +134,7 @@ public final class Store<State, Action> {
   private var isSending = false
   var parentCancellable: AnyCancellable?
   private let reducer: (inout State, Action) -> Effect<Action, Never>
-  var state: CurrentValueSubject<State, Never>
+  var state: DidChangeValueRelay<State>
   #if DEBUG
     private let mainThreadChecksEnabled: Bool
   #endif
@@ -323,24 +323,15 @@ public final class Store<State, Action> {
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> Store<LocalState, LocalAction> {
     self.threadCheck(status: .scope)
-    var isSending = false
     let localStore = Store<LocalState, LocalAction>(
-      initialState: toLocalState(self.state.value),
-      reducer: .init { localState, localAction, _ in
-        isSending = true
-        defer { isSending = false }
+			stateRelay: self.state.map(get: toLocalState, set: {_, _ in }),
+      reducer: .init { _, localAction, _ in
         self.send(fromLocalAction(localAction))
-        localState = toLocalState(self.state.value)
         return .none
       },
-      environment: ()
+			environment: (),
+			mainThreadChecksEnabled: true
     )
-    localStore.parentCancellable = self.state
-      .dropFirst()
-      .sink { [weak localStore] newValue in
-        guard !isSending else { return }
-        localStore?.state.value = toLocalState(newValue)
-      }
     return localStore
   }
 
@@ -473,17 +464,26 @@ public final class Store<State, Action> {
     #endif
   }
 
-  private init<Environment>(
+  private convenience init<Environment>(
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
     environment: Environment,
     mainThreadChecksEnabled: Bool
   ) {
-    self.state = CurrentValueSubject(initialState)
-    self.reducer = { state, action in reducer.run(&state, action, environment) }
-
-    #if DEBUG
-      self.mainThreadChecksEnabled = mainThreadChecksEnabled
-    #endif
+		self.init(stateRelay: DidChangeValueRelay(initialState), reducer: reducer, environment: environment, mainThreadChecksEnabled: mainThreadChecksEnabled)
   }
+	
+	private init<Environment>(
+		stateRelay: DidChangeValueRelay<State>,
+		reducer: Reducer<State, Action, Environment>,
+		environment: Environment,
+		mainThreadChecksEnabled: Bool
+	) {
+		self.state = stateRelay
+		self.reducer = { state, action in reducer.run(&state, action, environment) }
+		
+#if DEBUG
+		self.mainThreadChecksEnabled = mainThreadChecksEnabled
+#endif
+	}
 }
