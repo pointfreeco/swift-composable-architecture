@@ -6,7 +6,7 @@ struct DidChangeValueRelay<Value>: Publisher {
 	typealias Output = (oldValue: Value?, newValue: Value)
 
 	@RelayBinding private var source: Value
-	@RelayBinding private var subscriptions: [Subscription<AnySubscriber<Output, Failure>>]
+	@RelayBinding private var subscriptions: [RelaySubscription<AnySubscriber<Output, Failure>>]
 
   var value: Value {
     get { source }
@@ -20,9 +20,8 @@ struct DidChangeValueRelay<Value>: Publisher {
 
   func receive<S>(subscriber: S)
   where S: Subscriber, Never == S.Failure, Output == S.Input {
-    let subscription = Subscription(downstream: AnySubscriber(subscriber))
+    let subscription = RelaySubscription(downstream: AnySubscriber(subscriber))
     subscriber.receive(subscription: subscription)
-    subscription.forwardValueToBuffer((nil, source))
 		self.subscriptions.append(subscription)
   }
 	
@@ -40,11 +39,11 @@ struct DidChangeValueRelay<Value>: Publisher {
 				get: { [] },
 				set: {[_subscriptions] in
 					_subscriptions.wrappedValue += $0.map {
-						Subscription(
+						RelaySubscription(
 							demandBuffer: $0.demandBuffer?.map { subscriber in
 								AnySubscriber(
 									receiveSubscription: subscriber.receive(subscription:),
-									receiveValue: { subscriber.receive(($0.oldValue.map(get), get($0.newValue))) },
+									receiveValue: { subscriber.receive(($0.map(get), get($1))) },
 									receiveCompletion: subscriber.receive(completion:)
 								)
 							} value: {[_source] in
@@ -68,35 +67,8 @@ struct DidChangeValueRelay<Value>: Publisher {
     }
   }
 	
-	private init(source: RelayBinding<Value>, subscriptions: RelayBinding<[Subscription<AnySubscriber<Output, Failure>>]>) {
+	private init(source: RelayBinding<Value>, subscriptions: RelayBinding<[RelaySubscription<AnySubscriber<Output, Failure>>]>) {
 		self._source = source
 		self._subscriptions = subscriptions
 	}
-}
-
-extension DidChangeValueRelay {
-	final class Subscription<Downstream: Subscriber>: Combine.Subscription
-	where Output == Downstream.Input, Failure == Downstream.Failure {
-    fileprivate var demandBuffer: DemandBuffer<Downstream>?
-
-		convenience init(downstream: Downstream) {
-			self.init(demandBuffer: DemandBuffer(downstream))
-    }
-
-    func forwardValueToBuffer(_ value: Output) {
-      _ = demandBuffer?.buffer(value: value)
-    }
-
-    func request(_ demand: Subscribers.Demand) {
-      _ = demandBuffer?.demand(demand)
-    }
-
-    func cancel() {
-      demandBuffer = nil
-    }
-		
-		fileprivate init(demandBuffer: DemandBuffer<Downstream>?) {
-			self.demandBuffer = demandBuffer
-		}
-  }
 }

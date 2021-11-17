@@ -117,7 +117,7 @@ final class ViewStoreTests: XCTestCase {
     viewStore.send(())
     viewStore.send(())
 
-    XCTAssertNoDifference([0, 1, 2], results)
+    XCTAssertNoDifference([1, 2, 3], results)
   }
 
   func testPublisherOwnsViewStore() {

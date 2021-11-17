@@ -268,7 +268,7 @@ extension ViewStore {
 		let relay: RemoveDublicatesRelay<State>
 		
 		public func receive<S>(subscriber: S) where S : Subscriber, Never == S.Failure, Void == S.Input {
-			relay.map({ _ in () }).subscribe(subscriber)
+			relay.map({ _ in () }).dropFirst().subscribe(subscriber)
 		}
 	}
 }
@@ -291,13 +291,13 @@ public struct StorePublisher<State>: Publisher {
   public typealias Output = State
   public typealias Failure = Never
 
-	public var upstream: AnyPublisher<State, Never> { relay.eraseToAnyPublisher() }
-	private let relay: RemoveDublicatesRelay<State>
+	public var upstream: AnyPublisher<State, Never> { relay.map(\.newValue).eraseToAnyPublisher() }
+	private let relay: AnyPublisher<RemoveDublicatesRelay<State>.Output, Never>
   public let viewStore: Any
 
   fileprivate init<Action>(viewStore: ViewStore<State, Action>) {
     self.viewStore = viewStore
-		self.relay = viewStore.objectWillChange.relay
+		self.relay = viewStore._state.eraseToAnyPublisher()
   }
 
   public func receive<S>(subscriber: S)
@@ -314,11 +314,11 @@ public struct StorePublisher<State>: Publisher {
     )
   }
 
-  private init(
-		relay: RemoveDublicatesRelay<State>,
+	private init<P: Publisher>(
+		relay: P,
     viewStore: Any
-  ) {
-    self.relay = relay
+	) where P.Output == RemoveDublicatesRelay<State>.Output, P.Failure == Never {
+		self.relay = relay.eraseToAnyPublisher()
     self.viewStore = viewStore
   }
 
@@ -328,7 +328,11 @@ public struct StorePublisher<State>: Publisher {
   ) -> StorePublisher<LocalState>
   where LocalState: Equatable {
     .init(
-			relay: RemoveDublicatesRelay(relay: self.relay.relay.map(get: { $0[keyPath: keyPath] }, set: {_, _ in }), isDuplicate: ==),
+			relay: relay.compactMap {
+				let (old, new) = ($0?[keyPath: keyPath], $1[keyPath: keyPath])
+				if let oldValue = old, oldValue == new { return nil }
+				return (old, new)
+			},
 			viewStore: self.viewStore
 		)
   }

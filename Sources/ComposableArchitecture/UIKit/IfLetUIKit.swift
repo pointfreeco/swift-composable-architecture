@@ -49,7 +49,12 @@ extension Store {
     then unwrap: @escaping (Store<Wrapped, Action>) -> Void,
     else: @escaping () -> Void = {}
   ) -> Cancellable where State == Wrapped? {
-		return RemoveDublicatesRelay(relay: self.state, isDuplicate: { ($0 != nil) == ($1 != nil) })
+		return state
+			.prepend((nil, state.value))
+			.compactMap { old, new -> State? in
+				if let oldValue = old, (oldValue != nil) == (new != nil) { return nil }
+				return new
+			}
       .sink { state in
 				if var state = state {
           unwrap(

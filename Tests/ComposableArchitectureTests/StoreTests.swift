@@ -61,11 +61,11 @@ final class StoreTests: XCTestCase {
 			.sink(receiveValue: { values.append($0.newValue) })
       .store(in: &self.cancellables)
 
-    XCTAssertNoDifference(values, ["0"])
+    XCTAssertNoDifference(values, [])
 
     parentViewStore.send(())
 
-    XCTAssertNoDifference(values, ["0", "1"])
+    XCTAssertNoDifference(values, ["1"])
   }
 
   func testParentStoreReceivesUpdatesFromChild() {
@@ -83,11 +83,11 @@ final class StoreTests: XCTestCase {
 			.sink(receiveValue: { values.append($0.newValue) })
       .store(in: &self.cancellables)
 
-    XCTAssertNoDifference(values, [0])
+    XCTAssertNoDifference(values, [])
 
     childViewStore.send(())
 
-    XCTAssertNoDifference(values, [0, 1])
+    XCTAssertNoDifference(values, [1])
   }
 
   func testScopeCallCount() {
@@ -102,7 +102,7 @@ final class StoreTests: XCTestCase {
         return count
       })
 
-    XCTAssertNoDifference(numCalls1, 1)
+    XCTAssertNoDifference(numCalls1, 0)
   }
 
   func testScopeCallCount2() {
@@ -140,33 +140,33 @@ final class StoreTests: XCTestCase {
     _ = ViewStore(store3)
     let viewStore4 = ViewStore(store4)
 
+    XCTAssertNoDifference(numCalls1, 0)
+    XCTAssertNoDifference(numCalls2, 0)
+    XCTAssertNoDifference(numCalls3, 0)
+
+    _ = viewStore4.state
+
     XCTAssertNoDifference(numCalls1, 1)
     XCTAssertNoDifference(numCalls2, 1)
     XCTAssertNoDifference(numCalls3, 1)
 
-    viewStore4.send(())
+		_ = viewStore4.state
 
     XCTAssertNoDifference(numCalls1, 2)
     XCTAssertNoDifference(numCalls2, 2)
     XCTAssertNoDifference(numCalls3, 2)
 
-    viewStore4.send(())
+		_ = viewStore4.state
 
     XCTAssertNoDifference(numCalls1, 3)
     XCTAssertNoDifference(numCalls2, 3)
     XCTAssertNoDifference(numCalls3, 3)
 
-    viewStore4.send(())
+		_ = viewStore4.state
 
     XCTAssertNoDifference(numCalls1, 4)
     XCTAssertNoDifference(numCalls2, 4)
     XCTAssertNoDifference(numCalls3, 4)
-
-    viewStore4.send(())
-
-    XCTAssertNoDifference(numCalls1, 5)
-    XCTAssertNoDifference(numCalls2, 5)
-    XCTAssertNoDifference(numCalls3, 5)
   }
 
   func testSynchronousEffectsSentAfterSinking() {
