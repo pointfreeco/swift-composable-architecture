@@ -218,6 +218,15 @@ extension TextState {
     case localized(LocalizedStringKey, tableName: String?, bundle: Bundle?, comment: StaticString?)
     case verbatim(String)
 
+    var rawValue: String {
+      switch self {
+      case let .localized(key, tn, b, c):
+        return key.formatted(tableName: tn, bundle: b, comment: c)
+      case let .verbatim(str):
+        return str
+      }
+    }
+
     public init(_ content: String) {
       self = .verbatim(content)
     }
@@ -270,7 +279,7 @@ extension TextState {
     }
   }
 
-  public enum AccessibilityTextContentType: Equatable, Hashable {
+  public enum AccessibilityTextContentType: String, Equatable, Hashable {
     case console, fileSystem, messaging, narrative, plain, sourceCode, spreadsheet, wordProcessing
 
     #if compiler(>=5.5.1)
@@ -290,7 +299,7 @@ extension TextState {
     #endif
   }
 
-  public enum AccessibilityHeadingLevel: Equatable, Hashable {
+  public enum AccessibilityHeadingLevel: String, Equatable, Hashable {
     case h1, h2, h3, h4, h5, h6, unspecified
 
     #if compiler(>=5.5.1)
@@ -532,13 +541,15 @@ extension TextState: CustomDumpRepresentable {
           .strikethrough(active: false, color: _),
           .underline(active: false, color: _):
           break
-        // TODO: Handle custom dump accessibility output
-        case let .accessibilityLabel(value):
-          return output
+        case let .accessibilityLabel(label):
+          let tag = "accessibility-label"
+          output = "<\(tag)=\(label.rawValue)>\(output)</\(tag)>"
         case let .accessibilityHeading(headingLevel):
-          return output
+          let tag = "accessibility-heading-level"
+          output = "<\(tag)=\(headingLevel.rawValue)>\(output)</\(tag)>"
         case let .accessibilityTextContentType(type):
-          return output
+          let tag = "accessibility-text-content-type"
+          output = "<\(tag)=\(type.rawValue)>\(output)</\(tag)>"
         }
       }
       return output
