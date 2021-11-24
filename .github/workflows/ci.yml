@@ -16,7 +16,7 @@ jobs:
         xcode:
           - '12.4'
           - '12.5.1'
-          - '13.0'
+          - '13.1'
     steps:
       - uses: actions/checkout@v2
       - name: Select Xcode ${{ matrix.xcode }}
@@ -24,7 +24,7 @@ jobs:
       - name: Run tests
         run: make test-library
       - name: Compile documentation
-        if: ${{ matrix.xcode == '13.0' }}
+        if: ${{ matrix.xcode == '13.1' }}
         run: make test-docs
       - name: Run benchmark
         run: make benchmark
@@ -36,7 +36,7 @@ jobs:
         xcode:
           - '12.4'
           - '12.5.1'
-          - '13.0'
+          - '13.1'
     steps:
       - uses: actions/checkout@v2
       - name: Select Xcode ${{ matrix.xcode }}
