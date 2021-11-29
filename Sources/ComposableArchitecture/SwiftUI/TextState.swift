@@ -59,7 +59,7 @@ public struct TextState: Equatable, Hashable {
 
   fileprivate enum Modifier: Equatable, Hashable {
     case accessibilityHeading(AccessibilityHeadingLevel)
-    case accessibilityLabel(AccessibilityLabelValue)
+    case accessibilityLabel(TextState)
     case accessibilityTextContentType(AccessibilityTextContentType)
     case baselineOffset(CGFloat)
     case bold
@@ -214,71 +214,6 @@ extension TextState {
 // MARK: Accessibility
 
 extension TextState {
-  public enum AccessibilityLabelValue: Equatable, Hashable {
-    case localized(LocalizedStringKey, tableName: String?, bundle: Bundle?, comment: StaticString?)
-    case verbatim(String)
-
-    var rawValue: String {
-      switch self {
-      case let .localized(key, tn, b, c):
-        return key.formatted(tableName: tn, bundle: b, comment: c)
-      case let .verbatim(str):
-        return str
-      }
-    }
-
-    public init(_ content: String) {
-      self = .verbatim(content)
-    }
-
-    @_disfavoredOverload
-    public init<S:StringProtocol>(_ content: S) {
-      self.init(String(content))
-    }
-
-    public init(
-      _ key: LocalizedStringKey,
-      tableName: String? = nil,
-      bundle: Bundle? = nil,
-      comment: StaticString? = nil
-    ) {
-      self = .localized(key, tableName: tableName, bundle: bundle, comment: comment)
-    }
-
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-      switch (lhs, rhs) {
-
-      case let (.localized(lk, lt, lb, lc), .localized(rk, rt, rb, rc)):
-        return lk.formatted(tableName: lt, bundle: lb, comment: lc)
-          == rk.formatted(tableName: rt, bundle: rb, comment: rc)
-
-      case let (.verbatim(lhs), .verbatim(rhs)):
-        return lhs == rhs
-
-      case let (.localized(key, tableName, bundle, comment), .verbatim(string)),
-        let (.verbatim(string), .localized(key, tableName, bundle, comment)):
-        return key.formatted(tableName: tableName, bundle: bundle, comment: comment) == string
-      }
-    }
-
-    public func hash(into hasher: inout Hasher) {
-      enum Key {
-        case localized
-        case verbatim
-      }
-
-      switch self {
-      case let .localized(key, tableName, bundle, comment):
-        hasher.combine(Key.localized)
-        hasher.combine(key.formatted(tableName: tableName, bundle: bundle, comment: comment))
-
-      case let .verbatim(string):
-        hasher.combine(Key.verbatim)
-        hasher.combine(string)
-      }
-    }
-  }
-
   public enum AccessibilityTextContentType: String, Equatable, Hashable {
     case console, fileSystem, messaging, narrative, plain, sourceCode, spreadsheet, wordProcessing
 
@@ -374,11 +309,14 @@ extension Text {
         }
       case let .accessibilityLabel(value):
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-          switch value {
+          switch value.storage {
           case let .verbatim(string):
             return text.accessibilityLabel(string)
           case let .localized(key, tableName, bundle, comment):
             return text.accessibilityLabel(Text(key, tableName: tableName, bundle: bundle, comment: comment))
+          case .concatenated(_, _):
+            assertionFailure("`.accessibilityLabel` does not support contcatenated `TextState`")
+            return text
           }
         } else {
           return text
@@ -503,9 +441,9 @@ extension TextState: CustomDumpRepresentable {
         case let .accessibilityHeading(headingLevel):
           let tag = "accessibility-heading-level"
           output = "<\(tag)=\(headingLevel.rawValue)>\(output)</\(tag)>"
-        case let .accessibilityLabel(label):
+        case let .accessibilityLabel(value):
           let tag = "accessibility-label"
-          output = "<\(tag)=\(label.rawValue)>\(output)</\(tag)>"
+          output = "<\(tag)=\(dumpHelp(value))>\(output)</\(tag)>"
         case let .accessibilityTextContentType(type):
           let tag = "accessibility-text-content-type"
           output = "<\(tag)=\(type.rawValue)>\(output)</\(tag)>"
