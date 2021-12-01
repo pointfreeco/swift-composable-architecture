@@ -286,7 +286,7 @@ final class EffectTests: XCTestCase {
     struct MyError: Error {}
     var result: Int?
 
-    Effect<Int, MyError>.taskResult {
+    Effect<Int, MyError>.task {
       expectation.fulfill()
       return .success(42)
     }
@@ -314,7 +314,7 @@ final class EffectTests: XCTestCase {
     struct MyError: Error {}
     var result: MyError?
 
-    Effect<Int, MyError>.taskResult {
+    Effect<Int, MyError>.task {
       expectation.fulfill()
       return .failure(MyError())
     }

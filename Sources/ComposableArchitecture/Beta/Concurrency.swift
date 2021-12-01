@@ -140,7 +140,8 @@ import SwiftUI
     ///     `Task.currentPriority`.
     ///   - operation: The operation to execute which returns a result instead of throwing.
     /// - Returns: An effect wrapping the given asynchronous work.
-    public static func taskResult(
+    @_disfavoredOverload
+    public static func task(
       priority: TaskPriority? = nil,
       operation: @escaping @Sendable () async -> Result<Output, Failure>
     ) -> Self {
