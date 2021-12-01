@@ -140,7 +140,7 @@ public class NewGameViewController: UIViewController {
   }
 
   public override func viewDidAppear(_ animated: Bool) {
-    super.viewDidAppear(true)
+    super.viewDidAppear(animated)
 
     if !self.isMovingToParent {
       self.viewStore.send(.gameDismissed)
