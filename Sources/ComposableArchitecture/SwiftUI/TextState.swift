@@ -268,15 +268,19 @@ extension TextState {
     return `self`
   }
 
-  public func accessibilityLabel<S:StringProtocol>(_ string: S) -> Self {
+  public func accessibilityLabel<S: StringProtocol>(_ string: S) -> Self {
     var `self` = self
     `self`.modifiers.append(.accessibilityLabel(.init(string)))
     return `self`
   }
 
-  public func accessibilityLabel(_ key: LocalizedStringKey, tableName: String? = nil, bundle: Bundle? = nil, comment: StaticString? = nil) -> Self {
+  public func accessibilityLabel(
+    _ key: LocalizedStringKey, tableName: String? = nil, bundle: Bundle? = nil,
+    comment: StaticString? = nil
+  ) -> Self {
     var `self` = self
-    `self`.modifiers.append(.accessibilityLabel(.init(key, tableName: tableName, bundle: bundle, comment: comment)))
+    `self`.modifiers.append(
+      .accessibilityLabel(.init(key, tableName: tableName, bundle: bundle, comment: comment)))
     return `self`
   }
 
@@ -301,37 +305,38 @@ extension Text {
     self = state.modifiers.reduce(text) { text, modifier in
       switch modifier {
       #if compiler(>=5.5.1)
-      case let .accessibilityHeading(level):
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-          return text.accessibilityHeading(level.toSwiftUI)
-        } else {
-          return text
-        }
-      case let .accessibilityLabel(value):
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-          switch value.storage {
-          case let .verbatim(string):
-            return text.accessibilityLabel(string)
-          case let .localized(key, tableName, bundle, comment):
-            return text.accessibilityLabel(Text(key, tableName: tableName, bundle: bundle, comment: comment))
-          case .concatenated(_, _):
-            assertionFailure("`.accessibilityLabel` does not support contcatenated `TextState`")
+        case let .accessibilityHeading(level):
+          if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            return text.accessibilityHeading(level.toSwiftUI)
+          } else {
             return text
           }
-        } else {
-          return text
-        }
-      case let .accessibilityTextContentType(type):
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-          return text.accessibilityTextContentType(type.toSwiftUI)
-        } else {
-          return text
-        }
+        case let .accessibilityLabel(value):
+          if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            switch value.storage {
+            case let .verbatim(string):
+              return text.accessibilityLabel(string)
+            case let .localized(key, tableName, bundle, comment):
+              return text.accessibilityLabel(
+                Text(key, tableName: tableName, bundle: bundle, comment: comment))
+            case .concatenated(_, _):
+              assertionFailure("`.accessibilityLabel` does not support contcatenated `TextState`")
+              return text
+            }
+          } else {
+            return text
+          }
+        case let .accessibilityTextContentType(type):
+          if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            return text.accessibilityTextContentType(type.toSwiftUI)
+          } else {
+            return text
+          }
       #else
-      case .accessibilityHeading,
+        case .accessibilityHeading,
           .accessibilityLabel,
           .accessibilityTextContentType:
-        return text
+          return text
       #endif
       case let .baselineOffset(baselineOffset):
         return text.baselineOffset(baselineOffset)
