@@ -2,6 +2,31 @@ import Combine
 import ComposableArchitecture
 import XCTestDynamicOverlay
 
+#if compiler(>=5.5)
+enum ApiError: Equatable, Error {
+  case invalidResponse
+  case httpStatus(Int)
+  case urlSession(NSError)
+}
+
+extension URLSession {
+  func dataResult(from url: URL) async -> Result<Data, ApiError> {
+    do {
+      let (data, response) = try await data(from: url)
+      guard let response = response as? HTTPURLResponse else {
+        return .failure(.invalidResponse)
+      }
+      guard response.statusCode < 300 else {
+        return .failure(.httpStatus(response.statusCode))
+      }
+      return .success(data)
+    } catch let error {
+      return .failure(.urlSession(error as NSError))
+    }
+  }
+}
+#endif
+
 struct FactClient {
   var fetch: (Int) -> Effect<String, Error>
 
@@ -15,15 +40,16 @@ extension FactClient {
   #if compiler(>=5.5)
     static let live = Self(
       fetch: { number in
-        Effect.task {
-          do {
-            let (data, _) = try await URLSession.shared
-              .data(from: URL(string: "http://numbersapi.com/\(number)/trivia")!)
-            return String(decoding: data, as: UTF8.self)
-          } catch {
-            await Task.sleep(NSEC_PER_SEC)
-            return "\(number) is a good number Brent"
-          }
+        Effect.task { () -> Result<Data, ApiError> in
+          let url = URL(string: "http://numbersapi.com/\(number)/trivia")!
+          return await URLSession.shared.dataResult(from: url)
+        }
+        .map { String.init(decoding: $0, as: UTF8.self) }
+        .catch { _ in
+          // Sometimes numbersapi.com can be flakey, so if it ever fails we will just
+          // default to a mock response.
+          Just("\(number) is a good number Brent")
+            .delay(for: 1, scheduler: DispatchQueue.main)
         }
         .setFailureType(to: Error.self)
         .eraseToEffect()
