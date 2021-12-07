@@ -1,11 +1,11 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.5
 
 import PackageDescription
 
 let package = Package(
   name: "swift-composable-architecture",
   platforms: [
-    .iOS(.v13),
+    .iOS(.v15),
     .macOS(.v10_15),
     .tvOS(.v13),
     .watchOS(.v6),
@@ -34,6 +34,10 @@ let package = Package(
         .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
       ]
+//      ,
+//      swiftSettings: [
+//        .unsafeFlags(["-Xfrontend", "-warn-concurrency"]),
+//      ]
     ),
     .testTarget(
       name: "ComposableArchitectureTests",

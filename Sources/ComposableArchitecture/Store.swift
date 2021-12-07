@@ -1,6 +1,90 @@
 import Combine
 import Foundation
 
+
+
+@MainActor
+public final class MainActorStore<State, Action> {
+  private let reducer: (inout State, Action) async -> Effect<Action, Never>
+  // TODO: explore just holding onto State and then deriving streams/publishers from its changes
+  var state: CurrentValueSubject<State, Never>
+
+  fileprivate init(
+    reducer: @escaping (inout State, Action) async -> Effect<Action, Never>,
+    state: CurrentValueSubject<State, Never>
+  ) {
+    self.reducer = reducer
+    self.state = state
+  }
+
+  public init<Environment>(
+    initialState: State,
+    reducer: Reducer<State, Action, Environment>,
+    environment: Environment
+  ) {
+    self.reducer = { state, action in
+      reducer(&state, action, environment)
+    }
+    self.state = .init(initialState)
+  }
+
+  public func send(_ action: Action) async {
+    var state = self.state.value
+    let effect = await self.reducer(&state, action)
+    self.state.value = state
+
+    for await effectAction in effect.values {
+      guard !Task.isCancelled
+      else { break }
+
+      await self.send(effectAction)
+    }
+  }
+
+  public func scope<LocalState, LocalAction>(
+    state toLocalState: @escaping (State) -> LocalState,
+    action fromLocalAction: @escaping (LocalAction) -> Action
+  ) -> MainActorStore<LocalState, LocalAction> {
+    .init(
+      reducer: { localState, localAction in
+        await self.send(fromLocalAction(localAction))
+        localState = toLocalState(self.state.value)
+        return .none
+      },
+      state: .init(toLocalState(self.state.value))
+    )
+  }
+}
+
+@dynamicMemberLookup
+@MainActor
+public class MainActorViewStore<State, Action>: ObservableObject where Action: Sendable {
+  @Published public var state: State
+  public let _send: (Action) async -> Void
+
+  public init(store: MainActorStore<State, Action>) {
+    self.state = store.state.value
+    self._send = store.send
+    store.state.assign(to: &self.$state)
+  }
+
+  public func send(_ action: Action) async {
+    await self._send(action)
+  }
+
+  public func send(_ action: Action) {
+    Task { await self._send(action) }
+  }
+
+  public subscript<LocalState>(dynamicMember keyPath: KeyPath<State, LocalState>) -> LocalState {
+    self.state[keyPath: keyPath]
+  }
+}
+
+
+
+
+
 /// A store represents the runtime that powers the application. It is the object that you will pass
 /// around to views that need to interact with the application.
 ///

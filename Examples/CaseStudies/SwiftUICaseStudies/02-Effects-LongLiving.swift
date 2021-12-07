@@ -54,33 +54,40 @@ let longLivingEffectsReducer = Reducer<
 
   case .onDisappear:
     // When view disappears, stop the effect.
-    return .cancel(id: UserDidTakeScreenshotNotificationId())
+    return .none // .cancel(id: UserDidTakeScreenshotNotificationId())
   }
 }
 
 // MARK: - SwiftUI view
 
 struct LongLivingEffectsView: View {
-  let store: Store<LongLivingEffectsState, LongLivingEffectsAction>
+  let store: MainActorStore<LongLivingEffectsState, LongLivingEffectsAction>
+  @ObservedObject var viewStore: MainActorViewStore<LongLivingEffectsState, LongLivingEffectsAction>
+
+  init(store: MainActorStore<LongLivingEffectsState, LongLivingEffectsAction>) {
+    self.store = store
+    self.viewStore = MainActorViewStore(store: self.store)
+  }
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
-      Form {
-        Section(header: Text(template: readMe, .body)) {
-          Text("A screenshot of this screen has been taken \(viewStore.screenshotCount) times.")
-            .font(Font.headline)
-        }
+    Form {
+      Section(header: Text(template: readMe, .body)) {
+        Text("A screenshot of this screen has been taken \(self.viewStore.screenshotCount) times.")
+          .font(Font.headline)
+      }
 
-        Section {
-          NavigationLink(destination: self.detailView) {
-            Text("Navigate to another screen")
-          }
+      Section {
+        NavigationLink(destination: self.detailView) {
+          Text("Navigate to another screen")
         }
       }
-      .navigationBarTitle("Long-living effects")
-      .onAppear { viewStore.send(.onAppear) }
-      .onDisappear { viewStore.send(.onDisappear) }
     }
+    .navigationBarTitle("Long-living effects")
+    .task {
+      await self.viewStore.send(.onAppear)
+    }
+//    .onAppear { self.viewStore.send(.onAppear) }
+//    .onDisappear { self.viewStore.send(.onDisappear) }
   }
 
   var detailView: some View {
@@ -99,7 +106,7 @@ struct LongLivingEffectsView: View {
 struct EffectsLongLiving_Previews: PreviewProvider {
   static var previews: some View {
     let appView = LongLivingEffectsView(
-      store: Store(
+      store: MainActorStore(
         initialState: LongLivingEffectsState(),
         reducer: longLivingEffectsReducer,
         environment: LongLivingEffectsEnvironment(
