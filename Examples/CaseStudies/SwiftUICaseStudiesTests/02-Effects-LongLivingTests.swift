@@ -75,6 +75,15 @@ class LongLivingEffectsTests: XCTestCase {
       reducer: .init { state, action, _ in
         switch action {
         case .tap:
+
+//          Effect.stream { continuation in
+//            continuation.yield(.begin)
+//            defer { continuation.yield(.end) }
+//            for await in notification {
+//              continatuion.yield(.value(_))
+//            }
+//          }
+
           return Effect.task {
             await Task.sleep(100 * NSEC_PER_MSEC)
             return .response(42)
