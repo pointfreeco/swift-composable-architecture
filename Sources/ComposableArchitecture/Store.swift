@@ -1,37 +1,48 @@
 import Combine
 import Foundation
 
-
-
 @MainActor
 public final class MainActorStore<State, Action> {
   private let reducer: (inout State, Action) async -> Effect<Action, Never>
-  // TODO: explore just holding onto State and then deriving streams/publishers from its changes
-  var state: CurrentValueSubject<State, Never>
+  var _state: State {
+    didSet {
+      self.stateContinuation.yield(self._state)
+    }
+  }
+  let stateStream: AsyncStream<State>
+  private var stateContinuation: AsyncStream<State>.Continuation!
 
   fileprivate init(
     reducer: @escaping (inout State, Action) async -> Effect<Action, Never>,
-    state: CurrentValueSubject<State, Never>
+    state: State
   ) {
+    var stateContinuation: AsyncStream<State>.Continuation!
+    self.stateStream = AsyncStream<State> { continuation in
+      stateContinuation = continuation
+    }
+    self.stateContinuation = stateContinuation
+
     self.reducer = reducer
-    self.state = state
+    self._state = state
   }
 
-  public init<Environment>(
+  public convenience init<Environment>(
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
     environment: Environment
   ) {
-    self.reducer = { state, action in
-      reducer(&state, action, environment)
-    }
-    self.state = .init(initialState)
+    self.init(
+      reducer: { state, action in
+        reducer(&state, action, environment)
+      },
+      state: initialState
+    )
   }
 
   public func send(_ action: Action) async {
-    var state = self.state.value
-    let effect = await self.reducer(&state, action)
-    self.state.value = state
+    var _state = self._state
+    let effect = await self.reducer(&_state, action)
+    self._state = _state
 
     for await effectAction in effect.values {
       guard !Task.isCancelled
@@ -48,10 +59,10 @@ public final class MainActorStore<State, Action> {
     .init(
       reducer: { localState, localAction in
         await self.send(fromLocalAction(localAction))
-        localState = toLocalState(self.state.value)
+        localState = toLocalState(self._state)
         return .none
       },
-      state: .init(toLocalState(self.state.value))
+      state: toLocalState(self._state)
     )
   }
 }
@@ -61,11 +72,21 @@ public final class MainActorStore<State, Action> {
 public class MainActorViewStore<State, Action>: ObservableObject where Action: Sendable {
   @Published public var state: State
   public let _send: (Action) async -> Void
+  private var task: Task<(), Error>!
 
   public init(store: MainActorStore<State, Action>) {
-    self.state = store.state.value
+    self.state = store._state
     self._send = store.send
-    store.state.assign(to: &self.$state)
+    self.task = Task {
+      for await state in store.stateStream {
+        try Task.checkCancellation()
+        self.state = state
+      }
+    }
+  }
+
+  deinit {
+    self.task.cancel()
   }
 
   public func send(_ action: Action) async {
