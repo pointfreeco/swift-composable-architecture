@@ -51,14 +51,11 @@ public final class MainActorTestStore<State, Action, Environment> {
 
         let effectId = UUID()
         return effects
-          .print("EFFECTS")
           .handleEvents(
             receiveSubscription: { [weak self] _ in
-              print("original action", action)
               _ = self?.longLivingEffects.insert(effectId)
             },
             receiveCompletion: { [weak self] _ in
-              print("original action", action)
               self?.longLivingEffects.remove(effectId)
             },
             receiveCancel: { [weak self] in
@@ -71,7 +68,16 @@ public final class MainActorTestStore<State, Action, Environment> {
       environment: ()
     )
   }
+//
+//  public struct Task {
+//    let task: Task<Void, Never>
+//    public func cancel() async {
+//      self.task.cancel()
+//      try await Task.sleep(nanoseconds: 100 * NSEC_PER_MSEC)
+//    }
+//  }
 
+  @discardableResult
   public func send(
     _ action: Action,
     _ update: @escaping (inout State) throws -> Void = { _ in }
@@ -94,9 +100,7 @@ public final class MainActorTestStore<State, Action, Environment> {
 
     var expectedState = self.snapshotState
 
-    let task = self.store
-      .scope(state: { $0 }, action: TestAction.send)
-      .send(action)
+    let task = self.store.send(.send(action))
 
     do {
       try update(&expectedState)
@@ -248,14 +252,11 @@ public final class MainActorStore<State, Action> {
     }
 
     let cancellable = effect
-      .print("send.effect original action: \(action)")
       .sink(
       receiveCompletion: { _ in
-        print("original action", action)
         c.finish()
       },
       receiveValue: { action in
-        print("receive value", action)
         self.send(action)
       }
     )
@@ -267,7 +268,6 @@ public final class MainActorStore<State, Action> {
         guard !Task.isCancelled
         else { break }
       }
-      print("original action", action)
       cancellable.cancel()
     }
   }
@@ -290,7 +290,7 @@ public final class MainActorStore<State, Action> {
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> MainActorStore<LocalState, LocalAction> {
-    .init(
+    let localStore = MainActorStore<LocalState, LocalAction>(
       reducer: { localState, localAction in
         self.send(fromLocalAction(localAction))
         localState = toLocalState(self._state)
@@ -298,7 +298,24 @@ public final class MainActorStore<State, Action> {
       },
       state: toLocalState(self._state)
     )
+
+    self.parentTask = Task { [weak localStore, weak self] in
+      guard let localStore = localStore, let self = self
+      else { return }
+      for await newState in self.stateStream.dropFirst() {
+        localStore._state = toLocalState(newState)
+      }
+    }
+
+    return localStore
+
   }
+
+  deinit {
+    self.parentTask?.cancel()
+  }
+
+  private var parentTask: Task<Void, Never>?
 }
 
 @dynamicMemberLookup
