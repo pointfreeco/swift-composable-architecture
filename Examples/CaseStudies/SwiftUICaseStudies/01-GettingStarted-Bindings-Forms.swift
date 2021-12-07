@@ -79,6 +79,11 @@
               Slider(value: viewStore.binding(\.$sliderValue), in: 0...Double(viewStore.stepCount))
             }
             .disabled(viewStore.toggleIsOn)
+              
+            Button("Reset") {
+              viewStore.send(.resetButtonTapped)
+            }
+            .foregroundColor(.red)
           }
         }
       }
