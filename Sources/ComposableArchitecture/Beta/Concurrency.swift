@@ -191,7 +191,7 @@ import SwiftUI
       _ action: Action,
       while predicate: @escaping (State) -> Bool
     ) async {
-      self.send(action)
+      _ = self._send(action)
       await self.suspend(while: predicate)
     }
 

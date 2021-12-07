@@ -127,6 +127,7 @@ import Combine
 ///
 /// See also: ``ViewStore`` to understand how one observes changes to the state in a ``Store`` and
 /// sends user actions.
+@MainActor
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
   var effectCancellables: [UUID: AnyCancellable] = [:]
@@ -353,11 +354,15 @@ public final class Store<State, Action> {
     self.scope(state: toLocalState, action: { $0 })
   }
 
-  func send(_ action: Action, originatingFrom originatingAction: Action? = nil) {
+  @discardableResult
+  func send(
+    _ action: Action,
+    originatingFrom originatingAction: Action? = nil
+  ) -> Task<Void, Never> {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
     self.bufferedActions.append(action)
-    guard !self.isSending else { return }
+    guard !self.isSending else { return .init {} }
 
     self.isSending = true
     var currentState = self.state.value
@@ -366,7 +371,11 @@ public final class Store<State, Action> {
       self.state.value = currentState
     }
 
+    var tasks: [Task<Void, Never>] = []
+
     while !self.bufferedActions.isEmpty {
+      let task = Task { _ = try? await Task.sleep(nanoseconds: .max) }
+      tasks.append(task)
       let action = self.bufferedActions.removeFirst()
       let effect = self.reducer(&currentState, action)
 
@@ -374,6 +383,7 @@ public final class Store<State, Action> {
       let uuid = UUID()
       let effectCancellable = effect.sink(
         receiveCompletion: { [weak self] _ in
+          task.cancel()
           self?.threadCheck(status: .effectCompletion(action))
           didComplete = true
           self?.effectCancellables[uuid] = nil
@@ -385,6 +395,12 @@ public final class Store<State, Action> {
 
       if !didComplete {
         self.effectCancellables[uuid] = effectCancellable
+      }
+    }
+
+    return Task { [tasks] in
+      for task in tasks {
+        await task.value
       }
     }
   }

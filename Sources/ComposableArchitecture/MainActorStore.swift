@@ -246,30 +246,21 @@ public final class MainActorStore<State, Action> {
     let effect = self.reducer(&_state, action)
     self._state = _state
 
-    var c: AsyncStream<Void>.Continuation!
-    let s = AsyncStream<Void> { continuation in
-      c = continuation
+    let task = Task {
+      _ = try? await Task.sleep(nanoseconds: .max)
     }
-
-    let cancellable = effect
+    effect
       .sink(
         receiveCompletion: { _ in
-          c.finish()
+          task.cancel()
         },
         receiveValue: { action in
           self.send(action)
         }
       )
+      .store(in: &self.effectCancellables)
 
-    cancellable.store(in: &self.effectCancellables)
-
-    return Task {
-      for await _ in s {
-        guard !Task.isCancelled
-        else { break }
-      }
-      cancellable.cancel()
-    }
+    return task
   }
 
   public func send(_ action: Action) async {
