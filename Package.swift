@@ -1,11 +1,11 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.3
 
 import PackageDescription
 
 let package = Package(
   name: "swift-composable-architecture",
   platforms: [
-    .iOS(.v15),
+    .iOS(.v13),
     .macOS(.v10_15),
     .tvOS(.v13),
     .watchOS(.v6),
