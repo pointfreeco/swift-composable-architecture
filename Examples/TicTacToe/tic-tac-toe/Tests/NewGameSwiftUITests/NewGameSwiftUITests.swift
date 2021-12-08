@@ -4,6 +4,7 @@ import XCTest
 
 @testable import NewGameSwiftUI
 
+@MainActor
 class NewGameSwiftUITests: XCTestCase {
   let store = TestStore(
     initialState: NewGameState(),

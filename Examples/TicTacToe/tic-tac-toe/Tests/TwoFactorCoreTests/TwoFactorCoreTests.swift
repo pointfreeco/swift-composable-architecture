@@ -3,6 +3,7 @@ import ComposableArchitecture
 import TwoFactorCore
 import XCTest
 
+@MainActor
 class TwoFactorCoreTests: XCTestCase {
   func testFlow_Success() {
     let store = TestStore(

@@ -2,6 +2,7 @@ import ComposableArchitecture
 import GameCore
 import XCTest
 
+@MainActor
 class GameCoreTests: XCTestCase {
   let store = TestStore(
     initialState: GameState(

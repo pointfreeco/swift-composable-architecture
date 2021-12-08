@@ -6,6 +6,7 @@ import XCTest
 
 @testable import LoginSwiftUI
 
+@MainActor
 class LoginSwiftUITests: XCTestCase {
   func testFlow_Success() {
     var authenticationClient = AuthenticationClient.failing

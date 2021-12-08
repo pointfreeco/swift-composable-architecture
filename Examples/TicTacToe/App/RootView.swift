@@ -28,6 +28,7 @@ enum GameType: Identifiable {
 }
 
 struct RootView: View {
+  @MainActor
   let store = Store(
     initialState: AppState(),
     reducer: appReducer,

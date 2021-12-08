@@ -3,6 +3,7 @@ import GameCore
 import NewGameCore
 import XCTest
 
+@MainActor
 class NewGameCoreTests: XCTestCase {
   let store = TestStore(
     initialState: NewGameState(),

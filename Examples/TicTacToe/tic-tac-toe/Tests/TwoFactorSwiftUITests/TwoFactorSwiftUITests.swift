@@ -6,6 +6,7 @@ import XCTest
 
 @testable import TwoFactorSwiftUI
 
+@MainActor
 class TwoFactorSwiftUITests: XCTestCase {
   func testFlow_Success() {
     var authenticationClient = AuthenticationClient.failing

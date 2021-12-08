@@ -71,7 +71,7 @@ class TestStoreTests: XCTestCase {
       reducer: Reducer<Int, Action, Void> { state, action, _ in
         switch action {
         case .tap:
-          return .task { @MainActor in
+          return .task {
             try? await Task.sleep(nanoseconds: 100 * NSEC_PER_MSEC)
             return .response(42)
           }

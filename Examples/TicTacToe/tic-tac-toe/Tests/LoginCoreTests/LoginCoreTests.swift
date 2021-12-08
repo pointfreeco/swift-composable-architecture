@@ -4,6 +4,7 @@ import LoginCore
 import TwoFactorCore
 import XCTest
 
+@MainActor
 class LoginCoreTests: XCTestCase {
   func testFlow_Success_TwoFactor_Integration() {
     var authenticationClient = AuthenticationClient.failing

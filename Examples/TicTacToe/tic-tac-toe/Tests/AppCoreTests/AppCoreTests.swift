@@ -3,6 +3,7 @@ import AuthenticationClient
 import ComposableArchitecture
 import XCTest
 
+@MainActor
 class AppCoreTests: XCTestCase {
   func testIntegration() {
     var authenticationClient = AuthenticationClient.failing
