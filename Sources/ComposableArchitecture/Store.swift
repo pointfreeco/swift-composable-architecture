@@ -135,9 +135,6 @@ public final class Store<State, Action> {
   var parentCancellable: AnyCancellable?
   private let reducer: (inout State, Action) -> Effect<Action, Never>
   var state: CurrentValueSubject<State, Never>
-  #if DEBUG
-    private let mainThreadChecksEnabled: Bool
-  #endif
 
   /// Initializes a store from an initial state, a reducer, and an environment.
   ///
@@ -145,38 +142,13 @@ public final class Store<State, Action> {
   ///   - initialState: The state to start the application in.
   ///   - reducer: The reducer that powers the business logic of the application.
   ///   - environment: The environment of dependencies for the application.
-  public convenience init<Environment>(
+  public init<Environment>(
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
     environment: Environment
   ) {
-    self.init(
-      initialState: initialState,
-      reducer: reducer,
-      environment: environment,
-      mainThreadChecksEnabled: true
-    )
-    self.threadCheck(status: .`init`)
-  }
-
-  /// Initializes a store from an initial state, a reducer, and an environment, and the main thread
-  /// check is disabled for all interactions with this store.
-  ///
-  /// - Parameters:
-  ///   - initialState: The state to start the application in.
-  ///   - reducer: The reducer that powers the business logic of the application.
-  ///   - environment: The environment of dependencies for the application.
-  public static func unchecked<Environment>(
-    initialState: State,
-    reducer: Reducer<State, Action, Environment>,
-    environment: Environment
-  ) -> Self {
-    Self(
-      initialState: initialState,
-      reducer: reducer,
-      environment: environment,
-      mainThreadChecksEnabled: false
-    )
+    self.state = CurrentValueSubject(initialState)
+    self.reducer = { state, action in reducer.run(&state, action, environment) }
   }
 
   /// Scopes the store to one that exposes local state and actions.
@@ -322,7 +294,7 @@ public final class Store<State, Action> {
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> Store<LocalState, LocalAction> {
-    self.threadCheck(status: .scope)
+
     var isSending = false
     let localStore = Store<LocalState, LocalAction>(
       initialState: toLocalState(self.state.value),
@@ -359,7 +331,6 @@ public final class Store<State, Action> {
     _ action: Action,
     originatingFrom originatingAction: Action? = nil
   ) -> Task<Void, Never> {
-    self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
     self.bufferedActions.append(action)
     guard !self.isSending else { return .init {} }
@@ -384,7 +355,6 @@ public final class Store<State, Action> {
       let effectCancellable = effect.sink(
         receiveCompletion: { [weak self] _ in
           continuation.finish()
-          self?.threadCheck(status: .effectCompletion(action))
           didComplete = true
           self?.effectCancellables[uuid] = nil
         },
@@ -419,91 +389,5 @@ public final class Store<State, Action> {
   public var actionless: Store<State, Never> {
     func absurd<A>(_ never: Never) -> A {}
     return self.scope(state: { $0 }, action: absurd)
-  }
-
-  private enum ThreadCheckStatus {
-    case effectCompletion(Action)
-    case `init`
-    case scope
-    case send(Action, originatingAction: Action?)
-  }
-
-  @inline(__always)
-  private func threadCheck(status: ThreadCheckStatus) {
-    #if DEBUG
-      guard self.mainThreadChecksEnabled && !Thread.isMainThread
-      else { return }
-
-      let message: String
-      switch status {
-      case let .effectCompletion(action):
-        message = """
-          An effect returned from the action "\(debugCaseOutput(action))" completed on a non-main \
-          thread. Make sure to use ".receive(on:)" on any effects that execute on background \
-          threads to receive their output on the main thread, or create this store via \
-          "Store.unchecked" to disable the main thread checker.
-          """
-
-      case .`init`:
-        message = """
-          "Store.init" was called on a non-main thread. Make sure that stores are initialized on \
-          the main thread, or create this store via "Store.unchecked" to disable the main thread \
-          checker.
-          """
-
-      case .scope:
-        message = """
-          "Store.scope" was called on a non-main thread. Make sure that "Store.scope" is always \
-          called on the main thread, or create this store via "Store.unchecked" to disable the \
-          main thread checker.
-          """
-
-      case let .send(action, originatingAction: nil):
-        message = """
-          "ViewStore.send(\(debugCaseOutput(action)))" was called on a non-main thread. Make sure \
-          that "ViewStore.send" is always called on the main thread, or create this store via \
-          "Store.unchecked" to disable the main thread checker.
-          """
-
-      case let .send(action, originatingAction: .some(originatingAction)):
-        message = """
-          An effect returned from "\(debugCaseOutput(originatingAction))" emitted the action \
-          "\(debugCaseOutput(action))" on a non-main thread. Make sure to use ".receive(on:)" on \
-          any effects that execute on background threads to receive their output on the main \
-          thread, or create this store via "Store.unchecked" to disable the main thread checker.
-          """
-      }
-
-      breakpoint(
-        """
-        ---
-        Warning:
-
-        A store created on the main thread was interacted with on a non-main thread:
-
-          Thread: \(Thread.current)
-
-        \(message)
-
-        The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
-        (including all of its scopes and derived view stores) must be done on the main thread.
-        ---
-        """
-      )
-    #endif
-  }
-
-  private init<Environment>(
-    initialState: State,
-    reducer: Reducer<State, Action, Environment>,
-    environment: Environment,
-    mainThreadChecksEnabled: Bool
-  ) {
-    self.state = CurrentValueSubject(initialState)
-    self.reducer = { state, action in reducer.run(&state, action, environment) }
-
-    #if DEBUG
-      self.mainThreadChecksEnabled = mainThreadChecksEnabled
-    #endif
   }
 }
