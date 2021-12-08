@@ -370,11 +370,11 @@ public final class Store<State, Action> {
       self.state.value = currentState
     }
 
-    var tasks: [Task<Void, Never>] = []
+    var continuation: AsyncStream<Void>.Continuation!
+    let stream = AsyncStream<Void> { continuation = $0 }
+    var cancellables: [AnyCancellable] = []
 
     while !self.bufferedActions.isEmpty {
-      let task = Task { _ = try? await Task.sleep(nanoseconds: .max) }
-      tasks.append(task)
       let action = self.bufferedActions.removeFirst()
       let effect = self.reducer(&currentState, action)
 
@@ -382,7 +382,7 @@ public final class Store<State, Action> {
       let uuid = UUID()
       let effectCancellable = effect.sink(
         receiveCompletion: { [weak self] _ in
-          task.cancel()
+          continuation.finish()
           self?.threadCheck(status: .effectCompletion(action))
           didComplete = true
           self?.effectCancellables[uuid] = nil
@@ -391,16 +391,20 @@ public final class Store<State, Action> {
           self?.send(effectAction, originatingFrom: action)
         }
       )
+      cancellables.append(effectCancellable)
 
       if !didComplete {
         self.effectCancellables[uuid] = effectCancellable
       }
     }
 
-    return Task { [tasks] in
-      for task in tasks {
-        guard !Task.isCancelled else { break }
-        await task.value
+    return Task { [cancellables] in
+      for await _ in stream {
+        guard !Task.isCancelled
+        else { break }
+      }
+      for cancellable in cancellables {
+        cancellable.cancel()
       }
     }
   }
