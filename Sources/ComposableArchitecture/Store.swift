@@ -326,6 +326,28 @@ public final class Store<State, Action> {
     self.scope(state: toLocalState, action: { $0 })
   }
 
+//  public func send(_ action: Action) -> Task<Void, Never> {
+//    var _state = self._state
+//    let effect = self.reducer(&_state, action)
+//    self._state = _state
+//
+//    let task = Task {
+//      _ = try? await Task.sleep(nanoseconds: .max)
+//    }
+//    effect
+//      .sink(
+//        receiveCompletion: { _ in
+//          task.cancel()
+//        },
+//        receiveValue: { action in
+//          self.send(action)
+//        }
+//      )
+//      .store(in: &self.effectCancellables)
+//
+//    return task
+//  }
+
   @discardableResult
   func send(_ action: Action) -> Task<Void, Never> {
     self.bufferedActions.append(action)
@@ -338,11 +360,11 @@ public final class Store<State, Action> {
       self.state.value = currentState
     }
 
-    var continuation: AsyncStream<Void>.Continuation!
-    let stream = AsyncStream<Void> { continuation = $0 }
-    var cancellables: [AnyCancellable] = []
+    var pairs: [(Task<Void, Never>, AnyCancellable)] = []
 
     while !self.bufferedActions.isEmpty {
+      let task = Task { _ = try? await Task.sleep(nanoseconds: .max) }
+
       let action = self.bufferedActions.removeFirst()
       let effect = self.reducer(&currentState, action)
 
@@ -350,7 +372,8 @@ public final class Store<State, Action> {
       let uuid = UUID()
       let effectCancellable = effect.sink(
         receiveCompletion: { [weak self] _ in
-          continuation.finish()
+          print("completed \(action)")
+          task.cancel()
           didComplete = true
           self?.effectCancellables[uuid] = nil
         },
@@ -358,20 +381,20 @@ public final class Store<State, Action> {
           self?.send(effectAction)
         }
       )
-      cancellables.append(effectCancellable)
 
       if !didComplete {
+        pairs.append((task, effectCancellable))
         self.effectCancellables[uuid] = effectCancellable
       }
     }
 
-    return Task { [cancellables] in
-      for await _ in stream {
-        guard !Task.isCancelled
-        else { break }
-      }
-      for cancellable in cancellables {
-        cancellable.cancel()
+    return Task { [pairs] in
+      for (task, effectCancellable) in pairs {
+        print(action, 1)
+        await task.value
+//        effectCancellable.cancel()
+        print(action, 2)
+
       }
     }
   }
