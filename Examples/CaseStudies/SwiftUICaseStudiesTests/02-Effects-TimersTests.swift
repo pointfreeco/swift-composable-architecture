@@ -3,6 +3,7 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+@MainActor
 class TimersTests: XCTestCase {
   let scheduler = DispatchQueue.test
 

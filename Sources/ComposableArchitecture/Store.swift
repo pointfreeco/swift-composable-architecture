@@ -327,11 +327,7 @@ public final class Store<State, Action> {
   }
 
   @discardableResult
-  func send(
-    _ action: Action,
-    originatingFrom originatingAction: Action? = nil
-  ) -> Task<Void, Never> {
-
+  func send(_ action: Action) -> Task<Void, Never> {
     self.bufferedActions.append(action)
     guard !self.isSending else { return .init {} }
 
@@ -359,7 +355,7 @@ public final class Store<State, Action> {
           self?.effectCancellables[uuid] = nil
         },
         receiveValue: { [weak self] effectAction in
-          self?.send(effectAction, originatingFrom: action)
+          self?.send(effectAction)
         }
       )
       cancellables.append(effectCancellable)

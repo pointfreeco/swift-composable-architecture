@@ -4,6 +4,7 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+@MainActor
 class AnimationTests: XCTestCase {
   let scheduler = DispatchQueue.test
 

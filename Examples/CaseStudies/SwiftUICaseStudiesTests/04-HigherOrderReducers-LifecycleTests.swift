@@ -4,6 +4,7 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+@MainActor
 class LifecycleTests: XCTestCase {
   func testLifecycle() {
     let scheduler = DispatchQueue.test

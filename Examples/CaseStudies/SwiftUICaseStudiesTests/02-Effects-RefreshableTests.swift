@@ -3,6 +3,7 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+@MainActor
 class RefreshableTests: XCTestCase {
   func testHappyPath() {
     let store = TestStore(

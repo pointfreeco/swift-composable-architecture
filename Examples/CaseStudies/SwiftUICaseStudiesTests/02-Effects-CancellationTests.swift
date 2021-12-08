@@ -4,6 +4,7 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+@MainActor
 class EffectsCancellationTests: XCTestCase {
   func testTrivia_SuccessfulRequest() {
     let store = TestStore(

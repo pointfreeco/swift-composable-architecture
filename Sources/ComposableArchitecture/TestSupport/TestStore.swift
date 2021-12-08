@@ -241,46 +241,48 @@
     }
 
     deinit {
-//      self.completed()
-    }
+      let file = self.file
+      let line = self.line
+      let longLivingEffects = self.longLivingEffects
+      let receivedActions = self.receivedActions
+      Task { @MainActor in
+        if !receivedActions.isEmpty {
+          var actions = ""
+          customDump(receivedActions.map(\.action), to: &actions)
+          XCTFail(
+            """
+            The store received \(receivedActions.count) unexpected \
+            action\(receivedActions.count == 1 ? "" : "s") after this one: …
 
-    func completed() {
-      if !self.receivedActions.isEmpty {
-        var actions = ""
-        customDump(self.receivedActions.map(\.action), to: &actions)
-        XCTFail(
-          """
-          The store received \(self.receivedActions.count) unexpected \
-          action\(self.receivedActions.count == 1 ? "" : "s") after this one: …
+            Unhandled actions: \(actions)
+            """,
+            file: file, line: line
+          )
+        }
+        for effect in longLivingEffects {
+          XCTFail(
+            """
+            An effect returned for this action is still running. It must complete before the end of \
+            the test. …
 
-          Unhandled actions: \(actions)
-          """,
-          file: self.file, line: self.line
-        )
-      }
-      for effect in self.longLivingEffects {
-        XCTFail(
-          """
-          An effect returned for this action is still running. It must complete before the end of \
-          the test. …
+            To fix, inspect any effects the reducer returns for this action and ensure that all of \
+            them complete by the end of the test. There are a few reasons why an effect may not have \
+            completed:
 
-          To fix, inspect any effects the reducer returns for this action and ensure that all of \
-          them complete by the end of the test. There are a few reasons why an effect may not have \
-          completed:
+            • If an effect uses a scheduler (via "receive(on:)", "delay", "debounce", etc.), make \
+            sure that you wait enough time for the scheduler to perform the effect. If you are using \
+            a test scheduler, advance the scheduler so that the effects may complete, or consider \
+            using an immediate scheduler to immediately perform the effect instead.
 
-          • If an effect uses a scheduler (via "receive(on:)", "delay", "debounce", etc.), make \
-          sure that you wait enough time for the scheduler to perform the effect. If you are using \
-          a test scheduler, advance the scheduler so that the effects may complete, or consider \
-          using an immediate scheduler to immediately perform the effect instead.
-
-          • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
-          then make sure those effects are torn down by marking the effect ".cancellable" and \
-          returning a corresponding cancellation effect ("Effect.cancel") from another action, or, \
-          if your effect is driven by a Combine subject, send it a completion.
-          """,
-          file: effect.file,
-          line: effect.line
-        )
+            • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
+            then make sure those effects are torn down by marking the effect ".cancellable" and \
+            returning a corresponding cancellation effect ("Effect.cancel") from another action, or, \
+            if your effect is driven by a Combine subject, send it a completion.
+            """,
+            file: effect.file,
+            line: effect.line
+          )
+        }
       }
     }
 

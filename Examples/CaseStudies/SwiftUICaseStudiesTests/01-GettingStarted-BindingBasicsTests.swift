@@ -5,6 +5,7 @@
 
   @testable import SwiftUICaseStudies
 
+  @MainActor
   class BindingFormTests: XCTestCase {
     func testBasics() {
       let store = TestStore(
