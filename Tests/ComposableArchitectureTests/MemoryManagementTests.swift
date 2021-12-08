@@ -2,6 +2,7 @@ import Combine
 import ComposableArchitecture
 import XCTest
 
+@MainActor
 final class MemoryManagementTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 

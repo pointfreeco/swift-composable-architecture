@@ -5,6 +5,7 @@ import CustomDump
 import XCTest
 import os.signpost
 
+@MainActor
 final class ReducerTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 

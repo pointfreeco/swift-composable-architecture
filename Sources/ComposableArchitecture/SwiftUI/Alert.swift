@@ -208,6 +208,7 @@ extension View {
   ///   - dismissal: An action to send when the alert is dismissed through non-user actions, such
   ///     as when an alert is automatically dismissed by the system. Use this action to `nil` out
   ///     the associated alert state.
+  @MainActor
   public func alert<Action>(
     _ store: Store<AlertState<Action>?, Action>,
     dismiss: Action
@@ -219,17 +220,17 @@ extension View {
             (viewStore.state?.title).map { Text($0) } ?? Text(""),
             isPresented: viewStore.binding(send: dismiss).isPresent(),
             presenting: viewStore.state,
-            actions: { $0.toSwiftUIActions(send: viewStore.send) },
+            actions: { $0.toSwiftUIActions(send: { viewStore.send($0) }) },
             message: { $0.message.map { Text($0) } }
           )
         } else {
           self.alert(item: viewStore.binding(send: dismiss)) { state in
-            state.toSwiftUIAlert(send: viewStore.send)
+            state.toSwiftUIAlert(send: { viewStore.send($0) })
           }
         }
       #else
         self.alert(item: viewStore.binding(send: dismiss)) { state in
-          state.toSwiftUIAlert(send: viewStore.send)
+          state.toSwiftUIAlert(send: { viewStore.send($0) })
         }
       #endif
     }

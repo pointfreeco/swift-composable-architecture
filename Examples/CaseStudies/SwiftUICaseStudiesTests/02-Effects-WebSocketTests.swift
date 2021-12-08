@@ -4,6 +4,7 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+@MainActor
 class WebSocketTests: XCTestCase {
   func testWebSocketHappyPath() {
     let socketSubject = PassthroughSubject<WebSocketClient.Action, Never>()

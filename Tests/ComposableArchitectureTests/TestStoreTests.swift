@@ -2,6 +2,7 @@ import Combine
 import ComposableArchitecture
 import XCTest
 
+@MainActor
 class TestStoreTests: XCTestCase {
   func testEffectConcatenation() {
     struct State: Equatable {}
@@ -60,7 +61,6 @@ class TestStoreTests: XCTestCase {
     store.send(.d)
   }
 
-  @MainActor
   func testAsync() async {
     enum Action: Equatable {
       case tap, response(Int)
@@ -70,7 +70,7 @@ class TestStoreTests: XCTestCase {
       reducer: Reducer<Int, Action, Void> { state, action, _ in
         switch action {
         case .tap:
-          return .task { @MainActor in
+          return .task {
             try? await Task.sleep(nanoseconds: 100 * NSEC_PER_MSEC)
             return .response(42)
           }

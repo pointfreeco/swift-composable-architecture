@@ -230,6 +230,7 @@ extension View {
   @available(macOS 12, *)
   @available(tvOS 13, *)
   @available(watchOS 6, *)
+  @MainActor
   public func confirmationDialog<Action>(
     _ store: Store<ConfirmationDialogState<Action>?, Action>,
     dismiss: Action
@@ -243,19 +244,19 @@ extension View {
             isPresented: viewStore.binding(send: dismiss).isPresent(),
             titleVisibility: viewStore.state?.titleVisibility.toSwiftUI ?? .automatic,
             presenting: viewStore.state,
-            actions: { $0.toSwiftUIActions(send: viewStore.send) },
+            actions: { $0.toSwiftUIActions(send: { viewStore.send($0) }) },
             message: { $0.message.map { Text($0) } }
           )
         } else {
           #if !os(macOS)
             self.actionSheet(item: viewStore.binding(send: dismiss)) { state in
-              state.toSwiftUIActionSheet(send: viewStore.send)
+              state.toSwiftUIActionSheet(send: { viewStore.send($0) })
             }
           #endif
         }
       #elseif !os(macOS)
         self.actionSheet(item: viewStore.binding(send: dismiss)) { state in
-          state.toSwiftUIActionSheet(send: viewStore.send)
+          state.toSwiftUIActionSheet(send: { viewStore.send($0) })
         }
       #endif
     }

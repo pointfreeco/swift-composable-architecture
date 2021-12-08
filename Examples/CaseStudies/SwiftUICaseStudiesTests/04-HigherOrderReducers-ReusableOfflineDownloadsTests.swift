@@ -4,6 +4,7 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+@MainActor
 class ReusableComponentsDownloadComponentTests: XCTestCase {
   let downloadSubject = PassthroughSubject<DownloadClient.Action, DownloadClient.Error>()
   let reducer = Reducer<

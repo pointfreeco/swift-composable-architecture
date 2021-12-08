@@ -4,6 +4,7 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+@MainActor
 class SharedStateTests: XCTestCase {
   func testTabRestoredOnReset() {
     let store = TestStore(

@@ -3,6 +3,7 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+@MainActor
 class EffectsBasicsTests: XCTestCase {
   func testCountDown() {
     let store = TestStore(

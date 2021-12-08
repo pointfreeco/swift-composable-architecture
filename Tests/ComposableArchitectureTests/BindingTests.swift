@@ -2,6 +2,7 @@
   import ComposableArchitecture
   import XCTest
 
+  @MainActor
   final class BindingTests: XCTestCase {
     func testNestedBindableState() {
       struct State: Equatable {

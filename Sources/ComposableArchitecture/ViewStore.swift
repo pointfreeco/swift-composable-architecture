@@ -52,13 +52,10 @@ import SwiftUI
 /// interactions must happen on the _main_ thread. See the documentation of the ``Store`` class for
 /// more information as to why this decision was made.
 @dynamicMemberLookup
+@MainActor
 public final class ViewStore<State, Action>: ObservableObject {
-  // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
-  // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
-  public private(set) lazy var objectWillChange = ObservableObjectPublisher()
-
   let _send: (Action) -> Task<Void, Never>
-  fileprivate let _state: CurrentValueRelay<State>
+  @Published public private(set) var state: State
   private var viewCancellable: AnyCancellable?
 
   /// Initializes a view store from a store.
@@ -72,15 +69,10 @@ public final class ViewStore<State, Action>: ObservableObject {
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool
   ) {
     self._send = { store.send($0) }
-    self._state = CurrentValueRelay(store.state.value)
-
-    self.viewCancellable = store.state
+    self.state = store.state
+    store.$state
       .removeDuplicates(by: isDuplicate)
-      .sink { [weak self] in
-        guard let self = self else { return }
-        self.objectWillChange.send()
-        self._state.value = $0
-      }
+      .assign(to: &self.$state)
   }
 
   /// A publisher that emits when state changes.
@@ -112,14 +104,9 @@ public final class ViewStore<State, Action>: ObservableObject {
     StorePublisher(viewStore: self)
   }
 
-  /// The current state.
-  public var state: State {
-    self._state.value
-  }
-
   /// Returns the resulting value of a given key path.
   public subscript<LocalState>(dynamicMember keyPath: KeyPath<State, LocalState>) -> LocalState {
-    self._state.value[keyPath: keyPath]
+    self.state[keyPath: keyPath]
   }
 
   /// Sends an action to the store.
@@ -295,9 +282,10 @@ public struct StorePublisher<State>: Publisher {
   public let upstream: AnyPublisher<State, Never>
   public let viewStore: Any
 
+  @MainActor
   fileprivate init<Action>(viewStore: ViewStore<State, Action>) {
     self.viewStore = viewStore
-    self.upstream = viewStore._state.eraseToAnyPublisher()
+    self.upstream = viewStore.$state.eraseToAnyPublisher()
   }
 
   public func receive<S>(subscriber: S)
