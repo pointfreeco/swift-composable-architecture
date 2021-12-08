@@ -55,29 +55,25 @@ let longLivingEffectsReducer = Reducer<
 // MARK: - SwiftUI view
 
 struct LongLivingEffectsView: View {
-  let store: MainActorStore<LongLivingEffectsState, LongLivingEffectsAction>
-  @ObservedObject var viewStore: MainActorViewStore<LongLivingEffectsState, LongLivingEffectsAction>
-
-  init(store: MainActorStore<LongLivingEffectsState, LongLivingEffectsAction>) {
-    self.store = store
-    self.viewStore = MainActorViewStore(store: self.store)
-  }
+  let store: Store<LongLivingEffectsState, LongLivingEffectsAction>
 
   var body: some View {
-    Form {
-      Section(header: Text(template: readMe, .body)) {
-        Text("A screenshot of this screen has been taken \(self.viewStore.screenshotCount) times.")
-          .font(Font.headline)
-      }
+    WithViewStore(self.store) { viewStore in
+      Form {
+        Section(header: Text(template: readMe, .body)) {
+          Text("A screenshot of this screen has been taken \(viewStore.screenshotCount) times.")
+            .font(Font.headline)
+        }
 
-      Section {
-        NavigationLink(destination: self.detailView) {
-          Text("Navigate to another screen")
+        Section {
+          NavigationLink(destination: self.detailView) {
+            Text("Navigate to another screen")
+          }
         }
       }
+      .navigationBarTitle("Long-living effects")
+      .task { await viewStore.send(.task) }
     }
-    .navigationBarTitle("Long-living effects")
-    .task { await self.viewStore.send(.task) }
   }
 
   var detailView: some View {
@@ -96,7 +92,7 @@ struct LongLivingEffectsView: View {
 struct EffectsLongLiving_Previews: PreviewProvider {
   static var previews: some View {
     let appView = LongLivingEffectsView(
-      store: MainActorStore(
+      store: Store(
         initialState: LongLivingEffectsState(),
         reducer: longLivingEffectsReducer,
         environment: LongLivingEffectsEnvironment(
