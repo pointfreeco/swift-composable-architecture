@@ -66,42 +66,4 @@ class LongLivingEffectsTests: XCTestCase {
     // await store.cancel(task: task)
     // await store.completed(task: task)
   }
-
-  @MainActor
-  func testAsync() async {
-    enum Action: Equatable {
-      case tap, response(Int)
-    }
-    let store = MainActorTestStore<Int, Action, Void>(
-      initialState: 0,
-      reducer: .init { state, action, _ in
-        switch action {
-        case .tap:
-
-//          Effect.stream { continuation in
-//            continuation.yield(.begin)
-//            defer { continuation.yield(.end) }
-//            for await in notification {
-//              continatuion.yield(.value(_))
-//            }
-//          }
-
-          return Effect.task {
-            await Task.sleep(100 * NSEC_PER_MSEC)
-            return .response(42)
-          }
-        case let .response(number):
-          state = number
-          return .none
-        }
-      },
-      environment: ()
-    )
-
-    store.send(.tap)
-
-    await store.receive(.response(42)) {
-      $0 = 42
-    }
-  }
 }
