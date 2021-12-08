@@ -127,7 +127,6 @@ import Combine
 ///
 /// See also: ``ViewStore`` to understand how one observes changes to the state in a ``Store`` and
 /// sends user actions.
-@MainActor
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
   var effectCancellables: [UUID: AnyCancellable] = [:]
