@@ -175,7 +175,7 @@
     private let fromLocalAction: (LocalAction) -> Action
     private var line: UInt
     private var longLivingEffects: Set<LongLivingEffect> = []
-    private var receivedActions: [(action: Action, state: State)] = []
+    var receivedActions: [(action: Action, state: State)] = []
     private let receivedActionsStream: AsyncStream<Void>
     private var receivedActionsContinuation: AsyncStream<Void>.Continuation!
     private let reducer: Reducer<State, Action, Environment>
@@ -243,7 +243,7 @@
       self.completed()
     }
 
-    private func completed() {
+    func completed() {
       if !self.receivedActions.isEmpty {
         var actions = ""
         customDump(self.receivedActions.map(\.action), to: &actions)
@@ -294,6 +294,17 @@
 
       func hash(into hasher: inout Hasher) {
         self.id.hash(into: &hasher)
+      }
+    }
+
+    private struct TestAction {
+      let origin: Origin
+      let file: StaticString
+      let line: UInt
+
+      enum Origin {
+        case send(LocalAction)
+        case receive(Action)
       }
     }
   }
@@ -549,125 +560,6 @@
       state toLocalState: @escaping (LocalState) -> S
     ) -> TestStore<State, S, Action, LocalAction, Environment> {
       self.scope(state: toLocalState, action: { $0 })
-    }
-
-    /// A single step of a ``TestStore`` assertion.
-    public struct Step {
-      fileprivate let type: StepType
-      fileprivate let file: StaticString
-      fileprivate let line: UInt
-
-      private init(
-        _ type: StepType,
-        file: StaticString = #file,
-        line: UInt = #line
-      ) {
-        self.type = type
-        self.file = file
-        self.line = line
-      }
-
-      /// A step that describes an action sent to a store and asserts against how the store's state
-      /// is expected to change.
-      ///
-      /// - Parameters:
-      ///   - action: An action to send to the test store.
-      ///   - update: A function that describes how the test store's state is expected to change.
-      /// - Returns: A step that describes an action sent to a store and asserts against how the
-      ///   store's state is expected to change.
-      public static func send(
-        _ action: LocalAction,
-        file: StaticString = #file,
-        line: UInt = #line,
-        _ update: @escaping (inout LocalState) throws -> Void = { _ in }
-      ) -> Step {
-        Step(.send(action, update), file: file, line: line)
-      }
-
-      /// A step that describes an action received by an effect and asserts against how the store's
-      /// state is expected to change.
-      ///
-      /// - Parameters:
-      ///   - action: An action the test store should receive by evaluating an effect.
-      ///   - update: A function that describes how the test store's state is expected to change.
-      /// - Returns: A step that describes an action received by an effect and asserts against how
-      ///   the store's state is expected to change.
-      public static func receive(
-        _ action: Action,
-        file: StaticString = #file,
-        line: UInt = #line,
-        _ update: @escaping (inout LocalState) throws -> Void = { _ in }
-      ) -> Step {
-        Step(.receive(action, update), file: file, line: line)
-      }
-
-      /// A step that updates a test store's environment.
-      ///
-      /// - Parameter update: A function that updates the test store's environment for subsequent
-      ///   steps.
-      /// - Returns: A step that updates a test store's environment.
-      public static func environment(
-        file: StaticString = #file,
-        line: UInt = #line,
-        _ update: @escaping (inout Environment) throws -> Void
-      ) -> Step {
-        Step(.environment(update), file: file, line: line)
-      }
-
-      /// A step that captures some work to be done between assertions
-      ///
-      /// - Parameter work: A function that is called between steps.
-      /// - Returns: A step that captures some work to be done between assertions.
-      public static func `do`(
-        file: StaticString = #file,
-        line: UInt = #line,
-        _ work: @escaping () throws -> Void
-      ) -> Step {
-        Step(.do(work), file: file, line: line)
-      }
-
-      /// A step that captures a sub-sequence of steps.
-      ///
-      /// - Parameter steps: An array of ``TestStore/Step``
-      /// - Returns: A step that captures a sub-sequence of steps.
-      public static func sequence(
-        _ steps: [Step],
-        file: StaticString = #file,
-        line: UInt = #line
-      ) -> Step {
-        Step(.sequence(steps), file: file, line: line)
-      }
-
-      /// A step that captures a sub-sequence of steps.
-      ///
-      /// - Parameter steps: A variadic list of ``TestStore/Step``
-      /// - Returns: A step that captures a sub-sequence of steps.
-      public static func sequence(
-        _ steps: Step...,
-        file: StaticString = #file,
-        line: UInt = #line
-      ) -> Step {
-        Step(.sequence(steps), file: file, line: line)
-      }
-
-      fileprivate indirect enum StepType {
-        case send(LocalAction, (inout LocalState) throws -> Void)
-        case receive(Action, (inout LocalState) throws -> Void)
-        case environment((inout Environment) throws -> Void)
-        case `do`(() throws -> Void)
-        case sequence([Step])
-      }
-    }
-
-    private struct TestAction {
-      let origin: Origin
-      let file: StaticString
-      let line: UInt
-
-      enum Origin {
-        case send(LocalAction)
-        case receive(Action)
-      }
     }
   }
 #endif

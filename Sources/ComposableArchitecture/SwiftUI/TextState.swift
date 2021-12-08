@@ -58,6 +58,9 @@ public struct TextState: Equatable, Hashable {
   fileprivate let storage: Storage
 
   fileprivate enum Modifier: Equatable, Hashable {
+    case accessibilityHeading(AccessibilityHeadingLevel)
+    case accessibilityLabel(TextState)
+    case accessibilityTextContentType(AccessibilityTextContentType)
     case baselineOffset(CGFloat)
     case bold
     case font(Font?)
@@ -121,6 +124,8 @@ public struct TextState: Equatable, Hashable {
     }
   }
 }
+
+// MARK: - API
 
 extension TextState {
   public init(verbatim content: String) {
@@ -206,6 +211,86 @@ extension TextState {
   }
 }
 
+// MARK: Accessibility
+
+extension TextState {
+  public enum AccessibilityTextContentType: String, Equatable, Hashable {
+    case console, fileSystem, messaging, narrative, plain, sourceCode, spreadsheet, wordProcessing
+
+    #if compiler(>=5.5.1)
+      @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+      var toSwiftUI: SwiftUI.AccessibilityTextContentType {
+        switch self {
+        case .console: return .console
+        case .fileSystem: return .fileSystem
+        case .messaging: return .messaging
+        case .narrative: return .narrative
+        case .plain: return .plain
+        case .sourceCode: return .sourceCode
+        case .spreadsheet: return .spreadsheet
+        case .wordProcessing: return .wordProcessing
+        }
+      }
+    #endif
+  }
+
+  public enum AccessibilityHeadingLevel: String, Equatable, Hashable {
+    case h1, h2, h3, h4, h5, h6, unspecified
+
+    #if compiler(>=5.5.1)
+      @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+      var toSwiftUI: SwiftUI.AccessibilityHeadingLevel {
+        switch self {
+        case .h1: return .h1
+        case .h2: return .h2
+        case .h3: return .h3
+        case .h4: return .h4
+        case .h5: return .h5
+        case .h6: return .h6
+        case .unspecified: return .unspecified
+        }
+      }
+    #endif
+  }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension TextState {
+  public func accessibilityHeading(_ headingLevel: AccessibilityHeadingLevel) -> Self {
+    var `self` = self
+    `self`.modifiers.append(.accessibilityHeading(headingLevel))
+    return `self`
+  }
+
+  public func accessibilityLabel(_ string: String) -> Self {
+    var `self` = self
+    `self`.modifiers.append(.accessibilityLabel(.init(string)))
+    return `self`
+  }
+
+  public func accessibilityLabel<S: StringProtocol>(_ string: S) -> Self {
+    var `self` = self
+    `self`.modifiers.append(.accessibilityLabel(.init(string)))
+    return `self`
+  }
+
+  public func accessibilityLabel(
+    _ key: LocalizedStringKey, tableName: String? = nil, bundle: Bundle? = nil,
+    comment: StaticString? = nil
+  ) -> Self {
+    var `self` = self
+    `self`.modifiers.append(
+      .accessibilityLabel(.init(key, tableName: tableName, bundle: bundle, comment: comment)))
+    return `self`
+  }
+
+  public func accessibilityTextContentType(_ type: AccessibilityTextContentType) -> Self {
+    var `self` = self
+    `self`.modifiers.append(.accessibilityTextContentType(type))
+    return `self`
+  }
+}
+
 extension Text {
   public init(_ state: TextState) {
     let text: Text
@@ -219,6 +304,40 @@ extension Text {
     }
     self = state.modifiers.reduce(text) { text, modifier in
       switch modifier {
+      #if compiler(>=5.5.1)
+        case let .accessibilityHeading(level):
+          if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            return text.accessibilityHeading(level.toSwiftUI)
+          } else {
+            return text
+          }
+        case let .accessibilityLabel(value):
+          if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            switch value.storage {
+            case let .verbatim(string):
+              return text.accessibilityLabel(string)
+            case let .localized(key, tableName, bundle, comment):
+              return text.accessibilityLabel(
+                Text(key, tableName: tableName, bundle: bundle, comment: comment))
+            case .concatenated(_, _):
+              assertionFailure("`.accessibilityLabel` does not support contcatenated `TextState`")
+              return text
+            }
+          } else {
+            return text
+          }
+        case let .accessibilityTextContentType(type):
+          if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            return text.accessibilityTextContentType(type.toSwiftUI)
+          } else {
+            return text
+          }
+      #else
+        case .accessibilityHeading,
+          .accessibilityLabel,
+          .accessibilityTextContentType:
+          return text
+      #endif
       case let .baselineOffset(baselineOffset):
         return text.baselineOffset(baselineOffset)
       case .bold:
@@ -308,6 +427,8 @@ extension LocalizedStringKey {
   }
 }
 
+// MARK: - CustomDumpRepresentable
+
 extension TextState: CustomDumpRepresentable {
   public var customDumpValue: Any {
     func dumpHelp(_ textState: Self) -> String {
@@ -322,6 +443,15 @@ extension TextState: CustomDumpRepresentable {
       }
       for modifier in textState.modifiers {
         switch modifier {
+        case let .accessibilityHeading(headingLevel):
+          let tag = "accessibility-heading-level"
+          output = "<\(tag)=\(headingLevel.rawValue)>\(output)</\(tag)>"
+        case let .accessibilityLabel(value):
+          let tag = "accessibility-label"
+          output = "<\(tag)=\(dumpHelp(value))>\(output)</\(tag)>"
+        case let .accessibilityTextContentType(type):
+          let tag = "accessibility-text-content-type"
+          output = "<\(tag)=\(type.rawValue)>\(output)</\(tag)>"
         case let .baselineOffset(baselineOffset):
           output = "<baseline-offset=\(baselineOffset)>\(output)</baseline-offset>"
         case .bold, .fontWeight(.some(.bold)):

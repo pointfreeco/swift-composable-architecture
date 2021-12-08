@@ -258,7 +258,7 @@ final class EffectTests: XCTestCase {
       @Sendable func work() async throws -> Int {
         var task: Task<Int, Error>!
         task = Task {
-          await Task.sleep(NSEC_PER_MSEC)
+          try? await Task.sleep(nanoseconds: NSEC_PER_MSEC)
           try Task.checkCancellation()
           return 42
         }
