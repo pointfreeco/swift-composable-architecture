@@ -150,6 +150,7 @@ public struct Default<Content>: View where Content: View {
 }
 
 extension SwitchStore {
+  @MainActor
   public init<State1, Action1, Content1, DefaultContent>(
     _ store: Store<State, Action>,
     @ViewBuilder content: @escaping () -> TupleView<
@@ -181,6 +182,7 @@ extension SwitchStore {
     }
   }
 
+  @MainActor
   public init<State1, Action1, Content1>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
@@ -203,6 +205,7 @@ extension SwitchStore {
     }
   }
 
+  @MainActor
   public init<State1, Action1, Content1, State2, Action2, Content2, DefaultContent>(
     _ store: Store<State, Action>,
     @ViewBuilder content: @escaping () -> TupleView<
@@ -240,6 +243,7 @@ extension SwitchStore {
     }
   }
 
+  @MainActor
   public init<State1, Action1, Content1, State2, Action2, Content2>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
@@ -272,6 +276,7 @@ extension SwitchStore {
     }
   }
 
+  @MainActor
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -320,6 +325,7 @@ extension SwitchStore {
     }
   }
 
+  @MainActor
   public init<State1, Action1, Content1, State2, Action2, Content2, State3, Action3, Content3>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
@@ -357,6 +363,7 @@ extension SwitchStore {
     }
   }
 
+  @MainActor
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -412,6 +419,7 @@ extension SwitchStore {
     }
   }
 
+  @MainActor
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -459,6 +467,7 @@ extension SwitchStore {
     }
   }
 
+  @MainActor
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -521,6 +530,7 @@ extension SwitchStore {
     }
   }
 
+  @MainActor
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -574,6 +584,7 @@ extension SwitchStore {
     }
   }
 
+  @MainActor
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -643,6 +654,7 @@ extension SwitchStore {
     }
   }
 
+  @MainActor
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -702,6 +714,7 @@ extension SwitchStore {
     }
   }
 
+  @MainActor
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -778,6 +791,7 @@ extension SwitchStore {
     }
   }
 
+  @MainActor
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -843,6 +857,7 @@ extension SwitchStore {
     }
   }
 
+  @MainActor
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -926,6 +941,7 @@ extension SwitchStore {
     }
   }
 
+  @MainActor
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -997,6 +1013,7 @@ extension SwitchStore {
     }
   }
 
+  @MainActor
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -1087,6 +1104,7 @@ extension SwitchStore {
     }
   }
 
+  @MainActor
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,

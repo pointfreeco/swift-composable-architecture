@@ -168,6 +168,7 @@
   /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
   /// not expect it would cause a test failure.
   ///
+  @MainActor
   public final class TestStore<State, LocalState, Action, LocalAction, Environment> {
     public var environment: Environment
 
@@ -240,7 +241,7 @@
     }
 
     deinit {
-      self.completed()
+//      self.completed()
     }
 
     func completed() {

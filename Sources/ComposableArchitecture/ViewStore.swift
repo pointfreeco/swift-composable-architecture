@@ -52,10 +52,11 @@ import SwiftUI
 /// interactions must happen on the _main_ thread. See the documentation of the ``Store`` class for
 /// more information as to why this decision was made.
 @dynamicMemberLookup
+@MainActor
 public final class ViewStore<State, Action>: ObservableObject {
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
-  public private(set) lazy var objectWillChange = ObservableObjectPublisher()
+  public private(set) lazy nonisolated var objectWillChange = ObservableObjectPublisher()
 
   let _send: (Action) -> Task<Void, Never>
   fileprivate let _state: CurrentValueRelay<State>

@@ -44,6 +44,7 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
   ///   - ifContent: A function that is given a store of non-optional state and returns a view that
   ///     is visible only when the optional state is non-`nil`.
   ///   - elseContent: A view that is only visible when the optional state is `nil`.
+  @MainActor
   public init<IfContent, ElseContent>(
     _ store: Store<State?, Action>,
     @ViewBuilder then ifContent: @escaping (Store<State, Action>) -> IfContent,
@@ -73,6 +74,7 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
   ///   - store: A store of optional state.
   ///   - ifContent: A function that is given a store of non-optional state and returns a view that
   ///     is visible only when the optional state is non-`nil`.
+  @MainActor
   public init<IfContent>(
     _ store: Store<State?, Action>,
     @ViewBuilder then ifContent: @escaping (Store<State, Action>) -> IfContent

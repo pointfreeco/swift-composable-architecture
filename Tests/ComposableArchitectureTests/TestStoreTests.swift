@@ -2,6 +2,7 @@ import Combine
 import ComposableArchitecture
 import XCTest
 
+@MainActor
 class TestStoreTests: XCTestCase {
   func testEffectConcatenation() {
     struct State: Equatable {}

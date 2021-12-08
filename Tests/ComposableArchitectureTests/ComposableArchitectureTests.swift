@@ -3,6 +3,7 @@ import CombineSchedulers
 import ComposableArchitecture
 import XCTest
 
+@MainActor
 final class ComposableArchitectureTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
