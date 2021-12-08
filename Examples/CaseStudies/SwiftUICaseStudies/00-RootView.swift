@@ -128,12 +128,9 @@ struct RootView: View {
             NavigationLink(
               "Long-living effects",
               destination: LongLivingEffectsView(
-                store: .init(
-                  initialState: .init(),
-                  reducer: longLivingEffectsReducer.debug(),
-                  environment: LongLivingEffectsEnvironment(
-                    userDidTakeScreenshot: liveUserDidTakeScreenshot
-                  )
+                store: self.store.scope(
+                  state: \.longLivingEffects,
+                  action: RootAction.longLivingEffects
                 )
               )
             )
