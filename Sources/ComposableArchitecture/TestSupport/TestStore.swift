@@ -176,6 +176,8 @@
     private var line: UInt
     private var longLivingEffects: Set<LongLivingEffect> = []
     private var receivedActions: [(action: Action, state: State)] = []
+    private let receivedActionsStream: AsyncStream<Void>
+    private var receivedActionsContinuation: AsyncStream<Void>.Continuation!
     private let reducer: Reducer<State, Action, Environment>
     private var snapshotState: State
     private var store: Store<State, TestAction>!
@@ -190,6 +192,12 @@
       reducer: Reducer<State, Action, Environment>,
       toLocalState: @escaping (State) -> LocalState
     ) {
+      var receivedActionsContinuation: AsyncStream<Void>.Continuation!
+      self.receivedActionsStream = AsyncStream { continuation in
+        receivedActionsContinuation = continuation
+      }
+      self.receivedActionsContinuation = receivedActionsContinuation
+
       self.environment = environment
       self.file = file
       self.fromLocalAction = fromLocalAction
@@ -210,6 +218,7 @@
           case let .receive(action):
             effects = self.reducer.run(&state, action, self.environment)
             self.receivedActions.append((action, state))
+            self.receivedActionsContinuation.yield()
           }
 
           let effect = LongLivingEffect(file: action.file, line: action.line)
@@ -316,12 +325,13 @@
   }
 
   extension TestStore where LocalState: Equatable {
+    @discardableResult
     public func send(
       _ action: LocalAction,
       file: StaticString = #file,
       line: UInt = #line,
       _ update: @escaping (inout LocalState) throws -> Void = { _ in }
-    ) {
+    ) -> Task<Void, Never> {
       if !self.receivedActions.isEmpty {
         var actions = ""
         customDump(self.receivedActions.map(\.action), to: &actions)
@@ -336,13 +346,7 @@
         )
       }
       var expectedState = self.toLocalState(self.snapshotState)
-      ViewStore(
-        self.store.scope(
-          state: self.toLocalState,
-          action: { .init(origin: .send($0), file: file, line: line) }
-        )
-      )
-      .send(action)
+      let task = self.store.send(.init(origin: .send(action), file: file, line: line))
       do {
         try update(&expectedState)
       } catch {
@@ -357,6 +361,7 @@
       if "\(self.file)" == "\(file)" {
         self.line = line
       }
+      return task
     }
 
     private func expectedStateShouldMatch(
@@ -391,6 +396,64 @@
   }
 
   extension TestStore where LocalState: Equatable, Action: Equatable {
+    public func receive(
+      _ expectedAction: Action,
+      file: StaticString = #file,
+      line: UInt = #line,
+      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+    ) async {
+      guard !self.receivedActions.isEmpty else {
+        XCTFail(
+          """
+          Expected to receive an action, but received none.
+          """,
+          file: file, line: line
+        )
+        return
+      }
+      for await _ in self.receivedActionsStream {
+        let (receivedAction, state) = self.receivedActions.removeFirst()
+        if expectedAction != receivedAction {
+          let difference =
+            diff(expectedAction, receivedAction, format: .proportional)
+            .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
+            ?? """
+            Expected:
+            \(String(describing: expectedAction).indent(by: 2))
+
+            Received:
+            \(String(describing: receivedAction).indent(by: 2))
+            """
+
+          XCTFail(
+            """
+            Received unexpected action: …
+
+            \(difference)
+            """,
+            file: file, line: line
+          )
+        }
+        var expectedState = self.toLocalState(self.snapshotState)
+        do {
+          try update(&expectedState)
+        } catch {
+          XCTFail("Threw error: \(error)", file: file, line: line)
+        }
+        expectedStateShouldMatch(
+          expected: expectedState,
+          actual: self.toLocalState(state),
+          file: file,
+          line: line
+        )
+        snapshotState = state
+        if "\(self.file)" == "\(file)" {
+          self.line = line
+        }
+        break
+      }
+    }
+
     public func receive(
       _ expectedAction: Action,
       file: StaticString = #file,
@@ -444,80 +507,6 @@
       if "\(self.file)" == "\(file)" {
         self.line = line
       }
-    }
-
-    /// Asserts against a script of actions.
-    public func assert(
-      _ steps: Step...,
-      file: StaticString = #file,
-      line: UInt = #line
-    ) {
-      assert(steps, file: file, line: line)
-    }
-
-    /// Asserts against an array of actions.
-    public func assert(
-      _ steps: [Step],
-      file: StaticString = #file,
-      line: UInt = #line
-    ) {
-
-      func assert(step: Step) {
-        switch step.type {
-        case let .send(action, update):
-          self.send(action, file: step.file, line: step.line, update)
-
-        case let .receive(expectedAction, update):
-          self.receive(expectedAction, file: step.file, line: step.line, update)
-
-        case let .environment(work):
-          if !self.receivedActions.isEmpty {
-            var actions = ""
-            customDump(self.receivedActions.map(\.action), to: &actions)
-            XCTFail(
-              """
-              Must handle \(self.receivedActions.count) received \
-              action\(self.receivedActions.count == 1 ? "" : "s") before performing this work: …
-
-              Unhandled actions: \(actions)
-              """,
-              file: step.file, line: step.line
-            )
-          }
-          do {
-            try work(&self.environment)
-          } catch {
-            XCTFail("Threw error: \(error)", file: step.file, line: step.line)
-          }
-
-        case let .do(work):
-          if !receivedActions.isEmpty {
-            var actions = ""
-            customDump(self.receivedActions.map(\.action), to: &actions)
-            XCTFail(
-              """
-              Must handle \(self.receivedActions.count) received \
-              action\(self.receivedActions.count == 1 ? "" : "s") before performing this work: …
-
-              Unhandled actions: \(actions)
-              """,
-              file: step.file, line: step.line
-            )
-          }
-          do {
-            try work()
-          } catch {
-            XCTFail("Threw error: \(error)", file: step.file, line: step.line)
-          }
-
-        case let .sequence(subSteps):
-          subSteps.forEach(assert(step:))
-        }
-      }
-
-      steps.forEach(assert(step:))
-
-      self.completed()
     }
   }
 

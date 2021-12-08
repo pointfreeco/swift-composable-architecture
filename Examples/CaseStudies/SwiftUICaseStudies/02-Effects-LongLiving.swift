@@ -7,8 +7,8 @@ private let readMe = """
   Notification Center.
 
   Run this application in the simulator, and take a few screenshots by going to \
-  *Device › Screenshot* in the menu, and observe that the UI counts the number of times that \
-  happens.
+  *Device › Trigger Screenshot* in the menu, and observe that the UI counts the number of times \
+  that happens.
 
   Then, navigate to another screen and take screenshots there, and observe that this screen does \
   *not* count those screenshots.
@@ -22,8 +22,7 @@ struct LongLivingEffectsState: Equatable {
 
 enum LongLivingEffectsAction {
   case userDidTakeScreenshotNotification
-  case onAppear
-  case onDisappear
+  case task
 }
 
 struct LongLivingEffectsEnvironment {
@@ -46,15 +45,10 @@ let longLivingEffectsReducer = Reducer<
     state.screenshotCount += 1
     return .none
 
-  case .onAppear:
+  case .task:
     // When the view appears, start the effect that emits when screenshots are taken.
     return environment.userDidTakeScreenshot
       .map { LongLivingEffectsAction.userDidTakeScreenshotNotification }
-      .cancellable(id: UserDidTakeScreenshotNotificationId())
-
-  case .onDisappear:
-    // When view disappears, stop the effect.
-    return .cancel(id: UserDidTakeScreenshotNotificationId())
   }
 }
 
@@ -83,11 +77,7 @@ struct LongLivingEffectsView: View {
       }
     }
     .navigationBarTitle("Long-living effects")
-    .task {
-      await self.viewStore.send(.onAppear)
-    }
-//    .onAppear { self.viewStore.send(.onAppear) }
-//    .onDisappear { self.viewStore.send(.onDisappear) }
+    .task { await self.viewStore.send(.task) }
   }
 
   var detailView: some View {
@@ -97,7 +87,7 @@ struct LongLivingEffectsView: View {
       that those screenshots were not counted.
       """
     )
-    .padding([.leading, .trailing], 64)
+      .padding(.horizontal, 64)
   }
 }
 

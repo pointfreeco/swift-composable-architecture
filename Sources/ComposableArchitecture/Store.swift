@@ -399,6 +399,7 @@ public final class Store<State, Action> {
 
     return Task { [tasks] in
       for task in tasks {
+        guard !Task.isCancelled else { break }
         await task.value
       }
     }

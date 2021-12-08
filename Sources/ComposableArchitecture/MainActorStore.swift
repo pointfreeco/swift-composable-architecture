@@ -264,17 +264,16 @@ public final class MainActorStore<State, Action> {
   }
 
   public func send(_ action: Action) async {
-    fatalError()
-    //    var _state = self._state
-    //    let effect = self.reducer(&_state, action)
-    //    self._state = _state
-    //
-    //    for await effectAction in effect.values {
-    //      guard !Task.isCancelled
-    //      else { break }
-    //
-    //      await self.send(effectAction)
-    //    }
+    var _state = self._state
+    let effect = self.reducer(&_state, action)
+    self._state = _state
+
+    for await effectAction in effect.values {
+      guard !Task.isCancelled
+      else { break }
+
+      await self.send(effectAction)
+    }
   }
 
   public func scope<LocalState, LocalAction>(
