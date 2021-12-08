@@ -402,15 +402,16 @@
       line: UInt = #line,
       _ update: @escaping (inout LocalState) throws -> Void = { _ in }
     ) async {
-      guard !self.receivedActions.isEmpty else {
-        XCTFail(
-          """
-          Expected to receive an action, but received none.
-          """,
-          file: file, line: line
-        )
-        return
-      }
+      // TODO: Recover this?
+//      guard !self.receivedActions.isEmpty else {
+//        XCTFail(
+//          """
+//          Expected to receive an action, but received none.
+//          """,
+//          file: file, line: line
+//        )
+//        return
+//      }
       for await _ in self.receivedActionsStream {
         let (receivedAction, state) = self.receivedActions.removeFirst()
         if expectedAction != receivedAction {
