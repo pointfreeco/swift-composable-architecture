@@ -80,7 +80,7 @@ struct RootEnvironment {
   var downloadClient: DownloadClient
   var fact: FactClient
   var favorite: (UUID, Bool) -> Effect<Bool, Error>
-  var fetchNumber: () -> Effect<Int, Never>
+  var fetchNumber: () async -> Int
   var mainQueue: AnySchedulerOf<DispatchQueue>
   var userDidTakeScreenshot: Effect<Void, Never>
   var uuid: () -> UUID
@@ -307,10 +307,9 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
 .debug()
 .signpost()
 
-private func liveFetchNumber() -> Effect<Int, Never> {
-  Deferred { Just(Int.random(in: 1...1_000)) }
-    .delay(for: 1, scheduler: DispatchQueue.main)
-    .eraseToEffect()
+private func liveFetchNumber() async -> Int {
+  try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
+  return Int.random(in: 1...1_000)
 }
 
 private let liveUserDidTakeScreenshot = NotificationCenter.default
