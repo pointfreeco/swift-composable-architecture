@@ -4,7 +4,7 @@ public enum TaskResult<Success> {
   case success(Success)
   case failure(Error)
 
-  init(catching body: () async throws -> Success) async {
+  public init(catching body: () async throws -> Success) async {
     do {
       self = .success(try await body())
     } catch {
@@ -26,15 +26,13 @@ extension TaskResult: Equatable where Success: Equatable {
   }
 }
 
-import ComposableArchitecture
-
-extension Effect {
-  public static func task<Value>(
-    priority: TaskPriority? = nil,
-    operation: @escaping @Sendable () async throws -> Value
-  ) -> Self where Output == TaskResult<Value>, Failure == Never {
-    return Effect.task {
-      await .init { try await operation() }
+extension TaskResult: Hashable where Success: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    switch self {
+    case let .success(success):
+      hasher.combine(success)
+    case let .failure(failure):
+      hasher.combine(failure as NSError)
     }
   }
 }
