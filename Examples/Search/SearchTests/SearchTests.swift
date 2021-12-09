@@ -4,48 +4,9 @@ import XCTest
 
 @testable import Search
 
-struct MainActorTestSchedulerOf<S: Scheduler>: Scheduler {
-  @MainActor
-  func advance(by stride: SchedulerTimeType.Stride = .zero) async {
-    await Task { @MainActor in
-      self.testScheduler.advance(by: stride)
-    }
-  }
-
-  @MainActor
-  func run() async {
-    self.testScheduler.run()
-  }
-
-  func schedule(after date: S.SchedulerTimeType, interval: S.SchedulerTimeType.Stride, tolerance: S.SchedulerTimeType.Stride, options: S.SchedulerOptions?, _ action: @escaping () -> Void) -> Cancellable {
-    self.testScheduler.schedule(after: date, interval: interval, tolerance: tolerance, options: options, action)
-
-  }
-
-  func schedule(after date: S.SchedulerTimeType, tolerance: S.SchedulerTimeType.Stride, options: S.SchedulerOptions?, _ action: @escaping () -> Void) {
-    self.testScheduler.schedule(after: date, tolerance: tolerance, options: options, action)
-  }
-
-  func schedule(options: S.SchedulerOptions?, _ action: @escaping () -> Void) {
-    self.testScheduler.schedule(options: options, action)
-  }
-
-  var now: S.SchedulerTimeType { self.testScheduler.now }
-
-  var minimumTolerance: S.SchedulerTimeType.Stride { self.testScheduler.minimumTolerance }
-
-  typealias SchedulerTimeType = S.SchedulerTimeType
-
-  typealias SchedulerOptions = S.SchedulerOptions
-
-  let testScheduler: TestSchedulerOf<S>
-
-
-}
-
 @MainActor
 class SearchTests: XCTestCase {
-  let scheduler = MainActorTestSchedulerOf<DispatchQueue>(testScheduler: DispatchQueue.test)
+  let scheduler = DispatchQueue.test
 
   func testSearchAndClearQuery() async {
     let store = TestStore(
