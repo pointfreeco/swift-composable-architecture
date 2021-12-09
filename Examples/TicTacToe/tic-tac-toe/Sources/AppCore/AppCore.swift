@@ -18,14 +18,11 @@ public enum AppAction: Equatable {
 
 public struct AppEnvironment {
   public var authenticationClient: AuthenticationClient
-  public var mainQueue: AnySchedulerOf<DispatchQueue>
 
   public init(
-    authenticationClient: AuthenticationClient,
-    mainQueue: AnySchedulerOf<DispatchQueue>
+    authenticationClient: AuthenticationClient
   ) {
     self.authenticationClient = authenticationClient
-    self.mainQueue = mainQueue
   }
 }
 

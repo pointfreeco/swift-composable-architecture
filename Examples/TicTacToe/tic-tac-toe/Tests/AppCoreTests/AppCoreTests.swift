@@ -14,8 +14,7 @@ class AppCoreTests: XCTestCase {
       initialState: .init(),
       reducer: appReducer,
       environment: .init(
-        authenticationClient: authenticationClient,
-        mainQueue: .immediate
+        authenticationClient: authenticationClient
       )
     )
 
@@ -62,8 +61,7 @@ class AppCoreTests: XCTestCase {
       initialState: .init(),
       reducer: appReducer,
       environment: .init(
-        authenticationClient: authenticationClient,
-        mainQueue: .immediate
+        authenticationClient: authenticationClient
       )
     )
 
