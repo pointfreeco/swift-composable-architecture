@@ -301,12 +301,12 @@ public final class Store<State, Action> {
       reducer: .init { localState, localAction, _ in
         isSending = true
         defer { isSending = false }
-        let (c, t) = self.send(fromLocalAction(localAction))
+        let (cancel, task) = self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
         return Effect<Void, Never>.task {
           await withTaskCancellationHandler(
-            handler: { c() },
-            operation: { await t.value }
+            handler: { cancel() },
+            operation: { await task.value }
           )
         }
         .fireAndForget()
@@ -344,10 +344,10 @@ public final class Store<State, Action> {
       self.state.value = currentState
     }
 
-    var pairs: [(AsyncStream<Void>.Continuation, AsyncStream<Void>, AnyCancellable)] = []
+    var cancellables: [(AsyncStream<Void>.Continuation, AsyncStream<Void>, AnyCancellable)] = []
 
     while !self.bufferedActions.isEmpty {
-      let (c, s) = AsyncStream<Void>.create()
+      let (continuation, stream) = AsyncStream<Void>.create()
 
       let action = self.bufferedActions.removeFirst()
       let effect = self.reducer(&currentState, action)
@@ -356,7 +356,7 @@ public final class Store<State, Action> {
       let uuid = UUID()
       let effectCancellable = effect.sink(
         receiveCompletion: { [weak self] _ in
-          c.finish()
+          continuation.finish()
           didComplete = true
           self?.effectCancellables[uuid] = nil
         },
@@ -366,21 +366,21 @@ public final class Store<State, Action> {
       )
 
       if !didComplete {
-        pairs.append((c, s, effectCancellable))
+        cancellables.append((continuation, stream, effectCancellable))
         self.effectCancellables[uuid] = effectCancellable
       }
     }
 
     return (
-      { [pairs] in
-        for (c, _, cancellable) in pairs {
+      { [cancellables] in
+        for (continuation, _, cancellable) in cancellables {
           cancellable.cancel()
-          c.finish()
+          continuation.finish()
         }
       },
-      Task { [pairs] in
-        for (_, s, cancellable) in pairs {
-          for await _ in s {
+      Task { [cancellables] in
+        for (_, stream, cancellable) in cancellables {
+          for await _ in stream {
             guard !Task.isCancelled
             else { break }
           }
@@ -402,10 +402,10 @@ public final class Store<State, Action> {
   }
 }
 
-extension AsyncStream {
+private extension AsyncStream {
   static func create() -> (Self.Continuation, Self) {
-    var c: Continuation!
-    let s = Self { c = $0 }
-    return (c, s)
+    var continuation: Continuation!
+    let stream = Self { continuation = $0 }
+    return (continuation, stream)
   }
 }
