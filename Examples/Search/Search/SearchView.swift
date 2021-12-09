@@ -17,9 +17,9 @@ struct SearchState: Equatable {
 }
 
 enum SearchAction: Equatable {
-  case locationsResponse(Result<[Location], WeatherClient.Failure>)
+  case locationsResponse(Result<[Location], NSError>)
   case locationTapped(Location)
-  case locationWeatherResponse(Result<LocationWeather, WeatherClient.Failure>)
+  case locationWeatherResponse(Result<LocationWeather, NSError>)
   case searchQueryChanged(String)
 }
 
@@ -46,11 +46,17 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
 
     state.locationWeatherRequestInFlight = location
 
-    return environment.weatherClient
-      .weather(location.id)
-      .receive(on: environment.mainQueue)
-      .catchToEffect(SearchAction.locationWeatherResponse)
-      .cancellable(id: SearchWeatherId(), cancelInFlight: true)
+    return .task { @MainActor [id = location.id] in
+      do {
+        return .locationWeatherResponse(
+          .success(
+            try await environment.weatherClient.weather(id)
+          )
+        )
+      } catch {
+        return .locationWeatherResponse(.failure(error as NSError))
+      }
+    }
 
   case let .searchQueryChanged(query):
     struct SearchLocationId: Hashable {}

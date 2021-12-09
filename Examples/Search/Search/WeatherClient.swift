@@ -1,5 +1,6 @@
 import ComposableArchitecture
 import Foundation
+import XCTest
 
 // MARK: - API models
 
@@ -27,10 +28,8 @@ struct LocationWeather: Decodable, Equatable {
 // This allows the search feature to compile faster since it only depends on the interface.
 
 struct WeatherClient {
-  var searchLocation: (String) -> Effect<[Location], Failure>
-  var weather: (Int) -> Effect<LocationWeather, Failure>
-
-  struct Failure: Error, Equatable {}
+  var searchLocation: (String) async throws -> [Location]
+  var weather: (Int) async throws -> LocationWeather
 }
 
 // MARK: - Live API implementation
@@ -44,21 +43,13 @@ extension WeatherClient {
     searchLocation: { query in
       var components = URLComponents(string: "https://www.metaweather.com/api/location/search")!
       components.queryItems = [URLQueryItem(name: "query", value: query)]
-
-      return URLSession.shared.dataTaskPublisher(for: components.url!)
-        .map { data, _ in data }
-        .decode(type: [Location].self, decoder: jsonDecoder)
-        .mapError { _ in Failure() }
-        .eraseToEffect()
+      let (data, _) = try await URLSession.shared.data(from: components.url!)
+      return try jsonDecoder.decode([Location].self, from: data)
     },
     weather: { id in
       let url = URL(string: "https://www.metaweather.com/api/location/\(id)")!
-
-      return URLSession.shared.dataTaskPublisher(for: url)
-        .map { data, _ in data }
-        .decode(type: LocationWeather.self, decoder: jsonDecoder)
-        .mapError { _ in Failure() }
-        .eraseToEffect()
+      let (data, _) = try await URLSession.shared.data(from: url)
+      return try jsonDecoder.decode(LocationWeather.self, from: data)
     })
 }
 
@@ -66,9 +57,17 @@ extension WeatherClient {
 
 extension WeatherClient {
   static let failing = Self(
-    searchLocation: { _ in .failing("WeatherClient.searchLocation") },
-    weather: { _ in .failing("WeatherClient.weather") }
+    searchLocation: { _ in
+      throw UnimplementedError(message: "WeatherClient.searchLocation")
+    },
+    weather: { _ in
+      throw UnimplementedError(message: "WeatherClient.weather")
+    }
   )
+}
+
+struct UnimplementedError: Error {
+  let message: String
 }
 
 // MARK: - Private helpers
