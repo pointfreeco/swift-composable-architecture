@@ -5,7 +5,8 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 class LongLivingEffectsTests: XCTestCase {
-  func testReducer() {
+  @MainActor
+  func testReducer() async {
     // A passthrough subject to simulate the screenshot notification
     let screenshotTaken = PassthroughSubject<Void, Never>()
 
@@ -13,19 +14,21 @@ class LongLivingEffectsTests: XCTestCase {
       initialState: .init(),
       reducer: longLivingEffectsReducer,
       environment: .init(
-        userDidTakeScreenshot: Effect(screenshotTaken)
+        userDidTakeScreenshot: screenshotTaken.eraseToEffect()
       )
     )
 
-    store.send(.onAppear)
+    let task = store.send(.task)
 
     // Simulate a screenshot being taken
     screenshotTaken.send()
-    store.receive(.userDidTakeScreenshotNotification) {
+    await store.receive(.userDidTakeScreenshotNotification) {
       $0.screenshotCount = 1
     }
 
-    store.send(.onDisappear)
+    // Simulate screen going away
+    task.cancel()
+    await task.value
 
     // Simulate a screenshot being taken to show no effects
     // are executed.

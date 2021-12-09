@@ -59,4 +59,33 @@ class TestStoreTests: XCTestCase {
 
     store.send(.d)
   }
+
+  @MainActor
+  func testAsync() async {
+    enum Action: Equatable {
+      case tap, response(Int)
+    }
+    let store = TestStore(
+      initialState: 0,
+      reducer: Reducer<Int, Action, Void> { state, action, _ in
+        switch action {
+        case .tap:
+          return .task { @MainActor in
+            try? await Task.sleep(nanoseconds: 100 * NSEC_PER_MSEC)
+            return .response(42)
+          }
+        case let .response(number):
+          state = number
+          return .none
+        }
+      },
+      environment: ()
+    )
+
+    store.send(.tap)
+
+    await store.receive(.response(42)) {
+      $0 = 42
+    }
+  }
 }

@@ -2,7 +2,6 @@ import Combine
 import SwiftUI
 
 #if compiler(>=5.5) && canImport(_Concurrency)
-  @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
   extension Effect {
     /// Wraps an asynchronous unit of work in an effect.
     ///
@@ -105,7 +104,6 @@ import SwiftUI
     }
   }
 
-  @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
   extension ViewStore {
     /// Sends an action into the store and then suspends while a piece of state is `true`.
     ///
@@ -191,7 +189,7 @@ import SwiftUI
       _ action: Action,
       while predicate: @escaping (State) -> Bool
     ) async {
-      self.send(action)
+      { self.send(action) }() // NB: synchronous overload hack
       await self.suspend(while: predicate)
     }
 
@@ -219,8 +217,64 @@ import SwiftUI
     ///   should suspend.
     public func suspend(while predicate: @escaping (State) -> Bool) async {
       _ = await self.publisher
-        .values
+        .asyncStream()
         .first(where: { !predicate($0) })
     }
   }
 #endif
+
+
+class CombineAsyncStream<Upstream>: AsyncSequence
+where
+  Upstream: Publisher,
+  Upstream.Failure == Never
+{
+  typealias Element = Upstream.Output
+  typealias AsyncIterator = CombineAsyncStream<Upstream>
+
+  func makeAsyncIterator() -> Self {
+    return self
+  }
+
+  private let stream: AsyncStream<Upstream.Output>
+
+  private lazy var iterator = stream.makeAsyncIterator()
+
+  private var cancellable: AnyCancellable?
+  public init(_ upstream: Upstream) {
+    var subscription: AnyCancellable? = nil
+
+    stream = AsyncStream<Upstream.Output>(Upstream.Output.self) { continuation in
+      subscription = upstream
+        .handleEvents(
+          receiveCancel: {
+            continuation.finish()
+          }
+        )
+        .sink(receiveCompletion: { _ in
+          continuation.finish()
+        }, receiveValue: { value in
+          continuation.yield(value)
+        })
+    }
+
+    cancellable = subscription
+  }
+
+  func cancel() {
+    cancellable?.cancel()
+    cancellable = nil
+  }
+}
+
+extension CombineAsyncStream: AsyncIteratorProtocol {
+  public func next() async -> Upstream.Output? {
+    return await iterator.next()
+  }
+}
+
+extension Publisher where Failure == Never {
+  func asyncStream() -> CombineAsyncStream<Self> {
+    return CombineAsyncStream(self)
+  }
+}

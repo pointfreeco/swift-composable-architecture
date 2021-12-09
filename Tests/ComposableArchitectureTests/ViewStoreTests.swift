@@ -170,8 +170,6 @@ final class ViewStoreTests: XCTestCase {
 
   #if compiler(>=5.5) && canImport(_Concurrency)
     func testSendWhile() {
-      guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
-
       let expectation = self.expectation(description: "await")
       Task { @MainActor in
         enum Action {
@@ -203,8 +201,6 @@ final class ViewStoreTests: XCTestCase {
     }
 
     func testSuspend() {
-      guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
-
       let expectation = self.expectation(description: "await")
       Task { @MainActor in
         enum Action {
@@ -228,7 +224,7 @@ final class ViewStoreTests: XCTestCase {
         let viewStore = ViewStore(store)
 
         XCTAssertNoDifference(viewStore.state, false)
-        viewStore.send(.tapped)
+        _ = { viewStore.send(.tapped) }()
         XCTAssertNoDifference(viewStore.state, true)
         await viewStore.suspend(while: { $0 })
         XCTAssertNoDifference(viewStore.state, false)

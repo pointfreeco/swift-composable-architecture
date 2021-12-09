@@ -329,9 +329,15 @@ public final class Store<State, Action> {
       reducer: .init { localState, localAction, _ in
         isSending = true
         defer { isSending = false }
-        self.send(fromLocalAction(localAction))
+        let (cancel, task) = self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
-        return .none
+        return Effect.task { @MainActor in
+          await withTaskCancellationHandler(
+            handler: { cancel() },
+            operation: { await task.value }
+          )
+        }
+        .fireAndForget()
       },
       environment: ()
     )
@@ -354,11 +360,16 @@ public final class Store<State, Action> {
     self.scope(state: toLocalState, action: { $0 })
   }
 
-  func send(_ action: Action, originatingFrom originatingAction: Action? = nil) {
+  func send(
+    _ action: Action,
+    originatingFrom originatingAction: Action? = nil
+  )
+  -> (cancel: () -> Void, task: Task<Void, Never>)
+  {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
     self.bufferedActions.append(action)
-    guard !self.isSending else { return }
+    guard !self.isSending else { return ({}, .init {}) }
 
     self.isSending = true
     var currentState = self.state.value
@@ -367,7 +378,11 @@ public final class Store<State, Action> {
       self.state.value = currentState
     }
 
+    var cancellables: [(AsyncStream<Void>.Continuation, AsyncStream<Void>, AnyCancellable)] = []
+
     while !self.bufferedActions.isEmpty {
+      let (continuation, stream) = AsyncStream<Void>.create()
+
       let action = self.bufferedActions.removeFirst()
       let effect = self.reducer(&currentState, action)
 
@@ -376,18 +391,38 @@ public final class Store<State, Action> {
       let effectCancellable = effect.sink(
         receiveCompletion: { [weak self] _ in
           self?.threadCheck(status: .effectCompletion(action))
+          continuation.finish()
           didComplete = true
           self?.effectCancellables[uuid] = nil
         },
         receiveValue: { [weak self] effectAction in
-          self?.send(effectAction, originatingFrom: action)
+          _ = self?.send(effectAction, originatingFrom: action)
         }
       )
 
       if !didComplete {
+        cancellables.append((continuation, stream, effectCancellable))
         self.effectCancellables[uuid] = effectCancellable
       }
     }
+
+    return (
+      cancel: { [cancellables] in
+        for (continuation, _, cancellable) in cancellables {
+          cancellable.cancel()
+          continuation.finish()
+        }
+      },
+      task: Task { @MainActor [cancellables] in
+        for (_, stream, cancellable) in cancellables {
+          for await _ in stream {
+            guard !Task.isCancelled
+            else { break }
+          }
+          cancellable.cancel()
+        }
+      }
+    )
   }
 
   /// Returns a "stateless" store by erasing state to `Void`.
@@ -485,5 +520,13 @@ public final class Store<State, Action> {
     #if DEBUG
       self.mainThreadChecksEnabled = mainThreadChecksEnabled
     #endif
+  }
+}
+
+private extension AsyncStream {
+  static func create() -> (Self.Continuation, Self) {
+    var continuation: Continuation!
+    let stream = Self { continuation = $0 }
+    return (continuation, stream)
   }
 }

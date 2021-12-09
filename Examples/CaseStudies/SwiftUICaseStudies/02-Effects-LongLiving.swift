@@ -21,9 +21,8 @@ struct LongLivingEffectsState: Equatable {
 }
 
 enum LongLivingEffectsAction {
+  case task
   case userDidTakeScreenshotNotification
-  case onAppear
-  case onDisappear
 }
 
 struct LongLivingEffectsEnvironment {
@@ -39,22 +38,15 @@ let longLivingEffectsReducer = Reducer<
   LongLivingEffectsState, LongLivingEffectsAction, LongLivingEffectsEnvironment
 > { state, action, environment in
 
-  struct UserDidTakeScreenshotNotificationId: Hashable {}
-
   switch action {
+  case .task:
+    // When the view appears, start the effect that emits when screenshots are taken.
+    return environment.userDidTakeScreenshot
+      .map { .userDidTakeScreenshotNotification }
+
   case .userDidTakeScreenshotNotification:
     state.screenshotCount += 1
     return .none
-
-  case .onAppear:
-    // When the view appears, start the effect that emits when screenshots are taken.
-    return environment.userDidTakeScreenshot
-      .map { LongLivingEffectsAction.userDidTakeScreenshotNotification }
-      .cancellable(id: UserDidTakeScreenshotNotificationId())
-
-  case .onDisappear:
-    // When view disappears, stop the effect.
-    return .cancel(id: UserDidTakeScreenshotNotificationId())
   }
 }
 
@@ -78,8 +70,7 @@ struct LongLivingEffectsView: View {
         }
       }
       .navigationBarTitle("Long-living effects")
-      .onAppear { viewStore.send(.onAppear) }
-      .onDisappear { viewStore.send(.onDisappear) }
+      .task { await viewStore.send(.task) }
     }
   }
 
