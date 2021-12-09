@@ -57,6 +57,7 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
         return .locationWeatherResponse(.failure(error as NSError))
       }
     }
+    .cancellable(id: SearchWeatherId(), cancelInFlight: true)
 
   case let .searchQueryChanged(query):
     struct SearchLocationId: Hashable {}

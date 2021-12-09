@@ -51,113 +51,113 @@ class SearchTests: XCTestCase {
     await store.receive(.locationsResponse(.failure(SearchLocationError() as NSError)))
   }
 
-//  func testClearQueryCancelsInFlightSearchRequest() {
-//    var weatherClient = WeatherClient.failing
-//    weatherClient.searchLocation = { _ in mockLocations }
-//
-//    let store = TestStore(
-//      initialState: .init(),
-//      reducer: searchReducer,
-//      environment: SearchEnvironment(
-//        weatherClient: weatherClient,
-//        mainQueue: self.scheduler.eraseToAnyScheduler()
-//      )
-//    )
-//
-//    store.send(.searchQueryChanged("S")) {
-//      $0.searchQuery = "S"
-//    }
-//    await self.scheduler.advance(by: 0.2)
-//    store.send(.searchQueryChanged("")) {
-//      $0.searchQuery = ""
-//    }
-//    await self.scheduler.run()
-//  }
-//
-//  func testTapOnLocation() async {
-//    let specialLocation = Location(id: 42, title: "Special Place")
-//    let specialLocationWeather = LocationWeather(
-//      consolidatedWeather: mockWeather,
-//      id: 42
-//    )
-//
-//    var weatherClient = WeatherClient.failing
-//    weatherClient.weather = { _ in specialLocationWeather }
-//
-//    let store = TestStore(
-//      initialState: .init(locations: mockLocations + [specialLocation]),
-//      reducer: searchReducer,
-//      environment: SearchEnvironment(
-//        weatherClient: weatherClient,
-//        mainQueue: self.scheduler.eraseToAnyScheduler()
-//      )
-//    )
-//
-//    store.send(.locationTapped(specialLocation)) {
-//      $0.locationWeatherRequestInFlight = specialLocation
-//    }
-//    await self.scheduler.advance()
-//    await store.receive(.locationWeatherResponse(.success(specialLocationWeather))) {
-//      $0.locationWeatherRequestInFlight = nil
-//      $0.locationWeather = specialLocationWeather
-//    }
-//  }
+  func testClearQueryCancelsInFlightSearchRequest() async {
+    var weatherClient = WeatherClient.failing
+    weatherClient.searchLocation = { _ in mockLocations }
 
-//  func testTapOnLocationCancelsInFlightRequest() async {
-//    let specialLocation = Location(id: 42, title: "Special Place")
-//    let specialLocationWeather = LocationWeather(
-//      consolidatedWeather: mockWeather,
-//      id: 42
-//    )
-//
-//    var weatherClient = WeatherClient.failing
-//    weatherClient.weather = { _ in specialLocationWeather }
-//
-//    let store = TestStore(
-//      initialState: .init(locations: mockLocations + [specialLocation]),
-//      reducer: searchReducer,
-//      environment: SearchEnvironment(
-//        weatherClient: weatherClient,
-//        mainQueue: self.scheduler.eraseToAnyScheduler()
-//      )
-//    )
-//
-//    store.send(.locationTapped(mockLocations.first!)) {
-//      $0.locationWeatherRequestInFlight = mockLocations.first!
-//    }
-//    store.send(.locationTapped(specialLocation)) {
-//      $0.locationWeatherRequestInFlight = specialLocation
-//    }
-//    self.scheduler.advance()
-//    await store.receive(.locationWeatherResponse(.success(specialLocationWeather))) {
-//      $0.locationWeatherRequestInFlight = nil
-//      $0.locationWeather = specialLocationWeather
-//    }
-//  }
-//
-//  func testTapOnLocationFailure() async {
-//    struct WeatherError: Error, Equatable {}
-//
-//    var weatherClient = WeatherClient.failing
-//    weatherClient.weather = { _ in throw WeatherError() }
-//
-//    let store = TestStore(
-//      initialState: .init(locations: mockLocations),
-//      reducer: searchReducer,
-//      environment: SearchEnvironment(
-//        weatherClient: weatherClient,
-//        mainQueue: self.scheduler.eraseToAnyScheduler()
-//      )
-//    )
-//
-//    store.send(.locationTapped(mockLocations.first!)) {
-//      $0.locationWeatherRequestInFlight = mockLocations.first!
-//    }
-//    self.scheduler.advance()
-//    await store.receive(.locationWeatherResponse(.failure(WeatherError() as NSError))) {
-//      $0.locationWeatherRequestInFlight = nil
-//    }
-//  }
+    let store = TestStore(
+      initialState: .init(),
+      reducer: searchReducer,
+      environment: SearchEnvironment(
+        weatherClient: weatherClient,
+        mainQueue: self.scheduler.eraseToAnyScheduler()
+      )
+    )
+
+    store.send(.searchQueryChanged("S")) {
+      $0.searchQuery = "S"
+    }
+    await self.scheduler.advance(by: 0.2)
+    store.send(.searchQueryChanged("")) {
+      $0.searchQuery = ""
+    }
+    await self.scheduler.run()
+  }
+
+  func testTapOnLocation() async {
+    let specialLocation = Location(id: 42, title: "Special Place")
+    let specialLocationWeather = LocationWeather(
+      consolidatedWeather: mockWeather,
+      id: 42
+    )
+
+    var weatherClient = WeatherClient.failing
+    weatherClient.weather = { _ in specialLocationWeather }
+
+    let store = TestStore(
+      initialState: .init(locations: mockLocations + [specialLocation]),
+      reducer: searchReducer,
+      environment: SearchEnvironment(
+        weatherClient: weatherClient,
+        mainQueue: self.scheduler.eraseToAnyScheduler()
+      )
+    )
+
+    store.send(.locationTapped(specialLocation)) {
+      $0.locationWeatherRequestInFlight = specialLocation
+    }
+    await self.scheduler.advance()
+    await store.receive(.locationWeatherResponse(.success(specialLocationWeather))) {
+      $0.locationWeatherRequestInFlight = nil
+      $0.locationWeather = specialLocationWeather
+    }
+  }
+
+  func testTapOnLocationCancelsInFlightRequest() async {
+    let specialLocation = Location(id: 42, title: "Special Place")
+    let specialLocationWeather = LocationWeather(
+      consolidatedWeather: mockWeather,
+      id: 42
+    )
+
+    var weatherClient = WeatherClient.failing
+    weatherClient.weather = { _ in specialLocationWeather }
+
+    let store = TestStore(
+      initialState: .init(locations: mockLocations + [specialLocation]),
+      reducer: searchReducer,
+      environment: SearchEnvironment(
+        weatherClient: weatherClient,
+        mainQueue: self.scheduler.eraseToAnyScheduler()
+      )
+    )
+
+    store.send(.locationTapped(mockLocations.first!)) {
+      $0.locationWeatherRequestInFlight = mockLocations.first!
+    }
+    store.send(.locationTapped(specialLocation)) {
+      $0.locationWeatherRequestInFlight = specialLocation
+    }
+    await self.scheduler.advance()
+    await store.receive(.locationWeatherResponse(.success(specialLocationWeather))) {
+      $0.locationWeatherRequestInFlight = nil
+      $0.locationWeather = specialLocationWeather
+    }
+  }
+
+  func testTapOnLocationFailure() async {
+    struct WeatherError: Error, Equatable {}
+
+    var weatherClient = WeatherClient.failing
+    weatherClient.weather = { _ in throw WeatherError() }
+
+    let store = TestStore(
+      initialState: .init(locations: mockLocations),
+      reducer: searchReducer,
+      environment: SearchEnvironment(
+        weatherClient: weatherClient,
+        mainQueue: self.scheduler.eraseToAnyScheduler()
+      )
+    )
+
+    store.send(.locationTapped(mockLocations.first!)) {
+      $0.locationWeatherRequestInFlight = mockLocations.first!
+    }
+    await self.scheduler.advance()
+    await store.receive(.locationWeatherResponse(.failure(WeatherError() as NSError))) {
+      $0.locationWeatherRequestInFlight = nil
+    }
+  }
 }
 
 private let mockWeather: [LocationWeather.ConsolidatedWeather] = [
