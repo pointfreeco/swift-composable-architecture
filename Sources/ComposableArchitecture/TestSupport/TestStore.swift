@@ -176,12 +176,7 @@
     private let fromLocalAction: (LocalAction) -> Action
     private var line: UInt
     private var longLivingEffects: Set<LongLivingEffect> = []
-
-    // TODO: possible to unify receivedActions with receivedActionsStream?
-    var receivedActions: [(action: Action, state: State)] = []
-    private let receivedActionsStream: AsyncStream<Void>
-    private var receivedActionsContinuation: AsyncStream<Void>.Continuation!
-
+    var receivedActions = CurrentValueAsyncStream<[(action: Action, state: State)]>([])
     private let reducer: Reducer<State, Action, Environment>
     private var snapshotState: State
     private var store: Store<State, TestAction>!
@@ -196,12 +191,6 @@
       reducer: Reducer<State, Action, Environment>,
       toLocalState: @escaping (State) -> LocalState
     ) {
-      var receivedActionsContinuation: AsyncStream<Void>.Continuation!
-      self.receivedActionsStream = AsyncStream { continuation in
-        receivedActionsContinuation = continuation
-      }
-      self.receivedActionsContinuation = receivedActionsContinuation
-
       self.environment = environment
       self.file = file
       self.fromLocalAction = fromLocalAction
@@ -221,8 +210,7 @@
 
           case let .receive(action):
             effects = self.reducer.run(&state, action, self.environment)
-            self.receivedActions.append((action, state))
-            self.receivedActionsContinuation.yield()
+            self.receivedActions.element.append((action, state))
           }
 
           let effect = LongLivingEffect(file: action.file, line: action.line)
@@ -244,24 +232,21 @@
     }
 
     deinit {
-      let file = self.file
-      let line = self.line
-      let longLivingEffects = self.longLivingEffects
-      let receivedActions = self.receivedActions
-      if !receivedActions.isEmpty {
+      if !self.receivedActions.element.isEmpty {
         var actions = ""
-        customDump(receivedActions.map(\.action), to: &actions)
+        customDump(self.receivedActions.element.map(\.action), to: &actions)
         XCTFail(
             """
-            The store received \(receivedActions.count) unexpected \
-            action\(receivedActions.count == 1 ? "" : "s") after this one: …
+            The store received \(self.receivedActions.element.count) unexpected \
+            action\(self.receivedActions.element.count == 1 ? "" : "s") after this one: …
 
             Unhandled actions: \(actions)
             """,
-            file: file, line: line
+            file: self.file,
+            line: self.line
         )
       }
-      for effect in longLivingEffects {
+      for effect in self.longLivingEffects {
         XCTFail(
             """
             An effect returned for this action is still running. It must complete before the end of \
@@ -347,13 +332,13 @@
       line: UInt = #line,
       _ update: @escaping (inout LocalState) throws -> Void = { _ in }
     ) -> Task<Void, Never> {
-      if !self.receivedActions.isEmpty {
+      if !self.receivedActions.element.isEmpty {
         var actions = ""
-        customDump(self.receivedActions.map(\.action), to: &actions)
+        customDump(self.receivedActions.element.map(\.action), to: &actions)
         XCTFail(
           """
-          Must handle \(self.receivedActions.count) received \
-          action\(self.receivedActions.count == 1 ? "" : "s") before sending an action: …
+          Must handle \(self.receivedActions.element.count) received \
+          action\(self.receivedActions.element.count == 1 ? "" : "s") before sending an action: …
 
           Unhandled actions: \(actions)
           """,
@@ -439,16 +424,23 @@
         }
 
         group.addTask { @MainActor in
-          for await _ in self.receivedActionsStream {
-            guard !Task.isCancelled
-            else { return }
+          if self.receivedActions.element.isEmpty {
+            for await xs in self.receivedActions.stream {
+              guard xs.isEmpty
+              else { break }
+            }
+          }
 
-            let (receivedAction, state) = self.receivedActions.removeFirst()
-            if expectedAction != receivedAction {
-              let difference =
-              diff(expectedAction, receivedAction, format: .proportional)
-                .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
-              ?? """
+          guard !Task.isCancelled
+          else { return }
+
+          let (receivedAction, state) = self.receivedActions.element.removeFirst()
+
+          if expectedAction != receivedAction {
+            let difference =
+            diff(expectedAction, receivedAction, format: .proportional)
+              .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
+            ?? """
             Expected:
             \(String(describing: expectedAction).indent(by: 2))
 
@@ -456,32 +448,30 @@
             \(String(describing: receivedAction).indent(by: 2))
             """
 
-              XCTFail(
+            XCTFail(
             """
             Received unexpected action: …
 
             \(difference)
             """,
             file: file, line: line
-              )
-            }
-            var expectedState = self.toLocalState(self.snapshotState)
-            do {
-              try update(&expectedState)
-            } catch {
-              XCTFail("Threw error: \(error)", file: file, line: line)
-            }
-            self.expectedStateShouldMatch(
-              expected: expectedState,
-              actual: self.toLocalState(state),
-              file: file,
-              line: line
             )
-            self.snapshotState = state
-            if "\(self.file)" == "\(file)" {
-              self.line = line
-            }
-            break
+          }
+          var expectedState = self.toLocalState(self.snapshotState)
+          do {
+            try update(&expectedState)
+          } catch {
+            XCTFail("Threw error: \(error)", file: file, line: line)
+          }
+          self.expectedStateShouldMatch(
+            expected: expectedState,
+            actual: self.toLocalState(state),
+            file: file,
+            line: line
+          )
+          self.snapshotState = state
+          if "\(self.file)" == "\(file)" {
+            self.line = line
           }
         }
 
@@ -496,7 +486,7 @@
       line: UInt = #line,
       _ update: @escaping (inout LocalState) throws -> Void = { _ in }
     ) {
-      guard !self.receivedActions.isEmpty else {
+      guard !self.receivedActions.element.isEmpty else {
         XCTFail(
           """
           Expected to receive an action, but received none.
@@ -505,7 +495,7 @@
         )
         return
       }
-      let (receivedAction, state) = self.receivedActions.removeFirst()
+      let (receivedAction, state) = self.receivedActions.element.removeFirst()
       if expectedAction != receivedAction {
         let difference =
           diff(expectedAction, receivedAction, format: .proportional)
@@ -587,3 +577,28 @@
     }
   }
 #endif
+
+class CurrentValueAsyncStream<Element>: AsyncSequence {
+  let stream: AsyncStream<Element>
+  let continuation: AsyncStream<Element>.Continuation
+
+  var element: Element {
+    didSet {
+      self.continuation.yield(self.element)
+    }
+  }
+
+  init(_ element: Element) {
+    self.element = element
+    var continuation: AsyncStream<Element>.Continuation!
+    self.stream = .init {
+      continuation = $0
+    }
+    self.continuation = continuation
+    self.continuation.yield(element)
+  }
+
+  __consuming func makeAsyncIterator() -> AsyncStream<Element>.AsyncIterator {
+    self.stream.makeAsyncIterator()
+  }
+}
