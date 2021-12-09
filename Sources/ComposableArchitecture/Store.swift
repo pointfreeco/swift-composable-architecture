@@ -301,9 +301,15 @@ public final class Store<State, Action> {
       reducer: .init { localState, localAction, _ in
         isSending = true
         defer { isSending = false }
-        self.send(fromLocalAction(localAction))
+        let (c, t) = self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
-        return .none
+        return Effect<Void, Never>.task {
+          await withTaskCancellationHandler(
+            handler: { c() },
+            operation: { await t.value }
+          )
+        }
+        .fireAndForget()
       },
       environment: ()
     )
@@ -325,28 +331,6 @@ public final class Store<State, Action> {
   ) -> Store<LocalState, Action> {
     self.scope(state: toLocalState, action: { $0 })
   }
-
-//  public func send(_ action: Action) -> Task<Void, Never> {
-//    var _state = self._state
-//    let effect = self.reducer(&_state, action)
-//    self._state = _state
-//
-//    let task = Task {
-//      _ = try? await Task.sleep(nanoseconds: .max)
-//    }
-//    effect
-//      .sink(
-//        receiveCompletion: { _ in
-//          task.cancel()
-//        },
-//        receiveValue: { action in
-//          self.send(action)
-//        }
-//      )
-//      .store(in: &self.effectCancellables)
-//
-//    return task
-//  }
 
   @discardableResult
   func send(_ action: Action) -> (() -> Void, Task<Void, Never>) {
@@ -401,9 +385,7 @@ public final class Store<State, Action> {
             else { break }
           }
           cancellable.cancel()
-          print("End of task")
         }
-        print("End of all tasks")
       }
     )
   }
@@ -420,23 +402,10 @@ public final class Store<State, Action> {
   }
 }
 
-extension UInt64 {
-  static let maxSleep: Self = 9223372036854774784
-}
-
 extension AsyncStream {
   static func create() -> (Self.Continuation, Self) {
     var c: Continuation!
     let s = Self { c = $0 }
     return (c, s)
-  }
-}
-
-extension Task {
-  static var forever: Task<Void, Never> {
-    .init {
-      let (_, s) = AsyncStream<Void>.create()
-      for await _ in s {}
-    }
   }
 }
