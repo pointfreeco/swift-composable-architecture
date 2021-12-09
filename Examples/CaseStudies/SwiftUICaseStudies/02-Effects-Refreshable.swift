@@ -20,7 +20,7 @@ struct RefreshableState: Equatable {
 enum RefreshableAction: Equatable {
   case cancelButtonTapped
   case decrementButtonTapped
-  case factResponse(Result<String, FactClient.Error>)
+  case factResponse(TaskResult<String>)
   case incrementButtonTapped
   case refresh
 }
@@ -64,10 +64,16 @@ let refreshableReducer = Reducer<
   case .refresh:
     state.fact = nil
     state.isLoading = true
-    return environment.fact.fetch(state.count)
-      .delay(for: .seconds(2), scheduler: environment.mainQueue.animation())
-      .catchToEffect(RefreshableAction.factResponse)
-      .cancellable(id: CancelId())
+    return .task { @MainActor [count = state.count] in
+      .factResponse(
+        await TaskResult {
+          try await environment.fact.fetch(count)
+        }
+      )
+    }
+    .delay(for: .seconds(2), scheduler: environment.mainQueue.animation())
+    .eraseToEffect()
+    .cancellable(id: CancelId())
   }
 }
 
