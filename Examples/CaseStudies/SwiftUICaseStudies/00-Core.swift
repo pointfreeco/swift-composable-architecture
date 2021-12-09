@@ -79,7 +79,7 @@ struct RootEnvironment {
   var date: () -> Date
   var downloadClient: DownloadClient
   var fact: FactClient
-  var favorite: (UUID, Bool) -> Effect<Bool, Error>
+  var favorite: (UUID, Bool) async throws -> Bool
   var fetchNumber: () async -> Int
   var mainQueue: AnySchedulerOf<DispatchQueue>
   var userDidTakeScreenshot: Effect<Void, Never>
@@ -176,7 +176,7 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.episodes,
       action: /RootAction.episodes,
-      environment: { .init(favorite: $0.favorite, mainQueue: $0.mainQueue) }
+      environment: { .init(favorite: $0.favorite) }
     ),
   .init { state, action, environment in
     #if compiler(>=5.5)
