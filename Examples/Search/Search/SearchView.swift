@@ -71,10 +71,18 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
       return .cancel(id: SearchLocationId())
     }
 
-    return environment.weatherClient
-      .searchLocation(query)
-      .debounce(id: SearchLocationId(), for: 0.3, scheduler: environment.mainQueue)
-      .catchToEffect(SearchAction.locationsResponse)
+    return .task {
+      do {
+        return .locationsResponse(
+          .success(
+            try await environment.weatherClient.searchLocation(query)
+          )
+        )
+      } catch {
+        return .locationsResponse(.failure(error as NSError))
+      }
+    }
+    .debounce(id: SearchLocationId(), for: 0.3, scheduler: environment.mainQueue)
 
   case let .locationWeatherResponse(.failure(locationWeather)):
     state.locationWeather = nil
@@ -200,41 +208,41 @@ struct SearchView_Previews: PreviewProvider {
       environment: SearchEnvironment(
         weatherClient: WeatherClient(
           searchLocation: { _ in
-            Effect(value: [
+            [
               Location(id: 1, title: "Brooklyn"),
               Location(id: 2, title: "Los Angeles"),
               Location(id: 3, title: "San Francisco"),
-            ])
+            ]
           },
           weather: { id in
-            Effect(
-              value: LocationWeather(
-                consolidatedWeather: [
-                  .init(
-                    applicableDate: Date(timeIntervalSince1970: 0),
-                    maxTemp: 90,
-                    minTemp: 70,
-                    theTemp: 80,
-                    weatherStateName: "Clear"
-                  ),
-                  .init(
-                    applicableDate: Date(timeIntervalSince1970: 86_400),
-                    maxTemp: 70,
-                    minTemp: 50,
-                    theTemp: 60,
-                    weatherStateName: "Rain"
-                  ),
-                  .init(
-                    applicableDate: Date(timeIntervalSince1970: 172_800),
-                    maxTemp: 100,
-                    minTemp: 80,
-                    theTemp: 90,
-                    weatherStateName: "Cloudy"
-                  ),
-                ],
-                id: id
-              ))
-          }),
+            LocationWeather(
+              consolidatedWeather: [
+                .init(
+                  applicableDate: Date(timeIntervalSince1970: 0),
+                  maxTemp: 90,
+                  minTemp: 70,
+                  theTemp: 80,
+                  weatherStateName: "Clear"
+                ),
+                .init(
+                  applicableDate: Date(timeIntervalSince1970: 86_400),
+                  maxTemp: 70,
+                  minTemp: 50,
+                  theTemp: 60,
+                  weatherStateName: "Rain"
+                ),
+                .init(
+                  applicableDate: Date(timeIntervalSince1970: 172_800),
+                  maxTemp: 100,
+                  minTemp: 80,
+                  theTemp: 90,
+                  weatherStateName: "Cloudy"
+                ),
+              ],
+              id: id
+            )
+          }
+        ),
         mainQueue: .main
       )
     )

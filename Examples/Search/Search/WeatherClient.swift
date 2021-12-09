@@ -1,6 +1,5 @@
 import ComposableArchitecture
 import Foundation
-import XCTest
 
 // MARK: - API models
 
