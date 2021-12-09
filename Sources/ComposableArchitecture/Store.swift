@@ -303,7 +303,7 @@ public final class Store<State, Action> {
         defer { isSending = false }
         let (cancel, task) = self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
-        return Effect<Void, Never>.task {
+        return Effect.task {
           await withTaskCancellationHandler(
             handler: { cancel() },
             operation: { await task.value }
