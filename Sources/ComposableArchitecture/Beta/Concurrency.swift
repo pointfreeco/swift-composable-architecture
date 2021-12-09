@@ -190,7 +190,7 @@ import SwiftUI
       _ action: Action,
       while predicate: @escaping (State) -> Bool
     ) async {
-      _ = self._send(action)
+      Task { await self._send(action) }
       await self.suspend(while: predicate)
     }
 

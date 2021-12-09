@@ -11,13 +11,22 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
   ) {
     self.window = (scene as? UIWindowScene).map(UIWindow.init(windowScene:))
     self.window?.rootViewController = UIHostingController(
-      rootView: RootView(
+      rootView: NavigationView {
+        LongLivingEffectsView(
         store: .init(
-          initialState: RootState(),
-          reducer: rootReducer,
-          environment: .live
+          initialState: .init(),
+          reducer: longLivingEffectsReducer,
+          environment: .init(userDidTakeScreenshot: liveUserDidTakeScreenshot)
         )
       )
+      }
+//        RootView(
+//        store: .init(
+//          initialState: RootState(),
+//          reducer: rootReducer,
+//          environment: .live
+//        )
+//      )
     )
     self.window?.makeKeyAndVisible()
   }

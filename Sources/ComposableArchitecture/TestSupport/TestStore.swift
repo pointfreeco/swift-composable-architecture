@@ -245,11 +245,10 @@
       let line = self.line
       let longLivingEffects = self.longLivingEffects
       let receivedActions = self.receivedActions
-      Task { @MainActor in
-        if !receivedActions.isEmpty {
-          var actions = ""
-          customDump(receivedActions.map(\.action), to: &actions)
-          XCTFail(
+      if !receivedActions.isEmpty {
+        var actions = ""
+        customDump(receivedActions.map(\.action), to: &actions)
+        XCTFail(
             """
             The store received \(receivedActions.count) unexpected \
             action\(receivedActions.count == 1 ? "" : "s") after this one: …
@@ -257,10 +256,10 @@
             Unhandled actions: \(actions)
             """,
             file: file, line: line
-          )
-        }
-        for effect in longLivingEffects {
-          XCTFail(
+        )
+      }
+      for effect in longLivingEffects {
+        XCTFail(
             """
             An effect returned for this action is still running. It must complete before the end of \
             the test. …
@@ -281,8 +280,7 @@
             """,
             file: effect.file,
             line: effect.line
-          )
-        }
+        )
       }
     }
 
@@ -339,13 +337,12 @@
   }
 
   extension TestStore where LocalState: Equatable {
-    @discardableResult
     public func send(
       _ action: LocalAction,
       file: StaticString = #file,
       line: UInt = #line,
       _ update: @escaping (inout LocalState) throws -> Void = { _ in }
-    ) -> Task<Void, Never> {
+    ) async {
       if !self.receivedActions.isEmpty {
         var actions = ""
         customDump(self.receivedActions.map(\.action), to: &actions)
@@ -360,7 +357,7 @@
         )
       }
       var expectedState = self.toLocalState(self.snapshotState)
-      let task = self.store.send(.init(origin: .send(action), file: file, line: line))
+      await self.store.send(.init(origin: .send(action), file: file, line: line))
       do {
         try update(&expectedState)
       } catch {
@@ -375,7 +372,6 @@
       if "\(self.file)" == "\(file)" {
         self.line = line
       }
-      return task
     }
 
     private func expectedStateShouldMatch(
@@ -428,6 +424,8 @@
 //      }
       for await _ in self.receivedActionsStream {
         let (receivedAction, state) = self.receivedActions.removeFirst()
+        print("receivedAction", receivedAction)
+        print("state", state)
         if expectedAction != receivedAction {
           let difference =
             diff(expectedAction, receivedAction, format: .proportional)

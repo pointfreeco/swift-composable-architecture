@@ -61,7 +61,6 @@ class TestStoreTests: XCTestCase {
     store.send(.d)
   }
 
-  @MainActor
   func testAsync() async {
     enum Action: Equatable {
       case tap, response(Int)
@@ -83,10 +82,12 @@ class TestStoreTests: XCTestCase {
       environment: ()
     )
 
-    store.send(.tap)
+    let task = store.send(.tap)
 
     await store.receive(.response(42)) {
       $0 = 42
     }
+
+    await task.value
   }
 }

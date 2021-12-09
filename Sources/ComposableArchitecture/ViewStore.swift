@@ -58,7 +58,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy nonisolated var objectWillChange = ObservableObjectPublisher()
 
-  let _send: (Action) -> Task<Void, Never>
+  let _send: (Action) async -> Void
   fileprivate let _state: CurrentValueRelay<State>
   private var viewCancellable: AnyCancellable?
 
@@ -72,7 +72,7 @@ public final class ViewStore<State, Action>: ObservableObject {
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool
   ) {
-    self._send = { store.send($0) }
+    self._send = { await store.send($0) }
     self._state = CurrentValueRelay(store.state.value)
 
     self.viewCancellable = store.state
@@ -133,11 +133,21 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///
   /// - Parameter action: An action.
   public func send(_ action: Action) {
-    _ = self._send(action)
+    Task { await self._send(action) }
   }
 
   public func send(_ action: Action) async {
-    await self._send(action).value
+    await withTaskCancellationHandler(
+      handler: {
+        print("ViewStore.send", "withTaskCancellationHandler", "handler")
+      },
+      operation: {
+//        await viewStore.send(.task)
+        await self._send(action)
+      }
+    )
+
+//    await self._send(action).value
   }
 
   /// Derives a binding from the store that prevents direct writes to state and instead sends

@@ -133,8 +133,16 @@ public final class Store<State, Action> {
   var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
   var parentCancellable: AnyCancellable?
-  private let reducer: (inout State, Action) -> Effect<Action, Never>
+  private let reducer: (inout State, Action) async -> Effect<Action, Never>
   var state: CurrentValueSubject<State, Never>
+
+  fileprivate init(
+    initialState: State,
+    reducer: @escaping (inout State, Action) async -> Effect<Action, Never>
+  ) {
+    self.state = CurrentValueSubject(initialState)
+    self.reducer = reducer
+  }
 
   /// Initializes a store from an initial state, a reducer, and an environment.
   ///
@@ -298,14 +306,13 @@ public final class Store<State, Action> {
     var isSending = false
     let localStore = Store<LocalState, LocalAction>(
       initialState: toLocalState(self.state.value),
-      reducer: .init { localState, localAction, _ in
+      reducer: { localState, localAction in
         isSending = true
         defer { isSending = false }
-        self.send(fromLocalAction(localAction))
+        await self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
         return .none
-      },
-      environment: ()
+      }
     )
     localStore.parentCancellable = self.state
       .dropFirst()
@@ -348,10 +355,9 @@ public final class Store<State, Action> {
 //    return task
 //  }
 
-  @discardableResult
-  func send(_ action: Action) -> Task<Void, Never> {
+  func send(_ action: Action) async {
     self.bufferedActions.append(action)
-    guard !self.isSending else { return .init {} }
+    guard !self.isSending else { return }
 
     self.isSending = true
     var currentState = self.state.value
@@ -363,24 +369,39 @@ public final class Store<State, Action> {
     var pairs: [(Task<Void, Never>, AnyCancellable)] = []
 
     while !self.bufferedActions.isEmpty {
-      let task = Task { _ = try? await Task.sleep(nanoseconds: .max) }
+      var effectCancellable: AnyCancellable!
+      let task = Task { [effectCancellable] in
+        _ = try? await Task.sleep(nanoseconds: .maxSleep)
+        effectCancellable?.cancel()
+      }
 
       let action = self.bufferedActions.removeFirst()
-      let effect = self.reducer(&currentState, action)
+      let effect = await self.reducer(&currentState, action)
 
       var didComplete = false
       let uuid = UUID()
-      let effectCancellable = effect.sink(
-        receiveCompletion: { [weak self] _ in
-          print("completed \(action)")
-          task.cancel()
-          didComplete = true
-          self?.effectCancellables[uuid] = nil
-        },
-        receiveValue: { [weak self] effectAction in
-          self?.send(effectAction)
-        }
-      )
+      effectCancellable = effect
+        .handleEvents(
+          receiveCancel: { [weak self] in
+            print("cancel \(action)")
+            task.cancel()
+            didComplete = true
+            self?.effectCancellables[uuid] = nil
+          }
+        )
+        .sink(
+          receiveCompletion: { [weak self] _ in
+            print("completed \(action)")
+            task.cancel()
+            didComplete = true
+            self?.effectCancellables[uuid] = nil
+          },
+          receiveValue: { [weak self] effectAction in
+            Task { [weak self] in
+            await self?.send(effectAction)
+            }
+          }
+        )
 
       if !didComplete {
         pairs.append((task, effectCancellable))
@@ -388,15 +409,24 @@ public final class Store<State, Action> {
       }
     }
 
-    return Task { [pairs] in
-      for (task, effectCancellable) in pairs {
-        print(action, 1)
-        await task.value
-//        effectCancellable.cancel()
-        print(action, 2)
 
-      }
-    }
+      await withTaskCancellationHandler(
+        handler: {
+          print("withTaskCancellationHandler.handler")
+        },
+        operation: {
+          await withTaskGroup(of: Void.self) { group in
+            for (task, effectCancellable) in pairs {
+              group.addTask {
+                await task.value
+                effectCancellable.cancel()
+                print("?!?!?!")
+              }
+            }
+          }
+        })
+
+      print("finished", action)
   }
 
   /// Returns a "stateless" store by erasing state to `Void`.
@@ -409,4 +439,9 @@ public final class Store<State, Action> {
     func absurd<A>(_ never: Never) -> A {}
     return self.scope(state: { $0 }, action: absurd)
   }
+}
+
+
+extension UInt64 {
+  static let maxSleep: Self = 9223372036854774784
 }
