@@ -358,7 +358,7 @@
         )
       }
       var expectedState = self.toLocalState(self.snapshotState)
-      let task = self.store.send(.init(origin: .send(action), file: file, line: line))
+      let (_, task) = self.store.send(.init(origin: .send(action), file: file, line: line))
       do {
         try update(&expectedState)
       } catch {
@@ -373,7 +373,7 @@
       if "\(self.file)" == "\(file)" {
         self.line = line
       }
-      return task.1
+      return task
     }
 
     private func expectedStateShouldMatch(
