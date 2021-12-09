@@ -3,9 +3,7 @@ import ComposableArchitecture
 import XCTestDynamicOverlay
 
 struct FactClient {
-  var fetch: (Int) -> Effect<String, Error>
-
-  struct Error: Swift.Error, Equatable {}
+  var fetch: (Int) async throws -> String
 }
 
 // This is the "live" fact dependency that reaches into the outside world to fetch trivia.
@@ -15,18 +13,14 @@ extension FactClient {
   #if compiler(>=5.5)
     static let live = Self(
       fetch: { number in
-        Effect.task {
-          do {
-            let (data, _) = try await URLSession.shared
-              .data(from: URL(string: "http://numbersapi.com/\(number)/trivia")!)
-            return String(decoding: data, as: UTF8.self)
-          } catch {
-            try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
-            return "\(number) is a good number Brent"
-          }
+        do {
+          let (data, _) = try await URLSession.shared
+            .data(from: URL(string: "http://numbersapi.com/\(number)/trivia")!)
+          return String(decoding: data, as: UTF8.self)
+        } catch {
+          try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
+          return "\(number) is a good number Brent"
         }
-        .setFailureType(to: Error.self)
-        .eraseToEffect()
       }
     )
   #else
@@ -54,8 +48,9 @@ extension FactClient {
     // to prove do not need the dependency.
     static let failing = Self(
       fetch: { _ in
-        XCTFail("\(Self.self).fact is unimplemented.")
-        return .none
-      })
+        struct UnimplementedError: Error {}
+        throw UnimplementedError()
+      }
+    )
   }
 #endif

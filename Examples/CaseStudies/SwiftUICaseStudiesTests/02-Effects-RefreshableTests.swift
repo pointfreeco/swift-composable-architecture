@@ -3,13 +3,14 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+@MainActor
 class RefreshableTests: XCTestCase {
-  func testHappyPath() {
+  func testHappyPath() async {
     let store = TestStore(
       initialState: .init(),
       reducer: refreshableReducer,
       environment: .init(
-        fact: .init { .init(value: "\($0) is a good number.") },
+        fact: .init { "\($0) is a good number." },
         mainQueue: .immediate
       )
     )
@@ -20,18 +21,19 @@ class RefreshableTests: XCTestCase {
     store.send(.refresh) {
       $0.isLoading = true
     }
-    store.receive(.factResponse(.success("1 is a good number."))) {
+    await store.receive(.factResponse(.success("1 is a good number."))) {
       $0.isLoading = false
       $0.fact = "1 is a good number."
     }
   }
 
-  func testUnhappyPath() {
+  func testUnhappyPath() async {
+    struct FactError: Error {}
     let store = TestStore(
       initialState: .init(),
       reducer: refreshableReducer,
       environment: .init(
-        fact: .init { _ in .init(error: .init()) },
+        fact: .init { _ in throw FactError() },
         mainQueue: .immediate
       )
     )
@@ -42,7 +44,7 @@ class RefreshableTests: XCTestCase {
     store.send(.refresh) {
       $0.isLoading = true
     }
-    store.receive(.factResponse(.failure(.init()))) {
+    await store.receive(.factResponse(.failure(FactError()))) {
       $0.isLoading = false
     }
   }
@@ -54,7 +56,7 @@ class RefreshableTests: XCTestCase {
       initialState: .init(),
       reducer: refreshableReducer,
       environment: .init(
-        fact: .init { .init(value: "\($0) is a good number.") },
+        fact: .init { "\($0) is a good number." },
         mainQueue: mainQueue.eraseToAnyScheduler()
       )
     )

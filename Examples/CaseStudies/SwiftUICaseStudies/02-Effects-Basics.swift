@@ -35,7 +35,7 @@ enum EffectsBasicsAction: Equatable {
   case decrementButtonTapped
   case incrementButtonTapped
   case numberFactButtonTapped
-  case numberFactResponse(Result<String, FactClient.Error>)
+  case numberFactResponse(TaskResult<String>)
 }
 
 struct EffectsBasicsEnvironment {
@@ -67,9 +67,13 @@ let effectsBasicsReducer = Reducer<
     state.numberFact = nil
     // Return an effect that fetches a number fact from the API and returns the
     // value back to the reducer's `numberFactResponse` action.
-    return environment.fact.fetch(state.count)
-      .receive(on: environment.mainQueue)
-      .catchToEffect(EffectsBasicsAction.numberFactResponse)
+    return .task { @MainActor [count = state.count] in
+      .numberFactResponse(
+        await .init {
+          try await environment.fact.fetch(count)
+        }
+      )
+    }
 
   case let .numberFactResponse(.success(response)):
     state.isNumberFactRequestInFlight = false

@@ -3,8 +3,9 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+@MainActor
 class EffectsBasicsTests: XCTestCase {
-  func testCountDown() {
+  func testCountDown() async {
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
@@ -20,17 +21,17 @@ class EffectsBasicsTests: XCTestCase {
     store.send(.decrementButtonTapped) {
       $0.count = 0
     }
-    store.receive(.incrementButtonTapped) {
+    await store.receive(.incrementButtonTapped) {
       $0.count = 1
     }
   }
 
-  func testNumberFact() {
+  func testNumberFact() async {
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
       environment: EffectsBasicsEnvironment(
-        fact: .init(fetch: { n in Effect(value: "\(n) is a good number Brent") }),
+        fact: .init(fetch: { n in "\(n) is a good number Brent" }),
         mainQueue: .immediate
       )
     )
@@ -41,7 +42,7 @@ class EffectsBasicsTests: XCTestCase {
     store.send(.numberFactButtonTapped) {
       $0.isNumberFactRequestInFlight = true
     }
-    store.receive(.numberFactResponse(.success("1 is a good number Brent"))) {
+    await store.receive(.numberFactResponse(.success("1 is a good number Brent"))) {
       $0.isNumberFactRequestInFlight = false
       $0.numberFact = "1 is a good number Brent"
     }
