@@ -245,11 +245,10 @@
       let line = self.line
       let longLivingEffects = self.longLivingEffects
       let receivedActions = self.receivedActions
-      Task { @MainActor in
-        if !receivedActions.isEmpty {
-          var actions = ""
-          customDump(receivedActions.map(\.action), to: &actions)
-          XCTFail(
+      if !receivedActions.isEmpty {
+        var actions = ""
+        customDump(receivedActions.map(\.action), to: &actions)
+        XCTFail(
             """
             The store received \(receivedActions.count) unexpected \
             action\(receivedActions.count == 1 ? "" : "s") after this one: …
@@ -257,14 +256,14 @@
             Unhandled actions: \(actions)
             """,
             file: file, line: line
-          )
-        }
-        for effect in longLivingEffects {
-          XCTFail(
+        )
+      }
+      for effect in longLivingEffects {
+        XCTFail(
             """
             An effect returned for this action is still running. It must complete before the end of \
             the test. …
-
+            
             To fix, inspect any effects the reducer returns for this action and ensure that all of \
             them complete by the end of the test. There are a few reasons why an effect may not have \
             completed:
@@ -281,8 +280,7 @@
             """,
             file: effect.file,
             line: effect.line
-          )
-        }
+        )
       }
     }
 
