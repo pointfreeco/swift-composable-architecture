@@ -263,7 +263,7 @@
             """
             An effect returned for this action is still running. It must complete before the end of \
             the test. …
-            
+
             To fix, inspect any effects the reducer returns for this action and ensure that all of \
             them complete by the end of the test. There are a few reasons why an effect may not have \
             completed:
@@ -373,7 +373,7 @@
       if "\(self.file)" == "\(file)" {
         self.line = line
       }
-      return task
+      return task.1
     }
 
     private func expectedStateShouldMatch(

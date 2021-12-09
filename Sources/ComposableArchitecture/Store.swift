@@ -349,9 +349,9 @@ public final class Store<State, Action> {
 //  }
 
   @discardableResult
-  func send(_ action: Action) -> Task<Void, Never> {
+  func send(_ action: Action) -> (() -> Void, Task<Void, Never>) {
     self.bufferedActions.append(action)
-    guard !self.isSending else { return .init {} }
+    guard !self.isSending else { return ({}, .init {}) }
 
     self.isSending = true
     var currentState = self.state.value
@@ -360,10 +360,10 @@ public final class Store<State, Action> {
       self.state.value = currentState
     }
 
-    var pairs: [(Task<Void, Never>, AnyCancellable)] = []
+    var pairs: [(AsyncStream<Void>.Continuation, AsyncStream<Void>, AnyCancellable)] = []
 
     while !self.bufferedActions.isEmpty {
-      let task = Task { _ = try? await Task.sleep(nanoseconds: .max) }
+      let (c, s) = AsyncStream<Void>.create()
 
       let action = self.bufferedActions.removeFirst()
       let effect = self.reducer(&currentState, action)
@@ -372,8 +372,7 @@ public final class Store<State, Action> {
       let uuid = UUID()
       let effectCancellable = effect.sink(
         receiveCompletion: { [weak self] _ in
-          print("completed \(action)")
-          task.cancel()
+          c.finish()
           didComplete = true
           self?.effectCancellables[uuid] = nil
         },
@@ -383,20 +382,30 @@ public final class Store<State, Action> {
       )
 
       if !didComplete {
-        pairs.append((task, effectCancellable))
+        pairs.append((c, s, effectCancellable))
         self.effectCancellables[uuid] = effectCancellable
       }
     }
 
-    return Task { [pairs] in
-      for (task, effectCancellable) in pairs {
-        print(action, 1)
-        await task.value
-//        effectCancellable.cancel()
-        print(action, 2)
-
+    return (
+      { [pairs] in
+        for (c, _, cancellable) in pairs {
+          cancellable.cancel()
+          c.finish()
+        }
+      },
+      Task { [pairs] in
+        for (_, s, cancellable) in pairs {
+          for await _ in s {
+            guard !Task.isCancelled
+            else { break }
+          }
+          cancellable.cancel()
+          print("End of task")
+        }
+        print("End of all tasks")
       }
-    }
+    )
   }
 
   /// Returns a "stateless" store by erasing state to `Void`.
@@ -408,5 +417,26 @@ public final class Store<State, Action> {
   public var actionless: Store<State, Never> {
     func absurd<A>(_ never: Never) -> A {}
     return self.scope(state: { $0 }, action: absurd)
+  }
+}
+
+extension UInt64 {
+  static let maxSleep: Self = 9223372036854774784
+}
+
+extension AsyncStream {
+  static func create() -> (Self.Continuation, Self) {
+    var c: Continuation!
+    let s = Self { c = $0 }
+    return (c, s)
+  }
+}
+
+extension Task {
+  static var forever: Task<Void, Never> {
+    .init {
+      let (_, s) = AsyncStream<Void>.create()
+      for await _ in s {}
+    }
   }
 }

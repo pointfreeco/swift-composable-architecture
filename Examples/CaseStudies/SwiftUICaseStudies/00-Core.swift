@@ -313,7 +313,7 @@ private func liveFetchNumber() -> Effect<Int, Never> {
     .eraseToEffect()
 }
 
-private let liveUserDidTakeScreenshot = NotificationCenter.default
+let liveUserDidTakeScreenshot = NotificationCenter.default
   .publisher(for: UIApplication.userDidTakeScreenshotNotification)
   .map { _ in () }
   .eraseToEffect()
