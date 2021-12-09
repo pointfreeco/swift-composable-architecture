@@ -176,9 +176,12 @@
     private let fromLocalAction: (LocalAction) -> Action
     private var line: UInt
     private var longLivingEffects: Set<LongLivingEffect> = []
+
+    // TODO: possible to unify receivedActions with receivedActionsStream?
     var receivedActions: [(action: Action, state: State)] = []
     private let receivedActionsStream: AsyncStream<Void>
     private var receivedActionsContinuation: AsyncStream<Void>.Continuation!
+
     private let reducer: Reducer<State, Action, Environment>
     private var snapshotState: State
     private var store: Store<State, TestAction>!
@@ -410,27 +413,42 @@
   extension TestStore where LocalState: Equatable, Action: Equatable {
     public func receive(
       _ expectedAction: Action,
+      timeout: UInt64 = NSEC_PER_SEC,
       file: StaticString = #file,
       line: UInt = #line,
       _ update: @escaping (inout LocalState) throws -> Void = { _ in }
     ) async {
-      // TODO: Recover this?
-//      guard !self.receivedActions.isEmpty else {
-//        XCTFail(
-//          """
-//          Expected to receive an action, but received none.
-//          """,
-//          file: file, line: line
-//        )
-//        return
-//      }
-      for await _ in self.receivedActionsStream {
-        let (receivedAction, state) = self.receivedActions.removeFirst()
-        if expectedAction != receivedAction {
-          let difference =
-            diff(expectedAction, receivedAction, format: .proportional)
-            .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
-            ?? """
+      await withTaskGroup(of: Void.self) { group in
+        guard !group.isCancelled
+        else { return }
+
+        group.addTask {
+          try? await Task.sleep(nanoseconds: timeout)
+          guard !Task.isCancelled
+          else { return }
+
+          // TODO: finese error message
+          XCTFail(
+            """
+            Expected to receive an action, but received none after waiting for \
+            \(Double(timeout)/Double(NSEC_PER_SEC)) seconds.
+            """,
+            file: file,
+            line: line
+          )
+        }
+
+        group.addTask { @MainActor in
+          for await _ in self.receivedActionsStream {
+            guard !Task.isCancelled
+            else { return }
+
+            let (receivedAction, state) = self.receivedActions.removeFirst()
+            if expectedAction != receivedAction {
+              let difference =
+              diff(expectedAction, receivedAction, format: .proportional)
+                .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
+              ?? """
             Expected:
             \(String(describing: expectedAction).indent(by: 2))
 
@@ -438,32 +456,37 @@
             \(String(describing: receivedAction).indent(by: 2))
             """
 
-          XCTFail(
+              XCTFail(
             """
             Received unexpected action: …
 
             \(difference)
             """,
             file: file, line: line
-          )
+              )
+            }
+            var expectedState = self.toLocalState(self.snapshotState)
+            do {
+              try update(&expectedState)
+            } catch {
+              XCTFail("Threw error: \(error)", file: file, line: line)
+            }
+            self.expectedStateShouldMatch(
+              expected: expectedState,
+              actual: self.toLocalState(state),
+              file: file,
+              line: line
+            )
+            self.snapshotState = state
+            if "\(self.file)" == "\(file)" {
+              self.line = line
+            }
+            break
+          }
         }
-        var expectedState = self.toLocalState(self.snapshotState)
-        do {
-          try update(&expectedState)
-        } catch {
-          XCTFail("Threw error: \(error)", file: file, line: line)
-        }
-        expectedStateShouldMatch(
-          expected: expectedState,
-          actual: self.toLocalState(state),
-          file: file,
-          line: line
-        )
-        snapshotState = state
-        if "\(self.file)" == "\(file)" {
-          self.line = line
-        }
-        break
+
+        await group.next()
+        group.cancelAll()
       }
     }
 

@@ -33,8 +33,8 @@ class LongLivingEffectsTests: XCTestCase {
     // are executed.
     screenshotTaken.send()
     // TODO: This blocks forever. Should `receive` take `timeout` and race `sleep;throw`?
-//    await store.receive(.userDidTakeScreenshotNotification) {
-//      $0.screenshotCount = 2
-//    }
+    await store.receive(.userDidTakeScreenshotNotification) {
+      $0.screenshotCount = 2
+    }
   }
 }
