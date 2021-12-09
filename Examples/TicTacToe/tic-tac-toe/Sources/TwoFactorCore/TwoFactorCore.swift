@@ -19,7 +19,7 @@ public enum TwoFactorAction: Equatable {
   case alertDismissed
   case codeChanged(String)
   case submitButtonTapped
-  case twoFactorResponse(Result<AuthenticationResponse, AuthenticationError>)
+  case twoFactorResponse(TaskResult<AuthenticationResponse>)
 }
 
 public struct TwoFactorTearDownToken: Hashable {
@@ -28,14 +28,11 @@ public struct TwoFactorTearDownToken: Hashable {
 
 public struct TwoFactorEnvironment {
   public var authenticationClient: AuthenticationClient
-  public var mainQueue: AnySchedulerOf<DispatchQueue>
 
   public init(
-    authenticationClient: AuthenticationClient,
-    mainQueue: AnySchedulerOf<DispatchQueue>
+    authenticationClient: AuthenticationClient
   ) {
     self.authenticationClient = authenticationClient
-    self.mainQueue = mainQueue
   }
 }
 
@@ -54,11 +51,14 @@ public let twoFactorReducer = Reducer<TwoFactorState, TwoFactorAction, TwoFactor
 
   case .submitButtonTapped:
     state.isTwoFactorRequestInFlight = true
-    return environment.authenticationClient
-      .twoFactor(TwoFactorRequest(code: state.code, token: state.token))
-      .receive(on: environment.mainQueue)
-      .catchToEffect(TwoFactorAction.twoFactorResponse)
-      .cancellable(id: TwoFactorTearDownToken())
+    return .task { @MainActor [code = state.code, token = state.token] in
+      .twoFactorResponse(
+        await .init {
+          try await environment.authenticationClient.twoFactor(.init(code: code, token: token))
+        }
+      )
+    }
+    .cancellable(id: TwoFactorTearDownToken())
 
   case let .twoFactorResponse(.failure(error)):
     state.alert = .init(title: TextState(error.localizedDescription))

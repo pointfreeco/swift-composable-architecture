@@ -35,8 +35,7 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     action: /AppAction.login,
     environment: {
       LoginEnvironment(
-        authenticationClient: $0.authenticationClient,
-        mainQueue: $0.mainQueue
+        authenticationClient: $0.authenticationClient
       )
     }
   ),

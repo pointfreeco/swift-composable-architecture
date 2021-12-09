@@ -6,25 +6,25 @@ import XCTest
 
 @testable import TwoFactorSwiftUI
 
+@MainActor
 class TwoFactorSwiftUITests: XCTestCase {
-  func testFlow_Success() {
+  func testFlow_Success() async {
     var authenticationClient = AuthenticationClient.failing
     authenticationClient.twoFactor = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
+      .init(token: "deadbeefdeadbeef", twoFactorRequired: false)
     }
 
     let store = TestStore(
       initialState: TwoFactorState(token: "deadbeefdeadbeef"),
       reducer: twoFactorReducer,
       environment: TwoFactorEnvironment(
-        authenticationClient: authenticationClient,
-        mainQueue: .immediate
+        authenticationClient: authenticationClient
       )
     )
     .scope(state: TwoFactorView.ViewState.init, action: TwoFactorAction.init)
 
     store.environment.authenticationClient.twoFactor = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
+      .init(token: "deadbeefdeadbeef", twoFactorRequired: false)
     }
     store.send(.codeChanged("1")) {
       $0.code = "1"
@@ -43,7 +43,7 @@ class TwoFactorSwiftUITests: XCTestCase {
       $0.isActivityIndicatorVisible = true
       $0.isFormDisabled = true
     }
-    store.receive(
+    await store.receive(
       .twoFactorResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
     ) {
       $0.isActivityIndicatorVisible = false
@@ -51,16 +51,15 @@ class TwoFactorSwiftUITests: XCTestCase {
     }
   }
 
-  func testFlow_Failure() {
+  func testFlow_Failure() async {
     var authenticationClient = AuthenticationClient.failing
-    authenticationClient.twoFactor = { _ in Effect(error: .invalidTwoFactor) }
+    authenticationClient.twoFactor = { _ in throw AuthenticationError.invalidTwoFactor }
 
     let store = TestStore(
       initialState: TwoFactorState(token: "deadbeefdeadbeef"),
       reducer: twoFactorReducer,
       environment: TwoFactorEnvironment(
-        authenticationClient: authenticationClient,
-        mainQueue: .immediate
+        authenticationClient: authenticationClient
       )
     )
     .scope(state: TwoFactorView.ViewState.init, action: TwoFactorAction.init)
@@ -73,7 +72,7 @@ class TwoFactorSwiftUITests: XCTestCase {
       $0.isActivityIndicatorVisible = true
       $0.isFormDisabled = true
     }
-    store.receive(.twoFactorResponse(.failure(.invalidTwoFactor))) {
+    await store.receive(.twoFactorResponse(.failure(AuthenticationError.invalidTwoFactor))) {
       $0.alert = .init(
         title: TextState(AuthenticationError.invalidTwoFactor.localizedDescription)
       )

@@ -3,19 +3,19 @@ import ComposableArchitecture
 import TwoFactorCore
 import XCTest
 
+@MainActor
 class TwoFactorCoreTests: XCTestCase {
-  func testFlow_Success() {
+  func testFlow_Success() async {
     let store = TestStore(
       initialState: TwoFactorState(token: "deadbeefdeadbeef"),
       reducer: twoFactorReducer,
       environment: TwoFactorEnvironment(
-        authenticationClient: .failing,
-        mainQueue: .immediate
+        authenticationClient: .failing
       )
     )
 
     store.environment.authenticationClient.twoFactor = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
+      .init(token: "deadbeefdeadbeef", twoFactorRequired: false)
     }
     store.send(.codeChanged("1")) {
       $0.code = "1"
@@ -33,25 +33,24 @@ class TwoFactorCoreTests: XCTestCase {
     store.send(.submitButtonTapped) {
       $0.isTwoFactorRequestInFlight = true
     }
-    store.receive(
+    await store.receive(
       .twoFactorResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
     ) {
       $0.isTwoFactorRequestInFlight = false
     }
   }
 
-  func testFlow_Failure() {
+  func testFlow_Failure() async {
     let store = TestStore(
       initialState: TwoFactorState(token: "deadbeefdeadbeef"),
       reducer: twoFactorReducer,
       environment: TwoFactorEnvironment(
-        authenticationClient: .failing,
-        mainQueue: .immediate
+        authenticationClient: .failing
       )
     )
 
     store.environment.authenticationClient.twoFactor = { _ in
-      Effect(error: .invalidTwoFactor)
+      throw AuthenticationError.invalidTwoFactor
     }
 
     store.send(.codeChanged("1234")) {
@@ -61,7 +60,7 @@ class TwoFactorCoreTests: XCTestCase {
     store.send(.submitButtonTapped) {
       $0.isTwoFactorRequestInFlight = true
     }
-    store.receive(.twoFactorResponse(.failure(.invalidTwoFactor))) {
+    await store.receive(.twoFactorResponse(.failure(AuthenticationError.invalidTwoFactor))) {
       $0.alert = .init(
         title: TextState(AuthenticationError.invalidTwoFactor.localizedDescription)
       )

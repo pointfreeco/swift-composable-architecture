@@ -3,11 +3,12 @@ import AuthenticationClient
 import ComposableArchitecture
 import XCTest
 
+@MainActor
 class AppCoreTests: XCTestCase {
-  func testIntegration() {
+  func testIntegration() async {
     var authenticationClient = AuthenticationClient.failing
     authenticationClient.login = { _ in
-      .init(value: .init(token: "deadbeef", twoFactorRequired: false))
+      .init(token: "deadbeef", twoFactorRequired: false)
     }
     let store = TestStore(
       initialState: .init(),
@@ -34,7 +35,7 @@ class AppCoreTests: XCTestCase {
         $0.isLoginRequestInFlight = true
       }
     }
-    store.receive(
+    await store.receive(
       .login(.loginResponse(.success(.init(token: "deadbeef", twoFactorRequired: false))))
     ) {
       $0 = .newGame(.init())
@@ -49,13 +50,13 @@ class AppCoreTests: XCTestCase {
     }
   }
 
-  func testIntegration_TwoFactor() {
+  func testIntegration_TwoFactor() async {
     var authenticationClient = AuthenticationClient.failing
     authenticationClient.login = { _ in
-      .init(value: .init(token: "deadbeef", twoFactorRequired: true))
+      .init(token: "deadbeef", twoFactorRequired: true)
     }
     authenticationClient.twoFactor = { _ in
-      .init(value: .init(token: "deadbeef", twoFactorRequired: false))
+      .init(token: "deadbeef", twoFactorRequired: false)
     }
     let store = TestStore(
       initialState: .init(),
@@ -84,7 +85,7 @@ class AppCoreTests: XCTestCase {
         $0.isLoginRequestInFlight = true
       }
     }
-    store.receive(
+    await store.receive(
       .login(.loginResponse(.success(.init(token: "deadbeef", twoFactorRequired: true))))
     ) {
       try (/AppState.login).modify(&$0) {
@@ -105,7 +106,7 @@ class AppCoreTests: XCTestCase {
         $0.twoFactor?.isTwoFactorRequestInFlight = true
       }
     }
-    store.receive(
+    await store.receive(
       .login(
         .twoFactor(.twoFactorResponse(.success(.init(token: "deadbeef", twoFactorRequired: false))))
       )

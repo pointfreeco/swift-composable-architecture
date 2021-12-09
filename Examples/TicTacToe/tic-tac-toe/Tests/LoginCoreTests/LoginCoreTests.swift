@@ -4,22 +4,22 @@ import LoginCore
 import TwoFactorCore
 import XCTest
 
+@MainActor
 class LoginCoreTests: XCTestCase {
-  func testFlow_Success_TwoFactor_Integration() {
+  func testFlow_Success_TwoFactor_Integration() async {
     var authenticationClient = AuthenticationClient.failing
     authenticationClient.login = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: true))
+      .init(token: "deadbeefdeadbeef", twoFactorRequired: true)
     }
     authenticationClient.twoFactor = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
+      .init(token: "deadbeefdeadbeef", twoFactorRequired: false)
     }
 
     let store = TestStore(
       initialState: LoginState(),
       reducer: loginReducer,
       environment: LoginEnvironment(
-        authenticationClient: authenticationClient,
-        mainQueue: .immediate
+        authenticationClient: authenticationClient
       )
     )
 
@@ -33,7 +33,7 @@ class LoginCoreTests: XCTestCase {
     store.send(.loginButtonTapped) {
       $0.isLoginRequestInFlight = true
     }
-    store.receive(
+    await store.receive(
       .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: true)))
     ) {
       $0.isLoginRequestInFlight = false
@@ -46,7 +46,7 @@ class LoginCoreTests: XCTestCase {
     store.send(.twoFactor(.submitButtonTapped)) {
       $0.twoFactor?.isTwoFactorRequestInFlight = true
     }
-    store.receive(
+    await store.receive(
       .twoFactor(
         .twoFactorResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
       )
@@ -55,22 +55,20 @@ class LoginCoreTests: XCTestCase {
     }
   }
 
-  func testFlow_DismissEarly_TwoFactor_Integration() {
+  func testFlow_DismissEarly_TwoFactor_Integration() async {
     var authenticationClient = AuthenticationClient.failing
     authenticationClient.login = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: true))
+      .init(token: "deadbeefdeadbeef", twoFactorRequired: true)
     }
     authenticationClient.twoFactor = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
+      .init(token: "deadbeefdeadbeef", twoFactorRequired: false)
     }
-    let scheduler = DispatchQueue.test
 
     let store = TestStore(
       initialState: LoginState(),
       reducer: loginReducer,
       environment: LoginEnvironment(
-        authenticationClient: authenticationClient,
-        mainQueue: scheduler.eraseToAnyScheduler()
+        authenticationClient: authenticationClient
       )
     )
 
@@ -84,8 +82,7 @@ class LoginCoreTests: XCTestCase {
     store.send(.loginButtonTapped) {
       $0.isLoginRequestInFlight = true
     }
-    scheduler.advance()
-    store.receive(
+    await store.receive(
       .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: true)))
     ) {
       $0.isLoginRequestInFlight = false

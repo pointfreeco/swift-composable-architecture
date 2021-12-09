@@ -58,12 +58,12 @@ public enum AuthenticationError: Equatable, LocalizedError {
 }
 
 public struct AuthenticationClient {
-  public var login: (LoginRequest) -> Effect<AuthenticationResponse, AuthenticationError>
-  public var twoFactor: (TwoFactorRequest) -> Effect<AuthenticationResponse, AuthenticationError>
+  public var login: (LoginRequest) async throws -> AuthenticationResponse
+  public var twoFactor: (TwoFactorRequest) async throws -> AuthenticationResponse
 
   public init(
-    login: @escaping (LoginRequest) -> Effect<AuthenticationResponse, AuthenticationError>,
-    twoFactor: @escaping (TwoFactorRequest) -> Effect<AuthenticationResponse, AuthenticationError>
+    login: @escaping (LoginRequest) async throws -> AuthenticationResponse,
+    twoFactor: @escaping (TwoFactorRequest) async throws -> AuthenticationResponse
   ) {
     self.login = login
     self.twoFactor = twoFactor
@@ -72,9 +72,13 @@ public struct AuthenticationClient {
 
 #if DEBUG
   extension AuthenticationClient {
+    private struct Unimplemented: Error {
+      let description: String
+    }
+
     public static let failing = Self(
-      login: { _ in .failing("AuthenticationClient.login") },
-      twoFactor: { _ in .failing("AuthenticationClient.twoFactor") }
+      login: { _ in throw Unimplemented(description: "login") },
+      twoFactor: { _ in throw Unimplemented(description: "twoFactor") }
     )
   }
 #endif

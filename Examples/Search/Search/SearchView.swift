@@ -17,9 +17,9 @@ struct SearchState: Equatable {
 }
 
 enum SearchAction: Equatable {
-  case locationsResponse(Result<[Location], NSError>)
+  case locationsResponse(TaskResult<[Location]>)
   case locationTapped(Location)
-  case locationWeatherResponse(Result<LocationWeather, NSError>)
+  case locationWeatherResponse(TaskResult<LocationWeather>)
   case searchQueryChanged(String)
 }
 
@@ -47,15 +47,11 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
     state.locationWeatherRequestInFlight = location
 
     return .task { @MainActor [id = location.id] in
-      do {
-        return .locationWeatherResponse(
-          .success(
-            try await environment.weatherClient.weather(id)
-          )
-        )
-      } catch {
-        return .locationWeatherResponse(.failure(error as NSError))
-      }
+      .locationWeatherResponse(
+        await .init {
+          try await environment.weatherClient.weather(id)
+        }
+      )
     }
     .cancellable(id: SearchWeatherId(), cancelInFlight: true)
 
@@ -73,15 +69,11 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
     }
 
     return .task {
-      do {
-        return .locationsResponse(
-          .success(
-            try await environment.weatherClient.searchLocation(query)
-          )
-        )
-      } catch {
-        return .locationsResponse(.failure(error as NSError))
-      }
+      .locationsResponse(
+        await .init {
+          try await environment.weatherClient.searchLocation(query)
+        }
+      )
     }
     .debounce(id: SearchLocationId(), for: 0.3, scheduler: environment.mainQueue)
 

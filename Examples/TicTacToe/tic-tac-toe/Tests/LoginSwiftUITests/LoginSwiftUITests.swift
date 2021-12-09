@@ -6,19 +6,19 @@ import XCTest
 
 @testable import LoginSwiftUI
 
+@MainActor
 class LoginSwiftUITests: XCTestCase {
-  func testFlow_Success() {
+  func testFlow_Success() async {
     var authenticationClient = AuthenticationClient.failing
     authenticationClient.login = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
+      .init(token: "deadbeefdeadbeef", twoFactorRequired: false)
     }
 
     let store = TestStore(
       initialState: LoginState(),
       reducer: loginReducer,
       environment: LoginEnvironment(
-        authenticationClient: authenticationClient,
-        mainQueue: .immediate
+        authenticationClient: authenticationClient
       )
     )
     .scope(state: LoginView.ViewState.init, action: LoginAction.init)
@@ -34,7 +34,7 @@ class LoginSwiftUITests: XCTestCase {
       $0.isActivityIndicatorVisible = true
       $0.isFormDisabled = true
     }
-    store.receive(
+    await store.receive(
       .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
     ) {
       $0.isActivityIndicatorVisible = false
@@ -42,18 +42,17 @@ class LoginSwiftUITests: XCTestCase {
     }
   }
 
-  func testFlow_Success_TwoFactor() {
+  func testFlow_Success_TwoFactor() async {
     var authenticationClient = AuthenticationClient.failing
     authenticationClient.login = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: true))
+      .init(token: "deadbeefdeadbeef", twoFactorRequired: true)
     }
 
     let store = TestStore(
       initialState: LoginState(),
       reducer: loginReducer,
       environment: LoginEnvironment(
-        authenticationClient: authenticationClient,
-        mainQueue: .immediate
+        authenticationClient: authenticationClient
       )
     )
     .scope(state: LoginView.ViewState.init, action: LoginAction.init)
@@ -69,7 +68,7 @@ class LoginSwiftUITests: XCTestCase {
       $0.isActivityIndicatorVisible = true
       $0.isFormDisabled = true
     }
-    store.receive(
+    await store.receive(
       .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: true)))
     ) {
       $0.isActivityIndicatorVisible = false
@@ -81,16 +80,15 @@ class LoginSwiftUITests: XCTestCase {
     }
   }
 
-  func testFlow_Failure() {
+  func testFlow_Failure() async {
     var authenticationClient = AuthenticationClient.failing
-    authenticationClient.login = { _ in Effect(error: .invalidUserPassword) }
+    authenticationClient.login = { _ in throw AuthenticationError.invalidUserPassword }
 
     let store = TestStore(
       initialState: LoginState(),
       reducer: loginReducer,
       environment: LoginEnvironment(
-        authenticationClient: authenticationClient,
-        mainQueue: .immediate
+        authenticationClient: authenticationClient
       )
     )
     .scope(state: LoginView.ViewState.init, action: LoginAction.init)
@@ -106,7 +104,7 @@ class LoginSwiftUITests: XCTestCase {
       $0.isActivityIndicatorVisible = true
       $0.isFormDisabled = true
     }
-    store.receive(.loginResponse(.failure(.invalidUserPassword))) {
+    await store.receive(.loginResponse(.failure(AuthenticationError.invalidUserPassword))) {
       $0.alert = .init(
         title: TextState(AuthenticationError.invalidUserPassword.localizedDescription)
       )
