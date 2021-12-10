@@ -142,12 +142,8 @@ public final class ViewStore<State, Action>: ObservableObject {
     let (cancel, task) = self._send(action)
 
     await withTaskCancellationHandler(
-      handler: {
-        cancel()
-      },
-      operation: {
-        await task.value
-      }
+      handler: { cancel() },
+      operation: { await task.value }
     )
   }
 

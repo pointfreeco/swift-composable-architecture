@@ -413,7 +413,7 @@ public final class Store<State, Action> {
           continuation.finish()
         }
       },
-      task: Task { @MainActor [cancellables] in
+      task: Task { [cancellables] in
         for (_, stream, cancellable) in cancellables {
           for await _ in stream {
             guard !Task.isCancelled
