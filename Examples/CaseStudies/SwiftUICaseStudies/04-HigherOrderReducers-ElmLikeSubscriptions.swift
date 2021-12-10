@@ -98,7 +98,7 @@ struct ClockView: View {
             AngularGradient(
               gradient: Gradient(
                 colors: [
-                  Color.blue.opacity(0.3),
+                  .blue.opacity(0.3),
                   .blue,
                   .blue,
                   .green,
@@ -109,13 +109,13 @@ struct ClockView: View {
                   .red,
                   .purple,
                   .purple,
-                  Color.purple.opacity(0.3),
+                  .purple.opacity(0.3),
                 ]
               ),
               center: .center
             )
           )
-          .rotationEffect(Angle(degrees: -90))
+          .rotationEffect(.degrees(-90))
 
         GeometryReader { proxy in
           Path { path in
@@ -127,7 +127,7 @@ struct ClockView: View {
         }
       }
       .frame(width: 280, height: 280)
-      .padding([.bottom], 64)
+      .padding(.bottom, 64)
 
       Button(action: { self.viewStore.send(.toggleTimerButtonTapped) }) {
         HStack {

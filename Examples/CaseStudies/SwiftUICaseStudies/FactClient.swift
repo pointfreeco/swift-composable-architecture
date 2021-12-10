@@ -44,7 +44,8 @@ extension FactClient {
         }
         .setFailureType(to: Error.self)
         .eraseToEffect()
-      })
+      }
+    )
   #endif
 }
 
@@ -56,6 +57,7 @@ extension FactClient {
       fetch: { _ in
         XCTFail("\(Self.self).fact is unimplemented.")
         return .none
-      })
+      }
+    )
   }
 #endif

@@ -59,7 +59,8 @@ extension WeatherClient {
         .decode(type: LocationWeather.self, decoder: jsonDecoder)
         .mapError { _ in Failure() }
         .eraseToEffect()
-    })
+    }
+  )
 }
 
 // MARK: - Mock API implementations
