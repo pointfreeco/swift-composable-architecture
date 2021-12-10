@@ -20,7 +20,8 @@ extension AuthenticationClient {
           : Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
         .delay(for: 1, scheduler: queue)
         .eraseToEffect()
-    })
+    }
+  )
 }
 
 private let queue = DispatchQueue(label: "AuthenticationClient")

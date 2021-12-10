@@ -105,7 +105,7 @@ struct EffectsCancellationView: View {
           }
 
           viewStore.currentTrivia.map {
-            Text($0).padding([.top, .bottom], 8)
+            Text($0).padding(.vertical, 8)
           }
         }
       }

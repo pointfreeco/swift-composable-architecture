@@ -29,8 +29,8 @@ struct BindingBasicsState: Equatable {
 enum BindingBasicsAction {
   case sliderValueChanged(Double)
   case stepCountChanged(Int)
-  case textChange(String)
-  case toggleChange(isOn: Bool)
+  case textChanged(String)
+  case toggleChanged(isOn: Bool)
 }
 
 struct BindingBasicsEnvironment {}
@@ -49,11 +49,11 @@ let bindingBasicsReducer = Reducer<
     state.stepCount = count
     return .none
 
-  case let .textChange(text):
+  case let .textChanged(text):
     state.text = text
     return .none
 
-  case let .toggleChange(isOn):
+  case let .toggleChanged(isOn):
     state.toggleIsOn = isOn
     return .none
   }
@@ -69,7 +69,7 @@ struct BindingBasicsView: View {
           HStack {
             TextField(
               "Type here",
-              text: viewStore.binding(get: \.text, send: BindingBasicsAction.textChange)
+              text: viewStore.binding(get: \.text, send: BindingBasicsAction.textChanged)
             )
             .disableAutocorrection(true)
             .foregroundColor(viewStore.toggleIsOn ? .gray : .primary)
@@ -78,7 +78,7 @@ struct BindingBasicsView: View {
           .disabled(viewStore.toggleIsOn)
 
           Toggle(
-            isOn: viewStore.binding(get: \.toggleIsOn, send: BindingBasicsAction.toggleChange)
+            isOn: viewStore.binding(get: \.toggleIsOn, send: BindingBasicsAction.toggleChanged)
           ) {
             Text("Disable other controls")
           }
@@ -89,13 +89,13 @@ struct BindingBasicsView: View {
             in: 0...100
           ) {
             Text("Max slider value: \(viewStore.stepCount)")
-              .font(Font.body.monospacedDigit())
+              .font(.body.monospacedDigit())
           }
           .disabled(viewStore.toggleIsOn)
 
           HStack {
             Text("Slider value: \(Int(viewStore.sliderValue))")
-              .font(Font.body.monospacedDigit())
+              .font(.body.monospacedDigit())
             Slider(
               value: viewStore.binding(
                 get: \.sliderValue,

@@ -132,20 +132,20 @@ struct VoiceMemoView: View {
 
           dateComponentsFormatter.string(from: self.currentTime).map {
             Text($0)
-              .font(Font.footnote.monospacedDigit())
+              .font(.footnote.monospacedDigit())
               .foregroundColor(Color(.systemGray))
           }
 
           Button(action: { self.viewStore.send(.playButtonTapped) }) {
             Image(systemName: self.viewStore.mode.isPlaying ? "stop.circle" : "play.circle")
-              .font(Font.system(size: 22))
+              .font(.system(size: 22))
           }
         }
         .frame(maxHeight: .infinity, alignment: .center)
-        .padding([.leading, .trailing])
+        .padding(.horizontal)
       }
     }
-    .buttonStyle(BorderlessButtonStyle())
+    .buttonStyle(.borderless)
     .listRowBackground(self.viewStore.mode.isPlaying ? Color(.systemGray6) : .clear)
     .listRowInsets(EdgeInsets())
   }

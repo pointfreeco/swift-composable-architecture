@@ -34,17 +34,17 @@ public struct GameView: View {
         VStack(spacing: 0.0) {
           VStack {
             Text(viewStore.title)
-              .font(Font.title)
+              .font(.title)
 
             if viewStore.isPlayAgainButtonVisible {
               Button("Play again?") {
                 viewStore.send(.playAgainButtonTapped)
               }
-              .padding([.top], 12)
-              .font(Font.title)
+              .padding(.top, 12)
+              .font(.title)
             }
           }
-          .padding([.bottom], 48)
+          .padding(.bottom, 48)
 
           VStack {
             self.rowView(row: 0, proxy: proxy, viewStore: viewStore)

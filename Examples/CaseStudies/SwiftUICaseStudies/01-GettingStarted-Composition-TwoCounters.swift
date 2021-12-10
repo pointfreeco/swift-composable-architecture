@@ -46,7 +46,7 @@ struct TwoCountersView: View {
           CounterView(
             store: self.store.scope(state: \.counter1, action: TwoCountersAction.counter1)
           )
-          .buttonStyle(BorderlessButtonStyle())
+          .buttonStyle(.borderless)
           .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
         }
         HStack {
@@ -55,7 +55,7 @@ struct TwoCountersView: View {
           CounterView(
             store: self.store.scope(state: \.counter2, action: TwoCountersAction.counter2)
           )
-          .buttonStyle(BorderlessButtonStyle())
+          .buttonStyle(.borderless)
           .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
         }
       }
