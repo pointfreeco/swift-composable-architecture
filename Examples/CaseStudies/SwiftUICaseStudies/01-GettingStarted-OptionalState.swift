@@ -68,7 +68,7 @@ struct OptionalBasicsView: View {
               VStack(alignment: .leading, spacing: 16) {
                 Text(template: "`CounterState` is non-`nil`", .body)
                 CounterView(store: store)
-                  .buttonStyle(BorderlessButtonStyle())
+                  .buttonStyle(.borderless)
               }
             },
             else: {

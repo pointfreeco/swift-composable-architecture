@@ -57,7 +57,7 @@ struct RootView: View {
       }
       .navigationBarTitle("Tic-Tac-Toe")
     }
-    .navigationViewStyle(StackNavigationViewStyle())
+    .navigationViewStyle(.stack)
   }
 }
 

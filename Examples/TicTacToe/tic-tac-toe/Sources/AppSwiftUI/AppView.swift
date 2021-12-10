@@ -17,13 +17,13 @@ public struct AppView: View {
         NavigationView {
           LoginView(store: store)
         }
-        .navigationViewStyle(StackNavigationViewStyle())
+        .navigationViewStyle(.stack)
       }
       CaseLet(state: /AppState.newGame, action: AppAction.newGame) { store in
         NavigationView {
           NewGameView(store: store)
         }
-        .navigationViewStyle(StackNavigationViewStyle())
+        .navigationViewStyle(.stack)
       }
     }
   }

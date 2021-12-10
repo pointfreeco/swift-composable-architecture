@@ -121,7 +121,7 @@ struct SpeechRecognitionView: View {
       VStack {
         VStack(alignment: .leading) {
           Text(readMe)
-            .padding([.bottom], 32)
+            .padding(.bottom, 32)
 
           Text(viewStore.transcribedText)
             .font(.largeTitle)

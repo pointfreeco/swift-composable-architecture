@@ -141,7 +141,7 @@ struct WebSocketView: View {
     WithViewStore(self.store) { viewStore in
       VStack(alignment: .leading) {
         Text(template: readMe, .body)
-          .padding([.bottom])
+          .padding(.bottom)
 
         HStack {
           TextField(
@@ -247,7 +247,8 @@ extension WebSocketClient {
           },
           didOpenWithProtocol: {
             subscriber.send(.didOpenWithProtocol($0))
-          })
+          }
+        )
         let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
         let task = session.webSocketTask(with: url, protocols: protocols)
         task.resume()
@@ -286,7 +287,8 @@ extension WebSocketClient {
           callback(.success(error as NSError?))
         }
       }
-    })
+    }
+  )
 }
 
 private var dependencies: [AnyHashable: Dependencies] = [:]

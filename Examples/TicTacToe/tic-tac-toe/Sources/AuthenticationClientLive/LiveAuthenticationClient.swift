@@ -19,7 +19,8 @@ extension AuthenticationClient {
 
       try await Task.sleep(nanoseconds: NSEC_PER_SEC)
       return .init(token: "deadbeefdeadbeef", twoFactorRequired: false)
-    })
+    }
+  )
 }
 
 private let queue = DispatchQueue(label: "AuthenticationClient")

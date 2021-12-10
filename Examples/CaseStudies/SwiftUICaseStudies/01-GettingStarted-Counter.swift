@@ -39,7 +39,7 @@ struct CounterView: View {
       HStack {
         Button("−") { viewStore.send(.decrementButtonTapped) }
         Text("\(viewStore.count)")
-          .font(Font.body.monospacedDigit())
+          .font(.body.monospacedDigit())
         Button("+") { viewStore.send(.incrementButtonTapped) }
       }
     }
@@ -53,7 +53,7 @@ struct CounterDemoView: View {
     Form {
       Section(header: Text(readMe)) {
         CounterView(store: self.store)
-          .buttonStyle(BorderlessButtonStyle())
+          .buttonStyle(.borderless)
           .frame(maxWidth: .infinity, maxHeight: .infinity)
       }
     }

@@ -127,7 +127,7 @@ struct MultipleDependenciesView: View {
           }
         }
       }
-      .buttonStyle(BorderlessButtonStyle())
+      .buttonStyle(.borderless)
     }
     .navigationBarTitle("System Environment")
   }

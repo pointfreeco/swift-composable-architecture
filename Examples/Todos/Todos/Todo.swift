@@ -36,7 +36,7 @@ struct TodoView: View {
         Button(action: { viewStore.send(.checkBoxToggled) }) {
           Image(systemName: viewStore.isComplete ? "checkmark.square" : "square")
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.plain)
 
         TextField(
           "Untitled Todo",

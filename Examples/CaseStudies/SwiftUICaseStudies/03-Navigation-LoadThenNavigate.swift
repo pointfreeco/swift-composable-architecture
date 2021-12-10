@@ -118,6 +118,6 @@ struct LoadThenNavigateView_Previews: PreviewProvider {
         )
       )
     }
-    .navigationViewStyle(StackNavigationViewStyle())
+    .navigationViewStyle(.stack)
   }
 }

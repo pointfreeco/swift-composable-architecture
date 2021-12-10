@@ -106,13 +106,14 @@ struct SearchView: View {
             TextField(
               "New York, San Francisco, ...",
               text: viewStore.binding(
-                get: \.searchQuery, send: SearchAction.searchQueryChanged)
+                get: \.searchQuery, send: SearchAction.searchQueryChanged
+              )
             )
-            .textFieldStyle(RoundedBorderTextFieldStyle())
+            .textFieldStyle(.roundedBorder)
             .autocapitalization(.none)
             .disableAutocorrection(true)
           }
-          .padding([.leading, .trailing], 16)
+          .padding(.horizontal, 16)
 
           List {
             ForEach(viewStore.locations, id: \.id) { location in
@@ -137,12 +138,12 @@ struct SearchView: View {
           Button("Weather API provided by MetaWeather.com") {
             UIApplication.shared.open(URL(string: "http://www.MetaWeather.com")!)
           }
-          .foregroundColor(Color.gray)
+          .foregroundColor(.gray)
           .padding(.all, 16)
         }
         .navigationBarTitle("Search")
       }
-      .navigationViewStyle(StackNavigationViewStyle())
+      .navigationViewStyle(.stack)
     }
   }
 
@@ -161,7 +162,7 @@ struct SearchView: View {
           Text(day)
         }
       }
-      .padding([.leading], 16)
+      .padding(.leading, 16)
     )
   }
 }

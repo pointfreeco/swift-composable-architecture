@@ -1,5 +1,6 @@
 import ComposableArchitecture
 import Foundation
+import AuthenticationClient
 
 // MARK: - API models
 
@@ -49,24 +50,25 @@ extension WeatherClient {
       let url = URL(string: "https://www.metaweather.com/api/location/\(id)")!
       let (data, _) = try await URLSession.shared.data(from: url)
       return try jsonDecoder.decode(LocationWeather.self, from: data)
-    })
+    }
+  )
 }
 
 // MARK: - Mock API implementations
 
 extension WeatherClient {
+  private struct Unimplemented: Error {
+    let message: String
+  }
+
   static let failing = Self(
     searchLocation: { _ in
-      throw UnimplementedError(message: "WeatherClient.searchLocation")
+      throw Unimplemented(message: "searchLocation")
     },
     weather: { _ in
-      throw UnimplementedError(message: "WeatherClient.weather")
+      throw Unimplemented(message: "weather")
     }
   )
-}
-
-struct UnimplementedError: Error {
-  let message: String
 }
 
 // MARK: - Private helpers

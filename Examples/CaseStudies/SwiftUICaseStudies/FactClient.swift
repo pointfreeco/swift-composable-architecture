@@ -38,7 +38,8 @@ extension FactClient {
         }
         .setFailureType(to: Error.self)
         .eraseToEffect()
-      })
+      }
+    )
   #endif
 }
 

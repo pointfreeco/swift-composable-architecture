@@ -60,7 +60,7 @@ struct LongLivingEffectsView: View {
       Form {
         Section(header: Text(template: readMe, .body)) {
           Text("A screenshot of this screen has been taken \(viewStore.screenshotCount) times.")
-            .font(Font.headline)
+            .font(.headline)
         }
 
         Section {
@@ -81,7 +81,7 @@ struct LongLivingEffectsView: View {
       that those screenshots were not counted.
       """
     )
-    .padding([.leading, .trailing], 64)
+    .padding(.horizontal, 64)
   }
 }
 

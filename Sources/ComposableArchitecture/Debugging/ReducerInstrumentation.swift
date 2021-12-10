@@ -82,7 +82,8 @@ extension Publisher where Failure == Never {
         },
         receiveCancel: {
           os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sCancelled", prefix)
-        })
+        }
+      )
   }
 }
 

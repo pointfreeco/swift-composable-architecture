@@ -11,8 +11,8 @@ struct CircularProgressView: View {
     Circle()
       .trim(from: 0, to: CGFloat(self.value))
       .stroke(style: StrokeStyle(lineWidth: 2, lineCap: .round))
-      .foregroundColor(Color.black)
-      .rotationEffect(Angle(degrees: -90))
+      .foregroundColor(.black)
+      .rotationEffect(.degrees(-90))
       .animation(.easeIn, value: self.value)
   }
 }
