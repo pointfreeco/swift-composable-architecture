@@ -2,67 +2,74 @@ import AVFoundation
 import ComposableArchitecture
 
 extension AudioRecorderClient {
-  static let live = AudioRecorderClient(
-    currentTime: { id in
-      Effect.result {
-        guard
-          let recorder = dependencies[id]?.recorder,
-          recorder.isRecording
-        else { return .success(nil) }
-        return .success(recorder.currentTime)
-      }
-    },
-    requestRecordPermission: {
-      .future { callback in
-        AVAudioSession.sharedInstance().requestRecordPermission { granted in
-          callback(.success(granted))
-        }
-      }
-    },
-    startRecording: { id, url in
-      .future { callback in
-        guard
-          let delegate = try? AudioRecorderClientDelegate(
-            url: url,
-            didFinishRecording: { flag in
-              callback(.success(.didFinishRecording(successfully: flag)))
-              dependencies[id] = nil
-            },
-            encodeErrorDidOccur: { _ in
-              callback(.failure(.encodeErrorDidOccur))
-              dependencies[id] = nil
-            }
-          )
-        else {
-          callback(.failure(.couldntCreateAudioRecorder))
-          return
-        }
+  static var live: Self {
+    var delegate: AudioRecorderClientDelegate?
 
-        do {
-          try AVAudioSession.sharedInstance().setCategory(.record, mode: .default)
-        } catch {
-          callback(.failure(.couldntActivateAudioSession))
-          return
+    return Self(
+      currentTime: {
+        .result {
+          guard
+            let recorder = delegate?.recorder,
+            recorder.isRecording
+          else { return .success(nil) }
+          return .success(recorder.currentTime)
         }
-
-        do {
-          try AVAudioSession.sharedInstance().setActive(true, options: [])
-        } catch {
-          callback(.failure(.couldntSetAudioSessionCategory))
-          return
+      },
+      requestRecordPermission: {
+        .future { callback in
+          AVAudioSession.sharedInstance().requestRecordPermission { granted in
+            callback(.success(granted))
+          }
         }
+      },
+      startRecording: { url in
+        .future { callback in
+          delegate?.recorder.stop()
+          delegate = nil
+          do {
+            delegate = try AudioRecorderClientDelegate(
+              url: url,
+              didFinishRecording: { flag in
+                callback(.success(.didFinishRecording(successfully: flag)))
+                delegate = nil
+                try? AVAudioSession.sharedInstance().setActive(false)
+              },
+              encodeErrorDidOccur: { _ in
+                callback(.failure(.encodeErrorDidOccur))
+                delegate = nil
+                try? AVAudioSession.sharedInstance().setActive(false)
+              }
+            )
+          } catch {
+            callback(.failure(.couldntCreateAudioRecorder))
+            return
+          }
 
-        dependencies[id] = delegate
-        delegate.recorder.record()
+          do {
+            try AVAudioSession.sharedInstance().setCategory(.record, mode: .default)
+          } catch {
+            callback(.failure(.couldntActivateAudioSession))
+            return
+          }
+
+          do {
+            try AVAudioSession.sharedInstance().setActive(true)
+          } catch {
+            callback(.failure(.couldntSetAudioSessionCategory))
+            return
+          }
+
+          delegate?.recorder.record()
+        }
+      },
+      stopRecording: {
+        .fireAndForget {
+          delegate?.recorder.stop()
+          try? AVAudioSession.sharedInstance().setActive(false)
+        }
       }
-    },
-    stopRecording: { id in
-      .fireAndForget {
-        dependencies[id]?.recorder.stop()
-        try? AVAudioSession.sharedInstance().setActive(false, options: [])
-      }
-    }
-  )
+    )
+  }
 }
 
 private class AudioRecorderClientDelegate: NSObject, AVAudioRecorderDelegate {
@@ -97,5 +104,3 @@ private class AudioRecorderClientDelegate: NSObject, AVAudioRecorderDelegate {
     self.encodeErrorDidOccur(error)
   }
 }
-
-private var dependencies: [AnyHashable: AudioRecorderClientDelegate] = [:]

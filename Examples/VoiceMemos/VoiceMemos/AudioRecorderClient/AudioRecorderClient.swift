@@ -2,10 +2,10 @@ import ComposableArchitecture
 import Foundation
 
 struct AudioRecorderClient {
-  var currentTime: (AnyHashable) -> Effect<TimeInterval?, Never>
+  var currentTime: () -> Effect<TimeInterval?, Never>
   var requestRecordPermission: () -> Effect<Bool, Never>
-  var startRecording: (AnyHashable, URL) -> Effect<Action, Failure>
-  var stopRecording: (AnyHashable) -> Effect<Never, Never>
+  var startRecording: (URL) -> Effect<Action, Failure>
+  var stopRecording: () -> Effect<Never, Never>
 
   enum Action: Equatable {
     case didFinishRecording(successfully: Bool)
