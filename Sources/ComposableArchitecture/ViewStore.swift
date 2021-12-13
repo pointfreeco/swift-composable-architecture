@@ -454,27 +454,27 @@ private struct HashableWrapper<Value>: Hashable {
             .first(where: { !predicate($0) })
         } else {
           let cancellable = Box<AnyCancellable?>(wrappedValue: nil)
-           try? await withTaskCancellationHandler(
-             handler: { cancellable.wrappedValue?.cancel() },
-             operation: {
-               try Task.checkCancellation()
-               try await withUnsafeThrowingContinuation {
-                 (continuation: UnsafeContinuation<Void, Error>) in
-                 guard !Task.isCancelled else {
-                   continuation.resume(throwing: CancellationError())
-                   return
-                 }
-                 cancellable.wrappedValue = self.publisher
-                   .filter { !predicate($0) }
-                   .prefix(1)
-                   .sink { _ in
-                     continuation.resume()
-                     _ = cancellable
-                   }
-               }
-             }
-           )
-         }
+          try? await withTaskCancellationHandler(
+            handler: { cancellable.wrappedValue?.cancel() },
+            operation: {
+              try Task.checkCancellation()
+              try await withUnsafeThrowingContinuation {
+                (continuation: UnsafeContinuation<Void, Error>) in
+                guard !Task.isCancelled else {
+                  continuation.resume(throwing: CancellationError())
+                  return
+                }
+                cancellable.wrappedValue = self.publisher
+                  .filter { !predicate($0) }
+                  .prefix(1)
+                  .sink { _ in
+                    continuation.resume()
+                    _ = cancellable
+                  }
+              }
+            }
+          )
+        }
       }
     }
 

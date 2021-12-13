@@ -206,5 +206,6 @@ import SwiftUI
         }
         .eraseToEffect()
       }
-    }  #endif
+    }
+  #endif
 #endif
