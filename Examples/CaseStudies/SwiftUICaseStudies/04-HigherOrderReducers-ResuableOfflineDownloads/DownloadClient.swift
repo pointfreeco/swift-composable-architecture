@@ -16,10 +16,11 @@ extension DownloadClient {
     download: { url in
       .init { continuation in
         let (bytes, response) = try await URLSession.shared.bytes(from: url)
-        var data = Data(capacity: Int(response.expectedContentLength))
+        let length = response.expectedContentLength
+        var data = Data(capacity: Int(length))
         for try await byte in bytes {
           data.append(byte)
-          continuation.yield(.updateProgress(Double(data.count) / Double(response.expectedContentLength)))
+          continuation.yield(.updateProgress(Double(data.count) / Double(length)))
         }
         continuation.yield(.response(data))
         continuation.finish()
