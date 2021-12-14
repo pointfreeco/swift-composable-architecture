@@ -40,14 +40,18 @@ extension AsyncThrowingStream where Failure == Error {
   }
 }
 
-extension AsyncThrowingStream {
-  public init(_ build: @escaping (Continuation) async -> Void) {
-    let t = { (continuation: Continuation) -> Void in
+extension AsyncThrowingStream where Failure == Error {
+  public init(_ build: @escaping (Continuation) async throws -> Void) {
+    self.init { (continuation: Continuation) -> Void in
       Task {
-        await build(continuation)
+        do {
+          try await build(continuation)
+          continuation.finish()
+        } catch {
+          continuation.finish(throwing: error)
+        }
       }
     }
-    self = .init(t)
   }
 }
 
