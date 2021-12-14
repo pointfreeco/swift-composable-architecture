@@ -1,3 +1,4 @@
+import Combine
 import ComposableArchitecture
 import SwiftUI
 
@@ -84,7 +85,8 @@ extension Reducer {
 
           case .notDownloaded:
             state.mode = .startingToDownload
-            return Effect(environment.downloadClient.download(state.url))
+            return environment.downloadClient.download(state.url)
+              .publisher
               .mapError { $0 as NSError }
               .throttle(for: 1, scheduler: environment.mainQueue, latest: true)
               .catchToEffect(DownloadComponentAction.downloadClient)

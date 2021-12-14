@@ -16,27 +16,12 @@ extension TestScheduler {
 
 // MARK: - swift-concurrency-helpers
 
+// swift-concurrency-helpers
+// swift-concurrency-tools
+// swift-concurrency-extensions
+
 import XCTestDynamicOverlay
 import Combine
-
-extension AsyncThrowingStream where Failure == Error {
-  public static func pipe() -> (Self.Continuation, Self) {
-    var c: Continuation!
-    let s = Self { c = $0 }
-    return (c, s)
-  }
-}
-
-// TODO: AsyncStream.empty(completeImmediately:), .yielding, .throwing, 
-
-extension AsyncThrowingStream where Failure == Error {
-  public static func failing(_ message: String) -> Self {
-    .init {
-      XCTFail("Unimplemented: \(message)")
-      return nil
-    }
-  }
-}
 
 extension AsyncThrowingStream where Failure == Error {
   public init(_ build: @escaping (Continuation) async throws -> Void) {
@@ -70,26 +55,52 @@ extension AsyncThrowingStream where Failure == Error {
       }
     }
   }
+
+  public static func failing(_ message: String) -> Self {
+    .init {
+      XCTFail("Unimplemented: \(message)")
+      return nil
+    }
+  }
+
+  public static func passthrough() -> (continuation: Self.Continuation, stream: Self) {
+    var c: Continuation!
+    let s = Self { c = $0 }
+    return (c, s)
+  }
 }
 
-extension Effect {
-  public init<S: AsyncSequence>(
-    // TODO: remove priority?
-    priority: TaskPriority? = nil,
-    _ sequence: S
-  )
-  where
-  S.Element == Output,
-  Failure == Error
-  {
-    let subject = PassthroughSubject<Output, Failure>()
+extension AsyncStream {
+  public var publisher: AnyPublisher<Element, Never> {
+    let subject = PassthroughSubject<Element, Never>()
 
-    let task = Task(priority: priority) {
+    let task = Task {
+      await withTaskCancellationHandler {
+        subject.send(completion: .finished)
+      } operation: {
+        for await element in self {
+          subject.send(element)
+        }
+        subject.send(completion: .finished)
+      }
+    }
+
+    return subject
+      .handleEvents(receiveCancel: task.cancel)
+      .eraseToAnyPublisher()
+  }
+}
+
+extension AsyncSequence {
+  public var publisher: AnyPublisher<Element, Error> {
+    let subject = PassthroughSubject<Element, Error>()
+
+    let task = Task {
       do {
         try await withTaskCancellationHandler {
           subject.send(completion: .finished)
         } operation: {
-          for try await element in sequence {
+          for try await element in self {
             subject.send(element)
           }
           subject.send(completion: .finished)
@@ -99,8 +110,8 @@ extension Effect {
       }
     }
 
-    self = subject
+    return subject
       .handleEvents(receiveCancel: task.cancel)
-      .eraseToEffect()
+      .eraseToAnyPublisher()
   }
 }
