@@ -4,8 +4,16 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+@MainActor
 class ReusableComponentsDownloadComponentTests: XCTestCase {
-  let downloadSubject = PassthroughSubject<DownloadClient.Action, DownloadClient.Error>()
+  let (downloadContinuation, downloadStream): (
+    AsyncThrowingStream<DownloadClient.Action, Error>.Continuation,
+    AsyncThrowingStream<DownloadClient.Action, Error>
+  ) = {
+    var c: AsyncThrowingStream<DownloadClient.Action, Error>.Continuation!
+    let s = AsyncThrowingStream<DownloadClient.Action, Error> { c = $0 }
+    return (c, s)
+  }()
   let reducer = Reducer<
     DownloadComponentState<Int>, DownloadComponentAction, DownloadComponentEnvironment
   >
@@ -17,9 +25,9 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   )
   let scheduler = DispatchQueue.test
 
-  func testDownloadFlow() {
+  func testDownloadFlow() async {
     var downloadClient = DownloadClient.failing
-    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
+    downloadClient.download = { _ in self.downloadStream }
 
     let store = TestStore(
       initialState: DownloadComponentState(
@@ -38,23 +46,23 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       $0.mode = .startingToDownload
     }
 
-    self.downloadSubject.send(.updateProgress(0.2))
-    self.scheduler.advance()
+    self.downloadContinuation.yield(.updateProgress(0.2))
+    await self.scheduler.advance()
     store.receive(.downloadClient(.success(.updateProgress(0.2)))) {
       $0.mode = .downloading(progress: 0.2)
     }
 
-    self.downloadSubject.send(.response(Data()))
-    self.downloadSubject.send(completion: .finished)
-    self.scheduler.advance(by: 1)
+    self.downloadContinuation.yield(.response(Data()))
+    self.downloadContinuation.finish()
+    await self.scheduler.advance(by: 1)
     store.receive(.downloadClient(.success(.response(Data())))) {
       $0.mode = .downloaded
     }
   }
 
-  func testDownloadThrottling() {
+  func testDownloadThrottling() async {
     var downloadClient = DownloadClient.failing
-    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
+    downloadClient.download = { _ in self.downloadStream }
 
     let store = TestStore(
       initialState: DownloadComponentState(
@@ -73,28 +81,28 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       $0.mode = .startingToDownload
     }
 
-    self.downloadSubject.send(.updateProgress(0.5))
-    self.scheduler.advance()
+    self.downloadContinuation.yield(.updateProgress(0.5))
+    await self.scheduler.advance()
     store.receive(.downloadClient(.success(.updateProgress(0.5)))) {
       $0.mode = .downloading(progress: 0.5)
     }
 
-    self.downloadSubject.send(.updateProgress(0.6))
-    self.scheduler.advance(by: 0.5)
+    self.downloadContinuation.yield(.updateProgress(0.6))
+    await self.scheduler.advance(by: 0.5)
 
-    self.downloadSubject.send(.updateProgress(0.7))
-    self.scheduler.advance(by: 0.5)
+    self.downloadContinuation.yield(.updateProgress(0.7))
+    await self.scheduler.advance(by: 0.5)
     store.receive(.downloadClient(.success(.updateProgress(0.7)))) {
       $0.mode = .downloading(progress: 0.7)
     }
 
-    self.downloadSubject.send(completion: .finished)
-    self.scheduler.run()
+    self.downloadContinuation.finish()
+    await self.scheduler.run()
   }
 
-  func testCancelDownloadFlow() {
+  func testCancelDownloadFlow() async {
     var downloadClient = DownloadClient.failing
-    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
+    downloadClient.download = { _ in self.downloadStream }
 
     let store = TestStore(
       initialState: DownloadComponentState(
@@ -126,12 +134,12 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       $0.mode = .notDownloaded
     }
 
-    self.scheduler.run()
+    await self.scheduler.run()
   }
 
-  func testDownloadFinishesWhileTryingToCancel() {
+  func testDownloadFinishesWhileTryingToCancel() async {
     var downloadClient = DownloadClient.failing
-    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
+    downloadClient.download = { _ in self.downloadStream }
 
     let store = TestStore(
       initialState: DownloadComponentState(
@@ -158,9 +166,9 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       )
     }
 
-    self.downloadSubject.send(.response(Data()))
-    self.downloadSubject.send(completion: .finished)
-    self.scheduler.advance(by: 1)
+    self.downloadContinuation.yield(.response(Data()))
+    self.downloadContinuation.finish()
+    await self.scheduler.advance(by: 1)
     store.receive(.downloadClient(.success(.response(Data())))) {
       $0.alert = nil
       $0.mode = .downloaded
@@ -168,9 +176,6 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   }
 
   func testDeleteDownloadFlow() {
-    var downloadClient = DownloadClient.failing
-    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
-
     let store = TestStore(
       initialState: DownloadComponentState(
         id: 1,
@@ -179,7 +184,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       ),
       reducer: reducer,
       environment: DownloadComponentEnvironment(
-        downloadClient: downloadClient,
+        downloadClient: .failing,
         mainQueue: self.scheduler.eraseToAnyScheduler()
       )
     )
