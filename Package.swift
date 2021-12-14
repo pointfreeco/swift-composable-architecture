@@ -18,11 +18,11 @@ let package = Package(
   ],
   dependencies: [
     .package(name: "Benchmark", url: "https://github.com/google/swift-benchmark", from: "0.1.0"),
-    .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.5.0"),
-    .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.4.0"),
-    .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.1.0"),
-    .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "0.1.0"),
-    .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.2.0"),
+    .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.5.3"),
+    .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.7.0"),
+    .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.3.0"),
+    .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "0.3.2"),
+    .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.2.1"),
   ],
   targets: [
     .target(
