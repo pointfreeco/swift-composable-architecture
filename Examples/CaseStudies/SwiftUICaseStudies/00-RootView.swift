@@ -108,12 +108,7 @@ struct RootView: View {
           Section(header: Text("Effects")) {
             NavigationLink(
               "Basics",
-              destination: EffectsBasicsView(
-                store: self.store.scope(
-                  state: \.effectsBasics,
-                  action: RootAction.effectsBasics
-                )
-              )
+              destination: EffectsBasicsView()
             )
 
             NavigationLink(

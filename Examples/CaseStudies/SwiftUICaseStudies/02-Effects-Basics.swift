@@ -57,6 +57,7 @@ let effectsBasicsReducer = Reducer<
       .delay(for: 1, scheduler: environment.mainQueue)
       .eraseToEffect()
 
+
   case .incrementButtonTapped:
     state.count += 1
     state.numberFact = nil
@@ -85,7 +86,11 @@ let effectsBasicsReducer = Reducer<
 // MARK: - Feature view
 
 struct EffectsBasicsView: View {
-  let store: Store<EffectsBasicsState, EffectsBasicsAction>
+  @State var store: Store<EffectsBasicsState, EffectsBasicsAction> = .init(
+    initialState: .init(),
+    reducer: effectsBasicsReducer,
+    environment: .init(fact: .live, mainQueue: .main)
+  )
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
