@@ -53,6 +53,25 @@ extension AsyncThrowingStream where Failure == Error {
       }
     }
   }
+
+  public init(yielding element: Element) {
+    self.init {
+      $0.yield(element)
+      $0.finish()
+    }
+  }
+
+  public init(throwing error: Error) {
+    self.init { $0.finish(throwing: error) }
+  }
+
+  public static func empty(completeImmediately: Bool = true) -> Self {
+    self.init {
+      if completeImmediately {
+        $0.finish()
+      }
+    }
+  }
 }
 
 extension Effect {
