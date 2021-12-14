@@ -31,18 +31,16 @@ extension AsyncThrowingStream where Failure == Error {
 
 extension AsyncThrowingStream where Failure == Error {
   public static func failing(_ message: String) -> Self {
-    .init(
-      unfolding: {
-        XCTFail("Unimplemented: \(message)")
-        return nil
-      }
-    )
+    .init {
+      XCTFail("Unimplemented: \(message)")
+      return nil
+    }
   }
 }
 
 extension AsyncThrowingStream where Failure == Error {
   public init(_ build: @escaping (Continuation) async throws -> Void) {
-    self.init { (continuation: Continuation) -> Void in
+    self.init { continuation in
       Task {
         do {
           try await build(continuation)
@@ -54,14 +52,14 @@ extension AsyncThrowingStream where Failure == Error {
     }
   }
 
-  public init(yielding element: Element) {
-    self.init {
+  public static func yielding(_ element: Element) -> Self {
+    Self {
       $0.yield(element)
       $0.finish()
     }
   }
 
-  public init(throwing error: Error) {
+  public static func throwing(_ error: Error) -> Self {
     self.init { $0.finish(throwing: error) }
   }
 
