@@ -327,54 +327,145 @@
   }
 
   extension TestStore where LocalState: Equatable {
-    @discardableResult
-    public func send(
-      _ action: LocalAction,
-      file: StaticString = #file,
-      line: UInt = #line,
-      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
-    ) -> Task<Void, Never> {
-      if !self.receivedActions.isEmpty {
-        var actions = ""
-        customDump(self.receivedActions.map(\.action), to: &actions)
-        XCTFail(
-          """
-          Must handle \(self.receivedActions.count) received \
-          action\(self.receivedActions.count == 1 ? "" : "s") before sending an action: …
+    #if canImport(_Concurrency)
+      #if compiler(>=5.5.2)
+        @discardableResult
+        public func send(
+          _ action: LocalAction,
+          file: StaticString = #file,
+          line: UInt = #line,
+          _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+        ) -> Task<Void, Never> {
+          if !self.receivedActions.isEmpty {
+            var actions = ""
+            customDump(self.receivedActions.map(\.action), to: &actions)
+            XCTFail(
+              """
+              Must handle \(self.receivedActions.count) received \
+              action\(self.receivedActions.count == 1 ? "" : "s") before sending an action: …
 
-          Unhandled actions: \(actions)
-          """,
-          file: file, line: line
-        )
-      }
-      var expectedState = self.toLocalState(self.snapshotState)
-      let (cancel, onComplete) = self.store.send(.init(origin: .send(action), file: file, line: line))
-      do {
-        try update(&expectedState)
-      } catch {
-        XCTFail("Threw error: \(error)", file: file, line: line)
-      }
-      self.expectedStateShouldMatch(
-        expected: expectedState,
-        actual: self.toLocalState(self.snapshotState),
-        file: file,
-        line: line
-      )
-      if "\(self.file)" == "\(file)" {
-        self.line = line
-      }
-
-      return Task {
-        await withTaskCancellationHandler(
-          handler: { cancel() },
-          operation: {
-            await withUnsafeContinuation {
-              onComplete($0.resume)
-            }
+              Unhandled actions: \(actions)
+              """,
+              file: file, line: line
+            )
           }
+          var expectedState = self.toLocalState(self.snapshotState)
+          let (cancel, onComplete) = self.store.send(.init(origin: .send(action), file: file, line: line))
+          do {
+            try update(&expectedState)
+          } catch {
+            XCTFail("Threw error: \(error)", file: file, line: line)
+          }
+          self.expectedStateShouldMatch(
+            expected: expectedState,
+            actual: self.toLocalState(self.snapshotState),
+            file: file,
+            line: line
+          )
+          if "\(self.file)" == "\(file)" {
+            self.line = line
+          }
+
+          return Task {
+            await withTaskCancellationHandler(
+              handler: { cancel() },
+              operation: {
+                await withUnsafeContinuation {
+                  onComplete($0.resume)
+                }
+              }
+            )
+          }
+        }
+      #else
+        @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+        @discardableResult
+        public func send(
+          _ action: LocalAction,
+          file: StaticString = #file,
+          line: UInt = #line,
+          _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+        ) -> Task<Void, Never> {
+          if !self.receivedActions.isEmpty {
+            var actions = ""
+            customDump(self.receivedActions.map(\.action), to: &actions)
+            XCTFail(
+              """
+              Must handle \(self.receivedActions.count) received \
+              action\(self.receivedActions.count == 1 ? "" : "s") before sending an action: …
+
+              Unhandled actions: \(actions)
+              """,
+              file: file, line: line
+            )
+          }
+          var expectedState = self.toLocalState(self.snapshotState)
+          let (cancel, onComplete) = self.store.send(.init(origin: .send(action), file: file, line: line))
+          do {
+            try update(&expectedState)
+          } catch {
+            XCTFail("Threw error: \(error)", file: file, line: line)
+          }
+          self.expectedStateShouldMatch(
+            expected: expectedState,
+            actual: self.toLocalState(self.snapshotState),
+            file: file,
+            line: line
+          )
+          if "\(self.file)" == "\(file)" {
+            self.line = line
+          }
+
+          return Task {
+            await withTaskCancellationHandler(
+              handler: { cancel() },
+              operation: {
+                await withUnsafeContinuation {
+                  onComplete($0.resume)
+                }
+              }
+            )
+          }
+        }
+      #endif
+    #else
+      public func send(
+        _ action: LocalAction,
+        file: StaticString = #file,
+        line: UInt = #line,
+        _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+      ) {
+        if !self.receivedActions.isEmpty {
+          var actions = ""
+          customDump(self.receivedActions.map(\.action), to: &actions)
+          XCTFail(
+            """
+            Must handle \(self.receivedActions.count) received \
+            action\(self.receivedActions.count == 1 ? "" : "s") before sending an action: …
+
+            Unhandled actions: \(actions)
+            """,
+            file: file, line: line
+          )
+        }
+        var expectedState = self.toLocalState(self.snapshotState)
+        _ = self.store.send(.init(origin: .send(action), file: file, line: line))
+        do {
+          try update(&expectedState)
+        } catch {
+          XCTFail("Threw error: \(error)", file: file, line: line)
+        }
+        self.expectedStateShouldMatch(
+          expected: expectedState,
+          actual: self.toLocalState(self.snapshotState),
+          file: file,
+          line: line
         )
+        if "\(self.file)" == "\(file)" {
+          self.line = line
+        }
       }
-    }
+    #endif
 
     private func expectedStateShouldMatch(
       expected: LocalState,
@@ -408,51 +499,97 @@
   }
 
   extension TestStore where LocalState: Equatable, Action: Equatable {
-
     #if canImport(_Concurrency)
-    public func receive(
-      _ expectedAction: Action,
-      timeout: UInt64 = NSEC_PER_SEC,
-      file: StaticString = #file,
-      line: UInt = #line,
-      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
-    ) async {
-      await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-        var cancellable: AnyCancellable?
-        let timeout = Double(timeout) / Double(NSEC_PER_SEC)
-        cancellable = self.$receivedActions
-          .setFailureType(to: TimeoutError.self)
-          .timeout(
-            .seconds(timeout),
-            scheduler: DispatchQueue.main,
-            customError: { TimeoutError() }
-          )
-          .first { !$0.isEmpty }
-          .sink(
-            receiveCompletion: { completion in
-              _ = cancellable
+      #if compiler(>=5.5.2)
+        public func receive(
+          _ expectedAction: Action,
+          timeout: UInt64 = NSEC_PER_SEC,
+          file: StaticString = #file,
+          line: UInt = #line,
+          _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+        ) async {
+          await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
+            var cancellable: AnyCancellable?
+            let timeout = Double(timeout) / Double(NSEC_PER_SEC)
+            cancellable = self.$receivedActions
+              .setFailureType(to: TimeoutError.self)
+              .timeout(
+                .seconds(timeout),
+                scheduler: DispatchQueue.main,
+                customError: { TimeoutError() }
+              )
+              .first { !$0.isEmpty }
+              .sink(
+                receiveCompletion: { completion in
+                  _ = cancellable
 
-              switch completion {
-              case .finished:
-                break
-              case .failure:
-                XCTFail(
-                  """
-                  Expected to receive an action, but received none after waiting for \
-                  \(timeout) seconds.
-                  """,
-                  file: file,
-                  line: line
-                )
-              }
-            },
-            receiveValue: { _ in
-              { self.receive(expectedAction, file: file, line: line, update) }()
-              continuation.resume()
-            }
-          )
-      }
-    }
+                  switch completion {
+                  case .finished:
+                    break
+                  case .failure:
+                    XCTFail(
+                      """
+                      Expected to receive an action, but received none after waiting for \
+                      \(timeout) seconds.
+                      """,
+                      file: file,
+                      line: line
+                    )
+                  }
+                },
+                receiveValue: { _ in
+                  { self.receive(expectedAction, file: file, line: line, update) }()
+                  continuation.resume()
+                }
+              )
+          }
+        }
+      #else
+        @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+        public func receive(
+          _ expectedAction: Action,
+          timeout: UInt64 = NSEC_PER_SEC,
+          file: StaticString = #file,
+          line: UInt = #line,
+          _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+        ) async {
+          await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
+            var cancellable: AnyCancellable?
+            let timeout = Double(timeout) / Double(NSEC_PER_SEC)
+            cancellable = self.$receivedActions
+              .setFailureType(to: TimeoutError.self)
+              .timeout(
+                .seconds(timeout),
+                scheduler: DispatchQueue.main,
+                customError: { TimeoutError() }
+              )
+              .first { !$0.isEmpty }
+              .sink(
+                receiveCompletion: { completion in
+                  _ = cancellable
+
+                  switch completion {
+                  case .finished:
+                    break
+                  case .failure:
+                    XCTFail(
+                      """
+                      Expected to receive an action, but received none after waiting for \
+                      \(timeout) seconds.
+                      """,
+                      file: file,
+                      line: line
+                    )
+                  }
+                },
+                receiveValue: { _ in
+                  { self.receive(expectedAction, file: file, line: line, update) }()
+                  continuation.resume()
+                }
+              )
+          }
+        }
+      #endif
     #endif
 
     public func receive(
