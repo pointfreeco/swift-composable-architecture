@@ -329,9 +329,16 @@ public final class Store<State, Action> {
       reducer: .init { localState, localAction, _ in
         isSending = true
         defer { isSending = false }
-        self.send(fromLocalAction(localAction))
+
+        let (cancel, onComplete) = self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
-        return .none
+
+        let subject = PassthroughSubject<Never, Never>()
+        onComplete { subject.send(completion: .finished) }
+
+        return subject
+          .handleEvents(receiveCancel: cancel)
+          .fireAndForget()
       },
       environment: ()
     )
@@ -354,11 +361,14 @@ public final class Store<State, Action> {
     self.scope(state: toLocalState, action: { $0 })
   }
 
-  func send(_ action: Action, originatingFrom originatingAction: Action? = nil) {
+  func send(_ action: Action, originatingFrom originatingAction: Action? = nil) -> (
+    cancel: () -> Void,
+    onComplete: (@escaping () -> Void) -> Void
+  ) {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
     self.bufferedActions.append(action)
-    guard !self.isSending else { return }
+    guard !self.isSending else { return ({}, { $0() }) }
 
     self.isSending = true
     var currentState = self.state.value
@@ -367,6 +377,8 @@ public final class Store<State, Action> {
       self.state.value = currentState
     }
 
+    var cancellables: [AnyCancellable] = []
+    let subject = PassthroughSubject<Void, Never>()
     while !self.bufferedActions.isEmpty {
       let action = self.bufferedActions.removeFirst()
       let effect = self.reducer(&currentState, action)
@@ -378,16 +390,38 @@ public final class Store<State, Action> {
           self?.threadCheck(status: .effectCompletion(action))
           didComplete = true
           self?.effectCancellables[uuid] = nil
+          subject.send()
         },
         receiveValue: { [weak self] effectAction in
-          self?.send(effectAction, originatingFrom: action)
+          // TODO: Do we need to append this work to what's returned?
+          _ = self?.send(effectAction, originatingFrom: action)
         }
       )
+      cancellables.append(effectCancellable)
 
       if !didComplete {
         self.effectCancellables[uuid] = effectCancellable
       }
     }
+
+    return (
+      cancel: {
+        for cancellable in cancellables {
+          cancellable.cancel()
+        }
+      },
+      onComplete: { didComplete in
+        var cancellable: AnyCancellable?
+        cancellable = subject
+          .scan(0) { count, _ in count + 1 }
+          .sink {
+            if $0 == cancellables.count {
+              didComplete()
+            }
+            _ = cancellable
+          }
+      }
+    )
   }
 
   /// Returns a "stateless" store by erasing state to `Void`.

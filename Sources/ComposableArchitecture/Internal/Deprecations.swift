@@ -223,9 +223,15 @@ extension Store {
         let localStore = Store<LocalState, LocalAction>(
           initialState: localState,
           reducer: .init { localState, localAction, _ in
-            self.send(fromLocalAction(localAction))
+            let (cancel, onComplete) = self.send(fromLocalAction(localAction))
             localState = extractLocalState(self.state.value) ?? localState
-            return .none
+
+            let subject = PassthroughSubject<Never, Never>()
+            onComplete { subject.send(completion: .finished) }
+
+            return subject
+              .handleEvents(receiveCancel: cancel)
+              .fireAndForget()
           },
           environment: ()
         )

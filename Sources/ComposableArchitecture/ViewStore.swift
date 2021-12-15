@@ -57,7 +57,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
 
-  private let _send: (Action) -> Void
+  private let _send: (Action) -> (cancel: () -> Void, onComplete: (@escaping () -> Void) -> Void)
   fileprivate let _state: CurrentValueRelay<State>
   private var viewCancellable: AnyCancellable?
 
@@ -132,7 +132,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///
   /// - Parameter action: An action.
   public func send(_ action: Action) {
-    self._send(action)
+    _ = self._send(action)
   }
 
   /// Derives a binding from the store that prevents direct writes to state and instead sends
@@ -336,6 +336,20 @@ private struct HashableWrapper<Value>: Hashable {
 #if compiler(>=5.5) && canImport(_Concurrency)
   #if compiler(>=5.5.2)
     extension ViewStore {
+      public func send(_ action: Action) async {
+        let (cancel, onComplete) = self._send(action)
+        await withTaskCancellationHandler(
+          handler: { cancel() },
+          operation: {
+            await withCheckedContinuation { continuation in
+              onComplete {
+                continuation.resume()
+              }
+            }
+          }
+        )
+      }
+
       /// Sends an action into the store and then suspends while a piece of state is `true`.
       ///
       /// This method can be used to interact with async/await code, allowing you to suspend while
@@ -421,7 +435,7 @@ private struct HashableWrapper<Value>: Hashable {
         _ action: Action,
         while predicate: @escaping (State) -> Bool
       ) async {
-        self.send(action)
+        _ = self._send(action)
         await self.suspend(while: predicate)
       }
 
@@ -488,6 +502,20 @@ private struct HashableWrapper<Value>: Hashable {
   #else
     @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
     extension ViewStore {
+      public func send(_ action: Action) async {
+        let (cancel, onComplete) = self._send(action)
+        await withTaskCancellationHandler(
+          handler: { cancel() },
+          operation: {
+            await withCheckedContinuation { continuation in
+              onComplete {
+                continuation.resume()
+              }
+            }
+          }
+        )
+      }
+
       /// Sends an action into the store and then suspends while a piece of state is `true`.
       ///
       /// This method can be used to interact with async/await code, allowing you to suspend while
