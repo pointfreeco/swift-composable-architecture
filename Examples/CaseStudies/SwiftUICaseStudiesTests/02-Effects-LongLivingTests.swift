@@ -18,7 +18,7 @@ class LongLivingEffectsTests: XCTestCase {
       )
     )
 
-    let cancellable = store.send(.task)
+    let task = store.send(.task)
 
     // Simulate a screenshot being taken
     screenshotTaken.send()
@@ -26,7 +26,7 @@ class LongLivingEffectsTests: XCTestCase {
       $0.screenshotCount = 1
     }
 
-    cancellable.cancel()
+    task.cancel()
 
     // Simulate a screenshot being taken to show no effects
     // are executed.

@@ -333,7 +333,7 @@
       file: StaticString = #file,
       line: UInt = #line,
       _ update: @escaping (inout LocalState) throws -> Void = { _ in }
-    ) -> AnyCancellable {
+    ) -> Task<Void, Never> {
       if !self.receivedActions.isEmpty {
         var actions = ""
         customDump(self.receivedActions.map(\.action), to: &actions)
@@ -348,7 +348,7 @@
         )
       }
       var expectedState = self.toLocalState(self.snapshotState)
-      let (cancel, _) = self.store.send(.init(origin: .send(action), file: file, line: line))
+      let (cancel, onComplete) = self.store.send(.init(origin: .send(action), file: file, line: line))
       do {
         try update(&expectedState)
       } catch {
@@ -364,7 +364,16 @@
         self.line = line
       }
 
-      return AnyCancellable(cancel)
+      return Task {
+        await withTaskCancellationHandler(
+          handler: { cancel() },
+          operation: {
+            await withUnsafeContinuation {
+              onComplete($0.resume)
+            }
+          }
+        )
+      }
     }
 
     private func expectedStateShouldMatch(
