@@ -4,9 +4,8 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
-@MainActor
 class LongLivingEffectsTests: XCTestCase {
-  func testReducer() async {
+  func testReducer() {
     // A passthrough subject to simulate the screenshot notification
     let screenshotTaken = PassthroughSubject<Void, Never>()
 
@@ -22,7 +21,7 @@ class LongLivingEffectsTests: XCTestCase {
 
     // Simulate a screenshot being taken
     screenshotTaken.send()
-    await store.receive(.userDidTakeScreenshotNotification) {
+    store.receive(.userDidTakeScreenshotNotification) {
       $0.screenshotCount = 1
     }
 
