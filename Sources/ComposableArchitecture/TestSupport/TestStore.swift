@@ -475,7 +475,6 @@
               .sink(
                 receiveCompletion: { completion in
                   _ = cancellable
-
                   switch completion {
                   case .finished:
                     break
@@ -489,10 +488,10 @@
                       line: line
                     )
                   }
+                  continuation.resume()
                 },
                 receiveValue: { _ in
-                  { self.receive(expectedAction, file: file, line: line, update) }()
-                  continuation.resume()
+                  self.receive(expectedAction, file: file, line: line, update)
                 }
               )
           }
@@ -520,7 +519,6 @@
               .sink(
                 receiveCompletion: { completion in
                   _ = cancellable
-
                   switch completion {
                   case .finished:
                     break
@@ -534,10 +532,10 @@
                       line: line
                     )
                   }
+                  continuation.resume()
                 },
                 receiveValue: { _ in
-                  { self.receive(expectedAction, file: file, line: line, update) }()
-                  continuation.resume()
+                  self.receive(expectedAction, file: file, line: line, update)
                 }
               )
           }

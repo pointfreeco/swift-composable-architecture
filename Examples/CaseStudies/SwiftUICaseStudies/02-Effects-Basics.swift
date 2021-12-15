@@ -35,15 +35,83 @@ enum EffectsBasicsAction: Equatable {
   case decrementButtonTapped
   case incrementButtonTapped
   case numberFactButtonTapped
-  case numberFactResponse(Result<String, FactClient.Error>)
+  case numberFactResponse(TaskResult<String>)
+}
+
+struct AsyncFactClient {
+  var fetch: (Int) async throws -> String
+}
+
+extension AsyncFactClient {
+  static let live = Self { number in
+    let (data, _) = try await URLSession.shared
+      .data(from: URL(string: "http://numbersapi.com/\(number)/trivia")!)
+    return String(decoding: data, as: UTF8.self)
+  }
 }
 
 struct EffectsBasicsEnvironment {
-  var fact: FactClient
+  var fact: AsyncFactClient
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
 // MARK: - Feature business logic
+
+extension Scheduler {
+  func sleep(_ duration: SchedulerTimeType.Stride) async {
+    await withUnsafeContinuation { continuation in
+      self.schedule(
+        after: self.now.advanced(by: duration),
+        continuation.resume
+      )
+    }
+  }
+}
+
+enum Box<T> {}
+
+protocol AnyEquatable {
+  static func isEqual(_ lhs: Any, _ rhs: Any) -> Bool
+}
+
+extension Box: AnyEquatable where T: Equatable {
+  static func isEqual(_ lhs: Any, _ rhs: Any) -> Bool {
+    lhs as? T == rhs as? T
+  }
+}
+
+func isEqual(_ lhs: Any, _ rhs: Any) -> Bool {
+  func open<LHS>(_: LHS.Type) -> Bool? {
+    (Box<LHS>.self as? AnyEquatable.Type)?.isEqual(lhs, rhs)
+  }
+  return _openExistential(type(of: lhs), do: open) ?? false
+}
+
+enum TaskResult<Success> {
+  case success(Success)
+  case failure(Error)
+
+  public init(catching body: () async throws -> Success) async {
+    do {
+      self = .success(try await body())
+    } catch {
+      self = .failure(error)
+    }
+  }
+}
+
+extension TaskResult: Equatable where Success: Equatable {
+  static func == (lhs: Self, rhs: Self) -> Bool {
+    switch (lhs, rhs) {
+    case let (.success(lhs), .success(rhs)):
+      return lhs == rhs
+    case let (.failure(lhs), .failure(rhs)):
+      return isEqual(lhs, rhs)
+    case (.success, .failure), (.failure, .success):
+      return false
+    }
+  }
+}
 
 let effectsBasicsReducer = Reducer<
   EffectsBasicsState, EffectsBasicsAction, EffectsBasicsEnvironment
@@ -53,9 +121,13 @@ let effectsBasicsReducer = Reducer<
     state.count -= 1
     state.numberFact = nil
     // Return an effect that re-increments the count after 1 second.
-    return Effect(value: EffectsBasicsAction.incrementButtonTapped)
-      .delay(for: 1, scheduler: environment.mainQueue)
-      .eraseToEffect()
+//    return Effect(value: EffectsBasicsAction.incrementButtonTapped)
+//      .delay(for: 1, scheduler: environment.mainQueue)
+//      .eraseToEffect()
+    return .task { @MainActor in
+      await environment.mainQueue.sleep(.seconds(1))
+      return .incrementButtonTapped
+    }
 
   case .incrementButtonTapped:
     state.count += 1
@@ -67,9 +139,9 @@ let effectsBasicsReducer = Reducer<
     state.numberFact = nil
     // Return an effect that fetches a number fact from the API and returns the
     // value back to the reducer's `numberFactResponse` action.
-    return environment.fact.fetch(state.count)
-      .receive(on: environment.mainQueue)
-      .catchToEffect(EffectsBasicsAction.numberFactResponse)
+    return .task { @MainActor [count = state.count] in
+      await .numberFactResponse(.init { try await environment.fact.fetch(count) })
+    }
 
   case let .numberFactResponse(.success(response)):
     state.isNumberFactRequestInFlight = false

@@ -160,12 +160,12 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       action: /RootAction.dieRoll,
       environment: { _ in .init(rollDie: { .random(in: 1...6) }) }
     ),
-  effectsBasicsReducer
-    .pullback(
-      state: \.effectsBasics,
-      action: /RootAction.effectsBasics,
-      environment: { .init(fact: $0.fact, mainQueue: $0.mainQueue) }
-    ),
+//  effectsBasicsReducer
+//    .pullback(
+//      state: \.effectsBasics,
+//      action: /RootAction.effectsBasics,
+//      environment: { .init(fact: $0.fact, mainQueue: $0.mainQueue) }
+//    ),
   effectsCancellationReducer
     .pullback(
       state: \.effectsCancellation,
