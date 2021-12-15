@@ -347,13 +347,7 @@
         )
       }
       var expectedState = self.toLocalState(self.snapshotState)
-      ViewStore(
-        self.store.scope(
-          state: self.toLocalState,
-          action: { .init(origin: .send($0), file: file, line: line) }
-        )
-      )
-      .send(action)
+      self.store.send(.init(origin: .send(action), file: file, line: line))
       do {
         try update(&expectedState)
       } catch {
