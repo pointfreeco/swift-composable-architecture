@@ -336,36 +336,7 @@
           line: UInt = #line,
           _ update: @escaping (inout LocalState) throws -> Void = { _ in }
         ) -> Task<Void, Never> {
-          if !self.receivedActions.isEmpty {
-            var actions = ""
-            customDump(self.receivedActions.map(\.action), to: &actions)
-            XCTFail(
-              """
-              Must handle \(self.receivedActions.count) received \
-              action\(self.receivedActions.count == 1 ? "" : "s") before sending an action: …
-
-              Unhandled actions: \(actions)
-              """,
-              file: file, line: line
-            )
-          }
-          var expectedState = self.toLocalState(self.snapshotState)
-          let (cancel, onComplete) = self.store.send(.init(origin: .send(action), file: file, line: line))
-          do {
-            try update(&expectedState)
-          } catch {
-            XCTFail("Threw error: \(error)", file: file, line: line)
-          }
-          self.expectedStateShouldMatch(
-            expected: expectedState,
-            actual: self.toLocalState(self.snapshotState),
-            file: file,
-            line: line
-          )
-          if "\(self.file)" == "\(file)" {
-            self.line = line
-          }
-
+          let (cancel, onComplete) = self._send(action, file: file, line: line, update)
           return Task {
             await withTaskCancellationHandler(
               handler: { cancel() },
@@ -386,36 +357,7 @@
           line: UInt = #line,
           _ update: @escaping (inout LocalState) throws -> Void = { _ in }
         ) -> Task<Void, Never> {
-          if !self.receivedActions.isEmpty {
-            var actions = ""
-            customDump(self.receivedActions.map(\.action), to: &actions)
-            XCTFail(
-              """
-              Must handle \(self.receivedActions.count) received \
-              action\(self.receivedActions.count == 1 ? "" : "s") before sending an action: …
-
-              Unhandled actions: \(actions)
-              """,
-              file: file, line: line
-            )
-          }
-          var expectedState = self.toLocalState(self.snapshotState)
-          let (cancel, onComplete) = self.store.send(.init(origin: .send(action), file: file, line: line))
-          do {
-            try update(&expectedState)
-          } catch {
-            XCTFail("Threw error: \(error)", file: file, line: line)
-          }
-          self.expectedStateShouldMatch(
-            expected: expectedState,
-            actual: self.toLocalState(self.snapshotState),
-            file: file,
-            line: line
-          )
-          if "\(self.file)" == "\(file)" {
-            self.line = line
-          }
-
+          let (cancel, onComplete) = self._send(action, file: file, line: line, update)
           return Task {
             await withTaskCancellationHandler(
               handler: { cancel() },
@@ -435,37 +377,48 @@
         line: UInt = #line,
         _ update: @escaping (inout LocalState) throws -> Void = { _ in }
       ) {
-        if !self.receivedActions.isEmpty {
-          var actions = ""
-          customDump(self.receivedActions.map(\.action), to: &actions)
-          XCTFail(
-            """
-            Must handle \(self.receivedActions.count) received \
-            action\(self.receivedActions.count == 1 ? "" : "s") before sending an action: …
-
-            Unhandled actions: \(actions)
-            """,
-            file: file, line: line
-          )
-        }
-        var expectedState = self.toLocalState(self.snapshotState)
-        _ = self.store.send(.init(origin: .send(action), file: file, line: line))
-        do {
-          try update(&expectedState)
-        } catch {
-          XCTFail("Threw error: \(error)", file: file, line: line)
-        }
-        self.expectedStateShouldMatch(
-          expected: expectedState,
-          actual: self.toLocalState(self.snapshotState),
-          file: file,
-          line: line
-        )
-        if "\(self.file)" == "\(file)" {
-          self.line = line
-        }
+        self._send(action, file: file, line: line, update)
       }
     #endif
+
+    private func _send(
+      _ action: LocalAction,
+      file: StaticString = #file,
+      line: UInt = #line,
+      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+    ) -> (cancel: () -> Void, onComplete: (@escaping () -> Void) -> Void) {
+      if !self.receivedActions.isEmpty {
+        var actions = ""
+        customDump(self.receivedActions.map(\.action), to: &actions)
+        XCTFail(
+          """
+          Must handle \(self.receivedActions.count) received \
+          action\(self.receivedActions.count == 1 ? "" : "s") before sending an action: …
+
+          Unhandled actions: \(actions)
+          """,
+          file: file, line: line
+        )
+      }
+      var expectedState = self.toLocalState(self.snapshotState)
+      let (cancel, onComplete) = self.store
+        .send(.init(origin: .send(action), file: file, line: line))
+      do {
+        try update(&expectedState)
+      } catch {
+        XCTFail("Threw error: \(error)", file: file, line: line)
+      }
+      self.expectedStateShouldMatch(
+        expected: expectedState,
+        actual: self.toLocalState(self.snapshotState),
+        file: file,
+        line: line
+      )
+      if "\(self.file)" == "\(file)" {
+        self.line = line
+      }
+      return (cancel, onComplete)
+    }
 
     private func expectedStateShouldMatch(
       expected: LocalState,
