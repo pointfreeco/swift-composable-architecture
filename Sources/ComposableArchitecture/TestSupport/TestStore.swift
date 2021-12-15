@@ -175,7 +175,7 @@
     private let fromLocalAction: (LocalAction) -> Action
     private var line: UInt
     private var longLivingEffects: Set<LongLivingEffect> = []
-    var receivedActions: [(action: Action, state: State)] = []
+    @Published var receivedActions: [(action: Action, state: State)] = []
     private let reducer: Reducer<State, Action, Environment>
     private var snapshotState: State
     private var store: Store<State, TestAction>!
@@ -327,12 +327,13 @@
   }
 
   extension TestStore where LocalState: Equatable {
+    @discardableResult
     public func send(
       _ action: LocalAction,
       file: StaticString = #file,
       line: UInt = #line,
       _ update: @escaping (inout LocalState) throws -> Void = { _ in }
-    ) {
+    ) -> AnyCancellable {
       if !self.receivedActions.isEmpty {
         var actions = ""
         customDump(self.receivedActions.map(\.action), to: &actions)
@@ -347,13 +348,7 @@
         )
       }
       var expectedState = self.toLocalState(self.snapshotState)
-      ViewStore(
-        self.store.scope(
-          state: self.toLocalState,
-          action: { .init(origin: .send($0), file: file, line: line) }
-        )
-      )
-      .send(action)
+      let (cancel, _) = self.store.send(.init(origin: .send(action), file: file, line: line))
       do {
         try update(&expectedState)
       } catch {
@@ -368,6 +363,8 @@
       if "\(self.file)" == "\(file)" {
         self.line = line
       }
+
+      return AnyCancellable(cancel)
     }
 
     private func expectedStateShouldMatch(
@@ -402,6 +399,53 @@
   }
 
   extension TestStore where LocalState: Equatable, Action: Equatable {
+
+    #if canImport(_Concurrency)
+    public func receive(
+      _ expectedAction: Action,
+      timeout: UInt64 = NSEC_PER_SEC,
+      file: StaticString = #file,
+      line: UInt = #line,
+      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+    ) async {
+      await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
+        var cancellable: AnyCancellable?
+        let timeout = Double(timeout) / Double(NSEC_PER_SEC)
+        cancellable = self.$receivedActions
+          .setFailureType(to: TimeoutError.self)
+          .timeout(
+            .seconds(timeout),
+            scheduler: DispatchQueue.main,
+            customError: { TimeoutError() }
+          )
+          .first { !$0.isEmpty }
+          .sink(
+            receiveCompletion: { completion in
+              _ = cancellable
+
+              switch completion {
+              case .finished:
+                break
+              case .failure:
+                XCTFail(
+                  """
+                  Expected to receive an action, but received none after waiting for \
+                  \(timeout) seconds.
+                  """,
+                  file: file,
+                  line: line
+                )
+              }
+            },
+            receiveValue: { _ in
+              { self.receive(expectedAction, file: file, line: line, update) }()
+              continuation.resume()
+            }
+          )
+      }
+    }
+    #endif
+
     public func receive(
       _ expectedAction: Action,
       file: StaticString = #file,
@@ -499,3 +543,5 @@
     }
   }
 #endif
+
+struct TimeoutError: Error {}

@@ -336,6 +336,7 @@ private struct HashableWrapper<Value>: Hashable {
 #if compiler(>=5.5) && canImport(_Concurrency)
   #if compiler(>=5.5.2)
     extension ViewStore {
+      @MainActor
       public func send(_ action: Action) async {
         let (cancel, onComplete) = self._send(action)
         await withTaskCancellationHandler(
