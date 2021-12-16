@@ -11,9 +11,7 @@ class VoiceMemosTests: XCTestCase {
     // NB: Combine's concatenation behavior is different in 13.3
     guard #available(iOS 13.4, *) else { return }
 
-    let audioRecorderSubject = PassthroughSubject<
-      AudioRecorderClient.Action, AudioRecorderClient.Failure
-    >()
+    let audioRecorderSubject = PassthroughSubject<AudioRecorderClient.Action, Error>()
 
     var environment = VoiceMemosEnvironment.failing
     environment.audioRecorder.currentTime = { Effect(value: 2.5) }
@@ -103,9 +101,7 @@ class VoiceMemosTests: XCTestCase {
   }
 
   func testRecordMemoFailure() {
-    let audioRecorderSubject = PassthroughSubject<
-      AudioRecorderClient.Action, AudioRecorderClient.Failure
-    >()
+    let audioRecorderSubject = PassthroughSubject<AudioRecorderClient.Action, Error>()
 
     var environment = VoiceMemosEnvironment.failing
     environment.audioRecorder.currentTime = { Effect(value: 2.5) }
@@ -132,7 +128,8 @@ class VoiceMemosTests: XCTestCase {
         url: URL(string: "file:///tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")!
       )
     }
-    audioRecorderSubject.send(completion: .failure(.couldntActivateAudioSession))
+    struct CouldntActivateAudioSession: Error {}
+    audioRecorderSubject.send(completion: .failure(CouldntActivateAudioSession()))
     store.receive(/VoiceMemosAction.audioRecorder) {
       $0.alert = .init(title: .init("Voice memo recording failed."))
       $0.currentRecording = nil
@@ -183,7 +180,10 @@ class VoiceMemosTests: XCTestCase {
 
   func testPlayMemoFailure() {
     var environment = VoiceMemosEnvironment.failing
-    environment.audioPlayer.play = { _ in Effect(error: .decodeErrorDidOccur) }
+    environment.audioPlayer.play = { _ in
+      struct DecodeError: Error {}
+      return Effect(error: DecodeError())
+    }
     environment.mainRunLoop = .immediate
 
     let url = URL(string: "https://www.pointfree.co/functions")!

@@ -16,15 +16,16 @@ extension AudioPlayerClient {
                 callback(.success(.didFinishPlaying(successfully: flag)))
                 delegate = nil
               },
-              decodeErrorDidOccur: { _ in
-                callback(.failure(.decodeErrorDidOccur))
+              decodeErrorDidOccur: { error in
+                struct DecodeError: Error {}
+                callback(.failure(error ?? DecodeError()))
                 delegate = nil
               }
             )
 
             delegate?.player.play()
           } catch {
-            callback(.failure(.couldntCreateAudioPlayer))
+            callback(.failure(error))
           }
         }
       },

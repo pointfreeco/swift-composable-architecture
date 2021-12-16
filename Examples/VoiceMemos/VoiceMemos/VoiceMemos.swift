@@ -29,7 +29,7 @@ struct VoiceMemosState: Equatable {
 
 enum VoiceMemosAction {
   case alert(Alert)
-  case audioRecorder(Result<AudioRecorderClient.Action, AudioRecorderClient.Failure>)
+  case audioRecorder(Result<AudioRecorderClient.Action, Error>)
   case currentRecordingTimerUpdated
   case finalRecordingTime(TimeInterval)
   case openSettingsButtonTapped

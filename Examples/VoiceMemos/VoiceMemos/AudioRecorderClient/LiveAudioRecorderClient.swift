@@ -34,28 +34,29 @@ extension AudioRecorderClient {
                 delegate = nil
                 try? AVAudioSession.sharedInstance().setActive(false)
               },
-              encodeErrorDidOccur: { _ in
-                callback(.failure(.encodeErrorDidOccur))
+              encodeErrorDidOccur: { error in
+                struct EncodeError: Error {}
+                callback(.failure(error ?? EncodeError()))
                 delegate = nil
                 try? AVAudioSession.sharedInstance().setActive(false)
               }
             )
           } catch {
-            callback(.failure(.couldntCreateAudioRecorder))
+            callback(.failure(error))
             return
           }
 
           do {
             try AVAudioSession.sharedInstance().setCategory(.record, mode: .default)
           } catch {
-            callback(.failure(.couldntActivateAudioSession))
+            callback(.failure(error))
             return
           }
 
           do {
             try AVAudioSession.sharedInstance().setActive(true)
           } catch {
-            callback(.failure(.couldntSetAudioSessionCategory))
+            callback(.failure(error))
             return
           }
 

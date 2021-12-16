@@ -2,15 +2,10 @@ import ComposableArchitecture
 import Foundation
 
 struct AudioPlayerClient {
-  var play: (URL) -> Effect<Action, Failure>
+  var play: (URL) -> Effect<Action, Error>
   var stop: () -> Effect<Never, Never>
 
-  enum Action: Equatable {
+  enum Action {
     case didFinishPlaying(successfully: Bool)
-  }
-
-  enum Failure: Equatable, Error {
-    case couldntCreateAudioPlayer
-    case decodeErrorDidOccur
   }
 }

@@ -15,7 +15,7 @@ import SwiftUI
 /// To use this API, you model all the dialog actions in your domain's action enum:
 ///
 /// ```swift
-/// enum AppAction: Equatable {
+/// enum AppAction {
 ///   case cancelTapped
 ///   case deleteTapped
 ///   case favoriteTapped
