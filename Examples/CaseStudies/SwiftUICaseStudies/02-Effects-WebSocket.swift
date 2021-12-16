@@ -186,10 +186,10 @@ struct WebSocketView: View {
 // MARK: - WebSocketClient
 
 struct WebSocketClient {
-  enum Action: Equatable {
-    case didBecomeInvalidWithError(NSError?)
+  enum Action {
+    case didBecomeInvalidWithError(Error?)
     case didClose(code: URLSessionWebSocketTask.CloseCode, reason: Data?)
-    case didCompleteWithError(NSError?)
+    case didCompleteWithError(Error?)
     case didOpenWithProtocol(String?)
   }
 
