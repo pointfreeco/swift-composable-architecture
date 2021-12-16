@@ -251,13 +251,19 @@ public struct Effect<Output, Failure: Error>: Publisher {
     //     due to a bug in iOS 13.2 that publisher will never complete. The bug was fixed in
     //     iOS 13.3, but to remain compatible with iOS 13.2 and higher we need to do a little
     //     trickery to make sure the deferred publisher completes.
-    Deferred { () -> Publishers.CompactMap<Result<Output?, Failure>.Publisher, Output> in
+    let startedOnMainThread = Thread.isMainThread
+    return Deferred { () -> Publishers.CompactMap<Result<Output?, Failure>.Publisher, Output> in
       work()
       return Just<Output?>(nil)
         .setFailureType(to: Failure.self)
         .compactMap { $0 }
-    }
-    .eraseToEffect()
+    }.flatMap { output -> Effect in
+      if startedOnMainThread, !Thread.isMainThread {
+        return Effect(value: output).receive(on: DispatchQueue.main).eraseToEffect()
+      } else {
+        return Effect(value: output)
+      }
+    }.eraseToEffect()
   }
 
   /// Transforms all elements from the upstream effect with a provided closure.
