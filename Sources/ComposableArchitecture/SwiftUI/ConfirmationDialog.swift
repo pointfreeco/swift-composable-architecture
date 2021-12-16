@@ -16,10 +16,14 @@ import SwiftUI
 ///
 /// ```swift
 /// enum AppAction {
-///   case cancelTapped
-///   case deleteTapped
-///   case favoriteTapped
-///   case infoTapped
+///   enum ConfirmationDialog {
+///     case cancelTapped
+///     case deleteTapped
+///     case favoriteTapped
+///     case infoTapped
+///   }
+///
+///   case confirmationDialog(ConfirmationDialog)
 ///
 ///   // Your other actions
 /// }
@@ -30,7 +34,7 @@ import SwiftUI
 ///
 /// ```swift
 /// struct AppState: Equatable {
-///   var confirmationDialog: ConfirmationDialogState<AppAction>?
+///   var confirmationDialog: ConfirmationDialogState<AppAction.ConfirmationDialog>?
 ///
 ///   // Your other state
 /// }
@@ -41,29 +45,31 @@ import SwiftUI
 ///
 /// ```swift
 /// let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, env in
-///   switch action
-///     case .cancelTapped:
-///       state.confirmationDialog = nil
-///       return .none
-///
-///     case .deleteTapped:
-///       state.confirmationDialog = nil
-///       // Do deletion logic...
-///
-///     case .favoriteTapped:
-///       state.confirmationDialog = nil
-///       // Do favoriting logic
-///
-///     case .infoTapped:
-///       state.confirmationDialog = .init(
-///         title: "What would you like to do?",
-///         buttons: [
-///           .default(TextState("Favorite"), action: .send(.favoriteTapped)),
-///           .destructive(TextState("Delete"), action: .send(.deleteTapped)),
-///           .cancel(),
-///         ]
-///       )
+///   switch action {
+///   case .confirmationDialog(cancelTapped):
+///     state.confirmationDialog = nil
 ///     return .none
+///
+///   case .confirmationDialog(deleteTapped):
+///     state.confirmationDialog = nil
+///     // Do deletion logic...
+///
+///   case .confirmationDialog(favoriteTapped):
+///     state.confirmationDialog = nil
+///     // Do favoriting logic
+///
+///   case .confirmationDialog(infoTapped):
+///     state.confirmationDialog = .init(
+///       title: "What would you like to do?",
+///       buttons: [
+///         .default(TextState("Favorite"), action: .send(.favoriteTapped)),
+///         .destructive(TextState("Delete"), action: .send(.deleteTapped)),
+///         .cancel(),
+///       ]
+///     )
+///     return .none
+///
+///   // Your other actions
 ///   }
 /// }
 /// ```
@@ -74,7 +80,7 @@ import SwiftUI
 /// ```swift
 /// Button("Info") { viewStore.send(.infoTapped) }
 ///   .confirmationDialog(
-///     self.store.scope(state: \.confirmationDialog),
+///     self.store.scope(state: \.confirmationDialog, action: AppAction.confirmationDialog),
 ///     dismiss: .cancelTapped
 ///   )
 /// ```

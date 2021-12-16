@@ -15,10 +15,14 @@ import SwiftUI
 /// To use this API, you model all the alert actions in your domain's action enum:
 ///
 /// ```swift
-/// enum AppAction: Equatable {
-///   case cancelTapped
-///   case confirmTapped
-///   case deleteTapped
+/// enum AppAction {
+///   enum Alert {
+///     case cancelTapped
+///     case confirmTapped
+///     case deleteTapped
+///   }
+
+///   case alert(Alert)
 ///
 ///   // Your other actions
 /// }
@@ -29,7 +33,7 @@ import SwiftUI
 ///
 /// ```swift
 /// struct AppState: Equatable {
-///   var alert: AlertState<AppAction>?
+///   var alert: AlertState<AppAction.Alert>?
 ///
 ///   // Your other state
 /// }
@@ -40,23 +44,25 @@ import SwiftUI
 ///
 /// ```swift
 /// let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, env in
-///   switch action
-///     case .cancelTapped:
-///       state.alert = nil
-///       return .none
-///
-///     case .confirmTapped:
-///       state.alert = nil
-///       // Do deletion logic...
-///
-///     case .deleteTapped:
-///       state.alert = .init(
-///         title: TextState("Delete"),
-///         message: TextState("Are you sure you want to delete this? It cannot be undone."),
-///         primaryButton: .default(TextState("Confirm"), action: .send(.confirmTapped)),
-///         secondaryButton: .cancel(TextState("Cancel"))
-///       )
+///   switch action {
+///   case .alert(.cancelTapped):
+///     state.alert = nil
 ///     return .none
+///
+///   case .alert(.confirmTapped):
+///     state.alert = nil
+///     // Do deletion logic...
+///
+///   case .alert(.deleteTapped):
+///     state.alert = .init(
+///       title: TextState("Delete"),
+///       message: TextState("Are you sure you want to delete this? It cannot be undone."),
+///       primaryButton: .default(TextState("Confirm"), action: .send(.confirmTapped)),
+///       secondaryButton: .cancel(TextState("Cancel"))
+///     )
+///     return .none
+///
+///   // Your other actions
 ///   }
 /// }
 /// ```
@@ -67,7 +73,7 @@ import SwiftUI
 /// ```swift
 /// Button("Delete") { viewStore.send(.deleteTapped) }
 ///   .alert(
-///     self.store.scope(state: \.alert),
+///     self.store.scope(state: \.alert, action: AppAction.alert),
 ///     dismiss: .cancelTapped
 ///   )
 /// ```
@@ -85,7 +91,7 @@ import SwiftUI
 ///   environment: .mock
 /// )
 ///
-/// store.send(.deleteTapped) {
+/// store.send(.alert(deleteTapped)) {
 ///   $0.alert = .init(
 ///     title: TextState("Delete"),
 ///     message: TextState("Are you sure you want to delete this? It cannot be undone."),
@@ -93,7 +99,7 @@ import SwiftUI
 ///     secondaryButton: .cancel(TextState("Cancel"))
 ///   )
 /// }
-/// store.send(.deleteTapped) {
+/// store.send(.alert(.confirmTapped)) {
 ///   $0.alert = nil
 ///   // Also verify that delete logic executed correctly
 /// }
