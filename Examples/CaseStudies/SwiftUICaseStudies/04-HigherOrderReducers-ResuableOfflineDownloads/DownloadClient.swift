@@ -5,8 +5,6 @@ import Foundation
 struct DownloadClient {
   var download: (URL) -> Effect<Action, Error>
 
-  struct Error: Swift.Error, Equatable {}
-
   enum Action: Equatable {
     case response(Data)
     case updateProgress(Double)
@@ -23,7 +21,7 @@ extension DownloadClient {
             subscriber.send(.response(data))
             subscriber.send(completion: .finished)
           case let (_, .some(error)):
-            subscriber.send(completion: .failure(Error()))
+            subscriber.send(completion: .failure(error))
           case (.none, .none):
             fatalError("Data and Error should not both be nil")
           }

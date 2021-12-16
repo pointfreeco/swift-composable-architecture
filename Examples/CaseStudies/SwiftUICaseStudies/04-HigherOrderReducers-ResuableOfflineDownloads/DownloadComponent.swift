@@ -2,7 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 struct DownloadComponentState<ID: Equatable>: Equatable {
-  var alert: AlertState<DownloadComponentAction.AlertAction>?
+  var alert: AlertState<DownloadComponentAction.Alert>?
   let id: ID
   var mode: Mode
   let url: URL
@@ -29,12 +29,12 @@ enum Mode: Equatable {
   }
 }
 
-enum DownloadComponentAction: Equatable {
-  case alert(AlertAction)
+enum DownloadComponentAction {
+  case alert(Alert)
   case buttonTapped
-  case downloadClient(Result<DownloadClient.Action, DownloadClient.Error>)
+  case downloadClient(Result<DownloadClient.Action, Error>)
 
-  enum AlertAction: Equatable {
+  enum Alert {
     case cancelButtonTapped
     case deleteButtonTapped
     case dismiss
@@ -128,7 +128,7 @@ private let cancelAlert = AlertState(
   secondaryButton: nevermindButton
 )
 
-let nevermindButton = AlertState<DownloadComponentAction.AlertAction>.Button
+let nevermindButton = AlertState<DownloadComponentAction.Alert>.Button
   .default(.init("Nevermind"), action: .send(.nevermindButtonTapped))
 
 struct DownloadComponent<ID: Equatable>: View {

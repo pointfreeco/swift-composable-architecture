@@ -16,21 +16,25 @@ private let readMe = """
   """
 
 struct MultipleDependenciesState: Equatable {
-  var alert: AlertState<MultipleDependenciesAction>?
+  var alert: AlertState<MultipleDependenciesAction.Alert>?
   var dateString: String?
   var fetchedNumberString: String?
   var isFetchInFlight = false
   var uuidString: String?
 }
 
-enum MultipleDependenciesAction: Equatable {
+enum MultipleDependenciesAction {
+  case alert(Alert)
   case alertButtonTapped
   case alertDelayReceived
-  case alertDismissed
   case dateButtonTapped
   case fetchNumberButtonTapped
   case fetchNumberResponse(Int)
   case uuidButtonTapped
+
+  enum Alert {
+    case dismiss
+  }
 }
 
 struct MultipleDependenciesEnvironment {
@@ -44,6 +48,10 @@ let multipleDependenciesReducer = Reducer<
 > { state, action, environment in
 
   switch action {
+  case .alert(.dismiss):
+    state.alert = nil
+    return .none
+
   case .alertButtonTapped:
     return Effect(value: .alertDelayReceived)
       .delay(for: 1, scheduler: environment.mainQueue)
@@ -51,10 +59,6 @@ let multipleDependenciesReducer = Reducer<
 
   case .alertDelayReceived:
     state.alert = .init(title: .init("Here's an alert after a delay!"))
-    return .none
-
-  case .alertDismissed:
-    state.alert = nil
     return .none
 
   case .dateButtonTapped:
@@ -106,7 +110,10 @@ struct MultipleDependenciesView: View {
           }
 
           Button("Delayed Alert") { viewStore.send(.alertButtonTapped) }
-            .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
+            .alert(
+              self.store.scope(state: \.alert, action: MultipleDependenciesAction.alert),
+              dismiss: .dismiss
+            )
         }
 
         Section(

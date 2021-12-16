@@ -23,7 +23,7 @@ struct CityMap: Equatable, Identifiable {
 }
 
 struct CityMapState: Equatable, Identifiable {
-  var downloadAlert: AlertState<DownloadComponentAction.AlertAction>?
+  var downloadAlert: AlertState<DownloadComponentAction.Alert>?
   var downloadMode: Mode
   var cityMap: CityMap
 

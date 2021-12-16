@@ -5,7 +5,7 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 class ReusableComponentsDownloadComponentTests: XCTestCase {
-  let downloadSubject = PassthroughSubject<DownloadClient.Action, DownloadClient.Error>()
+  let downloadSubject = PassthroughSubject<DownloadClient.Action, Error>()
   let reducer = Reducer<
     DownloadComponentState<Int>, DownloadComponentAction, DownloadComponentEnvironment
   >
@@ -40,14 +40,14 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 
     self.downloadSubject.send(.updateProgress(0.2))
     self.scheduler.advance()
-    store.receive(.downloadClient(.success(.updateProgress(0.2)))) {
+    store.receive(/DownloadComponentAction.downloadClient) {
       $0.mode = .downloading(progress: 0.2)
     }
 
     self.downloadSubject.send(.response(Data()))
     self.downloadSubject.send(completion: .finished)
     self.scheduler.advance(by: 1)
-    store.receive(.downloadClient(.success(.response(Data())))) {
+    store.receive(/DownloadComponentAction.downloadClient) {
       $0.mode = .downloaded
     }
   }
@@ -75,7 +75,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 
     self.downloadSubject.send(.updateProgress(0.5))
     self.scheduler.advance()
-    store.receive(.downloadClient(.success(.updateProgress(0.5)))) {
+    store.receive(/DownloadComponentAction.downloadClient) {
       $0.mode = .downloading(progress: 0.5)
     }
 
@@ -84,7 +84,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 
     self.downloadSubject.send(.updateProgress(0.7))
     self.scheduler.advance(by: 0.5)
-    store.receive(.downloadClient(.success(.updateProgress(0.7)))) {
+    store.receive(/DownloadComponentAction.downloadClient) {
       $0.mode = .downloading(progress: 0.7)
     }
 
@@ -161,7 +161,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
     self.downloadSubject.send(.response(Data()))
     self.downloadSubject.send(completion: .finished)
     self.scheduler.advance(by: 1)
-    store.receive(.downloadClient(.success(.response(Data())))) {
+    store.receive(/DownloadComponentAction.downloadClient) {
       $0.alert = nil
       $0.mode = .downloaded
     }
