@@ -5,7 +5,7 @@ import Foundation
 struct DownloadClient {
   var download: (URL) -> Effect<Action, Error>
 
-  enum Action: Equatable {
+  enum Action {
     case response(Data)
     case updateProgress(Double)
   }

@@ -10,17 +10,21 @@ private let readMe = """
   """
 
 struct AppState: Equatable {
-  var alert: AlertState<AppAction>?
+  var alert: AlertState<AppAction.Alert>?
   var isRecording = false
   var speechRecognizerAuthorizationStatus = SFSpeechRecognizerAuthorizationStatus.notDetermined
   var transcribedText = ""
 }
 
-enum AppAction: Equatable {
-  case dismissAuthorizationStateAlert
+enum AppAction {
+  case alert(Alert)
   case recordButtonTapped
   case speech(Result<SpeechClient.Action, SpeechClient.Error>)
   case speechRecognizerAuthorizationStatusResponse(SFSpeechRecognizerAuthorizationStatus)
+
+  enum Alert {
+    case dismiss
+  }
 }
 
 struct AppEnvironment {
@@ -32,7 +36,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
   struct SpeechRecognitionId: Hashable {}
 
   switch action {
-  case .dismissAuthorizationStateAlert:
+  case .alert(.dismiss):
     state.alert = nil
     return .none
 
@@ -147,7 +151,7 @@ struct SpeechRecognitionView: View {
         }
       }
       .padding()
-      .alert(self.store.scope(state: \.alert), dismiss: .dismissAuthorizationStateAlert)
+      .alert(self.store.scope(state: \.alert, action: AppAction.alert), dismiss: .dismiss)
     }
   }
 }

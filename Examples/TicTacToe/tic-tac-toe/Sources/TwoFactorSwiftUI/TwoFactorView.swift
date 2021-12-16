@@ -22,7 +22,7 @@ public struct TwoFactorView: View {
     }
   }
 
-  enum ViewAction: Equatable {
+  enum ViewAction {
     case codeChanged(String)
     case submitButtonTapped
   }

@@ -26,7 +26,7 @@ struct FavoriteState<ID>: Equatable, Identifiable where ID: Hashable {
   var isFavorite: Bool
 }
 
-enum FavoriteAction: Equatable /* TODO: Remove? */ {
+enum FavoriteAction {
   case alert(Alert)
   case buttonTapped
   case response(Result<Bool, FavoriteError>)
@@ -121,7 +121,7 @@ struct EpisodeState: Equatable, Identifiable {
   }
 }
 
-enum EpisodeAction: Equatable {
+enum EpisodeAction {
   case favorite(FavoriteAction)
 }
 
@@ -158,7 +158,7 @@ struct EpisodesState: Equatable {
   var episodeSelection: EpisodeState?
 }
 
-enum EpisodesAction: Equatable {
+enum EpisodesAction {
   case episode(id: EpisodeState.ID, action: EpisodeAction)
   case episodeSelection(EpisodeAction)
 }

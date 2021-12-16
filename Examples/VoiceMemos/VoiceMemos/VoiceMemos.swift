@@ -3,7 +3,7 @@ import ComposableArchitecture
 import SwiftUI
 
 struct VoiceMemosState: Equatable {
-  var alert: AlertState<VoiceMemosAction>?
+  var alert: AlertState<VoiceMemosAction.Alert>?
   var audioRecorderPermission = RecorderPermission.undetermined
   var currentRecording: CurrentRecording?
   var voiceMemos: IdentifiedArrayOf<VoiceMemo> = []
@@ -27,8 +27,8 @@ struct VoiceMemosState: Equatable {
   }
 }
 
-enum VoiceMemosAction: Equatable {
-  case alertDismissed
+enum VoiceMemosAction {
+  case alert(Alert)
   case audioRecorder(Result<AudioRecorderClient.Action, AudioRecorderClient.Failure>)
   case currentRecordingTimerUpdated
   case finalRecordingTime(TimeInterval)
@@ -36,6 +36,10 @@ enum VoiceMemosAction: Equatable {
   case recordButtonTapped
   case recordPermissionResponse(Bool)
   case voiceMemo(id: VoiceMemo.ID, action: VoiceMemoAction)
+
+  enum Alert {
+    case dismiss
+  }
 }
 
 struct VoiceMemosEnvironment {
@@ -77,7 +81,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
     }
 
     switch action {
-    case .alertDismissed:
+    case .alert(.dismiss):
       state.alert = nil
       return .none
 
@@ -241,8 +245,8 @@ struct VoiceMemosView: View {
           .padding()
         }
         .alert(
-          self.store.scope(state: \.alert),
-          dismiss: .alertDismissed
+          self.store.scope(state: \.alert, action: VoiceMemosAction.alert),
+          dismiss: .dismiss
         )
         .navigationBarTitle("Voice memos")
       }

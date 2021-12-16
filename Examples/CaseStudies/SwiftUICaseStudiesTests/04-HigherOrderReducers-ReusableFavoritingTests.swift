@@ -40,7 +40,7 @@ class ReusableComponentsFavoritingTests: XCTestCase {
     }
 
     self.scheduler.advance()
-    store.receive(.episode(id: episodes[0].id, action: .favorite(.response(.success(true)))))
+    store.receive(/EpisodesAction.episode)
 
     store.send(.episode(id: episodes[1].id, action: .favorite(.buttonTapped))) {
       $0.episodes[id: episodes[1].id]?.isFavorite = true
@@ -50,7 +50,7 @@ class ReusableComponentsFavoritingTests: XCTestCase {
     }
 
     self.scheduler.advance()
-    store.receive(.episode(id: episodes[1].id, action: .favorite(.response(.success(false)))))
+    store.receive(/EpisodesAction.episode)
 
     store.environment.favorite = { _, _ in .future { $0(.failure(error)) } }
     store.send(.episode(id: episodes[2].id, action: .favorite(.buttonTapped))) {
@@ -58,10 +58,7 @@ class ReusableComponentsFavoritingTests: XCTestCase {
     }
 
     self.scheduler.advance()
-    store.receive(
-      .episode(
-        id: episodes[2].id, action: .favorite(.response(.failure(FavoriteError(error: error)))))
-    ) {
+    store.receive(/EpisodesAction.episode) {
       $0.episodes[id: episodes[2].id]?.alert = .init(
         title: .init("The operation couldn’t be completed. (co.pointfree error -1.)")
       )
