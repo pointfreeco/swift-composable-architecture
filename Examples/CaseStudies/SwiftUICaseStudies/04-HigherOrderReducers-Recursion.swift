@@ -32,7 +32,7 @@ struct NestedState: Equatable, Identifiable {
   var description: String = ""
 }
 
-indirect enum NestedAction: Equatable {
+indirect enum NestedAction {
   case append
   case node(id: NestedState.ID, action: NestedAction)
   case remove(IndexSet)

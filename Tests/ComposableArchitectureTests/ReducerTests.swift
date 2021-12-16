@@ -21,7 +21,7 @@ final class ReducerTests: XCTestCase {
 
   func testCombine_EffectsAreMerged() {
     typealias Scheduler = AnySchedulerOf<DispatchQueue>
-    enum Action: Equatable {
+    enum Action {
       case increment
     }
 
@@ -61,7 +61,7 @@ final class ReducerTests: XCTestCase {
   }
 
   func testCombine() {
-    enum Action: Equatable {
+    enum Action {
       case increment
     }
 
@@ -219,7 +219,7 @@ final class ReducerTests: XCTestCase {
   }
 }
 
-enum DebugAction: Equatable {
+enum DebugAction {
   case incrWithBool(Bool)
   case incr, noop
 }

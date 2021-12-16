@@ -39,7 +39,7 @@ struct ClockState: Equatable {
   var secondsElapsed = 0
 }
 
-enum ClockAction: Equatable {
+enum ClockAction {
   case timerTicked
   case toggleTimerButtonTapped
 }

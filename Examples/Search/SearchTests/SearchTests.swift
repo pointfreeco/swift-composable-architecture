@@ -22,7 +22,7 @@ class SearchTests: XCTestCase {
       $0.searchQuery = "S"
     }
     self.scheduler.advance(by: 0.3)
-    store.receive(.locationsResponse(.success(mockLocations))) {
+    store.receive(/SearchAction.locationsResponse) {
       $0.locations = mockLocations
     }
     store.send(.searchQueryChanged("")) {
@@ -46,7 +46,7 @@ class SearchTests: XCTestCase {
       $0.searchQuery = "S"
     }
     self.scheduler.advance(by: 0.3)
-    store.receive(.locationsResponse(.failure(.init())))
+    store.receive(/SearchAction.locationsResponse)
   }
 
   func testClearQueryCancelsInFlightSearchRequest() {
@@ -95,7 +95,7 @@ class SearchTests: XCTestCase {
       $0.locationWeatherRequestInFlight = specialLocation
     }
     self.scheduler.advance()
-    store.receive(.locationWeatherResponse(.success(specialLocationWeather))) {
+    store.receive(/SearchAction.locationWeatherResponse) {
       $0.locationWeatherRequestInFlight = nil
       $0.locationWeather = specialLocationWeather
     }
@@ -127,7 +127,7 @@ class SearchTests: XCTestCase {
       $0.locationWeatherRequestInFlight = specialLocation
     }
     self.scheduler.advance()
-    store.receive(.locationWeatherResponse(.success(specialLocationWeather))) {
+    store.receive(/SearchAction.locationWeatherResponse) {
       $0.locationWeatherRequestInFlight = nil
       $0.locationWeather = specialLocationWeather
     }
@@ -150,7 +150,7 @@ class SearchTests: XCTestCase {
       $0.locationWeatherRequestInFlight = mockLocations.first!
     }
     self.scheduler.advance()
-    store.receive(.locationWeatherResponse(.failure(.init()))) {
+    store.receive(/SearchAction.locationWeatherResponse) {
       $0.locationWeatherRequestInFlight = nil
     }
   }

@@ -25,7 +25,7 @@ struct AlertAndConfirmationDialogState: Equatable {
   var count = 0
 }
 
-enum AlertAndConfirmationDialogAction: Equatable {
+enum AlertAndConfirmationDialogAction {
   case alertButtonTapped
   case alertDismissed
   case confirmationDialogButtonTapped

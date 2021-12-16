@@ -15,7 +15,7 @@ struct NavigateAndLoadState: Equatable {
   var optionalCounter: CounterState?
 }
 
-enum NavigateAndLoadAction: Equatable {
+enum NavigateAndLoadAction {
   case optionalCounter(CounterAction)
   case setNavigation(isActive: Bool)
   case setNavigationIsActiveDelayCompleted

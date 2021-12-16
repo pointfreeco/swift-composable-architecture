@@ -4,8 +4,6 @@ import XCTestDynamicOverlay
 
 struct FactClient {
   var fetch: (Int) -> Effect<String, Error>
-
-  struct Error: Swift.Error, Equatable {}
 }
 
 // This is the "live" fact dependency that reaches into the outside world to fetch trivia.
@@ -25,7 +23,6 @@ extension FactClient {
             return "\(number) is a good number Brent"
           }
         }
-        .setFailureType(to: Error.self)
         .eraseToEffect()
       }
     )

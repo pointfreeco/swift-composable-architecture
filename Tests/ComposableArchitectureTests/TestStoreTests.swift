@@ -6,7 +6,7 @@ class TestStoreTests: XCTestCase {
   func testEffectConcatenation() {
     struct State: Equatable {}
 
-    enum Action: Equatable {
+    enum Action {
       case a, b1, b2, b3, c1, c2, c3, d
     }
 

@@ -24,7 +24,7 @@ class EffectsCancellationTests: XCTestCase {
     store.send(.triviaButtonTapped) {
       $0.isTriviaRequestInFlight = true
     }
-    store.receive(.triviaResponse(.success("0 is a good number Brent"))) {
+    store.receive(/EffectsCancellationAction.triviaResponse) {
       $0.currentTrivia = "0 is a good number Brent"
       $0.isTriviaRequestInFlight = false
     }
@@ -35,7 +35,10 @@ class EffectsCancellationTests: XCTestCase {
       initialState: .init(),
       reducer: effectsCancellationReducer,
       environment: .init(
-        fact: .init(fetch: { _ in Fail(error: FactClient.Error()).eraseToEffect() }),
+        fact: .init(fetch: { _ in
+          struct FactError: Error {}
+          return .init(error: FactError())
+        }),
         mainQueue: .immediate
       )
     )
@@ -43,7 +46,7 @@ class EffectsCancellationTests: XCTestCase {
     store.send(.triviaButtonTapped) {
       $0.isTriviaRequestInFlight = true
     }
-    store.receive(.triviaResponse(.failure(FactClient.Error()))) {
+    store.receive(/EffectsCancellationAction.triviaResponse) {
       $0.isTriviaRequestInFlight = false
     }
   }

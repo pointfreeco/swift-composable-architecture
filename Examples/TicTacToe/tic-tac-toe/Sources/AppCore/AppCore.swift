@@ -11,7 +11,7 @@ public enum AppState: Equatable {
   public init() { self = .login(.init()) }
 }
 
-public enum AppAction: Equatable {
+public enum AppAction {
   case login(LoginAction)
   case newGame(NewGameAction)
 }

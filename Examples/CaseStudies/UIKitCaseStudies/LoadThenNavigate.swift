@@ -8,7 +8,7 @@ struct LazyNavigationState: Equatable {
   var isActivityIndicatorHidden = true
 }
 
-enum LazyNavigationAction: Equatable {
+enum LazyNavigationAction {
   case onDisappear
   case optionalCounter(CounterAction)
   case setNavigation(isActive: Bool)

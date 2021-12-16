@@ -16,7 +16,7 @@ struct OptionalBasicsState: Equatable {
   var optionalCounter: CounterState?
 }
 
-enum OptionalBasicsAction: Equatable {
+enum OptionalBasicsAction {
   case optionalCounter(CounterAction)
   case toggleCounterButtonTapped
 }

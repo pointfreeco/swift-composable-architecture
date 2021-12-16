@@ -23,12 +23,12 @@ class LifecycleTests: XCTestCase {
     store.send(.timer(.onAppear))
 
     scheduler.advance(by: .seconds(1))
-    store.receive(.timer(.action(.tick))) {
+    store.receive(/LifecycleDemoAction.timer) {
       $0.count = 1
     }
 
     scheduler.advance(by: .seconds(1))
-    store.receive(.timer(.action(.tick))) {
+    store.receive(/LifecycleDemoAction.timer) {
       $0.count = 2
     }
 

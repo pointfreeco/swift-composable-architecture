@@ -8,7 +8,7 @@ struct EagerNavigationState: Equatable {
   var optionalCounter: CounterState?
 }
 
-enum EagerNavigationAction: Equatable {
+enum EagerNavigationAction {
   case optionalCounter(CounterAction)
   case setNavigation(isActive: Bool)
   case setNavigationIsActiveDelayCompleted

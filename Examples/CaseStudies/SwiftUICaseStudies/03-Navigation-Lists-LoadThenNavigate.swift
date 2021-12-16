@@ -24,7 +24,7 @@ struct LoadThenNavigateListState: Equatable {
   }
 }
 
-enum LoadThenNavigateListAction: Equatable {
+enum LoadThenNavigateListAction {
   case counter(CounterAction)
   case onDisappear
   case setNavigation(selection: UUID?)

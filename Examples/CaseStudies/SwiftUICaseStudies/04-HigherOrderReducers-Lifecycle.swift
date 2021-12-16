@@ -40,13 +40,11 @@ public enum LifecycleAction<Action> {
   case action(Action)
 }
 
-extension LifecycleAction: Equatable where Action: Equatable {}
-
 struct LifecycleDemoState: Equatable {
   var count: Int?
 }
 
-enum LifecycleDemoAction: Equatable {
+enum LifecycleDemoAction {
   case timer(LifecycleAction<TimerAction>)
   case toggleTimerButtonTapped
 }

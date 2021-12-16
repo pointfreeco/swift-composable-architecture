@@ -20,7 +20,7 @@ class RefreshableTests: XCTestCase {
     store.send(.refresh) {
       $0.isLoading = true
     }
-    store.receive(.factResponse(.success("1 is a good number."))) {
+    store.receive(/RefreshableAction.factResponse) {
       $0.isLoading = false
       $0.fact = "1 is a good number."
     }
@@ -31,7 +31,10 @@ class RefreshableTests: XCTestCase {
       initialState: .init(),
       reducer: refreshableReducer,
       environment: .init(
-        fact: .init { _ in .init(error: .init()) },
+        fact: .init { _ in
+          struct FactError: Error {} // TODO: Effect Unimplemented:Error helper?
+          return .init(error: FactError())
+        },
         mainQueue: .immediate
       )
     )
@@ -42,7 +45,7 @@ class RefreshableTests: XCTestCase {
     store.send(.refresh) {
       $0.isLoading = true
     }
-    store.receive(.factResponse(.failure(.init()))) {
+    store.receive(/RefreshableAction.factResponse) {
       $0.isLoading = false
     }
   }

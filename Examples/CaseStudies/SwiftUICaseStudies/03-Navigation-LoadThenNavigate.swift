@@ -16,7 +16,7 @@ struct LoadThenNavigateState: Equatable {
   var isNavigationActive: Bool { self.optionalCounter != nil }
 }
 
-enum LoadThenNavigateAction: Equatable {
+enum LoadThenNavigateAction {
   case onDisappear
   case optionalCounter(CounterAction)
   case setNavigation(isActive: Bool)

@@ -21,7 +21,7 @@ struct AppState: Equatable {
   }
 }
 
-enum AppAction: Equatable {
+enum AppAction {
   case addTodoButtonTapped
   case clearCompletedButtonTapped
   case delete(IndexSet)

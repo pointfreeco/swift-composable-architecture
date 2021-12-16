@@ -9,7 +9,7 @@ public struct NewGameState: Equatable {
   public init() {}
 }
 
-public enum NewGameAction: Equatable {
+public enum NewGameAction {
   case game(GameAction)
   case gameDismissed
   case letsPlayButtonTapped

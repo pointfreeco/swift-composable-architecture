@@ -7,7 +7,7 @@ final class ComposableArchitectureTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
   func testScheduling() {
-    enum CounterAction: Equatable {
+    enum CounterAction {
       case incrAndSquareLater
       case incrNow
       case squareNow
@@ -118,7 +118,7 @@ final class ComposableArchitectureTests: XCTestCase {
   }
 
   func testCancellation() {
-    enum Action: Equatable {
+    enum Action {
       case cancel
       case incr
       case response(Int)
@@ -163,7 +163,7 @@ final class ComposableArchitectureTests: XCTestCase {
 
     store.send(.incr) { $0 = 1 }
     scheduler.advance()
-    store.receive(.response(1)) { $0 = 1 }
+    store.receive(/Action.response) { $0 = 1 }
 
     store.send(.incr) { $0 = 2 }
     store.send(.cancel)

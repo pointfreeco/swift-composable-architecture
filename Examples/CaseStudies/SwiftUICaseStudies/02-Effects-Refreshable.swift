@@ -17,10 +17,10 @@ struct RefreshableState: Equatable {
   var isLoading = false
 }
 
-enum RefreshableAction: Equatable {
+enum RefreshableAction {
   case cancelButtonTapped
   case decrementButtonTapped
-  case factResponse(Result<String, FactClient.Error>)
+  case factResponse(Result<String, Error>)
   case incrementButtonTapped
   case refresh
 }

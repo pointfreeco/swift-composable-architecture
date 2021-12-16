@@ -31,11 +31,11 @@ struct EffectsBasicsState: Equatable {
   var numberFact: String?
 }
 
-enum EffectsBasicsAction: Equatable {
+enum EffectsBasicsAction {
   case decrementButtonTapped
   case incrementButtonTapped
   case numberFactButtonTapped
-  case numberFactResponse(Result<String, FactClient.Error>)
+  case numberFactResponse(Result<String, Error>)
 }
 
 struct EffectsBasicsEnvironment {

@@ -7,7 +7,7 @@ struct CounterState: Equatable {
   var count = 0
 }
 
-enum CounterAction: Equatable {
+enum CounterAction {
   case decrementButtonTapped
   case incrementButtonTapped
 }

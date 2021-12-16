@@ -21,11 +21,11 @@ struct EffectsCancellationState: Equatable {
   var isTriviaRequestInFlight = false
 }
 
-enum EffectsCancellationAction: Equatable {
+enum EffectsCancellationAction {
   case cancelButtonTapped
   case stepperChanged(Int)
   case triviaButtonTapped
-  case triviaResponse(Result<String, FactClient.Error>)
+  case triviaResponse(Result<String, Error>)
 }
 
 struct EffectsCancellationEnvironment {

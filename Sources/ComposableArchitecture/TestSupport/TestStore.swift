@@ -3,7 +3,6 @@
   import CustomDump
   import Foundation
   import XCTestDynamicOverlay
-import CasePaths
 
   /// A testable runtime for a reducer.
   ///
@@ -41,11 +40,11 @@ import CasePaths
   /// For example, given a simple counter reducer:
   ///
   /// ```swift
-  /// struct CounterState {
+  /// struct CounterState: Equatable {
   ///   var count = 0
   /// }
   ///
-  /// enum CounterAction: Equatable {
+  /// enum CounterAction {
   ///   case decrementButtonTapped
   ///   case incrementButtonTapped
   /// }
@@ -94,7 +93,7 @@ import CasePaths
   ///   var results: [String] = []
   /// }
   ///
-  /// enum SearchAction: Equatable {
+  /// enum SearchAction {
   ///   case queryChanged(String)
   ///   case response([String])
   /// }
@@ -159,7 +158,7 @@ import CasePaths
   /// scheduler.advance(by: 0.25)
   ///
   /// // Assert that the expected response is received
-  /// store.receive(.response(["Composable Architecture"])) {
+  /// store.receive(/SearchAction.response) {
   ///   // Assert that state updates accordingly
   ///   $0.results = ["Composable Architecture"]
   /// }
@@ -357,6 +356,7 @@ import CasePaths
       self.expectedStateShouldMatch(
         expected: expectedState,
         actual: self.toLocalState(self.snapshotState),
+        from: nil,
         file: file,
         line: line
       )
@@ -368,6 +368,7 @@ import CasePaths
     private func expectedStateShouldMatch(
       expected: LocalState,
       actual: LocalState,
+      from action: Action?,
       file: StaticString,
       line: UInt
     ) {
@@ -383,11 +384,20 @@ import CasePaths
           \(String(describing: actual).indent(by: 2))
           """
 
+        let prefix = action
+          .map { action in
+            var dump = ""
+            customDump(action, to: &dump, indent: 4)
+            let space = "\(CustomDump.DiffFormat.proportional.both) "
+            return "\(space)\(dump.replacingOccurrences(of: "\n", with: "\n\(space)"))\n"
+          }
+          ?? ""
+
         XCTFail(
           """
           State change does not match expectation: …
 
-          \(difference)
+          \(prefix)\(difference)
           """,
           file: file,
           line: line
@@ -396,51 +406,39 @@ import CasePaths
     }
 
     public func receive<Case>(
-      _ casePath: CasePath<Action, Case>,
+      _ extract: (Action) -> Case?,
       file: StaticString = #file,
       line: UInt = #line,
-      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+      _ update: (inout LocalState) throws -> Void = { _ in }
     ) {
-      // TODO: print action data in failure message
-      self.receive({ casePath.extract(from: $0) != nil }, file: file, line: line, update)
+      self.receive(dumpAction: true, file: file, line: line, update) { receivedAction in
+        guard extract(receivedAction) != nil else {
+          var action = ""
+          customDump(receivedAction, to: &action, indent: 4)
+          return """
+            Received unexpected action: …
+
+            \(action)
+            """
+        }
+        return nil
+      }
     }
 
-    func receive(
-      _ isAction: @escaping (Action) -> Bool,
-      file: StaticString = #file,
-      line: UInt = #line,
-      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+    private func receive(
+      dumpAction: Bool,
+      file: StaticString,
+      line: UInt,
+      _ update: (inout LocalState) throws -> Void,
+      _ failure: (Action) -> String?
     ) {
       guard !self.receivedActions.isEmpty else {
-        XCTFail(
-          """
-          Expected to receive an action, but received none.
-          """,
-          file: file, line: line
-        )
+        XCTFail("Expected to receive an action, but received none.", file: file, line: line)
         return
       }
       let (receivedAction, state) = self.receivedActions.removeFirst()
-      if !isAction(receivedAction) {
-        let difference = "TODO"
-//        diff(expectedAction, receivedAction, format: .proportional)
-//          .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
-//        ?? """
-//          Expected:
-//          \(String(describing: expectedAction).indent(by: 2))
-//
-//          Received:
-//          \(String(describing: receivedAction).indent(by: 2))
-//          """
-
-        XCTFail(
-          """
-          Received unexpected action: …
-
-          \(difference)
-          """,
-          file: file, line: line
-        )
+      if let message = failure(receivedAction) {
+        XCTFail(message, file: file, line: line)
       }
       var expectedState = self.toLocalState(self.snapshotState)
       do {
@@ -451,6 +449,7 @@ import CasePaths
       expectedStateShouldMatch(
         expected: expectedState,
         actual: self.toLocalState(state),
+        from: dumpAction ? receivedAction : nil,
         file: file,
         line: line
       )
@@ -466,9 +465,29 @@ import CasePaths
       _ expectedAction: Action,
       file: StaticString = #file,
       line: UInt = #line,
-      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+      _ update: (inout LocalState) throws -> Void = { _ in }
     ) {
-      self.receive({ $0 == expectedAction }, file: file, line: line, update)
+      self.receive(dumpAction: false, file: file, line: line, update) { receivedAction in
+        guard receivedAction == expectedAction else {
+          let difference = diff(expectedAction, receivedAction, format: .proportional)
+            .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
+            ?? """
+              Expected:
+              \(String(describing: expectedAction).indent(by: 2))
+
+              Received:
+              \(String(describing: receivedAction).indent(by: 2))
+              """
+
+         return """
+           Received unexpected action: …
+
+           \(difference)
+           """
+        }
+
+        return nil
+      }
     }
   }
 

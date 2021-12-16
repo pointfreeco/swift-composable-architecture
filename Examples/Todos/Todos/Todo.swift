@@ -8,7 +8,7 @@ struct Todo: Equatable, Identifiable {
   var isComplete = false
 }
 
-enum TodoAction: Equatable {
+enum TodoAction {
   case checkBoxToggled
   case textFieldChanged(String)
 }

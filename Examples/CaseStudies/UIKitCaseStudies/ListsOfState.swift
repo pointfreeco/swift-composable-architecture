@@ -7,7 +7,7 @@ struct CounterListState: Equatable {
   var counters: [CounterState] = []
 }
 
-enum CounterListAction: Equatable {
+enum CounterListAction {
   case counter(index: Int, action: CounterAction)
 }
 

@@ -1,6 +1,7 @@
 import AppCore
 import AuthenticationClient
 import ComposableArchitecture
+import LoginCore
 import XCTest
 
 class AppCoreTests: XCTestCase {
@@ -34,9 +35,7 @@ class AppCoreTests: XCTestCase {
         $0.isLoginRequestInFlight = true
       }
     }
-    store.receive(
-      .login(.loginResponse(.success(.init(token: "deadbeef", twoFactorRequired: false))))
-    ) {
+    store.receive(/AppAction.login) {
       $0 = .newGame(.init())
     }
     store.send(.newGame(.oPlayerNameChanged("Blob Sr."))) {
@@ -84,9 +83,7 @@ class AppCoreTests: XCTestCase {
         $0.isLoginRequestInFlight = true
       }
     }
-    store.receive(
-      .login(.loginResponse(.success(.init(token: "deadbeef", twoFactorRequired: true))))
-    ) {
+    store.receive(/AppAction.login) {
       try (/AppState.login).modify(&$0) {
         $0.isLoginRequestInFlight = false
         $0.twoFactor = .init(token: "deadbeef")
@@ -105,11 +102,7 @@ class AppCoreTests: XCTestCase {
         $0.twoFactor?.isTwoFactorRequestInFlight = true
       }
     }
-    store.receive(
-      .login(
-        .twoFactor(.twoFactorResponse(.success(.init(token: "deadbeef", twoFactorRequired: false))))
-      )
-    ) {
+    store.receive(/AppAction.login) {
       $0 = .newGame(.init())
     }
   }

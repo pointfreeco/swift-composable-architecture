@@ -82,7 +82,7 @@ class TodosTests: XCTestCase {
       $0.todos[id: state.todos[0].id]?.isComplete = true
     }
     self.scheduler.advance(by: 1)
-    store.receive(.sortCompletedTodos) {
+    store.receive(/AppAction.sortCompletedTodos) {
       $0.todos = [
         $0.todos[1],
         $0.todos[0],
@@ -122,7 +122,7 @@ class TodosTests: XCTestCase {
       $0.todos[id: state.todos[0].id]?.isComplete = false
     }
     self.scheduler.advance(by: 1)
-    store.receive(.sortCompletedTodos)
+    store.receive(/AppAction.sortCompletedTodos)
   }
 
   func testClearCompleted() {
@@ -233,7 +233,7 @@ class TodosTests: XCTestCase {
       ]
     }
     self.scheduler.advance(by: .milliseconds(100))
-    store.receive(.sortCompletedTodos)
+    store.receive(/AppAction.sortCompletedTodos)
   }
 
   func testFilteredEdit() {

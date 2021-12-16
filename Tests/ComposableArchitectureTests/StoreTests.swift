@@ -308,7 +308,7 @@ final class StoreTests: XCTestCase {
   func testActionQueuing() {
     let subject = PassthroughSubject<Void, Never>()
 
-    enum Action: Equatable {
+    enum Action {
       case incrementTapped
       case `init`
       case doIncrement
