@@ -11,7 +11,7 @@ private let readMe = """
   """
 
 struct WebSocketState: Equatable {
-  var alert: AlertState<WebSocketAction>?
+  var alert: AlertState<WebSocketAction.Alert>?
   var connectivityState = ConnectivityState.disconnected
   var messageToSend = ""
   var receivedMessages: [String] = []
@@ -23,15 +23,19 @@ struct WebSocketState: Equatable {
   }
 }
 
-enum WebSocketAction: Equatable {
-  case alertDismissed
+enum WebSocketAction {
+  case alert(Alert)
   case connectButtonTapped
   case messageToSendChanged(String)
-  case pingResponse(NSError?)
-  case receivedSocketMessage(Result<WebSocketClient.Message, NSError>)
+  case pingResponse(Result<Void, Error>)
+  case receivedSocketMessage(Result<WebSocketClient.Message, Error>)
   case sendButtonTapped
-  case sendResponse(NSError?)
+  case sendResponse(Result<Void, Error>)
   case webSocket(WebSocketClient.Action)
+
+  enum Alert {
+    case dismiss
+  }
 }
 
 struct WebSocketEnvironment {
@@ -52,13 +56,12 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
   var sendPingEffect: Effect<WebSocketAction, Never> {
     return environment.webSocket.sendPing(WebSocketId())
       .delay(for: 10, scheduler: environment.mainQueue)
-      .map(WebSocketAction.pingResponse)
-      .eraseToEffect()
+      .catchToEffect(WebSocketAction.pingResponse)
       .cancellable(id: WebSocketId())
   }
 
   switch action {
-  case .alertDismissed:
+  case .alert(.dismiss):
     state.alert = nil
     return .none
 
@@ -104,13 +107,13 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
 
     return environment.webSocket.send(WebSocketId(), .string(messageToSend))
       .receive(on: environment.mainQueue)
-      .eraseToEffect()
-      .map(WebSocketAction.sendResponse)
+      .catchToEffect(WebSocketAction.sendResponse)
 
-  case let .sendResponse(error):
-    if error != nil {
-      state.alert = .init(title: .init("Could not send socket message. Try again."))
-    }
+  case .sendResponse(.failure):
+    state.alert = .init(title: .init("Could not send socket message. Try again."))
+    return .none
+
+  case .sendResponse(.success):
     return .none
 
   case let .webSocket(.didClose(code, _)):
@@ -174,7 +177,7 @@ struct WebSocketView: View {
         Text(viewStore.receivedMessages.joined(separator: "\n"))
       }
       .padding()
-      .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
+      .alert(self.store.scope(state: \.alert, action: WebSocketAction.alert), dismiss: .dismiss)
       .navigationBarTitle("Web Socket")
     }
   }
@@ -219,9 +222,9 @@ struct WebSocketClient {
 
   var cancel: (AnyHashable, URLSessionWebSocketTask.CloseCode, Data?) -> Effect<Never, Never>
   var open: (AnyHashable, URL, [String]) -> Effect<Action, Never>
-  var receive: (AnyHashable) -> Effect<Message, NSError>
-  var send: (AnyHashable, URLSessionWebSocketTask.Message) -> Effect<NSError?, Never>
-  var sendPing: (AnyHashable) -> Effect<NSError?, Never>
+  var receive: (AnyHashable) -> Effect<Message, Error>
+  var send: (AnyHashable, URLSessionWebSocketTask.Message) -> Effect<Void, Error>
+  var sendPing: (AnyHashable) -> Effect<Void, Error>
 }
 
 extension WebSocketClient {
@@ -269,7 +272,7 @@ extension WebSocketClient {
           case .success(.none):
             callback(.failure(NSError.init(domain: "co.pointfree", code: 1)))
           case let .failure(error):
-            callback(.failure(error as NSError))
+            callback(.failure(error))
           }
         }
       }
@@ -277,14 +280,14 @@ extension WebSocketClient {
     send: { id, message in
       .future { callback in
         dependencies[id]?.task.send(message) { error in
-          callback(.success(error as NSError?))
+          callback(error.map(Result.failure) ?? .success(()))
         }
       }
     },
     sendPing: { id in
       .future { callback in
         dependencies[id]?.task.sendPing { error in
-          callback(.success(error as NSError?))
+          callback(error.map(Result.failure) ?? .success(()))
         }
       }
     }

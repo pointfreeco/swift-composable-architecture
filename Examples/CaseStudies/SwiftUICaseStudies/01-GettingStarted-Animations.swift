@@ -39,20 +39,24 @@ extension Effect where Failure == Never {
 }
 
 struct AnimationsState: Equatable {
-  var alert: AlertState<AnimationsAction>? = nil
+  var alert: AlertState<AnimationsAction.Alert>? = nil
   var circleCenter = CGPoint(x: 50, y: 50)
   var circleColor = Color.white
   var isCircleScaled = false
 }
 
-enum AnimationsAction: Equatable {
+enum AnimationsAction {
+  case alert(Alert)
   case circleScaleToggleChanged(Bool)
-  case dismissAlert
   case rainbowButtonTapped
   case resetButtonTapped
-  case resetConfirmationButtonTapped
   case setColor(Color)
   case tapped(CGPoint)
+
+  enum Alert {
+    case dismiss
+    case resetConfirmationButtonTapped
+  }
 }
 
 struct AnimationsEnvironment {
@@ -63,12 +67,16 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
   state, action, environment in
 
   switch action {
-  case let .circleScaleToggleChanged(isScaled):
-    state.isCircleScaled = isScaled
+  case .alert(.dismiss):
+    state.alert = nil
     return .none
 
-  case .dismissAlert:
-    state.alert = nil
+  case .alert(.resetConfirmationButtonTapped):
+    state = .init()
+    return .none
+
+  case let .circleScaleToggleChanged(isScaled):
+    state.isCircleScaled = isScaled
     return .none
 
   case .rainbowButtonTapped:
@@ -87,10 +95,6 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
       ),
       secondaryButton: .cancel(.init("Cancel"))
     )
-    return .none
-
-  case .resetConfirmationButtonTapped:
-    state = .init()
     return .none
 
   case let .setColor(color):
@@ -148,7 +152,7 @@ struct AnimationsView: View {
           Button("Reset") { viewStore.send(.resetButtonTapped) }
             .padding([.horizontal, .bottom])
         }
-        .alert(self.store.scope(state: \.alert), dismiss: .dismissAlert)
+        .alert(self.store.scope(state: \.alert, action: AnimationsAction.alert), dismiss: .dismiss)
       }
     }
   }

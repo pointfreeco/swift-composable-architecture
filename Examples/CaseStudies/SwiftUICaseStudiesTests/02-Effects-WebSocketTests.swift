@@ -7,12 +7,12 @@ import XCTest
 class WebSocketTests: XCTestCase {
   func testWebSocketHappyPath() {
     let socketSubject = PassthroughSubject<WebSocketClient.Action, Never>()
-    let receiveSubject = PassthroughSubject<WebSocketClient.Message, NSError>()
+    let receiveSubject = PassthroughSubject<WebSocketClient.Message, Error>()
 
     var webSocket = WebSocketClient.failing
     webSocket.open = { _, _, _ in socketSubject.eraseToEffect() }
     webSocket.receive = { _ in receiveSubject.eraseToEffect() }
-    webSocket.send = { _, _ in Effect(value: nil) }
+    webSocket.send = { _, _ in Effect(value: ()) }
     webSocket.sendPing = { _ in .none }
 
     let store = TestStore(
@@ -29,7 +29,7 @@ class WebSocketTests: XCTestCase {
       $0.connectivityState = .connecting
     }
     socketSubject.send(.didOpenWithProtocol(nil))
-    store.receive(.webSocket(.didOpenWithProtocol(nil))) {
+    store.receive(/WebSocketAction.webSocket) {
       $0.connectivityState = .connected
     }
 
@@ -40,11 +40,11 @@ class WebSocketTests: XCTestCase {
     store.send(.sendButtonTapped) {
       $0.messageToSend = ""
     }
-    store.receive(.sendResponse(nil))
+    store.receive(/WebSocketAction.sendResponse)
 
     // Receive a message
     receiveSubject.send(.string("Hi"))
-    store.receive(.receivedSocketMessage(.success(.string("Hi")))) {
+    store.receive(/WebSocketAction.receivedSocketMessage) {
       $0.receivedMessages = ["Hi"]
     }
 
@@ -56,12 +56,12 @@ class WebSocketTests: XCTestCase {
 
   func testWebSocketSendFailure() {
     let socketSubject = PassthroughSubject<WebSocketClient.Action, Never>()
-    let receiveSubject = PassthroughSubject<WebSocketClient.Message, NSError>()
+    let receiveSubject = PassthroughSubject<WebSocketClient.Message, Error>()
 
     var webSocket = WebSocketClient.failing
     webSocket.open = { _, _, _ in socketSubject.eraseToEffect() }
     webSocket.receive = { _ in receiveSubject.eraseToEffect() }
-    webSocket.send = { _, _ in Effect(value: NSError(domain: "", code: 1)) }
+    webSocket.send = { _, _ in Effect(error: NSError(domain: "", code: 1)) }
     webSocket.sendPing = { _ in .none }
 
     let store = TestStore(
@@ -78,7 +78,7 @@ class WebSocketTests: XCTestCase {
       $0.connectivityState = .connecting
     }
     socketSubject.send(.didOpenWithProtocol(nil))
-    store.receive(.webSocket(.didOpenWithProtocol(nil))) {
+    store.receive(/WebSocketAction.webSocket) {
       $0.connectivityState = .connected
     }
 
@@ -89,7 +89,7 @@ class WebSocketTests: XCTestCase {
     store.send(.sendButtonTapped) {
       $0.messageToSend = ""
     }
-    store.receive(.sendResponse(NSError(domain: "", code: 1))) {
+    store.receive(/WebSocketAction.sendResponse) {
       $0.alert = .init(title: .init("Could not send socket message. Try again."))
     }
 
@@ -101,7 +101,7 @@ class WebSocketTests: XCTestCase {
 
   func testWebSocketPings() {
     let socketSubject = PassthroughSubject<WebSocketClient.Action, Never>()
-    let pingSubject = PassthroughSubject<NSError?, Never>()
+    let pingSubject = PassthroughSubject<Void, Error>()
 
     var webSocket = WebSocketClient.failing
     webSocket.open = { _, _, _ in socketSubject.eraseToEffect() }
@@ -124,14 +124,14 @@ class WebSocketTests: XCTestCase {
 
     socketSubject.send(.didOpenWithProtocol(nil))
     scheduler.advance()
-    store.receive(.webSocket(.didOpenWithProtocol(nil))) {
+    store.receive(/WebSocketAction.webSocket) {
       $0.connectivityState = .connected
     }
 
-    pingSubject.send(nil)
+    pingSubject.send()
     scheduler.advance(by: .seconds(5))
     scheduler.advance(by: .seconds(5))
-    store.receive(.pingResponse(nil))
+    store.receive(/WebSocketAction.pingResponse)
 
     store.send(.connectButtonTapped) {
       $0.connectivityState = .disconnected
@@ -161,7 +161,7 @@ class WebSocketTests: XCTestCase {
     }
 
     socketSubject.send(.didClose(code: .internalServerError, reason: nil))
-    store.receive(.webSocket(.didClose(code: .internalServerError, reason: nil))) {
+    store.receive(/WebSocketAction.webSocket) {
       $0.connectivityState = .disconnected
     }
   }

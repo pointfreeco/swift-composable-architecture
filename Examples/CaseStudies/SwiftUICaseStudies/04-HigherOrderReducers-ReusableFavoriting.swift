@@ -21,15 +21,19 @@ private let readMe = """
 // MARK: - Favorite domain
 
 struct FavoriteState<ID>: Equatable, Identifiable where ID: Hashable {
-  var alert: AlertState<FavoriteAction>?
+  var alert: AlertState<FavoriteAction.Alert>?
   let id: ID
   var isFavorite: Bool
 }
 
-enum FavoriteAction: Equatable {
-  case alertDismissed
+enum FavoriteAction: Equatable /* TODO: Remove? */ {
+  case alert(Alert)
   case buttonTapped
   case response(Result<Bool, FavoriteError>)
+
+  enum Alert {
+    case dismiss
+  }
 }
 
 struct FavoriteEnvironment<ID> {
@@ -62,7 +66,7 @@ extension Reducer {
       Reducer<FavoriteState<ID>, FavoriteAction, FavoriteEnvironment> {
         state, action, environment in
         switch action {
-        case .alertDismissed:
+        case .alert(.dismiss):
           state.alert = nil
           state.isFavorite.toggle()
           return .none
@@ -98,7 +102,7 @@ struct FavoriteButton<ID>: View where ID: Hashable {
       Button(action: { viewStore.send(.buttonTapped) }) {
         Image(systemName: viewStore.isFavorite ? "heart.fill" : "heart")
       }
-      .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
+      .alert(self.store.scope(state: \.alert, action: FavoriteAction.alert), dismiss: .dismiss)
     }
   }
 }
@@ -106,7 +110,7 @@ struct FavoriteButton<ID>: View where ID: Hashable {
 // MARK: Feature domain -
 
 struct EpisodeState: Equatable, Identifiable {
-  var alert: AlertState<FavoriteAction>?
+  var alert: AlertState<FavoriteAction.Alert>?
   let id: UUID
   var isFavorite: Bool
   let title: String
