@@ -4,17 +4,17 @@ import Speech
 // and so they aren't super testable out the box. We define struct versions of those types to make
 // them easier to use and test.
 
+struct SpeechRecognitionMetadata: Equatable {
+  var averagePauseDuration: TimeInterval
+  var speakingRate: Double
+  var voiceAnalytics: VoiceAnalytics?
+}
+
 struct SpeechRecognitionResult: Equatable {
   var bestTranscription: Transcription
   var isFinal: Bool
   var speechRecognitionMetadata: SpeechRecognitionMetadata?
   var transcriptions: [Transcription]
-}
-
-struct SpeechRecognitionMetadata: Equatable {
-  var averagePauseDuration: TimeInterval
-  var speakingRate: Double
-  var voiceAnalytics: VoiceAnalytics?
 }
 
 struct Transcription: Equatable {
