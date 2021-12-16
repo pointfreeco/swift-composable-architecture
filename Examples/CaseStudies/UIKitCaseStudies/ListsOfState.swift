@@ -4,11 +4,11 @@ import SwiftUI
 import UIKit
 
 struct CounterListState: Equatable {
-  var counters: [CounterState] = []
+  var counters: IdentifiedArrayOf<CounterState> = []
 }
 
 enum CounterListAction: Equatable {
-  case counter(index: Int, action: CounterAction)
+  case counter(id: CounterState.ID, action: CounterAction)
 }
 
 struct CounterListEnvironment {}
@@ -16,7 +16,7 @@ struct CounterListEnvironment {}
 let counterListReducer: Reducer<CounterListState, CounterListAction, CounterListEnvironment> =
   counterReducer.forEach(
     state: \CounterListState.counters,
-    action: /CounterListAction.counter(index:action:),
+    action: /CounterListAction.counter(id:action:),
     environment: { _ in CounterEnvironment() }
   )
 
@@ -63,11 +63,12 @@ final class CountersTableViewController: UITableViewController {
   }
 
   override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    let counter = self.viewStore.counters[indexPath.row]
     self.navigationController?.pushViewController(
       CounterViewController(
         store: self.store.scope(
-          state: \.counters[indexPath.row],
-          action: { .counter(index: indexPath.row, action: $0) }
+          state: { _ in counter },
+          action: { .counter(id: counter.id, action: $0) }
         )
       ),
       animated: true
