@@ -185,7 +185,7 @@ public struct AlertState<Action> {
     case cancel
     case destructive
 
-    #if compiler(>=5.5) && canImport(_Concurrency)
+    #if compiler(>=5.5)
       @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
       var toSwiftUI: SwiftUI.ButtonRole {
         switch self {
@@ -213,7 +213,7 @@ extension View {
     dismiss: Action
   ) -> some View {
     WithViewStore(store, removeDuplicates: { $0?.id == $1?.id }) { viewStore in
-      #if compiler(>=5.5) && canImport(_Concurrency)
+      #if compiler(>=5.5)
         if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
           self.alert(
             (viewStore.state?.title).map { Text($0) } ?? Text(""),
@@ -355,7 +355,7 @@ extension AlertState.Button {
     }
   }
 
-  #if compiler(>=5.5) && canImport(_Concurrency)
+  #if compiler(>=5.5)
     @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
     func toSwiftUIButton(send: @escaping (Action) -> Void) -> some View {
       SwiftUI.Button(
@@ -369,7 +369,7 @@ extension AlertState.Button {
 }
 
 extension AlertState {
-  #if compiler(>=5.5) && canImport(_Concurrency)
+  #if compiler(>=5.5)
     @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
     @ViewBuilder
     fileprivate func toSwiftUIActions(send: @escaping (Action) -> Void) -> some View {

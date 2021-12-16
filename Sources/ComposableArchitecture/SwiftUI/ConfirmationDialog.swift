@@ -153,7 +153,7 @@ public struct ConfirmationDialogState<Action> {
     case hidden
     case visible
 
-    #if compiler(>=5.5) && canImport(_Concurrency)
+    #if compiler(>=5.5)
       @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
       var toSwiftUI: SwiftUI.Visibility {
         switch self {
@@ -236,7 +236,7 @@ extension View {
   ) -> some View {
 
     WithViewStore(store, removeDuplicates: { $0?.id == $1?.id }) { viewStore in
-      #if compiler(>=5.5) && canImport(_Concurrency)
+      #if compiler(>=5.5)
         if #available(iOS 15, tvOS 15, watchOS 8, *) {
           self.confirmationDialog(
             (viewStore.state?.title).map { Text($0) } ?? Text(""),
@@ -267,7 +267,7 @@ extension View {
 @available(tvOS 13, *)
 @available(watchOS 6, *)
 extension ConfirmationDialogState {
-  #if compiler(>=5.5) && canImport(_Concurrency)
+  #if compiler(>=5.5)
     @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
     @ViewBuilder
     fileprivate func toSwiftUIActions(send: @escaping (Action) -> Void) -> some View {
