@@ -405,6 +405,14 @@
       }
     }
 
+    public func receive(
+      file: StaticString = #file,
+      line: UInt = #line,
+      _ update: (inout LocalState) throws -> Void = { _ in }
+    ) {
+      self.receive({ $0 }, file: file, line: line, update)
+    }
+
     public func receive<Case>(
       _ casePath: CasePath<Action, Case>,
       file: StaticString = #file,

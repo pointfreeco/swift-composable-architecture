@@ -161,6 +161,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
     self.downloadSubject.send(.response(Data()))
     self.downloadSubject.send(completion: .finished)
     self.scheduler.advance(by: 1)
+
     store.receive(/DownloadComponentAction.downloadClient) {
       $0.alert = nil
       $0.mode = .downloaded

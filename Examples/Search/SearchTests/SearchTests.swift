@@ -150,7 +150,7 @@ class SearchTests: XCTestCase {
       $0.locationWeatherRequestInFlight = mockLocations.first!
     }
     self.scheduler.advance()
-    store.receive(/SearchAction.locationWeatherResponse) {
+    store.receive {
       $0.locationWeatherRequestInFlight = nil
     }
   }
