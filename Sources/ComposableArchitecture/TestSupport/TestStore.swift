@@ -406,6 +406,16 @@
     }
 
     public func receive<Case>(
+      _ casePath: CasePath<Action, Case>,
+      file: StaticString = #file,
+      line: UInt = #line,
+      _ update: (inout LocalState) throws -> Void = { _ in }
+    ) {
+      self.receive(casePath.extract, file: file, line: line, update)
+    }
+
+    @_disfavoredOverload
+    public func receive<Case>(
       _ extract: (Action) -> Case?,
       file: StaticString = #file,
       line: UInt = #line,

@@ -24,7 +24,7 @@ class EffectsCancellationTests: XCTestCase {
     store.send(.triviaButtonTapped) {
       $0.isTriviaRequestInFlight = true
     }
-    store.receive(/EffectsCancellationAction.triviaResponse) {
+    store.receive(/EffectsCancellationAction.triviaResponse .. /Result.success) {
       $0.currentTrivia = "0 is a good number Brent"
       $0.isTriviaRequestInFlight = false
     }
