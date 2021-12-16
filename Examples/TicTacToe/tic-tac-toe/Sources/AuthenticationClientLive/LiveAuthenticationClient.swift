@@ -8,15 +8,15 @@ extension AuthenticationClient {
     login: { request in
       (request.email.contains("@") && request.password == "password"
         ? Effect(value: .init(token: "deadbeef", twoFactorRequired: request.email.contains("2fa")))
-        : Effect(error: .invalidUserPassword))
+        : Effect(error: AuthenticationError.invalidUserPassword))
         .delay(for: 1, scheduler: queue)
         .eraseToEffect()
     },
     twoFactor: { request in
       (request.token != "deadbeef"
-        ? Effect(error: .invalidIntermediateToken)
+        ? Effect(error: AuthenticationError.invalidIntermediateToken)
         : request.code != "1234"
-          ? Effect(error: .invalidTwoFactor)
+          ? Effect(error: AuthenticationError.invalidTwoFactor)
           : Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
         .delay(for: 1, scheduler: queue)
         .eraseToEffect()

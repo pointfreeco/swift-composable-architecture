@@ -7,7 +7,7 @@ public struct TwoFactorView: View {
   let store: Store<TwoFactorState, TwoFactorAction>
 
   struct ViewState: Equatable {
-    var alert: AlertState<TwoFactorAction>?
+    var alert: AlertState<TwoFactorAction.Alert>?
     var code: String
     var isActivityIndicatorVisible: Bool
     var isFormDisabled: Bool
@@ -23,7 +23,6 @@ public struct TwoFactorView: View {
   }
 
   enum ViewAction: Equatable {
-    case alertDismissed
     case codeChanged(String)
     case submitButtonTapped
   }
@@ -61,7 +60,7 @@ public struct TwoFactorView: View {
             }
           }
         }
-        .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
+        .alert(self.store.scope(state: \.alert, action: TwoFactorAction.alert), dismiss: .dismiss)
         .disabled(viewStore.isFormDisabled)
         .padding(.horizontal)
       }
@@ -73,8 +72,6 @@ public struct TwoFactorView: View {
 extension TwoFactorAction {
   init(action: TwoFactorView.ViewAction) {
     switch action {
-    case .alertDismissed:
-      self = .alertDismissed
     case let .codeChanged(code):
       self = .codeChanged(code)
     case .submitButtonTapped:

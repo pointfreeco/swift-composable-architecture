@@ -58,12 +58,12 @@ public enum AuthenticationError: Equatable, LocalizedError {
 }
 
 public struct AuthenticationClient {
-  public var login: (LoginRequest) -> Effect<AuthenticationResponse, AuthenticationError>
-  public var twoFactor: (TwoFactorRequest) -> Effect<AuthenticationResponse, AuthenticationError>
+  public var login: (LoginRequest) -> Effect<AuthenticationResponse, Error>
+  public var twoFactor: (TwoFactorRequest) -> Effect<AuthenticationResponse, Error>
 
   public init(
-    login: @escaping (LoginRequest) -> Effect<AuthenticationResponse, AuthenticationError>,
-    twoFactor: @escaping (TwoFactorRequest) -> Effect<AuthenticationResponse, AuthenticationError>
+    login: @escaping (LoginRequest) -> Effect<AuthenticationResponse, Error>,
+    twoFactor: @escaping (TwoFactorRequest) -> Effect<AuthenticationResponse, Error>
   ) {
     self.login = login
     self.twoFactor = twoFactor

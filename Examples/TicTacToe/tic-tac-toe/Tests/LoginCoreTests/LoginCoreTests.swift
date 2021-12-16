@@ -33,9 +33,7 @@ class LoginCoreTests: XCTestCase {
     store.send(.loginButtonTapped) {
       $0.isLoginRequestInFlight = true
     }
-    store.receive(
-      .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: true)))
-    ) {
+    store.receive(/LoginAction.loginResponse) {
       $0.isLoginRequestInFlight = false
       $0.twoFactor = TwoFactorState(token: "deadbeefdeadbeef")
     }
@@ -46,11 +44,7 @@ class LoginCoreTests: XCTestCase {
     store.send(.twoFactor(.submitButtonTapped)) {
       $0.twoFactor?.isTwoFactorRequestInFlight = true
     }
-    store.receive(
-      .twoFactor(
-        .twoFactorResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
-      )
-    ) {
+    store.receive(/LoginAction.twoFactor) {
       $0.twoFactor?.isTwoFactorRequestInFlight = false
     }
   }
@@ -85,9 +79,7 @@ class LoginCoreTests: XCTestCase {
       $0.isLoginRequestInFlight = true
     }
     scheduler.advance()
-    store.receive(
-      .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: true)))
-    ) {
+    store.receive(/LoginAction.loginResponse) {
       $0.isLoginRequestInFlight = false
       $0.twoFactor = TwoFactorState(token: "deadbeefdeadbeef")
     }

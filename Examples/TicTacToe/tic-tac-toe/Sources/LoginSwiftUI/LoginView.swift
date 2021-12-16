@@ -9,7 +9,7 @@ public struct LoginView: View {
   let store: Store<LoginState, LoginAction>
 
   struct ViewState: Equatable {
-    var alert: AlertState<LoginAction>?
+    var alert: AlertState<LoginAction.Alert>?
     var email: String
     var isActivityIndicatorVisible: Bool
     var isFormDisabled: Bool
@@ -29,7 +29,6 @@ public struct LoginView: View {
   }
 
   enum ViewAction {
-    case alertDismissed
     case emailChanged(String)
     case loginButtonTapped
     case passwordChanged(String)
@@ -91,7 +90,7 @@ public struct LoginView: View {
           }
           .disabled(viewStore.isLoginButtonDisabled)
         }
-        .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
+        .alert(self.store.scope(state: \.alert, action: LoginAction.alert), dismiss: .dismiss)
         .disabled(viewStore.isFormDisabled)
         .padding(.horizontal)
       }
@@ -103,8 +102,6 @@ public struct LoginView: View {
 extension LoginAction {
   init(action: LoginView.ViewAction) {
     switch action {
-    case .alertDismissed:
-      self = .alertDismissed
     case .twoFactorDismissed:
       self = .twoFactorDismissed
     case let .emailChanged(email):

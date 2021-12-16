@@ -11,7 +11,7 @@ public class LoginViewController: UIViewController {
   private var cancellables: Set<AnyCancellable> = []
 
   struct ViewState: Equatable {
-    let alert: AlertState<LoginAction>?
+    let alert: AlertState<LoginAction.Alert>?
     let email: String?
     let isActivityIndicatorHidden: Bool
     let isEmailTextFieldEnabled: Bool
@@ -198,7 +198,7 @@ extension LoginAction {
   init(action: LoginViewController.ViewAction) {
     switch action {
     case .alertDismissed:
-      self = .alertDismissed
+      self = .alert(.dismiss)
     case let .emailChanged(email):
       self = .emailChanged(email ?? "")
     case .loginButtonTapped:

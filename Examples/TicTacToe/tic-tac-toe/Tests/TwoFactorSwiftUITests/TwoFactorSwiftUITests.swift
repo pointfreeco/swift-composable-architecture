@@ -43,9 +43,7 @@ class TwoFactorSwiftUITests: XCTestCase {
       $0.isActivityIndicatorVisible = true
       $0.isFormDisabled = true
     }
-    store.receive(
-      .twoFactorResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
-    ) {
+    store.receive(/TwoFactorAction.twoFactorResponse) {
       $0.isActivityIndicatorVisible = false
       $0.isFormDisabled = false
     }
@@ -53,7 +51,7 @@ class TwoFactorSwiftUITests: XCTestCase {
 
   func testFlow_Failure() {
     var authenticationClient = AuthenticationClient.failing
-    authenticationClient.twoFactor = { _ in Effect(error: .invalidTwoFactor) }
+    authenticationClient.twoFactor = { _ in Effect(error: AuthenticationError.invalidTwoFactor) }
 
     let store = TestStore(
       initialState: TwoFactorState(token: "deadbeefdeadbeef"),
@@ -73,15 +71,12 @@ class TwoFactorSwiftUITests: XCTestCase {
       $0.isActivityIndicatorVisible = true
       $0.isFormDisabled = true
     }
-    store.receive(.twoFactorResponse(.failure(.invalidTwoFactor))) {
+    store.receive(/TwoFactorAction.twoFactorResponse) {
       $0.alert = .init(
         title: TextState(AuthenticationError.invalidTwoFactor.localizedDescription)
       )
       $0.isActivityIndicatorVisible = false
       $0.isFormDisabled = false
-    }
-    store.send(.alertDismissed) {
-      $0.alert = nil
     }
   }
 }

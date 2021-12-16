@@ -4,7 +4,7 @@ import Dispatch
 import TwoFactorCore
 
 public struct LoginState: Equatable {
-  public var alert: AlertState<LoginAction>?
+  public var alert: AlertState<LoginAction.Alert>?
   public var email = ""
   public var isFormValid = false
   public var isLoginRequestInFlight = false
@@ -14,14 +14,18 @@ public struct LoginState: Equatable {
   public init() {}
 }
 
-public enum LoginAction: Equatable {
-  case alertDismissed
+public enum LoginAction {
+  case alert(Alert)
   case emailChanged(String)
   case passwordChanged(String)
   case loginButtonTapped
-  case loginResponse(Result<AuthenticationResponse, AuthenticationError>)
+  case loginResponse(Result<AuthenticationResponse, Error>)
   case twoFactor(TwoFactorAction)
   case twoFactorDismissed
+
+  public enum Alert {
+    case dismiss
+  }
 }
 
 public struct LoginEnvironment {
@@ -54,7 +58,7 @@ public let loginReducer = Reducer<LoginState, LoginAction, LoginEnvironment>.com
   .init {
     state, action, environment in
     switch action {
-    case .alertDismissed:
+    case .alert(.dismiss):
       state.alert = nil
       return .none
 

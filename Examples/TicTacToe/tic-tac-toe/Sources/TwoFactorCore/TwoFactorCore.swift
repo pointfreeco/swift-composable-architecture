@@ -4,7 +4,7 @@ import ComposableArchitecture
 import Dispatch
 
 public struct TwoFactorState: Equatable {
-  public var alert: AlertState<TwoFactorAction>?
+  public var alert: AlertState<TwoFactorAction.Alert>?
   public var code = ""
   public var isFormValid = false
   public var isTwoFactorRequestInFlight = false
@@ -15,11 +15,15 @@ public struct TwoFactorState: Equatable {
   }
 }
 
-public enum TwoFactorAction: Equatable {
-  case alertDismissed
+public enum TwoFactorAction {
+  case alert(Alert)
   case codeChanged(String)
   case submitButtonTapped
-  case twoFactorResponse(Result<AuthenticationResponse, AuthenticationError>)
+  case twoFactorResponse(Result<AuthenticationResponse, Error>)
+
+  public enum Alert {
+    case dismiss
+  }
 }
 
 public struct TwoFactorTearDownToken: Hashable {
@@ -43,7 +47,7 @@ public let twoFactorReducer = Reducer<TwoFactorState, TwoFactorAction, TwoFactor
   state, action, environment in
 
   switch action {
-  case .alertDismissed:
+  case .alert(.dismiss):
     state.alert = nil
     return .none
 
