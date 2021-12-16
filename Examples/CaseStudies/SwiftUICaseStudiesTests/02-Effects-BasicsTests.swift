@@ -41,9 +41,10 @@ class EffectsBasicsTests: XCTestCase {
     store.send(.numberFactButtonTapped) {
       $0.isNumberFactRequestInFlight = true
     }
-    store.receive(.numberFactResponse(.success("1 is a good number Brent"))) {
+//  store.receive(.numberFactResponse(.success("1 is a good number Brent"))) {
+    store.receive(/EffectsBasicsAction.numberFactResponse) {
       $0.isNumberFactRequestInFlight = false
-      $0.numberFact = "1 is a good number Brent"
+      $0.numberFact = "2 is a good number Brent"
     }
   }
 }

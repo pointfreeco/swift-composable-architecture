@@ -3,6 +3,7 @@
   import CustomDump
   import Foundation
   import XCTestDynamicOverlay
+import CasePaths
 
   /// A testable runtime for a reducer.
   ///
@@ -393,11 +394,19 @@
         )
       }
     }
-  }
 
-  extension TestStore where LocalState: Equatable, Action: Equatable {
-    public func receive(
-      _ expectedAction: Action,
+    public func receive<Case>(
+      _ casePath: CasePath<Action, Case>,
+      file: StaticString = #file,
+      line: UInt = #line,
+      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+    ) {
+      // TODO: print action data in failure message
+      self.receive({ casePath.extract(from: $0) != nil }, file: file, line: line, update)
+    }
+
+    func receive(
+      _ isAction: @escaping (Action) -> Bool,
       file: StaticString = #file,
       line: UInt = #line,
       _ update: @escaping (inout LocalState) throws -> Void = { _ in }
@@ -412,17 +421,17 @@
         return
       }
       let (receivedAction, state) = self.receivedActions.removeFirst()
-      if expectedAction != receivedAction {
-        let difference =
-          diff(expectedAction, receivedAction, format: .proportional)
-          .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
-          ?? """
-          Expected:
-          \(String(describing: expectedAction).indent(by: 2))
-
-          Received:
-          \(String(describing: receivedAction).indent(by: 2))
-          """
+      if !isAction(receivedAction) {
+        let difference = "TODO"
+//        diff(expectedAction, receivedAction, format: .proportional)
+//          .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
+//        ?? """
+//          Expected:
+//          \(String(describing: expectedAction).indent(by: 2))
+//
+//          Received:
+//          \(String(describing: receivedAction).indent(by: 2))
+//          """
 
         XCTFail(
           """
@@ -449,6 +458,17 @@
       if "\(self.file)" == "\(file)" {
         self.line = line
       }
+    }
+  }
+
+  extension TestStore where LocalState: Equatable, Action: Equatable {
+    public func receive(
+      _ expectedAction: Action,
+      file: StaticString = #file,
+      line: UInt = #line,
+      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+    ) {
+      self.receive({ $0 == expectedAction }, file: file, line: line, update)
     }
   }
 
