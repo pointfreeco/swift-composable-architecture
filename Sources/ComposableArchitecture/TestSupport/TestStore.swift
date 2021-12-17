@@ -405,43 +405,43 @@
       }
     }
 
-    public func receive(
-      file: StaticString = #file,
-      line: UInt = #line,
-      _ update: (inout LocalState) throws -> Void = { _ in }
-    ) {
-      self.receive({ $0 }, file: file, line: line, update)
-    }
-
-    public func receive<Case>(
-      _ casePath: CasePath<Action, Case>,
-      file: StaticString = #file,
-      line: UInt = #line,
-      _ update: (inout LocalState) throws -> Void = { _ in }
-    ) {
-      self.receive(casePath.extract, file: file, line: line, update)
-    }
-
-    @_disfavoredOverload
-    public func receive<Case>(
-      _ extract: (Action) -> Case?,
-      file: StaticString = #file,
-      line: UInt = #line,
-      _ update: (inout LocalState) throws -> Void = { _ in }
-    ) {
-      self.receive(dumpAction: true, file: file, line: line, update) { receivedAction in
-        guard extract(receivedAction) != nil else {
-          var action = ""
-          customDump(receivedAction, to: &action, indent: 4)
-          return """
-            Received unexpected action: …
-
-            \(action)
-            """
-        }
-        return nil
-      }
-    }
+//    public func receive(
+//      file: StaticString = #file,
+//      line: UInt = #line,
+//      _ update: (inout LocalState) throws -> Void = { _ in }
+//    ) {
+//      self.receive({ $0 }, file: file, line: line, update)
+//    }
+//
+//    public func receive<Case>(
+//      _ casePath: CasePath<Action, Case>,
+//      file: StaticString = #file,
+//      line: UInt = #line,
+//      _ update: (inout LocalState) throws -> Void = { _ in }
+//    ) {
+//      self.receive(casePath.extract, file: file, line: line, update)
+//    }
+//
+//    @_disfavoredOverload
+//    public func receive<Case>(
+//      _ extract: (Action) -> Case?,
+//      file: StaticString = #file,
+//      line: UInt = #line,
+//      _ update: (inout LocalState) throws -> Void = { _ in }
+//    ) {
+//      self.receive(dumpAction: true, file: file, line: line, update) { receivedAction in
+//        guard extract(receivedAction) != nil else {
+//          var action = ""
+//          customDump(receivedAction, to: &action, indent: 4)
+//          return """
+//            Received unexpected action: …
+//
+//            \(action)
+//            """
+//        }
+//        return nil
+//      }
+//    }
 
     private func receive(
       dumpAction: Bool,
@@ -551,16 +551,13 @@
   }
 #endif
 
-
-private enum Box<T> {}
-
-// MARK: - Equatable
+private enum ExistentialWitness<T> {}
 
 protocol AnyEquatable {
   static func isEqual(_ lhs: Any, _ rhs: Any) -> Bool
 }
 
-extension Box: AnyEquatable where T: Equatable {
+extension ExistentialWitness: AnyEquatable where T: Equatable {
   static func isEqual(_ lhs: Any, _ rhs: Any) -> Bool {
     lhs as? T == rhs as? T
   }
@@ -568,20 +565,23 @@ extension Box: AnyEquatable where T: Equatable {
 
 func isMirrorEqual(_ lhs: Any, _ rhs: Any) -> Bool {
   func open<LHS>(_: LHS.Type) -> Bool? {
-    (Box<LHS>.self as? AnyEquatable.Type)?.isEqual(lhs, rhs)
+    (ExistentialWitness<LHS>.self as? AnyEquatable.Type)?.isEqual(lhs, rhs)
   }
-  if let isEqual = _openExistential(type(of: lhs), do: open) { return isEqual }
-  let lhsMirror = Mirror(reflecting: lhs)
-  let rhsMirror = Mirror(reflecting: rhs)
-  guard
-    lhsMirror.subjectType == rhsMirror.subjectType,
-    lhsMirror.children.count == rhsMirror.children.count
-  else { return false }
-  for (lhsChild, rhsChild) in zip(lhsMirror.children, rhsMirror.children) {
+  guard let isEqual = _openExistential(type(of: lhs), do: open) else {
+    let lhsMirror = Mirror(reflecting: lhs)
+    let rhsMirror = Mirror(reflecting: rhs)
     guard
-      lhsChild.label == rhsChild.label,
-      isMirrorEqual(lhsChild.value, rhsChild.value)
+      lhsMirror.subjectType == rhsMirror.subjectType,
+      lhsMirror.children.count == rhsMirror.children.count,
+      enumTag(lhs) == enumTag(rhs)
     else { return false }
+    for (lhsChild, rhsChild) in zip(lhsMirror.children, rhsMirror.children) {
+      guard
+        lhsChild.label == rhsChild.label,
+        isMirrorEqual(lhsChild.value, rhsChild.value)
+      else { return false }
+    }
+    return true
   }
-  return true
+  return isEqual
 }

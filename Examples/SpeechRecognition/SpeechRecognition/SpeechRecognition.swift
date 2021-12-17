@@ -69,7 +69,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
       return .none
     }
 
-  case let .speech(.failure(error)):
+  case .speech(.failure):
     state.alert = .init(title: .init("An error occured while transcribing. Please try again."))
     return environment.speechClient.finishTask()
       .fireAndForget()

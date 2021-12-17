@@ -20,7 +20,7 @@ class EffectsBasicsTests: XCTestCase {
     store.send(.decrementButtonTapped) {
       $0.count = 0
     }
-    store.receive(/EffectsBasicsAction.incrementButtonTapped) {
+    store.receive(.incrementButtonTapped) {
       $0.count = 1
     }
   }
@@ -41,9 +41,9 @@ class EffectsBasicsTests: XCTestCase {
     store.send(.numberFactButtonTapped) {
       $0.isNumberFactRequestInFlight = true
     }
-    store.receive(/EffectsBasicsAction.numberFactResponse) {
+    store.receive(.numberFactResponse(.success("1 is a good number Brent"))) {
       $0.isNumberFactRequestInFlight = false
-      $0.numberFact = "1 is a good number Brett"
+      $0.numberFact = "1 is a good number Brent"
     }
   }
 }

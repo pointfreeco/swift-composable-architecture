@@ -20,21 +20,21 @@ class RefreshableTests: XCTestCase {
     store.send(.refresh) {
       $0.isLoading = true
     }
-    store.receive(/RefreshableAction.factResponse) {
+    store.receive(.factResponse(.success("1 is a good number."))) {
       $0.isLoading = false
       $0.fact = "1 is a good number."
     }
   }
 
   func testUnhappyPath() {
+    #warning("Make this Equatable?")
+    struct FactError: Error {}
+
     let store = TestStore(
       initialState: .init(),
       reducer: refreshableReducer,
       environment: .init(
-        fact: .init { _ in
-          struct FactError: Error {} // TODO: Effect Unimplemented:Error helper?
-          return .init(error: FactError())
-        },
+        fact: .init { _ in .init(error: FactError()) },
         mainQueue: .immediate
       )
     )
@@ -45,7 +45,7 @@ class RefreshableTests: XCTestCase {
     store.send(.refresh) {
       $0.isLoading = true
     }
-    store.receive(/RefreshableAction.factResponse) {
+    store.receive(.factResponse(.failure(FactError()))) {
       $0.isLoading = false
     }
   }

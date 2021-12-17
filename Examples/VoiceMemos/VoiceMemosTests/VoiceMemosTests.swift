@@ -37,7 +37,7 @@ class VoiceMemosTests: XCTestCase {
 
     store.send(.recordButtonTapped)
     mainRunLoop.advance()
-    store.receive(/VoiceMemosAction.recordPermissionResponse) {
+    store.receive(.recordPermissionResponse(true)) {
       $0.audioRecorderPermission = .allowed
       $0.currentRecording = .init(
         date: Date(timeIntervalSince1970: 0),
@@ -46,21 +46,21 @@ class VoiceMemosTests: XCTestCase {
       )
     }
     mainRunLoop.advance(by: 1)
-    store.receive(/VoiceMemosAction.currentRecordingTimerUpdated) {
+    store.receive(.currentRecordingTimerUpdated) {
       $0.currentRecording!.duration = 1
     }
     mainRunLoop.advance(by: 1)
-    store.receive(/VoiceMemosAction.currentRecordingTimerUpdated) {
+    store.receive(.currentRecordingTimerUpdated) {
       $0.currentRecording!.duration = 2
     }
     mainRunLoop.advance(by: 0.5)
     store.send(.recordButtonTapped) {
       $0.currentRecording!.mode = .encoding
     }
-    store.receive(/VoiceMemosAction.finalRecordingTime(2.5)) {
+    store.receive(.finalRecordingTime(2.5)) {
       $0.currentRecording!.duration = 2.5
     }
-    store.receive(/VoiceMemosAction.audioRecorder) {
+    store.receive(.audioRecorder(.success(.didFinishRecording(successfully: true)))) {
       $0.currentRecording = nil
       $0.voiceMemos = [
         VoiceMemo(
@@ -89,7 +89,7 @@ class VoiceMemosTests: XCTestCase {
     )
 
     store.send(.recordButtonTapped)
-    store.receive(/VoiceMemosAction.recordPermissionResponse) {
+    store.receive(.recordPermissionResponse(false)) {
       $0.alert = .init(title: .init("Permission is required to record voice memos."))
       $0.audioRecorderPermission = .denied
     }
@@ -120,7 +120,7 @@ class VoiceMemosTests: XCTestCase {
     )
 
     store.send(.recordButtonTapped)
-    store.receive(/VoiceMemosAction.recordPermissionResponse) {
+    store.receive(.recordPermissionResponse(true)) {
       $0.audioRecorderPermission = .allowed
       $0.currentRecording = .init(
         date: Date(timeIntervalSince1970: 0),
@@ -130,7 +130,7 @@ class VoiceMemosTests: XCTestCase {
     }
     struct CouldntActivateAudioSession: Error {}
     audioRecorderSubject.send(completion: .failure(CouldntActivateAudioSession()))
-    store.receive(/VoiceMemosAction.audioRecorder) {
+    store.receive(.audioRecorder(.failure(CouldntActivateAudioSession()))) {
       $0.alert = .init(title: .init("Voice memo recording failed."))
       $0.currentRecording = nil
     }
@@ -166,24 +166,27 @@ class VoiceMemosTests: XCTestCase {
       $0.voiceMemos[id: url]?.mode = VoiceMemo.Mode.playing(progress: 0)
     }
     self.mainRunLoop.advance(by: 0.5)
-    store.receive(/VoiceMemosAction.voiceMemo) {
+    store.receive(.voiceMemo(id: url, action: .timerUpdated(0.5))) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0.5)
     }
     self.mainRunLoop.advance(by: 0.5)
-    store.receive(/VoiceMemosAction.voiceMemo) {
+    store.receive(.voiceMemo(id: url, action: .timerUpdated(1))) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 1)
     }
-    store.receive(/VoiceMemosAction.voiceMemo) {
+    store.receive(
+      .voiceMemo(
+        id: url,
+        action: .audioPlayerClient(.success(.didFinishPlaying(successfully: true)))
+      )
+    ) {
       $0.voiceMemos[id: url]?.mode = .notPlaying
     }
   }
 
   func testPlayMemoFailure() {
     var environment = VoiceMemosEnvironment.failing
-    environment.audioPlayer.play = { _ in
-      struct DecodeError: Error {}
-      return Effect(error: DecodeError())
-    }
+    struct DecodeError: Error {}
+    environment.audioPlayer.play = { _ in .init(error: DecodeError()) }
     environment.mainRunLoop = .immediate
 
     let url = URL(string: "https://www.pointfree.co/functions")!
@@ -206,7 +209,7 @@ class VoiceMemosTests: XCTestCase {
     store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
     }
-    store.receive(/VoiceMemosAction.voiceMemo) {
+    store.receive(.voiceMemo(id: url, action: .audioPlayerClient(.failure(DecodeError())))) {
       $0.alert = .init(title: .init("Voice memo playback failed."))
       $0.voiceMemos[id: url]?.mode = .notPlaying
     }

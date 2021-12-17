@@ -27,10 +27,8 @@ struct LocationWeather: Decodable, Equatable {
 // This allows the search feature to compile faster since it only depends on the interface.
 
 struct WeatherClient {
-  var searchLocation: (String) -> Effect<[Location], Failure>
-  var weather: (Int) -> Effect<LocationWeather, Failure>
-
-  struct Failure: Error, Equatable {}
+  var searchLocation: (String) -> Effect<[Location], Error>
+  var weather: (Int) -> Effect<LocationWeather, Error>
 }
 
 // MARK: - Live API implementation
@@ -48,7 +46,6 @@ extension WeatherClient {
       return URLSession.shared.dataTaskPublisher(for: components.url!)
         .map { data, _ in data }
         .decode(type: [Location].self, decoder: jsonDecoder)
-        .mapError { _ in Failure() }
         .eraseToEffect()
     },
     weather: { id in
@@ -57,7 +54,6 @@ extension WeatherClient {
       return URLSession.shared.dataTaskPublisher(for: url)
         .map { data, _ in data }
         .decode(type: LocationWeather.self, decoder: jsonDecoder)
-        .mapError { _ in Failure() }
         .eraseToEffect()
     }
   )

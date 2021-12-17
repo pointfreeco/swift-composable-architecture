@@ -29,7 +29,7 @@ class WebSocketTests: XCTestCase {
       $0.connectivityState = .connecting
     }
     socketSubject.send(.didOpenWithProtocol(nil))
-    store.receive(/WebSocketAction.webSocket) {
+    store.receive(.webSocket(.didOpenWithProtocol(nil))) {
       $0.connectivityState = .connected
     }
 
@@ -40,11 +40,11 @@ class WebSocketTests: XCTestCase {
     store.send(.sendButtonTapped) {
       $0.messageToSend = ""
     }
-    store.receive(/WebSocketAction.sendResponse)
+    store.receive(.sendResponse(.success(())))
 
     // Receive a message
     receiveSubject.send(.string("Hi"))
-    store.receive(/WebSocketAction.receivedSocketMessage) {
+    store.receive(.receivedSocketMessage(.success(.string("Hi")))) {
       $0.receivedMessages = ["Hi"]
     }
 
@@ -78,7 +78,7 @@ class WebSocketTests: XCTestCase {
       $0.connectivityState = .connecting
     }
     socketSubject.send(.didOpenWithProtocol(nil))
-    store.receive(/WebSocketAction.webSocket) {
+    store.receive(.webSocket(.didOpenWithProtocol(nil))) {
       $0.connectivityState = .connected
     }
 
@@ -89,7 +89,7 @@ class WebSocketTests: XCTestCase {
     store.send(.sendButtonTapped) {
       $0.messageToSend = ""
     }
-    store.receive(/WebSocketAction.sendResponse) {
+    store.receive(.sendResponse(.failure(NSError(domain: "", code: 1)))) {
       $0.alert = .init(title: .init("Could not send socket message. Try again."))
     }
 
@@ -124,14 +124,14 @@ class WebSocketTests: XCTestCase {
 
     socketSubject.send(.didOpenWithProtocol(nil))
     scheduler.advance()
-    store.receive(/WebSocketAction.webSocket) {
+    store.receive(.webSocket(.didOpenWithProtocol(nil))) {
       $0.connectivityState = .connected
     }
 
     pingSubject.send()
     scheduler.advance(by: .seconds(5))
     scheduler.advance(by: .seconds(5))
-    store.receive(/WebSocketAction.pingResponse)
+    store.receive(.pingResponse(.success(())))
 
     store.send(.connectButtonTapped) {
       $0.connectivityState = .disconnected
@@ -161,7 +161,7 @@ class WebSocketTests: XCTestCase {
     }
 
     socketSubject.send(.didClose(code: .internalServerError, reason: nil))
-    store.receive(/WebSocketAction.webSocket) {
+    store.receive(.webSocket(.didClose(code: .internalServerError, reason: nil))) {
       $0.connectivityState = .disconnected
     }
   }

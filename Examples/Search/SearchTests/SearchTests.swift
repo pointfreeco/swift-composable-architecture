@@ -66,12 +66,13 @@ class SearchTests: XCTestCase {
       )
     )
 
-    store.environment.weatherClient.searchLocation = { _ in Effect(error: .init()) }
+    struct SearchLocationError: Error {}
+    store.environment.weatherClient.searchLocation = { _ in Effect(error: SearchLocationError()) }
     store.send(.searchQueryChanged("S")) {
       $0.searchQuery = "S"
     }
     self.scheduler.advance(by: 0.3)
-    store.receive(/SearchAction.locationsResponse)
+    store.receive(.locationsResponse(.failure(SearchLocationError())))
   }
 
   func testClearQueryCancelsInFlightSearchRequest() {
@@ -120,7 +121,7 @@ class SearchTests: XCTestCase {
       $0.locationWeatherRequestInFlight = specialLocation
     }
     self.scheduler.advance()
-    store.receive(/SearchAction.locationWeatherResponse) {
+    store.receive(.locationWeatherResponse(.success(specialLocationWeather))) {
       $0.locationWeatherRequestInFlight = nil
       $0.locationWeather = specialLocationWeather
     }
@@ -152,7 +153,7 @@ class SearchTests: XCTestCase {
       $0.locationWeatherRequestInFlight = specialLocation
     }
     self.scheduler.advance()
-    store.receive(/SearchAction.locationWeatherResponse) {
+    store.receive(.locationWeatherResponse(.success(specialLocationWeather))) {
       $0.locationWeatherRequestInFlight = nil
       $0.locationWeather = specialLocationWeather
     }
@@ -160,7 +161,8 @@ class SearchTests: XCTestCase {
 
   func testTapOnLocationFailure() {
     var weatherClient = WeatherClient.failing
-    weatherClient.weather = { _ in Effect(error: .init()) }
+    struct WeatherError: Error {}
+    weatherClient.weather = { _ in Effect(error: WeatherError()) }
 
     let store = TestStore(
       initialState: .init(locations: mockLocations),
@@ -175,7 +177,7 @@ class SearchTests: XCTestCase {
       $0.locationWeatherRequestInFlight = mockLocations.first!
     }
     self.scheduler.advance()
-    store.receive {
+    store.receive(.locationWeatherResponse(.failure(WeatherError()))) {
       $0.locationWeatherRequestInFlight = nil
     }
   }

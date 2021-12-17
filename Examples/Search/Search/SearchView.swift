@@ -17,9 +17,9 @@ struct SearchState: Equatable {
 }
 
 enum SearchAction {
-  case locationsResponse(Result<[Location], WeatherClient.Failure>)
+  case locationsResponse(Result<[Location], Error>)
   case locationTapped(Location)
-  case locationWeatherResponse(Result<LocationWeather, WeatherClient.Failure>)
+  case locationWeatherResponse(Result<LocationWeather, Error>)
   case searchQueryChanged(String)
 }
 

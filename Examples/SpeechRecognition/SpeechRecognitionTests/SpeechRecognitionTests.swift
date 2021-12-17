@@ -23,7 +23,7 @@ class SpeechRecognitionTests: XCTestCase {
     store.send(.recordButtonTapped) {
       $0.isRecording = true
     }
-    store.receive(/AppAction.speechRecognizerAuthorizationStatusResponse) {
+    store.receive(.speechRecognizerAuthorizationStatusResponse(.denied)) {
       $0.alert = .init(
         title: .init(
           """
@@ -52,7 +52,7 @@ class SpeechRecognitionTests: XCTestCase {
     store.send(.recordButtonTapped) {
       $0.isRecording = true
     }
-    store.receive(/AppAction.speechRecognizerAuthorizationStatusResponse) {
+    store.receive(.speechRecognizerAuthorizationStatusResponse(.restricted)) {
       $0.alert = .init(title: .init("Your device does not allow speech recognition."))
       $0.isRecording = false
       $0.speechRecognizerAuthorizationStatus = .restricted
@@ -94,17 +94,17 @@ class SpeechRecognitionTests: XCTestCase {
       $0.isRecording = true
     }
 
-    store.receive(/AppAction.speechRecognizerAuthorizationStatusResponse) {
+    store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized)) {
       $0.speechRecognizerAuthorizationStatus = .authorized
     }
 
     self.recognitionTaskSubject.send(.taskResult(result))
-    store.receive(/AppAction.speech) {
+    store.receive(.speech(.success(.taskResult(result)))) {
       $0.transcribedText = "Hello"
     }
 
     self.recognitionTaskSubject.send(.taskResult(finalResult))
-    store.receive(/AppAction.speech) {
+    store.receive(.speech(.success(.taskResult(finalResult)))) {
       $0.transcribedText = "Hello world"
     }
   }
@@ -127,12 +127,12 @@ class SpeechRecognitionTests: XCTestCase {
       $0.isRecording = true
     }
 
-    store.receive(/AppAction.speechRecognizerAuthorizationStatusResponse) {
+    store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized)) {
       $0.speechRecognizerAuthorizationStatus = .authorized
     }
 
     self.recognitionTaskSubject.send(completion: .failure(.couldntConfigureAudioSession))
-    store.receive(/AppAction.speech) {
+    store.receive(.speech(.failure(.couldntConfigureAudioSession))) {
       $0.alert = .init(title: .init("Problem with audio device. Please try again."))
     }
 
@@ -157,12 +157,12 @@ class SpeechRecognitionTests: XCTestCase {
       $0.isRecording = true
     }
 
-    store.receive(/AppAction.speechRecognizerAuthorizationStatusResponse) {
+    store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized)) {
       $0.speechRecognizerAuthorizationStatus = .authorized
     }
 
     self.recognitionTaskSubject.send(completion: .failure(.couldntStartAudioEngine))
-    store.receive(/AppAction.speech) {
+    store.receive(.speech(.failure(.couldntStartAudioEngine))) {
       $0.alert = .init(title: .init("Problem with audio device. Please try again."))
     }
 

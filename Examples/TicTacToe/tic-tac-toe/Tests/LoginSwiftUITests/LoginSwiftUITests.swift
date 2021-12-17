@@ -34,7 +34,9 @@ class LoginSwiftUITests: XCTestCase {
       $0.isActivityIndicatorVisible = true
       $0.isFormDisabled = true
     }
-    store.receive(/LoginAction.loginResponse) {
+    store.receive(
+      .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
+    ) {
       $0.isActivityIndicatorVisible = false
       $0.isFormDisabled = false
     }
@@ -67,7 +69,9 @@ class LoginSwiftUITests: XCTestCase {
       $0.isActivityIndicatorVisible = true
       $0.isFormDisabled = true
     }
-    store.receive(/LoginAction.loginResponse) {
+    store.receive(
+      .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: true)))
+    ) {
       $0.isActivityIndicatorVisible = false
       $0.isFormDisabled = false
       $0.isTwoFactorActive = true
@@ -102,7 +106,7 @@ class LoginSwiftUITests: XCTestCase {
       $0.isActivityIndicatorVisible = true
       $0.isFormDisabled = true
     }
-    store.receive(/LoginAction.loginResponse) {
+    store.receive(.loginResponse(.failure(AuthenticationError.invalidUserPassword))) {
       $0.alert = .init(
         title: TextState(AuthenticationError.invalidUserPassword.localizedDescription)
       )

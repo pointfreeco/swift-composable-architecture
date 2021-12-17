@@ -35,7 +35,9 @@ class AppCoreTests: XCTestCase {
         $0.isLoginRequestInFlight = true
       }
     }
-    store.receive(/AppAction.login) {
+    store.receive(
+      .login(.loginResponse(.success(.init(token: "deadbeef", twoFactorRequired: false))))
+    ) {
       $0 = .newGame(.init())
     }
     store.send(.newGame(.oPlayerNameChanged("Blob Sr."))) {
@@ -83,7 +85,9 @@ class AppCoreTests: XCTestCase {
         $0.isLoginRequestInFlight = true
       }
     }
-    store.receive(/AppAction.login) {
+    store.receive(
+      .login(.loginResponse(.success(.init(token: "deadbeef", twoFactorRequired: true))))
+    ) {
       try (/AppState.login).modify(&$0) {
         $0.isLoginRequestInFlight = false
         $0.twoFactor = .init(token: "deadbeef")
@@ -102,7 +106,11 @@ class AppCoreTests: XCTestCase {
         $0.twoFactor?.isTwoFactorRequestInFlight = true
       }
     }
-    store.receive(/AppAction.login) {
+    store.receive(
+      .login(
+        .twoFactor(.twoFactorResponse(.success(.init(token: "deadbeef", twoFactorRequired: false))))
+      )
+    ) {
       $0 = .newGame(.init())
     }
   }
