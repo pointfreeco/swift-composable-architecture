@@ -356,7 +356,6 @@
       self.expectedStateShouldMatch(
         expected: expectedState,
         actual: self.toLocalState(self.snapshotState),
-        from: nil,
         file: file,
         line: line
       )
@@ -368,7 +367,6 @@
     private func expectedStateShouldMatch(
       expected: LocalState,
       actual: LocalState,
-      from action: Action?,
       file: StaticString,
       line: UInt
     ) {
@@ -384,20 +382,11 @@
           \(String(describing: actual).indent(by: 2))
           """
 
-        let prefix = action
-          .map { action in
-            var dump = ""
-            customDump(action, to: &dump, indent: 4)
-            let space = "\(CustomDump.DiffFormat.proportional.both) "
-            return "\(space)\(dump.replacingOccurrences(of: "\n", with: "\n\(space)"))\n"
-          }
-          ?? ""
-
         XCTFail(
           """
           State change does not match expectation: …
 
-          \(prefix)\(difference)
+          \(difference)
           """,
           file: file,
           line: line
@@ -405,58 +394,37 @@
       }
     }
 
-//    public func receive(
-//      file: StaticString = #file,
-//      line: UInt = #line,
-//      _ update: (inout LocalState) throws -> Void = { _ in }
-//    ) {
-//      self.receive({ $0 }, file: file, line: line, update)
-//    }
-//
-//    public func receive<Case>(
-//      _ casePath: CasePath<Action, Case>,
-//      file: StaticString = #file,
-//      line: UInt = #line,
-//      _ update: (inout LocalState) throws -> Void = { _ in }
-//    ) {
-//      self.receive(casePath.extract, file: file, line: line, update)
-//    }
-//
-//    @_disfavoredOverload
-//    public func receive<Case>(
-//      _ extract: (Action) -> Case?,
-//      file: StaticString = #file,
-//      line: UInt = #line,
-//      _ update: (inout LocalState) throws -> Void = { _ in }
-//    ) {
-//      self.receive(dumpAction: true, file: file, line: line, update) { receivedAction in
-//        guard extract(receivedAction) != nil else {
-//          var action = ""
-//          customDump(receivedAction, to: &action, indent: 4)
-//          return """
-//            Received unexpected action: …
-//
-//            \(action)
-//            """
-//        }
-//        return nil
-//      }
-//    }
-
-    private func receive(
-      dumpAction: Bool,
-      file: StaticString,
-      line: UInt,
-      _ update: (inout LocalState) throws -> Void,
-      _ failure: (Action) -> String?
+    public func receive(
+      _ expectedAction: Action,
+      file: StaticString = #file,
+      line: UInt = #line,
+      _ update: (inout LocalState) throws -> Void = { _ in }
     ) {
       guard !self.receivedActions.isEmpty else {
         XCTFail("Expected to receive an action, but received none.", file: file, line: line)
         return
       }
       let (receivedAction, state) = self.receivedActions.removeFirst()
-      if let message = failure(receivedAction) {
-        XCTFail(message, file: file, line: line)
+      if !isMirrorEqual(receivedAction, expectedAction) {
+        let difference = diff(expectedAction, receivedAction, format: .proportional)
+          .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
+          ?? """
+            Expected:
+            \(String(describing: expectedAction).indent(by: 2))
+
+            Received:
+            \(String(describing: receivedAction).indent(by: 2))
+            """
+
+        XCTFail(
+          """
+          Received unexpected action: …
+
+          \(difference)
+          """,
+          file: file,
+          line: line
+        )
       }
       var expectedState = self.toLocalState(self.snapshotState)
       do {
@@ -467,44 +435,12 @@
       expectedStateShouldMatch(
         expected: expectedState,
         actual: self.toLocalState(state),
-        from: dumpAction ? receivedAction : nil,
         file: file,
         line: line
       )
       snapshotState = state
       if "\(self.file)" == "\(file)" {
         self.line = line
-      }
-    }
-  }
-
-  extension TestStore where LocalState: Equatable {
-    public func receive(
-      _ expectedAction: Action,
-      file: StaticString = #file,
-      line: UInt = #line,
-      _ update: (inout LocalState) throws -> Void = { _ in }
-    ) {
-      self.receive(dumpAction: false, file: file, line: line, update) { receivedAction in
-        guard isMirrorEqual(receivedAction, expectedAction) else {
-          let difference = diff(expectedAction, receivedAction, format: .proportional)
-            .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
-            ?? """
-              Expected:
-              \(String(describing: expectedAction).indent(by: 2))
-
-              Received:
-              \(String(describing: receivedAction).indent(by: 2))
-              """
-
-         return """
-           Received unexpected action: …
-
-           \(difference)
-           """
-        }
-
-        return nil
       }
     }
   }
