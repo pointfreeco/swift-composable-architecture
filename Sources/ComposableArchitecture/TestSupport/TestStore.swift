@@ -478,7 +478,7 @@
     }
   }
 
-  extension TestStore where LocalState: Equatable, Action: Equatable {
+  extension TestStore where LocalState: Equatable {
     public func receive(
       _ expectedAction: Action,
       file: StaticString = #file,
@@ -486,7 +486,7 @@
       _ update: (inout LocalState) throws -> Void = { _ in }
     ) {
       self.receive(dumpAction: false, file: file, line: line, update) { receivedAction in
-        guard receivedAction == expectedAction else {
+        guard isMirrorEqual(receivedAction, expectedAction) else {
           let difference = diff(expectedAction, receivedAction, format: .proportional)
             .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
             ?? """
@@ -550,3 +550,38 @@
     }
   }
 #endif
+
+
+private enum Box<T> {}
+
+// MARK: - Equatable
+
+protocol AnyEquatable {
+  static func isEqual(_ lhs: Any, _ rhs: Any) -> Bool
+}
+
+extension Box: AnyEquatable where T: Equatable {
+  static func isEqual(_ lhs: Any, _ rhs: Any) -> Bool {
+    lhs as? T == rhs as? T
+  }
+}
+
+func isMirrorEqual(_ lhs: Any, _ rhs: Any) -> Bool {
+  func open<LHS>(_: LHS.Type) -> Bool? {
+    (Box<LHS>.self as? AnyEquatable.Type)?.isEqual(lhs, rhs)
+  }
+  if let isEqual = _openExistential(type(of: lhs), do: open) { return isEqual }
+  let lhsMirror = Mirror(reflecting: lhs)
+  let rhsMirror = Mirror(reflecting: rhs)
+  guard
+    lhsMirror.subjectType == rhsMirror.subjectType,
+    lhsMirror.children.count == rhsMirror.children.count
+  else { return false }
+  for (lhsChild, rhsChild) in zip(lhsMirror.children, rhsMirror.children) {
+    guard
+      lhsChild.label == rhsChild.label,
+      isMirrorEqual(lhsChild.value, rhsChild.value)
+    else { return false }
+  }
+  return true
+}

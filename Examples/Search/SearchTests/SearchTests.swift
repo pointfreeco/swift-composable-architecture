@@ -7,6 +7,31 @@ import XCTest
 class SearchTests: XCTestCase {
   let scheduler = DispatchQueue.test
 
+  func testEq() {
+    enum Action {
+      case tapped
+      case tappedDelete
+      case textFieldChange(String)
+    }
+
+    let r = Reducer<Int, Action, Void> { state, action, _ in
+      switch action {
+      case .tapped:
+        return .none
+      case .tappedDelete:
+        return .none
+      case let .textFieldChange(string):
+        return .init(value: .tappedDelete)
+      }
+    }
+
+    let store = TestStore(initialState: 0, reducer: r, environment: ())
+
+    store.send(.textFieldChange("a"))
+    store.receive(.tapped)
+
+  }
+
   func testSearchAndClearQuery() {
     let store = TestStore(
       initialState: .init(),
@@ -22,7 +47,7 @@ class SearchTests: XCTestCase {
       $0.searchQuery = "S"
     }
     self.scheduler.advance(by: 0.3)
-    store.receive(/SearchAction.locationsResponse) {
+    store.receive(.locationsResponse(.success(mockLocations))) {
       $0.locations = mockLocations
     }
     store.send(.searchQueryChanged("")) {
