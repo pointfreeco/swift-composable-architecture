@@ -145,7 +145,8 @@ struct DownloadComponent<ID: Equatable>: View {
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
-      Button(action: { viewStore.send(.buttonTapped) }) {
+      AsyncButton(action: { await viewStore.send(.buttonTapped) }) {
+//      Button(action: { viewStore.send(.buttonTapped) }) {
         if viewStore.mode == .downloaded {
           Image(systemName: "checkmark.circle")
             .accentColor(.blue)
@@ -175,6 +176,20 @@ struct DownloadComponent<ID: Equatable>: View {
         self.store.scope(state: \.alert, action: DownloadComponentAction.alert),
         dismiss: .dismiss
       )
+    }
+  }
+}
+
+struct AsyncButton<Label>: View where Label: View {
+  let action: () async -> Void
+  @ViewBuilder let label: () -> Label
+  @State var task: Task<Void, Never>?
+
+  var body: some View {
+    Button(action: { self.task = Task { await action() }} ) {
+      self.label().onDisappear {
+        self.task?.cancel()
+      }
     }
   }
 }
