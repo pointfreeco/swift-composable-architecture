@@ -13,7 +13,9 @@ private let readMe = """
   To animate changes made to state through a binding, use the `.animation` method on `Binding`.
 
   To animate asynchronous changes made to state via effects, use the `.animation` method provided \
-  by the CombineSchedulers library to receive asynchronous actions in an animated fashion.
+  by the CombineSchedulers library to receive asynchronous actions in an animated fashion. You \
+  can also use the `.animations()` higher reducer with `.animated(AnimatedAction<Action>)` actions \
+  to receive and handle actions in the same animated way.
 
   Try it out by tapping or dragging anywhere on the screen to move the dot, and by flipping the \
   toggle at the bottom of the screen.
@@ -45,7 +47,8 @@ struct AnimationsState: Equatable {
   var isCircleScaled = false
 }
 
-enum AnimationsAction: Equatable {
+enum AnimationsAction: Equatable, AnimatableAction {
+  indirect case animated(AnimatedAction<Self>)
   case circleScaleToggleChanged(Bool)
   case dismissAlert
   case rainbowButtonTapped
@@ -63,6 +66,8 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
   state, action, environment in
 
   switch action {
+  case .animated:
+    return .none
   case let .circleScaleToggleChanged(isScaled):
     state.isCircleScaled = isScaled
     return .none
@@ -102,6 +107,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
     return .none
   }
 }
+.animations(scheduler: \.mainQueue)
 
 struct AnimationsView: View {
   @Environment(\.colorScheme) var colorScheme
@@ -145,6 +151,12 @@ struct AnimationsView: View {
           .padding()
           Button("Rainbow") { viewStore.send(.rainbowButtonTapped, animation: .linear) }
             .padding([.horizontal, .bottom])
+          #if compiler(>=5.4)
+          Button("Center") {
+            viewStore.send(.animated(.with(.spring(), action: .tapped(proxy.center))))
+          }
+          .padding([.horizontal, .bottom])
+          #endif
           Button("Reset") { viewStore.send(.resetButtonTapped) }
             .padding([.horizontal, .bottom])
         }
@@ -152,6 +164,10 @@ struct AnimationsView: View {
       }
     }
   }
+}
+
+fileprivate extension GeometryProxy {
+  var center: CGPoint { .init(x: size.width / 2, y: size.height / 2) }
 }
 
 struct AnimationsView_Previews: PreviewProvider {
@@ -184,3 +200,10 @@ struct AnimationsView_Previews: PreviewProvider {
     }
   }
 }
+
+#if compiler(<5.4)
+  // Make the `.animation()` higher reducer compile on older versions of Swift.
+  public extension Reducer where Action: AnimatableAction {
+    func animations<S>(scheduler: @escaping (Environment) -> S) -> Self where S: Scheduler { self }
+  }
+#endif
