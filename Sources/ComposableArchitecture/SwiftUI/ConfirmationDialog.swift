@@ -296,6 +296,8 @@ private struct OldConfirmationDialogModifier<Action>: ViewModifier {
       return content.actionSheet(item: viewStore.binding(send: dismiss)) { state in
         state.toSwiftUIActionSheet(send: viewStore.send)
       }
+    #else
+      return EmptyView()
     #endif
   }
 }
