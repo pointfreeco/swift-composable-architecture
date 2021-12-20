@@ -252,7 +252,7 @@ extension View {
           )
         #endif
       }
-    #else
+    #elseif !os(macOS)
       self.modifier(
         OldConfirmationDialogModifier(
           viewStore: ViewStore(store, removeDuplicates: { $0?.id == $1?.id }),
@@ -293,7 +293,7 @@ private struct OldConfirmationDialogModifier<Action>: ViewModifier {
 
   func body(content: Content) -> some View {
     #if !os(macOS)
-      content.actionSheet(item: viewStore.binding(send: dismiss)) { state in
+      return content.actionSheet(item: viewStore.binding(send: dismiss)) { state in
         state.toSwiftUIActionSheet(send: viewStore.send)
       }
     #endif
