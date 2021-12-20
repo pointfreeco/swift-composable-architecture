@@ -202,7 +202,7 @@ struct AnimationsView_Previews: PreviewProvider {
 }
 
 #if compiler(<5.4)
-  // Make the `.animation()` higher reducer compile on older versions of Swift.
+  // Makes the `.animation()` higher reducer compile on older versions of Swift.
   public extension Reducer where Action: AnimatableAction {
     func animations<S>(scheduler: @escaping (Environment) -> S) -> Self where S: Scheduler { self }
   }
