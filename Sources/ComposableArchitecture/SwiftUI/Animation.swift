@@ -22,19 +22,19 @@ public struct AnimatedAction<Action> {
   
   /// Creates an animated action from an action and a animation.
   /// - Parameters:
-  ///   - animation: an `Animation`
   ///   - action: an `Action`
+  ///   - animation: an `Animation`
   /// - Returns: An action animating `action` with the animation `animation`.
-  public static func with(_ animation: Animation, action: Action) -> Self {
+  public static func action(_ action: Action, with animation: Animation) -> Self {
     .init(action: action, transaction: Transaction(animation: animation))
   }
   
   /// Creates an animated action from an action and a transaction.
   /// - Parameters:
-  ///   - transaction: a `Transaction`
   ///   - action: an `Action`
+  ///   - transaction: a `Transaction`
   /// - Returns: An action animating `action` with the transaction `transaction`.
-  public static func with(_ transaction: Transaction, action: Action) -> Self {
+  public static func action(_ action: Action, with transaction: Transaction) -> Self {
     .init(action: action, transaction: transaction)
   }
 }
@@ -62,6 +62,23 @@ public protocol AnimatableAction {
   /// ```
   /// - Returns: A animated action.
   static func animated(_ action: AnimatedAction<Self>) -> Self
+}
+
+extension AnimatableAction {
+  
+  /// Wrap an action in an ``AnimatedAction<Self>``
+  /// - Parameter animation: The animation to use.
+  /// - Returns: A `.animated` version of `self` with the animation `animation`.
+  public func animation(_ animation: Animation) -> Self {
+    .animated(.action(self, with: animation))
+  }
+  
+  /// Wrap an action in an ``AnimatedAction<Self>``
+  /// - Parameter transaction: The transaction to use.
+  /// - Returns: A `.animated` version of `self` with the transaction `transaction`.
+  public func transaction(_ transaction: Transaction) -> Self {
+    .animated(.action(self, with: transaction))
+  }
 }
 
 #if compiler(>=5.4)

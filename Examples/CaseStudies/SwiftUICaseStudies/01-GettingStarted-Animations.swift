@@ -153,7 +153,7 @@ struct AnimationsView: View {
             .padding([.horizontal, .bottom])
           #if compiler(>=5.4)
           Button("Center") {
-            viewStore.send(.animated(.with(.spring(), action: .tapped(proxy.center))))
+            viewStore.send(.tapped(proxy.center).animation(.spring()))
           }
           .padding([.horizontal, .bottom])
           #endif
