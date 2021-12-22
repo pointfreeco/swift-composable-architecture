@@ -37,7 +37,7 @@ final class WeakCache<Key, Value> where Key: Hashable, Value: AnyObject {
   
   func performMaintenanceIfNeeded() {
     maintenanceCounter += 1
-    if maintenanceCounter >= 1000 {
+    if maintenanceCounter >= 100 {
       wrappers = wrappers.filter { $0.value.value != nil }
       maintenanceCounter = 0
     }
