@@ -343,11 +343,22 @@ public final class Store<State, Action> {
   ) -> Store<LocalState, LocalAction> {
     self.threadCheck(status: .scope)
     
-    if let id = scopeIdentifier, let scoped = scopeCache[id] {
+    if let scopeIdentifier = scopeIdentifier, let scoped = scopeCache[scopeIdentifier] {
       guard let scoped = scoped as? Store<LocalState, LocalAction> else {
-        fatalError("Tried to reuse the wrong store.")
+        fatalError("Tried to reuse the wrong store")
       }
+      #if DEBUG
+        if SharedStoreConfiguration.printStoreReuseStatus {
+          print("Reusing Store<\(LocalState.self), \(LocalAction.self)> with id: \(scopeIdentifier)")
+        }
+      #endif
       return scoped
+    } else if scopeIdentifier == nil {
+      #if DEBUG
+        if SharedStoreConfiguration.printStoreReuseStatus {
+          print("Initializing uncached Store<\(LocalState.self), \(LocalAction.self)>")
+        }
+      #endif
     }
 
     var isSending = false
@@ -369,8 +380,13 @@ public final class Store<State, Action> {
         localStore?.state.value = toLocalState(newValue)
       }
     
-    if let id = scopeIdentifier {
-      scopeCache[id] = localStore
+    if let scopeIdentifier = scopeIdentifier {
+    #if DEBUG
+      if SharedStoreConfiguration.printStoreReuseStatus {
+        print("Caching Store<\(LocalState.self), \(LocalAction.self)> with id: \(scopeIdentifier)")
+      }
+    #endif
+      scopeCache[scopeIdentifier] = localStore
     }
     
     return localStore
@@ -541,31 +557,56 @@ public final class Store<State, Action> {
 
 public enum SharedStoreConfiguration {
   public static var isAutomaticReuseOfStoreAndViewStoreInstancesEnabled = true
+  public static var printStoreReuseStatus = false
+  public static var printViewStoreReuseStatus = false
 }
 
 public struct ScopeIdentifier: Hashable {
   let id: AnyHashable
+  #if DEBUG
+    public var description: String
+  #endif
   public init<ID>(_ id: ID) where ID: Hashable {
     self.id = id
+    #if DEBUG
+      self.description = String(describing: id)
+    #endif
   }
-  public init(file: StaticString, line: UInt) {
-    self.id = "\(file).l\(line)"
+
+  public init(file: StaticString, line: UInt, column: Int? = nil) {
+    self.id = "\(file)-l.\(line)c.\(column ?? 0)"
+    #if DEBUG
+      self.description = "\(file)-l.\(line)c.\(column ?? 0)"
+    #endif
   }
-  
+
   public init<Element1, Element2>(_ e1: Element1, _ e2: Element2)
-  where Element1: Hashable, Element2: Hashable {
+    where Element1: Hashable, Element2: Hashable {
     self.id = [e1, e2] as [AnyHashable]
+    #if DEBUG
+      self.description = "\(String(describing: e1))-\(String(describing: e2))"
+    #endif
   }
 }
+
+#if DEBUG
+  extension ScopeIdentifier: CustomStringConvertible {}
+#endif
 
 extension ScopeIdentifier: ExpressibleByStringLiteral {
   public init(stringLiteral value: StringLiteralType) {
     self.id = value
+    #if DEBUG
+      self.description = value
+    #endif
   }
 }
 
 extension ScopeIdentifier: ExpressibleByStringInterpolation {
   public init(stringInterpolation: DefaultStringInterpolation) {
     self.id = "\(stringInterpolation)"
+    #if DEBUG
+      self.description = "\(stringInterpolation)"
+    #endif
   }
 }
