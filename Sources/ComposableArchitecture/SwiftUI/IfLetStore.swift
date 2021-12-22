@@ -58,7 +58,7 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
               state = $0 ?? state
               return state
             },
-            scopeIdentifier: SharedStoreConfiguration.isAutomaticReuseOfStoreAndViewStoreInstancesEnabled
+            scopeIdentifier: SharedStoreConfiguration.shouldInferScopeIdenfiers
               ? "Optional Unwrapping"
               : nil
             )
@@ -89,7 +89,7 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
             state = $0 ?? state
             return state
           },
-          scopeIdentifier: SharedStoreConfiguration.isAutomaticReuseOfStoreAndViewStoreInstancesEnabled
+          scopeIdentifier: SharedStoreConfiguration.shouldInferScopeIdenfiers
             ? "Optional Unwrapping"
             : nil
         ))

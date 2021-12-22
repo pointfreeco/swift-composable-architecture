@@ -494,7 +494,7 @@ extension Store {
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool
   ) -> ViewStore<State, Action> {
     let reuseIdentifier =
-      SharedStoreConfiguration.isAutomaticReuseOfStoreAndViewStoreInstancesEnabled
+      SharedStoreConfiguration.shouldInferScopeIdenfiers
         ? ScopeIdentifier(file: file, line: line)
         : nil
     return viewStore(reuseIdentifier: reuseIdentifier, removeDuplicates: isDuplicate)
@@ -511,22 +511,22 @@ extension Store {
         fatalError("Tried to reuse the wrong ViewStore instance.")
       }
       #if DEBUG
-        if SharedStoreConfiguration.printViewStoreReuseStatus {
+       if SharedStoreConfiguration.printOptions.contains(.reusableViewStore) {
           print("Reusing ViewStore<\(State.self), \(Action.self)> with id: \(reuseIdentifier)")
         }
       #endif
       return viewStore
     } else if reuseIdentifier == nil {
       #if DEBUG
-        if SharedStoreConfiguration.printViewStoreReuseStatus {
-          print("Initializing uncached ViewStore<\(State.self), \(Action.self)>")
+        if SharedStoreConfiguration.printOptions.contains(.nonReusableViewStore) {
+          print("Initializing non-reusable ViewStore<\(State.self), \(Action.self)>")
         }
       #endif
     }
     let viewStore = ViewStore(self, removeDuplicates: isDuplicate)
     if let reuseIdentifier = reuseIdentifier {
       #if DEBUG
-        if SharedStoreConfiguration.printViewStoreReuseStatus {
+        if SharedStoreConfiguration.printOptions.contains(.reusableViewStore) {
           print("Caching ViewStore<\(State.self), \(Action.self)> with id: \(reuseIdentifier)")
         }
       #endif

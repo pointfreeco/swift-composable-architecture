@@ -60,7 +60,7 @@ extension Store {
                 return state
               },
               scopeIdentifier:
-                SharedStoreConfiguration.isAutomaticReuseOfStoreAndViewStoreInstancesEnabled
+                SharedStoreConfiguration.shouldInferScopeIdenfiers
                 ? "Optional Unwrapping"
                 : nil)
           )

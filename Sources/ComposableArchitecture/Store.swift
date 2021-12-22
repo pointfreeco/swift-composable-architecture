@@ -330,7 +330,7 @@ public final class Store<State, Action> {
     scope(
       state: toLocalState,
       action: fromLocalAction,
-      scopeIdentifier: SharedStoreConfiguration.isAutomaticReuseOfStoreAndViewStoreInstancesEnabled
+      scopeIdentifier: SharedStoreConfiguration.shouldInferScopeIdenfiers
         ? ScopeIdentifier(file: file, line: line)
         : nil
     )
@@ -348,15 +348,15 @@ public final class Store<State, Action> {
         fatalError("Tried to reuse the wrong store")
       }
       #if DEBUG
-        if SharedStoreConfiguration.printStoreReuseStatus {
+      if SharedStoreConfiguration.printOptions.contains(.reusableStore) {
           print("Reusing Store<\(LocalState.self), \(LocalAction.self)> with id: \(scopeIdentifier)")
         }
       #endif
       return scoped
     } else if scopeIdentifier == nil {
       #if DEBUG
-        if SharedStoreConfiguration.printStoreReuseStatus {
-          print("Initializing uncached Store<\(LocalState.self), \(LocalAction.self)>")
+       if SharedStoreConfiguration.printOptions.contains(.nonReusableStore) {
+          print("Initializing non-reusable Store<\(LocalState.self), \(LocalAction.self)>")
         }
       #endif
     }
@@ -382,7 +382,7 @@ public final class Store<State, Action> {
     
     if let scopeIdentifier = scopeIdentifier {
     #if DEBUG
-      if SharedStoreConfiguration.printStoreReuseStatus {
+      if SharedStoreConfiguration.printOptions.contains(.reusableStore) {
         print("Caching Store<\(LocalState.self), \(LocalAction.self)> with id: \(scopeIdentifier)")
       }
     #endif
@@ -404,7 +404,7 @@ public final class Store<State, Action> {
     self.scope(
       state: toLocalState,
       action: { $0 },
-      scopeIdentifier: SharedStoreConfiguration.isAutomaticReuseOfStoreAndViewStoreInstancesEnabled
+      scopeIdentifier: SharedStoreConfiguration.shouldInferScopeIdenfiers
       ? ScopeIdentifier(file: file, line: line)
       : nil
     )
@@ -556,9 +556,24 @@ public final class Store<State, Action> {
 }
 
 public enum SharedStoreConfiguration {
-  public static var isAutomaticReuseOfStoreAndViewStoreInstancesEnabled = true
-  public static var printStoreReuseStatus = false
-  public static var printViewStoreReuseStatus = false
+  public struct PrintOptions: RawRepresentable, OptionSet {
+    public var rawValue: Int
+    public init(rawValue: Int) { self.rawValue = rawValue }
+
+    static let reusableStore = PrintOptions(rawValue: 1 << 0)
+    static let reusableViewStore = PrintOptions(rawValue: 1 << 1)
+    
+    static let nonReusableStore = PrintOptions(rawValue: 1 << 2)
+    static let nonReusableViewStore = PrintOptions(rawValue: 1 << 3)
+    
+    public static let store: PrintOptions = [.reusableStore, .nonReusableStore]
+    public static let viewStore: PrintOptions = [.reusableViewStore, .nonReusableViewStore]
+    public static let nonReusable: PrintOptions = [.nonReusableStore, .nonReusableViewStore]
+    public static let all: PrintOptions = [.store, .viewStore]
+  }
+  
+  public static var shouldInferScopeIdenfiers = true
+  public static var printOptions: PrintOptions = .nonReusable
 }
 
 public struct ScopeIdentifier: Hashable {
