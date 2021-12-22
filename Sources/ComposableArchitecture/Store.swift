@@ -538,7 +538,7 @@ public final class Store<State, Action> {
   }
 }
 
-public struct SharedStoreConfiguration {
+public enum SharedStoreConfiguration {
   public static var isAutomaticReuseOfStoreAndViewStoreInstancesEnabled = true
 }
 
