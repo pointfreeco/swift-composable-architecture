@@ -434,8 +434,8 @@ public struct Reducer<State, Action, Environment> {
   ///     }
   ///     ```
   ///
-  ///     Use ``Store/scope(state:action:)`` with ``SwitchStore`` to ensure that views can only send
-  ///     child actions when the child domain is available.
+  ///     Use ``Store/scope(state:action:scopeIdentifier:)`` with ``SwitchStore`` to ensure that
+  ///     views can only send child actions when the child domain is available.
   ///
   ///     ```swift
   ///     SwitchStore(self.parentStore) {
@@ -644,8 +644,9 @@ public struct Reducer<State, Action, Environment> {
   ///     }
   ///     ```
   ///
-  ///     Use ``Store/scope(state:action:)`` with ``IfLetStore`` or ``Store/ifLet(then:else:)`` to
-  ///     ensure that views can only send child actions when the child domain is non-`nil`.
+  ///     Use ``Store/scope(state:action:scopeIdentifier:)`` with ``IfLetStore`` or
+  ///     ``Store/ifLet(then:else:)`` to ensure that views can only send child actions when the
+  ///     child domain is non-`nil`.
   ///
   ///     ```swift
   ///     IfLetStore(

@@ -453,8 +453,8 @@ extension BindingAction {
   /// }
   /// ```
   ///
-  /// Finally, in the view we can invoke ``Store/scope(state:action:)`` with these domain
-  /// transformations to leverage the view store's binding helpers:
+  /// Finally, in the view we can invoke ``Store/scope(state:action:scopeIdentifier:)`` with these
+  /// domain transformations to leverage the view store's binding helpers:
   ///
   /// ```swift
   /// WithViewStore(
