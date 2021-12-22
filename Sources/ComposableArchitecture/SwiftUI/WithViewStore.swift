@@ -33,6 +33,7 @@ public struct WithViewStore<State, Action, Content> {
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
     file: StaticString = #fileID,
     line: UInt = #line,
+    column: UInt = #column,
     content: @escaping (ViewStore<State, Action>) -> Content
   ) {
     self.content = content
@@ -45,7 +46,12 @@ public struct WithViewStore<State, Action, Content> {
         return previousState
       }
     #endif
-    self.viewStore = store.viewStore(file: file, line: line, removeDuplicates: isDuplicate)
+    self.viewStore = store.viewStore(
+      file: file,
+      line: line,
+      column: column,
+      removeDuplicates: isDuplicate
+    )
   }
 
   /// Prints debug information to the console whenever the view is computed.
@@ -106,6 +112,7 @@ extension WithViewStore: View where Content: View {
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
     file: StaticString = #fileID,
     line: UInt = #line,
+    column: UInt = #column,
     @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
   ) {
     self.init(
@@ -113,6 +120,7 @@ extension WithViewStore: View where Content: View {
       removeDuplicates: isDuplicate,
       file: file,
       line: line,
+      column: column,
       content: content
     )
   }
@@ -133,9 +141,10 @@ extension WithViewStore where State: Equatable, Content: View {
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
+    column: UInt = #column,
     @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
   ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+    self.init(store, removeDuplicates: ==, file: file, line: line, column: column, content: content)
   }
 }
 
@@ -150,9 +159,10 @@ extension WithViewStore where State == Void, Content: View {
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
+    column: UInt = #column,
     @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
   ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+    self.init(store, removeDuplicates: ==, file: file, line: line, column: column, content: content)
   }
 }
 
@@ -179,6 +189,7 @@ extension WithViewStore: Scene where Content: Scene {
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
     file: StaticString = #fileID,
     line: UInt = #line,
+    column: UInt = #column,
     @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content
   ) {
     self.init(
@@ -186,6 +197,7 @@ extension WithViewStore: Scene where Content: Scene {
       removeDuplicates: isDuplicate,
       file: file,
       line: line,
+      column: column,
       content: content
     )
   }
@@ -207,9 +219,10 @@ extension WithViewStore where State: Equatable, Content: Scene {
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
+    column: UInt = #column,
     @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content
   ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+    self.init(store, removeDuplicates: ==, file: file, line: line, column: column, content: content)
   }
 }
 
@@ -225,8 +238,9 @@ extension WithViewStore where State == Void, Content: Scene {
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
+    column: UInt = #column,
     @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content
   ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+    self.init(store, removeDuplicates: ==, file: file, line: line, column: column, content: content)
   }
 }

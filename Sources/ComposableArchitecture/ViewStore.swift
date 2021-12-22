@@ -507,7 +507,7 @@ extension Store {
   ) -> ViewStore<State, Action> {
     let reuseIdentifier =
       SharedStoreConfiguration.shouldInferScopeIdenfiers
-        ? ScopeIdentifier(file: file, line: line)
+        ? ScopeIdentifier(file: file, line: line, column: column)
         : nil
     return viewStore(reuseIdentifier: reuseIdentifier, removeDuplicates: isDuplicate)
   }

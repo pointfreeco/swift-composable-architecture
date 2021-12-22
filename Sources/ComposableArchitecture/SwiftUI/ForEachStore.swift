@@ -86,6 +86,7 @@ where Data: Collection, ID: Hashable, Content: View {
     _ store: Store<IdentifiedArray<ID, EachState>, (ID, EachAction)>,
     file: StaticString = #fileID,
     line: UInt = #line,
+    column: UInt = #column,
     @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
   )
   where
@@ -99,7 +100,7 @@ where Data: Collection, ID: Hashable, Content: View {
       store,
       reuseIdentifier:
       SharedStoreConfiguration.shouldInferScopeIdenfiers
-        ? ScopeIdentifier(file: file, line: line)
+        ? ScopeIdentifier(file: file, line: line, column: column)
         : nil,
       content: content
     )

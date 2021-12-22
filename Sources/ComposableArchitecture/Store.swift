@@ -325,13 +325,14 @@ public final class Store<State, Action> {
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action,
     file: StaticString = #fileID,
-    line: UInt = #line
+    line: UInt = #line,
+    column: UInt = #column
   ) -> Store<LocalState, LocalAction> {
     scope(
       state: toLocalState,
       action: fromLocalAction,
       scopeIdentifier: SharedStoreConfiguration.shouldInferScopeIdenfiers
-        ? ScopeIdentifier(file: file, line: line)
+        ? ScopeIdentifier(file: file, line: line, column: column)
         : nil
     )
   }
@@ -399,13 +400,14 @@ public final class Store<State, Action> {
   public func scope<LocalState>(
     state toLocalState: @escaping (State) -> LocalState,
     file: StaticString = #fileID,
-    line: UInt = #line
+    line: UInt = #line,
+    column: UInt = #column
   ) -> Store<LocalState, Action> {
     self.scope(
       state: toLocalState,
       action: { $0 },
       scopeIdentifier: SharedStoreConfiguration.shouldInferScopeIdenfiers
-      ? ScopeIdentifier(file: file, line: line)
+      ? ScopeIdentifier(file: file, line: line, column: column)
       : nil
     )
   }
@@ -588,7 +590,7 @@ public struct ScopeIdentifier: Hashable {
     #endif
   }
 
-  public init(file: StaticString, line: UInt, column: Int? = nil) {
+  public init(file: StaticString, line: UInt, column: UInt? = nil) {
     self.id = "\(file)-l.\(line)c.\(column ?? 0)"
     #if DEBUG
       self.description = "\(file)-l.\(line)c.\(column ?? 0)"
