@@ -171,13 +171,13 @@ final class ReducerTests: XCTestCase {
       )
     }
 
-    let viewStore = ViewStore(
-      Store(
-        initialState: .init(),
-        reducer: reducer,
-        environment: ()
-      )
+    let viewStore = Store(
+      initialState: .init(),
+      reducer: reducer,
+      environment: ()
     )
+    .viewStore
+    
     viewStore.send(.incrWithBool(true))
 
     self.wait(for: [logsExpectation], timeout: 2)

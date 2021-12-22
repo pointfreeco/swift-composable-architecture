@@ -40,7 +40,7 @@ public class LoginViewController: UIViewController {
 
   public init(store: Store<LoginState, LoginAction>) {
     self.store = store
-    self.viewStore = ViewStore(store.scope(state: ViewState.init, action: LoginAction.init))
+    self.viewStore = store.scope(state: ViewState.init, action: LoginAction.init).viewStore
     super.init(nibName: nil, bundle: nil)
   }
 

@@ -54,10 +54,14 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
       if var state = viewStore.state {
         return ViewBuilder.buildEither(
           first: ifContent(
-            store.scope {
+            store.scope(state: {
               state = $0 ?? state
               return state
-            }
+            },
+            scopeIdentifier: SharedStoreConfiguration.isAutomaticReuseOfStoreAndViewStoreInstancesEnabled
+              ? "Optional Unwrapping"
+              : nil
+            )
           )
         )
       } else {
@@ -81,11 +85,14 @@ public struct IfLetStore<State, Action, Content>: View where Content: View {
     self.content = { viewStore in
       if var state = viewStore.state {
         return ifContent(
-          store.scope {
+          store.scope(state: {
             state = $0 ?? state
             return state
-          }
-        )
+          },
+          scopeIdentifier: SharedStoreConfiguration.isAutomaticReuseOfStoreAndViewStoreInstancesEnabled
+            ? "Optional Unwrapping"
+            : nil
+        ))
       } else {
         return nil
       }

@@ -18,7 +18,7 @@ final class ViewStoreTests: XCTestCase {
       environment: ()
     )
 
-    let viewStore = ViewStore(store)
+    let viewStore = store.viewStore
 
     var emissionCount = 0
     viewStore.publisher
@@ -46,10 +46,10 @@ final class ViewStoreTests: XCTestCase {
     let store3 = store2.scope(state: { $0 })
     let store4 = store3.scope(state: { $0 })
 
-    let viewStore1 = ViewStore(store1)
-    let viewStore2 = ViewStore(store2)
-    let viewStore3 = ViewStore(store3)
-    let viewStore4 = ViewStore(store4)
+    let viewStore1 = store1.viewStore
+    let viewStore2 = store2.viewStore
+    let viewStore3 = store3.viewStore
+    let viewStore4 = store4.viewStore
 
     viewStore1.publisher.sink { _ in }.store(in: &self.cancellables)
     viewStore2.publisher.sink { _ in }.store(in: &self.cancellables)
@@ -83,7 +83,7 @@ final class ViewStoreTests: XCTestCase {
     }
 
     let store = Store(initialState: 0, reducer: reducer, environment: ())
-    let viewStore = ViewStore(store)
+    let viewStore = store.viewStore
 
     var results: [Int] = []
 
@@ -105,7 +105,7 @@ final class ViewStoreTests: XCTestCase {
     }
 
     let store = Store(initialState: 0, reducer: reducer, environment: ())
-    let viewStore = ViewStore(store)
+    let viewStore = store.viewStore
 
     var results: [Int] = []
 
@@ -128,12 +128,12 @@ final class ViewStoreTests: XCTestCase {
     let store = Store(initialState: 0, reducer: reducer, environment: ())
 
     var results: [Int] = []
-    ViewStore(store)
+    store.viewStore
       .publisher
       .sink { results.append($0) }
       .store(in: &self.cancellables)
 
-    ViewStore(store).send(())
+    store.viewStore.send(())
     XCTAssertNoDifference(results, [0, 1])
   }
 
@@ -143,7 +143,7 @@ final class ViewStoreTests: XCTestCase {
       return .none
     }
     let store = Store(initialState: 0, reducer: reducer, environment: ())
-    let viewStore = ViewStore(store)
+    let viewStore = store.viewStore
 
     var results: [Int] = []
 
@@ -190,7 +190,7 @@ final class ViewStoreTests: XCTestCase {
         }
 
         let store = Store(initialState: false, reducer: reducer, environment: ())
-        let viewStore = ViewStore(store)
+        let viewStore = store.viewStore
 
         XCTAssertNoDifference(viewStore.state, false)
         await viewStore.send(.tapped, while: { $0 })
@@ -221,7 +221,7 @@ final class ViewStoreTests: XCTestCase {
         }
 
         let store = Store(initialState: false, reducer: reducer, environment: ())
-        let viewStore = ViewStore(store)
+        let viewStore = store.viewStore
 
         XCTAssertNoDifference(viewStore.state, false)
         viewStore.send(.tapped)

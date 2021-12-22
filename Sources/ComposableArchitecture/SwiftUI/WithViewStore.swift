@@ -45,7 +45,7 @@ public struct WithViewStore<State, Action, Content> {
         return previousState
       }
     #endif
-    self.viewStore = ViewStore(store, removeDuplicates: isDuplicate)
+    self.viewStore = store.viewStore(file: file, line: line, removeDuplicates: isDuplicate)
   }
 
   /// Prints debug information to the console whenever the view is computed.

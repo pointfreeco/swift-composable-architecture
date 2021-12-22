@@ -13,7 +13,7 @@ final class MemoryManagementTests: XCTestCase {
     let store = Store(initialState: 0, reducer: counterReducer, environment: ())
       .scope(state: { "\($0)" })
       .scope(state: { Int($0)! })
-    let viewStore = ViewStore(store)
+    let viewStore = store.viewStore
 
     var count = 0
     viewStore.publisher.sink { count = $0 }.store(in: &self.cancellables)
@@ -28,7 +28,7 @@ final class MemoryManagementTests: XCTestCase {
       state += 1
       return .none
     }
-    let viewStore = ViewStore(Store(initialState: 0, reducer: counterReducer, environment: ()))
+    let viewStore = Store(initialState: 0, reducer: counterReducer, environment: ()).viewStore
 
     var count = 0
     viewStore.publisher.sink { count = $0 }.store(in: &self.cancellables)

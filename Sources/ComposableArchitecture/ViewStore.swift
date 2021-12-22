@@ -485,3 +485,40 @@ private struct HashableWrapper<Value>: Hashable {
     }
   }
 #endif
+
+extension Store {
+  public func viewStore(
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    removeDuplicates isDuplicate: @escaping (State, State) -> Bool
+  ) -> ViewStore<State, Action> {
+    let reuseIdentifier =
+      SharedStoreConfiguration.isAutomaticReuseOfStoreAndViewStoreInstancesEnabled
+        ? ScopeIdentifier(file: file, line: line)
+        : nil
+    if let reuseIdentifier = reuseIdentifier,
+       let viewStore = self.viewStoresCache[reuseIdentifier] {
+      guard let viewStore = viewStore as? ViewStore<State, Action> else {
+        fatalError("Tried to reuse the wrong ViewStore instance.")
+      }
+      return viewStore
+    }
+    let viewStore = ViewStore(self, removeDuplicates: isDuplicate)
+    if let reuseIdentifier = reuseIdentifier {
+      self.viewStoresCache[reuseIdentifier] = viewStore
+    }
+    return viewStore
+  }
+}
+
+public extension Store where State == Void {
+  var viewStore: ViewStore<State, Action> {
+    viewStore(removeDuplicates: ==)
+  }
+}
+
+public extension Store where State: Equatable {
+  var viewStore: ViewStore<State, Action> {
+    viewStore(removeDuplicates: ==)
+  }
+}

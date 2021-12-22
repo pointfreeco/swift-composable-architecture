@@ -60,7 +60,7 @@ class EagerNavigationViewController: UIViewController {
 
   init(store: Store<EagerNavigationState, EagerNavigationAction>) {
     self.store = store
-    self.viewStore = ViewStore(store)
+    self.viewStore = store.viewStore
     super.init(nibName: nil, bundle: nil)
   }
 

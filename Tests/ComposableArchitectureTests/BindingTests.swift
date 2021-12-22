@@ -29,7 +29,7 @@
 
       let store = Store(initialState: .init(), reducer: reducer, environment: ())
 
-      let viewStore = ViewStore(store)
+      let viewStore = store.viewStore
 
       viewStore.binding(\.$nested.field).wrappedValue = "Hello"
 

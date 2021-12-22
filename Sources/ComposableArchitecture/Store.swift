@@ -134,6 +134,8 @@ public final class Store<State, Action> {
   private var isSending = false
   var parentCancellable: AnyCancellable?
   private let reducer: (inout State, Action) -> Effect<Action, Never>
+  private let scopeCache = WeakCache<ScopeIdentifier, AnyObject>()
+  let viewStoresCache = WeakCache<ScopeIdentifier, AnyObject>()
   var state: CurrentValueSubject<State, Never>
   #if DEBUG
     private let mainThreadChecksEnabled: Bool
@@ -320,9 +322,33 @@ public final class Store<State, Action> {
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<LocalState, LocalAction>(
     state toLocalState: @escaping (State) -> LocalState,
-    action fromLocalAction: @escaping (LocalAction) -> Action
+    action fromLocalAction: @escaping (LocalAction) -> Action,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  ) -> Store<LocalState, LocalAction> {
+    scope(
+      state: toLocalState,
+      action: fromLocalAction,
+      scopeIdentifier: SharedStoreConfiguration.isAutomaticReuseOfStoreAndViewStoreInstancesEnabled
+        ? ScopeIdentifier(file: file, line: line)
+        : nil
+    )
+  }
+  
+  public func scope<LocalState, LocalAction>(
+    state toLocalState: @escaping (State) -> LocalState,
+    action fromLocalAction: @escaping (LocalAction) -> Action,
+    scopeIdentifier: ScopeIdentifier?
   ) -> Store<LocalState, LocalAction> {
     self.threadCheck(status: .scope)
+    
+    if let id = scopeIdentifier, let scoped = scopeCache[id] {
+      guard let scoped = scoped as? Store<LocalState, LocalAction> else {
+        fatalError("Tried to reuse the wrong store.")
+      }
+      return scoped
+    }
+
     var isSending = false
     let localStore = Store<LocalState, LocalAction>(
       initialState: toLocalState(self.state.value),
@@ -341,6 +367,11 @@ public final class Store<State, Action> {
         guard !isSending else { return }
         localStore?.state.value = toLocalState(newValue)
       }
+    
+    if let id = scopeIdentifier {
+      scopeCache[id] = localStore
+    }
+    
     return localStore
   }
 
@@ -349,11 +380,30 @@ public final class Store<State, Action> {
   /// - Parameter toLocalState: A function that transforms `State` into `LocalState`.
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<LocalState>(
-    state toLocalState: @escaping (State) -> LocalState
+    state toLocalState: @escaping (State) -> LocalState,
+    file: StaticString = #fileID,
+    line: UInt = #line
   ) -> Store<LocalState, Action> {
-    self.scope(state: toLocalState, action: { $0 })
+    self.scope(
+      state: toLocalState,
+      action: { $0 },
+      scopeIdentifier: SharedStoreConfiguration.isAutomaticReuseOfStoreAndViewStoreInstancesEnabled
+      ? ScopeIdentifier(file: file, line: line)
+      : nil
+    )
   }
-
+  
+  public func scope<LocalState>(
+    state toLocalState: @escaping (State) -> LocalState,
+    scopeIdentifier: ScopeIdentifier?
+  ) -> Store<LocalState, Action> {
+    self.scope(
+      state: toLocalState,
+      action: { $0 },
+      scopeIdentifier: scopeIdentifier
+    )
+  }
+  
   func send(_ action: Action, originatingFrom originatingAction: Action? = nil) {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
@@ -485,5 +535,36 @@ public final class Store<State, Action> {
     #if DEBUG
       self.mainThreadChecksEnabled = mainThreadChecksEnabled
     #endif
+  }
+}
+
+public struct SharedStoreConfiguration {
+  public static var isAutomaticReuseOfStoreAndViewStoreInstancesEnabled = true
+}
+
+public struct ScopeIdentifier: Hashable {
+  let id: AnyHashable
+  public init<ID>(_ id: ID) where ID: Hashable {
+    self.id = id
+  }
+  public init(file: StaticString, line: UInt) {
+    self.id = "\(file).l\(line)"
+  }
+  
+  public init<Element1, Element2>(_ e1: Element1, _ e2: Element2)
+  where Element1: Hashable, Element2: Hashable {
+    self.id = [e1, e2] as [AnyHashable]
+  }
+}
+
+extension ScopeIdentifier: ExpressibleByStringLiteral {
+  public init(stringLiteral value: StringLiteralType) {
+    self.id = value
+  }
+}
+
+extension ScopeIdentifier: ExpressibleByStringInterpolation {
+  public init(stringInterpolation: DefaultStringInterpolation) {
+    self.id = "\(stringInterpolation)"
   }
 }

@@ -75,7 +75,8 @@ where Content: View {
   public let toLocalState: (GlobalState) -> LocalState?
   public let fromLocalAction: (LocalAction) -> GlobalAction
   public let content: (Store<LocalState, LocalAction>) -> Content
-
+  private let scopeIdentifier: ScopeIdentifier?
+  
   /// Initializes a ``CaseLet`` view that computes content depending on if a store of enum state
   /// matches a particular case.
   ///
@@ -88,18 +89,38 @@ where Content: View {
   public init(
     state toLocalState: @escaping (GlobalState) -> LocalState?,
     action fromLocalAction: @escaping (LocalAction) -> GlobalAction,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @ViewBuilder then content: @escaping (Store<LocalState, LocalAction>) -> Content
+  ) {
+    self.init(
+      state: toLocalState,
+      action: fromLocalAction,
+      caseIdentifier:  SharedStoreConfiguration.isAutomaticReuseOfStoreAndViewStoreInstancesEnabled
+      ? ScopeIdentifier(file: file, line: line)
+      : nil,
+      then: content
+    )
+  }
+  
+  public init(
+    state toLocalState: @escaping (GlobalState) -> LocalState?,
+    action fromLocalAction: @escaping (LocalAction) -> GlobalAction,
+    caseIdentifier: ScopeIdentifier?,
     @ViewBuilder then content: @escaping (Store<LocalState, LocalAction>) -> Content
   ) {
     self.toLocalState = toLocalState
     self.fromLocalAction = fromLocalAction
     self.content = content
+    self.scopeIdentifier = caseIdentifier
   }
 
   public var body: some View {
     IfLetStore(
       self.store.wrappedValue.scope(
         state: self.toLocalState,
-        action: self.fromLocalAction
+        action: self.fromLocalAction,
+        scopeIdentifier: scopeIdentifier
       ),
       then: self.content
     )
@@ -117,11 +138,29 @@ extension CaseLet where GlobalAction == LocalAction {
   ///     that is visible only when the switch store's state matches.
   public init(
     state toLocalState: @escaping (GlobalState) -> LocalState?,
+    file: StaticString = #fileID,
+    line: UInt = #line,
     @ViewBuilder then content: @escaping (Store<LocalState, LocalAction>) -> Content
   ) {
     self.init(
       state: toLocalState,
       action: { $0 },
+      caseIdentifier: SharedStoreConfiguration.isAutomaticReuseOfStoreAndViewStoreInstancesEnabled
+      ? ScopeIdentifier(file: file, line: line)
+      : nil,
+      then: content
+    )
+  }
+  
+  public init(
+    state toLocalState: @escaping (GlobalState) -> LocalState?,
+    caseIdentifier: ScopeIdentifier?,
+    @ViewBuilder then content: @escaping (Store<LocalState, LocalAction>) -> Content
+  ) {
+    self.init(
+      state: toLocalState,
+      action: { $0 },
+      caseIdentifier: caseIdentifier,
       then: content
     )
   }

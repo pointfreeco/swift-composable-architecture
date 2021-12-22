@@ -60,7 +60,7 @@ struct TimersView: View {
   @ObservedObject var viewStore: ViewStore<TimersState, TimersAction>
 
   init(store: Store<TimersState, TimersAction>) {
-    self.viewStore = ViewStore(store)
+    self.viewStore = store.viewStore
   }
 
   var body: some View {

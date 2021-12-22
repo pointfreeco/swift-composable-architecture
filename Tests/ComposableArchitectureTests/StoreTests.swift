@@ -53,7 +53,7 @@ final class StoreTests: XCTestCase {
     }
 
     let parentStore = Store(initialState: 0, reducer: counterReducer, environment: ())
-    let parentViewStore = ViewStore(parentStore)
+    let parentViewStore = parentStore.viewStore
     let childStore = parentStore.scope(state: String.init)
 
     var values: [String] = []
@@ -76,7 +76,7 @@ final class StoreTests: XCTestCase {
 
     let parentStore = Store(initialState: 0, reducer: counterReducer, environment: ())
     let childStore = parentStore.scope(state: String.init)
-    let childViewStore = ViewStore(childStore)
+    let childViewStore = childStore.viewStore
 
     var values: [Int] = []
     parentStore.state
@@ -135,10 +135,10 @@ final class StoreTests: XCTestCase {
         return count
       })
 
-    _ = ViewStore(store1)
-    _ = ViewStore(store2)
-    _ = ViewStore(store3)
-    let viewStore4 = ViewStore(store4)
+    _ = store1.viewStore
+    _ = store2.viewStore
+    _ = store3.viewStore
+    let viewStore4 = store4.viewStore
 
     XCTAssertNoDifference(numCalls1, 1)
     XCTAssertNoDifference(numCalls2, 1)
@@ -218,7 +218,7 @@ final class StoreTests: XCTestCase {
 
     let store = Store(initialState: 0, reducer: reducer, environment: ())
     store.send(.incr)
-    XCTAssertNoDifference(ViewStore(store).state, 100_000)
+    XCTAssertNoDifference(store.viewStore.state, 100_000)
   }
 
   func testIfLetAfterScope() {
@@ -287,7 +287,7 @@ final class StoreTests: XCTestCase {
 
     parentStore
       .ifLet(then: { childStore in
-        let vs = ViewStore(childStore)
+        let vs = childStore.viewStore
 
         vs
           .publisher
@@ -365,7 +365,7 @@ final class StoreTests: XCTestCase {
     )
 
     var emissions: [Int] = []
-    let viewStore = ViewStore(store)
+    let viewStore = store.viewStore
     viewStore.publisher
       .sink { emissions.append($0) }
       .store(in: &self.cancellables)
@@ -433,7 +433,7 @@ final class StoreTests: XCTestCase {
         action: ParentAction.child
       )
       .ifLet { childStore in
-        ViewStore(childStore).send(2)
+        childStore.viewStore.send(2)
       }
       .store(in: &cancellables)
 
@@ -454,19 +454,18 @@ final class StoreTests: XCTestCase {
       let expectation = XCTestExpectation(description: "\(i)th iteration is complete")
       expectations.append(expectation)
       DispatchQueue.global().async {
-        let viewStore = ViewStore(
-          Store.unchecked(
-            initialState: 0,
-            reducer: Reducer<Int, Void, XCTestExpectation> { state, _, expectation in
-              state += 1
-              if state == 2 {
-                return .fireAndForget { expectation.fulfill() }
-              }
-              return .none
-            },
-            environment: expectation
-          )
+        let viewStore = Store.unchecked(
+          initialState: 0,
+          reducer: Reducer<Int, Void, XCTestExpectation> { state, _, expectation in
+            state += 1
+            if state == 2 {
+              return .fireAndForget { expectation.fulfill() }
+            }
+            return .none
+          },
+          environment: expectation
         )
+          .viewStore
         viewStore.send(())
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
           viewStore.send(())

@@ -104,7 +104,7 @@ struct VoiceMemoView: View {
   @ObservedObject var viewStore: ViewStore<VoiceMemo, VoiceMemoAction>
 
   init(store: Store<VoiceMemo, VoiceMemoAction>) {
-    self.viewStore = ViewStore(store)
+    self.viewStore = store.viewStore
   }
 
   var body: some View {

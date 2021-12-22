@@ -75,7 +75,7 @@ public struct ForEachStore<EachState, EachAction, Data, ID, Content>: DynamicVie
 where Data: Collection, ID: Hashable, Content: View {
   public let data: Data
   let content: () -> Content
-
+  let scopeIdentifier: ScopeIdentifier?
   /// Initializes a structure that computes views on demand from a store on a collection of data and
   /// an identified action.
   ///
@@ -84,6 +84,30 @@ where Data: Collection, ID: Hashable, Content: View {
   ///   - content: A function that can generate content given a store of an element.
   public init<EachContent>(
     _ store: Store<IdentifiedArray<ID, EachState>, (ID, EachAction)>,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
+  )
+  where
+    EachContent: View,
+    Data == IdentifiedArray<ID, EachState>,
+    Content == WithViewStore<
+      OrderedSet<ID>, (ID, EachAction), ForEach<OrderedSet<ID>, ID, EachContent>
+    >
+  {
+    self = .init(
+      store,
+      reuseIdentifier:
+      SharedStoreConfiguration.isAutomaticReuseOfStoreAndViewStoreInstancesEnabled
+        ? ScopeIdentifier(file: file, line: line)
+        : nil,
+      content: content
+    )
+  }
+
+  public init<EachContent>(
+    _ store: Store<IdentifiedArray<ID, EachState>, (ID, EachAction)>,
+    reuseIdentifier: ScopeIdentifier?,
     @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
   )
   where
@@ -94,6 +118,8 @@ where Data: Collection, ID: Hashable, Content: View {
     >
   {
     self.data = store.state.value
+    let scopeIdentifier = reuseIdentifier
+    self.scopeIdentifier = scopeIdentifier
     self.content = {
       WithViewStore(store.scope(state: { $0.ids })) { viewStore in
         ForEach(viewStore.state, id: \.self) { id -> EachContent in
@@ -108,7 +134,8 @@ where Data: Collection, ID: Hashable, Content: View {
                 element = $0[id: id] ?? element
                 return element
               },
-              action: { (id, $0) }
+              action: { (id, $0) },
+              scopeIdentifier: .init(scopeIdentifier, id)
             )
           )
         }

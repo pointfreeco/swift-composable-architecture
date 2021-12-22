@@ -29,7 +29,7 @@ final class CountersTableViewController: UITableViewController {
 
   init(store: Store<CounterListState, CounterListAction>) {
     self.store = store
-    self.viewStore = ViewStore(store)
+    self.viewStore = store.viewStore
     super.init(nibName: nil, bundle: nil)
   }
 

@@ -30,7 +30,7 @@ public final class TwoFactorViewController: UIViewController {
 
   public init(store: Store<TwoFactorState, TwoFactorAction>) {
     self.store = store
-    self.viewStore = ViewStore(store.scope(state: ViewState.init, action: TwoFactorAction.init))
+    self.viewStore = store.scope(state: ViewState.init, action: TwoFactorAction.init)
     super.init(nibName: nil, bundle: nil)
   }
 

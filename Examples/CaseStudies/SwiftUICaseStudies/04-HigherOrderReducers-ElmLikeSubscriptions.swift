@@ -85,7 +85,7 @@ struct ClockView: View {
   @ObservedObject var viewStore: ViewStore<ClockState, ClockAction>
 
   init(store: Store<ClockState, ClockAction>) {
-    self.viewStore = ViewStore(store)
+    self.viewStore = store.viewStore
   }
 
   var body: some View {
