@@ -506,7 +506,7 @@ extension Store {
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool
   ) -> ViewStore<State, Action> {
     let reuseIdentifier =
-      SharedStoreConfiguration.shouldInferScopeIdenfiers
+      SharedStoreConfiguration.shouldInferScopeIdentifiers
         ? ScopeIdentifier(file: file, line: line, column: column)
         : nil
     return viewStore(reuseIdentifier: reuseIdentifier, removeDuplicates: isDuplicate)

@@ -331,7 +331,7 @@ public final class Store<State, Action> {
     scope(
       state: toLocalState,
       action: fromLocalAction,
-      scopeIdentifier: SharedStoreConfiguration.shouldInferScopeIdenfiers
+      scopeIdentifier: SharedStoreConfiguration.shouldInferScopeIdentifiers
         ? ScopeIdentifier(file: file, line: line, column: column)
         : nil
     )
@@ -406,7 +406,7 @@ public final class Store<State, Action> {
     self.scope(
       state: toLocalState,
       action: { $0 },
-      scopeIdentifier: SharedStoreConfiguration.shouldInferScopeIdenfiers
+      scopeIdentifier: SharedStoreConfiguration.shouldInferScopeIdentifiers
       ? ScopeIdentifier(file: file, line: line, column: column)
       : nil
     )
@@ -574,7 +574,7 @@ public enum SharedStoreConfiguration {
     public static let all: PrintOptions = [.store, .viewStore]
   }
   
-  public static var shouldInferScopeIdenfiers = true
+  public static var shouldInferScopeIdentifiers = true
   public static var printOptions: PrintOptions = .nonReusable
 }
 

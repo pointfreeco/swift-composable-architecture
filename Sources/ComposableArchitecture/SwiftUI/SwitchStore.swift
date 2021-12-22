@@ -97,7 +97,7 @@ where Content: View {
     self.init(
       state: toLocalState,
       action: fromLocalAction,
-      caseIdentifier:  SharedStoreConfiguration.shouldInferScopeIdenfiers
+      caseIdentifier:  SharedStoreConfiguration.shouldInferScopeIdentifiers
       ? ScopeIdentifier(file: file, line: line, column: column)
       : nil,
       then: content
@@ -147,7 +147,7 @@ extension CaseLet where GlobalAction == LocalAction {
     self.init(
       state: toLocalState,
       action: { $0 },
-      caseIdentifier: SharedStoreConfiguration.shouldInferScopeIdenfiers
+      caseIdentifier: SharedStoreConfiguration.shouldInferScopeIdentifiers
       ? ScopeIdentifier(file: file, line: line, column: column)
       : nil,
       then: content

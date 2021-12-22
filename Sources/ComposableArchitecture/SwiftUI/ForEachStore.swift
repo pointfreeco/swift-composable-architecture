@@ -99,7 +99,7 @@ where Data: Collection, ID: Hashable, Content: View {
     self = .init(
       store,
       reuseIdentifier:
-      SharedStoreConfiguration.shouldInferScopeIdenfiers
+      SharedStoreConfiguration.shouldInferScopeIdentifiers
         ? ScopeIdentifier(file: file, line: line, column: column)
         : nil,
       content: content
