@@ -67,8 +67,20 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///   - store: A store.
   ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
   ///     equal, repeat view computations are removed.
-  public init(
+  public convenience init(
     _ store: Store<State, Action>,
+    removeDuplicates isDuplicate: @escaping (State, State) -> Bool
+  ) {
+    #if DEBUG
+      if SharedStoreConfiguration.printOptions.contains(.nonReusableViewStore) {
+        print("Initializing non-reusable ViewStore<\(State.self), \(Action.self)>")
+      }
+    #endif
+    self.init(_store: store, removeDuplicates: isDuplicate)
+  }
+  
+  internal init(
+    _store store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool
   ) {
     self._send = { store.send($0) }
@@ -523,7 +535,7 @@ extension Store {
         }
       #endif
     }
-    let viewStore = ViewStore(self, removeDuplicates: isDuplicate)
+    let viewStore = ViewStore(_store: self, removeDuplicates: isDuplicate)
     if let reuseIdentifier = reuseIdentifier {
       #if DEBUG
         if SharedStoreConfiguration.printOptions.contains(.reusableViewStore) {
