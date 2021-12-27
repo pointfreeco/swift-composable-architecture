@@ -2,16 +2,11 @@ import ComposableArchitecture
 import SwiftUI
 
 private let readMe = """
-  This screen demonstrates how multiple independent screens can share state in the Composable \
-  Architecture. Each tab manages its own state, and could be in separate modules, but changes in \
-  one tab are immediately reflected in the other.
+  This screen is very similar to the previous Shared state example. The major difference is using the \
+  @StateToDerivedStatePropertyMapping property wrapper for definition of the derived state.
   
-  This tab has its own state, consisting of a count value that can be incremented and decremented, \
-  as well as an alert value that is set when asking if the current count is prime.
-  
-  Internally, it is also keeping track of various stats, such as min and max counts and total \
-  number of count events that occurred. Those states are viewable in the other tab, and the stats \
-  can be reset from the other tab.
+  Please note the button \"Toggle optional profile\" which creates/removes another optional state \
+  displayed in the third tab.
   """
 
 struct StateWithSharedProperties: Equatable {
@@ -239,7 +234,11 @@ struct StateWithSharedPropertiesView: View {
                             StateWithSharedPropertiesOptionalProfileView(store: store)
                         },
                         else: {
-                            Text(template: "`OptionalProfile` is `nil`", .body)
+                            VStack {
+                                Spacer()
+                                Text(template: "`OptionalProfile` is `nil`", .body)
+                                Spacer()
+                            }
                         }
                     )
                 }
@@ -287,12 +286,11 @@ struct StateWithSharedPropertiesProfileView: View {
             VStack(spacing: 64) {
                 Text(
                     template: """
-            This tab shows state from the previous tab, and it is capable of reseting all of the \
-            state back to 0.
+            This tab shows state fully derived from the first tab.
             
-            This shows that it is possible for each screen to model its state in the way that makes \
-            the most sense for it, while still allowing the state and mutations to be shared \
-            across independent screens.
+            State property \"Profile title\" is not \
+            displayed in the first tab, however it must be included in the state from which this state \
+            is derived from, as this tab state is 100% derived from some other state.
             """,
                     .caption
                 )
@@ -325,12 +323,10 @@ struct StateWithSharedPropertiesOptionalProfileView: View {
             VStack(spacing: 64) {
                 Text(
                     template: """
-            This tab shows state from the previous tab, and it is capable of reseting all of the \
-            state back to 0.
+            If you see this text, then the optional state used by this tab is not nil.
             
-            This shows that it is possible for each screen to model its state in the way that makes \
-            the most sense for it, while still allowing the state and mutations to be shared \
-            across independent screens.
+            This state is also fully derived from the state used in the first tab, but \
+            it is also possible that this state does not exist at all (is nil).
             """,
                     .caption
                 )
