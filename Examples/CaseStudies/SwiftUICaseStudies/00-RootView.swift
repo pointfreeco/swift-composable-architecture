@@ -71,6 +71,16 @@ struct RootView: View {
                 )
               )
             )
+              
+            NavigationLink(
+              "Shared state 2",
+              destination: StateWithSharedPropertiesView(
+                store: self.store.scope(
+                  state: \.shared2,
+                  action: RootAction.shared2
+                )
+              )
+            )
 
             NavigationLink(
               "Alerts and Confirmation Dialogs",

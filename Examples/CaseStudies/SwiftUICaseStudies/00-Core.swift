@@ -34,6 +34,7 @@ struct RootState {
   var presentAndLoad = PresentAndLoadState()
   var refreshable = RefreshableState()
   var shared = SharedState()
+  var shared2 = StateWithSharedProperties()
   var timers = TimersState()
   var twoCounters = TwoCountersState()
   var webSocket = WebSocketState()
@@ -70,6 +71,7 @@ enum RootAction {
   case presentAndLoad(PresentAndLoadAction)
   case refreshable(RefreshableAction)
   case shared(SharedStateAction)
+  case shared2(StateWithSharedPropertiesAction)
   case timers(TimersAction)
   case twoCounters(TwoCountersAction)
   case webSocket(WebSocketAction)
@@ -283,6 +285,12 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.shared,
       action: /RootAction.shared,
+      environment: { _ in () }
+    ),
+  stateWithSharedPropertiesReducer
+    .pullback(
+      state: \.shared2,
+      action: /RootAction.shared2,
       environment: { _ in () }
     ),
   timersReducer
