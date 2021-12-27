@@ -23,9 +23,9 @@ struct StateWithSharedProperties: Equatable {
         var isOptionalProfileDisplayed = true
     }
     
-    // The ProfileState can be derived from the CounterState by getting and setting the parts it cares
-    // about. This allows the profile feature to operate on a subset of app state instead of the whole
-    // thing.
+    // The ProfileState is fully derived from the parent states (StateWithSharedProperties and CounterState)
+    // using the @StateToDerivedStatePropertyMapping property wrapper that defines, how the state properties
+    // are being mapped.
     
     @StateToDerivedStatePropertyMapping(
         (\StateWithSharedProperties.currentTab, \ProfileState.currentTab),
@@ -84,6 +84,11 @@ struct ProfileState: Equatable, DerivedState {
     private(set) var numberOfCounts: Int
     
     var profileTitle: String
+    
+    // This initializer is required by the DerivedState protocol
+    // Forced unwrapping is recommended, this should crash during development,
+    // if value for any property is missing in the dictionary,
+    // or in case of type mismatch
     
     init(by valueForKeyPath: [PartialKeyPath<Self> : Any]) {
         currentTab = valueForKeyPath[\.currentTab] as! StateWithSharedProperties.Tab
