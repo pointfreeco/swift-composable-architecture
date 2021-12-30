@@ -133,29 +133,6 @@ extension TBCTestStore where LocalState: Equatable, Action: Equatable {
             store.receive(expectedAction, file: file, line: line, update)
         }
     }
-    
-    /// Asserts against a script of actions.
-    public func assert(
-        _ steps: TCATestStoreType.Step...,
-        file: StaticString = #file,
-        line: UInt = #line
-    ) {
-        assert(steps, file: file, line: line)
-    }
-    
-    /// Asserts against an array of actions.
-    public func assert(
-        _ steps: [TCATestStoreType.Step],
-        file: StaticString = #file,
-        line: UInt = #line
-    ) {
-        switch storeImplementation {
-        case let .exhaustive(store):
-            store.assert(steps, file: file, line: line)
-        case let .nonExhaustive(store):
-            store.assert(steps, file: file, line: line)
-        }
-    }
 }
 
 extension TBCTestStore {

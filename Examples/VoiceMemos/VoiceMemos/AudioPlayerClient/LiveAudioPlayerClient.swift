@@ -2,39 +2,41 @@ import AVFoundation
 import ComposableArchitecture
 
 extension AudioPlayerClient {
-  static let live = AudioPlayerClient(
-    play: { id, url in
-      .future { callback in
-        do {
-          let delegate = try AudioPlayerClientDelegate(
-            url: url,
-            didFinishPlaying: { flag in
-              callback(.success(.didFinishPlaying(successfully: flag)))
-              dependencies[id] = nil
-            },
-            decodeErrorDidOccur: { _ in
-              callback(.failure(.decodeErrorDidOccur))
-              dependencies[id] = nil
-            }
-          )
+  static var live: Self {
+    var delegate: AudioPlayerClientDelegate?
+    return Self(
+      play: { url in
+        .future { callback in
+          delegate?.player.stop()
+          delegate = nil
+          do {
+            delegate = try AudioPlayerClientDelegate(
+              url: url,
+              didFinishPlaying: { flag in
+                callback(.success(.didFinishPlaying(successfully: flag)))
+                delegate = nil
+              },
+              decodeErrorDidOccur: { _ in
+                callback(.failure(.decodeErrorDidOccur))
+                delegate = nil
+              }
+            )
 
-          delegate.player.play()
-          dependencies[id] = delegate
-        } catch {
-          callback(.failure(.couldntCreateAudioPlayer))
+            delegate?.player.play()
+          } catch {
+            callback(.failure(.couldntCreateAudioPlayer))
+          }
+        }
+      },
+      stop: {
+        .fireAndForget {
+          delegate?.player.stop()
+          delegate = nil
         }
       }
-    },
-    stop: { id in
-      .fireAndForget {
-        dependencies[id]?.player.stop()
-        dependencies[id] = nil
-      }
-    }
-  )
+    )
+  }
 }
-
-private var dependencies: [AnyHashable: AudioPlayerClientDelegate] = [:]
 
 private class AudioPlayerClientDelegate: NSObject, AVAudioPlayerDelegate {
   let didFinishPlaying: (Bool) -> Void

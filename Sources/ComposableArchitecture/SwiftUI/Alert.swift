@@ -165,7 +165,7 @@ public struct AlertState<Action> {
   }
 
   public struct ButtonAction {
-    let type: ActionType
+    public let type: ActionType
 
     public static func send(_ action: Action) -> Self {
       .init(type: .send(action))
@@ -175,7 +175,7 @@ public struct AlertState<Action> {
       .init(type: .animatedSend(action, animation: animation))
     }
 
-    enum ActionType {
+    public enum ActionType {
       case send(Action)
       case animatedSend(Action, animation: Animation?)
     }
@@ -185,7 +185,7 @@ public struct AlertState<Action> {
     case cancel
     case destructive
 
-    #if compiler(>=5.5) && canImport(_Concurrency)
+    #if compiler(>=5.5)
       @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
       var toSwiftUI: SwiftUI.ButtonRole {
         switch self {
@@ -208,30 +208,63 @@ extension View {
   ///   - dismissal: An action to send when the alert is dismissed through non-user actions, such
   ///     as when an alert is automatically dismissed by the system. Use this action to `nil` out
   ///     the associated alert state.
-  public func alert<Action>(
+  @ViewBuilder public func alert<Action>(
     _ store: Store<AlertState<Action>?, Action>,
     dismiss: Action
   ) -> some View {
-    WithViewStore(store, removeDuplicates: { $0?.id == $1?.id }) { viewStore in
-      #if compiler(>=5.5) && canImport(_Concurrency)
-        if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
-          self.alert(
-            (viewStore.state?.title).map { Text($0) } ?? Text(""),
-            isPresented: viewStore.binding(send: dismiss).isPresent(),
-            presenting: viewStore.state,
-            actions: { $0.toSwiftUIActions(send: viewStore.send) },
-            message: { $0.message.map { Text($0) } }
+    #if compiler(>=5.5)
+      if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
+        self.modifier(
+          NewAlertModifier(
+            viewStore: ViewStore(store, removeDuplicates: { $0?.id == $1?.id }),
+            dismiss: dismiss
           )
-        } else {
-          self.alert(item: viewStore.binding(send: dismiss)) { state in
-            state.toSwiftUIAlert(send: viewStore.send)
-          }
-        }
-      #else
-        self.alert(item: viewStore.binding(send: dismiss)) { state in
-          state.toSwiftUIAlert(send: viewStore.send)
-        }
-      #endif
+        )
+      } else {
+        self.modifier(
+          OldAlertModifier(
+            viewStore: ViewStore(store, removeDuplicates: { $0?.id == $1?.id }),
+            dismiss: dismiss
+          )
+        )
+      }
+    #else
+      self.modifier(
+        OldAlertModifier(
+          viewStore: ViewStore(store, removeDuplicates: { $0?.id == $1?.id }),
+          dismiss: dismiss
+        )
+      )
+    #endif
+  }
+}
+
+#if compiler(>=5.5)
+  // NB: Workaround for iOS 14 runtime crashes during iOS 15 availability checks.
+  @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+  private struct NewAlertModifier<Action>: ViewModifier {
+    @ObservedObject var viewStore: ViewStore<AlertState<Action>?, Action>
+    let dismiss: Action
+
+    func body(content: Content) -> some View {
+      content.alert(
+        (viewStore.state?.title).map { Text($0) } ?? Text(""),
+        isPresented: viewStore.binding(send: dismiss).isPresent(),
+        presenting: viewStore.state,
+        actions: { $0.toSwiftUIActions(send: viewStore.send) },
+        message: { $0.message.map { Text($0) } }
+      )
+    }
+  }
+#endif
+
+private struct OldAlertModifier<Action>: ViewModifier {
+  @ObservedObject var viewStore: ViewStore<AlertState<Action>?, Action>
+  let dismiss: Action
+
+  func body(content: Content) -> some View {
+    content.alert(item: viewStore.binding(send: dismiss)) { state in
+      state.toSwiftUIAlert(send: viewStore.send)
     }
   }
 }
@@ -313,7 +346,7 @@ extension AlertState.Button: Equatable where Action: Equatable {}
 
 extension AlertState.ButtonAction: Hashable where Action: Hashable {}
 extension AlertState.ButtonAction.ActionType: Hashable where Action: Hashable {
-  func hash(into hasher: inout Hasher) {
+  public func hash(into hasher: inout Hasher) {
     switch self {
     case let .send(action), let .animatedSend(action, animation: _):
       hasher.combine(action)
@@ -355,7 +388,7 @@ extension AlertState.Button {
     }
   }
 
-  #if compiler(>=5.5) && canImport(_Concurrency)
+  #if compiler(>=5.5)
     @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
     func toSwiftUIButton(send: @escaping (Action) -> Void) -> some View {
       SwiftUI.Button(
@@ -369,7 +402,7 @@ extension AlertState.Button {
 }
 
 extension AlertState {
-  #if compiler(>=5.5) && canImport(_Concurrency)
+  #if compiler(>=5.5)
     @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
     @ViewBuilder
     fileprivate func toSwiftUIActions(send: @escaping (Action) -> Void) -> some View {

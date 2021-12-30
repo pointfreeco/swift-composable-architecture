@@ -103,7 +103,7 @@ struct CityMapRowView: View {
               action: CityMapAction.downloadComponent
             )
           )
-          .padding([.trailing], 8)
+          .padding(.trailing, 8)
         }
       }
     }
@@ -181,7 +181,7 @@ struct CitiesView: View {
           self.store.scope(state: \.cityMaps, action: MapAppAction.cityMaps(id:action:))
         ) { cityMapStore in
           CityMapRowView(store: cityMapStore)
-            .buttonStyle(BorderlessButtonStyle())
+            .buttonStyle(.borderless)
         }
       }
     }

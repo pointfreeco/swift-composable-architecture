@@ -2,8 +2,8 @@ import ComposableArchitecture
 import Foundation
 
 struct AudioPlayerClient {
-  var play: (AnyHashable, URL) -> Effect<Action, Failure>
-  var stop: (AnyHashable) -> Effect<Never, Never>
+  var play: (URL) -> Effect<Action, Failure>
+  var stop: () -> Effect<Never, Never>
 
   enum Action: Equatable {
     case didFinishPlaying(successfully: Bool)

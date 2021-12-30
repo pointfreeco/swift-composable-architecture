@@ -30,7 +30,7 @@ enum GameType: Identifiable {
 struct RootView: View {
   let store = Store(
     initialState: AppState(),
-    reducer: appReducer.debug(),
+    reducer: appReducer,
     environment: AppEnvironment(
       authenticationClient: .live,
       mainQueue: .main
@@ -58,7 +58,7 @@ struct RootView: View {
       }
       .navigationBarTitle("Tic-Tac-Toe")
     }
-    .navigationViewStyle(StackNavigationViewStyle())
+    .navigationViewStyle(.stack)
   }
 }
 

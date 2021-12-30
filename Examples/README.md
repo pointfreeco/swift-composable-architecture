@@ -12,9 +12,9 @@ This directory holds many case studies and applications to demonstrate solving v
   <br> This application uses Apple's Speech framework to demonstrate how to wrap complex dependencies in the `Effect` type of the Composable Architecture. Doing a little bit of upfront work allows you to interact with the dependencies in a controlled, understandable way, and you can write tests on how the dependency interacts with your application logic.
 
 * **Tic-Tac-Toe**
-  <br> Builds a moderately complex application in both SwiftUI and UIKit that is fully controlled by the Composable Architecture. The core application logic is put into its own modules, with no UI, and then both of the SwiftUI and UIKit applications are run off of that single source of logic. This demonstrates how one can hyper-modularize an application, which for a big enough application can greatly help compile times and developer productivity. This demo was inspired by the equivalent demos in [RIBs](http://github.com/uber/RIBs) (see [here](https://github.com/uber/RIBs/tree/master/ios/tutorials/tutorial4-completed)) and [Workflow](https://github.com/square/workflow/) (see [here](https://github.com/square/workflow/tree/master/swift/Samples/TicTacToe)).
+  <br> Builds a moderately complex application in both SwiftUI and UIKit that is fully controlled by the Composable Architecture. The core application logic is put into its own modules, with no UI, and then both of the SwiftUI and UIKit applications are run off of that single source of logic. This demonstrates how one can hyper-modularize an application, which for a big enough application can greatly help compile times and developer productivity. This demo was inspired by the equivalent demos in [RIBs](http://github.com/uber/RIBs) (see [here](https://github.com/uber/RIBs/tree/master/ios/tutorials/tutorial4-completed)) and [Workflow](https://github.com/square/workflow/) (see [here](https://github.com/square/workflow-swift/tree/main/Samples/TicTacToe)).
 
-* **Todo**
+* **Todos**
   <br> A simple todo application with a few bells and whistles, and a comprehensive test suite.
 
 * **Voice Memos**

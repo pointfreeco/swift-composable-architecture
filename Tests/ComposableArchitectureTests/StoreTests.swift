@@ -377,7 +377,6 @@ final class StoreTests: XCTestCase {
     XCTAssertNoDifference(emissions, [0, 3])
   }
 
-
   func testBufferedActionProcessing() {
     struct ChildState: Equatable {
       var count: Int?

@@ -162,7 +162,7 @@ struct SharedStateView: View {
           Text("Profile")
             .tag(SharedState.Tab.profile)
         }
-        .pickerStyle(SegmentedPickerStyle())
+        .pickerStyle(.segmented)
 
         if viewStore.state == .counter {
           SharedStateCounterView(
@@ -194,7 +194,7 @@ struct SharedStateCounterView: View {
             Button("−") { viewStore.send(.decrementButtonTapped) }
 
             Text("\(viewStore.count)")
-              .font(Font.body.monospacedDigit())
+              .font(.body.monospacedDigit())
 
             Button("+") { viewStore.send(.incrementButtonTapped) }
           }

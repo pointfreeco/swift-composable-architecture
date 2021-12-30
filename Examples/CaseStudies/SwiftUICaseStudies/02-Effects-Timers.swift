@@ -73,7 +73,7 @@ struct TimersView: View {
             AngularGradient(
               gradient: Gradient(
                 colors: [
-                  Color.blue.opacity(0.3),
+                  .blue.opacity(0.3),
                   .blue,
                   .blue,
                   .green,
@@ -84,13 +84,13 @@ struct TimersView: View {
                   .red,
                   .purple,
                   .purple,
-                  Color.purple.opacity(0.3),
+                  .purple.opacity(0.3),
                 ]
               ),
               center: .center
             )
           )
-          .rotationEffect(Angle(degrees: -90))
+          .rotationEffect(.degrees(-90))
 
         GeometryReader { proxy in
           Path { path in
@@ -102,7 +102,7 @@ struct TimersView: View {
         }
       }
       .frame(width: 280, height: 280)
-      .padding([.bottom], 16)
+      .padding(.bottom, 16)
 
       Button(action: { self.viewStore.send(.toggleTimerButtonTapped) }) {
         HStack {

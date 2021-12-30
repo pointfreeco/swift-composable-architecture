@@ -19,12 +19,11 @@ struct RootView: View {
       #if swift(>=5.3)
         return AnyView(
           NavigationLink(
+            "Focus",
             destination: FocusView(
               store: self.store.scope(state: \.focus, action: RootAction.focus)
-            ),
-            label: {
-              Text("Focus")
-            })
+            )
+          )
         )
       #else
         return nil

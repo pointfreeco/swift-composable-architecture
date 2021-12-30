@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CA2332102447ACFA00B818EB /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA23320F2447ACFA00B818EB /* SceneDelegate.swift */; };
+		CA2332102447ACFA00B818EB /* SpeechRecognitionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA23320F2447ACFA00B818EB /* SpeechRecognitionApp.swift */; };
 		CA2332122447ACFA00B818EB /* SpeechRecognition.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA2332112447ACFA00B818EB /* SpeechRecognition.swift */; };
 		CA2332142447ACFB00B818EB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA2332132447ACFB00B818EB /* Assets.xcassets */; };
 		CA2332252447ACFC00B818EB /* SpeechRecognitionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA2332242447ACFC00B818EB /* SpeechRecognitionTests.swift */; };
@@ -53,7 +53,7 @@
 
 /* Begin PBXFileReference section */
 		CA23320A2447ACFA00B818EB /* SpeechRecognition.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpeechRecognition.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		CA23320F2447ACFA00B818EB /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		CA23320F2447ACFA00B818EB /* SpeechRecognitionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognitionApp.swift; sourceTree = "<group>"; };
 		CA2332112447ACFA00B818EB /* SpeechRecognition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognition.swift; sourceTree = "<group>"; };
 		CA2332132447ACFB00B818EB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CA23321B2447ACFB00B818EB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -110,8 +110,8 @@
 			isa = PBXGroup;
 			children = (
 				CACC04252447DBA3000C5725 /* SpeechClient */,
-				CA23320F2447ACFA00B818EB /* SceneDelegate.swift */,
 				CA2332112447ACFA00B818EB /* SpeechRecognition.swift */,
+				CA23320F2447ACFA00B818EB /* SpeechRecognitionApp.swift */,
 				CA2332132447ACFB00B818EB /* Assets.xcassets */,
 				CA23321B2447ACFB00B818EB /* Info.plist */,
 			);
@@ -245,7 +245,7 @@
 			files = (
 				CACC04242447D96D000C5725 /* Live.swift in Sources */,
 				CACC04292447DF0B000C5725 /* Failing.swift in Sources */,
-				CA2332102447ACFA00B818EB /* SceneDelegate.swift in Sources */,
+				CA2332102447ACFA00B818EB /* SpeechRecognitionApp.swift in Sources */,
 				CA2332122447ACFA00B818EB /* SpeechRecognition.swift in Sources */,
 				CACC04222447C66C000C5725 /* Client.swift in Sources */,
 				CACC04272447DBAF000C5725 /* Models.swift in Sources */,

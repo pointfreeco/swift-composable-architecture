@@ -68,17 +68,22 @@
 
             Stepper(value: viewStore.binding(\.$stepCount), in: 0...100) {
               Text("Max slider value: \(viewStore.stepCount)")
-                .font(Font.body.monospacedDigit())
+                .font(.body.monospacedDigit())
             }
             .disabled(viewStore.toggleIsOn)
 
             HStack {
               Text("Slider value: \(Int(viewStore.sliderValue))")
-                .font(Font.body.monospacedDigit())
+                .font(.body.monospacedDigit())
 
               Slider(value: viewStore.binding(\.$sliderValue), in: 0...Double(viewStore.stepCount))
             }
             .disabled(viewStore.toggleIsOn)
+
+            Button("Reset") {
+              viewStore.send(.resetButtonTapped)
+            }
+            .foregroundColor(.red)
           }
         }
       }

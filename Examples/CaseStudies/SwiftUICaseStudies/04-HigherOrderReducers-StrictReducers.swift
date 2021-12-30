@@ -71,9 +71,9 @@ struct DieRollView: View {
             Spacer()
 
             Text("\(viewStore.dieSide)")
-              .font(Font.body.monospacedDigit())
+              .font(.body.monospacedDigit())
           }
-          .buttonStyle(BorderlessButtonStyle())
+          .buttonStyle(.borderless)
         }
       }
       .navigationBarTitle("Strict reducers")

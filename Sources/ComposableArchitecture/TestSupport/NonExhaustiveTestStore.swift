@@ -3,9 +3,9 @@
   import Foundation
   import XCTestDynamicOverlay
 
-  internal final class NonExhaustiveTestStore<State, LocalState, Action: Equatable, LocalAction, Environment> {
-    internal typealias TCATestStoreType = TestStore<State, LocalState, Action, LocalAction, Environment>
-    internal var environment: Environment
+  final class NonExhaustiveTestStore<State, LocalState, Action: Equatable, LocalAction, Environment> {
+    typealias TCATestStoreType = TestStore<State, LocalState, Action, LocalAction, Environment>
+    var environment: Environment
 
     private let file: StaticString
     private let fromLocalAction: (LocalAction) -> Action
@@ -15,9 +15,9 @@
     private let reducer: Reducer<State, Action, Environment>
     private var store: Store<State, TCATestStoreType.TestAction>!
     private let toLocalState: (State) -> LocalState
-    internal private(set) var snapshotState: State
+    private(set) var snapshotState: State
 
-    internal init(
+    init(
       environment: Environment,
       file: StaticString,
       fromLocalAction: @escaping (LocalAction) -> Action,
@@ -162,49 +162,6 @@
       if "\(self.file)" == "\(file)" {
         self.line = line
       }
-    }
-      
-      internal func assert(
-        _ steps: TCATestStoreType.Step...,
-        file: StaticString = #file,
-        line: UInt = #line
-      ) {
-          assert(steps, file: file, line: line)
-      }
-      
-    internal func assert(
-      _ steps: [TCATestStoreType.Step],
-      file: StaticString = #file,
-      line: UInt = #line
-    ) {
-        func assert(step: TCATestStoreType.Step) {
-            switch step.type {
-            case let .send(action, update):
-                self.send(action, file: step.file, line: step.line, update)
-                
-            case let .receive(expectedAction, update):
-                self.receive(expectedAction, file: step.file, line: step.line, update)
-                
-            case let .environment(work):
-                do {
-                    try work(&self.environment)
-                } catch {
-                    XCTFail("Threw error: \(error)", file: step.file, line: step.line)
-                }
-                
-            case let .do(work):
-                do {
-                    try work()
-                } catch {
-                    XCTFail("Threw error: \(error)", file: step.file, line: step.line)
-                }
-                
-            case let .sequence(subSteps):
-                subSteps.forEach(assert(step:))
-            }
-        }
-        
-        steps.forEach(assert(step:))
     }
       
     private func verifyUpdateBlockMatchesState(

@@ -103,11 +103,11 @@ struct EffectsBasicsView: View {
             Spacer()
             Button("−") { viewStore.send(.decrementButtonTapped) }
             Text("\(viewStore.count)")
-              .font(Font.body.monospacedDigit())
+              .font(.body.monospacedDigit())
             Button("+") { viewStore.send(.incrementButtonTapped) }
             Spacer()
           }
-          .buttonStyle(BorderlessButtonStyle())
+          .buttonStyle(.borderless)
 
           Button("Number fact") { viewStore.send(.numberFactButtonTapped) }
           if viewStore.isNumberFactRequestInFlight {
