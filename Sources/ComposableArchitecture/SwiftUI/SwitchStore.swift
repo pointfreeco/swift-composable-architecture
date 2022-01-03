@@ -37,7 +37,7 @@ import SwiftUI
 /// ```
 ///
 /// If a ``SwitchStore`` does not exhaustively handle every case with a corresponding ``CaseLet``
-/// view, a debug breakpoint will be raised when an unhandled case is encountered. To fall back on a
+/// view, a runtime warning will be logged when an unhandled case is encountered. To fall back on a
 /// default view instead, introduce a ``Default`` view at the end of the ``SwitchStore``:
 ///
 /// ```swift
@@ -51,9 +51,9 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// - See also: ``Reducer/pullback(state:action:environment:breakpointOnNil:file:line:)``, a method
-///   that aids in transforming reducers that operate on each case of an enum into reducers that
-///   operate on the entire enum.
+/// - See also: ``Reducer/pullback(state:action:environment:file:line:)``, a method that aids in
+///   transforming reducers that operate on each case of an enum into reducers that operate on the
+///   entire enum.
 public struct SwitchStore<State, Action, Content>: View where Content: View {
   public let store: Store<State, Action>
   public let content: () -> Content
