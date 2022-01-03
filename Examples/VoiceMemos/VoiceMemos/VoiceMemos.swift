@@ -53,10 +53,10 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
     action: /VoiceMemosAction.voiceMemo(id:action:),
     environment: {
       VoiceMemoEnvironment(audioPlayerClient: $0.audioPlayer, mainRunLoop: $0.mainRunLoop)
-    }),
+    }
+  ),
   .init { state, action, environment in
-    struct RecorderId: Hashable {}
-    struct RecorderTimerId: Hashable {}
+    struct TimerId: Hashable {}
 
     func startRecording() -> Effect<VoiceMemosAction, Never> {
       let url = environment.temporaryDirectory()
@@ -66,10 +66,12 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
         date: environment.mainRunLoop.now.date,
         url: url
       )
+
       return .merge(
-        environment.audioRecorder.startRecording(RecorderId(), url)
+        environment.audioRecorder.startRecording(url)
           .catchToEffect(VoiceMemosAction.audioRecorder),
-        Effect.timer(id: RecorderTimerId(), every: 1, tolerance: .zero, on: environment.mainRunLoop)
+
+        Effect.timer(id: TimerId(), every: 1, tolerance: .zero, on: environment.mainRunLoop)
           .map { _ in .currentRecordingTimerUpdated }
       )
     }
@@ -103,7 +105,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       .audioRecorder(.failure):
       state.alert = .init(title: .init("Voice memo recording failed."))
       state.currentRecording = nil
-      return .cancel(id: RecorderTimerId())
+      return .cancel(id: TimerId())
 
     case .currentRecordingTimerUpdated:
       state.currentRecording?.duration += 1
@@ -141,13 +143,14 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
         case .recording:
           state.currentRecording?.mode = .encoding
           return .concatenate(
-            .cancel(id: RecorderTimerId()),
-            environment.audioRecorder.currentTime(RecorderId())
+            .cancel(id: TimerId()),
+
+            environment.audioRecorder.currentTime()
               .compactMap { $0 }
               .map(VoiceMemosAction.finalRecordingTime)
               .eraseToEffect(),
-            environment.audioRecorder.stopRecording(RecorderId())
-              .fireAndForget()
+
+            environment.audioRecorder.stopRecording().fireAndForget()
           )
         }
       }
@@ -229,10 +232,10 @@ struct VoiceMemosView: View {
               let formattedDuration = dateComponentsFormatter.string(from: duration)
             {
               Text(formattedDuration)
-                .font(Font.body.monospacedDigit().bold())
+                .font(.body.monospacedDigit().bold())
                 .foregroundColor(.white)
                 .colorMultiply(Color(Int(duration).isMultiple(of: 2) ? .systemRed : .label))
-                .animation(.easeInOut(duration: 0.5))
+                .animation(.easeInOut(duration: 0.5), value: duration)
             }
           }
           .padding()
@@ -243,7 +246,7 @@ struct VoiceMemosView: View {
         )
         .navigationBarTitle("Voice memos")
       }
-      .navigationViewStyle(StackNavigationViewStyle())
+      .navigationViewStyle(.stack)
     }
   }
 }
@@ -275,10 +278,10 @@ struct VoiceMemos_Previews: PreviewProvider {
           audioPlayer: .live,
           // NB: AVAudioRecorder doesn't work in previews, so we stub out the dependency here.
           audioRecorder: .init(
-            currentTime: { _ in Effect(value: 10) },
+            currentTime: { Effect(value: 10) },
             requestRecordPermission: { Effect(value: true) },
-            startRecording: { _, _ in .none },
-            stopRecording: { _ in .none }
+            startRecording: { _ in .none },
+            stopRecording: { .none }
           ),
           mainRunLoop: .main,
           openSettings: .none,

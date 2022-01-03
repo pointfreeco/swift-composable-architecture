@@ -119,7 +119,7 @@ struct AppView: View {
             Text(filter.rawValue).tag(filter)
           }
         }
-        .pickerStyle(SegmentedPickerStyle())
+        .pickerStyle(.segmented)
         .padding(.horizontal)
 
         List {
@@ -147,7 +147,7 @@ struct AppView: View {
         self.viewStore.binding(get: \.editMode, send: AppAction.editModeChanged)
       )
     }
-    .navigationViewStyle(StackNavigationViewStyle())
+    .navigationViewStyle(.stack)
   }
 }
 

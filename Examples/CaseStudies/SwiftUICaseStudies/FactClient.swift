@@ -21,7 +21,7 @@ extension FactClient {
               .data(from: URL(string: "http://numbersapi.com/\(number)/trivia")!)
             return String(decoding: data, as: UTF8.self)
           } catch {
-            await Task.sleep(NSEC_PER_SEC)
+            try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
             return "\(number) is a good number Brent"
           }
         }
@@ -44,7 +44,8 @@ extension FactClient {
         }
         .setFailureType(to: Error.self)
         .eraseToEffect()
-      })
+      }
+    )
   #endif
 }
 
@@ -56,6 +57,7 @@ extension FactClient {
       fetch: { _ in
         XCTFail("\(Self.self).fact is unimplemented.")
         return .none
-      })
+      }
+    )
   }
 #endif

@@ -10,7 +10,7 @@
 		CA93D05C249BF42500A6F65D /* VoiceMemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA93D05B249BF42500A6F65D /* VoiceMemo.swift */; };
 		CA93D05E249BF46E00A6F65D /* Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA93D05D249BF46E00A6F65D /* Helpers.swift */; };
 		DC1394342469E59600EE1157 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC1394332469E59600EE1157 /* ComposableArchitecture */; };
-		DC5BDCB024589177009C65A3 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDCAF24589177009C65A3 /* SceneDelegate.swift */; };
+		DC5BDCB024589177009C65A3 /* VoiceMemosApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDCAF24589177009C65A3 /* VoiceMemosApp.swift */; };
 		DC5BDCB224589177009C65A3 /* VoiceMemos.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDCB124589177009C65A3 /* VoiceMemos.swift */; };
 		DC5BDCB424589178009C65A3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC5BDCB324589178009C65A3 /* Assets.xcassets */; };
 		DC5BDCC524589179009C65A3 /* VoiceMemosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDCC424589179009C65A3 /* VoiceMemosTests.swift */; };
@@ -56,10 +56,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		23EDBE6B271CD8DD004F7430 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		CA93D05B249BF42500A6F65D /* VoiceMemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceMemo.swift; sourceTree = "<group>"; };
 		CA93D05D249BF46E00A6F65D /* Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Helpers.swift; sourceTree = "<group>"; };
 		DC5BDCAA24589177009C65A3 /* VoiceMemos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VoiceMemos.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		DC5BDCAF24589177009C65A3 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		DC5BDCAF24589177009C65A3 /* VoiceMemosApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceMemosApp.swift; sourceTree = "<group>"; };
 		DC5BDCB124589177009C65A3 /* VoiceMemos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceMemos.swift; sourceTree = "<group>"; };
 		DC5BDCB324589178009C65A3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DC5BDCBB24589178009C65A3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -97,6 +98,7 @@
 			isa = PBXGroup;
 			children = (
 				DC5BDF2A245891B7009C65A3 /* swift-composable-architecture */,
+				23EDBE6B271CD8DD004F7430 /* README.md */,
 				DC5BDCAB24589177009C65A3 /* Products */,
 				DC5BDCAC24589177009C65A3 /* VoiceMemos */,
 				DC5BDCC324589179009C65A3 /* VoiceMemosTests */,
@@ -117,9 +119,9 @@
 			children = (
 				DC5BDCBB24589178009C65A3 /* Info.plist */,
 				CA93D05D249BF46E00A6F65D /* Helpers.swift */,
-				DC5BDCAF24589177009C65A3 /* SceneDelegate.swift */,
 				CA93D05B249BF42500A6F65D /* VoiceMemo.swift */,
 				DC5BDCB124589177009C65A3 /* VoiceMemos.swift */,
+				DC5BDCAF24589177009C65A3 /* VoiceMemosApp.swift */,
 				DC5BDCB324589178009C65A3 /* Assets.xcassets */,
 				DC5BDF3B245893DB009C65A3 /* AudioPlayerClient */,
 				DC5BDF3424589389009C65A3 /* AudioRecorderClient */,
@@ -270,7 +272,7 @@
 				DC5BDF3F24589406009C65A3 /* LiveAudioPlayerClient.swift in Sources */,
 				DC94F0102458E09900082DE9 /* FailingAudioPlayerClient.swift in Sources */,
 				CA93D05C249BF42500A6F65D /* VoiceMemo.swift in Sources */,
-				DC5BDCB024589177009C65A3 /* SceneDelegate.swift in Sources */,
+				DC5BDCB024589177009C65A3 /* VoiceMemosApp.swift in Sources */,
 				DC5BDCB224589177009C65A3 /* VoiceMemos.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -47,7 +47,7 @@ public struct NewGameView: View {
             .autocapitalization(.words)
             .disableAutocorrection(true)
             .textContentType(.name)
-            .textFieldStyle(RoundedBorderTextFieldStyle())
+            .textFieldStyle(.roundedBorder)
           }
 
           VStack(alignment: .leading) {
@@ -59,7 +59,7 @@ public struct NewGameView: View {
             .autocapitalization(.words)
             .disableAutocorrection(true)
             .textContentType(.name)
-            .textFieldStyle(RoundedBorderTextFieldStyle())
+            .textFieldStyle(.roundedBorder)
           }
 
           NavigationLink(

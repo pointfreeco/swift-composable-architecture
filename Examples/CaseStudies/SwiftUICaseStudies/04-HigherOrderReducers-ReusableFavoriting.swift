@@ -181,7 +181,7 @@ struct EpisodesView: View {
           self.store.scope(state: \.episodes, action: EpisodesAction.episode(id:action:))
         ) { rowStore in
           EpisodeView(store: rowStore)
-            .buttonStyle(BorderlessButtonStyle())
+            .buttonStyle(.borderless)
         }
       }
     }

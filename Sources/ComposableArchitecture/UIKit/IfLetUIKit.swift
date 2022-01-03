@@ -57,7 +57,8 @@ extension Store {
             self.scope {
               state = $0 ?? state
               return state
-            })
+            }
+          )
         } else {
           `else`()
         }

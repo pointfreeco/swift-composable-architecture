@@ -91,22 +91,20 @@ struct AlertAndConfirmationDialogView: View {
       Form {
         Section(header: Text(template: readMe, .caption)) {
           Text("Count: \(viewStore.count)")
-
           Button("Alert") { viewStore.send(.alertButtonTapped) }
-            .alert(
-              self.store.scope(state: \.alert),
-              dismiss: .alertDismissed
-            )
-
           Button("Confirmation Dialog") { viewStore.send(.confirmationDialogButtonTapped) }
-            .confirmationDialog(
-              self.store.scope(state: \.confirmationDialog),
-              dismiss: .confirmationDialogDismissed
-            )
         }
       }
     }
     .navigationBarTitle("Alerts & Confirmation Dialogs")
+    .alert(
+      self.store.scope(state: \.alert),
+      dismiss: .alertDismissed
+    )
+    .confirmationDialog(
+      self.store.scope(state: \.confirmationDialog),
+      dismiss: .confirmationDialogDismissed
+    )
   }
 }
 

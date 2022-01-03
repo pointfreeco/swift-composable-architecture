@@ -100,11 +100,10 @@ public final class TwoFactorViewController: UIViewController {
         let alertController = UIAlertController(
           title: String(state: alert.title), message: nil, preferredStyle: .alert)
         alertController.addAction(
-          UIAlertAction(
-            title: "Ok", style: .default,
-            handler: { _ in
-              self.viewStore.send(.alertDismissed)
-            }))
+          UIAlertAction(title: "Ok", style: .default) { _ in
+            self.viewStore.send(.alertDismissed)
+          }
+        )
         self.present(alertController, animated: true, completion: nil)
       }
       .store(in: &self.cancellables)
