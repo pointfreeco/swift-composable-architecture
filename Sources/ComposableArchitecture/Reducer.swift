@@ -2,7 +2,7 @@ import CasePaths
 import Combine
 
 #if DEBUG
-  import OSLog
+  import os
 #endif
 
 /// A reducer describes how to evolve the current state of an application to the next state, given

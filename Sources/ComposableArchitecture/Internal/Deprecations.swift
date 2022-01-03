@@ -4,7 +4,7 @@ import SwiftUI
 import XCTestDynamicOverlay
 
 #if DEBUG
-  import OSLog
+  import os
 #endif
 
 // NB: Deprecated after 0.31.0:
