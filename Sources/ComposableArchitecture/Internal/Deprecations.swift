@@ -2,9 +2,95 @@ import CasePaths
 import Combine
 import SwiftUI
 import XCTestDynamicOverlay
+
 #if DEBUG
   import OSLog
 #endif
+
+// NB: Deprecated after 0.31.0:
+
+extension Reducer {
+  @available(
+    *,
+    deprecated,
+    message: "'pullback' no longer takes a 'breakpointOnNil' argument"
+  )
+  public func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
+    state toLocalState: CasePath<GlobalState, State>,
+    action toLocalAction: CasePath<GlobalAction, Action>,
+    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+    breakpointOnNil: Bool,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+    self.pullback(
+      state: toLocalState,
+      action: toLocalAction,
+      environment: toLocalEnvironment,
+      file: file,
+      line: line
+    )
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: "'optional' no longer takes a 'breakpointOnNil' argument"
+  )
+  public func optional(
+    breakpointOnNil: Bool,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  ) -> Reducer<
+    State?, Action, Environment
+  > {
+    self.optional(file: file, line: line)
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: "'forEach' no longer takes a 'breakpointOnNil' argument"
+  )
+  public func forEach<GlobalState, GlobalAction, GlobalEnvironment, ID>(
+    state toLocalState: WritableKeyPath<GlobalState, IdentifiedArray<ID, State>>,
+    action toLocalAction: CasePath<GlobalAction, (ID, Action)>,
+    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+    breakpointOnNil: Bool,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+    self.forEach(
+      state: toLocalState,
+      action: toLocalAction,
+      environment: toLocalEnvironment,
+      file: file,
+      line: line
+    )
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: "'forEach' no longer takes a 'breakpointOnNil' argument"
+  )
+  public func forEach<GlobalState, GlobalAction, GlobalEnvironment, Key>(
+    state toLocalState: WritableKeyPath<GlobalState, [Key: State]>,
+    action toLocalAction: CasePath<GlobalAction, (Key, Action)>,
+    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+    breakpointOnNil: Bool,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+    self.forEach(
+      state: toLocalState,
+      action: toLocalAction,
+      environment: toLocalEnvironment,
+      file: file,
+      line: line
+    )
+  }
+}
 
 // NB: Deprecated after 0.29.0:
 
