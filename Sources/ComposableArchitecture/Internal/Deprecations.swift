@@ -2,6 +2,9 @@ import CasePaths
 import Combine
 import SwiftUI
 import XCTestDynamicOverlay
+#if DEBUG
+  import OSLog
+#endif
 
 // NB: Deprecated after 0.29.0:
 
