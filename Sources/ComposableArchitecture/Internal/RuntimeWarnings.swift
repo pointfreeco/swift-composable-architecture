@@ -19,7 +19,7 @@
           }
         }
       }
-      fatalError("Import SwiftUI to use this")
+      return UnsafeMutableRawPointer(mutating: #dsohandle)
     }(),
     log: OSLog(subsystem: "com.apple.runtime-issues", category: "ComposableArchitecture")
   )
