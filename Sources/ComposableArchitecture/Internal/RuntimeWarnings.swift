@@ -12,9 +12,9 @@
       for i in 0..<count {
         if let name = _dyld_get_image_name(i) {
           let swiftString = String(cString: name)
-          if swiftString.hasSuffix("SwiftUI") {
-            if let pointer = UnsafeMutableRawPointer(bitPattern: _dyld_get_image_vmaddr_slide(i)) {
-              return pointer
+          if swiftString.hasSuffix("/SwiftUI") {
+            if let header = _dyld_get_image_header(i) {
+              return UnsafeMutableRawPointer(mutating: UnsafeRawPointer(header))
             }
           }
         }
