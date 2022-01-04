@@ -8,9 +8,18 @@
   // Feedback filed: https://gist.github.com/stephencelis/a8d06383ed6ccde3e5ef5d1b3ad52bbc
   let rw = (
     dso: { () -> UnsafeMutableRawPointer in
-      var info = Dl_info()
-      dladdr(dlsym(dlopen(nil, RTLD_LAZY), "LocalizedString"), &info)
-      return info.dli_fbase
+      let count = _dyld_image_count()
+      for i in 0..<count {
+        if let name = _dyld_get_image_name(i) {
+          let swiftString = String(cString: name)
+          if swiftString.hasSuffix("SwiftUI") {
+            if let pointer = UnsafeMutableRawPointer(bitPattern: _dyld_get_image_vmaddr_slide(i)) {
+              return pointer
+            }
+          }
+        }
+      }
+      fatalError("Import SwiftUI to use this")
     }(),
     log: OSLog(subsystem: "com.apple.runtime-issues", category: "ComposableArchitecture")
   )
