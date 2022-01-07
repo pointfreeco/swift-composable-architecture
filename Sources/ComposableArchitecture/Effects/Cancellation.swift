@@ -29,7 +29,11 @@ extension Effect {
   ///     canceled before starting this new one.
   /// - Returns: A new effect that is capable of being canceled by an identifier.
   public func cancellable(id: AnyHashable, cancelInFlight: Bool = false) -> Effect {
-    let effect = Deferred { () -> Publishers.HandleEvents<Publishers.PrefixUntilOutput<Self, PassthroughSubject<Void, Never>>> in
+    let effect = Deferred {
+      ()
+        -> Publishers.HandleEvents<
+          Publishers.PrefixUntilOutput<Self, PassthroughSubject<Void, Never>>
+        > in
       cancellablesLock.lock()
       defer { cancellablesLock.unlock() }
 

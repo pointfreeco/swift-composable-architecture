@@ -286,7 +286,7 @@ final class EffectCancellationTests: XCTestCase {
     scheduler.advance(by: 1)
     XCTAssertNoDifference(expectedOutput, [])
   }
-  
+
   func testNestedMergeCancellation() {
     let effect = Effect<Int, Never>.merge(
       (1...2).publisher
