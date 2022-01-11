@@ -73,12 +73,12 @@ public struct AuthenticationClient {
 #if DEBUG
   extension AuthenticationClient {
     private struct Unimplemented: Error {
-      let description: String
+      let endpoint: String
     }
 
     public static let failing = Self(
-      login: { _ in throw Unimplemented(description: "login") },
-      twoFactor: { _ in throw Unimplemented(description: "twoFactor") }
+      login: { _ in throw Unimplemented(endpoint: "login") },
+      twoFactor: { _ in throw Unimplemented(endpoint: "twoFactor") }
     )
   }
 #endif
