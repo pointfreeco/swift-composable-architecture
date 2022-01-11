@@ -58,16 +58,12 @@ extension WeatherClient {
 
 extension WeatherClient {
   private struct Unimplemented: Error {
-    let message: String
+    let endpoint: String
   }
 
   static let failing = Self(
-    searchLocation: { _ in
-      throw Unimplemented(message: "searchLocation")
-    },
-    weather: { _ in
-      throw Unimplemented(message: "weather")
-    }
+    searchLocation: { _ in throw Unimplemented(endpoint: "searchLocation") },
+    weather: { _ in throw Unimplemented(endpoint: "weather") }
   )
 }
 

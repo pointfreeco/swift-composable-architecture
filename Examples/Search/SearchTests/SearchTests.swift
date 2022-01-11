@@ -48,7 +48,7 @@ class SearchTests: XCTestCase {
       $0.searchQuery = "S"
     }
     await self.scheduler.advance(by: 0.3)
-    await store.receive(.locationsResponse(.failure(SearchLocationError() as NSError)))
+    await store.receive(.locationsResponse(.failure(SearchLocationError())))
   }
 
   func testClearQueryCancelsInFlightSearchRequest() async {
@@ -154,7 +154,7 @@ class SearchTests: XCTestCase {
       $0.locationWeatherRequestInFlight = mockLocations.first!
     }
     await self.scheduler.advance()
-    await store.receive(.locationWeatherResponse(.failure(WeatherError() as NSError))) {
+    await store.receive(.locationWeatherResponse(.failure(WeatherError()))) {
       $0.locationWeatherRequestInFlight = nil
     }
   }
