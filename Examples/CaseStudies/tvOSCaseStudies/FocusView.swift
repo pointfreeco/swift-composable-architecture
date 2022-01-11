@@ -48,7 +48,13 @@ let focusReducer = Reducer<FocusState, FocusAction, FocusEnvironment> {
             .padding()
 
           HStack(spacing: 40) {
-            ForEach(1..<11) { index in
+            ForEach(1..<6) { index in
+              Button(numbers[index]) {}
+                .prefersDefaultFocus(viewStore.currentFocus == index, in: self.namespace)
+            }
+          }
+          HStack(spacing: 40) {
+            ForEach(6..<11) { index in
               Button(numbers[index]) {}
                 .prefersDefaultFocus(viewStore.currentFocus == index, in: self.namespace)
             }

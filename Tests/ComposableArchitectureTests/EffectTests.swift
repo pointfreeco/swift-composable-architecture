@@ -210,7 +210,7 @@ final class EffectTests: XCTestCase {
     }
   #endif
 
-  #if compiler(>=5.5) && canImport(_Concurrency)
+  #if canImport(_Concurrency) && compiler(>=5.5.2)
     func testTask() {
       let expectation = self.expectation(description: "Complete")
       var result: Int?

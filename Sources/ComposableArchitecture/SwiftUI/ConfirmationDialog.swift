@@ -153,7 +153,7 @@ public struct ConfirmationDialogState<Action> {
     case hidden
     case visible
 
-    #if compiler(>=5.5) && canImport(_Concurrency)
+    #if compiler(>=5.5)
       @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
       var toSwiftUI: SwiftUI.Visibility {
         switch self {
@@ -230,35 +230,75 @@ extension View {
   @available(macOS 12, *)
   @available(tvOS 13, *)
   @available(watchOS 6, *)
-  public func confirmationDialog<Action>(
+  @ViewBuilder public func confirmationDialog<Action>(
     _ store: Store<ConfirmationDialogState<Action>?, Action>,
     dismiss: Action
   ) -> some View {
-
-    WithViewStore(store, removeDuplicates: { $0?.id == $1?.id }) { viewStore in
-      #if compiler(>=5.5) && canImport(_Concurrency)
-        if #available(iOS 15, tvOS 15, watchOS 8, *) {
-          self.confirmationDialog(
-            (viewStore.state?.title).map { Text($0) } ?? Text(""),
-            isPresented: viewStore.binding(send: dismiss).isPresent(),
-            titleVisibility: viewStore.state?.titleVisibility.toSwiftUI ?? .automatic,
-            presenting: viewStore.state,
-            actions: { $0.toSwiftUIActions(send: viewStore.send) },
-            message: { $0.message.map { Text($0) } }
+    #if compiler(>=5.5)
+      if #available(iOS 15, tvOS 15, watchOS 8, *) {
+        self.modifier(
+          NewConfirmationDialogModifier(
+            viewStore: ViewStore(store, removeDuplicates: { $0?.id == $1?.id }),
+            dismiss: dismiss
           )
-        } else {
-          #if !os(macOS)
-            self.actionSheet(item: viewStore.binding(send: dismiss)) { state in
-              state.toSwiftUIActionSheet(send: viewStore.send)
-            }
-          #endif
-        }
-      #elseif !os(macOS)
-        self.actionSheet(item: viewStore.binding(send: dismiss)) { state in
-          state.toSwiftUIActionSheet(send: viewStore.send)
-        }
-      #endif
+        )
+      } else {
+        #if !os(macOS)
+          self.modifier(
+            OldConfirmationDialogModifier(
+              viewStore: ViewStore(store, removeDuplicates: { $0?.id == $1?.id }),
+              dismiss: dismiss
+            )
+          )
+        #endif
+      }
+    #elseif !os(macOS)
+      self.modifier(
+        OldConfirmationDialogModifier(
+          viewStore: ViewStore(store, removeDuplicates: { $0?.id == $1?.id }),
+          dismiss: dismiss
+        )
+      )
+    #endif
+  }
+}
+
+#if compiler(>=5.5)
+  // NB: Workaround for iOS 14 runtime crashes during iOS 15 availability checks.
+  @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+  private struct NewConfirmationDialogModifier<Action>: ViewModifier {
+    @ObservedObject var viewStore: ViewStore<ConfirmationDialogState<Action>?, Action>
+    let dismiss: Action
+
+    func body(content: Content) -> some View {
+      content.confirmationDialog(
+        (viewStore.state?.title).map { Text($0) } ?? Text(""),
+        isPresented: viewStore.binding(send: dismiss).isPresent(),
+        titleVisibility: viewStore.state?.titleVisibility.toSwiftUI ?? .automatic,
+        presenting: viewStore.state,
+        actions: { $0.toSwiftUIActions(send: viewStore.send) },
+        message: { $0.message.map { Text($0) } }
+      )
     }
+  }
+#endif
+
+@available(iOS 13, *)
+@available(macOS 12, *)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
+private struct OldConfirmationDialogModifier<Action>: ViewModifier {
+  @ObservedObject var viewStore: ViewStore<ConfirmationDialogState<Action>?, Action>
+  let dismiss: Action
+
+  func body(content: Content) -> some View {
+    #if !os(macOS)
+      return content.actionSheet(item: viewStore.binding(send: dismiss)) { state in
+        state.toSwiftUIActionSheet(send: viewStore.send)
+      }
+    #else
+      return EmptyView()
+    #endif
   }
 }
 
@@ -267,7 +307,7 @@ extension View {
 @available(tvOS 13, *)
 @available(watchOS 6, *)
 extension ConfirmationDialogState {
-  #if compiler(>=5.5) && canImport(_Concurrency)
+  #if compiler(>=5.5)
     @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
     @ViewBuilder
     fileprivate func toSwiftUIActions(send: @escaping (Action) -> Void) -> some View {

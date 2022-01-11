@@ -1,6 +1,10 @@
 import CasePaths
 import Combine
 
+#if DEBUG
+  import os
+#endif
+
 /// A reducer describes how to evolve the current state of an application to the next state, given
 /// an action, and describes what ``Effect``s should be executed later by the store, if any.
 ///
@@ -69,25 +73,23 @@ public struct Reducer<State, Action, Environment> {
   /// its state, it can make a difference if `reducerA` chooses to modify `reducerB`'s state
   /// _before_ or _after_ `reducerB` runs.
   ///
-  /// This is perhaps most easily seen when working with ``optional(breakpointOnNil:file:line:)``
-  /// reducers, where the parent domain may listen to the child domain and `nil` out its state. If
-  /// the parent reducer runs before the child reducer, then the child reducer will not be able to
-  /// react to its own action.
+  /// This is perhaps most easily seen when working with ``optional(file:line:)`` reducers, where
+  /// the parent domain may listen to the child domain and `nil` out its state. If the parent
+  /// reducer runs before the child reducer, then the child reducer will not be able to react to its
+  /// own action.
   ///
-  /// Similar can be said for a
-  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer. If the parent
-  /// domain modifies the child collection by moving, removing, or modifying an element before the
-  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer runs, the
-  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer may perform its
-  /// action against the wrong element, an element that no longer exists, or an element in an
-  /// unexpected state.
+  /// Similar can be said for a ``forEach(state:action:environment:file:line:)-gvte`` reducer. If
+  /// the parent domain modifies the child collection by moving, removing, or modifying an element
+  /// before the ``forEach(state:action:environment:file:line:)-gvte`` reducer runs, the
+  /// ``forEach(state:action:environment:file:line:)-gvte`` reducer may perform its action against
+  /// the wrong element, an element that no longer exists, or an element in an unexpected state.
   ///
   /// Running a parent reducer before a child reducer can be considered an application logic
   /// error, and can produce assertion failures. So you should almost always combine reducers in
   /// order from child to parent domain.
   ///
-  /// Here is an example of how you should combine an ``optional(breakpointOnNil:file:line:)``
-  /// reducer with a parent domain:
+  /// Here is an example of how you should combine an ``optional(file:line:)`` reducer with a parent
+  /// domain:
   ///
   /// ```swift
   /// let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
@@ -126,25 +128,23 @@ public struct Reducer<State, Action, Environment> {
   /// its state, it can make a difference if `reducerA` chooses to modify `reducerB`'s state
   /// _before_ or _after_ `reducerB` runs.
   ///
-  /// This is perhaps most easily seen when working with ``optional(breakpointOnNil:file:line:)``
-  /// reducers, where the parent domain may listen to the child domain and `nil` out its state. If
-  /// the parent reducer runs before the child reducer, then the child reducer will not be able to
-  /// react to its own action.
+  /// This is perhaps most easily seen when working with ``optional(file:line:)`` reducers, where
+  /// the parent domain may listen to the child domain and `nil` out its state. If the parent
+  /// reducer runs before the child reducer, then the child reducer will not be able to react to its
+  /// own action.
   ///
-  /// Similar can be said for a
-  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer. If the parent
-  /// domain modifies the child collection by moving, removing, or modifying an element before the
-  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer runs, the
-  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer may perform its
-  /// action against the wrong element, an element that no longer exists, or an element in an
-  /// unexpected state.
+  /// Similar can be said for a ``forEach(state:action:environment:file:line:)-gvte`` reducer. If
+  /// the parent domain modifies the child collection by moving, removing, or modifying an element
+  /// before the ``forEach(state:action:environment:file:line:)-gvte`` reducer runs, the
+  /// ``forEach(state:action:environment:file:line:)-gvte`` reducer may perform its action against
+  /// the wrong element, an element that no longer exists, or an element in an unexpected state.
   ///
   /// Running a parent reducer before a child reducer can be considered an application logic error,
   /// and can produce assertion failures. So you should almost always combine reducers in order from
   /// child to parent domain.
   ///
-  /// Here is an example of how you should combine an ``optional(breakpointOnNil:file:line:)``
-  /// reducer with a parent domain:
+  /// Here is an example of how you should combine an ``optional(file:line:)`` reducer with a parent
+  /// domain:
   ///
   /// ```swift
   /// let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
@@ -185,25 +185,23 @@ public struct Reducer<State, Action, Environment> {
   /// its state, it can make a difference if `reducerA` chooses to modify `reducerB`'s state
   /// _before_ or _after_ `reducerB` runs.
   ///
-  /// This is perhaps most easily seen when working with ``optional(breakpointOnNil:file:line:)``
-  /// reducers, where the parent domain may listen to the child domain and `nil` out its state. If
-  /// the parent reducer runs before the child reducer, then the child reducer will not be able to
-  /// react to its own action.
+  /// This is perhaps most easily seen when working with ``optional(file:line:)`` reducers, where
+  /// the parent domain may listen to the child domain and `nil` out its state. If the parent
+  /// reducer runs before the child reducer, then the child reducer will not be able to react to its
+  /// own action.
   ///
-  /// Similar can be said for a
-  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer. If the
-  /// parent domain modifies the child collection by moving, removing, or modifying an element
-  /// before the ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer
-  /// runs, the ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducer may
-  /// perform its action against the wrong element, an element that no longer exists, or an element
-  /// in an unexpected state.
+  /// Similar can be said for a ``forEach(state:action:environment:file:line:)-gvte`` reducer. If
+  /// the parent domain modifies the child collection by moving, removing, or modifying an element
+  /// before the ``forEach(state:action:environment:file:line:)-gvte`` reducer runs, the
+  /// ``forEach(state:action:environment:file:line:)-gvte`` reducer may perform its action against
+  /// the wrong element, an element that no longer exists, or an element in an unexpected state.
   ///
   /// Running a parent reducer before a child reducer can be considered an application logic error,
   /// and can produce assertion failures. So you should almost always combine reducers in order from
   /// child to parent domain.
   ///
-  /// Here is an example of how you should combine an ``optional(breakpointOnNil:file:line:)``
-  /// reducer with a parent domain:
+  /// Here is an example of how you should combine an ``optional(file:line:)`` reducer with a parent
+  /// domain:
   ///
   /// ```swift
   /// let parentReducer: Reducer<ParentState, ParentAction, ParentEnvironment> =
@@ -333,7 +331,7 @@ public struct Reducer<State, Action, Environment> {
   /// Take care when combining a child reducer for a particular case of enum state into its parent
   /// domain. A child reducer cannot process actions in its domain if it fails to extract its
   /// corresponding state. If a child action is sent to a reducer when its state is unavailable, it
-  /// is generally considered a logic error, and a debug breakpoint will be raised. There are a few
+  /// is generally considered a logic error, and a runtime warning will be logged. There are a few
   /// ways in which these errors can sneak into a code base:
   ///
   ///   * A parent reducer sets child state to a different case when processing a child action and
@@ -462,7 +460,6 @@ public struct Reducer<State, Action, Environment> {
     state toLocalState: CasePath<GlobalState, State>,
     action toLocalAction: CasePath<GlobalAction, Action>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
-    breakpointOnNil: Bool = true,
     file: StaticString = #fileID,
     line: UInt = #line
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
@@ -470,33 +467,39 @@ public struct Reducer<State, Action, Environment> {
       guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
 
       guard var localState = toLocalState.extract(from: globalState) else {
-        if breakpointOnNil {
-          breakpoint(
+        #if DEBUG
+          os_log(
+            .fault, dso: rw.dso, log: rw.log,
             """
-            ---
-            Warning: Reducer.pullback@\(file):\(line)
+            A reducer pulled back from "%@:%d" received an action when local state was \
+            unavailable. …
 
-            "\(debugCaseOutput(localAction))" was received by a reducer when its state was \
-            unavailable. This is generally considered an application logic error, and can happen \
-            for a few reasons:
+              Action:
+                %@
 
-            * The reducer for a particular case of state was combined with or run from another \
-            reducer that set "\(State.self)" to another case before the reducer ran. Combine or \
-            run case-specific reducers before reducers that may set their state to another case. \
-            This ensures that case-specific reducers can handle their actions while their state \
-            is available.
+            This is generally considered an application logic error, and can happen for a few \
+            reasons:
 
-            * An in-flight effect emitted this action when state was unavailable. While it may be \
+            • The reducer for a particular case of state was combined with or run from another \
+            reducer that set "%@" to another case before the reducer ran. Combine or run \
+            case-specific reducers before reducers that may set their state to another case. This \
+            ensures that case-specific reducers can handle their actions while their state is \
+            available.
+
+            • An in-flight effect emitted this action when state was unavailable. While it may be \
             perfectly reasonable to ignore this action, you may want to cancel the associated \
             effect before state is set to another case, especially if it is a long-living effect.
 
-            * This action was sent to the store while state was another case. Make sure that \
+            • This action was sent to the store while state was another case. Make sure that \
             actions for this reducer can only be sent to a view store when state is non-"nil". \
             In SwiftUI applications, use "SwitchStore".
-            ---
-            """
+            """,
+            "\(file)",
+            line,
+            debugCaseOutput(localAction),
+            "\(State.self)"
           )
-        }
+        #endif
         return .none
       }
       defer { globalState = toLocalState.embed(localState) }
@@ -665,12 +668,8 @@ public struct Reducer<State, Action, Environment> {
   /// - See also: ``Store/ifLet(then:else:)``, a UIKit helper for doing imperative work with a store
   ///   on optional state.
   ///
-  /// - Parameter breakpointOnNil: Raises `SIGTRAP` signal when an action is sent to the reducer
-  ///   but state is `nil`. This is generally considered a logic error, as a child reducer cannot
-  ///   process a child action for unavailable child state.
   /// - Returns: A reducer that works on optional state.
   public func optional(
-    breakpointOnNil: Bool = true,
     file: StaticString = #fileID,
     line: UInt = #line
   ) -> Reducer<
@@ -678,32 +677,37 @@ public struct Reducer<State, Action, Environment> {
   > {
     .init { state, action, environment in
       guard state != nil else {
-        if breakpointOnNil {
-          breakpoint(
+        #if DEBUG
+          os_log(
+            .fault, dso: rw.dso, log: rw.log,
             """
-            ---
-            Warning: Reducer.optional@\(file):\(line)
+            An "optional" reducer at "%@:%d" received an action when state was "nil". …
 
-            "\(debugCaseOutput(action))" was received by an optional reducer when its state was \
-            "nil". This is generally considered an application logic error, and can happen for a \
-            few reasons:
+              Action:
+                %@
 
-            * The optional reducer was combined with or run from another reducer that set \
-            "\(State.self)" to "nil" before the optional reducer ran. Combine or run optional \
-            reducers before reducers that can set their state to "nil". This ensures that optional \
-            reducers can handle their actions while their state is still non-"nil".
+            This is generally considered an application logic error, and can happen for a few \
+            reasons:
 
-            * An in-flight effect emitted this action while state was "nil". While it may be \
+            • The optional reducer was combined with or run from another reducer that set \
+            "%@" to "nil" before the optional reducer ran. Combine or run optional reducers before \
+            reducers that can set their state to "nil". This ensures that optional reducers can \
+            handle their actions while their state is still non-"nil".
+
+            • An in-flight effect emitted this action while state was "nil". While it may be \
             perfectly reasonable to ignore this action, you may want to cancel the associated \
             effect before state is set to "nil", especially if it is a long-living effect.
 
-            * This action was sent to the store while state was "nil". Make sure that actions for \
+            • This action was sent to the store while state was "nil". Make sure that actions for \
             this reducer can only be sent to a view store when state is non-"nil". In SwiftUI \
             applications, use "IfLetStore".
-            ---
-            """
+            """,
+            "\(file)",
+            line,
+            debugCaseOutput(action),
+            "\(State.self)"
           )
-        }
+        #endif
         return .none
       }
       return self.reducer(&state!, action, environment)
@@ -735,11 +739,10 @@ public struct Reducer<State, Action, Environment> {
   /// )
   /// ```
   ///
-  /// Take care when combining
-  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducers into parent
-  /// domains, as order matters. Always combine
-  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-7h573`` reducers _before_
-  /// parent reducers that can modify the collection.
+  /// Take care when combining ``forEach(state:action:environment:file:line:)-gvte`` reducers into
+  /// parent domains, as order matters. Always combine
+  /// ``forEach(state:action:environment:file:line:)-gvte`` reducers _before_ parent reducers that
+  /// can modify the collection.
   ///
   /// - Parameters:
   ///   - toLocalState: A key path that can get/set a collection of `State` elements inside
@@ -747,51 +750,54 @@ public struct Reducer<State, Action, Environment> {
   ///   - toLocalAction: A case path that can extract/embed `(Collection.Index, Action)` from
   ///     `GlobalAction`.
   ///   - toLocalEnvironment: A function that transforms `GlobalEnvironment` into `Environment`.
-  ///   - breakpointOnNil: Raises `SIGTRAP` signal when an action is sent to the reducer but the
-  ///     identified array does not contain an element with the action's identifier. This is
-  ///     generally considered a logic error, as a child reducer cannot process a child action
-  ///     for unavailable child state.
   /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
   public func forEach<GlobalState, GlobalAction, GlobalEnvironment, ID>(
     state toLocalState: WritableKeyPath<GlobalState, IdentifiedArray<ID, State>>,
     action toLocalAction: CasePath<GlobalAction, (ID, Action)>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
-    breakpointOnNil: Bool = true,
     file: StaticString = #fileID,
     line: UInt = #line
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
     .init { globalState, globalAction, globalEnvironment in
       guard let (id, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
       if globalState[keyPath: toLocalState][id: id] == nil {
-        if breakpointOnNil {
-          breakpoint(
+        #if DEBUG
+          os_log(
+            .fault, dso: rw.dso, log: rw.log,
             """
-            ---
-            Warning: Reducer.forEach@\(file):\(line)
+            A "forEach" reducer at "%@:%d" received an action when state contained no element with \
+            that id. …
 
-            "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at id \(id) when \
-            its state contained no element at this id. This is generally considered an application \
-            logic error, and can happen for a few reasons:
+              Action:
+                %@
+              ID:
+                %@
 
-            * This "forEach" reducer was combined with or run from another reducer that removed \
+            This is generally considered an application logic error, and can happen for a few \
+            reasons:
+
+            • This "forEach" reducer was combined with or run from another reducer that removed \
             the element at this id when it handled this action. To fix this make sure that this \
             "forEach" reducer is run before any other reducers that can move or remove elements \
             from state. This ensures that "forEach" reducers can handle their actions for the \
             element at the intended id.
 
-            * An in-flight effect emitted this action while state contained no element at this id. \
+            • An in-flight effect emitted this action while state contained no element at this id. \
             It may be perfectly reasonable to ignore this action, but you also may want to cancel \
             the effect it originated from when removing an element from the identified array, \
             especially if it is a long-living effect.
 
-            * This action was sent to the store while its state contained no element at this id. \
+            • This action was sent to the store while its state contained no element at this id. \
             To fix this make sure that actions for this reducer can only be sent to a view store \
             when its state contains an element at this id. In SwiftUI applications, use \
             "ForEachStore".
-            ---
-            """
+            """,
+            "\(file)",
+            line,
+            debugCaseOutput(localAction),
+            "\(id)"
           )
-        }
+        #endif
         return .none
       }
       return
@@ -808,27 +814,21 @@ public struct Reducer<State, Action, Environment> {
   /// A version of ``pullback(state:action:environment:)`` that transforms a reducer that works on
   /// an element into one that works on a dictionary of element values.
   ///
-  /// Take care when combining
-  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-1h7qx``
-  /// reducers into parent domains, as order matters. Always combine
-  /// ``forEach(state:action:environment:breakpointOnNil:file:line:)-1h7qx`` reducers _before_
-  /// parent reducers that can modify the dictionary.
+  /// Take care when combining ``forEach(state:action:environment:file:line:)-21wow`` reducers into
+  /// parent domains, as order matters. Always combine
+  /// ``forEach(state:action:environment:file:line:)-21wow`` reducers _before_ parent reducers that
+  /// can modify the dictionary.
   ///
   /// - Parameters:
   ///   - toLocalState: A key path that can get/set a dictionary of `State` values inside
   ///     `GlobalState`.
   ///   - toLocalAction: A case path that can extract/embed `(Key, Action)` from `GlobalAction`.
   ///   - toLocalEnvironment: A function that transforms `GlobalEnvironment` into `Environment`.
-  ///   - breakpointOnNil: Raises `SIGTRAP` signal when an action is sent to the reducer but the
-  ///     identified array does not contain an element with the action's identifier. This is
-  ///     generally considered a logic error, as a child reducer cannot process a child action
-  ///     for unavailable child state.
   /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
   public func forEach<GlobalState, GlobalAction, GlobalEnvironment, Key>(
     state toLocalState: WritableKeyPath<GlobalState, [Key: State]>,
     action toLocalAction: CasePath<GlobalAction, (Key, Action)>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
-    breakpointOnNil: Bool = true,
     file: StaticString = #fileID,
     line: UInt = #line
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
@@ -836,34 +836,42 @@ public struct Reducer<State, Action, Environment> {
       guard let (key, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
 
       if globalState[keyPath: toLocalState][key] == nil {
-        if breakpointOnNil {
-          breakpoint(
+        #if DEBUG
+          os_log(
+            .fault, dso: rw.dso, log: rw.log,
             """
-            ---
-            Warning: Reducer.forEach@\(file):\(line)
+            A "forEach" reducer at "%@:%d" received an action when state contained no value at \
+            that key. …
 
-            "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at key \(key) \
-            when its state contained no element at this key. This is generally considered an \
-            application logic error, and can happen for a few reasons:
+              Action:
+                %@
+              Key:
+                %@
 
-            * This "forEach" reducer was combined with or run from another reducer that removed \
+            This is generally considered an application logic error, and can happen for a few \
+            reasons:
+
+            • This "forEach" reducer was combined with or run from another reducer that removed \
             the element at this key when it handled this action. To fix this make sure that this \
             "forEach" reducer is run before any other reducers that can move or remove elements \
             from state. This ensures that "forEach" reducers can handle their actions for the \
             element at the intended key.
 
-            * An in-flight effect emitted this action while state contained no element at this \
+            • An in-flight effect emitted this action while state contained no element at this \
             key. It may be perfectly reasonable to ignore this action, but you also may want to \
             cancel the effect it originated from when removing a value from the dictionary, \
             especially if it is a long-living effect.
 
-            * This action was sent to the store while its state contained no element at this \
+            • This action was sent to the store while its state contained no element at this \
             key. To fix this make sure that actions for this reducer can only be sent to a view \
             store when its state contains an element at this key.
-            ---
-            """
+            """,
+            "\(file)",
+            line,
+            debugCaseOutput(localAction),
+            "\(key)"
           )
-        }
+        #endif
         return .none
       }
       return self.reducer(

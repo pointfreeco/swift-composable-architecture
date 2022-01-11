@@ -3,7 +3,8 @@ import ComposableArchitecture
 import SwiftUI
 import UIKit
 
-struct CounterState: Equatable {
+struct CounterState: Equatable, Identifiable {
+  let id = UUID()
   var count = 0
 }
 

@@ -168,7 +168,7 @@ final class ViewStoreTests: XCTestCase {
     XCTAssertNoDifference(results, Array(repeating: [0, 1, 2], count: 10).flatMap { $0 })
   }
 
-  #if compiler(>=5.5) && canImport(_Concurrency)
+  #if canImport(_Concurrency) && compiler(>=5.5.2)
     func testSendWhile() {
       let expectation = self.expectation(description: "await")
       Task { @MainActor in
