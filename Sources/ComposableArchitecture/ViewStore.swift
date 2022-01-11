@@ -135,8 +135,6 @@ public final class ViewStore<State, Action>: ObservableObject {
     _ = self._send(action)
   }
 
-  // TODO: document this method as not being useful if main thread
-  //       check is off?
   @MainActor
   public func send(_ action: Action) async {
     let (cancel, task) = self._send(action)

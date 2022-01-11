@@ -12,7 +12,7 @@ final class StoreTests: XCTestCase {
 
     XCTAssertNoDifference(store.effectCancellables.count, 0)
 
-    store.send(())
+    _ = store.send(())
 
     XCTAssertNoDifference(store.effectCancellables.count, 0)
   }
@@ -37,7 +37,7 @@ final class StoreTests: XCTestCase {
 
     XCTAssertNoDifference(store.effectCancellables.count, 0)
 
-    store.send(.start)
+    _ = store.send(.start)
 
     XCTAssertNoDifference(store.effectCancellables.count, 1)
 
@@ -199,7 +199,7 @@ final class StoreTests: XCTestCase {
 
     let store = Store(initialState: (), reducer: counterReducer, environment: ())
 
-    store.send(.tap)
+    _ = store.send(.tap)
 
     XCTAssertNoDifference(values, [1, 2, 3, 4])
   }
@@ -217,7 +217,7 @@ final class StoreTests: XCTestCase {
     }
 
     let store = Store(initialState: 0, reducer: reducer, environment: ())
-    store.send(.incr)
+    _ = store.send(.incr)
     XCTAssertNoDifference(ViewStore(store).state, 100_000)
   }
 
@@ -252,22 +252,22 @@ final class StoreTests: XCTestCase {
 
     XCTAssertNoDifference(outputs, [nil])
 
-    parentStore.send(1)
+    _ = parentStore.send(1)
     XCTAssertNoDifference(outputs, [nil, 1])
 
-    parentStore.send(nil)
+    _ = parentStore.send(nil)
     XCTAssertNoDifference(outputs, [nil, 1, nil])
 
-    parentStore.send(1)
+    _ = parentStore.send(1)
     XCTAssertNoDifference(outputs, [nil, 1, nil, 1])
 
-    parentStore.send(nil)
+    _ = parentStore.send(nil)
     XCTAssertNoDifference(outputs, [nil, 1, nil, 1, nil])
 
-    parentStore.send(1)
+    _ = parentStore.send(1)
     XCTAssertNoDifference(outputs, [nil, 1, nil, 1, nil, 1])
 
-    parentStore.send(nil)
+    _ = parentStore.send(nil)
     XCTAssertNoDifference(outputs, [nil, 1, nil, 1, nil, 1, nil])
   }
 
@@ -439,7 +439,7 @@ final class StoreTests: XCTestCase {
 
     XCTAssertNoDifference(handledActions, [])
 
-    parentStore.send(.button)
+    _ = parentStore.send(.button)
     XCTAssertNoDifference(
       handledActions,
       [
