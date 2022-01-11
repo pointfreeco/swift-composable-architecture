@@ -4,13 +4,15 @@ public enum TaskResult<Success> {
   case success(Success)
   case failure(Error)
 
-  public init(catching body: () async throws -> Success) async {
-    do {
-      self = .success(try await body())
-    } catch {
-      self = .failure(error)
+  #if canImport(_Concurrency) && compiler(>=5.5.2)
+    public init(catching body: () async throws -> Success) async {
+      do {
+        self = .success(try await body())
+      } catch {
+        self = .failure(error)
+      }
     }
-  }
+  #endif
 }
 
 extension TaskResult: Equatable where Success: Equatable {
