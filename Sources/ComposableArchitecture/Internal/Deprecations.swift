@@ -3,6 +3,95 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
+#if DEBUG
+  import os
+#endif
+
+// NB: Deprecated after 0.31.0:
+
+extension Reducer {
+  @available(
+    *,
+    deprecated,
+    message: "'pullback' no longer takes a 'breakpointOnNil' argument"
+  )
+  public func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
+    state toLocalState: CasePath<GlobalState, State>,
+    action toLocalAction: CasePath<GlobalAction, Action>,
+    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+    breakpointOnNil: Bool,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+    self.pullback(
+      state: toLocalState,
+      action: toLocalAction,
+      environment: toLocalEnvironment,
+      file: file,
+      line: line
+    )
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: "'optional' no longer takes a 'breakpointOnNil' argument"
+  )
+  public func optional(
+    breakpointOnNil: Bool,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  ) -> Reducer<
+    State?, Action, Environment
+  > {
+    self.optional(file: file, line: line)
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: "'forEach' no longer takes a 'breakpointOnNil' argument"
+  )
+  public func forEach<GlobalState, GlobalAction, GlobalEnvironment, ID>(
+    state toLocalState: WritableKeyPath<GlobalState, IdentifiedArray<ID, State>>,
+    action toLocalAction: CasePath<GlobalAction, (ID, Action)>,
+    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+    breakpointOnNil: Bool,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+    self.forEach(
+      state: toLocalState,
+      action: toLocalAction,
+      environment: toLocalEnvironment,
+      file: file,
+      line: line
+    )
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: "'forEach' no longer takes a 'breakpointOnNil' argument"
+  )
+  public func forEach<GlobalState, GlobalAction, GlobalEnvironment, Key>(
+    state toLocalState: WritableKeyPath<GlobalState, [Key: State]>,
+    action toLocalAction: CasePath<GlobalAction, (Key, Action)>,
+    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+    breakpointOnNil: Bool,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+    self.forEach(
+      state: toLocalState,
+      action: toLocalAction,
+      environment: toLocalEnvironment,
+      file: file,
+      line: line
+    )
+  }
+}
+
 // NB: Deprecated after 0.29.0:
 
 #if DEBUG
@@ -458,36 +547,44 @@ extension Reducer {
         return .none
       }
       if index >= globalState[keyPath: toLocalState].endIndex {
-        if breakpointOnNil {
-          breakpoint(
+        #if DEBUG
+          os_log(
+            .fault, dso: rw.dso, log: rw.log,
             """
-            ---
-            Warning: Reducer.forEach@\(file):\(line)
+            A "forEach" reducer at "%@:%d" received an action when state contained no element at \
+            that index. …
 
-            "\(debugCaseOutput(localAction))" was received by a "forEach" reducer at index \
-            \(index) when its state contained no element at this index. This is generally \
-            considered an application logic error, and can happen for a few reasons:
+              Action:
+                %@
+              Index:
+                %d
 
-            * This "forEach" reducer was combined with or run from another reducer that removed \
+            This is generally considered an application logic error, and can happen for a few \
+            reasons:
+
+            • This "forEach" reducer was combined with or run from another reducer that removed \
             the element at this index when it handled this action. To fix this make sure that \
             this "forEach" reducer is run before any other reducers that can move or remove \
             elements from state. This ensures that "forEach" reducers can handle their actions \
             for the element at the intended index.
 
-            * An in-flight effect emitted this action while state contained no element at this \
+            • An in-flight effect emitted this action while state contained no element at this \
             index. While it may be perfectly reasonable to ignore this action, you may want to \
             cancel the associated effect when moving or removing an element. If your "forEach" \
             reducer returns any long-living effects, you should use the identifier-based \
             "forEach" instead.
 
-            * This action was sent to the store while its state contained no element at this \
+            • This action was sent to the store while its state contained no element at this \
             index. To fix this make sure that actions for this reducer can only be sent to a \
             view store when its state contains an element at this index. In SwiftUI \
             applications, use "ForEachStore".
-            ---
-            """
+            """,
+            "\(file)",
+            line,
+            debugCaseOutput(localAction),
+            index
           )
-        }
+        #endif
         return .none
       }
       return self.run(

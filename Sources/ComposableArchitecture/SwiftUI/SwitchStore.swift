@@ -1,5 +1,9 @@
 import SwiftUI
 
+#if DEBUG
+  import os
+#endif
+
 /// A view that can switch over a store of enum state and handle each case.
 ///
 /// An application may model parts of its state with enums. For example, app state may differ if a
@@ -33,7 +37,7 @@ import SwiftUI
 /// ```
 ///
 /// If a ``SwitchStore`` does not exhaustively handle every case with a corresponding ``CaseLet``
-/// view, a debug breakpoint will be raised when an unhandled case is encountered. To fall back on a
+/// view, a runtime warning will be logged when an unhandled case is encountered. To fall back on a
 /// default view instead, introduce a ``Default`` view at the end of the ``SwitchStore``:
 ///
 /// ```swift
@@ -47,9 +51,9 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// - See also: ``Reducer/pullback(state:action:environment:breakpointOnNil:file:line:)``, a method
-///   that aids in transforming reducers that operate on each case of an enum into reducers that
-///   operate on the entire enum.
+/// - See also: ``Reducer/pullback(state:action:environment:file:line:)``, a method that aids in
+///   transforming reducers that operate on each case of an enum into reducers that operate on the
+///   entire enum.
 public struct SwitchStore<State, Action, Content>: View where Content: View {
   public let store: Store<State, Action>
   public let content: () -> Content
@@ -1196,13 +1200,23 @@ public struct _ExhaustivityCheckView<State, Action>: View {
       .padding()
       .background(Color.red.edgesIgnoringSafeArea(.all))
       .onAppear {
-        breakpoint(
-          """
-          ---
-          \(message)
-          ---
-          """
-        )
+        #if DEBUG
+          os_log(
+            .fault, dso: rw.dso, log: rw.log,
+            """
+            SwitchStore@%@:%d does not handle the current case. …
+
+              Unhandled case:
+                %@
+
+            Make sure that you exhaustively provide a "CaseLet" view for each case in your state, \
+            or provide a "Default" view at the end of the "SwitchStore".
+            """,
+            "\(self.file)",
+            self.line,
+            debugCaseOutput(self.store.wrappedValue.state.value)
+          )
+        #endif
       }
     #else
       return EmptyView()
