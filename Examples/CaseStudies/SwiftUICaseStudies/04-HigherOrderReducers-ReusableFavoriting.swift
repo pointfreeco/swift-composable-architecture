@@ -151,12 +151,10 @@ let episodeReducer = Reducer<EpisodeState, EpisodeAction, EpisodeEnvironment>.em
 
 struct EpisodesState: Equatable {
   var episodes: IdentifiedArrayOf<EpisodeState> = []
-  var episodeSelection: EpisodeState?
 }
 
 enum EpisodesAction: Equatable {
   case episode(id: EpisodeState.ID, action: EpisodeAction)
-  case episodeSelection(EpisodeAction)
 }
 
 struct EpisodesEnvironment {
