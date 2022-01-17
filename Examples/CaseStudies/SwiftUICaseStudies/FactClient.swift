@@ -52,7 +52,7 @@ extension FactClient {
     // This is the "failing" fact dependency that is useful to plug into tests that you want
     // to prove do not need the dependency.
     static let failing = Self(
-      fetch: { _ in throw UnimplementedError(endpoint: "fetch") }
+      fetch: { _ in throw Unimplemented(endpoint: "fetch") }
     )
   }
 #endif
