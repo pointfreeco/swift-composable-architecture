@@ -339,7 +339,7 @@ extension Publisher {
   /// into a result and then applying passed in function to it.
   ///
   /// This is a convenience operator for writing ``Effect/catchToEffect()`` followed by a
-  /// ``Effect/map(_:)-28ghh``.
+  /// ``Effect/map(_:)``.
   ///
   /// ```swift
   /// case .buttonTapped:
