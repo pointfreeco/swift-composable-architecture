@@ -54,12 +54,15 @@ extension Effect {
         }
       }
 
-      cancellationCancellables[id, default: []].insert(
-        cancellationCancellable
-      )
-
       return self.prefix(untilOutputFrom: cancellationSubject)
         .handleEvents(
+          receiveSubscription: { _ in
+            _ = cancellablesLock.sync {
+              cancellationCancellables[id, default: []].insert(
+                cancellationCancellable
+              )
+            }
+          },
           receiveCompletion: { _ in cancellationCancellable.cancel() },
           receiveCancel: cancellationCancellable.cancel
         )
