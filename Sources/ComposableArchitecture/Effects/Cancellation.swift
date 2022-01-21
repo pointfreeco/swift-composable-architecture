@@ -29,38 +29,40 @@ extension Effect {
   ///     canceled before starting this new one.
   /// - Returns: A new effect that is capable of being canceled by an identifier.
   public func cancellable(id: AnyHashable, cancelInFlight: Bool = false) -> Effect {
-    Deferred { () -> Publishers.HandleEvents<
-      Publishers.PrefixUntilOutput<Self, PassthroughSubject<Void, Never>>
-    > in
-    cancellablesLock.lock()
-    defer { cancellablesLock.unlock() }
+    Deferred {
+      ()
+        -> Publishers.HandleEvents<
+          Publishers.PrefixUntilOutput<Self, PassthroughSubject<Void, Never>>
+        > in
+      cancellablesLock.lock()
+      defer { cancellablesLock.unlock() }
 
-    if cancelInFlight {
-      cancellationCancellables[id]?.forEach { $0.cancel() }
-    }
+      if cancelInFlight {
+        cancellationCancellables[id]?.forEach { $0.cancel() }
+      }
 
-    let cancellationSubject = PassthroughSubject<Void, Never>()
+      let cancellationSubject = PassthroughSubject<Void, Never>()
 
-    var cancellationCancellable: AnyCancellable!
-    cancellationCancellable = AnyCancellable {
-      cancellablesLock.sync {
-        cancellationSubject.send(())
-        cancellationCancellables[id]?.remove(cancellationCancellable)
-        if cancellationCancellables[id]?.isEmpty == .some(true) {
-          cancellationCancellables[id] = nil
+      var cancellationCancellable: AnyCancellable!
+      cancellationCancellable = AnyCancellable {
+        cancellablesLock.sync {
+          cancellationSubject.send(())
+          cancellationCancellables[id]?.remove(cancellationCancellable)
+          if cancellationCancellables[id]?.isEmpty == .some(true) {
+            cancellationCancellables[id] = nil
+          }
         }
       }
-    }
 
-    cancellationCancellables[id, default: []].insert(
-      cancellationCancellable
-    )
-
-    return self.prefix(untilOutputFrom: cancellationSubject)
-      .handleEvents(
-        receiveCompletion: { _ in cancellationCancellable.cancel() },
-        receiveCancel: cancellationCancellable.cancel
+      cancellationCancellables[id, default: []].insert(
+        cancellationCancellable
       )
+
+      return self.prefix(untilOutputFrom: cancellationSubject)
+        .handleEvents(
+          receiveCompletion: { _ in cancellationCancellable.cancel() },
+          receiveCancel: cancellationCancellable.cancel
+        )
     }
     .eraseToEffect()
   }
