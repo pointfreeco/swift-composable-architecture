@@ -134,6 +134,7 @@ import Foundation
 /// sends user actions.
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
+  private var contextID: UUID = UUID()
   var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
   var parentCancellable: AnyCancellable?
@@ -345,6 +346,7 @@ public final class Store<State, Action> {
         guard !isSending else { return }
         localStore?.state.value = toLocalState(newValue)
       }
+    localStore.contextID = contextID
     return localStore
   }
 
@@ -373,7 +375,9 @@ public final class Store<State, Action> {
 
     while !self.bufferedActions.isEmpty {
       let action = self.bufferedActions.removeFirst()
-      let effect = self.reducer(&currentState, action)
+      let effect = withContextID(contextID) {
+        self.reducer(&currentState, action)
+      }
 
       var didComplete = false
       let uuid = UUID()
@@ -524,5 +528,19 @@ public final class Store<State, Action> {
     #if DEBUG
       self.mainThreadChecksEnabled = mainThreadChecksEnabled
     #endif
+  }
+}
+
+var currentContextID: UUID?
+let contextLock = NSRecursiveLock()
+
+extension Store {
+  func withContextID<Result>(_ id: UUID, block: () -> Result) -> Result {
+    contextLock.lock()
+    defer { contextLock.unlock() }
+    let currentID = currentContextID
+    defer { currentContextID = currentID }
+    currentContextID = id
+    return block()
   }
 }

@@ -104,3 +104,62 @@ extension Effect {
 
 var cancellationCancellables: [AnyHashable: Set<AnyCancellable>] = [:]
 let cancellablesLock = NSRecursiveLock()
+
+@propertyWrapper
+public struct CancellationID: Hashable {
+  let cancellationIdentifier: CancellationIdentifier
+
+  public var wrappedValue: CancellationIdentifier {
+    get { cancellationIdentifier }
+  }
+  
+  public init<ID>(
+    wrappedValue: ID,
+    file: String = #file,
+    line: UInt = #line,
+    column: UInt = #column
+  ) where ID: Hashable {
+    cancellationIdentifier = .init(
+      content: wrappedValue,
+      contextID: currentContextID,
+      file: file,
+      line: line,
+      column: column
+    )
+  }
+
+  public init(
+    file: String = #file,
+    line: UInt = #line,
+    column: UInt = #column
+  ) {
+    cancellationIdentifier = .init(
+      content: 0,
+      contextID: currentContextID,
+      file: file,
+      line: line,
+      column: column
+    )
+  }
+}
+
+public struct CancellationIdentifier: Hashable {
+  init(content: AnyHashable, contextID: UUID?, file: String, line: UInt, column: UInt) {
+    self.content = content
+    self.contextID = contextID
+    self.file = file
+    self.line = line
+    self.column = column
+    #if DEBUG
+    if contextID == nil {
+      // TODO: Log some warning about the id not being store-specific
+    }
+    #endif
+  }
+  
+  let content: AnyHashable
+  let contextID: UUID?
+  let file: String
+  let line: UInt
+  let column: UInt
+}
