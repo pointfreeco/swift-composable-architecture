@@ -541,10 +541,4 @@ extension Store {
     }
     return block()
   }
-  
-  /// Add some additional context to a ``Store`` and all its scoped stores.
-  public func withContext<Context>(_ context: Context) -> Self where Context: Hashable {
-    self.contextID = context
-    return self
-  }
 }

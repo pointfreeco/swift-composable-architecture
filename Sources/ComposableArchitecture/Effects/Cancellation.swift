@@ -144,37 +144,6 @@ public struct EffectID: Hashable {
       column: column
     )
   }
-
-  public init<Context, ID>(
-    wrappedValue: ID,
-    context: Context,
-    file: String = #file,
-    line: UInt = #line,
-    column: UInt = #column
-  ) where Context: Hashable, ID: Hashable {
-    effectIdentifier = .init(
-      contextID: context,
-      userData: wrappedValue,
-      file: file,
-      line: line,
-      column: column
-    )
-  }
-
-  public init<Context>(
-    context: Context,
-    file: String = #file,
-    line: UInt = #line,
-    column: UInt = #column
-  ) where Context: Hashable {
-    effectIdentifier = .init(
-      contextID: context,
-      userData: nil,
-      file: file,
-      line: line,
-      column: column
-    )
-  }
 }
 
 public struct EffectIdentifier: Hashable {
