@@ -531,16 +531,14 @@ public final class Store<State, Action> {
   }
 }
 
-var currentContextID: UUID?
-let contextLock = NSRecursiveLock()
-
+let currentContextKey = "swift-composable-architecture:currentContext"
 extension Store {
-  func withContextID<Result>(_ id: UUID, block: () -> Result) -> Result {
-    contextLock.lock()
-    defer { contextLock.unlock() }
-    let currentID = currentContextID
-    defer { currentContextID = currentID }
-    currentContextID = id
+  @inlinable @discardableResult
+  func withContextID<ID, Result>(_ id: ID, block: () -> Result) -> Result where ID: Hashable {
+    Thread.current.threadDictionary.setValue(id as AnyHashable, forKey: currentContextKey)
+    defer {
+      Thread.current.threadDictionary.setValue(nil, forKey: currentContextKey)
+    }
     return block()
   }
 }
