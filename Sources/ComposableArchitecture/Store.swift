@@ -134,7 +134,7 @@ import Foundation
 /// sends user actions.
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
-  fileprivate lazy var contextID: AnyHashable = ObjectIdentifier(self)
+  private lazy var contextID: AnyHashable = ObjectIdentifier(self)
   var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
   var parentCancellable: AnyCancellable?
