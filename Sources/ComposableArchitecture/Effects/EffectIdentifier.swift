@@ -18,7 +18,7 @@ public struct EffectID: Hashable {
 
   public init<UserData>(
     wrappedValue: UserData,
-    file: StaticString = #file,
+    file: StaticString = #fileID,
     line: UInt = #line,
     column: UInt = #column
   ) where UserData: Hashable {
@@ -31,7 +31,7 @@ public struct EffectID: Hashable {
   }
 
   public init(
-    file: StaticString = #file,
+    file: StaticString = #fileID,
     line: UInt = #line,
     column: UInt = #column
   ) {
@@ -53,7 +53,7 @@ public struct EffectIdentifier: Hashable {
   internal init(
     contextID: AnyHashable? = nil,
     userData: AnyHashable? = nil,
-    file: StaticString = #file,
+    file: StaticString = #fileID,
     line: UInt = #line,
     column: UInt = #column
   ) {
