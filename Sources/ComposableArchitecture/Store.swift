@@ -531,13 +531,12 @@ public final class Store<State, Action> {
   }
 }
 
-let currentContextKey = "swift-composable-architecture:currentContext"
 extension Store {
-  @discardableResult
+  @inlinable @discardableResult
   func withContextID<ID, Result>(_ id: ID, block: () -> Result) -> Result where ID: Hashable {
-    Thread.current.threadDictionary.setValue(id as AnyHashable, forKey: currentContextKey)
+    Thread.current.threadDictionary.setValue(id as AnyHashable, forKey: EffectID.currentContextKey)
     defer {
-      Thread.current.threadDictionary.setValue(nil, forKey: currentContextKey)
+      Thread.current.threadDictionary.setValue(nil, forKey: EffectID.currentContextKey)
     }
     return block()
   }
