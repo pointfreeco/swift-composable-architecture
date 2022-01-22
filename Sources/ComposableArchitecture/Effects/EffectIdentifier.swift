@@ -3,7 +3,61 @@ import Foundation
 #if DEBUG
   import os
 #endif
-
+/// A property wrapper that generates a hashable value suitable to identify ``Effect``'s.
+///
+/// These identifiers are bound to the root ``Store`` executing the ``Reducer`` that produces the
+/// ``Effect``'s. This can be conveniently exploited in document-based apps for example, where
+/// you may have multiple documents and by extension, multiple root ``Store``'s coexisting in the
+/// same process.
+///
+/// The value returned is an opaque hashable value that is constant across ``Reducer``'s runs, and
+/// which can be used to identify long-running or cancellable effects:
+///
+/// ``` swift
+/// Reducer<State, Action, Environment> { state, action, environment in
+///  @EffectID var timerID
+///  switch action {
+///  case .onAppear:
+///   return
+///     .timer(id: timerID, every: 1, on: environment.mainQueue)
+///     .map { _ in Action.timerTick }
+///  case .onDisappear:
+///   return .cancel(id: timerID)
+///  case .timerTick:
+///   state.ticks += 1
+///   return .none
+///  }
+/// }
+/// ```
+///
+/// If these property wrappers can be used without arguments, you can also provide some contextual
+/// data to parametrize them:
+///
+/// ``` swift
+/// Reducer<State, Action, Environment> { state, action, environment in
+///  @EffectID var timerID = state.timerID
+///  …
+/// }
+/// ```
+///
+/// - Important: This property wrapper is context-specific. Two identifiers defined in different
+/// locations are always different, even if they share the same user data.
+///
+/// ``` swift
+/// Reducer<State, Action, Environment> { _, _, _ in
+///  @EffectID var id1 = 1
+///  @EffectID var id2 = 1
+///
+///  // id1 != id2
+/// }
+/// ```
+/// Two identifiers are equal iff they are defined at the same place, and with the same contextual
+/// data (if any).
+///
+/// - Warning: This property wrapper should only be used with some ``Reducer``'s context, that is,
+/// when reducing some action. Failing to do so raises a runtime warning when comparing two
+/// identifiers. The value can be defined in any spot allowing property wrappers, but it should only
+/// be accessed from some ``Reducer`` execution block.
 @propertyWrapper
 public struct EffectID: Hashable {
   static var currentContextID: AnyHashable? {
