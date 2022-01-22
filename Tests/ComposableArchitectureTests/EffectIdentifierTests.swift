@@ -27,6 +27,7 @@
       XCTAssertNotEqual(id1, id2_2)
       XCTAssertNotEqual(id2_1, id2_2)
     }
+    
     #if compiler(>=5.5)
     func testLocalEffectIdentifierEquality() {
       @EffectID var id1
