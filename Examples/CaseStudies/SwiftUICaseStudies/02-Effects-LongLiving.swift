@@ -40,7 +40,7 @@ let longLivingEffectsReducer = Reducer<
 > { state, action, environment in
 
   #if swift(>=5.4)
-  @CancellationID var userDidTakeScreenshotNotificationId
+  @EffectID var userDidTakeScreenshotNotificationId
   #else
   struct UserDidTakeScreenshotNotificationId: Hashable {}
   let userDidTakeScreenshotNotificationId = UserDidTakeScreenshotNotificationId()

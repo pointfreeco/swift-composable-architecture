@@ -106,11 +106,11 @@ var cancellationCancellables: [AnyHashable: Set<AnyCancellable>] = [:]
 let cancellablesLock = NSRecursiveLock()
 
 @propertyWrapper
-public struct CancellationID: Hashable {
-  let cancellationIdentifier: CancellationIdentifier
+public struct EffectID: Hashable {
+  let effectIdentifier: EffectIdentifier
 
-  public var wrappedValue: CancellationIdentifier {
-    cancellationIdentifier
+  public var wrappedValue: EffectIdentifier {
+    effectIdentifier
   }
 
   static var currentContextID: AnyHashable? {
@@ -123,9 +123,9 @@ public struct CancellationID: Hashable {
     line: UInt = #line,
     column: UInt = #column
   ) where ID: Hashable {
-    cancellationIdentifier = .init(
-      content: wrappedValue,
+    effectIdentifier = .init(
       contextID: Self.currentContextID,
+      userData: wrappedValue,
       file: file,
       line: line,
       column: column
@@ -137,7 +137,7 @@ public struct CancellationID: Hashable {
     line: UInt = #line,
     column: UInt = #column
   ) {
-    cancellationIdentifier = .init(
+    effectIdentifier = .init(
       contextID: Self.currentContextID,
       file: file,
       line: line,
@@ -152,9 +152,9 @@ public struct CancellationID: Hashable {
     line: UInt = #line,
     column: UInt = #column
   ) where Context: Hashable, ID: Hashable {
-    cancellationIdentifier = .init(
-      content: wrappedValue,
+    effectIdentifier = .init(
       contextID: context,
+      userData: wrappedValue,
       file: file,
       line: line,
       column: column
@@ -167,9 +167,9 @@ public struct CancellationID: Hashable {
     line: UInt = #line,
     column: UInt = #column
   ) where Context: Hashable {
-    cancellationIdentifier = .init(
-      content: nil,
+    effectIdentifier = .init(
       contextID: context,
+      userData: nil,
       file: file,
       line: line,
       column: column
@@ -177,16 +177,16 @@ public struct CancellationID: Hashable {
   }
 }
 
-public struct CancellationIdentifier: Hashable {
+public struct EffectIdentifier: Hashable {
   init(
-    content: AnyHashable? = nil,
     contextID: AnyHashable? = nil,
+    userData: AnyHashable? = nil,
     file: String = #file,
     line: UInt = #line,
     column: UInt = #column
   ) {
-    self.content = content
     self.contextID = contextID
+    self.userData = userData
     self.file = file
     self.line = line
     self.column = column
@@ -197,8 +197,8 @@ public struct CancellationIdentifier: Hashable {
     #endif
   }
 
-  let content: AnyHashable?
   let contextID: AnyHashable?
+  let userData: AnyHashable?
   let file: String
   let line: UInt
   let column: UInt

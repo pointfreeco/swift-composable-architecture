@@ -40,7 +40,7 @@ let effectsCancellationReducer = Reducer<
 > { state, action, environment in
 
   #if swift(>=5.4)
-  @CancellationID var triviaRequestId
+  @EffectID var triviaRequestId
   #else
   struct TriviaRequestId: Hashable {}
   let triviaRequestId = TriviaRequestId()
