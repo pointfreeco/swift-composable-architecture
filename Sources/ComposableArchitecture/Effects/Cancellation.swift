@@ -110,13 +110,13 @@ public struct CancellationID: Hashable {
   let cancellationIdentifier: CancellationIdentifier
 
   public var wrappedValue: CancellationIdentifier {
-    get { cancellationIdentifier }
+    cancellationIdentifier
   }
-  
+
   static var currentContextID: AnyHashable? {
     Thread.current.threadDictionary.value(forKey: currentContextKey) as? AnyHashable
   }
-  
+
   public init<ID>(
     wrappedValue: ID,
     file: String = #file,
@@ -144,6 +144,37 @@ public struct CancellationID: Hashable {
       column: column
     )
   }
+
+  public init<Context, ID>(
+    wrappedValue: ID,
+    context: Context,
+    file: String = #file,
+    line: UInt = #line,
+    column: UInt = #column
+  ) where Context: Hashable, ID: Hashable {
+    cancellationIdentifier = .init(
+      content: wrappedValue,
+      contextID: context,
+      file: file,
+      line: line,
+      column: column
+    )
+  }
+
+  public init<Context>(
+    context: Context,
+    file: String = #file,
+    line: UInt = #line,
+    column: UInt = #column
+  ) where Context: Hashable {
+    cancellationIdentifier = .init(
+      content: nil,
+      contextID: context,
+      file: file,
+      line: line,
+      column: column
+    )
+  }
 }
 
 public struct CancellationIdentifier: Hashable {
@@ -160,12 +191,12 @@ public struct CancellationIdentifier: Hashable {
     self.line = line
     self.column = column
     #if DEBUG
-    if contextID == nil {
-      // TODO: Log some warning about the id not being store-specific?
-    }
+      if contextID == nil {
+        // TODO: Log some warning about the id not being store-specific?
+      }
     #endif
   }
-  
+
   let content: AnyHashable?
   let contextID: AnyHashable?
   let file: String

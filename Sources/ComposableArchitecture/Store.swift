@@ -134,7 +134,7 @@ import Foundation
 /// sends user actions.
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
-  private var contextID: UUID = UUID()
+  fileprivate lazy var contextID: AnyHashable = ObjectIdentifier(self)
   var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
   var parentCancellable: AnyCancellable?
@@ -540,5 +540,11 @@ extension Store {
       Thread.current.threadDictionary.setValue(nil, forKey: currentContextKey)
     }
     return block()
+  }
+  
+  /// Add some additional context to a ``Store`` and all its scoped stores.
+  public func withContext<Context>(_ context: Context) -> Self where Context: Hashable {
+    self.contextID = context
+    return self
   }
 }
