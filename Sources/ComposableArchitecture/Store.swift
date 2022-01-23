@@ -134,7 +134,7 @@ import Foundation
 /// sends user actions.
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
-  private lazy var contextID: AnyHashable = ObjectIdentifier(self)
+  private lazy var contextID = ObjectIdentifier(self)
   var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
   var parentCancellable: AnyCancellable?
@@ -375,7 +375,7 @@ public final class Store<State, Action> {
 
     while !self.bufferedActions.isEmpty {
       let action = self.bufferedActions.removeFirst()
-      let effect = withContextID(contextID) {
+      let effect = withContextID {
         self.reducer(&currentState, action)
       }
 
@@ -409,6 +409,15 @@ public final class Store<State, Action> {
     return self.scope(state: { $0 }, action: absurd)
   }
 
+  @discardableResult
+  func withContextID<Result>(block: () -> Result) -> Result {
+    Thread.current.threadDictionary.setValue(contextID as AnyHashable, forKey: EffectID.currentContextKey)
+    defer {
+      Thread.current.threadDictionary.setValue(nil, forKey: EffectID.currentContextKey)
+    }
+    return block()
+  }
+  
   private enum ThreadCheckStatus {
     case effectCompletion(Action)
     case `init`
@@ -528,16 +537,5 @@ public final class Store<State, Action> {
     #if DEBUG
       self.mainThreadChecksEnabled = mainThreadChecksEnabled
     #endif
-  }
-}
-
-extension Store {
-  @inlinable @discardableResult
-  func withContextID<ID, Result>(_ id: ID, block: () -> Result) -> Result where ID: Hashable {
-    Thread.current.threadDictionary.setValue(id as AnyHashable, forKey: EffectID.currentContextKey)
-    defer {
-      Thread.current.threadDictionary.setValue(nil, forKey: EffectID.currentContextKey)
-    }
-    return block()
   }
 }
