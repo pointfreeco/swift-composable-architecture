@@ -2,7 +2,7 @@
   import XCTest
 
   @testable import ComposableArchitecture
-  final class EffectIdentifierTests: XCTestCase {
+  final class EffectIDTests: XCTestCase {
     @EffectID var id1
     @EffectID var id2_1 = 1
     @EffectID var id2_2 = 1
