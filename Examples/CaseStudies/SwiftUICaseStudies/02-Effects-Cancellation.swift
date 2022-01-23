@@ -39,12 +39,7 @@ let effectsCancellationReducer = Reducer<
   EffectsCancellationState, EffectsCancellationAction, EffectsCancellationEnvironment
 > { state, action, environment in
 
-  #if swift(>=5.4)
   @EffectID var triviaRequestId
-  #else
-  struct TriviaRequestId: Hashable {}
-  let triviaRequestId = TriviaRequestId()
-  #endif
 
   switch action {
   case .cancelButtonTapped:
