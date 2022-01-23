@@ -61,11 +61,11 @@ import Foundation
 @propertyWrapper
 public struct EffectID: Hashable {
   static var currentContextID: AnyHashable? {
-    Thread.current.threadDictionary.value(forKey: currentContextKey) as? AnyHashable
+    currentStoreContextIDLock.sync {
+      currentStoreContextID
+    }
   }
 
-  @usableFromInline
-  static let currentContextKey = "swift-composable-architecture:currentContext"
   private let value: Value
 
   public var wrappedValue: Value {

@@ -411,11 +411,11 @@ public final class Store<State, Action> {
 
   @discardableResult
   func withContextID<Result>(block: () -> Result) -> Result {
-    Thread.current.threadDictionary.setValue(contextID as AnyHashable, forKey: EffectID.currentContextKey)
-    defer {
-      Thread.current.threadDictionary.setValue(nil, forKey: EffectID.currentContextKey)
+    currentStoreContextIDLock.sync {
+      currentStoreContextID = contextID
+      defer { currentStoreContextID = nil }
+      return block()
     }
-    return block()
   }
   
   private enum ThreadCheckStatus {
@@ -539,3 +539,6 @@ public final class Store<State, Action> {
     #endif
   }
 }
+
+let currentStoreContextIDLock = NSRecursiveLock()
+var currentStoreContextID: AnyHashable?

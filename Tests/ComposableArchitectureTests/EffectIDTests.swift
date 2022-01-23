@@ -10,11 +10,11 @@
     override func setUp() {
       super.setUp()
       // Set a context to avoid runtime warnings
-      Thread.current.threadDictionary.setValue(0, forKey: EffectID.currentContextKey)
+      currentStoreContextID = 0
     }
 
     override func tearDown() {
-      Thread.current.threadDictionary.setValue(nil, forKey: EffectID.currentContextKey)
+      currentStoreContextID = nil
       super.tearDown()
     }
 
