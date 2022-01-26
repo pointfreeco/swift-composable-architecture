@@ -10,11 +10,17 @@
     override func setUp() {
       super.setUp()
       // Set a context to avoid runtime warnings
-      currentStoreContextID = 0
+      mainThreadStoreCurrentContextID = 0
+      currentStoreContextIDLock.sync {
+        currentStoreContextID = 0
+      }
     }
 
     override func tearDown() {
-      currentStoreContextID = nil
+      currentStoreContextIDLock.sync {
+        currentStoreContextID = nil
+      }
+      mainThreadStoreCurrentContextID = nil
       super.tearDown()
     }
 

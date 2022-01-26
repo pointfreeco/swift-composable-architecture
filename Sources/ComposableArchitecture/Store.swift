@@ -411,10 +411,16 @@ public final class Store<State, Action> {
 
   @discardableResult
   func withContextID<Result>(block: () -> Result) -> Result {
-    currentStoreContextIDLock.sync {
-      currentStoreContextID = contextID
-      defer { currentStoreContextID = nil }
+    if Thread.current.isMainThread {
+      mainThreadStoreCurrentContextID = contextID
+      defer { mainThreadStoreCurrentContextID = nil }
       return block()
+    } else {
+      return currentStoreContextIDLock.sync {
+        currentStoreContextID = contextID
+        defer { currentStoreContextID = nil }
+        return block()
+      }
     }
   }
   
@@ -542,3 +548,4 @@ public final class Store<State, Action> {
 
 let currentStoreContextIDLock = NSRecursiveLock()
 var currentStoreContextID: AnyHashable?
+var mainThreadStoreCurrentContextID: AnyHashable?
