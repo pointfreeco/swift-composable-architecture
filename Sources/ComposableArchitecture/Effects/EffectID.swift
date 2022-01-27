@@ -61,7 +61,7 @@ import Foundation
 @propertyWrapper
 public struct EffectID: Hashable {
   static var currentContextID: AnyHashable? {
-    if Thread.current.isMainThread {
+    if Thread.isMainThread {
       return mainThreadStoreCurrentContextID
     } else {
       return currentStoreContextIDLock.sync {

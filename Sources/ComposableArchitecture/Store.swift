@@ -411,7 +411,7 @@ public final class Store<State, Action> {
 
   @discardableResult
   func withContextID<Result>(block: () -> Result) -> Result {
-    if Thread.current.isMainThread {
+    if Thread.isMainThread {
       mainThreadStoreCurrentContextID = contextID
       defer { mainThreadStoreCurrentContextID = nil }
       return block()
