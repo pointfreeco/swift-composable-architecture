@@ -477,7 +477,7 @@ private struct HashableWrapper<Value>: Hashable {
     }
   }
 
-  private class Box<Value> {
+  private class Box<Value>: @unchecked Sendable {
     var wrappedValue: Value
 
     init(wrappedValue: Value) {
