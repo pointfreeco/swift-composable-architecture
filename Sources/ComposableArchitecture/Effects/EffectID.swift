@@ -60,20 +60,15 @@ import Foundation
 /// be accessed from some ``Reducer`` execution block.
 @propertyWrapper
 public struct EffectID: Hashable {
-  #if canImport(_Concurrency) && compiler(>=5.5.2)
-    @TaskLocal
-    static var currentContextID: AnyHashable?
-  #else
-    static var currentContextID: AnyHashable? {
-      if Thread.isMainThread {
-        return mainThreadStoreCurrentContextID
-      } else {
-        return currentStoreContextIDLock.sync {
-          currentStoreContextID
-        }
+  static var currentContextID: AnyHashable? {
+    if Thread.isMainThread {
+      return mainThreadStoreCurrentContextID
+    } else {
+      return currentStoreContextIDLock.sync {
+        currentStoreContextID
       }
     }
-  #endif
+  }
 
   private let value: Value
 
