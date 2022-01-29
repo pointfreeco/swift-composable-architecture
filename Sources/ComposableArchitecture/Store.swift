@@ -409,21 +409,6 @@ public final class Store<State, Action> {
     return self.scope(state: { $0 }, action: absurd)
   }
 
-  @discardableResult
-  func withContextID<Result>(block: () -> Result) -> Result {
-    if Thread.isMainThread {
-      mainThreadStoreCurrentContextID = contextID
-      defer { mainThreadStoreCurrentContextID = nil }
-      return block()
-    } else {
-      return currentStoreContextIDLock.sync {
-        currentStoreContextID = contextID
-        defer { currentStoreContextID = nil }
-        return block()
-      }
-    }
-  }
-  
   private enum ThreadCheckStatus {
     case effectCompletion(Action)
     case `init`
@@ -546,6 +531,33 @@ public final class Store<State, Action> {
   }
 }
 
-let currentStoreContextIDLock = NSRecursiveLock()
-var currentStoreContextID: AnyHashable?
-var mainThreadStoreCurrentContextID: AnyHashable?
+#if canImport(_Concurrency) && compiler(>=5.5.2)
+  extension Store {
+    @discardableResult
+    func withContextID<Result>(block: () -> Result) -> Result {
+      EffectID.$currentContextID.withValue(contextID) {
+        block()
+      }
+    }
+  }
+#else
+  let currentStoreContextIDLock = NSRecursiveLock()
+  var currentStoreContextID: AnyHashable?
+  var mainThreadStoreCurrentContextID: AnyHashable?
+  extension Store {
+    @discardableResult
+    func withContextID<Result>(block: () -> Result) -> Result {
+      if Thread.isMainThread {
+        mainThreadStoreCurrentContextID = contextID
+        defer { mainThreadStoreCurrentContextID = nil }
+        return block()
+      } else {
+        return currentStoreContextIDLock.sync {
+          currentStoreContextID = contextID
+          defer { currentStoreContextID = nil }
+          return block()
+        }
+      }
+    }
+  }
+#endif
