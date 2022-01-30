@@ -107,11 +107,7 @@ extension EffectID {
   public struct Value: Hashable {
     var contextID: AnyHashable?
     let userData: AnyHashable?
-    #if DEBUG
-      let file: String
-    #else
-      let file: Int
-    #endif
+    let file: String
     let line: UInt
     let column: UInt
 
@@ -124,11 +120,7 @@ extension EffectID {
     ) {
       self.contextID = contextID
       self.userData = userData
-      #if DEBUG
-        self.file = "\(file)"
-      #else
-        self.file = "\(file)".hashValue
-      #endif
+      self.file = "\(file)"
       self.line = line
       self.column = column
     }
