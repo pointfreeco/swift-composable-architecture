@@ -47,6 +47,7 @@ extension Effect {
       cancellationCancellable = AnyCancellable {
         cancellablesLock.sync {
           cancellationSubject.send(())
+          cancellationSubject.send(completion: .finished)
           cancellationCancellables[id]?.remove(cancellationCancellable)
           if cancellationCancellables[id]?.isEmpty == .some(true) {
             cancellationCancellables[id] = nil
