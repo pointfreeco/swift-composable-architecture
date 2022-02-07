@@ -236,6 +236,58 @@ class TodosTests: XCTestCase {
     store.receive(.sortCompletedTodos)
   }
 
+  func testEditModeMovingWithFilter() {
+    let state = AppState(
+      todos: [
+        Todo(
+          description: "",
+          id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+          isComplete: false
+        ),
+        Todo(
+          description: "",
+          id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+          isComplete: true
+        ),
+        Todo(
+          description: "",
+          id: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!,
+          isComplete: false
+        ),
+        Todo(
+          description: "",
+          id: UUID(uuidString: "00000000-0000-0000-0000-000000000003")!,
+          isComplete: true
+        ),
+      ]
+    )
+    let store = TestStore(
+      initialState: state,
+      reducer: appReducer,
+      environment: AppEnvironment(
+        mainQueue: self.scheduler.eraseToAnyScheduler(),
+        uuid: UUID.incrementing
+      )
+    )
+
+    store.send(.editModeChanged(.active)) {
+      $0.editMode = .active
+    }
+    store.send(.filterPicked(.completed)) {
+      $0.filter = .completed
+    }
+    store.send(.move([0], 1)) {
+      $0.todos = [
+        $0.todos[0],
+        $0.todos[2],
+        $0.todos[1],
+        $0.todos[3],
+      ]
+    }
+    self.scheduler.advance(by: .milliseconds(100))
+    store.receive(.sortCompletedTodos)
+  }
+
   func testFilteredEdit() {
     let state = AppState(
       todos: [
