@@ -526,11 +526,14 @@ private struct HashableWrapper<Value>: Hashable {
       while predicate: @escaping (State) -> Bool,
       onCancel cancellationHandler: (() -> Void)? = nil
     ) async {
-      let cancellable = Box<AnyCancellable?>(wrappedValue: nil)
+      let cancellable = Box<AnyCancellable?>(
+        wrappedValue: nil,
+        cancellationHandler: cancellationHandler
+      )
       try? await withTaskCancellationHandler(
         handler: {
           cancellable.wrappedValue?.cancel()
-          cancellationHandler?()
+          cancellable.cancellationHandler?()
         },
         operation: {
           try Task.checkCancellation()
@@ -555,9 +558,11 @@ private struct HashableWrapper<Value>: Hashable {
 
   private class Box<Value> {
     var wrappedValue: Value
+    var cancellationHandler: (() -> Void)?
 
-    init(wrappedValue: Value) {
+    init(wrappedValue: Value, cancellationHandler: (() -> Void)?) {
       self.wrappedValue = wrappedValue
+      self.cancellationHandler = cancellationHandler
     }
   }
 #endif
