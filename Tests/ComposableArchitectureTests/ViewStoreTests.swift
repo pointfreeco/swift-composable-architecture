@@ -199,6 +199,49 @@ final class ViewStoreTests: XCTestCase {
       }
       self.wait(for: [expectation], timeout: 1)
     }
+    
+    func testSendWhileCancellation() {
+      let expectation = self.expectation(description: "await")
+      let task = Task { @MainActor in
+        enum Action {
+          case response
+          case tapped
+          case cancel
+        }
+        enum State {
+          case stopped
+          case running
+          case cancelled
+        }
+        let reducer = Reducer<State, Action, Void> { state, action, environment in
+          struct CancellationID: Hashable {}
+          switch action {
+          case .response:
+            state = .stopped
+            return .none
+          case .tapped:
+            state = .running
+            return Effect(value: .response)
+              .delay(for: 2.0, scheduler: DispatchQueue.main)
+              .eraseToEffect()
+              .cancellable(id: CancellationID())
+          case .cancel:
+            state = .cancelled
+            return .cancel(id: CancellationID())
+          }
+        }
+
+        let store = Store(initialState: .stopped, reducer: reducer, environment: ())
+        let viewStore = ViewStore(store)
+
+        XCTAssertNoDifference(viewStore.state, .stopped)
+        await viewStore.send(.tapped, while: { $0 == .running }, onCancel: .cancel)
+        XCTAssertNoDifference(viewStore.state, .cancelled)
+        expectation.fulfill()
+      }
+      task.cancel()
+      self.wait(for: [expectation], timeout: 1)
+    }
 
     func testSuspend() {
       let expectation = self.expectation(description: "await")
@@ -232,6 +275,39 @@ final class ViewStoreTests: XCTestCase {
       }
       self.wait(for: [expectation], timeout: 1)
     }
+  
+    func testSuspendCancellationHandling() {
+      let expectation = self.expectation(description: "await")
+      let task = Task { @MainActor in
+        enum Action {
+          case response
+          case tapped
+        }
+        let reducer = Reducer<Bool, Action, Void> { state, action, environment in
+          switch action {
+          case .response:
+            state = false
+            return .none
+          case .tapped:
+            state = true
+            return Effect(value: .response)
+              .receive(on: DispatchQueue.main)
+              .eraseToEffect()
+          }
+        }
+
+        let store = Store(initialState: false, reducer: reducer, environment: ())
+        let viewStore = ViewStore(store)
+
+        viewStore.send(.tapped)
+        await viewStore.suspend(while: { $0 }, onCancel: {
+          expectation.fulfill()
+        })
+      }
+      task.cancel()
+      self.wait(for: [expectation], timeout: 1)
+    }
+  
   #endif
 }
 

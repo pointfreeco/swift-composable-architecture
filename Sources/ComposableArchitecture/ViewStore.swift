@@ -524,7 +524,7 @@ private struct HashableWrapper<Value>: Hashable {
     ///   - cancellationHandler: A closure that will be called if the suspend task is cancelled.
     public func suspend(
       while predicate: @escaping (State) -> Bool,
-      onCancel cancellationHandler: (() -> Void)?
+      onCancel cancellationHandler: (() -> Void)? = nil
     ) async {
       let cancellable = Box<AnyCancellable?>(wrappedValue: nil)
       try? await withTaskCancellationHandler(
