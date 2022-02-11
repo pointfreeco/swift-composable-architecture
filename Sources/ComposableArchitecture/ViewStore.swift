@@ -406,6 +406,68 @@ private struct HashableWrapper<Value>: Hashable {
     /// to `.refreshable` that the work has finished which will cause the loading indicator to
     /// disappear.
     ///
+    /// This method also takes an optional cancellation action that will be sent to the store when the
+    /// suspend task is cancelled - this can be useful when calling this method from inside a SwiftUI
+    /// `.task` modifier, as the task will be cancelled automatically when the view moves off screen.
+    /// If you're using this to start a long running effect when the view appears and waiting for it to
+    /// complete, you can use the cancellation action to cancel the long-running effect in your reducer.
+    ///
+    /// For example, given the following domain logic:
+    ///
+    /// ```swift
+    /// struct State: Equatable {
+    ///   var isRunningTask = false
+    /// }
+    ///
+    /// enum Action {
+    ///   case startTask
+    ///   case taskFinished
+    ///   case taskCancelled
+    /// }
+    ///
+    /// struct Environment {
+    ///   var task: () -> Effect<Void, Never>
+    /// }
+    ///
+    /// let reducer = Reducer<State, Action, Environment> { state, action, environment in
+    ///   struct TaskCancellationId: Hashable {}
+    ///
+    ///   switch action {
+    ///   case .startTask:
+    ///     state.isRunningTask = true
+    ///     return environment.task()
+    ///       .map { _ in Action.taskFinished }
+    ///       .cancellable(id: TaskCancellationId())
+    ///
+    ///   case .taskFinished:
+    ///     state.isRunningTask = false
+    ///     return .none
+    ///
+    ///   case .taskCancelled:
+    ///     state.isRunningTask = false
+    ///     return .cancel(id: TaskCancellationId())
+    ///   }
+    /// }
+    /// ```
+    ///
+    /// We can now use the `.task` modifier in our view to start the task effect and cancel it when
+    /// the view moves off screen:
+    ///
+    /// ```swift
+    /// struct TaskView: View {
+    ///   let store: Store<State, Action, Environment>
+    ///
+    ///   var body: some View {
+    ///     WithViewStore(store) { viewStore in
+    ///       Text("Running task? \(viewStore.isRunningTask ? "Yes" : "No")")
+    ///         .task {
+    ///           await viewStore.send(.runTask, while: \.isRunningTask, onCancel: .taskCancelled)
+    ///         }
+    ///     }
+    ///   }
+    /// }
+    /// ```
+    ///
     /// **Note:** ``ViewStore`` is not thread safe and you should only send actions to it from the
     /// main thread. If you are wanting to send actions on background threads due to the fact that
     /// the reducer is performing computationally expensive work, then a better way to handle this
@@ -416,12 +478,18 @@ private struct HashableWrapper<Value>: Hashable {
     ///   - action: An action.
     ///   - predicate: A predicate on `State` that determines for how long this method should
     ///     suspend.
+    ///   - cancellationAction: An action that will be fired when the suspend task is cancelled.
     public func send(
       _ action: Action,
-      while predicate: @escaping (State) -> Bool
+      while predicate: @escaping (State) -> Bool,
+      onCancel cancellationAction: Action? = nil
     ) async {
       self.send(action)
-      await self.suspend(while: predicate)
+      await self.suspend(while: predicate, onCancel: {
+        if let cancellationAction = cancellationAction {
+          self.send(cancellationAction)
+        }
+      })
     }
 
     /// Sends an action into the store and then suspends while a piece of state is `true`.
@@ -433,47 +501,55 @@ private struct HashableWrapper<Value>: Hashable {
     ///   - animation: The animation to perform when the action is sent.
     ///   - predicate: A predicate on `State` that determines for how long this method should
     ///     suspend.
+    ///   - cancellationAction: An action that will be fired when the suspend task is cancelled.
     public func send(
       _ action: Action,
       animation: Animation?,
-      while predicate: @escaping (State) -> Bool
+      while predicate: @escaping (State) -> Bool,
+      onCancel cancellationAction: Action? = nil
     ) async {
       withAnimation(animation) { self.send(action) }
-      await self.suspend(while: predicate)
+      await self.suspend(while: predicate, onCancel: {
+        if let cancellationAction = cancellationAction {
+          self.send(cancellationAction)
+        }
+      })
     }
 
     /// Suspends while a predicate on state is `true`.
     ///
-    /// - Parameter predicate: A predicate on `State` that determines for how long this method
+    /// - Parameters:
+    ///   - predicate: A predicate on `State` that determines for how long this method
     ///   should suspend.
-    public func suspend(while predicate: @escaping (State) -> Bool) async {
-      if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
-        _ = await self.publisher
-          .values
-          .first(where: { !predicate($0) })
-      } else {
-        let cancellable = Box<AnyCancellable?>(wrappedValue: nil)
-        try? await withTaskCancellationHandler(
-          handler: { cancellable.wrappedValue?.cancel() },
-          operation: {
-            try Task.checkCancellation()
-            try await withUnsafeThrowingContinuation {
-              (continuation: UnsafeContinuation<Void, Error>) in
-              guard !Task.isCancelled else {
-                continuation.resume(throwing: CancellationError())
-                return
-              }
-              cancellable.wrappedValue = self.publisher
-                .filter { !predicate($0) }
-                .prefix(1)
-                .sink { _ in
-                  continuation.resume()
-                  _ = cancellable
-                }
+    ///   - cancellationHandler: A closure that will be called if the suspend task is cancelled.
+    public func suspend(
+      while predicate: @escaping (State) -> Bool,
+      onCancel cancellationHandler: (() -> Void)?
+    ) async {
+      let cancellable = Box<AnyCancellable?>(wrappedValue: nil)
+      try? await withTaskCancellationHandler(
+        handler: {
+          cancellable.wrappedValue?.cancel()
+          cancellationHandler?()
+        },
+        operation: {
+          try Task.checkCancellation()
+          try await withUnsafeThrowingContinuation {
+            (continuation: UnsafeContinuation<Void, Error>) in
+            guard !Task.isCancelled else {
+              continuation.resume(throwing: CancellationError())
+              return
             }
+            cancellable.wrappedValue = self.publisher
+              .filter { !predicate($0) }
+              .prefix(1)
+              .sink { _ in
+                continuation.resume()
+                _ = cancellable
+              }
           }
-        )
-      }
+        }
+      )
     }
   }
 
