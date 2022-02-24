@@ -302,7 +302,7 @@ final class EffectCancellationTests: XCTestCase {
 
     XCTAssertEqual(output, [1, 2])
   }
-  
+
   func testMultipleCancellations() {
     let scheduler = DispatchQueue.test
     var values: [Int] = []
@@ -326,8 +326,8 @@ final class EffectCancellationTests: XCTestCase {
       .cancel(ids: CancellationId(id: 1), CancellationId(id: 2)),
       .cancel(ids: [CancellationId(id: 4), CancellationId(id: 5)][...])
     )
-      .sink { _ in }
-      .store(in: &self.cancellables)
+    .sink { _ in }
+    .store(in: &self.cancellables)
 
     scheduler.advance(by: 1)
     XCTAssertEqual(values, [3])
