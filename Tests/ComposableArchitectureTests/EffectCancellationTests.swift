@@ -324,7 +324,7 @@ final class EffectCancellationTests: XCTestCase {
 
     Effect<Int, Never>.merge(
       .cancel(ids: CancellationId(id: 1), CancellationId(id: 2)),
-      .cancel(ids: [CancellationId(id: 4), CancellationId(id: 5)])
+      .cancel(ids: [CancellationId(id: 4), CancellationId(id: 5)][...])
     )
       .sink { _ in }
       .store(in: &self.cancellables)
