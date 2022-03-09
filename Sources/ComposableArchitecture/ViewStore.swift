@@ -282,7 +282,7 @@ public final class ViewStore<State, Action>: ObservableObject {
 
 extension ViewStore {
   func newInstance() -> ViewStore<State, Action> {
-    ViewStore(_send: _send, _state: _state)
+    ViewStore(_send: _send, _state: _state, viewCancellable: viewCancellable)
   }
 }
 
