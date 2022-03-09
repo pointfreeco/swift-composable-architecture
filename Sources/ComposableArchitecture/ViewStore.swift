@@ -76,21 +76,18 @@ public final class ViewStore<State, Action>: ObservableObject {
 
     self.viewCancellable = store.state
       .removeDuplicates(by: isDuplicate)
-      .sink { [weak self] in
-        guard let self = self else { return }
-        self.objectWillChange.send()
-        self._state.value = $0
+      .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
+        guard let objectWillChange = objectWillChange, let _state = _state else { return }
+        objectWillChange.send()
+        _state.value = $0
       }
   }
 
-  fileprivate init(
-    _send: @escaping (Action) -> Void,
-    _state: CurrentValueRelay<State>,
-    viewCancellable: AnyCancellable? = nil
-  ) {
-    self._send = _send
-    self._state = _state
-    self.viewCancellable = viewCancellable
+  internal init(_ viewStore: ViewStore<State, Action>) {
+    self._send = viewStore._send
+    self._state = viewStore._state
+    self.objectWillChange = viewStore.objectWillChange
+    self.viewCancellable = viewStore.viewCancellable
   }
 
   /// A publisher that emits when state changes.
@@ -277,12 +274,6 @@ public final class ViewStore<State, Action>: ObservableObject {
   ) -> LocalState {
     get { state.rawValue(self.state) }
     set { self.send(action.rawValue(newValue)) }
-  }
-}
-
-extension ViewStore {
-  func newInstance() -> ViewStore<State, Action> {
-    ViewStore(_send: _send, _state: _state, viewCancellable: viewCancellable)
   }
 }
 
