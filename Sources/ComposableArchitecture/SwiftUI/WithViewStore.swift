@@ -88,7 +88,7 @@ public struct WithViewStore<State, Action, Content> {
         )
       }
     #endif
-    return self.content(self.viewStore)
+    return self.content(viewStore.newInstance())
   }
 }
 

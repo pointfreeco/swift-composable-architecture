@@ -83,6 +83,16 @@ public final class ViewStore<State, Action>: ObservableObject {
       }
   }
 
+  fileprivate init(
+    _send: @escaping (Action) -> Void,
+    _state: CurrentValueRelay<State>,
+    viewCancellable: AnyCancellable? = nil
+  ) {
+    self._send = _send
+    self._state = _state
+    self.viewCancellable = viewCancellable
+  }
+
   /// A publisher that emits when state changes.
   ///
   /// This publisher supports dynamic member lookup so that you can pluck out a specific field in
@@ -267,6 +277,12 @@ public final class ViewStore<State, Action>: ObservableObject {
   ) -> LocalState {
     get { state.rawValue(self.state) }
     set { self.send(action.rawValue(newValue)) }
+  }
+}
+
+extension ViewStore {
+  func newInstance() -> ViewStore<State, Action> {
+    ViewStore(_send: _send, _state: _state, viewCancellable: viewCancellable)
   }
 }
 

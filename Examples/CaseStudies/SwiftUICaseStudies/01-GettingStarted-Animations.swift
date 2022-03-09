@@ -108,8 +108,8 @@ struct AnimationsView: View {
   let store: Store<AnimationsState, AnimationsAction>
 
   var body: some View {
-    GeometryReader { proxy in
-      WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store) { viewStore in
+      GeometryReader { proxy in
         VStack(alignment: .leading) {
           ZStack(alignment: .center) {
             Text(template: readMe, .body)
