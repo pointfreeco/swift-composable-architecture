@@ -88,15 +88,7 @@ extension Reducer {
               .download(state.url)
               .publisher
               .throttle(for: 1, scheduler: environment.mainQueue, latest: true)
-              .catchToEffect()
-              .map { result in
-                switch result {
-                case let .success(action):
-                  return .downloadClient(.success(action))
-                case let .failure(error):
-                  return .downloadClient(.failure(error))
-                }
-              }
+              .catchToEffect(DownloadComponentAction.downloadClient)
               .cancellable(id: state.id)
 
           case .startingToDownload:

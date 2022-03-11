@@ -344,6 +344,22 @@ extension Publisher {
       .eraseToEffect()
   }
 
+  @_disfavoredOverload
+  public func catchToEffect() -> Effect<TaskResult<Output>, Never> {
+    self.map(TaskResult.success)
+      .catch { Just(.failure($0)) }
+      .eraseToEffect()
+  }
+  @_disfavoredOverload
+  public func catchToEffect<T>(
+    _ transform: @escaping (TaskResult<Output>) -> T
+  ) -> Effect<T, Never> {
+    self
+      .map { transform(.success($0)) }
+      .catch { Just(transform(.failure($0))) }
+      .eraseToEffect()
+  }
+
   /// Turns any publisher into an ``Effect`` that cannot fail by wrapping its output and failure
   /// into a result and then applying passed in function to it.
   ///
