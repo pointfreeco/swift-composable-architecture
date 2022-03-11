@@ -4,20 +4,6 @@ import SwiftUI
 
 /// A structure that transforms a store into an observable view store in order to compute views from
 /// store state.
-///
-/// Due to a bug in SwiftUI, there are times that use of this view can interfere with some core
-/// views provided by SwiftUI. The known problematic views are:
-///
-///   * If a `GeometryReader` or `ScrollViewReader` is used inside a ``WithViewStore`` it will not
-///     receive state updates correctly. To work around you either need to reorder the views so that
-///     the `GeometryReader` or `ScrollViewReader` wraps ``WithViewStore``, or, if that is not
-///     possible, then you must hold onto an explicit
-///     `@ObservedObject var viewStore: ViewStore<State, Action>` in your view in lieu of using this
-///     helper (see [here](https://gist.github.com/mbrandonw/cc5da3d487bcf7c4f21c27019a440d18)).
-///   * If you create a `Stepper` via the `Stepper.init(onIncrement:onDecrement:label:)` initializer
-///     inside a ``WithViewStore`` it will behave erratically. To work around you should use the
-///     initializer that takes a binding (see
-///     [here](https://gist.github.com/mbrandonw/dee2ceac2c316a1619cfdf1dc7945f66)).
 public struct WithViewStore<State, Action, Content> {
   private let content: (ViewStore<State, Action>) -> Content
   #if DEBUG
@@ -88,7 +74,7 @@ public struct WithViewStore<State, Action, Content> {
         )
       }
     #endif
-    return self.content(self.viewStore)
+    return self.content(ViewStore(self.viewStore))
   }
 }
 
