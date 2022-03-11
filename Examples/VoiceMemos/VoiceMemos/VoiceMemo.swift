@@ -100,7 +100,8 @@ struct VoiceMemoView: View {
 
   var body: some View {
     WithViewStore(store) { viewStore in
-      let currentTime = viewStore.mode.progress.map { $0 * viewStore.duration } ?? viewStore.duration
+      let currentTime =
+        viewStore.mode.progress.map { $0 * viewStore.duration } ?? viewStore.duration
       HStack {
         TextField(
           "Untitled, \(viewStore.date.formatted(date: .numeric, time: .shortened))",

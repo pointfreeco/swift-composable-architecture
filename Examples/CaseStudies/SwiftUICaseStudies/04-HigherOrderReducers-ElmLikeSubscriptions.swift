@@ -78,7 +78,7 @@ let clockReducer = Reducer<ClockState, ClockAction, ClockEnvironment>.combine(
 
 struct ClockView: View {
   let store: Store<ClockState, ClockAction>
-  
+
   var body: some View {
     WithViewStore(store) { viewStore in
       VStack {
