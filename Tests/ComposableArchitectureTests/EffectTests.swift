@@ -199,6 +199,18 @@ final class EffectTests: XCTestCase {
     self.wait(for: [expectation], timeout: 0)
   }
 
+  func testDoubleCancelInFlight() {
+    var result: Int?
+
+    _ = Just(42)
+      .eraseToEffect()
+      .cancellable(id: "id", cancelInFlight: true)
+      .cancellable(id: "id", cancelInFlight: true)
+      .sink { result = $0 }
+
+    XCTAssertEqual(result, 42)
+  }
+
   #if compiler(>=5.4)
     func testFailing() {
       let effect = Effect<Never, Never>.failing("failing")

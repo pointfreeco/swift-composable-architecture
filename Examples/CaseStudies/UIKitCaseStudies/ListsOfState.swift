@@ -63,11 +63,12 @@ final class CountersTableViewController: UITableViewController {
   }
 
   override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-    let counter = self.viewStore.counters[indexPath.row]
+    let indexPathRow = indexPath.row
+    let counter = self.viewStore.counters[indexPathRow]
     self.navigationController?.pushViewController(
       CounterViewController(
         store: self.store.scope(
-          state: { _ in counter },
+          state: \.counters[indexPathRow],
           action: { .counter(id: counter.id, action: $0) }
         )
       ),
