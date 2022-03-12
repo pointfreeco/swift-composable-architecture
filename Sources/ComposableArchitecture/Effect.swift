@@ -221,11 +221,133 @@ public struct Effect<Output, Failure: Error>: Publisher {
       }
   }
 
+  /// Merges two effects together into a single effect, which runs the effects at the same time.
+  ///
+  /// - Parameters:
+  ///   - a: An effect.
+  ///   - b: A second effect.
+  /// - Returns: A new effect
+  public static func merge(_ a: Effect, _ b: Effect) -> Effect {
+    Publishers.Merge(a, b).eraseToEffect()
+  }
+
+  /// Merges three effects together into a single effect, which runs the effects at the same time.
+  ///
+  /// - Parameters:
+  ///   - a: An effect.
+  ///   - b: A second effect.
+  ///   - c: A third effect.
+  /// - Returns: A new effect
+  public static func merge(_ a: Effect, _ b: Effect, _ c: Effect) -> Effect {
+    Publishers.Merge3(a, b, c).eraseToEffect()
+  }
+
+  /// Merges four effects together into a single effect, which runs the effects at the same time.
+  ///
+  /// - Parameters:
+  ///   - a: An effect.
+  ///   - b: A second effect.
+  ///   - c: A third effect.
+  ///   - d: A fourth effect.
+  /// - Returns: A new effect
+  public static func merge(_ a: Effect, _ b: Effect, _ c: Effect, _ d: Effect) -> Effect {
+    Publishers.Merge4(a, b, c, d).eraseToEffect()
+  }
+
+  /// Merges five effects together into a single effect, which runs the effects at the same time.
+  ///
+  /// - Parameters:
+  ///   - a: An effect.
+  ///   - b: A second effect.
+  ///   - c: A third effect.
+  ///   - d: A fourth effect.
+  ///   - e: A fifth effect.
+  /// - Returns: A new effect
+  public static func merge(
+    _ a: Effect,
+    _ b: Effect,
+    _ c: Effect,
+    _ d: Effect,
+    _ e: Effect
+  ) -> Effect {
+    Publishers.Merge5(a, b, c, d, e).eraseToEffect()
+  }
+
+  /// Merges six effects together into a single effect, which runs the effects at the same time.
+  ///
+  /// - Parameters:
+  ///   - a: An effect.
+  ///   - b: A second effect.
+  ///   - c: A third effect.
+  ///   - d: A fourth effect.
+  ///   - e: A fifth effect.
+  ///   - f: A sixth effect.
+  /// - Returns: A new effect
+  public static func merge(
+    _ a: Effect,
+    _ b: Effect,
+    _ c: Effect,
+    _ d: Effect,
+    _ e: Effect,
+    _ f: Effect
+  ) -> Effect {
+    Publishers.Merge6(a, b, c, d, e, f).eraseToEffect()
+  }
+
+  /// Merges seven effects together into a single effect, which runs the effects at the same time.
+  ///
+  /// - Parameters:
+  ///   - a: An effect.
+  ///   - b: A second effect.
+  ///   - c: A third effect.
+  ///   - d: A fourth effect.
+  ///   - e: A fifth effect.
+  ///   - f: A sixth effect.
+  ///   - g: A seventh effect.
+  /// - Returns: A new effect
+  public static func merge(
+    _ a: Effect,
+    _ b: Effect,
+    _ c: Effect,
+    _ d: Effect,
+    _ e: Effect,
+    _ f: Effect,
+    _ g: Effect
+  ) -> Effect {
+    Publishers.Merge7(a, b, c, d, e, f, g).eraseToEffect()
+  }
+
+  /// Merges eight effects together into a single effect, which runs the effects at the same time.
+  ///
+  /// - Parameters:
+  ///   - a: An effect.
+  ///   - b: A second effect.
+  ///   - c: A third effect.
+  ///   - d: A fourth effect.
+  ///   - e: A fifth effect.
+  ///   - f: A sixth effect.
+  ///   - g: A seventh effect.
+  ///   - h: An eighth effect.
+  /// - Returns: A new effect
+  public static func merge(
+    _ a: Effect,
+    _ b: Effect,
+    _ c: Effect,
+    _ d: Effect,
+    _ e: Effect,
+    _ f: Effect,
+    _ g: Effect,
+    _ h: Effect
+  ) -> Effect {
+    Publishers.Merge8(a, b, c, d, e, f, g, h).eraseToEffect()
+  }
+  
   /// Merges a variadic list of effects together into a single effect, which runs the effects at the
   /// same time.
   ///
   /// - Parameter effects: A list of effects.
   /// - Returns: A new effect
+  @_disfavoredOverload
   public static func merge(
     _ effects: Effect...
   ) -> Effect {

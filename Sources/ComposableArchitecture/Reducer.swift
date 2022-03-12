@@ -113,6 +113,7 @@ public struct Reducer<State, Action, Environment> {
   ///
   /// - Parameter reducers: A list of reducers.
   /// - Returns: A single reducer.
+  @_disfavoredOverload
   public static func combine(_ reducers: Reducer...) -> Reducer {
     .combine(reducers)
   }
@@ -169,8 +170,185 @@ public struct Reducer<State, Action, Environment> {
   /// - Parameter reducers: An array of reducers.
   /// - Returns: A single reducer.
   public static func combine(_ reducers: [Reducer]) -> Reducer {
-    Self { value, action, environment in
-      .merge(reducers.map { $0.reducer(&value, action, environment) })
+    Self { state, action, environment in
+      .merge(reducers.map { $0.reducer(&state, action, environment) })
+    }
+  }
+  
+  /// Combines two reducers into a single one by running each one on state in order, and merging all of the effects.
+  ///
+  /// - Parameters:
+  ///   - a: A reducer.
+  ///   - b: A second reducer.
+  /// - Returns: A single reducer.
+  public static func combine(_ a: Reducer, _ b: Reducer) -> Reducer {
+    Self { state, action, environment in
+      .merge(
+        a.run(&state, action, environment),
+        b.run(&state, action, environment)
+      )
+    }
+  }
+
+  /// Combines three reducers into a single one by running each one on state in order, and merging all of the effects.
+  ///
+  /// - Parameters:
+  ///   - a: A reducer.
+  ///   - b: A second reducer.
+  ///   - c: A third reducer.
+  /// - Returns: A single reducer.
+  public static func combine(_ a: Reducer, _ b: Reducer, _ c: Reducer) -> Reducer {
+    Self { state, action, environment in
+      .merge(
+        a.run(&state, action, environment),
+        b.run(&state, action, environment),
+        c.run(&state, action, environment)
+      )
+    }
+  }
+
+  /// Combines four reducers into a single one by running each one on state in order, and merging all of the effects.
+  ///
+  /// - Parameters:
+  ///   - a: A reducer.
+  ///   - b: A second reducer.
+  ///   - c: A third reducer.
+  ///   - d: A fourth reducer.
+  /// - Returns: A single reducer.
+  public static func combine(_ a: Reducer, _ b: Reducer, _ c: Reducer, _ d: Reducer) -> Reducer {
+    Self { state, action, environment in
+      .merge(
+        a.run(&state, action, environment),
+        b.run(&state, action, environment),
+        c.run(&state, action, environment),
+        d.run(&state, action, environment)
+      )
+    }
+  }
+
+  /// Combines five reducers into a single one by running each one on state in order, and merging all of the effects.
+  ///
+  /// - Parameters:
+  ///   - a: A reducer.
+  ///   - b: A second reducer.
+  ///   - c: A third reducer.
+  ///   - d: A fourth reducer.
+  ///   - e: A fifth reducer.
+  /// - Returns: A single reducer.
+  public static func combine(
+    _ a: Reducer,
+    _ b: Reducer,
+    _ c: Reducer,
+    _ d: Reducer,
+    _ e: Reducer
+  ) -> Reducer {
+    Self { state, action, environment in
+      .merge(
+        a.run(&state, action, environment),
+        b.run(&state, action, environment),
+        c.run(&state, action, environment),
+        d.run(&state, action, environment),
+        e.run(&state, action, environment)
+      )
+    }
+  }
+
+  /// Combines six reducers into a single one by running each one on state in order, and merging all of the effects.
+  ///
+  /// - Parameters:
+  ///   - a: A reducer.
+  ///   - b: A second reducer.
+  ///   - c: A third reducer.
+  ///   - d: A fourth reducer.
+  ///   - e: A fifth reducer.
+  ///   - f: A sixth reducer.
+  /// - Returns: A single reducer.
+  public static func combine(
+    _ a: Reducer,
+    _ b: Reducer,
+    _ c: Reducer,
+    _ d: Reducer,
+    _ e: Reducer,
+    _ f: Reducer
+  ) -> Reducer {
+    Self { state, action, environment in
+      .merge(
+        a.run(&state, action, environment),
+        b.run(&state, action, environment),
+        c.run(&state, action, environment),
+        d.run(&state, action, environment),
+        e.run(&state, action, environment),
+        f.run(&state, action, environment)
+      )
+    }
+  }
+
+  /// Combines seven reducers into a single one by running each one on state in order, and merging all of the effects.
+  ///
+  /// - Parameters:
+  ///   - a: A reducer.
+  ///   - b: A second reducer.
+  ///   - c: A third reducer.
+  ///   - d: A fourth reducer.
+  ///   - e: A fifth reducer.
+  ///   - f: A sixth reducer.
+  ///   - g: A seventh reducer.
+  /// - Returns: A single reducer.
+  public static func combine(
+    _ a: Reducer,
+    _ b: Reducer,
+    _ c: Reducer,
+    _ d: Reducer,
+    _ e: Reducer,
+    _ f: Reducer,
+    _ g: Reducer
+  ) -> Reducer {
+    Self { state, action, environment in
+      .merge(
+        a.run(&state, action, environment),
+        b.run(&state, action, environment),
+        c.run(&state, action, environment),
+        d.run(&state, action, environment),
+        e.run(&state, action, environment),
+        f.run(&state, action, environment),
+        g.run(&state, action, environment)
+      )
+    }
+  }
+
+  /// Combines eight reducers into a single one by running each one on state in order, and merging all of the effects.
+  ///
+  /// - Parameters:
+  ///   - a: A reducer.
+  ///   - b: A second reducer.
+  ///   - c: A third reducer.
+  ///   - d: A fourth reducer.
+  ///   - e: A fifth reducer.
+  ///   - f: A sixth reducer.
+  ///   - g: A seventh reducer.
+  ///   - h: An eighth reducer.
+  /// - Returns: A single reducer.
+  public static func combine(
+    _ a: Reducer,
+    _ b: Reducer,
+    _ c: Reducer,
+    _ d: Reducer,
+    _ e: Reducer,
+    _ f: Reducer,
+    _ g: Reducer,
+    _ h: Reducer
+  ) -> Reducer {
+    Self { state, action, environment in
+      .merge(
+        a.run(&state, action, environment),
+        b.run(&state, action, environment),
+        c.run(&state, action, environment),
+        d.run(&state, action, environment),
+        e.run(&state, action, environment),
+        f.run(&state, action, environment),
+        g.run(&state, action, environment),
+        h.run(&state, action, environment)
+      )
     }
   }
 
