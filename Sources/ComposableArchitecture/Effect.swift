@@ -14,7 +14,7 @@ import Foundation
 /// constructing some common types of effects.
 public struct Effect<Output, Failure: Error>: Publisher {
   public let upstream: AnyPublisher<Output, Failure>
-
+  let isNone: Bool
   /// Initializes an effect that wraps a publisher. Each emission of the wrapped publisher will be
   /// emitted by the effect.
   ///
@@ -39,6 +39,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   /// - Parameter publisher: A publisher.
   public init<P: Publisher>(_ publisher: P) where P.Output == Output, P.Failure == Failure {
     self.upstream = publisher.eraseToAnyPublisher()
+    self.isNone = false
   }
 
   public func receive<S>(
@@ -72,7 +73,12 @@ public struct Effect<Output, Failure: Error>: Publisher {
   /// An effect that does nothing and completes immediately. Useful for situations where you must
   /// return an effect, but you don't need to do anything.
   public static var none: Effect {
-    Empty(completeImmediately: true).eraseToEffect()
+    Effect(none: Empty(completeImmediately: true))
+  }
+  
+  init(none: Empty<Output, Failure>) {
+    self.upstream = none.eraseToAnyPublisher()
+    self.isNone = true
   }
 
   /// Creates an effect that can supply a single value asynchronously in the future.

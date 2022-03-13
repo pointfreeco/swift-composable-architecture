@@ -1,12 +1,15 @@
 import Combine
 
 extension Effect {
-//  public init(@Builder effects: (Self.Type) -> Self) {
-//    self = effects(Self.self)
-//  }
+  public init(@Builder effects: (Self.Type) -> Self) {
+    self = effects(Self.self)
+  }
+  
   public init(@Builder effects: () -> Self) {
     self = effects()
   }
+  
+  var isNotNone: Bool { !isNone }
 }
 
 extension Effect {
@@ -29,7 +32,7 @@ extension Effect {
     }
 
     public static func buildBlock(_ components: Effect...) -> Effect {
-      .merge(components)
+      .merge(components.filter(\.isNotNone))
     }
 
     public static func buildOptional(_ component: Effect?) -> Effect {
@@ -45,7 +48,7 @@ extension Effect {
     }
 
     public static func buildArray(_ components: [Effect]) -> Effect {
-      .merge(components)
+      .merge(components.filter(\.isNotNone))
     }
 
     public static func buildLimitedAvailability(_ component: Effect) -> Effect {
@@ -53,82 +56,3 @@ extension Effect {
     }
   }
 }
-
-
-
-
-//---
-
-private enum Action {
-  case action1
-  case action2
-}
-var i: Int = 0
-private let reducer = Reducer<Void, Action, Void>.init { _, _, _ in
-//  Effect {
-    .action1
-    //    $0.init(value: .action2)
-    //      .delay(for: .seconds(3), scheduler: DispatchQueue.main.eraseToAnyScheduler())
-    //      .eraseToEffect()
-//    $0.fireAndForget {
-//
-//    }
-    if 4.isZero {
-      .action2
-    }
-//    $0.none
-//    Effect {
-//      Action.action2
-//      Action.action1
-//    }
-//
-//    $0.future({ _ in
-//
-//    })
-
-    Effect {
-
-    }
-
-    switch i {
-    case 0:
-      .action2
-    case 1:
-      var x = 5
-      if x.isMultiple(of: 6) {
-        x += 1
-      }
-      if x > 5 {
-        .action1
-      }
-
-    default:
-      .none
-    }
-
-//
-
-    Effect.FFuture { _ in }.effect
-//  }
-}
-
-public protocol EffectDeclarating {
-  associatedtype Output
-  associatedtype Failure where Failure: Error
-  var effect: Effect<Output, Failure> { get }
-}
-
-extension Effect {
-  public struct FFuture: EffectDeclarating {
-    public init(attemptToFulfill: @escaping (@escaping (Result<Output, Failure>) -> Void) -> Void) {
-      self.effect = .future(attemptToFulfill)
-    }
-    public let effect: Effect<Output, Failure>
-  }
-}
-
-//public static func future(
-//  _ attemptToFulfill: @escaping (@escaping (Result<Output, Failure>) -> Void) -> Void
-//) -> Effect {
-//  Deferred { Future(attemptToFulfill) }.eraseToEffect()
-//}
