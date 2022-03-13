@@ -29,6 +29,7 @@ let reducerSuite = BenchmarkSuite(name: "Reducer") { suite in
       viewStore.send(())
     }
   }
+  
   do {
     let reducers = Reducer<Int, Void, Void>
       .combine([reducer, reducer, reducer, reducer, reducer, reducer, reducer, reducer])
