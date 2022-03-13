@@ -80,6 +80,7 @@
 		DCC68EE32447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EE22447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift */; };
 		DCE63B71245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCE63B70245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift */; };
 		DCFE1960278DBF0600C14CCF /* CaseStudiesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCFE195F278DBF0600C14CCF /* CaseStudiesApp.swift */; };
+		E9BF588E27DE1260001467FA /* 01-GettingStarted-Counter-EffectBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9BF588D27DE1260001467FA /* 01-GettingStarted-Counter-EffectBuilder.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -232,6 +233,7 @@
 		DCC68EE22447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-ReusableFavoriting.swift"; sourceTree = "<group>"; };
 		DCE63B70245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-Recursion.swift"; sourceTree = "<group>"; };
 		DCFE195F278DBF0600C14CCF /* CaseStudiesApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CaseStudiesApp.swift; sourceTree = "<group>"; };
+		E9BF588D27DE1260001467FA /* 01-GettingStarted-Counter-EffectBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Counter-EffectBuilder.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -399,6 +401,7 @@
 				DC5B505025C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift */,
 				DCC68EE02447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift */,
 				DC89C4432446111B006900B9 /* 01-GettingStarted-Counter.swift */,
+				E9BF588D27DE1260001467FA /* 01-GettingStarted-Counter-EffectBuilder.swift */,
 				CA3E421E26B8337500581ABC /* 01-GettingStarted-FocusState.swift */,
 				DCC68EDC2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift */,
 				CA7BC8ED245CCFE4001FB69F /* 01-GettingStarted-SharedState.swift */,
@@ -751,6 +754,7 @@
 				CAA9ADC624465C810003A984 /* 02-Effects-Cancellation.swift in Sources */,
 				DC2E370D24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift in Sources */,
 				CA5ECF92267A79F0002067FF /* FactClient.swift in Sources */,
+				E9BF588E27DE1260001467FA /* 01-GettingStarted-Counter-EffectBuilder.swift in Sources */,
 				DC9EB4172450CBD2005F413B /* UIViewRepresented.swift in Sources */,
 				CA6AC2652451135C00C71CB3 /* CircularProgressView.swift in Sources */,
 				CA6AC2642451135C00C71CB3 /* ReusableComponents-Download.swift in Sources */,

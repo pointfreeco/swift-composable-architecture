@@ -53,7 +53,7 @@ public struct Reducer<State, Action, Environment> {
   ///
   /// - Parameter reducer: A function signature that takes state, action and
   ///   environment.
-  public init(_ reducer: @escaping (inout State, Action, Environment) -> Effect<Action, Never>) {
+  public init(@Effect<Action, Never>.Builder _ reducer: @escaping (inout State, Action, Environment) -> Effect<Action, Never>) {
     self.reducer = reducer
   }
 

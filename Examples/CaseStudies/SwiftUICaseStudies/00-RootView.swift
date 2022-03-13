@@ -19,6 +19,16 @@ struct RootView: View {
                 )
               )
             )
+            
+            NavigationLink(
+              "Basics - EffectBuilder",
+              destination: CounterBuilderDemoView(
+                store: self.store.scope(
+                  state: \.counterBuilder,
+                  action: RootAction.counterBuilder
+                )
+              )
+            )
 
             NavigationLink(
               "Pullback and combine",
