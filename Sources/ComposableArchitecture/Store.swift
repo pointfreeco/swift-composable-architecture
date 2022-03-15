@@ -1,10 +1,6 @@
 import Combine
 import Foundation
 
-#if DEBUG
-  import os
-#endif
-
 /// A store represents the runtime that powers the application. It is the object that you will pass
 /// around to views that need to interact with the application.
 ///
@@ -420,8 +416,7 @@ public final class Store<State, Action> {
 
       switch status {
       case let .effectCompletion(action):
-        os_log(
-          .fault, dso: rw.dso, log: rw.log,
+        runtimeWarning(
           """
           An effect completed on a non-main thread. …
 
@@ -440,8 +435,7 @@ public final class Store<State, Action> {
         )
 
       case .`init`:
-        os_log(
-          .fault, dso: rw.dso, log: rw.log,
+        runtimeWarning(
           """
           A store initialized on a non-main thread. …
 
@@ -455,8 +449,7 @@ public final class Store<State, Action> {
         )
 
       case .scope:
-        os_log(
-          .fault, dso: rw.dso, log: rw.log,
+        runtimeWarning(
           """
           "Store.scope" was called on a non-main thread. …
 
@@ -470,8 +463,7 @@ public final class Store<State, Action> {
         )
 
       case let .send(action, originatingAction: nil):
-        os_log(
-          .fault, dso: rw.dso, log: rw.log,
+        runtimeWarning(
           """
           "ViewStore.send" was called on a non-main thread with: %@ …
 
@@ -486,8 +478,7 @@ public final class Store<State, Action> {
         )
 
       case let .send(action, originatingAction: .some(originatingAction)):
-        os_log(
-          .fault, dso: rw.dso, log: rw.log,
+        runtimeWarning(
           """
           An effect published an action on a non-main thread. …
 
