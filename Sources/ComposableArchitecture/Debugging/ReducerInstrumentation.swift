@@ -110,7 +110,8 @@ func debugCaseOutput(_ value: Any) -> String {
     }
   }
 
-  return "\(type(of: value))\(debugCaseOutputHelp(value))"
+  return (value as? CustomDebugStringConvertible)?.debugDescription
+    ?? "\(type(of: value))\(debugCaseOutputHelp(value))"
 }
 
 private func isUnlabeledArgument(_ label: String) -> Bool {
