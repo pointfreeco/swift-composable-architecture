@@ -1,4 +1,4 @@
-import Combine
+@preconcurrency import Combine
 
 extension AsyncSequence {
   var publisher: AnyPublisher<Element, Error> {
@@ -6,7 +6,9 @@ extension AsyncSequence {
     let task = Task {
       do {
         try await withTaskCancellationHandler(
-          handler: { subject.send(completion: .finished) },
+          handler: {
+            subject.send(completion: .finished)
+          },
           operation: {
             for try await element in self {
               subject.send(element)
@@ -19,7 +21,14 @@ extension AsyncSequence {
       }
     }
     return subject
-      .handleEvents(receiveCancel: task.cancel)
+      .handleEvents(
+        receiveCompletion: { _ in
+          task.cancel()
+        },
+        receiveCancel: {
+          task.cancel()
+        }
+      )
       .eraseToAnyPublisher()
   }
 }

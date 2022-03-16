@@ -312,6 +312,7 @@ private func liveFetchNumber() async -> Int {
   return Int.random(in: 1...1_000)
 }
 
+@MainActor
 private let liveUserDidTakeScreenshot = NotificationCenter.default
   .publisher(for: UIApplication.userDidTakeScreenshotNotification)
   .map { _ in () }

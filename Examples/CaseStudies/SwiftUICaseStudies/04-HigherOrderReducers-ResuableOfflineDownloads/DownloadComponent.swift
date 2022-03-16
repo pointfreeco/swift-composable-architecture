@@ -87,6 +87,7 @@ extension Reducer {
             return environment.downloadClient
               .download(state.url)
               .publisher
+              .print("!!!!!")
               .throttle(for: 1, scheduler: environment.mainQueue, latest: true)
               .catchToEffect(DownloadComponentAction.downloadClient)
               .cancellable(id: state.id)
