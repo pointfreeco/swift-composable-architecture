@@ -91,13 +91,13 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
     }
 
     self.downloadContinuation.yield(.updateProgress(0.6))
-//    await self.scheduler.advance(by: 0.5)
-//
-//    self.downloadContinuation.yield(.updateProgress(0.7))
-//    await self.scheduler.advance(by: 0.5)
-//    await store.receive(.downloadClient(.success(.updateProgress(0.7)))) {
-//      $0.mode = .downloading(progress: 0.7)
-//    }
+    await self.scheduler.advance(by: 0.5)
+
+    self.downloadContinuation.yield(.updateProgress(0.7))
+    await self.scheduler.advance(by: 0.5)
+    await store.receive(.downloadClient(.success(.updateProgress(0.7)))) {
+      $0.mode = .downloading(progress: 0.7)
+    }
 
     self.downloadContinuation.finish(throwing: nil)
     await self.scheduler.run()
@@ -245,6 +245,53 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
     self.scheduler.advance()
     XCTAssertEqual(count, 2)
     self.scheduler.run()
+    XCTAssertEqual(count, 3)
+  }
+
+  func testThrottleAsyncStream() async {
+    let (c, s): (
+      AsyncStream<Void>.Continuation,
+      AsyncStream<Void>
+    ) = {
+      var c: AsyncStream<Void>.Continuation!
+      let s = AsyncStream<Void> { c = $0 }
+      return (c, s)
+    }()
+
+    var count = 0
+    var cancellables: Set<AnyCancellable> = []
+    s
+      .publisher
+      .throttle(for: 1, scheduler: self.scheduler, latest: true)
+      .sink(receiveCompletion: { _ in }, receiveValue: { count += 1 })
+      .store(in: &cancellables)
+
+    XCTAssertEqual(count, 0)
+
+    c.yield()
+    await self.scheduler.advance()
+    XCTAssertEqual(count, 1)
+
+    c.yield()
+    await self.scheduler.advance()
+    XCTAssertEqual(count, 1)
+
+    c.yield()
+    await self.scheduler.advance()
+    XCTAssertEqual(count, 1)
+
+    await self.scheduler.run()
+    XCTAssertEqual(count, 2)
+
+    c.yield()
+    await self.scheduler.advance()
+    XCTAssertEqual(count, 2)
+
+    c.finish()
+    XCTAssertEqual(count, 2)
+    await self.scheduler.advance()
+    XCTAssertEqual(count, 2)
+    await self.scheduler.run()
     XCTAssertEqual(count, 3)
   }
 }

@@ -4,7 +4,7 @@ extension TestScheduler {
     _ = { self.advance(by: stride) }()
     await Task.yield()
     _ = { self.advance() }()
-    await Task.yield()
+//    await Task.yield()
   }
 
   @MainActor
@@ -12,6 +12,6 @@ extension TestScheduler {
     _ = { self.run() }()
     await Task.yield()
     _ = { self.advance() }()
-    await Task.yield()
+//    await Task.yield()
   }
 }
