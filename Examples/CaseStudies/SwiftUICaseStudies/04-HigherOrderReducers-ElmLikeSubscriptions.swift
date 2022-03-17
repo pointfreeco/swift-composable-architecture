@@ -77,72 +77,65 @@ let clockReducer = Reducer<ClockState, ClockAction, ClockEnvironment>.combine(
 )
 
 struct ClockView: View {
-  // NB: We are using an explicit `ObservedObject` for the view store here instead of
-  // `WithViewStore` due to a SwiftUI bug where `GeometryReader`s inside `WithViewStore` will
-  // not properly update.
-  //
-  // Feedback filed: https://gist.github.com/mbrandonw/cc5da3d487bcf7c4f21c27019a440d18
-  @ObservedObject var viewStore: ViewStore<ClockState, ClockAction>
-
-  init(store: Store<ClockState, ClockAction>) {
-    self.viewStore = ViewStore(store)
-  }
+  let store: Store<ClockState, ClockAction>
 
   var body: some View {
-    VStack {
-      Text(template: readMe, .body)
+    WithViewStore(store) { viewStore in
+      VStack {
+        Text(template: readMe, .body)
 
-      ZStack {
-        Circle()
-          .fill(
-            AngularGradient(
-              gradient: Gradient(
-                colors: [
-                  .blue.opacity(0.3),
-                  .blue,
-                  .blue,
-                  .green,
-                  .green,
-                  .yellow,
-                  .yellow,
-                  .red,
-                  .red,
-                  .purple,
-                  .purple,
-                  .purple.opacity(0.3),
-                ]
-              ),
-              center: .center
+        ZStack {
+          Circle()
+            .fill(
+              AngularGradient(
+                gradient: Gradient(
+                  colors: [
+                    .blue.opacity(0.3),
+                    .blue,
+                    .blue,
+                    .green,
+                    .green,
+                    .yellow,
+                    .yellow,
+                    .red,
+                    .red,
+                    .purple,
+                    .purple,
+                    .purple.opacity(0.3),
+                  ]
+                ),
+                center: .center
+              )
             )
-          )
-          .rotationEffect(.degrees(-90))
+            .rotationEffect(.degrees(-90))
 
-        GeometryReader { proxy in
-          Path { path in
-            path.move(to: CGPoint(x: proxy.size.width / 2, y: proxy.size.height / 2))
-            path.addLine(to: CGPoint(x: proxy.size.width / 2, y: 0))
+          GeometryReader { proxy in
+            Path { path in
+              path.move(to: CGPoint(x: proxy.size.width / 2, y: proxy.size.height / 2))
+              path.addLine(to: CGPoint(x: proxy.size.width / 2, y: 0))
+            }
+            .stroke(Color.black, lineWidth: 3)
+            .rotationEffect(.degrees(Double(viewStore.secondsElapsed) * 360 / 60))
           }
-          .stroke(Color.black, lineWidth: 3)
-          .rotationEffect(.degrees(Double(self.viewStore.secondsElapsed) * 360 / 60))
         }
-      }
-      .frame(width: 280, height: 280)
-      .padding(.bottom, 64)
+        .frame(width: 280, height: 280)
+        .padding(.bottom, 64)
 
-      Button(action: { self.viewStore.send(.toggleTimerButtonTapped) }) {
-        HStack {
-          Text(self.viewStore.isTimerActive ? "Stop" : "Start")
+        Button(action: { viewStore.send(.toggleTimerButtonTapped) }) {
+          HStack {
+            Text(viewStore.isTimerActive ? "Stop" : "Start")
+          }
+          .foregroundColor(.white)
+          .padding()
+          .background(viewStore.isTimerActive ? Color.red : .blue)
+          .cornerRadius(16)
         }
-        .foregroundColor(.white)
-        .padding()
-        .background(self.viewStore.isTimerActive ? Color.red : .blue)
-        .cornerRadius(16)
-      }
 
-      Spacer()
+        Spacer()
+      }
+      .padding()
+      .navigationBarTitle("Elm-like subscriptions")
     }
-    .padding()
-    .navigationBarTitle("Elm-like subscriptions")
   }
 }
 

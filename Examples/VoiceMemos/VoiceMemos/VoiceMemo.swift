@@ -96,55 +96,46 @@ let voiceMemoReducer = Reducer<
 }
 
 struct VoiceMemoView: View {
-  // NB: We are using an explicit `ObservedObject` for the view store here instead of
-  // `WithViewStore` due to a SwiftUI bug where `GeometryReader`s inside `WithViewStore` will
-  // not properly update.
-  //
-  // Feedback filed: https://gist.github.com/mbrandonw/cc5da3d487bcf7c4f21c27019a440d18
-  @ObservedObject var viewStore: ViewStore<VoiceMemo, VoiceMemoAction>
-
-  init(store: Store<VoiceMemo, VoiceMemoAction>) {
-    self.viewStore = ViewStore(store)
-  }
+  let store: Store<VoiceMemo, VoiceMemoAction>
 
   var body: some View {
-    HStack {
-      TextField(
-        "Untitled, \(self.viewStore.date.formatted(date: .numeric, time: .shortened))",
-        text: self.viewStore.binding(
-          get: \.title, send: VoiceMemoAction.titleTextFieldChanged)
+    WithViewStore(store) { viewStore in
+      let currentTime =
+        viewStore.mode.progress.map { $0 * viewStore.duration } ?? viewStore.duration
+      HStack {
+        TextField(
+          "Untitled, \(viewStore.date.formatted(date: .numeric, time: .shortened))",
+          text: viewStore.binding(
+            get: \.title, send: VoiceMemoAction.titleTextFieldChanged)
+        )
+
+        Spacer()
+
+        dateComponentsFormatter.string(from: currentTime).map {
+          Text($0)
+            .font(.footnote.monospacedDigit())
+            .foregroundColor(Color(.systemGray))
+        }
+
+        Button(action: { viewStore.send(.playButtonTapped) }) {
+          Image(systemName: viewStore.mode.isPlaying ? "stop.circle" : "play.circle")
+            .font(.system(size: 22))
+        }
+      }
+      .buttonStyle(.borderless)
+      .frame(maxHeight: .infinity, alignment: .center)
+      .padding(.horizontal)
+      .listRowBackground(viewStore.mode.isPlaying ? Color(.systemGray6) : .clear)
+      .listRowInsets(EdgeInsets())
+      .background(
+        Color(.systemGray5)
+          .frame(maxWidth: viewStore.mode.isPlaying ? .infinity : 0)
+          .animation(
+            viewStore.mode.isPlaying ? .linear(duration: viewStore.duration) : nil,
+            value: viewStore.mode.isPlaying
+          ),
+        alignment: .leading
       )
-
-      Spacer()
-
-      dateComponentsFormatter.string(from: self.currentTime).map {
-        Text($0)
-          .font(.footnote.monospacedDigit())
-          .foregroundColor(Color(.systemGray))
-      }
-
-      Button(action: { self.viewStore.send(.playButtonTapped) }) {
-        Image(systemName: self.viewStore.mode.isPlaying ? "stop.circle" : "play.circle")
-          .font(.system(size: 22))
-      }
     }
-    .buttonStyle(.borderless)
-    .frame(maxHeight: .infinity, alignment: .center)
-    .padding(.horizontal)
-    .listRowBackground(self.viewStore.mode.isPlaying ? Color(.systemGray6) : .clear)
-    .listRowInsets(EdgeInsets())
-    .background(
-      Color(.systemGray5)
-        .frame(maxWidth: self.viewStore.mode.isPlaying ? .infinity : 0)
-        .animation(
-          self.viewStore.mode.isPlaying ? .linear(duration: self.viewStore.duration) : nil,
-          value: self.viewStore.mode.isPlaying
-        ),
-      alignment: .leading
-    )
-  }
-
-  var currentTime: TimeInterval {
-    self.viewStore.mode.progress.map { $0 * self.viewStore.duration } ?? self.viewStore.duration
   }
 }

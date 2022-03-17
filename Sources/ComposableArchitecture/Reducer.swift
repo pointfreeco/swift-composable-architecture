@@ -1,10 +1,6 @@
 import CasePaths
 import Combine
 
-#if DEBUG
-  import os
-#endif
-
 /// A reducer describes how to evolve the current state of an application to the next state, given
 /// an action, and describes what ``Effect``s should be executed later by the store, if any.
 ///
@@ -488,8 +484,7 @@ public struct Reducer<State, Action, Environment> {
 
       guard var localState = toLocalState.extract(from: globalState) else {
         #if DEBUG
-          os_log(
-            .fault, dso: rw.dso, log: rw.log,
+          runtimeWarning(
             """
             A reducer pulled back from "%@:%d" received an action when local state was \
             unavailable. …
@@ -698,8 +693,7 @@ public struct Reducer<State, Action, Environment> {
     .init { state, action, environment in
       guard state != nil else {
         #if DEBUG
-          os_log(
-            .fault, dso: rw.dso, log: rw.log,
+          runtimeWarning(
             """
             An "optional" reducer at "%@:%d" received an action when state was "nil". …
 
@@ -709,8 +703,8 @@ public struct Reducer<State, Action, Environment> {
             This is generally considered an application logic error, and can happen for a few \
             reasons:
 
-            • The optional reducer was combined with or run from another reducer that set \
-            "%@" to "nil" before the optional reducer ran. Combine or run optional reducers before \
+            • The optional reducer was combined with or run from another reducer that set "%@" to \
+            "nil" before the optional reducer ran. Combine or run optional reducers before \
             reducers that can set their state to "nil". This ensures that optional reducers can \
             handle their actions while their state is still non-"nil".
 
@@ -782,8 +776,7 @@ public struct Reducer<State, Action, Environment> {
       guard let (id, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
       if globalState[keyPath: toLocalState][id: id] == nil {
         #if DEBUG
-          os_log(
-            .fault, dso: rw.dso, log: rw.log,
+          runtimeWarning(
             """
             A "forEach" reducer at "%@:%d" received an action when state contained no element with \
             that id. …
@@ -857,8 +850,7 @@ public struct Reducer<State, Action, Environment> {
 
       if globalState[keyPath: toLocalState][key] == nil {
         #if DEBUG
-          os_log(
-            .fault, dso: rw.dso, log: rw.log,
+          runtimeWarning(
             """
             A "forEach" reducer at "%@:%d" received an action when state contained no value at \
             that key. …

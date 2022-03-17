@@ -288,7 +288,7 @@
       }
     }
 
-    struct TestAction {
+    struct TestAction: CustomDebugStringConvertible {
       let origin: Origin
       let file: StaticString
       let line: UInt
@@ -296,6 +296,16 @@
       enum Origin {
         case send(LocalAction)
         case receive(Action)
+      }
+
+      var debugDescription: String {
+        switch self.origin {
+        case let .send(action):
+          return debugCaseOutput(action)
+
+        case let .receive(action):
+          return debugCaseOutput(action)
+        }
       }
     }
   }

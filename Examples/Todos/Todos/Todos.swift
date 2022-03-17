@@ -65,8 +65,20 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
       state.filter = filter
       return .none
 
-    case let .move(source, destination):
+    case var .move(source, destination):
+      if state.filter != .all {
+        source = IndexSet(
+          source
+            .map { state.filteredTodos[$0] }
+            .compactMap { state.todos.index(id: $0.id) }
+        )
+        destination =
+          state.todos.index(id: state.filteredTodos[destination].id)
+          ?? destination
+      }
+
       state.todos.move(fromOffsets: source, toOffset: destination)
+
       return Effect(value: .sortCompletedTodos)
         .delay(for: .milliseconds(100), scheduler: environment.mainQueue)
         .eraseToEffect()
