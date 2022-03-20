@@ -2,10 +2,18 @@ import ComposableArchitecture
 import Foundation
 import SwiftUI
 
-struct Todo: Equatable, Identifiable {
-  var description = ""
-  let id: UUID
-  var isComplete = false
+//struct Todo: Equatable, Identifiable {
+//  var description = ""
+//  let id: UUID
+//  var isComplete = false
+//}
+
+extension Todo: Equatable, Identifiable {
+    public static func == (lhs: Todo, rhs: Todo) -> Bool {
+        return lhs.id == rhs.id &&
+            lhs.description == rhs.description &&
+            lhs.isComplete == rhs.isComplete
+    }
 }
 
 enum TodoAction: Equatable {

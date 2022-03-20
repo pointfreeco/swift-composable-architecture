@@ -7,7 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CA93D060249BF4D000A6F65D /* Todo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA93D05F249BF4D000A6F65D /* Todo.swift */; };
+		03E39C891DB5F94DC922A558 /* AmplifyModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3FBF6C34E27F001CC155478 /* AmplifyModels.swift */; };
+		21D9006827E7A21C001D0E12 /* AWSAPIPlugin in Frameworks */ = {isa = PBXBuildFile; productRef = 21D9006727E7A21C001D0E12 /* AWSAPIPlugin */; };
+		21D9006A27E7A21C001D0E12 /* AWSDataStorePlugin in Frameworks */ = {isa = PBXBuildFile; productRef = 21D9006927E7A21C001D0E12 /* AWSDataStorePlugin */; };
+		21D9006C27E7A21C001D0E12 /* AWSPluginsCore in Frameworks */ = {isa = PBXBuildFile; productRef = 21D9006B27E7A21C001D0E12 /* AWSPluginsCore */; };
+		21D9006E27E7A21C001D0E12 /* Amplify in Frameworks */ = {isa = PBXBuildFile; productRef = 21D9006D27E7A21C001D0E12 /* Amplify */; };
+		884C408F248D9B91110505CE /* amplifyconfiguration.json in Resources */ = {isa = PBXBuildFile; fileRef = 87EFB48F61EE2110CE2903AF /* amplifyconfiguration.json */; };
+		B7D08262150206184F001930 /* Todo+Schema.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41D5E41F2CEF5599E59CE35 /* Todo+Schema.swift */; };
+		CA93D060249BF4D000A6F65D /* TodoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA93D05F249BF4D000A6F65D /* TodoView.swift */; };
+		CD0D23DF37883D556BDF89D4 /* awsconfiguration.json in Resources */ = {isa = PBXBuildFile; fileRef = 1CF5780233786D0824D198CD /* awsconfiguration.json */; };
+		D12FF4927B33BF970A79957A /* Todo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDC6BAF462D6F70FCEC7BCA5 /* Todo.swift */; };
 		DC1394322469E57000EE1157 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC1394312469E57000EE1157 /* ComposableArchitecture */; };
 		DCBCB77624290F6C00DE1F59 /* TodosApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCBCB77524290F6C00DE1F59 /* TodosApp.swift */; };
 		DCBCB77A24290F6D00DE1F59 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DCBCB77924290F6D00DE1F59 /* Assets.xcassets */; };
@@ -49,8 +58,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1CF5780233786D0824D198CD /* awsconfiguration.json */ = {isa = PBXFileReference; explicitFileType = text.json; path = awsconfiguration.json; sourceTree = "<group>"; };
 		23EDBE6A271CD8C7004F7430 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		CA93D05F249BF4D000A6F65D /* Todo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Todo.swift; sourceTree = "<group>"; };
+		87EFB48F61EE2110CE2903AF /* amplifyconfiguration.json */ = {isa = PBXFileReference; explicitFileType = text.json; path = amplifyconfiguration.json; sourceTree = "<group>"; };
+		CA93D05F249BF4D000A6F65D /* TodoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoView.swift; sourceTree = "<group>"; };
+		D3FBF6C34E27F001CC155478 /* AmplifyModels.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; name = AmplifyModels.swift; path = amplify/generated/models/AmplifyModels.swift; sourceTree = "<group>"; };
+		D41D5E41F2CEF5599E59CE35 /* Todo+Schema.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; name = "Todo+Schema.swift"; path = "amplify/generated/models/Todo+Schema.swift"; sourceTree = "<group>"; };
 		DC85B441242D0286009784B0 /* swift-composable-architecture */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "swift-composable-architecture"; path = ../..; sourceTree = "<group>"; };
 		DCBCB77024290F6C00DE1F59 /* Todos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Todos.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCBCB77524290F6C00DE1F59 /* TodosApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodosApp.swift; sourceTree = "<group>"; };
@@ -58,6 +71,7 @@
 		DCBCB78624290F6D00DE1F59 /* TodosTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TodosTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCBCB78A24290F6D00DE1F59 /* TodosTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodosTests.swift; sourceTree = "<group>"; };
 		DCBCB79A24290FEB00DE1F59 /* Todos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Todos.swift; sourceTree = "<group>"; };
+		FDC6BAF462D6F70FCEC7BCA5 /* Todo.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; name = Todo.swift; path = amplify/generated/models/Todo.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,6 +79,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				21D9006C27E7A21C001D0E12 /* AWSPluginsCore in Frameworks */,
+				21D9006E27E7A21C001D0E12 /* Amplify in Frameworks */,
+				21D9006A27E7A21C001D0E12 /* AWSDataStorePlugin in Frameworks */,
+				21D9006827E7A21C001D0E12 /* AWSAPIPlugin in Frameworks */,
 				DC1394322469E57000EE1157 /* ComposableArchitecture in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -79,6 +97,25 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B016F4E2C729A5858F8140B8 /* AmplifyConfig */ = {
+			isa = PBXGroup;
+			children = (
+				1CF5780233786D0824D198CD /* awsconfiguration.json */,
+				87EFB48F61EE2110CE2903AF /* amplifyconfiguration.json */,
+			);
+			name = AmplifyConfig;
+			sourceTree = "<group>";
+		};
+		B4701C2FD43BBABF6D7BEB32 /* AmplifyModels */ = {
+			isa = PBXGroup;
+			children = (
+				D3FBF6C34E27F001CC155478 /* AmplifyModels.swift */,
+				D41D5E41F2CEF5599E59CE35 /* Todo+Schema.swift */,
+				FDC6BAF462D6F70FCEC7BCA5 /* Todo.swift */,
+			);
+			name = AmplifyModels;
+			sourceTree = "<group>";
+		};
 		DCBCB76724290F6C00DE1F59 = {
 			isa = PBXGroup;
 			children = (
@@ -87,6 +124,8 @@
 				DCBCB77124290F6C00DE1F59 /* Products */,
 				DCBCB77224290F6C00DE1F59 /* Todos */,
 				DCBCB78924290F6D00DE1F59 /* TodosTests */,
+				B016F4E2C729A5858F8140B8 /* AmplifyConfig */,
+				B4701C2FD43BBABF6D7BEB32 /* AmplifyModels */,
 			);
 			sourceTree = "<group>";
 		};
@@ -102,7 +141,7 @@
 		DCBCB77224290F6C00DE1F59 /* Todos */ = {
 			isa = PBXGroup;
 			children = (
-				CA93D05F249BF4D000A6F65D /* Todo.swift */,
+				CA93D05F249BF4D000A6F65D /* TodoView.swift */,
 				DCBCB79A24290FEB00DE1F59 /* Todos.swift */,
 				DCBCB77524290F6C00DE1F59 /* TodosApp.swift */,
 				DCBCB77924290F6D00DE1F59 /* Assets.xcassets */,
@@ -137,6 +176,10 @@
 			name = Todos;
 			packageProductDependencies = (
 				DC1394312469E57000EE1157 /* ComposableArchitecture */,
+				21D9006727E7A21C001D0E12 /* AWSAPIPlugin */,
+				21D9006927E7A21C001D0E12 /* AWSDataStorePlugin */,
+				21D9006B27E7A21C001D0E12 /* AWSPluginsCore */,
+				21D9006D27E7A21C001D0E12 /* Amplify */,
 			);
 			productName = Todos;
 			productReference = DCBCB77024290F6C00DE1F59 /* Todos.app */;
@@ -157,8 +200,6 @@
 				DCBCB78824290F6D00DE1F59 /* PBXTargetDependency */,
 			);
 			name = TodosTests;
-			packageProductDependencies = (
-			);
 			productName = TodosTests;
 			productReference = DCBCB78624290F6D00DE1F59 /* TodosTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -192,6 +233,7 @@
 			);
 			mainGroup = DCBCB76724290F6C00DE1F59;
 			packageReferences = (
+				21D9006627E7A21C001D0E12 /* XCRemoteSwiftPackageReference "amplify-ios" */,
 			);
 			productRefGroup = DCBCB77124290F6C00DE1F59 /* Products */;
 			projectDirPath = "";
@@ -209,6 +251,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				DCBCB77A24290F6D00DE1F59 /* Assets.xcassets in Resources */,
+				CD0D23DF37883D556BDF89D4 /* awsconfiguration.json in Resources */,
+				884C408F248D9B91110505CE /* amplifyconfiguration.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -227,8 +271,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				DCBCB77624290F6C00DE1F59 /* TodosApp.swift in Sources */,
-				CA93D060249BF4D000A6F65D /* Todo.swift in Sources */,
+				CA93D060249BF4D000A6F65D /* TodoView.swift in Sources */,
 				DCBCB79B24290FEB00DE1F59 /* Todos.swift in Sources */,
+				03E39C891DB5F94DC922A558 /* AmplifyModels.swift in Sources */,
+				B7D08262150206184F001930 /* Todo+Schema.swift in Sources */,
+				D12FF4927B33BF970A79957A /* Todo.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -491,7 +538,38 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		21D9006627E7A21C001D0E12 /* XCRemoteSwiftPackageReference "amplify-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/aws-amplify/amplify-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
+		21D9006727E7A21C001D0E12 /* AWSAPIPlugin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 21D9006627E7A21C001D0E12 /* XCRemoteSwiftPackageReference "amplify-ios" */;
+			productName = AWSAPIPlugin;
+		};
+		21D9006927E7A21C001D0E12 /* AWSDataStorePlugin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 21D9006627E7A21C001D0E12 /* XCRemoteSwiftPackageReference "amplify-ios" */;
+			productName = AWSDataStorePlugin;
+		};
+		21D9006B27E7A21C001D0E12 /* AWSPluginsCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 21D9006627E7A21C001D0E12 /* XCRemoteSwiftPackageReference "amplify-ios" */;
+			productName = AWSPluginsCore;
+		};
+		21D9006D27E7A21C001D0E12 /* Amplify */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 21D9006627E7A21C001D0E12 /* XCRemoteSwiftPackageReference "amplify-ios" */;
+			productName = Amplify;
+		};
 		DC1394312469E57000EE1157 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;

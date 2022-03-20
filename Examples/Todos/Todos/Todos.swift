@@ -46,7 +46,8 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
   Reducer { state, action, environment in
     switch action {
     case .addTodoButtonTapped:
-      state.todos.insert(Todo(id: environment.uuid()), at: 0)
+        state.todos.insert(
+            Todo(id: environment.uuid().uuidString, description: "", isComplete: false), at: 0)
       return .none
 
     case .clearCompletedButtonTapped:
@@ -164,21 +165,22 @@ struct AppView: View {
 }
 
 extension IdentifiedArray where ID == Todo.ID, Element == Todo {
+    
   static let mock: Self = [
     Todo(
-      description: "Check Mail",
-      id: UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEDDEADBEEF")!,
-      isComplete: false
+        id: "DEADBEEF-DEAD-BEEF-DEAD-BEEDDEADBEEF",
+        description: "Check Mail",
+        isComplete: false
     ),
     Todo(
-      description: "Buy Milk",
-      id: UUID(uuidString: "CAFEBEEF-CAFE-BEEF-CAFE-BEEFCAFEBEEF")!,
-      isComplete: false
+        id: "CAFEBEEF-CAFE-BEEF-CAFE-BEEFCAFEBEEF",
+        description: "Buy Milk",
+        isComplete: false
     ),
     Todo(
-      description: "Call Mom",
-      id: UUID(uuidString: "D00DCAFE-D00D-CAFE-D00D-CAFED00DCAFE")!,
-      isComplete: true
+        id: "D00DCAFE-D00D-CAFE-D00D-CAFED00DCAFE",
+        description: "Call Mom",
+        isComplete: true
     ),
   ]
 }
