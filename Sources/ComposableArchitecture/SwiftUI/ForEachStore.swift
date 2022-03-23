@@ -89,27 +89,30 @@ where Data: Collection, ID: Hashable, Content: View {
     EachContent: View,
     Data == IdentifiedArray<ID, EachState>,
     Content == WithViewStore<
-      OrderedSet<ID>, (ID, EachAction), ForEach<OrderedSet<ID>, ID, EachContent>
+      OrderedSet<ID>, (ID, EachAction), ForEach<OrderedSet<ID>, ID, EachContent?>
     >
   {
     self.data = store.state.value
     self.content = {
       WithViewStore(store.scope(state: { $0.ids })) { viewStore in
-        ForEach(viewStore.state, id: \.self) { id -> EachContent in
+        ForEach(viewStore.state, id: \.self) { id -> EachContent? in
           // NB: We cache elements here to avoid a potential crash where SwiftUI may re-evaluate
           //     views for elements no longer in the collection.
           //
           // Feedback filed: https://gist.github.com/stephencelis/cdf85ae8dab437adc998fb0204ed9a6b
-          var element = store.state.value[id: id]!
-          return content(
-            store.scope(
-              state: {
-                element = $0[id: id] ?? element
-                return element
-              },
-              action: { (id, $0) }
+          if var element = store.state.value[id: id] {
+            return content(
+              store.scope(
+                state: {
+                  element = $0[id: id] ?? element
+                  return element
+                },
+                action: { (id, $0) }
+              )
             )
-          )
+          } else {
+            return nil
+          }
         }
       }
     }
