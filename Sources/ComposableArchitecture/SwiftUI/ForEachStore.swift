@@ -104,8 +104,8 @@ where Data: Collection, ID: Hashable, Content: View {
           let id = element[keyPath: viewStore.state.id]
           content(
             store.scope(
-              state: { collection in collection[id: id] ?? element },
-              action: { action in (id, action) }
+              state: { $0[id: id] ?? element },
+              action: { (id, $0) }
             )
           )
         }
