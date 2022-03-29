@@ -9,7 +9,8 @@ extension Effect {
   @available(
     *,
     deprecated,
-    message: "Using a variadic list is no longer supported. Use an array of identifiers instead. For more on this change, see: https://github.com/pointfreeco/swift-composable-architecture/pull/1041"
+    message:
+      "Using a variadic list is no longer supported. Use an array of identifiers instead. For more on this change, see: https://github.com/pointfreeco/swift-composable-architecture/pull/1041"
   )
   @_disfavoredOverload
   public static func cancel(ids: AnyHashable...) -> Effect {
