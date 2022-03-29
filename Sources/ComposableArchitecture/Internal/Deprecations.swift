@@ -3,6 +3,20 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
+// NB: Deprecated after 0.34.0:
+
+extension Effect {
+  @available(
+    *,
+    deprecated,
+    message: "Using a variadic list is no longer supported. Use an array of identifiers instead. For more on this change, see: https://github.com/pointfreeco/swift-composable-architecture/pull/1041"
+  )
+  @_disfavoredOverload
+  public static func cancel(ids: AnyHashable...) -> Effect {
+    .cancel(ids: ids)
+  }
+}
+
 // NB: Deprecated after 0.31.0:
 
 extension Reducer {

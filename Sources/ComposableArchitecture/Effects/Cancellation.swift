@@ -86,20 +86,10 @@ extension Effect {
 
   /// An effect that will cancel multiple currently in-flight effects with the given identifiers.
   ///
-  /// - Parameter ids: A variadic list of effect identifiers.
+  /// - Parameter ids: An array of effect identifiers.
   /// - Returns: A new effect that will cancel any currently in-flight effects with the given
   ///   identifiers.
-  @_disfavoredOverload
-  public static func cancel(ids: AnyHashable...) -> Effect {
-    .cancel(ids: ids)
-  }
-
-  /// An effect that will cancel multiple currently in-flight effects with the given identifiers.
-  ///
-  /// - Parameter ids: A sequence of effect identifiers.
-  /// - Returns: A new effect that will cancel any currently in-flight effects with the given
-  ///   identifiers.
-  public static func cancel<S: Sequence>(ids: S) -> Effect where S.Element == AnyHashable {
+  public static func cancel(ids: [AnyHashable]) -> Effect {
     .merge(ids.map(Effect.cancel(id:)))
   }
 }
