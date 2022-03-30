@@ -11,13 +11,16 @@ on:
 
 jobs:
   library:
-    runs-on: macos-11.0
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        xcode:
-          - '12.4'
-          - '12.5.1'
-          - '13.2.1'
+        os: [macos-12.0, macos-11.0]
+        xcode: [12.4, 12.5.1, 13.2.1, 13.3]
+        exclude: 
+          - os: macos-12.0
+            xcode: [12.4, 12.5.1]
+          - os: macos-11.0
+            xcode: [13.2.1, 13.3]
     steps:
       - uses: actions/checkout@v2
       - name: Select Xcode ${{ matrix.xcode }}
@@ -25,17 +28,17 @@ jobs:
       - name: Run tests
         run: make test-library
       - name: Compile documentation
-        if: ${{ matrix.xcode == '13.2' }}
+        if: ${{ matrix.xcode == '13.3' }}
         run: make test-docs
       - name: Run benchmark
         run: make benchmark
 
   examples:
-    runs-on: macos-11.0
+    runs-on: macos-12.0
     strategy:
       matrix:
         xcode:
-          - '13.2.1'
+          - '13.3'
     steps:
       - uses: actions/checkout@v2
       - name: Select Xcode ${{ matrix.xcode }}
