@@ -11,20 +11,10 @@ on:
 
 jobs:
   library:
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-12
     strategy:
       matrix:
-        os: [macos-12, macos-11]
-        xcode: [12.4, 12.5.1, 13.2.1, 13.3]
-        exclude: 
-          - os: macos-12
-            xcode: 12.5.1
-          - os: macos-12
-            xcode: 12.4
-          - os: macos-11
-            xcode: 13.3
-          - os: macos-11
-            xcode: 13.2.1
+        xcode: [13.2.1, 13.3]
     steps:
       - uses: actions/checkout@v2
       - name: Select Xcode ${{ matrix.xcode }}
@@ -39,13 +29,9 @@ jobs:
 
   examples:
     runs-on: macos-12
-    strategy:
-      matrix:
-        xcode:
-          - '13.3'
     steps:
       - uses: actions/checkout@v2
       - name: Select Xcode ${{ matrix.xcode }}
-        run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
+        run: sudo xcode-select -s /Applications/Xcode_13.3.app
       - name: Run tests
         run: make test-examples
