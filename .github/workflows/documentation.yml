@@ -1,3 +1,5 @@
+# Build and deploy DocC to GitHub pages. Based off of @karwa's work here:
+# https://github.com/karwa/swift-url/blob/main/.github/workflows/docs.yml
 name: Documentation
 
 on:
@@ -11,12 +13,47 @@ on:
 
 jobs:
   build:
-    runs-on: macos-12
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Package
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+
+      - name: Download Swift 5.5.1
+        run: wget -q https://download.swift.org/swift-5.5.1-release/ubuntu2004/swift-5.5.1-RELEASE/swift-5.5.1-RELEASE-ubuntu20.04.tar.gz
+      - name: Extract Swift 5.5.1
+        run: tar xzf swift-5.5.1-RELEASE-ubuntu20.04.tar.gz
+      - name: Add Swift toolchain to PATH
+        run: |
+          echo "$GITHUB_WORKSPACE/swift-5.5.1-RELEASE-ubuntu20.04/usr/bin" >> $GITHUB_PATH
+
+      - name: Checkout swift-docc
+        uses: actions/checkout@v2
+        with:
+          repository: apple/swift-docc
+          ref: main
+          path: swift-docc
+      - name: Cache DocC
+        id: cache-docc
+        uses: actions/cache@v2
+        with:
+          key: swift-url-docc-build
+          path: swift-docc/.build
+      - name: Build swift-docc
+        if: ${{ !steps.cache-docc.outputs.cache-hit }}
+        run: |
+          cd swift-docc; swift build --product docc -c release; cd ..
+
+      - name: Checkout swift-docc-render
+        uses: actions/checkout@v2
+        with:
+          repository: apple/swift-docc-render
+          ref: main
+          path: swift-docc-render
+      - name: Build swift-docc-render
+        run: |
+          cd swift-docc-render; npm install && npm run build; cd ..
 
       - name: Checkout gh-pages Branch
         uses: actions/checkout@v2
@@ -33,12 +70,12 @@ jobs:
           do
             echo "⏳ Generating documentation for "$tag" release.";
 
-            if [ -d "docs-out/$tag" ]
-            then
+            if [ -d "docs-out/$tag" ] 
+            then 
                 echo "✅ Documentation for "$tag" already exists.";
-            else
+            else 
                 git checkout "$tag";
-                mkdir -p Sources/Parsing/Documentation.docc;
+                mkdir -p Sources/ComposableArchitecture/Documentation.docc;
                 export DOCC_HTML_DIR="$(pwd)/swift-docc-render/dist";
 
                 rm -rf .build/symbol-graphs;
@@ -58,7 +95,7 @@ jobs:
                     --additional-symbol-graph-dir \
                     .build/symbol-graphs \
                     --transform-for-static-hosting \
-                    --hosting-base-path /swift-parsing/"$tag" \
+                    --hosting-base-path /swift-composable-architecture/"$tag" \
                     --output-path docs-out/"$tag" \
                     && echo "✅ Documentation generated for "$tag" release." \
                     || echo "⚠️ Documentation skipped for "$tag".";
@@ -73,33 +110,3 @@ jobs:
           branch: gh-pages
           folder: docs-out
           single-commit: true
-
-#name: Documentation
-#on:
-#  release:
-#    types:
-#      - published
-#  workflow_dispatch:
-#
-#jobs:
-#  build:
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: Generate Documentation
-#        uses: SwiftDocOrg/swift-doc@master
-#        with:
-#          base-url: /swift-composable-architecture/
-#          format: html
-#          inputs: Sources/ComposableArchitecture
-#          module-name: ComposableArchitecture
-#          output: Documentation
-#      - name: Update Permissions
-#        run: 'sudo chown --recursive $USER Documentation'
-#      - name: Deploy to GitHub Pages
-#        uses: JamesIves/github-pages-deploy-action@releases/v3
-#        with:
-#          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-#          BRANCH: gh-pages
-#          FOLDER: Documentation
