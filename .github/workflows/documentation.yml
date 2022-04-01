@@ -13,20 +13,12 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-12
     steps:
       - name: Checkout Package
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-
-      - name: Download Swift 5.5.1
-        run: wget -q https://download.swift.org/swift-5.5.1-release/ubuntu2004/swift-5.5.1-RELEASE/swift-5.5.1-RELEASE-ubuntu20.04.tar.gz
-      - name: Extract Swift 5.5.1
-        run: tar xzf swift-5.5.1-RELEASE-ubuntu20.04.tar.gz
-      - name: Add Swift toolchain to PATH
-        run: |
-          echo "$GITHUB_WORKSPACE/swift-5.5.1-RELEASE-ubuntu20.04/usr/bin" >> $GITHUB_PATH
 
       - name: Checkout swift-docc
         uses: actions/checkout@v2
