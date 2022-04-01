@@ -95,7 +95,7 @@ jobs:
           done
 
       - name: Fix permissions
-        run: 'sudo chown --recursive $USER docs-out'
+        run: 'sudo chown -R $USER docs-out'
       - name: Publish documentation to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@4.1.7
         with:
