@@ -88,14 +88,16 @@ where Data: Collection, ID: Hashable, Content: View {
   where
     EachContent: View,
     Data == IdentifiedArray<ID, EachState>,
-    EachState: Equatable,
     Content == WithViewStore<
       IdentifiedArray<ID, EachState>, (ID, EachAction), ForEach<IdentifiedArray<ID, EachState>, ID, EachContent>
     >
   {
     self.data = store.state.value
     self.content = {
-      WithViewStore(store) { viewStore in
+      WithViewStore(
+        store,
+        removeDuplicates: { old, new in old.ids == new.ids }
+      ) { viewStore in
         ForEach(viewStore.state, id: viewStore.state.id) { element in
           // NB: We cache elements here to avoid a potential crash where SwiftUI may re-evaluate
           //     views for elements no longer in the collection.
