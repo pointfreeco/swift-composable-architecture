@@ -558,43 +558,41 @@ extension Reducer {
         return .none
       }
       if index >= globalState[keyPath: toLocalState].endIndex {
-        #if DEBUG
-          runtimeWarning(
-            """
-            A "forEach" reducer at "%@:%d" received an action when state contained no element at \
-            that index. …
+        runtimeWarning(
+          """
+          A "forEach" reducer at "%@:%d" received an action when state contained no element at \
+          that index. …
 
-              Action:
-                %@
-              Index:
-                %d
+            Action:
+              %@
+            Index:
+              %d
 
-            This is generally considered an application logic error, and can happen for a few \
-            reasons:
+          This is generally considered an application logic error, and can happen for a few \
+          reasons:
 
-            • This "forEach" reducer was combined with or run from another reducer that removed \
-            the element at this index when it handled this action. To fix this make sure that this \
-            "forEach" reducer is run before any other reducers that can move or remove elements \
-            from state. This ensures that "forEach" reducers can handle their actions for the \
-            element at the intended index.
+          • This "forEach" reducer was combined with or run from another reducer that removed \
+          the element at this index when it handled this action. To fix this make sure that this \
+          "forEach" reducer is run before any other reducers that can move or remove elements \
+          from state. This ensures that "forEach" reducers can handle their actions for the \
+          element at the intended index.
 
-            • An in-flight effect emitted this action while state contained no element at this \
-            index. While it may be perfectly reasonable to ignore this action, you may want to \
-            cancel the associated effect when moving or removing an element. If your "forEach" \
-            reducer returns any long-living effects, you should use the identifier-based "forEach" \
-            instead.
+          • An in-flight effect emitted this action while state contained no element at this \
+          index. While it may be perfectly reasonable to ignore this action, you may want to \
+          cancel the associated effect when moving or removing an element. If your "forEach" \
+          reducer returns any long-living effects, you should use the identifier-based "forEach" \
+          instead.
 
-            • This action was sent to the store while its state contained no element at this index \
-            To fix this make sure that actions for this reducer can only be sent to a view store \
-            when its state contains an element at this index. In SwiftUI applications, use \
-            "ForEachStore".
-            """,
-            "\(file)",
-            line,
-            debugCaseOutput(localAction),
-            index
-          )
-        #endif
+          • This action was sent to the store while its state contained no element at this index \
+          To fix this make sure that actions for this reducer can only be sent to a view store \
+          when its state contains an element at this index. In SwiftUI applications, use \
+          "ForEachStore".
+          """,
+          "\(file)",
+          line,
+          debugCaseOutput(localAction),
+          index
+        )
         return .none
       }
       return self.run(
