@@ -1206,9 +1206,11 @@ public struct _ExhaustivityCheckView<State, Action>: View {
           Make sure that you exhaustively provide a "CaseLet" view for each case in your state, \
           or provide a "Default" view at the end of the "SwitchStore".
           """,
-          "\(self.file)",
-          self.line,
-          debugCaseOutput(self.store.wrappedValue.state.value)
+          [
+            "\(self.file)",
+            self.line,
+            debugCaseOutput(self.store.wrappedValue.state.value)
+          ]
         )
       }
     #else

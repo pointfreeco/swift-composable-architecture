@@ -488,10 +488,12 @@ public struct Reducer<State, Action, Environment> {
           actions for this reducer can only be sent to a view store when state is non-"nil". \
           In SwiftUI applications, use "SwitchStore".
           """,
-          "\(file)",
-          line,
-          debugCaseOutput(localAction),
-          "\(State.self)"
+          [
+            "\(file)",
+            line,
+            debugCaseOutput(localAction),
+            "\(State.self)"
+          ]
         )
         return .none
       }
@@ -693,10 +695,12 @@ public struct Reducer<State, Action, Environment> {
           this reducer can only be sent to a view store when state is non-"nil". In SwiftUI \
           applications, use "IfLetStore".
           """,
-          "\(file)",
-          line,
-          debugCaseOutput(action),
-          "\(State.self)"
+          [
+            "\(file)",
+            line,
+            debugCaseOutput(action),
+            "\(State.self)"
+          ]
         )
         return .none
       }
@@ -780,10 +784,12 @@ public struct Reducer<State, Action, Environment> {
           when its state contains an element at this id. In SwiftUI applications, use \
           "ForEachStore".
           """,
-          "\(file)",
-          line,
-          debugCaseOutput(localAction),
-          "\(id)"
+          [
+            "\(file)",
+            line,
+            debugCaseOutput(localAction),
+            "\(id)"
+          ]
         )
         return .none
       }
@@ -851,10 +857,12 @@ public struct Reducer<State, Action, Environment> {
           key. To fix this make sure that actions for this reducer can only be sent to a view \
           store when its state contains an element at this key.
           """,
-          "\(file)",
-          line,
-          debugCaseOutput(localAction),
-          "\(key)"
+          [
+            "\(file)",
+            line,
+            debugCaseOutput(localAction),
+            "\(key)"
+          ]
         )
         return .none
       }

@@ -588,10 +588,12 @@ extension Reducer {
           when its state contains an element at this index. In SwiftUI applications, use \
           "ForEachStore".
           """,
-          "\(file)",
-          line,
-          debugCaseOutput(localAction),
-          index
+          [
+            "\(file)",
+            line,
+            debugCaseOutput(localAction),
+            index
+          ]
         )
         return .none
       }
