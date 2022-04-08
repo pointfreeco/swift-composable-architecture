@@ -31,10 +31,11 @@ public enum ActionFormat {
 extension Reducer {
   /// Prints debug messages describing all received actions and state mutations.
   ///
-  /// Printing is only done in debug (`#if DEBUG`) builds.
-  ///
   /// - Parameters:
   ///   - prefix: A string with which to prefix all debug messages.
+  ///   - shouldPrintInOtherBuildConfiguration: A boolean value that indicates
+  ///     whether to print out messages for other build configurations (e.g. `RELEASE`, `ALPHA`, etc..)
+  ///     than `DEBUG`.
   ///   - toDebugEnvironment: A function that transforms an environment into a debug environment by
   ///     describing a print function and a queue to print from. Defaults to a function that ignores
   ///     the environment and returns a default ``DebugEnvironment`` that uses Swift's `print`
@@ -42,6 +43,7 @@ extension Reducer {
   /// - Returns: A reducer that prints debug messages for all received actions.
   public func debug(
     _ prefix: String = "",
+    shouldPrintInOtherBuildConfigurations: Bool = false,
     actionFormat: ActionFormat = .prettyPrint,
     environment toDebugEnvironment: @escaping (Environment) -> DebugEnvironment = { _ in
       DebugEnvironment()
@@ -49,6 +51,7 @@ extension Reducer {
   ) -> Reducer {
     self.debug(
       prefix,
+      shouldPrintInOtherBuildConfigurations: shouldPrintInOtherBuildConfigurations,
       state: { $0 },
       action: .self,
       actionFormat: actionFormat,
@@ -83,9 +86,53 @@ extension Reducer {
     )
   }
 
-  /// Prints debug messages describing all received local actions and local state mutations.
+  /// Prints debug messages describing all received actions and state mutations.
   ///
-  /// Printing is only done in debug (`#if DEBUG`) builds.
+  /// - Parameters:
+  ///   - prefix: A string with which to prefix all debug messages.
+  ///   - shouldPrintInOtherBuildConfiguration: A boolean value that indicates
+  ///     whether to print out messages for other build configurations (e.g. `RELEASE`, `ALPHA`, etc..)
+  ///     than `DEBUG`.
+  ///   - toDebugEnvironment: A function that transforms an environment into a debug environment by
+  ///     describing a print function and a queue to print from. Defaults to a function that ignores
+  ///     the environment and returns a default ``DebugEnvironment`` that uses Swift's `print`
+  ///     function and a background queue.
+  /// - Returns: A reducer that prints debug messages for all received actions.
+  public func debug<LocalState, LocalAction>(
+    _ prefix: String = "",
+    shouldPrintInOtherBuildConfigurations: Bool = false,
+    state toLocalState: @escaping (State) -> LocalState,
+    action toLocalAction: CasePath<Action, LocalAction>,
+    actionFormat: ActionFormat = .prettyPrint,
+    environment toDebugEnvironment: @escaping (Environment) -> DebugEnvironment = { _ in
+      DebugEnvironment()
+    }
+  ) -> Reducer {
+    #if DEBUG
+    return printOut(
+      prefix,
+      state: toLocalState,
+      action: toLocalAction,
+      actionFormat: actionFormat,
+      environment: toDebugEnvironment
+    )
+    #else
+    switch shouldPrintInOtherBuildConfigurations {
+    case true:
+      return printOut(
+        prefix,
+        state: toLocalState,
+        action: toLocalAction,
+        actionFormat: actionFormat,
+        environment: toDebugEnvironment
+      )
+    case false:
+      return self
+    }
+    #endif
+  }
+
+  /// Prints messages describing all received local actions and local state mutations.
   ///
   /// - Parameters:
   ///   - prefix: A string with which to prefix all debug messages.
@@ -96,7 +143,7 @@ extension Reducer {
   ///     the environment and returns a default ``DebugEnvironment`` that uses Swift's `print`
   ///     function and a background queue.
   /// - Returns: A reducer that prints debug messages for all received actions.
-  public func debug<LocalState, LocalAction>(
+  private func printOut<LocalState, LocalAction>(
     _ prefix: String = "",
     state toLocalState: @escaping (State) -> LocalState,
     action toLocalAction: CasePath<Action, LocalAction>,
@@ -105,41 +152,37 @@ extension Reducer {
       DebugEnvironment()
     }
   ) -> Reducer {
-    #if DEBUG
-      return .init { state, action, environment in
-        let previousState = toLocalState(state)
-        let effects = self.run(&state, action, environment)
-        guard let localAction = toLocalAction.extract(from: action) else { return effects }
-        let nextState = toLocalState(state)
-        let debugEnvironment = toDebugEnvironment(environment)
-        return .merge(
-          .fireAndForget {
-            debugEnvironment.queue.async {
-              var actionOutput = ""
-              if actionFormat == .prettyPrint {
-                customDump(localAction, to: &actionOutput, indent: 2)
-              } else {
-                actionOutput.write(debugCaseOutput(localAction).indent(by: 2))
-              }
-              let stateOutput =
-                LocalState.self == Void.self
-                ? ""
-                : diff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
-              debugEnvironment.printer(
-                """
-                \(prefix.isEmpty ? "" : "\(prefix): ")received action:
-                \(actionOutput)
-                \(stateOutput)
-                """
-              )
+    return .init { state, action, environment in
+      let previousState = toLocalState(state)
+      let effects = self.run(&state, action, environment)
+      guard let localAction = toLocalAction.extract(from: action) else { return effects }
+      let nextState = toLocalState(state)
+      let debugEnvironment = toDebugEnvironment(environment)
+      return .merge(
+        .fireAndForget {
+          debugEnvironment.queue.async {
+            var actionOutput = ""
+            if actionFormat == .prettyPrint {
+              customDump(localAction, to: &actionOutput, indent: 2)
+            } else {
+              actionOutput.write(debugCaseOutput(localAction).indent(by: 2))
             }
-          },
-          effects
-        )
-      }
-    #else
-      return self
-    #endif
+            let stateOutput =
+              LocalState.self == Void.self
+              ? ""
+              : diff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
+            debugEnvironment.printer(
+              """
+              \(prefix.isEmpty ? "" : "\(prefix): ")received action:
+              \(actionOutput)
+              \(stateOutput)
+              """
+            )
+          }
+        },
+        effects
+      )
+    }
   }
 }
 
