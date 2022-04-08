@@ -492,7 +492,7 @@ public struct Reducer<State, Action, Environment> {
             "\(file)",
             line,
             debugCaseOutput(localAction),
-            "\(State.self)"
+            "\(State.self)",
           ]
         )
         return .none
@@ -699,7 +699,7 @@ public struct Reducer<State, Action, Environment> {
             "\(file)",
             line,
             debugCaseOutput(action),
-            "\(State.self)"
+            "\(State.self)",
           ]
         )
         return .none
@@ -788,7 +788,7 @@ public struct Reducer<State, Action, Environment> {
             "\(file)",
             line,
             debugCaseOutput(localAction),
-            "\(id)"
+            "\(id)",
           ]
         )
         return .none
@@ -861,7 +861,7 @@ public struct Reducer<State, Action, Environment> {
             "\(file)",
             line,
             debugCaseOutput(localAction),
-            "\(key)"
+            "\(key)",
           ]
         )
         return .none

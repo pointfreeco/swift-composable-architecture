@@ -592,7 +592,7 @@ extension Reducer {
             "\(file)",
             line,
             debugCaseOutput(localAction),
-            index
+            index,
           ]
         )
         return .none

@@ -32,12 +32,12 @@ func runtimeWarning(
   _ message: @autoclosure () -> StaticString,
   _ args: @autoclosure () -> [CVarArg] = []
 ) {
-#if DEBUG
-  let message = message()
-  unsafeBitCast(
-    os_log as (OSLogType, UnsafeRawPointer, OSLog, StaticString, CVarArg...) -> Void,
-    to: ((OSLogType, UnsafeRawPointer, OSLog, StaticString, [CVarArg]) -> Void).self
-  )(.fault, rw.dso, rw.log, message, args())
-  XCTFail(String(format: "\(message)", arguments: args()))
-#endif
+  #if DEBUG
+    let message = message()
+    unsafeBitCast(
+      os_log as (OSLogType, UnsafeRawPointer, OSLog, StaticString, CVarArg...) -> Void,
+      to: ((OSLogType, UnsafeRawPointer, OSLog, StaticString, [CVarArg]) -> Void).self
+    )(.fault, rw.dso, rw.log, message, args())
+    XCTFail(String(format: "\(message)", arguments: args()))
+  #endif
 }

@@ -1209,7 +1209,7 @@ public struct _ExhaustivityCheckView<State, Action>: View {
           [
             "\(self.file)",
             self.line,
-            debugCaseOutput(self.store.wrappedValue.state.value)
+            debugCaseOutput(self.store.wrappedValue.state.value),
           ]
         )
       }

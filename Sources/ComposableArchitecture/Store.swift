@@ -498,7 +498,7 @@ public final class Store<State, Action> {
           """,
           [
             debugCaseOutput(action),
-            debugCaseOutput(originatingAction)
+            debugCaseOutput(originatingAction),
           ]
         )
       }
