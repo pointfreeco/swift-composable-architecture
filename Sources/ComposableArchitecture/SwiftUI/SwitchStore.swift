@@ -1196,22 +1196,22 @@ public struct _ExhaustivityCheckView<State, Action>: View {
       .padding()
       .background(Color.red.edgesIgnoringSafeArea(.all))
       .onAppear {
-        #if DEBUG
-          runtimeWarning(
-            """
-            SwitchStore@%@:%d does not handle the current case. …
+        runtimeWarning(
+          """
+          SwitchStore@%@:%d does not handle the current case. …
 
-              Unhandled case:
-                %@
+            Unhandled case:
+              %@
 
-            Make sure that you exhaustively provide a "CaseLet" view for each case in your state, \
-            or provide a "Default" view at the end of the "SwitchStore".
-            """,
+          Make sure that you exhaustively provide a "CaseLet" view for each case in your state, \
+          or provide a "Default" view at the end of the "SwitchStore".
+          """,
+          [
             "\(self.file)",
             self.line,
             debugCaseOutput(self.store.wrappedValue.state.value)
-          )
-        #endif
+          ]
+        )
       }
     #else
       return EmptyView()
