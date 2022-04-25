@@ -324,6 +324,28 @@ extension Publisher {
     Effect(self)
   }
 
+  /// Turns any publisher into an ``Effect``.
+  ///
+  /// This is a convenience operator for writing ``Effect/eraseToEffect()`` followed by a
+  /// ``Effect/map(_:)``.
+  ///
+  /// ```swift
+  /// case .buttonTapped:
+  ///   return fetchUser(id: 1)
+  ///     .filter(\.isAdmin)
+  ///     .eraseToEffect(ProfileAction.adminUserFetched)
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - transform: A mapping function that converts `Output` to another type.
+  /// - Returns: An effect that wraps `self` after mapping `Output` values.
+  public func eraseToEffect<T>(
+    _ transform: @escaping (Output) -> T
+  ) -> Effect<T, Failure> {
+    self.map(transform)
+      .eraseToEffect()
+  }
+
   /// Turns any publisher into an ``Effect`` that cannot fail by wrapping its output and failure in
   /// a result.
   ///

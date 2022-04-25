@@ -1,9 +1,5 @@
 import SwiftUI
 
-#if DEBUG
-  import os
-#endif
-
 /// A view that can switch over a store of enum state and handle each case.
 ///
 /// An application may model parts of its state with enums. For example, app state may differ if a
@@ -1200,23 +1196,22 @@ public struct _ExhaustivityCheckView<State, Action>: View {
       .padding()
       .background(Color.red.edgesIgnoringSafeArea(.all))
       .onAppear {
-        #if DEBUG
-          os_log(
-            .fault, dso: rw.dso, log: rw.log,
-            """
-            SwitchStore@%@:%d does not handle the current case. …
+        runtimeWarning(
+          """
+          SwitchStore@%@:%d does not handle the current case. …
 
-              Unhandled case:
-                %@
+            Unhandled case:
+              %@
 
-            Make sure that you exhaustively provide a "CaseLet" view for each case in your state, \
-            or provide a "Default" view at the end of the "SwitchStore".
-            """,
+          Make sure that you exhaustively provide a "CaseLet" view for each case in your state, \
+          or provide a "Default" view at the end of the "SwitchStore".
+          """,
+          [
             "\(self.file)",
             self.line,
-            debugCaseOutput(self.store.wrappedValue.state.value)
-          )
-        #endif
+            debugCaseOutput(self.store.wrappedValue.state.value),
+          ]
+        )
       }
     #else
       return EmptyView()

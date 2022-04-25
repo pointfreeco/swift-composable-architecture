@@ -76,11 +76,18 @@ public final class ViewStore<State, Action>: ObservableObject {
 
     self.viewCancellable = store.state
       .removeDuplicates(by: isDuplicate)
-      .sink { [weak self] in
-        guard let self = self else { return }
-        self.objectWillChange.send()
-        self._state.value = $0
+      .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
+        guard let objectWillChange = objectWillChange, let _state = _state else { return }
+        objectWillChange.send()
+        _state.value = $0
       }
+  }
+
+  internal init(_ viewStore: ViewStore<State, Action>) {
+    self._send = viewStore._send
+    self._state = viewStore._state
+    self.objectWillChange = viewStore.objectWillChange
+    self.viewCancellable = viewStore.viewCancellable
   }
 
   /// A publisher that emits when state changes.
