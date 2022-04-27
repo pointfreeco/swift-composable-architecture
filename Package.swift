@@ -41,7 +41,7 @@ let package = Package(
         "ComposableArchitecture"
       ]
     ),
-    .target(
+    .executableTarget(
       name: "swift-composable-architecture-benchmark",
       dependencies: [
         "ComposableArchitecture",
