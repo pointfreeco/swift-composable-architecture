@@ -70,7 +70,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
 
     case .disconnected:
       state.connectivityState = .connecting
-      return environment.webSocket.open(WebSocketId(), URL(string: "wss://echo.websocket.org")!, [])
+      return environment.webSocket.open(WebSocketId(), URL(string: "wss://echo.websocket.events")!, [])
         .receive(on: environment.mainQueue)
         .map(WebSocketAction.webSocket)
         .eraseToEffect()
