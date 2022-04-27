@@ -1,0 +1,16 @@
+name: Release
+
+on:
+  push:
+    tags:
+  workflow_dispatch:
+
+jobs:
+  create_release:
+    name: Create Release
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Create XCFramework
+        uses: unsignedapps/swift-create-xcframework@v2
