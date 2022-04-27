@@ -8,12 +8,9 @@ on:
 jobs:
   create_release:
     name: Create Release
-    runs-on: macos-12
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
-
-      - name: Select Xcode 13.3.1
-        run: sudo xcode-select -s/Applications/Xcode_13.3.1.app
 
       - name: Create XCFramework
         uses: unsignedapps/swift-create-xcframework@v2
