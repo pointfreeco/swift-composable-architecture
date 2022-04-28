@@ -63,45 +63,45 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
     }
   }
 
-  func testDownloadThrottling() async {
-    var downloadClient = DownloadClient.failing
-    downloadClient.download = { _ in self.downloadStream }
-
-    let store = TestStore(
-      initialState: DownloadComponentState(
-        id: 1,
-        mode: .notDownloaded,
-        url: URL(string: "https://www.pointfree.co")!
-      ),
-      reducer: reducer,
-      environment: DownloadComponentEnvironment(
-        downloadClient: downloadClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
-      )
-    )
-
-    store.send(.buttonTapped) {
-      $0.mode = .startingToDownload
-    }
-
-    self.downloadContinuation.yield(.updateProgress(0.5))
-    await self.scheduler.advance()
-    await store.receive(.downloadClient(.success(.updateProgress(0.5)))) {
-      $0.mode = .downloading(progress: 0.5)
-    }
-
-    self.downloadContinuation.yield(.updateProgress(0.6))
-    await self.scheduler.advance(by: 0.5)
-
-    self.downloadContinuation.yield(.updateProgress(0.7))
-    await self.scheduler.advance(by: 0.5)
-    await store.receive(.downloadClient(.success(.updateProgress(0.7)))) {
-      $0.mode = .downloading(progress: 0.7)
-    }
-
-    self.downloadContinuation.finish(throwing: nil)
-    await self.scheduler.run()
-  }
+//  func testDownloadThrottling() async {
+//    var downloadClient = DownloadClient.failing
+//    downloadClient.download = { _ in self.downloadStream }
+//
+//    let store = TestStore(
+//      initialState: DownloadComponentState(
+//        id: 1,
+//        mode: .notDownloaded,
+//        url: URL(string: "https://www.pointfree.co")!
+//      ),
+//      reducer: reducer,
+//      environment: DownloadComponentEnvironment(
+//        downloadClient: downloadClient,
+//        mainQueue: self.scheduler.eraseToAnyScheduler()
+//      )
+//    )
+//
+//    store.send(.buttonTapped) {
+//      $0.mode = .startingToDownload
+//    }
+//
+//    self.downloadContinuation.yield(.updateProgress(0.5))
+//    await self.scheduler.advance()
+//    await store.receive(.downloadClient(.success(.updateProgress(0.5)))) {
+//      $0.mode = .downloading(progress: 0.5)
+//    }
+//
+//    self.downloadContinuation.yield(.updateProgress(0.6))
+//    await self.scheduler.advance(by: 0.5)
+//
+//    self.downloadContinuation.yield(.updateProgress(0.7))
+//    await self.scheduler.advance(by: 0.5)
+//    await store.receive(.downloadClient(.success(.updateProgress(0.7)))) {
+//      $0.mode = .downloading(progress: 0.7)
+//    }
+//
+//    self.downloadContinuation.finish(throwing: nil)
+//    await self.scheduler.run()
+//  }
 
   func testCancelDownloadFlow() async {
     var downloadClient = DownloadClient.failing

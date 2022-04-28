@@ -175,7 +175,7 @@
     private let fromLocalAction: (LocalAction) -> Action
     private var line: UInt
     private var longLivingEffects: Set<LongLivingEffect> = []
-    @CurrentValueAsyncStream var receivedActions: [(action: Action, state: State)] = []
+    var receivedActions: [(action: Action, state: State)] = []
     private let reducer: Reducer<State, Action, Environment>
     private var snapshotState: State
     private var store: Store<State, TestAction>!
@@ -493,8 +493,8 @@
 
         group.addTask { @MainActor in
           if self.receivedActions.isEmpty {
-            for await xs in self.$receivedActions {
-              guard xs.isEmpty
+            while !Task.isCancelled {
+              guard self.receivedActions.isEmpty
               else { break }
             }
           }
@@ -552,33 +552,3 @@
     }
   }
 #endif
-
-@propertyWrapper
-class CurrentValueAsyncStream<Element>: AsyncSequence {
-  let stream: AsyncStream<Element>
-  let continuation: AsyncStream<Element>.Continuation
-
-  var wrappedValue: Element {
-    didSet {
-      self.continuation.yield(self.wrappedValue)
-    }
-  }
-
-  var projectedValue: AsyncStream<Element> {
-    self.stream
-  }
-
-  init(wrappedValue: Element) {
-    self.wrappedValue = wrappedValue
-    var continuation: AsyncStream<Element>.Continuation!
-    self.stream = .init {
-      continuation = $0
-    }
-    self.continuation = continuation
-    self.continuation.yield(wrappedValue)
-  }
-
-  __consuming func makeAsyncIterator() -> AsyncStream<Element>.AsyncIterator {
-    self.stream.makeAsyncIterator()
-  }
-}
