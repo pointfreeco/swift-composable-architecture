@@ -5,7 +5,7 @@ import XCTest
 
 @MainActor
 class DemoTests: XCTestCase {
-  func testBasics() async {
+  func testBasics() {
     let store = TestStore(
       initialState: .init(),
       reducer: reducer,

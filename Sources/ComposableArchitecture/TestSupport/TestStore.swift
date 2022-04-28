@@ -408,12 +408,57 @@
   extension TestStore where LocalState: Equatable, Action: Equatable {
     public func receive(
       _ expectedAction: Action,
+      timeout: UInt64 = NSEC_PER_SEC,
       file: StaticString = #file,
       line: UInt = #line,
       _ update: @escaping (inout LocalState) throws -> Void = { _ in }
     ) async {
-      fatalError()
+      await withTaskGroup(of: Void.self) { group in
+        guard !group.isCancelled
+        else { return }
+
+        group.addTask {
+          try? await Task.sleep(nanoseconds: timeout)
+          guard !Task.isCancelled
+          else { return }
+
+          // TODO: finese error message
+          XCTFail(
+            """
+            Expected to receive an action, but received none after waiting for \
+            \(Double(timeout)/Double(NSEC_PER_SEC)) seconds.
+            """,
+            file: file,
+            line: line
+          )
+        }
+
+        group.addTask { @MainActor in
+
+          while true {
+            await Task.yield()
+            guard self.receivedActions.isEmpty
+            else { break }
+          }
+
+//          if self.receivedActions.isEmpty {
+//            for await xs in self.$receivedActions {
+//              guard xs.isEmpty
+//              else { break }
+//            }
+//          }
+
+          guard !Task.isCancelled
+          else { return }
+
+          { self.receive(expectedAction, file: file, line: line, update) }()
+        }
+
+        await group.next()
+        group.cancelAll()
+      }
     }
+
 
     public func receive(
       _ expectedAction: Action,
