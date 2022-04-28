@@ -411,6 +411,15 @@
       file: StaticString = #file,
       line: UInt = #line,
       _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+    ) async {
+      fatalError()
+    }
+
+    public func receive(
+      _ expectedAction: Action,
+      file: StaticString = #file,
+      line: UInt = #line,
+      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
     ) {
       guard !self.receivedActions.isEmpty else {
         XCTFail(

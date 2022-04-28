@@ -104,7 +104,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
 }
 
 struct AnimationsView: View {
-  @Environment(\.colorScheme) var colorScheme
+//  @Environment(\.colorScheme) var colorScheme
   let store: Store<AnimationsState, AnimationsAction>
 
   var body: some View {
@@ -126,7 +126,7 @@ struct AnimationsView: View {
               )
           }
           .frame(maxWidth: .infinity, maxHeight: .infinity)
-          .background(self.colorScheme == .dark ? Color.black : .white)
+//          .background(self.colorScheme == .dark ? Color.black : .white)
           .simultaneousGesture(
             DragGesture(minimumDistance: 0).onChanged { gesture in
               viewStore.send(
