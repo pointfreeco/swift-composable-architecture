@@ -1,6 +1,33 @@
 import ComposableArchitecture
 import SwiftUI
 
+enum TaskResult<Success> {
+  case success(Success)
+  case failure(Error)
+
+  init(catching body: () async throws -> Success) async {
+    do {
+      self = .success(try await body())
+    } catch {
+      self = .failure(error)
+    }
+  }
+}
+
+extension TaskResult: Equatable where Success: Equatable {
+  static func == (lhs: Self, rhs: Self) -> Bool {
+    switch (lhs, rhs) {
+    case let (.success(lhs), .success(rhs)):
+      return lhs == rhs
+    case let (.failure(lhs), .failure(rhs)):
+      return (lhs as NSError) == (rhs as NSError)
+    case (.success, .failure):
+      return false
+    case (.failure, .success):
+      return false
+    }
+  }
+}
 struct State: Equatable {
   var count = 0
   var fact: String?
@@ -8,15 +35,17 @@ struct State: Equatable {
 enum Action: Equatable {
   case decrementButtonTapped
   case factButtonTaped
-  case factResponse(String)
+  case factResponse(TaskResult<String>)
   case incrementButtonTapped
-  case randomButtonTapped
   case onAppear
   case onDisappear
 }
 struct NumberClient {
   var fact: (Int) async throws -> String
-  var random: () async throws -> Int
+  enum Error: Swift.Error, Equatable {
+    case url(URLError)
+    case other
+  }
 }
 extension NumberClient {
   static let live = Self(
@@ -24,14 +53,6 @@ extension NumberClient {
       let (data, _) = try await URLSession.shared
         .data(from: .init(string: "http://numbersapi.com/\(number)/trivia")!)
       return .init(decoding: data, as: UTF8.self)
-    },
-    random: {
-      let (data, _) = try await URLSession.shared
-        .data(from: .init(string: "https://www.random.org/integers/?num=1&min=1&max=100&col=1&base=10&format=plain")!)
-      return Int(
-        String(decoding: data, as: UTF8.self)
-          .trimmingCharacters(in: .newlines)
-      ) ?? 0
     }
   )
 }
@@ -50,39 +71,33 @@ let reducer = Reducer<State, Action, Environment> { state, action, environment i
 
   case .factButtonTaped:
     return .task { @MainActor [count = state.count] in
-      do {
-        return .factResponse(try await environment.number.fact(count))
-      } catch {
-        return .factResponse("\(count) is a good number")
-      }
+      await .factResponse(
+        TaskResult { try await environment.number.fact(count) }
+      )
     }
 
-  case let .factResponse(fact):
+  case let .factResponse(.success(fact)):
     state.fact = fact
+    return .none
+
+  case let .factResponse(.failure(error as URLError)):
+    // TODO: handle URL error
+    return .none
+
+  case .factResponse(.failure):
+    // TODO: error handling
     return .none
 
   case .incrementButtonTapped:
     state.count += 1
     return .none
 
-  case .randomButtonTapped:
-    return .task { @MainActor in
-      do {
-        let number = try await environment.number.random()
-        let fact = try await environment.number.fact(number)
-        return .factResponse(fact)
-      } catch {
-        return .factResponse("0 is a good number")
-      }
-    }
-
   case .onAppear:
     return .task { @MainActor [count = state.count] in
       do {
-        try? await Task.sleep(nanoseconds: NSEC_PER_SEC * 2)
-        return .factResponse(try await environment.number.fact(count))
+        return .factResponse(.success(try await environment.number.fact(count)))
       } catch {
-        return .factResponse("\(count) is a good number")
+        return .factResponse(.failure(error))
       }
     }
     .cancellable(id: CancelId())
@@ -91,7 +106,6 @@ let reducer = Reducer<State, Action, Environment> { state, action, environment i
     return .cancel(id: CancelId())
   }
 }
-  .debug()
 
 struct FactView: View {
   let store: Store<State, Action>
@@ -105,7 +119,6 @@ struct FactView: View {
           Button("+") { viewStore.send(.incrementButtonTapped) }
         }
         Button("Fact") { viewStore.send(.factButtonTaped) }
-        Button("Random") { viewStore.send(.randomButtonTapped) }
         if let fact = viewStore.fact {
           Text(fact)
         }

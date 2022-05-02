@@ -413,52 +413,26 @@
       line: UInt = #line,
       _ update: @escaping (inout LocalState) throws -> Void = { _ in }
     ) async {
-      await withTaskGroup(of: Void.self) { group in
-        guard !group.isCancelled
-        else { return }
+      let start = DispatchTime.now().uptimeNanoseconds
+      while !Task.isCancelled, !longLivingEffects.isEmpty {
+        await Task.yield()
+        guard self.receivedActions.isEmpty
+        else { break }
 
-        group.addTask {
-          try? await Task.sleep(nanoseconds: timeout)
-          guard !Task.isCancelled
-          else { return }
-
-          // TODO: finese error message
+        if (DispatchTime.now().uptimeNanoseconds - start) >= NSEC_PER_SEC {
           XCTFail(
             """
-            Expected to receive an action, but received none after waiting for \
-            \(Double(timeout)/Double(NSEC_PER_SEC)) seconds.
+            Expected to receive an action, but received none.
             """,
             file: file,
             line: line
           )
+          return
         }
-
-        group.addTask { @MainActor in
-
-          while true {
-            await Task.yield()
-            guard self.receivedActions.isEmpty
-            else { break }
-          }
-
-//          if self.receivedActions.isEmpty {
-//            for await xs in self.$receivedActions {
-//              guard xs.isEmpty
-//              else { break }
-//            }
-//          }
-
-          guard !Task.isCancelled
-          else { return }
-
-          { self.receive(expectedAction, file: file, line: line, update) }()
-        }
-
-        await group.next()
-        group.cancelAll()
       }
-    }
 
+      { self.receive(expectedAction, file: file, line: line, update) }()
+    }
 
     public func receive(
       _ expectedAction: Action,
