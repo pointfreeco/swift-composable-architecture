@@ -1,11 +1,13 @@
 # Getting Started
 
-Learn how to integrate Parsing into your project and write your first parser.
+Learn how to integrate the Composable Architecture into your project and write your first 
+application.
 
 ## Adding the Composable Architecture as a dependency
 
 To use the Composable Architecture in a SwiftPM project, add it to the dependencies of your
-Package.swift and specify the `Parsing` product in any targets that need access to the library:
+Package.swift and specify the `ComposableArchitecture` product in any targets that need access to 
+the library:
 
 ```swift
 let package = Package(
