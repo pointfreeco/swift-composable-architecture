@@ -142,6 +142,19 @@ public final class ViewStore<State, Action>: ObservableObject {
     self._send(action)
   }
 
+  /// Sends an action to the store with a given animation.
+  ///
+  /// See ``ViewStore/send(_:)`` for more info.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - animation: An animation.
+  public func send(_ action: Action, animation: Animation?) {
+    withAnimation(animation) {
+      self.send(action)
+    }
+  }
+
   public func send(_ action: Action) async {
     self._send(action)
   }
