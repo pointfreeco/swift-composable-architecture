@@ -80,7 +80,7 @@ extension Effect {
   public static func cancel(id: AnyHashable) -> Effect {
     return .fireAndForget {
       cancellablesLock.sync {
-        cancellationCancellables[id]?.forEach { $0.cancel() }
+        cancellationCancellables[.init(id: id)]?.forEach { $0.cancel() }
       }
     }
   }
