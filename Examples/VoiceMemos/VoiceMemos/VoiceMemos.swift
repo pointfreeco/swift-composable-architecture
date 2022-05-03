@@ -105,7 +105,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       .audioRecorder(.failure):
       state.alert = .init(title: .init("Voice memo recording failed."))
       state.currentRecording = nil
-      return .cancel(id: TimerId())
+      return .cancel(id: TimerId.self)
 
     case .currentRecordingTimerUpdated:
       state.currentRecording?.duration += 1
@@ -143,7 +143,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
         case .recording:
           state.currentRecording?.mode = .encoding
           return .concatenate(
-            .cancel(id: TimerId()),
+            .cancel(id: TimerId.self),
 
             environment.audioRecorder.currentTime()
               .compactMap { $0 }
