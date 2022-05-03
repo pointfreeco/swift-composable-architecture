@@ -414,7 +414,7 @@
       _ update: @escaping (inout LocalState) throws -> Void = { _ in }
     ) async {
       let start = DispatchTime.now().uptimeNanoseconds
-      while !Task.isCancelled, !longLivingEffects.isEmpty {
+      while !Task.isCancelled, !self.inFlightEffects.isEmpty {
         await Task.yield()
         guard self.receivedActions.isEmpty
         else { break }
