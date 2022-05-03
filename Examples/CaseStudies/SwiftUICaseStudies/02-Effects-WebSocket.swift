@@ -41,6 +41,7 @@ struct WebSocketEnvironment {
 
 let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnvironment> {
   state, action, environment in
+
   struct WebSocketId: Hashable {}
 
   var receiveSocketMessageEffect: Effect<WebSocketAction, Never> {

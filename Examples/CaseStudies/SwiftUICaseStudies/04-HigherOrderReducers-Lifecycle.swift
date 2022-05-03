@@ -94,7 +94,7 @@ struct LifecycleDemoView: View {
   }
 }
 
-private struct TimerId: Hashable {}
+private enum TimerId {}
 
 enum TimerAction {
   case decrementButtonTapped
@@ -124,11 +124,11 @@ private let timerReducer = Reducer<Int, TimerAction, TimerEnvironment> {
 }
 .lifecycle(
   onAppear: {
-    Effect.timer(id: TimerId(), every: 1, tolerance: 0, on: $0.mainQueue)
+    Effect.timer(id: TimerId.self, every: 1, tolerance: 0, on: $0.mainQueue)
       .map { _ in TimerAction.tick }
   },
   onDisappear: { _ in
-    .cancel(id: TimerId())
+    .cancel(id: TimerId.self)
   }
 )
 

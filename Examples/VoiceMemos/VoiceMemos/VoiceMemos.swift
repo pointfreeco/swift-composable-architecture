@@ -56,7 +56,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
     }
   ),
   .init { state, action, environment in
-    struct TimerId: Hashable {}
+    enum TimerId {}
 
     func startRecording() -> Effect<VoiceMemosAction, Never> {
       let url = environment.temporaryDirectory()
@@ -71,7 +71,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
         environment.audioRecorder.startRecording(url)
           .catchToEffect(VoiceMemosAction.audioRecorder),
 
-        Effect.timer(id: TimerId(), every: 1, tolerance: .zero, on: environment.mainRunLoop)
+        Effect.timer(id: TimerId.self, every: 1, tolerance: .zero, on: environment.mainRunLoop)
           .map { _ in .currentRecordingTimerUpdated }
       )
     }

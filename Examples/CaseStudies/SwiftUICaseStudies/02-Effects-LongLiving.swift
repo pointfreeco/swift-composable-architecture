@@ -39,7 +39,7 @@ let longLivingEffectsReducer = Reducer<
   LongLivingEffectsState, LongLivingEffectsAction, LongLivingEffectsEnvironment
 > { state, action, environment in
 
-  struct UserDidTakeScreenshotNotificationId: Hashable {}
+  enum UserDidTakeScreenshotNotificationId {}
 
   switch action {
   case .userDidTakeScreenshotNotification:
@@ -50,11 +50,11 @@ let longLivingEffectsReducer = Reducer<
     // When the view appears, start the effect that emits when screenshots are taken.
     return environment.userDidTakeScreenshot
       .map { LongLivingEffectsAction.userDidTakeScreenshotNotification }
-      .cancellable(id: UserDidTakeScreenshotNotificationId())
+      .cancellable(id: UserDidTakeScreenshotNotificationId.self)
 
   case .onDisappear:
     // When view disappears, stop the effect.
-    return .cancel(id: UserDidTakeScreenshotNotificationId())
+    return .cancel(id: UserDidTakeScreenshotNotificationId.self)
   }
 }
 
