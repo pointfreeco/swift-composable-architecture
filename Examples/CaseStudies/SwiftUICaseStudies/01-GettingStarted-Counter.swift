@@ -18,6 +18,21 @@ enum CounterAction: Equatable {
   case incrementButtonTapped
 }
 
+struct CounterReducer: ReducerProtocol {
+  func reduce(
+    into state: inout CounterState, action: CounterAction
+  ) -> Effect<CounterAction, Never> {
+    switch action {
+    case .decrementButtonTapped:
+      state.count -= 1
+      return .none
+    case .incrementButtonTapped:
+      state.count += 1
+      return .none
+    }
+  }
+}
+
 struct CounterEnvironment {}
 
 let counterReducer = Reducer<CounterState, CounterAction, CounterEnvironment> { state, action, _ in
