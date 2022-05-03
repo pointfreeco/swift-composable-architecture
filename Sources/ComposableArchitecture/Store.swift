@@ -519,3 +519,29 @@ public final class Store<State, Action> {
     #endif
   }
 }
+
+import SwiftUI
+public struct Send<Action> {
+  let send: (Action) -> Void
+  public func callAsFunction(_ action: Action) {
+    self.send(action)
+  }
+  public func callAsFunction(_ action: Action, animation: Animation? = nil) {
+    withAnimation(animation) {
+      self.send(action)
+    }
+  }
+}
+
+extension Effect {
+  public static func run(_ operation: @escaping (_ send: Send<Output>) async -> Void) -> Self {
+    .run { subscriber in
+      let task = Task {
+        await operation(Send(send: subscriber.send(_:)))
+      }
+      return AnyCancellable {
+        task.cancel()
+      }
+    }
+  }
+}

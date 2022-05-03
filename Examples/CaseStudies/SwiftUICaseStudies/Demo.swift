@@ -31,17 +31,21 @@ extension TaskResult: Equatable where Success: Equatable {
 struct State: Equatable {
   var count = 0
   var fact: String?
+  var progress: Double?
 }
 enum Action: Equatable {
   case decrementButtonTapped
   case factButtonTaped
   case factResponse(TaskResult<String>)
+  case progress(Double?)
   case incrementButtonTapped
   case onAppear
   case onDisappear
+  case randomButtonTapped
 }
 struct NumberClient {
   var fact: (Int) async throws -> String
+  var random: () async throws -> Int
   enum Error: Swift.Error, Equatable {
     case url(URLError)
     case other
@@ -50,9 +54,14 @@ struct NumberClient {
 extension NumberClient {
   static let live = Self(
     fact: { number in
+      try await Task.sleep(nanoseconds: NSEC_PER_SEC * 1)
       let (data, _) = try await URLSession.shared
         .data(from: .init(string: "http://numbersapi.com/\(number)/trivia")!)
       return .init(decoding: data, as: UTF8.self)
+    },
+    random: {
+      try await Task.sleep(nanoseconds: NSEC_PER_SEC * 1)
+      return .random(in: 1...1_000)
     }
   )
 }
@@ -104,6 +113,33 @@ let reducer = Reducer<State, Action, Environment> { state, action, environment i
 
   case .onDisappear:
     return .cancel(id: CancelId())
+
+  case let .progress(progress):
+    state.progress = progress
+    return .none
+
+  case .randomButtonTapped:
+    return .run { @MainActor send in
+      send(.progress(0), animation: .default)
+      defer { send(.progress(nil)) }
+
+      do {
+        let number = try await environment.number.random()
+        send(.progress(0.5), animation: .default)
+        send(.factResponse(await TaskResult { try await environment.number.fact(number) }))
+        send(.progress(1), animation: .default)
+        try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
+      } catch {
+        send(.factResponse(.failure(error)))
+      }
+    }
+  }
+}
+
+@MainActor
+func withAnimation(_ animation: Animation? = nil, block: () -> Void) async {
+  await MainActor.run {
+    withAnimation(animation, block)
   }
 }
 
@@ -119,6 +155,11 @@ struct FactView: View {
           Button("+") { viewStore.send(.incrementButtonTapped) }
         }
         Button("Fact") { viewStore.send(.factButtonTaped) }
+        Button("Random") { viewStore.send(.randomButtonTapped) }
+        if let progress = viewStore.progress {
+          ProgressView(value: progress)
+            .progressViewStyle(.linear)
+        }
         if let fact = viewStore.fact {
           Text(fact)
         }
