@@ -3,9 +3,9 @@ import SwiftUI
 
 struct TwoCountersReducer: ReducerProtocol {
   var body: some ReducerProtocol<TwoCountersState, TwoCountersAction> {
-    Scope(state: \.counter1, action: /TwoCountersAction.counter1) {
-      CounterReducer()
-    }
+    CounterReducer()
+      .pullback(state: \.counter1, action: /TwoCountersAction.counter1)
+
     Scope(state: \.counter2, action: /TwoCountersAction.counter2) {
       CounterReducer()
     }
@@ -16,10 +16,10 @@ struct TwoCountersReducer: ReducerProtocol {
 struct CaseStudiesApp: App {
   var body: some Scene {
     WindowGroup {
-      TwoCountersView(
+      EffectsBasicsView(
         store: Store(
-          initialState: TwoCountersState(),
-          reducer: TwoCountersReducer()
+          initialState: EffectsBasicsState(),
+          reducer: EffectsBasicsReducer()
         )
       )
 

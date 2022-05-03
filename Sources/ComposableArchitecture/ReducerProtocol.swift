@@ -62,6 +62,19 @@ public struct Scope<Local: ReducerProtocol, GlobalState, GlobalAction>: ReducerP
   }
 }
 
+public typealias Pullback = Scope
+
+extension ReducerProtocol {
+  public func pullback<GlobalState, GlobalAction>(
+    state toLocalState: WritableKeyPath<GlobalState, State>,
+    action toLocalAction: CasePath<GlobalAction, Action>
+  ) -> Pullback<Self, GlobalState, GlobalAction> {
+    Pullback(state: toLocalState, action: toLocalAction) {
+      self
+    }
+  }
+}
+
 @resultBuilder
 public enum ReducerBuilder<State, Action> {
   public static func buildExpression<R: ReducerProtocol<State, Action>>(_ expression: R) -> R {

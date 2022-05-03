@@ -38,6 +38,60 @@ enum EffectsBasicsAction: Equatable {
   case numberFactResponse(Result<String, FactClient.Error>)
 }
 
+private enum FaceClientKey: LiveDependencyKey {
+  static let liveValue = FactClient.live
+  static let testValue = FactClient.failing
+}
+
+extension DependencyValues {
+  var fact: FactClient {
+    get { self[FaceClientKey.self] }
+    set { self[FaceClientKey.self] = newValue }
+  }
+}
+
+struct EffectsBasicsReducer: ReducerProtocol {
+  @Dependency(\.fact) var fact
+  @Dependency(\.mainQueue) var mainQueue
+
+  func reduce(
+    into state: inout EffectsBasicsState, action: EffectsBasicsAction
+  ) -> Effect<EffectsBasicsAction, Never> {
+    switch action {
+    case .decrementButtonTapped:
+      state.count -= 1
+      state.numberFact = nil
+      // Return an effect that re-increments the count after 1 second.
+      return Effect(value: EffectsBasicsAction.incrementButtonTapped)
+        .delay(for: 1, scheduler: self.mainQueue)
+        .eraseToEffect()
+
+    case .incrementButtonTapped:
+      state.count += 1
+      state.numberFact = nil
+      return .none
+
+    case .numberFactButtonTapped:
+      state.isNumberFactRequestInFlight = true
+      state.numberFact = nil
+      // Return an effect that fetches a number fact from the API and returns the
+      // value back to the reducer's `numberFactResponse` action.
+      return self.fact.fetch(state.count)
+        .receive(on: self.mainQueue)
+        .catchToEffect(EffectsBasicsAction.numberFactResponse)
+
+    case let .numberFactResponse(.success(response)):
+      state.isNumberFactRequestInFlight = false
+      state.numberFact = response
+      return .none
+
+    case .numberFactResponse(.failure):
+      state.isNumberFactRequestInFlight = false
+      return .none
+    }
+  }
+}
+
 struct EffectsBasicsEnvironment {
   var fact: FactClient
   var mainQueue: AnySchedulerOf<DispatchQueue>
