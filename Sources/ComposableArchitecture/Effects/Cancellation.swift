@@ -37,6 +37,7 @@ extension Effect {
       cancellablesLock.lock()
       defer { cancellablesLock.unlock() }
 
+      let id = CancelToken(id: id)
       if cancelInFlight {
         cancellationCancellables[id]?.forEach { $0.cancel() }
       }
@@ -94,5 +95,15 @@ extension Effect {
   }
 }
 
-var cancellationCancellables: [AnyHashable: Set<AnyCancellable>] = [:]
+struct CancelToken: Hashable {
+  let id: AnyHashable
+  let discriminator: ObjectIdentifier
+
+  init(id: AnyHashable) {
+    self.id = id
+    self.discriminator = ObjectIdentifier(type(of: id.base))
+  }
+}
+
+var cancellationCancellables: [CancelToken: Set<AnyCancellable>] = [:]
 let cancellablesLock = NSRecursiveLock()
