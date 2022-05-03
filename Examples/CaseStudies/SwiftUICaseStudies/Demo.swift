@@ -121,7 +121,9 @@ let reducer = Reducer<State, Action, Environment> { state, action, environment i
   case .randomButtonTapped:
     return .run { @MainActor send in
       send(.progress(0), animation: .default)
-      defer { send(.progress(nil)) }
+      defer {
+        send(.progress(nil))
+      }
 
       do {
         let number = try await environment.number.random()

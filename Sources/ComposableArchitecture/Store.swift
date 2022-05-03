@@ -538,6 +538,7 @@ extension Effect {
     .run { subscriber in
       let task = Task {
         await operation(Send(send: subscriber.send(_:)))
+        subscriber.send(completion: .finished)
       }
       return AnyCancellable {
         task.cancel()

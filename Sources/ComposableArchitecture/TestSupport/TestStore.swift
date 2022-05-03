@@ -419,7 +419,7 @@
         guard self.receivedActions.isEmpty
         else { break }
 
-        if (DispatchTime.now().uptimeNanoseconds - start) >= NSEC_PER_SEC {
+        if (DispatchTime.now().uptimeNanoseconds - start) >= timeout {
           XCTFail(
             """
             Expected to receive an action, but received none.

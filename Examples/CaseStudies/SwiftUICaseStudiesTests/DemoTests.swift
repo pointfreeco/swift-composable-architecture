@@ -11,7 +11,8 @@ class DemoTests: XCTestCase {
       reducer: reducer,
       environment: .init(
         number: .init(
-          fact: { "\($0) is a good number" }
+          fact: { "\($0) is a good number" },
+          random: { 42 }
         )
       )
     )
@@ -28,6 +29,38 @@ class DemoTests: XCTestCase {
       $0.fact = "2 is a good number"
     }
   }
+
+  func testRandom() async {
+    let store = TestStore( 
+      initialState: .init(),
+      reducer: reducer,
+      environment: .init(
+        number: .init(
+          fact: { "\($0) is a good number" },
+          random: { 42 }
+        )
+      )
+    )
+
+    store.send(.randomButtonTapped)
+    
+    await store.receive(.progress(0)) {
+      $0.progress = 0
+    }
+    await store.receive(.progress(0.5)) {
+      $0.progress = 0.5
+    }
+    await store.receive(.factResponse(.success("42 is a good number"))) {
+      $0.fact = "42 is a good number"
+    }
+    await store.receive(.progress(1)) {
+      $0.progress = 1
+    }
+    await store.receive(.progress(nil), timeout: NSEC_PER_SEC * 2) {
+      $0.progress = nil
+    }
+  }
+
 
   func testTime() async {
     let scheduler = DispatchQueue.test
