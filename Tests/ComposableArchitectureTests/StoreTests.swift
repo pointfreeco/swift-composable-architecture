@@ -476,4 +476,40 @@ final class StoreTests: XCTestCase {
 
     wait(for: expectations, timeout: 1)
   }
+
+  @MainActor
+  func testTaskCancellation() async {
+    enum Action { case task, response, response1, response2 }
+    let reducer = Reducer<Int, Action, Void> { state, action, _ in
+      switch action {
+      case .task:
+        return .task { @MainActor in
+          .response
+        }
+      case .response:
+        return .merge(
+          Empty(completeImmediately: false).eraseToEffect(),
+          .task { @MainActor in .response1 }
+        )
+      case .response1:
+        return .merge(
+          Empty(completeImmediately: false).eraseToEffect(),
+          .task { @MainActor in .response2 }
+        )
+      case .response2:
+        return Empty(completeImmediately: false).eraseToEffect()
+      }
+    }
+
+    let store = TestStore(
+      initialState: 0,
+      reducer: reducer,
+      environment: ()
+    )
+
+    let task = store.send(.task)
+    await store.receive(.response)
+
+    task.cancel()
+  }
 }

@@ -360,6 +360,10 @@ public final class Store<State, Action> {
     self.scope(state: toLocalState, action: { $0 })
   }
 
+  class Box {
+    var cancellables: [(AsyncStream<Void>.Continuation, AsyncStream<Void>, AnyCancellable)] = []
+  }
+
   func send(
     _ action: Action,
     originatingFrom originatingAction: Action? = nil
@@ -378,7 +382,8 @@ public final class Store<State, Action> {
       self.state.value = currentState
     }
 
-    var cancellables: [(AsyncStream<Void>.Continuation, AsyncStream<Void>, AnyCancellable)] = []
+//    var cancellables: [(AsyncStream<Void>.Continuation, AsyncStream<Void>, AnyCancellable)] = []
+    let box = Box()
 
     while !self.bufferedActions.isEmpty {
       let (continuation, stream) = AsyncStream<Void>.create()
@@ -396,25 +401,36 @@ public final class Store<State, Action> {
           self?.effectCancellables[uuid] = nil
         },
         receiveValue: { [weak self] effectAction in
-          _ = self?.send(effectAction, originatingFrom: action)
+          guard let self = self else { return }
+          let (cancel, task) = self.send(effectAction, originatingFrom: action)
+          box.cancellables.append(
+            (
+              continuation,
+              stream,
+              AnyCancellable {
+                task.cancel()
+                cancel()
+              }
+            )
+          )
         }
       )
 
       if !didComplete {
-        cancellables.append((continuation, stream, effectCancellable))
+        box.cancellables.append((continuation, stream, effectCancellable))
         self.effectCancellables[uuid] = effectCancellable
       }
     }
 
     return (
-      cancel: { [cancellables] in
-        for (continuation, _, cancellable) in cancellables {
+      cancel: {
+        for (continuation, _, cancellable) in box.cancellables {
           cancellable.cancel()
           continuation.finish()
         }
       },
-      task: Task { [cancellables] in
-        for (_, stream, cancellable) in cancellables {
+      task: Task { @MainActor in
+        for (_, stream, cancellable) in box.cancellables {
           for await _ in stream {
             guard !Task.isCancelled
             else { break }
