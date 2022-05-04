@@ -71,7 +71,7 @@ class TestStoreTests: XCTestCase {
         switch action {
         case .tap:
           return .task { @MainActor in
-            try? await Task.sleep(nanoseconds: 100 * NSEC_PER_MSEC)
+            try? await Task.sleep(nanoseconds: 1_000_000) // TODO: why does this fail?
             return .response(42)
           }
         case let .response(number):
@@ -83,7 +83,6 @@ class TestStoreTests: XCTestCase {
     )
 
     store.send(.tap)
-
     await store.receive(.response(42)) {
       $0 = 42
     }

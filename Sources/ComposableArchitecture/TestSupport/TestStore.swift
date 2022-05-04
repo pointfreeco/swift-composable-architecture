@@ -343,7 +343,7 @@
       file: StaticString = #file,
       line: UInt = #line,
       _ update: @escaping (inout LocalState) throws -> Void = { _ in }
-    ) -> Task<Void, Never> {
+    ) -> TestTask {
       if !self.receivedActions.isEmpty {
         var actions = ""
         customDump(self.receivedActions.map(\.action), to: &actions)
@@ -374,7 +374,7 @@
         self.line = line
       }
 
-      return task
+      return .init(task: task)
     }
 
     private func expectedStateShouldMatch(
@@ -492,13 +492,11 @@
         }
 
         group.addTask { @MainActor in
-          if self.receivedActions.isEmpty {
-            while !Task.isCancelled {
-              guard self.receivedActions.isEmpty
-              else { break }
-            }
+          while !Task.isCancelled {
+            guard self.receivedActions.isEmpty
+            else { break }
+            await Task.yield()
           }
-
           guard !Task.isCancelled
           else { return }
 
@@ -552,3 +550,17 @@
     }
   }
 #endif
+
+
+public struct TestTask {
+  let task: Task<Void, Never>
+  public var value: Void {
+    get async {
+      await self.task.value
+    }
+  }
+  public func cancel() async {
+    self.task.cancel()
+    await task.value
+  }
+}

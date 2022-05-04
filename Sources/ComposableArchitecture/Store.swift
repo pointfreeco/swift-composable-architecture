@@ -368,7 +368,10 @@ public final class Store<State, Action> {
     _ action: Action,
     originatingFrom originatingAction: Action? = nil
   )
-  -> (cancel: () -> Void, task: Task<Void, Never>)
+  -> (
+    cancel: () -> Void,
+    task: Task<Void, Never>
+  )
   {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
@@ -382,7 +385,6 @@ public final class Store<State, Action> {
       self.state.value = currentState
     }
 
-//    var cancellables: [(AsyncStream<Void>.Continuation, AsyncStream<Void>, AnyCancellable)] = []
     let box = Box()
 
     while !self.bufferedActions.isEmpty {
@@ -403,6 +405,13 @@ public final class Store<State, Action> {
         receiveValue: { [weak self] effectAction in
           guard let self = self else { return }
           let (cancel, task) = self.send(effectAction, originatingFrom: action)
+          let (continuation, stream) = AsyncStream<Void>.create()
+
+          Task {
+            await task.value
+            continuation.finish()
+          }
+
           box.cancellables.append(
             (
               continuation,

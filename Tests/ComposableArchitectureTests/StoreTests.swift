@@ -478,14 +478,12 @@ final class StoreTests: XCTestCase {
   }
 
   @MainActor
-  func testTaskCancellation() async {
+  func testTaskCancellatio1() async {
     enum Action { case task, response, response1, response2 }
     let reducer = Reducer<Int, Action, Void> { state, action, _ in
       switch action {
       case .task:
-        return .task { @MainActor in
-          .response
-        }
+        return .task { @MainActor in .response }
       case .response:
         return .merge(
           Empty(completeImmediately: false).eraseToEffect(),
@@ -509,7 +507,66 @@ final class StoreTests: XCTestCase {
 
     let task = store.send(.task)
     await store.receive(.response)
+    await store.receive(.response1)
+    await store.receive(.response2)
+    await task.cancel()
+  }
 
-    task.cancel()
+  @MainActor
+  func testTaskCancellation2() async {
+    enum Action { case task, response, response1, response2 }
+    let reducer = Reducer<Int, Action, Void> { state, action, _ in
+      switch action {
+      case .task:
+        return .merge(
+          Empty(completeImmediately: false).eraseToEffect(),
+          .task { @MainActor in .response }
+        )
+      case .response:
+        return .merge(
+          Empty(completeImmediately: false).eraseToEffect(),
+          .task { @MainActor in .response1 }
+        )
+      case .response1:
+        return .merge(
+          Empty(completeImmediately: false).eraseToEffect(),
+          .task { @MainActor in .response2 }
+        )
+      case .response2:
+        return Empty(completeImmediately: false).eraseToEffect()
+      }
+    }
+
+    let store = TestStore(
+      initialState: 0,
+      reducer: reducer,
+      environment: ()
+    )
+
+    let task = store.send(.task)
+    await store.receive(.response)
+    await store.receive(.response1)
+    await store.receive(.response2)
+    await task.cancel()
+  }
+
+  @MainActor
+  func testTaskCancellationEmpty() async {
+    enum Action { case task }
+    let reducer = Reducer<Int, Action, Void> { state, action, _ in
+      switch action {
+      case .task:
+        return Empty(completeImmediately: false).eraseToEffect()
+      }
+    }
+
+    let store = TestStore(
+      initialState: 0,
+      reducer: reducer,
+      environment: ()
+    )
+
+    let task = store.send(.task)
+    await task.cancel()
   }
 }
