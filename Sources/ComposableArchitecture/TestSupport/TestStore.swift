@@ -106,13 +106,13 @@
   /// let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
   ///   state, action, environment in
   ///
-  ///     struct SearchId: Hashable {}
+  ///     enum SearchId {}
   ///
   ///     switch action {
   ///     case let .queryChanged(query):
   ///       state.query = query
   ///       return environment.request(self.query)
-  ///         .debounce(id: SearchId(), for: 0.5, scheduler: environment.mainQueue)
+  ///         .debounce(id: SearchId.self, for: 0.5, scheduler: environment.mainQueue)
   ///
   ///     case let .response(results):
   ///       state.results = results
