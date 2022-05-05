@@ -374,9 +374,14 @@ public final class Store<State, Action> {
       self.state.value = currentState
     }
 
+    var tasks: [Task<Void, Never>] = []
+
     while !self.bufferedActions.isEmpty {
       let action = self.bufferedActions.removeFirst()
       let effect = self.reducer(&currentState, action)
+
+      let task = Task { _ = try? await Task.sleep(nanoseconds: NSEC_PER_SEC * 1_000_000_000) }
+      tasks.append(task)
 
       var didComplete = false
       let uuid = UUID()
@@ -385,6 +390,7 @@ public final class Store<State, Action> {
           self?.threadCheck(status: .effectCompletion(action))
           didComplete = true
           self?.effectCancellables[uuid] = nil
+          task.cancel()
         },
         receiveValue: { [weak self] effectAction in
           self?.send(effectAction, originatingFrom: action)
@@ -396,7 +402,11 @@ public final class Store<State, Action> {
       }
     }
 
-    return Task {}
+    return Task { [tasks] in
+      for task in tasks {
+        await task.value
+      }
+    }
   }
 
   /// Returns a "stateless" store by erasing state to `Void`.
