@@ -478,7 +478,7 @@ final class StoreTests: XCTestCase {
   }
 
   @MainActor
-  func testTaskCancellatio1() async {
+  func testTaskCancellation1() async {
     enum Action { case task, response, response1, response2 }
     let reducer = Reducer<Int, Action, Void> { state, action, _ in
       switch action {
