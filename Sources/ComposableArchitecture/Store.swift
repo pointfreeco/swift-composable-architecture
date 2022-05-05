@@ -358,11 +358,14 @@ public final class Store<State, Action> {
     self.scope(state: toLocalState, action: { $0 })
   }
 
-  func send(_ action: Action, originatingFrom originatingAction: Action? = nil) {
+  func send(
+    _ action: Action,
+    originatingFrom originatingAction: Action? = nil
+  ) -> Task<Void, Never> {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
     self.bufferedActions.append(action)
-    guard !self.isSending else { return }
+    guard !self.isSending else { return Task {} }
 
     self.isSending = true
     var currentState = self.state.value
@@ -392,6 +395,8 @@ public final class Store<State, Action> {
         self.effectCancellables[uuid] = effectCancellable
       }
     }
+
+    return Task {}
   }
 
   /// Returns a "stateless" store by erasing state to `Void`.
