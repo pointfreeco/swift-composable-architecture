@@ -337,12 +337,13 @@
   }
 
   extension TestStore where LocalState: Equatable {
+    @discardableResult
     public func send(
       _ action: LocalAction,
       file: StaticString = #file,
       line: UInt = #line,
       _ update: @escaping (inout LocalState) throws -> Void = { _ in }
-    ) {
+    ) -> TestTask {
       if !self.receivedActions.isEmpty {
         var actions = ""
         customDump(self.receivedActions.map(\.action), to: &actions)
@@ -357,7 +358,7 @@
         )
       }
       var expectedState = self.toLocalState(self.snapshotState)
-      self.store.send(.init(origin: .send(action), file: file, line: line))
+      let task = self.store.send(.init(origin: .send(action), file: file, line: line))
       do {
         try update(&expectedState)
       } catch {
@@ -372,6 +373,8 @@
       if "\(self.file)" == "\(file)" {
         self.line = line
       }
+
+      return .init(task: task)
     }
 
     private func expectedStateShouldMatch(
@@ -531,3 +534,16 @@
     }
   }
 #endif
+
+public struct TestTask {
+  let task: Task<Void, Never>
+  public var value: Void {
+    get async {
+      await self.task.value
+    }
+  }
+  public func cancel() async {
+    self.task.cancel()
+    await task.value
+  }
+}

@@ -335,10 +335,9 @@ public final class Store<State, Action> {
         defer { isSending = false }
         let task = self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
-        return Effect.task {
+        return .fireAndForget {
           await task.value
         }
-        .fireAndForget()
       },
       environment: ()
     )
@@ -378,6 +377,7 @@ public final class Store<State, Action> {
     }
 
     let tasks = Box<[Task<Void, Never>]>([])
+    var _tasks: [Task<Void, Never>] = []
 
     while !self.bufferedActions.isEmpty {
       let action = self.bufferedActions.removeFirst()
@@ -400,7 +400,9 @@ public final class Store<State, Action> {
           task.cancel()
         },
         receiveValue: { [weak self] effectAction in
-          self?.send(effectAction, originatingFrom: action)
+          guard let self = self else { return }
+//          tasks.value.append(self.send(effectAction, originatingFrom: action))
+          _tasks.append(self.send(effectAction, originatingFrom: action))
         }
       )
 
