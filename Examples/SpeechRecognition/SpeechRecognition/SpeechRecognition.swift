@@ -29,8 +29,6 @@ struct AppEnvironment {
 }
 
 let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
-  struct SpeechRecognitionId: Hashable {}
-
   switch action {
   case .dismissAuthorizationStateAlert:
     state.alert = nil
