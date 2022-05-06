@@ -84,7 +84,7 @@ public final class ViewStore<State, Action>: ObservableObject {
       sendEventInfo.action = actionString
       instrumentation.viewStore?.willSend(sendEventInfo)
       defer { instrumentation.viewStore?.didSend(sendEventInfo) }
-      store.send($0)
+      store.send($0, instrumentation: instrumentation)
     }
     self._state = CurrentValueRelay(store.state.value)
 
@@ -306,14 +306,14 @@ public final class ViewStore<State, Action>: ObservableObject {
 }
 
 extension ViewStore where State: Equatable {
-  public convenience init(_ store: Store<State, Action>) {
-    self.init(store, removeDuplicates: ==)
+  public convenience init(_ store: Store<State, Action>, instrumentation: Instrumentation = .shared) {
+    self.init(store, removeDuplicates: ==, instrumentation: instrumentation)
   }
 }
 
 extension ViewStore where State == Void {
-  public convenience init(_ store: Store<Void, Action>) {
-    self.init(store, removeDuplicates: ==)
+  public convenience init(_ store: Store<Void, Action>, instrumentation: Instrumentation = .shared) {
+    self.init(store, removeDuplicates: ==, instrumentation: instrumentation)
   }
 }
 

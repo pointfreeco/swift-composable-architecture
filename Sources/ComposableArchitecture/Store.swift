@@ -418,7 +418,7 @@ public final class Store<State, Action> {
           self?.effectCancellables[uuid] = nil
         },
         receiveValue: { [weak self] effectAction in
-          self?.send(effectAction, originatingFrom: action)
+          self?.send(effectAction, originatingFrom: action, instrumentation: instrumentation)
         }
       )
 
