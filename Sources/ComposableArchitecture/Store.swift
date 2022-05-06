@@ -362,15 +362,30 @@ public final class Store<State, Action> {
     self.scope(state: toLocalState, action: { $0 })
   }
 
-  func send(_ action: Action, originatingFrom originatingAction: Action? = nil) {
+  func send(_ action: Action, originatingFrom originatingAction: Action? = nil, instrumentation: Instrumentation = .shared) {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
+
+    let eventInfo = Instrumentation.EventInfo(
+      type: String(describing: Store.self),
+      action: debugCaseOutput(action),
+      tags: originatingAction.map { ["originating": debugCaseOutput($0)] } ?? [:]
+    )
 
     self.bufferedActions.append(action)
     guard !self.isSending else { return }
 
     self.isSending = true
     var currentState = self.state.value
+
+    instrumentation.store?.willSend(eventInfo)
     defer {
+      instrumentation.store?.didSend(eventInfo)
+    }
+
+    defer {
+      instrumentation.store?.willScope(eventInfo)
+      defer { instrumentation.store?.didScope(eventInfo) }
+
       self.state.value = currentState
       self.isSending = false
       // if new actions were added synchronously
@@ -383,6 +398,15 @@ public final class Store<State, Action> {
 
     while !self.bufferedActions.isEmpty {
       let action = self.bufferedActions.removeFirst()
+
+      var processEvent = eventInfo
+      processEvent.action = debugCaseOutput(action)
+
+      instrumentation.store?.willProcessEvents(processEvent)
+      defer {
+        instrumentation.store?.didProcessEvents(processEvent)
+      }
+
       let effect = self.reducer(&currentState, action)
 
       var didComplete = false
