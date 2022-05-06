@@ -304,8 +304,8 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       environment: { .init(mainQueue: $0.mainQueue, webSocket: $0.webSocket) }
     )
 )
-.debug()
-.signpost()
+//.debug()
+//.signpost()
 
 private func liveFetchNumber() -> Effect<Int, Never> {
   Deferred { Just(Int.random(in: 1...1_000)) }

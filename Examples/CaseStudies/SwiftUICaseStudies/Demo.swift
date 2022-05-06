@@ -39,8 +39,9 @@ enum Action: Equatable {
   case factResponse(TaskResult<String>)
   case progress(Double?)
   case incrementButtonTapped
-  case onAppear
-  case onDisappear
+//  case onAppear
+//  case onDisappear
+  case task
   case randomButtonTapped
 }
 struct NumberClient {
@@ -101,7 +102,7 @@ let reducer = Reducer<State, Action, Environment> { state, action, environment i
     state.count += 1
     return .none
 
-  case .onAppear:
+  case .task:
     return .task { @MainActor [count = state.count] in
       do {
         return .factResponse(.success(try await environment.number.fact(count)))
@@ -109,10 +110,6 @@ let reducer = Reducer<State, Action, Environment> { state, action, environment i
         return .factResponse(.failure(error))
       }
     }
-    .cancellable(id: CancelId())
-
-  case .onDisappear:
-    return .cancel(id: CancelId())
 
   case let .progress(progress):
     state.progress = progress
@@ -137,6 +134,7 @@ let reducer = Reducer<State, Action, Environment> { state, action, environment i
     }
   }
 }
+  .debugActions()
 
 @MainActor
 func withAnimation(_ animation: Animation? = nil, block: () -> Void) async {
@@ -166,8 +164,11 @@ struct FactView: View {
           Text(fact)
         }
       }
-      .onAppear { viewStore.send(.onAppear) }
-      .onDisappear { viewStore.send(.onDisappear) }
+      .task {
+        await viewStore.send(.task)
+      }
+//      .onAppear { viewStore.send(.onAppear) }
+//      .onDisappear { viewStore.send(.onDisappear) }
     }
   }
 }

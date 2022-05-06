@@ -155,9 +155,15 @@ public final class ViewStore<State, Action>: ObservableObject {
     }
   }
 
+  @MainActor
   public func send(_ action: Action) async {
     let task = self._send(action)
-    await task.value
+    await withTaskCancellationHandler(
+      handler: { task.cancel() },
+      operation: {
+        await task.value
+      }
+    )
   }
 
   /// Derives a binding from the store that prevents direct writes to state and instead sends

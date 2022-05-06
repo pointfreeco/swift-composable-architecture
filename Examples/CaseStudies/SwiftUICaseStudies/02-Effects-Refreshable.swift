@@ -97,7 +97,7 @@ let refreshableReducer = Reducer<
             }
           }
         }
-        .refreshable { @MainActor in
+        .refreshable {
           await viewStore.send(.refresh)
         }
       }

@@ -333,9 +333,12 @@ public final class Store<State, Action> {
       reducer: .init { localState, localAction, _ in
         isSending = true
         defer { isSending = false }
-        self.send(fromLocalAction(localAction))
+        let task = self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
-        return .none
+        return Effect.task {
+          await task.value
+        }
+        .fireAndForget()
       },
       environment: ()
     )
@@ -374,18 +377,22 @@ public final class Store<State, Action> {
       self.state.value = currentState
     }
 
-    var tasks: [Task<Void, Never>] = []
+    let tasks = Box<[Task<Void, Never>]>([])
 
     while !self.bufferedActions.isEmpty {
       let action = self.bufferedActions.removeFirst()
       let effect = self.reducer(&currentState, action)
 
-      let task = Task { _ = try? await Task.sleep(nanoseconds: NSEC_PER_SEC * 1_000_000_000) }
-      tasks.append(task)
+      let effectCancellable = Box<AnyCancellable?>(nil)
+      let task = Task {
+        _ = try? await Task.sleep(nanoseconds: NSEC_PER_SEC * 1_000_000_000)
+        effectCancellable.value?.cancel()
+      }
+      tasks.value.append(task)
 
       var didComplete = false
       let uuid = UUID()
-      let effectCancellable = effect.sink(
+      effectCancellable.value = effect.sink(
         receiveCompletion: { [weak self] _ in
           self?.threadCheck(status: .effectCompletion(action))
           didComplete = true
@@ -398,14 +405,23 @@ public final class Store<State, Action> {
       )
 
       if !didComplete {
-        self.effectCancellables[uuid] = effectCancellable
+        self.effectCancellables[uuid] = effectCancellable.value
       }
     }
 
-    return Task { [tasks] in
-      for task in tasks {
-        await task.value
-      }
+    return Task {
+      await withTaskCancellationHandler(
+        handler: {
+          for task in tasks.value {
+            task.cancel()
+          }
+        },
+        operation: {
+          for task in tasks.value {
+            await task.value
+          }
+        }
+      )
     }
   }
 
@@ -563,5 +579,12 @@ extension Effect {
         task.cancel()
       }
     }
+  }
+}
+
+private final class Box<Value> {
+  var value: Value
+  init(_ value: Value) {
+    self.value = value
   }
 }
