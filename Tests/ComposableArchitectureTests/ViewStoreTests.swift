@@ -224,7 +224,7 @@ final class ViewStoreTests: XCTestCase {
         let viewStore = ViewStore(store)
 
         XCTAssertNoDifference(viewStore.state, false)
-        viewStore.send(.tapped)
+        _ = { viewStore.send(.tapped) }()
         XCTAssertNoDifference(viewStore.state, true)
         await viewStore.suspend(while: { $0 })
         XCTAssertNoDifference(viewStore.state, false)

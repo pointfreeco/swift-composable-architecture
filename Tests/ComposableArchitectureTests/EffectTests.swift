@@ -261,20 +261,22 @@ final class EffectTests: XCTestCase {
     }
 
     func testCancellingTask() {
-      @Sendable func work() async throws -> Int {
-        try await Task.sleep(nanoseconds: NSEC_PER_MSEC)
-        XCTFail()
+      @Sendable func work() async -> Int {
+        do {
+          try await Task.sleep(nanoseconds: NSEC_PER_MSEC)
+          XCTFail()
+        } catch {
+        }
         return 42
       }
 
-      Effect<Int, Error>.task { try await work() }
+      let cancellable = Effect<Int, Never>.task { await work() }
         .sink(
           receiveCompletion: { _ in XCTFail() },
           receiveValue: { _ in XCTFail() }
         )
-        .store(in: &self.cancellables)
 
-      self.cancellables = []
+      cancellable.cancel()
 
       _ = XCTWaiter.wait(for: [.init()], timeout: 1.1)
     }

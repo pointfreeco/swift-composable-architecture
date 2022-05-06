@@ -384,7 +384,7 @@ public final class Store<State, Action> {
       let effect = self.reducer(&currentState, action)
 
       let effectCancellable = Box<AnyCancellable?>(nil)
-      let task = Task {
+      let task = Task { @MainActor in
         _ = try? await Task.sleep(nanoseconds: NSEC_PER_SEC * 1_000_000_000)
         effectCancellable.value?.cancel()
       }
@@ -409,14 +409,14 @@ public final class Store<State, Action> {
       }
     }
 
-    return Task {
+    return Task { @MainActor in
       await withTaskCancellationHandler(
         handler: {
           for task in tasks.value {
             task.cancel()
           }
         },
-        operation: {
+        operation: { @MainActor in
           for task in tasks.value {
             await task.value
           }
