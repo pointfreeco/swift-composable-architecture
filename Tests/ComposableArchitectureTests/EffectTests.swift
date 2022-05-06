@@ -289,7 +289,7 @@ final class EffectTests: XCTestCase {
         return 42
       }
 
-      Effect<Int, Never >.task { await work() }
+      Effect<Int, Never>.task { await work() }
         .sink(
           receiveCompletion: { _ in XCTFail() },
           receiveValue: { _ in XCTFail() }
