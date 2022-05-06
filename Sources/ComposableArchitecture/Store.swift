@@ -365,26 +365,21 @@ public final class Store<State, Action> {
   func send(_ action: Action, originatingFrom originatingAction: Action? = nil, instrumentation: Instrumentation = .shared) {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
-    let eventInfo = Instrumentation.EventInfo(
-      type: String(describing: Store.self),
-      action: debugCaseOutput(action),
-      tags: originatingAction.map { ["originating": debugCaseOutput($0)] } ?? [:]
-    )
-
     self.bufferedActions.append(action)
     guard !self.isSending else { return }
 
     self.isSending = true
     var currentState = self.state.value
 
-    instrumentation.store?.willSend(eventInfo)
+    let context = instrumentation.beginContext(Store.self, action)
+    let sendEvent = context.willSend()
     defer {
-      instrumentation.store?.didSend(eventInfo)
+      context.didSend(sendEvent)
     }
 
     defer {
-      instrumentation.store?.willChangeState(eventInfo)
-      defer { instrumentation.store?.didChangeState(eventInfo) }
+      let stateEvent = context.willChangeState()
+      defer { context.didChangeState(stateEvent) }
 
       self.state.value = currentState
       self.isSending = false
@@ -399,12 +394,9 @@ public final class Store<State, Action> {
     while !self.bufferedActions.isEmpty {
       let action = self.bufferedActions.removeFirst()
 
-      var processEvent = eventInfo
-      processEvent.action = debugCaseOutput(action)
-
-      instrumentation.store?.willProcessEvents(processEvent)
+      let processEvent = context.willProcess(action: action)
       defer {
-        instrumentation.store?.didProcessEvents(processEvent)
+        context.didProcess(processEvent)
       }
 
       let effect = self.reducer(&currentState, action)

@@ -32,11 +32,24 @@ import Foundation
 public class Instrumentation {
   public typealias Trigger = (EventInfo) -> Void
 
+  static let noop = Instrumentation()
+
+  public static var shared: Instrumentation = .noop
+  let viewStore: ViewStoreCallbacks?
+  let store: StoreCallbacks?
+
+  public init(viewStore: Instrumentation.ViewStoreCallbacks? = nil, store: Instrumentation.StoreCallbacks? = nil) {
+    self.viewStore = viewStore
+    self.store = store
+  }
+}
+
+extension Instrumentation {
   /// Container for the information that will be provided to tracking/instrumentation implementations.
   public struct EventInfo: CustomStringConvertible {
-    internal init(type: String, action: String = "", tags: [String: String] = [:]) {
+    internal init(type: String, action: String? = nil, tags: [String: String] = [:]) {
       self.type = type
-      self.action = action
+      self.action = action ?? ""
       self.tags = tags
     }
 
@@ -62,24 +75,25 @@ public class Instrumentation {
 
       return "\(type): \(action)"
     }
-  }
 
-  public init(viewStore: Instrumentation.ViewStore? = nil, store: Instrumentation.Store? = nil) {
-    self.viewStore = viewStore
-    self.store = store
+    static let empty: EventInfo = .init(type: "Unknown")
   }
+}
 
-  public static var shared: Instrumentation = .noop
+extension Instrumentation {
+  func beginContext<State, Action>(_ type: ComposableArchitecture.ViewStore<State, Action>.Type) -> ViewStoreContext<State, Action> {
+    return ViewStoreContext(viewStore: viewStore, type: type)
+  }
 
   /// Tracking/instrumentation hooks that operate only within the context of ``ViewStore`` objects.
-  public struct ViewStore {
-    public init(willSend: @escaping Trigger, didSend: @escaping Trigger, willDeduplicate: @escaping Trigger, didDeduplicate: @escaping Trigger, stateWillChange: @escaping Trigger, stateDidChange: @escaping Trigger) {
+  public struct ViewStoreCallbacks {
+    public init(willSend: @escaping Trigger, didSend: @escaping Trigger, willDeduplicate: @escaping Trigger, didDeduplicate: @escaping Trigger, willChangeState: @escaping Trigger, didChangeState: @escaping Trigger) {
       self.willSend = willSend
       self.didSend = didSend
       self.willDeduplicate = willDeduplicate
       self.didDeduplicate = didDeduplicate
-      self.stateWillChange = stateWillChange
-      self.stateDidChange = stateDidChange
+      self.willChangeState = willChangeState
+      self.didChangeState = didChangeState
     }
 
     /// Called _before_ the ``ViewStore.send`` handles the action.
@@ -99,13 +113,110 @@ public class Instrumentation {
     ///  is no old/new pair to compare).
     let didDeduplicate: Trigger
     /// Called _before_ the ``ViewStore.state`` is updated with the new value.
-    let stateWillChange: Trigger
+    let willChangeState: Trigger
     /// Called _after_ the ``ViewStore.state`` is updated with the new value.
-    let stateDidChange: Trigger
+    let didChangeState: Trigger
+  }
+
+  internal final class ViewStoreContext<State, Action> {
+    let viewStore: ViewStoreCallbacks?
+
+    let type: ComposableArchitecture.ViewStore<State, Action>.Type
+    private lazy var typeString: String = {
+      String(describing: type)
+    }()
+
+    private var actionString: String? {
+      didSet {
+        if let actionString = actionString {
+          event.action = actionString
+        }
+      }
+    }
+
+    var action: Action? {
+      didSet {
+        guard viewStore != nil else {
+          return
+        }
+
+        actionString = action.map { debugCaseOutput($0) }
+      }
+    }
+
+    private lazy var event: EventInfo = {
+      return EventInfo(type: typeString, action: actionString, tags: [:])
+    }()
+
+    init(viewStore: ViewStoreCallbacks?, type: ComposableArchitecture.ViewStore<State, Action>.Type, action: Action? = nil) {
+      self.viewStore = viewStore
+      self.type = type
+      self.action = action
+    }
+
+    func willSend(_ action: Action) -> EventInfo {
+      guard let viewStore = viewStore else {
+        return .empty
+      }
+
+      viewStore.willSend(event)
+      return event
+    }
+
+    func didSend(_ event: EventInfo) {
+      guard let viewStore = viewStore else {
+        return
+      }
+
+      self.event = event
+      viewStore.didSend(event)
+    }
+
+    func willDeduplicate() -> EventInfo {
+      guard let viewStore = viewStore else {
+        return .empty
+      }
+
+      viewStore.willDeduplicate(event)
+      return event
+    }
+
+    func didDeduplicate(_ event: EventInfo) {
+      guard let viewStore = viewStore else {
+        return
+      }
+
+      self.event = event
+      viewStore.didDeduplicate(event)
+    }
+
+    func willChangeState() -> EventInfo {
+      guard let viewStore = viewStore else {
+        return .empty
+      }
+
+      viewStore.willChangeState(event)
+      return event
+    }
+
+    func didChangeState(_ event: EventInfo) {
+      guard let viewStore = viewStore else {
+        return
+      }
+
+      self.event = event
+      viewStore.didChangeState(event)
+    }
+  }
+}
+
+extension Instrumentation {
+  func beginContext<State, Action>(_ type: ComposableArchitecture.Store<State, Action>.Type, _ action: Action) -> StoreContext<State, Action> {
+    return StoreContext(store: store, type: type, action: action)
   }
 
   /// Tracking/instrumentation hooks that operating only within the context of ``Store`` objects.
-  public struct Store {
+  public struct StoreCallbacks {
     public init(willSend: @escaping Instrumentation.Trigger, didSend: @escaping Instrumentation.Trigger, willChangeState: @escaping Instrumentation.Trigger, didChangeState: @escaping Instrumentation.Trigger, willProcessEvents: @escaping Instrumentation.Trigger, didProcessEvents: @escaping Instrumentation.Trigger) {
       self.willSend = willSend
       self.didSend = didSend
@@ -133,10 +244,89 @@ public class Instrumentation {
     let didProcessEvents: Trigger
   }
 
-  let viewStore: ViewStore?
-  let store: Store?
-}
+  internal final class StoreContext<State, Action> {
+    let store: StoreCallbacks?
+    let type: ComposableArchitecture.Store<State, Action>.Type
+    private lazy var typeString: String = {
+      String(describing: type)
+    }()
+    private lazy var actionString: String = {
+      debugCaseOutput(action)
+    }()
 
-extension Instrumentation {
-  static let noop = Instrumentation()
+    var action: Action {
+      didSet {
+        guard store != nil else {
+          return
+        }
+
+        actionString = debugCaseOutput(action)
+      }
+    }
+
+    private lazy var event: EventInfo = {
+      return EventInfo(type: typeString, action: actionString, tags: [:])
+    }()
+
+    init(store: StoreCallbacks?, type: ComposableArchitecture.Store<State, Action>.Type, action: Action) {
+      self.store = store
+      self.type = type
+      self.action = action
+    }
+
+    func willSend() -> EventInfo {
+      guard let store = store else {
+        return .empty
+      }
+
+      store.willSend(event)
+      return event
+    }
+
+    func didSend(_ event: EventInfo) {
+      guard let store = store else {
+        return
+      }
+
+      self.event = event
+      store.didSend(event)
+    }
+
+    func willChangeState() -> EventInfo {
+      guard let store = store else {
+        return .empty
+      }
+
+      store.willChangeState(event)
+      return event
+    }
+
+    func didChangeState(_ event: EventInfo) {
+      guard let store = store else {
+        return
+      }
+
+      self.event = event
+      store.didChangeState(event)
+    }
+
+    func willProcess(action: Action) -> EventInfo {
+      guard let store = store else {
+        return .empty
+      }
+
+      self.action = action
+      store.willProcessEvents(event)
+      return event
+    }
+
+    func didProcess(_ event: EventInfo) {
+      guard let store = store else {
+        return
+      }
+
+      self.event = event
+      store.didProcessEvents(event)
+    }
+  }
 }

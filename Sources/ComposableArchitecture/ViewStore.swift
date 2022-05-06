@@ -72,38 +72,28 @@ public final class ViewStore<State, Action>: ObservableObject {
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
     instrumentation: Instrumentation = .shared
   ) {
-    var actionString = ""
-    let eventInfo = Instrumentation.EventInfo(
-      type: String(describing: ViewStore.self),
-      action: actionString,
-      tags: [:]
-    )
+    let context = instrumentation.beginContext(ViewStore.self)
+
     self._send = {
-      actionString = debugCaseOutput($0)
-      var sendEventInfo = eventInfo
-      sendEventInfo.action = actionString
-      instrumentation.viewStore?.willSend(sendEventInfo)
-      defer { instrumentation.viewStore?.didSend(sendEventInfo) }
+      context.action = $0
+      let sendEventInfo = context.willSend($0)
+      defer { context.didSend(sendEventInfo) }
       store.send($0, instrumentation: instrumentation)
     }
     self._state = CurrentValueRelay(store.state.value)
 
     self.viewCancellable = store.state
       .removeDuplicates(by: {
-        var dedupEventInfo = eventInfo
-        dedupEventInfo.action = actionString
-        instrumentation.viewStore?.willDeduplicate(dedupEventInfo)
-        defer { instrumentation.viewStore?.didDeduplicate(dedupEventInfo) }
+        let dedupEventInfo = context.willDeduplicate()
+        defer { context.didDeduplicate(dedupEventInfo) }
 
         return isDuplicate($0, $1)
       })
       .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
         guard let objectWillChange = objectWillChange, let _state = _state else { return }
 
-        var viewEventInfo = eventInfo
-        viewEventInfo.action = actionString
-        instrumentation.viewStore?.stateWillChange(viewEventInfo)
-        defer { instrumentation.viewStore?.stateDidChange(viewEventInfo) }
+        let viewEventInfo = context.willChangeState()
+        defer { context.didChangeState(viewEventInfo) }
 
         objectWillChange.send()
         _state.value = $0
