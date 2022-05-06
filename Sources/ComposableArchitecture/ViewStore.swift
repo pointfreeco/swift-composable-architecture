@@ -69,21 +69,49 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///     equal, repeat view computations are removed.
   public init(
     _ store: Store<State, Action>,
-    removeDuplicates isDuplicate: @escaping (State, State) -> Bool
+    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
+    instrumentation: Instrumentation = .shared
   ) {
-    self._send = { store.send($0) }
+    var actionString = ""
+    let eventInfo = Instrumentation.EventInfo(
+      type: String(describing: ViewStore.self),
+      action: actionString,
+      tags: [:]
+    )
+    self._send = {
+      actionString = debugCaseOutput($0)
+      var sendEventInfo = eventInfo
+      sendEventInfo.action = actionString
+      instrumentation.viewStore?.willSend(sendEventInfo)
+      defer { instrumentation.viewStore?.didSend(sendEventInfo) }
+      store.send($0)
+    }
     self._state = CurrentValueRelay(store.state.value)
 
     self.viewCancellable = store.state
-      .removeDuplicates(by: isDuplicate)
+      .removeDuplicates(by: {
+        var dedupEventInfo = eventInfo
+        dedupEventInfo.action = actionString
+        instrumentation.viewStore?.willDeduplicate(dedupEventInfo)
+        defer { instrumentation.viewStore?.didDeduplicate(dedupEventInfo) }
+
+        return isDuplicate($0, $1)
+      })
       .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
         guard let objectWillChange = objectWillChange, let _state = _state else { return }
+
+        var viewEventInfo = eventInfo
+        viewEventInfo.action = actionString
+        instrumentation.viewStore?.stateWillChange(viewEventInfo)
+        defer { instrumentation.viewStore?.stateDidChange(viewEventInfo) }
+
         objectWillChange.send()
         _state.value = $0
       }
+
   }
 
-  internal init(_ viewStore: ViewStore<State, Action>) {
+  internal init(_ viewStore: ViewStore<State, Action>, instrumentation: Instrumentation = .shared) {
     self._send = viewStore._send
     self._state = viewStore._state
     self.objectWillChange = viewStore.objectWillChange

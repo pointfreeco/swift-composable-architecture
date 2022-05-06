@@ -23,11 +23,30 @@ public class Instrumentation {
     }
   }
 
-  public init(store: Instrumentation.Store? = nil) {
+  public init(viewStore: Instrumentation.ViewStore? = nil, store: Instrumentation.Store? = nil) {
+    self.viewStore = viewStore
     self.store = store
   }
 
   public static var shared: Instrumentation = .noop
+
+  public struct ViewStore {
+    public init(willSend: @escaping Trigger, didSend: @escaping Trigger, willDeduplicate: @escaping Trigger, didDeduplicate: @escaping Trigger, stateWillChange: @escaping Trigger, stateDidChange: @escaping Trigger) {
+      self.willSend = willSend
+      self.didSend = didSend
+      self.willDeduplicate = willDeduplicate
+      self.didDeduplicate = didDeduplicate
+      self.stateWillChange = stateWillChange
+      self.stateDidChange = stateDidChange
+    }
+
+    let willSend: Trigger
+    let didSend: Trigger
+    let willDeduplicate: Trigger
+    let didDeduplicate: Trigger
+    let stateWillChange: Trigger
+    let stateDidChange: Trigger
+  }
 
   public struct Store {
     public init(willSend: @escaping Instrumentation.Trigger, didSend: @escaping Instrumentation.Trigger, willScope: @escaping Instrumentation.Trigger, didScope: @escaping Instrumentation.Trigger, willProcessEvents: @escaping Instrumentation.Trigger, didProcessEvents: @escaping Instrumentation.Trigger) {
@@ -47,6 +66,7 @@ public class Instrumentation {
     let didProcessEvents: Trigger
   }
 
+  let viewStore: ViewStore?
   let store: Store?
 }
 
