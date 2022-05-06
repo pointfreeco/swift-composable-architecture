@@ -260,16 +260,6 @@ public struct Effect<Output, Failure: Error>: Publisher {
     .eraseToEffect()
   }
 
-  /// Creates an effect that executes some work in the real world that doesn't need to feed data
-  /// back into the store.
-  ///
-  /// - Parameter work: A closure encapsulating some work to execute in the real world.
-  /// - Returns: An effect.
-  public static func fireAndForget(_ work: @escaping @Sendable () async -> Void) -> Effect {
-    Effect<Void, Never>.task { await work() }
-      .fireAndForget()
-  }
-
   /// Transforms all elements from the upstream effect with a provided closure.
   ///
   /// - Parameter transform: A closure that transforms the upstream effect's output to a new output.
