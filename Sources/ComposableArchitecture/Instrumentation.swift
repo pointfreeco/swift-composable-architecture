@@ -127,7 +127,7 @@ public class Instrumentation {
     let didChangeState: Trigger
     /// Called _before_ the ``Store`` handles any individual action that has been enqueued. This may include actions
     /// that have been returned via an ``Effect`` out of a ``Reducer`` that are synchronous or even results of ``Effects``
-    ///  that were long running and just happened to complete while this ``Store`` was clearing the queue.
+    /// that were long running and just happened to complete while this ``Store`` was clearing the queue.
     let willProcessEvents: Trigger
     /// Called _after_ the ``Store`` has completed handling an individual action.
     let didProcessEvents: Trigger
