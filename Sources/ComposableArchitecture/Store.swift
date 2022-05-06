@@ -383,8 +383,8 @@ public final class Store<State, Action> {
     }
 
     defer {
-      instrumentation.store?.willScope(eventInfo)
-      defer { instrumentation.store?.didScope(eventInfo) }
+      instrumentation.store?.willChangeState(eventInfo)
+      defer { instrumentation.store?.didChangeState(eventInfo) }
 
       self.state.value = currentState
       self.isSending = false

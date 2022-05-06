@@ -16,7 +16,7 @@ import Foundation
 ///   6. The ``Action`` is passed to the ``Store.reducer`` and acted upon
 ///   7. The ``Store.reducer`` returns an ``Effect.none`` producing no further ``Action``s
 ///   8. The ``Instrumentation.Store.didProcessEvents`` callback is called
-///   9. The ``Instrumentation.Store.willScope`` callback is called
+///   9. The ``Instrumentation.Store.willChangeState`` callback is called
 ///   10. The ``Store.state.value`` is updated
 ///   11. The ``ViewStore`` is updated with the ``Store.state``s new value
 ///   12. The ``Instrumentation.ViewStore.willDeduplicate`` callback is called
@@ -26,7 +26,7 @@ import Foundation
 ///   16. The ``ViewStore.state`` value is updated
 ///   17. All subscribers to the ``ViewStore.state`` are updated with the new state value
 ///   18. The ``Instrumentation.ViewStore.stateDidChange`` callback is called
-///   19. The ``Instrumentation.Store.didScope`` callback is called
+///   19. The ``Instrumentation.Store.didChangeState`` callback is called
 ///   20. The ``Instrumentation.Store.didSend`` callback is called
 ///   21. The ``Instrumentation.ViewStore.didSend`` callback is called
 public class Instrumentation {
@@ -106,11 +106,11 @@ public class Instrumentation {
 
   /// Tracking/instrumentation hooks that operating only within the context of ``Store`` objects.
   public struct Store {
-    public init(willSend: @escaping Instrumentation.Trigger, didSend: @escaping Instrumentation.Trigger, willScope: @escaping Instrumentation.Trigger, didScope: @escaping Instrumentation.Trigger, willProcessEvents: @escaping Instrumentation.Trigger, didProcessEvents: @escaping Instrumentation.Trigger) {
+    public init(willSend: @escaping Instrumentation.Trigger, didSend: @escaping Instrumentation.Trigger, willChangeState: @escaping Instrumentation.Trigger, didChangeState: @escaping Instrumentation.Trigger, willProcessEvents: @escaping Instrumentation.Trigger, didProcessEvents: @escaping Instrumentation.Trigger) {
       self.willSend = willSend
       self.didSend = didSend
-      self.willScope = willScope
-      self.didScope = didScope
+      self.willChangeState = willChangeState
+      self.didChangeState = didChangeState
       self.willProcessEvents = willProcessEvents
       self.didProcessEvents = didProcessEvents
     }
@@ -118,13 +118,13 @@ public class Instrumentation {
     /// Called _before_ the ``Store.send`` has begun handling the action.
     let willSend: Trigger
     /// Called _after_ the ``Store.send`` has completed handling the action. This may include multiple instances of
-    /// ``will|didScope`` and ``will|didProcessEvents`` pairs, and potentially further calls to the
+    /// ``will|didChangeState`` and ``will|didProcessEvents`` pairs, and potentially further calls to the
     /// ``Instrumentation.ViewStore`` and ``Instrumentation.Store`` functions.
     let didSend: Trigger
     /// Called _before_ the ``Store.state.value`` is updated.
-    let willScope: Trigger
+    let willChangeState: Trigger
     /// Called _after_ the ``Store.state.value`` is updated.
-    let didScope: Trigger
+    let didChangeState: Trigger
     /// Called _before_ the ``Store`` handles any individual action that has been enqueued. This may include actions
     /// that have been returned via an ``Effect`` out of a ``Reducer`` that are synchronous or even results of ``Effects``
     ///  that were long running and just happened to complete while this ``Store`` was clearing the queue.

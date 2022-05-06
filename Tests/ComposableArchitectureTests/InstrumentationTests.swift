@@ -8,7 +8,7 @@ final class InstrumentationTests: XCTestCase {
 
   func testNoneEffectReducer_Store() {
     var sendCalls = 0
-    var scopeCalls = 0
+    var changeStateCalls = 0
     var processCalls = 0
     let inst = ComposableArchitecture.Instrumentation(
       viewStore: .init(
@@ -22,8 +22,8 @@ final class InstrumentationTests: XCTestCase {
       store: .init(
         willSend: { _ in sendCalls += 1 },
         didSend: { _ in sendCalls += 1 },
-        willScope: { _ in scopeCalls += 1 },
-        didScope: { _ in scopeCalls += 1 },
+        willChangeState: { _ in changeStateCalls += 1 },
+        didChangeState: { _ in changeStateCalls += 1 },
         willProcessEvents: { _ in processCalls += 1 },
         didProcessEvents:{ _ in processCalls += 1 }
       )
@@ -33,7 +33,7 @@ final class InstrumentationTests: XCTestCase {
     store.send((), instrumentation: inst)
 
     XCTAssertEqual(2, sendCalls)
-    XCTAssertEqual(2, scopeCalls)
+    XCTAssertEqual(2, changeStateCalls)
     XCTAssertEqual(2, processCalls)
   }
 
@@ -43,7 +43,7 @@ final class InstrumentationTests: XCTestCase {
     var changeCalls_vs = 0
 
     var sendCalls_s = 0
-    var scopeCalls_s = 0
+    var changeStateCalls_s = 0
     var processCalls_s = 0
     let inst = ComposableArchitecture.Instrumentation(
       viewStore: .init(
@@ -57,8 +57,8 @@ final class InstrumentationTests: XCTestCase {
       store: .init(
         willSend: { _ in sendCalls_s += 1 },
         didSend: { _ in sendCalls_s += 1 },
-        willScope: { _ in scopeCalls_s += 1 },
-        didScope: { _ in scopeCalls_s += 1 },
+        willChangeState: { _ in changeStateCalls_s += 1 },
+        didChangeState: { _ in changeStateCalls_s += 1 },
         willProcessEvents: { _ in processCalls_s += 1 },
         didProcessEvents:{ _ in processCalls_s += 1 }
       )
@@ -73,7 +73,7 @@ final class InstrumentationTests: XCTestCase {
     XCTAssertEqual(2, dedupCalls_vs)
     XCTAssertEqual(2, changeCalls_vs)
     XCTAssertEqual(2, sendCalls_s)
-    XCTAssertEqual(2, scopeCalls_s)
+    XCTAssertEqual(2, changeStateCalls_s)
     XCTAssertEqual(2, processCalls_s)
   }
 
@@ -82,7 +82,7 @@ final class InstrumentationTests: XCTestCase {
     var dedupCalls_vs = 0
     var changeCalls_vs = 0
     var sendCalls_s = 0
-    var scopeCalls_s = 0
+    var changeStateCalls_s = 0
     var processCalls_s = 0
 
     let inst = ComposableArchitecture.Instrumentation(
@@ -97,8 +97,8 @@ final class InstrumentationTests: XCTestCase {
       store: .init(
         willSend: { _ in sendCalls_s += 1 },
         didSend: { _ in sendCalls_s += 1 },
-        willScope: { _ in scopeCalls_s += 1 },
-        didScope: { _ in scopeCalls_s += 1 },
+        willChangeState: { _ in changeStateCalls_s += 1 },
+        didChangeState: { _ in changeStateCalls_s += 1 },
         willProcessEvents: { _ in processCalls_s += 1 },
         didProcessEvents:{ _ in processCalls_s += 1 }
       )
@@ -119,7 +119,7 @@ final class InstrumentationTests: XCTestCase {
     XCTAssertEqual(2, dedupCalls_vs)
     XCTAssertEqual(2, changeCalls_vs)
     XCTAssertEqual(2, sendCalls_s)
-    XCTAssertEqual(2, scopeCalls_s)
+    XCTAssertEqual(2, changeStateCalls_s)
     // 4 because 2 for the initial action and 2 for the action sent by the reducer's effect
     XCTAssertEqual(4, processCalls_s)
   }
@@ -129,7 +129,7 @@ final class InstrumentationTests: XCTestCase {
     var dedupCalls_vs = 0
     var changeCalls_vs = 0
     var sendCalls_s = 0
-    var scopeCalls_s = 0
+    var changeStateCalls_s = 0
     var processCalls_s = 0
 
     let inst = ComposableArchitecture.Instrumentation(
@@ -144,8 +144,8 @@ final class InstrumentationTests: XCTestCase {
       store: .init(
         willSend: { _ in sendCalls_s += 1 },
         didSend: { _ in sendCalls_s += 1 },
-        willScope: { _ in scopeCalls_s += 1 },
-        didScope: { _ in scopeCalls_s += 1 },
+        willChangeState: { _ in changeStateCalls_s += 1 },
+        didChangeState: { _ in changeStateCalls_s += 1 },
         willProcessEvents: { _ in processCalls_s += 1 },
         didProcessEvents:{ _ in processCalls_s += 1 }
       )
@@ -175,7 +175,7 @@ final class InstrumentationTests: XCTestCase {
     // 2 for each call to Store.send that comes from the ViewStore.send
     XCTAssertEqual(4, sendCalls_s)
     // 2 for each time the Store's state updates due to a send
-    XCTAssertEqual(4, scopeCalls_s)
+    XCTAssertEqual(4, changeStateCalls_s)
     // 6 because 2 for the initial ViewStore.send, 2 for the action from the reducer, and 2 for the publisher's
     // ViewStore.send
     XCTAssertEqual(6, processCalls_s)
@@ -186,7 +186,7 @@ final class InstrumentationTests: XCTestCase {
     var dedupCalls_vs = 0
     var changeCalls_vs = 0
     var sendCalls_s = 0
-    var scopeCalls_s = 0
+    var changeStateCalls_s = 0
     var processCalls_s = 0
 
     let inst = ComposableArchitecture.Instrumentation(
@@ -201,8 +201,8 @@ final class InstrumentationTests: XCTestCase {
       store: .init(
         willSend: { _ in sendCalls_s += 1 },
         didSend: { _ in sendCalls_s += 1 },
-        willScope: { _ in scopeCalls_s += 1 },
-        didScope: { _ in scopeCalls_s += 1 },
+        willChangeState: { _ in changeStateCalls_s += 1 },
+        didChangeState: { _ in changeStateCalls_s += 1 },
         willProcessEvents: { _ in processCalls_s += 1 },
         didProcessEvents:{ _ in processCalls_s += 1 }
       )
@@ -229,7 +229,7 @@ final class InstrumentationTests: XCTestCase {
     // 4 because 2 for the initial value and 2 for the updated value
     XCTAssertEqual(4, changeCalls_vs)
     XCTAssertEqual(2, sendCalls_s)
-    XCTAssertEqual(2, scopeCalls_s)
+    XCTAssertEqual(2, changeStateCalls_s)
     XCTAssertEqual(2, processCalls_s)
   }
 }
