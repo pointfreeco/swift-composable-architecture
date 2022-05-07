@@ -115,7 +115,7 @@ import SwiftUI
       priority: TaskPriority? = nil,
       _ work: @escaping @Sendable () async -> Void
     ) -> Effect {
-      Effect<Void, Never>.task { await work() }
+      Effect<Void, Never>.task(priority: priority) { await work() }
         .fireAndForget()
     }
   }
