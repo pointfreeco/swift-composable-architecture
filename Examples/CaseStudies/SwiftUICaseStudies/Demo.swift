@@ -1,5 +1,25 @@
+import Combine
 import ComposableArchitecture
 import SwiftUI
+
+struct Send<Output> {
+  var send: (Output) -> Void
+  func callAsFunction(_ output) -> Void {
+    self.send(output)
+  }
+}
+
+extension Effect {
+  static func run(_ work: @escaping (Output) async -> Void) -> Self {
+    .run { subscriber in
+      
+
+      return AnyCancellable {
+
+      }
+    }
+  }
+}
 
 enum TaskResult<Success> {
   case success(Success)
