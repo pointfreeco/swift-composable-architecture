@@ -377,7 +377,6 @@ public final class Store<State, Action> {
     }
 
     let tasks = Box<[Task<Void, Never>]>([])
-    var _tasks: [Task<Void, Never>] = []
 
     while !self.bufferedActions.isEmpty {
       let action = self.bufferedActions.removeFirst()
@@ -401,8 +400,7 @@ public final class Store<State, Action> {
         },
         receiveValue: { [weak self] effectAction in
           guard let self = self else { return }
-//          tasks.value.append(self.send(effectAction, originatingFrom: action))
-          _tasks.append(self.send(effectAction, originatingFrom: action))
+          tasks.value.append(self.send(effectAction, originatingFrom: action))
         }
       )
 

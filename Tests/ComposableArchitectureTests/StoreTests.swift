@@ -492,28 +492,28 @@ final class StoreTests: XCTestCase {
     await task.cancel()
   }
 
-//  @MainActor
-//  func testTaskCancellation1() async {
-//    enum Action { case task, response }
-//    let reducer = Reducer<Int, Action, Void> { state, action, _ in
-//      switch action {
-//      case .task:
-//        return .task { @MainActor in .response }
-//      case .response:
-//        return .merge(
-//          Empty(completeImmediately: false).eraseToEffect()
-//        )
-//      }
-//    }
-//
-//    let store = TestStore(
-//      initialState: 0,
-//      reducer: reducer,
-//      environment: ()
-//    )
-//
-//    let task = store.send(.task)
-//    await store.receive(.response)
-//    await task.cancel()
-//  }
+  @MainActor
+  func testTaskCancellation1() async {
+    enum Action { case task, response }
+    let reducer = Reducer<Int, Action, Void> { state, action, _ in
+      switch action {
+      case .task:
+        return .task { @MainActor in .response }
+      case .response:
+        return .merge(
+          Empty(completeImmediately: false).eraseToEffect()
+        )
+      }
+    }
+
+    let store = TestStore(
+      initialState: 0,
+      reducer: reducer,
+      environment: ()
+    )
+
+    let task = store.send(.task)
+    await store.receive(.response)
+    await task.cancel()
+  }
 }
