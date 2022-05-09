@@ -569,9 +569,12 @@ public struct Send<Action> {
 }
 
 extension Effect {
-  public static func run(_ operation: @escaping (_ send: Send<Output>) async -> Void) -> Self {
+  public static func run(
+    priority: TaskPriority? = nil,
+    _ operation: @escaping (_ send: Send<Output>) async -> Void
+  ) -> Self {
     .run { subscriber in
-      let task = Task {
+      let task = Task(priority: priority) {
         await operation(Send(send: subscriber.send(_:)))
         subscriber.send(completion: .finished)
       }

@@ -4,20 +4,8 @@ import SwiftUI
 
 struct Send<Output> {
   var send: (Output) -> Void
-  func callAsFunction(_ output) -> Void {
+  func callAsFunction(_ output: Output) -> Void {
     self.send(output)
-  }
-}
-
-extension Effect {
-  static func run(_ work: @escaping (Output) async -> Void) -> Self {
-    .run { subscriber in
-      
-
-      return AnyCancellable {
-
-      }
-    }
   }
 }
 
@@ -138,14 +126,15 @@ let reducer = Reducer<State, Action, Environment> { state, action, environment i
   case .randomButtonTapped:
     return .run { @MainActor send in
       send(.progress(0), animation: .default)
-      defer {
-        send(.progress(nil))
-      }
+      defer { send(.progress(nil)) }
 
       do {
         let number = try await environment.number.random()
         send(.progress(0.5), animation: .default)
-        send(.factResponse(await TaskResult { try await environment.number.fact(number) }))
+        send(
+          .factResponse(await TaskResult { try await environment.number.fact(number) }),
+          animation: .default
+        )
         send(.progress(1), animation: .default)
         try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
       } catch {
