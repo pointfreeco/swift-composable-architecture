@@ -56,7 +56,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
     }
   ),
   .init { state, action, environment in
-    struct TimerId: Hashable {}
+    enum TimerId {}
 
     func startRecording() -> Effect<VoiceMemosAction, Never> {
       let url = environment.temporaryDirectory()
@@ -71,7 +71,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
         environment.audioRecorder.startRecording(url)
           .catchToEffect(VoiceMemosAction.audioRecorder),
 
-        Effect.timer(id: TimerId(), every: 1, tolerance: .zero, on: environment.mainRunLoop)
+        Effect.timer(id: TimerId.self, every: 1, tolerance: .zero, on: environment.mainRunLoop)
           .map { _ in .currentRecordingTimerUpdated }
       )
     }
@@ -105,7 +105,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       .audioRecorder(.failure):
       state.alert = .init(title: .init("Voice memo recording failed."))
       state.currentRecording = nil
-      return .cancel(id: TimerId())
+      return .cancel(id: TimerId.self)
 
     case .currentRecordingTimerUpdated:
       state.currentRecording?.duration += 1
@@ -143,7 +143,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
         case .recording:
           state.currentRecording?.mode = .encoding
           return .concatenate(
-            .cancel(id: TimerId()),
+            .cancel(id: TimerId.self),
 
             environment.audioRecorder.currentTime()
               .compactMap { $0 }

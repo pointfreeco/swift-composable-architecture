@@ -152,6 +152,19 @@ public final class ViewStore<State, Action>: ObservableObject {
     )
   }
 
+  /// Sends an action to the store with a given animation.
+  ///
+  /// See ``ViewStore/send(_:)`` for more info.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - animation: An animation.
+  public func send(_ action: Action, animation: Animation?) {
+    withAnimation(animation) {
+      self.send(action)
+    }
+  }
+
   /// Derives a binding from the store that prevents direct writes to state and instead sends
   /// actions to the store.
   ///

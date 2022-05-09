@@ -93,7 +93,7 @@ public let loginReducer = Reducer<LoginState, LoginAction, LoginEnvironment>.com
 
     case .twoFactorDismissed:
       state.twoFactor = nil
-      return .cancel(id: TwoFactorTearDownToken())
+      return .cancel(id: TwoFactorTearDownToken.self)
     }
   }
 )

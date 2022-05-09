@@ -36,12 +36,12 @@ let refreshableReducer = Reducer<
   RefreshableEnvironment
 > { state, action, environment in
 
-  struct CancelId: Hashable {}
+  enum CancelId {}
 
   switch action {
   case .cancelButtonTapped:
     state.isLoading = false
-    return .cancel(id: CancelId())
+    return .cancel(id: CancelId.self)
 
   case .decrementButtonTapped:
     state.count -= 1
@@ -72,8 +72,8 @@ let refreshableReducer = Reducer<
       )
     }
     .delay(for: .seconds(2), scheduler: environment.mainQueue.animation())
-    .eraseToEffect()
-    .cancellable(id: CancelId())
+    .catchToEffect(RefreshableAction.factResponse)
+    .cancellable(id: CancelId.self)
   }
 }
 

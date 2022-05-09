@@ -42,7 +42,7 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
     return .none
 
   case let .locationTapped(location):
-    struct SearchWeatherId: Hashable {}
+    enum SearchWeatherId {}
 
     state.locationWeatherRequestInFlight = location
 
@@ -53,10 +53,10 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
         }
       )
     }
-    .cancellable(id: SearchWeatherId(), cancelInFlight: true)
+    .cancellable(id: SearchWeatherId.self, cancelInFlight: true)
 
   case let .searchQueryChanged(query):
-    struct SearchLocationId: Hashable {}
+    enum SearchLocationId {}
 
     state.searchQuery = query
 
@@ -65,7 +65,7 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
     guard !query.isEmpty else {
       state.locations = []
       state.locationWeather = nil
-      return .cancel(id: SearchLocationId())
+      return .cancel(id: SearchLocationId.self)
     }
 
     return .task {
@@ -75,7 +75,7 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
         }
       )
     }
-    .debounce(id: SearchLocationId(), for: 0.3, scheduler: environment.mainQueue)
+    .debounce(id: SearchLocationId.self, for: 0.3, scheduler: environment.mainQueue)
 
   case let .locationWeatherResponse(.failure(locationWeather)):
     state.locationWeather = nil

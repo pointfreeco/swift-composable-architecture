@@ -41,6 +41,7 @@ struct WebSocketEnvironment {
 
 let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnvironment> {
   state, action, environment in
+
   struct WebSocketId: Hashable {}
 
   var receiveSocketMessageEffect: Effect<WebSocketAction, Never> {
@@ -70,11 +71,13 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
 
     case .disconnected:
       state.connectivityState = .connecting
-      return environment.webSocket.open(WebSocketId(), URL(string: "wss://echo.websocket.org")!, [])
-        .receive(on: environment.mainQueue)
-        .map(WebSocketAction.webSocket)
-        .eraseToEffect()
-        .cancellable(id: WebSocketId())
+      return environment.webSocket.open(
+        WebSocketId(), URL(string: "wss://echo.websocket.events")!, []
+      )
+      .receive(on: environment.mainQueue)
+      .map(WebSocketAction.webSocket)
+      .eraseToEffect()
+      .cancellable(id: WebSocketId())
     }
 
   case let .messageToSendChanged(message):
