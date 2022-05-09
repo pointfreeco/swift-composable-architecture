@@ -260,15 +260,6 @@ public struct Effect<Output, Failure: Error>: Publisher {
     .eraseToEffect()
   }
 
-  /// TODO: docs
-  public static func fireAndForget(
-    priority: TaskPriority? = nil,
-    _ work: @Sendable @escaping () async -> Void
-  ) -> Effect {
-    Effect<Void, Never>.task { await work() }
-    .fireAndForget()
-  }
-
   /// Transforms all elements from the upstream effect with a provided closure.
   ///
   /// - Parameter transform: A closure that transforms the upstream effect's output to a new output.
