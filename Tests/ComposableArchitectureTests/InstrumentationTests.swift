@@ -16,8 +16,8 @@ final class InstrumentationTests: XCTestCase {
         didSend: { _ in XCTFail("ViewStore callbacks should not be called") },
         willDeduplicate: { _ in XCTFail("ViewStore callbacks should not be called") },
         didDeduplicate: { _ in XCTFail("ViewStore callbacks should not be called") },
-        stateWillChange: { _ in XCTFail("ViewStore callbacks should not be called") },
-        stateDidChange: { _ in XCTFail("ViewStore callbacks should not be called") }
+        willChangeState: { _ in XCTFail("ViewStore callbacks should not be called") },
+        didChangeState: { _ in XCTFail("ViewStore callbacks should not be called") }
       ),
       store: .init(
         willSend: { _ in sendCalls += 1 },
@@ -51,8 +51,8 @@ final class InstrumentationTests: XCTestCase {
         didSend: { _ in sendCalls_vs += 1 },
         willDeduplicate: { _ in dedupCalls_vs += 1 },
         didDeduplicate: { _ in dedupCalls_vs += 1 },
-        stateWillChange: { _ in changeCalls_vs += 1 },
-        stateDidChange: { _ in changeCalls_vs += 1 }
+        willChangeState: { _ in changeCalls_vs += 1 },
+        didChangeState: { _ in changeCalls_vs += 1 }
       ),
       store: .init(
         willSend: { _ in sendCalls_s += 1 },
@@ -91,8 +91,8 @@ final class InstrumentationTests: XCTestCase {
         didSend: { _ in sendCalls_vs += 1 },
         willDeduplicate: { _ in dedupCalls_vs += 1 },
         didDeduplicate: { _ in dedupCalls_vs += 1 },
-        stateWillChange: { _ in changeCalls_vs += 1 },
-        stateDidChange: { _ in changeCalls_vs += 1 }
+        willChangeState: { _ in changeCalls_vs += 1 },
+        didChangeState: { _ in changeCalls_vs += 1 }
       ),
       store: .init(
         willSend: { _ in sendCalls_s += 1 },
@@ -138,8 +138,8 @@ final class InstrumentationTests: XCTestCase {
         didSend: { _ in sendCalls_vs += 1 },
         willDeduplicate: { _ in dedupCalls_vs += 1 },
         didDeduplicate: { _ in dedupCalls_vs += 1 },
-        stateWillChange: { _ in changeCalls_vs += 1 },
-        stateDidChange: { _ in changeCalls_vs += 1 }
+        willChangeState: { _ in changeCalls_vs += 1 },
+        didChangeState: { _ in changeCalls_vs += 1 }
       ),
       store: .init(
         willSend: { _ in sendCalls_s += 1 },
@@ -195,8 +195,8 @@ final class InstrumentationTests: XCTestCase {
         didSend: { _ in sendCalls_vs += 1 },
         willDeduplicate: { _ in dedupCalls_vs += 1 },
         didDeduplicate: { _ in dedupCalls_vs += 1 },
-        stateWillChange: { _ in changeCalls_vs += 1 },
-        stateDidChange: { _ in changeCalls_vs += 1 }
+        willChangeState: { _ in changeCalls_vs += 1 },
+        didChangeState: { _ in changeCalls_vs += 1 }
       ),
       store: .init(
         willSend: { _ in sendCalls_s += 1 },

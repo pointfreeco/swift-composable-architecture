@@ -32,7 +32,7 @@ import Foundation
 /// Instrumentation.ViewStore.didSend
 /// ```
 public class Instrumentation {
-  public typealias Trigger = (EventInfo) -> Void
+  public typealias Callback = (EventInfo) -> Void
 
   static let noop = Instrumentation()
 
@@ -89,7 +89,7 @@ extension Instrumentation {
 
   /// Tracking/instrumentation hooks that operate only within the context of ``ViewStore`` objects.
   public struct ViewStoreCallbacks {
-    public init(willSend: @escaping Trigger, didSend: @escaping Trigger, willDeduplicate: @escaping Trigger, didDeduplicate: @escaping Trigger, willChangeState: @escaping Trigger, didChangeState: @escaping Trigger) {
+    public init(willSend: @escaping Callback, didSend: @escaping Callback, willDeduplicate: @escaping Callback, didDeduplicate: @escaping Callback, willChangeState: @escaping Callback, didChangeState: @escaping Callback) {
       self.willSend = willSend
       self.didSend = didSend
       self.willDeduplicate = willDeduplicate
@@ -99,25 +99,25 @@ extension Instrumentation {
     }
 
     /// Called _before_ the ``ViewStore.send`` handles the action.
-    let willSend: Trigger
+    let willSend: Callback
     /// Called  _after_ the ``ViewStore.send`` has completed handling the action.
-    let didSend: Trigger
+    let didSend: Callback
     /// Called _before_ the ``ViewStore`` attempts to deduplicate the old and new states. It is expected that for every
     /// ``willDeduplicate`` there will be a matching ``didDeduplicate``.
     /// Note: This may _not_ be called in every case. Because the deduplication implementation uses the
     /// ``Publisher.removeDuplicates`` method, this trigger will not be called on the _first_ state value (because there
     ///  is no old/new pair to compare).
-    let willDeduplicate: Trigger
+    let willDeduplicate: Callback
     /// Called _after_ the ``ViewStore`` has completed deduplicating the old and new states. It is expected that for
     /// every ``willDeduplicate`` there will be a matching ``didDeduplicate``.
     /// Note: This may _not_ be called in every case. Because the deduplication implementation uses the
     /// ``Publisher.removeDuplicates`` method, this trigger will not be called on the _first_ state value (because there
     ///  is no old/new pair to compare).
-    let didDeduplicate: Trigger
+    let didDeduplicate: Callback
     /// Called _before_ the ``ViewStore.state`` is updated with the new value.
-    let willChangeState: Trigger
+    let willChangeState: Callback
     /// Called _after_ the ``ViewStore.state`` is updated with the new value.
-    let didChangeState: Trigger
+    let didChangeState: Callback
   }
 
   internal final class ViewStoreContext<State, Action> {
@@ -219,7 +219,7 @@ extension Instrumentation {
 
   /// Tracking/instrumentation hooks that operating only within the context of ``Store`` objects.
   public struct StoreCallbacks {
-    public init(willSend: @escaping Instrumentation.Trigger, didSend: @escaping Instrumentation.Trigger, willChangeState: @escaping Instrumentation.Trigger, didChangeState: @escaping Instrumentation.Trigger, willProcessEvents: @escaping Instrumentation.Trigger, didProcessEvents: @escaping Instrumentation.Trigger) {
+    public init(willSend: @escaping Instrumentation.Callback, didSend: @escaping Instrumentation.Callback, willChangeState: @escaping Instrumentation.Callback, didChangeState: @escaping Instrumentation.Callback, willProcessEvents: @escaping Instrumentation.Callback, didProcessEvents: @escaping Instrumentation.Callback) {
       self.willSend = willSend
       self.didSend = didSend
       self.willChangeState = willChangeState
@@ -229,21 +229,21 @@ extension Instrumentation {
     }
 
     /// Called _before_ the ``Store.send`` has begun handling the action.
-    let willSend: Trigger
+    let willSend: Callback
     /// Called _after_ the ``Store.send`` has completed handling the action. This may include multiple instances of
     /// ``will|didChangeState`` and ``will|didProcessEvents`` pairs, and potentially further calls to the
     /// ``Instrumentation.ViewStore`` and ``Instrumentation.Store`` functions.
-    let didSend: Trigger
+    let didSend: Callback
     /// Called _before_ the ``Store.state.value`` is updated.
-    let willChangeState: Trigger
+    let willChangeState: Callback
     /// Called _after_ the ``Store.state.value`` is updated.
-    let didChangeState: Trigger
+    let didChangeState: Callback
     /// Called _before_ the ``Store`` handles any individual action that has been enqueued. This may include actions
     /// that have been returned via an ``Effect`` out of a ``Reducer`` that are synchronous or even results of ``Effects``
     /// that were long running and just happened to complete while this ``Store`` was clearing the queue.
-    let willProcessEvents: Trigger
+    let willProcessEvents: Callback
     /// Called _after_ the ``Store`` has completed handling an individual action.
-    let didProcessEvents: Trigger
+    let didProcessEvents: Callback
   }
 
   internal final class StoreContext<State, Action> {
