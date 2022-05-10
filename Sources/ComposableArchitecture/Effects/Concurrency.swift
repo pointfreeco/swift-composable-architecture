@@ -104,7 +104,7 @@ import SwiftUI
     }
 
     /// Creates an effect that executes some work in the real world that doesn't need to feed data
-    /// back into the store. Like a throwing `Task`, it will terminate with the first error.
+    /// back into the store. If an error is thrown, the effect will complete and the error will be ignored.
     ///
     /// - Parameters:
     ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
