@@ -104,7 +104,7 @@ import SwiftUI
     }
 
     /// Creates an effect that executes some work in the real world that doesn't need to feed data
-    /// back into the store.
+    /// back into the store and ignores any errors.
     ///
     /// - Parameters:
     ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
@@ -113,9 +113,9 @@ import SwiftUI
     /// - Returns: An effect.
     public static func fireAndForget(
       priority: TaskPriority? = nil,
-      _ work: @escaping @Sendable () async -> Void
+      _ work: @escaping @Sendable () async throws -> Void
     ) -> Effect {
-      Effect<Void, Never>.task(priority: priority) { await work() }
+      Effect<Void, Never>.task(priority: priority) { try? await work() }
         .fireAndForget()
     }
   }
