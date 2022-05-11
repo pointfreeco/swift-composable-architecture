@@ -4,19 +4,19 @@ import SwiftUI
 struct CaseStudiesApp: App {
   var body: some Scene {
     WindowGroup {
-//      NavigationView {
-//        NavigationLink("Go to demo") {
-//          FactView(
-//            store: .init(
-//              initialState: .init(),
-//              reducer: reducer,
-//              environment: .init(
-//                number: .live
-//              )
-//            )
-//          )
-//        }
-//      }
+      NavigationView {
+        NavigationLink("Go to demo") {
+          FactView(
+            store: .init(
+              initialState: .init(),
+              reducer: reducer,
+              environment: .init(
+                number: .live
+              )
+            )
+          )
+        }
+      }
 //      RootView(
 //        store: .init(
 //          initialState: RootState(),

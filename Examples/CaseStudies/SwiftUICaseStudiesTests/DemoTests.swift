@@ -41,7 +41,7 @@ class DemoTests: XCTestCase {
           random: { @MainActor in 42 }
         )
       )
-    )
+    ) 
 
     store.send(.randomButtonTapped)
     
