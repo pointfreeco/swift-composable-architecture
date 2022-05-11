@@ -9,6 +9,15 @@ private let readMe = """
   inspired by Elm's `subscriptions` API.
   """
 
+//struct Subscriptions<State, Action>: ReducerProtocol {
+//  @Dependency(\.activeSubscriptions) var activeSubscriptions
+//
+//  let subscriptions: (State) -> [AnyHashable: Effect<Action, Never>]
+//
+//  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+//  }
+//}
+
 extension Reducer {
   static func subscriptions(
     _ subscriptions: @escaping (State, Environment) -> [AnyHashable: Effect<Action, Never>]

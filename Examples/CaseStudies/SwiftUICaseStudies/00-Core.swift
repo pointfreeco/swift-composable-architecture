@@ -114,19 +114,19 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.alertAndConfirmationDialog,
       action: /RootAction.alertAndConfirmationDialog,
-      environment: { _ in () }
+      environment: { _ in }
     ),
   Reducer(AnimationsReducer())
     .pullback(
       state: \.animation,
       action: /RootAction.animation,
-      environment: { _ in () }
+      environment: { _ in }
     ),
   Reducer(BindingBasicsReducer())
     .pullback(
       state: \.bindingBasics,
       action: /RootAction.bindingBasics,
-      environment: { _ in () }
+      environment: { _ in }
     ),
   .init { state, action, environment in
     #if compiler(>=5.4)
@@ -135,7 +135,7 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
         .pullback(
           state: \.bindingForm,
           action: /RootAction.bindingForm,
-          environment: { _ in () }
+          environment: { _ in }
         )
         .run(&state, action, environment)
     #else
@@ -152,7 +152,7 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.counter,
       action: /RootAction.counter,
-      environment: { _ in () }
+      environment: { _ in }
     ),
   dieRollReducer
     .pullback(
@@ -160,17 +160,17 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       action: /RootAction.dieRoll,
       environment: { _ in .init(rollDie: { .random(in: 1...6) }) }
     ),
-  effectsBasicsReducer
+  Reducer(EffectsBasicsReducer())
     .pullback(
       state: \.effectsBasics,
       action: /RootAction.effectsBasics,
-      environment: { .init(fact: $0.fact, mainQueue: $0.mainQueue) }
+      environment: { _ in }
     ),
-  effectsCancellationReducer
+  Reducer(EffectsCancellationReducer())
     .pullback(
       state: \.effectsCancellation,
       action: /RootAction.effectsCancellation,
-      environment: { .init(fact: $0.fact, mainQueue: $0.mainQueue) }
+      environment: { _ in }
     ),
   episodesReducer
     .pullback(
@@ -202,19 +202,19 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.loadThenNavigate,
       action: /RootAction.loadThenNavigate,
-      environment: { _ in () }
+      environment: { _ in }
     ),
   Reducer(LoadThenNavigateListReducer())
     .pullback(
       state: \.loadThenNavigateList,
       action: /RootAction.loadThenNavigateList,
-      environment: { _ in () }
+      environment: { _ in }
     ),
   Reducer(LoadThenPresentReducer())
     .pullback(
       state: \.loadThenPresent,
       action: /RootAction.loadThenPresent,
-      environment: { _ in () }
+      environment: { _ in }
     ),
   longLivingEffectsReducer
     .pullback(
@@ -245,13 +245,13 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.navigateAndLoad,
       action: /RootAction.navigateAndLoad,
-      environment: { _ in () }
+      environment: { _ in }
     ),
   Reducer(NavigateAndLoadListReducer())
     .pullback(
       state: \.navigateAndLoadList,
       action: /RootAction.navigateAndLoadList,
-      environment: { _ in () }
+      environment: { _ in }
     ),
   nestedReducer
     .pullback(
@@ -263,13 +263,13 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.optionalBasics,
       action: /RootAction.optionalBasics,
-      environment: { _ in () }
+      environment: { _ in }
     ),
   Reducer(PresentAndLoadReducer())
     .pullback(
       state: \.presentAndLoad,
       action: /RootAction.presentAndLoad,
-      environment: { _ in () }
+      environment: { _ in }
     ),
   refreshableReducer
     .pullback(
@@ -283,7 +283,7 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.shared,
       action: /RootAction.shared,
-      environment: { _ in () }
+      environment: { _ in }
     ),
   timersReducer
     .pullback(
@@ -295,7 +295,7 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.twoCounters,
       action: /RootAction.twoCounters,
-      environment: { _ in () }
+      environment: { _ in }
     ),
   webSocketReducer
     .pullback(
@@ -315,5 +315,5 @@ private func liveFetchNumber() -> Effect<Int, Never> {
 
 private let liveUserDidTakeScreenshot = NotificationCenter.default
   .publisher(for: UIApplication.userDidTakeScreenshotNotification)
-  .map { _ in () }
+  .map { _ in }
   .eraseToEffect()

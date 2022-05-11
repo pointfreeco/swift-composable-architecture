@@ -8,6 +8,18 @@ struct FactClient {
   struct Error: Swift.Error, Equatable {}
 }
 
+extension DependencyValues {
+  var factClient: FactClient {
+    get { self[FaceClientKey.self] }
+    set { self[FaceClientKey.self] = newValue }
+  }
+
+  private enum FaceClientKey: LiveDependencyKey {
+    static let liveValue = FactClient.live
+    static let testValue = FactClient.failing
+  }
+}
+
 // This is the "live" fact dependency that reaches into the outside world to fetch trivia.
 // Typically this live implementation of the dependency would live in its own module so that the
 // main feature doesn't need to compile it.

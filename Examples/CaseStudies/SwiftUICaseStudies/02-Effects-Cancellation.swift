@@ -35,40 +35,44 @@ struct EffectsCancellationEnvironment {
 
 // MARK: - Business logic
 
-let effectsCancellationReducer = Reducer<
-  EffectsCancellationState, EffectsCancellationAction, EffectsCancellationEnvironment
-> { state, action, environment in
+struct EffectsCancellationReducer: ReducerProtocol {
+  @Dependency(\.factClient) var factClient
+  @Dependency(\.mainQueue) var mainQueue
 
-  enum TriviaRequestId {}
+  func reduce(
+    into state: inout EffectsCancellationState, action: EffectsCancellationAction
+  ) -> Effect<EffectsCancellationAction, Never> {
+    enum TriviaRequestId {}
 
-  switch action {
-  case .cancelButtonTapped:
-    state.isTriviaRequestInFlight = false
-    return .cancel(id: TriviaRequestId.self)
+    switch action {
+    case .cancelButtonTapped:
+      state.isTriviaRequestInFlight = false
+      return .cancel(id: TriviaRequestId.self)
 
-  case let .stepperChanged(value):
-    state.count = value
-    state.currentTrivia = nil
-    state.isTriviaRequestInFlight = false
-    return .cancel(id: TriviaRequestId.self)
+    case let .stepperChanged(value):
+      state.count = value
+      state.currentTrivia = nil
+      state.isTriviaRequestInFlight = false
+      return .cancel(id: TriviaRequestId.self)
 
-  case .triviaButtonTapped:
-    state.currentTrivia = nil
-    state.isTriviaRequestInFlight = true
+    case .triviaButtonTapped:
+      state.currentTrivia = nil
+      state.isTriviaRequestInFlight = true
 
-    return environment.fact.fetch(state.count)
-      .receive(on: environment.mainQueue)
-      .catchToEffect(EffectsCancellationAction.triviaResponse)
-      .cancellable(id: TriviaRequestId.self)
+      return self.factClient.fetch(state.count)
+        .receive(on: self.mainQueue)
+        .catchToEffect(EffectsCancellationAction.triviaResponse)
+        .cancellable(id: TriviaRequestId.self)
 
-  case let .triviaResponse(.success(response)):
-    state.isTriviaRequestInFlight = false
-    state.currentTrivia = response
-    return .none
+    case let .triviaResponse(.success(response)):
+      state.isTriviaRequestInFlight = false
+      state.currentTrivia = response
+      return .none
 
-  case .triviaResponse(.failure):
-    state.isTriviaRequestInFlight = false
-    return .none
+    case .triviaResponse(.failure):
+      state.isTriviaRequestInFlight = false
+      return .none
+    }
   }
 }
 
@@ -122,11 +126,7 @@ struct EffectsCancellation_Previews: PreviewProvider {
       EffectsCancellationView(
         store: Store(
           initialState: EffectsCancellationState(),
-          reducer: effectsCancellationReducer,
-          environment: EffectsCancellationEnvironment(
-            fact: .live,
-            mainQueue: .main
-          )
+          reducer: EffectsCancellationReducer()
         )
       )
     }

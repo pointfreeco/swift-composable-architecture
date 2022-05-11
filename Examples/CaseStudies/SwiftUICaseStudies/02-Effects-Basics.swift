@@ -38,20 +38,10 @@ enum EffectsBasicsAction: Equatable {
   case numberFactResponse(Result<String, FactClient.Error>)
 }
 
-private enum FaceClientKey: LiveDependencyKey {
-  static let liveValue = FactClient.live
-  static let testValue = FactClient.failing
-}
-
-extension DependencyValues {
-  var fact: FactClient {
-    get { self[FaceClientKey.self] }
-    set { self[FaceClientKey.self] = newValue }
-  }
-}
+// MARK: - Feature business logic
 
 struct EffectsBasicsReducer: ReducerProtocol {
-  @Dependency(\.fact) var fact
+  @Dependency(\.factClient) var factClient
   @Dependency(\.mainQueue) var mainQueue
 
   func reduce(
@@ -76,7 +66,7 @@ struct EffectsBasicsReducer: ReducerProtocol {
       state.numberFact = nil
       // Return an effect that fetches a number fact from the API and returns the
       // value back to the reducer's `numberFactResponse` action.
-      return self.fact.fetch(state.count)
+      return self.factClient.fetch(state.count)
         .receive(on: self.mainQueue)
         .catchToEffect(EffectsBasicsAction.numberFactResponse)
 
@@ -89,50 +79,6 @@ struct EffectsBasicsReducer: ReducerProtocol {
       state.isNumberFactRequestInFlight = false
       return .none
     }
-  }
-}
-
-struct EffectsBasicsEnvironment {
-  var fact: FactClient
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
-
-// MARK: - Feature business logic
-
-let effectsBasicsReducer = Reducer<
-  EffectsBasicsState, EffectsBasicsAction, EffectsBasicsEnvironment
-> { state, action, environment in
-  switch action {
-  case .decrementButtonTapped:
-    state.count -= 1
-    state.numberFact = nil
-    // Return an effect that re-increments the count after 1 second.
-    return Effect(value: EffectsBasicsAction.incrementButtonTapped)
-      .delay(for: 1, scheduler: environment.mainQueue)
-      .eraseToEffect()
-
-  case .incrementButtonTapped:
-    state.count += 1
-    state.numberFact = nil
-    return .none
-
-  case .numberFactButtonTapped:
-    state.isNumberFactRequestInFlight = true
-    state.numberFact = nil
-    // Return an effect that fetches a number fact from the API and returns the
-    // value back to the reducer's `numberFactResponse` action.
-    return environment.fact.fetch(state.count)
-      .receive(on: environment.mainQueue)
-      .catchToEffect(EffectsBasicsAction.numberFactResponse)
-
-  case let .numberFactResponse(.success(response)):
-    state.isNumberFactRequestInFlight = false
-    state.numberFact = response
-    return .none
-
-  case .numberFactResponse(.failure):
-    state.isNumberFactRequestInFlight = false
-    return .none
   }
 }
 
@@ -184,11 +130,7 @@ struct EffectsBasicsView_Previews: PreviewProvider {
       EffectsBasicsView(
         store: Store(
           initialState: EffectsBasicsState(),
-          reducer: effectsBasicsReducer,
-          environment: EffectsBasicsEnvironment(
-            fact: .live,
-            mainQueue: .main
-          )
+          reducer: EffectsBasicsReducer()
         )
       )
     }
