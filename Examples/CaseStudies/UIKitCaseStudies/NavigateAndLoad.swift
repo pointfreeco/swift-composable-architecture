@@ -14,30 +14,24 @@ enum EagerNavigationAction: Equatable {
   case setNavigationIsActiveDelayCompleted
 }
 
-struct EagerNavigationEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+struct EagerNavigationReducer: ReducerProtocol {
+  @Dependency(\.mainQueue) var mainQueue
 
-let eagerNavigationReducer =
-  counterReducer
-  .optional()
-  .pullback(
-    state: \.optionalCounter,
-    action: /EagerNavigationAction.optionalCounter,
-    environment: { _ in CounterEnvironment() }
-  )
-  .combined(
-    with: Reducer<
-      EagerNavigationState, EagerNavigationAction, EagerNavigationEnvironment
-    > { state, action, environment in
+  var body: some ReducerProtocol<EagerNavigationState, EagerNavigationAction> {
+    Pullback(state: \.optionalCounter, action: /EagerNavigationAction.optionalCounter) {
+      IfLetReducer {
+        CounterReducer()
+      }
+    }
 
+    Reduce { state, action in
       enum CancelId {}
 
       switch action {
       case .setNavigation(isActive: true):
         state.isNavigationActive = true
         return Effect(value: .setNavigationIsActiveDelayCompleted)
-          .delay(for: 1, scheduler: environment.mainQueue)
+          .delay(for: 1, scheduler: self.mainQueue)
           .eraseToEffect()
           .cancellable(id: CancelId.self)
       case .setNavigation(isActive: false):
@@ -51,7 +45,8 @@ let eagerNavigationReducer =
         return .none
       }
     }
-  )
+  }
+}
 
 class EagerNavigationViewController: UIViewController {
   var cancellables: [AnyCancellable] = []
@@ -124,10 +119,7 @@ struct EagerNavigationViewController_Previews: PreviewProvider {
       rootViewController: EagerNavigationViewController(
         store: Store(
           initialState: EagerNavigationState(),
-          reducer: eagerNavigationReducer,
-          environment: EagerNavigationEnvironment(
-            mainQueue: .main
-          )
+          reducer: EagerNavigationReducer()
         )
       )
     )

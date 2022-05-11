@@ -110,32 +110,32 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       return .none
     }
   },
-  alertAndConfirmationDialogReducer
+  Reducer(AlertAndConfirmationDialogReducer())
     .pullback(
       state: \.alertAndConfirmationDialog,
       action: /RootAction.alertAndConfirmationDialog,
-      environment: { _ in .init() }
+      environment: { _ in () }
     ),
-  animationsReducer
+  Reducer(AnimationsReducer())
     .pullback(
       state: \.animation,
       action: /RootAction.animation,
-      environment: { .init(mainQueue: $0.mainQueue) }
+      environment: { _ in () }
     ),
-  bindingBasicsReducer
+  Reducer(BindingBasicsReducer())
     .pullback(
       state: \.bindingBasics,
       action: /RootAction.bindingBasics,
-      environment: { _ in .init() }
+      environment: { _ in () }
     ),
   .init { state, action, environment in
     #if compiler(>=5.4)
       return
-        bindingFormReducer
+        Reducer(BindingFormReducer())
         .pullback(
           state: \.bindingForm,
           action: /RootAction.bindingForm,
-          environment: { _ in .init() }
+          environment: { _ in () }
         )
         .run(&state, action, environment)
     #else
@@ -148,11 +148,11 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       action: /RootAction.clock,
       environment: { .init(mainQueue: $0.mainQueue) }
     ),
-  counterReducer
+  Reducer(CounterReducer())
     .pullback(
       state: \.counter,
       action: /RootAction.counter,
-      environment: { _ in .init() }
+      environment: { _ in () }
     ),
   dieRollReducer
     .pullback(
@@ -198,23 +198,23 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       action: /RootAction.lifecycle,
       environment: { .init(mainQueue: $0.mainQueue) }
     ),
-  loadThenNavigateReducer
+  Reducer(LoadThenNavigateReducer())
     .pullback(
       state: \.loadThenNavigate,
       action: /RootAction.loadThenNavigate,
-      environment: { .init(mainQueue: $0.mainQueue) }
+      environment: { _ in () }
     ),
-  loadThenNavigateListReducer
+  Reducer(LoadThenNavigateListReducer())
     .pullback(
       state: \.loadThenNavigateList,
       action: /RootAction.loadThenNavigateList,
-      environment: { .init(mainQueue: $0.mainQueue) }
+      environment: { _ in () }
     ),
-  loadThenPresentReducer
+  Reducer(LoadThenPresentReducer())
     .pullback(
       state: \.loadThenPresent,
       action: /RootAction.loadThenPresent,
-      environment: { .init(mainQueue: $0.mainQueue) }
+      environment: { _ in () }
     ),
   longLivingEffectsReducer
     .pullback(
@@ -241,17 +241,17 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
         )
       }
     ),
-  navigateAndLoadReducer
+  Reducer(NavigateAndLoadReducer())
     .pullback(
       state: \.navigateAndLoad,
       action: /RootAction.navigateAndLoad,
-      environment: { .init(mainQueue: $0.mainQueue) }
+      environment: { _ in () }
     ),
-  navigateAndLoadListReducer
+  Reducer(NavigateAndLoadListReducer())
     .pullback(
       state: \.navigateAndLoadList,
       action: /RootAction.navigateAndLoadList,
-      environment: { .init(mainQueue: $0.mainQueue) }
+      environment: { _ in () }
     ),
   nestedReducer
     .pullback(
@@ -259,17 +259,17 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       action: /RootAction.nested,
       environment: { .init(uuid: $0.uuid) }
     ),
-  optionalBasicsReducer
+  Reducer(OptionalBasicsReducer())
     .pullback(
       state: \.optionalBasics,
       action: /RootAction.optionalBasics,
-      environment: { _ in .init() }
+      environment: { _ in () }
     ),
-  presentAndLoadReducer
+  Reducer(PresentAndLoadReducer())
     .pullback(
       state: \.presentAndLoad,
       action: /RootAction.presentAndLoad,
-      environment: { .init(mainQueue: $0.mainQueue) }
+      environment: { _ in () }
     ),
   refreshableReducer
     .pullback(
@@ -291,11 +291,11 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       action: /RootAction.timers,
       environment: { .init(mainQueue: $0.mainQueue) }
     ),
-  twoCountersReducer
+  Reducer(TwoCountersReducer())
     .pullback(
       state: \.twoCounters,
       action: /RootAction.twoCounters,
-      environment: { _ in .init() }
+      environment: { _ in () }
     ),
   webSocketReducer
     .pullback(

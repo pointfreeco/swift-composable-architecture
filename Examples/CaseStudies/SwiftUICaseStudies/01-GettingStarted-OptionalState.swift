@@ -21,20 +21,15 @@ enum OptionalBasicsAction: Equatable {
   case toggleCounterButtonTapped
 }
 
-struct OptionalBasicsEnvironment {}
+struct OptionalBasicsReducer: ReducerProtocol {
+  var body: some ReducerProtocol<OptionalBasicsState, OptionalBasicsAction> {
+    Pullback(state: \.optionalCounter, action: /OptionalBasicsAction.optionalCounter) {
+      IfLetReducer {
+        CounterReducer()
+      }
+    }
 
-let optionalBasicsReducer =
-  counterReducer
-  .optional()
-  .pullback(
-    state: \.optionalCounter,
-    action: /OptionalBasicsAction.optionalCounter,
-    environment: { _ in CounterEnvironment() }
-  )
-  .combined(
-    with: Reducer<
-      OptionalBasicsState, OptionalBasicsAction, OptionalBasicsEnvironment
-    > { state, action, environment in
+    Reduce { state, action in
       switch action {
       case .toggleCounterButtonTapped:
         state.optionalCounter =
@@ -46,7 +41,8 @@ let optionalBasicsReducer =
         return .none
       }
     }
-  )
+  }
+}
 
 struct OptionalBasicsView: View {
   let store: Store<OptionalBasicsState, OptionalBasicsAction>
@@ -89,8 +85,7 @@ struct OptionalBasicsView_Previews: PreviewProvider {
         OptionalBasicsView(
           store: Store(
             initialState: OptionalBasicsState(),
-            reducer: optionalBasicsReducer,
-            environment: OptionalBasicsEnvironment()
+            reducer: OptionalBasicsReducer()
           )
         )
       }
@@ -99,8 +94,7 @@ struct OptionalBasicsView_Previews: PreviewProvider {
         OptionalBasicsView(
           store: Store(
             initialState: OptionalBasicsState(optionalCounter: CounterState(count: 42)),
-            reducer: optionalBasicsReducer,
-            environment: OptionalBasicsEnvironment()
+            reducer: OptionalBasicsReducer()
           )
         )
       }

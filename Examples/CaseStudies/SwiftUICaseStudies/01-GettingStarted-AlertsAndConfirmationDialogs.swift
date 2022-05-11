@@ -34,52 +34,51 @@ enum AlertAndConfirmationDialogAction: Equatable {
   case incrementButtonTapped
 }
 
-struct AlertAndConfirmationDialogEnvironment {}
+struct AlertAndConfirmationDialogReducer: ReducerProtocol {
+  func reduce(
+    into state: inout AlertAndConfirmationDialogState, action: AlertAndConfirmationDialogAction
+  ) -> Effect<AlertAndConfirmationDialogAction, Never> {
 
-let alertAndConfirmationDialogReducer = Reducer<
-  AlertAndConfirmationDialogState, AlertAndConfirmationDialogAction,
-  AlertAndConfirmationDialogEnvironment
-> { state, action, _ in
+    switch action {
+    case .alertButtonTapped:
+      state.alert = .init(
+        title: .init("Alert!"),
+        message: .init("This is an alert"),
+        primaryButton: .cancel(.init("Cancel")),
+        secondaryButton: .default(.init("Increment"), action: .send(.incrementButtonTapped))
+      )
+      return .none
 
-  switch action {
-  case .alertButtonTapped:
-    state.alert = .init(
-      title: .init("Alert!"),
-      message: .init("This is an alert"),
-      primaryButton: .cancel(.init("Cancel")),
-      secondaryButton: .default(.init("Increment"), action: .send(.incrementButtonTapped))
-    )
-    return .none
+    case .alertDismissed:
+      state.alert = nil
+      return .none
 
-  case .alertDismissed:
-    state.alert = nil
-    return .none
+    case .confirmationDialogButtonTapped:
+      state.confirmationDialog = .init(
+        title: .init("Confirmation dialog"),
+        message: .init("This is a confirmation dialog."),
+        buttons: [
+          .cancel(.init("Cancel")),
+          .default(.init("Increment"), action: .send(.incrementButtonTapped)),
+          .default(.init("Decrement"), action: .send(.decrementButtonTapped)),
+        ]
+      )
+      return .none
 
-  case .confirmationDialogButtonTapped:
-    state.confirmationDialog = .init(
-      title: .init("Confirmation dialog"),
-      message: .init("This is a confirmation dialog."),
-      buttons: [
-        .cancel(.init("Cancel")),
-        .default(.init("Increment"), action: .send(.incrementButtonTapped)),
-        .default(.init("Decrement"), action: .send(.decrementButtonTapped)),
-      ]
-    )
-    return .none
+    case .confirmationDialogDismissed:
+      state.confirmationDialog = nil
+      return .none
 
-  case .confirmationDialogDismissed:
-    state.confirmationDialog = nil
-    return .none
+    case .decrementButtonTapped:
+      state.alert = .init(title: .init("Decremented!"))
+      state.count -= 1
+      return .none
 
-  case .decrementButtonTapped:
-    state.alert = .init(title: .init("Decremented!"))
-    state.count -= 1
-    return .none
-
-  case .incrementButtonTapped:
-    state.alert = .init(title: .init("Incremented!"))
-    state.count += 1
-    return .none
+    case .incrementButtonTapped:
+      state.alert = .init(title: .init("Incremented!"))
+      state.count += 1
+      return .none
+    }
   }
 }
 
@@ -114,8 +113,7 @@ struct AlertAndConfirmationDialog_Previews: PreviewProvider {
       AlertAndConfirmationDialogView(
         store: .init(
           initialState: .init(),
-          reducer: alertAndConfirmationDialogReducer,
-          environment: .init()
+          reducer: AlertAndConfirmationDialogReducer()
         )
       )
     }

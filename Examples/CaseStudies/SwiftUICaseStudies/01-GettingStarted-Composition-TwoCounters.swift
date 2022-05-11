@@ -18,21 +18,17 @@ enum TwoCountersAction {
   case counter2(CounterAction)
 }
 
-struct TwoCountersEnvironment {}
+struct TwoCountersReducer: ReducerProtocol {
+  var body: some ReducerProtocol<TwoCountersState, TwoCountersAction> {
+    Pullback(state: \.counter1, action: /TwoCountersAction.counter1) {
+      CounterReducer()
+    }
 
-let twoCountersReducer = Reducer<TwoCountersState, TwoCountersAction, TwoCountersEnvironment>
-  .combine(
-    counterReducer.pullback(
-      state: \TwoCountersState.counter1,
-      action: /TwoCountersAction.counter1,
-      environment: { _ in CounterEnvironment() }
-    ),
-    counterReducer.pullback(
-      state: \TwoCountersState.counter2,
-      action: /TwoCountersAction.counter2,
-      environment: { _ in CounterEnvironment() }
-    )
-  )
+    Pullback(state: \.counter2, action: /TwoCountersAction.counter2) {
+      CounterReducer()
+    }
+  }
+}
 
 struct TwoCountersView: View {
   let store: Store<TwoCountersState, TwoCountersAction>
@@ -70,8 +66,7 @@ struct TwoCountersView_Previews: PreviewProvider {
       TwoCountersView(
         store: Store(
           initialState: TwoCountersState(),
-          reducer: twoCountersReducer,
-          environment: TwoCountersEnvironment()
+          reducer: TwoCountersReducer()
         )
       )
     }

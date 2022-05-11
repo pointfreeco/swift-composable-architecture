@@ -35,24 +35,19 @@ struct LoadThenNavigateListEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
-let loadThenNavigateListReducer =
-  counterReducer
-  .pullback(
-    state: \Identified.value,
-    action: .self,
-    environment: { $0 }
-  )
-  .optional()
-  .pullback(
-    state: \LoadThenNavigateListState.selection,
-    action: /LoadThenNavigateListAction.counter,
-    environment: { _ in CounterEnvironment() }
-  )
-  .combined(
-    with: Reducer<
-      LoadThenNavigateListState, LoadThenNavigateListAction, LoadThenNavigateListEnvironment
-    > { state, action, environment in
+struct LoadThenNavigateListReducer: ReducerProtocol {
+  @Dependency(\.mainQueue) var mainQueue
 
+  var body: some ReducerProtocol<LoadThenNavigateListState, LoadThenNavigateListAction> {
+    Pullback(state: \.selection, action: /LoadThenNavigateListAction.counter) {
+      IfLetReducer {
+        Pullback(state: \Identified<State.Row.ID, CounterState>.value, action: .self) {
+          CounterReducer()
+        }
+      }
+    }
+
+    Reduce { state, action in
       enum CancelId {}
 
       switch action {
@@ -68,7 +63,7 @@ let loadThenNavigateListReducer =
         }
 
         return Effect(value: .setNavigationSelectionDelayCompleted(navigatedId))
-          .delay(for: 1, scheduler: environment.mainQueue)
+          .delay(for: 1, scheduler: self.mainQueue)
           .eraseToEffect()
           .cancellable(id: CancelId.self, cancelInFlight: true)
 
@@ -88,7 +83,8 @@ let loadThenNavigateListReducer =
         return .none
       }
     }
-  )
+  }
+}
 
 struct LoadThenNavigateListView: View {
   let store: Store<LoadThenNavigateListState, LoadThenNavigateListAction>
@@ -141,10 +137,7 @@ struct LoadThenNavigateListView_Previews: PreviewProvider {
               .init(count: 100, id: UUID()),
             ]
           ),
-          reducer: loadThenNavigateListReducer,
-          environment: LoadThenNavigateListEnvironment(
-            mainQueue: .main
-          )
+          reducer: LoadThenNavigateListReducer()
         )
       )
     }

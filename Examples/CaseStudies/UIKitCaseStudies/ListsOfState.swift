@@ -11,14 +11,13 @@ enum CounterListAction: Equatable {
   case counter(id: CounterState.ID, action: CounterAction)
 }
 
-struct CounterListEnvironment {}
-
-let counterListReducer: Reducer<CounterListState, CounterListAction, CounterListEnvironment> =
-  counterReducer.forEach(
-    state: \CounterListState.counters,
-    action: /CounterListAction.counter(id:action:),
-    environment: { _ in CounterEnvironment() }
-  )
+struct CounterListReducer: ReducerProtocol {
+  var body: some ReducerProtocol<CounterListState, CounterListAction> {
+    ForEachReducer(state: \.counters, action: /CounterListAction.counter) {
+      CounterReducer()
+    }
+  }
+}
 
 let cellIdentifier = "Cell"
 
@@ -89,8 +88,7 @@ struct CountersTableViewController_Previews: PreviewProvider {
               CounterState(),
             ]
           ),
-          reducer: counterListReducer,
-          environment: CounterListEnvironment()
+          reducer: CounterListReducer()
         )
       )
     )

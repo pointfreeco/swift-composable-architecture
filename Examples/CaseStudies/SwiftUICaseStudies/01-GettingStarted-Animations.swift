@@ -55,51 +55,51 @@ enum AnimationsAction: Equatable {
   case tapped(CGPoint)
 }
 
-struct AnimationsEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+struct AnimationsReducer: ReducerProtocol {
+  @Dependency(\.mainQueue) var mainQueue
 
-let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnvironment> {
-  state, action, environment in
+  func reduce(
+    into state: inout AnimationsState, action: AnimationsAction
+  ) -> Effect<AnimationsAction, Never> {
+    switch action {
+    case let .circleScaleToggleChanged(isScaled):
+      state.isCircleScaled = isScaled
+      return .none
 
-  switch action {
-  case let .circleScaleToggleChanged(isScaled):
-    state.isCircleScaled = isScaled
-    return .none
+    case .dismissAlert:
+      state.alert = nil
+      return .none
 
-  case .dismissAlert:
-    state.alert = nil
-    return .none
+    case .rainbowButtonTapped:
+      return .keyFrames(
+        values: [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .white]
+          .map { (output: .setColor($0), duration: 1) },
+        scheduler: self.mainQueue.animation(.linear)
+      )
 
-  case .rainbowButtonTapped:
-    return .keyFrames(
-      values: [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .white]
-        .map { (output: .setColor($0), duration: 1) },
-      scheduler: environment.mainQueue.animation(.linear)
-    )
+    case .resetButtonTapped:
+      state.alert = .init(
+        title: .init("Reset state?"),
+        primaryButton: .destructive(
+          .init("Reset"),
+          action: .send(.resetConfirmationButtonTapped, animation: .default)
+        ),
+        secondaryButton: .cancel(.init("Cancel"))
+      )
+      return .none
 
-  case .resetButtonTapped:
-    state.alert = .init(
-      title: .init("Reset state?"),
-      primaryButton: .destructive(
-        .init("Reset"),
-        action: .send(.resetConfirmationButtonTapped, animation: .default)
-      ),
-      secondaryButton: .cancel(.init("Cancel"))
-    )
-    return .none
+    case .resetConfirmationButtonTapped:
+      state = .init()
+      return .none
 
-  case .resetConfirmationButtonTapped:
-    state = .init()
-    return .none
+    case let .setColor(color):
+      state.circleColor = color
+      return .none
 
-  case let .setColor(color):
-    state.circleColor = color
-    return .none
-
-  case let .tapped(point):
-    state.circleCenter = point
-    return .none
+    case let .tapped(point):
+      state.circleCenter = point
+      return .none
+    }
   }
 }
 
@@ -161,10 +161,7 @@ struct AnimationsView_Previews: PreviewProvider {
         AnimationsView(
           store: Store(
             initialState: .init(),
-            reducer: animationsReducer,
-            environment: AnimationsEnvironment(
-              mainQueue: .main
-            )
+            reducer: AnimationsReducer()
           )
         )
       }
@@ -173,10 +170,7 @@ struct AnimationsView_Previews: PreviewProvider {
         AnimationsView(
           store: Store(
             initialState: .init(),
-            reducer: animationsReducer,
-            environment: AnimationsEnvironment(
-              mainQueue: .main
-            )
+            reducer: AnimationsReducer()
           )
         )
       }

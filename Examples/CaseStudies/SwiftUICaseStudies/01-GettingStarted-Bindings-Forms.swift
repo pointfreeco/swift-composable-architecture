@@ -27,26 +27,25 @@
     case resetButtonTapped
   }
 
-  struct BindingFormEnvironment {}
+  struct BindingFormReducer: ReducerProtocol {
+    var body: some ReducerProtocol<BindingFormState, BindingFormAction> {
+      Reduce { state, action in
+        switch action {
+        case .binding(\.$stepCount):
+          state.sliderValue = .minimum(state.sliderValue, Double(state.stepCount))
+          return .none
 
-  let bindingFormReducer = Reducer<
-    BindingFormState, BindingFormAction, BindingFormEnvironment
-  > {
-    state, action, _ in
-    switch action {
-    case .binding(\.$stepCount):
-      state.sliderValue = .minimum(state.sliderValue, Double(state.stepCount))
-      return .none
+        case .binding:
+          return .none
 
-    case .binding:
-      return .none
-
-    case .resetButtonTapped:
-      state = .init()
-      return .none
+        case .resetButtonTapped:
+          state = .init()
+          return .none
+        }
+      }
+      .binding()
     }
   }
-  .binding()
 
   struct BindingFormView: View {
     let store: Store<BindingFormState, BindingFormAction>
@@ -108,8 +107,7 @@
         BindingFormView(
           store: Store(
             initialState: BindingFormState(),
-            reducer: bindingFormReducer,
-            environment: BindingFormEnvironment()
+            reducer: BindingFormReducer()
           )
         )
       }

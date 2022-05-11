@@ -32,21 +32,23 @@ struct NavigateAndLoadListEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
-let navigateAndLoadListReducer =
-  counterReducer
-  .optional()
-  .pullback(state: \Identified.value, action: .self, environment: { $0 })
-  .optional()
-  .pullback(
-    state: \NavigateAndLoadListState.selection,
-    action: /NavigateAndLoadListAction.counter,
-    environment: { _ in CounterEnvironment() }
-  )
-  .combined(
-    with: Reducer<
-      NavigateAndLoadListState, NavigateAndLoadListAction, NavigateAndLoadListEnvironment
-    > { state, action, environment in
+struct NavigateAndLoadListReducer: ReducerProtocol {
+  @Dependency(\.mainQueue) var mainQueue
 
+  var body: some ReducerProtocol<NavigateAndLoadListState, NavigateAndLoadListAction> {
+    Pullback(state: \.selection, action: /NavigateAndLoadListAction.counter) {
+      IfLetReducer {
+        Pullback(
+          state: \Identified<NavigateAndLoadListState.Row.ID, CounterState?>.value, action: .self
+        ) {
+          IfLetReducer {
+            CounterReducer()
+          }
+        }
+      }
+    }
+
+    Reduce { state, action in
       enum CancelId {}
 
       switch action {
@@ -57,7 +59,7 @@ let navigateAndLoadListReducer =
         state.selection = Identified(nil, id: id)
 
         return Effect(value: .setNavigationSelectionDelayCompleted)
-          .delay(for: 1, scheduler: environment.mainQueue)
+          .delay(for: 1, scheduler: self.mainQueue)
           .eraseToEffect()
           .cancellable(id: CancelId.self)
 
@@ -74,7 +76,8 @@ let navigateAndLoadListReducer =
         return .none
       }
     }
-  )
+  }
+}
 
 struct NavigateAndLoadListView: View {
   let store: Store<NavigateAndLoadListState, NavigateAndLoadListAction>
@@ -121,10 +124,7 @@ struct NavigateAndLoadListView_Previews: PreviewProvider {
               .init(count: 100, id: UUID()),
             ]
           ),
-          reducer: navigateAndLoadListReducer,
-          environment: NavigateAndLoadListEnvironment(
-            mainQueue: .main
-          )
+          reducer: NavigateAndLoadListReducer()
         )
       )
     }

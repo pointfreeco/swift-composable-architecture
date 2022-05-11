@@ -23,23 +23,17 @@ enum LoadThenPresentAction {
   case setSheetIsPresentedDelayCompleted
 }
 
-struct LoadThenPresentEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+struct LoadThenPresentReducer: ReducerProtocol {
+  @Dependency(\.mainQueue) var mainQueue
 
-let loadThenPresentReducer =
-  counterReducer
-  .optional()
-  .pullback(
-    state: \.optionalCounter,
-    action: /LoadThenPresentAction.optionalCounter,
-    environment: { _ in CounterEnvironment() }
-  )
-  .combined(
-    with: Reducer<
-      LoadThenPresentState, LoadThenPresentAction, LoadThenPresentEnvironment
-    > { state, action, environment in
+  var body: some ReducerProtocol<LoadThenPresentState, LoadThenPresentAction> {
+    Pullback(state: \.optionalCounter, action: /LoadThenPresentAction.optionalCounter) {
+      IfLetReducer {
+        CounterReducer()
+      }
+    }
 
+    Reduce { state, action in
       enum CancelId {}
 
       switch action {
@@ -49,7 +43,7 @@ let loadThenPresentReducer =
       case .setSheet(isPresented: true):
         state.isActivityIndicatorVisible = true
         return Effect(value: .setSheetIsPresentedDelayCompleted)
-          .delay(for: 1, scheduler: environment.mainQueue)
+          .delay(for: 1, scheduler: self.mainQueue)
           .eraseToEffect()
           .cancellable(id: CancelId.self)
 
@@ -66,7 +60,8 @@ let loadThenPresentReducer =
         return .none
       }
     }
-  )
+  }
+}
 
 struct LoadThenPresentView: View {
   let store: Store<LoadThenPresentState, LoadThenPresentAction>
@@ -112,10 +107,7 @@ struct LoadThenPresentView_Previews: PreviewProvider {
       LoadThenPresentView(
         store: Store(
           initialState: LoadThenPresentState(),
-          reducer: loadThenPresentReducer,
-          environment: LoadThenPresentEnvironment(
-            mainQueue: .main
-          )
+          reducer: LoadThenPresentReducer()
         )
       )
     }

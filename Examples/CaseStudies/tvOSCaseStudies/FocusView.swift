@@ -18,16 +18,16 @@ enum FocusAction {
   case randomButtonClicked
 }
 
-struct FocusEnvironment {
-  var randomElement: () -> Int = { (1..<11).randomElement()! }
-}
+struct FocusReducer: ReducerProtocol {
+  @Dependency(\.randomNumberGenerator) var randomNumberGenerator
 
-let focusReducer = Reducer<FocusState, FocusAction, FocusEnvironment> {
-  state, action, environment in
-  switch action {
-  case .randomButtonClicked:
-    state.currentFocus = environment.randomElement()
-    return .none
+  func reduce(into state: inout FocusState, action: FocusAction) -> Effect<FocusAction, Never> {
+    switch action {
+    case .randomButtonClicked:
+      var randomNumberGenerator = self.randomNumberGenerator
+      state.currentFocus = (1..<numbers.count).randomElement(using: &randomNumberGenerator)!
+      return .none
+    }
   }
 }
 
@@ -47,14 +47,16 @@ let focusReducer = Reducer<FocusState, FocusAction, FocusEnvironment> {
             .multilineTextAlignment(.leading)
             .padding()
 
+          let mid = numbers.count / 2 + 1
+
           HStack(spacing: 40) {
-            ForEach(1..<6) { index in
+            ForEach(1..<mid) { index in
               Button(numbers[index]) {}
                 .prefersDefaultFocus(viewStore.currentFocus == index, in: self.namespace)
             }
           }
           HStack(spacing: 40) {
-            ForEach(6..<11) { index in
+            ForEach(mid..<numbers.count) { index in
               Button(numbers[index]) {}
                 .prefersDefaultFocus(viewStore.currentFocus == index, in: self.namespace)
             }
@@ -77,8 +79,7 @@ let focusReducer = Reducer<FocusState, FocusAction, FocusEnvironment> {
       FocusView(
         store: .init(
           initialState: .init(),
-          reducer: focusReducer,
-          environment: .init()
+          reducer: FocusReducer()
         )
       )
     }

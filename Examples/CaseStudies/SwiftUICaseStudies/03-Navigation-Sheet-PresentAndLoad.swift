@@ -19,30 +19,24 @@ enum PresentAndLoadAction {
   case setSheetIsPresentedDelayCompleted
 }
 
-struct PresentAndLoadEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+struct PresentAndLoadReducer: ReducerProtocol {
+  @Dependency(\.mainQueue) var mainQueue
 
-let presentAndLoadReducer =
-  counterReducer
-  .optional()
-  .pullback(
-    state: \.optionalCounter,
-    action: /PresentAndLoadAction.optionalCounter,
-    environment: { _ in CounterEnvironment() }
-  )
-  .combined(
-    with: Reducer<
-      PresentAndLoadState, PresentAndLoadAction, PresentAndLoadEnvironment
-    > { state, action, environment in
+  var body: some ReducerProtocol<PresentAndLoadState, PresentAndLoadAction> {
+    Pullback(state: \.optionalCounter, action: /PresentAndLoadAction.optionalCounter) {
+      IfLetReducer {
+        CounterReducer()
+      }
+    }
 
+    Reduce { state, action in
       enum CancelId {}
 
       switch action {
       case .setSheet(isPresented: true):
         state.isSheetPresented = true
         return Effect(value: .setSheetIsPresentedDelayCompleted)
-          .delay(for: 1, scheduler: environment.mainQueue)
+          .delay(for: 1, scheduler: self.mainQueue)
           .eraseToEffect()
           .cancellable(id: CancelId.self)
 
@@ -59,7 +53,8 @@ let presentAndLoadReducer =
         return .none
       }
     }
-  )
+  }
+}
 
 struct PresentAndLoadView: View {
   let store: Store<PresentAndLoadState, PresentAndLoadAction>
@@ -99,10 +94,7 @@ struct PresentAndLoadView_Previews: PreviewProvider {
       PresentAndLoadView(
         store: Store(
           initialState: PresentAndLoadState(),
-          reducer: presentAndLoadReducer,
-          environment: PresentAndLoadEnvironment(
-            mainQueue: .main
-          )
+          reducer: PresentAndLoadReducer()
         )
       )
     }

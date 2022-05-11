@@ -18,8 +18,7 @@ let dataSource: [CaseStudy] = [
     viewController: CounterViewController(
       store: Store(
         initialState: CounterState(),
-        reducer: counterReducer,
-        environment: CounterEnvironment()
+        reducer: CounterReducer()
       )
     )
   ),
@@ -34,8 +33,7 @@ let dataSource: [CaseStudy] = [
             CounterState(),
           ]
         ),
-        reducer: counterListReducer,
-        environment: CounterListEnvironment()
+        reducer: CounterListReducer()
       )
     )
   ),
@@ -44,10 +42,7 @@ let dataSource: [CaseStudy] = [
     viewController: EagerNavigationViewController(
       store: Store(
         initialState: EagerNavigationState(),
-        reducer: eagerNavigationReducer,
-        environment: EagerNavigationEnvironment(
-          mainQueue: .main
-        )
+        reducer: EagerNavigationReducer()
       )
     )
   ),
@@ -56,10 +51,7 @@ let dataSource: [CaseStudy] = [
     viewController: LazyNavigationViewController(
       store: Store(
         initialState: LazyNavigationState(),
-        reducer: lazyNavigationReducer,
-        environment: LazyNavigationEnvironment(
-          mainQueue: .main
-        )
+        reducer: LazyNavigationReducer()
       )
     )
   ),

@@ -21,30 +21,24 @@ enum NavigateAndLoadAction: Equatable {
   case setNavigationIsActiveDelayCompleted
 }
 
-struct NavigateAndLoadEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+struct NavigateAndLoadReducer: ReducerProtocol {
+  @Dependency(\.mainQueue) var mainQueue
 
-let navigateAndLoadReducer =
-  counterReducer
-  .optional()
-  .pullback(
-    state: \.optionalCounter,
-    action: /NavigateAndLoadAction.optionalCounter,
-    environment: { _ in CounterEnvironment() }
-  )
-  .combined(
-    with: Reducer<
-      NavigateAndLoadState, NavigateAndLoadAction, NavigateAndLoadEnvironment
-    > { state, action, environment in
+  var body: some ReducerProtocol<NavigateAndLoadState, NavigateAndLoadAction> {
+    Pullback(state: \.optionalCounter, action: /NavigateAndLoadAction.optionalCounter) {
+      IfLetReducer {
+        CounterReducer()
+      }
+    }
 
+    Reduce { state, action in
       enum CancelId {}
 
       switch action {
       case .setNavigation(isActive: true):
         state.isNavigationActive = true
         return Effect(value: .setNavigationIsActiveDelayCompleted)
-          .delay(for: 1, scheduler: environment.mainQueue)
+          .delay(for: 1, scheduler: self.mainQueue)
           .eraseToEffect()
           .cancellable(id: CancelId.self)
 
@@ -61,7 +55,8 @@ let navigateAndLoadReducer =
         return .none
       }
     }
-  )
+  }
+}
 
 struct NavigateAndLoadView: View {
   let store: Store<NavigateAndLoadState, NavigateAndLoadAction>
@@ -101,10 +96,7 @@ struct NavigateAndLoadView_Previews: PreviewProvider {
       NavigateAndLoadView(
         store: Store(
           initialState: NavigateAndLoadState(),
-          reducer: navigateAndLoadReducer,
-          environment: NavigateAndLoadEnvironment(
-            mainQueue: .main
-          )
+          reducer: NavigateAndLoadReducer()
         )
       )
     }

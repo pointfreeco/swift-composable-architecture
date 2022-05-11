@@ -13,16 +13,18 @@ enum CounterAction: Equatable {
   case incrementButtonTapped
 }
 
-struct CounterEnvironment {}
-
-let counterReducer = Reducer<CounterState, CounterAction, CounterEnvironment> { state, action, _ in
-  switch action {
-  case .decrementButtonTapped:
-    state.count -= 1
-    return .none
-  case .incrementButtonTapped:
-    state.count += 1
-    return .none
+struct CounterReducer: ReducerProtocol {
+  func reduce(
+    into state: inout CounterState, action: CounterAction
+  ) -> Effect<CounterAction, Never> {
+    switch action {
+    case .decrementButtonTapped:
+      state.count -= 1
+      return .none
+    case .incrementButtonTapped:
+      state.count += 1
+      return .none
+    }
   }
 }
 
@@ -88,8 +90,7 @@ struct CounterViewController_Previews: PreviewProvider {
     let vc = CounterViewController(
       store: Store(
         initialState: CounterState(),
-        reducer: counterReducer,
-        environment: CounterEnvironment()
+        reducer: CounterReducer()
       )
     )
     return UIViewRepresented(makeUIView: { _ in vc.view })

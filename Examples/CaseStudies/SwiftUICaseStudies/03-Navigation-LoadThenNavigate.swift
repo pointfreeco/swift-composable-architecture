@@ -27,19 +27,17 @@ struct LoadThenNavigateEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
-let loadThenNavigateReducer =
-  counterReducer
-  .optional()
-  .pullback(
-    state: \.optionalCounter,
-    action: /LoadThenNavigateAction.optionalCounter,
-    environment: { _ in CounterEnvironment() }
-  )
-  .combined(
-    with: Reducer<
-      LoadThenNavigateState, LoadThenNavigateAction, LoadThenNavigateEnvironment
-    > { state, action, environment in
+struct LoadThenNavigateReducer: ReducerProtocol {
+  @Dependency(\.mainQueue) var mainQueue
 
+  var body: some ReducerProtocol<LoadThenNavigateState, LoadThenNavigateAction> {
+    Pullback(state: \.optionalCounter, action: /LoadThenNavigateAction.optionalCounter) {
+      IfLetReducer {
+        CounterReducer()
+      }
+    }
+
+    Reduce { state, action in
       enum CancelId {}
 
       switch action {
@@ -49,7 +47,7 @@ let loadThenNavigateReducer =
       case .setNavigation(isActive: true):
         state.isActivityIndicatorVisible = true
         return Effect(value: .setNavigationIsActiveDelayCompleted)
-          .delay(for: 1, scheduler: environment.mainQueue)
+          .delay(for: 1, scheduler: self.mainQueue)
           .eraseToEffect()
           .cancellable(id: CancelId.self)
 
@@ -66,7 +64,8 @@ let loadThenNavigateReducer =
         return .none
       }
     }
-  )
+  }
+}
 
 struct LoadThenNavigateView: View {
   let store: Store<LoadThenNavigateState, LoadThenNavigateAction>
@@ -110,10 +109,7 @@ struct LoadThenNavigateView_Previews: PreviewProvider {
       LoadThenNavigateView(
         store: Store(
           initialState: LoadThenNavigateState(),
-          reducer: loadThenNavigateReducer,
-          environment: LoadThenNavigateEnvironment(
-            mainQueue: .main
-          )
+          reducer: LoadThenNavigateReducer()
         )
       )
     }

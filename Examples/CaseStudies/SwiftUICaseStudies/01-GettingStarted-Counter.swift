@@ -33,19 +33,6 @@ struct CounterReducer: ReducerProtocol {
   }
 }
 
-struct CounterEnvironment {}
-
-let counterReducer = Reducer<CounterState, CounterAction, CounterEnvironment> { state, action, _ in
-  switch action {
-  case .decrementButtonTapped:
-    state.count -= 1
-    return .none
-  case .incrementButtonTapped:
-    state.count += 1
-    return .none
-  }
-}
-
 struct CounterView: View {
   let store: Store<CounterState, CounterAction>
 
@@ -82,8 +69,7 @@ struct CounterView_Previews: PreviewProvider {
       CounterDemoView(
         store: Store(
           initialState: CounterState(),
-          reducer: counterReducer,
-          environment: CounterEnvironment()
+          reducer: CounterReducer()
         )
       )
     }
