@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-private var readMe = """
+private let readMe = """
   This application demonstrates how to make use of SwiftUI's `refreshable` API in the Composable \
   Architecture. Use the "-" and "+" buttons to count up and down, and then pull down to request \
   a fact about that number.
@@ -65,14 +65,10 @@ let refreshableReducer = Reducer<
     state.fact = nil
     state.isLoading = true
     return .task { @MainActor [count = state.count] in
-      .factResponse(
-        await TaskResult {
-          try await environment.fact.fetch(count)
-        }
-      )
+      await .factResponse(.init { try await environment.fact.fetch(count) })
     }
     .delay(for: .seconds(2), scheduler: environment.mainQueue.animation())
-    .catchToEffect(RefreshableAction.factResponse)
+    .eraseToEffect()
     .cancellable(id: CancelId.self)
   }
 }

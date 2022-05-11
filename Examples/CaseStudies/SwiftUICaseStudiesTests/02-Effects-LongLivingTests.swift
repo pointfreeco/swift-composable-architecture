@@ -27,8 +27,7 @@ class LongLivingEffectsTests: XCTestCase {
     }
 
     // Simulate screen going away
-    task.cancel()
-    await task.value
+    await task.cancel()
 
     // Simulate a screenshot being taken to show no effects
     // are executed.

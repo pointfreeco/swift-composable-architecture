@@ -104,52 +104,52 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
 }
 
 struct AnimationsView: View {
-  @Environment(\.colorScheme) var colorScheme
+//  @Environment(\.colorScheme) var colorScheme
   let store: Store<AnimationsState, AnimationsAction>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
-      GeometryReader { proxy in
-        VStack(alignment: .leading) {
-          ZStack(alignment: .center) {
-            Text(template: readMe, .body)
-              .padding()
-
-            Circle()
-              .fill(viewStore.circleColor)
-              .blendMode(.difference)
-              .frame(width: 50, height: 50)
-              .scaleEffect(viewStore.isCircleScaled ? 2 : 1)
-              .offset(
-                x: viewStore.circleCenter.x - proxy.size.width / 2,
-                y: viewStore.circleCenter.y - proxy.size.height / 2
-              )
-          }
-          .frame(maxWidth: .infinity, maxHeight: .infinity)
-          .background(self.colorScheme == .dark ? Color.black : .white)
-          .simultaneousGesture(
-            DragGesture(minimumDistance: 0).onChanged { gesture in
-              viewStore.send(
-                .tapped(gesture.location),
-                animation: .interactiveSpring(response: 0.25, dampingFraction: 0.1)
-              )
-            }
-          )
-          Toggle(
-            "Big mode",
-            isOn:
-              viewStore
-              .binding(get: \.isCircleScaled, send: AnimationsAction.circleScaleToggleChanged)
-              .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.1))
-          )
-          .padding()
-          Button("Rainbow") { viewStore.send(.rainbowButtonTapped, animation: .linear) }
-            .padding([.horizontal, .bottom])
-          Button("Reset") { viewStore.send(.resetButtonTapped) }
-            .padding([.horizontal, .bottom])
-        }
-        .alert(self.store.scope(state: \.alert), dismiss: .dismissAlert)
-      }
+//      GeometryReader { proxy in
+//        VStack(alignment: .leading) {
+//          ZStack(alignment: .center) {
+//            Text(template: readMe, .body)
+//              .padding()
+//
+//            Circle()
+//              .fill(viewStore.circleColor)
+//              .blendMode(.difference)
+//              .frame(width: 50, height: 50)
+//              .scaleEffect(viewStore.isCircleScaled ? 2 : 1)
+//              .offset(
+//                x: viewStore.circleCenter.x - proxy.size.width / 2,
+//                y: viewStore.circleCenter.y - proxy.size.height / 2
+//              )
+//          }
+//          .frame(maxWidth: .infinity, maxHeight: .infinity)
+//          .background(self.colorScheme == .dark ? Color.black : .white)
+//          .simultaneousGesture(
+//            DragGesture(minimumDistance: 0).onChanged { gesture in
+//              viewStore.send(
+//                .tapped(gesture.location),
+//                animation: .interactiveSpring(response: 0.25, dampingFraction: 0.1)
+//              )
+//            }
+//          )
+//          Toggle(
+//            "Big mode",
+//            isOn:
+//              viewStore
+//              .binding(get: \.isCircleScaled, send: AnimationsAction.circleScaleToggleChanged)
+//              .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.1))
+//          )
+//          .padding()
+//          Button("Rainbow") { viewStore.send(.rainbowButtonTapped, animation: .linear) }
+//            .padding([.horizontal, .bottom])
+//          Button("Reset") { viewStore.send(.resetButtonTapped) }
+//            .padding([.horizontal, .bottom])
+//        }
+//        .alert(self.store.scope(state: \.alert), dismiss: .dismissAlert)
+//      }
     }
   }
 }
