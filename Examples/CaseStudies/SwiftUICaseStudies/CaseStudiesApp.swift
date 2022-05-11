@@ -17,13 +17,13 @@ struct CaseStudiesApp: App {
 //          )
 //        }
 //      }
-      RootView(
-        store: .init(
-          initialState: RootState(),
-          reducer: rootReducer,
-          environment: .live
-        )
-      )
+//      RootView(
+//        store: .init(
+//          initialState: RootState(),
+//          reducer: rootReducer,
+//          environment: .live
+//        )
+//      )
     }
   }
 }

@@ -30,14 +30,15 @@ class DemoTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testRandom() async {
     let store = TestStore( 
       initialState: .init(),
       reducer: reducer,
       environment: .init(
         number: .init(
-          fact: { "\($0) is a good number" },
-          random: { 42 }
+          fact: { @MainActor in "\($0) is a good number" },
+          random: { @MainActor in 42 }
         )
       )
     )
@@ -56,7 +57,7 @@ class DemoTests: XCTestCase {
     await store.receive(.progress(1)) {
       $0.progress = 1
     }
-    await store.receive(.progress(nil), timeout: NSEC_PER_SEC * 2) {
+    await store.receive(.progress(nil)) {
       $0.progress = nil
     }
   }

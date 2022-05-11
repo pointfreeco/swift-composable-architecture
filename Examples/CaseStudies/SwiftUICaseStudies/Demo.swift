@@ -136,14 +136,14 @@ let reducer = Reducer<State, Action, Environment> { state, action, environment i
           animation: .default
         )
         send(.progress(1), animation: .default)
-        try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
+//        try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
       } catch {
         send(.factResponse(.failure(error)))
       }
     }
   }
 }
-  .debugActions()
+//  .debugActions()
 
 @MainActor
 func withAnimation(_ animation: Animation? = nil, block: () -> Void) async {

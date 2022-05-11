@@ -583,7 +583,7 @@ extension Effect {
       }
     }
   }
-}
+} 
 
 private final class Box<Value> {
   var value: Value
