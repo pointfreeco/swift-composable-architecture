@@ -312,8 +312,3 @@ private func liveFetchNumber() -> Effect<Int, Never> {
     .delay(for: 1, scheduler: DispatchQueue.main)
     .eraseToEffect()
 }
-
-private let liveUserDidTakeScreenshot = NotificationCenter.default
-  .publisher(for: UIApplication.userDidTakeScreenshotNotification)
-  .map { _ in () }
-  .eraseToEffect()
