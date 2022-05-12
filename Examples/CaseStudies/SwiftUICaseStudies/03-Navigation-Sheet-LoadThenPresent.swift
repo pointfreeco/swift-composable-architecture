@@ -9,27 +9,27 @@ private let readMe = """
   depends on this data.
   """
 
-struct LoadThenPresentState: Equatable {
-  var optionalCounter: CounterState?
-  var isActivityIndicatorVisible = false
+struct LoadThenPresent: ReducerProtocol {
+  struct State: Equatable {
+    var optionalCounter: Counter.State?
+    var isActivityIndicatorVisible = false
 
-  var isSheetPresented: Bool { self.optionalCounter != nil }
-}
+    var isSheetPresented: Bool { self.optionalCounter != nil }
+  }
 
-enum LoadThenPresentAction {
-  case onDisappear
-  case optionalCounter(CounterAction)
-  case setSheet(isPresented: Bool)
-  case setSheetIsPresentedDelayCompleted
-}
+  enum Action {
+    case onDisappear
+    case optionalCounter(Counter.Action)
+    case setSheet(isPresented: Bool)
+    case setSheetIsPresentedDelayCompleted
+  }
 
-struct LoadThenPresentReducer: ReducerProtocol {
   @Dependency(\.mainQueue) var mainQueue
 
-  var body: some ReducerProtocol<LoadThenPresentState, LoadThenPresentAction> {
-    Pullback(state: \.optionalCounter, action: /LoadThenPresentAction.optionalCounter) {
+  var body: some ReducerProtocol<State, Action> {
+    Pullback(state: \.optionalCounter, action: /Action.optionalCounter) {
       IfLetReducer {
-        CounterReducer()
+        Counter()
       }
     }
 
@@ -53,7 +53,7 @@ struct LoadThenPresentReducer: ReducerProtocol {
 
       case .setSheetIsPresentedDelayCompleted:
         state.isActivityIndicatorVisible = false
-        state.optionalCounter = CounterState()
+        state.optionalCounter = .init()
         return .none
 
       case .optionalCounter:
@@ -64,7 +64,7 @@ struct LoadThenPresentReducer: ReducerProtocol {
 }
 
 struct LoadThenPresentView: View {
-  let store: Store<LoadThenPresentState, LoadThenPresentAction>
+  let store: Store<LoadThenPresent.State, LoadThenPresent.Action>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -84,13 +84,13 @@ struct LoadThenPresentView: View {
       .sheet(
         isPresented: viewStore.binding(
           get: \.isSheetPresented,
-          send: LoadThenPresentAction.setSheet(isPresented:)
+          send: LoadThenPresent.Action.setSheet(isPresented:)
         )
       ) {
         IfLetStore(
           self.store.scope(
             state: \.optionalCounter,
-            action: LoadThenPresentAction.optionalCounter
+            action: LoadThenPresent.Action.optionalCounter
           ),
           then: CounterView.init(store:)
         )
@@ -106,8 +106,8 @@ struct LoadThenPresentView_Previews: PreviewProvider {
     NavigationView {
       LoadThenPresentView(
         store: Store(
-          initialState: LoadThenPresentState(),
-          reducer: LoadThenPresentReducer()
+          initialState: .init(),
+          reducer: LoadThenPresent()
         )
       )
     }

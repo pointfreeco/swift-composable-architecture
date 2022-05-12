@@ -8,41 +8,37 @@ private let readMe = """
   and fires off an effect that will load this state a second later.
   """
 
-struct NavigateAndLoadListState: Equatable {
-  var rows: IdentifiedArrayOf<Row> = [
-    .init(count: 1, id: UUID()),
-    .init(count: 42, id: UUID()),
-    .init(count: 100, id: UUID()),
-  ]
-  var selection: Identified<Row.ID, CounterState?>?
+struct NavigateAndLoadList: ReducerProtocol {
+  struct State: Equatable {
+    var rows: IdentifiedArrayOf<Row> = [
+      .init(count: 1, id: UUID()),
+      .init(count: 42, id: UUID()),
+      .init(count: 100, id: UUID()),
+    ]
+    var selection: Identified<Row.ID, Counter.State?>?
 
-  struct Row: Equatable, Identifiable {
-    var count: Int
-    let id: UUID
+    struct Row: Equatable, Identifiable {
+      var count: Int
+      let id: UUID
+    }
   }
-}
 
-enum NavigateAndLoadListAction: Equatable {
-  case counter(CounterAction)
-  case setNavigation(selection: UUID?)
-  case setNavigationSelectionDelayCompleted
-}
+  enum Action: Equatable {
+    case counter(Counter.Action)
+    case setNavigation(selection: UUID?)
+    case setNavigationSelectionDelayCompleted
+  }
 
-struct NavigateAndLoadListEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
-
-struct NavigateAndLoadListReducer: ReducerProtocol {
   @Dependency(\.mainQueue) var mainQueue
 
-  var body: some ReducerProtocol<NavigateAndLoadListState, NavigateAndLoadListAction> {
-    Pullback(state: \.selection, action: /NavigateAndLoadListAction.counter) {
+  var body: some ReducerProtocol<State, Action> {
+    Pullback(state: \.selection, action: /Action.counter) {
       IfLetReducer {
         Pullback(
-          state: \Identified<NavigateAndLoadListState.Row.ID, CounterState?>.value, action: .self
+          state: \Identified<State.Row.ID, Counter.State?>.value, action: .self
         ) {
           IfLetReducer {
-            CounterReducer()
+            Counter()
           }
         }
       }
@@ -72,7 +68,7 @@ struct NavigateAndLoadListReducer: ReducerProtocol {
 
       case .setNavigationSelectionDelayCompleted:
         guard let id = state.selection?.id else { return .none }
-        state.selection?.value = CounterState(count: state.rows[id: id]?.count ?? 0)
+        state.selection?.value = .init(count: state.rows[id: id]?.count ?? 0)
         return .none
       }
     }
@@ -80,7 +76,7 @@ struct NavigateAndLoadListReducer: ReducerProtocol {
 }
 
 struct NavigateAndLoadListView: View {
-  let store: Store<NavigateAndLoadListState, NavigateAndLoadListAction>
+  let store: Store<NavigateAndLoadList.State, NavigateAndLoadList.Action>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -91,7 +87,7 @@ struct NavigateAndLoadListView: View {
               destination: IfLetStore(
                 self.store.scope(
                   state: \.selection?.value,
-                  action: NavigateAndLoadListAction.counter
+                  action: NavigateAndLoadList.Action.counter
                 ),
                 then: CounterView.init(store:),
                 else: ProgressView.init
@@ -99,7 +95,7 @@ struct NavigateAndLoadListView: View {
               tag: row.id,
               selection: viewStore.binding(
                 get: \.selection?.id,
-                send: NavigateAndLoadListAction.setNavigation(selection:)
+                send: NavigateAndLoadList.Action.setNavigation(selection:)
               )
             ) {
               Text("Load optional counter that starts from \(row.count)")
@@ -117,14 +113,14 @@ struct NavigateAndLoadListView_Previews: PreviewProvider {
     NavigationView {
       NavigateAndLoadListView(
         store: Store(
-          initialState: NavigateAndLoadListState(
+          initialState: .init(
             rows: [
               .init(count: 1, id: UUID()),
               .init(count: 42, id: UUID()),
               .init(count: 100, id: UUID()),
             ]
           ),
-          reducer: NavigateAndLoadListReducer()
+          reducer: NavigateAndLoadList()
         )
       )
     }

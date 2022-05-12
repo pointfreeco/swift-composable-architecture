@@ -8,24 +8,24 @@ private let readMe = """
   state and fires off an effect that will load this state a second later.
   """
 
-struct PresentAndLoadState: Equatable {
-  var optionalCounter: CounterState?
-  var isSheetPresented = false
-}
+struct PresentAndLoad: ReducerProtocol {
+  struct State: Equatable {
+    var optionalCounter: Counter.State?
+    var isSheetPresented = false
+  }
 
-enum PresentAndLoadAction {
-  case optionalCounter(CounterAction)
-  case setSheet(isPresented: Bool)
-  case setSheetIsPresentedDelayCompleted
-}
+  enum Action {
+    case optionalCounter(Counter.Action)
+    case setSheet(isPresented: Bool)
+    case setSheetIsPresentedDelayCompleted
+  }
 
-struct PresentAndLoadReducer: ReducerProtocol {
   @Dependency(\.mainQueue) var mainQueue
 
-  var body: some ReducerProtocol<PresentAndLoadState, PresentAndLoadAction> {
-    Pullback(state: \.optionalCounter, action: /PresentAndLoadAction.optionalCounter) {
+  var body: some ReducerProtocol<State, Action> {
+    Pullback(state: \.optionalCounter, action: /Action.optionalCounter) {
       IfLetReducer {
-        CounterReducer()
+        Counter()
       }
     }
 
@@ -46,7 +46,7 @@ struct PresentAndLoadReducer: ReducerProtocol {
         return .cancel(id: CancelId.self)
 
       case .setSheetIsPresentedDelayCompleted:
-        state.optionalCounter = CounterState()
+        state.optionalCounter = .init()
         return .none
 
       case .optionalCounter:
@@ -57,7 +57,7 @@ struct PresentAndLoadReducer: ReducerProtocol {
 }
 
 struct PresentAndLoadView: View {
-  let store: Store<PresentAndLoadState, PresentAndLoadAction>
+  let store: Store<PresentAndLoad.State, PresentAndLoad.Action>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -71,13 +71,13 @@ struct PresentAndLoadView: View {
       .sheet(
         isPresented: viewStore.binding(
           get: \.isSheetPresented,
-          send: PresentAndLoadAction.setSheet(isPresented:)
+          send: PresentAndLoad.Action.setSheet(isPresented:)
         )
       ) {
         IfLetStore(
           self.store.scope(
             state: \.optionalCounter,
-            action: PresentAndLoadAction.optionalCounter
+            action: PresentAndLoad.Action.optionalCounter
           ),
           then: CounterView.init(store:),
           else: ProgressView.init
@@ -93,8 +93,8 @@ struct PresentAndLoadView_Previews: PreviewProvider {
     NavigationView {
       PresentAndLoadView(
         store: Store(
-          initialState: PresentAndLoadState(),
-          reducer: PresentAndLoadReducer()
+          initialState: .init(),
+          reducer: PresentAndLoad()
         )
       )
     }

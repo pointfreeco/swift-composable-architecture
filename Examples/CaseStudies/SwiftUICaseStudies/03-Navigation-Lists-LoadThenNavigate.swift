@@ -9,40 +9,36 @@ private let readMe = """
   depends on this data.
   """
 
-struct LoadThenNavigateListState: Equatable {
-  var rows: IdentifiedArrayOf<Row> = [
-    .init(count: 1, id: UUID()),
-    .init(count: 42, id: UUID()),
-    .init(count: 100, id: UUID()),
-  ]
-  var selection: Identified<Row.ID, CounterState>?
+struct LoadThenNavigateList: ReducerProtocol {
+  struct State: Equatable {
+    var rows: IdentifiedArrayOf<Row> = [
+      .init(count: 1, id: UUID()),
+      .init(count: 42, id: UUID()),
+      .init(count: 100, id: UUID()),
+    ]
+    var selection: Identified<Row.ID, Counter.State>?
 
-  struct Row: Equatable, Identifiable {
-    var count: Int
-    let id: UUID
-    var isActivityIndicatorVisible = false
+    struct Row: Equatable, Identifiable {
+      var count: Int
+      let id: UUID
+      var isActivityIndicatorVisible = false
+    }
   }
-}
 
-enum LoadThenNavigateListAction: Equatable {
-  case counter(CounterAction)
-  case onDisappear
-  case setNavigation(selection: UUID?)
-  case setNavigationSelectionDelayCompleted(UUID)
-}
+  enum Action: Equatable {
+    case counter(Counter.Action)
+    case onDisappear
+    case setNavigation(selection: UUID?)
+    case setNavigationSelectionDelayCompleted(UUID)
+  }
 
-struct LoadThenNavigateListEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
-
-struct LoadThenNavigateListReducer: ReducerProtocol {
   @Dependency(\.mainQueue) var mainQueue
 
-  var body: some ReducerProtocol<LoadThenNavigateListState, LoadThenNavigateListAction> {
-    Pullback(state: \.selection, action: /LoadThenNavigateListAction.counter) {
+  var body: some ReducerProtocol<State, Action> {
+    Pullback(state: \.selection, action: /Action.counter) {
       IfLetReducer {
-        Pullback(state: \Identified<State.Row.ID, CounterState>.value, action: .self) {
-          CounterReducer()
+        Pullback(state: \Identified<State.Row.ID, Counter.State>.value, action: .self) {
+          Counter()
         }
       }
     }
@@ -77,7 +73,7 @@ struct LoadThenNavigateListReducer: ReducerProtocol {
       case let .setNavigationSelectionDelayCompleted(id):
         state.rows[id: id]?.isActivityIndicatorVisible = false
         state.selection = Identified(
-          CounterState(count: state.rows[id: id]?.count ?? 0),
+          .init(count: state.rows[id: id]?.count ?? 0),
           id: id
         )
         return .none
@@ -87,7 +83,7 @@ struct LoadThenNavigateListReducer: ReducerProtocol {
 }
 
 struct LoadThenNavigateListView: View {
-  let store: Store<LoadThenNavigateListState, LoadThenNavigateListAction>
+  let store: Store<LoadThenNavigateList.State, LoadThenNavigateList.Action>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -98,14 +94,14 @@ struct LoadThenNavigateListView: View {
               destination: IfLetStore(
                 self.store.scope(
                   state: \.selection?.value,
-                  action: LoadThenNavigateListAction.counter
+                  action: LoadThenNavigateList.Action.counter
                 ),
                 then: CounterView.init(store:)
               ),
               tag: row.id,
               selection: viewStore.binding(
                 get: \.selection?.id,
-                send: LoadThenNavigateListAction.setNavigation(selection:)
+                send: LoadThenNavigateList.Action.setNavigation(selection:)
               )
             ) {
               HStack {
@@ -130,14 +126,14 @@ struct LoadThenNavigateListView_Previews: PreviewProvider {
     NavigationView {
       LoadThenNavigateListView(
         store: Store(
-          initialState: LoadThenNavigateListState(
+          initialState: .init(
             rows: [
               .init(count: 1, id: UUID()),
               .init(count: 42, id: UUID()),
               .init(count: 100, id: UUID()),
             ]
           ),
-          reducer: LoadThenNavigateListReducer()
+          reducer: LoadThenNavigateList()
         )
       )
     }

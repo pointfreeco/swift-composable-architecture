@@ -10,24 +10,24 @@ private let readMe = """
   counter state and fires off an effect that will load this state a second later.
   """
 
-struct NavigateAndLoadState: Equatable {
-  var isNavigationActive = false
-  var optionalCounter: CounterState?
-}
+struct NavigateAndLoad: ReducerProtocol {
+  struct State: Equatable {
+    var isNavigationActive = false
+    var optionalCounter: Counter.State?
+  }
 
-enum NavigateAndLoadAction: Equatable {
-  case optionalCounter(CounterAction)
-  case setNavigation(isActive: Bool)
-  case setNavigationIsActiveDelayCompleted
-}
+  enum Action: Equatable {
+    case optionalCounter(Counter.Action)
+    case setNavigation(isActive: Bool)
+    case setNavigationIsActiveDelayCompleted
+  }
 
-struct NavigateAndLoadReducer: ReducerProtocol {
   @Dependency(\.mainQueue) var mainQueue
 
-  var body: some ReducerProtocol<NavigateAndLoadState, NavigateAndLoadAction> {
-    Pullback(state: \.optionalCounter, action: /NavigateAndLoadAction.optionalCounter) {
+  var body: some ReducerProtocol<State, Action> {
+    Pullback(state: \.optionalCounter, action: /Action.optionalCounter) {
       IfLetReducer {
-        CounterReducer()
+        Counter()
       }
     }
 
@@ -48,7 +48,7 @@ struct NavigateAndLoadReducer: ReducerProtocol {
         return .cancel(id: CancelId.self)
 
       case .setNavigationIsActiveDelayCompleted:
-        state.optionalCounter = CounterState()
+        state.optionalCounter = .init()
         return .none
 
       case .optionalCounter:
@@ -59,7 +59,7 @@ struct NavigateAndLoadReducer: ReducerProtocol {
 }
 
 struct NavigateAndLoadView: View {
-  let store: Store<NavigateAndLoadState, NavigateAndLoadAction>
+  let store: Store<NavigateAndLoad.State, NavigateAndLoad.Action>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -69,14 +69,14 @@ struct NavigateAndLoadView: View {
             destination: IfLetStore(
               self.store.scope(
                 state: \.optionalCounter,
-                action: NavigateAndLoadAction.optionalCounter
+                action: NavigateAndLoad.Action.optionalCounter
               ),
               then: CounterView.init(store:),
               else: ProgressView.init
             ),
             isActive: viewStore.binding(
               get: \.isNavigationActive,
-              send: NavigateAndLoadAction.setNavigation(isActive:)
+              send: NavigateAndLoad.Action.setNavigation(isActive:)
             )
           ) {
             HStack {
@@ -95,8 +95,8 @@ struct NavigateAndLoadView_Previews: PreviewProvider {
     NavigationView {
       NavigateAndLoadView(
         store: Store(
-          initialState: NavigateAndLoadState(),
-          reducer: NavigateAndLoadReducer()
+          initialState: .init(),
+          reducer: NavigateAndLoad()
         )
       )
     }

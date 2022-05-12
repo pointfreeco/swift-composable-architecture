@@ -11,7 +11,7 @@ struct RootState {
     var bindingForm = BindingForm.State()
   #endif
   var clock = ClockState()
-  var counter = CounterState()
+  var counter = Counter.State()
   var dieRoll = DieRollState()
   var effectsBasics = EffectsBasicsState()
   var effectsCancellation = EffectsCancellationState()
@@ -21,21 +21,21 @@ struct RootState {
     var focusDemo = FocusDemoState()
   #endif
   var lifecycle = LifecycleDemoState()
-  var loadThenNavigate = LoadThenNavigateState()
-  var loadThenNavigateList = LoadThenNavigateListState()
-  var loadThenPresent = LoadThenPresentState()
+  var loadThenNavigate = LoadThenNavigate.State()
+  var loadThenNavigateList = LoadThenNavigateList.State()
+  var loadThenPresent = LoadThenPresent.State()
   var longLivingEffects = LongLivingEffectsState()
   var map = MapAppState(cityMaps: .mocks)
   var multipleDependencies = MultipleDependenciesState()
-  var navigateAndLoad = NavigateAndLoadState()
-  var navigateAndLoadList = NavigateAndLoadListState()
+  var navigateAndLoad = NavigateAndLoad.State()
+  var navigateAndLoadList = NavigateAndLoadList.State()
   var nested = NestedState.mock
-  var optionalBasics = OptionalBasicsState()
-  var presentAndLoad = PresentAndLoadState()
+  var optionalBasics = OptionalBasics.State()
+  var presentAndLoad = PresentAndLoad.State()
   var refreshable = RefreshableState()
   var shared = SharedState()
   var timers = TimersState()
-  var twoCounters = TwoCountersState()
+  var twoCounters = TwoCounters.State()
   var webSocket = WebSocketState()
 }
 
@@ -47,7 +47,7 @@ enum RootAction {
     case bindingForm(BindingForm.Action)
   #endif
   case clock(ClockAction)
-  case counter(CounterAction)
+  case counter(Counter.Action)
   case dieRoll(DieRollAction)
   case effectsBasics(EffectsBasicsAction)
   case effectsCancellation(EffectsCancellationAction)
@@ -56,22 +56,22 @@ enum RootAction {
     case focusDemo(FocusDemoAction)
   #endif
   case lifecycle(LifecycleDemoAction)
-  case loadThenNavigate(LoadThenNavigateAction)
-  case loadThenNavigateList(LoadThenNavigateListAction)
-  case loadThenPresent(LoadThenPresentAction)
+  case loadThenNavigate(LoadThenNavigate.Action)
+  case loadThenNavigateList(LoadThenNavigateList.Action)
+  case loadThenPresent(LoadThenPresent.Action)
   case longLivingEffects(LongLivingEffectsAction)
   case map(MapAppAction)
   case multipleDependencies(MultipleDependenciesAction)
-  case navigateAndLoad(NavigateAndLoadAction)
-  case navigateAndLoadList(NavigateAndLoadListAction)
+  case navigateAndLoad(NavigateAndLoad.Action)
+  case navigateAndLoadList(NavigateAndLoadList.Action)
   case nested(NestedAction)
-  case optionalBasics(OptionalBasicsAction)
+  case optionalBasics(OptionalBasics.Action)
   case onAppear
-  case presentAndLoad(PresentAndLoadAction)
+  case presentAndLoad(PresentAndLoad.Action)
   case refreshable(RefreshableAction)
   case shared(SharedStateAction)
   case timers(TimersAction)
-  case twoCounters(TwoCountersAction)
+  case twoCounters(TwoCounters.Action)
   case webSocket(WebSocketAction)
 }
 
@@ -109,7 +109,7 @@ struct RootReducer: ReducerProtocol {
       Reduce(clockReducer, environment: .init(mainQueue: self.mainQueue))
     }
     Pullback(state: \.counter, action: /RootAction.counter) {
-      CounterReducer()
+      Counter()
     }
     Pullback(state: \.dieRoll, action: /RootAction.dieRoll) {
       Reduce(dieRollReducer, environment: .init(rollDie: { .random(in: 1...6) }))
@@ -135,13 +135,13 @@ struct RootReducer: ReducerProtocol {
       Reduce(lifecycleDemoReducer, environment: .init(mainQueue: self.mainQueue))
     }
     Pullback(state: \.loadThenNavigate, action: /RootAction.loadThenNavigate) {
-      LoadThenNavigateReducer()
+      LoadThenNavigate()
     }
     Pullback(state: \.loadThenNavigateList, action: /RootAction.loadThenNavigateList) {
-      LoadThenNavigateListReducer()
+      LoadThenNavigateList()
     }
     Pullback(state: \.loadThenPresent, action: /RootAction.loadThenPresent) {
-      LoadThenPresentReducer()
+      LoadThenPresent()
     }
     Pullback(state: \.longLivingEffects, action: /RootAction.longLivingEffects) {
       LongLivingEffectsReducer()
@@ -161,19 +161,19 @@ struct RootReducer: ReducerProtocol {
       )
     }
     Pullback(state: \.navigateAndLoad, action: /RootAction.navigateAndLoad) {
-      NavigateAndLoadReducer()
+      NavigateAndLoad()
     }
     Pullback(state: \.navigateAndLoadList, action: /RootAction.navigateAndLoadList) {
-      NavigateAndLoadListReducer()
+      NavigateAndLoadList()
     }
     Pullback(state: \.nested, action: /RootAction.nested) {
       NestedReducer()
     }
     Pullback(state: \.optionalBasics, action: /RootAction.optionalBasics) {
-      OptionalBasicsReducer()
+      OptionalBasics()
     }
     Pullback(state: \.presentAndLoad, action: /RootAction.presentAndLoad) {
-      PresentAndLoadReducer()
+      PresentAndLoad()
     }
     Pullback(state: \.refreshable, action: /RootAction.refreshable) {
       RefreshableReducer()
@@ -185,7 +185,7 @@ struct RootReducer: ReducerProtocol {
       TimersReducer()
     }
     Pullback(state: \.twoCounters, action: /RootAction.twoCounters) {
-      TwoCountersReducer()
+      TwoCounters()
     }
     Pullback(state: \.webSocket, action: /RootAction.webSocket) {
       WebSocketReducer()

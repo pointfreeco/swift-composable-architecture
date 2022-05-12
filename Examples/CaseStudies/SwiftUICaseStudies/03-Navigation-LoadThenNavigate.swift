@@ -9,31 +9,27 @@ private let readMe = """
   that depends on this data.
   """
 
-struct LoadThenNavigateState: Equatable {
-  var optionalCounter: CounterState?
-  var isActivityIndicatorVisible = false
+struct LoadThenNavigate: ReducerProtocol {
+  struct State: Equatable {
+    var optionalCounter: Counter.State?
+    var isActivityIndicatorVisible = false
 
-  var isNavigationActive: Bool { self.optionalCounter != nil }
-}
+    var isNavigationActive: Bool { self.optionalCounter != nil }
+  }
 
-enum LoadThenNavigateAction: Equatable {
-  case onDisappear
-  case optionalCounter(CounterAction)
-  case setNavigation(isActive: Bool)
-  case setNavigationIsActiveDelayCompleted
-}
+  enum Action: Equatable {
+    case onDisappear
+    case optionalCounter(Counter.Action)
+    case setNavigation(isActive: Bool)
+    case setNavigationIsActiveDelayCompleted
+  }
 
-struct LoadThenNavigateEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
-
-struct LoadThenNavigateReducer: ReducerProtocol {
   @Dependency(\.mainQueue) var mainQueue
 
-  var body: some ReducerProtocol<LoadThenNavigateState, LoadThenNavigateAction> {
-    Pullback(state: \.optionalCounter, action: /LoadThenNavigateAction.optionalCounter) {
+  var body: some ReducerProtocol<State, Action> {
+    Pullback(state: \.optionalCounter, action: /Action.optionalCounter) {
       IfLetReducer {
-        CounterReducer()
+        Counter()
       }
     }
 
@@ -57,7 +53,7 @@ struct LoadThenNavigateReducer: ReducerProtocol {
 
       case .setNavigationIsActiveDelayCompleted:
         state.isActivityIndicatorVisible = false
-        state.optionalCounter = CounterState()
+        state.optionalCounter = .init()
         return .none
 
       case .optionalCounter:
@@ -68,7 +64,7 @@ struct LoadThenNavigateReducer: ReducerProtocol {
 }
 
 struct LoadThenNavigateView: View {
-  let store: Store<LoadThenNavigateState, LoadThenNavigateAction>
+  let store: Store<LoadThenNavigate.State, LoadThenNavigate.Action>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -78,13 +74,13 @@ struct LoadThenNavigateView: View {
             destination: IfLetStore(
               self.store.scope(
                 state: \.optionalCounter,
-                action: LoadThenNavigateAction.optionalCounter
+                action: LoadThenNavigate.Action.optionalCounter
               ),
               then: CounterView.init(store:)
             ),
             isActive: viewStore.binding(
               get: \.isNavigationActive,
-              send: LoadThenNavigateAction.setNavigation(isActive:)
+              send: LoadThenNavigate.Action.setNavigation(isActive:)
             )
           ) {
             HStack {
@@ -108,8 +104,8 @@ struct LoadThenNavigateView_Previews: PreviewProvider {
     NavigationView {
       LoadThenNavigateView(
         store: Store(
-          initialState: LoadThenNavigateState(),
-          reducer: LoadThenNavigateReducer()
+          initialState: .init(),
+          reducer: LoadThenNavigate()
         )
       )
     }

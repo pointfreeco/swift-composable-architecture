@@ -8,30 +8,30 @@ private let readMe = """
   It reuses the the domain of the counter screen and embeds it, twice, in a larger domain.
   """
 
-struct TwoCountersState: Equatable {
-  var counter1 = CounterState()
-  var counter2 = CounterState()
-}
+struct TwoCounters: ReducerProtocol {
+  struct State: Equatable {
+    var counter1 = Counter.State()
+    var counter2 = Counter.State()
+  }
 
-enum TwoCountersAction {
-  case counter1(CounterAction)
-  case counter2(CounterAction)
-}
+  enum Action {
+    case counter1(Counter.Action)
+    case counter2(Counter.Action)
+  }
 
-struct TwoCountersReducer: ReducerProtocol {
-  var body: some ReducerProtocol<TwoCountersState, TwoCountersAction> {
-    Pullback(state: \.counter1, action: /TwoCountersAction.counter1) {
-      CounterReducer()
+  var body: some ReducerProtocol<State, Action> {
+    Pullback(state: \.counter1, action: /Action.counter1) {
+      Counter()
     }
 
-    Pullback(state: \.counter2, action: /TwoCountersAction.counter2) {
-      CounterReducer()
+    Pullback(state: \.counter2, action: /Action.counter2) {
+      Counter()
     }
   }
 }
 
 struct TwoCountersView: View {
-  let store: Store<TwoCountersState, TwoCountersAction>
+  let store: Store<TwoCounters.State, TwoCounters.Action>
 
   var body: some View {
     Form {
@@ -40,7 +40,7 @@ struct TwoCountersView: View {
           Text("Counter 1")
 
           CounterView(
-            store: self.store.scope(state: \.counter1, action: TwoCountersAction.counter1)
+            store: self.store.scope(state: \.counter1, action: TwoCounters.Action.counter1)
           )
           .buttonStyle(.borderless)
           .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
@@ -49,7 +49,7 @@ struct TwoCountersView: View {
           Text("Counter 2")
 
           CounterView(
-            store: self.store.scope(state: \.counter2, action: TwoCountersAction.counter2)
+            store: self.store.scope(state: \.counter2, action: TwoCounters.Action.counter2)
           )
           .buttonStyle(.borderless)
           .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
@@ -65,8 +65,8 @@ struct TwoCountersView_Previews: PreviewProvider {
     NavigationView {
       TwoCountersView(
         store: Store(
-          initialState: TwoCountersState(),
-          reducer: TwoCountersReducer()
+          initialState: .init(),
+          reducer: TwoCounters()
         )
       )
     }
