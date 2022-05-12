@@ -133,9 +133,12 @@ public struct Send<Action> {
       self.send(action)
     }
   }
+  func pullback<NewAction>(_ f: @escaping (NewAction) -> Action) -> Send<NewAction> {
+    .init(send: { newAction in self.send(f(newAction)) })
+  }
 }
 
-extension Effect {
+extension Effect where Failure == Never {
   public static func run(
     priority: TaskPriority? = nil,
     _ operation: @escaping (_ send: Send<Output>) async -> Void
@@ -150,4 +153,29 @@ extension Effect {
       }
     }
   }
+
+  public static func run(
+    priority: TaskPriority? = nil,
+    _ operation: @escaping (_ send: Send<Output>) async throws -> Void,
+    `catch`: @escaping (TaskFailure) -> Output? = { _ in nil }
+  ) -> Self {
+    .run { subscriber in
+      let task = Task(priority: priority) {
+        do {
+          let send = Send(send: subscriber.send(_:))
+          try await operation(send)
+        } catch {
+          if let output = `catch`(.failure(error)) {
+            subscriber.send(output)
+          }
+        }
+        subscriber.send(completion: .finished)
+      }
+      return AnyCancellable {
+        task.cancel()
+      }
+    }
+  }
 }
+
+

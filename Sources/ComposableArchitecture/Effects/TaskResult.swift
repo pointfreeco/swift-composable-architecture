@@ -15,6 +15,8 @@ public enum TaskResult<Success> {
   #endif
 }
 
+public typealias TaskFailure = TaskResult<Never>
+
 extension TaskResult: Equatable where Success: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
     switch (lhs, rhs) {
