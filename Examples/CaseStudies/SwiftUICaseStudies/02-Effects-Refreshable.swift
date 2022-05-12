@@ -25,49 +25,46 @@ enum RefreshableAction: Equatable {
   case refresh
 }
 
-struct RefreshableEnvironment {
-  var fact: FactClient
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+struct RefreshableReducer: ReducerProtocol {
+  @Dependency(\.factClient) var factClient
+  @Dependency(\.mainQueue) var mainQueue
 
-let refreshableReducer = Reducer<
-  RefreshableState,
-  RefreshableAction,
-  RefreshableEnvironment
-> { state, action, environment in
+  func reduce(
+    into state: inout RefreshableState, action: RefreshableAction
+  ) -> Effect<RefreshableAction, Never> {
+    enum CancelId {}
 
-  enum CancelId {}
+    switch action {
+    case .cancelButtonTapped:
+      state.isLoading = false
+      return .cancel(id: CancelId.self)
 
-  switch action {
-  case .cancelButtonTapped:
-    state.isLoading = false
-    return .cancel(id: CancelId.self)
+    case .decrementButtonTapped:
+      state.count -= 1
+      return .none
 
-  case .decrementButtonTapped:
-    state.count -= 1
-    return .none
+    case let .factResponse(.success(fact)):
+      state.isLoading = false
+      state.fact = fact
+      return .none
 
-  case let .factResponse(.success(fact)):
-    state.isLoading = false
-    state.fact = fact
-    return .none
+    case .factResponse(.failure):
+      state.isLoading = false
+      // TODO: do some error handling
+      return .none
 
-  case .factResponse(.failure):
-    state.isLoading = false
-    // TODO: do some error handling
-    return .none
+    case .incrementButtonTapped:
+      state.count += 1
+      return .none
 
-  case .incrementButtonTapped:
-    state.count += 1
-    return .none
-
-  case .refresh:
-    state.fact = nil
-    state.isLoading = true
-    return environment.fact.fetch(state.count)
-      .delay(for: .seconds(2), scheduler: environment.mainQueue.animation())
-      .catchToEffect(RefreshableAction.factResponse)
-      .cancellable(id: CancelId.self)
+    case .refresh:
+      state.fact = nil
+      state.isLoading = true
+      return self.factClient.fetch(state.count)
+        .delay(for: .seconds(2), scheduler: self.mainQueue.animation())
+        .catchToEffect(RefreshableAction.factResponse)
+        .cancellable(id: CancelId.self)
+    }
   }
 }
 
@@ -109,11 +106,7 @@ let refreshableReducer = Reducer<
       RefreshableView(
         store: .init(
           initialState: .init(),
-          reducer: refreshableReducer,
-          environment: .init(
-            fact: .live,
-            mainQueue: .main
-          )
+          reducer: RefreshableReducer()
         )
       )
     }

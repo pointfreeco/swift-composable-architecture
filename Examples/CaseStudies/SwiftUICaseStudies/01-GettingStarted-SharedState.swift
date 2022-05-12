@@ -84,67 +84,71 @@ enum SharedStateAction: Equatable {
   }
 }
 
-let sharedStateCounterReducer = Reducer<
-  SharedState.CounterState, SharedStateAction.CounterAction, Void
-> { state, action, _ in
-  switch action {
-  case .alertDismissed:
-    state.alert = nil
-    return .none
-
-  case .decrementButtonTapped:
-    state.count -= 1
-    state.numberOfCounts += 1
-    state.minCount = min(state.minCount, state.count)
-    return .none
-
-  case .incrementButtonTapped:
-    state.count += 1
-    state.numberOfCounts += 1
-    state.maxCount = max(state.maxCount, state.count)
-    return .none
-
-  case .isPrimeButtonTapped:
-    state.alert = .init(
-      title: isPrime(state.count)
-        ? .init("👍 The number \(state.count) is prime!")
-        : .init("👎 The number \(state.count) is not prime :(")
-    )
-    return .none
-  }
-}
-
-let sharedStateProfileReducer = Reducer<
-  SharedState.ProfileState, SharedStateAction.ProfileAction, Void
-> { state, action, _ in
-  switch action {
-  case .resetCounterButtonTapped:
-    state.resetCount()
-    return .none
-  }
-}
-
-let sharedStateReducer = Reducer<SharedState, SharedStateAction, Void>.combine(
-  sharedStateCounterReducer.pullback(
-    state: \SharedState.counter,
-    action: /SharedStateAction.counter,
-    environment: { _ in () }
-  ),
-  sharedStateProfileReducer.pullback(
-    state: \SharedState.profile,
-    action: /SharedStateAction.profile,
-    environment: { _ in () }
-  ),
-  Reducer { state, action, _ in
+struct SharedStateCounterReducer: ReducerProtocol {
+  func reduce(
+    into state: inout SharedState.CounterState, action: SharedStateAction.CounterAction
+  ) -> Effect<SharedStateAction.CounterAction, Never> {
     switch action {
-    case .counter, .profile:
+    case .alertDismissed:
+      state.alert = nil
       return .none
-    case let .selectTab(tab):
-      state.currentTab = tab
+
+    case .decrementButtonTapped:
+      state.count -= 1
+      state.numberOfCounts += 1
+      state.minCount = min(state.minCount, state.count)
+      return .none
+
+    case .incrementButtonTapped:
+      state.count += 1
+      state.numberOfCounts += 1
+      state.maxCount = max(state.maxCount, state.count)
+      return .none
+
+    case .isPrimeButtonTapped:
+      state.alert = .init(
+        title: isPrime(state.count)
+          ? .init("👍 The number \(state.count) is prime!")
+          : .init("👎 The number \(state.count) is not prime :(")
+      )
       return .none
     }
   }
-)
+}
+
+struct SharedStateProfileReducer: ReducerProtocol {
+  func reduce(
+    into state: inout SharedState.ProfileState, action: SharedStateAction.ProfileAction
+  ) -> Effect<SharedStateAction.ProfileAction, Never> {
+    switch action {
+    case .resetCounterButtonTapped:
+      state.resetCount()
+      return .none
+    }
+  }
+}
+
+struct SharedStateReducer: ReducerProtocol {
+  var body: some ReducerProtocol<SharedState, SharedStateAction> {
+    Pullback(state: \.counter, action: /SharedStateAction.counter) {
+      SharedStateCounterReducer()
+    }
+
+    Pullback(state: \.profile, action: /SharedStateAction.profile) {
+      SharedStateProfileReducer()
+    }
+
+    Reduce { state, action in
+      switch action {
+      case let .selectTab(tab):
+        state.currentTab = tab
+        return .none
+      case .counter, .profile:
+        return .none
+      }
+    }
+  }
+}
 
 struct SharedStateView: View {
   let store: Store<SharedState, SharedStateAction>
@@ -250,8 +254,7 @@ struct SharedState_Previews: PreviewProvider {
     SharedStateView(
       store: Store(
         initialState: SharedState(),
-        reducer: sharedStateReducer,
-        environment: ()
+        reducer: SharedStateReducer()
       )
     )
   }

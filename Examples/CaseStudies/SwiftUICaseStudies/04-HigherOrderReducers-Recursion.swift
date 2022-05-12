@@ -13,19 +13,6 @@ private let readMe = """
   rows.
   """
 
-extension Reducer {
-  static func recurse(
-    _ reducer: @escaping (Reducer, inout State, Action, Environment) -> Effect<Action, Never>
-  ) -> Reducer {
-
-    var `self`: Reducer!
-    self = Reducer { state, action, environment in
-      reducer(self, &state, action, environment)
-    }
-    return self
-  }
-}
-
 struct NestedState: Equatable, Identifiable {
   var children: IdentifiedArrayOf<NestedState> = []
   let id: UUID
@@ -39,33 +26,29 @@ indirect enum NestedAction: Equatable {
   case rename(String)
 }
 
-struct NestedEnvironment {
-  var uuid: () -> UUID
-}
+struct NestedReducer: ReducerProtocol {
+  @Dependency(\.uuid) var uuid
 
-let nestedReducer = Reducer<
-  NestedState, NestedAction, NestedEnvironment
->.recurse { `self`, state, action, environment in
-  switch action {
-  case .append:
-    state.children.append(NestedState(id: environment.uuid()))
-    return .none
+  func reduce(into state: inout NestedState, action: NestedAction) -> Effect<NestedAction, Never> {
+    switch action {
+    case .append:
+      state.children.append(NestedState(id: self.uuid()))
+      return .none
 
-  case .node:
-    return self.forEach(
-      state: \.children,
-      action: /NestedAction.node(id:action:),
-      environment: { $0 }
-    )
-    .run(&state, action, environment)
+    case .node:
+      return ForEachReducer(state: \.children, action: /NestedAction.node) {
+        self
+      }
+      .reduce(into: &state, action: action)
 
-  case let .remove(indexSet):
-    state.children.remove(atOffsets: indexSet)
-    return .none
+    case let .remove(indexSet):
+      state.children.remove(atOffsets: indexSet)
+      return .none
 
-  case let .rename(name):
-    state.description = name
-    return .none
+    case let .rename(name):
+      state.description = name
+      return .none
+    }
   }
 }
 
@@ -156,10 +139,7 @@ extension NestedState {
         NestedView(
           store: Store(
             initialState: .mock,
-            reducer: nestedReducer,
-            environment: NestedEnvironment(
-              uuid: UUID.init
-            )
+            reducer: NestedReducer()
           )
         )
       }

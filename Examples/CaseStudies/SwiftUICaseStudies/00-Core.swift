@@ -216,11 +216,11 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       action: /RootAction.loadThenPresent,
       environment: { _ in }
     ),
-  longLivingEffectsReducer
+  Reducer(LongLivingEffectsReducer())
     .pullback(
       state: \.longLivingEffects,
       action: /RootAction.longLivingEffects,
-      environment: { .init(userDidTakeScreenshot: $0.userDidTakeScreenshot) }
+      environment: { _ in }
     ),
   mapAppReducer
     .pullback(
@@ -253,11 +253,11 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       action: /RootAction.navigateAndLoadList,
       environment: { _ in }
     ),
-  nestedReducer
+  Reducer(NestedReducer())
     .pullback(
       state: \.nested,
       action: /RootAction.nested,
-      environment: { .init(uuid: $0.uuid) }
+      environment: { _ in }
     ),
   Reducer(OptionalBasicsReducer())
     .pullback(
@@ -271,15 +271,13 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       action: /RootAction.presentAndLoad,
       environment: { _ in }
     ),
-  refreshableReducer
+  Reducer(RefreshableReducer())
     .pullback(
       state: \.refreshable,
       action: /RootAction.refreshable,
-      environment: {
-        .init(fact: $0.fact, mainQueue: $0.mainQueue)
-      }
+      environment: { _ in }
     ),
-  sharedStateReducer
+  Reducer(SharedStateReducer())
     .pullback(
       state: \.shared,
       action: /RootAction.shared,
