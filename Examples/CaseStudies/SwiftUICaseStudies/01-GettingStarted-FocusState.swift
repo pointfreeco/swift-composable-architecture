@@ -75,7 +75,7 @@
   }
 
   extension View {
-    func synchronize<Value: Equatable>(
+    func synchronize<Value>(
       _ first: Binding<Value>,
       _ second: FocusState<Value>.Binding
     ) -> some View {
