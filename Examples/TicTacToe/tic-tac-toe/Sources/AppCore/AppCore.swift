@@ -5,14 +5,14 @@ import LoginCore
 import NewGameCore
 
 public enum AppState: Equatable {
-  case login(LoginState)
+  case login(Login.State)
   case newGame(NewGameState)
 
   public init() { self = .login(.init()) }
 }
 
 public enum AppAction: Equatable {
-  case login(LoginAction)
+  case login(Login.Action)
   case newGame(NewGameAction)
 }
 
@@ -30,7 +30,7 @@ public struct AppEnvironment {
 }
 
 public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
-  Reducer(LoginReducer()).pullback(
+  Reducer(Login()).pullback(
     state: /AppState.login,
     action: /AppAction.login,
     environment: { _ in }

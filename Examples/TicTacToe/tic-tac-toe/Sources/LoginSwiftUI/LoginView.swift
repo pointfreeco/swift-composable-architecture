@@ -6,10 +6,10 @@ import TwoFactorCore
 import TwoFactorSwiftUI
 
 public struct LoginView: View {
-  let store: Store<LoginState, LoginAction>
+  let store: StoreOf<Login>
 
   struct ViewState: Equatable {
-    var alert: AlertState<LoginAction>?
+    var alert: AlertState<Login.Action>?
     var email: String
     var isActivityIndicatorVisible: Bool
     var isFormDisabled: Bool
@@ -17,7 +17,7 @@ public struct LoginView: View {
     var password: String
     var isTwoFactorActive: Bool
 
-    init(state: LoginState) {
+    init(state: Login.State) {
       self.alert = state.alert
       self.email = state.email
       self.isActivityIndicatorVisible = state.isLoginRequestInFlight
@@ -36,12 +36,12 @@ public struct LoginView: View {
     case twoFactorDismissed
   }
 
-  public init(store: Store<LoginState, LoginAction>) {
+  public init(store: StoreOf<Login>) {
     self.store = store
   }
 
   public var body: some View {
-    WithViewStore(self.store.scope(state: ViewState.init, action: LoginAction.init)) { viewStore in
+    WithViewStore(self.store.scope(state: ViewState.init, action: Login.Action.init)) { viewStore in
       ScrollView {
         VStack(spacing: 16) {
           Text(
@@ -75,7 +75,7 @@ public struct LoginView: View {
 
           NavigationLink(
             destination: IfLetStore(
-              self.store.scope(state: \.twoFactor, action: LoginAction.twoFactor),
+              self.store.scope(state: \.twoFactor, action: Login.Action.twoFactor),
               then: TwoFactorView.init(store:)
             ),
             isActive: viewStore.binding(
@@ -100,7 +100,7 @@ public struct LoginView: View {
   }
 }
 
-extension LoginAction {
+extension Login.Action {
   init(action: LoginView.ViewAction) {
     switch action {
     case .alertDismissed:
@@ -122,8 +122,8 @@ struct LoginView_Previews: PreviewProvider {
     NavigationView {
       LoginView(
         store: Store(
-          initialState: LoginState(),
-          reducer: LoginReducer()
+          initialState: .init(),
+          reducer: Login()
             .dependency(
               \.authenticationClient,
               .init(

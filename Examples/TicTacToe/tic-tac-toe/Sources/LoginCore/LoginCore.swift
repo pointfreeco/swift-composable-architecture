@@ -3,37 +3,37 @@ import ComposableArchitecture
 import Dispatch
 import TwoFactorCore
 
-public struct LoginState: Equatable {
-  public var alert: AlertState<LoginAction>?
-  public var email = ""
-  public var isFormValid = false
-  public var isLoginRequestInFlight = false
-  public var password = ""
-  public var twoFactor: TwoFactorState?
+public struct Login: ReducerProtocol {
+  public struct State: Equatable {
+    public var alert: AlertState<Action>?
+    public var email = ""
+    public var isFormValid = false
+    public var isLoginRequestInFlight = false
+    public var password = ""
+    public var twoFactor: TwoFactor.State?
 
-  public init() {}
-}
+    public init() {}
+  }
 
-public enum LoginAction: Equatable {
-  case alertDismissed
-  case emailChanged(String)
-  case passwordChanged(String)
-  case loginButtonTapped
-  case loginResponse(Result<AuthenticationResponse, AuthenticationError>)
-  case twoFactor(TwoFactorAction)
-  case twoFactorDismissed
-}
+  public enum Action: Equatable {
+    case alertDismissed
+    case emailChanged(String)
+    case passwordChanged(String)
+    case loginButtonTapped
+    case loginResponse(Result<AuthenticationResponse, AuthenticationError>)
+    case twoFactor(TwoFactor.Action)
+    case twoFactorDismissed
+  }
 
-public struct LoginReducer: ReducerProtocol {
   @Dependency(\.authenticationClient) var authenticationClient
   @Dependency(\.mainQueue) var mainQueue
 
   public init() {}
 
-  public var body: some ReducerProtocol<LoginState, LoginAction> {
-    Pullback(state: \.twoFactor, action: /LoginAction.twoFactor) {
+  public var body: some ReducerProtocol<State, Action> {
+    Pullback(state: \.twoFactor, action: /Action.twoFactor) {
       IfLetReducer {
-        TwoFactorReducer()
+        TwoFactor()
       }
     }
 
@@ -51,7 +51,7 @@ public struct LoginReducer: ReducerProtocol {
       case let .loginResponse(.success(response)):
         state.isLoginRequestInFlight = false
         if response.twoFactorRequired {
-          state.twoFactor = TwoFactorState(token: response.token)
+          state.twoFactor = .init(token: response.token)
         }
         return .none
 
@@ -70,14 +70,14 @@ public struct LoginReducer: ReducerProtocol {
         return self.authenticationClient
           .login(LoginRequest(email: state.email, password: state.password))
           .receive(on: self.mainQueue)
-          .catchToEffect(LoginAction.loginResponse)
+          .catchToEffect(Action.loginResponse)
 
       case .twoFactor:
         return .none
 
       case .twoFactorDismissed:
         state.twoFactor = nil
-        return .cancel(id: TwoFactorReducer.TearDownToken.self)
+        return .cancel(id: TwoFactor.TearDownToken.self)
       }
     }
   }

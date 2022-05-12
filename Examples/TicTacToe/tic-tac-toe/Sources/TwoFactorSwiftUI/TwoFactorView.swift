@@ -4,16 +4,16 @@ import SwiftUI
 import TwoFactorCore
 
 public struct TwoFactorView: View {
-  let store: Store<TwoFactorState, TwoFactorAction>
+  let store: StoreOf<TwoFactor>
 
   struct ViewState: Equatable {
-    var alert: AlertState<TwoFactorAction>?
+    var alert: AlertState<TwoFactor.Action>?
     var code: String
     var isActivityIndicatorVisible: Bool
     var isFormDisabled: Bool
     var isSubmitButtonDisabled: Bool
 
-    init(state: TwoFactorState) {
+    init(state: TwoFactor.State) {
       self.alert = state.alert
       self.code = state.code
       self.isActivityIndicatorVisible = state.isTwoFactorRequestInFlight
@@ -28,13 +28,13 @@ public struct TwoFactorView: View {
     case submitButtonTapped
   }
 
-  public init(store: Store<TwoFactorState, TwoFactorAction>) {
+  public init(store: StoreOf<TwoFactor>) {
     self.store = store
   }
 
   public var body: some View {
     WithViewStore(
-      self.store.scope(state: ViewState.init, action: TwoFactorAction.init)
+      self.store.scope(state: ViewState.init, action: TwoFactor.Action.init)
     ) { viewStore in
       ScrollView {
         VStack(spacing: 16) {
@@ -70,7 +70,7 @@ public struct TwoFactorView: View {
   }
 }
 
-extension TwoFactorAction {
+extension TwoFactor.Action {
   init(action: TwoFactorView.ViewAction) {
     switch action {
     case .alertDismissed:
@@ -88,8 +88,8 @@ struct TwoFactorView_Previews: PreviewProvider {
     NavigationView {
       TwoFactorView(
         store: Store(
-          initialState: TwoFactorState(token: "deadbeef"),
-          reducer: TwoFactorReducer()
+          initialState: .init(token: "deadbeef"),
+          reducer: TwoFactor()
             .dependency(
               \.authenticationClient, .init(
                 login: { _ in Effect(value: .init(token: "deadbeef", twoFactorRequired: false)) },

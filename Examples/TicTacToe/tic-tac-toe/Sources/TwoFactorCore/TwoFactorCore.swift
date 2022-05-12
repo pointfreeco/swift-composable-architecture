@@ -3,36 +3,34 @@ import Combine
 import ComposableArchitecture
 import Dispatch
 
-public struct TwoFactorState: Equatable {
-  public var alert: AlertState<TwoFactorAction>?
-  public var code = ""
-  public var isFormValid = false
-  public var isTwoFactorRequestInFlight = false
-  public let token: String
+public struct TwoFactor: ReducerProtocol {
+  public struct State: Equatable {
+    public var alert: AlertState<Action>?
+    public var code = ""
+    public var isFormValid = false
+    public var isTwoFactorRequestInFlight = false
+    public let token: String
 
-  public init(token: String) {
-    self.token = token
+    public init(token: String) {
+      self.token = token
+    }
   }
-}
 
-public enum TwoFactorAction: Equatable {
-  case alertDismissed
-  case codeChanged(String)
-  case submitButtonTapped
-  case twoFactorResponse(Result<AuthenticationResponse, AuthenticationError>)
-}
-
-public struct TwoFactorReducer: ReducerProtocol {
-  @Dependency(\.authenticationClient) var authenticationClient
-  @Dependency(\.mainQueue) var mainQueue
+  public enum Action: Equatable {
+    case alertDismissed
+    case codeChanged(String)
+    case submitButtonTapped
+    case twoFactorResponse(Result<AuthenticationResponse, AuthenticationError>)
+  }
 
   public enum TearDownToken {}
 
+  @Dependency(\.authenticationClient) var authenticationClient
+  @Dependency(\.mainQueue) var mainQueue
+
   public init() {}
 
-  public func reduce(
-    into state: inout TwoFactorState, action: TwoFactorAction
-  ) -> Effect<TwoFactorAction, Never> {
+  public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {
     case .alertDismissed:
       state.alert = nil
@@ -48,7 +46,7 @@ public struct TwoFactorReducer: ReducerProtocol {
       return self.authenticationClient
         .twoFactor(TwoFactorRequest(code: state.code, token: state.token))
         .receive(on: self.mainQueue)
-        .catchToEffect(TwoFactorAction.twoFactorResponse)
+        .catchToEffect(Action.twoFactorResponse)
         .cancellable(id: TearDownToken.self)
 
     case let .twoFactorResponse(.failure(error)):
