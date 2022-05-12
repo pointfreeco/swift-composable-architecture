@@ -3,83 +3,83 @@ import ComposableArchitecture
 import UIKit
 import XCTestDynamicOverlay
 
-struct RootState {
-  var alertAndConfirmationDialog = AlertAndConfirmationDialog.State()
-  var animation = Animations.State()
-  var bindingBasics = BindingBasics.State()
-  #if compiler(>=5.4)
-    var bindingForm = BindingForm.State()
-  #endif
-  var clock = ClockState()
-  var counter = Counter.State()
-  var dieRoll = DieRollState()
-  var effectsBasics = EffectsBasics.State()
-  var effectsCancellation = EffectsCancellation.State()
-  var effectsTimers = Timers.State()
-  var episodes = EpisodesState(episodes: .mocks)
-  #if compiler(>=5.5)
-    var focusDemo = FocusDemo.State()
-  #endif
-  var lifecycle = LifecycleDemoState()
-  var loadThenNavigate = LoadThenNavigate.State()
-  var loadThenNavigateList = LoadThenNavigateList.State()
-  var loadThenPresent = LoadThenPresent.State()
-  var longLivingEffects = LongLivingEffects.State()
-  var map = MapAppState(cityMaps: .mocks)
-  var multipleDependencies = MultipleDependenciesState()
-  var navigateAndLoad = NavigateAndLoad.State()
-  var navigateAndLoadList = NavigateAndLoadList.State()
-  var nested = Nested.State.mock
-  var optionalBasics = OptionalBasics.State()
-  var presentAndLoad = PresentAndLoad.State()
-  var refreshable = Refreshable.State()
-  var shared = SharedState.State()
-  var timers = Timers.State()
-  var twoCounters = TwoCounters.State()
-  var webSocket = WebSocket.State()
-}
+struct Root: ReducerProtocol {
+  struct State {
+    var alertAndConfirmationDialog = AlertAndConfirmationDialog.State()
+    var animation = Animations.State()
+    var bindingBasics = BindingBasics.State()
+    #if compiler(>=5.4)
+      var bindingForm = BindingForm.State()
+    #endif
+    var clock = ClockState()
+    var counter = Counter.State()
+    var dieRoll = DieRollState()
+    var effectsBasics = EffectsBasics.State()
+    var effectsCancellation = EffectsCancellation.State()
+    var effectsTimers = Timers.State()
+    var episodes = EpisodesState(episodes: .mocks)
+    #if compiler(>=5.5)
+      var focusDemo = FocusDemo.State()
+    #endif
+    var lifecycle = LifecycleDemoState()
+    var loadThenNavigate = LoadThenNavigate.State()
+    var loadThenNavigateList = LoadThenNavigateList.State()
+    var loadThenPresent = LoadThenPresent.State()
+    var longLivingEffects = LongLivingEffects.State()
+    var map = MapAppState(cityMaps: .mocks)
+    var multipleDependencies = MultipleDependenciesState()
+    var navigateAndLoad = NavigateAndLoad.State()
+    var navigateAndLoadList = NavigateAndLoadList.State()
+    var nested = Nested.State.mock
+    var optionalBasics = OptionalBasics.State()
+    var presentAndLoad = PresentAndLoad.State()
+    var refreshable = Refreshable.State()
+    var shared = SharedState.State()
+    var timers = Timers.State()
+    var twoCounters = TwoCounters.State()
+    var webSocket = WebSocket.State()
+  }
 
-enum RootAction {
-  case alertAndConfirmationDialog(AlertAndConfirmationDialog.Action)
-  case animation(Animations.Action)
-  case bindingBasics(BindingBasics.Action)
-  #if compiler(>=5.4)
-    case bindingForm(BindingForm.Action)
-  #endif
-  case clock(ClockAction)
-  case counter(Counter.Action)
-  case dieRoll(DieRollAction)
-  case effectsBasics(EffectsBasics.Action)
-  case effectsCancellation(EffectsCancellation.Action)
-  case episodes(EpisodesAction)
-  #if compiler(>=5.5)
-    case focusDemo(FocusDemo.Action)
-  #endif
-  case lifecycle(LifecycleDemoAction)
-  case loadThenNavigate(LoadThenNavigate.Action)
-  case loadThenNavigateList(LoadThenNavigateList.Action)
-  case loadThenPresent(LoadThenPresent.Action)
-  case longLivingEffects(LongLivingEffects.Action)
-  case map(MapAppAction)
-  case multipleDependencies(MultipleDependenciesAction)
-  case navigateAndLoad(NavigateAndLoad.Action)
-  case navigateAndLoadList(NavigateAndLoadList.Action)
-  case nested(Nested.Action)
-  case optionalBasics(OptionalBasics.Action)
-  case onAppear
-  case presentAndLoad(PresentAndLoad.Action)
-  case refreshable(Refreshable.Action)
-  case shared(SharedState.Action)
-  case timers(Timers.Action)
-  case twoCounters(TwoCounters.Action)
-  case webSocket(WebSocket.Action)
-}
+  enum Action {
+    case alertAndConfirmationDialog(AlertAndConfirmationDialog.Action)
+    case animation(Animations.Action)
+    case bindingBasics(BindingBasics.Action)
+    #if compiler(>=5.4)
+      case bindingForm(BindingForm.Action)
+    #endif
+    case clock(ClockAction)
+    case counter(Counter.Action)
+    case dieRoll(DieRollAction)
+    case effectsBasics(EffectsBasics.Action)
+    case effectsCancellation(EffectsCancellation.Action)
+    case episodes(EpisodesAction)
+    #if compiler(>=5.5)
+      case focusDemo(FocusDemo.Action)
+    #endif
+    case lifecycle(LifecycleDemoAction)
+    case loadThenNavigate(LoadThenNavigate.Action)
+    case loadThenNavigateList(LoadThenNavigateList.Action)
+    case loadThenPresent(LoadThenPresent.Action)
+    case longLivingEffects(LongLivingEffects.Action)
+    case map(MapAppAction)
+    case multipleDependencies(MultipleDependenciesAction)
+    case navigateAndLoad(NavigateAndLoad.Action)
+    case navigateAndLoadList(NavigateAndLoadList.Action)
+    case nested(Nested.Action)
+    case optionalBasics(OptionalBasics.Action)
+    case onAppear
+    case presentAndLoad(PresentAndLoad.Action)
+    case refreshable(Refreshable.Action)
+    case shared(SharedState.Action)
+    case timers(Timers.Action)
+    case twoCounters(TwoCounters.Action)
+    case webSocket(WebSocket.Action)
+  }
 
-struct RootReducer: ReducerProtocol {
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.uuid) var uuid
 
-  var body: some ReducerProtocol<RootState, RootAction> {
+  var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
       case .onAppear:
@@ -91,65 +91,65 @@ struct RootReducer: ReducerProtocol {
       }
     }
 
-    Pullback(state: \.alertAndConfirmationDialog, action: /RootAction.alertAndConfirmationDialog) {
+    Pullback(state: \.alertAndConfirmationDialog, action: /Action.alertAndConfirmationDialog) {
       AlertAndConfirmationDialog()
     }
-    Pullback(state: \.animation, action: /RootAction.animation) {
+    Pullback(state: \.animation, action: /Action.animation) {
       Animations()
     }
-    Pullback(state: \.bindingBasics, action: /RootAction.bindingBasics) {
+    Pullback(state: \.bindingBasics, action: /Action.bindingBasics) {
       BindingBasics()
     }
     #if compiler(>=5.4)
-      Pullback(state: \.bindingForm, action: /RootAction.bindingForm) {
+      Pullback(state: \.bindingForm, action: /Action.bindingForm) {
         BindingForm()
       }
     #endif
-    Pullback(state: \.clock, action: /RootAction.clock) {
+    Pullback(state: \.clock, action: /Action.clock) {
       Reduce(clockReducer, environment: .init(mainQueue: self.mainQueue))
     }
-    Pullback(state: \.counter, action: /RootAction.counter) {
+    Pullback(state: \.counter, action: /Action.counter) {
       Counter()
     }
-    Pullback(state: \.dieRoll, action: /RootAction.dieRoll) {
+    Pullback(state: \.dieRoll, action: /Action.dieRoll) {
       Reduce(dieRollReducer, environment: .init(rollDie: { .random(in: 1...6) }))
     }
-    Pullback(state: \.effectsBasics, action: /RootAction.effectsBasics) {
+    Pullback(state: \.effectsBasics, action: /Action.effectsBasics) {
       EffectsBasics()
     }
-    Pullback(state: \.effectsCancellation, action: /RootAction.effectsCancellation) {
+    Pullback(state: \.effectsCancellation, action: /Action.effectsCancellation) {
       EffectsCancellation()
     }
-    Pullback(state: \.episodes, action: /RootAction.episodes) {
+    Pullback(state: \.episodes, action: /Action.episodes) {
       Reduce(
         episodesReducer,
         environment: .init(favorite: favorite(id:isFavorite:), mainQueue: self.mainQueue)
       )
     }
     #if compiler(>=5.5)
-      Pullback(state: \.focusDemo, action: /RootAction.focusDemo) {
+      Pullback(state: \.focusDemo, action: /Action.focusDemo) {
         FocusDemo()
       }
     #endif
-    Pullback(state: \.lifecycle, action: /RootAction.lifecycle) {
+    Pullback(state: \.lifecycle, action: /Action.lifecycle) {
       Reduce(lifecycleDemoReducer, environment: .init(mainQueue: self.mainQueue))
     }
-    Pullback(state: \.loadThenNavigate, action: /RootAction.loadThenNavigate) {
+    Pullback(state: \.loadThenNavigate, action: /Action.loadThenNavigate) {
       LoadThenNavigate()
     }
-    Pullback(state: \.loadThenNavigateList, action: /RootAction.loadThenNavigateList) {
+    Pullback(state: \.loadThenNavigateList, action: /Action.loadThenNavigateList) {
       LoadThenNavigateList()
     }
-    Pullback(state: \.loadThenPresent, action: /RootAction.loadThenPresent) {
+    Pullback(state: \.loadThenPresent, action: /Action.loadThenPresent) {
       LoadThenPresent()
     }
-    Pullback(state: \.longLivingEffects, action: /RootAction.longLivingEffects) {
+    Pullback(state: \.longLivingEffects, action: /Action.longLivingEffects) {
       LongLivingEffects()
     }
-    Pullback(state: \.map, action: /RootAction.map) {
+    Pullback(state: \.map, action: /Action.map) {
       Reduce(mapAppReducer, environment: .init(downloadClient: .live, mainQueue: self.mainQueue))
     }
-    Pullback(state: \.multipleDependencies, action: /RootAction.multipleDependencies) {
+    Pullback(state: \.multipleDependencies, action: /Action.multipleDependencies) {
       Reduce(
         multipleDependenciesReducer,
         environment: .init(
@@ -160,34 +160,34 @@ struct RootReducer: ReducerProtocol {
         )
       )
     }
-    Pullback(state: \.navigateAndLoad, action: /RootAction.navigateAndLoad) {
+    Pullback(state: \.navigateAndLoad, action: /Action.navigateAndLoad) {
       NavigateAndLoad()
     }
-    Pullback(state: \.navigateAndLoadList, action: /RootAction.navigateAndLoadList) {
+    Pullback(state: \.navigateAndLoadList, action: /Action.navigateAndLoadList) {
       NavigateAndLoadList()
     }
-    Pullback(state: \.nested, action: /RootAction.nested) {
+    Pullback(state: \.nested, action: /Action.nested) {
       Nested()
     }
-    Pullback(state: \.optionalBasics, action: /RootAction.optionalBasics) {
+    Pullback(state: \.optionalBasics, action: /Action.optionalBasics) {
       OptionalBasics()
     }
-    Pullback(state: \.presentAndLoad, action: /RootAction.presentAndLoad) {
+    Pullback(state: \.presentAndLoad, action: /Action.presentAndLoad) {
       PresentAndLoad()
     }
-    Pullback(state: \.refreshable, action: /RootAction.refreshable) {
+    Pullback(state: \.refreshable, action: /Action.refreshable) {
       Refreshable()
     }
-    Pullback(state: \.shared, action: /RootAction.shared) {
+    Pullback(state: \.shared, action: /Action.shared) {
       SharedState()
     }
-    Pullback(state: \.timers, action: /RootAction.timers) {
+    Pullback(state: \.timers, action: /Action.timers) {
       Timers()
     }
-    Pullback(state: \.twoCounters, action: /RootAction.twoCounters) {
+    Pullback(state: \.twoCounters, action: /Action.twoCounters) {
       TwoCounters()
     }
-    Pullback(state: \.webSocket, action: /RootAction.webSocket) {
+    Pullback(state: \.webSocket, action: /Action.webSocket) {
       WebSocket()
     }
   }

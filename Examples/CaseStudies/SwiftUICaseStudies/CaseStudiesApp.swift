@@ -7,8 +7,8 @@ struct CaseStudiesApp: App {
     WindowGroup {
       RootView(
         store: .init(
-          initialState: RootState(),
-          reducer: RootReducer()
+          initialState: .init(),
+          reducer: Root()
             .debug()
             .signpost()
         )
