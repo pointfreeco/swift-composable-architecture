@@ -44,13 +44,13 @@ struct WebSocketReducer: ReducerProtocol {
     struct WebSocketId: Hashable {}
 
     var receiveSocketMessageEffect: Effect<WebSocketAction, Never> {
-      return self.webSocket.receive(WebSocketId())
+      self.webSocket.receive(WebSocketId())
         .receive(on: self.mainQueue)
         .catchToEffect(WebSocketAction.receivedSocketMessage)
         .cancellable(id: WebSocketId())
     }
     var sendPingEffect: Effect<WebSocketAction, Never> {
-      return self.webSocket.sendPing(WebSocketId())
+      self.webSocket.sendPing(WebSocketId())
         .delay(for: 10, scheduler: self.mainQueue)
         .map(WebSocketAction.pingResponse)
         .eraseToEffect()

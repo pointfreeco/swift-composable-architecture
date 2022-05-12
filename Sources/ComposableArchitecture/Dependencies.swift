@@ -45,26 +45,61 @@ public struct Dependency<Value> {
   }
 }
 
-public struct DependencyKeyWritingReducer<R: ReducerProtocol, Value>: ReducerProtocol {
-  let upstream: R
-  let keyPath: WritableKeyPath<DependencyValues, Value>
-  let value: Value
+public struct DependencyKeyWritingReducer<Upstream: ReducerProtocol, Value>: ReducerProtocol {
+  @usableFromInline
+  let upstream: Upstream
 
-  public func reduce(into state: inout R.State, action: R.Action) -> Effect<R.Action, Never> {
+  @usableFromInline
+  let update: (inout DependencyValues) -> Void
+
+  @usableFromInline
+  init(upstream: Upstream, update: @escaping (inout DependencyValues) -> Void) {
+    self.upstream = upstream
+    self.update = update
+  }
+
+  @inlinable
+  public func reduce(
+    into state: inout Upstream.State, action: Upstream.Action
+  ) -> Effect<Upstream.Action, Never> {
     var values = DependencyValues.current
-    values[keyPath: self.keyPath] = self.value
+    self.update(&values)
     return DependencyValues.$current.withValue(values) {
       self.upstream.reduce(into: &state, action: action)
+    }
+  }
+
+  @inlinable
+  public func dependency<Value>(
+    _ keyPath: WritableKeyPath<DependencyValues, Value>,
+    _ value: Value
+  ) -> Self {
+    .init(upstream: self.upstream) { values in
+      self.update(&values)
+      values[keyPath: keyPath] = value
     }
   }
 }
 
 extension ReducerProtocol {
+  @inlinable
   public func dependency<Value>(
     _ keyPath: WritableKeyPath<DependencyValues, Value>,
     _ value: Value
   ) -> DependencyKeyWritingReducer<Self, Value> {
-    .init(upstream: self, keyPath: keyPath, value: value)
+    .init(upstream: self) { $0[keyPath: keyPath] = value }
+  }
+}
+
+extension DependencyValues {
+  public var isTesting: Bool {
+    get { self[IsTestingKey.self] }
+    set { self[IsTestingKey.self] = newValue }
+  }
+
+  private enum IsTestingKey: LiveDependencyKey {
+    static let liveValue = false
+    static let testValue = true
   }
 }
 
@@ -76,16 +111,4 @@ private protocol AnyLiveDependencyKey {
 
 extension Witness: AnyLiveDependencyKey where T: LiveDependencyKey {
   static var liveValue: Any { T.liveValue }
-}
-
-private enum IsTestingKey: LiveDependencyKey {
-  static let liveValue = false
-  static let testValue = true
-}
-
-extension DependencyValues {
-  public var isTesting: Bool {
-    get { self[IsTestingKey.self] }
-    set { self[IsTestingKey.self] = newValue }
-  }
 }
