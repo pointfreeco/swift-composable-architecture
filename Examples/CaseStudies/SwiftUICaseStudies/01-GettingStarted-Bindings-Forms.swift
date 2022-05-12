@@ -14,21 +14,20 @@
     It is instructive to compare this case study to the "Binding Basics" case study.
     """
 
-  // The state for this screen holds a bunch of values that will drive
-  struct BindingFormState: Equatable {
-    @BindableState var sliderValue = 5.0
-    @BindableState var stepCount = 10
-    @BindableState var text = ""
-    @BindableState var toggleIsOn = false
-  }
+  struct BindingForm: ReducerProtocol {
+    struct State: Equatable {
+      @BindableState var sliderValue = 5.0
+      @BindableState var stepCount = 10
+      @BindableState var text = ""
+      @BindableState var toggleIsOn = false
+    }
 
-  enum BindingFormAction: BindableAction, Equatable {
-    case binding(BindingAction<BindingFormState>)
-    case resetButtonTapped
-  }
+    enum Action: BindableAction, Equatable {
+      case binding(BindingAction<State>)
+      case resetButtonTapped
+    }
 
-  struct BindingFormReducer: ReducerProtocol {
-    var body: some ReducerProtocol<BindingFormState, BindingFormAction> {
+    var body: some ReducerProtocol<State, Action> {
       Reduce { state, action in
         switch action {
         case .binding(\.$stepCount):
@@ -48,7 +47,7 @@
   }
 
   struct BindingFormView: View {
-    let store: Store<BindingFormState, BindingFormAction>
+    let store: Store<BindingForm.State, BindingForm.Action>
 
     var body: some View {
       WithViewStore(self.store) { viewStore in
@@ -106,8 +105,8 @@
       NavigationView {
         BindingFormView(
           store: Store(
-            initialState: BindingFormState(),
-            reducer: BindingFormReducer()
+            initialState: .init(),
+            reducer: BindingForm()
           )
         )
       }

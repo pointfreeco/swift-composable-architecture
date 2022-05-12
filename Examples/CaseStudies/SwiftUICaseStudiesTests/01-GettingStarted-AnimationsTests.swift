@@ -9,8 +9,8 @@ class AnimationTests: XCTestCase {
     let mainQueue = DispatchQueue.test
 
     let store = _TestStore(
-      initialState: AnimationsState(),
-      reducer: AnimationsReducer()
+      initialState: .init(),
+      reducer: Animations()
         .dependency(\.mainQueue, mainQueue.eraseToAnyScheduler())
     )
 

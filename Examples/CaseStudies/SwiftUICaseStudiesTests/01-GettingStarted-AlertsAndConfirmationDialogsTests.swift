@@ -8,8 +8,8 @@ import XCTest
 class AlertsAndConfirmationDialogsTests: XCTestCase {
   func testAlert() {
     let store = _TestStore(
-      initialState: AlertAndConfirmationDialogState(),
-      reducer: AlertAndConfirmationDialogReducer()
+      initialState: .init(),
+      reducer: AlertAndConfirmationDialog()
     )
 
     store.send(.alertButtonTapped) {
@@ -31,8 +31,8 @@ class AlertsAndConfirmationDialogsTests: XCTestCase {
 
   func testConfirmationDialog() {
     let store = _TestStore(
-      initialState: AlertAndConfirmationDialogState(),
-      reducer: AlertAndConfirmationDialogReducer()
+      initialState: .init(),
+      reducer: AlertAndConfirmationDialog()
     )
 
     store.send(.confirmationDialogButtonTapped) {

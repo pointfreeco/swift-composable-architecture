@@ -19,48 +19,27 @@ private let readMe = """
   toggle at the bottom of the screen.
   """
 
-extension Effect where Failure == Never {
-  public static func keyFrames<S>(
-    values: [(output: Output, duration: S.SchedulerTimeType.Stride)],
-    scheduler: S
-  ) -> Effect where S: Scheduler {
-    .concatenate(
-      values
-        .enumerated()
-        .map { index, animationState in
-          index == 0
-            ? Effect(value: animationState.output)
-            : Just(animationState.output)
-              .delay(for: values[index - 1].duration, scheduler: scheduler)
-              .eraseToEffect()
-        }
-    )
+struct Animations: ReducerProtocol {
+  struct State: Equatable {
+    var alert: AlertState<Action>? = nil
+    var circleCenter = CGPoint(x: 50, y: 50)
+    var circleColor = Color.white
+    var isCircleScaled = false
   }
-}
 
-struct AnimationsState: Equatable {
-  var alert: AlertState<AnimationsAction>? = nil
-  var circleCenter = CGPoint(x: 50, y: 50)
-  var circleColor = Color.white
-  var isCircleScaled = false
-}
+  enum Action: Equatable {
+    case circleScaleToggleChanged(Bool)
+    case dismissAlert
+    case rainbowButtonTapped
+    case resetButtonTapped
+    case resetConfirmationButtonTapped
+    case setColor(Color)
+    case tapped(CGPoint)
+  }
 
-enum AnimationsAction: Equatable {
-  case circleScaleToggleChanged(Bool)
-  case dismissAlert
-  case rainbowButtonTapped
-  case resetButtonTapped
-  case resetConfirmationButtonTapped
-  case setColor(Color)
-  case tapped(CGPoint)
-}
-
-struct AnimationsReducer: ReducerProtocol {
   @Dependency(\.mainQueue) var mainQueue
 
-  func reduce(
-    into state: inout AnimationsState, action: AnimationsAction
-  ) -> Effect<AnimationsAction, Never> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {
     case let .circleScaleToggleChanged(isScaled):
       state.isCircleScaled = isScaled
@@ -103,9 +82,28 @@ struct AnimationsReducer: ReducerProtocol {
   }
 }
 
+extension Effect where Failure == Never {
+  static func keyFrames<S>(
+    values: [(output: Output, duration: S.SchedulerTimeType.Stride)],
+    scheduler: S
+  ) -> Effect where S: Scheduler {
+    .concatenate(
+      values
+        .enumerated()
+        .map { index, animationState in
+          index == 0
+            ? Effect(value: animationState.output)
+            : Just(animationState.output)
+              .delay(for: values[index - 1].duration, scheduler: scheduler)
+              .eraseToEffect()
+        }
+    )
+  }
+}
+
 struct AnimationsView: View {
   @Environment(\.colorScheme) var colorScheme
-  let store: Store<AnimationsState, AnimationsAction>
+  let store: Store<Animations.State, Animations.Action>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -139,7 +137,7 @@ struct AnimationsView: View {
             "Big mode",
             isOn:
               viewStore
-              .binding(get: \.isCircleScaled, send: AnimationsAction.circleScaleToggleChanged)
+              .binding(get: \.isCircleScaled, send: Animations.Action.circleScaleToggleChanged)
               .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.1))
           )
           .padding()
@@ -161,7 +159,7 @@ struct AnimationsView_Previews: PreviewProvider {
         AnimationsView(
           store: Store(
             initialState: .init(),
-            reducer: AnimationsReducer()
+            reducer: Animations()
           )
         )
       }
@@ -170,7 +168,7 @@ struct AnimationsView_Previews: PreviewProvider {
         AnimationsView(
           store: Store(
             initialState: .init(),
-            reducer: AnimationsReducer()
+            reducer: Animations()
           )
         )
       }

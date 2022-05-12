@@ -5,10 +5,10 @@ import XCTestDynamicOverlay
 
 struct RootState {
   var alertAndConfirmationDialog = AlertAndConfirmationDialog.State()
-  var animation = AnimationsState()
-  var bindingBasics = BindingBasicsState()
+  var animation = Animations.State()
+  var bindingBasics = BindingBasics.State()
   #if compiler(>=5.4)
-    var bindingForm = BindingFormState()
+    var bindingForm = BindingForm.State()
   #endif
   var clock = ClockState()
   var counter = CounterState()
@@ -41,10 +41,10 @@ struct RootState {
 
 enum RootAction {
   case alertAndConfirmationDialog(AlertAndConfirmationDialog.Action)
-  case animation(AnimationsAction)
-  case bindingBasics(BindingBasicsAction)
+  case animation(Animations.Action)
+  case bindingBasics(BindingBasics.Action)
   #if compiler(>=5.4)
-    case bindingForm(BindingFormAction)
+    case bindingForm(BindingForm.Action)
   #endif
   case clock(ClockAction)
   case counter(CounterAction)
@@ -95,14 +95,14 @@ struct RootReducer: ReducerProtocol {
       AlertAndConfirmationDialog()
     }
     Pullback(state: \.animation, action: /RootAction.animation) {
-      AnimationsReducer()
+      Animations()
     }
     Pullback(state: \.bindingBasics, action: /RootAction.bindingBasics) {
-      BindingBasicsReducer()
+      BindingBasics()
     }
     #if compiler(>=5.4)
       Pullback(state: \.bindingForm, action: /RootAction.bindingForm) {
-        BindingFormReducer()
+        BindingForm()
       }
     #endif
     Pullback(state: \.clock, action: /RootAction.clock) {
