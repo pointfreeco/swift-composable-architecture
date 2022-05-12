@@ -82,7 +82,7 @@ struct RootEnvironment {
   var favorite: (UUID, Bool) -> Effect<Bool, Error>
   var fetchNumber: () -> Effect<Int, Never>
   var mainQueue: AnySchedulerOf<DispatchQueue>
-  var userDidTakeScreenshot: Effect<Void, Never>
+  var notificationCenter: NotificationCenter
   var uuid: () -> UUID
   var webSocket: WebSocketClient
 
@@ -93,7 +93,7 @@ struct RootEnvironment {
     favorite: favorite(id:isFavorite:),
     fetchNumber: liveFetchNumber,
     mainQueue: .main,
-    userDidTakeScreenshot: liveUserDidTakeScreenshot,
+    notificationCenter: .default,
     uuid: UUID.init,
     webSocket: .live
   )
@@ -310,8 +310,3 @@ private func liveFetchNumber() -> Effect<Int, Never> {
     .delay(for: 1, scheduler: DispatchQueue.main)
     .eraseToEffect()
 }
-
-private let liveUserDidTakeScreenshot = NotificationCenter.default
-  .publisher(for: UIApplication.userDidTakeScreenshotNotification)
-  .map { _ in }
-  .eraseToEffect()

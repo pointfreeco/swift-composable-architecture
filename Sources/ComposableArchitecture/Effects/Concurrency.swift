@@ -102,5 +102,21 @@ import SwiftUI
       }
       .eraseToEffect()
     }
+
+    /// Creates an effect that executes some work in the real world that doesn't need to feed data
+    /// back into the store. If an error is thrown, the effect will complete and the error will be ignored.
+    ///
+    /// - Parameters:
+    ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
+    ///     `Task.currentPriority`.
+    ///   - work: A closure encapsulating some work to execute in the real world.
+    /// - Returns: An effect.
+    public static func fireAndForget(
+      priority: TaskPriority? = nil,
+      _ work: @escaping @Sendable () async throws -> Void
+    ) -> Effect {
+      Effect<Void, Never>.task(priority: priority) { try? await work() }
+        .fireAndForget()
+    }
   }
 #endif
