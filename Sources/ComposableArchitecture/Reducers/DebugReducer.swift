@@ -118,18 +118,18 @@ extension DependencyValues {
     set { self[DebugLoggingQueueKey.self] = newValue }
   }
 
-  public enum DebugLoggerKey: LiveDependencyKey {
+  private enum DebugLoggerKey: LiveDependencyKey {
     public static let liveValue: (String) -> Void = { print($0) }
     public static let testValue: (String) -> Void = { print($0) }
   }
 
   private enum DebugLoggingQueueKey: LiveDependencyKey {
-    static let liveValue = AnySchedulerOf<DispatchQueue>(_debugLoggingQueue)
+    static let liveValue = AnySchedulerOf<DispatchQueue>(
+      DispatchQueue(
+        label: "co.pointfree.ComposableArchitecture.DebugReducer",
+        qos: .utility
+      )
+    )
     static let testValue = AnySchedulerOf<DispatchQueue>.immediate
   }
 }
-
-private let _debugLoggingQueue = DispatchQueue(
-  label: "co.pointfree.ComposableArchitecture.DebugEnvironment",
-  qos: .utility
-)
