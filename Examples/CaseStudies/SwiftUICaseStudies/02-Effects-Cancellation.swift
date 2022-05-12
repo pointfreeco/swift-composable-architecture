@@ -13,35 +13,24 @@ private let readMe = """
   request is in-flight will also cancel it.
   """
 
-// MARK: - Demo app domain
+struct EffectsCancellation: ReducerProtocol {
+  struct State: Equatable {
+    var count = 0
+    var currentTrivia: String?
+    var isTriviaRequestInFlight = false
+  }
 
-struct EffectsCancellationState: Equatable {
-  var count = 0
-  var currentTrivia: String?
-  var isTriviaRequestInFlight = false
-}
+  enum Action: Equatable {
+    case cancelButtonTapped
+    case stepperChanged(Int)
+    case triviaButtonTapped
+    case triviaResponse(Result<String, FactClient.Error>)
+  }
 
-enum EffectsCancellationAction: Equatable {
-  case cancelButtonTapped
-  case stepperChanged(Int)
-  case triviaButtonTapped
-  case triviaResponse(Result<String, FactClient.Error>)
-}
-
-struct EffectsCancellationEnvironment {
-  var fact: FactClient
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
-
-// MARK: - Business logic
-
-struct EffectsCancellationReducer: ReducerProtocol {
   @Dependency(\.factClient) var factClient
   @Dependency(\.mainQueue) var mainQueue
 
-  func reduce(
-    into state: inout EffectsCancellationState, action: EffectsCancellationAction
-  ) -> Effect<EffectsCancellationAction, Never> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     enum TriviaRequestId {}
 
     switch action {
@@ -61,7 +50,7 @@ struct EffectsCancellationReducer: ReducerProtocol {
 
       return self.factClient.fetch(state.count)
         .receive(on: self.mainQueue)
-        .catchToEffect(EffectsCancellationAction.triviaResponse)
+        .catchToEffect(Action.triviaResponse)
         .cancellable(id: TriviaRequestId.self)
 
     case let .triviaResponse(.success(response)):
@@ -79,7 +68,7 @@ struct EffectsCancellationReducer: ReducerProtocol {
 // MARK: - Application view
 
 struct EffectsCancellationView: View {
-  let store: Store<EffectsCancellationState, EffectsCancellationAction>
+  let store: Store<EffectsCancellation.State, EffectsCancellation.Action>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -92,7 +81,7 @@ struct EffectsCancellationView: View {
         ) {
           Stepper(
             value: viewStore.binding(
-              get: \.count, send: EffectsCancellationAction.stepperChanged)
+              get: \.count, send: EffectsCancellation.Action.stepperChanged)
           ) {
             Text("\(viewStore.count)")
           }
@@ -125,8 +114,8 @@ struct EffectsCancellation_Previews: PreviewProvider {
     NavigationView {
       EffectsCancellationView(
         store: Store(
-          initialState: EffectsCancellationState(),
-          reducer: EffectsCancellationReducer()
+          initialState: .init(),
+          reducer: EffectsCancellation()
         )
       )
     }

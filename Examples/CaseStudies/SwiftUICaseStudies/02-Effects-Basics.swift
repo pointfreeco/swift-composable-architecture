@@ -23,36 +23,30 @@ private let readMe = """
   effects behave in the way we expect.
   """
 
-// MARK: - Feature domain
+struct EffectsBasics: ReducerProtocol {
+  struct State: Equatable {
+    var count = 0
+    var isNumberFactRequestInFlight = false
+    var numberFact: String?
+  }
 
-struct EffectsBasicsState: Equatable {
-  var count = 0
-  var isNumberFactRequestInFlight = false
-  var numberFact: String?
-}
+  enum Action: Equatable {
+    case decrementButtonTapped
+    case incrementButtonTapped
+    case numberFactButtonTapped
+    case numberFactResponse(Result<String, FactClient.Error>)
+  }
 
-enum EffectsBasicsAction: Equatable {
-  case decrementButtonTapped
-  case incrementButtonTapped
-  case numberFactButtonTapped
-  case numberFactResponse(Result<String, FactClient.Error>)
-}
-
-// MARK: - Feature business logic
-
-struct EffectsBasicsReducer: ReducerProtocol {
   @Dependency(\.factClient) var factClient
   @Dependency(\.mainQueue) var mainQueue
 
-  func reduce(
-    into state: inout EffectsBasicsState, action: EffectsBasicsAction
-  ) -> Effect<EffectsBasicsAction, Never> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {
     case .decrementButtonTapped:
       state.count -= 1
       state.numberFact = nil
       // Return an effect that re-increments the count after 1 second.
-      return Effect(value: EffectsBasicsAction.incrementButtonTapped)
+      return Effect(value: .incrementButtonTapped)
         .delay(for: 1, scheduler: self.mainQueue)
         .eraseToEffect()
 
@@ -68,7 +62,7 @@ struct EffectsBasicsReducer: ReducerProtocol {
       // value back to the reducer's `numberFactResponse` action.
       return self.factClient.fetch(state.count)
         .receive(on: self.mainQueue)
-        .catchToEffect(EffectsBasicsAction.numberFactResponse)
+        .catchToEffect(Action.numberFactResponse)
 
     case let .numberFactResponse(.success(response)):
       state.isNumberFactRequestInFlight = false
@@ -85,7 +79,7 @@ struct EffectsBasicsReducer: ReducerProtocol {
 // MARK: - Feature view
 
 struct EffectsBasicsView: View {
-  let store: Store<EffectsBasicsState, EffectsBasicsAction>
+  let store: Store<EffectsBasics.State, EffectsBasics.Action>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -129,8 +123,8 @@ struct EffectsBasicsView_Previews: PreviewProvider {
     NavigationView {
       EffectsBasicsView(
         store: Store(
-          initialState: EffectsBasicsState(),
-          reducer: EffectsBasicsReducer()
+          initialState: .init(),
+          reducer: EffectsBasics()
         )
       )
     }

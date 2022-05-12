@@ -8,7 +8,7 @@ class EffectsCancellationTests: XCTestCase {
   func testTrivia_SuccessfulRequest() {
     let store = _TestStore(
       initialState: .init(),
-      reducer: EffectsCancellationReducer()
+      reducer: EffectsCancellation()
         .dependency(
           \.factClient, .init(fetch: { n in Effect(value: "\(n) is a good number Brent") })
         )
@@ -33,7 +33,7 @@ class EffectsCancellationTests: XCTestCase {
   func testTrivia_FailedRequest() {
     let store = _TestStore(
       initialState: .init(),
-      reducer: EffectsCancellationReducer()
+      reducer: EffectsCancellation()
         .dependency(
           \.factClient, .init(fetch: { _ in Fail(error: FactClient.Error()).eraseToEffect() })
         )
@@ -51,14 +51,14 @@ class EffectsCancellationTests: XCTestCase {
   // NB: This tests that the cancel button really does cancel the in-flight API request.
   //
   // To see the real power of this test, try replacing the `.cancel` effect with a `.none` effect
-  // in the `.cancelButtonTapped` action of the `effectsCancellationReducer`. This will cause the
-  // test to fail, showing that we are exhaustively asserting that the effect truly is canceled and
-  // will never emit.
+  // in the `.cancelButtonTapped` action of `EffectsCancellation`. This will cause the test to fail,
+  // showing that we are exhaustively asserting that the effect truly is canceled and will never
+  // emit.
   func testTrivia_CancelButtonCancelsRequest() {
     let mainQueue = DispatchQueue.test
     let store = _TestStore(
       initialState: .init(),
-      reducer: EffectsCancellationReducer()
+      reducer: EffectsCancellation()
         .dependency(
           \.factClient, .init(fetch: { n in Effect(value: "\(n) is a good number Brent") })
         )
@@ -78,7 +78,7 @@ class EffectsCancellationTests: XCTestCase {
     let mainQueue = DispatchQueue.test
     let store = _TestStore(
       initialState: .init(),
-      reducer: EffectsCancellationReducer()
+      reducer: EffectsCancellation()
         .dependency(
           \.factClient, .init(fetch: { n in Effect(value: "\(n) is a good number Brent") })
         )

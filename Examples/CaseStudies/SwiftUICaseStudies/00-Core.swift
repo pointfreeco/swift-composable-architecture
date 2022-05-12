@@ -13,8 +13,8 @@ struct RootState {
   var clock = ClockState()
   var counter = Counter.State()
   var dieRoll = DieRollState()
-  var effectsBasics = EffectsBasicsState()
-  var effectsCancellation = EffectsCancellationState()
+  var effectsBasics = EffectsBasics.State()
+  var effectsCancellation = EffectsCancellation.State()
   var effectsTimers = TimersState()
   var episodes = EpisodesState(episodes: .mocks)
   #if compiler(>=5.5)
@@ -49,8 +49,8 @@ enum RootAction {
   case clock(ClockAction)
   case counter(Counter.Action)
   case dieRoll(DieRollAction)
-  case effectsBasics(EffectsBasicsAction)
-  case effectsCancellation(EffectsCancellationAction)
+  case effectsBasics(EffectsBasics.Action)
+  case effectsCancellation(EffectsCancellation.Action)
   case episodes(EpisodesAction)
   #if compiler(>=5.5)
     case focusDemo(FocusDemoAction)
@@ -115,10 +115,10 @@ struct RootReducer: ReducerProtocol {
       Reduce(dieRollReducer, environment: .init(rollDie: { .random(in: 1...6) }))
     }
     Pullback(state: \.effectsBasics, action: /RootAction.effectsBasics) {
-      EffectsBasicsReducer()
+      EffectsBasics()
     }
     Pullback(state: \.effectsCancellation, action: /RootAction.effectsCancellation) {
-      EffectsCancellationReducer()
+      EffectsCancellation()
     }
     Pullback(state: \.episodes, action: /RootAction.episodes) {
       Reduce(

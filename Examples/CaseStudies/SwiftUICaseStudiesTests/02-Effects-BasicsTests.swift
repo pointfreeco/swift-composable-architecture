@@ -6,8 +6,8 @@ import XCTest
 class EffectsBasicsTests: XCTestCase {
   func testCountDown() {
     let store = _TestStore(
-      initialState: EffectsBasicsState(),
-      reducer: EffectsBasicsReducer()
+      initialState: .init(),
+      reducer: EffectsBasics()
         .dependency(\.mainQueue, .immediate)
     )
 
@@ -24,8 +24,8 @@ class EffectsBasicsTests: XCTestCase {
 
   func testNumberFact() {
     let store = _TestStore(
-      initialState: EffectsBasicsState(),
-      reducer: EffectsBasicsReducer()
+      initialState: .init(),
+      reducer: EffectsBasics()
         .dependency(
           \.factClient, .init(fetch: { n in Effect(value: "\(n) is a good number Brent") })
         )
