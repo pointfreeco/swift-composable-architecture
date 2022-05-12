@@ -34,106 +34,106 @@ enum WebSocketAction: Equatable {
   case webSocket(WebSocketClient.Action)
 }
 
-struct WebSocketEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-  var webSocket: WebSocketClient
-}
+struct WebSocketReducer: ReducerProtocol {
+  @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.webSocket) var webSocket
 
-let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnvironment> {
-  state, action, environment in
+  func reduce(
+    into state: inout WebSocketState, action: WebSocketAction
+  ) -> Effect<WebSocketAction, Never> {
+    struct WebSocketId: Hashable {}
 
-  struct WebSocketId: Hashable {}
+    var receiveSocketMessageEffect: Effect<WebSocketAction, Never> {
+      return self.webSocket.receive(WebSocketId())
+        .receive(on: self.mainQueue)
+        .catchToEffect(WebSocketAction.receivedSocketMessage)
+        .cancellable(id: WebSocketId())
+    }
+    var sendPingEffect: Effect<WebSocketAction, Never> {
+      return self.webSocket.sendPing(WebSocketId())
+        .delay(for: 10, scheduler: self.mainQueue)
+        .map(WebSocketAction.pingResponse)
+        .eraseToEffect()
+        .cancellable(id: WebSocketId())
+    }
 
-  var receiveSocketMessageEffect: Effect<WebSocketAction, Never> {
-    return environment.webSocket.receive(WebSocketId())
-      .receive(on: environment.mainQueue)
-      .catchToEffect(WebSocketAction.receivedSocketMessage)
-      .cancellable(id: WebSocketId())
-  }
-  var sendPingEffect: Effect<WebSocketAction, Never> {
-    return environment.webSocket.sendPing(WebSocketId())
-      .delay(for: 10, scheduler: environment.mainQueue)
-      .map(WebSocketAction.pingResponse)
-      .eraseToEffect()
-      .cancellable(id: WebSocketId())
-  }
+    switch action {
+    case .alertDismissed:
+      state.alert = nil
+      return .none
 
-  switch action {
-  case .alertDismissed:
-    state.alert = nil
-    return .none
+    case .connectButtonTapped:
+      switch state.connectivityState {
+      case .connected, .connecting:
+        state.connectivityState = .disconnected
+        return .cancel(id: WebSocketId())
 
-  case .connectButtonTapped:
-    switch state.connectivityState {
-    case .connected, .connecting:
+      case .disconnected:
+        state.connectivityState = .connecting
+        return self.webSocket.open(
+          WebSocketId(), URL(string: "wss://echo.websocket.events")!, []
+        )
+        .receive(on: self.mainQueue)
+        .map(WebSocketAction.webSocket)
+        .eraseToEffect()
+        .cancellable(id: WebSocketId())
+      }
+
+    case let .messageToSendChanged(message):
+      state.messageToSend = message
+      return .none
+
+    case .pingResponse:
+      // Ping the socket again in 10 seconds
+      return sendPingEffect
+
+    case let .receivedSocketMessage(.success(.string(string))):
+      state.receivedMessages.append(string)
+
+      // Immediately ask for the next socket message
+      return receiveSocketMessageEffect
+
+    case .receivedSocketMessage(.success):
+      // Immediately ask for the next socket message
+      return receiveSocketMessageEffect
+
+    case .receivedSocketMessage(.failure):
+      return .none
+
+    case .sendButtonTapped:
+      let messageToSend = state.messageToSend
+      state.messageToSend = ""
+
+      return self.webSocket.send(WebSocketId(), .string(messageToSend))
+        .receive(on: self.mainQueue)
+        .eraseToEffect()
+        .map(WebSocketAction.sendResponse)
+
+    case let .sendResponse(error):
+      if error != nil {
+        state.alert = .init(title: .init("Could not send socket message. Try again."))
+      }
+      return .none
+
+    case .webSocket(.didClose):
       state.connectivityState = .disconnected
       return .cancel(id: WebSocketId())
 
-    case .disconnected:
-      state.connectivityState = .connecting
-      return environment.webSocket.open(
-        WebSocketId(), URL(string: "wss://echo.websocket.events")!, []
+    case let .webSocket(.didBecomeInvalidWithError(error)),
+      let .webSocket(.didCompleteWithError(error)):
+      state.connectivityState = .disconnected
+      if error != nil {
+        state.alert = .init(title: .init("Disconnected from socket for some reason. Try again."))
+      }
+      return .cancel(id: WebSocketId())
+
+    case .webSocket(.didOpenWithProtocol):
+      state.connectivityState = .connected
+      return .merge(
+        receiveSocketMessageEffect,
+        sendPingEffect
       )
-      .receive(on: environment.mainQueue)
-      .map(WebSocketAction.webSocket)
-      .eraseToEffect()
-      .cancellable(id: WebSocketId())
     }
-
-  case let .messageToSendChanged(message):
-    state.messageToSend = message
-    return .none
-
-  case .pingResponse:
-    // Ping the socket again in 10 seconds
-    return sendPingEffect
-
-  case let .receivedSocketMessage(.success(.string(string))):
-    state.receivedMessages.append(string)
-
-    // Immediately ask for the next socket message
-    return receiveSocketMessageEffect
-
-  case .receivedSocketMessage(.success):
-    // Immediately ask for the next socket message
-    return receiveSocketMessageEffect
-
-  case .receivedSocketMessage(.failure):
-    return .none
-
-  case .sendButtonTapped:
-    let messageToSend = state.messageToSend
-    state.messageToSend = ""
-
-    return environment.webSocket.send(WebSocketId(), .string(messageToSend))
-      .receive(on: environment.mainQueue)
-      .eraseToEffect()
-      .map(WebSocketAction.sendResponse)
-
-  case let .sendResponse(error):
-    if error != nil {
-      state.alert = .init(title: .init("Could not send socket message. Try again."))
-    }
-    return .none
-
-  case let .webSocket(.didClose(code, _)):
-    state.connectivityState = .disconnected
-    return .cancel(id: WebSocketId())
-
-  case let .webSocket(.didBecomeInvalidWithError(error)),
-    let .webSocket(.didCompleteWithError(error)):
-    state.connectivityState = .disconnected
-    if error != nil {
-      state.alert = .init(title: .init("Disconnected from socket for some reason. Try again."))
-    }
-    return .cancel(id: WebSocketId())
-
-  case .webSocket(.didOpenWithProtocol):
-    state.connectivityState = .connected
-    return .merge(
-      receiveSocketMessageEffect,
-      sendPingEffect
-    )
   }
 }
 
@@ -185,6 +185,18 @@ struct WebSocketView: View {
 
 // MARK: - WebSocketClient
 
+extension DependencyValues {
+  var webSocket: WebSocketClient {
+    get { self[WebSocketKey.self] }
+    set { self[WebSocketKey.self] = newValue }
+  }
+
+  private enum WebSocketKey: LiveDependencyKey {
+    static let liveValue = WebSocketClient.live
+    static let testValue = WebSocketClient.failing
+  }
+}
+
 struct WebSocketClient {
   enum Action: Equatable {
     case didBecomeInvalidWithError(NSError?)
@@ -228,7 +240,7 @@ struct WebSocketClient {
 }
 
 extension WebSocketClient {
-  static let live = WebSocketClient(
+  static let live = Self(
     cancel: { id, closeCode, reason in
       .fireAndForget {
         dependencies[id]?.task.cancel(with: closeCode, reason: reason)
@@ -292,6 +304,14 @@ extension WebSocketClient {
       }
     }
   )
+
+  static let failing = Self(
+    cancel: { _, _, _ in .failing("\(Self.self).cancel") },
+    open: { _, _, _ in .failing("\(Self.self).open") },
+    receive: { _ in .failing("\(Self.self).receive") },
+    send: { _, _ in .failing("\(Self.self).send") },
+    sendPing: { _ in .failing("\(Self.self).sendPing") }
+  )
 }
 
 private var dependencies: [AnyHashable: Dependencies] = [:]
@@ -353,11 +373,7 @@ struct WebSocketView_Previews: PreviewProvider {
       WebSocketView(
         store: Store(
           initialState: .init(receivedMessages: ["Echo"]),
-          reducer: webSocketReducer,
-          environment: WebSocketEnvironment(
-            mainQueue: .main,
-            webSocket: .live
-          )
+          reducer: WebSocketReducer()
         )
       )
     }

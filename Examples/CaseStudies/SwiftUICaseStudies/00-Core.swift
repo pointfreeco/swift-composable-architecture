@@ -295,11 +295,11 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       action: /RootAction.twoCounters,
       environment: { _ in }
     ),
-  webSocketReducer
+  Reducer(WebSocketReducer())
     .pullback(
       state: \.webSocket,
       action: /RootAction.webSocket,
-      environment: { .init(mainQueue: $0.mainQueue, webSocket: $0.webSocket) }
+      environment: { _ in }
     )
 )
 .debug()
