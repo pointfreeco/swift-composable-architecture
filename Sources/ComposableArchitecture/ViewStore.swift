@@ -436,6 +436,7 @@ private struct HashableWrapper<Value>: Hashable {
     ///   - action: An action.
     ///   - predicate: A predicate on `State` that determines for how long this method should
     ///     suspend.
+    @MainActor
     public func send(
       _ action: Action,
       while predicate: @escaping (State) -> Bool
