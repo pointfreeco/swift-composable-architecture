@@ -56,7 +56,7 @@ struct BindingBasics: ReducerProtocol {
 }
 
 struct BindingBasicsView: View {
-  let store: Store<BindingBasics.State, BindingBasics.Action>
+  let store: StoreOf<BindingBasics>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in

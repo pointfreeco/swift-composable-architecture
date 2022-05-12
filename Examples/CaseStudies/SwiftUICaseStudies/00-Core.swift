@@ -18,7 +18,7 @@ struct RootState {
   var effectsTimers = TimersState()
   var episodes = EpisodesState(episodes: .mocks)
   #if compiler(>=5.5)
-    var focusDemo = FocusDemoState()
+    var focusDemo = FocusDemo.State()
   #endif
   var lifecycle = LifecycleDemoState()
   var loadThenNavigate = LoadThenNavigate.State()
@@ -53,7 +53,7 @@ enum RootAction {
   case effectsCancellation(EffectsCancellation.Action)
   case episodes(EpisodesAction)
   #if compiler(>=5.5)
-    case focusDemo(FocusDemoAction)
+    case focusDemo(FocusDemo.Action)
   #endif
   case lifecycle(LifecycleDemoAction)
   case loadThenNavigate(LoadThenNavigate.Action)
@@ -128,7 +128,7 @@ struct RootReducer: ReducerProtocol {
     }
     #if compiler(>=5.5)
       Pullback(state: \.focusDemo, action: /RootAction.focusDemo) {
-        Reduce(focusDemoReducer, environment: .init())
+        FocusDemo()
       }
     #endif
     Pullback(state: \.lifecycle, action: /RootAction.lifecycle) {

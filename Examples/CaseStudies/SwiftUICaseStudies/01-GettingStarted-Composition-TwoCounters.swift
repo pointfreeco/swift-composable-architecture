@@ -31,7 +31,7 @@ struct TwoCounters: ReducerProtocol {
 }
 
 struct TwoCountersView: View {
-  let store: Store<TwoCounters.State, TwoCounters.Action>
+  let store: StoreOf<TwoCounters>
 
   var body: some View {
     Form {

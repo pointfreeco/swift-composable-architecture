@@ -45,7 +45,7 @@ struct OptionalBasics: ReducerProtocol {
 }
 
 struct OptionalBasicsView: View {
-  let store: Store<OptionalBasics.State, OptionalBasics.Action>
+  let store: StoreOf<OptionalBasics>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in

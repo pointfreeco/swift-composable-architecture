@@ -103,7 +103,7 @@ extension Effect where Failure == Never {
 
 struct AnimationsView: View {
   @Environment(\.colorScheme) var colorScheme
-  let store: Store<Animations.State, Animations.Action>
+  let store: StoreOf<Animations>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in

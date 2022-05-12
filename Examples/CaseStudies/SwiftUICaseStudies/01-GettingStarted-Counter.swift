@@ -32,7 +32,7 @@ struct Counter: ReducerProtocol {
 }
 
 struct CounterView: View {
-  let store: Store<Counter.State, Counter.Action>
+  let store: StoreOf<Counter>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -47,7 +47,7 @@ struct CounterView: View {
 }
 
 struct CounterDemoView: View {
-  let store: Store<Counter.State, Counter.Action>
+  let store: StoreOf<Counter>
 
   var body: some View {
     Form {

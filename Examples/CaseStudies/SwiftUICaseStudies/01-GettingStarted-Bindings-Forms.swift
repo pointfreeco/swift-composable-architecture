@@ -47,7 +47,7 @@
   }
 
   struct BindingFormView: View {
-    let store: Store<BindingForm.State, BindingForm.Action>
+    let store: StoreOf<BindingForm>
 
     var body: some View {
       WithViewStore(self.store) { viewStore in

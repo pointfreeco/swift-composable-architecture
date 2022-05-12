@@ -80,7 +80,7 @@ struct AlertAndConfirmationDialog: ReducerProtocol {
 }
 
 struct AlertAndConfirmationDialogView: View {
-  let store: Store<AlertAndConfirmationDialog.State, AlertAndConfirmationDialog.Action>
+  let store: StoreOf<AlertAndConfirmationDialog>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in

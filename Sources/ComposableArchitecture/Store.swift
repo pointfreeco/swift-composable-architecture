@@ -523,3 +523,5 @@ public final class Store<State, Action> {
     #endif
   }
 }
+
+public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
