@@ -29,27 +29,52 @@ indirect enum NestedAction: Equatable {
 struct NestedReducer: ReducerProtocol {
   @Dependency(\.uuid) var uuid
 
-  func reduce(into state: inout NestedState, action: NestedAction) -> Effect<NestedAction, Never> {
-    switch action {
-    case .append:
-      state.children.append(NestedState(id: self.uuid()))
-      return .none
+  var body: some ReducerProtocol<NestedState, NestedAction> {
+    Reduce { state, action in
+      switch action {
+      case .append:
+        state.children.append(NestedState(id: self.uuid()))
+        return .none
 
-    case .node:
-      return ForEachReducer(state: \.children, action: /NestedAction.node) {
-        self
+      case .node:
+        return .none
+
+      case let .remove(indexSet):
+        state.children.remove(atOffsets: indexSet)
+        return .none
+
+      case let .rename(name):
+        state.description = name
+        return .none
       }
-      .reduce(into: &state, action: action)
+    }
 
-    case let .remove(indexSet):
-      state.children.remove(atOffsets: indexSet)
-      return .none
-
-    case let .rename(name):
-      state.description = name
-      return .none
+    ForEachReducer(state: \.children, action: /NestedAction.node) {
+      self
     }
   }
+
+//  func reduce(into state: inout NestedState, action: NestedAction) -> Effect<NestedAction, Never> {
+//    switch action {
+//    case .append:
+//      state.children.append(NestedState(id: self.uuid()))
+//      return .none
+//
+//    case .node:
+//      return ForEachReducer(state: \.children, action: /NestedAction.node) {
+//        self
+//      }
+//      .reduce(into: &state, action: action)
+//
+//    case let .remove(indexSet):
+//      state.children.remove(atOffsets: indexSet)
+//      return .none
+//
+//    case let .rename(name):
+//      state.description = name
+//      return .none
+//    }
+//  }
 }
 
 struct NestedView: View {

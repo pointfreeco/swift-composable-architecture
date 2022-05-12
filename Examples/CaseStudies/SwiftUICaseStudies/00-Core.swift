@@ -283,11 +283,11 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       action: /RootAction.shared,
       environment: { _ in }
     ),
-  timersReducer
+  Reducer(TimersReducer())
     .pullback(
       state: \.timers,
       action: /RootAction.timers,
-      environment: { .init(mainQueue: $0.mainQueue) }
+      environment: { _ in }
     ),
   Reducer(TwoCountersReducer())
     .pullback(

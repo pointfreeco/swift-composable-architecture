@@ -22,31 +22,29 @@ enum TimersAction {
   case toggleTimerButtonTapped
 }
 
-struct TimersEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+struct TimersReducer: ReducerProtocol {
+  @Dependency(\.mainQueue) var mainQueue
 
-let timersReducer = Reducer<TimersState, TimersAction, TimersEnvironment> {
-  state, action, environment in
+  func reduce(into state: inout TimersState, action: TimersAction) -> Effect<TimersAction, Never> {
+    enum TimerId {}
 
-  enum TimerId {}
+    switch action {
+    case .timerTicked:
+      state.secondsElapsed += 1
+      return .none
 
-  switch action {
-  case .timerTicked:
-    state.secondsElapsed += 1
-    return .none
-
-  case .toggleTimerButtonTapped:
-    state.isTimerActive.toggle()
-    return state.isTimerActive
-      ? Effect.timer(
-        id: TimerId.self,
-        every: 1,
-        tolerance: .zero,
-        on: environment.mainQueue.animation(.interpolatingSpring(stiffness: 3000, damping: 40))
-      )
-      .map { _ in TimersAction.timerTicked }
-      : .cancel(id: TimerId.self)
+    case .toggleTimerButtonTapped:
+      state.isTimerActive.toggle()
+      return state.isTimerActive
+        ? Effect.timer(
+          id: TimerId.self,
+          every: 1,
+          tolerance: .zero,
+          on: self.mainQueue.animation(.interpolatingSpring(stiffness: 3000, damping: 40))
+        )
+        .map { _ in TimersAction.timerTicked }
+        : .cancel(id: TimerId.self)
+    }
   }
 }
 
@@ -123,10 +121,7 @@ struct TimersView_Previews: PreviewProvider {
       TimersView(
         store: Store(
           initialState: TimersState(),
-          reducer: timersReducer,
-          environment: TimersEnvironment(
-            mainQueue: .main
-          )
+          reducer: TimersReducer()
         )
       )
     }
