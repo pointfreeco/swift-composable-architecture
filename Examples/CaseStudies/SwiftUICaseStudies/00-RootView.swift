@@ -314,8 +314,7 @@ struct RootView_Previews: PreviewProvider {
     RootView(
       store: .init(
         initialState: RootState(),
-        reducer: rootReducer,
-        environment: .live
+        reducer: RootReducer()
       )
     )
   }

@@ -26,22 +26,3 @@ extension ReducerProtocol {
     self.body.reduce(into: &state, action: action)
   }
 }
-
-extension Reducer where Environment == Void {
-  public init<R: ReducerProtocol<State, Action>>(_ reducer: R) {
-    self.init { state, action, _ in reducer.reduce(into: &state, action: action) }
-  }
-}
-
-extension Store {
-  public convenience init<R: ReducerProtocol<State, Action>>(
-    initialState: State,
-    reducer: R
-  ) {
-    self.init(
-      initialState: initialState,
-      reducer: .init(reducer),
-      environment: ()
-    )
-  }
-}

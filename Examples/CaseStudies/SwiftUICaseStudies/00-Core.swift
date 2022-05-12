@@ -75,235 +75,123 @@ enum RootAction {
   case webSocket(WebSocketAction)
 }
 
-struct RootEnvironment {
-  var date: () -> Date
-  var downloadClient: DownloadClient
-  var fact: FactClient
-  var favorite: (UUID, Bool) -> Effect<Bool, Error>
-  var fetchNumber: () -> Effect<Int, Never>
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-  var notificationCenter: NotificationCenter
-  var uuid: () -> UUID
-  var webSocket: WebSocketClient
+struct RootReducer: ReducerProtocol {
+  @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.uuid) var uuid
 
-  static let live = Self(
-    date: Date.init,
-    downloadClient: .live,
-    fact: .live,
-    favorite: favorite(id:isFavorite:),
-    fetchNumber: liveFetchNumber,
-    mainQueue: .main,
-    notificationCenter: .default,
-    uuid: UUID.init,
-    webSocket: .live
-  )
-}
+  var body: some ReducerProtocol<RootState, RootAction> {
+    Reduce { state, action in
+      switch action {
+      case .onAppear:
+        state = .init()
+        return .none
 
-let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
-  .init { state, action, _ in
-    switch action {
-    case .onAppear:
-      state = .init()
-      return .none
-
-    default:
-      return .none
-    }
-  },
-  Reducer(AlertAndConfirmationDialogReducer())
-    .pullback(
-      state: \.alertAndConfirmationDialog,
-      action: /RootAction.alertAndConfirmationDialog,
-      environment: { _ in }
-    ),
-  Reducer(AnimationsReducer())
-    .pullback(
-      state: \.animation,
-      action: /RootAction.animation,
-      environment: { _ in }
-    ),
-  Reducer(BindingBasicsReducer())
-    .pullback(
-      state: \.bindingBasics,
-      action: /RootAction.bindingBasics,
-      environment: { _ in }
-    ),
-  .init { state, action, environment in
-    #if compiler(>=5.4)
-      return
-        Reducer(BindingFormReducer())
-        .pullback(
-          state: \.bindingForm,
-          action: /RootAction.bindingForm,
-          environment: { _ in }
-        )
-        .run(&state, action, environment)
-    #else
-      return .none
-    #endif
-  },
-  clockReducer
-    .pullback(
-      state: \.clock,
-      action: /RootAction.clock,
-      environment: { .init(mainQueue: $0.mainQueue) }
-    ),
-  Reducer(CounterReducer())
-    .pullback(
-      state: \.counter,
-      action: /RootAction.counter,
-      environment: { _ in }
-    ),
-  dieRollReducer
-    .pullback(
-      state: \.dieRoll,
-      action: /RootAction.dieRoll,
-      environment: { _ in .init(rollDie: { .random(in: 1...6) }) }
-    ),
-  Reducer(EffectsBasicsReducer())
-    .pullback(
-      state: \.effectsBasics,
-      action: /RootAction.effectsBasics,
-      environment: { _ in }
-    ),
-  Reducer(EffectsCancellationReducer())
-    .pullback(
-      state: \.effectsCancellation,
-      action: /RootAction.effectsCancellation,
-      environment: { _ in }
-    ),
-  episodesReducer
-    .pullback(
-      state: \.episodes,
-      action: /RootAction.episodes,
-      environment: { .init(favorite: $0.favorite, mainQueue: $0.mainQueue) }
-    ),
-  .init { state, action, environment in
-    #if compiler(>=5.5)
-      return
-        focusDemoReducer
-        .pullback(
-          state: \.focusDemo,
-          action: /RootAction.focusDemo,
-          environment: { _ in .init() }
-        )
-        .run(&state, action, environment)
-    #else
-      return .none
-    #endif
-  },
-  lifecycleDemoReducer
-    .pullback(
-      state: \.lifecycle,
-      action: /RootAction.lifecycle,
-      environment: { .init(mainQueue: $0.mainQueue) }
-    ),
-  Reducer(LoadThenNavigateReducer())
-    .pullback(
-      state: \.loadThenNavigate,
-      action: /RootAction.loadThenNavigate,
-      environment: { _ in }
-    ),
-  Reducer(LoadThenNavigateListReducer())
-    .pullback(
-      state: \.loadThenNavigateList,
-      action: /RootAction.loadThenNavigateList,
-      environment: { _ in }
-    ),
-  Reducer(LoadThenPresentReducer())
-    .pullback(
-      state: \.loadThenPresent,
-      action: /RootAction.loadThenPresent,
-      environment: { _ in }
-    ),
-  Reducer(LongLivingEffectsReducer())
-    .pullback(
-      state: \.longLivingEffects,
-      action: /RootAction.longLivingEffects,
-      environment: { _ in }
-    ),
-  mapAppReducer
-    .pullback(
-      state: \.map,
-      action: /RootAction.map,
-      environment: { .init(downloadClient: $0.downloadClient, mainQueue: $0.mainQueue) }
-    ),
-  multipleDependenciesReducer
-    .pullback(
-      state: \.multipleDependencies,
-      action: /RootAction.multipleDependencies,
-      environment: { env in
-        .init(
-          date: env.date,
-          environment: .init(fetchNumber: env.fetchNumber),
-          mainQueue: env.mainQueue,
-          uuid: env.uuid
-        )
+      default:
+        return .none
       }
-    ),
-  Reducer(NavigateAndLoadReducer())
-    .pullback(
-      state: \.navigateAndLoad,
-      action: /RootAction.navigateAndLoad,
-      environment: { _ in }
-    ),
-  Reducer(NavigateAndLoadListReducer())
-    .pullback(
-      state: \.navigateAndLoadList,
-      action: /RootAction.navigateAndLoadList,
-      environment: { _ in }
-    ),
-  Reducer(NestedReducer())
-    .pullback(
-      state: \.nested,
-      action: /RootAction.nested,
-      environment: { _ in }
-    ),
-  Reducer(OptionalBasicsReducer())
-    .pullback(
-      state: \.optionalBasics,
-      action: /RootAction.optionalBasics,
-      environment: { _ in }
-    ),
-  Reducer(PresentAndLoadReducer())
-    .pullback(
-      state: \.presentAndLoad,
-      action: /RootAction.presentAndLoad,
-      environment: { _ in }
-    ),
-  Reducer(RefreshableReducer())
-    .pullback(
-      state: \.refreshable,
-      action: /RootAction.refreshable,
-      environment: { _ in }
-    ),
-  Reducer(SharedStateReducer())
-    .pullback(
-      state: \.shared,
-      action: /RootAction.shared,
-      environment: { _ in }
-    ),
-  Reducer(TimersReducer())
-    .pullback(
-      state: \.timers,
-      action: /RootAction.timers,
-      environment: { _ in }
-    ),
-  Reducer(TwoCountersReducer())
-    .pullback(
-      state: \.twoCounters,
-      action: /RootAction.twoCounters,
-      environment: { _ in }
-    ),
-  Reducer(WebSocketReducer())
-    .pullback(
-      state: \.webSocket,
-      action: /RootAction.webSocket,
-      environment: { _ in }
-    )
-)
-.debug()
-.signpost()
+    }
+
+    Pullback(state: \.alertAndConfirmationDialog, action: /RootAction.alertAndConfirmationDialog) {
+      AlertAndConfirmationDialogReducer()
+    }
+    Pullback(state: \.animation, action: /RootAction.animation) {
+      AnimationsReducer()
+    }
+    Pullback(state: \.bindingBasics, action: /RootAction.bindingBasics) {
+      BindingBasicsReducer()
+    }
+    #if compiler(>=5.4)
+      Pullback(state: \.bindingForm, action: /RootAction.bindingForm) {
+        BindingFormReducer()
+      }
+    #endif
+    Pullback(state: \.clock, action: /RootAction.clock) {
+      Reduce(clockReducer, environment: .init(mainQueue: self.mainQueue))
+    }
+    Pullback(state: \.counter, action: /RootAction.counter) {
+      CounterReducer()
+    }
+    Pullback(state: \.dieRoll, action: /RootAction.dieRoll) {
+      Reduce(dieRollReducer, environment: .init(rollDie: { .random(in: 1...6) }))
+    }
+    Pullback(state: \.effectsBasics, action: /RootAction.effectsBasics) {
+      EffectsBasicsReducer()
+    }
+    Pullback(state: \.effectsCancellation, action: /RootAction.effectsCancellation) {
+      EffectsCancellationReducer()
+    }
+    Pullback(state: \.episodes, action: /RootAction.episodes) {
+      Reduce(
+        episodesReducer,
+        environment: .init(favorite: favorite(id:isFavorite:), mainQueue: self.mainQueue)
+      )
+    }
+    #if compiler(>=5.5)
+      Pullback(state: \.focusDemo, action: /RootAction.focusDemo) {
+        Reduce(focusDemoReducer, environment: .init())
+      }
+    #endif
+    Pullback(state: \.lifecycle, action: /RootAction.lifecycle) {
+      Reduce(lifecycleDemoReducer, environment: .init(mainQueue: self.mainQueue))
+    }
+    Pullback(state: \.loadThenNavigate, action: /RootAction.loadThenNavigate) {
+      LoadThenNavigateReducer()
+    }
+    Pullback(state: \.loadThenNavigateList, action: /RootAction.loadThenNavigateList) {
+      LoadThenNavigateListReducer()
+    }
+    Pullback(state: \.loadThenPresent, action: /RootAction.loadThenPresent) {
+      LoadThenPresentReducer()
+    }
+    Pullback(state: \.longLivingEffects, action: /RootAction.longLivingEffects) {
+      LongLivingEffectsReducer()
+    }
+    Pullback(state: \.map, action: /RootAction.map) {
+      Reduce(mapAppReducer, environment: .init(downloadClient: .live, mainQueue: self.mainQueue))
+    }
+    Pullback(state: \.multipleDependencies, action: /RootAction.multipleDependencies) {
+      Reduce(
+        multipleDependenciesReducer,
+        environment: .init(
+          date: Date.init,
+          environment: .init(fetchNumber: liveFetchNumber),
+          mainQueue: self.mainQueue,
+          uuid: self.uuid.callAsFunction
+        )
+      )
+    }
+    Pullback(state: \.navigateAndLoad, action: /RootAction.navigateAndLoad) {
+      NavigateAndLoadReducer()
+    }
+    Pullback(state: \.navigateAndLoadList, action: /RootAction.navigateAndLoadList) {
+      NavigateAndLoadListReducer()
+    }
+    Pullback(state: \.nested, action: /RootAction.nested) {
+      NestedReducer()
+    }
+    Pullback(state: \.optionalBasics, action: /RootAction.optionalBasics) {
+      OptionalBasicsReducer()
+    }
+    Pullback(state: \.presentAndLoad, action: /RootAction.presentAndLoad) {
+      PresentAndLoadReducer()
+    }
+    Pullback(state: \.refreshable, action: /RootAction.refreshable) {
+      RefreshableReducer()
+    }
+    Pullback(state: \.shared, action: /RootAction.shared) {
+      SharedStateReducer()
+    }
+    Pullback(state: \.timers, action: /RootAction.timers) {
+      TimersReducer()
+    }
+    Pullback(state: \.twoCounters, action: /RootAction.twoCounters) {
+      TwoCountersReducer()
+    }
+    Pullback(state: \.webSocket, action: /RootAction.webSocket) {
+      WebSocketReducer()
+    }
+  }
+}
 
 private func liveFetchNumber() -> Effect<Int, Never> {
   Deferred { Just(Int.random(in: 1...1_000)) }
