@@ -7,8 +7,8 @@ import XCTest
 class SharedStateTests: XCTestCase {
   func testTabRestoredOnReset() {
     let store = _TestStore(
-      initialState: SharedState(),
-      reducer: SharedStateReducer()
+      initialState: .init(),
+      reducer: SharedState()
     )
 
     store.send(.selectTab(.profile)) {
@@ -25,8 +25,8 @@ class SharedStateTests: XCTestCase {
 
   func testTabSelection() {
     let store = _TestStore(
-      initialState: SharedState(),
-      reducer: SharedStateReducer()
+      initialState: .init(),
+      reducer: SharedState()
     )
 
     store.send(.selectTab(.profile)) {
@@ -43,8 +43,8 @@ class SharedStateTests: XCTestCase {
 
   func testSharedCounts() {
     let store = _TestStore(
-      initialState: SharedState(),
-      reducer: SharedStateReducer()
+      initialState: .init(),
+      reducer: SharedState()
     )
 
     store.send(.counter(.incrementButtonTapped)) {
@@ -66,7 +66,7 @@ class SharedStateTests: XCTestCase {
   func testIsPrimeWhenPrime() {
     let store = _TestStore(
       initialState: .init(alert: nil, count: 3, maxCount: 0, minCount: 0, numberOfCounts: 0),
-      reducer: SharedStateCounterReducer()
+      reducer: SharedState.Counter()
     )
 
     store.send(.isPrimeButtonTapped) {
@@ -82,7 +82,7 @@ class SharedStateTests: XCTestCase {
   func testIsPrimeWhenNotPrime() {
     let store = _TestStore(
       initialState: .init(alert: nil, count: 6, maxCount: 0, minCount: 0, numberOfCounts: 0),
-      reducer: SharedStateCounterReducer()
+      reducer: SharedState.Counter()
     )
 
     store.send(.isPrimeButtonTapped) {

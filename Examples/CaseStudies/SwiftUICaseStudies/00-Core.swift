@@ -33,7 +33,7 @@ struct RootState {
   var optionalBasics = OptionalBasics.State()
   var presentAndLoad = PresentAndLoad.State()
   var refreshable = RefreshableState()
-  var shared = SharedState()
+  var shared = SharedState.State()
   var timers = TimersState()
   var twoCounters = TwoCounters.State()
   var webSocket = WebSocketState()
@@ -69,7 +69,7 @@ enum RootAction {
   case onAppear
   case presentAndLoad(PresentAndLoad.Action)
   case refreshable(RefreshableAction)
-  case shared(SharedStateAction)
+  case shared(SharedState.Action)
   case timers(TimersAction)
   case twoCounters(TwoCounters.Action)
   case webSocket(WebSocketAction)
@@ -179,7 +179,7 @@ struct RootReducer: ReducerProtocol {
       RefreshableReducer()
     }
     Pullback(state: \.shared, action: /RootAction.shared) {
-      SharedStateReducer()
+      SharedState()
     }
     Pullback(state: \.timers, action: /RootAction.timers) {
       TimersReducer()
