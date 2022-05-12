@@ -10,24 +10,19 @@ final class InstrumentationTests: XCTestCase {
     var sendCalls = 0
     var changeStateCalls = 0
     var processCalls = 0
-    let inst = ComposableArchitecture.Instrumentation(
-      viewStore: .init(
-        willSend: { _ in XCTFail("ViewStore callbacks should not be called") },
-        didSend: { _ in XCTFail("ViewStore callbacks should not be called") },
-        willDeduplicate: { _ in XCTFail("ViewStore callbacks should not be called") },
-        didDeduplicate: { _ in XCTFail("ViewStore callbacks should not be called") },
-        willChangeState: { _ in XCTFail("ViewStore callbacks should not be called") },
-        didChangeState: { _ in XCTFail("ViewStore callbacks should not be called") }
-      ),
-      store: .init(
-        willSend: { _ in sendCalls += 1 },
-        didSend: { _ in sendCalls += 1 },
-        willChangeState: { _ in changeStateCalls += 1 },
-        didChangeState: { _ in changeStateCalls += 1 },
-        willProcessEvents: { _ in processCalls += 1 },
-        didProcessEvents:{ _ in processCalls += 1 }
-      )
-    )
+    let inst = ComposableArchitecture.Instrumentation { info, timing, kind in
+      switch (timing, kind) {
+      case (_, .viewStoreSend), (_, .viewStoreDeduplicate), (_, .viewStoreChangeState):
+        XCTFail("ViewStore callbacks should not be called")
+      case (_, .storeSend):
+        sendCalls += 1
+      case (_, .storeChangeState):
+        changeStateCalls += 1
+      case (_, .storeProcessEvent):
+        processCalls += 1
+      }
+    }
+
 
     let store = Store(initialState: (), reducer: Reducer<Void, Void, Void>.empty, environment: ())
     store.send((), instrumentation: inst)
@@ -45,24 +40,22 @@ final class InstrumentationTests: XCTestCase {
     var sendCalls_s = 0
     var changeStateCalls_s = 0
     var processCalls_s = 0
-    let inst = ComposableArchitecture.Instrumentation(
-      viewStore: .init(
-        willSend: { _ in sendCalls_vs += 1 },
-        didSend: { _ in sendCalls_vs += 1 },
-        willDeduplicate: { _ in dedupCalls_vs += 1 },
-        didDeduplicate: { _ in dedupCalls_vs += 1 },
-        willChangeState: { _ in changeCalls_vs += 1 },
-        didChangeState: { _ in changeCalls_vs += 1 }
-      ),
-      store: .init(
-        willSend: { _ in sendCalls_s += 1 },
-        didSend: { _ in sendCalls_s += 1 },
-        willChangeState: { _ in changeStateCalls_s += 1 },
-        didChangeState: { _ in changeStateCalls_s += 1 },
-        willProcessEvents: { _ in processCalls_s += 1 },
-        didProcessEvents:{ _ in processCalls_s += 1 }
-      )
-    )
+    let inst = ComposableArchitecture.Instrumentation { info, timing, kind in
+      switch (timing, kind) {
+      case (_, .storeSend):
+        sendCalls_s += 1
+      case (_, .storeChangeState):
+        changeStateCalls_s += 1
+      case (_, .storeProcessEvent):
+        processCalls_s += 1
+      case (_, .viewStoreSend):
+        sendCalls_vs += 1
+      case (_, .viewStoreDeduplicate):
+        dedupCalls_vs += 1
+      case (_, .viewStoreChangeState):
+        changeCalls_vs += 1
+      }
+    }
 
     let store = Store(initialState: (), reducer: Reducer<Void, Void, Void>.empty, environment: ())
     let viewStore = ViewStore(store, instrumentation: inst)
@@ -85,24 +78,22 @@ final class InstrumentationTests: XCTestCase {
     var changeStateCalls_s = 0
     var processCalls_s = 0
 
-    let inst = ComposableArchitecture.Instrumentation(
-      viewStore: .init(
-        willSend: { _ in sendCalls_vs += 1 },
-        didSend: { _ in sendCalls_vs += 1 },
-        willDeduplicate: { _ in dedupCalls_vs += 1 },
-        didDeduplicate: { _ in dedupCalls_vs += 1 },
-        willChangeState: { _ in changeCalls_vs += 1 },
-        didChangeState: { _ in changeCalls_vs += 1 }
-      ),
-      store: .init(
-        willSend: { _ in sendCalls_s += 1 },
-        didSend: { _ in sendCalls_s += 1 },
-        willChangeState: { _ in changeStateCalls_s += 1 },
-        didChangeState: { _ in changeStateCalls_s += 1 },
-        willProcessEvents: { _ in processCalls_s += 1 },
-        didProcessEvents:{ _ in processCalls_s += 1 }
-      )
-    )
+    let inst = ComposableArchitecture.Instrumentation { info, timing, kind in
+      switch (timing, kind) {
+      case (_, .storeSend):
+        sendCalls_s += 1
+      case (_, .storeChangeState):
+        changeStateCalls_s += 1
+      case (_, .storeProcessEvent):
+        processCalls_s += 1
+      case (_, .viewStoreSend):
+        sendCalls_vs += 1
+      case (_, .viewStoreDeduplicate):
+        dedupCalls_vs += 1
+      case (_, .viewStoreChangeState):
+        changeCalls_vs += 1
+      }
+    }
 
     var reducerCount = 0
     let reducer = Reducer<Void, Void, Void> { _, _, _ in
@@ -132,24 +123,22 @@ final class InstrumentationTests: XCTestCase {
     var changeStateCalls_s = 0
     var processCalls_s = 0
 
-    let inst = ComposableArchitecture.Instrumentation(
-      viewStore: .init(
-        willSend: { _ in sendCalls_vs += 1 },
-        didSend: { _ in sendCalls_vs += 1 },
-        willDeduplicate: { _ in dedupCalls_vs += 1 },
-        didDeduplicate: { _ in dedupCalls_vs += 1 },
-        willChangeState: { _ in changeCalls_vs += 1 },
-        didChangeState: { _ in changeCalls_vs += 1 }
-      ),
-      store: .init(
-        willSend: { _ in sendCalls_s += 1 },
-        didSend: { _ in sendCalls_s += 1 },
-        willChangeState: { _ in changeStateCalls_s += 1 },
-        didChangeState: { _ in changeStateCalls_s += 1 },
-        willProcessEvents: { _ in processCalls_s += 1 },
-        didProcessEvents:{ _ in processCalls_s += 1 }
-      )
-    )
+    let inst = ComposableArchitecture.Instrumentation { info, timing, kind in
+      switch (timing, kind) {
+      case (_, .storeSend):
+        sendCalls_s += 1
+      case (_, .storeChangeState):
+        changeStateCalls_s += 1
+      case (_, .storeProcessEvent):
+        processCalls_s += 1
+      case (_, .viewStoreSend):
+        sendCalls_vs += 1
+      case (_, .viewStoreDeduplicate):
+        dedupCalls_vs += 1
+      case (_, .viewStoreChangeState):
+        changeCalls_vs += 1
+      }
+    }
 
     var reducerCount = 0
     let reducer = Reducer<Void, Void, Void> { _, _, _ in
@@ -189,24 +178,22 @@ final class InstrumentationTests: XCTestCase {
     var changeStateCalls_s = 0
     var processCalls_s = 0
 
-    let inst = ComposableArchitecture.Instrumentation(
-      viewStore: .init(
-        willSend: { _ in sendCalls_vs += 1 },
-        didSend: { _ in sendCalls_vs += 1 },
-        willDeduplicate: { _ in dedupCalls_vs += 1 },
-        didDeduplicate: { _ in dedupCalls_vs += 1 },
-        willChangeState: { _ in changeCalls_vs += 1 },
-        didChangeState: { _ in changeCalls_vs += 1 }
-      ),
-      store: .init(
-        willSend: { _ in sendCalls_s += 1 },
-        didSend: { _ in sendCalls_s += 1 },
-        willChangeState: { _ in changeStateCalls_s += 1 },
-        didChangeState: { _ in changeStateCalls_s += 1 },
-        willProcessEvents: { _ in processCalls_s += 1 },
-        didProcessEvents:{ _ in processCalls_s += 1 }
-      )
-    )
+    let inst = ComposableArchitecture.Instrumentation { info, timing, kind in
+      switch (timing, kind) {
+      case (_, .storeSend):
+        sendCalls_s += 1
+      case (_, .storeChangeState):
+        changeStateCalls_s += 1
+      case (_, .storeProcessEvent):
+        processCalls_s += 1
+      case (_, .viewStoreSend):
+        sendCalls_vs += 1
+      case (_, .viewStoreDeduplicate):
+        dedupCalls_vs += 1
+      case (_, .viewStoreChangeState):
+        changeCalls_vs += 1
+      }
+    }
 
     let counterReducer = Reducer<Int, Void, Void> { state, _, _ in
       state += 1

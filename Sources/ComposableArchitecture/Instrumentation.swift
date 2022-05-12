@@ -10,325 +10,72 @@ import Foundation
 /// ``ViewStore`` is scoped off a parent ``Store``s state:
 /// ```
 /// ViewStore.send(.someAction)
-/// Instrumentation.ViewStore.willSend
+/// .pre, .viewStoreSend
 ///   Store.send(.someAction)
-///   Instrumentation.Store.willSend
+///   .pre, .storeSend
 ///     The Store will begin processing .someAction
-///     Instrumentation.Store.willProcess
+///     .pre, .storeProcessEvent
 ///       The Store's reducer handles .someAction
 ///       Any returned actions from the reducer are queued up
-///     Instrumentation.Store.didProcess
+///     .post, .storeProcessEvent
 ///     The above(willProcess -> didProcess) is repeated for each queued up action within Store
-///     Instrumentation.Store.willChangeState
+///     .pre, .storeChangeState
 ///       The Store updates its state
 ///       Any Stores based off the parent Store have their states updated, there for the below may be called multiple times
-///       Instrumentation.ViewStore.willDeduplicate for impacted ViewStores
-///       Instrumentation.ViewStore.didDeduplicate
-///       Instrumentation.ViewStore.willChangeState
+///       .pre, .viewStoreDeduplicate for impacted ViewStores
+///       .post, .viewStoreDeduplicate
+///       .pre, .viewStoreChangeState
 ///       If the value for a ViewStores state was not a duplicate, then it is updated
-///       Instrumentation.ViewStore.didChangeState
-///     Instrumentation.Store.didChangeState
-///   Instrumentation.Store.didSend
-/// Instrumentation.ViewStore.didSend
+///       .post, .viewStoreChangeState
+///     .post, .storeChangeState
+///   .post, .store.didSend
+/// .post, .viewStoreSend
 /// ```
 public class Instrumentation {
-  public typealias Callback = (EventInfo) -> Void
+  /// Type indicating the action being taken by the store
+  public enum CallbackKind {
+    case storeSend
+    case storeChangeState
+    case storeProcessEvent
+    case viewStoreSend
+    case viewStoreChangeState
+    case viewStoreDeduplicate
+  }
 
-  static let noop = Instrumentation()
+  /// Type indicating if the callback is before or after the action begin taken by the store
+  public enum CallbackTiming {
+    case pre
+    case post
+  }
 
+  /// The method to implement if a user of ComposableArchitecture would like to be notified about the "life cycle" of
+  /// the various stores within the app as an action is acted upon.
+  public typealias Callback = (CallbackInfo<Any, Any>, CallbackTiming, CallbackKind) -> Void
+  let callback: Callback?
+
+  public static let noop = Instrumentation()
   public static var shared: Instrumentation = .noop
-  let viewStore: ViewStoreCallbacks?
-  let store: StoreCallbacks?
 
-  public init(viewStore: Instrumentation.ViewStoreCallbacks? = nil, store: Instrumentation.StoreCallbacks? = nil) {
-    self.viewStore = viewStore
-    self.store = store
+  public init(callback: Callback? = nil) {
+    self.callback = callback
   }
 }
 
 extension Instrumentation {
-  /// Container for the information that will be provided to tracking/instrumentation implementations.
-  public struct EventInfo: CustomStringConvertible {
-    internal init(type: String, action: String? = nil, tags: [String: String] = [:]) {
-      self.type = type
-      self.action = action ?? ""
-      self.tags = tags
-    }
+  /// Object that holds the information that will be passed to any implementation that has provided a callback function
+  public struct CallbackInfo<StoreKind, Action> {
+    public let storeKind: StoreKind
+    public let action: Action?
+    public let originatingAction: Action?
 
-    /// The Swift type of object that is operating. This will generally be of the type `Store<State, Action>` or
-    /// `ViewStore<State, Action>` with the `State` and `Action` types properly filled in. With this information it
-    /// _should_ be possible to identify which ``Store`` or ``ViewStore`` (or other type) is operating.
-    public let type: String
-
-    /// A ``String`` generated for the ``Action`` that was sent, when available. There are operations that may not have
-    /// an ``Action`` available and so this may be an empty string. The value is generated using ``String(describing:)``
-    /// and so is dependent on the Swift runtime metadata. If that metadata is removed in some way then this value will
-    /// be empty most likely.
-    public var action: String
-
-    /// A dictionary of tags that the library thinks are valuable to include in the tracking/instrumentation. There is
-    /// obviously no requirement to use these, but they are there just in case.
-    public var tags: [String: String]
-
-    public var description: String {
-      guard !action.isEmpty else {
-        return "\(type)"
-      }
-
-      return "\(type): \(action)"
-    }
-
-    static let empty: EventInfo = .init(type: "Unknown")
-  }
-}
-
-extension Instrumentation {
-  func beginContext<State, Action>(_ type: ComposableArchitecture.ViewStore<State, Action>.Type) -> ViewStoreContext<State, Action> {
-    return ViewStoreContext(viewStore: viewStore, type: type)
-  }
-
-  /// Tracking/instrumentation hooks that operate only within the context of ``ViewStore`` objects.
-  public struct ViewStoreCallbacks {
-    public init(willSend: @escaping Callback, didSend: @escaping Callback, willDeduplicate: @escaping Callback, didDeduplicate: @escaping Callback, willChangeState: @escaping Callback, didChangeState: @escaping Callback) {
-      self.willSend = willSend
-      self.didSend = didSend
-      self.willDeduplicate = willDeduplicate
-      self.didDeduplicate = didDeduplicate
-      self.willChangeState = willChangeState
-      self.didChangeState = didChangeState
-    }
-
-    /// Called _before_ the ``ViewStore.send`` handles the action.
-    let willSend: Callback
-    /// Called  _after_ the ``ViewStore.send`` has completed handling the action.
-    let didSend: Callback
-    /// Called _before_ the ``ViewStore`` attempts to deduplicate the old and new states. It is expected that for every
-    /// ``willDeduplicate`` there will be a matching ``didDeduplicate``.
-    /// Note: This may _not_ be called in every case. Because the deduplication implementation uses the
-    /// ``Publisher.removeDuplicates`` method, this trigger will not be called on the _first_ state value (because there
-    ///  is no old/new pair to compare).
-    let willDeduplicate: Callback
-    /// Called _after_ the ``ViewStore`` has completed deduplicating the old and new states. It is expected that for
-    /// every ``willDeduplicate`` there will be a matching ``didDeduplicate``.
-    /// Note: This may _not_ be called in every case. Because the deduplication implementation uses the
-    /// ``Publisher.removeDuplicates`` method, this trigger will not be called on the _first_ state value (because there
-    ///  is no old/new pair to compare).
-    let didDeduplicate: Callback
-    /// Called _before_ the ``ViewStore.state`` is updated with the new value.
-    let willChangeState: Callback
-    /// Called _after_ the ``ViewStore.state`` is updated with the new value.
-    let didChangeState: Callback
-  }
-
-  internal final class ViewStoreContext<State, Action> {
-    let viewStore: ViewStoreCallbacks?
-
-    let type: ComposableArchitecture.ViewStore<State, Action>.Type
-    private lazy var typeString: String = {
-      String(describing: type)
-    }()
-
-    private var actionString: String? {
-      didSet {
-        if let actionString = actionString {
-          event.action = actionString
-        }
-      }
-    }
-
-    var action: Action? {
-      didSet {
-        guard viewStore != nil else {
-          return
-        }
-
-        actionString = action.map { debugCaseOutput($0) }
-      }
-    }
-
-    private lazy var event: EventInfo = {
-      return EventInfo(type: typeString, action: actionString, tags: [:])
-    }()
-
-    init(viewStore: ViewStoreCallbacks?, type: ComposableArchitecture.ViewStore<State, Action>.Type, action: Action? = nil) {
-      self.viewStore = viewStore
-      self.type = type
+    init(storeKind: StoreKind, action: Action? = nil, originatingAction: Action? = nil) {
+      self.storeKind = storeKind
       self.action = action
+      self.originatingAction = originatingAction
     }
 
-    func willSend(_ action: Action) -> EventInfo {
-      guard let viewStore = viewStore else {
-        return .empty
-      }
-
-      viewStore.willSend(event)
-      return event
-    }
-
-    func didSend(_ event: EventInfo) {
-      guard let viewStore = viewStore else {
-        return
-      }
-
-      self.event = event
-      viewStore.didSend(event)
-    }
-
-    func willDeduplicate() -> EventInfo {
-      guard let viewStore = viewStore else {
-        return .empty
-      }
-
-      viewStore.willDeduplicate(event)
-      return event
-    }
-
-    func didDeduplicate(_ event: EventInfo) {
-      guard let viewStore = viewStore else {
-        return
-      }
-
-      self.event = event
-      viewStore.didDeduplicate(event)
-    }
-
-    func willChangeState() -> EventInfo {
-      guard let viewStore = viewStore else {
-        return .empty
-      }
-
-      viewStore.willChangeState(event)
-      return event
-    }
-
-    func didChangeState(_ event: EventInfo) {
-      guard let viewStore = viewStore else {
-        return
-      }
-
-      self.event = event
-      viewStore.didChangeState(event)
-    }
-  }
-}
-
-extension Instrumentation {
-  func beginContext<State, Action>(_ type: ComposableArchitecture.Store<State, Action>.Type, _ action: Action) -> StoreContext<State, Action> {
-    return StoreContext(store: store, type: type, action: action)
-  }
-
-  /// Tracking/instrumentation hooks that operating only within the context of ``Store`` objects.
-  public struct StoreCallbacks {
-    public init(willSend: @escaping Instrumentation.Callback, didSend: @escaping Instrumentation.Callback, willChangeState: @escaping Instrumentation.Callback, didChangeState: @escaping Instrumentation.Callback, willProcessEvents: @escaping Instrumentation.Callback, didProcessEvents: @escaping Instrumentation.Callback) {
-      self.willSend = willSend
-      self.didSend = didSend
-      self.willChangeState = willChangeState
-      self.didChangeState = didChangeState
-      self.willProcessEvents = willProcessEvents
-      self.didProcessEvents = didProcessEvents
-    }
-
-    /// Called _before_ the ``Store.send`` has begun handling the action.
-    let willSend: Callback
-    /// Called _after_ the ``Store.send`` has completed handling the action. This may include multiple instances of
-    /// ``will|didChangeState`` and ``will|didProcessEvents`` pairs, and potentially further calls to the
-    /// ``Instrumentation.ViewStore`` and ``Instrumentation.Store`` functions.
-    let didSend: Callback
-    /// Called _before_ the ``Store.state.value`` is updated.
-    let willChangeState: Callback
-    /// Called _after_ the ``Store.state.value`` is updated.
-    let didChangeState: Callback
-    /// Called _before_ the ``Store`` handles any individual action that has been enqueued. This may include actions
-    /// that have been returned via an ``Effect`` out of a ``Reducer`` that are synchronous or even results of ``Effects``
-    /// that were long running and just happened to complete while this ``Store`` was clearing the queue.
-    let willProcessEvents: Callback
-    /// Called _after_ the ``Store`` has completed handling an individual action.
-    let didProcessEvents: Callback
-  }
-
-  internal final class StoreContext<State, Action> {
-    let store: StoreCallbacks?
-    let type: ComposableArchitecture.Store<State, Action>.Type
-    private lazy var typeString: String = {
-      String(describing: type)
-    }()
-    private lazy var actionString: String = {
-      debugCaseOutput(action)
-    }()
-
-    var action: Action {
-      didSet {
-        guard store != nil else {
-          return
-        }
-
-        actionString = debugCaseOutput(action)
-      }
-    }
-
-    private lazy var event: EventInfo = {
-      return EventInfo(type: typeString, action: actionString, tags: [:])
-    }()
-
-    init(store: StoreCallbacks?, type: ComposableArchitecture.Store<State, Action>.Type, action: Action) {
-      self.store = store
-      self.type = type
-      self.action = action
-    }
-
-    func willSend() -> EventInfo {
-      guard let store = store else {
-        return .empty
-      }
-
-      store.willSend(event)
-      return event
-    }
-
-    func didSend(_ event: EventInfo) {
-      guard let store = store else {
-        return
-      }
-
-      self.event = event
-      store.didSend(event)
-    }
-
-    func willChangeState() -> EventInfo {
-      guard let store = store else {
-        return .empty
-      }
-
-      store.willChangeState(event)
-      return event
-    }
-
-    func didChangeState(_ event: EventInfo) {
-      guard let store = store else {
-        return
-      }
-
-      self.event = event
-      store.didChangeState(event)
-    }
-
-    func willProcess(action: Action) -> EventInfo {
-      guard let store = store else {
-        return .empty
-      }
-
-      self.action = action
-      store.willProcessEvents(event)
-      return event
-    }
-
-    func didProcess(_ event: EventInfo) {
-      guard let store = store else {
-        return
-      }
-
-      self.event = event
-      store.didProcessEvents(event)
+    public func eraseToAny() -> CallbackInfo<Any, Any> {
+      return .init(storeKind: (storeKind as Any), action: action.map { $0 as Any }, originatingAction: originatingAction.map { $0 as Any })
     }
   }
 }

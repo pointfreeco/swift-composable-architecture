@@ -371,15 +371,13 @@ public final class Store<State, Action> {
     self.isSending = true
     var currentState = self.state.value
 
-    let context = instrumentation.beginContext(Store.self, action)
-    let sendEvent = context.willSend()
-    defer {
-      context.didSend(sendEvent)
-    }
+    let callbackInfo = Instrumentation.CallbackInfo(storeKind: self.self, action: action, originatingAction: originatingAction).eraseToAny()
+    instrumentation.callback?(callbackInfo, .pre, .storeSend)
+    defer { instrumentation.callback?(callbackInfo, .post, .storeSend) }
 
     defer {
-      let stateEvent = context.willChangeState()
-      defer { context.didChangeState(stateEvent) }
+      instrumentation.callback?(callbackInfo, .pre, .storeChangeState)
+      defer { instrumentation.callback?(callbackInfo, .post, .storeChangeState) }
 
       self.state.value = currentState
       self.isSending = false
@@ -394,10 +392,9 @@ public final class Store<State, Action> {
     while !self.bufferedActions.isEmpty {
       let action = self.bufferedActions.removeFirst()
 
-      let processEvent = context.willProcess(action: action)
-      defer {
-        context.didProcess(processEvent)
-      }
+      let processCallbackInfo = Instrumentation.CallbackInfo(storeKind: self.self, action: action, originatingAction: nil).eraseToAny()
+      instrumentation.callback?(processCallbackInfo, .pre, .storeProcessEvent)
+      defer { instrumentation.callback?(processCallbackInfo, .post, .storeProcessEvent) }
 
       let effect = self.reducer(&currentState, action)
 
