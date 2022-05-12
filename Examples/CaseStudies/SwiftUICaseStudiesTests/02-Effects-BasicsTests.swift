@@ -5,13 +5,10 @@ import XCTest
 
 class EffectsBasicsTests: XCTestCase {
   func testCountDown() {
-    let store = TestStore(
+    let store = _TestStore(
       initialState: EffectsBasicsState(),
-      reducer: effectsBasicsReducer,
-      environment: EffectsBasicsEnvironment(
-        fact: .failing,
-        mainQueue: .immediate
-      )
+      reducer: EffectsBasicsReducer()
+        .dependency(\.mainQueue, .immediate)
     )
 
     store.send(.incrementButtonTapped) {
@@ -26,13 +23,13 @@ class EffectsBasicsTests: XCTestCase {
   }
 
   func testNumberFact() {
-    let store = TestStore(
+    let store = _TestStore(
       initialState: EffectsBasicsState(),
-      reducer: effectsBasicsReducer,
-      environment: EffectsBasicsEnvironment(
-        fact: .init(fetch: { n in Effect(value: "\(n) is a good number Brent") }),
-        mainQueue: .immediate
-      )
+      reducer: EffectsBasicsReducer()
+        .dependency(
+          \.factClient, .init(fetch: { n in Effect(value: "\(n) is a good number Brent") })
+        )
+        .dependency(\.mainQueue, .immediate)
     )
 
     store.send(.incrementButtonTapped) {

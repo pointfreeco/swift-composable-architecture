@@ -5,13 +5,11 @@ import XCTest
 
 class RefreshableTests: XCTestCase {
   func testHappyPath() {
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: refreshableReducer,
-      environment: .init(
-        fact: .init { .init(value: "\($0) is a good number.") },
-        mainQueue: .immediate
-      )
+      reducer: RefreshableReducer()
+        .dependency(\.factClient, .init { .init(value: "\($0) is a good number.") })
+        .dependency(\.mainQueue, .immediate)
     )
 
     store.send(.incrementButtonTapped) {
@@ -27,13 +25,11 @@ class RefreshableTests: XCTestCase {
   }
 
   func testUnhappyPath() {
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: refreshableReducer,
-      environment: .init(
-        fact: .init { _ in .init(error: .init()) },
-        mainQueue: .immediate
-      )
+      reducer: RefreshableReducer()
+        .dependency(\.factClient, .init { _ in .init(error: .init()) })
+        .dependency(\.mainQueue, .immediate)
     )
 
     store.send(.incrementButtonTapped) {
@@ -50,13 +46,11 @@ class RefreshableTests: XCTestCase {
   func testCancellation() {
     let mainQueue = DispatchQueue.test
 
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: refreshableReducer,
-      environment: .init(
-        fact: .init { .init(value: "\($0) is a good number.") },
-        mainQueue: mainQueue.eraseToAnyScheduler()
-      )
+      reducer: RefreshableReducer()
+        .dependency(\.factClient, .init { .init(value: "\($0) is a good number.") })
+        .dependency(\.mainQueue, mainQueue.eraseToAnyScheduler())
     )
 
     store.send(.incrementButtonTapped) {

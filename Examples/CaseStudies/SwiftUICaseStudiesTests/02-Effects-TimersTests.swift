@@ -4,25 +4,23 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 class TimersTests: XCTestCase {
-  let scheduler = DispatchQueue.test
+  let mainQueue = DispatchQueue.test
 
   func testStart() {
-    let store = TestStore(
+    let store = _TestStore(
       initialState: TimersState(),
-      reducer: timersReducer,
-      environment: TimersEnvironment(
-        mainQueue: self.scheduler.eraseToAnyScheduler()
-      )
+      reducer: TimersReducer()
+        .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
     )
 
     store.send(.toggleTimerButtonTapped) {
       $0.isTimerActive = true
     }
-    self.scheduler.advance(by: 1)
+    self.mainQueue.advance(by: 1)
     store.receive(.timerTicked) {
       $0.secondsElapsed = 1
     }
-    self.scheduler.advance(by: 5)
+    self.mainQueue.advance(by: 5)
     store.receive(.timerTicked) {
       $0.secondsElapsed = 2
     }

@@ -15,13 +15,11 @@ class WebSocketTests: XCTestCase {
     webSocket.send = { _, _ in Effect(value: nil) }
     webSocket.sendPing = { _ in .none }
 
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: webSocketReducer,
-      environment: WebSocketEnvironment(
-        mainQueue: .immediate,
-        webSocket: webSocket
-      )
+      reducer: WebSocketReducer()
+        .dependency(\.mainQueue, .immediate)
+        .dependency(\.webSocket, webSocket)
     )
 
     // Connect to the socket
@@ -64,13 +62,11 @@ class WebSocketTests: XCTestCase {
     webSocket.send = { _, _ in Effect(value: NSError(domain: "", code: 1)) }
     webSocket.sendPing = { _ in .none }
 
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: webSocketReducer,
-      environment: WebSocketEnvironment(
-        mainQueue: .immediate,
-        webSocket: webSocket
-      )
+      reducer: WebSocketReducer()
+        .dependency(\.mainQueue, .immediate)
+        .dependency(\.webSocket, webSocket)
     )
 
     // Connect to the socket
@@ -108,14 +104,12 @@ class WebSocketTests: XCTestCase {
     webSocket.receive = { _ in .none }
     webSocket.sendPing = { _ in pingSubject.eraseToEffect() }
 
-    let scheduler = DispatchQueue.test
-    let store = TestStore(
+    let mainQueue = DispatchQueue.test
+    let store = _TestStore(
       initialState: .init(),
-      reducer: webSocketReducer,
-      environment: WebSocketEnvironment(
-        mainQueue: scheduler.eraseToAnyScheduler(),
-        webSocket: webSocket
-      )
+      reducer: WebSocketReducer()
+        .dependency(\.mainQueue, mainQueue.eraseToAnyScheduler())
+        .dependency(\.webSocket, webSocket)
     )
 
     store.send(.connectButtonTapped) {
@@ -123,14 +117,14 @@ class WebSocketTests: XCTestCase {
     }
 
     socketSubject.send(.didOpenWithProtocol(nil))
-    scheduler.advance()
+    mainQueue.advance()
     store.receive(.webSocket(.didOpenWithProtocol(nil))) {
       $0.connectivityState = .connected
     }
 
     pingSubject.send(nil)
-    scheduler.advance(by: .seconds(5))
-    scheduler.advance(by: .seconds(5))
+    mainQueue.advance(by: .seconds(5))
+    mainQueue.advance(by: .seconds(5))
     store.receive(.pingResponse(nil))
 
     store.send(.connectButtonTapped) {
@@ -147,13 +141,11 @@ class WebSocketTests: XCTestCase {
     webSocket.receive = { _ in .none }
     webSocket.sendPing = { _ in .none }
 
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: webSocketReducer,
-      environment: WebSocketEnvironment(
-        mainQueue: .immediate,
-        webSocket: webSocket
-      )
+      reducer: WebSocketReducer()
+        .dependency(\.mainQueue, .immediate)
+        .dependency(\.webSocket, webSocket)
     )
 
     store.send(.connectButtonTapped) {

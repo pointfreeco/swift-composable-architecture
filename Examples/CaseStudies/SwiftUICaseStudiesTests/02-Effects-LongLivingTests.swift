@@ -8,12 +8,10 @@ class LongLivingEffectsTests: XCTestCase {
   func testReducer() {
     let notificationCenter = NotificationCenter()
 
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: longLivingEffectsReducer,
-      environment: .init(
-        notificationCenter: notificationCenter
-      )
+      reducer: LongLivingEffectsReducer()
+        .dependency(\.notificationCenter, notificationCenter)
     )
 
     store.send(.onAppear)
