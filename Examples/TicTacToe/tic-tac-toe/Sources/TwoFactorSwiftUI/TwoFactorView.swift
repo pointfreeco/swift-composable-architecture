@@ -89,16 +89,15 @@ struct TwoFactorView_Previews: PreviewProvider {
       TwoFactorView(
         store: Store(
           initialState: TwoFactorState(token: "deadbeef"),
-          reducer: twoFactorReducer,
-          environment: TwoFactorEnvironment(
-            authenticationClient: AuthenticationClient(
-              login: { _ in Effect(value: .init(token: "deadbeef", twoFactorRequired: false)) },
-              twoFactor: { _ in
-                Effect(value: .init(token: "deadbeef", twoFactorRequired: false))
-              }
-            ),
-            mainQueue: .main
-          )
+          reducer: TwoFactorReducer()
+            .dependency(
+              \.authenticationClient, .init(
+                login: { _ in Effect(value: .init(token: "deadbeef", twoFactorRequired: false)) },
+                twoFactor: { _ in
+                  Effect(value: .init(token: "deadbeef", twoFactorRequired: false))
+                }
+              )
+            )
         )
       )
     }

@@ -77,4 +77,14 @@ public struct AuthenticationClient {
       twoFactor: { _ in .failing("AuthenticationClient.twoFactor") }
     )
   }
+
+  extension DependencyValues {
+    public var authenticationClient: AuthenticationClient {
+      get { self[AuthenticationClientKey.self] }
+      set { self[AuthenticationClientKey.self] = newValue }
+    }
+    public enum AuthenticationClientKey: DependencyKey {
+      public static var testValue = AuthenticationClient.failing
+    }
+  }
 #endif

@@ -24,4 +24,8 @@ extension AuthenticationClient {
   )
 }
 
+extension DependencyValues.AuthenticationClientKey: LiveDependencyKey {
+  public static let liveValue = AuthenticationClient.live
+}
+
 private let queue = DispatchQueue(label: "AuthenticationClient")

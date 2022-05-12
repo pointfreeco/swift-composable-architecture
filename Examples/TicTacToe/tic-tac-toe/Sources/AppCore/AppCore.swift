@@ -30,15 +30,10 @@ public struct AppEnvironment {
 }
 
 public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
-  loginReducer.pullback(
+  Reducer(LoginReducer()).pullback(
     state: /AppState.login,
     action: /AppAction.login,
-    environment: {
-      LoginEnvironment(
-        authenticationClient: $0.authenticationClient,
-        mainQueue: $0.mainQueue
-      )
-    }
+    environment: { _ in }
   ),
   newGameReducer.pullback(
     state: /AppState.newGame,

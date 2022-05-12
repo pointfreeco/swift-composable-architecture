@@ -24,75 +24,61 @@ public enum LoginAction: Equatable {
   case twoFactorDismissed
 }
 
-public struct LoginEnvironment {
-  public var authenticationClient: AuthenticationClient
-  public var mainQueue: AnySchedulerOf<DispatchQueue>
+public struct LoginReducer: ReducerProtocol {
+  @Dependency(\.authenticationClient) var authenticationClient
+  @Dependency(\.mainQueue) var mainQueue
 
-  public init(
-    authenticationClient: AuthenticationClient,
-    mainQueue: AnySchedulerOf<DispatchQueue>
-  ) {
-    self.authenticationClient = authenticationClient
-    self.mainQueue = mainQueue
-  }
-}
+  public init() {}
 
-public let loginReducer = Reducer<LoginState, LoginAction, LoginEnvironment>.combine(
-  twoFactorReducer
-    .optional()
-    .pullback(
-      state: \.twoFactor,
-      action: /LoginAction.twoFactor,
-      environment: {
-        TwoFactorEnvironment(
-          authenticationClient: $0.authenticationClient,
-          mainQueue: $0.mainQueue
-        )
+  public var body: some ReducerProtocol<LoginState, LoginAction> {
+    Pullback(state: \.twoFactor, action: /LoginAction.twoFactor) {
+      IfLetReducer {
+        TwoFactorReducer()
       }
-    ),
+    }
 
-  .init {
-    state, action, environment in
-    switch action {
-    case .alertDismissed:
-      state.alert = nil
-      return .none
+    Reduce { state, action in
+      switch action {
+      case .alertDismissed:
+        state.alert = nil
+        return .none
 
-    case let .emailChanged(email):
-      state.email = email
-      state.isFormValid = !state.email.isEmpty && !state.password.isEmpty
-      return .none
+      case let .emailChanged(email):
+        state.email = email
+        state.isFormValid = !state.email.isEmpty && !state.password.isEmpty
+        return .none
 
-    case let .loginResponse(.success(response)):
-      state.isLoginRequestInFlight = false
-      if response.twoFactorRequired {
-        state.twoFactor = TwoFactorState(token: response.token)
+      case let .loginResponse(.success(response)):
+        state.isLoginRequestInFlight = false
+        if response.twoFactorRequired {
+          state.twoFactor = TwoFactorState(token: response.token)
+        }
+        return .none
+
+      case let .loginResponse(.failure(error)):
+        state.alert = .init(title: TextState(error.localizedDescription))
+        state.isLoginRequestInFlight = false
+        return .none
+
+      case let .passwordChanged(password):
+        state.password = password
+        state.isFormValid = !state.email.isEmpty && !state.password.isEmpty
+        return .none
+
+      case .loginButtonTapped:
+        state.isLoginRequestInFlight = true
+        return self.authenticationClient
+          .login(LoginRequest(email: state.email, password: state.password))
+          .receive(on: self.mainQueue)
+          .catchToEffect(LoginAction.loginResponse)
+
+      case .twoFactor:
+        return .none
+
+      case .twoFactorDismissed:
+        state.twoFactor = nil
+        return .cancel(id: TwoFactorReducer.TearDownToken.self)
       }
-      return .none
-
-    case let .loginResponse(.failure(error)):
-      state.alert = .init(title: TextState(error.localizedDescription))
-      state.isLoginRequestInFlight = false
-      return .none
-
-    case let .passwordChanged(password):
-      state.password = password
-      state.isFormValid = !state.email.isEmpty && !state.password.isEmpty
-      return .none
-
-    case .loginButtonTapped:
-      state.isLoginRequestInFlight = true
-      return environment.authenticationClient
-        .login(LoginRequest(email: state.email, password: state.password))
-        .receive(on: environment.mainQueue)
-        .catchToEffect(LoginAction.loginResponse)
-
-    case .twoFactor:
-      return .none
-
-    case .twoFactorDismissed:
-      state.twoFactor = nil
-      return .cancel(id: TwoFactorTearDownToken.self)
     }
   }
-)
+}
