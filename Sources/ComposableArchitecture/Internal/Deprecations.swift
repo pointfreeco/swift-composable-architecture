@@ -616,7 +616,6 @@ extension ForEachStore {
   )
   where
     Data == [EachState],
-    EachContent: View,
     Content == WithViewStore<
       [ID], (Data.Index, EachAction), ForEach<[(offset: Int, element: ID)], ID, EachContent>
     >
@@ -644,7 +643,6 @@ extension ForEachStore {
   )
   where
     Data == [EachState],
-    EachContent: View,
     Content == WithViewStore<
       [ID], (Data.Index, EachAction), ForEach<[(offset: Int, element: ID)], ID, EachContent>
     >,
