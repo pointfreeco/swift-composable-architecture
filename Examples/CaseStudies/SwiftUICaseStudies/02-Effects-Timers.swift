@@ -12,20 +12,20 @@ private let readMe = """
 
 // MARK: - Timer feature domain
 
-struct TimersState: Equatable {
-  var isTimerActive = false
-  var secondsElapsed = 0
-}
+struct Timers: ReducerProtocol {
+  struct State: Equatable {
+    var isTimerActive = false
+    var secondsElapsed = 0
+  }
 
-enum TimersAction {
-  case timerTicked
-  case toggleTimerButtonTapped
-}
+  enum Action {
+    case timerTicked
+    case toggleTimerButtonTapped
+  }
 
-struct TimersReducer: ReducerProtocol {
   @Dependency(\.mainQueue) var mainQueue
 
-  func reduce(into state: inout TimersState, action: TimersAction) -> Effect<TimersAction, Never> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     enum TimerId {}
 
     switch action {
@@ -42,7 +42,7 @@ struct TimersReducer: ReducerProtocol {
           tolerance: .zero,
           on: self.mainQueue.animation(.interpolatingSpring(stiffness: 3000, damping: 40))
         )
-        .map { _ in TimersAction.timerTicked }
+        .map { _ in .timerTicked }
         : .cancel(id: TimerId.self)
     }
   }
@@ -51,7 +51,7 @@ struct TimersReducer: ReducerProtocol {
 // MARK: - Timer feature view
 
 struct TimersView: View {
-  let store: Store<TimersState, TimersAction>
+  let store: StoreOf<Timers>
 
   var body: some View {
     WithViewStore(store) { viewStore in
@@ -120,8 +120,8 @@ struct TimersView_Previews: PreviewProvider {
     NavigationView {
       TimersView(
         store: Store(
-          initialState: TimersState(),
-          reducer: TimersReducer()
+          initialState: .init(),
+          reducer: Timers()
         )
       )
     }

@@ -17,7 +17,7 @@ class WebSocketTests: XCTestCase {
 
     let store = _TestStore(
       initialState: .init(),
-      reducer: WebSocketReducer()
+      reducer: WebSocket()
         .dependency(\.mainQueue, .immediate)
         .dependency(\.webSocket, webSocket)
     )
@@ -64,7 +64,7 @@ class WebSocketTests: XCTestCase {
 
     let store = _TestStore(
       initialState: .init(),
-      reducer: WebSocketReducer()
+      reducer: WebSocket()
         .dependency(\.mainQueue, .immediate)
         .dependency(\.webSocket, webSocket)
     )
@@ -107,7 +107,7 @@ class WebSocketTests: XCTestCase {
     let mainQueue = DispatchQueue.test
     let store = _TestStore(
       initialState: .init(),
-      reducer: WebSocketReducer()
+      reducer: WebSocket()
         .dependency(\.mainQueue, mainQueue.eraseToAnyScheduler())
         .dependency(\.webSocket, webSocket)
     )
@@ -143,7 +143,7 @@ class WebSocketTests: XCTestCase {
 
     let store = _TestStore(
       initialState: .init(),
-      reducer: WebSocketReducer()
+      reducer: WebSocket()
         .dependency(\.mainQueue, .immediate)
         .dependency(\.webSocket, webSocket)
     )

@@ -8,8 +8,8 @@ class TimersTests: XCTestCase {
 
   func testStart() {
     let store = _TestStore(
-      initialState: TimersState(),
-      reducer: TimersReducer()
+      initialState: .init(),
+      reducer: Timers()
         .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
     )
 

@@ -11,27 +11,25 @@ private var readMe = """
   currently fetching data so that it knows to continue showing the loading indicator.
   """
 
-struct RefreshableState: Equatable {
-  var count = 0
-  var fact: String?
-  var isLoading = false
-}
+struct Refreshable: ReducerProtocol {
+  struct State: Equatable {
+    var count = 0
+    var fact: String?
+    var isLoading = false
+  }
 
-enum RefreshableAction: Equatable {
-  case cancelButtonTapped
-  case decrementButtonTapped
-  case factResponse(Result<String, FactClient.Error>)
-  case incrementButtonTapped
-  case refresh
-}
+  enum Action: Equatable {
+    case cancelButtonTapped
+    case decrementButtonTapped
+    case factResponse(Result<String, FactClient.Error>)
+    case incrementButtonTapped
+    case refresh
+  }
 
-struct RefreshableReducer: ReducerProtocol {
   @Dependency(\.factClient) var factClient
   @Dependency(\.mainQueue) var mainQueue
 
-  func reduce(
-    into state: inout RefreshableState, action: RefreshableAction
-  ) -> Effect<RefreshableAction, Never> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     enum CancelId {}
 
     switch action {
@@ -62,7 +60,7 @@ struct RefreshableReducer: ReducerProtocol {
       state.isLoading = true
       return self.factClient.fetch(state.count)
         .delay(for: .seconds(2), scheduler: self.mainQueue.animation())
-        .catchToEffect(RefreshableAction.factResponse)
+        .catchToEffect(Action.factResponse)
         .cancellable(id: CancelId.self)
     }
   }
@@ -70,7 +68,7 @@ struct RefreshableReducer: ReducerProtocol {
 
 #if compiler(>=5.5)
   struct RefreshableView: View {
-    let store: Store<RefreshableState, RefreshableAction>
+    let store: StoreOf<Refreshable>
 
     var body: some View {
       WithViewStore(self.store) { viewStore in
@@ -106,7 +104,7 @@ struct RefreshableReducer: ReducerProtocol {
       RefreshableView(
         store: .init(
           initialState: .init(),
-          reducer: RefreshableReducer()
+          reducer: Refreshable()
         )
       )
     }

@@ -10,7 +10,7 @@ class LongLivingEffectsTests: XCTestCase {
 
     let store = _TestStore(
       initialState: .init(),
-      reducer: LongLivingEffectsReducer()
+      reducer: LongLivingEffects()
         .dependency(\.notificationCenter, notificationCenter)
     )
 

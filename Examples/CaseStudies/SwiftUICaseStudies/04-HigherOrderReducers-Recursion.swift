@@ -13,27 +13,27 @@ private let readMe = """
   rows.
   """
 
-struct NestedState: Equatable, Identifiable {
-  var children: IdentifiedArrayOf<NestedState> = []
-  let id: UUID
-  var description: String = ""
-}
+struct Nested: ReducerProtocol {
+  struct State: Equatable, Identifiable {
+    var children: IdentifiedArrayOf<State> = []
+    let id: UUID
+    var description: String = ""
+  }
 
-indirect enum NestedAction: Equatable {
-  case append
-  case node(id: NestedState.ID, action: NestedAction)
-  case remove(IndexSet)
-  case rename(String)
-}
+  indirect enum Action: Equatable {
+    case append
+    case node(id: State.ID, action: Action)
+    case remove(IndexSet)
+    case rename(String)
+  }
 
-struct NestedReducer: ReducerProtocol {
   @Dependency(\.uuid) var uuid
 
-  var body: some ReducerProtocol<NestedState, NestedAction> {
+  var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
       case .append:
-        state.children.append(NestedState(id: self.uuid()))
+        state.children.append(State(id: self.uuid()))
         return .none
 
       case .node:
@@ -49,36 +49,14 @@ struct NestedReducer: ReducerProtocol {
       }
     }
 
-    ForEachReducer(state: \.children, action: /NestedAction.node) {
+    ForEachReducer(state: \.children, action: /Action.node) {
       self
     }
   }
-
-//  func reduce(into state: inout NestedState, action: NestedAction) -> Effect<NestedAction, Never> {
-//    switch action {
-//    case .append:
-//      state.children.append(NestedState(id: self.uuid()))
-//      return .none
-//
-//    case .node:
-//      return ForEachReducer(state: \.children, action: /NestedAction.node) {
-//        self
-//      }
-//      .reduce(into: &state, action: action)
-//
-//    case let .remove(indexSet):
-//      state.children.remove(atOffsets: indexSet)
-//      return .none
-//
-//    case let .rename(name):
-//      state.description = name
-//      return .none
-//    }
-//  }
 }
 
 struct NestedView: View {
-  let store: Store<NestedState, NestedAction>
+  let store: StoreOf<Nested>
 
   var body: some View {
     WithViewStore(self.store.scope(state: \.description)) { viewStore in
@@ -86,13 +64,13 @@ struct NestedView: View {
         Section(header: Text(template: readMe, .caption)) {
 
           ForEachStore(
-            self.store.scope(state: \.children, action: NestedAction.node(id:action:))
+            self.store.scope(state: \.children, action: Nested.Action.node(id:action:))
           ) { childStore in
             WithViewStore(childStore) { childViewStore in
               HStack {
                 TextField(
                   "Untitled",
-                  text: childViewStore.binding(get: \.description, send: NestedAction.rename)
+                  text: childViewStore.binding(get: \.description, send: Nested.Action.rename)
                 )
 
                 Spacer()
@@ -116,12 +94,12 @@ struct NestedView: View {
   }
 }
 
-extension NestedState {
-  static let mock = NestedState(
+extension Nested.State {
+  static let mock = Self(
     children: [
-      NestedState(
+      Self(
         children: [
-          NestedState(
+          Self(
             children: [],
             id: UUID(),
             description: ""
@@ -130,14 +108,14 @@ extension NestedState {
         id: UUID(),
         description: "Bar"
       ),
-      NestedState(
+      Self(
         children: [
-          NestedState(
+          Self(
             children: [],
             id: UUID(),
             description: "Fizz"
           ),
-          NestedState(
+          Self(
             children: [],
             id: UUID(),
             description: "Buzz"
@@ -146,7 +124,7 @@ extension NestedState {
         id: UUID(),
         description: "Baz"
       ),
-      NestedState(
+      Self(
         children: [],
         id: UUID(),
         description: ""
@@ -164,7 +142,7 @@ extension NestedState {
         NestedView(
           store: Store(
             initialState: .mock,
-            reducer: NestedReducer()
+            reducer: Nested()
           )
         )
       }

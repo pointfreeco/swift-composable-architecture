@@ -14,26 +14,20 @@ private let readMe = """
   *not* count those screenshots.
   """
 
-// MARK: - Application domain
+struct LongLivingEffects: ReducerProtocol {
+  struct State: Equatable {
+    var screenshotCount = 0
+  }
 
-struct LongLivingEffectsState: Equatable {
-  var screenshotCount = 0
-}
+  enum Action {
+    case userDidTakeScreenshotNotification
+    case onAppear
+    case onDisappear
+  }
 
-enum LongLivingEffectsAction {
-  case userDidTakeScreenshotNotification
-  case onAppear
-  case onDisappear
-}
-
-// MARK: - Business logic
-
-struct LongLivingEffectsReducer: ReducerProtocol {
   @Dependency(\.notificationCenter) var notificationCenter
 
-  func reduce(
-    into state: inout LongLivingEffectsState, action: LongLivingEffectsAction
-  ) -> Effect<LongLivingEffectsAction, Never> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     enum UserDidTakeScreenshotNotificationId {}
 
     switch action {
@@ -45,7 +39,7 @@ struct LongLivingEffectsReducer: ReducerProtocol {
       // When the view appears, start the effect that emits when screenshots are taken.
       return self.notificationCenter
         .publisher(for: UIApplication.userDidTakeScreenshotNotification)
-        .map { _ in LongLivingEffectsAction.userDidTakeScreenshotNotification }
+        .map { _ in .userDidTakeScreenshotNotification }
         .eraseToEffect()
         .cancellable(id: UserDidTakeScreenshotNotificationId.self)
 
@@ -59,7 +53,7 @@ struct LongLivingEffectsReducer: ReducerProtocol {
 // MARK: - SwiftUI view
 
 struct LongLivingEffectsView: View {
-  let store: Store<LongLivingEffectsState, LongLivingEffectsAction>
+  let store: StoreOf<LongLivingEffects>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -98,8 +92,8 @@ struct EffectsLongLiving_Previews: PreviewProvider {
   static var previews: some View {
     let appView = LongLivingEffectsView(
       store: Store(
-        initialState: LongLivingEffectsState(),
-        reducer: LongLivingEffectsReducer()
+        initialState: .init(),
+        reducer: LongLivingEffects()
       )
     )
 

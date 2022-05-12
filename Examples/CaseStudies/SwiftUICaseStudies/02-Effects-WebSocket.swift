@@ -10,49 +10,47 @@ private let readMe = """
   message. The socket server should immediately reply with the exact message you send it.
   """
 
-struct WebSocketState: Equatable {
-  var alert: AlertState<WebSocketAction>?
-  var connectivityState = ConnectivityState.disconnected
-  var messageToSend = ""
-  var receivedMessages: [String] = []
+struct WebSocket: ReducerProtocol {
+  struct State: Equatable {
+    var alert: AlertState<Action>?
+    var connectivityState = ConnectivityState.disconnected
+    var messageToSend = ""
+    var receivedMessages: [String] = []
 
-  enum ConnectivityState: String {
-    case connected
-    case connecting
-    case disconnected
+    enum ConnectivityState: String {
+      case connected
+      case connecting
+      case disconnected
+    }
   }
-}
 
-enum WebSocketAction: Equatable {
-  case alertDismissed
-  case connectButtonTapped
-  case messageToSendChanged(String)
-  case pingResponse(NSError?)
-  case receivedSocketMessage(Result<WebSocketClient.Message, NSError>)
-  case sendButtonTapped
-  case sendResponse(NSError?)
-  case webSocket(WebSocketClient.Action)
-}
+  enum Action: Equatable {
+    case alertDismissed
+    case connectButtonTapped
+    case messageToSendChanged(String)
+    case pingResponse(NSError?)
+    case receivedSocketMessage(Result<WebSocketClient.Message, NSError>)
+    case sendButtonTapped
+    case sendResponse(NSError?)
+    case webSocket(WebSocketClient.Action)
+  }
 
-struct WebSocketReducer: ReducerProtocol {
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.webSocket) var webSocket
 
-  func reduce(
-    into state: inout WebSocketState, action: WebSocketAction
-  ) -> Effect<WebSocketAction, Never> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     struct WebSocketId: Hashable {}
 
-    var receiveSocketMessageEffect: Effect<WebSocketAction, Never> {
+    var receiveSocketMessageEffect: Effect<Action, Never> {
       self.webSocket.receive(WebSocketId())
         .receive(on: self.mainQueue)
-        .catchToEffect(WebSocketAction.receivedSocketMessage)
+        .catchToEffect(Action.receivedSocketMessage)
         .cancellable(id: WebSocketId())
     }
-    var sendPingEffect: Effect<WebSocketAction, Never> {
+    var sendPingEffect: Effect<Action, Never> {
       self.webSocket.sendPing(WebSocketId())
         .delay(for: 10, scheduler: self.mainQueue)
-        .map(WebSocketAction.pingResponse)
+        .map(Action.pingResponse)
         .eraseToEffect()
         .cancellable(id: WebSocketId())
     }
@@ -74,7 +72,7 @@ struct WebSocketReducer: ReducerProtocol {
           WebSocketId(), URL(string: "wss://echo.websocket.events")!, []
         )
         .receive(on: self.mainQueue)
-        .map(WebSocketAction.webSocket)
+        .map(Action.webSocket)
         .eraseToEffect()
         .cancellable(id: WebSocketId())
       }
@@ -107,7 +105,7 @@ struct WebSocketReducer: ReducerProtocol {
       return self.webSocket.send(WebSocketId(), .string(messageToSend))
         .receive(on: self.mainQueue)
         .eraseToEffect()
-        .map(WebSocketAction.sendResponse)
+        .map(Action.sendResponse)
 
     case let .sendResponse(error):
       if error != nil {
@@ -138,7 +136,7 @@ struct WebSocketReducer: ReducerProtocol {
 }
 
 struct WebSocketView: View {
-  let store: Store<WebSocketState, WebSocketAction>
+  let store: StoreOf<WebSocket>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -150,7 +148,7 @@ struct WebSocketView: View {
           TextField(
             "Message to send",
             text: viewStore.binding(
-              get: \.messageToSend, send: WebSocketAction.messageToSendChanged)
+              get: \.messageToSend, send: WebSocket.Action.messageToSendChanged)
           )
 
           Button(
@@ -373,7 +371,7 @@ struct WebSocketView_Previews: PreviewProvider {
       WebSocketView(
         store: Store(
           initialState: .init(receivedMessages: ["Echo"]),
-          reducer: WebSocketReducer()
+          reducer: WebSocket()
         )
       )
     }

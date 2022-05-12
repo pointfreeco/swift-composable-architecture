@@ -15,7 +15,7 @@ struct RootState {
   var dieRoll = DieRollState()
   var effectsBasics = EffectsBasics.State()
   var effectsCancellation = EffectsCancellation.State()
-  var effectsTimers = TimersState()
+  var effectsTimers = Timers.State()
   var episodes = EpisodesState(episodes: .mocks)
   #if compiler(>=5.5)
     var focusDemo = FocusDemo.State()
@@ -24,19 +24,19 @@ struct RootState {
   var loadThenNavigate = LoadThenNavigate.State()
   var loadThenNavigateList = LoadThenNavigateList.State()
   var loadThenPresent = LoadThenPresent.State()
-  var longLivingEffects = LongLivingEffectsState()
+  var longLivingEffects = LongLivingEffects.State()
   var map = MapAppState(cityMaps: .mocks)
   var multipleDependencies = MultipleDependenciesState()
   var navigateAndLoad = NavigateAndLoad.State()
   var navigateAndLoadList = NavigateAndLoadList.State()
-  var nested = NestedState.mock
+  var nested = Nested.State.mock
   var optionalBasics = OptionalBasics.State()
   var presentAndLoad = PresentAndLoad.State()
-  var refreshable = RefreshableState()
+  var refreshable = Refreshable.State()
   var shared = SharedState.State()
-  var timers = TimersState()
+  var timers = Timers.State()
   var twoCounters = TwoCounters.State()
-  var webSocket = WebSocketState()
+  var webSocket = WebSocket.State()
 }
 
 enum RootAction {
@@ -59,20 +59,20 @@ enum RootAction {
   case loadThenNavigate(LoadThenNavigate.Action)
   case loadThenNavigateList(LoadThenNavigateList.Action)
   case loadThenPresent(LoadThenPresent.Action)
-  case longLivingEffects(LongLivingEffectsAction)
+  case longLivingEffects(LongLivingEffects.Action)
   case map(MapAppAction)
   case multipleDependencies(MultipleDependenciesAction)
   case navigateAndLoad(NavigateAndLoad.Action)
   case navigateAndLoadList(NavigateAndLoadList.Action)
-  case nested(NestedAction)
+  case nested(Nested.Action)
   case optionalBasics(OptionalBasics.Action)
   case onAppear
   case presentAndLoad(PresentAndLoad.Action)
-  case refreshable(RefreshableAction)
+  case refreshable(Refreshable.Action)
   case shared(SharedState.Action)
-  case timers(TimersAction)
+  case timers(Timers.Action)
   case twoCounters(TwoCounters.Action)
-  case webSocket(WebSocketAction)
+  case webSocket(WebSocket.Action)
 }
 
 struct RootReducer: ReducerProtocol {
@@ -144,7 +144,7 @@ struct RootReducer: ReducerProtocol {
       LoadThenPresent()
     }
     Pullback(state: \.longLivingEffects, action: /RootAction.longLivingEffects) {
-      LongLivingEffectsReducer()
+      LongLivingEffects()
     }
     Pullback(state: \.map, action: /RootAction.map) {
       Reduce(mapAppReducer, environment: .init(downloadClient: .live, mainQueue: self.mainQueue))
@@ -167,7 +167,7 @@ struct RootReducer: ReducerProtocol {
       NavigateAndLoadList()
     }
     Pullback(state: \.nested, action: /RootAction.nested) {
-      NestedReducer()
+      Nested()
     }
     Pullback(state: \.optionalBasics, action: /RootAction.optionalBasics) {
       OptionalBasics()
@@ -176,19 +176,19 @@ struct RootReducer: ReducerProtocol {
       PresentAndLoad()
     }
     Pullback(state: \.refreshable, action: /RootAction.refreshable) {
-      RefreshableReducer()
+      Refreshable()
     }
     Pullback(state: \.shared, action: /RootAction.shared) {
       SharedState()
     }
     Pullback(state: \.timers, action: /RootAction.timers) {
-      TimersReducer()
+      Timers()
     }
     Pullback(state: \.twoCounters, action: /RootAction.twoCounters) {
       TwoCounters()
     }
     Pullback(state: \.webSocket, action: /RootAction.webSocket) {
-      WebSocketReducer()
+      WebSocket()
     }
   }
 }

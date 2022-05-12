@@ -7,7 +7,7 @@ class RefreshableTests: XCTestCase {
   func testHappyPath() {
     let store = _TestStore(
       initialState: .init(),
-      reducer: RefreshableReducer()
+      reducer: Refreshable()
         .dependency(\.factClient, .init { .init(value: "\($0) is a good number.") })
         .dependency(\.mainQueue, .immediate)
     )
@@ -27,7 +27,7 @@ class RefreshableTests: XCTestCase {
   func testUnhappyPath() {
     let store = _TestStore(
       initialState: .init(),
-      reducer: RefreshableReducer()
+      reducer: Refreshable()
         .dependency(\.factClient, .init { _ in .init(error: .init()) })
         .dependency(\.mainQueue, .immediate)
     )
@@ -48,7 +48,7 @@ class RefreshableTests: XCTestCase {
 
     let store = _TestStore(
       initialState: .init(),
-      reducer: RefreshableReducer()
+      reducer: Refreshable()
         .dependency(\.factClient, .init { .init(value: "\($0) is a good number.") })
         .dependency(\.mainQueue, mainQueue.eraseToAnyScheduler())
     )
