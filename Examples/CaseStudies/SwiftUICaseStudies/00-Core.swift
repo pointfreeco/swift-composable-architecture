@@ -4,7 +4,7 @@ import UIKit
 import XCTestDynamicOverlay
 
 struct RootState {
-  var alertAndConfirmationDialog = AlertAndConfirmationDialogState()
+  var alertAndConfirmationDialog = AlertAndConfirmationDialog.State()
   var animation = AnimationsState()
   var bindingBasics = BindingBasicsState()
   #if compiler(>=5.4)
@@ -40,7 +40,7 @@ struct RootState {
 }
 
 enum RootAction {
-  case alertAndConfirmationDialog(AlertAndConfirmationDialogAction)
+  case alertAndConfirmationDialog(AlertAndConfirmationDialog.Action)
   case animation(AnimationsAction)
   case bindingBasics(BindingBasicsAction)
   #if compiler(>=5.4)
@@ -92,7 +92,7 @@ struct RootReducer: ReducerProtocol {
     }
 
     Pullback(state: \.alertAndConfirmationDialog, action: /RootAction.alertAndConfirmationDialog) {
-      AlertAndConfirmationDialogReducer()
+      AlertAndConfirmationDialog()
     }
     Pullback(state: \.animation, action: /RootAction.animation) {
       AnimationsReducer()

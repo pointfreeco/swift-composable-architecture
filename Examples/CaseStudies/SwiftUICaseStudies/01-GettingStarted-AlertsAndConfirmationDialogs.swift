@@ -19,26 +19,23 @@ private let readMe = """
   alerts and dialogs in your application
   """
 
-struct AlertAndConfirmationDialogState: Equatable {
-  var alert: AlertState<AlertAndConfirmationDialogAction>?
-  var confirmationDialog: ConfirmationDialogState<AlertAndConfirmationDialogAction>?
-  var count = 0
-}
+struct AlertAndConfirmationDialog: ReducerProtocol {
+  struct State: Equatable {
+    var alert: AlertState<Action>?
+    var confirmationDialog: ConfirmationDialogState<Action>?
+    var count = 0
+  }
 
-enum AlertAndConfirmationDialogAction: Equatable {
-  case alertButtonTapped
-  case alertDismissed
-  case confirmationDialogButtonTapped
-  case confirmationDialogDismissed
-  case decrementButtonTapped
-  case incrementButtonTapped
-}
+  enum Action: Equatable {
+    case alertButtonTapped
+    case alertDismissed
+    case confirmationDialogButtonTapped
+    case confirmationDialogDismissed
+    case decrementButtonTapped
+    case incrementButtonTapped
+  }
 
-struct AlertAndConfirmationDialogReducer: ReducerProtocol {
-  func reduce(
-    into state: inout AlertAndConfirmationDialogState, action: AlertAndConfirmationDialogAction
-  ) -> Effect<AlertAndConfirmationDialogAction, Never> {
-
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {
     case .alertButtonTapped:
       state.alert = .init(
@@ -83,7 +80,7 @@ struct AlertAndConfirmationDialogReducer: ReducerProtocol {
 }
 
 struct AlertAndConfirmationDialogView: View {
-  let store: Store<AlertAndConfirmationDialogState, AlertAndConfirmationDialogAction>
+  let store: Store<AlertAndConfirmationDialog.State, AlertAndConfirmationDialog.Action>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -113,7 +110,7 @@ struct AlertAndConfirmationDialog_Previews: PreviewProvider {
       AlertAndConfirmationDialogView(
         store: .init(
           initialState: .init(),
-          reducer: AlertAndConfirmationDialogReducer()
+          reducer: AlertAndConfirmationDialog()
         )
       )
     }
