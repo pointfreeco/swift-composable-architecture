@@ -69,9 +69,7 @@ class TestStoreTests: XCTestCase {
       case increment, changed(from: Int, to: Int)
     }
 
-    let mainQueue = DispatchQueue.test
-
-    let reducer = Reducer<State, Action, AnySchedulerOf<DispatchQueue>> { state, action, scheduler in
+    let reducer = Reducer<State, Action, Void> { state, action, scheduler in
       switch action {
       case .increment:
         state.isChanging = true
@@ -88,7 +86,7 @@ class TestStoreTests: XCTestCase {
     let store = TestStore(
       initialState: State(),
       reducer: reducer,
-      environment: mainQueue.eraseToAnyScheduler()
+      environment: ()
     )
 
     store.send(.increment) {
@@ -120,9 +118,7 @@ class TestStoreTests: XCTestCase {
       case noop, finished
     }
 
-    let mainQueue = DispatchQueue.test
-
-    let reducer = Reducer<State, Action, AnySchedulerOf<DispatchQueue>> { state, action, scheduler in
+    let reducer = Reducer<State, Action, Void> { state, action, scheduler in
       switch action {
       case .noop:
         return Effect(value: .finished)
@@ -134,7 +130,7 @@ class TestStoreTests: XCTestCase {
     let store = TestStore(
       initialState: State(),
       reducer: reducer,
-      environment: mainQueue.eraseToAnyScheduler()
+      environment: ()
     )
 
     store.send(.noop)
