@@ -8,6 +8,7 @@ extension DependencyValues {
   }
 
   private enum DateGeneratorKey: LiveDependencyKey {
+    // TODO: Benchmark difference between existential overhead vs. struct with non-inlined closures.
     static let liveValue: any DateGenerator = LiveDateGenerator()
     static let testValue: any DateGenerator = FailingDateGenerator()
   }
