@@ -8,11 +8,8 @@ struct SpeechRecognitionApp: App {
       SpeechRecognitionView(
         store: Store(
           initialState: .init(),
-          reducer: appReducer,
-          environment: AppEnvironment(
-            mainQueue: .main,
-            speechClient: .live
-          )
+          reducer: AppReducer()
+            .debug(actionFormat: .labelsOnly)
         )
       )
     }

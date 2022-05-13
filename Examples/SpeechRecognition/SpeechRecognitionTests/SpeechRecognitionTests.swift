@@ -8,16 +8,11 @@ class SpeechRecognitionTests: XCTestCase {
   let recognitionTaskSubject = PassthroughSubject<SpeechClient.Action, SpeechClient.Error>()
 
   func testDenyAuthorization() {
-    var speechClient = SpeechClient.failing
-    speechClient.requestAuthorization = { Effect(value: .denied) }
-
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: appReducer,
-      environment: AppEnvironment(
-        mainQueue: .immediate,
-        speechClient: speechClient
-      )
+      reducer: AppReducer()
+        .dependency(\.mainQueue, .immediate)
+        .dependency(\.speechClient.requestAuthorization) { Effect(value: .denied) }
     )
 
     store.send(.recordButtonTapped) {
@@ -37,16 +32,11 @@ class SpeechRecognitionTests: XCTestCase {
   }
 
   func testRestrictedAuthorization() {
-    var speechClient = SpeechClient.failing
-    speechClient.requestAuthorization = { Effect(value: .restricted) }
-
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: appReducer,
-      environment: AppEnvironment(
-        mainQueue: .immediate,
-        speechClient: speechClient
-      )
+      reducer: AppReducer()
+        .dependency(\.mainQueue, .immediate)
+        .dependency(\.speechClient.requestAuthorization) { Effect(value: .restricted) }
     )
 
     store.send(.recordButtonTapped) {
@@ -60,20 +50,17 @@ class SpeechRecognitionTests: XCTestCase {
   }
 
   func testAllowAndRecord() {
-    var speechClient = SpeechClient.failing
-    speechClient.finishTask = {
-      .fireAndForget { self.recognitionTaskSubject.send(completion: .finished) }
-    }
-    speechClient.recognitionTask = { _ in self.recognitionTaskSubject.eraseToEffect() }
-    speechClient.requestAuthorization = { Effect(value: .authorized) }
-
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: appReducer,
-      environment: AppEnvironment(
-        mainQueue: .immediate,
-        speechClient: speechClient
-      )
+      reducer: AppReducer()
+        .dependency(\.mainQueue, .immediate)
+        .dependency(\.speechClient.finishTask) {
+          .fireAndForget { self.recognitionTaskSubject.send(completion: .finished) }
+        }
+        .dependency(\.speechClient.recognitionTask) { _ in
+          self.recognitionTaskSubject.eraseToEffect()
+        }
+        .dependency(\.speechClient.requestAuthorization) { Effect(value: .authorized) }
     )
 
     let result = SpeechRecognitionResult(
@@ -108,17 +95,14 @@ class SpeechRecognitionTests: XCTestCase {
   }
 
   func testAudioSessionFailure() {
-    var speechClient = SpeechClient.failing
-    speechClient.recognitionTask = { _ in self.recognitionTaskSubject.eraseToEffect() }
-    speechClient.requestAuthorization = { Effect(value: .authorized) }
-
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: appReducer,
-      environment: AppEnvironment(
-        mainQueue: .immediate,
-        speechClient: speechClient
-      )
+      reducer: AppReducer()
+        .dependency(\.mainQueue, .immediate)
+        .dependency(\.speechClient.recognitionTask) { _ in
+          self.recognitionTaskSubject.eraseToEffect()
+        }
+        .dependency(\.speechClient.requestAuthorization) { Effect(value: .authorized) }
     )
 
     store.send(.recordButtonTapped) {
@@ -138,17 +122,14 @@ class SpeechRecognitionTests: XCTestCase {
   }
 
   func testAudioEngineFailure() {
-    var speechClient = SpeechClient.failing
-    speechClient.recognitionTask = { _ in self.recognitionTaskSubject.eraseToEffect() }
-    speechClient.requestAuthorization = { Effect(value: .authorized) }
-
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: appReducer,
-      environment: AppEnvironment(
-        mainQueue: .immediate,
-        speechClient: speechClient
-      )
+      reducer: AppReducer()
+        .dependency(\.mainQueue, .immediate)
+        .dependency(\.speechClient.recognitionTask) { _ in
+          self.recognitionTaskSubject.eraseToEffect()
+        }
+        .dependency(\.speechClient.requestAuthorization) { Effect(value: .authorized) }
     )
 
     store.send(.recordButtonTapped) {
