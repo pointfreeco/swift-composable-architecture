@@ -64,8 +64,12 @@ public class Instrumentation {
 extension Instrumentation {
   /// Object that holds the information that will be passed to any implementation that has provided a callback function
   public struct CallbackInfo<StoreKind, Action> {
+    /// The ``Type`` of the store that the callback is being executed within/for
     public let storeKind: StoreKind
+    /// The action that was `sent` to the store
     public let action: Action?
+    /// In the case of a ``Store.send`` operation the ``action`` may be one returned from a reducer and thus have an
+    /// "originating" action (that action which was passed to the reducer that then returned the current ``action``)
     public let originatingAction: Action?
 
     init(storeKind: StoreKind, action: Action? = nil, originatingAction: Action? = nil) {
@@ -74,7 +78,7 @@ extension Instrumentation {
       self.originatingAction = originatingAction
     }
 
-    public func eraseToAny() -> CallbackInfo<Any, Any> {
+    func eraseToAny() -> CallbackInfo<Any, Any> {
       return .init(storeKind: (storeKind as Any), action: action.map { $0 as Any }, originatingAction: originatingAction.map { $0 as Any })
     }
   }
