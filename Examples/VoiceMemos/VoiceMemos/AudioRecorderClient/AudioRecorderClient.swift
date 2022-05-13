@@ -1,6 +1,18 @@
 import ComposableArchitecture
 import Foundation
 
+extension DependencyValues {
+  var audioRecorder: AudioRecorderClient {
+    get { self[AudioRecorderClientKey.self] }
+    set { self[AudioRecorderClientKey.self] = newValue }
+  }
+
+  private enum AudioRecorderClientKey: LiveDependencyKey {
+    static let liveValue = AudioRecorderClient.live
+    static let testValue = AudioRecorderClient.failing
+  }
+}
+
 struct AudioRecorderClient {
   var currentTime: () -> Effect<TimeInterval?, Never>
   var requestRecordPermission: () -> Effect<Bool, Never>

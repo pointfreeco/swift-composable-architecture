@@ -15,26 +15,21 @@ class VoiceMemosTests: XCTestCase {
       AudioRecorderClient.Action, AudioRecorderClient.Failure
     >()
 
-    var environment = VoiceMemosEnvironment.failing
-    environment.audioRecorder.currentTime = { Effect(value: 2.5) }
-    environment.audioRecorder.requestRecordPermission = { Effect(value: true) }
-    environment.audioRecorder.startRecording = { _ in
-      audioRecorderSubject.eraseToEffect()
-    }
-    environment.audioRecorder.stopRecording = {
-      .fireAndForget {
-        audioRecorderSubject.send(.didFinishRecording(successfully: true))
-        audioRecorderSubject.send(completion: .finished)
-      }
-    }
-    environment.mainRunLoop = mainRunLoop.eraseToAnyScheduler()
-    environment.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
-    environment.uuid = { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! }
-
-    let store = TestStore(
-      initialState: VoiceMemosState(),
-      reducer: voiceMemosReducer,
-      environment: environment
+    let store = _TestStore(
+      initialState: .init(),
+      reducer: VoiceMemos()
+        .dependency(\.audioRecorder.currentTime) { Effect(value: 2.5) }
+        .dependency(\.audioRecorder.requestRecordPermission) { Effect(value: true) }
+        .dependency(\.audioRecorder.startRecording) { _ in audioRecorderSubject.eraseToEffect() }
+        .dependency(\.audioRecorder.stopRecording) {
+          .fireAndForget {
+            audioRecorderSubject.send(.didFinishRecording(successfully: true))
+            audioRecorderSubject.send(completion: .finished)
+          }
+        }
+        .dependency(\.mainRunLoop, self.mainRunLoop.eraseToAnyScheduler())
+        .dependency(\.temporaryDirectory) { URL(fileURLWithPath: "/tmp") }
+        .dependency(\.uuid, .constant(UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!))
     )
 
     store.send(.recordButtonTapped)
@@ -65,7 +60,7 @@ class VoiceMemosTests: XCTestCase {
     store.receive(.audioRecorder(.success(.didFinishRecording(successfully: true)))) {
       $0.currentRecording = nil
       $0.voiceMemos = [
-        VoiceMemo(
+        .init(
           date: Date(timeIntervalSince1970: 0),
           duration: 2.5,
           mode: .notPlaying,
@@ -79,15 +74,12 @@ class VoiceMemosTests: XCTestCase {
   func testPermissionDenied() {
     var didOpenSettings = false
 
-    var environment = VoiceMemosEnvironment.failing
-    environment.audioRecorder.requestRecordPermission = { Effect(value: false) }
-    environment.mainRunLoop = .immediate
-    environment.openSettings = .fireAndForget { didOpenSettings = true }
-
-    let store = TestStore(
-      initialState: VoiceMemosState(),
-      reducer: voiceMemosReducer,
-      environment: environment
+    let store = _TestStore(
+      initialState: .init(),
+      reducer: VoiceMemos()
+        .dependency(\.audioRecorder.requestRecordPermission) { Effect(value: false) }
+        .dependency(\.mainRunLoop, .immediate)
+        .dependency(\.openSettings, .fireAndForget { didOpenSettings = true })
     )
 
     store.send(.recordButtonTapped)
@@ -107,20 +99,15 @@ class VoiceMemosTests: XCTestCase {
       AudioRecorderClient.Action, AudioRecorderClient.Failure
     >()
 
-    var environment = VoiceMemosEnvironment.failing
-    environment.audioRecorder.currentTime = { Effect(value: 2.5) }
-    environment.audioRecorder.requestRecordPermission = { Effect(value: true) }
-    environment.audioRecorder.startRecording = { _ in
-      audioRecorderSubject.eraseToEffect()
-    }
-    environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
-    environment.temporaryDirectory = { .init(fileURLWithPath: "/tmp") }
-    environment.uuid = { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! }
-
-    let store = TestStore(
-      initialState: VoiceMemosState(),
-      reducer: voiceMemosReducer,
-      environment: environment
+    let store = _TestStore(
+      initialState: .init(),
+      reducer: VoiceMemos()
+        .dependency(\.audioRecorder.currentTime) { Effect(value: 2.5) }
+        .dependency(\.audioRecorder.requestRecordPermission) { Effect(value: true) }
+        .dependency(\.audioRecorder.startRecording) { _ in audioRecorderSubject.eraseToEffect() }
+        .dependency(\.mainRunLoop, self.mainRunLoop.eraseToAnyScheduler())
+        .dependency(\.temporaryDirectory) { .init(fileURLWithPath: "/tmp") }
+        .dependency(\.uuid, .constant(UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!))
     )
 
     store.send(.recordButtonTapped)
@@ -142,19 +129,11 @@ class VoiceMemosTests: XCTestCase {
   }
 
   func testPlayMemoHappyPath() {
-    var environment = VoiceMemosEnvironment.failing
-    environment.audioPlayer.play = { _ in
-      Effect(value: .didFinishPlaying(successfully: true))
-        .delay(for: 1, scheduler: self.mainRunLoop)
-        .eraseToEffect()
-    }
-    environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
-
     let url = URL(string: "https://www.pointfree.co/functions")!
-    let store = TestStore(
-      initialState: VoiceMemosState(
+    let store = _TestStore(
+      initialState: .init(
         voiceMemos: [
-          VoiceMemo(
+          .init(
             date: Date(timeIntervalSinceNow: 0),
             duration: 1,
             mode: .notPlaying,
@@ -163,19 +142,24 @@ class VoiceMemosTests: XCTestCase {
           )
         ]
       ),
-      reducer: voiceMemosReducer,
-      environment: environment
+      reducer: VoiceMemos()
+        .dependency(\.audioPlayer.play) { _ in
+          Effect(value: .didFinishPlaying(successfully: true))
+            .delay(for: 1, scheduler: self.mainRunLoop)
+            .eraseToEffect()
+        }
+        .dependency(\.mainRunLoop, self.mainRunLoop.eraseToAnyScheduler())
     )
 
     store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
-      $0.voiceMemos[id: url]?.mode = VoiceMemo.Mode.playing(progress: 0)
+      $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
     }
     self.mainRunLoop.advance(by: 0.5)
-    store.receive(VoiceMemosAction.voiceMemo(id: url, action: VoiceMemoAction.timerUpdated(0.5))) {
+    store.receive(.voiceMemo(id: url, action: .timerUpdated(0.5))) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0.5)
     }
     self.mainRunLoop.advance(by: 0.5)
-    store.receive(VoiceMemosAction.voiceMemo(id: url, action: VoiceMemoAction.timerUpdated(1))) {
+    store.receive(.voiceMemo(id: url, action: .timerUpdated(1))) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 1)
     }
     store.receive(
@@ -189,15 +173,11 @@ class VoiceMemosTests: XCTestCase {
   }
 
   func testPlayMemoFailure() {
-    var environment = VoiceMemosEnvironment.failing
-    environment.audioPlayer.play = { _ in Effect(error: .decodeErrorDidOccur) }
-    environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
-
     let url = URL(string: "https://www.pointfree.co/functions")!
-    let store = TestStore(
-      initialState: VoiceMemosState(
+    let store = _TestStore(
+      initialState: .init(
         voiceMemos: [
-          VoiceMemo(
+          .init(
             date: Date(timeIntervalSinceNow: 0),
             duration: 30,
             mode: .notPlaying,
@@ -206,8 +186,9 @@ class VoiceMemosTests: XCTestCase {
           )
         ]
       ),
-      reducer: voiceMemosReducer,
-      environment: environment
+      reducer: VoiceMemos()
+        .dependency(\.audioPlayer.play) { _ in Effect(error: .decodeErrorDidOccur) }
+        .dependency(\.mainRunLoop, self.mainRunLoop.eraseToAnyScheduler())
     )
 
     store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
@@ -221,14 +202,11 @@ class VoiceMemosTests: XCTestCase {
 
   func testStopMemo() {
     var didStopAudioPlayerClient = false
-    var environment = VoiceMemosEnvironment.failing
-    environment.audioPlayer.stop = { .fireAndForget { didStopAudioPlayerClient = true } }
-
     let url = URL(string: "https://www.pointfree.co/functions")!
-    let store = TestStore(
-      initialState: VoiceMemosState(
+    let store = _TestStore(
+      initialState: .init(
         voiceMemos: [
-          VoiceMemo(
+          .init(
             date: Date(timeIntervalSinceNow: 0),
             duration: 30,
             mode: .playing(progress: 0.3),
@@ -237,8 +215,8 @@ class VoiceMemosTests: XCTestCase {
           )
         ]
       ),
-      reducer: voiceMemosReducer,
-      environment: environment
+      reducer: VoiceMemos()
+        .dependency(\.audioPlayer.stop) { .fireAndForget { didStopAudioPlayerClient = true } }
     )
 
     store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
@@ -249,14 +227,11 @@ class VoiceMemosTests: XCTestCase {
 
   func testDeleteMemo() {
     var didStopAudioPlayerClient = false
-    var environment = VoiceMemosEnvironment.failing
-    environment.audioPlayer.stop = { .fireAndForget { didStopAudioPlayerClient = true } }
-
     let url = URL(string: "https://www.pointfree.co/functions")!
-    let store = TestStore(
-      initialState: VoiceMemosState(
+    let store = _TestStore(
+      initialState: .init(
         voiceMemos: [
-          VoiceMemo(
+          .init(
             date: Date(timeIntervalSinceNow: 0),
             duration: 30,
             mode: .playing(progress: 0.3),
@@ -265,8 +240,8 @@ class VoiceMemosTests: XCTestCase {
           )
         ]
       ),
-      reducer: voiceMemosReducer,
-      environment: environment
+      reducer: VoiceMemos()
+        .dependency(\.audioPlayer.stop) { .fireAndForget { didStopAudioPlayerClient = true } }
     )
 
     store.send(.voiceMemo(id: url, action: .delete)) {
@@ -277,15 +252,10 @@ class VoiceMemosTests: XCTestCase {
 
   func testDeleteMemoWhilePlaying() {
     let url = URL(string: "https://www.pointfree.co/functions")!
-    var environment = VoiceMemosEnvironment.failing
-    environment.audioPlayer.play = { _ in .none }
-    environment.audioPlayer.stop = { .none }
-    environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
-
-    let store = TestStore(
-      initialState: VoiceMemosState(
+    let store = _TestStore(
+      initialState: .init(
         voiceMemos: [
-          VoiceMemo(
+          .init(
             date: Date(timeIntervalSinceNow: 0),
             duration: 10,
             mode: .notPlaying,
@@ -294,8 +264,10 @@ class VoiceMemosTests: XCTestCase {
           )
         ]
       ),
-      reducer: voiceMemosReducer,
-      environment: environment
+      reducer: VoiceMemos()
+        .dependency(\.audioPlayer.play) { _ in .none }
+        .dependency(\.audioPlayer.stop) { .none }
+        .dependency(\.mainRunLoop, self.mainRunLoop.eraseToAnyScheduler())
     )
 
     store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
@@ -305,21 +277,4 @@ class VoiceMemosTests: XCTestCase {
       $0.voiceMemos = []
     }
   }
-}
-
-extension VoiceMemosEnvironment {
-  static let failing = Self(
-    audioPlayer: .failing,
-    audioRecorder: .failing,
-    mainRunLoop: .failing,
-    openSettings: .failing("VoiceMemosEnvironment.openSettings"),
-    temporaryDirectory: {
-      XCTFail("VoiceMemosEnvironment.temporaryDirectory is unimplemented")
-      return URL(fileURLWithPath: NSTemporaryDirectory())
-    },
-    uuid: {
-      XCTFail("VoiceMemosEnvironment.uuid is unimplemented")
-      return UUID()
-    }
-  )
 }

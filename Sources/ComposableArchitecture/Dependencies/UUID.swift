@@ -54,3 +54,22 @@ public final class IncrementingUUIDGenerator: UUIDGenerator {
 extension UUIDGenerator where Self == IncrementingUUIDGenerator {
   public static var incrementing: Self { .init() }
 }
+
+public struct ConstantUUIDGenerator: UUIDGenerator {
+  @usableFromInline
+  let value: UUID
+
+  @usableFromInline
+  init(value: UUID) {
+    self.value = value
+  }
+
+  @inlinable
+  public func callAsFunction() -> UUID {
+    self.value
+  }
+}
+
+extension UUIDGenerator where Self == ConstantUUIDGenerator {
+  public static func constant(_ uuid: UUID) -> Self { .init(value: uuid) }
+}

@@ -2,101 +2,100 @@ import ComposableArchitecture
 import Foundation
 import SwiftUI
 
-struct VoiceMemo: Equatable, Identifiable {
-  var date: Date
-  var duration: TimeInterval
-  var mode = Mode.notPlaying
-  var title = ""
-  var url: URL
+struct VoiceMemo: ReducerProtocol {
+  struct State: Equatable, Identifiable {
+    var date: Date
+    var duration: TimeInterval
+    var mode = Mode.notPlaying
+    var title = ""
+    var url: URL
 
-  var id: URL { self.url }
+    var id: URL { self.url }
 
-  enum Mode: Equatable {
-    case notPlaying
-    case playing(progress: Double)
+    enum Mode: Equatable {
+      case notPlaying
+      case playing(progress: Double)
 
-    var isPlaying: Bool {
-      if case .playing = self { return true }
-      return false
-    }
+      var isPlaying: Bool {
+        if case .playing = self { return true }
+        return false
+      }
 
-    var progress: Double? {
-      if case let .playing(progress) = self { return progress }
-      return nil
+      var progress: Double? {
+        if case let .playing(progress) = self { return progress }
+        return nil
+      }
     }
   }
-}
 
-enum VoiceMemoAction: Equatable {
-  case audioPlayerClient(Result<AudioPlayerClient.Action, AudioPlayerClient.Failure>)
-  case playButtonTapped
-  case delete
-  case timerUpdated(TimeInterval)
-  case titleTextFieldChanged(String)
-}
+  enum Action: Equatable {
+    case audioPlayerClient(Result<AudioPlayerClient.Action, AudioPlayerClient.Failure>)
+    case playButtonTapped
+    case delete
+    case timerUpdated(TimeInterval)
+    case titleTextFieldChanged(String)
+  }
 
-struct VoiceMemoEnvironment {
-  var audioPlayerClient: AudioPlayerClient
-  var mainRunLoop: AnySchedulerOf<RunLoop>
-}
+  @Dependency(\.audioPlayer) var audioPlayer
+  @Dependency(\.mainRunLoop) var mainRunLoop
 
-let voiceMemoReducer = Reducer<
-  VoiceMemo, VoiceMemoAction, VoiceMemoEnvironment
-> { memo, action, environment in
-  enum TimerId {}
+  func reduce(into memo: inout State, action: Action) -> Effect<Action, Never> {
+    enum TimerId {}
 
-  switch action {
-  case .audioPlayerClient(.success(.didFinishPlaying)), .audioPlayerClient(.failure):
-    memo.mode = .notPlaying
-    return .cancel(id: TimerId.self)
-
-  case .delete:
-    return .merge(
-      environment.audioPlayerClient.stop().fireAndForget(),
-      .cancel(id: TimerId.self)
-    )
-
-  case .playButtonTapped:
-    switch memo.mode {
-    case .notPlaying:
-      memo.mode = .playing(progress: 0)
-
-      let start = environment.mainRunLoop.now
-      return .merge(
-        Effect.timer(id: TimerId.self, every: 0.5, on: environment.mainRunLoop)
-          .map { .timerUpdated($0.date.timeIntervalSince1970 - start.date.timeIntervalSince1970) },
-
-        environment.audioPlayerClient
-          .play(memo.url)
-          .catchToEffect(VoiceMemoAction.audioPlayerClient)
-      )
-
-    case .playing:
+    switch action {
+    case .audioPlayerClient(.success(.didFinishPlaying)), .audioPlayerClient(.failure):
       memo.mode = .notPlaying
+      return .cancel(id: TimerId.self)
 
-      return .concatenate(
-        .cancel(id: TimerId.self),
-        environment.audioPlayerClient.stop().fireAndForget()
+    case .delete:
+      return .merge(
+        self.audioPlayer.stop().fireAndForget(),
+        .cancel(id: TimerId.self)
       )
-    }
 
-  case let .timerUpdated(time):
-    switch memo.mode {
-    case .notPlaying:
-      break
-    case let .playing(progress: progress):
-      memo.mode = .playing(progress: time / memo.duration)
-    }
-    return .none
+    case .playButtonTapped:
+      switch memo.mode {
+      case .notPlaying:
+        memo.mode = .playing(progress: 0)
 
-  case let .titleTextFieldChanged(text):
-    memo.title = text
-    return .none
+        let start = self.mainRunLoop.now
+        return .merge(
+          Effect.timer(id: TimerId.self, every: 0.5, on: self.mainRunLoop).map {
+            .timerUpdated($0.date.timeIntervalSince1970 - start.date.timeIntervalSince1970)
+          },
+
+          self.audioPlayer
+            .play(memo.url)
+            .catchToEffect(Action.audioPlayerClient)
+        )
+
+      case .playing:
+        memo.mode = .notPlaying
+
+        return .concatenate(
+          .cancel(id: TimerId.self),
+          self.audioPlayer.stop().fireAndForget()
+        )
+      }
+
+    case let .timerUpdated(time):
+      switch memo.mode {
+      case .notPlaying:
+        break
+      case .playing:
+        memo.mode = .playing(progress: time / memo.duration)
+      }
+      return .none
+
+    case let .titleTextFieldChanged(text):
+      memo.title = text
+      return .none
+    }
   }
 }
 
 struct VoiceMemoView: View {
-  let store: Store<VoiceMemo, VoiceMemoAction>
+  let store: StoreOf<VoiceMemo>
 
   var body: some View {
     WithViewStore(store) { viewStore in
@@ -106,7 +105,7 @@ struct VoiceMemoView: View {
         TextField(
           "Untitled, \(viewStore.date.formatted(date: .numeric, time: .shortened))",
           text: viewStore.binding(
-            get: \.title, send: VoiceMemoAction.titleTextFieldChanged)
+            get: \.title, send: VoiceMemo.Action.titleTextFieldChanged)
         )
 
         Spacer()
