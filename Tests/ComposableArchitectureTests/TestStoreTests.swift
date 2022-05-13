@@ -66,7 +66,8 @@ class TestStoreTests: XCTestCase {
     }
 
     enum Action: Equatable {
-      case increment, changed(from: Int, to: Int)
+      case increment
+      case changed(from: Int, to: Int)
     }
 
     let reducer = Reducer<State, Action, Void> { state, action, scheduler in
