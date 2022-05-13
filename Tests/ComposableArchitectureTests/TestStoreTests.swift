@@ -59,4 +59,56 @@ class TestStoreTests: XCTestCase {
 
     store.send(.d)
   }
+  func testExpectedStateEquality() {
+    struct State: Equatable {
+      var count: Int = 0
+      var isChanging: Bool = false
+    }
+
+    enum Action: Equatable {
+      case increment, changed(from: Int, to: Int)
+    }
+
+    let mainQueue = DispatchQueue.test
+
+    let reducer = Reducer<State, Action, AnySchedulerOf<DispatchQueue>> { state, action, scheduler in
+      switch action {
+      case .increment:
+        state.isChanging = true
+        return Effect(value: .changed(from: state.count, to: state.count + 1))
+      case .changed(let from, let to):
+        state.isChanging = false
+        if state.count == from {
+          state.count = to
+        }
+        return .none
+      }
+    }
+
+    let store = TestStore(
+      initialState: State(),
+      reducer: reducer,
+      environment: mainQueue.eraseToAnyScheduler()
+    )
+
+    store.send(.increment) {
+      $0.isChanging = true
+    }
+    store.receive(.changed(from: 0, to: 1)) {
+      $0.isChanging = false
+      $0.count = 1
+    }
+
+    XCTExpectFailure {
+      store.send(.increment) {
+        $0.isChanging = false
+      }
+    }
+    XCTExpectFailure {
+      store.receive(.changed(from: 1, to: 2)) {
+        $0.isChanging = true
+        $0.count = 1100
+      }
+    }
+  }
 }
