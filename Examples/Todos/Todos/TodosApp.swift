@@ -7,12 +7,9 @@ struct TodosApp: App {
     WindowGroup {
       AppView(
         store: Store(
-          initialState: AppState(),
-          reducer: appReducer,
-          environment: AppEnvironment(
-            mainQueue: .main,
-            uuid: UUID.init
-          )
+          initialState: .init(),
+          reducer: AppReducer()
+            .debug()
         )
       )
     }

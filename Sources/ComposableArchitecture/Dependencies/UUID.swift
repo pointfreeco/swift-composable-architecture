@@ -17,25 +17,40 @@ public protocol UUIDGenerator {
   func callAsFunction() -> UUID
 }
 
-private struct LiveUUIDGenerator: UUIDGenerator {
+public struct LiveUUIDGenerator: UUIDGenerator {
   @inlinable
-  func callAsFunction() -> UUID {
+  public func callAsFunction() -> UUID {
     .init()
   }
 }
 
 extension UUIDGenerator where Self == LiveUUIDGenerator {
-  static var live: Self { .init() }
+  public static var live: Self { .init() }
 }
 
-private struct FailingUUIDGenerator: UUIDGenerator {
+public struct FailingUUIDGenerator: UUIDGenerator {
   @inlinable
-  func callAsFunction() -> UUID {
+  public func callAsFunction() -> UUID {
     XCTFail(#"@Dependency(\.uuid) is failing"#)
     return .init()
   }
 }
 
 extension UUIDGenerator where Self == FailingUUIDGenerator {
-  static var failing: Self { .init() }
+  public static var failing: Self { .init() }
+}
+
+public final class IncrementingUUIDGenerator: UUIDGenerator {
+  @usableFromInline
+  var sequence = 0
+
+  @inlinable
+  public func callAsFunction() -> UUID {
+    defer { self.sequence += 1 }
+    return .init(uuidString: "00000000-0000-0000-0000-\(String(format: "%012x", self.sequence))")!
+  }
+}
+
+extension UUIDGenerator where Self == IncrementingUUIDGenerator {
+  public static var incrementing: Self { .init() }
 }
