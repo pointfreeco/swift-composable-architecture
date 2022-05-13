@@ -111,4 +111,44 @@ class TestStoreTests: XCTestCase {
       }
     }
   }
+  func testExpectedStateEqualityMustModify() {
+    struct State: Equatable {
+      var count: Int = 0
+    }
+
+    enum Action: Equatable {
+      case noop, finished
+    }
+
+    let mainQueue = DispatchQueue.test
+
+    let reducer = Reducer<State, Action, AnySchedulerOf<DispatchQueue>> { state, action, scheduler in
+      switch action {
+      case .noop:
+        return Effect(value: .finished)
+      case .finished:
+        return .none
+      }
+    }
+
+    let store = TestStore(
+      initialState: State(),
+      reducer: reducer,
+      environment: mainQueue.eraseToAnyScheduler()
+    )
+
+    store.send(.noop)
+    store.receive(.finished)
+
+    XCTExpectFailure {
+      store.send(.noop) {
+        $0.count = 0
+      }
+    }
+    XCTExpectFailure {
+      store.receive(.finished) {
+        $0.count = 0
+      }
+    }
+  }
 }
