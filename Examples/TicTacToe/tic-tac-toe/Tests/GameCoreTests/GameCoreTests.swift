@@ -3,13 +3,12 @@ import GameCore
 import XCTest
 
 class GameCoreTests: XCTestCase {
-  let store = TestStore(
-    initialState: GameState(
+  let store = _TestStore(
+    initialState: .init(
       oPlayerName: "Blob Jr.",
       xPlayerName: "Blob Sr."
     ),
-    reducer: gameReducer,
-    environment: GameEnvironment()
+    reducer: Game()
   )
 
   func testFlow_Winner_Quit() {
@@ -73,7 +72,7 @@ class GameCoreTests: XCTestCase {
       $0.currentPlayer = .o
     }
     self.store.send(.playAgainButtonTapped) {
-      $0 = GameState(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr.")
+      $0 = .init(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr.")
     }
   }
 }

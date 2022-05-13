@@ -29,12 +29,9 @@ enum GameType: Identifiable {
 
 struct RootView: View {
   let store = Store(
-    initialState: AppState(),
-    reducer: appReducer,
-    environment: AppEnvironment(
-      authenticationClient: .live,
-      mainQueue: .main
-    )
+    initialState: .init(),
+    reducer: AppReducer()
+      .debug()
   )
 
   @State var showGame: GameType?

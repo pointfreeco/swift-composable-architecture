@@ -3,20 +3,18 @@ import ComposableArchitecture
 import TwoFactorCore
 import XCTest
 
+
 class TwoFactorCoreTests: XCTestCase {
   func testFlow_Success() {
-    let store = TestStore(
-      initialState: TwoFactorState(token: "deadbeefdeadbeef"),
-      reducer: twoFactorReducer,
-      environment: TwoFactorEnvironment(
-        authenticationClient: .failing,
-        mainQueue: .immediate
-      )
+    let store = _TestStore(
+      initialState: .init(token: "deadbeefdeadbeef"),
+      reducer: TwoFactor()
+        .dependency(\.mainQueue, .immediate)
+        .dependency(\.authenticationClient.twoFactor) { _ in
+          Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
+        }
     )
 
-    store.environment.authenticationClient.twoFactor = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
-    }
     store.send(.codeChanged("1")) {
       $0.code = "1"
     }
@@ -41,18 +39,12 @@ class TwoFactorCoreTests: XCTestCase {
   }
 
   func testFlow_Failure() {
-    let store = TestStore(
-      initialState: TwoFactorState(token: "deadbeefdeadbeef"),
-      reducer: twoFactorReducer,
-      environment: TwoFactorEnvironment(
-        authenticationClient: .failing,
-        mainQueue: .immediate
-      )
+    let store = _TestStore(
+      initialState: .init(token: "deadbeefdeadbeef"),
+      reducer: TwoFactor()
+        .dependency(\.mainQueue, .immediate)
+        .dependency(\.authenticationClient.twoFactor) { _ in Effect(error: .invalidTwoFactor) }
     )
-
-    store.environment.authenticationClient.twoFactor = { _ in
-      Effect(error: .invalidTwoFactor)
-    }
 
     store.send(.codeChanged("1234")) {
       $0.code = "1234"

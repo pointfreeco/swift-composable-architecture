@@ -4,59 +4,50 @@ import Dispatch
 import LoginCore
 import NewGameCore
 
-public enum AppState: Equatable {
-  case login(Login.State)
-  case newGame(NewGameState)
+public struct AppReducer: ReducerProtocol {
+  public enum State: Equatable {
+    case login(Login.State)
+    case newGame(NewGame.State)
 
-  public init() { self = .login(.init()) }
-}
-
-public enum AppAction: Equatable {
-  case login(Login.Action)
-  case newGame(NewGameAction)
-}
-
-public struct AppEnvironment {
-  public var authenticationClient: AuthenticationClient
-  public var mainQueue: AnySchedulerOf<DispatchQueue>
-
-  public init(
-    authenticationClient: AuthenticationClient,
-    mainQueue: AnySchedulerOf<DispatchQueue>
-  ) {
-    self.authenticationClient = authenticationClient
-    self.mainQueue = mainQueue
+    public init() { self = .login(.init()) }
   }
-}
 
-public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
-  Reducer(Login()).pullback(
-    state: /AppState.login,
-    action: /AppAction.login,
-    environment: { _ in }
-  ),
-  newGameReducer.pullback(
-    state: /AppState.newGame,
-    action: /AppAction.newGame,
-    environment: { _ in NewGameEnvironment() }
-  ),
-  Reducer { state, action, _ in
-    switch action {
-    case let .login(.twoFactor(.twoFactorResponse(.success(response)))),
-      let .login(.loginResponse(.success(response))) where !response.twoFactorRequired:
-      state = .newGame(.init())
-      return .none
+  public enum Action: Equatable {
+    case login(Login.Action)
+    case newGame(NewGame.Action)
+  }
 
-    case .login:
-      return .none
+  public init() {}
 
-    case .newGame(.logoutButtonTapped):
-      state = .login(.init())
-      return .none
+  public var body: some ReducerProtocol<State, Action> {
+    PullbackCase(state: /State.login, action: /Action.login) {
+      Login()
+    }
 
-    case .newGame:
-      return .none
+    PullbackCase(state: /State.newGame, action: /Action.newGame) {
+      NewGame()
+    }
+
+    Reduce { state, action in
+      switch action {
+      case .login(.twoFactor(.twoFactorResponse(.success))):
+        state = .newGame(.init())
+        return .none
+
+      case let .login(.loginResponse(.success(response))) where !response.twoFactorRequired:
+        state = .newGame(.init())
+        return .none
+
+      case .login:
+        return .none
+
+      case .newGame(.logoutButtonTapped):
+        state = .login(.init())
+        return .none
+
+      case .newGame:
+        return .none
+      }
     }
   }
-)
-.debug()
+}

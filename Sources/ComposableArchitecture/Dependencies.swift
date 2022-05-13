@@ -32,6 +32,18 @@ public struct DependencyValues {
   }
 }
 
+extension TaskLocal where Value == DependencyValues {
+  public func with<DependencyValue, Result>(
+    _ keyPath: WritableKeyPath<DependencyValues, DependencyValue>,
+    _ value: DependencyValue,
+    operation: () throws -> Result
+  ) rethrows -> Result {
+    var values = self.wrappedValue
+    values[keyPath: keyPath] = value
+    return try self.withValue(values, operation: operation)
+  }
+}
+
 @propertyWrapper
 public struct Dependency<Value> {
   public let keyPath: WritableKeyPath<DependencyValues, Value>
