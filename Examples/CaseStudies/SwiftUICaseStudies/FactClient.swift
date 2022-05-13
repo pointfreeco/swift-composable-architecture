@@ -10,11 +10,11 @@ struct FactClient {
 
 extension DependencyValues {
   var factClient: FactClient {
-    get { self[FaceClientKey.self] }
-    set { self[FaceClientKey.self] = newValue }
+    get { self[FactClientKey.self] }
+    set { self[FactClientKey.self] = newValue }
   }
 
-  private enum FaceClientKey: LiveDependencyKey {
+  private enum FactClientKey: LiveDependencyKey {
     static let liveValue = FactClient.live
     static let testValue = FactClient.failing
   }

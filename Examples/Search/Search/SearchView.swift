@@ -7,85 +7,80 @@ private let readMe = """
   locations. Then tapping on a location will load weather.
   """
 
-// MARK: - Search feature domain
+struct Search: ReducerProtocol {
+  struct State: Equatable {
+    var locations: [Location] = []
+    var locationWeather: LocationWeather?
+    var locationWeatherRequestInFlight: Location?
+    var searchQuery = ""
+  }
 
-struct SearchState: Equatable {
-  var locations: [Location] = []
-  var locationWeather: LocationWeather?
-  var locationWeatherRequestInFlight: Location?
-  var searchQuery = ""
-}
+  enum Action: Equatable {
+    case locationsResponse(Result<[Location], WeatherClient.Failure>)
+    case locationTapped(Location)
+    case locationWeatherResponse(Result<LocationWeather, WeatherClient.Failure>)
+    case searchQueryChanged(String)
+  }
 
-enum SearchAction: Equatable {
-  case locationsResponse(Result<[Location], WeatherClient.Failure>)
-  case locationTapped(Location)
-  case locationWeatherResponse(Result<LocationWeather, WeatherClient.Failure>)
-  case searchQueryChanged(String)
-}
+  @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.weatherClient) var weatherClient
 
-struct SearchEnvironment {
-  var weatherClient: WeatherClient
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
-
-// MARK: - Search feature reducer
-
-let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
-  state, action, environment in
-  switch action {
-  case .locationsResponse(.failure):
-    state.locations = []
-    return .none
-
-  case let .locationsResponse(.success(response)):
-    state.locations = response
-    return .none
-
-  case let .locationTapped(location):
-    enum SearchWeatherId {}
-
-    state.locationWeatherRequestInFlight = location
-
-    return environment.weatherClient
-      .weather(location.id)
-      .receive(on: environment.mainQueue)
-      .catchToEffect(SearchAction.locationWeatherResponse)
-      .cancellable(id: SearchWeatherId.self, cancelInFlight: true)
-
-  case let .searchQueryChanged(query):
-    enum SearchLocationId {}
-
-    state.searchQuery = query
-
-    // When the query is cleared we can clear the search results, but we have to make sure to cancel
-    // any in-flight search requests too, otherwise we may get data coming in later.
-    guard !query.isEmpty else {
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    switch action {
+    case .locationsResponse(.failure):
       state.locations = []
+      return .none
+
+    case let .locationsResponse(.success(response)):
+      state.locations = response
+      return .none
+
+    case let .locationTapped(location):
+      enum SearchWeatherId {}
+
+      state.locationWeatherRequestInFlight = location
+
+      return self.weatherClient
+        .weather(location.id)
+        .receive(on: self.mainQueue)
+        .catchToEffect(Action.locationWeatherResponse)
+        .cancellable(id: SearchWeatherId.self, cancelInFlight: true)
+
+    case let .searchQueryChanged(query):
+      enum SearchLocationId {}
+
+      state.searchQuery = query
+
+      // When the query is cleared we can clear the search results, but we have to make sure to cancel
+      // any in-flight search requests too, otherwise we may get data coming in later.
+      guard !query.isEmpty else {
+        state.locations = []
+        state.locationWeather = nil
+        return .cancel(id: SearchLocationId.self)
+      }
+
+      return self.weatherClient
+        .searchLocation(query)
+        .debounce(id: SearchLocationId.self, for: 0.3, scheduler: self.mainQueue)
+        .catchToEffect(Action.locationsResponse)
+
+    case .locationWeatherResponse(.failure):
       state.locationWeather = nil
-      return .cancel(id: SearchLocationId.self)
+      state.locationWeatherRequestInFlight = nil
+      return .none
+
+    case let .locationWeatherResponse(.success(locationWeather)):
+      state.locationWeather = locationWeather
+      state.locationWeatherRequestInFlight = nil
+      return .none
     }
-
-    return environment.weatherClient
-      .searchLocation(query)
-      .debounce(id: SearchLocationId.self, for: 0.3, scheduler: environment.mainQueue)
-      .catchToEffect(SearchAction.locationsResponse)
-
-  case let .locationWeatherResponse(.failure(locationWeather)):
-    state.locationWeather = nil
-    state.locationWeatherRequestInFlight = nil
-    return .none
-
-  case let .locationWeatherResponse(.success(locationWeather)):
-    state.locationWeather = locationWeather
-    state.locationWeatherRequestInFlight = nil
-    return .none
   }
 }
 
 // MARK: - Search feature view
 
 struct SearchView: View {
-  let store: Store<SearchState, SearchAction>
+  let store: StoreOf<Search>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -99,7 +94,7 @@ struct SearchView: View {
             TextField(
               "New York, San Francisco, ...",
               text: viewStore.binding(
-                get: \.searchQuery, send: SearchAction.searchQueryChanged
+                get: \.searchQuery, send: Search.Action.searchQueryChanged
               )
             )
             .textFieldStyle(.roundedBorder)
@@ -190,50 +185,45 @@ private let dateFormatter: DateFormatter = {
 struct SearchView_Previews: PreviewProvider {
   static var previews: some View {
     let store = Store(
-      initialState: SearchState(),
-      reducer: searchReducer,
-      environment: SearchEnvironment(
-        weatherClient: WeatherClient(
-          searchLocation: { _ in
-            Effect(value: [
-              Location(id: 1, title: "Brooklyn"),
-              Location(id: 2, title: "Los Angeles"),
-              Location(id: 3, title: "San Francisco"),
-            ])
-          },
-          weather: { id in
-            Effect(
-              value: LocationWeather(
-                consolidatedWeather: [
-                  .init(
-                    applicableDate: Date(timeIntervalSince1970: 0),
-                    maxTemp: 90,
-                    minTemp: 70,
-                    theTemp: 80,
-                    weatherStateName: "Clear"
-                  ),
-                  .init(
-                    applicableDate: Date(timeIntervalSince1970: 86_400),
-                    maxTemp: 70,
-                    minTemp: 50,
-                    theTemp: 60,
-                    weatherStateName: "Rain"
-                  ),
-                  .init(
-                    applicableDate: Date(timeIntervalSince1970: 172_800),
-                    maxTemp: 100,
-                    minTemp: 80,
-                    theTemp: 90,
-                    weatherStateName: "Cloudy"
-                  ),
-                ],
-                id: id
-              )
+      initialState: .init(),
+      reducer: Search()
+        .dependency(\.weatherClient.searchLocation) { _ in
+          Effect(value: [
+            Location(id: 1, title: "Brooklyn"),
+            Location(id: 2, title: "Los Angeles"),
+            Location(id: 3, title: "San Francisco"),
+          ])
+        }
+        .dependency(\.weatherClient.weather) { id in
+          Effect(
+            value: LocationWeather(
+              consolidatedWeather: [
+                .init(
+                  applicableDate: Date(timeIntervalSince1970: 0),
+                  maxTemp: 90,
+                  minTemp: 70,
+                  theTemp: 80,
+                  weatherStateName: "Clear"
+                ),
+                .init(
+                  applicableDate: Date(timeIntervalSince1970: 86_400),
+                  maxTemp: 70,
+                  minTemp: 50,
+                  theTemp: 60,
+                  weatherStateName: "Rain"
+                ),
+                .init(
+                  applicableDate: Date(timeIntervalSince1970: 172_800),
+                  maxTemp: 100,
+                  minTemp: 80,
+                  theTemp: 90,
+                  weatherStateName: "Cloudy"
+                ),
+              ],
+              id: id
             )
-          }
-        ),
-        mainQueue: .main
-      )
+          )
+        }
     )
 
     return Group {

@@ -5,23 +5,20 @@ import XCTest
 @testable import Search
 
 class SearchTests: XCTestCase {
-  let scheduler = DispatchQueue.test
+  let mainQueue = DispatchQueue.test
 
   func testSearchAndClearQuery() {
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: searchReducer,
-      environment: SearchEnvironment(
-        weatherClient: .failing,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
-      )
+      reducer: Search()
+        .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
+        .dependency(\.weatherClient.searchLocation) { _ in Effect(value: mockLocations) }
     )
 
-    store.environment.weatherClient.searchLocation = { _ in Effect(value: mockLocations) }
     store.send(.searchQueryChanged("S")) {
       $0.searchQuery = "S"
     }
-    self.scheduler.advance(by: 0.3)
+    self.mainQueue.advance(by: 0.3)
     store.receive(.locationsResponse(.success(mockLocations))) {
       $0.locations = mockLocations
     }
@@ -32,44 +29,36 @@ class SearchTests: XCTestCase {
   }
 
   func testSearchFailure() {
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: searchReducer,
-      environment: SearchEnvironment(
-        weatherClient: .failing,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
-      )
+      reducer: Search()
+        .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
+        .dependency(\.weatherClient.searchLocation) { _ in Effect(error: .init()) }
     )
 
-    store.environment.weatherClient.searchLocation = { _ in Effect(error: .init()) }
     store.send(.searchQueryChanged("S")) {
       $0.searchQuery = "S"
     }
-    self.scheduler.advance(by: 0.3)
+    self.mainQueue.advance(by: 0.3)
     store.receive(.locationsResponse(.failure(.init())))
   }
 
   func testClearQueryCancelsInFlightSearchRequest() {
-    var weatherClient = WeatherClient.failing
-    weatherClient.searchLocation = { _ in Effect(value: mockLocations) }
-
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: searchReducer,
-      environment: SearchEnvironment(
-        weatherClient: weatherClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
-      )
+      reducer: Search()
+        .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
+        .dependency(\.weatherClient.searchLocation) { _ in Effect(value: mockLocations) }
     )
 
     store.send(.searchQueryChanged("S")) {
       $0.searchQuery = "S"
     }
-    self.scheduler.advance(by: 0.2)
+    self.mainQueue.advance(by: 0.2)
     store.send(.searchQueryChanged("")) {
       $0.searchQuery = ""
     }
-    self.scheduler.run()
+    self.mainQueue.run()
   }
 
   func testTapOnLocation() {
@@ -79,22 +68,17 @@ class SearchTests: XCTestCase {
       id: 42
     )
 
-    var weatherClient = WeatherClient.failing
-    weatherClient.weather = { _ in Effect(value: specialLocationWeather) }
-
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(locations: mockLocations + [specialLocation]),
-      reducer: searchReducer,
-      environment: SearchEnvironment(
-        weatherClient: weatherClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
-      )
+      reducer: Search()
+        .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
+        .dependency(\.weatherClient.weather) { _ in Effect(value: specialLocationWeather) }
     )
 
     store.send(.locationTapped(specialLocation)) {
       $0.locationWeatherRequestInFlight = specialLocation
     }
-    self.scheduler.advance()
+    self.mainQueue.advance()
     store.receive(.locationWeatherResponse(.success(specialLocationWeather))) {
       $0.locationWeatherRequestInFlight = nil
       $0.locationWeather = specialLocationWeather
@@ -108,16 +92,11 @@ class SearchTests: XCTestCase {
       id: 42
     )
 
-    var weatherClient = WeatherClient.failing
-    weatherClient.weather = { _ in Effect(value: specialLocationWeather) }
-
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(locations: mockLocations + [specialLocation]),
-      reducer: searchReducer,
-      environment: SearchEnvironment(
-        weatherClient: weatherClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
-      )
+      reducer: Search()
+        .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
+        .dependency(\.weatherClient.weather) { _ in Effect(value: specialLocationWeather) }
     )
 
     store.send(.locationTapped(mockLocations.first!)) {
@@ -126,7 +105,7 @@ class SearchTests: XCTestCase {
     store.send(.locationTapped(specialLocation)) {
       $0.locationWeatherRequestInFlight = specialLocation
     }
-    self.scheduler.advance()
+    self.mainQueue.advance()
     store.receive(.locationWeatherResponse(.success(specialLocationWeather))) {
       $0.locationWeatherRequestInFlight = nil
       $0.locationWeather = specialLocationWeather
@@ -134,22 +113,17 @@ class SearchTests: XCTestCase {
   }
 
   func testTapOnLocationFailure() {
-    var weatherClient = WeatherClient.failing
-    weatherClient.weather = { _ in Effect(error: .init()) }
-
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(locations: mockLocations),
-      reducer: searchReducer,
-      environment: SearchEnvironment(
-        weatherClient: weatherClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
-      )
+      reducer: Search()
+        .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
+        .dependency(\.weatherClient.weather) { _ in Effect(error: .init()) }
     )
 
     store.send(.locationTapped(mockLocations.first!)) {
       $0.locationWeatherRequestInFlight = mockLocations.first!
     }
-    self.scheduler.advance()
+    self.mainQueue.advance()
     store.receive(.locationWeatherResponse(.failure(.init()))) {
       $0.locationWeatherRequestInFlight = nil
     }

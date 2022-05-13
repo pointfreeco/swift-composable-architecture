@@ -33,6 +33,19 @@ struct WeatherClient {
   struct Failure: Error, Equatable {}
 }
 
+extension DependencyValues {
+  var weatherClient: WeatherClient {
+    get { self[WeatherClientKey.self] }
+    set { self[WeatherClientKey.self] = newValue }
+  }
+
+  private enum WeatherClientKey: LiveDependencyKey {
+    static let liveValue = WeatherClient.live
+    static let testValue = WeatherClient.failing
+  }
+}
+
+
 // MARK: - Live API implementation
 
 // Example endpoints:
