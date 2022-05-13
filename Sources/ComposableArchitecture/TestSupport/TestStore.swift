@@ -341,7 +341,7 @@
       _ action: LocalAction,
       file: StaticString = #file,
       line: UInt = #line,
-      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+      _ update: ((inout LocalState) throws -> Void)? = nil
     ) {
       if !self.receivedActions.isEmpty {
         var actions = ""
@@ -359,7 +359,12 @@
       var expectedState = self.toLocalState(self.snapshotState)
       self.store.send(.init(origin: .send(action), file: file, line: line))
       do {
-        try update(&expectedState)
+        try self.expectedStateShouldChange(
+          expected: &expectedState,
+          update: update,
+          file: file,
+          line: line
+        )
       } catch {
         XCTFail("Threw error: \(error)", file: file, line: line)
       }
@@ -371,6 +376,27 @@
       )
       if "\(self.file)" == "\(file)" {
         self.line = line
+      }
+    }
+
+    private func expectedStateShouldChange(
+      expected: inout LocalState,
+      update: ((inout LocalState) throws -> Void)? = nil,
+      file: StaticString,
+      line: UInt
+    ) throws {
+      guard let update = update else { return }
+      let current = expected
+      try update(&expected)
+      if expected == current {
+        XCTFail(
+          """
+          Expected to modify the expected state, but no change occurred.
+
+          Ensure that the state was modified or remove the closure to assert no change.
+          """,
+          file: file, line: line
+        )
       }
     }
 
@@ -410,7 +436,7 @@
       _ expectedAction: Action,
       file: StaticString = #file,
       line: UInt = #line,
-      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+      _ update: ((inout LocalState) throws -> Void)? = nil
     ) {
       guard !self.receivedActions.isEmpty else {
         XCTFail(
@@ -445,7 +471,12 @@
       }
       var expectedState = self.toLocalState(self.snapshotState)
       do {
-        try update(&expectedState)
+        try self.expectedStateShouldChange(
+          expected: &expectedState,
+          update: update,
+          file: file,
+          line: line
+        )
       } catch {
         XCTFail("Threw error: \(error)", file: file, line: line)
       }
