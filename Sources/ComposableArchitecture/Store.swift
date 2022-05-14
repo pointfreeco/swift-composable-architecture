@@ -362,7 +362,7 @@ public final class Store<State, Action> {
     self.scope(state: toLocalState, action: { $0 })
   }
 
-  func send(_ action: Action, originatingFrom originatingAction: Action? = nil) {
+  func send(_ action: Action, originatingFrom originatingAction: Action? = nil, instrumentation: Instrumentation = .shared) {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
     self.bufferedActions.append(action)
@@ -370,7 +370,15 @@ public final class Store<State, Action> {
 
     self.isSending = true
     var currentState = self.state.value
+
+    let callbackInfo = Instrumentation.CallbackInfo(storeKind: self.self, action: action, originatingAction: originatingAction).eraseToAny()
+    instrumentation.callback?(callbackInfo, .pre, .storeSend)
+    defer { instrumentation.callback?(callbackInfo, .post, .storeSend) }
+
     defer {
+      instrumentation.callback?(callbackInfo, .pre, .storeChangeState)
+      defer { instrumentation.callback?(callbackInfo, .post, .storeChangeState) }
+
       self.state.value = currentState
       self.isSending = false
       // if new actions were added synchronously
@@ -383,6 +391,11 @@ public final class Store<State, Action> {
 
     while !self.bufferedActions.isEmpty {
       let action = self.bufferedActions.removeFirst()
+
+      let processCallbackInfo = Instrumentation.CallbackInfo(storeKind: self.self, action: action, originatingAction: nil).eraseToAny()
+      instrumentation.callback?(processCallbackInfo, .pre, .storeProcessEvent)
+      defer { instrumentation.callback?(processCallbackInfo, .post, .storeProcessEvent) }
+
       let effect = self.reducer(&currentState, action)
 
       var didComplete = false
@@ -394,7 +407,7 @@ public final class Store<State, Action> {
           self?.effectCancellables[uuid] = nil
         },
         receiveValue: { [weak self] effectAction in
-          self?.send(effectAction, originatingFrom: action)
+          self?.send(effectAction, originatingFrom: action, instrumentation: instrumentation)
         }
       )
 

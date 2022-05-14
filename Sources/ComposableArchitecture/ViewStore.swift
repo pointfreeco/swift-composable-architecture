@@ -69,21 +69,39 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///     equal, repeat view computations are removed.
   public init(
     _ store: Store<State, Action>,
-    removeDuplicates isDuplicate: @escaping (State, State) -> Bool
+    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
+    instrumentation: Instrumentation = .shared
   ) {
-    self._send = { store.send($0) }
+    self._send = {
+      let sendCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: $0).eraseToAny()
+      instrumentation.callback?(sendCallbackInfo, .pre, .viewStoreSend)
+      defer { instrumentation.callback?(sendCallbackInfo, .post, .viewStoreSend) }
+
+      store.send($0, instrumentation: instrumentation)
+    }
     self._state = CurrentValueRelay(store.state.value)
 
+    let stateChangeCallbackInfo = Instrumentation.CallbackInfo<ViewStore<State, Action>, Action>(storeKind: self.self).eraseToAny()
     self.viewCancellable = store.state
-      .removeDuplicates(by: isDuplicate)
+      .removeDuplicates(by: {
+        instrumentation.callback?(stateChangeCallbackInfo, .pre, .viewStoreDeduplicate)
+        defer { instrumentation.callback?(stateChangeCallbackInfo, .post, .viewStoreDeduplicate) }
+
+        return isDuplicate($0, $1)
+      })
       .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
         guard let objectWillChange = objectWillChange, let _state = _state else { return }
+
+        instrumentation.callback?(stateChangeCallbackInfo, .pre, .viewStoreChangeState)
+        defer { instrumentation.callback?(stateChangeCallbackInfo, .post, .viewStoreChangeState) }
+
         objectWillChange.send()
         _state.value = $0
       }
+
   }
 
-  internal init(_ viewStore: ViewStore<State, Action>) {
+  internal init(_ viewStore: ViewStore<State, Action>, instrumentation: Instrumentation = .shared) {
     self._send = viewStore._send
     self._state = viewStore._state
     self.objectWillChange = viewStore.objectWillChange
@@ -278,14 +296,14 @@ public final class ViewStore<State, Action>: ObservableObject {
 }
 
 extension ViewStore where State: Equatable {
-  public convenience init(_ store: Store<State, Action>) {
-    self.init(store, removeDuplicates: ==)
+  public convenience init(_ store: Store<State, Action>, instrumentation: Instrumentation = .shared) {
+    self.init(store, removeDuplicates: ==, instrumentation: instrumentation)
   }
 }
 
 extension ViewStore where State == Void {
-  public convenience init(_ store: Store<Void, Action>) {
-    self.init(store, removeDuplicates: ==)
+  public convenience init(_ store: Store<Void, Action>, instrumentation: Instrumentation = .shared) {
+    self.init(store, removeDuplicates: ==, instrumentation: instrumentation)
   }
 }
 
