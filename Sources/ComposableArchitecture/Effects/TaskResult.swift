@@ -5,7 +5,7 @@ public enum TaskResult<Success> {
   case failure(Error)
 
   #if canImport(_Concurrency) && compiler(>=5.5.2)
-    public init(catching body: () async throws -> Success) async {
+    public init(catching body: @Sendable () async throws -> Success) async {
       do {
         self = .success(try await body())
       } catch {

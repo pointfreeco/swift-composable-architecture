@@ -150,7 +150,7 @@ public struct Send<Action> {
 extension Effect where Failure == Error {
   public static func run(
     priority: TaskPriority? = nil,
-    _ operation: @escaping (_ send: Send<Output>) async throws -> Void
+    _ operation: @escaping @Sendable (_ send: Send<Output>) async throws -> Void
   ) -> Self {
     .run { subscriber in
       let task = Task(priority: priority) {
@@ -171,34 +171,11 @@ extension Effect where Failure == Error {
 extension Effect where Failure == Never {
   public static func run(
     priority: TaskPriority? = nil,
-    _ operation: @escaping (_ send: Send<Output>) async -> Void
+    _ operation: @escaping @Sendable (_ send: Send<Output>) async -> Void
   ) -> Self {
     .run { subscriber in
       let task = Task(priority: priority) {
         await operation(Send(send: subscriber.send(_:)))
-        subscriber.send(completion: .finished)
-      }
-      return AnyCancellable {
-        task.cancel()
-      }
-    }
-  }
-
-  public static func run(
-    priority: TaskPriority? = nil,
-    _ operation: @escaping (_ send: Send<Output>) async throws -> Void,
-    `catch`: @escaping (Error) -> Output? = { _ in nil }
-  ) -> Self {
-    .run { subscriber in
-      let task = Task(priority: priority) {
-        do {
-          let send = Send(send: subscriber.send(_:))
-          try await operation(send)
-        } catch {
-          if let output = `catch`(error) {
-            subscriber.send(output)
-          }
-        }
         subscriber.send(completion: .finished)
       }
       return AnyCancellable {
