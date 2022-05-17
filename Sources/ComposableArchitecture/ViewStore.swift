@@ -81,7 +81,7 @@ public final class ViewStore<State, Action>: ObservableObject {
     }
     self._state = CurrentValueRelay(store.state.value)
 
-    let stateChangeCallbackInfo = Instrumentation.CallbackInfo<ViewStore<State, Action>, Action>(storeKind: self.self).eraseToAny()
+    let stateChangeCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: nil as Action?).eraseToAny()
     self.viewCancellable = store.state
       .removeDuplicates(by: {
         instrumentation.callback?(stateChangeCallbackInfo, .pre, .viewStoreDeduplicate)
