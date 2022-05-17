@@ -73,7 +73,7 @@ public final class ViewStore<State, Action>: ObservableObject {
     instrumentation: Instrumentation = .shared
   ) {
     self._send = {
-      let sendCallbackInfo = Instrumentation.CallbackInfo(storeKind: ViewStore<State, Action>.self, action: $0).eraseToAny()
+      let sendCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: $0).eraseToAny()
       instrumentation.callback?(sendCallbackInfo, .pre, .viewStoreSend)
       defer { instrumentation.callback?(sendCallbackInfo, .post, .viewStoreSend) }
 
@@ -81,7 +81,7 @@ public final class ViewStore<State, Action>: ObservableObject {
     }
     self._state = CurrentValueRelay(store.state.value)
 
-    let stateChangeCallbackInfo = Instrumentation.CallbackInfo<ViewStore<State, Action>.Type, Action>(storeKind: ViewStore<State, Action>.self).eraseToAny()
+    let stateChangeCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: nil as Action?).eraseToAny()
     self.viewCancellable = store.state
       .removeDuplicates(by: {
         instrumentation.callback?(stateChangeCallbackInfo, .pre, .viewStoreDeduplicate)

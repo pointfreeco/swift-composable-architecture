@@ -371,7 +371,7 @@ public final class Store<State, Action> {
     self.isSending = true
     var currentState = self.state.value
 
-    let callbackInfo = Instrumentation.CallbackInfo(storeKind: Store<State, Action>.self, action: action, originatingAction: originatingAction).eraseToAny()
+    let callbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: action, originatingAction: originatingAction).eraseToAny()
     instrumentation.callback?(callbackInfo, .pre, .storeSend)
     defer { instrumentation.callback?(callbackInfo, .post, .storeSend) }
 
@@ -392,7 +392,7 @@ public final class Store<State, Action> {
     while !self.bufferedActions.isEmpty {
       let action = self.bufferedActions.removeFirst()
 
-      let processCallbackInfo = Instrumentation.CallbackInfo(storeKind: Store<State,Action>.self, action: action, originatingAction: nil).eraseToAny()
+      let processCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: action, originatingAction: nil).eraseToAny()
       instrumentation.callback?(processCallbackInfo, .pre, .storeProcessEvent)
       defer { instrumentation.callback?(processCallbackInfo, .post, .storeProcessEvent) }
 
