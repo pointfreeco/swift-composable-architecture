@@ -222,8 +222,7 @@
               receiveCompletion: { [weak self] _ in self?.inFlightEffects.remove(effect) },
               receiveCancel: { [weak self] in self?.inFlightEffects.remove(effect) }
             )
-            .map { .init(origin: .receive($0), file: action.file, line: action.line) }
-            .eraseToEffect()
+            .eraseToEffect { .init(origin: .receive($0), file: action.file, line: action.line) }
 
         },
         environment: ()

@@ -53,8 +53,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
   var sendPingEffect: Effect<WebSocketAction, Never> {
     return environment.webSocket.sendPing(WebSocketId())
       .delay(for: 10, scheduler: environment.mainQueue)
-      .map(WebSocketAction.pingResponse)
-      .eraseToEffect()
+      .eraseToEffect(WebSocketAction.pingResponse)
       .cancellable(id: WebSocketId())
   }
 
@@ -75,8 +74,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
         WebSocketId(), URL(string: "wss://echo.websocket.events")!, []
       )
       .receive(on: environment.mainQueue)
-      .map(WebSocketAction.webSocket)
-      .eraseToEffect()
+      .eraseToEffect(WebSocketAction.webSocket)
       .cancellable(id: WebSocketId())
     }
 
@@ -107,8 +105,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
 
     return environment.webSocket.send(WebSocketId(), .string(messageToSend))
       .receive(on: environment.mainQueue)
-      .eraseToEffect()
-      .map(WebSocketAction.sendResponse)
+      .eraseToEffect(WebSocketAction.sendResponse)
 
   case let .sendResponse(error):
     if error != nil {
