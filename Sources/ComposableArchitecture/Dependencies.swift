@@ -46,9 +46,9 @@ extension TaskLocal where Value == DependencyValues {
 
 @propertyWrapper
 public struct Dependency<Value> {
-  public let keyPath: WritableKeyPath<DependencyValues, Value>
+  public let keyPath: KeyPath<DependencyValues, Value>
 
-  public init(_ keyPath: WritableKeyPath<DependencyValues, Value>) {
+  public init(_ keyPath: KeyPath<DependencyValues, Value>) {
     self.keyPath = keyPath
   }
 
