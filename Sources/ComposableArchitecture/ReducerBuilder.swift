@@ -1,3 +1,4 @@
+import Combine
 @resultBuilder
 public enum ReducerBuilder<State, Action> {
   @inlinable
@@ -43,10 +44,10 @@ public enum ReducerBuilder<State, Action> {
 
     @inlinable
     public func reduce(into state: inout R0.State, action: R0.Action) -> Effect<R0.Action, Never> {
-      .merge(
+      Publishers.Merge(
         self.r0.reduce(into: &state, action: action),
         self.r1.reduce(into: &state, action: action)
-      )
+      ).eraseToEffect()
     }
   }
 }
