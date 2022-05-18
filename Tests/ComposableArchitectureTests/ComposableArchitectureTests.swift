@@ -163,7 +163,7 @@ final class ComposableArchitectureTests: XCTestCase {
 
     store.send(.incr) { $0 = 1 }
     scheduler.advance()
-    store.receive(.response(1)) { $0 = 1 }
+    store.receive(.response(1))
 
     store.send(.incr) { $0 = 2 }
     store.send(.cancel)

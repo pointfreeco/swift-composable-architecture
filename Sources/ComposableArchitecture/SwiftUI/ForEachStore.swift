@@ -86,7 +86,6 @@ where Data: Collection, ID: Hashable, Content: View {
     @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
   )
   where
-    EachContent: View,
     Data == IdentifiedArray<ID, EachState>,
     Content == WithViewStore<
       OrderedSet<ID>, (ID, EachAction), ForEach<OrderedSet<ID>, ID, EachContent>

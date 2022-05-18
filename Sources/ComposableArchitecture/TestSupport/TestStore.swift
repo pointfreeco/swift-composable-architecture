@@ -342,7 +342,7 @@
       _ action: LocalAction,
       file: StaticString = #file,
       line: UInt = #line,
-      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+      _ update: ((inout LocalState) throws -> Void)? = nil
     ) -> TestTask {
       if !self.receivedActions.isEmpty {
         var actions = ""
@@ -360,7 +360,12 @@
       var expectedState = self.toLocalState(self.snapshotState)
       let (_, task) = self.store.send(.init(origin: .send(action), file: file, line: line))
       do {
-        try update(&expectedState)
+        try self.expectedStateShouldChange(
+          expected: &expectedState,
+          update: update,
+          file: file,
+          line: line
+        )
       } catch {
         XCTFail("Threw error: \(error)", file: file, line: line)
       }
@@ -375,6 +380,27 @@
       }
 
       return .init(task: task)
+    }
+
+    private func expectedStateShouldChange(
+      expected: inout LocalState,
+      update: ((inout LocalState) throws -> Void)? = nil,
+      file: StaticString,
+      line: UInt
+    ) throws {
+      guard let update = update else { return }
+      let current = expected
+      try update(&expected)
+      if expected == current {
+        XCTFail(
+          """
+          Expected to modify the expected state, but no change occurred.
+
+          Ensure that the state was modified or remove the closure to assert no change.
+          """,
+          file: file, line: line
+        )
+      }
     }
 
     private func expectedStateShouldMatch(
@@ -413,7 +439,7 @@
       _ expectedAction: Action,
       file: StaticString = #file,
       line: UInt = #line,
-      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+      _ update: ((inout LocalState) throws -> Void)? = nil
     ) {
       guard !self.receivedActions.isEmpty else {
         XCTFail(
@@ -448,7 +474,12 @@
       }
       var expectedState = self.toLocalState(self.snapshotState)
       do {
-        try update(&expectedState)
+        try self.expectedStateShouldChange(
+          expected: &expectedState,
+          update: update,
+          file: file,
+          line: line
+        )
       } catch {
         XCTFail("Threw error: \(error)", file: file, line: line)
       }
@@ -554,13 +585,21 @@
 
 public struct TestTask {
   let task: Task<Void, Never>
+
   public var value: Void {
     get async {
       await self.task.value
     }
   }
+
   public func cancel() async {
     self.task.cancel()
     await task.value
+  }
+
+  public func yield() async {
+    await Task(priority: .low) {
+      await Task.yield()
+    }
   }
 }

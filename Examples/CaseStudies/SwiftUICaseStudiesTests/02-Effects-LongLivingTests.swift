@@ -7,21 +7,21 @@ import XCTest
 class LongLivingEffectsTests: XCTestCase {
   @MainActor
   func testReducer() async {
-    // A passthrough subject to simulate the screenshot notification
-    let screenshotTaken = PassthroughSubject<Void, Never>()
+    let notificationCenter = NotificationCenter()
 
     let store = TestStore(
       initialState: .init(),
       reducer: longLivingEffectsReducer,
       environment: .init(
-        userDidTakeScreenshot: screenshotTaken.eraseToEffect()
+        notificationCenter: notificationCenter
       )
     )
 
     let task = store.send(.task)
 
     // Simulate a screenshot being taken
-    screenshotTaken.send()
+    notificationCenter.post(name: UIApplication.userDidTakeScreenshotNotification, object: nil)
+
     await store.receive(.userDidTakeScreenshotNotification) {
       $0.screenshotCount = 1
     }
@@ -31,6 +31,6 @@ class LongLivingEffectsTests: XCTestCase {
 
     // Simulate a screenshot being taken to show no effects
     // are executed.
-    screenshotTaken.send()
+    notificationCenter.post(name: UIApplication.userDidTakeScreenshotNotification, object: nil)
   }
 }
