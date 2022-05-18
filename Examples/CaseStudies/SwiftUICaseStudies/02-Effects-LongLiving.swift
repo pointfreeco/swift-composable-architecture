@@ -1,6 +1,7 @@
 import Combine
 import ComposableArchitecture
 import SwiftUI
+@preconcurrency import Foundation
 
 private let readMe = """
   This application demonstrates how to handle long-living effects, for example notifications from \
@@ -25,8 +26,15 @@ enum LongLivingEffectsAction {
   case userDidTakeScreenshotNotification
 }
 
-struct LongLivingEffectsEnvironment {
-  var notificationCenter: NotificationCenter
+struct LongLivingEffectsEnvironment: Sendable {
+  @UncheckedSendable var notificationCenter: NotificationCenter
+}
+@propertyWrapper
+struct UncheckedSendable<Wrapped> : @unchecked Sendable {
+  var wrappedValue: Wrapped
+  init(wrappedValue: Wrapped) {
+    self.wrappedValue = wrappedValue
+  }
 }
 
 // MARK: - Business logic
@@ -38,9 +46,11 @@ let longLivingEffectsReducer = Reducer<
   switch action {
   case .task:
     // When the view appears, start the effect that emits when screenshots are taken.
-    return environment.notificationCenter
-      .publisher(for: UIApplication.userDidTakeScreenshotNotification)
-      .eraseToEffect { _ in LongLivingEffectsAction.userDidTakeScreenshotNotification }
+    return .run { @MainActor send in
+      for await _ in environment.notificationCenter.notifications(named: UIApplication.userDidTakeScreenshotNotification) {
+        send(.userDidTakeScreenshotNotification)
+      }
+    }
 
   case .userDidTakeScreenshotNotification:
     state.screenshotCount += 1

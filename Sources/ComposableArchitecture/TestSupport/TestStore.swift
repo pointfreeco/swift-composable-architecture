@@ -600,6 +600,6 @@ public struct TestTask {
   public func yield() async {
     await Task(priority: .low) {
       await Task.yield()
-    }
+    }.value
   }
 }
