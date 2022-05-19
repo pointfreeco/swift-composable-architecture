@@ -19,7 +19,9 @@ final class EffectThrottleTests: XCTestCase {
         return Just(value)
       }
       .eraseToEffect()
-      .throttle(id: CancelToken.self, for: 1, scheduler: scheduler.eraseToAnyScheduler(), latest: true)
+      .throttle(
+        id: CancelToken.self, for: 1, scheduler: scheduler.eraseToAnyScheduler(), latest: true
+      )
       .sink { values.append($0) }
       .store(in: &self.cancellables)
     }
@@ -138,7 +140,9 @@ final class EffectThrottleTests: XCTestCase {
         return Just(value)
       }
       .eraseToEffect()
-      .throttle(id: CancelToken.self, for: 1, scheduler: scheduler.eraseToAnyScheduler(), latest: true)
+      .throttle(
+        id: CancelToken.self, for: 1, scheduler: scheduler.eraseToAnyScheduler(), latest: true
+      )
       .sink { values.append($0) }
       .store(in: &self.cancellables)
     }
