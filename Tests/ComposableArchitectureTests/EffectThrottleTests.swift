@@ -12,14 +12,14 @@ final class EffectThrottleTests: XCTestCase {
     var effectRuns = 0
 
     func runThrottledEffect(value: Int) {
-      struct CancelToken: Hashable {}
+      enum CancelToken {}
 
       Deferred { () -> Just<Int> in
         effectRuns += 1
         return Just(value)
       }
       .eraseToEffect()
-      .throttle(id: CancelToken(), for: 1, scheduler: scheduler.eraseToAnyScheduler(), latest: true)
+      .throttle(id: CancelToken.self, for: 1, scheduler: scheduler.eraseToAnyScheduler(), latest: true)
       .sink { values.append($0) }
       .store(in: &self.cancellables)
     }
@@ -64,7 +64,7 @@ final class EffectThrottleTests: XCTestCase {
     var effectRuns = 0
 
     func runThrottledEffect(value: Int) {
-      struct CancelToken: Hashable {}
+      enum CancelToken {}
 
       Deferred { () -> Just<Int> in
         effectRuns += 1
@@ -72,7 +72,7 @@ final class EffectThrottleTests: XCTestCase {
       }
       .eraseToEffect()
       .throttle(
-        id: CancelToken(), for: 1, scheduler: scheduler.eraseToAnyScheduler(), latest: false
+        id: CancelToken.self, for: 1, scheduler: scheduler.eraseToAnyScheduler(), latest: false
       )
       .sink { values.append($0) }
       .store(in: &self.cancellables)
@@ -131,14 +131,14 @@ final class EffectThrottleTests: XCTestCase {
     var effectRuns = 0
 
     func runThrottledEffect(value: Int) {
-      struct CancelToken: Hashable {}
+      enum CancelToken {}
 
       Deferred { () -> Just<Int> in
         effectRuns += 1
         return Just(value)
       }
       .eraseToEffect()
-      .throttle(id: CancelToken(), for: 1, scheduler: scheduler.eraseToAnyScheduler(), latest: true)
+      .throttle(id: CancelToken.self, for: 1, scheduler: scheduler.eraseToAnyScheduler(), latest: true)
       .sink { values.append($0) }
       .store(in: &self.cancellables)
     }
@@ -174,7 +174,7 @@ final class EffectThrottleTests: XCTestCase {
     var effectRuns = 0
 
     func runThrottledEffect(value: Int) {
-      struct CancelToken: Hashable {}
+      enum CancelToken {}
 
       Deferred { () -> Just<Int> in
         effectRuns += 1
@@ -182,7 +182,7 @@ final class EffectThrottleTests: XCTestCase {
       }
       .eraseToEffect()
       .throttle(
-        id: CancelToken(), for: 1, scheduler: scheduler.eraseToAnyScheduler(), latest: false
+        id: CancelToken.self, for: 1, scheduler: scheduler.eraseToAnyScheduler(), latest: false
       )
       .sink { values.append($0) }
       .store(in: &self.cancellables)
