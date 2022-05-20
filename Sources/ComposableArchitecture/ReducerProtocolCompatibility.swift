@@ -1,4 +1,4 @@
-extension Reducer where Environment == Void {
+extension Reducer {
   public init<R: ReducerProtocol>(_ reducer: R) where R.State == State, R.Action == Action {
     self.init { state, action, _ in reducer.reduce(into: &state, action: action) }
   }
