@@ -1,5 +1,5 @@
 extension Reducer where Environment == Void {
-  public init<R: ReducerProtocol<State, Action>>(_ reducer: R) {
+  public init<R: ReducerProtocol>(_ reducer: R) where R.State == State, R.Action == Action {
     self.init { state, action, _ in reducer.reduce(into: &state, action: action) }
   }
 }
@@ -17,10 +17,10 @@ extension Reduce {
 
 extension Store {
   // TODO: Make this the default convenience initializer and have the 'Reducer' one call to it
-  public convenience init<R: ReducerProtocol<State, Action>>(
+  public convenience init<R: ReducerProtocol>(
     initialState: State,
     reducer: R
-  ) {
+  ) where R.State == State, R.Action == Action {
     self.init(
       initialState: initialState,
       reducer: .init(reducer),

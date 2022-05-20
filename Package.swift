@@ -33,12 +33,6 @@ let package = Package(
         .product(name: "CustomDump", package: "swift-custom-dump"),
         .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
-      ],
-      swiftSettings: [
-        .unsafeFlags([
-          "-Xfrontend", "-enable-experimental-pairwise-build-block",
-          "-Xfrontend", "-requirement-machine-protocol-signatures=on",
-        ])
       ]
     ),
     .testTarget(

@@ -8,7 +8,8 @@ public struct Reduce<State, Action>: ReducerProtocol {
   }
 
   @inlinable
-  public init<R: ReducerProtocol<State, Action>>(_ reducer: R) {
+  public init<R: ReducerProtocol>(_ reducer: R)
+  where R.State == State, R.Action == Action {
     self.reduce = reducer.reduce
   }
 

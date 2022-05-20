@@ -32,6 +32,11 @@ public struct DependencyValues {
   }
 }
 
+// TODO: Why is this needed?
+#if compiler(<5.7)
+  extension DependencyValues: @unchecked Sendable {}
+#endif
+
 extension TaskLocal where Value == DependencyValues {
   public func with<DependencyValue, Result>(
     _ keyPath: WritableKeyPath<DependencyValues, DependencyValue>,
