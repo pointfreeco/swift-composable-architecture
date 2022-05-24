@@ -57,7 +57,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
 
-  private let _send: (Action) -> (cancel: () -> Void, task: Task<Void, Never>)
+  private let _send: (Action) -> Task<Void, Never>
   fileprivate let _state: CurrentValueRelay<State>
   private var viewCancellable: AnyCancellable?
 
@@ -140,16 +140,6 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// - Parameter action: An action.
   public func send(_ action: Action) {
     _ = self._send(action)
-  }
-
-  @MainActor
-  public func send(_ action: Action) async {
-    let (cancel, task) = self._send(action)
-
-    await withTaskCancellationHandler(
-      handler: { cancel() },
-      operation: { await task.value }
-    )
   }
 
   /// Sends an action to the store with a given animation.
@@ -365,6 +355,24 @@ private struct HashableWrapper<Value>: Hashable {
 
 #if canImport(_Concurrency) && compiler(>=5.5.2)
   extension ViewStore {
+    @MainActor
+    public func send(_ action: Action) async {
+      let task = self._send(action)
+      await withTaskCancellationHandler(
+        handler: { task.cancel() },
+        operation: { await task.value }
+      )
+    }
+
+    @MainActor
+    public func send(_ action: Action, animation: Animation?) async {
+      let task = withAnimation(animation) { self._send(action) }
+      await withTaskCancellationHandler(
+        handler: { task.cancel() },
+        operation: { await task.value }
+      )
+    }
+
     /// Sends an action into the store and then suspends while a piece of state is `true`.
     ///
     /// This method can be used to interact with async/await code, allowing you to suspend while
@@ -464,6 +472,7 @@ private struct HashableWrapper<Value>: Hashable {
     ///   - animation: The animation to perform when the action is sent.
     ///   - predicate: A predicate on `State` that determines for how long this method should
     ///     suspend.
+    @MainActor
     public func send(
       _ action: Action,
       animation: Animation?,

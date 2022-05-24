@@ -323,11 +323,11 @@ extension Store {
         let localStore = Store<LocalState, LocalAction>(
           initialState: localState,
           reducer: .init { localState, localAction, _ in
-            let (cancel, task) = self.send(fromLocalAction(localAction))
+            let task = self.send(fromLocalAction(localAction))
             localState = extractLocalState(self.state.value) ?? localState
             return Effect.task { @MainActor in
               await withTaskCancellationHandler(
-                handler: { cancel() },
+                handler: { task.cancel() },
                 operation: { await task.value }
               )
             }

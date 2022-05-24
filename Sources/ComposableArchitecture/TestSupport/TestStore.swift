@@ -357,7 +357,7 @@
         )
       }
       var expectedState = self.toLocalState(self.state)
-      let (_, task) = self.store.send(.init(origin: .send(action), file: file, line: line))
+      let task = self.store.send(.init(origin: .send(action), file: file, line: line))
       do {
         try self.expectedStateShouldChange(
           expected: &expectedState,

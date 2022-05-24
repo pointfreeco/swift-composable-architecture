@@ -334,15 +334,9 @@ public final class Store<State, Action> {
       reducer: .init { localState, localAction, _ in
         isSending = true
         defer { isSending = false }
-        let (cancel, task) = self.send(fromLocalAction(localAction))
+        let task = self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
-        return Effect.task { @MainActor in
-          await withTaskCancellationHandler(
-            handler: { cancel() },
-            operation: { await task.value }
-          )
-        }
-        .fireAndForget()
+        return .fireAndForget { @MainActor in await task.value }
       },
       environment: ()
     )
@@ -367,23 +361,14 @@ public final class Store<State, Action> {
     self.scope(state: toLocalState, action: { $0 })
   }
 
-  class Box {
-    var cancellables: [(Task<Void, Never>, AnyCancellable)] = []
-  }
-
   func send(
     _ action: Action,
     originatingFrom originatingAction: Action? = nil
-  )
-  -> (
-    cancel: () -> Void,
-    task: Task<Void, Never>
-  )
-  {
+  ) -> Task<Void, Never> {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
     self.bufferedActions.append(action)
-    guard !self.isSending else { return ({}, .init {}) }
+    guard !self.isSending else { return Task {} }
 
     self.isSending = true
     var currentState = self.state.value
@@ -392,18 +377,22 @@ public final class Store<State, Action> {
       self.state.value = currentState
     }
 
-    let box = Box()
+    let tasks = Box<[Task<Void, Never>]>([])
 
     while !self.bufferedActions.isEmpty {
-//      let task = Task<Void, Never> { while !Task.isCancelled { await Task.yield() } }
-      let task = Task<Void, Never> { _ = try? await Task.sleep(nanoseconds: NSEC_PER_SEC * 99999999) }
-
       let action = self.bufferedActions.removeFirst()
       let effect = self.reducer(&currentState, action)
 
+      let effectCancellable = Box<AnyCancellable?>(nil)
+      let task = Task { @MainActor in
+        await AsyncStream<Void> { _ in }.first { _ in true }
+        effectCancellable.value?.cancel()
+      }
+      tasks.value.append(task)
+
       var didComplete = false
       let uuid = UUID()
-      let effectCancellable = effect.sink(
+      effectCancellable.value = effect.sink(
         receiveCompletion: { [weak self] _ in
           self?.threadCheck(status: .effectCompletion(action))
           task.cancel()
@@ -412,44 +401,29 @@ public final class Store<State, Action> {
         },
         receiveValue: { [weak self] effectAction in
           guard let self = self else { return }
-          let (cancel, task) = self.send(effectAction, originatingFrom: action)
-          box.cancellables.append(
-            (
-              task,
-              AnyCancellable {
-                task.cancel()
-                cancel()
-              }
-            )
-          )
+          tasks.value.append(self.send(effectAction, originatingFrom: action))
         }
       )
 
       if !didComplete {
-        box.cancellables.append((task, effectCancellable))
-        self.effectCancellables[uuid] = effectCancellable
+        self.effectCancellables[uuid] = effectCancellable.value
       }
     }
 
-    return (
-      cancel: {
-        for (task, cancellable) in box.cancellables {
-          task.cancel()
-          cancellable.cancel()
+    return Task { @MainActor in
+      await withTaskCancellationHandler(
+        handler: {
+          for task in tasks.value {
+            task.cancel()
+          }
+        },
+        operation: { @MainActor in
+          for task in tasks.value {
+            await task.value
+          }
         }
-      },
-      task: Task { @MainActor in
-        for (task, cancellable) in box.cancellables {
-          await withTaskCancellationHandler(
-            handler: { task.cancel() },
-            operation: {
-              await task.value
-            }
-          )
-          cancellable.cancel()
-        }
-      }
-    )
+      )
+    }
   }
 
   /// Returns a "stateless" store by erasing state to `Void`.
@@ -582,10 +556,9 @@ public final class Store<State, Action> {
   }
 }
 
-private extension AsyncStream {
-  static func create() -> (Self.Continuation, Self) {
-    var continuation: Continuation!
-    let stream = Self { continuation = $0 }
-    return (continuation, stream)
+private final class Box<Value> {
+  var value: Value
+  init(_ value: Value) {
+    self.value = value
   }
 }
