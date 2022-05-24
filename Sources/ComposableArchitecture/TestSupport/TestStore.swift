@@ -223,6 +223,7 @@
             )
             .map { .init(origin: .receive($0), file: action.file, line: action.line) }
             .eraseToEffect()
+
         },
         environment: ()
       )
@@ -517,7 +518,7 @@
         }
 
         group.addTask { 
-          try? await Task.sleep(nanoseconds: timeout)
+          try? await Task.sleep(nanoseconds: nanoseconds)
           guard !Task.isCancelled
           else { return }
 
@@ -525,7 +526,7 @@
           XCTFail(
             """
             Expected to receive an action, but received none after waiting for \
-            \(Double(timeout)/Double(NSEC_PER_SEC)) seconds.
+            \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds.
             """,
             file: file,
             line: line

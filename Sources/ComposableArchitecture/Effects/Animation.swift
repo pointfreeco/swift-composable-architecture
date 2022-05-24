@@ -15,9 +15,10 @@ private struct AnimatedPublisher<Upstream: Publisher>: Publisher {
   public var upstream: Upstream
   public var animation: Animation?
 
-  public func receive<S>(subscriber: S) where S : Combine.Subscriber, Self.Failure == S.Failure, Self.Output == S.Input {
+  public func receive<S: Combine.Subscriber>(subscriber: S)
+  where S.Input == Output, S.Failure == Failure {
     let conduit = Subscriber(downstream: subscriber, animation: self.animation)
-    upstream.receive(subscriber: conduit)
+    self.upstream.receive(subscriber: conduit)
   }
 
   fileprivate class Subscriber<Downstream: Combine.Subscriber>: Combine.Subscriber {
