@@ -224,7 +224,6 @@
             )
             .map { .init(origin: .receive($0), file: action.file, line: action.line) }
             .eraseToEffect()
-
         },
         environment: ()
       )
@@ -497,30 +496,14 @@
 
     public func receive(
       _ expectedAction: Action,
-      timeout: UInt64 = NSEC_PER_SEC,
+      timeout nanoseconds: UInt64 = NSEC_PER_SEC, // TODO: Better default? Remove default?
       file: StaticString = #file,
       line: UInt = #line,
-      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+      _ update: ((inout LocalState) throws -> Void)? = nil
     ) async {
       await withTaskGroup(of: Void.self) { group in
         guard !group.isCancelled
         else { return }
-
-        group.addTask { 
-          try? await Task.sleep(nanoseconds: timeout)
-          guard !Task.isCancelled
-          else { return }
-
-          // TODO: finese error message
-          XCTFail(
-            """
-            Expected to receive an action, but received none after waiting for \
-            \(Double(timeout)/Double(NSEC_PER_SEC)) seconds.
-            """,
-            file: file,
-            line: line
-          )
-        }
 
         group.addTask { @MainActor in
           while !Task.isCancelled {
@@ -532,6 +515,22 @@
           else { return }
 
           { self.receive(expectedAction, file: file, line: line, update) }()
+        }
+
+        group.addTask { 
+          try? await Task.sleep(nanoseconds: timeout)
+          guard !Task.isCancelled
+          else { return }
+
+          // TODO: finesse error message
+          XCTFail(
+            """
+            Expected to receive an action, but received none after waiting for \
+            \(Double(timeout)/Double(NSEC_PER_SEC)) seconds.
+            """,
+            file: file,
+            line: line
+          )
         }
 
         await group.next()
@@ -580,26 +579,23 @@
       self.scope(state: toLocalState, action: { $0 })
     }
   }
-#endif
 
+  public struct TestTask {
+    let task: Task<Void, Never>
 
-public struct TestTask {
-  let task: Task<Void, Never>
+    public var value: Void {
+      get async {
+        await self.task.value
+      }
+    }
 
-  public var value: Void {
-    get async {
-      await self.task.value
+    public func cancel() async {
+      self.task.cancel()
+      await task.value
+    }
+
+    public func yield() async {
+      await Task(priority: .low) { await Task.yield() }.value
     }
   }
-
-  public func cancel() async {
-    self.task.cancel()
-    await task.value
-  }
-
-  public func yield() async {
-    await Task(priority: .low) {
-      await Task.yield()
-    }.value
-  }
-}
+#endif

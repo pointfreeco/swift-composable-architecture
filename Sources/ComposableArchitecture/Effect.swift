@@ -363,6 +363,7 @@ extension Publisher {
       .catch { Just(.failure($0)) }
       .eraseToEffect()
   }
+
   @_disfavoredOverload
   public func catchToEffect<T>(
     _ transform: @escaping (TaskResult<Output>) -> T
@@ -424,6 +425,3 @@ extension Publisher {
       .eraseToEffect()
   }
 }
-
-
-
