@@ -43,7 +43,6 @@
   /// struct CounterState {
   ///   var count = 0
   /// }
-  ///
   /// enum CounterAction: Equatable {
   ///   case decrementButtonTapped
   ///   case incrementButtonTapped
@@ -68,12 +67,12 @@
   /// class CounterTests: XCTestCase {
   ///   func testCounter() {
   ///     let store = TestStore(
-  ///       initialState: .init(count: 0),     // GIVEN counter state of 0
+  ///       initialState: .init(count: 0),      // Given a counter state of 0
   ///       reducer: counterReducer,
   ///       environment: ()
   ///     )
-  ///     store.send(.incrementButtonTapped) { // WHEN the increment button is tapped
-  ///       $0.count = 1                       // THEN the count should be 1
+  ///     store.send(.incrementButtonTapped) {  // When the increment button is tapped
+  ///       $0.count = 1                        // Then the count should be 1
   ///     }
   ///   }
   /// }
@@ -84,8 +83,8 @@
   /// to match the state after the action was sent. In this case the `count` field changes to `1`.
   ///
   /// For a more complex example, consider the following bare-bones search feature that uses the
-  /// ``Effect/debounce(id:for:scheduler:options:)`` operator to wait for the user to stop typing
-  /// before making a network request:
+  /// ``Effect/debounce(id:for:scheduler:options:)-76yye`` operator to wait for the user to stop
+  /// typing before making a network request:
   ///
   /// ```swift
   /// struct SearchState: Equatable {
@@ -177,7 +176,7 @@
     private var inFlightEffects: Set<LongLivingEffect> = []
     var receivedActions: [(action: Action, state: State)] = []
     private let reducer: Reducer<State, Action, Environment>
-    private var snapshotState: State
+    private var state: State
     private var store: Store<State, TestAction>!
     private let toLocalState: (State) -> LocalState
 
@@ -195,7 +194,7 @@
       self.fromLocalAction = fromLocalAction
       self.line = line
       self.reducer = reducer
-      self.snapshotState = initialState
+      self.state = initialState
       self.toLocalState = toLocalState
 
       self.store = Store(
@@ -205,7 +204,7 @@
           switch action.origin {
           case let .send(localAction):
             effects = self.reducer.run(&state, self.fromLocalAction(localAction), self.environment)
-            self.snapshotState = state
+            self.state = state
 
           case let .receive(action):
             effects = self.reducer.run(&state, action, self.environment)
@@ -356,7 +355,7 @@
           file: file, line: line
         )
       }
-      var expectedState = self.toLocalState(self.snapshotState)
+      var expectedState = self.toLocalState(self.state)
       self.store.send(.init(origin: .send(action), file: file, line: line))
       do {
         try self.expectedStateShouldChange(
@@ -370,7 +369,7 @@
       }
       self.expectedStateShouldMatch(
         expected: expectedState,
-        actual: self.toLocalState(self.snapshotState),
+        actual: self.toLocalState(self.state),
         file: file,
         line: line
       )
@@ -469,7 +468,7 @@
           file: file, line: line
         )
       }
-      var expectedState = self.toLocalState(self.snapshotState)
+      var expectedState = self.toLocalState(self.state)
       do {
         try self.expectedStateShouldChange(
           expected: &expectedState,
@@ -486,7 +485,7 @@
         file: file,
         line: line
       )
-      snapshotState = state
+      self.state = state
       if "\(self.file)" == "\(file)" {
         self.line = line
       }
