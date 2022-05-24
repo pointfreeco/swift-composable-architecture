@@ -236,6 +236,7 @@ public final class Store<State, Action> {
   /// ```
   ///
   /// The login view holds onto a store of this domain:
+  ///
   /// ```swift
   /// struct LoginView: View {
   ///   let store: Store<LoginState, LoginAction>
@@ -355,6 +356,8 @@ public final class Store<State, Action> {
   }
 
   /// Scopes the store to one that exposes local state.
+  ///
+  /// A version of ``scope(state:action:)`` that leaves the action type unchanged.
   ///
   /// - Parameter toLocalState: A function that transforms `State` into `LocalState`.
   /// - Returns: A new store with its domain (state and action) transformed.
