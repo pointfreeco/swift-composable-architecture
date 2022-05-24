@@ -29,14 +29,6 @@ struct LongLivingEffectsEnvironment: Sendable {
   @UncheckedSendable var notificationCenter: NotificationCenter
 }
 
-@propertyWrapper
-struct UncheckedSendable<Wrapped> : @unchecked Sendable {
-  var wrappedValue: Wrapped
-  init(wrappedValue: Wrapped) {
-    self.wrappedValue = wrappedValue
-  }
-}
-
 // MARK: - Business logic
 
 let longLivingEffectsReducer = Reducer<
