@@ -1,7 +1,6 @@
 import Combine
 import ComposableArchitecture
 import SwiftUI
-@preconcurrency import Foundation
 
 private let readMe = """
   This application demonstrates how to handle long-living effects, for example notifications from \
@@ -29,6 +28,7 @@ enum LongLivingEffectsAction {
 struct LongLivingEffectsEnvironment: Sendable {
   @UncheckedSendable var notificationCenter: NotificationCenter
 }
+
 @propertyWrapper
 struct UncheckedSendable<Wrapped> : @unchecked Sendable {
   var wrappedValue: Wrapped
@@ -39,7 +39,6 @@ struct UncheckedSendable<Wrapped> : @unchecked Sendable {
 
 // MARK: - Business logic
 
-@MainActor
 let longLivingEffectsReducer = Reducer<
   LongLivingEffectsState, LongLivingEffectsAction, LongLivingEffectsEnvironment
 > { state, action, environment in

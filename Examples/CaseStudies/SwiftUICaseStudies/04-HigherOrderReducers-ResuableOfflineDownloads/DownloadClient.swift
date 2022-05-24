@@ -3,7 +3,9 @@ import ComposableArchitecture
 import Foundation
 
 struct DownloadClient {
-  var download: (URL) -> AsyncThrowingStream<Action, Error>
+  var download: (URL) -> Effect<Action, Error>
+
+  struct Error: Swift.Error, Equatable {}
 
   enum Action: Equatable {
     case response(Data)
@@ -14,19 +16,28 @@ struct DownloadClient {
 extension DownloadClient {
   static let live = DownloadClient(
     download: { url in
-      AsyncThrowingStream { continuation in
-        Task {
-          defer { continuation.finish() }
-          let (bytes, response) = try await URLSession.shared.bytes(from: url)
-          let length = response.expectedContentLength
-          var data = Data()
-          data.reserveCapacity(Int(length))
-          for try await byte in bytes {
-            data.append(byte)
-            let progress = Double(data.count) / Double(length)
-            continuation.yield(.updateProgress(progress))
+      .run { subscriber in
+        let task = URLSession.shared.dataTask(with: url) { data, _, error in
+          switch (data, error) {
+          case let (.some(data), _):
+            subscriber.send(.response(data))
+            subscriber.send(completion: .finished)
+          case let (_, .some(error)):
+            subscriber.send(completion: .failure(Error()))
+          case (.none, .none):
+            fatalError("Data and Error should not both be nil")
           }
-          continuation.yield(.response(data))
+        }
+
+        let observation = task.progress.observe(\.fractionCompleted) { progress, _ in
+          subscriber.send(.updateProgress(progress.fractionCompleted))
+        }
+
+        task.resume()
+
+        return AnyCancellable {
+          observation.invalidate()
+          task.cancel()
         }
       }
     }

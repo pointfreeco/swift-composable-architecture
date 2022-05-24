@@ -32,7 +32,7 @@ enum Mode: Equatable {
 enum DownloadComponentAction: Equatable {
   case alert(AlertAction)
   case buttonTapped
-  case downloadClient(TaskResult<DownloadClient.Action>)
+  case downloadClient(Result<DownloadClient.Action, DownloadClient.Error>)
 
   enum AlertAction: Equatable {
     case cancelButtonTapped
@@ -86,8 +86,6 @@ extension Reducer {
             state.mode = .startingToDownload
             return environment.downloadClient
               .download(state.url)
-              .publisher
-              .print("!!!!!")
               .throttle(for: 1, scheduler: environment.mainQueue, latest: true)
               .catchToEffect(DownloadComponentAction.downloadClient)
               .cancellable(id: state.id)
