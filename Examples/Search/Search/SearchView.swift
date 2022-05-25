@@ -68,7 +68,7 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
       return .cancel(id: SearchLocationId.self)
     }
 
-    return .task {
+    return .task { @MainActor in
       .locationsResponse(
         await .init {
           try await environment.weatherClient.searchLocation(query)

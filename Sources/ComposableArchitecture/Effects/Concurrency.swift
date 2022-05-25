@@ -33,16 +33,19 @@ import SwiftUI
     /// - Returns: An effect wrapping the given asynchronous work.
     public static func task(
       priority: TaskPriority? = nil,
-      operation: @escaping @Sendable () async throws -> Output
+      operation: @escaping @Sendable () async throws -> Output,
+      file: StaticString = #file,
+      line: UInt = #line
     ) -> Self {
-      Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
+      return Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
         let subject = PassthroughSubject<Output, Failure>()
-        let task = Task(priority: priority) {
+        let task = Task(priority: priority) { @MainActor in
           do {
             try Task.checkCancellation()
             let output = try await operation()
             try Task.checkCancellation()
             subject.send(output)
+            Swift.print(file, line)
             subject.send(completion: .finished)
           } catch is CancellationError {
             subject.send(completion: .finished)
@@ -105,9 +108,11 @@ import SwiftUI
     /// - Returns: An effect wrapping the given asynchronous work.
     public static func task(
       priority: TaskPriority? = nil,
-      operation: @escaping @Sendable () async throws -> Output
+      operation: @escaping @Sendable () async throws -> Output,
+      file: StaticString = #file,
+      line: UInt = #line
     ) -> Self where Failure == Never {
-      Effect<Output, Error>.task(priority: priority, operation: operation)
+      return Effect<Output, Error>.task(priority: priority, operation: operation, file: file, line: line)
         .catch { _ in Empty() }
         .eraseToEffect()
     }
@@ -117,7 +122,7 @@ import SwiftUI
       _ operation: @escaping @Sendable (_ send: Send<Output>) async -> Void
     ) -> Self {
       .run { subscriber in
-        let task = Task(priority: priority) {
+        let task = Task(priority: priority) { @MainActor in
           await operation(Send(send: subscriber.send(_:)))
           subscriber.send(completion: .finished)
         }
@@ -137,9 +142,11 @@ import SwiftUI
     /// - Returns: An effect.
     public static func fireAndForget(
       priority: TaskPriority? = nil,
-      _ work: @escaping @Sendable () async throws -> Void
+      _ work: @escaping @Sendable () async throws -> Void,
+      file: StaticString = #file,
+      line: UInt = #line
     ) -> Effect {
-      Effect<Void, Never>.task(priority: priority) { try? await work() }
+      Effect<Void, Never>.task(priority: priority, operation: { try? await work() }, file: file, line: line)
         .fireAndForget()
     }
   }

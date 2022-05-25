@@ -33,7 +33,9 @@ extension Effect {
     Just(())
       .setFailureType(to: Failure.self)
       .delay(for: dueTime, scheduler: scheduler, options: options)
-      .flatMap { self.receive(on: scheduler) }
+      .flatMap {
+        self.receive(on: scheduler)
+      }
       .eraseToEffect()
       .cancellable(id: id, cancelInFlight: true)
   }

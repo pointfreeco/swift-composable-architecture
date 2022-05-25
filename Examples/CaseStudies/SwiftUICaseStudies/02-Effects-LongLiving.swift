@@ -1,3 +1,4 @@
+import AsyncAlgorithms
 import Combine
 import ComposableArchitecture
 import SwiftUI
@@ -25,7 +26,8 @@ enum LongLivingEffectsAction {
   case userDidTakeScreenshotNotification
 }
 
-struct LongLivingEffectsEnvironment: Sendable {
+struct LongLivingEffectsEnvironment {
+  var screenshots: AsyncStream<Void>
   @UncheckedSendable var notificationCenter: NotificationCenter
 }
 
@@ -38,7 +40,10 @@ let longLivingEffectsReducer = Reducer<
   case .task:
     // When the view appears, start the effect that emits when screenshots are taken.
     return .run { @MainActor send in
-      for await _ in environment.notificationCenter.notifications(named: UIApplication.userDidTakeScreenshotNotification) {
+      for await _ in
+//      NotificationCenter.default.notifications(named: UIApplication.userDidTakeScreenshotNotification)
+            environment.screenshots
+      {
         send(.userDidTakeScreenshotNotification)
       }
     }
@@ -93,6 +98,7 @@ struct EffectsLongLiving_Previews: PreviewProvider {
         initialState: LongLivingEffectsState(),
         reducer: longLivingEffectsReducer,
         environment: LongLivingEffectsEnvironment(
+          screenshots: .init { _ in },
           notificationCenter: .default
         )
       )

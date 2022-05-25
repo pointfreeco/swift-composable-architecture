@@ -1,3 +1,4 @@
+import AsyncAlgorithms
 import Combine
 import ComposableArchitecture
 import UIKit
@@ -82,21 +83,31 @@ struct RootEnvironment {
   var favorite: (UUID, Bool) async throws -> Bool
   var fetchNumber: () async -> Int
   var mainQueue: AnySchedulerOf<DispatchQueue>
-  var notificationCenter: NotificationCenter
+  var screenshots: AsyncStream<Void>
   var uuid: () -> UUID
   var webSocket: WebSocketClient
 
-  static let live = Self(
-    date: Date.init,
-    downloadClient: .live,
-    fact: .live,
-    favorite: favorite(id:isFavorite:),
-    fetchNumber: liveFetchNumber,
-    mainQueue: .main,
-    notificationCenter: .default,
-    uuid: UUID.init,
-    webSocket: .live
-  )
+  static var live: Self {
+    var continuation: AsyncStream<Void>.Continuation!
+    let screenshots = AsyncStream<Void> { continuation = $0 }
+    let c = continuation!
+    Task {
+      for await _ in await NotificationCenter.default.notifications(named: UIApplication.userDidTakeScreenshotNotification) {
+        c.yield()
+      }
+    }
+    return Self(
+      date: Date.init,
+      downloadClient: .live,
+      fact: .live,
+      favorite: favorite(id:isFavorite:),
+      fetchNumber: liveFetchNumber,
+      mainQueue: .main,
+      screenshots: screenshots,
+      uuid: UUID.init,
+      webSocket: .live
+    )
+  }
 }
 
 let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
@@ -220,7 +231,7 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.longLivingEffects,
       action: /RootAction.longLivingEffects,
-      environment: { .init(notificationCenter: $0.notificationCenter) }
+      environment: { .init(screenshots: $0.screenshots, notificationCenter: .default) }
     ),
   mapAppReducer
     .pullback(

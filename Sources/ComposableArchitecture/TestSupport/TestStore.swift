@@ -595,7 +595,9 @@
     }
 
     public func yield() async {
-      await Task(priority: .low) { await Task.yield() }.value
+//      for _ in 1...100 {
+        await Task(priority: .background) { await Task.yield() }.value
+//      }
     }
   }
 #endif

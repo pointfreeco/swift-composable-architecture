@@ -339,7 +339,7 @@ public final class Store<State, Action> {
         return .fireAndForget { @MainActor in
           await withTaskCancellationHandler(
             handler: { task.cancel() },
-            operation: { await task.value }
+            operation: { @MainActor in await task.value }
           )
         }
       },

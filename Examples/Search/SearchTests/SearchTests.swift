@@ -18,11 +18,16 @@ class SearchTests: XCTestCase {
       )
     )
 
-    store.environment.weatherClient.searchLocation = { _ in mockLocations }
+    store.environment.weatherClient.searchLocation = { _ in
+      mockLocations
+    }
     store.send(.searchQueryChanged("S")) {
       $0.searchQuery = "S"
     }
+//    await task.yield()
     await self.scheduler.advance(by: 0.3)
+//    await task.yield()
+//    self.scheduler.advance()
     await store.receive(.locationsResponse(.success(mockLocations))) {
       $0.locations = mockLocations
     }
@@ -48,7 +53,8 @@ class SearchTests: XCTestCase {
       $0.searchQuery = "S"
     }
     await self.scheduler.advance(by: 0.3)
-    await store.receive(.locationsResponse(.failure(SearchLocationError())))
+    
+    await store.receive(.locationsResponse(.failure(SearchLocationError())), timeout: NSEC_PER_SEC*10)
   }
 
   func testClearQueryCancelsInFlightSearchRequest() async {
