@@ -336,7 +336,12 @@ public final class Store<State, Action> {
         defer { isSending = false }
         let task = self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
-        return .fireAndForget { @MainActor in await task.value }
+        return .fireAndForget { @MainActor in
+          await withTaskCancellationHandler(
+            handler: { task.cancel() },
+            operation: { await task.value }
+          )
+        }
       },
       environment: ()
     )
