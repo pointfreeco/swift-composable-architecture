@@ -27,7 +27,7 @@ enum LongLivingEffectsAction {
 }
 
 struct LongLivingEffectsEnvironment {
-  var screenshots: AsyncStream<Void>
+  var screenshots: () -> AsyncStream<Void>
   @UncheckedSendable var notificationCenter: NotificationCenter
 }
 
@@ -42,7 +42,7 @@ let longLivingEffectsReducer = Reducer<
     return .run { @MainActor send in
       for await _ in
 //      NotificationCenter.default.notifications(named: UIApplication.userDidTakeScreenshotNotification)
-            environment.screenshots
+            environment.screenshots()
       {
         send(.userDidTakeScreenshotNotification)
       }
@@ -98,7 +98,7 @@ struct EffectsLongLiving_Previews: PreviewProvider {
         initialState: LongLivingEffectsState(),
         reducer: longLivingEffectsReducer,
         environment: LongLivingEffectsEnvironment(
-          screenshots: .init { _ in },
+          screenshots: { .init { _ in } },
           notificationCenter: .default
         )
       )

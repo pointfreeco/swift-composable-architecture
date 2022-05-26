@@ -83,19 +83,11 @@ struct RootEnvironment {
   var favorite: (UUID, Bool) async throws -> Bool
   var fetchNumber: () async -> Int
   var mainQueue: AnySchedulerOf<DispatchQueue>
-  var screenshots: AsyncStream<Void>
+  var screenshots: () -> AsyncStream<Void>
   var uuid: () -> UUID
   var webSocket: WebSocketClient
 
   static var live: Self {
-    var continuation: AsyncStream<Void>.Continuation!
-    let screenshots = AsyncStream<Void> { continuation = $0 }
-    let c = continuation!
-    Task {
-      for await _ in await NotificationCenter.default.notifications(named: UIApplication.userDidTakeScreenshotNotification) {
-        c.yield()
-      }
-    }
     return Self(
       date: Date.init,
       downloadClient: .live,
@@ -103,7 +95,17 @@ struct RootEnvironment {
       favorite: favorite(id:isFavorite:),
       fetchNumber: liveFetchNumber,
       mainQueue: .main,
-      screenshots: screenshots,
+      screenshots: {
+        var continuation: AsyncStream<Void>.Continuation!
+        let screenshots = AsyncStream<Void> { continuation = $0 }
+        let c = continuation!
+        Task {
+          for await _ in await NotificationCenter.default.notifications(named: UIApplication.userDidTakeScreenshotNotification) {
+            c.yield()
+          }
+        }
+        return screenshots
+      },
       uuid: UUID.init,
       webSocket: .live
     )
