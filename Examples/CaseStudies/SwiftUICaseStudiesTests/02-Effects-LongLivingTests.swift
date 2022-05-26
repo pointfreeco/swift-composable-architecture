@@ -43,7 +43,7 @@ class LongLivingEffectsTests: XCTestCase {
     takeScreenshot.yield()
 
     await store.receive(.userDidTakeScreenshotNotification) {
-      $0.screenshotCount = 1
+      $0.screenshotCount = 2
     }
 
     await task.cancel()
