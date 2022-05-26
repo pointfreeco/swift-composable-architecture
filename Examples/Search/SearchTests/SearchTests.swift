@@ -17,16 +17,16 @@ class SearchTests: XCTestCase {
       )
     )
 
-    store.environment.weatherClient.searchLocation = { _ in Effect(value: mockLocations) }
+    store.environment.weatherClient.search = { _ in Effect(value: .mock) }
     store.send(.searchQueryChanged("S")) {
       $0.searchQuery = "S"
     }
     self.scheduler.advance(by: 0.3)
-    store.receive(.locationsResponse(.success(mockLocations))) {
-      $0.locations = mockLocations
+    store.receive(.searchResponse(.success(.mock))) {
+      $0.results = Search.mock.results
     }
     store.send(.searchQueryChanged("")) {
-      $0.locations = []
+      $0.results = []
       $0.searchQuery = ""
     }
   }
@@ -41,17 +41,17 @@ class SearchTests: XCTestCase {
       )
     )
 
-    store.environment.weatherClient.searchLocation = { _ in Effect(error: .init()) }
+    store.environment.weatherClient.search = { _ in Effect(error: .init()) }
     store.send(.searchQueryChanged("S")) {
       $0.searchQuery = "S"
     }
     self.scheduler.advance(by: 0.3)
-    store.receive(.locationsResponse(.failure(.init())))
+    store.receive(.searchResponse(.failure(.init())))
   }
 
   func testClearQueryCancelsInFlightSearchRequest() {
     var weatherClient = WeatherClient.failing
-    weatherClient.searchLocation = { _ in Effect(value: mockLocations) }
+    weatherClient.search = { _ in Effect(value: .mock) }
 
     let store = TestStore(
       initialState: .init(),
@@ -73,17 +73,22 @@ class SearchTests: XCTestCase {
   }
 
   func testTapOnLocation() {
-    let specialLocation = Location(id: 42, title: "Special Place")
-    let specialLocationWeather = LocationWeather(
-      consolidatedWeather: mockWeather,
-      id: 42
+    let specialResult = Search.Result(
+      country: "Special Country",
+      latitude: 0,
+      longitude: 0,
+      id: 42,
+      name: "Special Place"
     )
 
+    var results = Search.mock.results
+    results.append(specialResult)
+
     var weatherClient = WeatherClient.failing
-    weatherClient.weather = { _ in Effect(value: specialLocationWeather) }
+    weatherClient.forecast = { _ in Effect(value: .mock) }
 
     let store = TestStore(
-      initialState: .init(locations: mockLocations + [specialLocation]),
+      initialState: .init(results: results),
       reducer: searchReducer,
       environment: SearchEnvironment(
         weatherClient: weatherClient,
@@ -91,28 +96,58 @@ class SearchTests: XCTestCase {
       )
     )
 
-    store.send(.locationTapped(specialLocation)) {
-      $0.locationWeatherRequestInFlight = specialLocation
+    store.send(.searchResultTapped(specialResult)) {
+      $0.resultForecastRequestInFlight = specialResult
     }
     self.scheduler.advance()
-    store.receive(.locationWeatherResponse(.success(specialLocationWeather))) {
-      $0.locationWeatherRequestInFlight = nil
-      $0.locationWeather = specialLocationWeather
+    store.receive(.forecastResponse(42, .success(.mock))) {
+      $0.resultForecastRequestInFlight = nil
+      $0.weather = .init(
+        id: 42,
+        days: [
+          .init(
+            date: Date(timeIntervalSince1970: 0),
+            temperatureMax: 90,
+            temperatureMaxUnit: "°F",
+            temperatureMin: 70,
+            temperatureMinUnit: "°F"
+          ),
+          .init(
+            date: Date(timeIntervalSince1970: 86_400),
+            temperatureMax: 70,
+            temperatureMaxUnit: "°F",
+            temperatureMin: 50,
+            temperatureMinUnit: "°F"
+          ),
+          .init(
+            date: Date(timeIntervalSince1970: 172_800),
+            temperatureMax: 100,
+            temperatureMaxUnit: "°F",
+            temperatureMin: 80,
+            temperatureMinUnit: "°F"
+          )
+        ]
+      )
     }
   }
 
   func testTapOnLocationCancelsInFlightRequest() {
-    let specialLocation = Location(id: 42, title: "Special Place")
-    let specialLocationWeather = LocationWeather(
-      consolidatedWeather: mockWeather,
-      id: 42
+    let specialResult = Search.Result(
+      country: "Special Country",
+      latitude: 0,
+      longitude: 0,
+      id: 42,
+      name: "Special Place"
     )
 
+    var results = Search.mock.results
+    results.append(specialResult)
+
     var weatherClient = WeatherClient.failing
-    weatherClient.weather = { _ in Effect(value: specialLocationWeather) }
+    weatherClient.forecast = { _ in Effect(value: .mock) }
 
     let store = TestStore(
-      initialState: .init(locations: mockLocations + [specialLocation]),
+      initialState: .init(results: results),
       reducer: searchReducer,
       environment: SearchEnvironment(
         weatherClient: weatherClient,
@@ -120,25 +155,52 @@ class SearchTests: XCTestCase {
       )
     )
 
-    store.send(.locationTapped(mockLocations.first!)) {
-      $0.locationWeatherRequestInFlight = mockLocations.first!
+    store.send(.searchResultTapped(results.first!)) {
+      $0.resultForecastRequestInFlight = results.first!
     }
-    store.send(.locationTapped(specialLocation)) {
-      $0.locationWeatherRequestInFlight = specialLocation
+    store.send(.searchResultTapped(specialResult)) {
+      $0.resultForecastRequestInFlight = specialResult
     }
     self.scheduler.advance()
-    store.receive(.locationWeatherResponse(.success(specialLocationWeather))) {
-      $0.locationWeatherRequestInFlight = nil
-      $0.locationWeather = specialLocationWeather
+    store.receive(.forecastResponse(42, .success(.mock))) {
+      $0.resultForecastRequestInFlight = nil
+      $0.weather = .init(
+        id: 42,
+        days: [
+          .init(
+            date: Date(timeIntervalSince1970: 0),
+            temperatureMax: 90,
+            temperatureMaxUnit: "°F",
+            temperatureMin: 70,
+            temperatureMinUnit: "°F"
+          ),
+          .init(
+            date: Date(timeIntervalSince1970: 86_400),
+            temperatureMax: 70,
+            temperatureMaxUnit: "°F",
+            temperatureMin: 50,
+            temperatureMinUnit: "°F"
+          ),
+          .init(
+            date: Date(timeIntervalSince1970: 172_800),
+            temperatureMax: 100,
+            temperatureMaxUnit: "°F",
+            temperatureMin: 80,
+            temperatureMinUnit: "°F"
+          )
+        ]
+      )
     }
   }
 
   func testTapOnLocationFailure() {
     var weatherClient = WeatherClient.failing
-    weatherClient.weather = { _ in Effect(error: .init()) }
+    weatherClient.forecast = { _ in Effect(error: .init()) }
+
+    let results = Search.mock.results
 
     let store = TestStore(
-      initialState: .init(locations: mockLocations),
+      initialState: .init(results: results),
       reducer: searchReducer,
       environment: SearchEnvironment(
         weatherClient: weatherClient,
@@ -146,42 +208,12 @@ class SearchTests: XCTestCase {
       )
     )
 
-    store.send(.locationTapped(mockLocations.first!)) {
-      $0.locationWeatherRequestInFlight = mockLocations.first!
+    store.send(.searchResultTapped(results.first!)) {
+      $0.resultForecastRequestInFlight = results.first!
     }
     self.scheduler.advance()
-    store.receive(.locationWeatherResponse(.failure(.init()))) {
-      $0.locationWeatherRequestInFlight = nil
+    store.receive(.forecastResponse(1, .failure(.init()))) {
+      $0.resultForecastRequestInFlight = nil
     }
   }
 }
-
-private let mockWeather: [LocationWeather.ConsolidatedWeather] = [
-  .init(
-    applicableDate: Date(timeIntervalSince1970: 0),
-    maxTemp: 90,
-    minTemp: 70,
-    theTemp: 80,
-    weatherStateName: "Clear"
-  ),
-  .init(
-    applicableDate: Date(timeIntervalSince1970: 86_400),
-    maxTemp: 70,
-    minTemp: 50,
-    theTemp: 60,
-    weatherStateName: "Rain"
-  ),
-  .init(
-    applicableDate: Date(timeIntervalSince1970: 172_800),
-    maxTemp: 100,
-    minTemp: 80,
-    theTemp: 90,
-    weatherStateName: "Cloudy"
-  ),
-]
-
-private let mockLocations = [
-  Location(id: 1, title: "Brooklyn"),
-  Location(id: 2, title: "Los Angeles"),
-  Location(id: 3, title: "San Francisco"),
-]
