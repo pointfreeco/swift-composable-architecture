@@ -337,10 +337,11 @@ public final class Store<State, Action> {
         let task = self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
         return .fireAndForget { @MainActor in
-          await withTaskCancellationHandler(
-            handler: { task.cancel() },
-            operation: { await task.value }
-          )
+          await withTaskCancellationHandler {
+            task.cancel()
+          } operation: {
+            await task.value
+          }
         }
       },
       environment: ()
@@ -416,18 +417,15 @@ public final class Store<State, Action> {
     }
 
     return Task { @MainActor in
-      await withTaskCancellationHandler(
-        handler: {
-          for task in tasks.value {
-            task.cancel()
-          }
-        },
-        operation: { @MainActor in
-          for task in tasks.value {
-            await task.value
-          }
+      await withTaskCancellationHandler {
+        for task in tasks.value {
+          task.cancel()
         }
-      )
+      } operation: {
+        for task in tasks.value {
+          await task.value
+        }
+      }
     }
   }
 

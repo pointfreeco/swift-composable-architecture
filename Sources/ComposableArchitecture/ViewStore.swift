@@ -358,19 +358,21 @@ private struct HashableWrapper<Value>: Hashable {
     @MainActor
     public func send(_ action: Action) async {
       let task = self._send(action)
-      await withTaskCancellationHandler(
-        handler: { task.cancel() },
-        operation: { await task.value }
-      )
+      await withTaskCancellationHandler {
+        task.cancel()
+      } operation: {
+        await task.value
+      }
     }
 
     @MainActor
     public func send(_ action: Action, animation: Animation?) async {
       let task = withAnimation(animation) { self._send(action) }
-      await withTaskCancellationHandler(
-        handler: { task.cancel() },
-        operation: { await task.value }
-      )
+      await withTaskCancellationHandler {
+        task.cancel()
+      } operation: {
+        await task.value
+      }
     }
 
     /// Sends an action into the store and then suspends while a piece of state is `true`.
@@ -486,6 +488,7 @@ private struct HashableWrapper<Value>: Hashable {
     ///
     /// - Parameter predicate: A predicate on `State` that determines for how long this method
     ///   should suspend.
+    @MainActor
     public func suspend(while predicate: @escaping (State) -> Bool) async {
       if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
         _ = await self.publisher
@@ -493,26 +496,25 @@ private struct HashableWrapper<Value>: Hashable {
           .first(where: { !predicate($0) })
       } else {
         let cancellable = Box<AnyCancellable?>(wrappedValue: nil)
-        try? await withTaskCancellationHandler(
-          handler: { cancellable.wrappedValue?.cancel() },
-          operation: {
-            try Task.checkCancellation()
-            try await withUnsafeThrowingContinuation {
-              (continuation: UnsafeContinuation<Void, Error>) in
-              guard !Task.isCancelled else {
-                continuation.resume(throwing: CancellationError())
-                return
-              }
-              cancellable.wrappedValue = self.publisher
-                .filter { !predicate($0) }
-                .prefix(1)
-                .sink { _ in
-                  continuation.resume()
-                  _ = cancellable
-                }
+        try? await withTaskCancellationHandler {
+          cancellable.wrappedValue?.cancel()
+        } operation: {
+          try Task.checkCancellation()
+          try await withUnsafeThrowingContinuation {
+            (continuation: UnsafeContinuation<Void, Error>) in
+            guard !Task.isCancelled else {
+              continuation.resume(throwing: CancellationError())
+              return
             }
+            cancellable.wrappedValue = self.publisher
+              .filter { !predicate($0) }
+              .prefix(1)
+              .sink { _ in
+                continuation.resume()
+                _ = cancellable
+              }
           }
-        )
+        }
       }
     }
   }

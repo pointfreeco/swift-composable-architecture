@@ -82,7 +82,7 @@ struct RootEnvironment {
   var favorite: (UUID, Bool) async throws -> Bool
   var fetchNumber: () async -> Int
   var mainQueue: AnySchedulerOf<DispatchQueue>
-  var notificationCenter: NotificationCenter
+  var screenshots: @Sendable () async -> AsyncStream<Void>
   var uuid: () -> UUID
   var webSocket: WebSocketClient
 
@@ -93,7 +93,14 @@ struct RootEnvironment {
     favorite: favorite(id:isFavorite:),
     fetchNumber: liveFetchNumber,
     mainQueue: .main,
-    notificationCenter: .default,
+    screenshots: {
+      await .init(
+        NotificationCenter
+          .default
+          .notifications(named: UIApplication.userDidTakeScreenshotNotification)
+          .map { _ in }
+      )
+    },
     uuid: UUID.init,
     webSocket: .live
   )
@@ -220,7 +227,7 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.longLivingEffects,
       action: /RootAction.longLivingEffects,
-      environment: { .init(notificationCenter: $0.notificationCenter) }
+      environment: { .init(screenshots: $0.screenshots) }
     ),
   mapAppReducer
     .pullback(

@@ -37,7 +37,7 @@ import SwiftUI
     ) -> Self {
       Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
         let subject = PassthroughSubject<Output, Failure>()
-        let task = Task(priority: priority) {
+        let task = Task(priority: priority) { @MainActor in
           do {
             try Task.checkCancellation()
             let output = try await operation()
@@ -60,7 +60,7 @@ import SwiftUI
       _ operation: @escaping @Sendable (_ send: Send<Output>) async throws -> Void
     ) -> Self {
       .run { subscriber in
-        let task = Task(priority: priority) {
+        let task = Task(priority: priority) { @MainActor in
           try await operation(Send(send: subscriber.send(_:)))
           subscriber.send(completion: .finished)
         }
@@ -117,7 +117,7 @@ import SwiftUI
       _ operation: @escaping @Sendable (_ send: Send<Output>) async -> Void
     ) -> Self {
       .run { subscriber in
-        let task = Task(priority: priority) {
+        let task = Task(priority: priority) { @MainActor in
           await operation(Send(send: subscriber.send(_:)))
           subscriber.send(completion: .finished)
         }

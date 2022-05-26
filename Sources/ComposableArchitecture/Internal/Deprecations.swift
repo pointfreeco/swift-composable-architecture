@@ -326,10 +326,11 @@ extension Store {
             let task = self.send(fromLocalAction(localAction))
             localState = extractLocalState(self.state.value) ?? localState
             return Effect.task { @MainActor in
-              await withTaskCancellationHandler(
-                handler: { task.cancel() },
-                operation: { await task.value }
-              )
+              await withTaskCancellationHandler {
+                task.cancel()
+              } operation: {
+                await task.value
+              }
             }
             .fireAndForget()
           },
