@@ -40,10 +40,7 @@ let longLivingEffectsReducer = Reducer<
   case .task:
     // When the view appears, start the effect that emits when screenshots are taken.
     return .run { @MainActor send in
-      for await _ in
-//      NotificationCenter.default.notifications(named: UIApplication.userDidTakeScreenshotNotification)
-            environment.screenshots()
-      {
+      for await _ in environment.screenshots() {
         send(.userDidTakeScreenshotNotification)
       }
     }

@@ -96,15 +96,11 @@ struct RootEnvironment {
       fetchNumber: liveFetchNumber,
       mainQueue: .main,
       screenshots: {
-        var continuation: AsyncStream<Void>.Continuation!
-        let screenshots = AsyncStream<Void> { continuation = $0 }
-        let c = continuation!
-        Task {
-          for await _ in await NotificationCenter.default.notifications(named: UIApplication.userDidTakeScreenshotNotification) {
-            c.yield()
-          }
-        }
-        return screenshots
+        AsyncStream(
+          NotificationCenter.default
+            .notifications(named: UIApplication.userDidTakeScreenshotNotification)
+            .map { _ in }
+        )
       },
       uuid: UUID.init,
       webSocket: .live

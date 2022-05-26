@@ -42,6 +42,7 @@
 		CAF88E9324B8E3D000539345 /* Core.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF88E9224B8E3D000539345 /* Core.swift */; };
 		CAF88E9524B8E4D500539345 /* FocusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF88E9424B8E4D500539345 /* FocusView.swift */; };
 		DC002486283D8C4C004E5F3C /* UncheckedSendable.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC002485283D8C4C004E5F3C /* UncheckedSendable.swift */; };
+		DC002488283FBCA4004E5F3C /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC002487283FBCA4004E5F3C /* Async.swift */; };
 		DC07231724465D1E003A8B65 /* 02-Effects-TimersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC07231624465D1E003A8B65 /* 02-Effects-TimersTests.swift */; };
 		DC072322244663B1003A8B65 /* 03-Navigation-Sheet-LoadThenPresent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC072321244663B1003A8B65 /* 03-Navigation-Sheet-LoadThenPresent.swift */; };
 		DC13940E2469E25C00EE1157 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC13940D2469E25C00EE1157 /* ComposableArchitecture */; };
@@ -188,6 +189,7 @@
 		CAF88E9224B8E3D000539345 /* Core.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core.swift; sourceTree = "<group>"; };
 		CAF88E9424B8E4D500539345 /* FocusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusView.swift; sourceTree = "<group>"; };
 		DC002485283D8C4C004E5F3C /* UncheckedSendable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UncheckedSendable.swift; sourceTree = "<group>"; };
+		DC002487283FBCA4004E5F3C /* Async.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Async.swift; sourceTree = "<group>"; };
 		DC07231624465D1E003A8B65 /* 02-Effects-TimersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-TimersTests.swift"; sourceTree = "<group>"; };
 		DC072321244663B1003A8B65 /* 03-Navigation-Sheet-LoadThenPresent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Navigation-Sheet-LoadThenPresent.swift"; sourceTree = "<group>"; };
 		DC25DC5E2450F13200082E81 /* IfLetStoreController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IfLetStoreController.swift; sourceTree = "<group>"; };
@@ -454,6 +456,7 @@
 		DC89C44524461416006900B9 /* Internal */ = {
 			isa = PBXGroup;
 			children = (
+				DC002487283FBCA4004E5F3C /* Async.swift */,
 				CA6AC2612451135C00C71CB3 /* CircularProgressView.swift */,
 				DCC68EDE2447BC810037F998 /* TemplateText.swift */,
 				DC9EB4162450CBD2005F413B /* UIViewRepresented.swift */,
@@ -766,6 +769,7 @@
 				DC89C41B24460F95006900B9 /* 00-RootView.swift in Sources */,
 				DCC68EDD2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift in Sources */,
 				CABC4F3926AEE00C00D5FA2C /* 02-Effects-Refreshable.swift in Sources */,
+				DC002488283FBCA4004E5F3C /* Async.swift in Sources */,
 				DCC68EAB244666AF0037F998 /* 03-Navigation-Sheet-PresentAndLoad.swift in Sources */,
 				CAE962FD24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndConfirmationDialogs.swift in Sources */,
 				CA25E5D224463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift in Sources */,

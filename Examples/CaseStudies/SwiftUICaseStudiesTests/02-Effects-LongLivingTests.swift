@@ -7,26 +7,21 @@ import XCTest
 class LongLivingEffectsTests: XCTestCase {
   @MainActor
   func testReducer() async {
-    var continuation: AsyncStream<Void>.Continuation!
-    let s = AsyncStream<Void> { continuation = $0 }
-    let c = continuation!
+    var (screenshots, takeScreenshot) = AsyncStream<Void>.pipe()
 
     let store = TestStore(
       initialState: .init(),
       reducer: longLivingEffectsReducer,
       environment: .init(
-        screenshots: { s },
+        screenshots: { screenshots },
         notificationCenter: .default
       )
     )
 
     var task = store.send(.task)
 
-//    await task.yield()
-
     // Simulate a screenshot being taken
-    continuation.yield()
-//    NotificationCenter.default.post(name: UIApplication.userDidTakeScreenshotNotification, object: nil)
+    takeScreenshot.yield()
 
     await store.receive(.userDidTakeScreenshotNotification) {
       $0.screenshotCount = 1
@@ -37,20 +32,19 @@ class LongLivingEffectsTests: XCTestCase {
 
     // Simulate a screenshot being taken to show no effects
     // are executed.
-    continuation.yield()
-//    NotificationCenter.default.post(name: UIApplication.userDidTakeScreenshotNotification, object: nil)
+    takeScreenshot.yield()
 
-    let s1 = AsyncStream<Void> { continuation = $0 }
-    let c1 = continuation!
-    store.environment.screenshots = { s1 }
-
+    (screenshots, takeScreenshot) = AsyncStream<Void>.pipe()
+    store.environment.screenshots = { screenshots }
     
     task = store.send(.task)
-    c1.yield()
-    await store.receive(.userDidTakeScreenshotNotification) {
-      $0.screenshotCount = 2
-    }
 
+    // Simulate a screenshot being taken
+    takeScreenshot.yield()
+
+    await store.receive(.userDidTakeScreenshotNotification) {
+      $0.screenshotCount = 1
+    }
 
     await task.cancel()
   }
