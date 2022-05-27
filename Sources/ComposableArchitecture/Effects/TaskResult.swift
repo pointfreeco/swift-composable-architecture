@@ -15,7 +15,9 @@ public enum TaskResult<Success> {
   #endif
 }
 
-public struct EquatableVoid: Equatable, Codable, Hashable {}
+public struct EquatableVoid: Equatable, Codable, Hashable {
+  public init() {}
+}
 
 #if canImport(_Concurrency) && compiler(>=5.5.2)
   extension TaskResult where Success == EquatableVoid {
