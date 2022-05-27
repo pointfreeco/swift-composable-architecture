@@ -27,7 +27,6 @@ enum RefreshableAction: Equatable {
 
 struct RefreshableEnvironment {
   var fact: FactClient
-  var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
 let refreshableReducer = Reducer<
@@ -67,8 +66,7 @@ let refreshableReducer = Reducer<
     return .task { @MainActor [count = state.count] in
       await .factResponse(.init { try await environment.fact.fetch(count) })
     }
-    .delay(for: .seconds(2), scheduler: environment.mainQueue.animation())
-    .eraseToEffect()
+    .animation()
     .cancellable(id: CancelId.self)
   }
 }
@@ -113,8 +111,7 @@ let refreshableReducer = Reducer<
           initialState: .init(),
           reducer: refreshableReducer,
           environment: .init(
-            fact: .live,
-            mainQueue: .main
+            fact: .live
           )
         )
       )

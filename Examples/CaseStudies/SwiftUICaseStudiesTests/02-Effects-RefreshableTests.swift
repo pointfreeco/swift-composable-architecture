@@ -10,8 +10,7 @@ class RefreshableTests: XCTestCase {
       initialState: .init(),
       reducer: refreshableReducer,
       environment: .init(
-        fact: .init { "\($0) is a good number." },
-        mainQueue: .immediate
+        fact: .init { "\($0) is a good number." }
       )
     )
 
@@ -33,8 +32,7 @@ class RefreshableTests: XCTestCase {
       initialState: .init(),
       reducer: refreshableReducer,
       environment: .init(
-        fact: .init { _ in throw FactError() },
-        mainQueue: .immediate
+        fact: .init { _ in throw FactError() }
       )
     )
 
@@ -50,14 +48,11 @@ class RefreshableTests: XCTestCase {
   }
 
   func testCancellation() {
-    let mainQueue = DispatchQueue.test
-
     let store = TestStore(
       initialState: .init(),
       reducer: refreshableReducer,
       environment: .init(
-        fact: .init { "\($0) is a good number." },
-        mainQueue: mainQueue.eraseToAnyScheduler()
+        fact: .init { "\($0) is a good number." }
       )
     )
 
