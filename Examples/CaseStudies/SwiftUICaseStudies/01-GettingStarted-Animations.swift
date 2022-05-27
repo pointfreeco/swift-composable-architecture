@@ -19,25 +19,6 @@ private let readMe = """
   toggle at the bottom of the screen.
   """
 
-extension Effect where Failure == Never {
-  public static func keyFrames<S>(
-    values: [(output: Output, duration: S.SchedulerTimeType.Stride)],
-    scheduler: S
-  ) -> Effect where S: Scheduler {
-    .concatenate(
-      values
-        .enumerated()
-        .map { index, animationState in
-          index == 0
-            ? Effect(value: animationState.output)
-            : Just(animationState.output)
-              .delay(for: values[index - 1].duration, scheduler: scheduler)
-              .eraseToEffect()
-        }
-    )
-  }
-}
-
 struct AnimationsState: Equatable {
   var alert: AlertState<AnimationsAction>? = nil
   var circleCenter = CGPoint(x: 50, y: 50)
@@ -57,6 +38,25 @@ enum AnimationsAction: Equatable {
 
 struct AnimationsEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
+}
+
+extension Effect where Failure == Never {
+  public static func keyFrames<S>(
+    values: [(output: Output, duration: S.SchedulerTimeType.Stride)],
+    scheduler: S
+  ) -> Effect where S: Scheduler {
+    .concatenate(
+      values
+        .enumerated()
+        .map { index, animationState in
+          index == 0
+            ? Effect(value: animationState.output)
+            : Just(animationState.output)
+              .delay(for: values[index - 1].duration, scheduler: scheduler)
+              .eraseToEffect()
+        }
+    )
+  }
 }
 
 let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnvironment> {

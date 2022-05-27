@@ -49,7 +49,7 @@ extension Effect {
   ///
   ///   case .incrementButtonTapped:
   ///     state.count += 1
-  ///     return .non
+  ///     return .none
   ///   }
   /// }
   /// ```
