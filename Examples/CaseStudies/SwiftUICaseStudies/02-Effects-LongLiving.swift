@@ -47,8 +47,7 @@ let longLivingEffectsReducer = Reducer<
     // When the view appears, start the effect that emits when screenshots are taken.
     return environment.notificationCenter
       .publisher(for: UIApplication.userDidTakeScreenshotNotification)
-      .map { _ in LongLivingEffectsAction.userDidTakeScreenshotNotification }
-      .eraseToEffect()
+      .eraseToEffect { _ in LongLivingEffectsAction.userDidTakeScreenshotNotification }
       .cancellable(id: UserDidTakeScreenshotNotificationId.self)
 
   case .onDisappear:

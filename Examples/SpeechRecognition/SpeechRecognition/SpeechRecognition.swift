@@ -44,8 +44,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     if state.isRecording {
       return environment.speechClient.requestAuthorization()
         .receive(on: environment.mainQueue)
-        .map(AppAction.speechRecognizerAuthorizationStatusResponse)
-        .eraseToEffect()
+        .eraseToEffect(AppAction.speechRecognizerAuthorizationStatusResponse)
     } else {
       return environment.speechClient.finishTask()
         .fireAndForget()
