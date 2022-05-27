@@ -52,7 +52,10 @@ class RefreshableTests: XCTestCase {
       initialState: .init(),
       reducer: refreshableReducer,
       environment: .init(
-        fact: .init { "\($0) is a good number." }
+        fact: .init {
+          try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+          return "\($0) is a good number."
+        }
       )
     )
 

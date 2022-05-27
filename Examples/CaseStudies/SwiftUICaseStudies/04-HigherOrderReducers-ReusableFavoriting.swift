@@ -62,9 +62,7 @@ extension Reducer {
           state.isFavorite.toggle()
 
           return .task { @MainActor [id = state.id, isFavorite = state.isFavorite] in
-            await .response(.init {
-              try await environment.request(id, isFavorite)
-            })
+            await .response(.init { try await environment.request(id, isFavorite) })
           }
           .cancellable(id: FavoriteCancelId(id: state.id), cancelInFlight: true)
 

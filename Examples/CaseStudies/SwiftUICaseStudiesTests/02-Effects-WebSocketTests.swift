@@ -169,10 +169,10 @@ class WebSocketTests: XCTestCase {
 
 extension WebSocketClient {
   static let failing = Self(
-    cancel: { _, _, _ in .failing("WebSocketClient.cancel") },
-    open: { _, _, _ in .failing("WebSocketClient.open") },
-    receive: { _ in .failing("WebSocketClient.receive") },
-    send: { _, _ in .failing("WebSocketClient.send") },
-    sendPing: { _ in .failing("WebSocketClient.sendPing") }
+    cancel: { _, _, _ in .failing("\(Self.self).cancel") },
+    open: { _, _, _ in .failing("\(Self.self).open") },
+    receive: { _ in .failing("\(Self.self).receive") },
+    send: { _, _ in .failing("\(Self.self).send") },
+    sendPing: { _ in .failing("\(Self.self).sendPing") }
   )
 }
