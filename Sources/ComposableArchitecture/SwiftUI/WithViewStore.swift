@@ -425,3 +425,79 @@ line: UInt = #line,
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
+
+// MARK: - TableColumn
+@available(macOS 12.0, *)
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension WithViewStore: TableColumnContent where Content: TableColumnContent {
+  /// Initializes a structure that transforms a store into an observable view store in order to
+  /// compute table column from store state.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
+  ///     equal, repeat view computations are removed,
+  ///   - content: A function that can generate content from a view store.
+  public init(
+  _ store: Store<State, Action>,
+  removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
+  file: StaticString = #fileID,
+  line: UInt = #line,
+  @TableColumnBuilder<Content.TableRowValue, Content.TableColumnSortComparator> content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.init(
+      store: store,
+      removeDuplicates: isDuplicate,
+      file: file,
+      line: line,
+      content: content
+    )
+  }
+  public var tableColumnBody: some TableColumnContent {
+    self._body
+  }
+}
+
+@available(macOS 12.0, *)
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension WithViewStore where State: Equatable, Content: TableColumnContent {
+  /// Initializes a structure that transforms a store into an observable view store in order to
+  /// compute table column from equatable store state.
+  ///
+  /// - Parameters:
+  ///   - store: A store of equatable state.
+  ///   - content: A function that can generate content from a view store.
+  public init(
+  _ store: Store<State, Action>,
+  file: StaticString = #fileID,
+  line: UInt = #line,
+  @TableColumnBuilder<Content.TableRowValue, Content.TableColumnSortComparator> content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+  }
+}
+
+@available(macOS 12.0, *)
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension WithViewStore where State == Void, Content: TableColumnContent {
+  /// Initializes a structure that transforms a store into an observable view store in order to
+  /// compute table column from void store state.
+  ///
+  /// - Parameters:
+  ///   - store: A store of equatable state.
+  ///   - content: A function that can generate content from a view store.
+  public init(
+  _ store: Store<State, Action>,
+  file: StaticString = #fileID,
+  line: UInt = #line,
+  @TableColumnBuilder<Content.TableRowValue, Content.TableColumnSortComparator> content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+  }
+}
