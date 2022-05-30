@@ -371,11 +371,11 @@ extension WithViewStore: ToolbarContent where Content: ToolbarContent {
   ///     equal, repeat view computations are removed,
   ///   - content: A function that can generate content from a view store.
   public init(
-  _ store: Store<State, Action>,
-  removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
-file: StaticString = #fileID,
-line: UInt = #line,
-  @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
+    _ store: Store<State, Action>,
+    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
   ) {
     self.init(
       store: store,
@@ -399,10 +399,10 @@ extension WithViewStore where State: Equatable, Content: ToolbarContent {
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
   public init(
-  _ store: Store<State, Action>,
-file: StaticString = #fileID,
-line: UInt = #line,
-  @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
+    _ store: Store<State, Action>,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
   ) {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
@@ -417,10 +417,10 @@ extension WithViewStore where State == Void, Content: ToolbarContent {
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
   public init(
-  _ store: Store<State, Action>,
-file: StaticString = #fileID,
-line: UInt = #line,
-  @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
+    _ store: Store<State, Action>,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
   ) {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
@@ -441,11 +441,12 @@ extension WithViewStore: TableColumnContent where Content: TableColumnContent {
   ///     equal, repeat view computations are removed,
   ///   - content: A function that can generate content from a view store.
   public init(
-  _ store: Store<State, Action>,
-  removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
-  file: StaticString = #fileID,
-  line: UInt = #line,
-  @TableColumnBuilder<Content.TableRowValue, Content.TableColumnSortComparator> content: @escaping (ViewStore<State, Action>) -> Content
+    _ store: Store<State, Action>,
+    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @TableColumnBuilder<Content.TableRowValue, Content.TableColumnSortComparator>
+    content: @escaping (ViewStore<State, Action>) -> Content
   ) {
     self.init(
       store: store,
@@ -472,10 +473,11 @@ extension WithViewStore where State: Equatable, Content: TableColumnContent {
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
   public init(
-  _ store: Store<State, Action>,
-  file: StaticString = #fileID,
-  line: UInt = #line,
-  @TableColumnBuilder<Content.TableRowValue, Content.TableColumnSortComparator> content: @escaping (ViewStore<State, Action>) -> Content
+    _ store: Store<State, Action>,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @TableColumnBuilder<Content.TableRowValue, Content.TableColumnSortComparator>
+    content: @escaping (ViewStore<State, Action>) -> Content
   ) {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
@@ -493,10 +495,11 @@ extension WithViewStore where State == Void, Content: TableColumnContent {
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
   public init(
-  _ store: Store<State, Action>,
-  file: StaticString = #fileID,
-  line: UInt = #line,
-  @TableColumnBuilder<Content.TableRowValue, Content.TableColumnSortComparator> content: @escaping (ViewStore<State, Action>) -> Content
+    _ store: Store<State, Action>,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @TableColumnBuilder<Content.TableRowValue, Content.TableColumnSortComparator>
+    content: @escaping (ViewStore<State, Action>) -> Content
   ) {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
