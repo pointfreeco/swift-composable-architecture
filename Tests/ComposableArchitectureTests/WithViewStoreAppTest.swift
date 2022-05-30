@@ -1,4 +1,4 @@
-// NB: This file gathers coverage of `WithViewStore` use as a `Scene`.
+// NB: This file gathers coverage of `WithViewStore` use as a `Scene` and `Commands`.
 
 import ComposableArchitecture
 import SwiftUI
@@ -34,5 +34,16 @@ struct TestApp: App {
         }
       #endif
     }
+    #if os(iOS) || os(macOS)
+    .commands {
+      WithViewStore(self.store) { viewStore in
+        CommandMenu("Other Commands") {
+          Button("Increment") {
+            viewStore.send(())
+          }
+        }
+      }
+    }
+    #endif
   }
 }
