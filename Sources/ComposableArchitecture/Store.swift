@@ -336,13 +336,7 @@ public final class Store<State, Action> {
         defer { isSending = false }
         let task = self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
-        return .fireAndForget { @MainActor in
-          await withTaskCancellationHandler {
-            task.cancel()
-          } operation: {
-            await task.value
-          }
-        }
+        return .fireAndForget { @MainActor in await task.valueWithCancellation }
       },
       environment: ()
     )
@@ -563,5 +557,29 @@ private final class Box<Value> {
   var value: Value
   init(_ value: Value) {
     self.value = value
+  }
+}
+
+extension Task where Failure == Error {
+  var valueWithCancellation: Success {
+    get async throws {
+      try await withTaskCancellationHandler {
+        self.cancel()
+      } operation: {
+        try await self.value
+      }
+    }
+  }
+}
+
+extension Task where Failure == Never {
+  var valueWithCancellation: Success {
+    get async {
+      await withTaskCancellationHandler {
+        self.cancel()
+      } operation: {
+        await self.value
+      }
+    }
   }
 }

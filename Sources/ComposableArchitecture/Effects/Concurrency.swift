@@ -31,6 +31,7 @@ import SwiftUI
     ///     `Task.currentPriority`.
     ///   - operation: The operation to execute.
     /// - Returns: An effect wrapping the given asynchronous work.
+    // TODO: Deprecate
     public static func task(
       priority: TaskPriority? = nil,
       operation: @escaping @Sendable () async throws -> Output
@@ -55,20 +56,20 @@ import SwiftUI
       .eraseToEffect()
     }
 
-    public static func run(
-      priority: TaskPriority? = nil,
-      _ operation: @escaping @Sendable (_ send: Send<Output>) async throws -> Void
-    ) -> Self {
-      .run { subscriber in
-        let task = Task(priority: priority) { @MainActor in
-          try await operation(Send(send: subscriber.send(_:)))
-          subscriber.send(completion: .finished)
-        }
-        return AnyCancellable {
-          task.cancel()
-        }
-      }
-    }
+//    public static func run(
+//      priority: TaskPriority? = nil,
+//      _ operation: @escaping @Sendable (_ send: Send<Output>) async throws -> Void
+//    ) -> Self {
+//      .run { subscriber in
+//        let task = Task(priority: priority) { @MainActor in
+//          try await operation(Send(send: subscriber.send(_:)))
+//          subscriber.send(completion: .finished)
+//        }
+//        return AnyCancellable {
+//          task.cancel()
+//        }
+//      }
+//    }
   }
 
   extension Effect where Failure == Never {
@@ -105,7 +106,7 @@ import SwiftUI
     /// - Returns: An effect wrapping the given asynchronous work.
     public static func task(
       priority: TaskPriority? = nil,
-      operation: @escaping @Sendable () async throws -> Output
+      operation: @escaping @Sendable () async -> Output
     ) -> Self where Failure == Never {
       Effect<Output, Error>.task(priority: priority, operation: operation)
         .catch { _ in Empty() }

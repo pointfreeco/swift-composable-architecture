@@ -1,9 +1,40 @@
+import Combine
+
 // NB: From SE-0302
 @propertyWrapper
-struct UnsafeTransfer<Wrapped> : @unchecked Sendable {
-  var wrappedValue: Wrapped
-  init(wrappedValue: Wrapped) {
+public struct UncheckedSendable<Wrapped> : @unchecked Sendable {
+  public var wrappedValue: Wrapped
+
+  public init(wrappedValue: Wrapped) {
     self.wrappedValue = wrappedValue
+  }
+
+  public var unchecked: Wrapped {
+    _read { yield self.wrappedValue }
+    _modify { yield &self.wrappedValue }
+  }
+
+  public var projectedValue: Self {
+    get { self }
+    set { self = newValue }
+  }
+}
+
+@propertyWrapper
+public final class Box<Wrapped> {
+  public var wrappedValue: Wrapped
+
+  public init(wrappedValue: Wrapped) {
+    self.wrappedValue = wrappedValue
+  }
+
+  public var unboxed: Wrapped {
+    _read { yield self.wrappedValue }
+    _modify { yield &self.wrappedValue }
+  }
+
+  public var projectedValue: Box<Wrapped> {
+    self
   }
 }
 
@@ -54,5 +85,20 @@ extension AsyncThrowingStream where Failure == Error {
   public static func pipe() -> (stream: Self, continuation: Continuation) {
     var continuation: Continuation!
     return (Self { continuation = $0 }, continuation)
+  }
+}
+
+extension Scheduler {
+  public func sleep(
+    for interval: SchedulerTimeType.Stride,
+    tolerance: SchedulerTimeType.Stride? = nil,
+    options: SchedulerOptions? = nil
+  ) async throws {
+    try Task.checkCancellation()
+    await Just(())
+      .delay(for: interval, tolerance: tolerance, scheduler: self, options: options)
+      .values
+      .first { _ in true }
+    try Task.checkCancellation()
   }
 }
