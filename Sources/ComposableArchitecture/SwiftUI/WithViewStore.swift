@@ -127,7 +127,7 @@ extension WithViewStore where State: Equatable, Content: View {
 
 extension WithViewStore where State == Void, Content: View {
   /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute views from equatable store state.
+  /// compute views from void store state.
   ///
   /// - Parameters:
   ///   - store: A store of equatable state.
@@ -202,7 +202,7 @@ extension WithViewStore where State: Equatable, Content: Scene {
 @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension WithViewStore where State == Void, Content: Scene {
   /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute scenes from equatable store state.
+  /// compute scenes from void store state.
   ///
   /// - Parameters:
   ///   - store: A store of equatable state.
@@ -274,7 +274,7 @@ extension WithViewStore where State: Equatable, Content: Commands {
 @available(watchOS, unavailable)
 extension WithViewStore where State == Void, Content: Commands {
   /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute commands from equatable store state.
+  /// compute commands from void store state.
   ///
   /// - Parameters:
   ///   - store: A store of equatable state.
