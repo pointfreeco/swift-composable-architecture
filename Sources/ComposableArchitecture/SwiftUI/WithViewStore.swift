@@ -426,7 +426,7 @@ extension WithViewStore where State == Void, Content: ToolbarContent {
   }
 }
 
-// MARK: - TableColumn
+// MARK: - TableColumnContent
 @available(macOS 12.0, *)
 @available(iOS, unavailable)
 @available(tvOS, unavailable)
