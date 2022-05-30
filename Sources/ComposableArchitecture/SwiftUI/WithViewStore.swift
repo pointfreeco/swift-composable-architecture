@@ -580,3 +580,14 @@ extension WithViewStore where State == Void, Content: TableRowContent {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
+
+@available(macOS 12.0, *)
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension WithViewStore: DynamicTableRowContent
+where State: Collection, Content: DynamicTableRowContent {
+  public var data: State {
+    self.viewStore.state
+  }
+}
