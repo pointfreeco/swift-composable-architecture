@@ -504,3 +504,79 @@ extension WithViewStore where State == Void, Content: TableColumnContent {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
+
+// MARK: - TableRowContent
+@available(macOS 12.0, *)
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension WithViewStore: TableRowContent where Content: TableRowContent {
+  /// Initializes a structure that transforms a store into an observable view store in order to
+  /// compute table row content from store state.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
+  ///     equal, repeat view computations are removed,
+  ///   - content: A function that can generate content from a view store.
+  public init(
+    _ store: Store<State, Action>,
+    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @TableRowBuilder<Content.TableRowValue> content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.init(
+      store: store,
+      removeDuplicates: isDuplicate,
+      file: file,
+      line: line,
+      content: content
+    )
+  }
+  public var tableRowBody: some TableRowContent {
+    self._body
+  }
+}
+
+@available(macOS 12.0, *)
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension WithViewStore where State: Equatable, Content: TableRowContent {
+  /// Initializes a structure that transforms a store into an observable view store in order to
+  /// compute table row content from equatable store state.
+  ///
+  /// - Parameters:
+  ///   - store: A store of equatable state.
+  ///   - content: A function that can generate content from a view store.
+  public init(
+    _ store: Store<State, Action>,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @TableRowBuilder<Content.TableRowValue> content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+  }
+}
+
+@available(macOS 12.0, *)
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension WithViewStore where State == Void, Content: TableRowContent {
+  /// Initializes a structure that transforms a store into an observable view store in order to
+  /// compute table row content from void store state.
+  ///
+  /// - Parameters:
+  ///   - store: A store of equatable state.
+  ///   - content: A function that can generate content from a view store.
+  public init(
+    _ store: Store<State, Action>,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @TableRowBuilder<Content.TableRowValue> content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+  }
+}
