@@ -36,37 +36,33 @@ public struct TwoFactorView: View {
     WithViewStore(
       self.store.scope(state: ViewState.init, action: TwoFactorAction.init)
     ) { viewStore in
-      ScrollView {
-        VStack(spacing: 16) {
-          Text(#"To confirm the second factor enter "1234" into the form."#)
+      Form {
+        Text(#"To confirm the second factor enter "1234" into the form."#)
 
-          VStack(alignment: .leading) {
-            Text("Code")
-            TextField(
-              "1234",
-              text: viewStore.binding(get: \.code, send: ViewAction.codeChanged)
-            )
-            .keyboardType(.numberPad)
-            .textFieldStyle(.roundedBorder)
+        Section {
+          TextField(
+            "1234",
+            text: viewStore.binding(get: \.code, send: ViewAction.codeChanged)
+          )
+          .keyboardType(.numberPad)
+        }
+
+        HStack {
+          Button("Submit") {
+            viewStore.send(.submitButtonTapped)
           }
+          .disabled(viewStore.isSubmitButtonDisabled)
 
-          HStack {
-            Button("Submit") {
-              viewStore.send(.submitButtonTapped)
-            }
-            .disabled(viewStore.isSubmitButtonDisabled)
-
-            if viewStore.isActivityIndicatorVisible {
-              ProgressView()
-            }
+          if viewStore.isActivityIndicatorVisible {
+            Spacer()
+            ProgressView()
           }
         }
-        .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
-        .disabled(viewStore.isFormDisabled)
-        .padding(.horizontal)
       }
+      .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
+      .disabled(viewStore.isFormDisabled)
+      .navigationBarTitle("Confirmation Code")
     }
-    .navigationBarTitle("Confirmation Code")
   }
 }
 

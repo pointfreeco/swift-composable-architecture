@@ -42,59 +42,56 @@ public struct LoginView: View {
 
   public var body: some View {
     WithViewStore(self.store.scope(state: ViewState.init, action: LoginAction.init)) { viewStore in
-      ScrollView {
-        VStack(spacing: 16) {
-          Text(
+      Form {
+        Text(
             """
             To login use any email and "password" for the password. If your email contains the \
             characters "2fa" you will be taken to a two-factor flow, and on that screen you can \
             use "1234" for the code.
             """
+        )
+
+        Section {
+          TextField(
+            "blob@pointfree.co",
+            text: viewStore.binding(get: \.email, send: ViewAction.emailChanged)
           )
+          .autocapitalization(.none)
+          .keyboardType(.emailAddress)
+          .textContentType(.emailAddress)
 
-          VStack(alignment: .leading) {
-            Text("Email")
-            TextField(
-              "blob@pointfree.co",
-              text: viewStore.binding(get: \.email, send: ViewAction.emailChanged)
-            )
-            .autocapitalization(.none)
-            .keyboardType(.emailAddress)
-            .textContentType(.emailAddress)
-            .textFieldStyle(.roundedBorder)
-          }
-
-          VStack(alignment: .leading) {
-            Text("Password")
-            SecureField(
-              "••••••••",
-              text: viewStore.binding(get: \.password, send: ViewAction.passwordChanged)
-            )
-            .textFieldStyle(.roundedBorder)
-          }
-
-          NavigationLink(
-            destination: IfLetStore(
-              self.store.scope(state: \.twoFactor, action: LoginAction.twoFactor),
-              then: TwoFactorView.init(store:)
-            ),
-            isActive: viewStore.binding(
-              get: \.isTwoFactorActive,
-              send: { $0 ? .loginButtonTapped : .twoFactorDismissed }
-            )
-          ) {
-            Text("Log in")
-
-            if viewStore.isActivityIndicatorVisible {
-              ProgressView()
-            }
-          }
-          .disabled(viewStore.isLoginButtonDisabled)
+          SecureField(
+            "••••••••",
+            text: viewStore.binding(get: \.password, send: ViewAction.passwordChanged)
+          )
         }
-        .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
-        .disabled(viewStore.isFormDisabled)
-        .padding(.horizontal)
+
+        NavigationLink(
+          destination: IfLetStore(
+            self.store.scope(state: \.twoFactor, action: LoginAction.twoFactor),
+            then: TwoFactorView.init(store:)
+          ),
+          isActive: viewStore.binding(
+            get: \.isTwoFactorActive,
+            send: {
+              // NB: https://stackoverflow.com/a/69653555
+              UIApplication.shared.sendAction(
+                #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
+              )
+              return $0 ? .loginButtonTapped : .twoFactorDismissed
+            }
+          )
+        ) {
+          Text("Log in")
+          if viewStore.isActivityIndicatorVisible {
+            Spacer()
+            ProgressView()
+          }
+        }
+        .disabled(viewStore.isLoginButtonDisabled)
       }
+      .disabled(viewStore.isFormDisabled)
+      .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
     }
     .navigationBarTitle("Login")
   }
