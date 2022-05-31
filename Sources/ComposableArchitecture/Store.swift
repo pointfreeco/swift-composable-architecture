@@ -377,22 +377,22 @@ public final class Store<State, Action> {
       self.state.value = currentState
     }
 
-    let tasks = Box<[Task<Void, Never>]>([])
+    let tasks = Box<[Task<Void, Never>]>(wrappedValue: [])
 
     while !self.bufferedActions.isEmpty {
       let action = self.bufferedActions.removeFirst()
       let effect = self.reducer(&currentState, action)
 
-      let effectCancellable = Box<AnyCancellable?>(nil)
+      let effectCancellable = Box<AnyCancellable?>(wrappedValue: nil)
       let task = Task { @MainActor in
         await AsyncStream<Void> { _ in }.first { _ in true }
-        effectCancellable.value?.cancel()
+        effectCancellable.wrappedValue?.cancel()
       }
-      tasks.value.append(task)
+      tasks.wrappedValue.append(task)
 
       var didComplete = false
       let uuid = UUID()
-      effectCancellable.value = effect.sink(
+      effectCancellable.wrappedValue = effect.sink(
         receiveCompletion: { [weak self] _ in
           self?.threadCheck(status: .effectCompletion(action))
           task.cancel()
@@ -401,22 +401,22 @@ public final class Store<State, Action> {
         },
         receiveValue: { [weak self] effectAction in
           guard let self = self else { return }
-          tasks.value.append(self.send(effectAction, originatingFrom: action))
+          tasks.wrappedValue.append(self.send(effectAction, originatingFrom: action))
         }
       )
 
       if !didComplete {
-        self.effectCancellables[uuid] = effectCancellable.value
+        self.effectCancellables[uuid] = effectCancellable.wrappedValue
       }
     }
 
     return Task { @MainActor in
       await withTaskCancellationHandler {
-        for task in tasks.value {
+        for task in tasks.wrappedValue {
           task.cancel()
         }
       } operation: {
-        for task in tasks.value {
+        for task in tasks.wrappedValue {
           await task.value
         }
       }
@@ -550,13 +550,6 @@ public final class Store<State, Action> {
     #if DEBUG
       self.mainThreadChecksEnabled = mainThreadChecksEnabled
     #endif
-  }
-}
-
-private final class Box<Value> {
-  var value: Value
-  init(_ value: Value) {
-    self.value = value
   }
 }
 

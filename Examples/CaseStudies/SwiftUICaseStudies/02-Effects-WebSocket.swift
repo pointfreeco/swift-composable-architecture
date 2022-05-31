@@ -72,10 +72,8 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
                 }
               }
               group.addTask { @MainActor in
-                while !Task.isCancelled {
-                  send(.receivedSocketMessage(await .init {
-                    try await environment.webSocket.receive(WebSocketId.self)
-                  }))
+                for await result in try await environment.webSocket.receive(WebSocketId.self) {
+                  send(.receivedSocketMessage(result))
                 }
               }
             case .didClose:
@@ -197,7 +195,7 @@ struct WebSocketClient {
   }
 
   var open: @Sendable (Any.Type, URL, [String]) async -> AsyncStream<Action>
-  var receive: @Sendable (Any.Type) async throws -> Message
+  var receive: @Sendable (Any.Type) async throws -> AsyncStream<TaskResult<Message>>
   var send: @Sendable (Any.Type, URLSessionWebSocketTask.Message) async throws -> Void
   var sendPing: @Sendable (Any.Type) async throws -> Void
 }
@@ -260,8 +258,17 @@ extension WebSocketClient {
         try self.socket(id: id).cancel(with: closeCode, reason: reason)
       }
 
-      func receive(id: Any.Type) async throws -> Message {
-        try await Message(self.socket(id: ObjectIdentifier(id)).receive())
+      func receive(id: Any.Type) throws -> AsyncStream<TaskResult<Message>> {
+        let socket = try self.socket(id: ObjectIdentifier(id))
+        return .init { continuation in
+          let task = Task {
+            while !Task.isCancelled {
+              continuation.yield(await .init { try await Message(socket.receive()) })
+            }
+            continuation.finish()
+          }
+          continuation.onTermination = { _ in task.cancel() }
+        }
       }
 
       func send(id: Any.Type, message: URLSessionWebSocketTask.Message) async throws {

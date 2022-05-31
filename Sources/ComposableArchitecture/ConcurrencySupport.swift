@@ -38,7 +38,6 @@ public final class Box<Wrapped> {
   }
 }
 
-//@propertyWrapper
 @dynamicMemberLookup
 public final actor SendableState<Value> {
   public var value: Value
@@ -76,8 +75,7 @@ extension AsyncStream {
     }
   }
 
-  // FIXME: Better name than ReactiveSwift-inspired 'pipe'?
-  public static func pipe() -> (stream: Self, continuation: Continuation) {
+  public static func streamWithContinuation() -> (stream: Self, continuation: Continuation) {
     var continuation: Continuation!
     return (Self { continuation = $0 }, continuation)
   }
@@ -102,14 +100,26 @@ extension AsyncThrowingStream where Failure == Error {
     }
   }
 
-  // FIXME: Better name than ReactiveSwift-inspired 'pipe'?
-  public static func pipe() -> (stream: Self, continuation: Continuation) {
+  public static func streamWithContinuation() -> (stream: Self, continuation: Continuation) {
     var continuation: Continuation!
     return (Self { continuation = $0 }, continuation)
   }
 }
 
+extension Task where Failure == Never {
+  public static func never() async throws -> Success {
+    let stream = AsyncStream<Success> { _ in }
+    for await element in stream {
+      return element
+    }
+    throw _Concurrency.CancellationError()
+  }
+}
+
+// TODO: Move to combine-schedulers
+
 extension Scheduler {
+  @available(iOS 15.0, *)
   public func sleep(
     for interval: SchedulerTimeType.Stride,
     tolerance: SchedulerTimeType.Stride? = nil,
@@ -124,27 +134,3 @@ extension Scheduler {
   }
 }
 
-extension Task where Failure == Never {
-  public static func never() async throws -> Success {
-    let stream = AsyncStream<Success> { _ in }
-    for await never in stream {
-      return never
-    }
-    throw _Concurrency.CancellationError()
-  }
-}
-
-extension AsyncSequence {
-  // TODO: Better name?
-  // With `reasync` less compelling:
-  //
-  //     try await xs.first(where: { _ in true }) ?? Task.never()
-  //
-  public var always: Element {
-    get async throws {
-      guard let value = try await self.first(where: { _ in true })
-      else { throw CancellationError() }
-      return value
-    }
-  }
-}

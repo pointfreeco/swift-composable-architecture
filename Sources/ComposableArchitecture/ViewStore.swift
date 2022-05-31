@@ -518,12 +518,4 @@ private struct HashableWrapper<Value>: Hashable {
       }
     }
   }
-
-  private class Box<Value> {
-    var wrappedValue: Value
-
-    init(wrappedValue: Value) {
-      self.wrappedValue = wrappedValue
-    }
-  }
 #endif

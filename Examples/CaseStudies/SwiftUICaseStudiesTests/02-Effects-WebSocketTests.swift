@@ -7,13 +7,13 @@ import XCTest
 @MainActor
 class WebSocketTests: XCTestCase {
   func testWebSocketHappyPath() async {
-    let actions = AsyncStream<WebSocketClient.Action>.pipe()
-    let messages = AsyncStream<WebSocketClient.Message>.pipe()
+    let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
+    let messages = AsyncStream<TaskResult<WebSocketClient.Message>>.streamWithContinuation()
 
     var webSocket = WebSocketClient.failing
     webSocket.open = { _, _, _ in actions.stream }
     webSocket.send = { _, _ in }
-    webSocket.receive = { _ in try await messages.stream.always }
+    webSocket.receive = { _ in messages.stream }
     webSocket.sendPing = { _ in try await Task.never() }
 
     let store = TestStore(
@@ -35,7 +35,7 @@ class WebSocketTests: XCTestCase {
     }
 
     // Receive a message
-    messages.continuation.yield(.string("Welcome to echo.pointfree.co"))
+    messages.continuation.yield(.success(.string("Welcome to echo.pointfree.co")))
     await store.receive(.receivedSocketMessage(.success(.string("Welcome to echo.pointfree.co")))) {
       $0.receivedMessages = ["Welcome to echo.pointfree.co"]
     }
@@ -50,7 +50,7 @@ class WebSocketTests: XCTestCase {
     await store.receive(.sendResponse(.success(.init())))
 
     // Receive a message
-    messages.continuation.yield(.string("Hi"))
+    messages.continuation.yield(.success(.string("Hi")))
     await store.receive(.receivedSocketMessage(.success(.string("Hi")))) {
       $0.receivedMessages = ["Welcome to echo.pointfree.co", "Hi"]
     }
@@ -63,12 +63,12 @@ class WebSocketTests: XCTestCase {
   }
 
   func testWebSocketSendFailure() async {
-    let actions = AsyncStream<WebSocketClient.Action>.pipe()
-    let messages = AsyncStream<WebSocketClient.Message>.pipe()
+    let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
+    let messages = AsyncStream<TaskResult<WebSocketClient.Message>>.streamWithContinuation()
 
     var webSocket = WebSocketClient.failing
     webSocket.open = { _, _, _ in actions.stream }
-    webSocket.receive = { _ in try await messages.stream.always }
+    webSocket.receive = { _ in messages.stream }
     struct SendFailure: Error, Equatable {}
     webSocket.send = { _, _ in throw SendFailure() }
     webSocket.sendPing = { _ in try await Task.never() }
@@ -110,7 +110,7 @@ class WebSocketTests: XCTestCase {
   }
 
   func testWebSocketPings() async {
-    let actions = AsyncStream<WebSocketClient.Action>.pipe()
+    let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
     let pingsCount = SendableState(0)
 
     var webSocket = WebSocketClient.failing
@@ -152,7 +152,7 @@ class WebSocketTests: XCTestCase {
   }
 
   func testWebSocketConnectError() async {
-    let actions = AsyncStream<WebSocketClient.Action>.pipe()
+    let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
 
     var webSocket = WebSocketClient.failing
     webSocket.open = { _, _, _ in actions.stream }
