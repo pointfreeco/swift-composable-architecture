@@ -29,6 +29,8 @@ struct AppEnvironment {
 }
 
 let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
+  enum CancelId {}
+
   switch action {
   case .dismissAuthorizationStateAlert:
     state.alert = nil
@@ -36,16 +38,17 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
   case .recordButtonTapped:
     state.isRecording.toggle()
-    return .run { @MainActor [isRecording = state.isRecording] send in
-      if isRecording {
+    if state.isRecording {
+      return .run { @MainActor [isRecording = state.isRecording] send in
         send(
           .speechRecognizerAuthorizationStatusResponse(
             await environment.speechClient.requestAuthorization()
           )
         )
-      } else {
-        await environment.speechClient.finishTask()
       }
+      .cancellable(id: CancelId.self)
+    } else {
+      return .cancel(id: CancelId.self)
     }
 
   case let .speech(.success(.availabilityDidChange(isAvailable))):
@@ -53,21 +56,16 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
   case let .speech(.success(.taskResult(result))):
     state.transcribedText = result.bestTranscription.formattedString
-    return .fireAndForget { @MainActor in
-      guard result.isFinal else { return }
-      await environment.speechClient.finishTask()
-    }
+    return result.isFinal ? .none : .cancel(id: CancelId.self)
 
-  case .speech(.failure(SpeechClient.Error.couldntConfigureAudioSession)),
-    .speech(.failure(SpeechClient.Error.couldntStartAudioEngine)):
+  case .speech(.failure(SpeechClient.Failure.couldntConfigureAudioSession)),
+    .speech(.failure(SpeechClient.Failure.couldntStartAudioEngine)):
     state.alert = .init(title: .init("Problem with audio device. Please try again."))
     return .none
 
   case let .speech(.failure(error)):
     state.alert = .init(title: .init("An error occurred while transcribing. Please try again."))
-    return .fireAndForget { @MainActor in
-      await environment.speechClient.finishTask()
-    }
+    return .cancel(id: CancelId.self)
 
   case let .speechRecognizerAuthorizationStatusResponse(status):
     state.isRecording = status == .authorized
@@ -93,11 +91,18 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
       return .none
 
     case .authorized:
-      let request = SFSpeechAudioBufferRecognitionRequest()
-      request.shouldReportPartialResults = true
-      request.requiresOnDeviceRecognition = false
-      return environment.speechClient.recognitionTask(request)
-        .catchToEffect(AppAction.speech)
+      return .run { @MainActor send in
+        do {
+          let request = SFSpeechAudioBufferRecognitionRequest()
+          request.shouldReportPartialResults = true
+          request.requiresOnDeviceRecognition = false
+          for try await action in await environment.speechClient.recognitionTask(request) {
+            send(.speech(.success(action)))
+          }
+        } catch {
+          send(.speech(.failure(error)))
+        }
+      }
 
     @unknown default:
       return .none

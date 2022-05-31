@@ -3,8 +3,8 @@ import ComposableArchitecture
 import Speech
 
 struct SpeechClient {
-  var finishTask: () async -> Void
-  var recognitionTask: (SFSpeechAudioBufferRecognitionRequest) -> Effect<Action, Error>
+  var recognitionTask:
+    (SFSpeechAudioBufferRecognitionRequest) async -> AsyncThrowingStream<Action, Error>
   var requestAuthorization: () async -> SFSpeechRecognizerAuthorizationStatus
 
   enum Action: Equatable {
@@ -12,7 +12,7 @@ struct SpeechClient {
     case taskResult(SpeechRecognitionResult)
   }
 
-  enum Error: Swift.Error, Equatable {
+  enum Failure: Error, Equatable {
     case taskError
     case couldntStartAudioEngine
     case couldntConfigureAudioSession

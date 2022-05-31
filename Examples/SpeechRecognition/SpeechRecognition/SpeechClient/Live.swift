@@ -4,75 +4,89 @@ import Speech
 
 extension SpeechClient {
   static var live: Self {
-    var audioEngine: AVAudioEngine?
-    var inputNode: AVAudioInputNode?
-    var recognitionTask: SFSpeechRecognitionTask?
+    final class Delegate: NSObject, SFSpeechRecognizerDelegate {
+      var availabilityDidChange: (Bool) -> Void
 
-    return Self(
-      finishTask: {
-        audioEngine?.stop()
-        inputNode?.removeTap(onBus: 0)
-        recognitionTask?.finish()
-      },
-      recognitionTask: { request in
-        Effect.run { subscriber in
+      init(availabilityDidChange: @escaping (Bool) -> Void) {
+        self.availabilityDidChange = availabilityDidChange
+      }
+
+      func speechRecognizer(
+        _ speechRecognizer: SFSpeechRecognizer, availabilityDidChange available: Bool
+      ) {
+        self.availabilityDidChange(available)
+      }
+    }
+
+    final actor Actor {
+      let audioEngine = AVAudioEngine()
+      var inputNode: AVAudioInputNode?
+      var recognitionTask: SFSpeechRecognitionTask?
+
+      func recognitionTask(
+        request: SFSpeechAudioBufferRecognitionRequest
+      ) -> AsyncThrowingStream<Action, Error> {
+        .init { continuation in
           let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))!
-          let speechRecognizerDelegate = SpeechRecognizerDelegate(
-            availabilityDidChange: { available in
-              subscriber.send(.availabilityDidChange(isAvailable: available))
-            }
-          )
+          let speechRecognizerDelegate = Delegate { available in
+            continuation.yield(.availabilityDidChange(isAvailable: available))
+          }
           speechRecognizer.delegate = speechRecognizerDelegate
 
-          let cancellable = AnyCancellable {
-            audioEngine?.stop()
-            inputNode?.removeTap(onBus: 0)
-            recognitionTask?.cancel()
+          continuation.onTermination = { _ in
             _ = speechRecognizer
             _ = speechRecognizerDelegate
+            Task {
+              self.audioEngine.stop()
+              self.audioEngine.inputNode.removeTap(onBus: 0)
+              await self.recognitionTask?.finish()
+            }
           }
 
-          audioEngine = AVAudioEngine()
           let audioSession = AVAudioSession.sharedInstance()
           do {
             try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
           } catch {
-            subscriber.send(completion: .failure(.couldntConfigureAudioSession))
-            return cancellable
+            continuation.finish(throwing: Failure.couldntConfigureAudioSession)
+            return
           }
-          inputNode = audioEngine!.inputNode
 
-          recognitionTask = speechRecognizer.recognitionTask(with: request) { result, error in
+          let recognitionTask = speechRecognizer.recognitionTask(with: request) { result, error in
             switch (result, error) {
             case let (.some(result), _):
-              subscriber.send(.taskResult(SpeechRecognitionResult(result)))
+              continuation.yield(.taskResult(SpeechRecognitionResult(result)))
             case (_, .some):
-              subscriber.send(completion: .failure(.taskError))
+              continuation.finish(throwing: Failure.taskError)
             case (.none, .none):
               fatalError("It should not be possible to have both a nil result and nil error.")
             }
           }
+          self.recognitionTask = recognitionTask
 
-          inputNode!.installTap(
+          self.audioEngine.inputNode.installTap(
             onBus: 0,
             bufferSize: 1024,
-            format: inputNode!.outputFormat(forBus: 0)
+            format: self.audioEngine.inputNode.outputFormat(forBus: 0)
           ) { buffer, when in
             request.append(buffer)
           }
 
-          audioEngine!.prepare()
+          self.audioEngine.prepare()
           do {
-            try audioEngine!.start()
+            try self.audioEngine.start()
           } catch {
-            subscriber.send(completion: .failure(.couldntStartAudioEngine))
-            return cancellable
+            continuation.finish(throwing: Failure.couldntStartAudioEngine)
+            return
           }
-
-          return cancellable
         }
-      },
+      }
+    }
+
+    let actor = Actor()
+
+    return Self(
+      recognitionTask: { await actor.recognitionTask(request: $0) },
       requestAuthorization: {
         await withCheckedContinuation { continuation in
           SFSpeechRecognizer.requestAuthorization { status in
@@ -84,16 +98,3 @@ extension SpeechClient {
   }
 }
 
-private class SpeechRecognizerDelegate: NSObject, SFSpeechRecognizerDelegate {
-  var availabilityDidChange: (Bool) -> Void
-
-  init(availabilityDidChange: @escaping (Bool) -> Void) {
-    self.availabilityDidChange = availabilityDidChange
-  }
-
-  func speechRecognizer(
-    _ speechRecognizer: SFSpeechRecognizer, availabilityDidChange available: Bool
-  ) {
-    self.availabilityDidChange(available)
-  }
-}
