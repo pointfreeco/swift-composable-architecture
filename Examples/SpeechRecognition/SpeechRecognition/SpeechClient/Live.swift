@@ -10,11 +10,9 @@ extension SpeechClient {
 
     return Self(
       finishTask: {
-        .fireAndForget {
-          audioEngine?.stop()
-          inputNode?.removeTap(onBus: 0)
-          recognitionTask?.finish()
-        }
+        audioEngine?.stop()
+        inputNode?.removeTap(onBus: 0)
+        recognitionTask?.finish()
       },
       recognitionTask: { request in
         Effect.run { subscriber in
@@ -76,9 +74,9 @@ extension SpeechClient {
         }
       },
       requestAuthorization: {
-        .future { callback in
+        await withCheckedContinuation { continuation in
           SFSpeechRecognizer.requestAuthorization { status in
-            callback(.success(status))
+            continuation.resume(returning: status)
           }
         }
       }

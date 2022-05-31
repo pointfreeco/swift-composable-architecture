@@ -19,7 +19,7 @@ struct AppState: Equatable {
 enum AppAction: Equatable {
   case dismissAuthorizationStateAlert
   case recordButtonTapped
-  case speech(Result<SpeechClient.Action, SpeechClient.Error>)
+  case speech(TaskResult<SpeechClient.Action>)
   case speechRecognizerAuthorizationStatusResponse(SFSpeechRecognizerAuthorizationStatus)
 }
 
@@ -34,20 +34,18 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     state.alert = nil
     return .none
 
-  case .speech(.failure(.couldntConfigureAudioSession)),
-    .speech(.failure(.couldntStartAudioEngine)):
-    state.alert = .init(title: .init("Problem with audio device. Please try again."))
-    return .none
-
   case .recordButtonTapped:
     state.isRecording.toggle()
-    if state.isRecording {
-      return environment.speechClient.requestAuthorization()
-        .receive(on: environment.mainQueue)
-        .eraseToEffect(AppAction.speechRecognizerAuthorizationStatusResponse)
-    } else {
-      return environment.speechClient.finishTask()
-        .fireAndForget()
+    return .run { @MainActor [isRecording = state.isRecording] send in
+      if isRecording {
+        send(
+          .speechRecognizerAuthorizationStatusResponse(
+            await environment.speechClient.requestAuthorization()
+          )
+        )
+      } else {
+        await environment.speechClient.finishTask()
+      }
     }
 
   case let .speech(.success(.availabilityDidChange(isAvailable))):
@@ -55,17 +53,21 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
   case let .speech(.success(.taskResult(result))):
     state.transcribedText = result.bestTranscription.formattedString
-    if result.isFinal {
-      return environment.speechClient.finishTask()
-        .fireAndForget()
-    } else {
-      return .none
+    return .fireAndForget { @MainActor in
+      guard result.isFinal else { return }
+      await environment.speechClient.finishTask()
     }
 
+  case .speech(.failure(SpeechClient.Error.couldntConfigureAudioSession)),
+    .speech(.failure(SpeechClient.Error.couldntStartAudioEngine)):
+    state.alert = .init(title: .init("Problem with audio device. Please try again."))
+    return .none
+
   case let .speech(.failure(error)):
-    state.alert = .init(title: .init("An error occured while transcribing. Please try again."))
-    return environment.speechClient.finishTask()
-      .fireAndForget()
+    state.alert = .init(title: .init("An error occurred while transcribing. Please try again."))
+    return .fireAndForget { @MainActor in
+      await environment.speechClient.finishTask()
+    }
 
   case let .speechRecognizerAuthorizationStatusResponse(status):
     state.isRecording = status == .authorized
