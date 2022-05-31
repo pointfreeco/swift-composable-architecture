@@ -71,7 +71,7 @@ class TestStoreTests: XCTestCase {
         switch action {
         case .tap:
           return .task { @MainActor in
-            try await Task.sleep(nanoseconds: 1_000_000)
+            try? await Task.sleep(nanoseconds: 1_000_000)
             return .response(42)
           }
         case let .response(number):
@@ -128,7 +128,7 @@ class TestStoreTests: XCTestCase {
     }
 
     XCTExpectFailure {
-      store.send(.increment) {
+      _ = store.send(.increment) {
         $0.isChanging = false
       }
     }
@@ -168,7 +168,7 @@ class TestStoreTests: XCTestCase {
     store.receive(.finished)
 
     XCTExpectFailure {
-      store.send(.noop) {
+      _ = store.send(.noop) {
         $0.count = 0
       }
     }

@@ -115,22 +115,3 @@ extension Task where Failure == Never {
     throw _Concurrency.CancellationError()
   }
 }
-
-// TODO: Move to combine-schedulers
-
-extension Scheduler {
-  @available(iOS 15.0, *)
-  public func sleep(
-    for interval: SchedulerTimeType.Stride,
-    tolerance: SchedulerTimeType.Stride? = nil,
-    options: SchedulerOptions? = nil
-  ) async throws {
-    try Task.checkCancellation()
-    await Just(())
-      .delay(for: interval, tolerance: tolerance, scheduler: self, options: options)
-      .values
-      .first { _ in true }
-    try Task.checkCancellation()
-  }
-}
-
