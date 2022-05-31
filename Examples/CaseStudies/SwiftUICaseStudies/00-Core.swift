@@ -12,7 +12,6 @@ struct RootState {
   #endif
   var clock = ClockState()
   var counter = CounterState()
-  var dieRoll = DieRollState()
   var effectsBasics = EffectsBasicsState()
   var effectsCancellation = EffectsCancellationState()
   var effectsTimers = TimersState()
@@ -48,7 +47,6 @@ enum RootAction {
   #endif
   case clock(ClockAction)
   case counter(CounterAction)
-  case dieRoll(DieRollAction)
   case effectsBasics(EffectsBasicsAction)
   case effectsCancellation(EffectsCancellationAction)
   case episodes(EpisodesAction)
@@ -153,12 +151,6 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       state: \.counter,
       action: /RootAction.counter,
       environment: { _ in .init() }
-    ),
-  dieRollReducer
-    .pullback(
-      state: \.dieRoll,
-      action: /RootAction.dieRoll,
-      environment: { _ in .init(rollDie: { .random(in: 1...6) }) }
     ),
   effectsBasicsReducer
     .pullback(
