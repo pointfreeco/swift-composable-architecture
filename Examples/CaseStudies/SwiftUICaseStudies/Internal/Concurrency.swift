@@ -38,6 +38,27 @@ public final class Box<Wrapped> {
   }
 }
 
+//@propertyWrapper
+@dynamicMemberLookup
+public final actor SendableState<Value> {
+  public var value: Value
+
+  public init(_ wrappedValue: Value) {
+    self.value = wrappedValue
+  }
+
+  public subscript<Subject>(dynamicMember keyPath: KeyPath<Value, Subject>) -> Subject {
+    self.value[keyPath: keyPath]
+  }
+
+  public func modify<R>(_ operation: (inout Value) async throws -> R) async rethrows -> R {
+    var wrappedValue = self.value
+    let returnValue = try await operation(&wrappedValue)
+    self.value = wrappedValue
+    return returnValue
+  }
+}
+
 extension AsyncStream {
   public init<S: AsyncSequence>(_ sequence: S) where S.Element == Element {
     self.init { (continuation: Continuation) in
@@ -100,5 +121,30 @@ extension Scheduler {
       .values
       .first { _ in true }
     try Task.checkCancellation()
+  }
+}
+
+extension Task where Failure == Never {
+  public static func never() async throws -> Success {
+    let stream = AsyncStream<Success> { _ in }
+    for await never in stream {
+      return never
+    }
+    throw _Concurrency.CancellationError()
+  }
+}
+
+extension AsyncSequence {
+  // TODO: Better name?
+  // With `reasync` less compelling:
+  //
+  //     try await xs.first(where: { _ in true }) ?? Task.never()
+  //
+  public var always: Element {
+    get async throws {
+      guard let value = try await self.first(where: { _ in true })
+      else { throw CancellationError() }
+      return value
+    }
   }
 }

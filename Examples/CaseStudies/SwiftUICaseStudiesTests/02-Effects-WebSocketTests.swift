@@ -13,12 +13,8 @@ class WebSocketTests: XCTestCase {
     var webSocket = WebSocketClient.failing
     webSocket.open = { _, _, _ in actions.stream }
     webSocket.send = { _, _ in }
-    webSocket.receive = { _ in
-      guard let message = await messages.stream.first(where: { _ in true })
-      else { throw CancellationError() }
-      return message
-    }
-    webSocket.sendPing = { _ in await Task.yield() }
+    webSocket.receive = { _ in try await messages.stream.always }
+    webSocket.sendPing = { _ in try await Task.never() }
 
     let store = TestStore(
       initialState: .init(),
@@ -38,6 +34,12 @@ class WebSocketTests: XCTestCase {
       $0.connectivityState = .connected
     }
 
+    // Receive a message
+    messages.continuation.yield(.string("Welcome to echo.pointfree.co"))
+    await store.receive(.receivedSocketMessage(.success(.string("Welcome to echo.pointfree.co")))) {
+      $0.receivedMessages = ["Welcome to echo.pointfree.co"]
+    }
+
     // Send a message
     store.send(.messageToSendChanged("Hi")) {
       $0.messageToSend = "Hi"
@@ -50,7 +52,7 @@ class WebSocketTests: XCTestCase {
     // Receive a message
     messages.continuation.yield(.string("Hi"))
     await store.receive(.receivedSocketMessage(.success(.string("Hi")))) {
-      $0.receivedMessages = ["Hi"]
+      $0.receivedMessages = ["Welcome to echo.pointfree.co", "Hi"]
     }
 
     // Disconnect from the socket
@@ -66,14 +68,10 @@ class WebSocketTests: XCTestCase {
 
     var webSocket = WebSocketClient.failing
     webSocket.open = { _, _, _ in actions.stream }
-    webSocket.receive = { _ in
-      guard let message = await messages.stream.first(where: { _ in true })
-      else { throw CancellationError() }
-      return message
-    }
+    webSocket.receive = { _ in try await messages.stream.always }
     struct SendFailure: Error, Equatable {}
     webSocket.send = { _, _ in throw SendFailure() }
-    webSocket.sendPing = { _ in await Task.yield() }
+    webSocket.sendPing = { _ in try await Task.never() }
 
     let store = TestStore(
       initialState: .init(),
@@ -113,12 +111,12 @@ class WebSocketTests: XCTestCase {
 
   func testWebSocketPings() async {
     let actions = AsyncStream<WebSocketClient.Action>.pipe()
-    @Box @UncheckedSendable var pingsCount = 0
+    let pingsCount = SendableState(0)
 
     var webSocket = WebSocketClient.failing
     webSocket.open = { _, _, _ in actions.stream }
-    webSocket.receive = { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC); fatalError() }
-    webSocket.sendPing = { _ in $pingsCount.unboxed.unchecked += 1 }
+    webSocket.receive = { _ in try await Task.never() }
+    webSocket.sendPing = { _ in await pingsCount.modify { $0 += 1 } }
 
     let scheduler = DispatchQueue.test
     let store = TestStore(
@@ -140,9 +138,11 @@ class WebSocketTests: XCTestCase {
     }
 
     // Wait for ping
-    XCTAssertEqual(pingsCount, 0)
+    let before = await pingsCount.value
+    XCTAssertEqual(before, 0)
     await scheduler.advance(by: .seconds(10))
-    XCTAssertEqual(pingsCount, 1)
+    let after = await pingsCount.value
+    XCTAssertEqual(after, 1)
 
     // Disconnect from the socket
     store.send(.connectButtonTapped) {
@@ -156,8 +156,8 @@ class WebSocketTests: XCTestCase {
 
     var webSocket = WebSocketClient.failing
     webSocket.open = { _, _, _ in actions.stream }
-    webSocket.receive = { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC); fatalError() }
-    webSocket.sendPing = { _ in await Task.yield() }
+    webSocket.receive = { _ in try await Task.never() }
+    webSocket.sendPing = { _ in try await Task.never() }
 
     let store = TestStore(
       initialState: .init(),
