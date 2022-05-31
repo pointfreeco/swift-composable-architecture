@@ -36,50 +36,47 @@ public struct NewGameView: View {
   public var body: some View {
     WithViewStore(self.store.scope(state: ViewState.init, action: NewGameAction.init)) {
       viewStore in
-      ScrollView {
-        VStack(spacing: 16) {
-          VStack(alignment: .leading) {
-            Text("X Player Name")
-            TextField(
-              "Blob Sr.",
-              text: viewStore.binding(get: \.xPlayerName, send: ViewAction.xPlayerNameChanged)
-            )
-            .autocapitalization(.words)
-            .disableAutocorrection(true)
-            .textContentType(.name)
-            .textFieldStyle(.roundedBorder)
-          }
-
-          VStack(alignment: .leading) {
-            Text("O Player Name")
-            TextField(
-              "Blob Jr.",
-              text: viewStore.binding(get: \.oPlayerName, send: ViewAction.oPlayerNameChanged)
-            )
-            .autocapitalization(.words)
-            .disableAutocorrection(true)
-            .textContentType(.name)
-            .textFieldStyle(.roundedBorder)
-          }
-
-          NavigationLink(
-            destination: IfLetStore(
-              self.store.scope(state: \.game, action: NewGameAction.game),
-              then: GameView.init(store:)
-            ),
-            isActive: viewStore.binding(
-              get: \.isGameActive,
-              send: { $0 ? .letsPlayButtonTapped : .gameDismissed }
-            )
-          ) {
-            Text("Let's play!")
-          }
-          .disabled(viewStore.isLetsPlayButtonDisabled)
+      Form {
+        Section {
+          TextField(
+            "Blob Sr.",
+            text: viewStore.binding(get: \.xPlayerName, send: ViewAction.xPlayerNameChanged)
+          )
+          .autocapitalization(.words)
+          .disableAutocorrection(true)
+          .textContentType(.name)
+        } header: {
+          Text("X Player Name")
         }
-        .padding(.horizontal)
+
+        Section {
+          TextField(
+            "Blob Jr.",
+            text: viewStore.binding(get: \.oPlayerName, send: ViewAction.oPlayerNameChanged)
+          )
+          .autocapitalization(.words)
+          .disableAutocorrection(true)
+          .textContentType(.name)
+        } header: {
+          Text("O Player Name")
+        }
+
+        NavigationLink(
+          destination: IfLetStore(
+            self.store.scope(state: \.game, action: NewGameAction.game),
+            then: GameView.init(store:)
+          ),
+          isActive: viewStore.binding(
+            get: \.isGameActive,
+            send: { $0 ? .letsPlayButtonTapped : .gameDismissed }
+          )
+        ) {
+          Text("Let's play!")
+        }
+        .disabled(viewStore.isLetsPlayButtonDisabled)
+        .navigationBarTitle("New Game")
+        .navigationBarItems(trailing: Button("Logout") { viewStore.send(.logoutButtonTapped) })
       }
-      .navigationBarTitle("New Game")
-      .navigationBarItems(trailing: Button("Logout") { viewStore.send(.logoutButtonTapped) })
     }
   }
 }
