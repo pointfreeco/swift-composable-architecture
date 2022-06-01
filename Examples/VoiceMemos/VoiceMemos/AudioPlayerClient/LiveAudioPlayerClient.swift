@@ -1,16 +1,16 @@
-import AVFoundation
+@preconcurrency import AVFoundation
 import ComposableArchitecture
 
 extension AudioPlayerClient {
-  class Delegate: NSObject, AVAudioPlayerDelegate {
-    let didFinishPlaying: (Bool) -> Void
-    let decodeErrorDidOccur: (Error?) -> Void
+  final class Delegate: NSObject, AVAudioPlayerDelegate, Sendable {
+    let didFinishPlaying: @Sendable (Bool) -> Void
+    let decodeErrorDidOccur: @Sendable (Error?) -> Void
     let player: AVAudioPlayer
 
     init(
       url: URL,
-      didFinishPlaying: @escaping (Bool) -> Void,
-      decodeErrorDidOccur: @escaping (Error?) -> Void
+      didFinishPlaying: @escaping @Sendable (Bool) -> Void,
+      decodeErrorDidOccur: @escaping @Sendable (Error?) -> Void
     ) throws {
       self.didFinishPlaying = didFinishPlaying
       self.decodeErrorDidOccur = decodeErrorDidOccur

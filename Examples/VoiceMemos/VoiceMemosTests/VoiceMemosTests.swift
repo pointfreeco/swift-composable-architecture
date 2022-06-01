@@ -168,14 +168,14 @@ class VoiceMemosTests: XCTestCase {
     )
 
     let task = store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
-      $0.voiceMemos[id: url]?.mode = VoiceMemo.Mode.playing(progress: 0)
+      $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
     }
     await self.mainRunLoop.advance(by: 0.5)
-    await store.receive(VoiceMemosAction.voiceMemo(id: url, action: VoiceMemoAction.timerUpdated(0.5))) {
+    await store.receive(.voiceMemo(id: url, action: .timerUpdated(0.5))) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0.5)
     }
     await self.mainRunLoop.advance(by: 0.5)
-    await store.receive(VoiceMemosAction.voiceMemo(id: url, action: VoiceMemoAction.timerUpdated(1))) {
+    await store.receive(.voiceMemo(id: url, action: .timerUpdated(1))) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 1)
     }
     await store.receive(

@@ -1,5 +1,5 @@
 import ComposableArchitecture
-import Foundation
+@preconcurrency import Foundation
 import SwiftUI
 
 struct VoiceMemo: Equatable, Identifiable {
