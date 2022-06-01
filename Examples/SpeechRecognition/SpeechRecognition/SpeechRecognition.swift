@@ -38,7 +38,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
     state.isRecording.toggle()
     if state.isRecording {
-      return .run { @MainActor [isRecording = state.isRecording] send in
+      return .run { @MainActor send in
         send(
           .speechRecognizerAuthorizationStatusResponse(
             await environment.speechClient.requestAuthorization()
@@ -50,13 +50,6 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
       return .cancel(id: CancelId.self)
     }
 
-  case let .speech(.success(.availabilityDidChange(isAvailable))):
-    return .none
-
-  case let .speech(.success(.taskResult(result))):
-    state.transcribedText = result.bestTranscription.formattedString
-    return result.isFinal ? .none : .cancel(id: CancelId.self)
-
   case .speech(.failure(SpeechClient.Failure.couldntConfigureAudioSession)),
     .speech(.failure(SpeechClient.Failure.couldntStartAudioEngine)):
     state.alert = .init(title: .init("Problem with audio device. Please try again."))
@@ -66,29 +59,18 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     state.alert = .init(title: .init("An error occurred while transcribing. Please try again."))
     return .none
 
+  case let .speech(.success(.availabilityDidChange(isAvailable))):
+    return .none
+
+  case let .speech(.success(.taskResult(result))):
+    state.transcribedText = result.bestTranscription.formattedString
+    return result.isFinal ? .none : .cancel(id: CancelId.self)
+
   case let .speechRecognizerAuthorizationStatusResponse(status):
     state.isRecording = status == .authorized
     state.speechRecognizerAuthorizationStatus = status
 
     switch status {
-    case .notDetermined:
-      state.alert = .init(title: .init("Try again."))
-      return .none
-
-    case .denied:
-      state.alert = .init(
-        title: .init(
-          """
-          You denied access to speech recognition. This app needs access to transcribe your speech.
-          """
-        )
-      )
-      return .none
-
-    case .restricted:
-      state.alert = .init(title: .init("Your device does not allow speech recognition."))
-      return .none
-
     case .authorized:
       return .run { @MainActor send in
         do {
@@ -103,18 +85,29 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
         }
       }
 
+    case .denied:
+      state.alert = .init(
+        title: .init(
+          """
+          You denied access to speech recognition. This app needs access to transcribe your speech.
+          """
+        )
+      )
+      return .none
+
+    case .notDetermined:
+      return .none
+
+    case .restricted:
+      state.alert = .init(title: .init("Your device does not allow speech recognition."))
+      return .none
+
     @unknown default:
       return .none
     }
   }
 }
 .debug(actionFormat: .labelsOnly)
-
-struct AuthorizationStateAlert: Equatable, Identifiable {
-  var title: String
-
-  var id: String { self.title }
-}
 
 struct SpeechRecognitionView: View {
   let store: Store<AppState, AppAction>
