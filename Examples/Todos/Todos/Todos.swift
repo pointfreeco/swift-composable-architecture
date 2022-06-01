@@ -79,9 +79,10 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
 
       state.todos.move(fromOffsets: source, toOffset: destination)
 
-      return Effect(value: .sortCompletedTodos)
-        .delay(for: .milliseconds(100), scheduler: environment.mainQueue)
-        .eraseToEffect()
+      return .task { @MainActor in
+        try? await environment.mainQueue.sleep(for: .milliseconds(100))
+        return .sortCompletedTodos
+      }
 
     case .sortCompletedTodos:
       state.todos.sort { $1.isComplete && !$0.isComplete }

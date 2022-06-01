@@ -14,7 +14,6 @@ class SpeechRecognitionTests: XCTestCase {
       initialState: .init(),
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: .immediate,
         speechClient: speechClient
       )
     )
@@ -43,7 +42,6 @@ class SpeechRecognitionTests: XCTestCase {
       initialState: .init(),
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: .immediate,
         speechClient: speechClient
       )
     )
@@ -69,7 +67,6 @@ class SpeechRecognitionTests: XCTestCase {
       initialState: .init(),
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: .immediate,
         speechClient: speechClient
       )
     )
@@ -117,7 +114,6 @@ class SpeechRecognitionTests: XCTestCase {
       initialState: .init(),
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: .immediate,
         speechClient: speechClient
       )
     )
@@ -147,7 +143,6 @@ class SpeechRecognitionTests: XCTestCase {
       initialState: .init(),
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: .immediate,
         speechClient: speechClient
       )
     )
