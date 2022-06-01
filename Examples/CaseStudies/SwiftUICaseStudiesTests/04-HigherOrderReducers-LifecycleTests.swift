@@ -4,8 +4,9 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+@MainActor
 class LifecycleTests: XCTestCase {
-  func testLifecycle() {
+  func testLifecycle() async {
     let scheduler = DispatchQueue.test
 
     let store = TestStore(
@@ -22,13 +23,13 @@ class LifecycleTests: XCTestCase {
 
     store.send(.timer(.onAppear))
 
-    scheduler.advance(by: .seconds(1))
-    store.receive(.timer(.action(.tick))) {
+    await scheduler.advance(by: .seconds(1))
+    await store.receive(.timer(.action(.tick))) {
       $0.count = 1
     }
 
-    scheduler.advance(by: .seconds(1))
-    store.receive(.timer(.action(.tick))) {
+    await scheduler.advance(by: .seconds(1))
+    await store.receive(.timer(.action(.tick))) {
       $0.count = 2
     }
 

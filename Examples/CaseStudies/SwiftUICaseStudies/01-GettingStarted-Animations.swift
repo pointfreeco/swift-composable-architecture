@@ -42,20 +42,17 @@ struct AnimationsEnvironment {
 
 extension Effect where Failure == Never {
   public static func keyFrames<S>(
-    values: [(output: Output, duration: S.SchedulerTimeType.Stride)],
+    values: [(output: Output, duration: S.SchedulerTimeType.Stride, animation: Animation?)],
     scheduler: S
   ) -> Effect where S: Scheduler {
-    .concatenate(
-      values
-        .enumerated()
-        .map { index, animationState in
-          index == 0
-            ? Effect(value: animationState.output)
-            : Just(animationState.output)
-              .delay(for: values[index - 1].duration, scheduler: scheduler)
-              .eraseToEffect()
+    .run { @MainActor send in
+      for (index, (output, duration, animation)) in values.enumerated() {
+        if index > 0 {
+          try? await scheduler.sleep(for: duration)
         }
-    )
+        send(output, animation: animation)
+      }
+    }
   }
 }
 
@@ -74,8 +71,8 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
   case .rainbowButtonTapped:
     return .keyFrames(
       values: [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .white]
-        .map { (output: .setColor($0), duration: 1) },
-      scheduler: environment.mainQueue.animation(.linear)
+        .map { (output: .setColor($0), duration: 1, animation: .linear) },
+      scheduler: environment.mainQueue
     )
 
   case .resetButtonTapped:
