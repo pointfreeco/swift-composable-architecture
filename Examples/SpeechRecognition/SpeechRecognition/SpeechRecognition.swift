@@ -24,7 +24,6 @@ enum AppAction: Equatable {
 }
 
 struct AppEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
   var speechClient: SpeechClient
 }
 
@@ -163,7 +162,6 @@ struct SpeechRecognitionView_Previews: PreviewProvider {
         initialState: .init(transcribedText: "Test test 123"),
         reducer: appReducer,
         environment: AppEnvironment(
-          mainQueue: .main,
           speechClient: .live
         )
       )
