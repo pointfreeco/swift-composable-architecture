@@ -28,7 +28,7 @@ class VoiceMemosTests: XCTestCase {
         audioRecorderSubject.send(completion: .finished)
       }
     }
-    environment.mainRunLoop = mainRunLoop.eraseToAnyScheduler()
+    environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
     environment.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
     environment.uuid = { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! }
 
@@ -39,29 +39,29 @@ class VoiceMemosTests: XCTestCase {
     )
 
     store.send(.recordButtonTapped)
-    mainRunLoop.advance()
+    self.mainRunLoop.advance()
     store.receive(.recordPermissionResponse(true)) {
       $0.audioRecorderPermission = .allowed
       $0.currentRecording = .init(
         date: Date(timeIntervalSince1970: 0),
         mode: .recording,
-        url: URL(string: "file:///tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")!
+        url: URL(fileURLWithPath: "/tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")
       )
     }
-    mainRunLoop.advance(by: 1)
+    self.mainRunLoop.advance(by: 1)
     store.receive(.currentRecordingTimerUpdated) {
-      $0.currentRecording!.duration = 1
+      $0.currentRecording?.duration = 1
     }
-    mainRunLoop.advance(by: 1)
+    self.mainRunLoop.advance(by: 1)
     store.receive(.currentRecordingTimerUpdated) {
-      $0.currentRecording!.duration = 2
+      $0.currentRecording?.duration = 2
     }
-    mainRunLoop.advance(by: 0.5)
+    self.mainRunLoop.advance(by: 0.5)
     store.send(.recordButtonTapped) {
-      $0.currentRecording!.mode = .encoding
+      $0.currentRecording?.mode = .encoding
     }
     store.receive(.finalRecordingTime(2.5)) {
-      $0.currentRecording!.duration = 2.5
+      $0.currentRecording?.duration = 2.5
     }
     store.receive(.audioRecorder(.success(.didFinishRecording(successfully: true)))) {
       $0.currentRecording = nil
@@ -71,7 +71,7 @@ class VoiceMemosTests: XCTestCase {
           duration: 2.5,
           mode: .notPlaying,
           title: "",
-          url: URL(string: "file:///tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")!
+          url: URL(fileURLWithPath: "/tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")
         )
       ]
     }
@@ -115,7 +115,7 @@ class VoiceMemosTests: XCTestCase {
       audioRecorderSubject.eraseToEffect()
     }
     environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
-    environment.temporaryDirectory = { .init(fileURLWithPath: "/tmp") }
+    environment.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
     environment.uuid = { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! }
 
     let store = TestStore(
@@ -131,7 +131,7 @@ class VoiceMemosTests: XCTestCase {
       $0.currentRecording = .init(
         date: Date(timeIntervalSince1970: 0),
         mode: .recording,
-        url: URL(string: "file:///tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")!
+        url: URL(fileURLWithPath: "/tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")
       )
     }
     audioRecorderSubject.send(completion: .failure(.couldntActivateAudioSession))
@@ -150,12 +150,12 @@ class VoiceMemosTests: XCTestCase {
     }
     environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
-    let url = URL(string: "https://www.pointfree.co/functions")!
+    let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
       initialState: VoiceMemosState(
         voiceMemos: [
           VoiceMemo(
-            date: Date(timeIntervalSinceNow: 0),
+            date: Date(),
             duration: 1,
             mode: .notPlaying,
             title: "",
@@ -178,12 +178,7 @@ class VoiceMemosTests: XCTestCase {
     await store.receive(.voiceMemo(id: url, action: .timerUpdated(1))) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 1)
     }
-    await store.receive(
-      .voiceMemo(
-        id: url,
-        action: .audioPlayerClient(.success(true))
-      )
-    ) {
+    await store.receive(.voiceMemo(id: url, action: .audioPlayerClient(.success(true)))) {
       $0.voiceMemos[id: url]?.mode = .notPlaying
     }
     await task.cancel()
@@ -194,12 +189,12 @@ class VoiceMemosTests: XCTestCase {
     environment.audioPlayer.play = { _ in throw AudioPlayerClient.Failure.decodeErrorDidOccur }
     environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
-    let url = URL(string: "https://www.pointfree.co/functions")!
+    let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
       initialState: VoiceMemosState(
         voiceMemos: [
           VoiceMemo(
-            date: Date(timeIntervalSinceNow: 0),
+            date: Date(),
             duration: 30,
             mode: .notPlaying,
             title: "",
@@ -226,12 +221,12 @@ class VoiceMemosTests: XCTestCase {
   }
 
   func testStopMemo() {
-    let url = URL(string: "https://www.pointfree.co/functions")!
+    let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
       initialState: VoiceMemosState(
         voiceMemos: [
           VoiceMemo(
-            date: Date(timeIntervalSinceNow: 0),
+            date: Date(),
             duration: 30,
             mode: .playing(progress: 0.3),
             title: "",
@@ -249,12 +244,12 @@ class VoiceMemosTests: XCTestCase {
   }
 
   func testDeleteMemo() {
-    let url = URL(string: "https://www.pointfree.co/functions")!
+    let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
       initialState: VoiceMemosState(
         voiceMemos: [
           VoiceMemo(
-            date: Date(timeIntervalSinceNow: 0),
+            date: Date(),
             duration: 30,
             mode: .playing(progress: 0.3),
             title: "",
@@ -272,7 +267,7 @@ class VoiceMemosTests: XCTestCase {
   }
 
   func testDeleteMemoWhilePlaying() {
-    let url = URL(string: "https://www.pointfree.co/functions")!
+    let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     var environment = VoiceMemosEnvironment.failing
     environment.audioPlayer.play = { _ in try await Task.never() }
     environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
@@ -281,7 +276,7 @@ class VoiceMemosTests: XCTestCase {
       initialState: VoiceMemosState(
         voiceMemos: [
           VoiceMemo(
-            date: Date(timeIntervalSinceNow: 0),
+            date: Date(),
             duration: 10,
             mode: .notPlaying,
             title: "",
@@ -307,13 +302,13 @@ extension VoiceMemosEnvironment {
     audioPlayer: .failing,
     audioRecorder: .failing,
     mainRunLoop: .failing,
-    openSettings: .failing("VoiceMemosEnvironment.openSettings"),
+    openSettings: .failing("\(Self.self).openSettings"),
     temporaryDirectory: {
-      XCTFail("VoiceMemosEnvironment.temporaryDirectory is unimplemented")
+      XCTFail("\(Self.self).temporaryDirectory is unimplemented")
       return URL(fileURLWithPath: NSTemporaryDirectory())
     },
     uuid: {
-      XCTFail("VoiceMemosEnvironment.uuid is unimplemented")
+      XCTFail("\(Self.self).uuid is unimplemented")
       return UUID()
     }
   )

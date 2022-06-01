@@ -59,8 +59,11 @@ public final actor SendableState<Value> {
 }
 
 extension AsyncStream {
-  public init<S: AsyncSequence>(_ sequence: S) where S.Element == Element {
-    self.init { (continuation: Continuation) in
+  public init<S: AsyncSequence>(
+    _ sequence: S,
+    bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
+  ) where S.Element == Element {
+    self.init(bufferingPolicy: limit) { (continuation: Continuation) in
       let task = Task {
         do {
           for try await element in sequence {
@@ -85,8 +88,11 @@ extension AsyncStream {
 }
 
 extension AsyncThrowingStream where Failure == Error {
-  public init<S: AsyncSequence>(_ sequence: S) where S.Element == Element {
-    self.init { (continuation: Continuation) in
+  public init<S: AsyncSequence>(
+    _ sequence: S,
+    bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
+  ) where S.Element == Element {
+    self.init(bufferingPolicy: limit) { (continuation: Continuation) in
       let task = Task {
         do {
           for try await element in sequence {
