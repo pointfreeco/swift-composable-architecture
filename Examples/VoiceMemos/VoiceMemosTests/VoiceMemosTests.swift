@@ -4,6 +4,7 @@ import XCTest
 
 @testable import VoiceMemos
 
+@MainActor
 class VoiceMemosTests: XCTestCase {
   let mainRunLoop = RunLoop.test
 
@@ -141,12 +142,11 @@ class VoiceMemosTests: XCTestCase {
     }
   }
 
-  func testPlayMemoHappyPath() {
+  func testPlayMemoHappyPath() async {
     var environment = VoiceMemosEnvironment.failing
     environment.audioPlayer.play = { _ in
-      Effect(value: .didFinishPlaying(successfully: true))
-        .delay(for: 1, scheduler: self.mainRunLoop)
-        .eraseToEffect()
+      try await self.mainRunLoop.sleep(for: 1)
+      return true
     }
     environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
@@ -167,30 +167,31 @@ class VoiceMemosTests: XCTestCase {
       environment: environment
     )
 
-    store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
+    let task = store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = VoiceMemo.Mode.playing(progress: 0)
     }
-    self.mainRunLoop.advance(by: 0.5)
-    store.receive(VoiceMemosAction.voiceMemo(id: url, action: VoiceMemoAction.timerUpdated(0.5))) {
+    await self.mainRunLoop.advance(by: 0.5)
+    await store.receive(VoiceMemosAction.voiceMemo(id: url, action: VoiceMemoAction.timerUpdated(0.5))) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0.5)
     }
-    self.mainRunLoop.advance(by: 0.5)
-    store.receive(VoiceMemosAction.voiceMemo(id: url, action: VoiceMemoAction.timerUpdated(1))) {
+    await self.mainRunLoop.advance(by: 0.5)
+    await store.receive(VoiceMemosAction.voiceMemo(id: url, action: VoiceMemoAction.timerUpdated(1))) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 1)
     }
-    store.receive(
+    await store.receive(
       .voiceMemo(
         id: url,
-        action: .audioPlayerClient(.success(.didFinishPlaying(successfully: true)))
+        action: .audioPlayerClient(.success(true))
       )
     ) {
       $0.voiceMemos[id: url]?.mode = .notPlaying
     }
+    await task.cancel()
   }
 
-  func testPlayMemoFailure() {
+  func testPlayMemoFailure() async {
     var environment = VoiceMemosEnvironment.failing
-    environment.audioPlayer.play = { _ in Effect(error: .decodeErrorDidOccur) }
+    environment.audioPlayer.play = { _ in throw AudioPlayerClient.Failure.decodeErrorDidOccur }
     environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
     let url = URL(string: "https://www.pointfree.co/functions")!
@@ -210,20 +211,21 @@ class VoiceMemosTests: XCTestCase {
       environment: environment
     )
 
-    store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
+    let task = store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
     }
-    store.receive(.voiceMemo(id: url, action: .audioPlayerClient(.failure(.decodeErrorDidOccur)))) {
+    await store.receive(
+      .voiceMemo(
+        id: url, action: .audioPlayerClient(.failure(AudioPlayerClient.Failure.decodeErrorDidOccur))
+      )
+    ) {
       $0.alert = .init(title: .init("Voice memo playback failed."))
       $0.voiceMemos[id: url]?.mode = .notPlaying
     }
+    await task.cancel()
   }
 
   func testStopMemo() {
-    var didStopAudioPlayerClient = false
-    var environment = VoiceMemosEnvironment.failing
-    environment.audioPlayer.stop = { .fireAndForget { didStopAudioPlayerClient = true } }
-
     let url = URL(string: "https://www.pointfree.co/functions")!
     let store = TestStore(
       initialState: VoiceMemosState(
@@ -238,20 +240,15 @@ class VoiceMemosTests: XCTestCase {
         ]
       ),
       reducer: voiceMemosReducer,
-      environment: environment
+      environment: .failing
     )
 
     store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .notPlaying
     }
-    XCTAssert(didStopAudioPlayerClient)
   }
 
   func testDeleteMemo() {
-    var didStopAudioPlayerClient = false
-    var environment = VoiceMemosEnvironment.failing
-    environment.audioPlayer.stop = { .fireAndForget { didStopAudioPlayerClient = true } }
-
     let url = URL(string: "https://www.pointfree.co/functions")!
     let store = TestStore(
       initialState: VoiceMemosState(
@@ -266,20 +263,18 @@ class VoiceMemosTests: XCTestCase {
         ]
       ),
       reducer: voiceMemosReducer,
-      environment: environment
+      environment: .failing
     )
 
     store.send(.voiceMemo(id: url, action: .delete)) {
       $0.voiceMemos = []
-      XCTAssertNoDifference(didStopAudioPlayerClient, true)
     }
   }
 
   func testDeleteMemoWhilePlaying() {
     let url = URL(string: "https://www.pointfree.co/functions")!
     var environment = VoiceMemosEnvironment.failing
-    environment.audioPlayer.play = { _ in .none }
-    environment.audioPlayer.stop = { .none }
+    environment.audioPlayer.play = { _ in try await Task.never() }
     environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
     let store = TestStore(

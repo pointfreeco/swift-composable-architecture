@@ -28,7 +28,7 @@ struct VoiceMemo: Equatable, Identifiable {
 }
 
 enum VoiceMemoAction: Equatable {
-  case audioPlayerClient(Result<AudioPlayerClient.Action, AudioPlayerClient.Failure>)
+  case audioPlayerClient(TaskResult<Bool>)
   case playButtonTapped
   case delete
   case timerUpdated(TimeInterval)
@@ -43,41 +43,43 @@ struct VoiceMemoEnvironment {
 let voiceMemoReducer = Reducer<
   VoiceMemo, VoiceMemoAction, VoiceMemoEnvironment
 > { memo, action, environment in
+  enum PlayId {}
   enum TimerId {}
 
   switch action {
-  case .audioPlayerClient(.success(.didFinishPlaying)), .audioPlayerClient(.failure):
+  case .audioPlayerClient:
     memo.mode = .notPlaying
     return .cancel(id: TimerId.self)
 
   case .delete:
-    return .merge(
-      environment.audioPlayerClient.stop().fireAndForget(),
-      .cancel(id: TimerId.self)
-    )
+    return .cancel(ids: [PlayId.self, TimerId.self])
 
   case .playButtonTapped:
     switch memo.mode {
     case .notPlaying:
       memo.mode = .playing(progress: 0)
 
-      let start = environment.mainRunLoop.now
-      return .merge(
-        Effect.timer(id: TimerId.self, every: 0.5, on: environment.mainRunLoop)
-          .map { .timerUpdated($0.date.timeIntervalSince1970 - start.date.timeIntervalSince1970) },
+      return .run { @MainActor [url = memo.url] send in
+        let start = environment.mainRunLoop.now
 
-        environment.audioPlayerClient
-          .play(memo.url)
-          .catchToEffect(VoiceMemoAction.audioPlayerClient)
-      )
+        await withThrowingTaskGroup(of: Void.self) { group in
+          group.addTask { @MainActor in
+            for try await tick in environment.mainRunLoop.timer(interval: 0.5) {
+              send(.timerUpdated(tick.date.timeIntervalSince(start.date)))
+            }
+          }
+          group.addTask { @MainActor in
+            send(
+              await .audioPlayerClient(.init { try await environment.audioPlayerClient.play(url) })
+            )
+          }
+        }
+      }
+      .cancellable(id: PlayId.self, cancelInFlight: true)
 
     case .playing:
       memo.mode = .notPlaying
-
-      return .concatenate(
-        .cancel(id: TimerId.self),
-        environment.audioPlayerClient.stop().fireAndForget()
-      )
+      return .cancel(ids: [PlayId.self, TimerId.self])
     }
 
   case let .timerUpdated(time):
