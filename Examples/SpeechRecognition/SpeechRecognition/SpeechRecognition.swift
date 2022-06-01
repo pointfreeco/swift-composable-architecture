@@ -28,14 +28,14 @@ struct AppEnvironment {
 }
 
 let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
-  enum CancelId {}
-
   switch action {
   case .dismissAuthorizationStateAlert:
     state.alert = nil
     return .none
 
   case .recordButtonTapped:
+    enum CancelId {}
+
     state.isRecording.toggle()
     if state.isRecording {
       return .run { @MainActor [isRecording = state.isRecording] send in
@@ -64,7 +64,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
   case let .speech(.failure(error)):
     state.alert = .init(title: .init("An error occurred while transcribing. Please try again."))
-    return .cancel(id: CancelId.self)
+    return .none
 
   case let .speechRecognizerAuthorizationStatusResponse(status):
     state.isRecording = status == .authorized
