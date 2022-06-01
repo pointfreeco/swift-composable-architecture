@@ -20,7 +20,6 @@ extension SpeechClient {
 
     final actor Actor {
       let audioEngine = AVAudioEngine()
-      var inputNode: AVAudioInputNode?
       var recognitionTask: SFSpeechRecognitionTask?
 
       func recognitionTask(

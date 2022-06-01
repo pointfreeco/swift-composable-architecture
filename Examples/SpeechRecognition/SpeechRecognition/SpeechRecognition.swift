@@ -38,11 +38,9 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
     state.isRecording.toggle()
     if state.isRecording {
-      return .run { @MainActor send in
-        send(
-          .speechRecognizerAuthorizationStatusResponse(
-            await environment.speechClient.requestAuthorization()
-          )
+      return .task { @MainActor send in
+        .speechRecognizerAuthorizationStatusResponse(
+          await environment.speechClient.requestAuthorization()
         )
       }
       .cancellable(id: CancelId.self)
@@ -55,11 +53,11 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     state.alert = .init(title: .init("Problem with audio device. Please try again."))
     return .none
 
-  case let .speech(.failure(error)):
+  case .speech(.failure):
     state.alert = .init(title: .init("An error occurred while transcribing. Please try again."))
     return .none
 
-  case let .speech(.success(.availabilityDidChange(isAvailable))):
+  case .speech(.success(.availabilityDidChange)):
     return .none
 
   case let .speech(.success(.taskResult(result))):

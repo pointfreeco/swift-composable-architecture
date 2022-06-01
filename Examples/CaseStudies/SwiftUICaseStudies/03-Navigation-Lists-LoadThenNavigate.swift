@@ -1,4 +1,5 @@
 import ComposableArchitecture
+@preconcurrency import Foundation  // NB: UUID is not Sendable
 import SwiftUI
 
 private let readMe = """

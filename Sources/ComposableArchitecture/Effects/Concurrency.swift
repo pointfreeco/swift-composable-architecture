@@ -123,7 +123,7 @@ import SwiftUI
     ) -> Self {
       .run { subscriber in
         let task = Task(priority: priority) { @MainActor in
-          await operation(Send(send: subscriber.send(_:)))
+          await operation(Send(send: { subscriber.send($0) }))
           subscriber.send(completion: .finished)
         }
         return AnyCancellable {
@@ -149,8 +149,9 @@ import SwiftUI
     }
   }
 
-  public struct Send<Action> {
-    let send: (Action) -> Void
+  // TODO: Should `Send` be `@MainActor`?
+  public struct Send<Action>: Sendable {
+    let send: @Sendable (Action) -> Void
 
     public func callAsFunction(_ action: Action) {
       self.send(action)

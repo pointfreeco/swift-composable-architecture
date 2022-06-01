@@ -1,4 +1,4 @@
-import ComposableArchitecture
+@preconcurrency import ComposableArchitecture  // FIXME
 import SwiftUI
 
 private let readMe = """

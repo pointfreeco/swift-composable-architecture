@@ -23,7 +23,7 @@ enum LoadThenNavigateAction: Equatable {
   case setNavigationIsActiveDelayCompleted
 }
 
-struct LoadThenNavigateEnvironment {
+struct LoadThenNavigateEnvironment: Sendable {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 

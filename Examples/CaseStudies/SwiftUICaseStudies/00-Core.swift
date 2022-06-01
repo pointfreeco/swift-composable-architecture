@@ -74,18 +74,18 @@ enum RootAction {
 }
 
 struct RootEnvironment {
-  var date: () -> Date
+  var date: @Sendable () -> Date
   var downloadClient: DownloadClient
   var fact: FactClient
-  var favorite: (UUID, Bool) async throws -> Bool
-  var fetchNumber: () async -> Int
+  var favorite: @Sendable (UUID, Bool) async throws -> Bool
+  var fetchNumber: @Sendable () async -> Int
   var mainQueue: AnySchedulerOf<DispatchQueue>
   var screenshots: @Sendable () async -> AsyncStream<Void>
-  var uuid: () -> UUID
+  var uuid: @Sendable () -> UUID
   var webSocket: WebSocketClient
 
   static let live = Self(
-    date: Date.init,
+    date: { Date() },
     downloadClient: .live,
     fact: .live,
     favorite: favorite(id:isFavorite:),
@@ -99,7 +99,7 @@ struct RootEnvironment {
           .map { _ in }
       )
     },
-    uuid: UUID.init,
+    uuid: { UUID() },
     webSocket: .live
   )
 }
@@ -304,7 +304,7 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
 .debug()
 .signpost()
 
-private func liveFetchNumber() async -> Int {
+@Sendable private func liveFetchNumber() async -> Int {
   try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
   return Int.random(in: 1...1_000)
 }

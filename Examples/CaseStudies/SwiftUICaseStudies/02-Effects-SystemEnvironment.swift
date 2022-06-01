@@ -34,7 +34,7 @@ enum MultipleDependenciesAction: Equatable {
 }
 
 struct MultipleDependenciesEnvironment {
-  var fetchNumber: () async -> Int
+  var fetchNumber: @Sendable () async -> Int
 }
 
 let multipleDependenciesReducer = Reducer<
@@ -157,10 +157,10 @@ struct MultipleDependenciesView_Previews: PreviewProvider {
 
 @dynamicMemberLookup
 struct SystemEnvironment<Environment> {
-  var date: () -> Date
+  var date: @Sendable () -> Date
   var environment: Environment
   var mainQueue: AnySchedulerOf<DispatchQueue>
-  var uuid: () -> UUID
+  var uuid: @Sendable () -> UUID
 
   subscript<Dependency>(
     dynamicMember keyPath: WritableKeyPath<Environment, Dependency>
@@ -175,10 +175,10 @@ struct SystemEnvironment<Environment> {
   /// - Returns: A new system environment.
   static func live(environment: Environment) -> Self {
     Self(
-      date: Date.init,
+      date: { Date() },
       environment: environment,
       mainQueue: .main,
-      uuid: UUID.init
+      uuid: { UUID() }
     )
   }
 
@@ -195,18 +195,20 @@ struct SystemEnvironment<Environment> {
   }
 }
 
+extension SystemEnvironment: Sendable where Environment: Sendable {}
+
 #if DEBUG
   import XCTestDynamicOverlay
 
   extension SystemEnvironment {
     static func failing(
-      date: @escaping () -> Date = {
+      date: @escaping @Sendable () -> Date = {
         XCTFail("date dependency is unimplemented.")
         return Date()
       },
       environment: Environment,
       mainQueue: AnySchedulerOf<DispatchQueue> = .failing,
-      uuid: @escaping () -> UUID = {
+      uuid: @escaping @Sendable () -> UUID = {
         XCTFail("UUID dependency is unimplemented.")
         return UUID()
       }

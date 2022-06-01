@@ -1,5 +1,6 @@
 import Combine
 import ComposableArchitecture
+@preconcurrency import Foundation
 import SwiftUI
 import XCTestDynamicOverlay
 

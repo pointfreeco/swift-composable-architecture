@@ -15,6 +15,8 @@ public enum TaskResult<Success> {
   #endif
 }
 
+extension TaskResult: Sendable where Success: Sendable {}
+
 public struct EquatableVoid: Equatable, Codable, Hashable {
   public init() {}
 }

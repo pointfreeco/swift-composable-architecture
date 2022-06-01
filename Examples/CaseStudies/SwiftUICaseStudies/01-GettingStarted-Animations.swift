@@ -40,22 +40,6 @@ struct AnimationsEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
-extension Effect where Failure == Never {
-  public static func keyFrames<S>(
-    values: [(output: Output, duration: S.SchedulerTimeType.Stride, animation: Animation?)],
-    scheduler: S
-  ) -> Effect where S: Scheduler {
-    .run { @MainActor send in
-      for (index, (output, duration, animation)) in values.enumerated() {
-        if index > 0 {
-          try? await scheduler.sleep(for: duration)
-        }
-        send(output, animation: animation)
-      }
-    }
-  }
-}
-
 let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnvironment> {
   state, action, environment in
 
@@ -69,11 +53,15 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
     return .none
 
   case .rainbowButtonTapped:
-    return .keyFrames(
-      values: [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .white]
-        .map { (output: .setColor($0), duration: 1, animation: .linear) },
-      scheduler: environment.mainQueue
-    )
+    return .run { @MainActor send in
+      let colors = [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .white]
+      for (index, color) in colors.enumerated() {
+        if index > 0 {
+          try? await environment.mainQueue.sleep(for: 1)
+        }
+        send(.setColor(color), animation: .linear)
+      }
+    }
 
   case .resetButtonTapped:
     state.alert = .init(

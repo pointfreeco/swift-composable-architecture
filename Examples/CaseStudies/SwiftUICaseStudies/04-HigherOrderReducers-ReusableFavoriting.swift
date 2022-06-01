@@ -1,5 +1,6 @@
 import Combine
 import ComposableArchitecture
+@preconcurrency import Foundation
 import SwiftUI
 
 private let readMe = """
@@ -32,8 +33,8 @@ enum FavoriteAction: Equatable {
   case response(TaskResult<Bool>)
 }
 
-struct FavoriteEnvironment<ID> {
-  var request: (ID, Bool) async throws -> Bool
+struct FavoriteEnvironment<ID: Sendable> {
+  var request: @Sendable (ID, Bool) async throws -> Bool
 }
 
 /// A cancellation token that cancels in-flight favoriting requests.
@@ -112,7 +113,7 @@ enum EpisodeAction: Equatable {
 }
 
 struct EpisodeEnvironment {
-  var favorite: (EpisodeState.ID, Bool) async throws -> Bool
+  var favorite: @Sendable (EpisodeState.ID, Bool) async throws -> Bool
 }
 
 struct EpisodeView: View {
@@ -147,7 +148,7 @@ enum EpisodesAction: Equatable {
 }
 
 struct EpisodesEnvironment {
-  var favorite: (UUID, Bool) async throws -> Bool
+  var favorite: @Sendable (UUID, Bool) async throws -> Bool
 }
 
 let episodesReducer: Reducer<EpisodesState, EpisodesAction, EpisodesEnvironment> =
@@ -199,7 +200,7 @@ struct FavoriteError: LocalizedError {
   }
 }
 
-func favorite<ID>(id: ID, isFavorite: Bool) async throws -> Bool {
+@Sendable func favorite<ID>(id: ID, isFavorite: Bool) async throws -> Bool {
   try await Task.sleep(nanoseconds: NSEC_PER_SEC)
   if .random(in: 0...1) > 0.25 {
     return isFavorite

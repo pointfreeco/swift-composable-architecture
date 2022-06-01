@@ -3,7 +3,7 @@ import ComposableArchitecture
 import XCTestDynamicOverlay
 
 struct FactClient {
-  var fetch: (Int) async throws -> String
+  var fetch: @Sendable (Int) async throws -> String
 }
 
 // This is the "live" fact dependency that reaches into the outside world to fetch trivia.
