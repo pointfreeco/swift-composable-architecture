@@ -3,6 +3,7 @@ import XCTest
 
 @testable import Todos
 
+@MainActor
 class TodosTests: XCTestCase {
   let scheduler = DispatchQueue.test
 
@@ -193,7 +194,7 @@ class TodosTests: XCTestCase {
     }
   }
 
-  func testEditModeMoving() {
+  func testEditModeMoving() async {
     let state = AppState(
       todos: [
         Todo(
@@ -232,11 +233,11 @@ class TodosTests: XCTestCase {
         $0.todos[2],
       ]
     }
-    self.scheduler.advance(by: .milliseconds(100))
-    store.receive(.sortCompletedTodos)
+    await self.scheduler.advance(by: .milliseconds(100))
+    await store.receive(.sortCompletedTodos)
   }
 
-  func testEditModeMovingWithFilter() {
+  func testEditModeMovingWithFilter() async {
     let state = AppState(
       todos: [
         Todo(
@@ -284,8 +285,8 @@ class TodosTests: XCTestCase {
         $0.todos[3],
       ]
     }
-    self.scheduler.advance(by: .milliseconds(100))
-    store.receive(.sortCompletedTodos)
+    await self.scheduler.advance(by: .milliseconds(100))
+    await store.receive(.sortCompletedTodos)
   }
 
   func testFilteredEdit() {
