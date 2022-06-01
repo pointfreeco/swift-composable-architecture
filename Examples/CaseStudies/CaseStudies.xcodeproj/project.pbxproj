@@ -49,7 +49,6 @@
 		DC25DC612450F2B000082E81 /* LoadThenNavigate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC25DC602450F2B000082E81 /* LoadThenNavigate.swift */; };
 		DC25DC642450F2DF00082E81 /* ActivityIndicatorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC25DC632450F2DF00082E81 /* ActivityIndicatorViewController.swift */; };
 		DC27215625BF84FC00D9C8DB /* 01-GettingStarted-BindingBasicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC27215525BF84FC00D9C8DB /* 01-GettingStarted-BindingBasicsTests.swift */; };
-		DC2E370D24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC2E370C24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift */; };
 		DC4C6EAC2450DD380066A05D /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4C6EAB2450DD380066A05D /* SceneDelegate.swift */; };
 		DC4C6EAE2450DD380066A05D /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4C6EAD2450DD380066A05D /* RootViewController.swift */; };
 		DC4C6EB02450DD380066A05D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC4C6EAF2450DD380066A05D /* Assets.xcassets */; };
@@ -192,7 +191,6 @@
 		DC25DC602450F2B000082E81 /* LoadThenNavigate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadThenNavigate.swift; sourceTree = "<group>"; };
 		DC25DC632450F2DF00082E81 /* ActivityIndicatorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityIndicatorViewController.swift; sourceTree = "<group>"; };
 		DC27215525BF84FC00D9C8DB /* 01-GettingStarted-BindingBasicsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-BindingBasicsTests.swift"; sourceTree = "<group>"; };
-		DC2E370C24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-StrictReducers.swift"; sourceTree = "<group>"; };
 		DC4C6EA72450DD380066A05D /* UIKitCaseStudies.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UIKitCaseStudies.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC4C6EAB2450DD380066A05D /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		DC4C6EAD2450DD380066A05D /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
@@ -419,7 +417,6 @@
 				CA3E4C5A24B4FA0E00447C0B /* 04-HigherOrderReducers-Lifecycle.swift */,
 				DCE63B70245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift */,
 				DCC68EE22447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift */,
-				DC2E370C24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift */,
 				DCFE195F278DBF0600C14CCF /* CaseStudiesApp.swift */,
 				CA5ECF91267A79F0002067FF /* FactClient.swift */,
 				DC89C41C24460F96006900B9 /* Assets.xcassets */,
@@ -749,7 +746,6 @@
 				DCAC2A4F2452352E0094DEF5 /* 04-HigherOrderReducers-ElmLikeSubscriptions.swift in Sources */,
 				CA6AC2672451135C00C71CB3 /* DownloadClient.swift in Sources */,
 				CAA9ADC624465C810003A984 /* 02-Effects-Cancellation.swift in Sources */,
-				DC2E370D24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift in Sources */,
 				CA5ECF92267A79F0002067FF /* FactClient.swift in Sources */,
 				DC9EB4172450CBD2005F413B /* UIViewRepresented.swift in Sources */,
 				CA6AC2652451135C00C71CB3 /* CircularProgressView.swift in Sources */,
