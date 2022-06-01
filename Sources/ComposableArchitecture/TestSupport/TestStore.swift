@@ -586,5 +586,11 @@
       self.task.cancel()
       await task.value
     }
+
+    public var value: Void {
+      get async {
+        await self.task.value
+      }
+    }
   }
 #endif

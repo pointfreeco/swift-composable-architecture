@@ -26,7 +26,7 @@ class WebSocketTests: XCTestCase {
     )
 
     // Connect to the socket
-    let task = store.send(.connectButtonTapped) {
+    store.send(.connectButtonTapped) {
       $0.connectivityState = .connecting
     }
     actions.continuation.yield(.didOpen(protocol: nil))
@@ -59,7 +59,6 @@ class WebSocketTests: XCTestCase {
     store.send(.connectButtonTapped) {
       $0.connectivityState = .disconnected
     }
-    await task.value
   }
 
   func testWebSocketSendFailure() async {
@@ -83,7 +82,7 @@ class WebSocketTests: XCTestCase {
     )
 
     // Connect to the socket
-    let task = store.send(.connectButtonTapped) {
+    store.send(.connectButtonTapped) {
       $0.connectivityState = .connecting
     }
     actions.continuation.yield(.didOpen(protocol: nil))
@@ -106,7 +105,6 @@ class WebSocketTests: XCTestCase {
     store.send(.connectButtonTapped) {
       $0.connectivityState = .disconnected
     }
-    await task.value
   }
 
   func testWebSocketPings() async {
@@ -129,7 +127,7 @@ class WebSocketTests: XCTestCase {
     )
 
     // Connect to the socket
-    let task = store.send(.connectButtonTapped) {
+    store.send(.connectButtonTapped) {
       $0.connectivityState = .connecting
     }
     actions.continuation.yield(.didOpen(protocol: nil))
@@ -148,7 +146,6 @@ class WebSocketTests: XCTestCase {
     store.send(.connectButtonTapped) {
       $0.connectivityState = .disconnected
     }
-    await task.value
   }
 
   func testWebSocketConnectError() async {
