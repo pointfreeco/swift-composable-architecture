@@ -582,21 +582,9 @@
   public struct TestTask {
     let task: Task<Void, Never>
 
-    public var value: Void {
-      get async {
-        await self.task.value
-      }
-    }
-
     public func cancel() async {
       self.task.cancel()
       await task.value
-    }
-
-    public func yield() async {
-      for _ in 1...10 {
-        await Task(priority: .background) { await Task.yield() }.value
-      }
     }
   }
 #endif
