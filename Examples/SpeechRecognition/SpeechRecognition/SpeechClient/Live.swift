@@ -1,13 +1,13 @@
 import Combine
 import ComposableArchitecture
-import Speech
+@preconcurrency import Speech
 
 extension SpeechClient {
   static var live: Self {
-    final class Delegate: NSObject, SFSpeechRecognizerDelegate {
-      var availabilityDidChange: (Bool) -> Void
+    final class Delegate: NSObject, Sendable, SFSpeechRecognizerDelegate {
+      let availabilityDidChange: @Sendable (Bool) -> Void
 
-      init(availabilityDidChange: @escaping (Bool) -> Void) {
+      init(availabilityDidChange: @escaping @Sendable (Bool) -> Void) {
         self.availabilityDidChange = availabilityDidChange
       }
 

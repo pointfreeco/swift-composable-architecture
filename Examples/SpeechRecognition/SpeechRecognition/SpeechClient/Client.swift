@@ -4,8 +4,8 @@ import Speech
 
 struct SpeechClient {
   var recognitionTask:
-    (SFSpeechAudioBufferRecognitionRequest) async -> AsyncThrowingStream<Action, Error>
-  var requestAuthorization: () async -> SFSpeechRecognizerAuthorizationStatus
+    @Sendable (SFSpeechAudioBufferRecognitionRequest) async -> AsyncThrowingStream<Action, Error>
+  var requestAuthorization: @Sendable () async -> SFSpeechRecognizerAuthorizationStatus
 
   enum Action: Equatable {
     case availabilityDidChange(isAvailable: Bool)

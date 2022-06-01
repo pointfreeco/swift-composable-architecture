@@ -27,8 +27,8 @@ struct LocationWeather: Decodable, Equatable {
 // This allows the search feature to compile faster since it only depends on the interface.
 
 struct WeatherClient {
-  var searchLocation: (String) async throws -> [Location]
-  var weather: (Int) async throws -> LocationWeather
+  var searchLocation: @Sendable (String) async throws -> [Location]
+  var weather: @Sendable (Int) async throws -> LocationWeather
 }
 
 // MARK: - Live API implementation

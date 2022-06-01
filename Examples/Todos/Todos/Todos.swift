@@ -34,7 +34,7 @@ enum AppAction: Equatable {
 
 struct AppEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
-  var uuid: () -> UUID
+  var uuid: @Sendable () -> UUID
 }
 
 let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
@@ -192,7 +192,7 @@ struct AppView_Previews: PreviewProvider {
         reducer: appReducer,
         environment: AppEnvironment(
           mainQueue: .main,
-          uuid: UUID.init
+          uuid: { UUID() }
         )
       )
     )

@@ -57,13 +57,13 @@ public enum AuthenticationError: Equatable, LocalizedError {
   }
 }
 
-public struct AuthenticationClient {
-  public var login: (LoginRequest) async throws -> AuthenticationResponse
-  public var twoFactor: (TwoFactorRequest) async throws -> AuthenticationResponse
+public struct AuthenticationClient: Sendable {
+  public var login: @Sendable (LoginRequest) async throws -> AuthenticationResponse
+  public var twoFactor: @Sendable (TwoFactorRequest) async throws -> AuthenticationResponse
 
   public init(
-    login: @escaping (LoginRequest) async throws -> AuthenticationResponse,
-    twoFactor: @escaping (TwoFactorRequest) async throws -> AuthenticationResponse
+    login: @escaping @Sendable (LoginRequest) async throws -> AuthenticationResponse,
+    twoFactor: @escaping @Sendable (TwoFactorRequest) async throws -> AuthenticationResponse
   ) {
     self.login = login
     self.twoFactor = twoFactor

@@ -28,17 +28,17 @@ struct AppEnvironment {
 }
 
 let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
+  enum CancelId {}
+
   switch action {
   case .dismissAuthorizationStateAlert:
     state.alert = nil
     return .none
 
   case .recordButtonTapped:
-    enum CancelId {}
-
     state.isRecording.toggle()
     if state.isRecording {
-      return .task { @MainActor send in
+      return .task { @MainActor in
         .speechRecognizerAuthorizationStatusResponse(
           await environment.speechClient.requestAuthorization()
         )
@@ -62,7 +62,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
   case let .speech(.success(.taskResult(result))):
     state.transcribedText = result.bestTranscription.formattedString
-    return result.isFinal ? .none : .cancel(id: CancelId.self)
+    return result.isFinal ? .cancel(id: CancelId.self) : .none
 
   case let .speechRecognizerAuthorizationStatusResponse(status):
     state.isRecording = status == .authorized

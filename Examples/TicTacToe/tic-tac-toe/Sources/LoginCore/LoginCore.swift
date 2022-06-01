@@ -24,7 +24,7 @@ public enum LoginAction: Equatable {
   case twoFactorDismissed
 }
 
-public struct LoginEnvironment {
+public struct LoginEnvironment: Sendable {
   public var authenticationClient: AuthenticationClient
 
   public init(

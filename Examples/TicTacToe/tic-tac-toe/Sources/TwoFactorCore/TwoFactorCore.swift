@@ -24,7 +24,7 @@ public enum TwoFactorAction: Equatable {
 
 public enum TwoFactorTearDownToken {}
 
-public struct TwoFactorEnvironment {
+public struct TwoFactorEnvironment: Sendable {
   public var authenticationClient: AuthenticationClient
 
   public init(
