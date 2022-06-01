@@ -48,10 +48,11 @@ let loadThenNavigateReducer =
 
       case .setNavigation(isActive: true):
         state.isActivityIndicatorVisible = true
-        return Effect(value: .setNavigationIsActiveDelayCompleted)
-          .delay(for: 1, scheduler: environment.mainQueue)
-          .eraseToEffect()
-          .cancellable(id: CancelId.self)
+        return .task { @MainActor in
+          try? await environment.mainQueue.sleep(for: 1)
+          return .setNavigationIsActiveDelayCompleted
+        }
+        .cancellable(id: CancelId.self)
 
       case .setNavigation(isActive: false):
         state.optionalCounter = nil

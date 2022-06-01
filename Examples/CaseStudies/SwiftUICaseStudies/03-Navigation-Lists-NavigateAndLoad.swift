@@ -55,11 +55,11 @@ let navigateAndLoadListReducer =
 
       case let .setNavigation(selection: .some(id)):
         state.selection = Identified(nil, id: id)
-
-        return Effect(value: .setNavigationSelectionDelayCompleted)
-          .delay(for: 1, scheduler: environment.mainQueue)
-          .eraseToEffect()
-          .cancellable(id: CancelId.self)
+        return .task { @MainActor in
+          try? await environment.mainQueue.sleep(for: 1)
+          return .setNavigationSelectionDelayCompleted
+        }
+        .cancellable(id: CancelId.self, cancelInFlight: true)
 
       case .setNavigation(selection: .none):
         if let selection = state.selection, let count = selection.value?.count {

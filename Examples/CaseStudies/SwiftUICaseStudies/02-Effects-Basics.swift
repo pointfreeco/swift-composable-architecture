@@ -53,9 +53,10 @@ let effectsBasicsReducer = Reducer<
     state.count -= 1
     state.numberFact = nil
     // Return an effect that re-increments the count after 1 second.
-    return Effect(value: EffectsBasicsAction.incrementButtonTapped)
-      .delay(for: 1, scheduler: environment.mainQueue)
-      .eraseToEffect()
+    return .task { @MainActor in
+      try? await environment.mainQueue.sleep(for: 1)
+      return .incrementButtonTapped
+    }
 
   case .incrementButtonTapped:
     state.count += 1

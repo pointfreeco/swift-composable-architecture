@@ -45,9 +45,10 @@ let multipleDependenciesReducer = Reducer<
 
   switch action {
   case .alertButtonTapped:
-    return Effect(value: .alertDelayReceived)
-      .delay(for: 1, scheduler: environment.mainQueue)
-      .eraseToEffect()
+    return .task { @MainActor in
+      try? await environment.mainQueue.sleep(for: 1)
+      return .alertDelayReceived
+    }
 
   case .alertDelayReceived:
     state.alert = .init(title: .init("Here's an alert after a delay!"))

@@ -66,11 +66,11 @@ let loadThenNavigateListReducer =
         for row in state.rows {
           state.rows[id: row.id]?.isActivityIndicatorVisible = row.id == navigatedId
         }
-
-        return Effect(value: .setNavigationSelectionDelayCompleted(navigatedId))
-          .delay(for: 1, scheduler: environment.mainQueue)
-          .eraseToEffect()
-          .cancellable(id: CancelId.self, cancelInFlight: true)
+        return .task { @MainActor in
+          try? await environment.mainQueue.sleep(for: 1)
+          return .setNavigationSelectionDelayCompleted(navigatedId)
+        }
+        .cancellable(id: CancelId.self, cancelInFlight: true)
 
       case .setNavigation(selection: .none):
         if let selection = state.selection {

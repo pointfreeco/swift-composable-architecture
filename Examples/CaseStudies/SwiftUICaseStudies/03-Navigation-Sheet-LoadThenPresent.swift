@@ -48,10 +48,11 @@ let loadThenPresentReducer =
 
       case .setSheet(isPresented: true):
         state.isActivityIndicatorVisible = true
-        return Effect(value: .setSheetIsPresentedDelayCompleted)
-          .delay(for: 1, scheduler: environment.mainQueue)
-          .eraseToEffect()
-          .cancellable(id: CancelId.self)
+        return .task { @MainActor in
+          try? await environment.mainQueue.sleep(for: 1)
+          return .setSheetIsPresentedDelayCompleted
+        }
+        .cancellable(id: CancelId.self)
 
       case .setSheet(isPresented: false):
         state.optionalCounter = nil
