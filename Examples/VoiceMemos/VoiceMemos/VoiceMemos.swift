@@ -80,7 +80,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
           }
         }
       }
-      .cancellable(id: RecordId.self)
+      .cancellable(id: RecordId.self, cancelInFlight: true)
     }
 
     switch action {
