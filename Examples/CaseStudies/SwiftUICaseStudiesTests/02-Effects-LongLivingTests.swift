@@ -1,5 +1,5 @@
 import Combine
-import ComposableArchitecture
+@testable import ComposableArchitecture
 import XCTest
 
 @testable import SwiftUICaseStudies
