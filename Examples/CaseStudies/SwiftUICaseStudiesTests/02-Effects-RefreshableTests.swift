@@ -10,7 +10,8 @@ class RefreshableTests: XCTestCase {
       initialState: .init(),
       reducer: refreshableReducer,
       environment: .init(
-        fact: .init { "\($0) is a good number." }
+        fact: .init { "\($0) is a good number." },
+        mainQueue: .immediate
       )
     )
 
@@ -32,7 +33,8 @@ class RefreshableTests: XCTestCase {
       initialState: .init(),
       reducer: refreshableReducer,
       environment: .init(
-        fact: .init { _ in throw FactError() }
+        fact: .init { _ in throw FactError() },
+        mainQueue: .immediate
       )
     )
 
@@ -55,7 +57,8 @@ class RefreshableTests: XCTestCase {
         fact: .init {
           try await Task.sleep(nanoseconds: NSEC_PER_SEC)
           return "\($0) is a good number."
-        }
+        },
+        mainQueue: .immediate
       )
     )
 
