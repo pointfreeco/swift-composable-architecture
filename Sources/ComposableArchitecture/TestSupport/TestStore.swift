@@ -516,7 +516,7 @@
           { self.receive(expectedAction, file: file, line: line, update) }()
         }
 
-        group.addTask { 
+        group.addTask { @MainActor in
           try? await Task.sleep(nanoseconds: nanoseconds)
           guard !Task.isCancelled
           else { return }
