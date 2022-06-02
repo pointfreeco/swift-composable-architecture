@@ -483,16 +483,16 @@ final class StoreTests: XCTestCase {
     let reducer = Reducer<Int, Action, Void> { state, action, _ in
       switch action {
       case .task:
-        return .task { @MainActor in .response }
+        return .task { .response }
       case .response:
         return .merge(
           Empty(completeImmediately: false).eraseToEffect(),
-          .task { @MainActor in .response1 }
+          .task { .response1 }
         )
       case .response1:
         return .merge(
           Empty(completeImmediately: false).eraseToEffect(),
-          .task { @MainActor in .response2 }
+          .task { .response2 }
         )
       case .response2:
         return Empty(completeImmediately: false).eraseToEffect()
@@ -520,17 +520,17 @@ final class StoreTests: XCTestCase {
       case .task:
         return .merge(
           Empty(completeImmediately: false).eraseToEffect(),
-          .task { @MainActor in .response }
+          .task { .response }
         )
       case .response:
         return .merge(
           Empty(completeImmediately: false).eraseToEffect(),
-          .task { @MainActor in .response1 }
+          .task { .response1 }
         )
       case .response1:
         return .merge(
           Empty(completeImmediately: false).eraseToEffect(),
-          .task { @MainActor in .response2 }
+          .task { .response2 }
         )
       case .response2:
         return Empty(completeImmediately: false).eraseToEffect()

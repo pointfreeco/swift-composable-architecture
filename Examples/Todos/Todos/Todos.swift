@@ -79,7 +79,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
 
       state.todos.move(fromOffsets: source, toOffset: destination)
 
-      return .task { @MainActor in
+      return .task {
         try? await environment.mainQueue.sleep(for: .milliseconds(100))
         return .sortCompletedTodos
       }

@@ -63,7 +63,7 @@ let refreshableReducer = Reducer<
   case .refresh:
     state.fact = nil
     state.isLoading = true
-    return .task { @MainActor [count = state.count] in
+    return .task { [count = state.count] in
       await .factResponse(.init { try await environment.fact.fetch(count) })
     }
     .animation()

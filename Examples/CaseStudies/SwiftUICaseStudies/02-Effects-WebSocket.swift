@@ -57,12 +57,12 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
 
     case .disconnected:
       state.connectivityState = .connecting
-      return .run { @MainActor send in
+      return .run { send in
         let actions = await environment.webSocket
           .open(WebSocketId.self, URL(string: "wss://echo.websocket.events")!, [])
         await withThrowingTaskGroup(of: Void.self) { group in
           for await action in actions {
-            send(.webSocket(action))
+            await send(.webSocket(action))
             switch action {
             case .didOpen:
               group.addTask {
@@ -71,9 +71,9 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
                   try? await environment.webSocket.sendPing(WebSocketId.self)
                 }
               }
-              group.addTask { @MainActor in
+              group.addTask {
                 for await result in try await environment.webSocket.receive(WebSocketId.self) {
-                  send(.receivedSocketMessage(result))
+                  await send(.receivedSocketMessage(result))
                 }
               }
             case .didClose:
@@ -101,7 +101,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
   case .sendButtonTapped:
     let messageToSend = state.messageToSend
     state.messageToSend = ""
-    return .task { @MainActor in
+    return .task {
       .sendResponse(await .init {
         try await environment.webSocket.send(WebSocketId.self, .string(messageToSend))
       })

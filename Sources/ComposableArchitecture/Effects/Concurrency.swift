@@ -150,6 +150,7 @@ import SwiftUI
   }
 
   // TODO: Should `Send` be `@MainActor`?
+  @MainActor
   public struct Send<Action>: Sendable {
     let send: @Sendable (Action) -> Void
 
@@ -161,6 +162,23 @@ import SwiftUI
       withAnimation(animation) {
         self.send(action)
       }
+    }
+  }
+
+  extension Send where Action: BindableAction {
+    public func callAsFunction<Value>(
+      set keyPath: WritableKeyPath<Action.State, BindableState<Value>>,
+      to value: Value
+    ) where Value: Equatable {
+      self.send(.set(keyPath, value))
+    }
+
+    public func callAsFunction<Value>(
+      set keyPath: WritableKeyPath<Action.State, BindableState<Value>>,
+      to value: Value,
+      animation: Animation? = nil
+    ) where Value: Equatable {
+      self(.set(keyPath, value), animation: animation)
     }
   }
 #endif

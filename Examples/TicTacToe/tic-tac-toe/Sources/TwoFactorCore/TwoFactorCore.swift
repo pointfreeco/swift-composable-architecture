@@ -49,7 +49,7 @@ public let twoFactorReducer = Reducer<TwoFactorState, TwoFactorAction, TwoFactor
 
   case .submitButtonTapped:
     state.isTwoFactorRequestInFlight = true
-    return .task { @MainActor [code = state.code, token = state.token] in
+    return .task { [code = state.code, token = state.token] in
       .twoFactorResponse(
         await .init {
           try await environment.authenticationClient.twoFactor(.init(code: code, token: token))

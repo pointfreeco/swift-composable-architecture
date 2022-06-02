@@ -41,7 +41,7 @@ let presentAndLoadReducer =
       switch action {
       case .setSheet(isPresented: true):
         state.isSheetPresented = true
-        return .task { @MainActor in
+        return .task { 
           try? await environment.mainQueue.sleep(for: 1)
           return .setSheetIsPresentedDelayCompleted
         }

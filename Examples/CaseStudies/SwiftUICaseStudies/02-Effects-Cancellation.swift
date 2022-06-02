@@ -55,7 +55,7 @@ let effectsCancellationReducer = Reducer<
     state.currentTrivia = nil
     state.isTriviaRequestInFlight = true
 
-    return .task { @MainActor [count = state.count] in
+    return .task { [count = state.count] in
       .triviaResponse(
         await TaskResult {
           try await environment.fact.fetch(count)

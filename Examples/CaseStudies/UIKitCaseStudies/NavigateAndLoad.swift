@@ -36,7 +36,7 @@ let eagerNavigationReducer =
       switch action {
       case .setNavigation(isActive: true):
         state.isNavigationActive = true
-        return .task { @MainActor in
+        return .task { 
           try? await environment.mainQueue.sleep(for: 1)
           return .setNavigationIsActiveDelayCompleted
         }

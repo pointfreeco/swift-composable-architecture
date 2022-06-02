@@ -1,6 +1,6 @@
 import Combine
 import ComposableArchitecture
-import SwiftUI
+@preconcurrency import SwiftUI
 
 private let readMe = """
   This screen demonstrates how changes to application state can drive animations. Because the \
@@ -26,7 +26,7 @@ struct AnimationsState: Equatable {
   var isCircleScaled = false
 }
 
-enum AnimationsAction: Equatable {
+enum AnimationsAction: Equatable, Sendable {
   case circleScaleToggleChanged(Bool)
   case dismissAlert
   case rainbowButtonTapped
@@ -42,6 +42,7 @@ struct AnimationsEnvironment {
 
 let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnvironment> {
   state, action, environment in
+  struct CancelId {}
 
   switch action {
   case let .circleScaleToggleChanged(isScaled):
@@ -53,15 +54,19 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
     return .none
 
   case .rainbowButtonTapped:
-    return .run { @MainActor send in
-      let colors = [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .white]
-      for (index, color) in colors.enumerated() {
-        if index > 0 {
-          try? await environment.mainQueue.sleep(for: 1)
+    return .run { send in
+      do {
+        let colors = [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .white]
+        for (index, color) in colors.enumerated() {
+          if index > 0 {
+            try await environment.mainQueue.sleep(for: 1)
+          }
+          await send(.setColor(color), animation: .linear)
         }
-        send(.setColor(color), animation: .linear)
+      } catch {
       }
     }
+    .cancellable(id: CancelId.self)
 
   case .resetButtonTapped:
     state.alert = .init(
@@ -76,7 +81,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
 
   case .resetConfirmationButtonTapped:
     state = .init()
-    return .none
+    return .cancel(id: CancelId.self)
 
   case let .setColor(color):
     state.circleColor = color

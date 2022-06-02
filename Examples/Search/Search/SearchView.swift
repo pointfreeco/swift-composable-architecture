@@ -46,7 +46,7 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
 
     state.locationWeatherRequestInFlight = location
 
-    return .task { @MainActor [id = location.id] in
+    return .task { [id = location.id] in
       .locationWeatherResponse(
         await .init {
           try await environment.weatherClient.weather(id)

@@ -124,9 +124,9 @@ private let timerReducer = Reducer<Int, TimerAction, TimerEnvironment> {
 }
 .lifecycle(
   onAppear: { environment in
-    .run { @MainActor send in
+    .run { send in
       for await _ in environment.mainQueue.timer(interval: 1) {
-        send(.tick)
+        await send(.tick)
       }
     }
     .cancellable(id: TimerId.self)

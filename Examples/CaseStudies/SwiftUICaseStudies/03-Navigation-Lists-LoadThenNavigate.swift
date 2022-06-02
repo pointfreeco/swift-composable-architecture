@@ -67,7 +67,7 @@ let loadThenNavigateListReducer =
         for row in state.rows {
           state.rows[id: row.id]?.isActivityIndicatorVisible = row.id == navigatedId
         }
-        return .task { @MainActor in
+        return .task {
           try? await environment.mainQueue.sleep(for: 1)
           return .setNavigationSelectionDelayCompleted(navigatedId)
         }

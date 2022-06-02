@@ -53,7 +53,7 @@ let effectsBasicsReducer = Reducer<
     state.count -= 1
     state.numberFact = nil
     // Return an effect that re-increments the count after 1 second.
-    return .task { @MainActor in
+    return .task {
       try? await environment.mainQueue.sleep(for: 1)
       return .incrementButtonTapped
     }
@@ -68,7 +68,7 @@ let effectsBasicsReducer = Reducer<
     state.numberFact = nil
     // Return an effect that fetches a number fact from the API and returns the
     // value back to the reducer's `numberFactResponse` action.
-    return .task { @MainActor [count = state.count] in
+    return .task { [count = state.count] in
       .numberFactResponse(
         await .init {
           try await environment.fact.fetch(count)

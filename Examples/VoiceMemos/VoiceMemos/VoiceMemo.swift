@@ -59,18 +59,18 @@ let voiceMemoReducer = Reducer<
     case .notPlaying:
       memo.mode = .playing(progress: 0)
 
-      return .run { @MainActor [url = memo.url] send in
+      return .run { [url = memo.url] send in
         let start = environment.mainRunLoop.now
 
         await withThrowingTaskGroup(of: Void.self) { group in
-          group.addTask { @MainActor in
+          group.addTask {
             for try await tick in environment.mainRunLoop.timer(interval: 0.5) {
-              send(.timerUpdated(tick.date.timeIntervalSince(start.date)))
+              await send(.timerUpdated(tick.date.timeIntervalSince(start.date)))
             }
           }
-          group.addTask { @MainActor in
-            send(
-              await .audioPlayerClient(.init { try await environment.audioPlayerClient.play(url) })
+          group.addTask {
+            await send(
+              .audioPlayerClient(.init { try await environment.audioPlayerClient.play(url) })
             )
           }
         }

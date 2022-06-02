@@ -68,14 +68,14 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
         url: url
       )
 
-      return .run { @MainActor send in
+      return .run { send in
         await withTaskGroup(of: Void.self) { group in
-          group.addTask { @MainActor in
+          group.addTask {
             await send(.audioRecorderDidFinish(.init { try await environment.audioRecorder.startRecording(url) }))
           }
-          group.addTask { @MainActor in
+          group.addTask {
             for await _ in environment.mainRunLoop.timer(interval: .seconds(1)) {
-              send(.currentRecordingTimerUpdated)
+              await send(.currentRecordingTimerUpdated)
             }
           }
         }
@@ -122,14 +122,14 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       return .none
 
     case .openSettingsButtonTapped:
-      return .fireAndForget { @MainActor in
+      return .fireAndForget { 
         await environment.openSettings()
       }
 
     case .recordButtonTapped:
       switch state.audioRecorderPermission {
       case .undetermined:
-        return .task { @MainActor in
+        return .task { 
           await .recordPermissionResponse(environment.audioRecorder.requestRecordPermission())
         }
 
@@ -149,9 +149,9 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
         case .recording:
           state.currentRecording?.mode = .encoding
 
-          return .run { @MainActor send in
+          return .run { send in
             if let currentTime = await environment.audioRecorder.currentTime() {
-              send(.finalRecordingTime(currentTime))
+              await send(.finalRecordingTime(currentTime))
             }
             await environment.audioRecorder.stopRecording()
           }

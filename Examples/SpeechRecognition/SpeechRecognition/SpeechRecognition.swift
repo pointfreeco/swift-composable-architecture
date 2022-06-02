@@ -38,7 +38,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
   case .recordButtonTapped:
     state.isRecording.toggle()
     if state.isRecording {
-      return .task { @MainActor in
+      return .task {
         .speechRecognizerAuthorizationStatusResponse(
           await environment.speechClient.requestAuthorization()
         )
@@ -70,16 +70,16 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
     switch status {
     case .authorized:
-      return .run { @MainActor send in
+      return .run { send in
         do {
           let request = SFSpeechAudioBufferRecognitionRequest()
           request.shouldReportPartialResults = true
           request.requiresOnDeviceRecognition = false
           for try await action in await environment.speechClient.recognitionTask(request) {
-            send(.speech(.success(action)))
+            await send(.speech(.success(action)))
           }
         } catch {
-          send(.speech(.failure(error)))
+          await send(.speech(.failure(error)))
         }
       }
 
