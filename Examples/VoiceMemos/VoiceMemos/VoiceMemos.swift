@@ -283,10 +283,7 @@ struct VoiceMemos_Previews: PreviewProvider {
           audioRecorder: .init(
             currentTime: { 10 },
             requestRecordPermission: { true },
-            startRecording: { _ in
-              try await Task.sleep(nanoseconds: NSEC_PER_SEC*NSEC_PER_SEC)
-              fatalError()
-            },
+            startRecording: { _ in try await Task.never() },
             stopRecording: { }
           ),
           mainRunLoop: .main,

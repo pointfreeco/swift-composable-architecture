@@ -587,7 +587,14 @@
       await task.value
     }
 
+    @available(*, deprecated)
     public var value: Void {
+      get async {
+        await self.task.value
+      }
+    }
+
+    public var finish: Void {
       get async {
         await self.task.value
       }

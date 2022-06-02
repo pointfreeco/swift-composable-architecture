@@ -56,6 +56,10 @@ public final actor SendableState<Value> {
     self.value = wrappedValue
     return returnValue
   }
+
+  public func set(_ value: Value) {
+    self.value = value
+  }
 }
 
 extension AsyncStream {
