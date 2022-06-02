@@ -30,7 +30,7 @@ struct VoiceMemosState: Equatable {
 
 enum VoiceMemosAction: Equatable {
   case alertDismissed
-  case audioRecorder(TaskResult<AudioRecorderClient.Action>)
+  case audioRecorderDidFinish(TaskResult<Bool>)
   case currentRecordingTimerUpdated
   case finalRecordingTime(TimeInterval)
   case openSettingsButtonTapped
@@ -57,7 +57,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
     }
   ),
   .init { state, action, environment in
-    enum TimerId {}
+    enum RecordId {}
 
     func startRecording() -> Effect<VoiceMemosAction, Never> {
       let url = environment.temporaryDirectory()
@@ -71,9 +71,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       return .run { @MainActor send in
         await withTaskGroup(of: Void.self) { group in
           group.addTask { @MainActor in
-            for await result in environment.audioRecorder.startRecording(url) {
-              send(.audioRecorder(result))
-            }
+            await send(.audioRecorderDidFinish(.init { try await environment.audioRecorder.startRecording(url) }))
           }
           group.addTask { @MainActor in
             for await _ in environment.mainRunLoop.timer(interval: .seconds(1)) {
@@ -82,7 +80,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
           }
         }
       }
-      .cancellable(id: Timer.self)
+      .cancellable(id: RecordId.self)
     }
 
     switch action {
@@ -90,7 +88,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       state.alert = nil
       return .none
 
-    case .audioRecorder(.success(.didFinishRecording(successfully: true))):
+    case .audioRecorderDidFinish(.success(true)):
       guard
         let currentRecording = state.currentRecording,
         currentRecording.mode == .encoding
@@ -108,13 +106,12 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
         ),
         at: 0
       )
-      return .none
+      return .cancel(id: RecordId.self)
 
-    case .audioRecorder(.success(.didFinishRecording(successfully: false))),
-      .audioRecorder(.failure):
+    case .audioRecorderDidFinish(.success(false)), .audioRecorderDidFinish(.failure):
       state.alert = .init(title: .init("Voice memo recording failed."))
       state.currentRecording = nil
-      return .cancel(id: TimerId.self)
+      return .cancel(id: RecordId.self)
 
     case .currentRecordingTimerUpdated:
       state.currentRecording?.duration += 1
@@ -152,15 +149,12 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
         case .recording:
           state.currentRecording?.mode = .encoding
 
-          return .concatenate(
-            .run { @MainActor send in
-              if let currentTime = await environment.audioRecorder.currentTime() {
-                send(.finalRecordingTime(currentTime))
-              }
-              await environment.audioRecorder.stopRecording()
-            },
-            .cancel(id: Timer.self) // TODO: move into .run somehow
-          )
+          return .run { @MainActor send in
+            if let currentTime = await environment.audioRecorder.currentTime() {
+              send(.finalRecordingTime(currentTime))
+            }
+            await environment.audioRecorder.stopRecording()
+          }
         }
       }
 
@@ -289,7 +283,10 @@ struct VoiceMemos_Previews: PreviewProvider {
           audioRecorder: .init(
             currentTime: { 10 },
             requestRecordPermission: { true },
-            startRecording: { _ in .init { _ in } },
+            startRecording: { _ in
+              try await Task.sleep(nanoseconds: NSEC_PER_SEC*NSEC_PER_SEC)
+              fatalError()
+            },
             stopRecording: { }
           ),
           mainRunLoop: .main,

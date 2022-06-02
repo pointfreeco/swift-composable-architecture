@@ -5,29 +5,80 @@ import ComposableArchitecture
 extension AudioRecorderClient {
   static var live: Self {
     actor AudioRecorder {
-      var delegate: AudioRecorderClientDelegate?
-      init(delegate: AudioRecorderClientDelegate? = nil) {
-        self.delegate = delegate
+      var delegate: Delegate?
+      var recorder: AVAudioRecorder?
+
+      init() {
       }
+
       var currentTime: TimeInterval? {
         guard
-          let delegate = self.delegate,
-          delegate.recorder.isRecording
+          let recorder = self.recorder,
+          recorder.isRecording
         else { return nil }
-        return delegate.recorder.currentTime
+        return recorder.currentTime
       }
+
       func stop() {
-        self.delegate?.recorder.stop()
+        self.recorder?.stop()
       }
-      func set(delegate: AudioRecorderClientDelegate?) {
-        self.delegate = delegate
-      }
-      func record() {
-        self.delegate?.recorder.record()
+
+      func start(url: URL) async throws -> Bool {
+        self.recorder?.stop()
+
+        let stream = AsyncThrowingStream<Bool, Error> { continuation in
+          do {
+            self.delegate = Delegate(
+              didFinishRecording: { flag in
+                continuation.yield(flag)
+                continuation.finish()
+                try? AVAudioSession.sharedInstance().setActive(false)
+              },
+              encodeErrorDidOccur: { error in
+                guard let error = error
+                else {
+                  continuation.finish(throwing: AudioRecorderClient.Failure.encodeErrorDidOccur)
+                  return
+                }
+                continuation.finish(throwing: error)
+                try? AVAudioSession.sharedInstance().setActive(false)
+              }
+            )
+            let recorder = try AVAudioRecorder(
+              url: url,
+              settings: [
+                AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
+                AVSampleRateKey: 44100,
+                AVNumberOfChannelsKey: 1,
+                AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue,
+              ])
+            self.recorder = recorder
+            recorder.delegate = self.delegate
+
+            continuation.onTermination = { [recorder = UncheckedSendable(wrappedValue: recorder)] _ in
+              recorder.wrappedValue.stop()
+            }
+
+            do {
+              try AVAudioSession.sharedInstance().setCategory(.record, mode: .default)
+              try AVAudioSession.sharedInstance().setActive(true)
+            } catch {
+              continuation.finish(throwing: error)
+              return
+            }
+
+            self.recorder?.record()
+          } catch {
+            continuation.finish(throwing: error)
+          }
+        }
+
+        guard let action = try await stream.first(where: { _ in true })
+        else { throw CancellationError() }
+        return action
       }
     }
 
-    var delegate: AudioRecorderClientDelegate?
     let audioRecorder = AudioRecorder()
 
     return Self(
@@ -40,53 +91,7 @@ extension AudioRecorderClient {
         }
       },
       startRecording: { url in
-        return .init { continuation in
-          Task {
-            // OK to put these in the task and not outside?
-            await audioRecorder.stop()
-            await audioRecorder.set(delegate: nil)
-
-            do {
-              try await audioRecorder.set(
-                delegate: .init(
-                  url: url,
-                  didFinishRecording: { flag in
-                    continuation.yield(.success(.didFinishRecording(successfully: flag)))
-                    // audioRecorder.set(delegate: nil)
-                    try? AVAudioSession.sharedInstance().setActive(false)
-                  },
-                  encodeErrorDidOccur: { error in
-                    guard let error = error
-                    else {
-                      continuation.yield(.failure(AudioRecorderClient.Failure.encodeErrorDidOccur))
-                      return
-                    }
-                    continuation.yield(.failure(error))
-                    // audioRecorder.set(delegate: nil)
-                    try? AVAudioSession.sharedInstance().setActive(false)
-                  }
-                )
-              )
-            } catch {
-              continuation.yield(.failure(error))
-              return
-            }
-
-            do {
-              try AVAudioSession.sharedInstance().setCategory(.record, mode: .default)
-              try AVAudioSession.sharedInstance().setActive(true)
-            } catch {
-              continuation.yield(.failure(error))
-              return
-            }
-
-            continuation.onTermination = { _ in
-              // TODO: what to do here?
-            }
-
-            await audioRecorder.record()
-          }
-        }
+        try await audioRecorder.start(url: url)
       },
       stopRecording: {
         await audioRecorder.stop()
@@ -96,28 +101,16 @@ extension AudioRecorderClient {
   }
 }
 
-private final class AudioRecorderClientDelegate: NSObject, AVAudioRecorderDelegate, Sendable {
-  @UncheckedSendable var recorder: AVAudioRecorder
+private final class Delegate: NSObject, AVAudioRecorderDelegate, Sendable {
   let didFinishRecording: @Sendable (Bool) -> Void
   let encodeErrorDidOccur: @Sendable (Error?) -> Void
 
   init(
-    url: URL,
     didFinishRecording: @escaping @Sendable (Bool) -> Void,
     encodeErrorDidOccur: @escaping @Sendable (Error?) -> Void
-  ) throws {
-    self.recorder = try AVAudioRecorder(
-      url: url,
-      settings: [
-        AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
-        AVSampleRateKey: 44100,
-        AVNumberOfChannelsKey: 1,
-        AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue,
-      ])
+  ) {
     self.didFinishRecording = didFinishRecording
     self.encodeErrorDidOccur = encodeErrorDidOccur
-    super.init()
-    self.recorder.delegate = self
   }
 
   func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {

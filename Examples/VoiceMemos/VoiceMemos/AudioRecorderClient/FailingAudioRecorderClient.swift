@@ -15,7 +15,8 @@ import XCTestDynamicOverlay
       },
       startRecording: { _ in
         XCTFail("AudioRecorderClient.startRecording")
-        return .init { _ in }
+        try await Task.sleep(nanoseconds: NSEC_PER_SEC * NSEC_PER_SEC)
+        fatalError()
       },
       stopRecording: {
         XCTFail("AudioRecorderClient.stopRecording")

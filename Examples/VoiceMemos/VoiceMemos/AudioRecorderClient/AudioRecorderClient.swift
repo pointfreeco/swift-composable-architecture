@@ -4,12 +4,8 @@ import Foundation
 struct AudioRecorderClient {
   var currentTime: @Sendable () async -> TimeInterval?
   var requestRecordPermission: @Sendable () async -> Bool
-  var startRecording: @Sendable (URL) -> AsyncStream<TaskResult<Action>>
+  var startRecording: @Sendable (URL) async throws -> Bool
   var stopRecording: @Sendable () async -> Void
-
-  enum Action: Equatable {
-    case didFinishRecording(successfully: Bool)
-  }
 
   enum Failure: Equatable, Error {
     case couldntCreateAudioRecorder

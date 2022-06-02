@@ -12,15 +12,16 @@ class VoiceMemosTests: XCTestCase {
     // NB: Combine's concatenation behavior is different in 13.3
     guard #available(iOS 13.4, *) else { return }
 
-    let (stream, continuation) = AsyncStream<TaskResult<AudioRecorderClient.Action>>.streamWithContinuation()
+    // TODO: CancellableAsyncValue instead of AsyncStream with first?
+    let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
 
     var environment = VoiceMemosEnvironment.failing
     environment.audioRecorder.currentTime = { 2.5 }
     environment.audioRecorder.requestRecordPermission = { true }
-    environment.audioRecorder.startRecording = { _ in stream }
+    environment.audioRecorder.startRecording = { _ in try await didFinish.stream.first { _ in true }! }
     environment.audioRecorder.stopRecording = {
-      continuation.yield(.success(.didFinishRecording(successfully: true)))
-      continuation.finish()
+      didFinish.continuation.yield(true)
+      didFinish.continuation.finish()
     }
     environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
     environment.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
@@ -57,7 +58,7 @@ class VoiceMemosTests: XCTestCase {
     await store.receive(.finalRecordingTime(2.5)) {
       $0.currentRecording?.duration = 2.5
     }
-    await store.receive(.audioRecorder(.success(.didFinishRecording(successfully: true)))) {
+    await store.receive(.audioRecorderDidFinish(.success(true))) {
       $0.currentRecording = nil
       $0.voiceMemos = [
         VoiceMemo(
@@ -69,7 +70,6 @@ class VoiceMemosTests: XCTestCase {
         )
       ]
     }
-//    await recordButtonTappedTask.cancel()
     await recordButtonTappedTask.value
   }
 
