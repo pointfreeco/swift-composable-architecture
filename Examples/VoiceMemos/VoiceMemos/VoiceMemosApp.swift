@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Foundation
 import SwiftUI
 
 @main
@@ -13,11 +14,11 @@ struct VoiceMemosApp: App {
             audioPlayer: .live,
             audioRecorder: .live,
             mainRunLoop: .main,
-            openSettings: .fireAndForget {
+            openSettings: { @MainActor in
               UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
             },
             temporaryDirectory: { URL(fileURLWithPath: NSTemporaryDirectory()) },
-            uuid: UUID.init
+            uuid: { UUID() }
           )
         )
       )

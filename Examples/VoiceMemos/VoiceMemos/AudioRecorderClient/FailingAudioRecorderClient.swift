@@ -1,13 +1,25 @@
 import ComposableArchitecture
 import Foundation
+import XCTestDynamicOverlay
 
 #if DEBUG
   extension AudioRecorderClient {
     static let failing = Self(
-      currentTime: { .failing("AudioRecorderClient.currentTime") },
-      requestRecordPermission: { .failing("AudioRecorderClient.requestRecordPermission") },
-      startRecording: { _ in .failing("AudioRecorderClient.startRecording") },
-      stopRecording: { .failing("AudioRecorderClient.stopRecording") }
+      currentTime: {
+        XCTFail("AudioRecorderClient.currentTime")
+        return nil
+      },
+      requestRecordPermission: {
+        XCTFail("AudioRecorderClient.requestRecordPermission")
+        return false
+      },
+      startRecording: { _ in
+        XCTFail("AudioRecorderClient.startRecording")
+        return .init { _ in }
+      },
+      stopRecording: {
+        XCTFail("AudioRecorderClient.stopRecording")
+      }
     )
   }
 #endif

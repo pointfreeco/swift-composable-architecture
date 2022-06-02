@@ -1,86 +1,110 @@
+@preconcurrency import Foundation
 import AVFoundation
 import ComposableArchitecture
 
 extension AudioRecorderClient {
   static var live: Self {
+    actor AudioRecorder {
+      var delegate: AudioRecorderClientDelegate?
+      init(delegate: AudioRecorderClientDelegate? = nil) {
+        self.delegate = delegate
+      }
+      var currentTime: TimeInterval? {
+        guard
+          let delegate = self.delegate,
+          delegate.recorder.isRecording
+        else { return nil }
+        return delegate.recorder.currentTime
+      }
+      func stop() {
+        self.delegate?.recorder.stop()
+      }
+      func set(delegate: AudioRecorderClientDelegate?) {
+        self.delegate = delegate
+      }
+      func record() {
+        self.delegate?.recorder.record()
+      }
+    }
+
     var delegate: AudioRecorderClientDelegate?
+    let audioRecorder = AudioRecorder()
 
     return Self(
-      currentTime: {
-        .result {
-          guard
-            let recorder = delegate?.recorder,
-            recorder.isRecording
-          else { return .success(nil) }
-          return .success(recorder.currentTime)
-        }
-      },
+      currentTime: { await audioRecorder.currentTime },
       requestRecordPermission: {
-        .future { callback in
+        await withUnsafeContinuation { continuation in
           AVAudioSession.sharedInstance().requestRecordPermission { granted in
-            callback(.success(granted))
+            continuation.resume(returning: granted)
           }
         }
       },
       startRecording: { url in
-        .future { callback in
-          delegate?.recorder.stop()
-          delegate = nil
-          do {
-            delegate = try AudioRecorderClientDelegate(
-              url: url,
-              didFinishRecording: { flag in
-                callback(.success(.didFinishRecording(successfully: flag)))
-                delegate = nil
-                try? AVAudioSession.sharedInstance().setActive(false)
-              },
-              encodeErrorDidOccur: { _ in
-                callback(.failure(.encodeErrorDidOccur))
-                delegate = nil
-                try? AVAudioSession.sharedInstance().setActive(false)
-              }
-            )
-          } catch {
-            callback(.failure(.couldntCreateAudioRecorder))
-            return
-          }
+        return .init { continuation in
+          Task {
+            // OK to put these in the task and not outside?
+            await audioRecorder.stop()
+            await audioRecorder.set(delegate: nil)
 
-          do {
-            try AVAudioSession.sharedInstance().setCategory(.record, mode: .default)
-          } catch {
-            callback(.failure(.couldntActivateAudioSession))
-            return
-          }
+            do {
+              try await audioRecorder.set(
+                delegate: .init(
+                  url: url,
+                  didFinishRecording: { flag in
+                    continuation.yield(.success(.didFinishRecording(successfully: flag)))
+                    // audioRecorder.set(delegate: nil)
+                    try? AVAudioSession.sharedInstance().setActive(false)
+                  },
+                  encodeErrorDidOccur: { error in
+                    guard let error = error
+                    else {
+                      continuation.yield(.failure(AudioRecorderClient.Failure.encodeErrorDidOccur))
+                      return
+                    }
+                    continuation.yield(.failure(error))
+                    // audioRecorder.set(delegate: nil)
+                    try? AVAudioSession.sharedInstance().setActive(false)
+                  }
+                )
+              )
+            } catch {
+              continuation.yield(.failure(error))
+              return
+            }
 
-          do {
-            try AVAudioSession.sharedInstance().setActive(true)
-          } catch {
-            callback(.failure(.couldntSetAudioSessionCategory))
-            return
-          }
+            do {
+              try AVAudioSession.sharedInstance().setCategory(.record, mode: .default)
+              try AVAudioSession.sharedInstance().setActive(true)
+            } catch {
+              continuation.yield(.failure(error))
+              return
+            }
 
-          delegate?.recorder.record()
+            continuation.onTermination = { _ in
+              // TODO: what to do here?
+            }
+
+            await audioRecorder.record()
+          }
         }
       },
       stopRecording: {
-        .fireAndForget {
-          delegate?.recorder.stop()
-          try? AVAudioSession.sharedInstance().setActive(false)
-        }
+        await audioRecorder.stop()
+        try? AVAudioSession.sharedInstance().setActive(false)
       }
     )
   }
 }
 
-private class AudioRecorderClientDelegate: NSObject, AVAudioRecorderDelegate {
-  let recorder: AVAudioRecorder
-  let didFinishRecording: (Bool) -> Void
-  let encodeErrorDidOccur: (Error?) -> Void
+private final class AudioRecorderClientDelegate: NSObject, AVAudioRecorderDelegate, Sendable {
+  @UncheckedSendable var recorder: AVAudioRecorder
+  let didFinishRecording: @Sendable (Bool) -> Void
+  let encodeErrorDidOccur: @Sendable (Error?) -> Void
 
   init(
     url: URL,
-    didFinishRecording: @escaping (Bool) -> Void,
-    encodeErrorDidOccur: @escaping (Error?) -> Void
+    didFinishRecording: @escaping @Sendable (Bool) -> Void,
+    encodeErrorDidOccur: @escaping @Sendable (Error?) -> Void
   ) throws {
     self.recorder = try AVAudioRecorder(
       url: url,
