@@ -39,7 +39,7 @@ enum VoiceMemosAction: Equatable {
   case voiceMemo(id: VoiceMemo.ID, action: VoiceMemoAction)
 }
 
-struct VoiceMemosEnvironment: Sendable {
+struct VoiceMemosEnvironment {
   var audioPlayer: AudioPlayerClient
   var audioRecorder: AudioRecorderClient
   var mainRunLoop: AnySchedulerOf<RunLoop>

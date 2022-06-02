@@ -1,5 +1,5 @@
 import Combine
-import ComposableArchitecture
+@preconcurrency import ComposableArchitecture  // FIXME
 import SwiftUI
 
 private let readMe = """
@@ -25,7 +25,7 @@ enum LongLivingEffectsAction {
   case userDidTakeScreenshotNotification
 }
 
-struct LongLivingEffectsEnvironment: Sendable {
+struct LongLivingEffectsEnvironment {
   var screenshots: @Sendable () async -> AsyncStream<Void>
 }
 

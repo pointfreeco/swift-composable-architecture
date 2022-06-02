@@ -149,9 +149,8 @@ import SwiftUI
     }
   }
 
-  // TODO: Should `Send` be `@MainActor`?
   @MainActor
-  public struct Send<Action>: Sendable {
+  public struct Send<Action> {
     let send: @Sendable (Action) -> Void
 
     public func callAsFunction(_ action: Action) {
@@ -164,6 +163,8 @@ import SwiftUI
       }
     }
   }
+
+  extension Send: Sendable where Action: Sendable {}
 
   extension Send where Action: BindableAction {
     public func callAsFunction<Value>(

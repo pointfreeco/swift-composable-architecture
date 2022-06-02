@@ -274,7 +274,7 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.refreshable,
       action: /RootAction.refreshable,
-      environment: { .init(fact: $0.fact) }
+      environment: { .init(fact: $0.fact, mainQueue: $0.mainQueue) }
     ),
   sharedStateReducer
     .pullback(
