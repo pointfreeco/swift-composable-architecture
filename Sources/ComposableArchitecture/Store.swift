@@ -417,14 +417,18 @@ public final class Store<State, Action> {
       }
     }
 
-    return Task { @MainActor in 
+    return Task { @MainActor in
       await withTaskCancellationHandler {
-        for task in tasks.wrappedValue {
-          task.cancel()
+        var index = tasks.wrappedValue.startIndex
+        while index < tasks.wrappedValue.endIndex {
+          defer { index += 1 }
+          tasks.wrappedValue[index].cancel()
         }
-      } operation: { 
-        for task in tasks.wrappedValue {
-          await task.value
+      } operation: {
+        var index = tasks.wrappedValue.startIndex
+        while index < tasks.wrappedValue.endIndex {
+          defer { index += 1 }
+          await tasks.wrappedValue[index].value
         }
       }
     }
