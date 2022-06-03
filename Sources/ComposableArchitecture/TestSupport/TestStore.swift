@@ -606,17 +606,16 @@
 
     public func cancel() async {
       self.task.cancel()
-      await task.value
+      await self.task.value
     }
 
-    @available(*, deprecated)
+    public func finish() async {
+      await self.task.value
+    }
+
+    // TODO: Should we delete this before merging?
+    @available(*, deprecated, renamed: "finish()")
     public var value: Void {
-      get async {
-        await self.task.value
-      }
-    }
-
-    public var finish: Void {
       get async {
         await self.task.value
       }

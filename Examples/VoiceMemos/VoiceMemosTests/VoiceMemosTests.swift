@@ -70,7 +70,7 @@ class VoiceMemosTests: XCTestCase {
         )
       ]
     }
-    await recordButtonTappedTask.finish
+    await recordButtonTappedTask.finish()
   }
 
   func testPermissionDenied() async {
