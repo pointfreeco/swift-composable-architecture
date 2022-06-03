@@ -130,10 +130,10 @@ extension Reducer {
       func assert(step: Step) {
         switch step.type {
         case let .send(action, update):
-          self.send(action, file: step.file, line: step.line, update)
+          self.send(action, update, file: step.file, line: step.line)
 
         case let .receive(expectedAction, update):
-          self.receive(expectedAction, file: step.file, line: step.line, update)
+          self.receive(expectedAction, update, file: step.file, line: step.line)
 
         case let .environment(work):
           if !self.receivedActions.isEmpty {
