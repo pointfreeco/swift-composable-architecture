@@ -40,7 +40,7 @@ import SwiftUI
     ) -> Self where Failure == Never {
       var task: Task<Void, Never>?
       return .future { callback in
-        task = Task(priority: priority) {
+        task = Task(priority: priority) { @MainActor in
           guard !Task.isCancelled else { return }
           let output = await operation()
           guard !Task.isCancelled else { return }
@@ -85,7 +85,7 @@ import SwiftUI
     ) -> Self where Failure == Error {
       Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
         let subject = PassthroughSubject<Output, Failure>()
-        let task = Task(priority: priority) {
+        let task = Task(priority: priority) { @MainActor in
           do {
             try Task.checkCancellation()
             let output = try await operation()
