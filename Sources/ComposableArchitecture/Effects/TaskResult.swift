@@ -42,7 +42,7 @@ extension TaskResult: Equatable where Success: Equatable {
     case let (.success(lhs), .success(rhs)):
       return lhs == rhs
     case let (.failure(lhs), .failure(rhs)):
-      return isEqual(lhs, rhs) || (lhs as NSError) == (rhs as NSError)
+      return isEqual(lhs, rhs) ?? ((lhs as NSError) == (rhs as NSError))
     default:
       return false
     }
@@ -60,9 +60,9 @@ extension TaskResult: Hashable where Success: Hashable {
   }
 }
 
-private func isEqual(_ a: Any, _ b: Any) -> Bool {
-  func `do`<A>(_: A.Type) -> Bool {
-    (Witness<A>.self as? AnyEquatable.Type)?.isEqual(a, b) ?? false
+private func isEqual(_ a: Any, _ b: Any) -> Bool? {
+  func `do`<A>(_: A.Type) -> Bool? {
+    (Witness<A>.self as? AnyEquatable.Type)?.isEqual(a, b)
   }
   return _openExistential(type(of: a), do: `do`)
 }

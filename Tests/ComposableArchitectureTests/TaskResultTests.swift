@@ -47,7 +47,6 @@ class TaskResultTests: XCTestCase {
       TaskResult<Never>.failure(Error.message("Something went wrong")),
       TaskResult<Never>.failure(Error.message("Something went wrong"))
     )
-    // TODO: why does this fail?
     XCTAssertNotEqual(
       TaskResult<Never>.failure(Error.message("Something went wrong")),
       TaskResult<Never>.failure(Error.message("Something else went wrong"))
