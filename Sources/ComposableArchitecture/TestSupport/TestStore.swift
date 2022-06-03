@@ -530,8 +530,8 @@
               """
           } else {
             let timeoutMessage = nanoseconds > 0
-              ? #"configure this assertion with an explicit "timeout"#
-              : #"try increasing the duration of "timeout"#
+              ? #"try increasing the duration of this assertion's "timeout"#
+              : #"configure this assertion with an explicit "timeout"#
             suggestion = """
               There are effects in-flight. If the effect that delivers this action uses a \
               scheduler (via "receive(on:)", "delay", "debounce", etc.), make sure that you wait \
