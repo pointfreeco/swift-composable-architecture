@@ -51,11 +51,11 @@ You can watch all of the episodes [here](https://www.pointfree.co/collections/co
 
 ## Examples
 
-[![Screen shots of example applications](https://d3rccdn33rt8ze.cloudfront.net/composable-architecture/demos.png)](./Examples)
+[![Screen shots of example applications](https://d3rccdn33rt8ze.cloudfront.net/composable-architecture/demos.png)](https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples)
 
-This repo comes with _lots_ of examples to demonstrate how to solve common and complex problems with the Composable Architecture. Check out [this](./Examples) directory to see them all, including:
+This repo comes with _lots_ of examples to demonstrate how to solve common and complex problems with the Composable Architecture. Check out [this](https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples) directory to see them all, including:
 
-* [Case Studies](./Examples/CaseStudies)
+* [Case Studies](https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/CaseStudies)
   * Getting started
   * Effects
   * Navigation
@@ -63,11 +63,11 @@ This repo comes with _lots_ of examples to demonstrate how to solve common and c
   * Reusable components
 * [Location manager](https://github.com/pointfreeco/composable-core-location/tree/main/Examples/LocationManager)
 * [Motion manager](https://github.com/pointfreeco/composable-core-motion/tree/main/Examples/MotionManager)
-* [Search](./Examples/Search)
-* [Speech Recognition](./Examples/SpeechRecognition)
-* [Tic-Tac-Toe](./Examples/TicTacToe)
-* [Todos](./Examples/Todos)
-* [Voice memos](./Examples/VoiceMemos)
+* [Search](https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/Search)
+* [Speech Recognition](https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/SpeechRecognition)
+* [Tic-Tac-Toe](https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/TicTacToe)
+* [Todos](https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/Todos)
+* [Voice memos](https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/VoiceMemos)
 
 Looking for something more substantial? Check out the source code for [isowords](https://github.com/pointfreeco/isowords), an iOS word search game built in SwiftUI and the Composable Architecture.
 
@@ -312,7 +312,7 @@ store.send(.factAlertDismissed) {
 }
 ```
 
-That is the basics of building and testing a feature in the Composable Architecture. There are _a lot_ more things to be explored, such as composition, modularity, adaptability, and complex effects. The [Examples](./Examples) directory has a bunch of projects to explore to see more advanced usages.
+That is the basics of building and testing a feature in the Composable Architecture. There are _a lot_ more things to be explored, such as composition, modularity, adaptability, and complex effects. The [Examples](https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples) directory has a bunch of projects to explore to see more advanced usages.
 
 ### Debugging
 
@@ -411,7 +411,7 @@ You can add ComposableArchitecture to an Xcode project by adding it as a package
   2. Enter "https://github.com/pointfreeco/swift-composable-architecture" into the package repository URL text field
   3. Depending on how your project is structured:
       - If you have a single application target that needs access to the library, then add **ComposableArchitecture** directly to your application.
-      - If you want to use this library from multiple Xcode targets, or mixing Xcode targets and SPM targets, you must create a shared framework that depends on **ComposableArchitecture** and then depend on that framework in all of your targets. For an example of this, check out the [Tic-Tac-Toe](./Examples/TicTacToe) demo application, which splits lots of features into modules and consumes the static library in this fashion using the **tic-tac-toe** Swift package.
+      - If you want to use this library from multiple Xcode targets, or mixing Xcode targets and SPM targets, you must create a shared framework that depends on **ComposableArchitecture** and then depend on that framework in all of your targets. For an example of this, check out the [Tic-Tac-Toe](https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/TicTacToe) demo application, which splits lots of features into modules and consumes the static library in this fashion using the **tic-tac-toe** Swift package.
 
 ## Documentation
 
@@ -517,4 +517,4 @@ There are also many architecture libraries in the Swift and iOS community. Each 
 
 ## License
 
-This library is released under the MIT license. See [LICENSE](LICENSE) for details.
+This library is released under the MIT license. See [LICENSE](https://github.com/pointfreeco/swift-composable-architecture/tree/main/LICENSE) for details.
