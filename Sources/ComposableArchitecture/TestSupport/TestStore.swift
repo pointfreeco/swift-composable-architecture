@@ -178,7 +178,7 @@
     private var inFlightEffects: Set<LongLivingEffect> = []
     var receivedActions: [(action: Action, state: State)] = []
     private let reducer: Reducer<State, Action, Environment>
-    private var state: State
+    public private(set) var state: State
     private var store: Store<State, TestAction>!
     private let toLocalState: (State) -> LocalState
 
@@ -358,8 +358,13 @@
         )
       }
       var expectedState = self.toLocalState(self.state)
+      let previousState = self.state
       let task = self.store.send(.init(origin: .send(action), file: file, line: line))
       do {
+        let currentState = self.state
+        self.state = previousState
+        defer { self.state = currentState }
+
         try self.expectedStateShouldChange(
           expected: &expectedState,
           update: update,

@@ -78,6 +78,7 @@ public struct WithViewStore<State, Action, Content> {
   }
 }
 
+// MARK: - View
 extension WithViewStore: View where Content: View {
   /// Initializes a structure that transforms a store into an observable view store in order to
   /// compute views from store state.
@@ -127,7 +128,7 @@ extension WithViewStore where State: Equatable, Content: View {
 
 extension WithViewStore where State == Void, Content: View {
   /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute views from equatable store state.
+  /// compute views from void store state.
   ///
   /// - Parameters:
   ///   - store: A store of equatable state.
@@ -150,10 +151,151 @@ extension WithViewStore: DynamicViewContent where State: Collection, Content: Dy
   }
 }
 
+// MARK: - AccessibilityRotorContent
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WithViewStore: AccessibilityRotorContent where Content: AccessibilityRotorContent {
+  /// Initializes a structure that transforms a store into an observable view store in order to
+  /// compute accessibility rotor content from store state.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
+  ///     equal, repeat view computations are removed,
+  ///   - content: A function that can generate content from a view store.
+  public init(
+    _ store: Store<State, Action>,
+    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.init(
+      store: store,
+      removeDuplicates: isDuplicate,
+      file: file,
+      line: line,
+      content: content
+    )
+  }
+  public var body: some AccessibilityRotorContent {
+    self._body
+  }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WithViewStore where State: Equatable, Content: AccessibilityRotorContent {
+  /// Initializes a structure that transforms a store into an observable view store in order to
+  /// compute accessibility rotor content from equatable store state.
+  ///
+  /// - Parameters:
+  ///   - store: A store of equatable state.
+  ///   - content: A function that can generate content from a view store.
+  public init(
+    _ store: Store<State, Action>,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+  }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WithViewStore where State == Void, Content: AccessibilityRotorContent {
+  /// Initializes a structure that transforms a store into an observable view store in order to
+  /// compute accessibility rotor content from void store state.
+  ///
+  /// - Parameters:
+  ///   - store: A store of equatable state.
+  ///   - content: A function that can generate content from a view store.
+  public init(
+    _ store: Store<State, Action>,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+  }
+}
+
+// MARK: - Commands
+@available(iOS 14.0, macOS 11.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension WithViewStore: Commands where Content: Commands {
+  /// Initializes a structure that transforms a store into an observable view store in order to
+  /// compute commands from store state.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
+  ///     equal, repeat view computations are removed,
+  ///   - content: A function that can generate content from a view store.
+  public init(
+    _ store: Store<State, Action>,
+    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.init(
+      store: store,
+      removeDuplicates: isDuplicate,
+      file: file,
+      line: line,
+      content: content
+    )
+  }
+  public var body: some Commands {
+    self._body
+  }
+}
+
+@available(iOS 14.0, macOS 11.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension WithViewStore where State: Equatable, Content: Commands {
+  /// Initializes a structure that transforms a store into an observable view store in order to
+  /// compute commands from equatable store state.
+  ///
+  /// - Parameters:
+  ///   - store: A store of equatable state.
+  ///   - content: A function that can generate content from a view store.
+  public init(
+    _ store: Store<State, Action>,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+  }
+}
+
+@available(iOS 14.0, macOS 11.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension WithViewStore where State == Void, Content: Commands {
+  /// Initializes a structure that transforms a store into an observable view store in order to
+  /// compute commands from void store state.
+  ///
+  /// - Parameters:
+  ///   - store: A store of equatable state.
+  ///   - content: A function that can generate content from a view store.
+  public init(
+    _ store: Store<State, Action>,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+  }
+}
+
+// MARK: - Scene
 @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension WithViewStore: Scene where Content: Scene {
   /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute views from store state.
+  /// compute scenes from store state.
   ///
   /// - Parameters:
   ///   - store: A store.
@@ -202,7 +344,7 @@ extension WithViewStore where State: Equatable, Content: Scene {
 @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension WithViewStore where State == Void, Content: Scene {
   /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute scenes from equatable store state.
+  /// compute scenes from void store state.
   ///
   /// - Parameters:
   ///   - store: A store of equatable state.
@@ -212,6 +354,73 @@ extension WithViewStore where State == Void, Content: Scene {
     file: StaticString = #fileID,
     line: UInt = #line,
     @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+  }
+}
+
+// MARK: - ToolbarContent
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+extension WithViewStore: ToolbarContent where Content: ToolbarContent {
+  /// Initializes a structure that transforms a store into an observable view store in order to
+  /// compute toolbar content from store state.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
+  ///     equal, repeat view computations are removed,
+  ///   - content: A function that can generate content from a view store.
+  public init(
+    _ store: Store<State, Action>,
+    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.init(
+      store: store,
+      removeDuplicates: isDuplicate,
+      file: file,
+      line: line,
+      content: content
+    )
+  }
+  public var body: some ToolbarContent {
+    self._body
+  }
+}
+
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+extension WithViewStore where State: Equatable, Content: ToolbarContent {
+  /// Initializes a structure that transforms a store into an observable view store in order to
+  /// compute toolbar content from equatable store state.
+  ///
+  /// - Parameters:
+  ///   - store: A store of equatable state.
+  ///   - content: A function that can generate content from a view store.
+  public init(
+    _ store: Store<State, Action>,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+  }
+}
+
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+extension WithViewStore where State == Void, Content: ToolbarContent {
+  /// Initializes a structure that transforms a store into an observable view store in order to
+  /// compute toolbar content from void store state.
+  ///
+  /// - Parameters:
+  ///   - store: A store of equatable state.
+  ///   - content: A function that can generate content from a view store.
+  public init(
+    _ store: Store<State, Action>,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
   ) {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
