@@ -336,7 +336,7 @@ public final class Store<State, Action> {
         defer { isSending = false }
         let task = self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
-        return .fireAndForget { await task.valueWithCancellation }
+        return .fireAndForget { await task.cancellableValue }
       },
       environment: ()
     )
@@ -561,29 +561,5 @@ public final class Store<State, Action> {
     #if DEBUG
       self.mainThreadChecksEnabled = mainThreadChecksEnabled
     #endif
-  }
-}
-
-extension Task where Failure == Error {
-  var valueWithCancellation: Success {
-    get async throws {
-      try await withTaskCancellationHandler {
-        self.cancel()
-      } operation: {
-        try await self.value
-      }
-    }
-  }
-}
-
-extension Task where Failure == Never {
-  var valueWithCancellation: Success {
-    get async {
-      await withTaskCancellationHandler {
-        self.cancel()
-      } operation: {
-        await self.value
-      }
-    }
   }
 }

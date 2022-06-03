@@ -357,22 +357,12 @@ private struct HashableWrapper<Value>: Hashable {
   extension ViewStore {
     @MainActor
     public func send(_ action: Action) async {
-      let task = self._send(action)
-      await withTaskCancellationHandler {
-        task.cancel()
-      } operation: {
-        await task.value
-      }
+      await self._send(action).cancellableValue
     }
 
     @MainActor
     public func send(_ action: Action, animation: Animation?) async {
-      let task = withAnimation(animation) { self._send(action) }
-      await withTaskCancellationHandler {
-        task.cancel()
-      } operation: {
-        await task.value
-      }
+      await withAnimation(animation) { self._send(action) }.cancellableValue
     }
 
     /// Sends an action into the store and then suspends while a piece of state is `true`.

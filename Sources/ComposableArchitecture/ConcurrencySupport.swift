@@ -1,25 +1,5 @@
 import Combine
 
-// NB: From SE-0302
-@propertyWrapper
-public struct UncheckedSendable<Wrapped> : @unchecked Sendable {
-  public var wrappedValue: Wrapped
-
-  public init(wrappedValue: Wrapped) {
-    self.wrappedValue = wrappedValue
-  }
-
-  public var unchecked: Wrapped {
-    _read { yield self.wrappedValue }
-    _modify { yield &self.wrappedValue }
-  }
-
-  public var projectedValue: Self {
-    get { self }
-    set { self = newValue }
-  }
-}
-
 @propertyWrapper
 public final class Box<Wrapped> {
   public var wrappedValue: Wrapped
@@ -59,6 +39,25 @@ public final actor SendableState<Value> {
 
   public func set(_ value: Value) {
     self.value = value
+  }
+}
+
+@propertyWrapper
+public struct UncheckedSendable<Wrapped> : @unchecked Sendable {
+  public var wrappedValue: Wrapped
+
+  public init(wrappedValue: Wrapped) {
+    self.wrappedValue = wrappedValue
+  }
+
+  public var unchecked: Wrapped {
+    _read { yield self.wrappedValue }
+    _modify { yield &self.wrappedValue }
+  }
+
+  public var projectedValue: Self {
+    get { self }
+    set { self = newValue }
   }
 }
 
@@ -129,5 +128,29 @@ extension Task where Failure == Never {
       return element
     }
     throw _Concurrency.CancellationError()
+  }
+}
+
+extension Task where Failure == Error {
+  var cancellableValue: Success {
+    get async throws {
+      try await withTaskCancellationHandler {
+        self.cancel()
+      } operation: {
+        try await self.value
+      }
+    }
+  }
+}
+
+extension Task where Failure == Never {
+  var cancellableValue: Success {
+    get async {
+      await withTaskCancellationHandler {
+        self.cancel()
+      } operation: {
+        await self.value
+      }
+    }
   }
 }
