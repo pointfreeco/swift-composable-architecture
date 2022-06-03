@@ -495,7 +495,7 @@
 
     public func receive(
       _ expectedAction: Action,
-      timeout nanoseconds: UInt64 = NSEC_PER_SEC, // TODO: Better default? Remove default?
+      timeout nanoseconds: UInt64 = 0, // TODO: Better default? Remove default?
       file: StaticString = #file,
       line: UInt = #line,
       _ update: ((inout LocalState) throws -> Void)? = nil
@@ -517,15 +517,19 @@
         }
 
         group.addTask { @MainActor in
-          try? await Task.sleep(nanoseconds: nanoseconds)
+          await Task(priority: .low) { try? await Task.sleep(nanoseconds: nanoseconds) }
+            .cancellableValue
           guard !Task.isCancelled
           else { return }
 
-          // TODO: finesse error message
           XCTFail(
-            """
+            nanoseconds > 0 ? """
             Expected to receive an action, but received none after waiting for \
             \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds.
+            """
+            : """
+            Expected to receive an action, but received none. Consider adding an explicit \
+            'timeout'.
             """,
             file: file,
             line: line

@@ -236,50 +236,7 @@ final class EffectTests: XCTestCase {
       XCTAssertNoDifference(result, 42)
     }
 
-    func testThrowingTask() {
-      let expectation = self.expectation(description: "Complete")
-      struct MyError: Error {}
-      var result: Error?
-      Effect<Int, Error>.task { 
-        expectation.fulfill()
-        throw MyError()
-      }
-      .sink(
-        receiveCompletion: {
-          switch $0 {
-          case .finished:
-            XCTFail()
-          case let .failure(error):
-            result = error
-          }
-        },
-        receiveValue: { _ in XCTFail() }
-      )
-      .store(in: &self.cancellables)
-      self.wait(for: [expectation], timeout: 1)
-      XCTAssertNotNil(result)
-    }
-
-    func testCancellingTask_Failable() {
-      @Sendable func work() async throws -> Int {
-        try await Task.sleep(nanoseconds: NSEC_PER_MSEC)
-        XCTFail()
-        return 42
-      }
-
-      Effect<Int, Error>.task { try await work() }
-        .sink(
-          receiveCompletion: { _ in XCTFail() },
-          receiveValue: { _ in XCTFail() }
-        )
-        .store(in: &self.cancellables)
-
-      self.cancellables = []
-
-      _ = XCTWaiter.wait(for: [.init()], timeout: 1.1)
-    }
-
-    func testCancellingTask_Infalable() {
+    func testCancellingTask_Infallible() {
       @Sendable func work() async -> Int {
         do {
           try await Task.sleep(nanoseconds: NSEC_PER_MSEC)

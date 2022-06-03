@@ -83,7 +83,7 @@ class TestStoreTests: XCTestCase {
     )
 
     store.send(.tap)
-    await store.receive(.response(42)) {
+    await store.receive(.response(42), timeout: 2_000_000) {
       $0 = 42
     }
   }
