@@ -392,18 +392,25 @@ public final class Store<State, Action> {
 
       var didComplete = false
       let uuid = UUID()
-      effectCancellable.wrappedValue = effect.sink(
-        receiveCompletion: { [weak self] _ in
-          self?.threadCheck(status: .effectCompletion(action))
-          task.cancel()
-          didComplete = true
-          self?.effectCancellables[uuid] = nil
-        },
-        receiveValue: { [weak self] effectAction in
-          guard let self = self else { return }
-          tasks.wrappedValue.append(self.send(effectAction, originatingFrom: action))
-        }
-      )
+      effectCancellable.wrappedValue = effect
+        .handleEvents(
+          receiveCancel: { [weak self] in
+            self?.threadCheck(status: .effectCompletion(action))
+            self?.effectCancellables[uuid] = nil
+          }
+        )
+        .sink(
+          receiveCompletion: { [weak self] _ in
+            self?.threadCheck(status: .effectCompletion(action))
+            task.cancel()
+            didComplete = true
+            self?.effectCancellables[uuid] = nil
+          },
+          receiveValue: { [weak self] effectAction in
+            guard let self = self else { return }
+            tasks.wrappedValue.append(self.send(effectAction, originatingFrom: action))
+          }
+        )
 
       if !didComplete {
         self.effectCancellables[uuid] = effectCancellable.wrappedValue
