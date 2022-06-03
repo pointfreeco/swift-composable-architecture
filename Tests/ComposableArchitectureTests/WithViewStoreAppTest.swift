@@ -22,8 +22,12 @@ struct TestApp: App {
         checkAccessibilityRotor()
         checkToolbar()
       }
-    }#if os(iOS) || os(macOS)
-      .commands {
+    }
+  }
+
+  #if os(iOS) || os(macOS)
+    var commands: some Scene {
+      self.body.commands {
         WithViewStore(self.store) { viewStore in
           CommandMenu("Commands") {
             Button("Increment") {
@@ -32,8 +36,8 @@ struct TestApp: App {
           }
         }
       }
-    #endif
-  }
+    }
+  #endif
 
   @ViewBuilder
   func checkToolbar() -> some View {
