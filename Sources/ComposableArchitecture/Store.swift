@@ -417,7 +417,7 @@ public final class Store<State, Action> {
       }
     }
 
-    return Task { 
+    return Task { @MainActor in 
       await withTaskCancellationHandler {
         for task in tasks.wrappedValue {
           task.cancel()
