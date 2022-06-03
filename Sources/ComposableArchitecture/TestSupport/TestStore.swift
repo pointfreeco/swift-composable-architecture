@@ -522,14 +522,34 @@
           guard !Task.isCancelled
           else { return }
 
+          let timeoutMessage = nanoseconds > 0
+          ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds"
+          : ""
+
+          let suggestion: String
+          if self.inFlightEffects.isEmpty {
+            suggestion = """
+              There are no in-flight effects that could deliver this action. Could the effect you \
+              expected to deliver this action have been cancelled?
+              """
+          } else {
+            suggestion = """
+              There are effects in-flight. If the effect that delivers this action uses a \
+              scheduler (via "receive(on:)", "delay", "debounce", etc.), make sure that you wait \
+              enough time for the scheduler to perform the effect. If you are using a test \
+              scheduler, advance the scheduler so that the effects may complete, or consider using \
+              an immediate scheduler to immediately perform the effect instead.
+
+              If you are not yet using a scheduler, or can not use a scheduler, configure this \
+              assertion with an explicit "timeout".
+              """
+          }
+
           XCTFail(
-            nanoseconds > 0 ? """
-            Expected to receive an action, but received none after waiting for \
-            \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds.
             """
-            : """
-            Expected to receive an action, but received none. Consider adding an explicit \
-            'timeout'.
+            Expected to receive an action, but received none\(timeoutMessage).
+
+            \(suggestion)
             """,
             file: file,
             line: line
