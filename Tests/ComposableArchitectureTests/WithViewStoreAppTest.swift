@@ -6,7 +6,7 @@ import SwiftUI
 @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 struct TestApp: App {
   @Namespace var namespace
-  
+
   let store = Store(
     initialState: 0,
     reducer: Reducer<Int, Void, Void> { state, _, _ in
@@ -22,20 +22,19 @@ struct TestApp: App {
         checkAccessibilityRotor()
         checkToolbar()
       }
-    }
-    #if os(iOS) || os(macOS)
-    .commands {
-      WithViewStore(self.store) { viewStore in
-        CommandMenu("Commands") {
-          Button("Increment") {
-            viewStore.send(())
+    }#if os(iOS) || os(macOS)
+      .commands {
+        WithViewStore(self.store) { viewStore in
+          CommandMenu("Commands") {
+            Button("Increment") {
+              viewStore.send(())
+            }
           }
         }
       }
-    }
     #endif
   }
-  
+
   @ViewBuilder
   func checkToolbar() -> some View {
     Color.clear
