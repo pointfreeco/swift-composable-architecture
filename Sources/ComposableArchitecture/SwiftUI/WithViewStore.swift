@@ -78,6 +78,79 @@ public struct WithViewStore<State, Action, Content> {
   }
 }
 
+// MARK: - View
+extension WithViewStore: View where Content: View {
+  /// Initializes a structure that transforms a store into an observable view store in order to
+  /// compute views from store state.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
+  ///     equal, repeat view computations are removed,
+  ///   - content: A function that can generate content from a view store.
+  public init(
+    _ store: Store<State, Action>,
+    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.init(
+      store: store,
+      removeDuplicates: isDuplicate,
+      file: file,
+      line: line,
+      content: content
+    )
+  }
+
+  public var body: Content {
+    self._body
+  }
+}
+
+extension WithViewStore where State: Equatable, Content: View {
+  /// Initializes a structure that transforms a store into an observable view store in order to
+  /// compute views from equatable store state.
+  ///
+  /// - Parameters:
+  ///   - store: A store of equatable state.
+  ///   - content: A function that can generate content from a view store.
+  public init(
+    _ store: Store<State, Action>,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+  }
+}
+
+extension WithViewStore where State == Void, Content: View {
+  /// Initializes a structure that transforms a store into an observable view store in order to
+  /// compute views from void store state.
+  ///
+  /// - Parameters:
+  ///   - store: A store of equatable state.
+  ///   - content: A function that can generate content from a view store.
+  public init(
+    _ store: Store<State, Action>,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+  }
+}
+
+extension WithViewStore: DynamicViewContent where State: Collection, Content: DynamicViewContent {
+  public typealias Data = State
+
+  public var data: State {
+    self.viewStore.state
+  }
+}
+
 // MARK: - AccessibilityRotorContent
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WithViewStore: AccessibilityRotorContent where Content: AccessibilityRotorContent {
@@ -350,78 +423,5 @@ extension WithViewStore where State == Void, Content: ToolbarContent {
     @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
   ) {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
-  }
-}
-
-// MARK: - View
-extension WithViewStore: View where Content: View {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute views from store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store.
-  ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
-  ///     equal, repeat view computations are removed,
-  ///   - content: A function that can generate content from a view store.
-  public init(
-    _ store: Store<State, Action>,
-    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
-    self.init(
-      store: store,
-      removeDuplicates: isDuplicate,
-      file: file,
-      line: line,
-      content: content
-    )
-  }
-
-  public var body: Content {
-    self._body
-  }
-}
-
-extension WithViewStore where State: Equatable, Content: View {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute views from equatable store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  public init(
-    _ store: Store<State, Action>,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
-  }
-}
-
-extension WithViewStore where State == Void, Content: View {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute views from void store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  public init(
-    _ store: Store<State, Action>,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
-  }
-}
-
-extension WithViewStore: DynamicViewContent where State: Collection, Content: DynamicViewContent {
-  public typealias Data = State
-
-  public var data: State {
-    self.viewStore.state
   }
 }
