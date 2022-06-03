@@ -123,9 +123,8 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       switch state.audioRecorderPermission {
       case .undetermined:
         return environment.audioRecorder.requestRecordPermission()
-          .map(VoiceMemosAction.recordPermissionResponse)
           .receive(on: environment.mainRunLoop)
-          .eraseToEffect()
+          .eraseToEffect(VoiceMemosAction.recordPermissionResponse)
 
       case .denied:
         state.alert = .init(title: .init("Permission is required to record voice memos."))
@@ -147,8 +146,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
 
             environment.audioRecorder.currentTime()
               .compactMap { $0 }
-              .map(VoiceMemosAction.finalRecordingTime)
-              .eraseToEffect(),
+              .eraseToEffect(VoiceMemosAction.finalRecordingTime),
 
             environment.audioRecorder.stopRecording().fireAndForget()
           )
