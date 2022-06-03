@@ -99,19 +99,21 @@
   ///
   /// struct SearchEnvironment {
   ///   var mainQueue: AnySchedulerOf<DispatchQueue>
-  ///   var request: (String) -> Effect<[String], Never>
+  ///   var request: (String) async throws -> [String]
   /// }
   ///
   /// let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
   ///   state, action, environment in
-  ///
-  ///     enum SearchId {}
-  ///
   ///     switch action {
   ///     case let .queryChanged(query):
+  ///       enum SearchId {}
+  ///
   ///       state.query = query
-  ///       return environment.request(self.query)
-  ///         .debounce(id: SearchId.self, for: 0.5, scheduler: environment.mainQueue)
+  ///       return .run { send in
+  ///         guard let results = try? await environment.request(query) else { return }
+  ///         send(.response(results))
+  ///       }
+  ///       .debounce(id: SearchId.self, for: 0.5, scheduler: environment.mainQueue)
   ///
   ///     case let .response(results):
   ///       state.results = results
@@ -133,7 +135,7 @@
   ///     // Wrap the test scheduler in a type-erased scheduler
   ///     mainQueue: scheduler.eraseToAnyScheduler(),
   ///     // Simulate a search response with one item
-  ///     request: { _ in Effect(value: ["Composable Architecture"]) }
+  ///     request: { ["Composable Architecture"] }
   ///   )
   /// )
   ///
@@ -144,7 +146,7 @@
   /// }
   ///
   /// // Advance the scheduler by a period shorter than the debounce
-  /// scheduler.advance(by: 0.25)
+  /// await scheduler.advance(by: 0.25)
   ///
   /// // Change the query again
   /// store.send(.searchFieldChanged("co") {
@@ -152,12 +154,12 @@
   /// }
   ///
   /// // Advance the scheduler by a period shorter than the debounce
-  /// scheduler.advance(by: 0.25)
+  /// await scheduler.advance(by: 0.25)
   /// // Advance the scheduler to the debounce
-  /// scheduler.advance(by: 0.25)
+  /// await scheduler.advance(by: 0.25)
   ///
   /// // Assert that the expected response is received
-  /// store.receive(.response(["Composable Architecture"])) {
+  /// await store.receive(.response(["Composable Architecture"])) {
   ///   // Assert that state updates accordingly
   ///   $0.results = ["Composable Architecture"]
   /// }
