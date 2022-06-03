@@ -125,7 +125,7 @@ class SearchTests: XCTestCase {
             temperatureMaxUnit: "°F",
             temperatureMin: 80,
             temperatureMinUnit: "°F"
-          )
+          ),
         ]
       )
     }
@@ -187,7 +187,7 @@ class SearchTests: XCTestCase {
             temperatureMaxUnit: "°F",
             temperatureMin: 80,
             temperatureMinUnit: "°F"
-          )
+          ),
         ]
       )
     }
