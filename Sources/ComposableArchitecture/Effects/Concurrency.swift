@@ -8,17 +8,42 @@ import SwiftUI
     /// This function is useful for executing work in an asynchronous context and capture the
     /// result in an ``Effect`` so that the reducer, a non-asynchronous context, can process it.
     ///
-    /// ```swift
-    /// Effect.task {
-    ///   guard case let .some((data, _)) = try? await URLSession.shared
-    ///     .data(from: .init(string: "http://numbersapi.com/42")!)
-    ///   else {
-    ///     return "Could not load"
-    ///   }
+    /// For example, if your environment contains a dependency that exposes an `async` function,
+    /// you can use ``Effect/task(priority:operation:)-4llhw`` to provide an asynchronous context
+    /// for invoking that endpoint:
     ///
-    ///   return String(decoding: data, as: UTF8.self)
+    /// ```swift
+    /// struct FeatureEnvironment {
+    ///   var numberFact: @Sendable (Int) async throws -> String
+    /// }
+    ///
+    /// enum FeatureAction {
+    ///   case factButtonTapped
+    ///   case faceResponse(TaskResult<String>)
+    /// }
+    ///
+    /// let featureReducer = Reducer<State, Action, Environment> { state, action, environment in
+    ///   switch action {
+    ///     case .factButtonTapped:
+    ///       return .task {
+    ///         await .factResponse(.init { try await environment.numberFact(state.number) })
+    ///       }
+    ///
+    ///     case .factResponse(.success(fact)):
+    ///       // do something with fact
+    ///
+    ///     case .factResponse(.failure):
+    ///       // handle error
+    ///
+    ///     ...
+    ///   }
     /// }
     /// ```
+    ///
+    /// Note that the operation provided to ``Effect/task(priority:operation:)-4llhw`` cannot throw
+    /// and so you must either handle errors directly in the closure or use the catching initializer
+    /// of ``TaskResult/init(catching:)`` to package the response into a ``TaskResult`` and send
+    /// it back into the system via an action.
     ///
     /// - Parameters:
     ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
@@ -65,7 +90,8 @@ import SwiftUI
     }
 
     /// Creates an effect that executes some work in the real world that doesn't need to feed data
-    /// back into the store. If an error is thrown, the effect will complete and the error will be ignored.
+    /// back into the store. If an error is thrown, the effect will complete and the error will be
+    /// ignored.
     ///
     /// - Parameters:
     ///   - priority: Priority of the underlying task. If `nil`, the priority will come from

@@ -93,8 +93,7 @@ struct RootEnvironment {
     mainQueue: .main,
     screenshots: { @MainActor in
       .init(
-        NotificationCenter
-          .default
+        NotificationCenter.default
           .notifications(named: UIApplication.userDidTakeScreenshotNotification)
           .map { _ in }
       )

@@ -88,7 +88,7 @@ fetch a number fact we can model an async throwing function from `Int` to `Strin
 
 ```swift
 struct AppEnvironment {
-  var numberFact: (Int) async throws -> String
+  var numberFact: @Sendable (Int) async throws -> String
 }
 ```
 

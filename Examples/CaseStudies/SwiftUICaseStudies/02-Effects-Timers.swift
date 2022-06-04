@@ -39,14 +39,10 @@ let timersReducer = Reducer<TimersState, TimersAction, TimersEnvironment> {
   case .toggleTimerButtonTapped:
     state.isTimerActive.toggle()
     return state.isTimerActive
-      ? Effect.timer(
-        id: TimerId.self,
-        every: 1,
-        tolerance: .zero,
-        on: environment.mainQueue.animation(.interpolatingSpring(stiffness: 3000, damping: 40))
-      )
+    ? Effect.timer(id: TimerId.self, every: 1, on: environment.mainQueue)
+      .animation(.interpolatingSpring(stiffness: 3000, damping: 40))
       .map { _ in TimersAction.timerTicked }
-      : .cancel(id: TimerId.self)
+    : .cancel(id: TimerId.self)
   }
 }
 

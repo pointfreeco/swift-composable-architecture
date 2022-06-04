@@ -110,7 +110,7 @@ Next we model the environment of dependencies this feature needs to do its job. 
 
 ```swift
 struct AppEnvironment {
-  var numberFact: (Int) async throws -> String
+  var numberFact: @Sendable (Int) async throws -> String
 }
 ```
 

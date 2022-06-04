@@ -30,7 +30,7 @@ enum WebSocketAction: Equatable {
   case messageToSendChanged(String)
   case receivedSocketMessage(TaskResult<WebSocketClient.Message>)
   case sendButtonTapped
-  case sendResponse(TaskResult<EquatableVoid>)
+  case sendResponse(didSucceed: Bool)
   case webSocket(WebSocketClient.Action)
 }
 
@@ -102,17 +102,20 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
     let messageToSend = state.messageToSend
     state.messageToSend = ""
     return .task {
-      .sendResponse(await .init {
+      do {
         try await environment.webSocket.send(WebSocketId.self, .string(messageToSend))
-      })
+        return .sendResponse(didSucceed: true)
+      } catch {
+        return .sendResponse(didSucceed: false)
+      }
     }
     .cancellable(id: WebSocketId.self)
 
-  case .sendResponse(.failure):
+  case .sendResponse(didSucceed: false):
     state.alert = .init(title: .init("Could not send socket message. Try again."))
     return .none
 
-  case .sendResponse(.success):
+  case .sendResponse(didSucceed: true):
     return .none
 
   case .webSocket(.didClose):

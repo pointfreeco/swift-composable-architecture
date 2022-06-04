@@ -43,7 +43,7 @@ private struct AnimatedPublisher<Upstream: Publisher>: Publisher {
     let animation: Animation?
 
     init(downstream: Downstream, animation: Animation?) {
-      self.self.downstream = downstream
+      self.downstream = downstream
       self.animation = animation
     }
 

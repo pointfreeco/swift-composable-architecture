@@ -47,7 +47,7 @@ class WebSocketTests: XCTestCase {
     store.send(.sendButtonTapped) {
       $0.messageToSend = ""
     }
-    await store.receive(.sendResponse(.success(.init())))
+    await store.receive(.sendResponse(didSucceed: true))
 
     // Receive a message
     messages.continuation.yield(.success(.string("Hi")))
@@ -68,8 +68,10 @@ class WebSocketTests: XCTestCase {
     var webSocket = WebSocketClient.failing
     webSocket.open = { _, _, _ in actions.stream }
     webSocket.receive = { _ in messages.stream }
-    struct SendFailure: Error, Equatable {}
-    webSocket.send = { _, _ in throw SendFailure() }
+    webSocket.send = { _, _ in
+      struct SendFailure: Error, Equatable {}
+      throw SendFailure()
+    }
     webSocket.sendPing = { _ in try await Task.never() }
 
     let store = TestStore(
@@ -97,7 +99,7 @@ class WebSocketTests: XCTestCase {
     store.send(.sendButtonTapped) {
       $0.messageToSend = ""
     }
-    await store.receive(.sendResponse(.failure(SendFailure()))) {
+    await store.receive(.sendResponse(didSucceed: false)) {
       $0.alert = .init(title: .init("Could not send socket message. Try again."))
     }
 
