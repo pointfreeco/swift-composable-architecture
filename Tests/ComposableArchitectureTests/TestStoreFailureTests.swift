@@ -21,7 +21,8 @@ class TestStoreFailureTests: XCTestCase {
       $0.compactDescription == """
         Expected state to change, but no change occurred.
 
-        The trailing closure made no observable modifications to state. If no change to state is expected, omit the trailing closure.
+        The trailing closure made no observable modifications to state. If no change to state is \
+        expected, omit the trailing closure.
         """
     }
 
@@ -31,7 +32,8 @@ class TestStoreFailureTests: XCTestCase {
       $0.compactDescription == """
         Expected state to change, but no change occurred.
 
-        The trailing closure made no observable modifications to state. If no change to state is expected, omit the trailing closure.
+        The trailing closure made no observable modifications to state. If no change to state is \
+        expected, omit the trailing closure.
         """
     }
   }
@@ -50,8 +52,8 @@ class TestStoreFailureTests: XCTestCase {
       $0.compactDescription == """
         A state change does not match expectation: …
 
-            − TestStoreTests.State(count: 0)
-            + TestStoreTests.State(count: 1)
+            − TestStoreFailureTests.State(count: 0)
+            + TestStoreFailureTests.State(count: 1)
 
         (Expected: −, Actual: +)
         """
@@ -79,7 +81,7 @@ class TestStoreFailureTests: XCTestCase {
         The store received 1 unexpected action after this one: …
 
         Unhandled actions: [
-          [0]: TestStoreTests.Action.second
+          [0]: TestStoreFailureTests.Action.second
         ]
         """
     }
@@ -99,13 +101,22 @@ class TestStoreFailureTests: XCTestCase {
       }
     } issueMatcher: {
       $0.compactDescription == """
-        An effect returned for this action is still running. It must complete before the end of the test. …
+        An effect returned for this action is still running. It must complete before the end of the \
+        test. …
 
-        To fix, inspect any effects the reducer returns for this action and ensure that all of them complete by the end of the test. There are a few reasons why an effect may not have completed:
+        To fix, inspect any effects the reducer returns for this action and ensure that all of \
+        them complete by the end of the test. There are a few reasons why an effect may not have \
+        completed:
 
-        • If an effect uses a scheduler (via "receive(on:)", "delay", "debounce", etc.), make sure that you wait enough time for the scheduler to perform the effect. If you are using a test scheduler, advance the scheduler so that the effects may complete, or consider using an immediate scheduler to immediately perform the effect instead.
+        • If an effect uses a scheduler (via "receive(on:)", "delay", "debounce", etc.), make sure \
+        that you wait enough time for the scheduler to perform the effect. If you are using a test \
+        scheduler, advance the scheduler so that the effects may complete, or consider using an \
+        immediate scheduler to immediately perform the effect instead.
 
-        • If you are returning a long-living effect (timers, notifications, subjects, etc.), then make sure those effects are torn down by marking the effect ".cancellable" and returning a corresponding cancellation effect ("Effect.cancel") from another action, or, if your effect is driven by a Combine subject, send it a completion.
+        • If you are returning a long-living effect (timers, notifications, subjects, etc.), then \
+        make sure those effects are torn down by marking the effect ".cancellable" and returning a \
+        corresponding cancellation effect ("Effect.cancel") from another action, or, if your \
+        effect is driven by a Combine subject, send it a completion.
         """
     }
   }
@@ -133,7 +144,7 @@ class TestStoreFailureTests: XCTestCase {
         Must handle 1 received action before sending an action: …
 
         Unhandled actions: [
-          [0]: TestStoreTests.Action.second
+          [0]: TestStoreFailureTests.Action.second
         ]
         """
     }
@@ -174,8 +185,8 @@ class TestStoreFailureTests: XCTestCase {
       issue.compactDescription == """
         Received unexpected action: …
 
-            − TestStoreTests.Action.first
-            + TestStoreTests.Action.second
+            − TestStoreFailureTests.Action.first
+            + TestStoreFailureTests.Action.second
 
         (Expected: −, Received: +)
         """
