@@ -33,17 +33,17 @@ import SwiftUI
     /// - Returns: An effect wrapping the given asynchronous work.
     @available(
       *,
-      deprecated,
-      message: "Use the non-throwing version of 'Effect.task' and catch errors explicitly"
+       deprecated,
+       message: "Use the non-throwing version of 'Effect.task' and catch errors explicitly"
     )
     public static func task(
       priority: TaskPriority? = nil,
-      operation: @escaping @Sendable () async -> Output
-    ) -> Self where Failure == Never {
-      var task: Task<Void, Never>?
-      return .future { callback in
-        task = Task(priority: priority) { @MainActor in
-          guard !Task.isCancelled else { return }
+      operation: @escaping @Sendable () async throws -> Output
+    ) -> Self {
+      Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
+        let subject = PassthroughSubject<Output, Failure>()
+        let task = Task(priority: priority) { @MainActor in
+          do {
             try Task.checkCancellation()
             let output = try await operation()
             try Task.checkCancellation()
@@ -57,6 +57,7 @@ import SwiftUI
         }
         return subject.handleEvents(receiveCancel: task.cancel)
       }
+      .eraseToEffect()
     }
   }
 

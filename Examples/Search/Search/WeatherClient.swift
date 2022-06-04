@@ -38,10 +38,8 @@ struct Forecast: Decodable, Equatable {
 // This allows the search feature to compile faster since it only depends on the interface.
 
 struct WeatherClient {
-  var forecast: (Search.Result) -> Effect<Forecast, Failure>
-  var search: (String) -> Effect<Search, Failure>
-
-  struct Failure: Error, Equatable {}
+  var forecast: @Sendable (Search.Result) async throws -> Forecast
+  var search: @Sendable (String) async throws -> Search
 }
 
 // MARK: - Live API implementation
@@ -57,21 +55,15 @@ extension WeatherClient {
         .init(name: "timezone", value: TimeZone.autoupdatingCurrent.identifier),
       ]
 
-      return URLSession.shared.dataTaskPublisher(for: components.url!)
-        .map { data, _ in data }
-        .decode(type: Forecast.self, decoder: jsonDecoder)
-        .mapError { _ in Failure() }
-        .eraseToEffect()
+      let (data, _) = try await URLSession.shared.data(from: components.url!)
+      return try jsonDecoder.decode(Forecast.self, from: data)
     },
     search: { query in
       var components = URLComponents(string: "https://geocoding-api.open-meteo.com/v1/search")!
       components.queryItems = [.init(name: "name", value: query)]
 
-      return URLSession.shared.dataTaskPublisher(for: components.url!)
-        .map { data, _ in data }
-        .decode(type: Search.self, decoder: jsonDecoder)
-        .mapError { _ in Failure() }
-        .eraseToEffect()
+      let (data, _) = try await URLSession.shared.data(from: components.url!)
+      return try jsonDecoder.decode(Search.self, from: data)
     }
   )
 }
@@ -79,9 +71,13 @@ extension WeatherClient {
 // MARK: - Mock API implementations
 
 extension WeatherClient {
+  private struct Unimplemented: Error {
+    let endpoint: String
+  }
+
   static let failing = Self(
-    forecast: { _ in .failing("\(Self.self).forecast") },
-    search: { _ in .failing("\(Self.self).search") }
+    forecast: { _ in throw Unimplemented(endpoint: "forecast") },
+    search: { _ in throw Unimplemented(endpoint: "search") }
   )
 }
 

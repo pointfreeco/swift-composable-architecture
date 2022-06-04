@@ -30,9 +30,9 @@ struct SearchState: Equatable {
 }
 
 enum SearchAction: Equatable {
-  case forecastResponse(Search.Result.ID, Result<Forecast, WeatherClient.Failure>)
+  case forecastResponse(Search.Result.ID, TaskResult<Forecast>)
   case searchQueryChanged(String)
-  case searchResponse(Result<Search, WeatherClient.Failure>)
+  case searchResponse(TaskResult<Search>)
   case searchResultTapped(Search.Result)
 }
 
@@ -80,10 +80,12 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
       return .cancel(id: SearchLocationId.self)
     }
 
-    return environment.weatherClient
-      .search(query)
-      .debounce(id: SearchLocationId.self, for: 0.3, scheduler: environment.mainQueue)
-      .catchToEffect(SearchAction.searchResponse)
+    return .task {
+      await .searchResponse(
+        .init { try await environment.weatherClient.search(query) }
+      )
+    }
+    .debounce(id: SearchLocationId.self, for: 0.3, scheduler: environment.mainQueue)
 
   case .searchResponse(.failure):
     state.results = []
@@ -98,12 +100,13 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
 
     state.resultForecastRequestInFlight = location
 
-    return environment.weatherClient
-      .forecast(location)
-      .receive(on: environment.mainQueue)
-      .catchToEffect()
-      .map { .forecastResponse(location.id, $0) }
-      .cancellable(id: SearchWeatherId.self, cancelInFlight: true)
+    return .task {
+      await .forecastResponse(
+        location.id,
+        .init { try await environment.weatherClient.forecast(location) }
+      )
+    }
+    .cancellable(id: SearchWeatherId.self, cancelInFlight: true)
   }
 }
 
@@ -215,8 +218,8 @@ struct SearchView_Previews: PreviewProvider {
       reducer: searchReducer,
       environment: SearchEnvironment(
         weatherClient: WeatherClient(
-          forecast: { _ in Effect(value: .mock) },
-          search: { _ in Effect(value: .mock) }
+          forecast: { _ in .mock },
+          search: { _ in .mock }
         ),
         mainQueue: .main
       )
