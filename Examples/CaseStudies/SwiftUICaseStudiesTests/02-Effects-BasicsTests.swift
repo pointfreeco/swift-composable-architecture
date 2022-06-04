@@ -31,7 +31,7 @@ class EffectsBasicsTests: XCTestCase {
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
       environment: EffectsBasicsEnvironment(
-        fact: .init(fetch: { n in "\(n) is a good number Brent" }),
+        fact: .init(fetch: { "\($0) is a good number Brent" }),
         mainQueue: .immediate
       )
     )

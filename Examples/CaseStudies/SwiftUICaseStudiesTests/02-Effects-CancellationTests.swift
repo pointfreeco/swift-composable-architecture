@@ -11,7 +11,7 @@ class EffectsCancellationTests: XCTestCase {
       initialState: .init(),
       reducer: effectsCancellationReducer,
       environment: .init(
-        fact: .init(fetch: { n in "\(n) is a good number Brent" })
+        fact: .init(fetch: { "\($0) is a good number Brent" })
       )
     )
 
@@ -60,7 +60,7 @@ class EffectsCancellationTests: XCTestCase {
       initialState: .init(),
       reducer: effectsCancellationReducer,
       environment: .init(
-        fact: .init(fetch: { n in "\(n) is a good number Brent" })
+        fact: .init(fetch: { "\($0) is a good number Brent" })
       )
     )
 
@@ -79,7 +79,7 @@ class EffectsCancellationTests: XCTestCase {
       initialState: .init(),
       reducer: effectsCancellationReducer,
       environment: .init(
-        fact: .init(fetch: { n in "\(n) is a good number Brent" })
+        fact: .init(fetch: { "\($0) is a good number Brent" })
       )
     )
 

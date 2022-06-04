@@ -56,11 +56,7 @@ let effectsCancellationReducer = Reducer<
     state.isTriviaRequestInFlight = true
 
     return .task { [count = state.count] in
-      .triviaResponse(
-        await TaskResult {
-          try await environment.fact.fetch(count)
-        }
-      )
+      await .triviaResponse(TaskResult { try await environment.fact.fetch(count) })
     }
     .cancellable(id: TriviaRequestId.self)
 
