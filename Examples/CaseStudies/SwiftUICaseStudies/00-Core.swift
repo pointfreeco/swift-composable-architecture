@@ -91,8 +91,8 @@ struct RootEnvironment {
     favorite: favorite(id:isFavorite:),
     fetchNumber: liveFetchNumber,
     mainQueue: .main,
-    screenshots: {
-      await .init(
+    screenshots: { @MainActor in
+      .init(
         NotificationCenter
           .default
           .notifications(named: UIApplication.userDidTakeScreenshotNotification)
