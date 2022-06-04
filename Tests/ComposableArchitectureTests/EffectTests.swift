@@ -218,6 +218,8 @@ final class EffectTests: XCTestCase {
         effect
           .sink(receiveValue: { _ in })
           .store(in: &self.cancellables)
+      } issueMatcher: { issue in
+        issue.compactDescription == "failing - A failing effect ran."
       }
     }
   #endif
