@@ -23,13 +23,13 @@ extension Publisher {
 }
 
 private struct AnimatedPublisher<Upstream: Publisher>: Publisher {
-  public typealias Output = Upstream.Output
-  public typealias Failure = Upstream.Failure
+  typealias Output = Upstream.Output
+  typealias Failure = Upstream.Failure
 
-  public var upstream: Upstream
-  public var animation: Animation?
+  var upstream: Upstream
+  var animation: Animation?
 
-  public func receive<S: Combine.Subscriber>(subscriber: S)
+  func receive<S: Combine.Subscriber>(subscriber: S)
   where S.Input == Output, S.Failure == Failure {
     let conduit = Subscriber(downstream: subscriber, animation: self.animation)
     self.upstream.receive(subscriber: conduit)

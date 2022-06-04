@@ -396,7 +396,7 @@ private struct HashableWrapper<Value>: Hashable {
     ///   case .pulledToRefresh:
     ///     state.isLoading = true
     ///     return .task {
-    ///       await .receivedResponse(.init { try await environment.fetch() })
+    ///       await .receivedResponse(TaskResult { try await environment.fetch() })
     ///     }
     ///
     ///   case let .receivedResponse(result):

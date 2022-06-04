@@ -26,7 +26,7 @@ import SwiftUI
     ///   switch action {
     ///     case .factButtonTapped:
     ///       return .task {
-    ///         await .factResponse(.init { try await environment.numberFact(state.number) })
+    ///         await .factResponse(TaskResult { try await environment.numberFact(state.number) })
     ///       }
     ///
     ///     case .factResponse(.success(fact)):
@@ -99,6 +99,9 @@ import SwiftUI
     ///   }
     /// ```
     ///
+    /// See ``Send`` for more information on how to use the `send` argument passed to `run`'s
+    /// closure.
+    ///
     /// - Parameters:
     ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
     ///     `Task.currentPriority`.
@@ -167,6 +170,9 @@ import SwiftUI
   /// defer { send(set: \.$isLoading, to: false) }
   /// ```
   ///
+  /// See ``Effect/run(priority:_:)`` for more information on how to use this value to construct
+  /// effects that can emit any number of times in an asynchronous context.
+  ///
   /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
   @MainActor
   public struct Send<Action> {
@@ -185,7 +191,7 @@ import SwiftUI
 
   extension Send: Sendable where Action: Sendable {}
 
-extension Send where Action: BindableAction {
+  extension Send where Action: BindableAction {
     public func callAsFunction<Value>(
       set keyPath: WritableKeyPath<Action.State, BindableState<Value>>,
       to value: Value
