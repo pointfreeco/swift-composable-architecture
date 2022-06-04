@@ -170,7 +170,17 @@
   /// not expect it would cause a test failure.
   ///
   public final class TestStore<State, LocalState, Action, LocalAction, Environment> {
+    /// The current environment.
+    ///
+    /// The environment can be modified throughout a test store's lifecycle in order to influence
+    /// how it produces effects.
     public var environment: Environment
+
+    /// The current state.
+    ///
+    /// When read from a trailing closure assertion in ``send`` or ``receive``, it will equal the
+    /// `inout` state passed to the closure.
+    public private(set) var state: State
 
     private let file: StaticString
     private let fromLocalAction: (LocalAction) -> Action
@@ -178,7 +188,6 @@
     private var inFlightEffects: Set<LongLivingEffect> = []
     var receivedActions: [(action: Action, state: State)] = []
     private let reducer: Reducer<State, Action, Environment>
-    public private(set) var state: State
     private var store: Store<State, TestAction>!
     private let toLocalState: (State) -> LocalState
 
@@ -337,12 +346,20 @@
   }
 
   extension TestStore where LocalState: Equatable {
+    /// Sends an action to the store and asserts when state changes.
+    ///
+    /// - Parameters:
+    ///   - action: An action.
+    ///   - updateExpectingResult: A closure that asserts state changed by sending the action to the
+    ///     store. The mutable state sent to this closure must be modified to match the state of the
+    ///     store after processing the given action. Do not provide a closure if no change is
+    ///     expected.
     @discardableResult
     public func send(
       _ action: LocalAction,
+      _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString = #file,
-      line: UInt = #line,
-      _ update: ((inout LocalState) throws -> Void)? = nil
+      line: UInt = #line
     ) -> TestTask {
       if !self.receivedActions.isEmpty {
         var actions = ""
@@ -367,7 +384,7 @@
 
         try self.expectedStateShouldChange(
           expected: &expectedState,
-          update: update,
+          modify: updateExpectingResult,
           file: file,
           line: line
         )
@@ -389,19 +406,20 @@
 
     private func expectedStateShouldChange(
       expected: inout LocalState,
-      update: ((inout LocalState) throws -> Void)? = nil,
+      modify: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString,
       line: UInt
     ) throws {
-      guard let update = update else { return }
+      guard let modify = modify else { return }
       let current = expected
-      try update(&expected)
+      try modify(&expected)
       if expected == current {
         XCTFail(
           """
-          Expected to modify the expected state, but no change occurred.
+          Expected state to change, but no change occurred.
 
-          Ensure that the state was modified or remove the closure to assert no change.
+          The trailing closure made no observable modifications to state. If no change to state is \
+          expected, omit the trailing closure.
           """,
           file: file, line: line
         )
@@ -440,11 +458,19 @@
   }
 
   extension TestStore where LocalState: Equatable, Action: Equatable {
+    /// Asserts an action was received from an effect and asserts when state changes.
+    ///
+    /// - Parameters:
+    ///   - expectedAction: An action expected from an effect.
+    ///   - updateExpectingResult: A closure that asserts state changed by sending the action to the
+    ///     store. The mutable state sent to this closure must be modified to match the state of the
+    ///     store after processing the given action. Do not provide a closure if no change is
+    ///     expected.
     public func receive(
       _ expectedAction: Action,
+      _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString = #file,
-      line: UInt = #line,
-      _ update: ((inout LocalState) throws -> Void)? = nil
+      line: UInt = #line
     ) {
       guard !self.receivedActions.isEmpty else {
         XCTFail(
@@ -481,7 +507,7 @@
       do {
         try self.expectedStateShouldChange(
           expected: &expectedState,
-          update: update,
+          modify: updateExpectingResult,
           file: file,
           line: line
         )
