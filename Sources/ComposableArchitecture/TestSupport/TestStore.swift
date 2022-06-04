@@ -178,8 +178,8 @@
 
     /// The current state.
     ///
-    /// When read from a trailing closure assertion in ``send`` or ``receive``, it will equal the
-    /// `inout` state passed to the closure.
+    /// When read from a trailing closure assertion in ``send(_:_:file:line:)`` or
+    /// ``receive(_:_:file:line:)``, it will equal the `inout` state passed to the closure.
     public private(set) var state: State
 
     private let file: StaticString

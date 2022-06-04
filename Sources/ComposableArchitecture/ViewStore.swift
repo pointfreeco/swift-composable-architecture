@@ -144,7 +144,7 @@ public final class ViewStore<State, Action>: ObservableObject {
 
   /// Sends an action to the store with a given animation.
   ///
-  /// See ``ViewStore/send(_:)`` for more info.
+  /// See ``ViewStore/send(_:)-1dr17`` for more info.
   ///
   /// - Parameters:
   ///   - action: An action.
@@ -384,23 +384,24 @@ private struct HashableWrapper<Value>: Hashable {
     ///
     /// enum Action {
     ///   case pulledToRefresh
-    ///   case receivedResponse(String?)
+    ///   case receivedResponse(TaskResult<String>)
     /// }
     ///
     /// struct Environment {
-    ///   var fetch: () -> Effect<String?, Never>
+    ///   var fetch: () async throws -> String
     /// }
     ///
     /// let reducer = Reducer<State, Action, Environment> { state, action, environment in
     ///   switch action {
     ///   case .pulledToRefresh:
     ///     state.isLoading = true
-    ///     return environment.fetch()
-    ///       .map(Action.receivedResponse)
+    ///     return .task {
+    ///       await .receivedResponse(.init { try await environment.fetch() })
+    ///     }
     ///
-    ///   case let .receivedResponse(response):
+    ///   case let .receivedResponse(result):
     ///     state.isLoading = false
-    ///     state.response = response
+    ///     state.response = try? result.value
     ///     return .none
     ///   }
     /// }

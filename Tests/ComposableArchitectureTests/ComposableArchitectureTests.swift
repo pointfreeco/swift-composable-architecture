@@ -3,6 +3,7 @@ import CombineSchedulers
 import ComposableArchitecture
 import XCTest
 
+@MainActor
 final class ComposableArchitectureTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
@@ -117,7 +118,7 @@ final class ComposableArchitectureTests: XCTestCase {
     store.send(.end)
   }
 
-  func testCancellation() {
+  func testCancellation() async {
     enum Action: Equatable {
       case cancel
       case incr
@@ -125,8 +126,7 @@ final class ComposableArchitectureTests: XCTestCase {
     }
 
     struct Environment {
-      let fetch: (Int) -> Effect<Int, Never>
-      let mainQueue: AnySchedulerOf<DispatchQueue>
+      let fetch: (Int) async -> Int
     }
 
     let reducer = Reducer<Int, Action, Environment> { state, action, environment in
@@ -138,10 +138,7 @@ final class ComposableArchitectureTests: XCTestCase {
 
       case .incr:
         state += 1
-        return environment.fetch(state)
-          .receive(on: environment.mainQueue)
-          .map(Action.response)
-          .eraseToEffect()
+        return .task { [state] in .response(await environment.fetch(state)) }
           .cancellable(id: CancelId.self)
 
       case let .response(value):
@@ -150,23 +147,18 @@ final class ComposableArchitectureTests: XCTestCase {
       }
     }
 
-    let scheduler = DispatchQueue.test
-
     let store = TestStore(
       initialState: 0,
       reducer: reducer,
       environment: Environment(
-        fetch: { value in Effect(value: value * value) },
-        mainQueue: scheduler.eraseToAnyScheduler()
+        fetch: { value in value * value }
       )
     )
 
     store.send(.incr) { $0 = 1 }
-    scheduler.advance()
-    store.receive(.response(1))
+    await store.receive(.response(1))
 
     store.send(.incr) { $0 = 2 }
     store.send(.cancel)
-    scheduler.run()
   }
 }

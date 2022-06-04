@@ -2,6 +2,20 @@ import Combine
 import SwiftUI
 
 extension Publisher {
+  /// Wraps the emission of each element with SwiftUI's `withAnimation`.
+  ///
+  /// This publisher is most useful when using ``Effect/task(priority:operation:)-4llhw``
+  ///
+  /// ```swift
+  /// case .buttonTapped:
+  ///   return .task {
+  ///     .activityResponse(await environment.apiClient.fetchActivity())
+  ///   }
+  ///   .animation()
+  /// ```
+  ///
+  /// - Parameter animation: An animation.
+  /// - Returns: A publisher.
   public func animation(_ animation: Animation? = .default) -> Effect<Output, Failure> {
     AnimatedPublisher(upstream: self, animation: animation)
       .eraseToEffect()
@@ -21,7 +35,7 @@ private struct AnimatedPublisher<Upstream: Publisher>: Publisher {
     self.upstream.receive(subscriber: conduit)
   }
 
-  fileprivate class Subscriber<Downstream: Combine.Subscriber>: Combine.Subscriber {
+  private class Subscriber<Downstream: Combine.Subscriber>: Combine.Subscriber {
     typealias Input = Downstream.Input
     typealias Failure = Downstream.Failure
 
@@ -29,22 +43,22 @@ private struct AnimatedPublisher<Upstream: Publisher>: Publisher {
     let animation: Animation?
 
     init(downstream: Downstream, animation: Animation?) {
-      self.downstream = downstream
+      self.self.downstream = downstream
       self.animation = animation
     }
 
     func receive(subscription: Subscription) {
-      downstream.receive(subscription: subscription)
+      self.downstream.receive(subscription: subscription)
     }
 
     func receive(_ input: Input) -> Subscribers.Demand {
       withAnimation(self.animation) {
-        downstream.receive(input)
+        self.downstream.receive(input)
       }
     }
 
     func receive(completion: Subscribers.Completion<Failure>) {
-      downstream.receive(completion: completion)
+      self.downstream.receive(completion: completion)
     }
   }
 }

@@ -376,7 +376,7 @@ extension BindingAction {
   /// }
   ///
   /// struct AppEnvironment {
-  ///   var numberFact: (Int) -> Effect<String, Error>
+  ///   var numberFact: (Int) async throws -> String
   ///   ...
   /// }
   ///

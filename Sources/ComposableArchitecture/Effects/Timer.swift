@@ -102,7 +102,7 @@ extension Effect where Failure == Never {
     tolerance: S.SchedulerTimeType.Stride? = nil,
     on scheduler: S,
     options: S.SchedulerOptions? = nil
-  ) -> Effect where S: Scheduler, S.SchedulerTimeType == Output {
+  ) -> Self where S: Scheduler, S.SchedulerTimeType == Output {
 
     Publishers.Timer(every: interval, tolerance: tolerance, scheduler: scheduler, options: options)
       .autoconnect()
@@ -131,7 +131,7 @@ extension Effect where Failure == Never {
     tolerance: S.SchedulerTimeType.Stride? = nil,
     on scheduler: S,
     options: S.SchedulerOptions? = nil
-  ) -> Effect where S: Scheduler, S.SchedulerTimeType == Output {
+  ) -> Self where S: Scheduler, S.SchedulerTimeType == Output {
     self.timer(
       id: ObjectIdentifier(id),
       every: interval,

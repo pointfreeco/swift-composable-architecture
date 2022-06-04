@@ -29,7 +29,7 @@ extension Effect {
     for dueTime: S.SchedulerTimeType.Stride,
     scheduler: S,
     options: S.SchedulerOptions? = nil
-  ) -> Effect {
+  ) -> Self {
     Just(())
       .setFailureType(to: Failure.self)
       .delay(for: dueTime, scheduler: scheduler, options: options)
@@ -54,7 +54,7 @@ extension Effect {
     for dueTime: S.SchedulerTimeType.Stride,
     scheduler: S,
     options: S.SchedulerOptions? = nil
-  ) -> Effect {
+  ) -> Self {
     self.debounce(id: ObjectIdentifier(id), for: dueTime, scheduler: scheduler, options: options)
   }
 }

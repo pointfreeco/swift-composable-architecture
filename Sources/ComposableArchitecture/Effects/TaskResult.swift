@@ -13,6 +13,17 @@ public enum TaskResult<Success> {
       }
     }
   #endif
+
+  public var value: Success {
+    get throws {
+      switch self {
+      case let .success(success):
+        return success
+      case let .failure(error):
+        throw error
+      }
+    }
+  }
 }
 
 extension TaskResult: Sendable where Success: Sendable {}

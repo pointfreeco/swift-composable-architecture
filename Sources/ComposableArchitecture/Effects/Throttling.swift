@@ -18,7 +18,7 @@ extension Effect {
     for interval: S.SchedulerTimeType.Stride,
     scheduler: S,
     latest: Bool
-  ) -> Effect where S: Scheduler {
+  ) -> Self where S: Scheduler {
     self.receive(on: scheduler)
       .flatMap { value -> AnyPublisher<Output, Failure> in
         throttleLock.lock()
@@ -78,7 +78,7 @@ extension Effect {
     for interval: S.SchedulerTimeType.Stride,
     scheduler: S,
     latest: Bool
-  ) -> Effect where S: Scheduler {
+  ) -> Self where S: Scheduler {
     self.throttle(id: ObjectIdentifier(id), for: interval, scheduler: scheduler, latest: latest)
   }
 }

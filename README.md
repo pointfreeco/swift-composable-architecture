@@ -102,18 +102,15 @@ enum AppAction: Equatable {
   case decrementButtonTapped
   case incrementButtonTapped
   case numberFactButtonTapped
-  case numberFactResponse(Result<String, ApiError>)
+  case numberFactResponse(TaskResult<String>)
 }
-
-struct ApiError: Error, Equatable {}
 ```
 
-Next we model the environment of dependencies this feature needs to do its job. In particular, to fetch a number fact we need to construct an `Effect` value that encapsulates the network request. So that dependency is a function from `Int` to `Effect<String, ApiError>`, where `String` represents the response from the request. Further, the effect will typically do its work on a background thread (as is the case with `URLSession`), and so we need a way to receive the effect's values on the main queue. We do this via a main queue scheduler, which is a dependency that is important to control so that we can write tests. We must use an `AnyScheduler` so that we can use a live `DispatchQueue` in production and a test scheduler in tests.
+Next we model the environment of dependencies this feature needs to do its job. In particular, to fetch a number fact we can model an async throwing function from `Int` to `String`:
 
 ```swift
 struct AppEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-  var numberFact: (Int) -> Effect<String, ApiError>
+  var numberFact: (Int) async throws -> String
 }
 ```
 
@@ -135,9 +132,9 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     return .none
 
   case .numberFactButtonTapped:
-    return environment.numberFact(state.count)
-      .receive(on: environment.mainQueue)
-      .catchToEffect(AppAction.numberFactResponse)
+    return .task {
+      await .numberFactResponse(TaskResult { try await environment.numberFact(state.count) })
+    }
 
   case let .numberFactResponse(.success(fact)):
     state.numberFactAlert = fact
@@ -250,38 +247,44 @@ It is also straightforward to have a UIKit controller driven off of this store. 
   ```
 </details>
 
-Once we are ready to display this view, for example in the scene delegate, we can construct a store. This is the moment where we need to supply the dependencies, and for now we can just use an effect that immediately returns a mocked string:
+Once we are ready to display this view, for example in the app's entry point, we can construct a store. This is the moment where we need to supply the dependencies, including the `numberFact` endpoint that actually reaches out into the real world to fetch the fact:
 
 ```swift
-let appView = AppView(
-  store: Store(
-    initialState: AppState(),
-    reducer: appReducer,
-    environment: AppEnvironment(
-      mainQueue: .main,
-      numberFact: { number in Effect(value: "\(number) is a good number Brent") }
+@main
+struct CaseStudiesApp: App {
+var body: some Scene {
+  AppView(
+    store: Store(
+      initialState: AppState(),
+      reducer: appReducer,
+      environment: AppEnvironment(
+        numberFact: { number in 
+          let (data, _) = try await URLSession.shared
+            .data(from: .init(string: "http://numbersapi.com/\(number)")!)
+          return String(decoding: data, using: UTF8.self)
+        }
+      )
     )
   )
-)
+}
 ```
 
 And that is enough to get something on the screen to play around with. It's definitely a few more steps than if you were to do this in a vanilla SwiftUI way, but there are a few benefits. It gives us a consistent manner to apply state mutations, instead of scattering logic in some observable objects and in various action closures of UI components. It also gives us a concise way of expressing side effects. And we can immediately test this logic, including the effects, without doing much additional work.
 
 ### Testing
 
-To test, you first create a `TestStore` with the same information that you would to create a regular `Store`, except this time we can supply test-friendly dependencies. In particular, we use a test scheduler instead of the live `DispatchQueue.main` scheduler because that allows us to control when work is executed, and we don't have to artificially wait for queues to catch up.
+To test, you first create a `TestStore` with the same information that you would to create a regular `Store`, except this time we can supply test-friendly dependencies. In particular, we can now use a `numberFact` implementation that immediately returns a value we control rather than reaching out into the real world:
 
 ```swift
-let scheduler = DispatchQueue.test
-
-let store = TestStore(
-  initialState: AppState(),
-  reducer: appReducer,
-  environment: AppEnvironment(
-    mainQueue: scheduler.eraseToAnyScheduler(),
-    numberFact: { number in Effect(value: "\(number) is a good number Brent") }
+func testFeature() async {
+  let store = TestStore(
+    initialState: AppState(),
+    reducer: appReducer,
+    environment: AppEnvironment(
+      numberFact: { "\($0) is a good number Brent" }
+    )
   )
-)
+}
 ```
 
 Once the test store is created we can use it to make an assertion of an entire user flow of steps. Each step of the way we need to prove that state changed how we expect. Further, if a step causes an effect to be executed, which feeds data back into the store, we must assert that those actions were received properly.
@@ -298,11 +301,11 @@ store.send(.decrementButtonTapped) {
 }
 
 // Test that tapping the fact button causes us to receive a response from the effect. Note
-// that we have to advance the scheduler because we used `.receive(on:)` in the reducer.
+// that we have to await the receive because the effect is asynchronous and so takes a small
+// amount of time to emit.
 store.send(.numberFactButtonTapped)
 
-scheduler.advance()
-store.receive(.numberFactResponse(.success("0 is a good number Brent"))) {
+await store.receive(.numberFactResponse(.success("0 is a good number Brent"))) {
   $0.numberFactAlert = "0 is a good number Brent"
 }
 
