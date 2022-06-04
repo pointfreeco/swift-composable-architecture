@@ -3,6 +3,39 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
+// NB: Deprecated after 0.36.0:
+
+extension Effect where Failure == Error {
+  @available(
+    *,
+    deprecated,
+    message: "Use the non-throwing version of 'Effect.task' and catch errors explicitly"
+  )
+  public static func task(
+    priority: TaskPriority? = nil,
+    operation: @escaping @Sendable () async throws -> Output
+  ) -> Self {
+    Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
+      let subject = PassthroughSubject<Output, Failure>()
+      let task = Task(priority: priority) { @MainActor in
+        do {
+          try Task.checkCancellation()
+          let output = try await operation()
+          try Task.checkCancellation()
+          subject.send(output)
+          subject.send(completion: .finished)
+        } catch is CancellationError {
+          subject.send(completion: .finished)
+        } catch {
+          subject.send(completion: .failure(error))
+        }
+      }
+      return subject.handleEvents(receiveCancel: task.cancel)
+    }
+    .eraseToEffect()
+  }
+}
+
 // NB: Deprecated after 0.34.0:
 
 extension Effect {
