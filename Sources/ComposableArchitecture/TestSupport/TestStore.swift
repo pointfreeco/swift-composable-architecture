@@ -534,10 +534,7 @@
       _ update: ((inout LocalState) throws -> Void)? = nil
     ) async {
       await withTaskGroup(of: Void.self) { group in
-        guard !group.isCancelled
-        else { return }
-
-        group.addTask { @MainActor in
+        group.addTaskUnlessCancelled { @MainActor in
           while !Task.isCancelled {
             guard self.receivedActions.isEmpty
             else { break }
@@ -549,7 +546,7 @@
           { self.receive(expectedAction, update, file: file, line: line) }()
         }
 
-        group.addTask { @MainActor in
+        group.addTaskUnlessCancelled { @MainActor in
           await Task(priority: .low) { try? await Task.sleep(nanoseconds: nanoseconds) }
             .cancellableValue
           guard !Task.isCancelled
@@ -634,6 +631,11 @@
     }
   }
 
+  /// The type returned from ``TestStore/send(_:_:file:line:)`` that represents the lifecycle
+  /// of the effect started from sending an action.
+  ///
+  /// You can use this value in tests to cancel the effect started from sending an action, or
+  /// to await until the effect finishes.
   public struct TestTask {
     let task: Task<Void, Never>
 
@@ -644,14 +646,6 @@
 
     public func finish() async {
       await self.task.value
-    }
-
-    // TODO: Should we delete this before merging?
-    @available(*, deprecated, renamed: "finish()")
-    public var value: Void {
-      get async {
-        await self.task.value
-      }
     }
   }
 #endif

@@ -3,6 +3,7 @@ import XCTest
 
 @testable import ComposableArchitecture
 
+@MainActor
 final class StoreTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
@@ -477,8 +478,7 @@ final class StoreTests: XCTestCase {
     wait(for: expectations, timeout: 1)
   }
 
-  @MainActor
-  func testTaskCancellation1() async {
+  func testCascadingTaskCancellation() async {
     enum Action { case task, response, response1, response2 }
     let reducer = Reducer<Int, Action, Void> { state, action, _ in
       switch action {
@@ -512,51 +512,12 @@ final class StoreTests: XCTestCase {
     await task.cancel()
   }
 
-  @MainActor
-  func testTaskCancellation2() async {
-    enum Action { case task, response, response1, response2 }
-    let reducer = Reducer<Int, Action, Void> { state, action, _ in
-      switch action {
-      case .task:
-        return .merge(
-          Empty(completeImmediately: false).eraseToEffect(),
-          .task { .response }
-        )
-      case .response:
-        return .merge(
-          Empty(completeImmediately: false).eraseToEffect(),
-          .task { .response1 }
-        )
-      case .response1:
-        return .merge(
-          Empty(completeImmediately: false).eraseToEffect(),
-          .task { .response2 }
-        )
-      case .response2:
-        return Empty(completeImmediately: false).eraseToEffect()
-      }
-    }
-
-    let store = TestStore(
-      initialState: 0,
-      reducer: reducer,
-      environment: ()
-    )
-
-    let task = store.send(.task)
-    await store.receive(.response)
-    await store.receive(.response1)
-    await store.receive(.response2)
-    await task.cancel()
-  }
-
-  @MainActor
   func testTaskCancellationEmpty() async {
     enum Action { case task }
     let reducer = Reducer<Int, Action, Void> { state, action, _ in
       switch action {
       case .task:
-        return Empty(completeImmediately: false).eraseToEffect()
+        return .fireAndForget { try await Task.never() }
       }
     }
 
@@ -568,5 +529,27 @@ final class StoreTests: XCTestCase {
 
     let task = store.send(.task)
     await task.cancel()
+  }
+  
+  func testScopeCancellation() async throws {
+    let neverEndingTask = Task<Never, _> { try await Task.never() }
+
+    let store = Store(
+      initialState: (),
+      reducer: Reducer<Void, Void, Void> { _, _, _ in
+        .fireAndForget {
+          try await neverEndingTask.value
+        }
+      },
+      environment: ()
+    )
+    let scopedStore = store.scope(state: { $0 })
+
+    let sendTask = scopedStore.send(())
+    await Task.yield()
+    neverEndingTask.cancel()
+    await sendTask.value
+    XCTAssertEqual(store.effectCancellables.count, 0)
+    XCTAssertEqual(scopedStore.effectCancellables.count, 0)
   }
 }
