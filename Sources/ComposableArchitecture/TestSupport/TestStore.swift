@@ -624,11 +624,11 @@
 
     public func cancel() async {
       self.task.cancel()
-      await self.task.value
+      await self.task.cancellableValue
     }
 
     public func finish() async {
-      await self.task.value
+      await self.task.cancellableValue
     }
   }
 #endif
