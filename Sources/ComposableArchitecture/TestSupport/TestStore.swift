@@ -511,7 +511,7 @@
 
     public func receive(
       _ expectedAction: Action,
-      timeout nanoseconds: UInt64 = 0, // TODO: Better default? Remove default?
+      timeout nanoseconds: UInt64 = 0,  // TODO: Better default? Remove default?
       file: StaticString = #file,
       line: UInt = #line,
       _ update: ((inout LocalState) throws -> Void)? = nil
@@ -627,8 +627,30 @@
       await self.task.cancellableValue
     }
 
-    public func finish() async {
-      await self.task.cancellableValue
+    public func finish(
+      timeout nanoseconds: UInt64 = NSEC_PER_MSEC,  // TODO: Better default? Remove default?
+      file: StaticString = #file,
+      line: UInt = #line
+    ) async {
+      do {
+        try await withThrowingTaskGroup(of: Void.self) { group in
+          group.addTask { await self.task.cancellableValue }
+          group.addTask {
+            try await Task.sleep(nanoseconds: nanoseconds)
+            throw CancellationError()
+          }
+          try await group.next()
+          group.cancelAll()
+        }
+      } catch {
+        XCTFail(
+          """
+          Expected task to finish, but it is still in-flight
+          """,
+          file: file,
+          line: line
+        )
+      }
     }
   }
 #endif
