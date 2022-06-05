@@ -379,8 +379,9 @@
         self.state = previousState
         defer { self.state = currentState }
 
-        try self.expectedStateShouldChange(
+        try self.expectedStateShouldMatch(
           expected: &expectedState,
+          actual: self.toLocalState(currentState),
           modify: updateExpectingResult,
           file: file,
           line: line
@@ -388,19 +389,14 @@
       } catch {
         XCTFail("Threw error: \(error)", file: file, line: line)
       }
-      self.expectedStateShouldMatch(
-        expected: expectedState,
-        actual: self.toLocalState(self.state),
-        file: file,
-        line: line
-      )
       if "\(self.file)" == "\(file)" {
         self.line = line
       }
     }
 
-    private func expectedStateShouldChange(
+    private func expectedStateShouldMatch(
       expected: inout LocalState,
+      actual: LocalState,
       modify: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString,
       line: UInt
@@ -408,25 +404,7 @@
       guard let modify = modify else { return }
       let current = expected
       try modify(&expected)
-      if expected == current {
-        XCTFail(
-          """
-          Expected state to change, but no change occurred.
 
-          The trailing closure made no observable modifications to state. If no change to state is \
-          expected, omit the trailing closure.
-          """,
-          file: file, line: line
-        )
-      }
-    }
-
-    private func expectedStateShouldMatch(
-      expected: LocalState,
-      actual: LocalState,
-      file: StaticString,
-      line: UInt
-    ) {
       if expected != actual {
         let difference =
           diff(expected, actual, format: .proportional)
@@ -447,6 +425,16 @@
           """,
           file: file,
           line: line
+        )
+      } else if expected == current {
+        XCTFail(
+          """
+          Expected state to change, but no change occurred.
+
+          The trailing closure made no observable modifications to state. If no change to state is \
+          expected, omit the trailing closure.
+          """,
+          file: file, line: line
         )
       }
     }
@@ -500,8 +488,9 @@
       }
       var expectedState = self.toLocalState(self.state)
       do {
-        try self.expectedStateShouldChange(
+        try expectedStateShouldMatch(
           expected: &expectedState,
+          actual: self.toLocalState(state),
           modify: updateExpectingResult,
           file: file,
           line: line
@@ -509,12 +498,6 @@
       } catch {
         XCTFail("Threw error: \(error)", file: file, line: line)
       }
-      expectedStateShouldMatch(
-        expected: expectedState,
-        actual: self.toLocalState(state),
-        file: file,
-        line: line
-      )
       self.state = state
       if "\(self.file)" == "\(file)" {
         self.line = line
