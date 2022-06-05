@@ -1,5 +1,4 @@
 import Combine
-import Foundation
 
 extension Effect {
   /// Turns an effect into one that is capable of being canceled.
