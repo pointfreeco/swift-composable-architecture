@@ -39,7 +39,7 @@ extension BenchmarkSuite {
     }
     
     self.benchmark("\(label).ReduceIndirectAction") {
-      viewStore.send(.reset)
+      viewStore.send(.indirectReset)
     } tearDown: {
       precondition(viewStore.string == "")
     }
