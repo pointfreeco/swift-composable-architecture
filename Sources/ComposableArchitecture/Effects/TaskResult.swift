@@ -131,24 +131,6 @@ public enum TaskResult<Success> {
 
 extension TaskResult: Sendable where Success: Sendable {}
 
-// TODO: do we need this?
-//public struct EquatableVoid: Equatable, Codable, Hashable {
-//  public init() {}
-//}
-//
-//#if canImport(_Concurrency) && compiler(>=5.5.2)
-//  extension TaskResult where Success == EquatableVoid {
-//    public init(catching body: @Sendable () async throws -> Void) async {
-//      do {
-//        try await body()
-//        self = .success(.init())
-//      } catch {
-//        self = .failure(error)
-//      }
-//    }
-//  }
-//#endif
-
 public typealias TaskFailure = TaskResult<Never>
 
 extension TaskResult: Equatable where Success: Equatable {
