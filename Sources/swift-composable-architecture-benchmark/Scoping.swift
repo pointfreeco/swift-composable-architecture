@@ -6,6 +6,8 @@ let scopingSuite = BenchmarkSuite(name: "Scoping") { suite in
     var store: Store<BaseState, BaseAction>?
     suite.benchmark("Standalone.Instantiate") {
       store = .init(initialState: .init(), reducer: baseReducer, environment: .init())
+    } setUp: {
+      store = nil
     } tearDown: {
       precondition(store != nil)
     }
@@ -16,6 +18,8 @@ let scopingSuite = BenchmarkSuite(name: "Scoping") { suite in
     var scoped: Store<BaseState, BaseAction>?
     suite.benchmark("Scoped.Instantiate") {
       scoped = store.scope(state: \.base, action: RootAction.base)
+    } setUp: {
+      scoped = nil
     } tearDown: {
       precondition(scoped != nil)
     }
