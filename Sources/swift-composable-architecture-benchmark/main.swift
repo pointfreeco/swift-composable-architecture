@@ -7,4 +7,5 @@ Benchmark.main([
   bindingSuite,
   compositionSuite,
   scopingSuite,
+  viewStoreSuite,
 ])
