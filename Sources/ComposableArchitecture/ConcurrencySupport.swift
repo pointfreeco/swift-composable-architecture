@@ -26,6 +26,10 @@ public final actor SendableState<Value> {
     self.value = wrappedValue
   }
 
+  public convenience init<Wrapped>() where Value == Wrapped? {
+    self.init(nil)
+  }
+
   public subscript<Subject>(dynamicMember keyPath: KeyPath<Value, Subject>) -> Subject {
     self.value[keyPath: keyPath]
   }

@@ -53,7 +53,7 @@ import SwiftUI
     public static func task(
       priority: TaskPriority? = nil,
       operation: @escaping @Sendable () async -> Output
-    ) -> Self where Failure == Never {
+    ) -> Self {
       Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
         let subject = PassthroughSubject<Output, Failure>()
         let task = Task(priority: priority) { @MainActor in

@@ -517,7 +517,7 @@
       _ update: ((inout LocalState) throws -> Void)? = nil
     ) async {
       await withTaskGroup(of: Void.self) { group in
-        group.addTaskUnlessCancelled { @MainActor in
+        _ = group.addTaskUnlessCancelled { @MainActor in
           while !Task.isCancelled {
             guard self.receivedActions.isEmpty
             else { break }
@@ -529,7 +529,7 @@
           { self.receive(expectedAction, update, file: file, line: line) }()
         }
 
-        group.addTaskUnlessCancelled { @MainActor in
+        _ = group.addTaskUnlessCancelled { @MainActor in
           await Task(priority: .low) { try? await Task.sleep(nanoseconds: nanoseconds) }
             .cancellableValue
           guard !Task.isCancelled
