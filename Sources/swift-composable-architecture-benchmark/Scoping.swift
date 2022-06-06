@@ -16,8 +16,20 @@ let scopingSuite = BenchmarkSuite(name: "Scoping") { suite in
   do {
     let store = Store(initialState: .init(), reducer: rootReducer, environment: .init())
     var scoped: Store<BaseState, BaseAction>?
-    suite.benchmark("Scoped.Instantiate") {
+    suite.benchmark("Scoped.Instantiate.KeyPath") {
       scoped = store.scope(state: \.base, action: RootAction.base)
+    } setUp: {
+      scoped = nil
+    } tearDown: {
+      precondition(scoped != nil)
+    }
+  }
+  
+  do {
+    let store = Store(initialState: .init(), reducer: rootReducer, environment: .init())
+    var scoped: Store<BaseState, BaseAction>?
+    suite.benchmark("Scoped.Instantiate.Closure") {
+      scoped = store.scope(state: { $0.base }, action: RootAction.base)
     } setUp: {
       scoped = nil
     } tearDown: {
