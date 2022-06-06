@@ -82,7 +82,7 @@ let scopingSuite = BenchmarkSuite(name: "Scoping") { suite in
     }
     viewStore1.send(false)
 
-    suite.benchmark("Chain.2") {
+    suite.benchmark("Chain.3") {
       viewStore4.send(true)
     }
   }
