@@ -228,7 +228,7 @@ final class EffectTests: XCTestCase {
     func testTask() {
       let expectation = self.expectation(description: "Complete")
       var result: Int?
-      Effect<Int, Never>.task {
+      Effect<Int, Never>.task { @MainActor in
         expectation.fulfill()
         return 42
       }
@@ -242,7 +242,7 @@ final class EffectTests: XCTestCase {
       let expectation = self.expectation(description: "Complete")
       struct MyError: Error {}
       var result: Error?
-      Effect<Int, Error>.task {
+      Effect<Int, Error>.task { @MainActor in
         expectation.fulfill()
         throw MyError()
       }
