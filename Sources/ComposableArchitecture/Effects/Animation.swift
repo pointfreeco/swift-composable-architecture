@@ -1,7 +1,6 @@
 import Combine
 import SwiftUI
 
-<<<<<<< HEAD
 extension Effect {
   /// Wraps the emission of each element with SwiftUI's `withAnimation`.
   ///
