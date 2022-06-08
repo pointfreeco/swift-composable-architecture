@@ -511,7 +511,7 @@
 
     public func receive(
       _ expectedAction: Action,
-      timeout nanoseconds: UInt64 = 0,  // TODO: Better default? Remove default?
+      timeout nanoseconds: UInt64 = NSEC_PER_SEC,  // TODO: Better default? Remove default?
       file: StaticString = #file,
       line: UInt = #line,
       _ update: ((inout LocalState) throws -> Void)? = nil
@@ -628,7 +628,7 @@
     }
 
     public func finish(
-      timeout nanoseconds: UInt64 = NSEC_PER_MSEC,  // TODO: Better default? Remove default?
+      timeout nanoseconds: UInt64 = NSEC_PER_SEC,  // TODO: Better default? Remove default?
       file: StaticString = #file,
       line: UInt = #line
     ) async {
