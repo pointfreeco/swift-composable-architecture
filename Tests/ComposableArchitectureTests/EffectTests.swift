@@ -228,7 +228,7 @@ final class EffectTests: XCTestCase {
     func testTask() {
       let expectation = self.expectation(description: "Complete")
       var result: Int?
-      Effect<Int, Never>.task {
+      Effect<Int, Never>.task { @MainActor in
         expectation.fulfill()
         return 42
       }

@@ -1,10 +1,11 @@
 import Combine
 import SwiftUI
 
-extension Publisher {
+<<<<<<< HEAD
+extension Effect {
   /// Wraps the emission of each element with SwiftUI's `withAnimation`.
   ///
-  /// This publisher is most useful when using ``Effect/task(priority:operation:)-4llhw``
+  /// This publisher is most useful when using with ``Effect/task(priority:operation:)-2czg0``
   ///
   /// ```swift
   /// case .buttonTapped:
@@ -16,7 +17,7 @@ extension Publisher {
   ///
   /// - Parameter animation: An animation.
   /// - Returns: A publisher.
-  public func animation(_ animation: Animation? = .default) -> Effect<Output, Failure> {
+  public func animation(_ animation: Animation? = .default) -> Self {
     AnimatedPublisher(upstream: self, animation: animation)
       .eraseToEffect()
   }
