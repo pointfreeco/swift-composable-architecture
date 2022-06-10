@@ -533,7 +533,7 @@
         return
       }
       
-      guard let (receivedAction, state) = self.receivedActions.first(where: { $0 == expectedAction }) else {
+      guard let (_, state) = self.receivedActions.first(where: { action, state in action == expectedAction }) else {
         XCTFail(
           """
           Expected to receive `\(expectedAction)` but others received instead.
@@ -542,7 +542,7 @@
         )
         return
       }
-      self.receivedActions.remove(at: self.receivedActions.firstIndex(where: { $0 == expectedAction })!)
+      self.receivedActions.remove(at: self.receivedActions.firstIndex(where: { action, state in action == expectedAction })!)
       
       var expectedState = self.toLocalState(self.state)
       do {
