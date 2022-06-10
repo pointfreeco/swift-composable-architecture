@@ -161,9 +161,19 @@ extension Reducer {
 
         /// Use callerSymbol/index to retieve closure retaining the reducer function
         func lastStored() -> ReducerFunc {
-            let reducerGetter = reducerOverrideStore[callerSymbol]![index]
-            let anyReducer = reducerGetter(ReducerFunc.self)
-            return anyReducer as! ReducerFunc
+            if let storedReducers = reducerOverrideStore[callerSymbol],
+               let reducerGetter = index < storedReducers.count ?
+                storedReducers[index] : nil, let anyReducer =
+                    reducerGetter(ReducerFunc.self) as? ReducerFunc {
+                return anyReducer
+            } else {
+                fatalError("""
+                    ⚠️ Unable to retrieve injected reducer override for \
+                    \(callerSymbol). Are you sure all top level reducer \
+                    variables composed into this reducer have been wrapped \
+                    in ARCInjectable?
+                    """)
+            }
         }
     }
 }
