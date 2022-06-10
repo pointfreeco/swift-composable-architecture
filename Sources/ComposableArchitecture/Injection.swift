@@ -168,7 +168,7 @@ extension Reducer {
                 return anyReducer
             } else {
                 fatalError("""
-                    ⚠️ Unable to rerieve injected reducer override for \
+                    ⚠️ Unable to retrieve injected reducer override for \
                     \(callerSymbol). Are you sure all top level reducer \
                     variables composed into this reducer have been wrapped \
                     in ARCInjectable?
