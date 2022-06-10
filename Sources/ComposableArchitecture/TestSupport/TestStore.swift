@@ -503,6 +503,64 @@
         self.line = line
       }
     }
+    
+    /// Asserts an action was received from an effect and asserts when state changes.
+    /// This is an unsafe version of the above since it only checks the action is present between all the other actions received.
+    /// This means that if actions mutate the same state, results might be unattended.
+    /// This method solves an issue for which the same Publisher observed in multiple reducers might call subscribers out of order
+    /// thus invalidating all the possibly writable tests since synchronicity can't be ensured. Please use this method only in
+    /// that case
+    ///
+    /// - Parameters:
+    ///   - expectedAction: An action expected from an effect.
+    ///   - updateExpectingResult: A closure that asserts state changed by sending the action to the
+    ///     store. The mutable state sent to this closure must be modified to match the state of the
+    ///     store after processing the given action. Do not provide a closure if no change is
+    ///     expected.
+    public func unsafeReceiveOutOfOrder(
+      _ expectedAction: Action,
+      _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
+      file: StaticString = #file,
+      line: UInt = #line
+    ) {
+      guard !self.receivedActions.isEmpty else {
+        XCTFail(
+          """
+          Expected to receive an action, but received none.
+          """,
+          file: file, line: line
+        )
+        return
+      }
+      
+      guard let (receivedAction, state) = self.receivedActions.first(where: { $0 == expectedAction }) else {
+        XCTFail(
+          """
+          Expected to receive `\(expectedAction)` but others received instead.
+          """,
+          file: file, line: line
+        )
+        return
+      }
+      self.receivedActions.remove(at: self.receivedActions.firstIndex(where: { $0 == expectedAction })!)
+      
+      var expectedState = self.toLocalState(self.state)
+      do {
+        try expectedStateShouldMatch(
+          expected: &expectedState,
+          actual: self.toLocalState(state),
+          modify: updateExpectingResult,
+          file: file,
+          line: line
+        )
+      } catch {
+        XCTFail("Threw error: \(error)", file: file, line: line)
+      }
+      self.state = state
+      if "\(self.file)" == "\(file)" {
+        self.line = line
+      }
+    }
   }
 
   extension TestStore {
