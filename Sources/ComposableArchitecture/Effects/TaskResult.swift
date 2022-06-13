@@ -164,9 +164,6 @@ private enum _Witness<A> {}
 private protocol _AnyEquatable {
   static func _isEqual(_ lhs: Any, _ rhs: Any) -> Bool
 }
-private protocol _AnyHashable: _AnyEquatable {
-  static func _hash(_ value: Any, into hasher: inout Hasher) -> Bool
-}
 
 extension _Witness: _AnyEquatable where A: Equatable {
   static func _isEqual(_ lhs: Any, _ rhs: Any) -> Bool {
@@ -178,15 +175,6 @@ extension _Witness: _AnyEquatable where A: Equatable {
   }
 }
 
-extension _Witness: _AnyHashable where A: Hashable {
-  static func _hash(_ value: Any, into hasher: inout Hasher) -> Bool {
-    guard let value = value as? A
-    else { return false }
-    hasher.combine(value)
-    return true
-  }
-}
-
 private func _isEqual(_ a: Any, _ b: Any) -> Bool? {
   func `do`<A>(_: A.Type) -> Bool? {
     (_Witness<A>.self as? _AnyEquatable.Type)?._isEqual(a, b)
@@ -195,10 +183,7 @@ private func _isEqual(_ a: Any, _ b: Any) -> Bool? {
 }
 
 private func _hash(_ value: Any, into hasher: inout Hasher) -> Bool {
-  func `do`<A>(_: A.Type) -> Bool {
-    guard let hashable = (_Witness<A>.self as? _AnyHashable.Type)
-    else { return false }
-    return hashable._hash(value, into: &hasher)
-  }
-  return _openExistential(type(of: value), do: `do`)
+  guard let hashable = value as? AnyHashable else { return false }
+  hashable.hash(into: &hasher)
+  return true
 }
