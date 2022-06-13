@@ -152,7 +152,9 @@ extension TaskResult: Hashable where Success: Hashable {
     case let .success(success):
       hasher.combine(success)
     case let .failure(failure):
-      if !_hash(failure, into: &hasher) {
+      if let failure = (failure as Any) as? AnyHashable {
+        hasher.combine(failure)
+      } else {
         hasher.combine(failure as NSError)
       }
     }
@@ -182,8 +184,3 @@ private func _isEqual(_ a: Any, _ b: Any) -> Bool? {
   return _openExistential(type(of: a), do: `do`)
 }
 
-private func _hash(_ value: Any, into hasher: inout Hasher) -> Bool {
-  guard let hashable = value as? AnyHashable else { return false }
-  hashable.hash(into: &hasher)
-  return true
-}
