@@ -8,7 +8,7 @@ public final class Box<Wrapped> {
     self.wrappedValue = wrappedValue
   }
 
-  public var unboxed: Wrapped {
+  public var boxedValue: Wrapped {
     _read { yield self.wrappedValue }
     _modify { yield &self.wrappedValue }
   }
@@ -47,14 +47,14 @@ public final actor SendableState<Value> {
 }
 
 @propertyWrapper
-public struct UncheckedSendable<Wrapped> : @unchecked Sendable {
+public struct UncheckedSendable<Wrapped>: @unchecked Sendable {
   public var wrappedValue: Wrapped
 
   public init(wrappedValue: Wrapped) {
     self.wrappedValue = wrappedValue
   }
 
-  public var unchecked: Wrapped {
+  public var uncheckedValue: Wrapped {
     _read { yield self.wrappedValue }
     _modify { yield &self.wrappedValue }
   }
@@ -66,7 +66,7 @@ public struct UncheckedSendable<Wrapped> : @unchecked Sendable {
 }
 
 extension AsyncStream {
-  public init<S: AsyncSequence>(
+  public init<S: AsyncSequence & Sendable>(
     _ sequence: S,
     bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
   ) where S.Element == Element {
@@ -95,7 +95,7 @@ extension AsyncStream {
 }
 
 extension AsyncThrowingStream where Failure == Error {
-  public init<S: AsyncSequence>(
+  public init<S: AsyncSequence & Sendable>(
     _ sequence: S,
     bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
   ) where S.Element == Element {
