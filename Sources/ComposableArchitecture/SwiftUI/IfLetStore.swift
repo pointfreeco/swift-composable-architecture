@@ -32,7 +32,7 @@ import SwiftUI
 /// }
 /// ```
 ///
-public struct IfLetStore<State, Action, Content>: View where Content: View {
+public struct IfLetStore<State, Action, Content: View>: View {
   private let content: (ViewStore<State?, Action>) -> Content
   private let store: Store<State?, Action>
 

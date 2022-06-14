@@ -20,10 +20,10 @@ private let readMe = """
   """
 
 extension Effect where Failure == Never {
-  public static func keyFrames<S>(
+  public static func keyFrames<S: Scheduler>(
     values: [(output: Output, duration: S.SchedulerTimeType.Stride)],
     scheduler: S
-  ) -> Effect where S: Scheduler {
+  ) -> Self {
     .concatenate(
       values
         .enumerated()

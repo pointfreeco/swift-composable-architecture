@@ -1,6 +1,6 @@
 /// A wrapper around a value and a hashable identifier that conforms to identifiable.
 @dynamicMemberLookup
-public struct Identified<ID, Value>: Identifiable where ID: Hashable {
+public struct Identified<ID: Hashable, Value>: Identifiable {
   public let id: ID
   public var value: Value
 

@@ -52,7 +52,7 @@ extension Reducer {
     state: WritableKeyPath<State, DownloadComponentState<ID>>,
     action: CasePath<Action, DownloadComponentAction>,
     environment: @escaping (Environment) -> DownloadComponentEnvironment
-  ) -> Reducer {
+  ) -> Self {
     .combine(
       Reducer<DownloadComponentState<ID>, DownloadComponentAction, DownloadComponentEnvironment> {
         state, action, environment in
