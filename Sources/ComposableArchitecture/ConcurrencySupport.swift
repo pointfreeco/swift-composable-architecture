@@ -92,6 +92,10 @@ extension AsyncStream {
     var continuation: Continuation!
     return (Self(elementType, bufferingPolicy: limit) { continuation = $0 }, continuation)
   }
+
+  public static var never: Self {
+    .init { _ in }
+  }
 }
 
 extension AsyncThrowingStream where Failure == Error {
@@ -128,8 +132,7 @@ extension AsyncThrowingStream where Failure == Error {
 extension Task where Failure == Never {
   /// An async function that never returns.
   public static func never() async throws -> Success {
-    let stream = AsyncStream<Success> { _ in }
-    for await element in stream {
+    for await element in AsyncStream<Success>.never {
       return element
     }
     throw _Concurrency.CancellationError()
