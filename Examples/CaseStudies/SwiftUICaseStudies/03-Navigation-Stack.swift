@@ -88,9 +88,7 @@ struct NavigationStackView: View {
     ZStack(alignment: .bottom) {
       NavigationStackStore(store: self.store) {
         Form {
-          Section {
-            Text(readMe)
-          }
+          Section { Text(readMe) }
 
           NavigationLink(route: NavigationStackState.Route.screenA(.init())) {
             Text("Go to screen A")
@@ -122,25 +120,28 @@ struct NavigationStackView: View {
         }
         .navigationTitle("Navigation Stack")
       }
+      .zIndex(0)
 
       WithViewStore(
-        self.store.scope(state: { (total: $0.total, depth: $0.path.count) }),
+        self.store, //.scope(state: { (total: $0.total, depth: $0.path.count) }),
         removeDuplicates: ==
       ) { viewStore in
-        VStack {
-          Text("Total count: \(viewStore.total)")
-          if viewStore.depth > 0 {
-            Button("Go home") {
+        if viewStore.path.count > 0 {
+          VStack {
+            Text("Total count: \(viewStore.total)")
+            Button("Pop to root") {
               // TODO: choose style
               viewStore.send(.navigation(.setPath([])))
               viewStore.send(.popToRoot)
               viewStore.send(.navigation(.removeAll))
             }
           }
+          .padding()
+          .transition(.opacity.animation(.default))
+          .background(Color.white)
         }
-        .animation(.default, value: viewStore.depth)
-        .background(Color.white)
       }
+      .zIndex(1)
     }
   }
 }
