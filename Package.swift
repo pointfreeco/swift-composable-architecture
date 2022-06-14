@@ -21,7 +21,8 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/combine-schedulers", branch: "concurrency-updates"),
     .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.8.0"),
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.3.0"),
-    .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "0.3.2"),
+    // TODO: don't use this branch on identified-collections. move all of that into the NavigationState wrapper
+    .package(url: "https://github.com/pointfreeco/swift-identified-collections", branch: "range-replaceable"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.2.1"),
   ],
   targets: [
