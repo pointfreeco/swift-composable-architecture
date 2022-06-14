@@ -96,13 +96,13 @@ extension Effect where Failure == Never {
   ///   - tolerance: The allowed timing variance when emitting events. Defaults to `nil`, which
   ///     allows any variance.
   ///   - options: Scheduler options passed to the timer. Defaults to `nil`.
-  public static func timer<S>(
+  public static func timer<S: Scheduler>(
     id: AnyHashable,
     every interval: S.SchedulerTimeType.Stride,
     tolerance: S.SchedulerTimeType.Stride? = nil,
     on scheduler: S,
     options: S.SchedulerOptions? = nil
-  ) -> Effect where S: Scheduler, S.SchedulerTimeType == Output {
+  ) -> Self where S.SchedulerTimeType == Output {
 
     Publishers.Timer(every: interval, tolerance: tolerance, scheduler: scheduler, options: options)
       .autoconnect()
@@ -125,13 +125,13 @@ extension Effect where Failure == Never {
   ///   - tolerance: The allowed timing variance when emitting events. Defaults to `nil`, which
   ///     allows any variance.
   ///   - options: Scheduler options passed to the timer. Defaults to `nil`.
-  public static func timer<S>(
+  public static func timer<S: Scheduler>(
     id: Any.Type,
     every interval: S.SchedulerTimeType.Stride,
     tolerance: S.SchedulerTimeType.Stride? = nil,
     on scheduler: S,
     options: S.SchedulerOptions? = nil
-  ) -> Effect where S: Scheduler, S.SchedulerTimeType == Output {
+  ) -> Self where S.SchedulerTimeType == Output {
     self.timer(
       id: ObjectIdentifier(id),
       every: interval,

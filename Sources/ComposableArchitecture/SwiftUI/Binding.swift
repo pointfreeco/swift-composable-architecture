@@ -263,24 +263,22 @@ import SwiftUI
     /// Shorthand for `.binding(.set(\.$keyPath, value))`.
     ///
     /// - Returns: A binding action.
-    public static func set<Value>(
+    public static func set<Value: Equatable>(
       _ keyPath: WritableKeyPath<State, BindableState<Value>>,
       _ value: Value
-    ) -> Self
-    where Value: Equatable {
+    ) -> Self {
       self.binding(.set(keyPath, value))
     }
   }
 
-  extension ViewStore {
+  extension ViewStore where Action: BindableAction, Action.State == State {
     /// Returns a binding to the resulting bindable state of a given key path.
     ///
     /// - Parameter keyPath: A key path to a specific bindable state.
     /// - Returns: A new binding.
-    public func binding<Value>(
+    public func binding<Value: Equatable>(
       _ keyPath: WritableKeyPath<State, BindableState<Value>>
-    ) -> Binding<Value>
-    where Action: BindableAction, Action.State == State, Value: Equatable {
+    ) -> Binding<Value> {
       self.binding(
         get: { $0[keyPath: keyPath].wrappedValue },
         send: { .binding(.set(keyPath, $0)) }
@@ -318,10 +316,10 @@ public struct BindingAction<Root>: Equatable {
     ///   - value: A value to assign at the given key path.
     /// - Returns: An action that describes simple mutations to some root state at a writable key
     ///   path.
-    public static func set<Value>(
+    public static func set<Value: Equatable>(
       _ keyPath: WritableKeyPath<Root, BindableState<Value>>,
       _ value: Value
-    ) -> Self where Value: Equatable {
+    ) -> Self {
       .init(
         keyPath: keyPath,
         set: { $0[keyPath: keyPath].wrappedValue = value },

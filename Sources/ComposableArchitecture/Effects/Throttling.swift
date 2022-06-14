@@ -13,12 +13,12 @@ extension Effect {
   ///     `false`, the publisher emits the first element received during the interval.
   /// - Returns: An effect that emits either the most-recent or first element received during the
   ///   specified interval.
-  public func throttle<S>(
+  public func throttle<S: Scheduler>(
     id: AnyHashable,
     for interval: S.SchedulerTimeType.Stride,
     scheduler: S,
     latest: Bool
-  ) -> Effect where S: Scheduler {
+  ) -> Self {
     self.receive(on: scheduler)
       .flatMap { value -> AnyPublisher<Output, Failure> in
         throttleLock.lock()
@@ -73,12 +73,12 @@ extension Effect {
   ///     `false`, the publisher emits the first element received during the interval.
   /// - Returns: An effect that emits either the most-recent or first element received during the
   ///   specified interval.
-  public func throttle<S>(
+  public func throttle<S: Scheduler>(
     id: Any.Type,
     for interval: S.SchedulerTimeType.Stride,
     scheduler: S,
     latest: Bool
-  ) -> Effect where S: Scheduler {
+  ) -> Self {
     self.throttle(id: ObjectIdentifier(id), for: interval, scheduler: scheduler, latest: latest)
   }
 }

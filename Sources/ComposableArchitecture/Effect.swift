@@ -41,9 +41,9 @@ public struct Effect<Output, Failure: Error>: Publisher {
     self.upstream = publisher.eraseToAnyPublisher()
   }
 
-  public func receive<S>(
+  public func receive<S: Combine.Subscriber>(
     subscriber: S
-  ) where S: Combine.Subscriber, Failure == S.Failure, Output == S.Input {
+  ) where S.Input == Output, S.Failure == Failure {
     self.upstream.subscribe(subscriber)
   }
 
@@ -71,7 +71,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
 
   /// An effect that does nothing and completes immediately. Useful for situations where you must
   /// return an effect, but you don't need to do anything.
-  public static var none: Effect {
+  public static var none: Self {
     Empty(completeImmediately: true).eraseToEffect()
   }
 
@@ -109,7 +109,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   ///   used to feed it `Result<Output, Failure>` values.
   public static func future(
     _ attemptToFulfill: @escaping (@escaping (Result<Output, Failure>) -> Void) -> Void
-  ) -> Effect {
+  ) -> Self {
     Deferred { Future(attemptToFulfill) }.eraseToEffect()
   }
 
@@ -193,7 +193,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   ///
   /// - Parameter effects: A variadic list of effects.
   /// - Returns: A new effect
-  public static func concatenate(_ effects: Effect...) -> Effect {
+  public static func concatenate(_ effects: Self...) -> Self {
     .concatenate(effects)
   }
 
@@ -208,9 +208,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   ///
   /// - Parameter effects: A collection of effects.
   /// - Returns: A new effect
-  public static func concatenate<C: Collection>(
-    _ effects: C
-  ) -> Effect where C.Element == Effect {
+  public static func concatenate<C: Collection>(_ effects: C) -> Self where C.Element == Effect {
     guard let first = effects.first else { return .none }
 
     return
@@ -226,9 +224,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   ///
   /// - Parameter effects: A list of effects.
   /// - Returns: A new effect
-  public static func merge(
-    _ effects: Effect...
-  ) -> Effect {
+  public static func merge(_ effects: Self...) -> Self {
     .merge(effects)
   }
 
@@ -237,7 +233,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   ///
   /// - Parameter effects: A sequence of effects.
   /// - Returns: A new effect
-  public static func merge<S: Sequence>(_ effects: S) -> Effect where S.Element == Effect {
+  public static func merge<S: Sequence>(_ effects: S) -> Self where S.Element == Effect {
     Publishers.MergeMany(effects).eraseToEffect()
   }
 
@@ -246,7 +242,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   ///
   /// - Parameter work: A closure encapsulating some work to execute in the real world.
   /// - Returns: An effect.
-  public static func fireAndForget(_ work: @escaping () throws -> Void) -> Effect {
+  public static func fireAndForget(_ work: @escaping () throws -> Void) -> Self {
     // NB: Ideally we'd return a `Deferred` wrapping an `Empty(completeImmediately: true)`, but
     //     due to a bug in iOS 13.2 that publisher will never complete. The bug was fixed in
     //     iOS 13.3, but to remain compatible with iOS 13.2 and higher we need to do a little

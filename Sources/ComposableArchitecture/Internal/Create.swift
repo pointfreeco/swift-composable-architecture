@@ -123,7 +123,7 @@ extension Publishers {
       self.callback = callback
     }
 
-    func receive<S: Subscriber>(subscriber: S) where Failure == S.Failure, Output == S.Input {
+    func receive<S: Subscriber>(subscriber: S) where S.Input == Output, S.Failure == Failure {
       subscriber.receive(subscription: Subscription(callback: callback, downstream: subscriber))
     }
   }
@@ -131,7 +131,7 @@ extension Publishers {
 
 extension Publishers.Create {
   fileprivate class Subscription<Downstream: Subscriber>: Combine.Subscription
-  where Output == Downstream.Input, Failure == Downstream.Failure {
+  where Downstream.Input == Output, Downstream.Failure == Failure {
     private let buffer: DemandBuffer<Downstream>
     private var cancellable: Cancellable?
 

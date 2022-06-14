@@ -114,7 +114,7 @@ import SwiftUI
     public static func fireAndForget(
       priority: TaskPriority? = nil,
       _ work: @escaping @Sendable () async throws -> Void
-    ) -> Effect {
+    ) -> Self {
       Effect<Void, Never>.task(priority: priority) { try? await work() }
         .fireAndForget()
     }

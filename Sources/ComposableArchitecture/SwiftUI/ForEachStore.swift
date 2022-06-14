@@ -70,8 +70,9 @@ import SwiftUI
 /// }
 /// ```
 ///
-public struct ForEachStore<EachState, EachAction, Data, ID, Content>: DynamicViewContent
-where Data: Collection, ID: Hashable, Content: View {
+public struct ForEachStore<
+  EachState, EachAction, Data: Collection, ID: Hashable, Content: View
+>: DynamicViewContent {
   public let data: Data
   let content: () -> Content
 
