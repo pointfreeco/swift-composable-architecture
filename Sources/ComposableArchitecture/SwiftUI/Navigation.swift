@@ -55,6 +55,10 @@ public struct NavigationState<Element>: MutableCollection, RandomAccessCollectio
       }
     }
   }
+
+  public func dropLast(_ k: Int = 1) -> Self {
+    .init(path: .init(uniqueElements: self.path.dropLast(k)))
+  }
 }
 
 extension NavigationState: ExpressibleByDictionaryLiteral {
