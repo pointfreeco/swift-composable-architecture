@@ -41,7 +41,7 @@ class NavigationStackTests: XCTestCase {
       }
     }
 
-    // Push Screen C, start timer, wait 2 seconds, pop off stack.
+    // Push Screen C, start timer, wait 2 seconds
     let id = UUID()
     store.send(.navigation(.setPath(store.state.path + [.init(id: 1, element: .screenC(.init(id: id)))]))) {
       $0.path.append(.init(id: 1, element: .screenC(.init(id: id))))
@@ -61,6 +61,7 @@ class NavigationStackTests: XCTestCase {
       $0.total = 3
     }
 
+    // Pop screen C off stack
     store.send(.navigation(.setPath(store.state.path.dropLast()))) {
       $0.path.removeLast()
       $0.total = 1
