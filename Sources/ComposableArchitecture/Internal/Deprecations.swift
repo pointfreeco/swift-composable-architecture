@@ -387,16 +387,15 @@ extension Store {
 }
 
 #if compiler(>=5.4)
-  extension ViewStore {
+  extension ViewStore where Action: BindableAction, Action.State == State {
     @available(
       *, deprecated,
       message:
         "Dynamic member lookup is no longer supported for bindable state. Instead of dot-chaining on the view store, e.g. 'viewStore.$value', invoke the 'binding' method on view store with a key path to the value, e.g. 'viewStore.binding(\\.$value)'. For more on this change, see: https://github.com/pointfreeco/swift-composable-architecture/pull/810"
     )
-    public subscript<Value>(
+    public subscript<Value: Equatable>(
       dynamicMember keyPath: WritableKeyPath<State, BindableState<Value>>
-    ) -> Binding<Value>
-    where Action: BindableAction, Action.State == State, Value: Equatable {
+    ) -> Binding<Value> {
       self.binding(
         get: { $0[keyPath: keyPath].wrappedValue },
         send: { .binding(.set(keyPath, $0)) }
@@ -414,11 +413,10 @@ extension Store {
       message:
         "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\\.$value'"
     )
-    public static func set<Value>(
+    public static func set<Value: Equatable>(
       _ keyPath: WritableKeyPath<Root, Value>,
       _ value: Value
-    ) -> Self
-    where Value: Equatable {
+    ) -> Self {
       .init(
         keyPath: keyPath,
         set: { $0[keyPath: keyPath] = value },
@@ -461,11 +459,10 @@ extension Store {
       message:
         "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. Bindings are now derived via 'ViewStore.binding' with a key path to that 'BindableState' (for example, 'viewStore.binding(\\.$value)'). For dynamic member lookup to be available, the view store's 'Action' type must also conform to 'BindableAction'."
     )
-    public func binding<LocalState>(
+    public func binding<LocalState: Equatable>(
       keyPath: WritableKeyPath<State, LocalState>,
       send action: @escaping (BindingAction<State>) -> Action
-    ) -> Binding<LocalState>
-    where LocalState: Equatable {
+    ) -> Binding<LocalState> {
       self.binding(
         get: { $0[keyPath: keyPath] },
         send: { action(.set(keyPath, $0)) }
@@ -479,11 +476,10 @@ extension Store {
       message:
         "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\\.$value'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'."
     )
-    public static func set<Value>(
+    public static func set<Value: Equatable>(
       _ keyPath: WritableKeyPath<Root, Value>,
       _ value: Value
-    ) -> Self
-    where Value: Equatable {
+    ) -> Self {
       .init(
         keyPath: keyPath,
         set: { $0[keyPath: keyPath] = value },
@@ -526,11 +522,10 @@ extension Store {
       message:
         "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. Bindings are now derived via 'ViewStore.binding' with a key path to that 'BindableState' (for example, 'viewStore.binding(\\.$value)'). For dynamic member lookup to be available, the view store's 'Action' type must also conform to 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'BindableState' and 'BindableAction'."
     )
-    public func binding<LocalState>(
+    public func binding<LocalState: Equatable>(
       keyPath: WritableKeyPath<State, LocalState>,
       send action: @escaping (BindingAction<State>) -> Action
-    ) -> Binding<LocalState>
-    where LocalState: Equatable {
+    ) -> Binding<LocalState> {
       self.binding(
         get: { $0[keyPath: keyPath] },
         send: { action(.set(keyPath, $0)) }

@@ -50,7 +50,7 @@ import SwiftUI
 /// - See also: ``Reducer/pullback(state:action:environment:file:line:)``, a method that aids in
 ///   transforming reducers that operate on each case of an enum into reducers that operate on the
 ///   entire enum.
-public struct SwitchStore<State, Action, Content>: View where Content: View {
+public struct SwitchStore<State, Action, Content: View>: View {
   public let store: Store<State, Action>
   public let content: () -> Content
 
@@ -69,8 +69,7 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
 }
 
 /// A view that handles a specific case of enum state in a ``SwitchStore``.
-public struct CaseLet<GlobalState, GlobalAction, LocalState, LocalAction, Content>: View
-where Content: View {
+public struct CaseLet<GlobalState, GlobalAction, LocalState, LocalAction, Content: View>: View {
   @EnvironmentObject private var store: StoreObservableObject<GlobalState, GlobalAction>
   public let toLocalState: (GlobalState) -> LocalState?
   public let fromLocalAction: (LocalAction) -> GlobalAction
@@ -132,7 +131,7 @@ extension CaseLet where GlobalAction == LocalAction {
 /// If you wish to use ``SwitchStore`` in a non-exhaustive manner (i.e. you do not want to provide
 /// a ``CaseLet`` for each case of the enum), then you must insert a ``Default`` view at the end of
 /// the ``SwitchStore``'s body.
-public struct Default<Content>: View where Content: View {
+public struct Default<Content: View>: View {
   private let content: () -> Content
 
   /// Initializes a ``Default`` view that computes content depending on if a store of enum state

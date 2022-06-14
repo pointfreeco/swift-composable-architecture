@@ -41,9 +41,9 @@ public struct Effect<Output, Failure: Error>: Publisher {
     self.upstream = publisher.eraseToAnyPublisher()
   }
 
-  public func receive<S>(
+  public func receive<S: Combine.Subscriber>(
     subscriber: S
-  ) where S: Combine.Subscriber, Failure == S.Failure, Output == S.Input {
+  ) where S.Input == Output, S.Failure == Failure {
     self.upstream.subscribe(subscriber)
   }
 
@@ -71,7 +71,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
 
   /// An effect that does nothing and completes immediately. Useful for situations where you must
   /// return an effect, but you don't need to do anything.
-  public static var none: Effect {
+  public static var none: Self {
     Empty(completeImmediately: true).eraseToEffect()
   }
 
@@ -193,7 +193,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   ///
   /// - Parameter effects: A variadic list of effects.
   /// - Returns: A new effect
-  public static func concatenate(_ effects: Effect...) -> Self {
+  public static func concatenate(_ effects: Self...) -> Self {
     .concatenate(effects)
   }
 
@@ -208,9 +208,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   ///
   /// - Parameter effects: A collection of effects.
   /// - Returns: A new effect
-  public static func concatenate<C: Collection>(
-    _ effects: C
-  ) -> Self where C.Element == Effect {
+  public static func concatenate<C: Collection>(_ effects: C) -> Self where C.Element == Effect {
     guard let first = effects.first else { return .none }
 
     return
@@ -226,9 +224,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   ///
   /// - Parameter effects: A list of effects.
   /// - Returns: A new effect
-  public static func merge(
-    _ effects: Effect...
-  ) -> Self {
+  public static func merge(_ effects: Self...) -> Self {
     .merge(effects)
   }
 

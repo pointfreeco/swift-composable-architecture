@@ -109,7 +109,7 @@ public struct Reducer<State, Action, Environment> {
   ///
   /// - Parameter reducers: A list of reducers.
   /// - Returns: A single reducer.
-  public static func combine(_ reducers: Reducer...) -> Reducer {
+  public static func combine(_ reducers: Self...) -> Self {
     .combine(reducers)
   }
 
@@ -164,7 +164,7 @@ public struct Reducer<State, Action, Environment> {
   ///
   /// - Parameter reducers: An array of reducers.
   /// - Returns: A single reducer.
-  public static func combine(_ reducers: [Reducer]) -> Reducer {
+  public static func combine(_ reducers: [Self]) -> Self {
     Self { value, action, environment in
       .merge(reducers.map { $0.reducer(&value, action, environment) })
     }
@@ -224,7 +224,7 @@ public struct Reducer<State, Action, Environment> {
   ///
   /// - Parameter other: Another reducer.
   /// - Returns: A single reducer.
-  public func combined(with other: Reducer) -> Reducer {
+  public func combined(with other: Self) -> Self {
     .combine(self, other)
   }
 

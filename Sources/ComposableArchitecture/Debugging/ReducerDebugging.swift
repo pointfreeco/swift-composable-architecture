@@ -46,7 +46,7 @@ extension Reducer {
     environment toDebugEnvironment: @escaping (Environment) -> DebugEnvironment = { _ in
       DebugEnvironment()
     }
-  ) -> Reducer {
+  ) -> Self {
     self.debug(
       prefix,
       state: { $0 },
@@ -73,7 +73,7 @@ extension Reducer {
     environment toDebugEnvironment: @escaping (Environment) -> DebugEnvironment = { _ in
       DebugEnvironment()
     }
-  ) -> Reducer {
+  ) -> Self {
     self.debug(
       prefix,
       state: { _ in () },
@@ -104,7 +104,7 @@ extension Reducer {
     environment toDebugEnvironment: @escaping (Environment) -> DebugEnvironment = { _ in
       DebugEnvironment()
     }
-  ) -> Reducer {
+  ) -> Self {
     #if DEBUG
       return .init { state, action, environment in
         let previousState = toLocalState(state)
