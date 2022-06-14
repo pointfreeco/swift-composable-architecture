@@ -85,51 +85,62 @@ struct NavigationStackView: View {
   let store: Store<NavigationStackState, NavigationStackAction>
 
   var body: some View {
-    NavigationStackStore(store: self.store) {
-      Form {
-        Section {
-          Text(readMe)
-        }
+    ZStack(alignment: .bottom) {
+      NavigationStackStore(store: self.store) {
+        Form {
+          Section {
+            Text(readMe)
+          }
 
-        NavigationLink(route: NavigationStackState.Route.screenA(.init())) {
-          Text("Go to screen A")
-        }
-        NavigationLink(route: NavigationStackState.Route.screenB(.init())) {
-          Text("Go to screen B")
-        }
-        NavigationLink(route: NavigationStackState.Route.screenC(.init(id: UUID()))) {
-          Text("Go to screen C")
-        }
-      }
-      .navigationDestination(store: self.store) {
-        DestinationStore(
-          // NB: Using explicit CasePath(...) due to Swift compiler bugs
-          state: CasePath(NavigationStackState.Route.screenA).extract(from:),
-          action: NavigationStackAction.Route.screenA,
-          content: ScreenAView.init(store:)
-        )
-        DestinationStore(
-          state: CasePath(NavigationStackState.Route.screenB).extract(from:),
-          action: NavigationStackAction.Route.screenB,
-          content: ScreenBView.init(store:)
-        )
-        DestinationStore(
-          state: CasePath(NavigationStackState.Route.screenC).extract(from:),
-          action: NavigationStackAction.Route.screenC,
-          content: ScreenCView.init(store:)
-        )
-
-        WithViewStore(self.store.scope(state: \.total)) { viewStore in
-          Text("Total count: \(viewStore.state)")
-          Button("Go home") {
-            // TODO: choose style
-            viewStore.send(.navigation(.setPath([])))
-            viewStore.send(.popToRoot)
-            viewStore.send(.navigation(.removeAll))
+          NavigationLink(route: NavigationStackState.Route.screenA(.init())) {
+            Text("Go to screen A")
+          }
+          NavigationLink(route: NavigationStackState.Route.screenB(.init())) {
+            Text("Go to screen B")
+          }
+          NavigationLink(route: NavigationStackState.Route.screenC(.init(id: UUID()))) {
+            Text("Go to screen C")
           }
         }
+        .navigationDestination(store: self.store) {
+          DestinationStore(
+            // NB: Using explicit CasePath(...) due to Swift compiler bugs
+            state: CasePath(NavigationStackState.Route.screenA).extract(from:),
+            action: NavigationStackAction.Route.screenA,
+            content: ScreenAView.init(store:)
+          )
+          DestinationStore(
+            state: CasePath(NavigationStackState.Route.screenB).extract(from:),
+            action: NavigationStackAction.Route.screenB,
+            content: ScreenBView.init(store:)
+          )
+          DestinationStore(
+            state: CasePath(NavigationStackState.Route.screenC).extract(from:),
+            action: NavigationStackAction.Route.screenC,
+            content: ScreenCView.init(store:)
+          )
+        }
+        .navigationTitle("Navigation Stack")
       }
-      .navigationTitle("Navigation Stack")
+
+      WithViewStore(
+        self.store.scope(state: { (total: $0.total, depth: $0.path.count) }),
+        removeDuplicates: ==
+      ) { viewStore in
+        VStack {
+          Text("Total count: \(viewStore.total)")
+          if viewStore.depth > 0 {
+            Button("Go home") {
+              // TODO: choose style
+              viewStore.send(.navigation(.setPath([])))
+              viewStore.send(.popToRoot)
+              viewStore.send(.navigation(.removeAll))
+            }
+          }
+        }
+        .animation(.default, value: viewStore.depth)
+        .background(Color.white)
+      }
     }
   }
 }
@@ -208,7 +219,7 @@ struct ScreenAView: View {
         }
 
         Section {
-          NavigationLink(route: NavigationStackState.Route.screenA(.init())) {
+          NavigationLink(route: NavigationStackState.Route.screenA(.init(count: viewStore.count))) {
             Text("Go to screen A")
           }
           NavigationLink(route: NavigationStackState.Route.screenB(.init())) {
@@ -280,7 +291,7 @@ struct ScreenCView: View {
         }
 
         Section {
-          NavigationLink(route: NavigationStackState.Route.screenA(.init())) {
+          NavigationLink(route: NavigationStackState.Route.screenA(.init(count: viewStore.count))) {
             Text("Go to screen A")
           }
           NavigationLink(route: NavigationStackState.Route.screenB(.init())) {
