@@ -17,7 +17,9 @@ struct NavigationStackState: Equatable, NavigableState {
 }
 
 enum NavigationStackAction: Equatable, NavigableAction {
+  case goToABCButtonTapped
   case navigation(NavigationAction<NavigationStackState.Route, Route>)
+  case shuffleButtonTapped
 
   enum Route: Equatable {
     case screenA(ScreenAAction)
@@ -44,9 +46,17 @@ let navigationStackReducer = Reducer<
   NavigationStackEnvironment
 > { state, action, environment in
   switch action {
+  case .goToABCButtonTapped:
+    state.path.append(.init(id: environment.nextId(), element: .screenA(.init())))
+    state.path.append(.init(id: environment.nextId(), element: .screenB(.init())))
+    state.path.append(.init(id: environment.nextId(), element: .screenC(.init(id: UUID()))))
+    return .none
+
+  case .shuffleButtonTapped:
+    state.path = NavigationState(path: .init(uniqueElements: state.path.shuffled()))
+    return .none
 
   case .navigation:
-
     // TODO: shows off how to inspect state in entire stack
     state.total = state.path.reduce(into: 0) { total, route in
       switch route.element {
@@ -90,14 +100,24 @@ struct NavigationStackView: View {
         Form {
           Section { Text(readMe) }
 
-          NavigationLink(route: NavigationStackState.Route.screenA(.init())) {
-            Text("Go to screen A")
+          Section{
+            NavigationLink(route: NavigationStackState.Route.screenA(.init())) {
+              Text("Go to screen A")
+            }
+            NavigationLink(route: NavigationStackState.Route.screenB(.init())) {
+              Text("Go to screen B")
+            }
+            NavigationLink(route: NavigationStackState.Route.screenC(.init(id: UUID()))) {
+              Text("Go to screen C")
+            }
           }
-          NavigationLink(route: NavigationStackState.Route.screenB(.init())) {
-            Text("Go to screen B")
-          }
-          NavigationLink(route: NavigationStackState.Route.screenC(.init(id: UUID()))) {
-            Text("Go to screen C")
+
+          WithViewStore(self.store.stateless) { viewStore in
+            Section {
+              Button("Go to A → B → C") {
+                viewStore.send(.goToABCButtonTapped)
+              }
+            }
           }
         }
         .navigationDestination(store: self.store) {
@@ -129,6 +149,9 @@ struct NavigationStackView: View {
         if viewStore.path.count > 0 {
           VStack {
             Text("Total count: \(viewStore.total)")
+            Button("Shuffle navigation stack") {
+              viewStore.send(.shuffleButtonTapped)
+            }
             Button("Pop to root") {
               // TODO: choose style
               viewStore.send(.navigation(.setPath([])))
@@ -246,7 +269,10 @@ let screenBReducer = Reducer<ScreenBState, ScreenBAction, Void> { state, action,
 struct ScreenBView: View {
   let store: Store<ScreenBState, ScreenBAction>
   var body: some View {
-    Text("Screen B")
+    Form {
+
+    }
+    .navigationTitle("Screen B")
   }
 }
 
@@ -303,133 +329,11 @@ struct ScreenCView: View {
           }
         }
       }
+      .navigationTitle("Screen C")
     }
   }
 }
 
-
-
-//
-//struct LoadThenNavigateListState: Equatable {
-//  var rows: IdentifiedArrayOf<Row> = [
-//    .init(count: 1, id: UUID()),
-//    .init(count: 42, id: UUID()),
-//    .init(count: 100, id: UUID()),
-//  ]
-//  var selection: Identified<Row.ID, CounterState>?
-//
-//  struct Row: Equatable, Identifiable {
-//    var count: Int
-//    let id: UUID
-//    var isActivityIndicatorVisible = false
-//  }
-//}
-//
-//enum LoadThenNavigateListAction: Equatable {
-//  case counter(CounterAction)
-//  case onDisappear
-//  case setNavigation(selection: UUID?)
-//  case setNavigationSelectionDelayCompleted(UUID)
-//}
-//
-//struct LoadThenNavigateListEnvironment {
-//  var mainQueue: AnySchedulerOf<DispatchQueue>
-//}
-//
-//let loadThenNavigateListReducer =
-//counterReducer
-//  .pullback(
-//    state: \Identified.value,
-//    action: .self,
-//    environment: { $0 }
-//  )
-//  .optional()
-//  .pullback(
-//    state: \LoadThenNavigateListState.selection,
-//    action: /LoadThenNavigateListAction.counter,
-//    environment: { _ in CounterEnvironment() }
-//  )
-//  .combined(
-//    with: Reducer<
-//    LoadThenNavigateListState, LoadThenNavigateListAction, LoadThenNavigateListEnvironment
-//    > { state, action, environment in
-//
-//      enum CancelId {}
-//
-//      switch action {
-//      case .counter:
-//        return .none
-//
-//      case .onDisappear:
-//        return .cancel(id: CancelId.self)
-//
-//      case let .setNavigation(selection: .some(navigatedId)):
-//        for row in state.rows {
-//          state.rows[id: row.id]?.isActivityIndicatorVisible = row.id == navigatedId
-//        }
-//
-//        return Effect(value: .setNavigationSelectionDelayCompleted(navigatedId))
-//          .delay(for: 1, scheduler: environment.mainQueue)
-//          .eraseToEffect()
-//          .cancellable(id: CancelId.self, cancelInFlight: true)
-//
-//      case .setNavigation(selection: .none):
-//        if let selection = state.selection {
-//          state.rows[id: selection.id]?.count = selection.count
-//        }
-//        state.selection = nil
-//        return .cancel(id: CancelId.self)
-//
-//      case let .setNavigationSelectionDelayCompleted(id):
-//        state.rows[id: id]?.isActivityIndicatorVisible = false
-//        state.selection = Identified(
-//          CounterState(count: state.rows[id: id]?.count ?? 0),
-//          id: id
-//        )
-//        return .none
-//      }
-//    }
-//  )
-//
-//struct LoadThenNavigateListView: View {
-//  let store: Store<LoadThenNavigateListState, LoadThenNavigateListAction>
-//
-//  var body: some View {
-//    WithViewStore(self.store) { viewStore in
-//      Form {
-//        Section(header: Text(readMe)) {
-//          ForEach(viewStore.rows) { row in
-//            NavigationLink(
-//              destination: IfLetStore(
-//                self.store.scope(
-//                  state: \.selection?.value,
-//                  action: LoadThenNavigateListAction.counter
-//                ),
-//                then: CounterView.init(store:)
-//              ),
-//              tag: row.id,
-//              selection: viewStore.binding(
-//                get: \.selection?.id,
-//                send: LoadThenNavigateListAction.setNavigation(selection:)
-//              )
-//            ) {
-//              HStack {
-//                Text("Load optional counter that starts from \(row.count)")
-//                if row.isActivityIndicatorVisible {
-//                  Spacer()
-//                  ProgressView()
-//                }
-//              }
-//            }
-//          }
-//        }
-//      }
-//      .navigationBarTitle("Load then navigate")
-//      .onDisappear { viewStore.send(.onDisappear) }
-//    }
-//  }
-//}
-//
 struct NavigationStack_Previews: PreviewProvider {
   static var previews: some View {
     NavigationStackView(
