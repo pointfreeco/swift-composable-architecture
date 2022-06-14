@@ -1,46 +1,51 @@
 import SwiftUI
 
-struct NavigationState<Element>: MutableCollection, RandomAccessCollection, RangeReplaceableCollection {
-  typealias ID = AnyHashable
+// TODO: other names? NavigationPathState? NavigationStatePath?
+// TODO: should NavigationState flatten to just work on Identifiable elements?
+public struct NavigationState<Element>: MutableCollection, RandomAccessCollection, RangeReplaceableCollection {
+  public typealias ID = AnyHashable
 
-  struct Route: Identifiable {
-    var id: AnyHashable
-    var element: Element
+  public struct Route: Identifiable {
+    public var id: AnyHashable
+    public var element: Element
 
-    init(id: AnyHashable, element: Element) {
+    public init(id: ID, element: Element) {
       self.id = id
       self.element = element
     }
   }
 
+  public init() {
+  }
+  public init(path: IdentifiedArrayOf<Route>) {
+    self.path = path
+  }
+
   // TODO: replace IdentifiedArray with OrderedDictionary?
   var path = IdentifiedArrayOf<Route>()
 
-  var startIndex: Int {
+  public var startIndex: Int {
     self.path.startIndex
   }
-  var endIndex: Int {
+  public var endIndex: Int {
     self.path.endIndex
   }
-  func index(after i: Int) -> Int {
+  public func index(after i: Int) -> Int {
     self.path.index(after: i)
   }
-  subscript(position: Int) -> Route {
+  public subscript(position: Int) -> Route {
     _read { yield self.path[position] }
     _modify { yield &self.path[position] }
   }
-  mutating func replaceSubrange<C>(_ subrange: Range<Int>, with newElements: C)
+  public mutating func replaceSubrange<C>(_ subrange: Range<Int>, with newElements: C)
   where C: Collection, Route == C.Element {
     self.path.replaceSubrange(
       subrange,
       with: newElements
     )
   }
-  mutating func append(_ newElement: Element) where Element: Identifiable {
-    self.append(.init(id: newElement.id, element: newElement))
-  }
 
-  subscript(id id: ID) -> Element? {
+  public subscript(id id: ID) -> Element? {
     get {
       self.path[id: id]?.element
     }
@@ -53,45 +58,54 @@ struct NavigationState<Element>: MutableCollection, RandomAccessCollection, Rang
 }
 
 extension NavigationState: ExpressibleByDictionaryLiteral {
-  init(dictionaryLiteral elements: (ID, Element)...) {
+  public init(dictionaryLiteral elements: (ID, Element)...) {
     self.path = .init(uniqueElements: elements.map(Route.init(id:element:)))
   }
 }
 
 extension NavigationState.Route: Equatable where Element: Equatable {}
 extension NavigationState.Route: Hashable where Element: Hashable {}
+// TODO: open up AnyHashable to detect codability?
+//extension NavigationState.Route: Encodable where Element: Encodable {}
+//extension NavigationState.Route: Decodable where Element: Decodable {}
 extension NavigationState: Equatable where Element: Equatable {}
 extension NavigationState: Hashable where Element: Hashable {}
+//extension NavigationState: Decodable where Element: Decodable {}
+//extension NavigationState: Encodable where Element: Encodable {}
 
 extension NavigationState: ExpressibleByArrayLiteral {
-  init(arrayLiteral elements: Route...) {
+  public init(arrayLiteral elements: Route...) {
     self.init(path: .init(uniqueElements: elements))
   }
 }
 
-enum NavigationAction<State, Action> {
+public enum NavigationAction<State, Action> {
   case element(id: NavigationState.ID, Action)
   case setPath(NavigationState<State>)
 }
 
-protocol NavigableAction {
+extension NavigationAction: Equatable where State: Equatable, Action: Equatable {}
+extension NavigationAction: Hashable where State: Hashable, Action: Hashable {}
+
+public protocol NavigableAction {
   associatedtype State
   associatedtype Action
   static func navigation(_: NavigationAction<State, Action>) -> Self
 }
 
-protocol NavigableState {
+public protocol NavigableState {
   associatedtype State: Hashable
+  // TODO: other names? stack?
   var path: NavigationState<State> { get set }
 }
 
 @available(iOS 16.0, macOS 13.0, *)
-struct NavigationStackStore<State: NavigableState, Action: NavigableAction, Content: View>: View
+public struct NavigationStackStore<State: NavigableState, Action: NavigableAction, Content: View>: View
 where State.State == Action.State
 {
   let store: Store<NavigationState<State.State>, NavigationState<State.State>>
   let content: Content
-  init(
+  public init(
     store: Store<State, Action>,
     @ViewBuilder content: () -> Content
   ) {
@@ -99,11 +113,17 @@ where State.State == Action.State
     self.content = content()
   }
 
-  var body: some View {
-    WithViewStore(self.store, removeDuplicates: Self.isEqual) { viewStore in
+  public var body: some View {
+    WithViewStore(self.store, removeDuplicates: Self.isEqual) { _ in
       NavigationStack(
-        // TODO: animation binding
-        path: .init(get: { self.store.state.value }, set: { self.store.send($0) })
+        path: ViewStore(self.store).binding(send: { $0 })
+        // TODO: cool to use ViewStore.binding or should we construct manually?
+//        .init(
+//          get: { self.store.state.value },
+//          set: {
+//            self.store.send($0)
+//          }
+//        )
       ) {
         self.content
       }
@@ -125,7 +145,7 @@ where State.State == Action.State
 }
 
 extension Reducer where State: NavigableState, Action: NavigableAction {
-  func navigationDestination(
+  public func navigationDestination(
     _ reducers: Reducer<Action.State, Action.Action, Environment>...
   ) -> Self
   where State.State == Action.State
@@ -139,8 +159,12 @@ extension Reducer where State: NavigableState, Action: NavigableAction {
         switch navigationAction {
         case let .element(id, localAction):
           guard let index = globalState.path.firstIndex(where: { $0.id == id })
-          else { return .none }
+          else {
+            // TODO: runtime warning
+            return .none
+          }
           return reducer
+            // TODO: once we have @Dependency, explore this: .dependency(\.navigationId, id)
             .run(
               &globalState.path[index].element,
               localAction,
@@ -162,7 +186,6 @@ extension Reducer where State: NavigableState, Action: NavigableAction {
   }
 }
 
-
 private class StoreObservableObject<State, Action>: ObservableObject {
   let id: NavigationState.ID
   let wrappedValue: Store<State, Action>
@@ -173,19 +196,30 @@ private class StoreObservableObject<State, Action>: ObservableObject {
   }
 }
 
-struct DestinationStore<State, Action, DestinationState, DestinationAction, Destination: View>: View {
+public struct DestinationStore<State, Action, DestinationState, DestinationAction, Destination: View>: View {
   @EnvironmentObject private var store: StoreObservableObject<NavigationState<State>, NavigationAction<State, Action>>
 
   let state: (State) -> DestinationState?
   let action: (DestinationAction) -> Action
   let content: (Store<DestinationState, DestinationAction>) -> Destination
 
-  var body: some View {
+  public init(
+    state: @escaping (State) -> DestinationState?,
+    action: @escaping (DestinationAction) -> Action,
+    @ViewBuilder content: @escaping (Store<DestinationState, DestinationAction>) -> Destination
+  ) {
+    self.state = state
+    self.action = action
+    self.content = content
+  }
+
+  public var body: some View {
     IfLetStore(
       self.store.wrappedValue.scope(
         state: { _state in (_state.path[id: store.id]?.element).flatMap(state) },
         action: { _action in .element(id: store.id, action(_action)) }
       )
+      .scope(state: Optional.cacheLastSome)
     ) {
       content($0)
     }
@@ -195,7 +229,7 @@ struct DestinationStore<State, Action, DestinationState, DestinationAction, Dest
 @available(iOS 16.0, macOS 13.0, *)
 extension View {
   @ViewBuilder
-  func navigationDestination<State: NavigableState, Action: NavigableAction, Content>(
+  public func navigationDestination<State: NavigableState, Action: NavigableAction, Content>(
     store: Store<State, Action>,
     @ViewBuilder destination: @escaping () -> Content
   )
@@ -222,7 +256,28 @@ extension View {
 
 @available(iOS 16.0, macOS 13.0, *)
 extension NavigationLink where Destination == Never {
-  init<Route: Hashable>(route: Route, label: () -> Label) {
+  public init<Route: Hashable>(route: Route, label: () -> Label) {
     self.init(value: NavigationState.Route.init(id: UUID(), element: route), label: label)
+  }
+}
+
+extension Optional {
+  fileprivate static var cacheLastSome: (Self) -> Self {
+    var lastWrapped: Wrapped?
+    return {
+      lastWrapped = $0 ?? lastWrapped
+      return lastWrapped
+    }
+  }
+}
+
+extension NavigationAction {
+  public static var removeAll: Self {
+    .setPath([])
+  }
+}
+extension NavigableAction {
+  public static var popToRoot: Self {
+    .navigation(.setPath([]))
   }
 }

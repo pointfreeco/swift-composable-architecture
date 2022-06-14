@@ -5,7 +5,7 @@ import SwiftUI
 struct CaseStudiesApp: App {
   var body: some Scene {
     WindowGroup {
-      RootView(
+      NavigationStackView(
         store: .init(
           initialState: .init(),
           reducer: Root()
@@ -13,6 +13,21 @@ struct CaseStudiesApp: App {
             .signpost()
         )
       )
+	  NavigationStackView(
+        store: .init(
+          initialState: .init(),
+          reducer: navigationStackReducer,
+          environment: .live
+        )
+      )
+
+//      RootView(
+//        store: .init(
+//          initialState: RootState(),
+//          reducer: rootReducer,
+//          environment: .live
+//        )
+//      )
     }
   }
 }
