@@ -1,6 +1,4 @@
 import ComposableArchitecture
-import GameCore
-import GameSwiftUI
 import NewGameCore
 import SwiftUI
 
@@ -8,13 +6,11 @@ public struct NewGameView: View {
   let store: StoreOf<NewGame>
 
   struct ViewState: Equatable {
-    var isGameActive: Bool
     var isLetsPlayButtonDisabled: Bool
     var oPlayerName: String
     var xPlayerName: String
 
     init(state: NewGame.State) {
-      self.isGameActive = state.game != nil
       self.isLetsPlayButtonDisabled = state.oPlayerName.isEmpty || state.xPlayerName.isEmpty
       self.oPlayerName = state.oPlayerName
       self.xPlayerName = state.xPlayerName
@@ -22,7 +18,6 @@ public struct NewGameView: View {
   }
 
   enum ViewAction {
-    case gameDismissed
     case letsPlayButtonTapped
     case logoutButtonTapped
     case oPlayerNameChanged(String)
@@ -61,22 +56,16 @@ public struct NewGameView: View {
           Text("O Player Name")
         }
 
-        NavigationLink(
-          destination: IfLetStore(
-            self.store.scope(state: \.game, action: NewGame.Action.game),
-            then: GameView.init(store:)
-          ),
-          isActive: viewStore.binding(
-            get: \.isGameActive,
-            send: { $0 ? .letsPlayButtonTapped : .gameDismissed }
-          )
-        ) {
+        Button {
+          viewStore.send(.letsPlayButtonTapped)
+        } label: {
           Text("Let's play!")
         }
         .disabled(viewStore.isLetsPlayButtonDisabled)
-        .navigationBarTitle("New Game")
-        .navigationBarItems(trailing: Button("Logout") { viewStore.send(.logoutButtonTapped) })
       }
+      .navigationBarTitle("New Game")
+      .navigationBarBackButtonHidden(true)
+      .navigationBarItems(leading: Button("Logout") { viewStore.send(.logoutButtonTapped) })
     }
   }
 }
@@ -84,8 +73,6 @@ public struct NewGameView: View {
 extension NewGame.Action {
   init(action: NewGameView.ViewAction) {
     switch action {
-    case .gameDismissed:
-      self = .gameDismissed
     case .letsPlayButtonTapped:
       self = .letsPlayButtonTapped
     case .logoutButtonTapped:

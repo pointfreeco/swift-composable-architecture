@@ -1,11 +1,11 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.7
 
 import PackageDescription
 
 let package = Package(
   name: "tic-tac-toe",
   platforms: [
-    .iOS(.v14)
+    .iOS("16.0"),
   ],
   products: [
     .library(name: "AppCore", targets: ["AppCore"]),
@@ -35,7 +35,9 @@ let package = Package(
       dependencies: [
         "AuthenticationClient",
         "LoginCore",
+        "GameCore",
         "NewGameCore",
+        "TwoFactorCore",
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
       ]
     ),
@@ -98,7 +100,6 @@ let package = Package(
       name: "LoginCore",
       dependencies: [
         "AuthenticationClient",
-        "TwoFactorCore",
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
       ]
     ),
@@ -128,7 +129,6 @@ let package = Package(
     .target(
       name: "NewGameCore",
       dependencies: [
-        "GameCore",
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
       ]
     ),

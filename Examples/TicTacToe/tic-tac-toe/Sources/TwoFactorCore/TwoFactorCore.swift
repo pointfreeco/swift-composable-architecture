@@ -36,11 +36,7 @@ public struct TwoFactor: ReducerProtocol {
   @Dependency(\.authenticationClient) var authenticationClient
   @Dependency(\.mainQueue) var mainQueue
 
-  let tearDownToken: Any.Type
-
-  public init(tearDownToken: Any.Type) {
-    self.tearDownToken = tearDownToken
-  }
+  public init() {}
 
   public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {
@@ -62,7 +58,6 @@ public struct TwoFactor: ReducerProtocol {
           }
         )
       }
-      .cancellable(id: self.tearDownToken)
 
     case let .twoFactorResponse(.failure(error)):
       state.alert = .init(title: TextState(error.localizedDescription))

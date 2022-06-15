@@ -29,7 +29,7 @@ enum GameType: Identifiable {
 
 struct RootView: View {
   let store = Store(
-    initialState: .init(),
+    initialState: AppReducer.State(),
     reducer: AppReducer()
       .debug()
   )
@@ -50,7 +50,7 @@ struct RootView: View {
         if gameType == .swiftui {
           AppView(store: self.store)
         } else {
-          UIKitAppView(store: self.store)
+//          UIKitAppView(store: self.store)
         }
       }
       .navigationBarTitle("Tic-Tac-Toe")

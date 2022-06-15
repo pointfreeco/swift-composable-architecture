@@ -92,7 +92,7 @@ struct TwoFactorView_Previews: PreviewProvider {
       TwoFactorView(
         store: Store(
           initialState: .init(token: "deadbeef"),
-          reducer: TwoFactor(tearDownToken: Never.self)
+          reducer: TwoFactor()
             .dependency(\.authenticationClient.login) { _ in
               .init(token: "deadbeef", twoFactorRequired: false)
             }

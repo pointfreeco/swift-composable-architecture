@@ -2,8 +2,6 @@ import AuthenticationClient
 import ComposableArchitecture
 import LoginCore
 import SwiftUI
-import TwoFactorCore
-import TwoFactorSwiftUI
 
 public struct LoginView: View {
   let store: StoreOf<Login>
@@ -15,7 +13,6 @@ public struct LoginView: View {
     var isFormDisabled: Bool
     var isLoginButtonDisabled: Bool
     var password: String
-    var isTwoFactorActive: Bool
 
     init(state: Login.State) {
       self.alert = state.alert
@@ -24,7 +21,6 @@ public struct LoginView: View {
       self.isFormDisabled = state.isLoginRequestInFlight
       self.isLoginButtonDisabled = !state.isFormValid
       self.password = state.password
-      self.isTwoFactorActive = state.twoFactor != nil
     }
   }
 
@@ -33,7 +29,6 @@ public struct LoginView: View {
     case emailChanged(String)
     case loginButtonTapped
     case passwordChanged(String)
-    case twoFactorDismissed
   }
 
   public init(store: StoreOf<Login>) {
@@ -53,7 +48,7 @@ public struct LoginView: View {
 
         Section {
           TextField(
-            "blob@pointfree.co",
+            "Email address",
             text: viewStore.binding(get: \.email, send: ViewAction.emailChanged)
           )
           .autocapitalization(.none)
@@ -66,29 +61,22 @@ public struct LoginView: View {
           )
         }
 
-        NavigationLink(
-          destination: IfLetStore(
-            self.store.scope(state: \.twoFactor, action: Login.Action.twoFactor),
-            then: TwoFactorView.init(store:)
-          ),
-          isActive: viewStore.binding(
-            get: \.isTwoFactorActive,
-            send: {
-              // NB: SwiftUI will print errors to the console about "AttributeGraph: cycle detected"
-              //     if you disable a text field while it is focused. This hack will force all
-              //     fields to unfocus before we send the action to the view store.
-              // CF: https://stackoverflow.com/a/69653555
-              UIApplication.shared.sendAction(
-                #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
-              )
-              return $0 ? .loginButtonTapped : .twoFactorDismissed
-            }
+        Button {
+          // NB: SwiftUI will print errors to the console about "AttributeGraph: cycle detected"
+          //     if you disable a text field while it is focused. This hack will force all
+          //     fields to unfocus before we send the action to the view store.
+          // CF: https://stackoverflow.com/a/69653555
+          UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
           )
-        ) {
-          Text("Log in")
-          if viewStore.isActivityIndicatorVisible {
-            Spacer()
-            ProgressView()
+          viewStore.send(.loginButtonTapped)
+        } label: {
+          HStack {
+            Text("Log in")
+            if viewStore.isActivityIndicatorVisible {
+              Spacer()
+              ProgressView()
+            }
           }
         }
         .disabled(viewStore.isLoginButtonDisabled)
@@ -105,8 +93,6 @@ extension Login.Action {
     switch action {
     case .alertDismissed:
       self = .alertDismissed
-    case .twoFactorDismissed:
-      self = .twoFactorDismissed
     case let .emailChanged(email):
       self = .emailChanged(email)
     case .loginButtonTapped:

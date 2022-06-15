@@ -1,7 +1,6 @@
 import AuthenticationClient
 import ComposableArchitecture
 import Dispatch
-import TwoFactorCore
 
 public struct Login: ReducerProtocol {
   public struct State: Hashable {
@@ -10,7 +9,6 @@ public struct Login: ReducerProtocol {
     public var isFormValid = false
     public var isLoginRequestInFlight = false
     public var password = ""
-    public var twoFactor: TwoFactor.State?
 
     public init() {}
   }
@@ -21,24 +19,14 @@ public struct Login: ReducerProtocol {
     case passwordChanged(String)
     case loginButtonTapped
     case loginResponse(TaskResult<AuthenticationResponse>)
-    case twoFactor(TwoFactor.Action)
-    case twoFactorDismissed
   }
 
   @Dependency(\.authenticationClient) var authenticationClient
   @Dependency(\.mainQueue) var mainQueue
 
-  private enum TwoFactorTearDownToken {}
-
   public init() {}
 
   public var body: some ReducerProtocol<State, Action> {
-    Pullback(state: \.twoFactor, action: /Action.twoFactor) {
-      IfLetReducer {
-        TwoFactor(tearDownToken: TwoFactorTearDownToken.self)
-      }
-    }
-
     Reduce { state, action in
       switch action {
       case .alertDismissed:
@@ -52,9 +40,6 @@ public struct Login: ReducerProtocol {
 
       case let .loginResponse(.success(response)):
         state.isLoginRequestInFlight = false
-        if response.twoFactorRequired {
-          state.twoFactor = .init(token: response.token)
-        }
         return .none
 
       case let .loginResponse(.failure(error)):
@@ -78,13 +63,6 @@ public struct Login: ReducerProtocol {
             }
           )
         }
-
-      case .twoFactor:
-        return .none
-
-      case .twoFactorDismissed:
-        state.twoFactor = nil
-        return .cancel(id: TwoFactorTearDownToken.self)
       }
     }
   }

@@ -1,8 +1,10 @@
 import AppCore
 import ComposableArchitecture
+import GameSwiftUI
 import LoginSwiftUI
 import NewGameSwiftUI
 import SwiftUI
+import TwoFactorSwiftUI
 
 public struct AppView: View {
   let store: StoreOf<AppReducer>
@@ -12,19 +14,27 @@ public struct AppView: View {
   }
 
   public var body: some View {
-    SwitchStore(self.store) {
-      CaseLet(state: /AppReducer.State.login, action: AppReducer.Action.login) { store in
-        NavigationView {
-          LoginView(store: store)
+    NavigationStackStore(store: self.store) {
+      LoginView(
+        store: self.store.scope(state: \.login, action: AppReducer.Action.login)
+      )
+        .navigationDestination(store: self.store) {
+          DestinationStore(
+            state: CasePath(AppReducer.State.Route.game).extract(from:),
+            action: AppReducer.Action.Route.game,
+            content: GameView.init(store:)
+          )
+          DestinationStore(
+            state: CasePath(AppReducer.State.Route.newGame).extract(from:),
+            action: AppReducer.Action.Route.newGame,
+            content: NewGameView.init(store:)
+          )
+          DestinationStore(
+            state: CasePath(AppReducer.State.Route.twoFactor).extract(from:),
+            action: AppReducer.Action.Route.twoFactor,
+            content: TwoFactorView.init(store:)
+          )
         }
-        .navigationViewStyle(.stack)
-      }
-      CaseLet(state: /AppReducer.State.newGame, action: AppReducer.Action.newGame) { store in
-        NavigationView {
-          NewGameView(store: store)
-        }
-        .navigationViewStyle(.stack)
-      }
     }
   }
 }
