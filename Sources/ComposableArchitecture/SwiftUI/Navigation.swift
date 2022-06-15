@@ -92,22 +92,22 @@ extension NavigationAction: Equatable where State: Equatable, Action: Equatable 
 extension NavigationAction: Hashable where State: Hashable, Action: Hashable {}
 
 public protocol NavigableAction {
-  associatedtype State
-  associatedtype Action
-  static func navigation(_: NavigationAction<State, Action>) -> Self
+  associatedtype DestinationState
+  associatedtype DestinationAction
+  static func navigation(_: NavigationAction<DestinationState, DestinationAction>) -> Self
 }
 
 public protocol NavigableState {
-  associatedtype State: Hashable
+  associatedtype DestinationState: Hashable
   // TODO: other names? stack?
-  var path: NavigationState<State> { get set }
+  var path: NavigationState<DestinationState> { get set }
 }
 
 @available(iOS 16.0, macOS 13.0, *)
 public struct NavigationStackStore<State: NavigableState, Action: NavigableAction, Content: View>: View
-where State.State == Action.State
+where State.DestinationState == Action.DestinationState
 {
-  let store: Store<NavigationState<State.State>, NavigationState<State.State>>
+  let store: Store<NavigationState<State.DestinationState>, NavigationState<State.DestinationState>>
   let content: Content
   public init(
     store: Store<State, Action>,
@@ -135,8 +135,8 @@ where State.State == Action.State
   }
 
   private static func isEqual(
-    lhs: NavigationState<State.State>,
-    rhs: NavigationState<State.State>
+    lhs: NavigationState<State.DestinationState>,
+    rhs: NavigationState<State.DestinationState>
   ) -> Bool {
     guard lhs.count == rhs.count
     else { return false }
@@ -152,9 +152,9 @@ public struct NavigationStackReducer<Upstream: ReducerProtocol, Destinations: Re
 where
   Upstream.State: NavigableState,
   Upstream.Action: NavigableAction,
-  Upstream.State.State == Upstream.Action.State,
-  Destinations.State == Upstream.Action.State,
-  Destinations.Action == Upstream.Action.Action
+  Upstream.State.DestinationState == Upstream.Action.DestinationState,
+  Destinations.State == Upstream.Action.DestinationState,
+  Destinations.Action == Upstream.Action.DestinationAction
 {
   let upstream: Upstream
   let destinations: Destinations
@@ -204,7 +204,7 @@ where
 
 extension ReducerProtocol where State: NavigableState, Action: NavigableAction {
 //  @ReducerBuilder
-  public func navigationDestination<Destinations: ReducerProtocol<Action.State, Action.Action>>(
+  public func navigationDestination<Destinations: ReducerProtocol<Action.DestinationState, Action.DestinationAction>>(
     @ReducerBuilder<Destinations.State, Destinations.Action> destinations: () -> Destinations
   ) -> NavigationStackReducer<Self, Destinations>
   {
@@ -218,11 +218,11 @@ extension ReducerProtocol where State: NavigableState, Action: NavigableAction {
 
 extension Reducer where State: NavigableState, Action: NavigableAction {
   public func navigationDestination(
-    _ reducers: Reducer<Action.State, Action.Action, Environment>...
+    _ reducers: Reducer<Action.DestinationState, Action.DestinationAction, Environment>...
   ) -> Self
-  where State.State == Action.State
+  where State.DestinationState == Action.DestinationState
   {
-    let reducer = Reducer<Action.State, Action.Action, Environment>.combine(reducers)
+    let reducer = Reducer<Action.DestinationState, Action.DestinationAction, Environment>.combine(reducers)
     return .combine(
       .init { globalState, globalAction, globalEnvironment in
         guard let navigationAction = CasePath(Action.navigation).extract(from: globalAction)
@@ -308,9 +308,9 @@ extension View {
   -> some View
   where
     Content: View,
-    State.State == Action.State
+    State.DestinationState == Action.DestinationState
   {
-    self.navigationDestination(for: NavigationState<State.State>.Route.self) { route in
+    self.navigationDestination(for: NavigationState<State.DestinationState>.Route.self) { route in
       if let innerRoute = store.state.value.path.last(where: { $0 == route }) {
         destination()
           .environmentObject(

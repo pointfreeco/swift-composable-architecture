@@ -78,6 +78,7 @@ struct NavigationStackDemo: ReducerProtocol {
         ScreenC()
       }
     }
+//    .presents(...)
   }
 }
 //.debug()
