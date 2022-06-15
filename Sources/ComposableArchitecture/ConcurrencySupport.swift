@@ -93,6 +93,7 @@ extension AsyncStream {
     return (Self(elementType, bufferingPolicy: limit) { continuation = $0 }, continuation)
   }
 
+  /// An `AsyncStream` that never emits and never completes unless cancelled.
   public static var never: Self {
     .init { _ in }
   }
