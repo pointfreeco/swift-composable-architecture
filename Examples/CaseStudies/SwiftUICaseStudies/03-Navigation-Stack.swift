@@ -147,7 +147,7 @@ struct NavigationStackView: View {
         removeDuplicates: ==
       ) { viewStore in
         if viewStore.path.count > 0 {
-          VStack {
+          VStack(alignment: .leading) {
             Text("Total count: \(viewStore.total)")
             Button("Shuffle navigation stack") {
               viewStore.send(.shuffleButtonTapped)
@@ -160,8 +160,9 @@ struct NavigationStackView: View {
             }
           }
           .padding()
-          .transition(.opacity.animation(.default))
           .background(Color.white)
+          .padding(.bottom, 1)
+          .transition(.opacity.animation(.default))
         }
       }
       .zIndex(1)
@@ -280,6 +281,7 @@ struct ScreenCState: Codable, Equatable, Hashable {
   // TODO: this should be pulled from @Dependency once we have it
   let id: UUID
   var count = 0
+  var isTimerRunning = false
 }
 enum ScreenCAction: Equatable {
   case startButtonTapped
@@ -295,11 +297,13 @@ let screenCReducer = Reducer<
 
   switch action {
   case .startButtonTapped:
+    state.isTimerRunning = true
     return Effect.timer(id: TimerId(id: state.id), every: 1, on: environment.mainQueue)
       .map { _ in .timerTick }
 
   case .stopButtonTapped:
-    return .cancel(id: TimerId.self)
+    state.isTimerRunning = false
+    return .cancel(id: TimerId(id: state.id))
 
   case .timerTick:
     state.count += 1
@@ -313,8 +317,11 @@ struct ScreenCView: View {
       Form {
         Section {
           Text("\(viewStore.count)")
-          Button("Start timer") { viewStore.send(.startButtonTapped) }
-          Button("Stop timer") { viewStore.send(.stopButtonTapped) }
+          if viewStore.isTimerRunning {
+            Button("Stop timer") { viewStore.send(.stopButtonTapped) }
+          } else {
+            Button("Start timer") { viewStore.send(.startButtonTapped) }
+          }
         }
 
         Section {
