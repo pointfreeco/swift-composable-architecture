@@ -12,6 +12,7 @@ public struct DependencyValues {
 
   private var storage: [ObjectIdentifier: Any] = [:]
 
+  // TODO: lock storage?
   public subscript<Key>(key: Key.Type) -> Key.Value where Key: DependencyKey {
     get {
       guard let dependency = self.storage[ObjectIdentifier(key)] as? Key.Value

@@ -179,13 +179,8 @@ public struct Effect<Output, Failure: Error>: Publisher {
   public static func run(
     _ work: @escaping (Effect.Subscriber) -> Cancellable
   ) -> Self {
-    let dependencies = DependencyValues.current
-    return AnyPublisher.create { subscriber in
-      DependencyValues.$current.withValue(dependencies) {
-        work(subscriber)
-      }
-    }
-    .eraseToEffect()
+    AnyPublisher.create(work)
+      .eraseToEffect()
   }
 
   /// Concatenates a variadic list of effects together into a single effect, which runs the effects

@@ -114,13 +114,16 @@ import SwiftUI
       priority: TaskPriority? = nil,
       _ operation: @escaping @Sendable (_ send: Send<Output>) async -> Void
     ) -> Self {
-      .run { subscriber in
-        let task = Task(priority: priority) { @MainActor in
-          await operation(Send(send: { subscriber.send($0) }))
-          subscriber.send(completion: .finished)
-        }
-        return AnyCancellable {
-          task.cancel()
+      let dependencies = DependencyValues.current
+      return .run { subscriber in
+        DependencyValues.$current.withValue(dependencies) {
+          let task = Task(priority: priority) { @MainActor in
+            await operation(Send(send: { subscriber.send($0) }))
+            subscriber.send(completion: .finished)
+          }
+          return AnyCancellable {
+            task.cancel()
+          }
         }
       }
     }
