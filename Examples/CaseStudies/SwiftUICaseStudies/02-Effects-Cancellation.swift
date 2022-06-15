@@ -13,68 +13,62 @@ private let readMe = """
   request is in-flight will also cancel it.
   """
 
-// MARK: - Demo app domain
+struct EffectsCancellation: ReducerProtocol {
+  struct State: Equatable {
+    var count = 0
+    var currentTrivia: String?
+    var isTriviaRequestInFlight = false
+  }
 
-struct EffectsCancellationState: Equatable {
-  var count = 0
-  var currentTrivia: String?
-  var isTriviaRequestInFlight = false
-}
+  enum Action: Equatable {
+    case cancelButtonTapped
+    case stepperChanged(Int)
+    case triviaButtonTapped
+    case triviaResponse(TaskResult<String>)
+  }
 
-enum EffectsCancellationAction: Equatable {
-  case cancelButtonTapped
-  case stepperChanged(Int)
-  case triviaButtonTapped
-  case triviaResponse(TaskResult<String>)
-}
+  @Dependency(\.factClient) var factClient
+  @Dependency(\.mainQueue) var mainQueue
 
-struct EffectsCancellationEnvironment {
-  var fact: FactClient
-}
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    enum TriviaRequestId {}
 
-// MARK: - Business logic
+    switch action {
+    case .cancelButtonTapped:
+      state.isTriviaRequestInFlight = false
+      return .cancel(id: TriviaRequestId.self)
 
-let effectsCancellationReducer = Reducer<
-  EffectsCancellationState, EffectsCancellationAction, EffectsCancellationEnvironment
-> { state, action, environment in
+    case let .stepperChanged(value):
+      state.count = value
+      state.currentTrivia = nil
+      state.isTriviaRequestInFlight = false
+      return .cancel(id: TriviaRequestId.self)
 
-  enum TriviaRequestId {}
+    case .triviaButtonTapped:
+      state.currentTrivia = nil
+      state.isTriviaRequestInFlight = true
 
-  switch action {
-  case .cancelButtonTapped:
-    state.isTriviaRequestInFlight = false
-    return .cancel(id: TriviaRequestId.self)
+      return .task { [count = state.count] in
+        await .triviaResponse(TaskResult { try await self.factClient.fetch(count) })
+      }
+      .cancellable(id: TriviaRequestId.self)
 
-  case let .stepperChanged(value):
-    state.count = value
-    state.currentTrivia = nil
-    state.isTriviaRequestInFlight = false
-    return .cancel(id: TriviaRequestId.self)
+    case let .triviaResponse(.success(response)):
+      state.isTriviaRequestInFlight = false
+      state.currentTrivia = response
+      return .none
 
-  case .triviaButtonTapped:
-    state.currentTrivia = nil
-    state.isTriviaRequestInFlight = true
-
-    return .task { [count = state.count] in
-      await .triviaResponse(TaskResult { try await environment.fact.fetch(count) })
+    case .triviaResponse(.failure):
+      state.isTriviaRequestInFlight = false
+      return .none
     }
-    .cancellable(id: TriviaRequestId.self)
-
-  case let .triviaResponse(.success(response)):
-    state.isTriviaRequestInFlight = false
-    state.currentTrivia = response
-    return .none
-
-  case .triviaResponse(.failure):
-    state.isTriviaRequestInFlight = false
-    return .none
   }
 }
 
 // MARK: - Application view
 
 struct EffectsCancellationView: View {
-  let store: Store<EffectsCancellationState, EffectsCancellationAction>
+  let store: StoreOf<EffectsCancellation>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -86,7 +80,7 @@ struct EffectsCancellationView: View {
           }
         ) {
           Stepper(
-            value: viewStore.binding(get: \.count, send: EffectsCancellationAction.stepperChanged)
+            value: viewStore.binding(get: \.count, send: EffectsCancellation.Action.stepperChanged)
           ) {
             Text("\(viewStore.count)")
           }
@@ -119,11 +113,8 @@ struct EffectsCancellation_Previews: PreviewProvider {
     NavigationView {
       EffectsCancellationView(
         store: Store(
-          initialState: EffectsCancellationState(),
-          reducer: effectsCancellationReducer,
-          environment: EffectsCancellationEnvironment(
-            fact: .live
-          )
+          initialState: .init(),
+          reducer: EffectsCancellation()
         )
       )
     }

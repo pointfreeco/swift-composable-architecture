@@ -7,113 +7,108 @@ private let readMe = """
   locations. Then tapping on a location will load weather.
   """
 
-// MARK: - Search feature domain
+struct SearchReducer: ReducerProtocol {
+  struct State: Equatable {
+    var results: [Search.Result] = []
+    var resultForecastRequestInFlight: Search.Result?
+    var searchQuery = ""
+    var weather: Weather?
 
-struct SearchState: Equatable {
-  var results: [Search.Result] = []
-  var resultForecastRequestInFlight: Search.Result?
-  var searchQuery = ""
-  var weather: Weather?
+    struct Weather: Equatable {
+      var id: Search.Result.ID
+      var days: [Day]
 
-  struct Weather: Equatable {
-    var id: Search.Result.ID
-    var days: [Day]
-
-    struct Day: Equatable {
-      var date: Date
-      var temperatureMax: Double
-      var temperatureMaxUnit: String
-      var temperatureMin: Double
-      var temperatureMinUnit: String
+      struct Day: Equatable {
+        var date: Date
+        var temperatureMax: Double
+        var temperatureMaxUnit: String
+        var temperatureMin: Double
+        var temperatureMinUnit: String
+      }
     }
   }
-}
 
-enum SearchAction: Equatable {
-  case forecastResponse(Search.Result.ID, TaskResult<Forecast>)
-  case searchQueryChanged(String)
-  case searchResponse(TaskResult<Search>)
-  case searchResultTapped(Search.Result)
-}
+  enum Action: Equatable {
+    case forecastResponse(Search.Result.ID, TaskResult<Forecast>)
+    case searchQueryChanged(String)
+    case searchResponse(TaskResult<Search>)
+    case searchResultTapped(Search.Result)
+  }
 
-struct SearchEnvironment {
-  var weatherClient: WeatherClient
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+  @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.weatherClient) var weatherClient
 
-// MARK: - Search feature reducer
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    switch action {
+    case .forecastResponse(_, .failure):
+      state.weather = nil
+      state.resultForecastRequestInFlight = nil
+      return .none
 
-let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
-  state, action, environment in
-  switch action {
-  case .forecastResponse(_, .failure):
-    state.weather = nil
-    state.resultForecastRequestInFlight = nil
-    return .none
+    case let .forecastResponse(id, .success(forecast)):
+      state.weather = .init(
+        id: id,
+        days: forecast.daily.time.indices.map {
+          .init(
+            date: forecast.daily.time[$0],
+            temperatureMax: forecast.daily.temperatureMax[$0],
+            temperatureMaxUnit: forecast.dailyUnits.temperatureMax,
+            temperatureMin: forecast.daily.temperatureMin[$0],
+            temperatureMinUnit: forecast.dailyUnits.temperatureMin
+          )
+        }
+      )
+      state.resultForecastRequestInFlight = nil
+      return .none
 
-  case let .forecastResponse(id, .success(forecast)):
-    state.weather = .init(
-      id: id,
-      days: forecast.daily.time.indices.map {
-        .init(
-          date: forecast.daily.time[$0],
-          temperatureMax: forecast.daily.temperatureMax[$0],
-          temperatureMaxUnit: forecast.dailyUnits.temperatureMax,
-          temperatureMin: forecast.daily.temperatureMin[$0],
-          temperatureMinUnit: forecast.dailyUnits.temperatureMin
+    case let .searchQueryChanged(query):
+      enum SearchLocationId {}
+
+      state.searchQuery = query
+
+      // When the query is cleared we can clear the search results, but we have to make sure to cancel
+      // any in-flight search requests too, otherwise we may get data coming in later.
+      guard !query.isEmpty else {
+        state.results = []
+        state.weather = nil
+        return .cancel(id: SearchLocationId.self)
+      }
+
+      return .task {
+        await .searchResponse(
+          .init { try await self.weatherClient.search(query) }
         )
       }
-    )
-    state.resultForecastRequestInFlight = nil
-    return .none
+      .debounce(id: SearchLocationId.self, for: 0.3, scheduler: self.mainQueue)
 
-  case let .searchQueryChanged(query):
-    enum SearchLocationId {}
-
-    state.searchQuery = query
-
-    // When the query is cleared we can clear the search results, but we have to make sure to cancel
-    // any in-flight search requests too, otherwise we may get data coming in later.
-    guard !query.isEmpty else {
+    case .searchResponse(.failure):
       state.results = []
-      state.weather = nil
-      return .cancel(id: SearchLocationId.self)
+      return .none
+
+    case let .searchResponse(.success(response)):
+      state.results = response.results
+      return .none
+
+    case let .searchResultTapped(location):
+      enum SearchWeatherId {}
+
+      state.resultForecastRequestInFlight = location
+
+      return .task {
+        await .forecastResponse(
+          location.id,
+          .init { try await self.weatherClient.forecast(location) }
+        )
+      }
+      .cancellable(id: SearchWeatherId.self, cancelInFlight: true)
     }
-
-    return .task {
-      await .searchResponse(
-        .init { try await environment.weatherClient.search(query) }
-      )
-    }
-    .debounce(id: SearchLocationId.self, for: 0.3, scheduler: environment.mainQueue)
-
-  case .searchResponse(.failure):
-    state.results = []
-    return .none
-
-  case let .searchResponse(.success(response)):
-    state.results = response.results
-    return .none
-
-  case let .searchResultTapped(location):
-    enum SearchWeatherId {}
-
-    state.resultForecastRequestInFlight = location
-
-    return .task {
-      await .forecastResponse(
-        location.id,
-        .init { try await environment.weatherClient.forecast(location) }
-      )
-    }
-    .cancellable(id: SearchWeatherId.self, cancelInFlight: true)
   }
 }
 
 // MARK: - Search feature view
 
 struct SearchView: View {
-  let store: Store<SearchState, SearchAction>
+  let store: StoreOf<SearchReducer>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -127,7 +122,7 @@ struct SearchView: View {
             TextField(
               "New York, San Francisco, ...",
               text: viewStore.binding(
-                get: \.searchQuery, send: SearchAction.searchQueryChanged
+                get: \.searchQuery, send: SearchReducer.Action.searchQueryChanged
               )
             )
             .textFieldStyle(.roundedBorder)
@@ -168,7 +163,7 @@ struct SearchView: View {
     }
   }
 
-  func weatherView(locationWeather: SearchState.Weather?) -> some View {
+  func weatherView(locationWeather: SearchReducer.State.Weather?) -> some View {
     guard let locationWeather = locationWeather else {
       return AnyView(EmptyView())
     }
@@ -190,7 +185,7 @@ struct SearchView: View {
 
 // MARK: - Private helpers
 
-private func formattedWeatherDay(_ day: SearchState.Weather.Day, isToday: Bool)
+private func formattedWeatherDay(_ day: SearchReducer.State.Weather.Day, isToday: Bool)
   -> String
 {
   let date =
@@ -214,15 +209,10 @@ private let dateFormatter: DateFormatter = {
 struct SearchView_Previews: PreviewProvider {
   static var previews: some View {
     let store = Store(
-      initialState: SearchState(),
-      reducer: searchReducer,
-      environment: SearchEnvironment(
-        weatherClient: WeatherClient(
-          forecast: { _ in .mock },
-          search: { _ in .mock }
-        ),
-        mainQueue: .main
-      )
+      initialState: .init(),
+      reducer: SearchReducer()
+        .dependency(\.weatherClient.forecast) { _ in .mock }
+        .dependency(\.weatherClient.search) { _ in .mock }
     )
 
     return Group {

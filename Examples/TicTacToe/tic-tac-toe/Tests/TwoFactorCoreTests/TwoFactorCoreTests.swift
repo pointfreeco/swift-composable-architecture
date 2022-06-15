@@ -6,17 +6,15 @@ import XCTest
 @MainActor
 class TwoFactorCoreTests: XCTestCase {
   func testFlow_Success() async {
-    let store = TestStore(
-      initialState: TwoFactorState(token: "deadbeefdeadbeef"),
-      reducer: twoFactorReducer,
-      environment: TwoFactorEnvironment(
-        authenticationClient: .failing
-      )
+    let store = _TestStore(
+      initialState: .init(token: "deadbeefdeadbeef"),
+      reducer: TwoFactor(tearDownToken: Never.self)
+        .dependency(\.mainQueue, .immediate)
+        .dependency(\.authenticationClient.twoFactor) { _ in
+          .init(token: "deadbeefdeadbeef", twoFactorRequired: false)
+        }
     )
 
-    store.environment.authenticationClient.twoFactor = { _ in
-      .init(token: "deadbeefdeadbeef", twoFactorRequired: false)
-    }
     store.send(.codeChanged("1")) {
       $0.code = "1"
     }
@@ -41,17 +39,14 @@ class TwoFactorCoreTests: XCTestCase {
   }
 
   func testFlow_Failure() async {
-    let store = TestStore(
-      initialState: TwoFactorState(token: "deadbeefdeadbeef"),
-      reducer: twoFactorReducer,
-      environment: TwoFactorEnvironment(
-        authenticationClient: .failing
-      )
+    let store = _TestStore(
+      initialState: .init(token: "deadbeefdeadbeef"),
+      reducer: TwoFactor(tearDownToken: Never.self)
+        .dependency(\.mainQueue, .immediate)
+        .dependency(\.authenticationClient.twoFactor) { _ in
+          throw AuthenticationError.invalidTwoFactor
+        }
     )
-
-    store.environment.authenticationClient.twoFactor = { _ in
-      throw AuthenticationError.invalidTwoFactor
-    }
 
     store.send(.codeChanged("1234")) {
       $0.code = "1234"

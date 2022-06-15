@@ -8,34 +8,30 @@ private let readMe = """
   It reuses the the domain of the counter screen and embeds it, twice, in a larger domain.
   """
 
-struct TwoCountersState: Equatable {
-  var counter1 = CounterState()
-  var counter2 = CounterState()
+struct TwoCounters: ReducerProtocol {
+  struct State: Equatable {
+    var counter1 = Counter.State()
+    var counter2 = Counter.State()
+  }
+
+  enum Action {
+    case counter1(Counter.Action)
+    case counter2(Counter.Action)
+  }
+
+  var body: some ReducerProtocol<State, Action> {
+    Pullback(state: \.counter1, action: /Action.counter1) {
+      Counter()
+    }
+
+    Pullback(state: \.counter2, action: /Action.counter2) {
+      Counter()
+    }
+  }
 }
-
-enum TwoCountersAction {
-  case counter1(CounterAction)
-  case counter2(CounterAction)
-}
-
-struct TwoCountersEnvironment {}
-
-let twoCountersReducer = Reducer<TwoCountersState, TwoCountersAction, TwoCountersEnvironment>
-  .combine(
-    counterReducer.pullback(
-      state: \TwoCountersState.counter1,
-      action: /TwoCountersAction.counter1,
-      environment: { _ in CounterEnvironment() }
-    ),
-    counterReducer.pullback(
-      state: \TwoCountersState.counter2,
-      action: /TwoCountersAction.counter2,
-      environment: { _ in CounterEnvironment() }
-    )
-  )
 
 struct TwoCountersView: View {
-  let store: Store<TwoCountersState, TwoCountersAction>
+  let store: StoreOf<TwoCounters>
 
   var body: some View {
     Form {
@@ -44,7 +40,7 @@ struct TwoCountersView: View {
           Text("Counter 1")
 
           CounterView(
-            store: self.store.scope(state: \.counter1, action: TwoCountersAction.counter1)
+            store: self.store.scope(state: \.counter1, action: TwoCounters.Action.counter1)
           )
           .buttonStyle(.borderless)
           .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
@@ -53,7 +49,7 @@ struct TwoCountersView: View {
           Text("Counter 2")
 
           CounterView(
-            store: self.store.scope(state: \.counter2, action: TwoCountersAction.counter2)
+            store: self.store.scope(state: \.counter2, action: TwoCounters.Action.counter2)
           )
           .buttonStyle(.borderless)
           .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
@@ -69,9 +65,8 @@ struct TwoCountersView_Previews: PreviewProvider {
     NavigationView {
       TwoCountersView(
         store: Store(
-          initialState: TwoCountersState(),
-          reducer: twoCountersReducer,
-          environment: TwoCountersEnvironment()
+          initialState: .init(),
+          reducer: TwoCounters()
         )
       )
     }

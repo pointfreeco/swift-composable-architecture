@@ -2,6 +2,18 @@ import Combine
 import ComposableArchitecture
 import Speech
 
+extension DependencyValues {
+  var speechClient: SpeechClient {
+    get { self[SpeechClientKey.self] }
+    set { self[SpeechClientKey.self] = newValue }
+  }
+
+  private enum SpeechClientKey: LiveDependencyKey {
+    static let liveValue = SpeechClient.live
+    static let testValue = SpeechClient.failing
+  }
+}
+
 struct SpeechClient {
   var recognitionTask:
     @Sendable (SFSpeechAudioBufferRecognitionRequest) async -> AsyncThrowingStream<Action, Error>

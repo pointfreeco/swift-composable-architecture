@@ -16,13 +16,11 @@ class WebSocketTests: XCTestCase {
     webSocket.receive = { _ in messages.stream }
     webSocket.sendPing = { _ in try await Task.never() }
 
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: webSocketReducer,
-      environment: WebSocketEnvironment(
-        mainQueue: .immediate,
-        webSocket: webSocket
-      )
+      reducer: WebSocket()
+        .dependency(\.mainQueue, .immediate)
+        .dependency(\.webSocket, webSocket)
     )
 
     // Connect to the socket
@@ -74,13 +72,11 @@ class WebSocketTests: XCTestCase {
     }
     webSocket.sendPing = { _ in try await Task.never() }
 
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: webSocketReducer,
-      environment: WebSocketEnvironment(
-        mainQueue: .immediate,
-        webSocket: webSocket
-      )
+      reducer: WebSocket()
+        .dependency(\.mainQueue, .immediate)
+        .dependency(\.webSocket, webSocket)
     )
 
     // Connect to the socket
@@ -118,14 +114,12 @@ class WebSocketTests: XCTestCase {
     webSocket.receive = { _ in try await Task.never() }
     webSocket.sendPing = { _ in await pingsCount.modify { $0 += 1 } }
 
-    let scheduler = DispatchQueue.test
-    let store = TestStore(
+    let mainQueue = DispatchQueue.test
+    let store = _TestStore(
       initialState: .init(),
-      reducer: webSocketReducer,
-      environment: WebSocketEnvironment(
-        mainQueue: scheduler.eraseToAnyScheduler(),
-        webSocket: webSocket
-      )
+      reducer: WebSocket()
+        .dependency(\.mainQueue, mainQueue.eraseToAnyScheduler())
+        .dependency(\.webSocket, webSocket)
     )
 
     // Connect to the socket
@@ -140,7 +134,7 @@ class WebSocketTests: XCTestCase {
     // Wait for ping
     let before = await pingsCount.value
     XCTAssertEqual(before, 0)
-    await scheduler.advance(by: .seconds(10))
+    await mainQueue.advance(by: .seconds(10))
     let after = await pingsCount.value
     XCTAssertEqual(after, 1)
 
@@ -158,13 +152,11 @@ class WebSocketTests: XCTestCase {
     webSocket.receive = { _ in try await Task.never() }
     webSocket.sendPing = { _ in try await Task.never() }
 
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: webSocketReducer,
-      environment: WebSocketEnvironment(
-        mainQueue: .immediate,
-        webSocket: webSocket
-      )
+      reducer: WebSocket()
+        .dependency(\.mainQueue, .immediate)
+        .dependency(\.webSocket, webSocket)
     )
 
     // Attempt to connect to the socket

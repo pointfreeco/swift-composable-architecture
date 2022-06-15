@@ -1,3 +1,4 @@
+import ComposableArchitecture
 import SwiftUI
 
 @main
@@ -6,9 +7,10 @@ struct CaseStudiesApp: App {
     WindowGroup {
       RootView(
         store: .init(
-          initialState: RootState(),
-          reducer: rootReducer,
-          environment: .live
+          initialState: .init(),
+          reducer: Root()
+            .debug()
+            .signpost()
         )
       )
     }

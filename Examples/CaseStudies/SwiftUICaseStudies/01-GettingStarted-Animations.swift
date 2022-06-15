@@ -19,83 +19,82 @@ private let readMe = """
   toggle at the bottom of the screen.
   """
 
-struct AnimationsState: Equatable {
-  var alert: AlertState<AnimationsAction>? = nil
-  var circleCenter = CGPoint(x: 50, y: 50)
-  var circleColor = Color.white
-  var isCircleScaled = false
-}
+struct Animations: ReducerProtocol {
+  struct State: Equatable {
+    var alert: AlertState<Action>? = nil
+    var circleCenter = CGPoint(x: 50, y: 50)
+    var circleColor = Color.white
+    var isCircleScaled = false
+  }
 
-enum AnimationsAction: Equatable, Sendable {
-  case circleScaleToggleChanged(Bool)
-  case dismissAlert
-  case rainbowButtonTapped
-  case resetButtonTapped
-  case resetConfirmationButtonTapped
-  case setColor(Color)
-  case tapped(CGPoint)
-}
+  enum Action: Equatable {
+    case circleScaleToggleChanged(Bool)
+    case dismissAlert
+    case rainbowButtonTapped
+    case resetButtonTapped
+    case resetConfirmationButtonTapped
+    case setColor(Color)
+    case tapped(CGPoint)
+  }
 
-struct AnimationsEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+  @Dependency(\.mainQueue) var mainQueue
 
-let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnvironment> {
-  state, action, environment in
-  struct CancelId {}
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    enum CancelId {}
+    
+    switch action {
+    case let .circleScaleToggleChanged(isScaled):
+      state.isCircleScaled = isScaled
+      return .none
 
-  switch action {
-  case let .circleScaleToggleChanged(isScaled):
-    state.isCircleScaled = isScaled
-    return .none
+    case .dismissAlert:
+      state.alert = nil
+      return .none
 
-  case .dismissAlert:
-    state.alert = nil
-    return .none
-
-  case .rainbowButtonTapped:
-    return .run { send in
-      do {
-        let colors = [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .white]
-        for (index, color) in colors.enumerated() {
-          if index > 0 {
-            try await environment.mainQueue.sleep(for: 1)
+    case .rainbowButtonTapped:
+      return .run { send in
+        do {
+          let colors = [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .white]
+          for (index, color) in colors.enumerated() {
+            if index > 0 {
+              try await self.mainQueue.sleep(for: 1)
+            }
+            await send(.setColor(color), animation: .linear)
           }
-          await send(.setColor(color), animation: .linear)
+        } catch {
         }
-      } catch {
       }
+      .cancellable(id: CancelId.self)
+
+    case .resetButtonTapped:
+      state.alert = .init(
+        title: .init("Reset state?"),
+        primaryButton: .destructive(
+          .init("Reset"),
+          action: .send(.resetConfirmationButtonTapped, animation: .default)
+        ),
+        secondaryButton: .cancel(.init("Cancel"))
+      )
+      return .none
+
+    case .resetConfirmationButtonTapped:
+      state = .init()
+      return .cancel(id: CancelId.self)
+
+    case let .setColor(color):
+      state.circleColor = color
+      return .none
+
+    case let .tapped(point):
+      state.circleCenter = point
+      return .none
     }
-    .cancellable(id: CancelId.self)
-
-  case .resetButtonTapped:
-    state.alert = .init(
-      title: .init("Reset state?"),
-      primaryButton: .destructive(
-        .init("Reset"),
-        action: .send(.resetConfirmationButtonTapped, animation: .default)
-      ),
-      secondaryButton: .cancel(.init("Cancel"))
-    )
-    return .none
-
-  case .resetConfirmationButtonTapped:
-    state = .init()
-    return .cancel(id: CancelId.self)
-
-  case let .setColor(color):
-    state.circleColor = color
-    return .none
-
-  case let .tapped(point):
-    state.circleCenter = point
-    return .none
   }
 }
 
 struct AnimationsView: View {
   @Environment(\.colorScheme) var colorScheme
-  let store: Store<AnimationsState, AnimationsAction>
+  let store: StoreOf<Animations>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -129,7 +128,7 @@ struct AnimationsView: View {
             "Big mode",
             isOn:
               viewStore
-              .binding(get: \.isCircleScaled, send: AnimationsAction.circleScaleToggleChanged)
+              .binding(get: \.isCircleScaled, send: Animations.Action.circleScaleToggleChanged)
               .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.1))
           )
           .padding()
@@ -151,10 +150,7 @@ struct AnimationsView_Previews: PreviewProvider {
         AnimationsView(
           store: Store(
             initialState: .init(),
-            reducer: animationsReducer,
-            environment: AnimationsEnvironment(
-              mainQueue: .main
-            )
+            reducer: Animations()
           )
         )
       }
@@ -163,10 +159,7 @@ struct AnimationsView_Previews: PreviewProvider {
         AnimationsView(
           store: Store(
             initialState: .init(),
-            reducer: animationsReducer,
-            environment: AnimationsEnvironment(
-              mainQueue: .main
-            )
+            reducer: Animations()
           )
         )
       }

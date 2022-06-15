@@ -508,3 +508,5 @@ private struct HashableWrapper<Value>: Hashable {
     }
   }
 #endif
+
+public typealias ViewStoreOf<R: ReducerProtocol> = ViewStore<R.State, R.Action>

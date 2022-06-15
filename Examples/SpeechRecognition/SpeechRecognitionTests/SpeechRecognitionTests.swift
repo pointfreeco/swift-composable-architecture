@@ -7,15 +7,10 @@ import XCTest
 @MainActor
 class SpeechRecognitionTests: XCTestCase {
   func testDenyAuthorization() async {
-    var speechClient = SpeechClient.failing
-    speechClient.requestAuthorization = { .denied }
-
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: appReducer,
-      environment: AppEnvironment(
-        speechClient: speechClient
-      )
+      reducer: AppReducer()
+        .dependency(\.speechClient.requestAuthorization) { .denied }
     )
 
     store.send(.recordButtonTapped) {
@@ -35,15 +30,10 @@ class SpeechRecognitionTests: XCTestCase {
   }
 
   func testRestrictedAuthorization() async {
-    var speechClient = SpeechClient.failing
-    speechClient.requestAuthorization = { .restricted }
-
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: appReducer,
-      environment: AppEnvironment(
-        speechClient: speechClient
-      )
+      reducer: AppReducer()
+        .dependency(\.speechClient.requestAuthorization) { .restricted }
     )
 
     store.send(.recordButtonTapped) {
@@ -63,12 +53,11 @@ class SpeechRecognitionTests: XCTestCase {
     speechClient.recognitionTask = { _ in recognitionTask.stream }
     speechClient.requestAuthorization = { .authorized }
 
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: appReducer,
-      environment: AppEnvironment(
-        speechClient: speechClient
-      )
+      reducer: AppReducer()
+        .dependency(\.speechClient.recognitionTask) { _ in recognitionTask.stream }
+        .dependency(\.speechClient.requestAuthorization) { .authorized }
     )
 
     let result = SpeechRecognitionResult(
@@ -106,16 +95,11 @@ class SpeechRecognitionTests: XCTestCase {
   func testAudioSessionFailure() async {
     let recognitionTask = AsyncThrowingStream<SpeechClient.Action, Error>.streamWithContinuation()
 
-    var speechClient = SpeechClient.failing
-    speechClient.recognitionTask = { _ in recognitionTask.stream }
-    speechClient.requestAuthorization = { .authorized }
-
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: appReducer,
-      environment: AppEnvironment(
-        speechClient: speechClient
-      )
+      reducer: AppReducer()
+        .dependency(\.speechClient.recognitionTask) { _ in recognitionTask.stream }
+        .dependency(\.speechClient.requestAuthorization) { .authorized }
     )
 
     store.send(.recordButtonTapped) {
@@ -139,12 +123,11 @@ class SpeechRecognitionTests: XCTestCase {
     speechClient.recognitionTask = { _ in recognitionTask.stream }
     speechClient.requestAuthorization = { .authorized }
 
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: appReducer,
-      environment: AppEnvironment(
-        speechClient: speechClient
-      )
+      reducer: AppReducer()
+        .dependency(\.speechClient.recognitionTask) { _ in recognitionTask.stream }
+        .dependency(\.speechClient.requestAuthorization) { .authorized }
     )
 
     store.send(.recordButtonTapped) {

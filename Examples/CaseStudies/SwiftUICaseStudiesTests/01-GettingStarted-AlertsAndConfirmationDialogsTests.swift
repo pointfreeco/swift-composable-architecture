@@ -7,10 +7,9 @@ import XCTest
 
 class AlertsAndConfirmationDialogsTests: XCTestCase {
   func testAlert() {
-    let store = TestStore(
-      initialState: AlertAndConfirmationDialogState(),
-      reducer: alertAndConfirmationDialogReducer,
-      environment: AlertAndConfirmationDialogEnvironment()
+    let store = _TestStore(
+      initialState: .init(),
+      reducer: AlertAndConfirmationDialog()
     )
 
     store.send(.alertButtonTapped) {
@@ -31,10 +30,9 @@ class AlertsAndConfirmationDialogsTests: XCTestCase {
   }
 
   func testConfirmationDialog() {
-    let store = TestStore(
-      initialState: AlertAndConfirmationDialogState(),
-      reducer: alertAndConfirmationDialogReducer,
-      environment: AlertAndConfirmationDialogEnvironment()
+    let store = _TestStore(
+      initialState: .init(),
+      reducer: AlertAndConfirmationDialog()
     )
 
     store.send(.confirmationDialogButtonTapped) {

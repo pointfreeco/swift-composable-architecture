@@ -5,21 +5,21 @@ import NewGameSwiftUI
 import SwiftUI
 
 public struct AppView: View {
-  let store: Store<AppState, AppAction>
+  let store: StoreOf<AppReducer>
 
-  public init(store: Store<AppState, AppAction>) {
+  public init(store: StoreOf<AppReducer>) {
     self.store = store
   }
 
   public var body: some View {
     SwitchStore(self.store) {
-      CaseLet(state: /AppState.login, action: AppAction.login) { store in
+      CaseLet(state: /AppReducer.State.login, action: AppReducer.Action.login) { store in
         NavigationView {
           LoginView(store: store)
         }
         .navigationViewStyle(.stack)
       }
-      CaseLet(state: /AppState.newGame, action: AppAction.newGame) { store in
+      CaseLet(state: /AppReducer.State.newGame, action: AppReducer.Action.newGame) { store in
         NavigationView {
           NewGameView(store: store)
         }

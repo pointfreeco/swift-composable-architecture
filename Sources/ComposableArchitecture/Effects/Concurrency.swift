@@ -54,22 +54,25 @@ import SwiftUI
       priority: TaskPriority? = nil,
       operation: @escaping @Sendable () async -> Output
     ) -> Self {
-      Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
-        let subject = PassthroughSubject<Output, Failure>()
-        let task = Task(priority: priority) { @MainActor in
-          do {
-            try Task.checkCancellation()
-            let output = await operation()
-            try Task.checkCancellation()
-            subject.send(output)
-            subject.send(completion: .finished)
-          } catch is CancellationError {
-            subject.send(completion: .finished)
-          } catch {
-            subject.send(completion: .finished)
+      let dependencies = DependencyValues.current
+      return Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
+        DependencyValues.$current.withValue(dependencies) {
+          let subject = PassthroughSubject<Output, Failure>()
+          let task = Task(priority: priority) { @MainActor in
+            do {
+              try Task.checkCancellation()
+              let output = await operation()
+              try Task.checkCancellation()
+              subject.send(output)
+              subject.send(completion: .finished)
+            } catch is CancellationError {
+              subject.send(completion: .finished)
+            } catch {
+              subject.send(completion: .finished)
+            }
           }
+          return subject.handleEvents(receiveCancel: task.cancel)
         }
-        return subject.handleEvents(receiveCancel: task.cancel)
       }
       .eraseToEffect()
     }

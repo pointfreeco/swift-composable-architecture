@@ -7,10 +7,9 @@
 
   class BindingFormTests: XCTestCase {
     func testBasics() {
-      let store = TestStore(
-        initialState: BindingFormState(),
-        reducer: bindingFormReducer,
-        environment: BindingFormEnvironment()
+      let store = _TestStore(
+        initialState: .init(),
+        reducer: BindingForm()
       )
 
       store.send(.set(\.$sliderValue, 2)) {

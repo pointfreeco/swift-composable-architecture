@@ -42,6 +42,18 @@ struct WeatherClient {
   var search: @Sendable (String) async throws -> Search
 }
 
+extension DependencyValues {
+  var weatherClient: WeatherClient {
+    get { self[WeatherClientKey.self] }
+    set { self[WeatherClientKey.self] = newValue }
+  }
+
+  private enum WeatherClientKey: LiveDependencyKey {
+    static let liveValue = WeatherClient.live
+    static let testValue = WeatherClient.failing
+  }
+}
+
 // MARK: - Live API implementation
 
 extension WeatherClient {

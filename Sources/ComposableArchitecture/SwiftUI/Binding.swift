@@ -296,7 +296,9 @@ import SwiftUI
 public struct BindingAction<Root>: Equatable {
   public let keyPath: PartialKeyPath<Root>
 
+  @usableFromInline
   let set: (inout Root) -> Void
+
   let value: Any
   let valueIsEqualTo: (Any) -> Bool
 

@@ -13,8 +13,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let contentView = RootView(
       store: Store(
         initialState: .init(),
-        reducer: rootReducer,
-        environment: .init()
+        reducer: RootReducer()
       )
     )
 

@@ -1,4 +1,4 @@
-@preconcurrency import Foundation
+import Foundation
 import AVFoundation
 import ComposableArchitecture
 

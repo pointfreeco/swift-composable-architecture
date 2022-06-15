@@ -9,12 +9,10 @@ class LongLivingEffectsTests: XCTestCase {
   func testReducer() async {
     let (screenshots, takeScreenshot) = AsyncStream<Void>.streamWithContinuation()
 
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: longLivingEffectsReducer,
-      environment: .init(
-        screenshots: { screenshots }
-      )
+      reducer: LongLivingEffects()
+        .dependency(\.screenshots) { screenshots }
     )
 
     let task = store.send(.task)

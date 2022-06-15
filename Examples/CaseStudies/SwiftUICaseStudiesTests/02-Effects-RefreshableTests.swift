@@ -6,13 +6,11 @@ import XCTest
 @MainActor
 class RefreshableTests: XCTestCase {
   func testHappyPath() async {
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: refreshableReducer,
-      environment: .init(
-        fact: .init { "\($0) is a good number." },
-        mainQueue: .immediate
-      )
+      reducer: Refreshable()
+        .dependency(\.factClient, .init { "\($0) is a good number." })
+        .dependency(\.mainQueue, .immediate)
     )
 
     store.send(.incrementButtonTapped) {
@@ -29,13 +27,11 @@ class RefreshableTests: XCTestCase {
 
   func testUnhappyPath() async {
     struct FactError: Error {}
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: refreshableReducer,
-      environment: .init(
-        fact: .init { _ in throw FactError() },
-        mainQueue: .immediate
-      )
+      reducer: Refreshable()
+        .dependency(\.factClient, .init { _ in throw FactError() })
+        .dependency(\.mainQueue, .immediate)
     )
 
     store.send(.incrementButtonTapped) {
@@ -50,16 +46,11 @@ class RefreshableTests: XCTestCase {
   }
 
   func testCancellation() {
-    let store = TestStore(
+    let store = _TestStore(
       initialState: .init(),
-      reducer: refreshableReducer,
-      environment: .init(
-        fact: .init {
-          try await Task.sleep(nanoseconds: NSEC_PER_SEC)
-          return "\($0) is a good number."
-        },
-        mainQueue: .immediate
-      )
+      reducer: Refreshable()
+        .dependency(\.factClient, .init { "\($0) is a good number." })
+        .dependency(\.mainQueue, .immediate)
     )
 
     store.send(.incrementButtonTapped) {

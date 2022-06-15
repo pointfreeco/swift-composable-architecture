@@ -1,4 +1,5 @@
 import AuthenticationClient
+import ComposableArchitecture
 import Foundation
 
 extension AuthenticationClient {
@@ -21,6 +22,10 @@ extension AuthenticationClient {
       return .init(token: "deadbeefdeadbeef", twoFactorRequired: false)
     }
   )
+}
+
+extension DependencyValues.AuthenticationClientKey: LiveDependencyKey {
+  public static let liveValue = AuthenticationClient.live
 }
 
 private let queue = DispatchQueue(label: "AuthenticationClient")

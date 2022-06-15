@@ -6,6 +6,18 @@ struct FactClient {
   var fetch: @Sendable (Int) async throws -> String
 }
 
+extension DependencyValues {
+  var factClient: FactClient {
+    get { self[FactClientKey.self] }
+    set { self[FactClientKey.self] = newValue }
+  }
+
+  private enum FactClientKey: LiveDependencyKey {
+    static let liveValue = FactClient.live
+    static let testValue = FactClient.failing
+  }
+}
+
 // This is the "live" fact dependency that reaches into the outside world to fetch trivia.
 // Typically this live implementation of the dependency would live in its own module so that the
 // main feature doesn't need to compile it.

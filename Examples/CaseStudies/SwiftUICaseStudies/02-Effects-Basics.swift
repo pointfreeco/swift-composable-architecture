@@ -23,70 +23,65 @@ private let readMe = """
   effects behave in the way we expect.
   """
 
-// MARK: - Feature domain
+struct EffectsBasics: ReducerProtocol {
+  struct State: Equatable {
+    var count = 0
+    var isNumberFactRequestInFlight = false
+    var numberFact: String?
+  }
 
-struct EffectsBasicsState: Equatable {
-  var count = 0
-  var isNumberFactRequestInFlight = false
-  var numberFact: String?
-}
+  enum Action: Equatable {
+    case decrementButtonTapped
+    case incrementButtonTapped
+    case numberFactButtonTapped
+    case numberFactResponse(TaskResult<String>)
+  }
 
-enum EffectsBasicsAction: Equatable {
-  case decrementButtonTapped
-  case incrementButtonTapped
-  case numberFactButtonTapped
-  case numberFactResponse(TaskResult<String>)
-}
+  @Dependency(\.factClient) var factClient
+  @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.isTesting) var isTesting
 
-struct EffectsBasicsEnvironment {
-  var fact: FactClient
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    switch action {
+    case .decrementButtonTapped:
+      state.count -= 1
+      state.numberFact = nil
+      // Return an effect that re-increments the count after 1 second.
+      return .task {
+        try? await self.mainQueue.sleep(for: 1)
+        return .incrementButtonTapped
+      }
 
-// MARK: - Feature business logic
+    case .incrementButtonTapped:
+      state.count += 1
+      state.numberFact = nil
+      return .none
 
-let effectsBasicsReducer = Reducer<
-  EffectsBasicsState, EffectsBasicsAction, EffectsBasicsEnvironment
-> { state, action, environment in
-  switch action {
-  case .decrementButtonTapped:
-    state.count -= 1
-    state.numberFact = nil
-    // Return an effect that re-increments the count after 1 second.
-    return .task {
-      try? await environment.mainQueue.sleep(for: 1)
-      return .incrementButtonTapped
+    case .numberFactButtonTapped:
+      state.isNumberFactRequestInFlight = true
+      state.numberFact = nil
+      // Return an effect that fetches a number fact from the API and returns the
+      // value back to the reducer's `numberFactResponse` action.
+      return .task { [count = state.count] in
+        await .numberFactResponse(.init { try await self.factClient.fetch(count) })
+      }
+
+    case let .numberFactResponse(.success(response)):
+      state.isNumberFactRequestInFlight = false
+      state.numberFact = response
+      return .none
+
+    case .numberFactResponse(.failure):
+      state.isNumberFactRequestInFlight = false
+      return .none
     }
-
-  case .incrementButtonTapped:
-    state.count += 1
-    state.numberFact = nil
-    return .none
-
-  case .numberFactButtonTapped:
-    state.isNumberFactRequestInFlight = true
-    state.numberFact = nil
-    // Return an effect that fetches a number fact from the API and returns the
-    // value back to the reducer's `numberFactResponse` action.
-    return .task { [count = state.count] in
-      await .numberFactResponse(.init { try await environment.fact.fetch(count) })
-    }
-
-  case let .numberFactResponse(.success(response)):
-    state.isNumberFactRequestInFlight = false
-    state.numberFact = response
-    return .none
-
-  case .numberFactResponse(.failure):
-    state.isNumberFactRequestInFlight = false
-    return .none
   }
 }
 
 // MARK: - Feature view
 
 struct EffectsBasicsView: View {
-  let store: Store<EffectsBasicsState, EffectsBasicsAction>
+  let store: Store<EffectsBasics.State, EffectsBasics.Action>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -130,12 +125,8 @@ struct EffectsBasicsView_Previews: PreviewProvider {
     NavigationView {
       EffectsBasicsView(
         store: Store(
-          initialState: EffectsBasicsState(),
-          reducer: effectsBasicsReducer,
-          environment: EffectsBasicsEnvironment(
-            fact: .live,
-            mainQueue: .main
-          )
+          initialState: .init(),
+          reducer: EffectsBasics()
         )
       )
     }

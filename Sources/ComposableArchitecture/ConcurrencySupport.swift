@@ -66,7 +66,7 @@ public struct UncheckedSendable<Wrapped>: @unchecked Sendable {
 }
 
 extension AsyncStream {
-  public init<S: AsyncSequence & Sendable>(
+  public init<S: AsyncSequence>(
     _ sequence: S,
     bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
   ) where S.Element == Element {
@@ -95,7 +95,7 @@ extension AsyncStream {
 }
 
 extension AsyncThrowingStream where Failure == Error {
-  public init<S: AsyncSequence & Sendable>(
+  public init<S: AsyncSequence>(
     _ sequence: S,
     bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
   ) where S.Element == Element {

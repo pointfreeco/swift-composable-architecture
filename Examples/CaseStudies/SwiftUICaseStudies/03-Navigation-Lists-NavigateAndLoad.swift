@@ -8,45 +8,43 @@ private let readMe = """
   and fires off an effect that will load this state a second later.
   """
 
-struct NavigateAndLoadListState: Equatable {
-  var rows: IdentifiedArrayOf<Row> = [
-    .init(count: 1, id: UUID()),
-    .init(count: 42, id: UUID()),
-    .init(count: 100, id: UUID()),
-  ]
-  var selection: Identified<Row.ID, CounterState?>?
+struct NavigateAndLoadList: ReducerProtocol {
+  struct State: Equatable {
+    var rows: IdentifiedArrayOf<Row> = [
+      .init(count: 1, id: UUID()),
+      .init(count: 42, id: UUID()),
+      .init(count: 100, id: UUID()),
+    ]
+    var selection: Identified<Row.ID, Counter.State?>?
 
-  struct Row: Equatable, Identifiable {
-    var count: Int
-    let id: UUID
+    struct Row: Equatable, Identifiable {
+      var count: Int
+      let id: UUID
+    }
   }
-}
 
-enum NavigateAndLoadListAction: Equatable {
-  case counter(CounterAction)
-  case setNavigation(selection: UUID?)
-  case setNavigationSelectionDelayCompleted
-}
+  enum Action: Equatable {
+    case counter(Counter.Action)
+    case setNavigation(selection: UUID?)
+    case setNavigationSelectionDelayCompleted
+  }
 
-struct NavigateAndLoadListEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+  @Dependency(\.mainQueue) var mainQueue
 
-let navigateAndLoadListReducer =
-  counterReducer
-  .optional()
-  .pullback(state: \Identified.value, action: .self, environment: { $0 })
-  .optional()
-  .pullback(
-    state: \NavigateAndLoadListState.selection,
-    action: /NavigateAndLoadListAction.counter,
-    environment: { _ in CounterEnvironment() }
-  )
-  .combined(
-    with: Reducer<
-      NavigateAndLoadListState, NavigateAndLoadListAction, NavigateAndLoadListEnvironment
-    > { state, action, environment in
+  var body: some ReducerProtocol<State, Action> {
+    Pullback(state: \.selection, action: /Action.counter) {
+      IfLetReducer {
+        Pullback(
+          state: \Identified<State.Row.ID, Counter.State?>.value, action: .self
+        ) {
+          IfLetReducer {
+            Counter()
+          }
+        }
+      }
+    }
 
+    Reduce { state, action in
       enum CancelId {}
 
       switch action {
@@ -55,8 +53,8 @@ let navigateAndLoadListReducer =
 
       case let .setNavigation(selection: .some(id)):
         state.selection = Identified(nil, id: id)
-        return .task { 
-          try? await environment.mainQueue.sleep(for: 1)
+        return .task {
+          try? await self.mainQueue.sleep(for: 1)
           return .setNavigationSelectionDelayCompleted
         }
         .cancellable(id: CancelId.self, cancelInFlight: true)
@@ -70,14 +68,15 @@ let navigateAndLoadListReducer =
 
       case .setNavigationSelectionDelayCompleted:
         guard let id = state.selection?.id else { return .none }
-        state.selection?.value = CounterState(count: state.rows[id: id]?.count ?? 0)
+        state.selection?.value = .init(count: state.rows[id: id]?.count ?? 0)
         return .none
       }
     }
-  )
+  }
+}
 
 struct NavigateAndLoadListView: View {
-  let store: Store<NavigateAndLoadListState, NavigateAndLoadListAction>
+  let store: Store<NavigateAndLoadList.State, NavigateAndLoadList.Action>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -88,7 +87,7 @@ struct NavigateAndLoadListView: View {
               destination: IfLetStore(
                 self.store.scope(
                   state: \.selection?.value,
-                  action: NavigateAndLoadListAction.counter
+                  action: NavigateAndLoadList.Action.counter
                 ),
                 then: CounterView.init(store:),
                 else: ProgressView.init
@@ -96,7 +95,7 @@ struct NavigateAndLoadListView: View {
               tag: row.id,
               selection: viewStore.binding(
                 get: \.selection?.id,
-                send: NavigateAndLoadListAction.setNavigation(selection:)
+                send: NavigateAndLoadList.Action.setNavigation(selection:)
               )
             ) {
               Text("Load optional counter that starts from \(row.count)")
@@ -114,17 +113,14 @@ struct NavigateAndLoadListView_Previews: PreviewProvider {
     NavigationView {
       NavigateAndLoadListView(
         store: Store(
-          initialState: NavigateAndLoadListState(
+          initialState: .init(
             rows: [
               .init(count: 1, id: UUID()),
               .init(count: 42, id: UUID()),
               .init(count: 100, id: UUID()),
             ]
           ),
-          reducer: navigateAndLoadListReducer,
-          environment: NavigateAndLoadListEnvironment(
-            mainQueue: .main
-          )
+          reducer: NavigateAndLoadList()
         )
       )
     }

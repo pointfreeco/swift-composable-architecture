@@ -12,44 +12,40 @@ private let readMe = """
   Tapping "Toggle counter state" will flip between the `nil` and non-`nil` counter states.
   """
 
-struct OptionalBasicsState: Equatable {
-  var optionalCounter: CounterState?
-}
+struct OptionalBasics: ReducerProtocol {
+  struct State: Equatable {
+    var optionalCounter: Counter.State?
+  }
 
-enum OptionalBasicsAction: Equatable {
-  case optionalCounter(CounterAction)
-  case toggleCounterButtonTapped
-}
+  enum Action: Equatable {
+    case optionalCounter(Counter.Action)
+    case toggleCounterButtonTapped
+  }
 
-struct OptionalBasicsEnvironment {}
+  var body: some ReducerProtocol<State, Action> {
+    Pullback(state: \.optionalCounter, action: /Action.optionalCounter) {
+      IfLetReducer {
+        Counter()
+      }
+    }
 
-let optionalBasicsReducer =
-  counterReducer
-  .optional()
-  .pullback(
-    state: \.optionalCounter,
-    action: /OptionalBasicsAction.optionalCounter,
-    environment: { _ in CounterEnvironment() }
-  )
-  .combined(
-    with: Reducer<
-      OptionalBasicsState, OptionalBasicsAction, OptionalBasicsEnvironment
-    > { state, action, environment in
+    Reduce { state, action in
       switch action {
       case .toggleCounterButtonTapped:
         state.optionalCounter =
           state.optionalCounter == nil
-          ? CounterState()
+          ? .init()
           : nil
         return .none
       case .optionalCounter:
         return .none
       }
     }
-  )
+  }
+}
 
 struct OptionalBasicsView: View {
-  let store: Store<OptionalBasicsState, OptionalBasicsAction>
+  let store: StoreOf<OptionalBasics>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -62,7 +58,7 @@ struct OptionalBasicsView: View {
           IfLetStore(
             self.store.scope(
               state: \.optionalCounter,
-              action: OptionalBasicsAction.optionalCounter
+              action: OptionalBasics.Action.optionalCounter
             ),
             then: { store in
               VStack(alignment: .leading, spacing: 16) {
@@ -88,9 +84,8 @@ struct OptionalBasicsView_Previews: PreviewProvider {
       NavigationView {
         OptionalBasicsView(
           store: Store(
-            initialState: OptionalBasicsState(),
-            reducer: optionalBasicsReducer,
-            environment: OptionalBasicsEnvironment()
+            initialState: .init(),
+            reducer: OptionalBasics()
           )
         )
       }
@@ -98,9 +93,8 @@ struct OptionalBasicsView_Previews: PreviewProvider {
       NavigationView {
         OptionalBasicsView(
           store: Store(
-            initialState: OptionalBasicsState(optionalCounter: CounterState(count: 42)),
-            reducer: optionalBasicsReducer,
-            environment: OptionalBasicsEnvironment()
+            initialState: .init(optionalCounter: .init(count: 42)),
+            reducer: OptionalBasics()
           )
         )
       }

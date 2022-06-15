@@ -2,103 +2,102 @@ import ComposableArchitecture
 @preconcurrency import Foundation
 import SwiftUI
 
-struct VoiceMemo: Equatable, Identifiable {
-  var date: Date
-  var duration: TimeInterval
-  var mode = Mode.notPlaying
-  var title = ""
-  var url: URL
+struct VoiceMemo: ReducerProtocol {
+  struct State: Equatable, Identifiable {
+    var date: Date
+    var duration: TimeInterval
+    var mode = Mode.notPlaying
+    var title = ""
+    var url: URL
 
-  var id: URL { self.url }
+    var id: URL { self.url }
 
-  enum Mode: Equatable {
-    case notPlaying
-    case playing(progress: Double)
+    enum Mode: Equatable {
+      case notPlaying
+      case playing(progress: Double)
 
-    var isPlaying: Bool {
-      if case .playing = self { return true }
-      return false
-    }
+      var isPlaying: Bool {
+        if case .playing = self { return true }
+        return false
+      }
 
-    var progress: Double? {
-      if case let .playing(progress) = self { return progress }
-      return nil
+      var progress: Double? {
+        if case let .playing(progress) = self { return progress }
+        return nil
+      }
     }
   }
-}
 
-enum VoiceMemoAction: Equatable {
-  case audioPlayerClient(TaskResult<Bool>)
-  case playButtonTapped
-  case delete
-  case timerUpdated(TimeInterval)
-  case titleTextFieldChanged(String)
-}
+  enum Action: Equatable {
+    case audioPlayerClient(TaskResult<Bool>)
+    case playButtonTapped
+    case delete
+    case timerUpdated(TimeInterval)
+    case titleTextFieldChanged(String)
+  }
 
-struct VoiceMemoEnvironment {
-  var audioPlayerClient: AudioPlayerClient
-  var mainRunLoop: AnySchedulerOf<RunLoop>
-}
+  @Dependency(\.audioPlayer) var audioPlayer
+  @Dependency(\.mainRunLoop) var mainRunLoop
 
-let voiceMemoReducer = Reducer<
-  VoiceMemo, VoiceMemoAction, VoiceMemoEnvironment
-> { memo, action, environment in
-  enum PlayId {}
-  enum TimerId {}
+  func reduce(into memo: inout State, action: Action) -> Effect<Action, Never> {
+    enum PlayId {}
+    enum TimerId {}
 
-  switch action {
-  case .audioPlayerClient:
-    memo.mode = .notPlaying
-    return .cancel(id: TimerId.self)
+    switch action {
+    case .audioPlayerClient:
+      memo.mode = .notPlaying
+      return .cancel(id: TimerId.self)
 
-  case .delete:
-    return .cancel(ids: [PlayId.self, TimerId.self])
+    case .delete:
+      return .cancel(ids: [PlayId.self, TimerId.self])
 
-  case .playButtonTapped:
-    switch memo.mode {
-    case .notPlaying:
-      memo.mode = .playing(progress: 0)
+    case .playButtonTapped:
+      switch memo.mode {
+      case .notPlaying:
+        memo.mode = .playing(progress: 0)
 
-      return .run { [url = memo.url] send in
-        let start = environment.mainRunLoop.now
+        return .run { [url = memo.url] send in
+          let start = self.mainRunLoop.now
 
-        await withThrowingTaskGroup(of: Void.self) { group in
-          group.addTask {
-            for try await tick in environment.mainRunLoop.timer(interval: 0.5) {
-              await send(.timerUpdated(tick.date.timeIntervalSince(start.date)))
+          await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask {
+              for try await tick in self.mainRunLoop.timer(interval: 0.5) {
+                await send(.timerUpdated(tick.date.timeIntervalSince(start.date)))
+              }
+            }
+            group.addTask {
+              await send(
+                .audioPlayerClient(.init { try await self.audioPlayer.play(url) })
+              )
             }
           }
-          group.addTask {
-            await send(
-              .audioPlayerClient(.init { try await environment.audioPlayerClient.play(url) })
-            )
-          }
         }
+        .cancellable(id: PlayId.self, cancelInFlight: true)
+
+      case .playing:
+        memo.mode = .notPlaying
+        return .cancel(ids: [PlayId.self, TimerId.self])
       }
-      .cancellable(id: PlayId.self, cancelInFlight: true)
 
-    case .playing:
-      memo.mode = .notPlaying
-      return .cancel(ids: [PlayId.self, TimerId.self])
+    case let .timerUpdated(time):
+      switch memo.mode {
+      case .notPlaying:
+        break
+
+      case .playing:
+        memo.mode = .playing(progress: time / memo.duration)
+      }
+      return .none
+
+    case let .titleTextFieldChanged(text):
+      memo.title = text
+      return .none
     }
-
-  case let .timerUpdated(time):
-    switch memo.mode {
-    case .notPlaying:
-      break
-    case let .playing(progress: progress):
-      memo.mode = .playing(progress: time / memo.duration)
-    }
-    return .none
-
-  case let .titleTextFieldChanged(text):
-    memo.title = text
-    return .none
   }
 }
 
 struct VoiceMemoView: View {
-  let store: Store<VoiceMemo, VoiceMemoAction>
+  let store: StoreOf<VoiceMemo>
 
   var body: some View {
     WithViewStore(store) { viewStore in
@@ -108,7 +107,7 @@ struct VoiceMemoView: View {
         TextField(
           "Untitled, \(viewStore.date.formatted(date: .numeric, time: .shortened))",
           text: viewStore.binding(
-            get: \.title, send: VoiceMemoAction.titleTextFieldChanged)
+            get: \.title, send: VoiceMemo.Action.titleTextFieldChanged)
         )
 
         Spacer()

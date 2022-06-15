@@ -13,64 +13,50 @@ private let readMe = """
   rows.
   """
 
-extension Reducer {
-  static func recurse(
-    _ reducer: @escaping (Self, inout State, Action, Environment) -> Effect<Action, Never>
-  ) -> Self {
-
-    var `self`: Self!
-    self = Self { state, action, environment in
-      reducer(self, &state, action, environment)
-    }
-    return self
+struct Nested: ReducerProtocol {
+  struct State: Equatable, Identifiable {
+    var children: IdentifiedArrayOf<State> = []
+    let id: UUID
+    var description: String = ""
   }
-}
 
-struct NestedState: Equatable, Identifiable {
-  var children: IdentifiedArrayOf<NestedState> = []
-  let id: UUID
-  var description: String = ""
-}
+  enum Action: Equatable {
+    case append
+    indirect case node(id: State.ID, action: Action)
+    case remove(IndexSet)
+    case rename(String)
+  }
 
-indirect enum NestedAction: Equatable {
-  case append
-  case node(id: NestedState.ID, action: NestedAction)
-  case remove(IndexSet)
-  case rename(String)
-}
+  @Dependency(\.uuid) var uuid
 
-struct NestedEnvironment {
-  var uuid: () -> UUID
-}
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .append:
+        state.children.append(State(id: self.uuid()))
+        return .none
 
-let nestedReducer = Reducer<
-  NestedState, NestedAction, NestedEnvironment
->.recurse { `self`, state, action, environment in
-  switch action {
-  case .append:
-    state.children.append(NestedState(id: environment.uuid()))
-    return .none
+      case .node:
+        return .none
 
-  case .node:
-    return self.forEach(
-      state: \.children,
-      action: /NestedAction.node(id:action:),
-      environment: { $0 }
-    )
-    .run(&state, action, environment)
+      case let .remove(indexSet):
+        state.children.remove(atOffsets: indexSet)
+        return .none
 
-  case let .remove(indexSet):
-    state.children.remove(atOffsets: indexSet)
-    return .none
+      case let .rename(name):
+        state.description = name
+        return .none
+      }
+    }
 
-  case let .rename(name):
-    state.description = name
-    return .none
+    ForEachReducer(state: \.children, action: /Action.node) {
+      self
+    }
   }
 }
 
 struct NestedView: View {
-  let store: Store<NestedState, NestedAction>
+  let store: StoreOf<Nested>
 
   var body: some View {
     WithViewStore(self.store.scope(state: \.description)) { viewStore in
@@ -78,13 +64,13 @@ struct NestedView: View {
         Section(header: Text(template: readMe, .caption)) {
 
           ForEachStore(
-            self.store.scope(state: \.children, action: NestedAction.node(id:action:))
+            self.store.scope(state: \.children, action: Nested.Action.node(id:action:))
           ) { childStore in
             WithViewStore(childStore) { childViewStore in
               HStack {
                 TextField(
                   "Untitled",
-                  text: childViewStore.binding(get: \.description, send: NestedAction.rename)
+                  text: childViewStore.binding(get: \.description, send: Nested.Action.rename)
                 )
 
                 Spacer()
@@ -108,12 +94,12 @@ struct NestedView: View {
   }
 }
 
-extension NestedState {
-  static let mock = NestedState(
+extension Nested.State {
+  static let mock = Self(
     children: [
-      NestedState(
+      Self(
         children: [
-          NestedState(
+          Self(
             children: [],
             id: UUID(),
             description: ""
@@ -122,14 +108,14 @@ extension NestedState {
         id: UUID(),
         description: "Bar"
       ),
-      NestedState(
+      Self(
         children: [
-          NestedState(
+          Self(
             children: [],
             id: UUID(),
             description: "Fizz"
           ),
-          NestedState(
+          Self(
             children: [],
             id: UUID(),
             description: "Buzz"
@@ -138,7 +124,7 @@ extension NestedState {
         id: UUID(),
         description: "Baz"
       ),
-      NestedState(
+      Self(
         children: [],
         id: UUID(),
         description: ""
@@ -156,10 +142,7 @@ extension NestedState {
         NestedView(
           store: Store(
             initialState: .mock,
-            reducer: nestedReducer,
-            environment: NestedEnvironment(
-              uuid: UUID.init
-            )
+            reducer: Nested()
           )
         )
       }

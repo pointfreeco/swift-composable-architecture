@@ -11,71 +11,66 @@ private let readMe = """
   currently fetching data so that it knows to continue showing the loading indicator.
   """
 
-struct RefreshableState: Equatable {
-  var count = 0
-  var fact: String?
-  var isLoading = false
-}
+struct Refreshable: ReducerProtocol {
+  struct State: Equatable {
+    var count = 0
+    var fact: String?
+    var isLoading = false
+  }
 
-enum RefreshableAction: Equatable {
-  case cancelButtonTapped
-  case decrementButtonTapped
-  case factResponse(TaskResult<String>)
-  case incrementButtonTapped
-  case refresh
-}
+  enum Action: Equatable {
+    case cancelButtonTapped
+    case decrementButtonTapped
+    case factResponse(TaskResult<String>)
+    case incrementButtonTapped
+    case refresh
+  }
 
-struct RefreshableEnvironment {
-  var fact: FactClient
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+  @Dependency(\.factClient) var factClient
+  @Dependency(\.mainQueue) var mainQueue
 
-let refreshableReducer = Reducer<
-  RefreshableState,
-  RefreshableAction,
-  RefreshableEnvironment
-> { state, action, environment in
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    enum CancelId {}
 
-  enum CancelId {}
+    switch action {
+    case .cancelButtonTapped:
+      state.isLoading = false
+      return .cancel(id: CancelId.self)
 
-  switch action {
-  case .cancelButtonTapped:
-    state.isLoading = false
-    return .cancel(id: CancelId.self)
+    case .decrementButtonTapped:
+      state.count -= 1
+      return .none
 
-  case .decrementButtonTapped:
-    state.count -= 1
-    return .none
+    case let .factResponse(.success(fact)):
+      state.isLoading = false
+      state.fact = fact
+      return .none
 
-  case let .factResponse(.success(fact)):
-    state.isLoading = false
-    state.fact = fact
-    return .none
+    case .factResponse(.failure):
+      state.isLoading = false
+      // TODO: do some error handling
+      return .none
 
-  case .factResponse(.failure):
-    state.isLoading = false
-    // TODO: do some error handling
-    return .none
+    case .incrementButtonTapped:
+      state.count += 1
+      return .none
 
-  case .incrementButtonTapped:
-    state.count += 1
-    return .none
-
-  case .refresh:
-    state.fact = nil
-    state.isLoading = true
-    return .task { [count = state.count] in
-      try? await environment.mainQueue.sleep(for: 2)
-      return await .factResponse(.init { try await environment.fact.fetch(count) })
+    case .refresh:
+      state.fact = nil
+      state.isLoading = true
+      return .task { [count = state.count] in
+        try? await self.mainQueue.sleep(for: 2)
+        return await .factResponse(.init { try await self.factClient.fetch(count) })
+      }
+      .animation()
+      .cancellable(id: CancelId.self)
     }
-    .animation()
-    .cancellable(id: CancelId.self)
   }
 }
 
 #if compiler(>=5.5)
   struct RefreshableView: View {
-    let store: Store<RefreshableState, RefreshableAction>
+    let store: StoreOf<Refreshable>
 
     var body: some View {
       WithViewStore(self.store) { viewStore in
@@ -111,11 +106,7 @@ let refreshableReducer = Reducer<
       RefreshableView(
         store: .init(
           initialState: .init(),
-          reducer: refreshableReducer,
-          environment: .init(
-            fact: .live,
-            mainQueue: .main
-          )
+          reducer: Refreshable()
         )
       )
     }

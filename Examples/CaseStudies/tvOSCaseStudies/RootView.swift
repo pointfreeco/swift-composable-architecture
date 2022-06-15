@@ -1,6 +1,22 @@
 import ComposableArchitecture
 import SwiftUI
 
+struct RootState {
+  var focus = FocusState()
+}
+
+enum RootAction {
+  case focus(FocusAction)
+}
+
+struct RootReducer: ReducerProtocol {
+  var body: some ReducerProtocol<RootState, RootAction> {
+    Pullback(state: \.focus, action: /RootAction.focus) {
+      FocusReducer()
+    }
+  }
+}
+
 struct RootView: View {
   let store: Store<RootState, RootAction>
 
@@ -40,8 +56,7 @@ struct ContentView_Previews: PreviewProvider {
       RootView(
         store: Store(
           initialState: .init(),
-          reducer: rootReducer,
-          environment: .init()
+          reducer: RootReducer()
         )
       )
     }

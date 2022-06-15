@@ -7,20 +7,16 @@ import XCTest
 @MainActor
 class LoginCoreTests: XCTestCase {
   func testFlow_Success_TwoFactor_Integration() async {
-    var authenticationClient = AuthenticationClient.failing
-    authenticationClient.login = { _ in
-      .init(token: "deadbeefdeadbeef", twoFactorRequired: true)
-    }
-    authenticationClient.twoFactor = { _ in
-      .init(token: "deadbeefdeadbeef", twoFactorRequired: false)
-    }
-
-    let store = TestStore(
-      initialState: LoginState(),
-      reducer: loginReducer,
-      environment: LoginEnvironment(
-        authenticationClient: authenticationClient
-      )
+    let store = _TestStore(
+      initialState: .init(),
+      reducer: Login()
+        .dependency(\.authenticationClient.login) { _ in
+          .init(token: "deadbeefdeadbeef", twoFactorRequired: true)
+        }
+        .dependency(\.authenticationClient.twoFactor) { _ in
+          .init(token: "deadbeefdeadbeef", twoFactorRequired: false)
+        }
+        .dependency(\.mainQueue, .immediate)
     )
 
     store.send(.emailChanged("2fa@pointfree.co")) {
@@ -37,7 +33,7 @@ class LoginCoreTests: XCTestCase {
       .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: true)))
     ) {
       $0.isLoginRequestInFlight = false
-      $0.twoFactor = TwoFactorState(token: "deadbeefdeadbeef")
+      $0.twoFactor = .init(token: "deadbeefdeadbeef")
     }
     store.send(.twoFactor(.codeChanged("1234"))) {
       $0.twoFactor?.code = "1234"
@@ -56,20 +52,15 @@ class LoginCoreTests: XCTestCase {
   }
 
   func testFlow_DismissEarly_TwoFactor_Integration() async {
-    var authenticationClient = AuthenticationClient.failing
-    authenticationClient.login = { _ in
-      .init(token: "deadbeefdeadbeef", twoFactorRequired: true)
-    }
-    authenticationClient.twoFactor = { _ in
-      .init(token: "deadbeefdeadbeef", twoFactorRequired: false)
-    }
-
-    let store = TestStore(
-      initialState: LoginState(),
-      reducer: loginReducer,
-      environment: LoginEnvironment(
-        authenticationClient: authenticationClient
-      )
+    let store = _TestStore(
+      initialState: .init(),
+      reducer: Login()
+        .dependency(\.authenticationClient.login) { _ in
+          .init(token: "deadbeefdeadbeef", twoFactorRequired: true)
+        }
+        .dependency(\.authenticationClient.twoFactor) { _ in
+          .init(token: "deadbeefdeadbeef", twoFactorRequired: false)
+        }
     )
 
     store.send(.emailChanged("2fa@pointfree.co")) {
@@ -86,7 +77,7 @@ class LoginCoreTests: XCTestCase {
       .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: true)))
     ) {
       $0.isLoginRequestInFlight = false
-      $0.twoFactor = TwoFactorState(token: "deadbeefdeadbeef")
+      $0.twoFactor = .init(token: "deadbeefdeadbeef")
     }
     store.send(.twoFactor(.codeChanged("1234"))) {
       $0.twoFactor?.code = "1234"

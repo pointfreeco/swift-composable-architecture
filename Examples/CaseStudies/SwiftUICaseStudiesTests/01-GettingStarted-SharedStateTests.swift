@@ -6,10 +6,9 @@ import XCTest
 
 class SharedStateTests: XCTestCase {
   func testTabRestoredOnReset() {
-    let store = TestStore(
-      initialState: SharedState(),
-      reducer: sharedStateReducer,
-      environment: ()
+    let store = _TestStore(
+      initialState: .init(),
+      reducer: SharedState()
     )
 
     store.send(.selectTab(.profile)) {
@@ -25,10 +24,9 @@ class SharedStateTests: XCTestCase {
   }
 
   func testTabSelection() {
-    let store = TestStore(
-      initialState: SharedState(),
-      reducer: sharedStateReducer,
-      environment: ()
+    let store = _TestStore(
+      initialState: .init(),
+      reducer: SharedState()
     )
 
     store.send(.selectTab(.profile)) {
@@ -44,10 +42,9 @@ class SharedStateTests: XCTestCase {
   }
 
   func testSharedCounts() {
-    let store = TestStore(
-      initialState: SharedState(),
-      reducer: sharedStateReducer,
-      environment: ()
+    let store = _TestStore(
+      initialState: .init(),
+      reducer: SharedState()
     )
 
     store.send(.counter(.incrementButtonTapped)) {
@@ -67,11 +64,9 @@ class SharedStateTests: XCTestCase {
   }
 
   func testIsPrimeWhenPrime() {
-    let store = TestStore(
-      initialState: SharedState.CounterState(
-        alert: nil, count: 3, maxCount: 0, minCount: 0, numberOfCounts: 0),
-      reducer: sharedStateCounterReducer,
-      environment: ()
+    let store = _TestStore(
+      initialState: .init(alert: nil, count: 3, maxCount: 0, minCount: 0, numberOfCounts: 0),
+      reducer: SharedState.Counter()
     )
 
     store.send(.isPrimeButtonTapped) {
@@ -85,11 +80,9 @@ class SharedStateTests: XCTestCase {
   }
 
   func testIsPrimeWhenNotPrime() {
-    let store = TestStore(
-      initialState: SharedState.CounterState(
-        alert: nil, count: 6, maxCount: 0, minCount: 0, numberOfCounts: 0),
-      reducer: sharedStateCounterReducer,
-      environment: ()
+    let store = _TestStore(
+      initialState: .init(alert: nil, count: 6, maxCount: 0, minCount: 0, numberOfCounts: 0),
+      reducer: SharedState.Counter()
     )
 
     store.send(.isPrimeButtonTapped) {

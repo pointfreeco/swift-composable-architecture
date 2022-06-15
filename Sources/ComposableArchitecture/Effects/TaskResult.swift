@@ -95,7 +95,7 @@ import Foundation
 ///
 ///  TaskResult<Int>.failure(error1) == .failure(error2) ❌
 ///  ```
-public enum TaskResult<Success> {
+public enum TaskResult<Success: Sendable>: Sendable {
   case success(Success)
   case failure(Error)
 
@@ -128,8 +128,6 @@ public enum TaskResult<Success> {
     }
   }
 }
-
-extension TaskResult: Sendable where Success: Sendable {}
 
 public typealias TaskFailure = TaskResult<Never>
 

@@ -15,23 +15,17 @@ enum LazyNavigationAction: Equatable {
   case setNavigationIsActiveDelayCompleted
 }
 
-struct LazyNavigationEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+struct LazyNavigationReducer: ReducerProtocol {
+  @Dependency(\.mainQueue) var mainQueue
 
-let lazyNavigationReducer =
-  counterReducer
-  .optional()
-  .pullback(
-    state: \.optionalCounter,
-    action: /LazyNavigationAction.optionalCounter,
-    environment: { _ in CounterEnvironment() }
-  )
-  .combined(
-    with: Reducer<
-      LazyNavigationState, LazyNavigationAction, LazyNavigationEnvironment
-    > { state, action, environment in
+  var body: some ReducerProtocol<LazyNavigationState, LazyNavigationAction> {
+    Pullback(state: \.optionalCounter, action: /LazyNavigationAction.optionalCounter) {
+      IfLetReducer {
+        CounterReducer()
+      }
+    }
 
+    Reduce { state, action in
       enum CancelId {}
 
       switch action {
@@ -40,8 +34,8 @@ let lazyNavigationReducer =
 
       case .setNavigation(isActive: true):
         state.isActivityIndicatorHidden = false
-        return .task { 
-          try? await environment.mainQueue.sleep(for: 1)
+        return .task {
+          try? await self.mainQueue.sleep(for: 1)
           return .setNavigationIsActiveDelayCompleted
         }
         .cancellable(id: CancelId.self)
@@ -59,7 +53,8 @@ let lazyNavigationReducer =
         return .none
       }
     }
-  )
+  }
+}
 
 class LazyNavigationViewController: UIViewController {
   var cancellables: [AnyCancellable] = []
@@ -145,10 +140,7 @@ struct LazyNavigationViewController_Previews: PreviewProvider {
       rootViewController: LazyNavigationViewController(
         store: Store(
           initialState: LazyNavigationState(),
-          reducer: lazyNavigationReducer,
-          environment: LazyNavigationEnvironment(
-            mainQueue: .main
-          )
+          reducer: LazyNavigationReducer()
         )
       )
     )
