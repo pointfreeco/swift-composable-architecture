@@ -69,7 +69,7 @@ struct LongLivingEffectsView: View {
         }
       }
       .navigationBarTitle("Long-living effects")
-      .task { await viewStore.send(.task) }
+      .task { await viewStore.send(.task).finish() }
     }
   }
 

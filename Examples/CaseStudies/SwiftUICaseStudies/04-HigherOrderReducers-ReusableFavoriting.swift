@@ -1,6 +1,6 @@
 import Combine
 import ComposableArchitecture
-@preconcurrency import Foundation
+import Foundation
 import SwiftUI
 
 private let readMe = """
