@@ -24,6 +24,7 @@ public struct AppReducer: ReducerProtocol {
       self.path = path
     }
 
+    // TODO: Rename Destination?
     public enum Route: Hashable {
       case twoFactor(TwoFactor.State)
       case newGame(NewGame.State)
@@ -32,9 +33,13 @@ public struct AppReducer: ReducerProtocol {
   }
 
   public enum Action: Hashable, NavigableAction {
+    public typealias DestinationState = State.Route
+    public typealias DestinationAction = Route
+
     case login(Login.Action)
-    // TODO: NavigationActionOf<AppReducer> ?
-    case navigation(NavigationAction<State.Route, Route>)
+    // TODO: can we get this to work without the typealiases above??
+    case navigation(NavigationActionOf<AppReducer>)
+//    case navigation(NavigationAction<State.Route, Route>)
 
     public enum Route: Hashable {
       case twoFactor(TwoFactor.Action)

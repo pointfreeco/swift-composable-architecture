@@ -96,6 +96,16 @@ public enum NavigationAction<State, Action> {
   case setPath(NavigationState<State>)
 }
 
+// TODO: can we get this to work?
+public typealias NavigationActionOf<Reducer: ReducerProtocol> = NavigationAction<
+  Reducer.State.DestinationState,
+  Reducer.Action.DestinationAction
+>
+where
+  Reducer.State: NavigableState,
+  Reducer.Action: NavigableAction,
+  Reducer.Action.DestinationState == Reducer.State.DestinationState
+
 extension NavigationAction: Equatable where State: Equatable, Action: Equatable {}
 extension NavigationAction: Hashable where State: Hashable, Action: Hashable {}
 
