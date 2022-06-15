@@ -12,13 +12,6 @@ public struct NewGameView: View {
     var isLetsPlayButtonDisabled: Bool
     var oPlayerName: String
     var xPlayerName: String
-
-    init(state: NewGameState) {
-      self.isGameActive = state.game != nil
-      self.isLetsPlayButtonDisabled = state.oPlayerName.isEmpty || state.xPlayerName.isEmpty
-      self.oPlayerName = state.oPlayerName
-      self.xPlayerName = state.xPlayerName
-    }
   }
 
   enum ViewAction {
@@ -78,6 +71,15 @@ public struct NewGameView: View {
         .navigationBarItems(trailing: Button("Logout") { viewStore.send(.logoutButtonTapped) })
       }
     }
+  }
+}
+
+extension NewGameView.ViewState {
+  init(state: NewGameState) {
+    self.isGameActive = state.game != nil
+    self.isLetsPlayButtonDisabled = state.oPlayerName.isEmpty || state.xPlayerName.isEmpty
+    self.oPlayerName = state.oPlayerName
+    self.xPlayerName = state.xPlayerName
   }
 }
 

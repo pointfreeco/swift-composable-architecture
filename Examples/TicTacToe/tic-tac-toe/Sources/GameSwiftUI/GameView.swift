@@ -10,18 +10,6 @@ public struct GameView: View {
     var isGameDisabled: Bool
     var isPlayAgainButtonVisible: Bool
     var title: String
-
-    init(state: GameState) {
-      self.board = state.board.map { $0.map { $0?.label ?? "" } }
-      self.isGameDisabled = state.board.hasWinner || state.board.isFilled
-      self.isPlayAgainButtonVisible = state.board.hasWinner || state.board.isFilled
-      self.title =
-        state.board.hasWinner
-        ? "Winner! Congrats \(state.currentPlayerName)!"
-        : state.board.isFilled
-          ? "Tied game!"
-          : "\(state.currentPlayerName), place your \(state.currentPlayer.label)"
-    }
   }
 
   public init(store: Store<GameState, GameAction>) {
@@ -89,6 +77,20 @@ public struct GameView: View {
             : Color(red: 0.6, green: 0.6, blue: 0.6)
         )
     }
+  }
+}
+
+extension GameView.ViewState {
+  init(state: GameState) {
+    self.board = state.board.map { $0.map { $0?.label ?? "" } }
+    self.isGameDisabled = state.board.hasWinner || state.board.isFilled
+    self.isPlayAgainButtonVisible = state.board.hasWinner || state.board.isFilled
+    self.title =
+      state.board.hasWinner
+      ? "Winner! Congrats \(state.currentPlayerName)!"
+      : state.board.isFilled
+        ? "Tied game!"
+        : "\(state.currentPlayerName), place your \(state.currentPlayer.label)"
   }
 }
 

@@ -3,6 +3,43 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
+// NB: Deprecated after 0.36.0:
+
+#if DEBUG
+  extension TestStore where LocalState: Equatable, Action: Equatable {
+    @available(
+      *, deprecated,
+      message:
+        "See the following discussion for alternatives, or to share how you use this API: https://github.com/pointfreeco/swift-composable-architecture/discussions/1148"
+    )
+    public func scope<S, A>(
+      state toLocalState: @escaping (LocalState) -> S,
+      action fromLocalAction: @escaping (A) -> LocalAction
+    ) -> TestStore<State, S, Action, A, Environment> {
+      .init(
+        environment: self.environment,
+        file: self.file,
+        fromLocalAction: { self.fromLocalAction(fromLocalAction($0)) },
+        initialState: self.store.state.value,
+        line: self.line,
+        reducer: self.reducer,
+        toLocalState: { toLocalState(self.toLocalState($0)) }
+      )
+    }
+
+    @available(
+      *, deprecated,
+      message:
+        "See the following discussion for alternatives, or to share how you use this API: https://github.com/pointfreeco/swift-composable-architecture/discussions/1148"
+    )
+    public func scope<S>(
+      state toLocalState: @escaping (LocalState) -> S
+    ) -> TestStore<State, S, Action, LocalAction, Environment> {
+      self.scope(state: toLocalState, action: { $0 })
+    }
+  }
+#endif
+
 // NB: Deprecated after 0.34.0:
 
 extension Effect {

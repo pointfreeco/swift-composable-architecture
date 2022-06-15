@@ -16,16 +16,6 @@ public struct LoginView: View {
     var isLoginButtonDisabled: Bool
     var password: String
     var isTwoFactorActive: Bool
-
-    init(state: LoginState) {
-      self.alert = state.alert
-      self.email = state.email
-      self.isActivityIndicatorVisible = state.isLoginRequestInFlight
-      self.isFormDisabled = state.isLoginRequestInFlight
-      self.isLoginButtonDisabled = !state.isFormValid
-      self.password = state.password
-      self.isTwoFactorActive = state.twoFactor != nil
-    }
   }
 
   enum ViewAction {
@@ -97,6 +87,18 @@ public struct LoginView: View {
       .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
     }
     .navigationBarTitle("Login")
+  }
+}
+
+extension LoginView.ViewState {
+  init(state: LoginState) {
+    self.alert = state.alert
+    self.email = state.email
+    self.isActivityIndicatorVisible = state.isLoginRequestInFlight
+    self.isFormDisabled = state.isLoginRequestInFlight
+    self.isLoginButtonDisabled = !state.isFormValid
+    self.password = state.password
+    self.isTwoFactorActive = state.twoFactor != nil
   }
 }
 

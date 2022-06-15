@@ -5,27 +5,35 @@ import XCTest
 @testable import NewGameSwiftUI
 
 class NewGameSwiftUITests: XCTestCase {
-  let store = TestStore(
-    initialState: NewGameState(),
-    reducer: newGameReducer,
-    environment: NewGameEnvironment()
-  )
-  .scope(state: NewGameView.ViewState.init, action: NewGameAction.init)
-
   func testNewGame() {
-    self.store.send(.xPlayerNameChanged("Blob Sr.")) {
-      $0.xPlayerName = "Blob Sr."
-    }
-    self.store.send(.oPlayerNameChanged("Blob Jr.")) {
-      $0.oPlayerName = "Blob Jr."
-      $0.isLetsPlayButtonDisabled = false
-    }
-    self.store.send(.letsPlayButtonTapped) {
-      $0.isGameActive = true
-    }
-    self.store.send(.gameDismissed) {
-      $0.isGameActive = false
-    }
-    self.store.send(.logoutButtonTapped)
+    let store = Store(
+      initialState: NewGameState(),
+      reducer: newGameReducer,
+      environment: NewGameEnvironment()
+    )
+    let viewStore = ViewStore(
+      store.scope(state: NewGameView.ViewState.init, action: NewGameAction.init)
+    )
+
+    viewStore.send(.xPlayerNameChanged("Blob Sr."))
+    XCTAssertEqual(
+      .init(
+        isGameActive: false,
+        isLetsPlayButtonDisabled: true,
+        oPlayerName: "",
+        xPlayerName: "Blob Sr."
+      ),
+      viewStore.state
+    )
+
+    viewStore.send(.oPlayerNameChanged("Blob Jr."))
+    XCTAssertEqual("Blob Jr.", viewStore.oPlayerName)
+    XCTAssertEqual(false, viewStore.isLetsPlayButtonDisabled)
+
+    viewStore.send(.letsPlayButtonTapped)
+    XCTAssertEqual(true, viewStore.isGameActive)
+
+    viewStore.send(.gameDismissed)
+    XCTAssertEqual(false, viewStore.isGameActive)
   }
 }

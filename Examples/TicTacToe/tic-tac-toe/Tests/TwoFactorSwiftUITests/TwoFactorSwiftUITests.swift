@@ -12,76 +12,78 @@ class TwoFactorSwiftUITests: XCTestCase {
     authenticationClient.twoFactor = { _ in
       Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
     }
+    let mainQueue = DispatchQueue.test
 
-    let store = TestStore(
+    let store = Store(
       initialState: TwoFactorState(token: "deadbeefdeadbeef"),
       reducer: twoFactorReducer,
       environment: TwoFactorEnvironment(
         authenticationClient: authenticationClient,
-        mainQueue: .immediate
+        mainQueue: mainQueue.eraseToAnyScheduler()
       )
     )
-    .scope(state: TwoFactorView.ViewState.init, action: TwoFactorAction.init)
+    let viewStore = ViewStore(
+      store.scope(state: TwoFactorView.ViewState.init, action: TwoFactorAction.init)
+    )
 
-    store.environment.authenticationClient.twoFactor = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
-    }
-    store.send(.codeChanged("1")) {
-      $0.code = "1"
-    }
-    store.send(.codeChanged("12")) {
-      $0.code = "12"
-    }
-    store.send(.codeChanged("123")) {
-      $0.code = "123"
-    }
-    store.send(.codeChanged("1234")) {
-      $0.code = "1234"
-      $0.isSubmitButtonDisabled = false
-    }
-    store.send(.submitButtonTapped) {
-      $0.isActivityIndicatorVisible = true
-      $0.isFormDisabled = true
-    }
-    store.receive(
-      .twoFactorResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
-    ) {
-      $0.isActivityIndicatorVisible = false
-      $0.isFormDisabled = false
-    }
+    viewStore.send(.codeChanged("1"))
+    XCTAssertNoDifference(
+      .init(
+        code: "1",
+        isActivityIndicatorVisible: false,
+        isFormDisabled: false,
+        isSubmitButtonDisabled: true
+      ),
+      viewStore.state
+    )
+
+    viewStore.send(.codeChanged("12"))
+    XCTAssertEqual("12", viewStore.code)
+
+    viewStore.send(.codeChanged("123"))
+    XCTAssertEqual("123", viewStore.code)
+
+    viewStore.send(.codeChanged("1234"))
+    XCTAssertEqual("1234", viewStore.code)
+    XCTAssertEqual(false, viewStore.isSubmitButtonDisabled)
+
+    viewStore.send(.submitButtonTapped)
+    XCTAssertEqual(true, viewStore.isActivityIndicatorVisible)
+    XCTAssertEqual(true, viewStore.isFormDisabled)
   }
 
   func testFlow_Failure() {
     var authenticationClient = AuthenticationClient.failing
     authenticationClient.twoFactor = { _ in Effect(error: .invalidTwoFactor) }
+    let mainQueue = DispatchQueue.test
 
-    let store = TestStore(
+    let store = Store(
       initialState: TwoFactorState(token: "deadbeefdeadbeef"),
       reducer: twoFactorReducer,
       environment: TwoFactorEnvironment(
         authenticationClient: authenticationClient,
-        mainQueue: .immediate
+        mainQueue: mainQueue.eraseToAnyScheduler()
       )
     )
-    .scope(state: TwoFactorView.ViewState.init, action: TwoFactorAction.init)
+    let viewStore = ViewStore(
+      store.scope(state: TwoFactorView.ViewState.init, action: TwoFactorAction.init)
+    )
 
-    store.send(.codeChanged("1234")) {
-      $0.code = "1234"
-      $0.isSubmitButtonDisabled = false
-    }
-    store.send(.submitButtonTapped) {
-      $0.isActivityIndicatorVisible = true
-      $0.isFormDisabled = true
-    }
-    store.receive(.twoFactorResponse(.failure(.invalidTwoFactor))) {
-      $0.alert = .init(
-        title: TextState(AuthenticationError.invalidTwoFactor.localizedDescription)
-      )
-      $0.isActivityIndicatorVisible = false
-      $0.isFormDisabled = false
-    }
-    store.send(.alertDismissed) {
-      $0.alert = nil
-    }
+    viewStore.send(.codeChanged("1234"))
+    viewStore.send(.submitButtonTapped)
+    XCTAssertEqual(true, viewStore.isActivityIndicatorVisible)
+    XCTAssertEqual(true, viewStore.isFormDisabled)
+
+    mainQueue.advance()
+
+    XCTAssertNoDifference(
+      .init(title: TextState(AuthenticationError.invalidTwoFactor.localizedDescription)),
+      viewStore.alert
+    )
+    XCTAssertEqual(false, viewStore.isActivityIndicatorVisible)
+    XCTAssertEqual(false, viewStore.isFormDisabled)
+
+    viewStore.send(.alertDismissed)
+    XCTAssertEqual(nil, viewStore.alert)
   }
 }

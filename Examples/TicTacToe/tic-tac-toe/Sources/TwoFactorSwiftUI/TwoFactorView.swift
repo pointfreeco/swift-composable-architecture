@@ -12,14 +12,6 @@ public struct TwoFactorView: View {
     var isActivityIndicatorVisible: Bool
     var isFormDisabled: Bool
     var isSubmitButtonDisabled: Bool
-
-    init(state: TwoFactorState) {
-      self.alert = state.alert
-      self.code = state.code
-      self.isActivityIndicatorVisible = state.isTwoFactorRequestInFlight
-      self.isFormDisabled = state.isTwoFactorRequestInFlight
-      self.isSubmitButtonDisabled = !state.isFormValid
-    }
   }
 
   enum ViewAction: Equatable {
@@ -70,6 +62,16 @@ public struct TwoFactorView: View {
       .disabled(viewStore.isFormDisabled)
       .navigationBarTitle("Confirmation Code")
     }
+  }
+}
+
+extension TwoFactorView.ViewState {
+  init(state: TwoFactorState) {
+    self.alert = state.alert
+    self.code = state.code
+    self.isActivityIndicatorVisible = state.isTwoFactorRequestInFlight
+    self.isFormDisabled = state.isTwoFactorRequestInFlight
+    self.isSubmitButtonDisabled = !state.isFormValid
   }
 }
 

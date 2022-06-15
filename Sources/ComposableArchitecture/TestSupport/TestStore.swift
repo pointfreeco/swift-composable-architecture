@@ -180,16 +180,16 @@
     /// ``receive(_:_:file:line:)``, it will equal the `inout` state passed to the closure.
     public private(set) var state: State
 
-    private let file: StaticString
-    private let fromLocalAction: (LocalAction) -> Action
-    private var line: UInt
-    private var inFlightEffects: Set<LongLivingEffect> = []
+    let file: StaticString
+    let fromLocalAction: (LocalAction) -> Action
+    var line: UInt
+    var inFlightEffects: Set<LongLivingEffect> = []
     var receivedActions: [(action: Action, state: State)] = []
-    private let reducer: Reducer<State, Action, Environment>
-    private var store: Store<State, TestAction>!
-    private let toLocalState: (State) -> LocalState
+    let reducer: Reducer<State, Action, Environment>
+    var store: Store<State, TestAction>!
+    let toLocalState: (State) -> LocalState
 
-    private init(
+    init(
       environment: Environment,
       file: StaticString,
       fromLocalAction: @escaping (LocalAction) -> Action,
@@ -281,7 +281,7 @@
       }
     }
 
-    private struct LongLivingEffect: Hashable {
+    struct LongLivingEffect: Hashable {
       let id = UUID()
       let file: StaticString
       let line: UInt
@@ -295,7 +295,7 @@
       }
     }
 
-    private struct TestAction: CustomDebugStringConvertible {
+    struct TestAction: CustomDebugStringConvertible {
       let origin: Origin
       let file: StaticString
       let line: UInt
@@ -502,47 +502,6 @@
       if "\(self.file)" == "\(file)" {
         self.line = line
       }
-    }
-  }
-
-  extension TestStore {
-    /// Scopes a store to assert against more local state and actions.
-    ///
-    /// Useful for testing view store-specific state and actions.
-    ///
-    /// - Parameters:
-    ///   - toLocalState: A function that transforms the reducer's state into more local state. This
-    ///     state will be asserted against as it is mutated by the reducer. Useful for testing view
-    ///     store state transformations.
-    ///   - fromLocalAction: A function that wraps a more local action in the reducer's action.
-    ///     Local actions can be "sent" to the store, while any reducer action may be received.
-    ///     Useful for testing view store action transformations.
-    public func scope<S, A>(
-      state toLocalState: @escaping (LocalState) -> S,
-      action fromLocalAction: @escaping (A) -> LocalAction
-    ) -> TestStore<State, S, Action, A, Environment> {
-      .init(
-        environment: self.environment,
-        file: self.file,
-        fromLocalAction: { self.fromLocalAction(fromLocalAction($0)) },
-        initialState: self.store.state.value,
-        line: self.line,
-        reducer: self.reducer,
-        toLocalState: { toLocalState(self.toLocalState($0)) }
-      )
-    }
-
-    /// Scopes a store to assert against more local state.
-    ///
-    /// Useful for testing view store-specific state.
-    ///
-    /// - Parameter toLocalState: A function that transforms the reducer's state into more local
-    ///   state. This state will be asserted against as it is mutated by the reducer. Useful for
-    ///   testing view store state transformations.
-    public func scope<S>(
-      state toLocalState: @escaping (LocalState) -> S
-    ) -> TestStore<State, S, Action, LocalAction, Environment> {
-      self.scope(state: toLocalState, action: { $0 })
     }
   }
 #endif

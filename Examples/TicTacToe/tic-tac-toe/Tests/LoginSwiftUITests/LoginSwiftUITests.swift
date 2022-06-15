@@ -12,43 +12,49 @@ class LoginSwiftUITests: XCTestCase {
     authenticationClient.login = { _ in
       Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
     }
+    let mainQueue = DispatchQueue.test
 
-    let store = TestStore(
+    let store = Store(
       initialState: LoginState(),
       reducer: loginReducer,
       environment: LoginEnvironment(
         authenticationClient: authenticationClient,
-        mainQueue: .immediate
+        mainQueue: mainQueue.eraseToAnyScheduler()
       )
     )
-    .scope(state: LoginView.ViewState.init, action: LoginAction.init)
+    let viewStore = ViewStore(
+      store.scope(state: LoginView.ViewState.init, action: LoginAction.init)
+    )
 
-    store.send(.emailChanged("blob@pointfree.co")) {
-      $0.email = "blob@pointfree.co"
-    }
-    store.send(.passwordChanged("password")) {
-      $0.password = "password"
-      $0.isLoginButtonDisabled = false
-    }
-    store.send(.loginButtonTapped) {
-      $0.isActivityIndicatorVisible = true
-      $0.isFormDisabled = true
-    }
-    store.receive(
-      .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
-    ) {
-      $0.isActivityIndicatorVisible = false
-      $0.isFormDisabled = false
-    }
+    viewStore.send(.emailChanged("blob@pointfree.co"))
+    XCTAssertNoDifference(
+      .init(
+        email: "blob@pointfree.co",
+        isActivityIndicatorVisible: false,
+        isFormDisabled: false,
+        isLoginButtonDisabled: true,
+        password: "",
+        isTwoFactorActive: false
+      ),
+      viewStore.state
+    )
+
+    viewStore.send(.passwordChanged("password"))
+    XCTAssertEqual("password", viewStore.password)
+    XCTAssertEqual(false, viewStore.isLoginButtonDisabled)
+
+    viewStore.send(.loginButtonTapped)
+    XCTAssertEqual(true, viewStore.isActivityIndicatorVisible)
+    XCTAssertEqual(true, viewStore.isFormDisabled)
   }
 
-  func testFlow_Success_TwoFactor() {
+  func testFlow_TwoFactor() {
     var authenticationClient = AuthenticationClient.failing
     authenticationClient.login = { _ in
       Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: true))
     }
 
-    let store = TestStore(
+    let store = Store(
       initialState: LoginState(),
       reducer: loginReducer,
       environment: LoginEnvironment(
@@ -56,65 +62,48 @@ class LoginSwiftUITests: XCTestCase {
         mainQueue: .immediate
       )
     )
-    .scope(state: LoginView.ViewState.init, action: LoginAction.init)
+    let viewStore = ViewStore(
+      store.scope(state: LoginView.ViewState.init, action: LoginAction.init)
+    )
 
-    store.send(.emailChanged("2fa@pointfree.co")) {
-      $0.email = "2fa@pointfree.co"
-    }
-    store.send(.passwordChanged("password")) {
-      $0.password = "password"
-      $0.isLoginButtonDisabled = false
-    }
-    store.send(.loginButtonTapped) {
-      $0.isActivityIndicatorVisible = true
-      $0.isFormDisabled = true
-    }
-    store.receive(
-      .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: true)))
-    ) {
-      $0.isActivityIndicatorVisible = false
-      $0.isFormDisabled = false
-      $0.isTwoFactorActive = true
-    }
-    store.send(.twoFactorDismissed) {
-      $0.isTwoFactorActive = false
-    }
+    viewStore.send(.emailChanged("2fa@pointfree.co"))
+    viewStore.send(.passwordChanged("password"))
+    viewStore.send(.loginButtonTapped)
+    XCTAssertEqual(true, viewStore.isTwoFactorActive)
   }
 
   func testFlow_Failure() {
     var authenticationClient = AuthenticationClient.failing
     authenticationClient.login = { _ in Effect(error: .invalidUserPassword) }
+    let mainQueue = DispatchQueue.test
 
-    let store = TestStore(
+    let store = Store(
       initialState: LoginState(),
       reducer: loginReducer,
       environment: LoginEnvironment(
         authenticationClient: authenticationClient,
-        mainQueue: .immediate
+        mainQueue: mainQueue.eraseToAnyScheduler()
       )
     )
-    .scope(state: LoginView.ViewState.init, action: LoginAction.init)
+    let viewStore = ViewStore(
+      store.scope(state: LoginView.ViewState.init, action: LoginAction.init)
+    )
 
-    store.send(.emailChanged("blob")) {
-      $0.email = "blob"
-    }
-    store.send(.passwordChanged("password")) {
-      $0.password = "password"
-      $0.isLoginButtonDisabled = false
-    }
-    store.send(.loginButtonTapped) {
-      $0.isActivityIndicatorVisible = true
-      $0.isFormDisabled = true
-    }
-    store.receive(.loginResponse(.failure(.invalidUserPassword))) {
-      $0.alert = .init(
-        title: TextState(AuthenticationError.invalidUserPassword.localizedDescription)
-      )
-      $0.isActivityIndicatorVisible = false
-      $0.isFormDisabled = false
-    }
-    store.send(.alertDismissed) {
-      $0.alert = nil
-    }
+    viewStore.send(.emailChanged("blob"))
+    viewStore.send(.passwordChanged("password"))
+    viewStore.send(.loginButtonTapped)
+    XCTAssertEqual(true, viewStore.isActivityIndicatorVisible)
+    XCTAssertEqual(true, viewStore.isFormDisabled)
+
+    mainQueue.advance()
+    XCTAssertNoDifference(
+      .init(title: TextState(AuthenticationError.invalidUserPassword.localizedDescription)),
+      viewStore.alert
+    )
+    XCTAssertEqual(false, viewStore.isActivityIndicatorVisible)
+    XCTAssertEqual(false, viewStore.isFormDisabled)
+
+    viewStore.send(.alertDismissed)
+    XCTAssertEqual(nil, viewStore.alert)
   }
 }
