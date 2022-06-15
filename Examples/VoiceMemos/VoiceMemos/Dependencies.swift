@@ -3,18 +3,18 @@ import SwiftUI
 import XCTestDynamicOverlay
 
 extension DependencyValues {
-  var openSettings: @MainActor () async -> Void {
+  var openSettings: @MainActor @Sendable () async -> Void {
     get { self[OpenSettingsKey.self] }
     set { self[OpenSettingsKey.self] = newValue }
   }
 
   private enum OpenSettingsKey: LiveDependencyKey {
-    typealias Value = @MainActor () async -> Void
+    typealias Value = @MainActor @Sendable () async -> Void
 
-    static let liveValue: @MainActor () async -> Void = {
+    static let liveValue: @MainActor @Sendable () async -> Void = {
       await UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
     }
-    static let testValue: @MainActor () async -> Void = {
+    static let testValue: @MainActor @Sendable () async -> Void = {
       XCTFail(#"@Dependency(\.openSettings)"#)
     }
   }

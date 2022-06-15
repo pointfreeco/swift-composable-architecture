@@ -1,5 +1,5 @@
 import ComposableArchitecture
-@preconcurrency import Foundation
+import Foundation
 import SwiftUI
 
 struct VoiceMemo: ReducerProtocol {

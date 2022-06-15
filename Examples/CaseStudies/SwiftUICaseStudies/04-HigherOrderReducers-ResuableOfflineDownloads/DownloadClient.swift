@@ -1,5 +1,5 @@
 import Combine
-import ComposableArchitecture
+@preconcurrency import ComposableArchitecture
 import Foundation
 
 struct DownloadClient {

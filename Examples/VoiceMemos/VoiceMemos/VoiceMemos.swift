@@ -1,9 +1,9 @@
 import AVFoundation
 import ComposableArchitecture
-@preconcurrency import Foundation
+import Foundation
 import SwiftUI
 
-struct VoiceMemos: ReducerProtocol {
+struct VoiceMemos: ReducerProtocol, Sendable {
   struct State: Equatable {
     var alert: AlertState<Action>?
     var audioRecorderPermission = RecorderPermission.undetermined
