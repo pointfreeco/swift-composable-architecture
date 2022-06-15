@@ -179,6 +179,17 @@ struct RootView: View {
           }
 
           Section(header: Text("Navigation")) {
+            // TODO: show in modal?
+            NavigationLink(
+              "Navigate stack",
+              destination: NavigationStackView(
+                store: self.store.scope(
+                  state: \.navigationStack,
+                  action: Root.Action.navigationStack
+                )
+              )
+            )
+
             NavigationLink(
               "Navigate and load data",
               destination: NavigateAndLoadView(

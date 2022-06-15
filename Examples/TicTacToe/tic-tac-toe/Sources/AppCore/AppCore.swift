@@ -33,7 +33,7 @@ public struct AppReducer: ReducerProtocol {
 
   public enum Action: Hashable, NavigableAction {
     case login(Login.Action)
-    // TODO: NavigationActionOf<_AppReducer> ?
+    // TODO: NavigationActionOf<AppReducer> ?
     case navigation(NavigationAction<State.Route, Route>)
 
     public enum Route: Hashable {

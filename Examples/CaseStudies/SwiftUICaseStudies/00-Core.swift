@@ -29,6 +29,7 @@ struct Root: ReducerProtocol {
     var multipleDependencies = MultipleDependenciesState()
     var navigateAndLoad = NavigateAndLoad.State()
     var navigateAndLoadList = NavigateAndLoadList.State()
+    var navigationStack = NavigationStackDemo.State()
     var nested = Nested.State.mock
     var optionalBasics = OptionalBasics.State()
     var presentAndLoad = PresentAndLoad.State()
@@ -63,6 +64,7 @@ struct Root: ReducerProtocol {
     case multipleDependencies(MultipleDependenciesAction)
     case navigateAndLoad(NavigateAndLoad.Action)
     case navigateAndLoadList(NavigateAndLoadList.Action)
+    case navigationStack(NavigationStackDemo.Action)
     case nested(Nested.Action)
     case optionalBasics(OptionalBasics.Action)
     case onAppear
@@ -160,6 +162,9 @@ struct Root: ReducerProtocol {
     }
     Pullback(state: \.navigateAndLoadList, action: /Action.navigateAndLoadList) {
       NavigateAndLoadList()
+    }
+    Pullback(state: \.navigationStack, action: /Action.navigationStack) {
+      NavigationStackDemo()
     }
     Pullback(state: \.nested, action: /Action.nested) {
       Nested()

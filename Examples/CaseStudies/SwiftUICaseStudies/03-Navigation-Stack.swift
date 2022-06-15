@@ -11,8 +11,8 @@ struct NavigationStackDemo: ReducerProtocol {
   struct State: Equatable, NavigableState {
     var path = NavigationState<Route>()
     var total = 0
+    var currentStack: [String] = []
 
-    // TODO: consolidate two Route enums into a single generic?
     enum Route: Codable, Equatable, Hashable {
       case screenA(ScreenA.State)
       case screenB(ScreenB.State)
@@ -21,6 +21,7 @@ struct NavigationStackDemo: ReducerProtocol {
   }
 
   enum Action: Equatable, NavigableAction {
+    case goBackToScreen(Int)
     case goToABCButtonTapped
     case navigation(NavigationAction<State.Route, Route>)
     case shuffleButtonTapped
@@ -36,6 +37,10 @@ struct NavigationStackDemo: ReducerProtocol {
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
+      case let .goBackToScreen(index):
+        state.path = state.path.dropLast(state.path.count - index - 1)
+        return .none
+
       case .goToABCButtonTapped:
         state.path.append(.init(id: self.nextID(), element: .screenA(.init())))
         state.path.append(.init(id: self.nextID(), element: .screenB(.init())))
@@ -51,18 +56,6 @@ struct NavigationStackDemo: ReducerProtocol {
         return .none
 
       case .navigation:
-        // TODO: shows off how to inspect state in entire stack
-        state.total = state.path.reduce(into: 0) { total, route in
-          switch route.element {
-          case let .screenA(state):
-            total += state.count
-          case .screenB:
-            break
-          case let .screenC(state):
-            total += state.count
-          }
-        }
-
         return .none
 
       case .cancelTimersButtonTapped:
@@ -94,10 +87,26 @@ struct NavigationStackDemo: ReducerProtocol {
         ScreenC()
       }
     }
-//    .presents(...)
+
+    Reduce { state, action in
+      state.total = 0
+      state.currentStack = []
+      for route in state.path {
+        switch route.element {
+        case let .screenA(screenAState):
+          state.total += screenAState.count
+          state.currentStack.append("Screen A")
+        case .screenB:
+          state.currentStack.append("Screen B")
+        case let .screenC(screenBState):
+          state.total += screenBState.count
+          state.currentStack.append("Screen C")
+        }
+      }
+      return .none
+    }
   }
 }
-//.debug()
 
 struct NavigationStackView: View {
   let store: StoreOf<NavigationStackDemo>
@@ -150,33 +159,59 @@ struct NavigationStackView: View {
       }
       .zIndex(0)
 
-      WithViewStore(
-        self.store, //.scope(state: { (total: $0.total, depth: $0.path.count) }),
-        removeDuplicates: ==
-      ) { viewStore in
-        if viewStore.path.count > 0 {
-          VStack(alignment: .leading) {
-            Text("Total count: \(viewStore.total)")
-            Button("Shuffle navigation stack") {
-              viewStore.send(.shuffleButtonTapped)
-            }
-            Button("Pop to root") {
-              // TODO: choose style
-              viewStore.send(.navigation(.setPath([])))
-              viewStore.send(.popToRoot)
-              viewStore.send(.navigation(.removeAll))
-            }
-            Button("Cancel timers") {
-              viewStore.send(.cancelTimersButtonTapped)
-            }
+      FloatingMenuView(store: self.store)
+        .zIndex(1)
+    }
+  }
+}
+
+struct FloatingMenuView: View {
+  let store: StoreOf<NavigationStackDemo>
+
+  struct State: Equatable {
+    let currentStack: [String]
+    let total: Int
+    init(state: NavigationStackDemo.State) {
+      self.currentStack = state.currentStack
+      self.total = state.total
+    }
+  }
+
+  var body: some View {
+    WithViewStore(self.store.scope(state: State.init)) { viewStore in
+      if viewStore.currentStack.count > 0 {
+        VStack(alignment: .leading) {
+          Text("Total count: \(viewStore.total)")
+          Button("Shuffle navigation stack") {
+            viewStore.send(.shuffleButtonTapped)
           }
-          .padding()
-          .background(Color.white)
-          .padding(.bottom, 1)
-          .transition(.opacity.animation(.default))
+          Button("Pop to root") {
+            // TODO: choose style
+            viewStore.send(.popToRoot)
+//            viewStore.send(.navigation(.setPath([])))
+//            viewStore.send(.navigation(.removeAll))
+          }
+          Button("Cancel timers") {
+            viewStore.send(.cancelTimersButtonTapped)
+          }
+
+          Menu {
+            ForEach(Array(viewStore.currentStack.enumerated().reversed()), id: \.offset) { offset, screen in
+              Button("\(offset + 1).) \(screen)") {
+                viewStore.send(.goBackToScreen(offset))
+              }
+              .disabled(offset == viewStore.currentStack.count - 1)
+            }
+            Button("Root") { viewStore.send(.popToRoot) }
+          } label: {
+            Text("Current stack")
+          }
         }
+        .padding()
+        .background(Color.white)
+        .padding(.bottom, 1)
+        .transition(.opacity.animation(.default))
       }
-      .zIndex(1)
     }
   }
 }
@@ -368,12 +403,7 @@ struct NavigationStack_Previews: PreviewProvider {
   static var previews: some View {
     NavigationStackView(
       store: .init(
-        initialState: .init(
-          path: [
-//            0: .screenA(.init()),
-//            1: .screenA(.init(count: 100)),
-          ]
-        ),
+        initialState: .init(),
         reducer: NavigationStackDemo()
       )
     )
