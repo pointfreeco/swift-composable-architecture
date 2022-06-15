@@ -10,7 +10,6 @@ public struct NewGame: ReducerProtocol {
 
   public enum Action: Hashable {
     case letsPlayButtonTapped
-    case logoutButtonTapped
     case oPlayerNameChanged(String)
     case xPlayerNameChanged(String)
   }
@@ -20,9 +19,6 @@ public struct NewGame: ReducerProtocol {
   public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {
     case .letsPlayButtonTapped:
-      return .none
-
-    case .logoutButtonTapped:
       return .none
 
     case let .oPlayerNameChanged(name):

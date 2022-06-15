@@ -3,6 +3,7 @@ import NewGameCore
 import SwiftUI
 
 public struct NewGameView: View {
+  @Environment(\.dismiss) var dismiss
   let store: StoreOf<NewGame>
 
   struct ViewState: Equatable {
@@ -19,7 +20,6 @@ public struct NewGameView: View {
 
   enum ViewAction {
     case letsPlayButtonTapped
-    case logoutButtonTapped
     case oPlayerNameChanged(String)
     case xPlayerNameChanged(String)
   }
@@ -65,7 +65,7 @@ public struct NewGameView: View {
       }
       .navigationBarTitle("New Game")
       .navigationBarBackButtonHidden(true)
-      .navigationBarItems(leading: Button("Logout") { viewStore.send(.logoutButtonTapped) })
+      .navigationBarItems(leading: Button("Logout") { self.dismiss() })
     }
   }
 }
@@ -75,8 +75,6 @@ extension NewGame.Action {
     switch action {
     case .letsPlayButtonTapped:
       self = .letsPlayButtonTapped
-    case .logoutButtonTapped:
-      self = .logoutButtonTapped
     case let .oPlayerNameChanged(name):
       self = .oPlayerNameChanged(name)
     case let .xPlayerNameChanged(name):

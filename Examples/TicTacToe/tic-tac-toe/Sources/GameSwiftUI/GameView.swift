@@ -3,6 +3,7 @@ import GameCore
 import SwiftUI
 
 public struct GameView: View {
+  @Environment(\.dismiss) var dismiss
   let store: StoreOf<Game>
 
   struct ViewState: Equatable {
@@ -54,7 +55,7 @@ public struct GameView: View {
           .disabled(viewStore.isGameDisabled)
         }
         .navigationBarTitle("Tic-tac-toe")
-        .navigationBarItems(leading: Button("Quit") { viewStore.send(.quitButtonTapped) })
+        .navigationBarItems(leading: Button("Quit") { self.dismiss() })
         .navigationBarBackButtonHidden(true)
       }
     }
