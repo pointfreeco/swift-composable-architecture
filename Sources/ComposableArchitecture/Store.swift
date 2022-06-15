@@ -384,8 +384,8 @@ public final class Store<State, Action> {
       let effect = self.reducer(&currentState, action)
 
       let effectCancellable = Box<AnyCancellable?>(wrappedValue: nil)
-      let task = Task { @MainActor in
-        await AsyncStream<Void> { _ in }.first { _ in true }
+      let task = Task<Void, Never> { @MainActor in
+        for await _ in AsyncStream<Void>.never {}
         effectCancellable.wrappedValue?.cancel()
       }
       tasks.wrappedValue.append(task)
