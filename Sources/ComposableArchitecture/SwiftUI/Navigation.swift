@@ -27,22 +27,30 @@ public struct NavigationState<Element>: MutableCollection, RandomAccessCollectio
   public var startIndex: Int {
     self.path.startIndex
   }
+
   public var endIndex: Int {
     self.path.endIndex
   }
+
   public func index(after i: Int) -> Int {
     self.path.index(after: i)
   }
+
   public subscript(position: Int) -> Route {
     _read { yield self.path[position] }
-    _modify { yield &self.path[position] }
+    _modify {
+      var element = self.path[position]
+      yield &element
+      self.path.update(element, at: position)
+    }
   }
+
   public mutating func replaceSubrange<C>(_ subrange: Range<Int>, with newElements: C)
   where C: Collection, Route == C.Element {
-    self.path.replaceSubrange(
-      subrange,
-      with: newElements
-    )
+    self.path.removeSubrange(subrange)
+    for element in newElements.reversed() {
+      self.path.insert(element, at: subrange.startIndex)
+    }
   }
 
   public subscript(id id: ID) -> Element? {
