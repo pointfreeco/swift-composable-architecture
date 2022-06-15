@@ -10,11 +10,11 @@ public protocol LiveDependencyKey: DependencyKey {
 public struct DependencyValues {
   @TaskLocal static var current = DependencyValues()
 
-  var storage: [ObjectIdentifier: Any] = [:]
+  private var storage: [ObjectIdentifier: Any] = [:]
 
   // TODO: lock storage?
   public subscript<Key>(key: Key.Type) -> Key.Value where Key: DependencyKey {
-    mutating get {
+    get {
       guard let dependency = self.storage[ObjectIdentifier(key)] as? Key.Value
       else {
         func open<T>(_: T.Type) -> Any? {
@@ -28,10 +28,8 @@ public struct DependencyValues {
 
         let dependency = _openExistential(Key.self as Any.Type, do: open) as? Key.Value
         ?? Key.testValue
-        self.storage[ObjectIdentifier(key)] = dependency
         return dependency
       }
-      self.storage[ObjectIdentifier(key)] = dependency
       return dependency
     }
     set { self.storage[ObjectIdentifier(key)] = newValue }

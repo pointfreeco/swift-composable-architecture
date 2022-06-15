@@ -7,7 +7,7 @@ extension DependencyValues {
 
   private enum NavigationIDKey: LiveDependencyKey {
     static let liveValue = NavigationID.live
-    static var testValue: NavigationID { NavigationID.incrementing }
+    static var testValue = NavigationID.live
   }
 }
 

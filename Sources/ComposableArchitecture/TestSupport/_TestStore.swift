@@ -15,7 +15,8 @@ private class TestReducer<Upstream>: ReducerProtocol where Upstream: ReducerProt
   }
 
   func reduce(into state: inout Upstream.State, action: TestAction) -> Effect<TestAction, Never> {
-    let reducer = self.upstream.dependency(\.isTesting, true)
+    let reducer = self.upstream
+      .dependency(\.isTesting, true)
 
     let effects: Effect<Upstream.Action, Never>
     switch action.origin {
@@ -72,8 +73,8 @@ private class TestReducer<Upstream>: ReducerProtocol where Upstream: ReducerProt
 public final class _TestStore<Reducer: ReducerProtocol> {
   private let file: StaticString
   private var line: UInt
-  private let testReducer: TestReducer<Reducer>
-  private var store: StoreOf<TestReducer<Reducer>>!
+  private let testReducer: TestReducer<DependencyKeyWritingReducer<Reducer, NavigationID>>
+  private var store: StoreOf<TestReducer<DependencyKeyWritingReducer<Reducer, NavigationID>>>!
 
   public init(
     initialState: Reducer.State,
@@ -84,20 +85,22 @@ public final class _TestStore<Reducer: ReducerProtocol> {
     self.file = file
     self.line = line
 
-    self.testReducer = TestReducer(reducer, initialState: initialState)
+    self.testReducer = TestReducer(
+      reducer.dependency(\.navigationID, .incrementing),
+      initialState: initialState
+    )
     self.store = Store(initialState: initialState, reducer: self.testReducer)
   }
 
   deinit {
     self.completed()
-    DependencyValues.current.storage = [:]
   }
 
   public var state: Reducer.State {
     self.store.state.value
   }
 
-  public var reducer: Reducer {
+  public var reducer: DependencyKeyWritingReducer<Reducer, NavigationID> {
     self.testReducer.upstream
   }
 
