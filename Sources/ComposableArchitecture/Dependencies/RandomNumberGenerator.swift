@@ -17,7 +17,7 @@ public final class WithRandomNumberGenerator: @unchecked Sendable {
   private var generator: any RandomNumberGenerator
   private let lock: os_unfair_lock_t
 
-  init(_ generator: some RandomNumberGenerator) {
+  init<T: RandomNumberGenerator>(_ generator: T) {
     self.generator = generator
     self.lock = os_unfair_lock_t.allocate(capacity: 1)
     self.lock.initialize(to: os_unfair_lock())
