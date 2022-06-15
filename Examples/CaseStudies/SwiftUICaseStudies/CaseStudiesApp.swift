@@ -5,26 +5,18 @@ import SwiftUI
 struct CaseStudiesApp: App {
   var body: some Scene {
     WindowGroup {
-//      RootView(
-//        store: .init(
-//          initialState: .init(),
-//          reducer: Root()
-//            .debug()
-//            .signpost()
-//        )
-//      )
-      NavigationStackView(
+      RootView(
         store: .init(
           initialState: .init(),
-          reducer: NavigationStackDemo().debug()
+          reducer: Root()
+            .debug()
+            .signpost()
         )
       )
-
-//      RootView(
+//      NavigationStackView(
 //        store: .init(
-//          initialState: RootState(),
-//          reducer: rootReducer,
-//          environment: .live
+//          initialState: .init(),
+//          reducer: NavigationStackDemo().debug()
 //        )
 //      )
     }
