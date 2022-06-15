@@ -8,7 +8,7 @@ public protocol LiveDependencyKey: DependencyKey {
 }
 
 public struct DependencyValues {
-  @TaskLocal public static var current = Self()
+  @TaskLocal static var current = Self()
 
   private var storage: [ObjectIdentifier: Any] = [:]
 
@@ -40,18 +40,6 @@ public struct DependencyValues {
   extension DependencyValues: @unchecked Sendable {}
 #endif
 
-extension TaskLocal where Value == DependencyValues {
-  public func with<DependencyValue, Result>(
-    _ keyPath: WritableKeyPath<DependencyValues, DependencyValue>,
-    _ value: DependencyValue,
-    operation: () throws -> Result
-  ) rethrows -> Result {
-    var values = self.wrappedValue
-    values[keyPath: keyPath] = value
-    return try self.withValue(values, operation: operation)
-  }
-}
-
 @propertyWrapper
 public struct Dependency<Value> {
   public let keyPath: KeyPath<DependencyValues, Value>
@@ -62,6 +50,26 @@ public struct Dependency<Value> {
 
   public var wrappedValue: Value {
     DependencyValues.current[keyPath: self.keyPath]
+  }
+
+  public static func with<Result>(
+    _ keyPath: WritableKeyPath<DependencyValues, Value>,
+    _ value: Value,
+    operation: () throws -> Result
+  ) rethrows -> Result {
+    var values = DependencyValues.current
+    values[keyPath: keyPath] = value
+    return try DependencyValues.$current.withValue(values, operation: operation)
+  }
+
+  public static func with<Result>(
+    _ keyPath: WritableKeyPath<DependencyValues, Value>,
+    _ value: Value,
+    operation: () async throws -> Result
+  ) async rethrows -> Result {
+    var values = DependencyValues.current
+    values[keyPath: keyPath] = value
+    return try await DependencyValues.$current.withValue(values, operation: operation)
   }
 }
 
@@ -81,7 +89,6 @@ public struct DependencyKeyWritingReducer<Upstream: ReducerProtocol, Value>: Red
     self.update = update
   }
 
-  @inlinable
   public func reduce(
     into state: inout Upstream.State, action: Upstream.Action
   ) -> Effect<Upstream.Action, Never> {
