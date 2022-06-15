@@ -14,6 +14,7 @@ class NavigationStackTests: XCTestCase {
       reducer: NavigationStackDemo()
         .dependency(\.factClient.fetch) { "\($0) is a good number." }
         .dependency(\.mainQueue, self.scheduler.eraseToAnyScheduler())
+//        .dependency(\.navigationID, NavigationID.incrementing)
     )
 
     // Push Screen A, increment and fetch fact.
@@ -68,6 +69,25 @@ class NavigationStackTests: XCTestCase {
   }
 
   // TODO: test programmatic navigation. how does ID work?
+
+  func testProgrammaticNavigation() {
+    let store = _TestStore(
+      initialState: .init(),
+      reducer: NavigationStackDemo()
+        .dependency(\.factClient.fetch) { "\($0) is a good number." }
+        .dependency(\.mainQueue, self.scheduler.eraseToAnyScheduler())
+//        .dependency(\.navigationID, NavigationID.incrementing)
+    )
+
+    let screenBID = store.reducer.nextID()
+    store.send(.navigation(.setPath([.init(id: screenBID, element: .screenB(.init()))]))) {
+      $0.path = [.init(id: screenBID, element: .screenB(.init()))]
+    }
+
+    store.send(.navigation(.element(id: screenBID, .screenB(.screenAButtonTapped)))) {
+      $0.path.append(.init(id: 1, element: .screenA(.init())))
+    }
+  }
 }
 
 // TODO: move to swift-case-paths?

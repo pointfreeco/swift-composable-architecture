@@ -46,13 +46,17 @@ struct NavigationStackDemo: ReducerProtocol {
         state.path = NavigationState(path: .init(uniqueElements: state.path.shuffled()))
         return .none
 
+      case .navigation(.element(id: _, .screenB(.screenAButtonTapped))):
+        state.path.append(.init(id: self.nextID(), element: .screenA(.init())))
+        return .none
+
       case .navigation:
         // TODO: shows off how to inspect state in entire stack
         state.total = state.path.reduce(into: 0) { total, route in
           switch route.element {
           case let .screenA(state):
             total += state.count
-          case let .screenB:
+          case .screenB:
             break
           case let .screenC(state):
             total += state.count
@@ -271,10 +275,14 @@ struct ScreenAView: View {
 
 struct ScreenB: ReducerProtocol {
   struct State: Codable, Equatable, Hashable {}
-  enum Action: Equatable {}
+  enum Action: Equatable {
+    case screenAButtonTapped
+  }
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {
+    case .screenAButtonTapped:
+      return .none
     }
   }
 }
@@ -282,9 +290,14 @@ struct ScreenBView: View {
   let store: StoreOf<ScreenB>
 
   var body: some View {
-    Form {
+    WithViewStore(self.store) { viewStore in
+      Form {
+        Button("Decoupled navigation to screen A") {
+          viewStore.send(.screenAButtonTapped)
+        }
+      }
+      .navigationTitle("Screen B")
     }
-    .navigationTitle("Screen B")
   }
 }
 

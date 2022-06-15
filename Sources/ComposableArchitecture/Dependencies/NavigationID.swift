@@ -7,7 +7,7 @@ extension DependencyValues {
 
   private enum NavigationIDKey: LiveDependencyKey {
     static let liveValue = NavigationID.live
-    static let testValue = NavigationID.incrementing
+    static var testValue: NavigationID { NavigationID.incrementing }
   }
 }
 
@@ -16,8 +16,8 @@ public struct NavigationID {
   public var next: () -> AnyHashable
   public var current: AnyHashable?
 
-  static let live = Self { UUID() }
-  static var incrementing: Self {
+  public static let live = Self { UUID() }
+  public static var incrementing: Self {
     var count = 0
     return Self {
       defer { count += 1 }

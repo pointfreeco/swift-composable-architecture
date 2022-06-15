@@ -8,13 +8,13 @@ public protocol LiveDependencyKey: DependencyKey {
 }
 
 public struct DependencyValues {
-  @TaskLocal static var current = Self()
+  @TaskLocal static var current = DependencyValues()
 
-  private var storage: [ObjectIdentifier: Any] = [:]
+  var storage: [ObjectIdentifier: Any] = [:]
 
   // TODO: lock storage?
   public subscript<Key>(key: Key.Type) -> Key.Value where Key: DependencyKey {
-    get {
+    mutating get {
       guard let dependency = self.storage[ObjectIdentifier(key)] as? Key.Value
       else {
         func open<T>(_: T.Type) -> Any? {
@@ -26,9 +26,12 @@ public struct DependencyValues {
           return (Witness<T>.self as? AnyLiveDependencyKey.Type)?.liveValue
         }
 
-        return _openExistential(Key.self as Any.Type, do: open) as? Key.Value
+        let dependency = _openExistential(Key.self as Any.Type, do: open) as? Key.Value
         ?? Key.testValue
+        self.storage[ObjectIdentifier(key)] = dependency
+        return dependency
       }
+      self.storage[ObjectIdentifier(key)] = dependency
       return dependency
     }
     set { self.storage[ObjectIdentifier(key)] = newValue }
@@ -111,7 +114,11 @@ public struct DependencyKeyWritingReducer<Upstream: ReducerProtocol, Value>: Red
   }
 
   public subscript<Value>(dynamicMember keyPath: KeyPath<Upstream, Value>) -> Value {
-    self.upstream[keyPath: keyPath]
+    var values = DependencyValues.current
+    self.update(&values)
+    return DependencyValues.$current.withValue(values) {
+      self.upstream[keyPath: keyPath]
+    }
   }
 }
 

@@ -90,6 +90,7 @@ public final class _TestStore<Reducer: ReducerProtocol> {
 
   deinit {
     self.completed()
+    DependencyValues.current.storage = [:]
   }
 
   public var state: Reducer.State {
