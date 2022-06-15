@@ -89,7 +89,8 @@ struct AppReducer: ReducerProtocol {
       case .todo(id: _, action: .checkBoxToggled):
         enum TodoCompletionId {}
         return .task { .sortCompletedTodos }
-          .debounce(id: TodoCompletionId.self, for: 1, scheduler: self.mainQueue.animation())
+          .animation()
+          .debounce(id: TodoCompletionId.self, for: 1, scheduler: self.mainQueue)
 
       case .todo:
         return .none

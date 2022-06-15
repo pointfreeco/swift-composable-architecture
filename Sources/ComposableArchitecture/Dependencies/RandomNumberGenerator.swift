@@ -1,26 +1,36 @@
-// TODO: Should this be `withRandomNumberGenerator: ((inout any RandomNumberGenerator) -> R) -> R`?
+import Foundation
 
 extension DependencyValues {
-  public var randomNumberGenerator: any RandomNumberGenerator {
-    get { self[RandomNumberGeneratorKey.self] }
-    set { self[RandomNumberGeneratorKey.self] = BoxedRandomNumberGenerator(rng: newValue) }
+  public var withRandomNumberGenerator: WithRandomNumberGenerator {
+    get { self[WithRandomNumberGeneratorKey.self] }
+    set { self[WithRandomNumberGeneratorKey.self] = newValue }
   }
 
-  private enum RandomNumberGeneratorKey: LiveDependencyKey {
-    static let liveValue: any RandomNumberGenerator = SystemRandomNumberGenerator()
+  private enum WithRandomNumberGeneratorKey: LiveDependencyKey {
+    static let liveValue = WithRandomNumberGenerator(SystemRandomNumberGenerator())
     // TODO: Testable or failing RNG
-    static let testValue: any RandomNumberGenerator = SystemRandomNumberGenerator()
+    static let testValue = WithRandomNumberGenerator(SystemRandomNumberGenerator())
+  }
+}
+
+public final class WithRandomNumberGenerator: @unchecked Sendable {
+  private var generator: any RandomNumberGenerator
+  private let lock: os_unfair_lock_t
+
+  init(_ generator: some RandomNumberGenerator) {
+    self.generator = generator
+    self.lock = os_unfair_lock_t.allocate(capacity: 1)
+    self.lock.initialize(to: os_unfair_lock())
   }
 
-  private final class BoxedRandomNumberGenerator: RandomNumberGenerator {
-    var rng: any RandomNumberGenerator
+  deinit {
+    self.lock.deinitialize(count: 1)
+    self.lock.deallocate()
+  }
 
-    init(rng: any RandomNumberGenerator) {
-      self.rng = rng
-    }
-
-    func next() -> UInt64 {
-      self.rng.next()
+  public func callAsFunction<R>(_ work: (inout any RandomNumberGenerator) -> R) -> R {
+    self.lock.sync {
+      work(&self.generator)
     }
   }
 }
