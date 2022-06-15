@@ -5,94 +5,85 @@ private let readMe = """
   This screen demonstrates how to use NavigationStack with Composable Architecture applications.
   """
 
-struct NavigationStackState: Equatable, NavigableState {
-  var path = NavigationState<Route>()
-  var total = 0
+struct NavigationStackDemo: ReducerProtocol {
+  @Dependency(\.incrementing) var incrementing
 
-  enum Route: Codable, Equatable, Hashable {
-    case screenA(ScreenAState)
-    case screenB(ScreenBState)
-    case screenC(ScreenCState)
+  struct State: Equatable, NavigableState {
+    var path = NavigationState<Route>()
+    var total = 0
+
+    // TODO: consolidate two Route enums into a single generic?
+    enum Route: Codable, Equatable, Hashable {
+      case screenA(ScreenA.State)
+      case screenB(ScreenB.State)
+      case screenC(ScreenC.State)
+    }
   }
-}
 
-enum NavigationStackAction: Equatable, NavigableAction {
-  case goToABCButtonTapped
-  case navigation(NavigationAction<NavigationStackState.Route, Route>)
-  case shuffleButtonTapped
+  enum Action: Equatable, NavigableAction {
+    case goToABCButtonTapped
+    case navigation(NavigationAction<State.Route, Route>)
+    case shuffleButtonTapped
 
-  enum Route: Equatable {
-    case screenA(ScreenAAction)
-    case screenB(ScreenBAction)
-    case screenC(ScreenCAction)
+    enum Route: Equatable {
+      case screenA(ScreenA.Action)
+      case screenB(ScreenB.Action)
+      case screenC(ScreenC.Action)
+    }
   }
-}
 
-struct NavigationStackEnvironment {
-  var fact: FactClient
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-  var nextId: () -> Int
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .goToABCButtonTapped:
+        state.path.append(.init(id: self.incrementing(), element: .screenA(.init())))
+        state.path.append(.init(id: self.incrementing(), element: .screenB(.init())))
+        state.path.append(.init(id: self.incrementing(), element: .screenC(.init(id: UUID()))))
+        return .none
 
-  static let live = Self(
-    fact: .live,
-    mainQueue: .main,
-    nextId: Int.incrementing
-  )
-}
+      case .shuffleButtonTapped:
+        state.path = NavigationState(path: .init(uniqueElements: state.path.shuffled()))
+        return .none
 
-let navigationStackReducer = Reducer<
-  NavigationStackState,
-  NavigationStackAction,
-  NavigationStackEnvironment
-> { state, action, environment in
-  switch action {
-  case .goToABCButtonTapped:
-    state.path.append(.init(id: environment.nextId(), element: .screenA(.init())))
-    state.path.append(.init(id: environment.nextId(), element: .screenB(.init())))
-    state.path.append(.init(id: environment.nextId(), element: .screenC(.init(id: UUID()))))
-    return .none
+      case .navigation:
+        // TODO: shows off how to inspect state in entire stack
+        state.total = state.path.reduce(into: 0) { total, route in
+          switch route.element {
+          case let .screenA(state):
+            total += state.count
+          case let .screenB:
+            break
+          case let .screenC(state):
+            total += state.count
+          }
+        }
 
-  case .shuffleButtonTapped:
-    state.path = NavigationState(path: .init(uniqueElements: state.path.shuffled()))
-    return .none
-
-  case .navigation:
-    // TODO: shows off how to inspect state in entire stack
-    state.total = state.path.reduce(into: 0) { total, route in
-      switch route.element {
-      case let .screenA(state):
-        total += state.count
-      case let .screenB(state):
-        break
-      case let .screenC(state):
-        total += state.count
+        return .none
       }
     }
-
-    return .none
+    // TODO: figure out destinations builder
+    .navigationDestination {
+      // NB: Using explicit CasePath(...) due to Swift compiler bugs
+      PullbackCase(state: CasePath(State.Route.screenA), action: CasePath(Action.Route.screenA)) {
+        ScreenA()
+      }
+    }
+    .navigationDestination {
+      PullbackCase(state: CasePath(State.Route.screenB), action: CasePath(Action.Route.screenB)) {
+        ScreenB()
+      }
+    }
+    .navigationDestination {
+      PullbackCase(state: CasePath(State.Route.screenC), action: CasePath(Action.Route.screenC)) {
+        ScreenC()
+      }
+    }
   }
 }
-.navigationDestination(
-  screenAReducer.pullback(
-    // NB: Using explicit CasePath(...) due to Swift compiler bugs
-    state: CasePath(NavigationStackState.Route.screenA),
-    action: CasePath(NavigationStackAction.Route.screenA),
-    environment: { $0 }
-  ),
-  screenBReducer.pullback(
-    state: CasePath(NavigationStackState.Route.screenB),
-    action: CasePath(NavigationStackAction.Route.screenB),
-    environment: { $0 }
-  ),
-  screenCReducer.pullback(
-    state: CasePath(NavigationStackState.Route.screenC),
-    action: CasePath(NavigationStackAction.Route.screenC),
-    environment: { $0 }
-  )
-)
-.debug()
+//.debug()
+
 struct NavigationStackView: View {
-  let store: Store<NavigationStackState, NavigationStackAction>
+  let store: StoreOf<NavigationStackDemo>
 
   var body: some View {
     ZStack(alignment: .bottom) {
@@ -101,13 +92,13 @@ struct NavigationStackView: View {
           Section { Text(readMe) }
 
           Section{
-            NavigationLink(route: NavigationStackState.Route.screenA(.init())) {
+            NavigationLink(route: NavigationStackDemo.State.Route.screenA(.init())) {
               Text("Go to screen A")
             }
-            NavigationLink(route: NavigationStackState.Route.screenB(.init())) {
+            NavigationLink(route: NavigationStackDemo.State.Route.screenB(.init())) {
               Text("Go to screen B")
             }
-            NavigationLink(route: NavigationStackState.Route.screenC(.init(id: UUID()))) {
+            NavigationLink(route: NavigationStackDemo.State.Route.screenC(.init(id: UUID()))) {
               Text("Go to screen C")
             }
           }
@@ -123,18 +114,18 @@ struct NavigationStackView: View {
         .navigationDestination(store: self.store) {
           DestinationStore(
             // NB: Using explicit CasePath(...) due to Swift compiler bugs
-            state: CasePath(NavigationStackState.Route.screenA).extract(from:),
-            action: NavigationStackAction.Route.screenA,
+            state: CasePath(NavigationStackDemo.State.Route.screenA).extract(from:),
+            action: NavigationStackDemo.Action.Route.screenA,
             content: ScreenAView.init(store:)
           )
           DestinationStore(
-            state: CasePath(NavigationStackState.Route.screenB).extract(from:),
-            action: NavigationStackAction.Route.screenB,
+            state: CasePath(NavigationStackDemo.State.Route.screenB).extract(from:),
+            action: NavigationStackDemo.Action.Route.screenB,
             content: ScreenBView.init(store:)
           )
           DestinationStore(
-            state: CasePath(NavigationStackState.Route.screenC).extract(from:),
-            action: NavigationStackAction.Route.screenC,
+            state: CasePath(NavigationStackDemo.State.Route.screenC).extract(from:),
+            action: NavigationStackDemo.Action.Route.screenC,
             content: ScreenCView.init(store:)
           )
         }
@@ -170,51 +161,53 @@ struct NavigationStackView: View {
   }
 }
 
-struct ScreenAState: Codable, Equatable, Hashable {
-  var count = 0
-  var fact: String?
-  var isLoading = false
-}
-enum ScreenAAction: Equatable {
-  case decrementButtonTapped
-  case incrementButtonTapped
-  case factButtonTapped
-  case factResponse(Result<String, FactClient.Error>)
-}
-let screenAReducer = Reducer<
-  ScreenAState,
-  ScreenAAction,
-  NavigationStackEnvironment
-> { state, action, environment in
-  switch action {
-  case .decrementButtonTapped:
-    state.count -= 1
-    return .none
+struct ScreenA: ReducerProtocol {
+  @Dependency(\.factClient) var fact
 
-  case .incrementButtonTapped:
-    state.count += 1
-    return .none
+  struct State: Codable, Equatable, Hashable {
+    var count = 0
+    var fact: String?
+    var isLoading = false
+  }
+  enum Action: Equatable {
+    case decrementButtonTapped
+    case incrementButtonTapped
+    case factButtonTapped
+    case factResponse(TaskResult<String>)
+  }
 
-  case .factButtonTapped:
-    state.isLoading = true
-    return environment.fact.fetch(state.count)
-      .receive(on: environment.mainQueue)
-      .catchToEffect(ScreenAAction.factResponse)
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    switch action {
+    case .decrementButtonTapped:
+      state.count -= 1
+      return .none
 
-  case let .factResponse(.success(fact)):
-    state.isLoading = false
-    state.fact = fact
-    return .none
+    case .incrementButtonTapped:
+      state.count += 1
+      return .none
 
-  case .factResponse(.failure):
-    state.isLoading = false
-    state.fact = nil
-    // TODO: error handling
-    return .none
+    case .factButtonTapped:
+      state.isLoading = true
+      return .task { [count = state.count] in
+        await .factResponse(.init { try await self.fact.fetch(count) })
+      }
+
+    case let .factResponse(.success(fact)):
+      state.isLoading = false
+      state.fact = fact
+      return .none
+
+    case .factResponse(.failure):
+      state.isLoading = false
+      state.fact = nil
+      // TODO: error handling
+      return .none
+    }
   }
 }
+
 struct ScreenAView: View {
-  let store: Store<ScreenAState, ScreenAAction>
+  let store: StoreOf<ScreenA>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -244,13 +237,13 @@ struct ScreenAView: View {
         }
 
         Section {
-          NavigationLink(route: NavigationStackState.Route.screenA(.init(count: viewStore.count))) {
+          NavigationLink(route: NavigationStackDemo.State.Route.screenA(.init(count: viewStore.count))) {
             Text("Go to screen A")
           }
-          NavigationLink(route: NavigationStackState.Route.screenB(.init())) {
+          NavigationLink(route: NavigationStackDemo.State.Route.screenB(.init())) {
             Text("Go to screen B")
           }
-          NavigationLink(route: NavigationStackState.Route.screenC(.init(id: UUID()))) {
+          NavigationLink(route: NavigationStackDemo.State.Route.screenC(.init(id: UUID()))) {
             Text("Go to screen C")
           }
         }
@@ -260,58 +253,60 @@ struct ScreenAView: View {
   }
 }
 
-struct ScreenBState: Codable, Equatable, Hashable {
-}
-enum ScreenBAction: Equatable {}
-let screenBReducer = Reducer<ScreenBState, ScreenBAction, Void> { state, action, _ in
-  switch action {
+struct ScreenB: ReducerProtocol {
+  struct State: Codable, Equatable, Hashable {}
+  enum Action: Equatable {}
+
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    switch action {
+    }
   }
 }
 struct ScreenBView: View {
-  let store: Store<ScreenBState, ScreenBAction>
+  let store: StoreOf<ScreenB>
+
   var body: some View {
     Form {
-
     }
     .navigationTitle("Screen B")
   }
 }
 
-struct ScreenCState: Codable, Equatable, Hashable {
-  // TODO: this should be pulled from @Dependency once we have it
-  let id: UUID
-  var count = 0
-  var isTimerRunning = false
-}
-enum ScreenCAction: Equatable {
-  case startButtonTapped
-  case stopButtonTapped
-  case timerTick
-}
-let screenCReducer = Reducer<
-  ScreenCState,
-  ScreenCAction,
-  NavigationStackEnvironment
-> { state, action, environment in
-  struct TimerId: Hashable { var id: AnyHashable }
+struct ScreenC: ReducerProtocol {
+  @Dependency(\.mainQueue) var mainQueue
+  struct State: Codable, Equatable, Hashable {
+    // TODO: this should be pulled from @Dependency once we have it
+    let id: UUID
+    var count = 0
+    var isTimerRunning = false
+  }
+  enum Action: Equatable {
+    case startButtonTapped
+    case stopButtonTapped
+    case timerTick
+  }
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    struct TimerId: Hashable { var id: AnyHashable }
 
-  switch action {
-  case .startButtonTapped:
-    state.isTimerRunning = true
-    return Effect.timer(id: TimerId(id: state.id), every: 1, on: environment.mainQueue)
-      .map { _ in .timerTick }
+    switch action {
+    case .startButtonTapped:
+      state.isTimerRunning = true
+      return Effect.timer(id: TimerId(id: state.id), every: 1, on: self.mainQueue)
+        .map { _ in .timerTick }
 
-  case .stopButtonTapped:
-    state.isTimerRunning = false
-    return .cancel(id: TimerId(id: state.id))
+    case .stopButtonTapped:
+      state.isTimerRunning = false
+      return .cancel(id: TimerId(id: state.id))
 
-  case .timerTick:
-    state.count += 1
-    return .none
+    case .timerTick:
+      state.count += 1
+      return .none
+    }
   }
 }
 struct ScreenCView: View {
-  let store: Store<ScreenCState, ScreenCAction>
+  let store: StoreOf<ScreenC>
+
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
@@ -325,13 +320,13 @@ struct ScreenCView: View {
         }
 
         Section {
-          NavigationLink(route: NavigationStackState.Route.screenA(.init(count: viewStore.count))) {
+          NavigationLink(route: NavigationStackDemo.State.Route.screenA(.init(count: viewStore.count))) {
             Text("Go to screen A")
           }
-          NavigationLink(route: NavigationStackState.Route.screenB(.init())) {
+          NavigationLink(route: NavigationStackDemo.State.Route.screenB(.init())) {
             Text("Go to screen B")
           }
-          NavigationLink(route: NavigationStackState.Route.screenC(.init(id: UUID()))) {
+          NavigationLink(route: NavigationStackDemo.State.Route.screenC(.init(id: UUID()))) {
             Text("Go to screen C")
           }
         }
@@ -351,8 +346,7 @@ struct NavigationStack_Previews: PreviewProvider {
 //            1: .screenA(.init(count: 100)),
           ]
         ),
-        reducer: navigationStackReducer,
-        environment: .live
+        reducer: NavigationStackDemo()
       )
     )
   }

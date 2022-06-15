@@ -148,6 +148,61 @@ where State.State == Action.State
   }
 }
 
+public struct NavigationDestinationReducer<Upstream: ReducerProtocol, Destinations: ReducerProtocol>: ReducerProtocol
+where
+  Upstream.State: NavigableState,
+  Upstream.Action: NavigableAction,
+  Upstream.State.State == Upstream.Action.State,
+  Destinations.State == Upstream.Action.State,
+  Destinations.Action == Upstream.Action.Action
+{
+  let upstream: Upstream
+  let destinations: Destinations
+
+  public var body: some ReducerProtocol<Upstream.State, Upstream.Action> {
+    Reduce { globalState, globalAction in
+      guard let navigationAction = CasePath(Action.navigation).extract(from: globalAction)
+      else { return .none }
+
+      switch navigationAction {
+      case let .element(id, localAction):
+        guard let index = globalState.path.firstIndex(where: { $0.id == id })
+        else {
+          // TODO: runtime warning
+          return .none
+        }
+        return self.destinations
+        // TODO: once we have @Dependency, explore this: .dependency(\.navigationId, id)
+          .reduce(
+            into: &globalState.path[index].element,
+            action: localAction
+          )
+          .map { Action.navigation(.element(id: id, $0)) }
+          .cancellable(id: id)
+
+      case let .setPath(path):
+        let removedIds = globalState.path.path.ids.compactMap {
+          !path.path.ids.contains($0) ? $0 : nil
+        }
+        globalState.path = path
+        return .cancel(ids: removedIds)
+      }
+    }
+
+    self.upstream
+  }
+}
+
+extension ReducerProtocol where State: NavigableState, Action: NavigableAction {
+//  @ReducerBuilder
+  public func navigationDestination<Destinations: ReducerProtocol>(
+    @ReducerBuilder<Action.State, Action.Action> destinations: () -> Destinations
+  ) -> NavigationDestinationReducer<Self, Destinations>
+  {
+    .init(upstream: self, destinations: destinations())
+  }
+}
+
 extension Reducer where State: NavigableState, Action: NavigableAction {
   public func navigationDestination(
     _ reducers: Reducer<Action.State, Action.Action, Environment>...
