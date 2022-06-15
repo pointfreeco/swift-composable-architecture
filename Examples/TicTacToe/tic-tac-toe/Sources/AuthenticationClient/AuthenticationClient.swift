@@ -27,7 +27,7 @@ public struct TwoFactorRequest {
   }
 }
 
-public struct AuthenticationResponse: Equatable {
+public struct AuthenticationResponse: Hashable {
   public var token: String
   public var twoFactorRequired: Bool
 

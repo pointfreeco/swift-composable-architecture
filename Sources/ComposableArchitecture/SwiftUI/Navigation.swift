@@ -181,7 +181,6 @@ where
         }
         return self.destinations
           .dependency(\.navigationID.current, id)
-        // TODO: once we have @Dependency, explore this: .dependency(\.navigationId, id)
           .reduce(
             into: &globalState.path[index].element,
             action: localAction
@@ -204,57 +203,18 @@ where
 
 extension ReducerProtocol where State: NavigableState, Action: NavigableAction {
 //  @ReducerBuilder
-  public func navigationDestination<Destinations: ReducerProtocol<Action.DestinationState, Action.DestinationAction>>(
+  public func navigationDestination<Destinations: ReducerProtocol>(
     @ReducerBuilder<Destinations.State, Destinations.Action> destinations: () -> Destinations
   ) -> NavigationStackReducer<Self, Destinations>
+  where
+    Destinations.State == Action.DestinationState,
+    Destinations.Action == Action.DestinationAction
   {
     .init {
       self
     } destinations: {
       destinations()
     }
-  }
-}
-
-extension Reducer where State: NavigableState, Action: NavigableAction {
-  public func navigationDestination(
-    _ reducers: Reducer<Action.DestinationState, Action.DestinationAction, Environment>...
-  ) -> Self
-  where State.DestinationState == Action.DestinationState
-  {
-    let reducer = Reducer<Action.DestinationState, Action.DestinationAction, Environment>.combine(reducers)
-    return .combine(
-      .init { globalState, globalAction, globalEnvironment in
-        guard let navigationAction = CasePath(Action.navigation).extract(from: globalAction)
-        else { return .none }
-
-        switch navigationAction {
-        case let .element(id, localAction):
-          guard let index = globalState.path.firstIndex(where: { $0.id == id })
-          else {
-            // TODO: runtime warning
-            return .none
-          }
-          return reducer
-            // TODO: once we have @Dependency, explore this: .dependency(\.navigationId, id)
-            .run(
-              &globalState.path[index].element,
-              localAction,
-              globalEnvironment
-            )
-            .map { Action.navigation(.element(id: id, $0)) }
-            .cancellable(id: id)
-
-        case let .setPath(path):
-          let removedIds = globalState.path.path.ids.compactMap {
-            !path.path.ids.contains($0) ? $0 : nil
-          }
-          globalState.path = path
-          return .cancel(ids: removedIds)
-        }
-      },
-      self
-    )
   }
 }
 

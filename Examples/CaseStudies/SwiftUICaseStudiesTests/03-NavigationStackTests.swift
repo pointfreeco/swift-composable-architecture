@@ -66,6 +66,8 @@ class NavigationStackTests: XCTestCase {
       $0.total = 1
     }
   }
+
+  // TODO: test programmatic navigation. how does ID work?
 }
 
 // TODO: move to swift-case-paths?

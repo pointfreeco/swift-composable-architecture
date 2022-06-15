@@ -4,7 +4,7 @@ import Dispatch
 import TwoFactorCore
 
 public struct Login: ReducerProtocol {
-  public struct State: Equatable {
+  public struct State: Hashable {
     public var alert: AlertState<Action>?
     public var email = ""
     public var isFormValid = false
@@ -15,7 +15,7 @@ public struct Login: ReducerProtocol {
     public init() {}
   }
 
-  public enum Action: Equatable {
+  public enum Action: Hashable {
     case alertDismissed
     case emailChanged(String)
     case passwordChanged(String)

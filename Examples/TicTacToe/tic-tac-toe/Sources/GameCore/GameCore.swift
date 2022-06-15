@@ -2,7 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 public struct Game: ReducerProtocol {
-  public struct State: Equatable {
+  public struct State: Hashable {
     public var board: Three<Three<Player?>> = .empty
     public var currentPlayer: Player = .x
     public var oPlayerName: String
@@ -21,7 +21,7 @@ public struct Game: ReducerProtocol {
     }
   }
 
-  public enum Action: Equatable {
+  public enum Action: Hashable {
     case cellTapped(row: Int, column: Int)
     case playAgainButtonTapped
     case quitButtonTapped

@@ -4,7 +4,7 @@ import ComposableArchitecture
 import Dispatch
 
 public struct TwoFactor: ReducerProtocol {
-  public struct State: Equatable {
+  public struct State: Hashable {
     public var alert: AlertState<Action>?
     public var code = ""
     public var isFormValid = false
@@ -26,7 +26,7 @@ public struct TwoFactor: ReducerProtocol {
     }
   }
 
-  public enum Action: Equatable {
+  public enum Action: Hashable {
     case alertDismissed
     case codeChanged(String)
     case submitButtonTapped

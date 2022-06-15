@@ -2,7 +2,7 @@ import ComposableArchitecture
 import GameCore
 
 public struct NewGame: ReducerProtocol {
-  public struct State: Equatable {
+  public struct State: Hashable {
     public var game: Game.State?
     public var oPlayerName = ""
     public var xPlayerName = ""
@@ -10,7 +10,7 @@ public struct NewGame: ReducerProtocol {
     public init() {}
   }
 
-  public enum Action: Equatable {
+  public enum Action: Hashable {
     case game(Game.Action)
     case gameDismissed
     case letsPlayButtonTapped

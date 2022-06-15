@@ -331,4 +331,11 @@ final class EffectCancellationTests: XCTestCase {
     scheduler.advance(by: 1)
     XCTAssertNoDifference(output, [B()])
   }
+
+  func testNavigationCancellation() {
+//    let store = _TestStore(
+//      initialState: <#T##_.State#>,
+//      reducer: Reduce<Int, Action>
+//    )
+  }
 }

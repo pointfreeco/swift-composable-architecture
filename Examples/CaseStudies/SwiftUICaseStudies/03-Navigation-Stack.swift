@@ -24,6 +24,7 @@ struct NavigationStackDemo: ReducerProtocol {
     case goToABCButtonTapped
     case navigation(NavigationAction<State.Route, Route>)
     case shuffleButtonTapped
+    case cancelTimersButtonTapped
 
     enum Route: Equatable {
       case screenA(ScreenA.Action)
@@ -59,6 +60,17 @@ struct NavigationStackDemo: ReducerProtocol {
         }
 
         return .none
+
+      case .cancelTimersButtonTapped:
+        return .merge(state.path.compactMap { state in
+          switch state.element {
+          case .screenA, .screenB:
+            return nil
+            
+          case .screenC:
+            return .cancel(id: state.id)
+          }
+        })
       }
     }
     // TODO: figure out destinations builder
@@ -149,6 +161,9 @@ struct NavigationStackView: View {
               viewStore.send(.navigation(.setPath([])))
               viewStore.send(.popToRoot)
               viewStore.send(.navigation(.removeAll))
+            }
+            Button("Cancel timers") {
+              viewStore.send(.cancelTimersButtonTapped)
             }
           }
           .padding()
@@ -274,6 +289,7 @@ struct ScreenBView: View {
 }
 
 struct ScreenC: ReducerProtocol {
+  enum TimerId {}
   @Dependency(\.mainQueue) var mainQueue
 
   struct State: Codable, Equatable, Hashable {
@@ -286,7 +302,6 @@ struct ScreenC: ReducerProtocol {
     case timerTick
   }
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    enum TimerId {}
 
     switch action {
     case .startButtonTapped:

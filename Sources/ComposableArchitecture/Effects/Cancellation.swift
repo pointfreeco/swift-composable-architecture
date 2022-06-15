@@ -30,11 +30,9 @@ extension Effect {
   /// - Returns: A new effect that is capable of being canceled by an identifier.
   public func cancellable(id: AnyHashable, cancelInFlight: Bool = false) -> Self {
     let navigationID = DependencyValues.current.navigationID.current
-    return Deferred {
-      ()
-        -> Publishers.HandleEvents<
-          Publishers.PrefixUntilOutput<Self, PassthroughSubject<Void, Never>>
-        > in
+    return Deferred<
+      Publishers.HandleEvents<Publishers.PrefixUntilOutput<Self, PassthroughSubject<Void, Never>>>
+    > {
       cancellablesLock.lock()
       defer { cancellablesLock.unlock() }
 
@@ -92,8 +90,8 @@ extension Effect {
   /// - Parameter id: An effect identifier.
   /// - Returns: A new effect that will cancel any currently in-flight effect with the given
   ///   identifier.
-  public static func cancel(id: AnyHashable) -> Self {
-    let navigationID = DependencyValues.current.navigationID.current
+  public static func cancel(id: AnyHashable, navigationID: AnyHashable? = nil) -> Self {
+    let navigationID = navigationID ?? DependencyValues.current.navigationID.current
     return .fireAndForget {
       cancellablesLock.sync {
         cancellationCancellables[.init(id: id, navigationID: navigationID)]?.forEach { $0.cancel() }
@@ -109,8 +107,8 @@ extension Effect {
   /// - Parameter id: A unique type identifying the effect.
   /// - Returns: A new effect that will cancel any currently in-flight effect with the given
   ///   identifier.
-  public static func cancel(id: Any.Type) -> Self {
-    .cancel(id: ObjectIdentifier(id))
+  public static func cancel(id: Any.Type, navigationID: AnyHashable? = nil) -> Self {
+    .cancel(id: ObjectIdentifier(id), navigationID: navigationID)
   }
 
   /// An effect that will cancel multiple currently in-flight effects with the given identifiers.
@@ -119,7 +117,7 @@ extension Effect {
   /// - Returns: A new effect that will cancel any currently in-flight effects with the given
   ///   identifiers.
   public static func cancel(ids: [AnyHashable]) -> Self {
-    .merge(ids.map(Effect.cancel(id:)))
+    .merge(ids.map { Effect.cancel(id: $0) })
   }
 
   /// An effect that will cancel multiple currently in-flight effects with the given identifiers.
@@ -131,7 +129,7 @@ extension Effect {
   /// - Returns: A new effect that will cancel any currently in-flight effects with the given
   ///   identifiers.
   public static func cancel(ids: [Any.Type]) -> Self {
-    .merge(ids.map(Effect.cancel(id:)))
+    .merge(ids.map { Effect.cancel(id: $0) })
   }
 }
 
