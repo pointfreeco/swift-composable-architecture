@@ -18,7 +18,9 @@ public struct DependencyValues {
       guard let dependency = self.storage[ObjectIdentifier(key)] as? Key.Value
       else {
         func open<T>(_: T.Type) -> Any? {
-          let isTesting = self.storage[ObjectIdentifier(IsTestingKey.self)] as? Bool ?? false
+          let isTesting = self.storage[ObjectIdentifier(IsTestingKey.self)] as? Bool
+          // TODO: better way to detect tests running?
+          ?? (ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil)
           guard !isTesting
           else { return nil }
           return (Witness<T>.self as? AnyLiveDependencyKey.Type)?.liveValue
@@ -65,6 +67,7 @@ public struct Dependency<Value> {
 
 extension Dependency: @unchecked Sendable where Value: Sendable {}
 
+@dynamicMemberLookup
 public struct DependencyKeyWritingReducer<Upstream: ReducerProtocol, Value>: ReducerProtocol {
   @usableFromInline
   let upstream: Upstream
@@ -98,6 +101,10 @@ public struct DependencyKeyWritingReducer<Upstream: ReducerProtocol, Value>: Red
       self.update(&values)
       values[keyPath: keyPath] = value
     }
+  }
+
+  public subscript<Value>(dynamicMember keyPath: KeyPath<Upstream, Value>) -> Value {
+    self.upstream[keyPath: keyPath]
   }
 }
 

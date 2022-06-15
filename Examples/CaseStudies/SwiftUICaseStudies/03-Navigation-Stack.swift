@@ -6,7 +6,7 @@ private let readMe = """
   """
 
 struct NavigationStackDemo: ReducerProtocol {
-  @Dependency(\.incrementing) var incrementing
+  @Dependency(\.navigationID.next) var nextID
 
   struct State: Equatable, NavigableState {
     var path = NavigationState<Route>()
@@ -36,9 +36,9 @@ struct NavigationStackDemo: ReducerProtocol {
     Reduce { state, action in
       switch action {
       case .goToABCButtonTapped:
-        state.path.append(.init(id: self.incrementing(), element: .screenA(.init())))
-        state.path.append(.init(id: self.incrementing(), element: .screenB(.init())))
-        state.path.append(.init(id: self.incrementing(), element: .screenC(.init(id: UUID()))))
+        state.path.append(.init(id: self.nextID(), element: .screenA(.init())))
+        state.path.append(.init(id: self.nextID(), element: .screenB(.init())))
+        state.path.append(.init(id: self.nextID(), element: .screenC(.init())))
         return .none
 
       case .shuffleButtonTapped:
@@ -98,7 +98,7 @@ struct NavigationStackView: View {
             NavigationLink(route: NavigationStackDemo.State.Route.screenB(.init())) {
               Text("Go to screen B")
             }
-            NavigationLink(route: NavigationStackDemo.State.Route.screenC(.init(id: UUID()))) {
+            NavigationLink(route: NavigationStackDemo.State.Route.screenC(.init())) {
               Text("Go to screen C")
             }
           }
@@ -243,7 +243,7 @@ struct ScreenAView: View {
           NavigationLink(route: NavigationStackDemo.State.Route.screenB(.init())) {
             Text("Go to screen B")
           }
-          NavigationLink(route: NavigationStackDemo.State.Route.screenC(.init(id: UUID()))) {
+          NavigationLink(route: NavigationStackDemo.State.Route.screenC(.init())) {
             Text("Go to screen C")
           }
         }
@@ -274,9 +274,8 @@ struct ScreenBView: View {
 
 struct ScreenC: ReducerProtocol {
   @Dependency(\.mainQueue) var mainQueue
+
   struct State: Codable, Equatable, Hashable {
-    // TODO: this should be pulled from @Dependency once we have it
-    let id: UUID
     var count = 0
     var isTimerRunning = false
   }
@@ -286,17 +285,17 @@ struct ScreenC: ReducerProtocol {
     case timerTick
   }
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    struct TimerId: Hashable { var id: AnyHashable }
+    enum TimerId {}
 
     switch action {
     case .startButtonTapped:
       state.isTimerRunning = true
-      return Effect.timer(id: TimerId(id: state.id), every: 1, on: self.mainQueue)
+      return Effect.timer(id: TimerId.self, every: 1, on: self.mainQueue)
         .map { _ in .timerTick }
 
     case .stopButtonTapped:
       state.isTimerRunning = false
-      return .cancel(id: TimerId(id: state.id))
+      return .cancel(id: TimerId.self)
 
     case .timerTick:
       state.count += 1
@@ -326,7 +325,7 @@ struct ScreenCView: View {
           NavigationLink(route: NavigationStackDemo.State.Route.screenB(.init())) {
             Text("Go to screen B")
           }
-          NavigationLink(route: NavigationStackDemo.State.Route.screenC(.init(id: UUID()))) {
+          NavigationLink(route: NavigationStackDemo.State.Route.screenC(.init())) {
             Text("Go to screen C")
           }
         }
@@ -349,15 +348,5 @@ struct NavigationStack_Previews: PreviewProvider {
         reducer: NavigationStackDemo()
       )
     )
-  }
-}
-
-extension Int {
-  static var incrementing: () -> Int {
-    var count = 0
-    return {
-      defer { count += 1 }
-      return count
-    }
   }
 }

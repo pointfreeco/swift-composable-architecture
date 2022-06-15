@@ -15,14 +15,16 @@ private class TestReducer<Upstream>: ReducerProtocol where Upstream: ReducerProt
   }
 
   func reduce(into state: inout Upstream.State, action: TestAction) -> Effect<TestAction, Never> {
+    let reducer = self.upstream.dependency(\.isTesting, true)
+
     let effects: Effect<Upstream.Action, Never>
     switch action.origin {
     case let .send(action):
-      effects = self.upstream.reduce(into: &state, action: action)
+      effects = reducer.reduce(into: &state, action: action)
       self.state = state
 
     case let .receive(action):
-      effects = self.upstream.reduce(into: &state, action: action)
+      effects = reducer.reduce(into: &state, action: action)
       self.receivedActions.append((action, state))
     }
 
@@ -66,47 +68,53 @@ private class TestReducer<Upstream>: ReducerProtocol where Upstream: ReducerProt
   }
 }
 
-public final class _TestStore<State, Action> {
+// TODO: don't erase reducer in test store
+public final class _TestStore<Reducer: ReducerProtocol> {
   private let file: StaticString
   private var line: UInt
-  private let reducer: TestReducer<Reduce<State, Action>>
-  private var store: Store<State, TestReducer<Reduce<State, Action>>.TestAction>!
+  private let testReducer: TestReducer<Reducer>
+  private var store: StoreOf<TestReducer<Reducer>>!
 
-  public init<R: ReducerProtocol>(
-    initialState: State,
-    reducer: R,
+  public init(
+    initialState: Reducer.State,
+    reducer: Reducer,
     file: StaticString = #file,
     line: UInt = #line
-  ) where R.State == State, R.Action == Action {
+  ) {
     self.file = file
     self.line = line
 
-    self.reducer = TestReducer(
-      Reduce(reducer.dependency(\.isTesting, true)),
-      initialState: initialState
-    )
-    self.store = Store(initialState: initialState, reducer: self.reducer)
+    self.testReducer = TestReducer(reducer, initialState: initialState)
+    self.store = Store(initialState: initialState, reducer: self.testReducer)
   }
 
   deinit {
     self.completed()
   }
 
+  public var state: Reducer.State {
+    self.store.state.value
+  }
+
+  public var reducer: Reducer {
+    self.testReducer.upstream
+  }
+
   private func completed() {
-    if !self.reducer.receivedActions.isEmpty {
+    if !self.testReducer.receivedActions.isEmpty {
       var actions = ""
-      customDump(self.reducer.receivedActions.map(\.action), to: &actions)
+      customDump(self.testReducer.receivedActions.map(\.action), to: &actions)
       XCTFail(
         """
-        The store received \(self.reducer.receivedActions.count) unexpected \
-        action\(self.reducer.receivedActions.count == 1 ? "" : "s") after this one: …
+        The store received \(self.testReducer.receivedActions.count) unexpected \
+        action\(self.testReducer.receivedActions.count == 1 ? "" : "s") after this one: …
 
         Unhandled actions: \(actions)
         """,
         file: self.file, line: self.line
       )
     }
-    for effect in self.reducer.inFlightEffects {
+    for effect in self.testReducer.inFlightEffects {
       XCTFail(
         """
         An effect returned for this action is still running. It must complete before the end of \
@@ -133,34 +141,34 @@ public final class _TestStore<State, Action> {
   }
 }
 
-extension _TestStore where State: Equatable {
+extension _TestStore where Reducer.State: Equatable {
   @discardableResult
   public func send(
-    _ action: Action,
-    _ updateExpectingResult: ((inout State) throws -> Void)? = nil,
+    _ action: Reducer.Action,
+    _ updateExpectingResult: ((inout Reducer.State) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) -> TestTask {
-    if !self.reducer.receivedActions.isEmpty {
+    if !self.testReducer.receivedActions.isEmpty {
       var actions = ""
-      customDump(self.reducer.receivedActions.map(\.action), to: &actions)
+      customDump(self.testReducer.receivedActions.map(\.action), to: &actions)
       XCTFail(
         """
-        Must handle \(self.reducer.receivedActions.count) received \
-        action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
+        Must handle \(self.testReducer.receivedActions.count) received \
+        action\(self.testReducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
 
         Unhandled actions: \(actions)
         """,
         file: file, line: line
       )
     }
-    var expectedState = self.reducer.state
-    let previousState = self.reducer.state
+    var expectedState = self.testReducer.state
+    let previousState = self.testReducer.state
     let task = self.store.send(.init(origin: .send(action), file: file, line: line))
     do {
-      let currentState = self.reducer.state
-      self.reducer.state = previousState
-      defer { self.reducer.state = currentState }
+      let currentState = self.testReducer.state
+      self.testReducer.state = previousState
+      defer { self.testReducer.state = currentState }
 
       try self.expectedStateShouldMatch(
         expected: &expectedState,
@@ -180,9 +188,9 @@ extension _TestStore where State: Equatable {
   }
 
   private func expectedStateShouldMatch(
-    expected: inout State,
-    actual: State,
-    modify: ((inout State) throws -> Void)? = nil,
+    expected: inout Reducer.State,
+    actual: Reducer.State,
+    modify: ((inout Reducer.State) throws -> Void)? = nil,
     file: StaticString,
     line: UInt
   ) throws {
@@ -225,14 +233,14 @@ extension _TestStore where State: Equatable {
   }
 }
 
-extension _TestStore where State: Equatable, Action: Equatable {
+extension _TestStore where Reducer.State: Equatable, Reducer.Action: Equatable {
   public func receive(
-    _ expectedAction: Action,
-    _ updateExpectingResult: ((inout State) throws -> Void)? = nil,
+    _ expectedAction: Reducer.Action,
+    _ updateExpectingResult: ((inout Reducer.State) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) {
-    guard !self.reducer.receivedActions.isEmpty else {
+    guard !self.testReducer.receivedActions.isEmpty else {
       XCTFail(
         """
         Expected to receive an action, but received none.
@@ -241,7 +249,7 @@ extension _TestStore where State: Equatable, Action: Equatable {
       )
       return
     }
-    let (receivedAction, state) = self.reducer.receivedActions.removeFirst()
+    let (receivedAction, state) = self.testReducer.receivedActions.removeFirst()
     if expectedAction != receivedAction {
       let difference =
         diff(expectedAction, receivedAction, format: .proportional)
@@ -263,7 +271,7 @@ extension _TestStore where State: Equatable, Action: Equatable {
         file: file, line: line
       )
     }
-    var expectedState = self.reducer.state
+    var expectedState = self.testReducer.state
     do {
       try expectedStateShouldMatch(
         expected: &expectedState,
@@ -275,23 +283,23 @@ extension _TestStore where State: Equatable, Action: Equatable {
     } catch {
       XCTFail("Threw error: \(error)", file: file, line: line)
     }
-    self.reducer.state = state
+    self.testReducer.state = state
     if "\(self.file)" == "\(file)" {
       self.line = line
     }
   }
 
   public func receive(
-    _ expectedAction: Action,
+    _ expectedAction: Reducer.Action,
     timeout nanoseconds: UInt64 = NSEC_PER_SEC,  // TODO: Better default? Remove default?
     file: StaticString = #file,
     line: UInt = #line,
-    _ update: ((inout State) throws -> Void)? = nil
+    _ update: ((inout Reducer.State) throws -> Void)? = nil
   ) async {
     await withTaskGroup(of: Void.self) { group in
       _ = group.addTaskUnlessCancelled { @MainActor in
         while !Task.isCancelled {
-          guard self.reducer.receivedActions.isEmpty
+          guard self.testReducer.receivedActions.isEmpty
           else { break }
           await Task.yield()
         }
@@ -308,7 +316,7 @@ extension _TestStore where State: Equatable, Action: Equatable {
         else { return }
 
         let suggestion: String
-        if self.reducer.inFlightEffects.isEmpty {
+        if self.testReducer.inFlightEffects.isEmpty {
           suggestion = """
             There are no in-flight effects that could deliver this action. Could the effect you \
             expected to deliver this action have been cancelled?

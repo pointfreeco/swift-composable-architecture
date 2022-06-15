@@ -29,7 +29,8 @@ extension Effect {
   ///     canceled before starting this new one.
   /// - Returns: A new effect that is capable of being canceled by an identifier.
   public func cancellable(id: AnyHashable, cancelInFlight: Bool = false) -> Self {
-    Deferred {
+    let navigationID = DependencyValues.current.navigationID.current
+    return Deferred {
       ()
         -> Publishers.HandleEvents<
           Publishers.PrefixUntilOutput<Self, PassthroughSubject<Void, Never>>
@@ -37,7 +38,7 @@ extension Effect {
       cancellablesLock.lock()
       defer { cancellablesLock.unlock() }
 
-      let id = CancelToken(id: id)
+      let id = CancelToken(id: id, navigationID: navigationID)
       if cancelInFlight {
         cancellationCancellables[id]?.forEach { $0.cancel() }
       }
@@ -92,9 +93,10 @@ extension Effect {
   /// - Returns: A new effect that will cancel any currently in-flight effect with the given
   ///   identifier.
   public static func cancel(id: AnyHashable) -> Self {
-    .fireAndForget {
+    let navigationID = DependencyValues.current.navigationID.current
+    return .fireAndForget {
       cancellablesLock.sync {
-        cancellationCancellables[.init(id: id)]?.forEach { $0.cancel() }
+        cancellationCancellables[.init(id: id, navigationID: navigationID)]?.forEach { $0.cancel() }
       }
     }
   }
@@ -135,10 +137,12 @@ extension Effect {
 
 struct CancelToken: Hashable {
   let id: AnyHashable
+  let navigationID: AnyHashable?
   let discriminator: ObjectIdentifier
 
-  init(id: AnyHashable) {
+  init(id: AnyHashable, navigationID: AnyHashable?) {
     self.id = id
+    self.navigationID = navigationID
     self.discriminator = ObjectIdentifier(type(of: id.base))
   }
 }

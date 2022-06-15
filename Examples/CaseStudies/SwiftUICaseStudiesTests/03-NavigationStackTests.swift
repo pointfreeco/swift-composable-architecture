@@ -4,58 +4,57 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+@MainActor
 class NavigationStackTests: XCTestCase {
   let scheduler = DispatchQueue.test
 
-  func testBasics() {
-    let store = TestStore(
+  func testBasics() async {
+    let store = _TestStore(
       initialState: .init(),
-      reducer: navigationStackReducer,
-      environment: .init(
-        fact: .init(fetch: { Effect(value: "\($0) is a good number.") }),
-        mainQueue: self.scheduler.eraseToAnyScheduler(),
-        nextId: Int.incrementing
-      )
+      reducer: NavigationStackDemo()
+        .dependency(\.factClient.fetch) { "\($0) is a good number." }
+        .dependency(\.mainQueue, self.scheduler.eraseToAnyScheduler())
     )
 
     // Push Screen A, increment and fetch fact.
-    store.send(.navigation(.setPath([.init(id: 0, element: .screenA(.init()))]))) {
-      $0.path.append(.init(id: 0, element: .screenA(.init())))
+    let screenAID = store.reducer.nextID()
+    store.send(.navigation(.setPath([.init(id: screenAID, element: .screenA(.init()))]))) {
+      $0.path.append(.init(id: screenAID, element: .screenA(.init())))
     }
-    store.send(.navigation(.element(id: 0, .screenA(.incrementButtonTapped)))) {
-      try CasePath(NavigationStackState.Route.screenA).unwrapModify(&$0.path[id: 0]) {
+    store.send(.navigation(.element(id: screenAID, .screenA(.incrementButtonTapped)))) {
+      try CasePath(NavigationStackDemo.State.Route.screenA).unwrapModify(&$0.path[id: screenAID]) {
         $0.count = 1
       }
       $0.total = 1
     }
-    store.send(.navigation(.element(id: 0, .screenA(.factButtonTapped)))) {
-      try CasePath(NavigationStackState.Route.screenA).unwrapModify(&$0.path[id: 0]) {
+    store.send(.navigation(.element(id: screenAID, .screenA(.factButtonTapped)))) {
+      try CasePath(NavigationStackDemo.State.Route.screenA).unwrapModify(&$0.path[id: screenAID]) {
         $0.isLoading = true
       }
     }
-    self.scheduler.advance()
-    store.receive(.navigation(.element(id: 0, .screenA(.factResponse(.success("1 is a good number.")))))) {
-      try CasePath(NavigationStackState.Route.screenA).unwrapModify(&$0.path[id: 0]) {
+    await self.scheduler.advance()
+    await store.receive(.navigation(.element(id: screenAID, .screenA(.factResponse(.success("1 is a good number.")))))) {
+      try CasePath(NavigationStackDemo.State.Route.screenA).unwrapModify(&$0.path[id: screenAID]) {
         $0.isLoading = false
         $0.fact = "1 is a good number."
       }
     }
 
     // Push Screen C, start timer, wait 2 seconds
-    let id = UUID()
-    store.send(.navigation(.setPath(store.state.path + [.init(id: 1, element: .screenC(.init(id: id)))]))) {
-      $0.path.append(.init(id: 1, element: .screenC(.init(id: id))))
+    let screenCID = store.reducer.nextID()
+    store.send(.navigation(.setPath(store.state.path + [.init(id: screenCID, element: .screenC(.init()))]))) {
+      $0.path.append(.init(id: screenCID, element: .screenC(.init())))
     }
-    store.send(.navigation(.element(id: 1, .screenC(.startButtonTapped))))
-    self.scheduler.advance(by: .seconds(2))
-    store.receive(.navigation(.element(id: 1, .screenC(.timerTick)))) {
-      try CasePath(NavigationStackState.Route.screenC).unwrapModify(&$0.path[id: 1]) {
+    store.send(.navigation(.element(id: screenCID, .screenC(.startButtonTapped))))
+    await self.scheduler.advance(by: .seconds(2))
+    await store.receive(.navigation(.element(id: screenCID, .screenC(.timerTick)))) {
+      try CasePath(NavigationStackDemo.State.Route.screenC).unwrapModify(&$0.path[id: screenCID]) {
         $0.count = 1
       }
       $0.total = 2
     }
-    store.receive(.navigation(.element(id: 1, .screenC(.timerTick)))) {
-      try CasePath(NavigationStackState.Route.screenC).unwrapModify(&$0.path[id: 1]) {
+    await store.receive(.navigation(.element(id: screenCID, .screenC(.timerTick)))) {
+      try CasePath(NavigationStackDemo.State.Route.screenC).unwrapModify(&$0.path[id: screenCID]) {
         $0.count = 2
       }
       $0.total = 3

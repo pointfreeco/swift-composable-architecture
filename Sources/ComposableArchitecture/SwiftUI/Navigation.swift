@@ -148,7 +148,7 @@ where State.State == Action.State
   }
 }
 
-public struct NavigationDestinationReducer<Upstream: ReducerProtocol, Destinations: ReducerProtocol>: ReducerProtocol
+public struct NavigationStackReducer<Upstream: ReducerProtocol, Destinations: ReducerProtocol>: ReducerProtocol
 where
   Upstream.State: NavigableState,
   Upstream.Action: NavigableAction,
@@ -158,6 +158,14 @@ where
 {
   let upstream: Upstream
   let destinations: Destinations
+
+  public init(
+    @ReducerBuilder<Upstream.State, Upstream.Action> _ upstream: () -> Upstream,
+    @ReducerBuilder<Destinations.State, Destinations.Action> destinations: () -> Destinations
+  ) {
+    self.upstream = upstream()
+    self.destinations = destinations()
+  }
 
   public var body: some ReducerProtocol<Upstream.State, Upstream.Action> {
     Reduce { globalState, globalAction in
@@ -172,6 +180,7 @@ where
           return .none
         }
         return self.destinations
+          .dependency(\.navigationID.current, id)
         // TODO: once we have @Dependency, explore this: .dependency(\.navigationId, id)
           .reduce(
             into: &globalState.path[index].element,
@@ -195,11 +204,15 @@ where
 
 extension ReducerProtocol where State: NavigableState, Action: NavigableAction {
 //  @ReducerBuilder
-  public func navigationDestination<Destinations: ReducerProtocol>(
-    @ReducerBuilder<Action.State, Action.Action> destinations: () -> Destinations
-  ) -> NavigationDestinationReducer<Self, Destinations>
+  public func navigationDestination<Destinations: ReducerProtocol<Action.State, Action.Action>>(
+    @ReducerBuilder<Destinations.State, Destinations.Action> destinations: () -> Destinations
+  ) -> NavigationStackReducer<Self, Destinations>
   {
-    .init(upstream: self, destinations: destinations())
+    .init {
+      self
+    } destinations: {
+      destinations()
+    }
   }
 }
 
@@ -313,6 +326,7 @@ extension View {
   }
 }
 
+// TODO: do other overloads
 @available(iOS 16.0, macOS 13.0, *)
 extension NavigationLink where Destination == Never {
   public init<Route: Hashable>(route: Route, label: () -> Label) {
