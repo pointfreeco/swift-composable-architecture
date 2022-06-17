@@ -9,31 +9,27 @@ struct NavigationStackDemo: ReducerProtocol {
   @Dependency(\.navigationID.next) var nextID
 
   struct State: Equatable, NavigableState {
-    var path = NavigationState<Route>()
-
-    enum Route: Codable, Equatable, Hashable {
-      case screenA(ScreenA.State)
-      case screenB(ScreenB.State)
-      case screenC(ScreenC.State)
-    }
+    var path = NavigationState<DestinationState>()
   }
 
   enum Action: Equatable, NavigableAction {
-    // TODO: why are these needed??
-    public typealias DestinationState = State.Route
-    public typealias DestinationAction = Route
-    
     case goBackToScreen(Int)
     case goToABCButtonTapped
-    case navigation(NavigationActionOf<NavigationStackDemo>)
+    case navigation(NavigationAction<DestinationState, DestinationAction>)
     case shuffleButtonTapped
     case cancelTimersButtonTapped
+  }
 
-    enum Route: Equatable {
-      case screenA(ScreenA.Action)
-      case screenB(ScreenB.Action)
-      case screenC(ScreenC.Action)
-    }
+  enum DestinationState: Codable, Equatable, Hashable {
+    case screenA(ScreenA.State)
+    case screenB(ScreenB.State)
+    case screenC(ScreenC.State)
+  }
+
+  enum DestinationAction: Equatable {
+    case screenA(ScreenA.Action)
+    case screenB(ScreenB.Action)
+    case screenC(ScreenC.Action)
   }
 
   var body: some ReducerProtocol<State, Action> {
@@ -89,25 +85,25 @@ struct NavigationStackDemo: ReducerProtocol {
     }
   }
 
-  @ReducerBuilder<State.Route, Action.Route>
-  var destinations: some ReducerProtocol<State.Route, Action.Route> {
-    // TODO: new reducer wrapper to signify routing/destination, e.g. DestinationReduer, ...?
+  @ReducerBuilder<DestinationState, DestinationAction>
+  var destinations: some ReducerProtocol<DestinationState, DestinationAction> {
+    // TODO: new reducer wrapper to signify routing/destination, e.g. DestinationReducer, ...?
     PullbackCase(
       // NB: Using explicit CasePath(...) due to Swift compiler bugs
-      state: CasePath(State.Route.screenA),
-      action: CasePath(Action.Route.screenA)
+      state: CasePath(DestinationState.screenA),
+      action: CasePath(DestinationAction.screenA)
     ) {
       ScreenA()
     }
     PullbackCase(
-      state: CasePath(State.Route.screenB),
-      action: CasePath(Action.Route.screenB)
+      state: CasePath(DestinationState.screenB),
+      action: CasePath(DestinationAction.screenB)
     ) {
       ScreenB()
     }
     PullbackCase(
-      state: CasePath(State.Route.screenC),
-      action: CasePath(Action.Route.screenC)
+      state: CasePath(DestinationState.screenC),
+      action: CasePath(DestinationAction.screenC)
     ) {
       ScreenC()
     }
@@ -130,13 +126,13 @@ struct NavigationStackView: View {
           Section { Text(readMe) }
 
           Section{
-            NavigationLink(route: NavigationStackDemo.State.Route.screenA(.init())) {
+            NavigationLink(route: NavigationStackDemo.DestinationState.screenA(.init())) {
               Text("Go to screen A")
             }
-            NavigationLink(route: NavigationStackDemo.State.Route.screenB(.init())) {
+            NavigationLink(route: NavigationStackDemo.DestinationState.screenB(.init())) {
               Text("Go to screen B")
             }
-            NavigationLink(route: NavigationStackDemo.State.Route.screenC(.init())) {
+            NavigationLink(route: NavigationStackDemo.DestinationState.screenC(.init())) {
               Text("Go to screen C")
             }
           }
@@ -152,18 +148,18 @@ struct NavigationStackView: View {
         .navigationDestination(store: self.store) {
           DestinationStore(
             // NB: Using explicit CasePath(...) due to Swift compiler bugs
-            state: CasePath(NavigationStackDemo.State.Route.screenA).extract(from:),
-            action: NavigationStackDemo.Action.Route.screenA,
+            state: CasePath(NavigationStackDemo.DestinationState.screenA).extract(from:),
+            action: NavigationStackDemo.DestinationAction.screenA,
             content: ScreenAView.init(store:)
           )
           DestinationStore(
-            state: CasePath(NavigationStackDemo.State.Route.screenB).extract(from:),
-            action: NavigationStackDemo.Action.Route.screenB,
+            state: CasePath(NavigationStackDemo.DestinationState.screenB).extract(from:),
+            action: NavigationStackDemo.DestinationAction.screenB,
             content: ScreenBView.init(store:)
           )
           DestinationStore(
-            state: CasePath(NavigationStackDemo.State.Route.screenC).extract(from:),
-            action: NavigationStackDemo.Action.Route.screenC,
+            state: CasePath(NavigationStackDemo.DestinationState.screenC).extract(from:),
+            action: NavigationStackDemo.DestinationAction.screenC,
             content: ScreenCView.init(store:)
           )
         }
@@ -317,13 +313,13 @@ struct ScreenAView: View {
         }
 
         Section {
-          NavigationLink(route: NavigationStackDemo.State.Route.screenA(.init(count: viewStore.count))) {
+          NavigationLink(route: NavigationStackDemo.DestinationState.screenA(.init(count: viewStore.count))) {
             Text("Go to screen A")
           }
-          NavigationLink(route: NavigationStackDemo.State.Route.screenB(.init())) {
+          NavigationLink(route: NavigationStackDemo.DestinationState.screenB(.init())) {
             Text("Go to screen B")
           }
-          NavigationLink(route: NavigationStackDemo.State.Route.screenC(.init())) {
+          NavigationLink(route: NavigationStackDemo.DestinationState.screenC(.init())) {
             Text("Go to screen C")
           }
         }
@@ -420,13 +416,13 @@ struct ScreenCView: View {
         }
 
         Section {
-          NavigationLink(route: NavigationStackDemo.State.Route.screenA(.init(count: viewStore.count))) {
+          NavigationLink(route: NavigationStackDemo.DestinationState.screenA(.init(count: viewStore.count))) {
             Text("Go to screen A")
           }
-          NavigationLink(route: NavigationStackDemo.State.Route.screenB(.init())) {
+          NavigationLink(route: NavigationStackDemo.DestinationState.screenB(.init())) {
             Text("Go to screen B")
           }
-          NavigationLink(route: NavigationStackDemo.State.Route.screenC(.init())) {
+          NavigationLink(route: NavigationStackDemo.DestinationState.screenC(.init())) {
             Text("Go to screen C")
           }
         }
