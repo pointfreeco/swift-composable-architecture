@@ -11,7 +11,7 @@ class NavigationStackTests: XCTestCase {
   func testBasics() async {
     let store = TestStore(
       initialState: .init(),
-      reducer: NavigationStackDemo()
+      reducer: NavigationDemo()
         .dependency(\.factClient.fetch) { "\($0) is a good number." }
         .dependency(\.mainQueue, self.scheduler.eraseToAnyScheduler())
     )
@@ -22,18 +22,18 @@ class NavigationStackTests: XCTestCase {
       $0.path.append(.init(id: screenAID, element: .screenA(.init())))
     }
     store.send(.navigation(.element(id: screenAID, .screenA(.incrementButtonTapped)))) {
-      try CasePath(NavigationStackDemo.DestinationState.screenA).unwrapModify(&$0.path[id: screenAID]) {
+      try CasePath(NavigationDemo.DestinationState.screenA).unwrapModify(&$0.path[id: screenAID]) {
         $0.count = 1
       }
     }
     store.send(.navigation(.element(id: screenAID, .screenA(.factButtonTapped)))) {
-      try CasePath(NavigationStackDemo.DestinationState.screenA).unwrapModify(&$0.path[id: screenAID]) {
+      try CasePath(NavigationDemo.DestinationState.screenA).unwrapModify(&$0.path[id: screenAID]) {
         $0.isLoading = true
       }
     }
     await self.scheduler.advance()
     await store.receive(.navigation(.element(id: screenAID, .screenA(.factResponse(.success("1 is a good number.")))))) {
-      try CasePath(NavigationStackDemo.DestinationState.screenA).unwrapModify(&$0.path[id: screenAID]) {
+      try CasePath(NavigationDemo.DestinationState.screenA).unwrapModify(&$0.path[id: screenAID]) {
         $0.isLoading = false
         $0.fact = "1 is a good number."
       }
@@ -47,12 +47,12 @@ class NavigationStackTests: XCTestCase {
     store.send(.navigation(.element(id: screenCID, .screenC(.startButtonTapped))))
     await self.scheduler.advance(by: .seconds(2))
     await store.receive(.navigation(.element(id: screenCID, .screenC(.timerTick)))) {
-      try CasePath(NavigationStackDemo.DestinationState.screenC).unwrapModify(&$0.path[id: screenCID]) {
+      try CasePath(NavigationDemo.DestinationState.screenC).unwrapModify(&$0.path[id: screenCID]) {
         $0.count = 1
       }
     }
     await store.receive(.navigation(.element(id: screenCID, .screenC(.timerTick)))) {
-      try CasePath(NavigationStackDemo.DestinationState.screenC).unwrapModify(&$0.path[id: screenCID]) {
+      try CasePath(NavigationDemo.DestinationState.screenC).unwrapModify(&$0.path[id: screenCID]) {
         $0.count = 2
       }
     }
@@ -66,7 +66,7 @@ class NavigationStackTests: XCTestCase {
   func testProgrammaticNavigation() {
     let store = TestStore(
       initialState: .init(),
-      reducer: NavigationStackDemo()
+      reducer: NavigationDemo()
         .dependency(\.factClient.fetch) { "\($0) is a good number." }
         .dependency(\.mainQueue, self.scheduler.eraseToAnyScheduler())
     )

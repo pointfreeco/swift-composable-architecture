@@ -17,7 +17,7 @@ struct CaseStudiesApp: App {
       NavigationStackView(
         store: .init(
           initialState: .init(),
-          reducer: NavigationStackDemo().debug()
+          reducer: NavigationDemo().debug()
         )
       )
     }

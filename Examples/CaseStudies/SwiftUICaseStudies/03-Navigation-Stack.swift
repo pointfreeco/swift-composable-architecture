@@ -5,7 +5,7 @@ private let readMe = """
   This screen demonstrates how to use NavigationStack with Composable Architecture applications.
   """
 
-struct NavigationStackDemo: ReducerProtocol {
+struct NavigationDemo: ReducerProtocol {
   @Dependency(\.navigationID.next) var nextID
 
   struct State: Equatable, NavigableState {
@@ -100,14 +100,8 @@ struct NavigationStackDemo: ReducerProtocol {
   }
 }
 
-//typealias Eq = Equatable
-//typealias ReducerProtocolOf<Reducer: ReducerProtocol> = ReducerProtocol<Reducer.State, Reducer.Action>
-//protocol ReducerProtocolOf<Reducer>: ReducerProtocol where State == Reducer.State, Action == Reducer.Action {
-//  associatedtype Reducer: ReducerProtocol
-//}
-
 struct NavigationStackView: View {
-  let store: StoreOf<NavigationStackDemo>
+  let store: StoreOf<NavigationDemo>
 
   var body: some View {
     ZStack(alignment: .bottom) {
@@ -141,18 +135,18 @@ struct NavigationStackView: View {
         .navigationDestination(store: self.store) {
           DestinationStore(
             // NB: Using explicit CasePath(...) due to Swift compiler bugs
-            state: CasePath(NavigationStackDemo.DestinationState.screenA).extract(from:),
-            action: NavigationStackDemo.DestinationAction.screenA,
+            state: CasePath(NavigationDemo.DestinationState.screenA).extract(from:),
+            action: NavigationDemo.DestinationAction.screenA,
             content: ScreenAView.init(store:)
           )
           DestinationStore(
-            state: CasePath(NavigationStackDemo.DestinationState.screenB).extract(from:),
-            action: NavigationStackDemo.DestinationAction.screenB,
+            state: CasePath(NavigationDemo.DestinationState.screenB).extract(from:),
+            action: NavigationDemo.DestinationAction.screenB,
             content: ScreenBView.init(store:)
           )
           DestinationStore(
-            state: CasePath(NavigationStackDemo.DestinationState.screenC).extract(from:),
-            action: NavigationStackDemo.DestinationAction.screenC,
+            state: CasePath(NavigationDemo.DestinationState.screenC).extract(from:),
+            action: NavigationDemo.DestinationAction.screenC,
             content: ScreenCView.init(store:)
           )
         }
@@ -167,12 +161,12 @@ struct NavigationStackView: View {
 }
 
 struct FloatingMenuView: View {
-  let store: StoreOf<NavigationStackDemo>
+  let store: StoreOf<NavigationDemo>
 
   struct State: Equatable {
     var currentStack: [String]
     var total: Int
-    init(state: NavigationStackDemo.State) {
+    init(state: NavigationDemo.State) {
       self.total = 0
       self.currentStack = []
       for route in state.path {
@@ -436,7 +430,7 @@ struct NavigationStack_Previews: PreviewProvider {
     NavigationStackView(
       store: .init(
         initialState: .init(),
-        reducer: NavigationStackDemo()
+        reducer: NavigationDemo()
       )
     )
   }
