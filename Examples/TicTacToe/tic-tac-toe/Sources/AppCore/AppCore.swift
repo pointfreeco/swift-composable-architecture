@@ -9,8 +9,7 @@ import GameCore
 public struct AppReducer: ReducerProtocol {
   @Dependency(\.navigationID.next) var nextID
 
-  public init() {
-  }
+  public init() {}
 
   public struct State: Hashable, NavigableState {
     public var login: Login.State
@@ -33,6 +32,7 @@ public struct AppReducer: ReducerProtocol {
   }
 
   public enum Action: Hashable, NavigableAction {
+    // TODO: why are these needed??
     public typealias DestinationState = State.Route
     public typealias DestinationAction = Route
 
@@ -53,6 +53,11 @@ public struct AppReducer: ReducerProtocol {
       Login()
     }
 
+    self.core
+      .navigationDestination { self.destinations }
+  }
+
+  var core: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
       case let .login(.loginResponse(.success(response))):
@@ -89,20 +94,27 @@ public struct AppReducer: ReducerProtocol {
         return .none
       }
     }
-    .navigationDestination {
-      PullbackCase(state: CasePath(State.Route.twoFactor), action: CasePath(Action.Route.twoFactor)) {
-        TwoFactor()
-      }
+  }
+
+  @ReducerBuilder<State.Route, Action.Route>
+  var destinations: some ReducerProtocol<State.Route, Action.Route> {
+    PullbackCase(
+      state: CasePath(State.Route.twoFactor),
+      action: CasePath(Action.Route.twoFactor)
+    ) {
+      TwoFactor()
     }
-    .navigationDestination {
-      PullbackCase(state: CasePath(State.Route.newGame), action: CasePath(Action.Route.newGame)) {
-        NewGame()
-      }
+    PullbackCase(
+      state: CasePath(State.Route.newGame),
+      action: CasePath(Action.Route.newGame)
+    ) {
+      NewGame()
     }
-    .navigationDestination {
-      PullbackCase(state: CasePath(State.Route.game), action: CasePath(Action.Route.game)) {
-        Game()
-      }
+    PullbackCase(
+      state: CasePath(State.Route.game),
+      action: CasePath(Action.Route.game)
+    ) {
+      Game()
     }
   }
 }

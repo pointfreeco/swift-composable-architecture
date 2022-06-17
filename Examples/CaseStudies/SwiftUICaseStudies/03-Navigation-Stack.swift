@@ -21,9 +21,13 @@ struct NavigationStackDemo: ReducerProtocol {
   }
 
   enum Action: Equatable, NavigableAction {
+    // TODO: why are these needed??
+    public typealias DestinationState = State.Route
+    public typealias DestinationAction = Route
+    
     case goBackToScreen(Int)
     case goToABCButtonTapped
-    case navigation(NavigationAction<State.Route, Route>)
+    case navigation(NavigationActionOf<NavigationStackDemo>)
     case shuffleButtonTapped
     case cancelTimersButtonTapped
 
@@ -35,6 +39,17 @@ struct NavigationStackDemo: ReducerProtocol {
   }
 
   var body: some ReducerProtocol<State, Action> {
+    self.core
+    // TODO: figure out destinations builder
+      .navigationDestination {
+        // TODO: possible to hide this? NavigableReducerProtocol?
+        self.destinations
+      }
+
+    self.aggregator
+  }
+
+  var core: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
       case let .goBackToScreen(index):
@@ -63,32 +78,41 @@ struct NavigationStackDemo: ReducerProtocol {
           switch state.element {
           case .screenA, .screenB:
             return nil
-            
+
           case .screenC:
             return .cancel(id: state.id)
           }
         })
       }
     }
-    // TODO: figure out destinations builder
-    .navigationDestination {
-      // NB: Using explicit CasePath(...) due to Swift compiler bugs
-      PullbackCase(state: CasePath(State.Route.screenA), action: CasePath(Action.Route.screenA)) {
-        ScreenA()
-      }
-    }
-    .navigationDestination {
-      PullbackCase(state: CasePath(State.Route.screenB), action: CasePath(Action.Route.screenB)) {
-        ScreenB()
-      }
-    }
-    .navigationDestination {
-      PullbackCase(state: CasePath(State.Route.screenC), action: CasePath(Action.Route.screenC)) {
-        ScreenC()
-      }
-    }
+  }
 
-    Reduce { state, action in
+  @ReducerBuilder<State.Route, Action.Route>
+  var destinations: some ReducerProtocol<State.Route, Action.Route> {
+    // TODO: new reducer wrapper to signify routing/destination, e.g. DestinationReduer, ...?
+    PullbackCase(
+      // NB: Using explicit CasePath(...) due to Swift compiler bugs
+      state: CasePath(State.Route.screenA),
+      action: CasePath(Action.Route.screenA)
+    ) {
+      ScreenA()
+    }
+    PullbackCase(
+      state: CasePath(State.Route.screenB),
+      action: CasePath(Action.Route.screenB)
+    ) {
+      ScreenB()
+    }
+    PullbackCase(
+      state: CasePath(State.Route.screenC),
+      action: CasePath(Action.Route.screenC)
+    ) {
+      ScreenC()
+    }
+  }
+
+  var aggregator: some ReducerProtocol<State, Action> {
+    Reduce<State, Action> { state, action in
       state.total = 0
       state.currentStack = []
       for route in state.path {
@@ -107,6 +131,12 @@ struct NavigationStackDemo: ReducerProtocol {
     }
   }
 }
+
+//typealias Eq = Equatable
+//typealias ReducerProtocolOf<Reducer: ReducerProtocol> = ReducerProtocol<Reducer.State, Reducer.Action>
+//protocol ReducerProtocolOf<Reducer>: ReducerProtocol where State == Reducer.State, Action == Reducer.Action {
+//  associatedtype Reducer: ReducerProtocol
+//}
 
 struct NavigationStackView: View {
   let store: StoreOf<NavigationStackDemo>
