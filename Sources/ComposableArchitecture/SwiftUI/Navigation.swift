@@ -2,7 +2,11 @@ import SwiftUI
 
 // TODO: other names? NavigationPathState? NavigationStatePath?
 // TODO: should NavigationState flatten to just work on Identifiable elements?
-public struct NavigationState<Element>: MutableCollection, RandomAccessCollection, RangeReplaceableCollection {
+public struct NavigationState<Element>:
+  MutableCollection,
+  RandomAccessCollection,
+  RangeReplaceableCollection
+{
   public typealias ID = AnyHashable
 
   public struct Route: Identifiable {
@@ -17,6 +21,7 @@ public struct NavigationState<Element>: MutableCollection, RandomAccessCollectio
 
   public init() {
   }
+
   public init(path: IdentifiedArrayOf<Route>) {
     self.path = path
   }
@@ -64,6 +69,7 @@ public struct NavigationState<Element>: MutableCollection, RandomAccessCollectio
     }
   }
 
+  // TODO: more of these?
   public func dropLast(_ k: Int = 1) -> Self {
     .init(path: .init(uniqueElements: self.path.dropLast(k)))
   }
@@ -117,6 +123,7 @@ where State.DestinationState == Action.DestinationState
 {
   let store: Store<NavigationState<State.DestinationState>, NavigationState<State.DestinationState>>
   let content: Content
+
   public init(
     store: Store<State, Action>,
     @ViewBuilder content: () -> Content
@@ -127,16 +134,7 @@ where State.DestinationState == Action.DestinationState
 
   public var body: some View {
     WithViewStore(self.store, removeDuplicates: Self.isEqual) { _ in
-      NavigationStack(
-        path: ViewStore(self.store).binding(send: { $0 })
-        // TODO: cool to use ViewStore.binding or should we construct manually?
-//        .init(
-//          get: { self.store.state.value },
-//          set: {
-//            self.store.send($0)
-//          }
-//        )
-      ) {
+      NavigationStack(path: ViewStore(self.store).binding(send: { $0 })) {
         self.content
       }
     }
@@ -148,6 +146,7 @@ where State.DestinationState == Action.DestinationState
   ) -> Bool {
     guard lhs.count == rhs.count
     else { return false }
+
     for (lhs, rhs) in zip(lhs, rhs) {
       guard lhs.id == rhs.id && enumTag(lhs.element) == enumTag(rhs.element)
       else { return false }
@@ -156,7 +155,10 @@ where State.DestinationState == Action.DestinationState
   }
 }
 
-public struct NavigationStackReducer<Upstream: ReducerProtocol, Destinations: ReducerProtocol>: ReducerProtocol
+public struct NavigationStackReducer<
+  Upstream: ReducerProtocol,
+    Destinations: ReducerProtocol
+>: ReducerProtocol
 where
   Upstream.State: NavigableState,
   Upstream.Action: NavigableAction,
@@ -210,10 +212,10 @@ where
 }
 
 extension ReducerProtocol where State: NavigableState, Action: NavigableAction {
-//  @ReducerBuilder
   public func navigationDestination<Destinations: ReducerProtocol>(
     @ReducerBuilder<Destinations.State, Destinations.Action> destinations: () -> Destinations
-  ) -> NavigationStackReducer<Self, Destinations>
+  )
+  -> NavigationStackReducer<Self, Destinations>
   where
     Destinations.State == Action.DestinationState,
     Destinations.Action == Action.DestinationAction
@@ -236,8 +238,17 @@ private class StoreObservableObject<State, Action>: ObservableObject {
   }
 }
 
-public struct DestinationStore<State, Action, DestinationState, DestinationAction, Destination: View>: View {
-  @EnvironmentObject private var store: StoreObservableObject<NavigationState<State>, NavigationAction<State, Action>>
+public struct DestinationStore<
+  State,
+  Action,
+  DestinationState,
+  DestinationAction,
+  Destination: View
+>: View {
+  @EnvironmentObject private var store: StoreObservableObject<
+    NavigationState<State>,
+    NavigationAction<State, Action>
+  >
 
   let state: (State) -> DestinationState?
   let action: (DestinationAction) -> Action
@@ -256,10 +267,9 @@ public struct DestinationStore<State, Action, DestinationState, DestinationActio
   public var body: some View {
     IfLetStore(
       self.store.wrappedValue.scope(
-        state: { _state in (_state.path[id: store.id]?.element).flatMap(state) },
+        state: cachedLastSome { _state in (_state.path[id: store.id]?.element).flatMap(state) },
         action: { _action in .element(id: store.id, action(_action)) }
       )
-      .scope(state: Optional.cacheLastSome)
     ) {
       content($0)
     }
@@ -279,11 +289,11 @@ extension View {
     State.DestinationState == Action.DestinationState
   {
     self.navigationDestination(for: NavigationState<State.DestinationState>.Route.self) { route in
-      if let innerRoute = store.state.value.path.last(where: { $0 == route }) {
+      if let destinationState = store.state.value.path.last(where: { $0 == route }) {
         destination()
           .environmentObject(
             StoreObservableObject(
-              id: innerRoute.id,
+              id: destinationState.id,
               store: store.scope(state: \.path, action: Action.navigation)
             )
           )
@@ -309,16 +319,15 @@ extension NavigationLink where Destination == Never {
   }
 }
 
-extension Optional {
-  fileprivate static var cacheLastSome: (Self) -> Self {
-    var lastWrapped: Wrapped?
-    return {
-      lastWrapped = $0 ?? lastWrapped
-      return lastWrapped
-    }
+private func cachedLastSome<A, B>(_ f: @escaping (A) -> B?) -> (A) -> B? {
+  var lastWrapped: B?
+  return { wrapped in
+    lastWrapped = f(wrapped) ?? lastWrapped
+    return lastWrapped
   }
 }
 
+// TODO: should we ship these?
 extension NavigationAction {
   public static var removeAll: Self {
     .setPath([])

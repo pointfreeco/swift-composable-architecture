@@ -25,7 +25,6 @@ class NavigationStackTests: XCTestCase {
       try CasePath(NavigationStackDemo.DestinationState.screenA).unwrapModify(&$0.path[id: screenAID]) {
         $0.count = 1
       }
-      $0.total = 1
     }
     store.send(.navigation(.element(id: screenAID, .screenA(.factButtonTapped)))) {
       try CasePath(NavigationStackDemo.DestinationState.screenA).unwrapModify(&$0.path[id: screenAID]) {
@@ -51,19 +50,16 @@ class NavigationStackTests: XCTestCase {
       try CasePath(NavigationStackDemo.DestinationState.screenC).unwrapModify(&$0.path[id: screenCID]) {
         $0.count = 1
       }
-      $0.total = 2
     }
     await store.receive(.navigation(.element(id: screenCID, .screenC(.timerTick)))) {
       try CasePath(NavigationStackDemo.DestinationState.screenC).unwrapModify(&$0.path[id: screenCID]) {
         $0.count = 2
       }
-      $0.total = 3
     }
 
     // Pop screen C off stack
     store.send(.navigation(.setPath(store.state.path.dropLast()))) {
       $0.path.removeLast()
-      $0.total = 1
     }
   }
 
