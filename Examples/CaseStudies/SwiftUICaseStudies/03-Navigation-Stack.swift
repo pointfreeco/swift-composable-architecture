@@ -49,7 +49,7 @@ struct NavigationStackDemo: ReducerProtocol {
     Reduce { state, action in
       switch action {
       case let .goBackToScreen(index):
-        state.path = state.path.dropLast(state.path.count - index - 1)
+        state.path = state.path.dropLast(index)
         return .none
 
       case .goToABCButtonTapped:
@@ -64,6 +64,12 @@ struct NavigationStackDemo: ReducerProtocol {
 
       case .navigation(.element(id: _, .screenB(.screenAButtonTapped))):
         state.path.append(.init(id: self.nextID(), element: .screenA(.init())))
+        return .none
+      case .navigation(.element(id: _, .screenB(.screenBButtonTapped))):
+        state.path.append(.init(id: self.nextID(), element: .screenB(.init())))
+        return .none
+      case .navigation(.element(id: _, .screenB(.screenCButtonTapped))):
+        state.path.append(.init(id: self.nextID(), element: .screenC(.init())))
         return .none
 
       case .navigation:
@@ -184,12 +190,12 @@ struct FloatingMenuView: View {
         switch route.element {
         case let .screenA(screenAState):
           self.total += screenAState.count
-          self.currentStack.append("Screen A")
+          self.currentStack.insert("Screen A", at: 0)
         case .screenB:
-          self.currentStack.append("Screen B")
+          self.currentStack.insert("Screen B", at: 0)
         case let .screenC(screenBState):
           self.total += screenBState.count
-          self.currentStack.append("Screen C")
+          self.currentStack.insert("Screen C", at: 0)
         }
       }
     }
@@ -206,19 +212,19 @@ struct FloatingMenuView: View {
           Button("Pop to root") {
             // TODO: choose style
             viewStore.send(.popToRoot)
-//            viewStore.send(.navigation(.setPath([])))
-//            viewStore.send(.navigation(.removeAll))
+            // viewStore.send(.navigation(.setPath([])))
+            // viewStore.send(.navigation(.removeAll))
           }
           Button("Cancel timers") {
             viewStore.send(.cancelTimersButtonTapped)
           }
 
           Menu {
-            ForEach(Array(viewStore.currentStack.enumerated().reversed()), id: \.offset) { offset, screen in
-              Button("\(offset + 1).) \(screen)") {
+            ForEach(Array(viewStore.currentStack.enumerated()), id: \.offset) { offset, screen in
+              Button("\(viewStore.currentStack.count - offset).) \(screen)") {
                 viewStore.send(.goBackToScreen(offset))
               }
-              .disabled(offset == viewStore.currentStack.count - 1)
+              .disabled(offset == 0)
             }
             Button("Root") { viewStore.send(.popToRoot) }
           } label: {
@@ -231,6 +237,7 @@ struct FloatingMenuView: View {
         .transition(.opacity.animation(.default))
       }
     }
+    .debug()
   }
 }
 
@@ -330,11 +337,17 @@ struct ScreenB: ReducerProtocol {
   struct State: Codable, Equatable, Hashable {}
   enum Action: Equatable {
     case screenAButtonTapped
+    case screenBButtonTapped
+    case screenCButtonTapped
   }
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {
     case .screenAButtonTapped:
+      return .none
+    case .screenBButtonTapped:
+      return .none
+    case .screenCButtonTapped:
       return .none
     }
   }
@@ -347,6 +360,12 @@ struct ScreenBView: View {
       Form {
         Button("Decoupled navigation to screen A") {
           viewStore.send(.screenAButtonTapped)
+        }
+        Button("Decoupled navigation to screen B") {
+          viewStore.send(.screenBButtonTapped)
+        }
+        Button("Decoupled navigation to screen C") {
+          viewStore.send(.screenCButtonTapped)
         }
       }
       .navigationTitle("Screen B")
