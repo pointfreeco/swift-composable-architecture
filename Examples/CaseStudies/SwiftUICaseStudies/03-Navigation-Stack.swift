@@ -126,13 +126,13 @@ struct NavigationStackView: View {
           Section { Text(readMe) }
 
           Section{
-            NavigationLink(route: NavigationStackDemo.DestinationState.screenA(.init())) {
+            NavigationLink(state: NavigationStackDemo.DestinationState.screenA(.init())) {
               Text("Go to screen A")
             }
-            NavigationLink(route: NavigationStackDemo.DestinationState.screenB(.init())) {
+            NavigationLink(state: NavigationStackDemo.DestinationState.screenB(.init())) {
               Text("Go to screen B")
             }
-            NavigationLink(route: NavigationStackDemo.DestinationState.screenC(.init())) {
+            NavigationLink(state: NavigationStackDemo.DestinationState.screenC(.init())) {
               Text("Go to screen C")
             }
           }
@@ -313,13 +313,13 @@ struct ScreenAView: View {
         }
 
         Section {
-          NavigationLink(route: NavigationStackDemo.DestinationState.screenA(.init(count: viewStore.count))) {
+          NavigationLink(state: NavigationStackDemo.DestinationState.screenA(.init(count: viewStore.count))) {
             Text("Go to screen A")
           }
-          NavigationLink(route: NavigationStackDemo.DestinationState.screenB(.init())) {
+          NavigationLink(state: NavigationStackDemo.DestinationState.screenB(.init())) {
             Text("Go to screen B")
           }
-          NavigationLink(route: NavigationStackDemo.DestinationState.screenC(.init())) {
+          NavigationLink(state: NavigationStackDemo.DestinationState.screenC(.init())) {
             Text("Go to screen C")
           }
         }
@@ -416,13 +416,13 @@ struct ScreenCView: View {
         }
 
         Section {
-          NavigationLink(route: NavigationStackDemo.DestinationState.screenA(.init(count: viewStore.count))) {
+          NavigationLink(state: NavigationStackDemo.DestinationState.screenA(.init(count: viewStore.count))) {
             Text("Go to screen A")
           }
-          NavigationLink(route: NavigationStackDemo.DestinationState.screenB(.init())) {
+          NavigationLink(state: NavigationStackDemo.DestinationState.screenB(.init())) {
             Text("Go to screen B")
           }
-          NavigationLink(route: NavigationStackDemo.DestinationState.screenC(.init())) {
+          NavigationLink(state: NavigationStackDemo.DestinationState.screenC(.init())) {
             Text("Go to screen C")
           }
         }

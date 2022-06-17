@@ -111,7 +111,7 @@ public protocol NavigableState {
   var path: NavigationState<DestinationState> { get set }
 }
 
-@available(iOS 16.0, macOS 13.0, *)
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 public struct NavigationStackStore<State: NavigableState, Action: NavigableAction, Content: View>: View
 where State.DestinationState == Action.DestinationState
 {
@@ -266,7 +266,7 @@ public struct DestinationStore<State, Action, DestinationState, DestinationActio
   }
 }
 
-@available(iOS 16.0, macOS 13.0, *)
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension View {
   @ViewBuilder
   public func navigationDestination<State: NavigableState, Action: NavigableAction, Content>(
@@ -294,11 +294,18 @@ extension View {
   }
 }
 
-// TODO: do other overloads
-@available(iOS 16.0, macOS 13.0, *)
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationLink where Destination == Never {
-  public init<Route: Hashable>(route: Route, label: () -> Label) {
-    self.init(value: NavigationState.Route.init(id: UUID(), element: route), label: label)
+  public init<D: Hashable>(state: D?, label: () -> Label) {
+    self.init(value: NavigationState.Route(id: UUID(), element: state), label: label)
+  }
+
+  public init<D: Hashable>(_ titleKey: LocalizedStringKey, state: D?) where Label == Text {
+    self.init(titleKey, value: NavigationState.Route(id: UUID(), element: state))
+  }
+
+  public init<S: StringProtocol, D: Hashable>(_ title: S, state: D?) where Label == Text {
+    self.init(title, value: NavigationState.Route(id: UUID(), element: state))
   }
 }
 
