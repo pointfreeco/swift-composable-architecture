@@ -297,15 +297,15 @@ extension View {
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationLink where Destination == Never {
   public init<D: Hashable>(state: D?, label: () -> Label) {
-    self.init(value: NavigationState.Route(id: UUID(), element: state), label: label)
+    self.init(value: state.map { NavigationState.Route(id: UUID(), element: $0) }, label: label)
   }
 
   public init<D: Hashable>(_ titleKey: LocalizedStringKey, state: D?) where Label == Text {
-    self.init(titleKey, value: NavigationState.Route(id: UUID(), element: state))
+    self.init(titleKey, value: state.map { NavigationState.Route(id: UUID(), element: $0) })
   }
 
   public init<S: StringProtocol, D: Hashable>(_ title: S, state: D?) where Label == Text {
-    self.init(title, value: NavigationState.Route(id: UUID(), element: state))
+    self.init(title, value: state.map { NavigationState.Route(id: UUID(), element: $0) })
   }
 }
 
