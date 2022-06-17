@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
   name: "tic-tac-toe",
   platforms: [
-    .iOS("16.0"),
+    .iOS(.v16),
   ],
   products: [
     .library(name: "AppCore", targets: ["AppCore"]),

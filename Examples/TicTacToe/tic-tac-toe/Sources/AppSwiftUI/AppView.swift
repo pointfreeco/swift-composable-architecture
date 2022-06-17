@@ -20,18 +20,18 @@ public struct AppView: View {
       )
         .navigationDestination(store: self.store) {
           DestinationStore(
-            state: CasePath(AppReducer.State.Route.game).extract(from:),
-            action: AppReducer.Action.Route.game,
+            state: CasePath(AppReducer.DestinationState.game).extract(from:),
+            action: AppReducer.DestinationAction.game,
             content: GameView.init(store:)
           )
           DestinationStore(
-            state: CasePath(AppReducer.State.Route.newGame).extract(from:),
-            action: AppReducer.Action.Route.newGame,
+            state: CasePath(AppReducer.DestinationState.newGame).extract(from:),
+            action: AppReducer.DestinationAction.newGame,
             content: NewGameView.init(store:)
           )
           DestinationStore(
-            state: CasePath(AppReducer.State.Route.twoFactor).extract(from:),
-            action: AppReducer.Action.Route.twoFactor,
+            state: CasePath(AppReducer.DestinationState.twoFactor).extract(from:),
+            action: AppReducer.DestinationAction.twoFactor,
             content: TwoFactorView.init(store:)
           )
         }

@@ -13,39 +13,32 @@ public struct AppReducer: ReducerProtocol {
 
   public struct State: Hashable, NavigableState {
     public var login: Login.State
-    public var path: NavigationState<Route>
+    public var path: NavigationState<DestinationState>
 
     public init(
       login: Login.State = .init(),
-      path: NavigationState<Route> = []
+      path: NavigationState<DestinationState> = []
     ) {
       self.login = login
       self.path = path
     }
-
-    // TODO: Rename Destination?
-    public enum Route: Hashable {
-      case twoFactor(TwoFactor.State)
-      case newGame(NewGame.State)
-      case game(Game.State)
-    }
   }
 
   public enum Action: Hashable, NavigableAction {
-    // TODO: why are these needed??
-    public typealias DestinationState = State.Route
-    public typealias DestinationAction = Route
-
     case login(Login.Action)
-    // TODO: can we get this to work without the typealiases above??
-    case navigation(NavigationActionOf<AppReducer>)
-//    case navigation(NavigationAction<State.Route, Route>)
+    case navigation(NavigationAction<DestinationState, DestinationAction>)
+  }
 
-    public enum Route: Hashable {
-      case twoFactor(TwoFactor.Action)
-      case newGame(NewGame.Action)
-      case game(Game.Action)
-    }
+  public enum DestinationState: Hashable {
+    case twoFactor(TwoFactor.State)
+    case newGame(NewGame.State)
+    case game(Game.State)
+  }
+
+  public enum DestinationAction: Hashable {
+    case twoFactor(TwoFactor.Action)
+    case newGame(NewGame.Action)
+    case game(Game.Action)
   }
 
   public var body: some ReducerProtocol<State, Action> {
@@ -76,7 +69,7 @@ public struct AppReducer: ReducerProtocol {
         return .none
 
       case let .navigation(.element(id: id, .newGame(.letsPlayButtonTapped))):
-        let newGameState = CasePath(State.Route.newGame).extract(from: state.path[id: id]!)!
+        let newGameState = CasePath(DestinationState.newGame).extract(from: state.path[id: id]!)!
         state.path.append(
           .init(
             id: self.nextID(),
@@ -96,23 +89,23 @@ public struct AppReducer: ReducerProtocol {
     }
   }
 
-  @ReducerBuilder<State.Route, Action.Route>
-  var destinations: some ReducerProtocol<State.Route, Action.Route> {
+  @ReducerBuilder<DestinationState, DestinationAction>
+  var destinations: some ReducerProtocol<DestinationState, DestinationAction> {
     PullbackCase(
-      state: CasePath(State.Route.twoFactor),
-      action: CasePath(Action.Route.twoFactor)
+      state: CasePath(DestinationState.twoFactor),
+      action: CasePath(DestinationAction.twoFactor)
     ) {
       TwoFactor()
     }
     PullbackCase(
-      state: CasePath(State.Route.newGame),
-      action: CasePath(Action.Route.newGame)
+      state: CasePath(DestinationState.newGame),
+      action: CasePath(DestinationAction.newGame)
     ) {
       NewGame()
     }
     PullbackCase(
-      state: CasePath(State.Route.game),
-      action: CasePath(Action.Route.game)
+      state: CasePath(DestinationState.game),
+      action: CasePath(DestinationAction.game)
     ) {
       Game()
     }
