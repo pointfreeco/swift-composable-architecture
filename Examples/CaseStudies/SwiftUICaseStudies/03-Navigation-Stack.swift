@@ -10,8 +10,6 @@ struct NavigationStackDemo: ReducerProtocol {
 
   struct State: Equatable, NavigableState {
     var path = NavigationState<Route>()
-    var total = 0
-    var currentStack: [String] = []
 
     enum Route: Codable, Equatable, Hashable {
       case screenA(ScreenA.State)
@@ -45,8 +43,6 @@ struct NavigationStackDemo: ReducerProtocol {
         // TODO: possible to hide this? NavigableReducerProtocol?
         self.destinations
       }
-
-    self.aggregator
   }
 
   var core: some ReducerProtocol<State, Action> {
@@ -108,26 +104,6 @@ struct NavigationStackDemo: ReducerProtocol {
       action: CasePath(Action.Route.screenC)
     ) {
       ScreenC()
-    }
-  }
-
-  var aggregator: some ReducerProtocol<State, Action> {
-    Reduce<State, Action> { state, action in
-      state.total = 0
-      state.currentStack = []
-      for route in state.path {
-        switch route.element {
-        case let .screenA(screenAState):
-          state.total += screenAState.count
-          state.currentStack.append("Screen A")
-        case .screenB:
-          state.currentStack.append("Screen B")
-        case let .screenC(screenBState):
-          state.total += screenBState.count
-          state.currentStack.append("Screen C")
-        }
-      }
-      return .none
     }
   }
 }
@@ -199,11 +175,23 @@ struct FloatingMenuView: View {
   let store: StoreOf<NavigationStackDemo>
 
   struct State: Equatable {
-    let currentStack: [String]
-    let total: Int
+    var currentStack: [String]
+    var total: Int
     init(state: NavigationStackDemo.State) {
-      self.currentStack = state.currentStack
-      self.total = state.total
+      self.total = 0
+      self.currentStack = []
+      for route in state.path {
+        switch route.element {
+        case let .screenA(screenAState):
+          self.total += screenAState.count
+          self.currentStack.append("Screen A")
+        case .screenB:
+          self.currentStack.append("Screen B")
+        case let .screenC(screenBState):
+          self.total += screenBState.count
+          self.currentStack.append("Screen C")
+        }
+      }
     }
   }
 
