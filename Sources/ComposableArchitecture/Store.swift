@@ -182,7 +182,7 @@ public final class Store<State, Action> {
       reducer: reducer,
       environment: environment,
       mainThreadChecksEnabled: false,
-      stackChecksEnabled: true
+      stackChecksEnabled: false
     )
   }
 
