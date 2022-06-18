@@ -526,7 +526,7 @@ public final class Store<State, Action> {
   private func stackCheck(event: Event) {
   #if DEBUG
     guard self.stackChecksEnabled else { return }
-    let threshold: Double = 0.95
+    let threshold: Double = 0.85
     let status = StackStatus()
     guard status.usedFraction > threshold else { return }
     let stateSize = MemoryLayout<State>.size
