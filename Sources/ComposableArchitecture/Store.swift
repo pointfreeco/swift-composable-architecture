@@ -141,6 +141,7 @@ public final class Store<State, Action> {
   var state: CurrentValueSubject<State, Never>
   #if DEBUG
     private let mainThreadChecksEnabled: Bool
+    private let stackChecksEnabled: Bool
   #endif
 
   /// Initializes a store from an initial state, a reducer, and an environment.
@@ -158,9 +159,10 @@ public final class Store<State, Action> {
       initialState: initialState,
       reducer: reducer,
       environment: environment,
-      mainThreadChecksEnabled: true
+      mainThreadChecksEnabled: true,
+      stackChecksEnabled: true
     )
-    self.threadCheck(status: .`init`)
+    self.performChecks(event: .`init`)
   }
 
   /// Initializes a store from an initial state, a reducer, and an environment, and the main thread
@@ -179,7 +181,8 @@ public final class Store<State, Action> {
       initialState: initialState,
       reducer: reducer,
       environment: environment,
-      mainThreadChecksEnabled: false
+      mainThreadChecksEnabled: false,
+      stackChecksEnabled: true
     )
   }
 
@@ -327,7 +330,7 @@ public final class Store<State, Action> {
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> Store<LocalState, LocalAction> {
-    self.threadCheck(status: .scope)
+    self.performChecks(event: .scope)
     var isSending = false
     let localStore = Store<LocalState, LocalAction>(
       initialState: toLocalState(self.state.value),
@@ -362,7 +365,7 @@ public final class Store<State, Action> {
   }
 
   func send(_ action: Action, originatingFrom originatingAction: Action? = nil) {
-    self.threadCheck(status: .send(action, originatingAction: originatingAction))
+    self.performChecks(event: .send(action, originatingAction: originatingAction))
 
     self.bufferedActions.append(action)
     guard !self.isSending else { return }
@@ -382,7 +385,7 @@ public final class Store<State, Action> {
       let uuid = UUID()
       let effectCancellable = effect.sink(
         receiveCompletion: { [weak self] _ in
-          self?.threadCheck(status: .effectCompletion(action))
+          self?.performChecks(event: .effectCompletion(action))
           didComplete = true
           self?.effectCancellables[uuid] = nil
         },
@@ -408,20 +411,28 @@ public final class Store<State, Action> {
     return self.scope(state: { $0 }, action: absurd)
   }
 
-  private enum ThreadCheckStatus {
+  private enum Event {
     case effectCompletion(Action)
     case `init`
     case scope
     case send(Action, originatingAction: Action?)
   }
+  
+  @inline(__always)
+  private func performChecks(event: Event) {
+    #if DEBUG
+    threadCheck(event: event)
+    stackCheck(event: event)
+    #endif
+  }
 
   @inline(__always)
-  private func threadCheck(status: ThreadCheckStatus) {
+  private func threadCheck(event: Event) {
     #if DEBUG
       guard self.mainThreadChecksEnabled && !Thread.isMainThread
       else { return }
 
-      switch status {
+      switch event {
       case let .effectCompletion(action):
         runtimeWarning(
           """
@@ -511,18 +522,54 @@ public final class Store<State, Action> {
       }
     #endif
   }
+  
+  private func stackCheck(event: Event) {
+  #if DEBUG
+    guard self.stackChecksEnabled else { return }
+    let threshold: Double = 0.95
+    let status = StackStatus()
+    guard status.usedFraction > threshold else { return }
+    let stateSize = MemoryLayout<State>.size
+    
+    runtimeWarning(
+    """
+    The thread's stack depth is reaching %@. …
+        
+    If the stack deepens more, it risks to overflow and the app will crash.
+    
+    On this platform and on this thread, you can use %@ bytes of stack memory. \
+    You are currently using %@ of it, and it remains around %@ bytes.
+    
+    The state this store manages is occupying %@ bytes on the stack. If this value is \
+    too large with respect to the stack size and your app logic, you can relocate some of its \
+    properties on the heap. If a property is a value type, you can try to "box" it into a \
+    reference type. You can achieve this using a dedicated property wrapper (See [XXX] for example).
+    If the property is an `enum`, you can simply mark it as `indirect`, producing the same effect.
+    """,
+    [
+      String(format: "%.0f%%", threshold * 100),
+      "\(status.stackSize)",
+      String(format: "%.0f%%", status.usedFraction * 100),
+      "\(status.available)",
+      "\(stateSize)"
+    ]
+    )
+  #endif
+  }
 
   private init<Environment>(
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
     environment: Environment,
-    mainThreadChecksEnabled: Bool
+    mainThreadChecksEnabled: Bool,
+    stackChecksEnabled: Bool
   ) {
     self.state = CurrentValueSubject(initialState)
     self.reducer = { state, action in reducer.run(&state, action, environment) }
 
     #if DEBUG
       self.mainThreadChecksEnabled = mainThreadChecksEnabled
+      self.stackChecksEnabled = stackChecksEnabled
     #endif
   }
 }
