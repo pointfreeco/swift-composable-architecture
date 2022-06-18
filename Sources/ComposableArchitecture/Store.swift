@@ -141,7 +141,7 @@ public final class Store<State, Action> {
   var state: CurrentValueSubject<State, Never>
   #if DEBUG
     private let mainThreadChecksEnabled: Bool
-    private let stackChecksEnabled: Bool
+    var stackChecksEnabled: Bool
   #endif
 
   /// Initializes a store from an initial state, a reducer, and an environment.
@@ -343,6 +343,9 @@ public final class Store<State, Action> {
       },
       environment: ()
     )
+    #if DEBUG
+    localStore.stackChecksEnabled = stackChecksEnabled
+    #endif
     localStore.parentCancellable = self.state
       .dropFirst()
       .sink { [weak localStore] newValue in

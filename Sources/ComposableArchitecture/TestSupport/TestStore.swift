@@ -235,6 +235,9 @@
         },
         environment: ()
       )
+      #if DEBUG
+      store.stackChecksEnabled = false
+      #endif
     }
 
     deinit {
