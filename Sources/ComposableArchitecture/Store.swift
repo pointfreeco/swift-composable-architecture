@@ -343,9 +343,6 @@ public final class Store<State, Action> {
       },
       environment: ()
     )
-    #if DEBUG
-    localStore.stackChecksEnabled = stackChecksEnabled
-    #endif
     localStore.parentCancellable = self.state
       .dropFirst()
       .sink { [weak localStore] newValue in
@@ -529,32 +526,58 @@ public final class Store<State, Action> {
   private func stackCheck(event: Event) {
   #if DEBUG
     guard self.stackChecksEnabled else { return }
+    // Disable in scoped stores
+    guard self.parentCancellable == nil else { return }
     let threshold: Double = 0.85
     let status = StackStatus()
     guard status.usedFraction > threshold else { return }
-    let stateSize = MemoryLayout<State>.size
+    
+    // We warn only once, but scoped stores could pass through on `init` as their
+    // parent cancellable is nil at this point. So we use the `threadDictionary`.
+    // This path is only hit once per store lifetime, and only when the stack depth is
+    // beyond the threshold.
+    let threadDictionaryKey = "co.pointfree.ComposableArchitecture.stack-checked-warned"
+    guard Thread.current.threadDictionary[threadDictionaryKey] == nil else { return }
+    defer {
+      self.stackChecksEnabled = false
+      Thread.current.threadDictionary[threadDictionaryKey] = ()
+    }
     
     runtimeWarning(
     """
-    The thread's stack depth is reaching %@. …
-        
+    The thread's stack depth is reaching %@ of its capacity. …
+    
+      Stack size:
+        %@
+    
+      Used stack memory:
+        %@
+    
+      Available stack memory:
+        %@
+    
+      Size on the stack of the State managed by this store:
+        %@
+    
     If the stack deepens more, it risks to overflow and the app will crash.
-    
-    On this platform and on this thread, you can use %@ bytes of stack memory. \
-    You are currently using %@ of it, and it remains around %@ bytes.
-    
-    The state this store manages is occupying %@ bytes on the stack. If this value is \
+        
+    The state that this store manages is occupying %@ bytes on the stack. If this value is \
     too large with respect to the stack size and your app logic, you can relocate some of its \
     properties on the heap. If a property is a value type, you can try to "box" it into a \
-    reference type. You can achieve this using a dedicated property wrapper (See [XXX] for example).
-    If the property is an `enum`, you can simply mark it as `indirect`, producing the same effect.
+    reference type. One way to achieve this is using a dedicated property wrapper (See \
+    "https://github.com/apple/swift/blob/main/docs/OptimizationTips.rst\
+    #advice-use-copy-on-write-semantics-for-large-values" for example). If the property is an \
+    "enum", you can simply mark it as "indirect", producing the same effect.
+    
+    "Array", "Set", "Dictionary" or "IdentifiedArray" are already storing their content on the heap.
     """,
     [
-      String(format: "%.0f%%", threshold * 100),
-      "\(status.stackSize)",
       String(format: "%.0f%%", status.usedFraction * 100),
+      "\(status.stackSize)",
+      "\(status.used)",
       "\(status.available)",
-      "\(stateSize)"
+      "\(MemoryLayout<State>.size)",
+      "\(MemoryLayout<State>.size)"
     ]
     )
   #endif
