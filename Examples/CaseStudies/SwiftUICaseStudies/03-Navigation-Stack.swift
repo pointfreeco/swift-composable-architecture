@@ -33,15 +33,6 @@ struct NavigationStackDemo: ReducerProtocol {
   }
 
   var body: some ReducerProtocol<State, Action> {
-    self.core
-    // TODO: figure out destinations builder
-      .navigationDestination {
-        // TODO: possible to hide this? NavigableReducerProtocol?
-        self.destinations
-      }
-  }
-
-  var core: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
       case let .goBackToScreen(index):
@@ -85,29 +76,26 @@ struct NavigationStackDemo: ReducerProtocol {
         })
       }
     }
-  }
-
-  @ReducerBuilder<DestinationState, DestinationAction>
-  var destinations: some ReducerProtocol<DestinationState, DestinationAction> {
-    // TODO: new reducer wrapper to signify routing/destination, e.g. DestinationReducer, ...?
-    PullbackCase(
-      // NB: Using explicit CasePath(...) due to Swift compiler bugs
-      state: CasePath(DestinationState.screenA),
-      action: CasePath(DestinationAction.screenA)
-    ) {
-      ScreenA()
-    }
-    PullbackCase(
-      state: CasePath(DestinationState.screenB),
-      action: CasePath(DestinationAction.screenB)
-    ) {
-      ScreenB()
-    }
-    PullbackCase(
-      state: CasePath(DestinationState.screenC),
-      action: CasePath(DestinationAction.screenC)
-    ) {
-      ScreenC()
+    .navigationDestination {
+      PullbackCase(
+        // NB: Using explicit CasePath(...) due to Swift compiler bugs
+        state: CasePath(DestinationState.screenA),
+        action: CasePath(DestinationAction.screenA)
+      ) {
+        ScreenA()
+      }
+      PullbackCase(
+        state: CasePath(DestinationState.screenB),
+        action: CasePath(DestinationAction.screenB)
+      ) {
+        ScreenB()
+      }
+      PullbackCase(
+        state: CasePath(DestinationState.screenC),
+        action: CasePath(DestinationAction.screenC)
+      ) {
+        ScreenC()
+      }
     }
   }
 }
