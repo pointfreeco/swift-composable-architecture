@@ -8,7 +8,7 @@ class TimersTests: XCTestCase {
   func testStart() async {
     let mainQueue = DispatchQueue.test
 
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: Timers()
         .dependency(\.mainQueue, mainQueue.eraseToAnyScheduler())

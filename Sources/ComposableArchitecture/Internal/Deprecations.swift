@@ -169,13 +169,13 @@ extension Reducer {
           self.receive(expectedAction, update, file: step.file, line: step.line)
 
         case let .environment(work):
-          if !self.receivedActions.isEmpty {
+          if !self.reducer.receivedActions.isEmpty {
             var actions = ""
-            customDump(self.receivedActions.map(\.action), to: &actions)
+            customDump(self.reducer.receivedActions.map(\.action), to: &actions)
             XCTFail(
               """
-              Must handle \(self.receivedActions.count) received \
-              action\(self.receivedActions.count == 1 ? "" : "s") before performing this work: …
+              Must handle \(self.reducer.receivedActions.count) received \
+              action\(self.reducer.receivedActions.count == 1 ? "" : "s") before performing this work: …
 
               Unhandled actions: \(actions)
               """,
@@ -189,13 +189,13 @@ extension Reducer {
           }
 
         case let .do(work):
-          if !receivedActions.isEmpty {
+          if !self.reducer.receivedActions.isEmpty {
             var actions = ""
-            customDump(self.receivedActions.map(\.action), to: &actions)
+            customDump(self.reducer.receivedActions.map(\.action), to: &actions)
             XCTFail(
               """
-              Must handle \(self.receivedActions.count) received \
-              action\(self.receivedActions.count == 1 ? "" : "s") before performing this work: …
+              Must handle \(self.reducer.receivedActions.count) received \
+              action\(self.reducer.receivedActions.count == 1 ? "" : "s") before performing this work: …
 
               Unhandled actions: \(actions)
               """,

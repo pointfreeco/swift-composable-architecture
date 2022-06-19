@@ -7,7 +7,7 @@ import XCTest
 
 class AlertsAndConfirmationDialogsTests: XCTestCase {
   func testAlert() {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: AlertAndConfirmationDialog()
     )
@@ -30,7 +30,7 @@ class AlertsAndConfirmationDialogsTests: XCTestCase {
   }
 
   func testConfirmationDialog() {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: AlertAndConfirmationDialog()
     )

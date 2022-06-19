@@ -7,7 +7,7 @@ import XCTest
 @MainActor
 class LoginCoreTests: XCTestCase {
   func testFlow_Success_TwoFactor_Integration() async {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: Login()
         .dependency(\.authenticationClient.login) { _ in
@@ -52,7 +52,7 @@ class LoginCoreTests: XCTestCase {
   }
 
   func testFlow_DismissEarly_TwoFactor_Integration() async {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: Login()
         .dependency(\.authenticationClient.login) { _ in

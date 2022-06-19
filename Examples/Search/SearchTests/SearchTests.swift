@@ -9,7 +9,7 @@ class SearchTests: XCTestCase {
   let mainQueue = DispatchQueue.test
 
   func testSearchAndClearQuery() async {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: SearchReducer()
         .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
@@ -30,7 +30,7 @@ class SearchTests: XCTestCase {
   }
 
   func testSearchFailure() async {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: SearchReducer()
         .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
@@ -45,7 +45,7 @@ class SearchTests: XCTestCase {
   }
 
   func testClearQueryCancelsInFlightSearchRequest() async {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: SearchReducer()
         .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
@@ -74,7 +74,7 @@ class SearchTests: XCTestCase {
     var results = Search.mock.results
     results.append(specialResult)
 
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(results: results),
       reducer: SearchReducer()
         .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
@@ -128,7 +128,7 @@ class SearchTests: XCTestCase {
     var results = Search.mock.results
     results.append(specialResult)
 
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(results: results),
       reducer: SearchReducer()
         .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
@@ -176,7 +176,7 @@ class SearchTests: XCTestCase {
   func testTapOnLocationFailure() async {
     let results = Search.mock.results
 
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(results: results),
       reducer: SearchReducer()
         .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())

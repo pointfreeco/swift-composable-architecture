@@ -8,7 +8,7 @@ class TodosTests: XCTestCase {
   let mainQueue = DispatchQueue.test
 
   func testAddTodo() {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: AppReducer()
         .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
@@ -37,7 +37,7 @@ class TodosTests: XCTestCase {
         )
       ]
     )
-    let store = _TestStore(
+    let store = TestStore(
       initialState: state,
       reducer: AppReducer()
         .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
@@ -66,7 +66,7 @@ class TodosTests: XCTestCase {
         ),
       ]
     )
-    let store = _TestStore(
+    let store = TestStore(
       initialState: state,
       reducer: AppReducer()
         .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
@@ -100,7 +100,7 @@ class TodosTests: XCTestCase {
         ),
       ]
     )
-    let store = _TestStore(
+    let store = TestStore(
       initialState: state,
       reducer: AppReducer()
         .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
@@ -119,7 +119,7 @@ class TodosTests: XCTestCase {
   }
 
   func testClearCompleted() {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(
         todos: [
           .init(
@@ -147,7 +147,7 @@ class TodosTests: XCTestCase {
   }
 
   func testDelete() {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(
         todos: [
           .init(
@@ -181,7 +181,7 @@ class TodosTests: XCTestCase {
   }
 
   func testEditModeMoving() async {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(
         todos: [
           .init(
@@ -221,7 +221,7 @@ class TodosTests: XCTestCase {
   }
 
   func testEditModeMovingWithFilter() async {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(
         todos: [
           .init(
@@ -284,7 +284,7 @@ class TodosTests: XCTestCase {
         ),
       ]
     )
-    let store = _TestStore(
+    let store = TestStore(
       initialState: state,
       reducer: AppReducer()
         .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())

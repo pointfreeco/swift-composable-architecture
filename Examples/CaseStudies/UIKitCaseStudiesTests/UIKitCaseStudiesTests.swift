@@ -5,7 +5,7 @@ import XCTest
 
 final class UIKitCaseStudiesTests: XCTestCase {
   func testCountDown() {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: CounterState(),
       reducer: CounterReducer()
     )
@@ -23,7 +23,7 @@ final class UIKitCaseStudiesTests: XCTestCase {
     let secondState = CounterState()
     let thirdState = CounterState()
 
-    let store = _TestStore(
+    let store = TestStore(
       initialState: CounterListState(
         counters: [firstState, secondState, thirdState]
       ),

@@ -4,7 +4,7 @@ import NewGameCore
 import XCTest
 
 class NewGameCoreTests: XCTestCase {
-  let store = _TestStore(initialState: .init(), reducer: NewGame())
+  let store = TestStore(initialState: .init(), reducer: NewGame())
 
   func testFlow_NewGame_Integration() {
     self.store.send(.oPlayerNameChanged("Blob Sr.")) {

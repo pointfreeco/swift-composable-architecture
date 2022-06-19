@@ -6,7 +6,7 @@ import XCTest
 @MainActor
 class AppCoreTests: XCTestCase {
   func testIntegration() async {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: AppReducer()
         .dependency(\.authenticationClient.login) { _ in
@@ -47,7 +47,7 @@ class AppCoreTests: XCTestCase {
   }
 
   func testIntegration_TwoFactor() async {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: AppReducer()
         .dependency(\.authenticationClient.login) { _ in
