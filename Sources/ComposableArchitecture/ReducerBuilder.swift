@@ -12,19 +12,22 @@ public enum ReducerBuilder<State, Action> {
   }
 
   @inlinable
-  public static func buildBlock<R: ReducerProtocol>(_ r: R) -> R {
+  public static func buildBlock<R: ReducerProtocol>(_ r: R) -> R
+  where R.State == State, R.Action == Action {
     r
   }
 
   @inlinable
-  public static func buildPartialBlock<R: ReducerProtocol>(first: R) -> R {
+  public static func buildPartialBlock<R: ReducerProtocol>(first: R) -> R
+  where R.State == State, R.Action == Action {
     first
   }
 
   @inlinable
   public static func buildPartialBlock<R0: ReducerProtocol, R1: ReducerProtocol>(
     accumulated: R0, next: R1
-  ) -> Sequence<R0, R1> {
+  ) -> Sequence<R0, R1>
+  where R0.State == State, R1.Action == Action {
     .init(r0: accumulated, r1: next)
   }
 
