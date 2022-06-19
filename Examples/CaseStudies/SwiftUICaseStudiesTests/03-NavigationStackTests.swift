@@ -9,7 +9,7 @@ class NavigationStackTests: XCTestCase {
   let scheduler = DispatchQueue.test
 
   func testBasics() async {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: NavigationStackDemo()
         .dependency(\.factClient.fetch) { "\($0) is a good number." }
@@ -68,7 +68,7 @@ class NavigationStackTests: XCTestCase {
   }
 
   func testProgrammaticNavigation() {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: NavigationStackDemo()
         .dependency(\.factClient.fetch) { "\($0) is a good number." }

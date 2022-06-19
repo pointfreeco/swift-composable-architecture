@@ -7,7 +7,7 @@
 
   class BindingFormTests: XCTestCase {
     func testBasics() {
-      let store = _TestStore(
+      let store = TestStore(
         initialState: .init(),
         reducer: BindingForm()
       )

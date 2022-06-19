@@ -16,7 +16,7 @@ class WebSocketTests: XCTestCase {
     webSocket.receive = { _ in messages.stream }
     webSocket.sendPing = { _ in try await Task.never() }
 
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: WebSocket()
         .dependency(\.mainQueue, .immediate)
@@ -72,7 +72,7 @@ class WebSocketTests: XCTestCase {
     }
     webSocket.sendPing = { _ in try await Task.never() }
 
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: WebSocket()
         .dependency(\.mainQueue, .immediate)
@@ -115,7 +115,7 @@ class WebSocketTests: XCTestCase {
     webSocket.sendPing = { _ in await pingsCount.modify { $0 += 1 } }
 
     let mainQueue = DispatchQueue.test
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: WebSocket()
         .dependency(\.mainQueue, mainQueue.eraseToAnyScheduler())
@@ -152,7 +152,7 @@ class WebSocketTests: XCTestCase {
     webSocket.receive = { _ in try await Task.never() }
     webSocket.sendPing = { _ in try await Task.never() }
 
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: WebSocket()
         .dependency(\.mainQueue, .immediate)

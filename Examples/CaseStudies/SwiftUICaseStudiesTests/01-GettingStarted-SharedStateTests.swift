@@ -6,7 +6,7 @@ import XCTest
 
 class SharedStateTests: XCTestCase {
   func testTabRestoredOnReset() {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: SharedState()
     )
@@ -24,7 +24,7 @@ class SharedStateTests: XCTestCase {
   }
 
   func testTabSelection() {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: SharedState()
     )
@@ -42,7 +42,7 @@ class SharedStateTests: XCTestCase {
   }
 
   func testSharedCounts() {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: SharedState()
     )
@@ -64,7 +64,7 @@ class SharedStateTests: XCTestCase {
   }
 
   func testIsPrimeWhenPrime() {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(alert: nil, count: 3, maxCount: 0, minCount: 0, numberOfCounts: 0),
       reducer: SharedState.Counter()
     )
@@ -80,7 +80,7 @@ class SharedStateTests: XCTestCase {
   }
 
   func testIsPrimeWhenNotPrime() {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(alert: nil, count: 6, maxCount: 0, minCount: 0, numberOfCounts: 0),
       reducer: SharedState.Counter()
     )

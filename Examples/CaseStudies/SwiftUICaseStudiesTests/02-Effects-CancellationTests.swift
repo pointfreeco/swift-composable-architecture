@@ -7,7 +7,7 @@ import XCTest
 @MainActor
 class EffectsCancellationTests: XCTestCase {
   func testTrivia_SuccessfulRequest() async {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: EffectsCancellation()
         .dependency(\.factClient, .init(fetch: { "\($0) is a good number Brent" }))
@@ -31,7 +31,7 @@ class EffectsCancellationTests: XCTestCase {
 
   func testTrivia_FailedRequest() async {
     struct FactError: Error {}
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: EffectsCancellation()
         .dependency(\.factClient, .init(fetch: { _ in throw FactError() }))
@@ -54,7 +54,7 @@ class EffectsCancellationTests: XCTestCase {
   // emit.
   func testTrivia_CancelButtonCancelsRequest() {
     let mainQueue = DispatchQueue.test
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: EffectsCancellation()
         .dependency(\.factClient, .init(fetch: { "\($0) is a good number Brent" }))
@@ -72,7 +72,7 @@ class EffectsCancellationTests: XCTestCase {
 
   func testTrivia_PlusMinusButtonsCancelsRequest() {
     let mainQueue = DispatchQueue.test
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: EffectsCancellation()
         .dependency(\.factClient, .init(fetch: { "\($0) is a good number Brent" }))

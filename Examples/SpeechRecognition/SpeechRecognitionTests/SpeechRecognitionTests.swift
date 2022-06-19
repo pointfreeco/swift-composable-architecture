@@ -7,7 +7,7 @@ import XCTest
 @MainActor
 class SpeechRecognitionTests: XCTestCase {
   func testDenyAuthorization() async {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: AppReducer()
         .dependency(\.speechClient.requestAuthorization) { .denied }
@@ -30,7 +30,7 @@ class SpeechRecognitionTests: XCTestCase {
   }
 
   func testRestrictedAuthorization() async {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: AppReducer()
         .dependency(\.speechClient.requestAuthorization) { .restricted }
@@ -53,7 +53,7 @@ class SpeechRecognitionTests: XCTestCase {
     speechClient.recognitionTask = { _ in recognitionTask.stream }
     speechClient.requestAuthorization = { .authorized }
 
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: AppReducer()
         .dependency(\.speechClient.recognitionTask) { _ in recognitionTask.stream }
@@ -95,7 +95,7 @@ class SpeechRecognitionTests: XCTestCase {
   func testAudioSessionFailure() async {
     let recognitionTask = AsyncThrowingStream<SpeechClient.Action, Error>.streamWithContinuation()
 
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: AppReducer()
         .dependency(\.speechClient.recognitionTask) { _ in recognitionTask.stream }
@@ -123,7 +123,7 @@ class SpeechRecognitionTests: XCTestCase {
     speechClient.recognitionTask = { _ in recognitionTask.stream }
     speechClient.requestAuthorization = { .authorized }
 
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: AppReducer()
         .dependency(\.speechClient.recognitionTask) { _ in recognitionTask.stream }

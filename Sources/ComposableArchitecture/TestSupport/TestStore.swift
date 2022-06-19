@@ -1,7 +1,4 @@
 #if DEBUG
-  import Combine
-  import CustomDump
-  import Foundation
   import XCTestDynamicOverlay
 
   /// A testable runtime for a reducer.
@@ -40,23 +37,24 @@
   /// For example, given a simple counter reducer:
   ///
   /// ```swift
-  /// struct CounterState {
-  ///   var count = 0
-  /// }
-  /// enum CounterAction: Equatable {
-  ///   case decrementButtonTapped
-  ///   case incrementButtonTapped
-  /// }
+  /// struct CounterReducer: ReducerProtocol {
+  ///   struct State {
+  ///     var count = 0
+  ///   }
+  ///   enum Action: Equatable {
+  ///     case decrementButtonTapped
+  ///     case incrementButtonTapped
+  ///   }
+  ///   func reduce(into state: inout State, action: Action) -> Effect<Action> {
+  ///     switch action {
+  ///     case .decrementButtonTapped:
+  ///       state.count -= 1
+  ///       return .none
   ///
-  /// let counterReducer = Reducer<CounterState, CounterAction, Void> { state, action, _ in
-  ///   switch action {
-  ///   case .decrementButtonTapped:
-  ///     state.count -= 1
-  ///     return .none
-  ///
-  ///   case .incrementButtonTapped:
-  ///     state.count += 1
-  ///     return .none
+  ///     case .incrementButtonTapped:
+  ///       state.count += 1
+  ///       return .none
+  ///     }
   ///   }
   /// }
   /// ```
@@ -68,8 +66,7 @@
   ///   func testCounter() {
   ///     let store = TestStore(
   ///       initialState: .init(count: 0),      // Given a counter state of 0
-  ///       reducer: counterReducer,
-  ///       environment: ()
+  ///       reducer: CounterReducer()
   ///     )
   ///     store.send(.incrementButtonTapped) {  // When the increment button is tapped
   ///       $0.count = 1                        // Then the count should be 1
@@ -87,30 +84,26 @@
   /// typing before making a network request:
   ///
   /// ```swift
-  /// struct SearchState: Equatable {
-  ///   var query = ""
-  ///   var results: [String] = []
-  /// }
+  /// struct SearchReducer: ReducerProtocol {
+  ///   struct State: Equatable {
+  ///     var query = ""
+  ///     var results: [String] = []
+  ///   }
+  ///   enum Action: Equatable {
+  ///     case queryChanged(String)
+  ///     case response([String])
+  ///   }
+  ///   @Dependency(\.mainQueue) var mainQueue
+  ///   let request: @Sendable (String) async throws -> [String]
   ///
-  /// enum SearchAction: Equatable {
-  ///   case queryChanged(String)
-  ///   case response([String])
-  /// }
-  ///
-  /// struct SearchEnvironment {
-  ///   var mainQueue: AnySchedulerOf<DispatchQueue>
-  ///   var request: (String) async throws -> [String]
-  /// }
-  ///
-  /// let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
-  ///   state, action, environment in
+  ///   func reduce(into state: inout State, action: Action) -> Effect<Action> {
   ///     switch action {
   ///     case let .queryChanged(query):
   ///       enum SearchId {}
   ///
   ///       state.query = query
   ///       return .run { send in
-  ///         guard let results = try? await environment.request(query) else { return }
+  ///         guard let results = try? await self.request(query) else { return }
   ///         send(.response(results))
   ///       }
   ///       .debounce(id: SearchId.self, for: 0.5, scheduler: environment.mainQueue)
@@ -119,24 +112,21 @@
   ///       state.results = results
   ///       return .none
   ///     }
+  ///   }
   /// }
   /// ```
   ///
   /// It can be fully tested by controlling the environment's scheduler and effect:
   ///
   /// ```swift
-  /// // Create a test dispatch scheduler to control the timing of effects
-  /// let scheduler = DispatchQueue.test
+  /// // Create a test dispatch queue to control the timing of effects
+  /// let mainQueue = DispatchQueue.test
   ///
   /// let store = TestStore(
-  ///   initialState: SearchState(),
-  ///   reducer: searchReducer,
-  ///   environment: SearchEnvironment(
-  ///     // Wrap the test scheduler in a type-erased scheduler
-  ///     mainQueue: scheduler.eraseToAnyScheduler(),
-  ///     // Simulate a search response with one item
-  ///     request: { ["Composable Architecture"] }
-  ///   )
+  ///   initialState: .init(),
+  ///   reducer: SearchReducer(request: { ["Composable Architecture"] })
+  ///     // Override the main queue dependency with a type-erased scheduler
+  ///     .dependency(\.mainQueue, mainQueue.eraseToAnyScheduler()
   /// )
   ///
   /// // Change the query
@@ -169,74 +159,106 @@
   /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
   /// not expect it would cause a test failure.
   ///
-  public final class TestStore<State, LocalState, Action, LocalAction, Environment> {
+public final class TestStore<Reducer: ReducerProtocol, LocalState, LocalAction, Environment> {
     /// The current environment.
     ///
     /// The environment can be modified throughout a test store's lifecycle in order to influence
     /// how it produces effects.
-    public var environment: Environment
+    public var environment: Environment {
+      _read { yield self._environment.wrappedValue }
+      _modify { yield &self._environment.wrappedValue }
+    }
+
+    public var reducer: Reducer {
+      self._reducer.upstream
+    }
 
     /// The current state.
     ///
     /// When read from a trailing closure assertion in ``send(_:_:file:line:)`` or
     /// ``receive(_:_:file:line:)``, it will equal the `inout` state passed to the closure.
-    public private(set) var state: State
+    public var state: Reducer.State {
+      self._reducer.state
+    }
 
+    private var _environment: Box<Environment>
     private let file: StaticString
-    private let fromLocalAction: (LocalAction) -> Action
+    private let fromLocalAction: (LocalAction) -> Reducer.Action
     private var line: UInt
-    private var inFlightEffects: Set<LongLivingEffect> = []
-    var receivedActions: [(action: Action, state: State)] = []
-    private let reducer: Reducer<State, Action, Environment>
-    private var store: Store<State, TestAction>!
-    private let toLocalState: (State) -> LocalState
+    let _reducer: TestReducer<Reducer>
+    private var store: Store<Reducer.State, TestReducer<Reducer>.TestAction>!
+    private let toLocalState: (Reducer.State) -> LocalState
+
+    public init(
+      initialState: Reducer.State,
+      reducer: Reducer,
+      file: StaticString = #file,
+      line: UInt = #line
+    )
+    where
+      Reducer.State == LocalState,
+      Reducer.Action == LocalAction,
+      Environment == Void
+    {
+      let reducer = TestReducer(reducer, initialState: initialState)
+      self._reducer = reducer
+      self.store = Store(initialState: initialState, reducer: reducer)
+      self.toLocalState = { $0 }
+      self.fromLocalAction = { $0 }
+      self._environment = .init(wrappedValue: ())
+      self.file = file
+      self.line = line
+    }
+
+    /// Initializes a test store from an initial state, a reducer, and an initial environment.
+    ///
+    /// - Parameters:
+    ///   - initialState: The state to start the test from.
+    ///   - reducer: A reducer.
+    ///   - environment: The environment to start the test from.
+    public init(
+      initialState: LocalState,
+      reducer: ComposableArchitecture.Reducer<LocalState, LocalAction, Environment>,
+      environment: Environment,
+      file: StaticString = #file,
+      line: UInt = #line
+    )
+    where
+      Reducer == Reduce<LocalState, LocalAction>
+    {
+      let environment = Box(wrappedValue: environment)
+      let reducer = TestReducer(
+        Reduce(
+          reducer.pullback(state: \.self, action: .self, environment: { $0.wrappedValue }),
+          environment: environment
+        ),
+        initialState: initialState
+      )
+      self._reducer = reducer
+      self.toLocalState = { $0 }
+      self.fromLocalAction = { $0 }
+      self.store = Store(initialState: initialState, reducer: reducer)
+      self._environment = environment
+      self.line = line
+      self.file = file
+    }
 
     private init(
-      environment: Environment,
+      _environment: Box<Environment>,
       file: StaticString,
-      fromLocalAction: @escaping (LocalAction) -> Action,
-      initialState: State,
+      fromLocalAction: @escaping (LocalAction) -> Reducer.Action,
       line: UInt,
-      reducer: Reducer<State, Action, Environment>,
-      toLocalState: @escaping (State) -> LocalState
+      reducer: TestReducer<Reducer>,
+      store: Store<Reducer.State, TestReducer<Reducer>.TestAction>,
+      toLocalState: @escaping (Reducer.State) -> LocalState
     ) {
-      self.environment = environment
+      self._environment = _environment
       self.file = file
       self.fromLocalAction = fromLocalAction
       self.line = line
-      self.reducer = reducer
-      self.state = initialState
+      self._reducer = reducer
+      self.store = store
       self.toLocalState = toLocalState
-
-      self.store = Store(
-        initialState: initialState,
-        reducer: Reducer<State, TestAction, Void> { [unowned self] state, action, _ in
-          let effects: Effect<Action, Never>
-          switch action.origin {
-          case let .send(localAction):
-            effects = self.reducer.run(&state, self.fromLocalAction(localAction), self.environment)
-            self.state = state
-
-          case let .receive(action):
-            effects = self.reducer.run(&state, action, self.environment)
-            self.receivedActions.append((action, state))
-          }
-
-          let effect = LongLivingEffect(file: action.file, line: action.line)
-          return
-            effects
-            .handleEvents(
-              receiveSubscription: { [weak self] _ in
-                self?.inFlightEffects.insert(effect)
-              },
-              receiveCompletion: { [weak self] _ in self?.inFlightEffects.remove(effect) },
-              receiveCancel: { [weak self] in self?.inFlightEffects.remove(effect) }
-            )
-            .eraseToEffect { .init(origin: .receive($0), file: action.file, line: action.line) }
-
-        },
-        environment: ()
-      )
     }
 
     deinit {
@@ -244,20 +266,20 @@
     }
 
     func completed() {
-      if !self.receivedActions.isEmpty {
+      if !self._reducer.receivedActions.isEmpty {
         var actions = ""
-        customDump(self.receivedActions.map(\.action), to: &actions)
+        customDump(self._reducer.receivedActions.map(\.action), to: &actions)
         XCTFail(
           """
-          The store received \(self.receivedActions.count) unexpected \
-          action\(self.receivedActions.count == 1 ? "" : "s") after this one: …
+          The store received \(self._reducer.receivedActions.count) unexpected \
+          action\(self._reducer.receivedActions.count == 1 ? "" : "s") after this one: …
 
           Unhandled actions: \(actions)
           """,
           file: self.file, line: self.line
         )
       }
-      for effect in self.inFlightEffects {
+      for effect in self._reducer.inFlightEffects {
         XCTFail(
           """
           An effect returned for this action is still running. It must complete before the end of \
@@ -282,67 +304,6 @@
         )
       }
     }
-
-    private struct LongLivingEffect: Hashable {
-      let id = UUID()
-      let file: StaticString
-      let line: UInt
-
-      static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.id == rhs.id
-      }
-
-      func hash(into hasher: inout Hasher) {
-        self.id.hash(into: &hasher)
-      }
-    }
-
-    private struct TestAction: CustomDebugStringConvertible {
-      let origin: Origin
-      let file: StaticString
-      let line: UInt
-
-      enum Origin {
-        case send(LocalAction)
-        case receive(Action)
-      }
-
-      var debugDescription: String {
-        switch self.origin {
-        case let .send(action):
-          return debugCaseOutput(action)
-
-        case let .receive(action):
-          return debugCaseOutput(action)
-        }
-      }
-    }
-  }
-
-  extension TestStore where State == LocalState, Action == LocalAction {
-    /// Initializes a test store from an initial state, a reducer, and an initial environment.
-    ///
-    /// - Parameters:
-    ///   - initialState: The state to start the test from.
-    ///   - reducer: A reducer.
-    ///   - environment: The environment to start the test from.
-    public convenience init(
-      initialState: State,
-      reducer: Reducer<State, Action, Environment>,
-      environment: Environment,
-      file: StaticString = #file,
-      line: UInt = #line
-    ) {
-      self.init(
-        environment: environment,
-        file: file,
-        fromLocalAction: { $0 },
-        initialState: initialState,
-        line: line,
-        reducer: reducer,
-        toLocalState: { $0 }
-      )
-    }
   }
 
   extension TestStore where LocalState: Equatable {
@@ -361,28 +322,30 @@
       file: StaticString = #file,
       line: UInt = #line
     ) -> TestTask {
-      if !self.receivedActions.isEmpty {
+      if !self._reducer.receivedActions.isEmpty {
         var actions = ""
-        customDump(self.receivedActions.map(\.action), to: &actions)
+        customDump(self._reducer.receivedActions.map(\.action), to: &actions)
         XCTFail(
           """
-          Must handle \(self.receivedActions.count) received \
-          action\(self.receivedActions.count == 1 ? "" : "s") before sending an action: …
+          Must handle \(self._reducer.receivedActions.count) received \
+          action\(self._reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
 
           Unhandled actions: \(actions)
           """,
-          file: file, line: line
+          file: file,
+          line: line
         )
       }
-      var expectedState = self.toLocalState(self.state)
-      let previousState = self.state
-      let task = self.store.send(.init(origin: .send(action), file: file, line: line))
+      var expectedState = self.toLocalState(self._reducer.state)
+      let previousState = self._reducer.state
+      let task = self.store
+        .send(.init(origin: .send(self.fromLocalAction(action)), file: file, line: line))
       do {
-        let currentState = self.state
-        self.state = previousState
-        defer { self.state = currentState }
+        let currentState = self._reducer.state
+        self._reducer.state = previousState
+        defer { self._reducer.state = currentState }
 
-        try self.expectedStateShouldMatch(
+        try expectedStateShouldMatch(
           expected: &expectedState,
           actual: self.toLocalState(currentState),
           modify: updateExpectingResult,
@@ -398,54 +361,9 @@
 
       return .init(task: task)
     }
-
-    private func expectedStateShouldMatch(
-      expected: inout LocalState,
-      actual: LocalState,
-      modify: ((inout LocalState) throws -> Void)? = nil,
-      file: StaticString,
-      line: UInt
-    ) throws {
-      guard let modify = modify else { return }
-      let current = expected
-      try modify(&expected)
-
-      if expected != actual {
-        let difference =
-          diff(expected, actual, format: .proportional)
-          .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
-          ?? """
-          Expected:
-          \(String(describing: expected).indent(by: 2))
-
-          Actual:
-          \(String(describing: actual).indent(by: 2))
-          """
-
-        XCTFail(
-          """
-          A state change does not match expectation: …
-
-          \(difference)
-          """,
-          file: file,
-          line: line
-        )
-      } else if expected == current {
-        XCTFail(
-          """
-          Expected state to change, but no change occurred.
-
-          The trailing closure made no observable modifications to state. If no change to state is \
-          expected, omit the trailing closure.
-          """,
-          file: file, line: line
-        )
-      }
-    }
   }
 
-  extension TestStore where LocalState: Equatable, Action: Equatable {
+  extension TestStore where LocalState: Equatable, Reducer.Action: Equatable {
     /// Asserts an action was received from an effect and asserts when state changes.
     ///
     /// - Parameters:
@@ -455,12 +373,12 @@
     ///     store after processing the given action. Do not provide a closure if no change is
     ///     expected.
     public func receive(
-      _ expectedAction: Action,
+      _ expectedAction: Reducer.Action,
       _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) {
-      guard !self.receivedActions.isEmpty else {
+      guard !self._reducer.receivedActions.isEmpty else {
         XCTFail(
           """
           Expected to receive an action, but received none.
@@ -469,7 +387,7 @@
         )
         return
       }
-      let (receivedAction, state) = self.receivedActions.removeFirst()
+      let (receivedAction, state) = self._reducer.receivedActions.removeFirst()
       if expectedAction != receivedAction {
         let difference =
           diff(expectedAction, receivedAction, format: .proportional)
@@ -488,10 +406,11 @@
 
           \(difference)
           """,
-          file: file, line: line
+          file: file,
+          line: line
         )
       }
-      var expectedState = self.toLocalState(self.state)
+      var expectedState = self.toLocalState(self._reducer.state)
       do {
         try expectedStateShouldMatch(
           expected: &expectedState,
@@ -503,30 +422,38 @@
       } catch {
         XCTFail("Threw error: \(error)", file: file, line: line)
       }
-      self.state = state
+      self._reducer.state = state
       if "\(self.file)" == "\(file)" {
         self.line = line
       }
     }
 
+    /// Asserts an action was received from an effect and asserts when state changes.
+    ///
+    /// - Parameters:
+    ///   - expectedAction: An action expected from an effect.
+    ///   - updateExpectingResult: A closure that asserts state changed by sending the action to the
+    ///     store. The mutable state sent to this closure must be modified to match the state of the
+    ///     store after processing the given action. Do not provide a closure if no change is
+    ///     expected.
     public func receive(
-      _ expectedAction: Action,
+      _ expectedAction: Reducer.Action,
       timeout nanoseconds: UInt64 = NSEC_PER_SEC,  // TODO: Better default? Remove default?
+      _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString = #file,
-      line: UInt = #line,
-      _ update: ((inout LocalState) throws -> Void)? = nil
+      line: UInt = #line
     ) async {
       await withTaskGroup(of: Void.self) { group in
         _ = group.addTaskUnlessCancelled { @MainActor in
           while !Task.isCancelled {
-            guard self.receivedActions.isEmpty
+            guard self._reducer.receivedActions.isEmpty
             else { break }
             await Task.yield()
           }
           guard !Task.isCancelled
           else { return }
 
-          { self.receive(expectedAction, update, file: file, line: line) }()
+          { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
         }
 
         _ = group.addTaskUnlessCancelled { @MainActor in
@@ -536,7 +463,7 @@
           else { return }
 
           let suggestion: String
-          if self.inFlightEffects.isEmpty {
+          if self._reducer.inFlightEffects.isEmpty {
             suggestion = """
               There are no in-flight effects that could deliver this action. Could the effect you \
               expected to deliver this action have been cancelled?
@@ -573,52 +500,11 @@
     }
   }
 
-  extension TestStore {
-    /// Scopes a store to assert against more local state and actions.
-    ///
-    /// Useful for testing view store-specific state and actions.
-    ///
-    /// - Parameters:
-    ///   - toLocalState: A function that transforms the reducer's state into more local state. This
-    ///     state will be asserted against as it is mutated by the reducer. Useful for testing view
-    ///     store state transformations.
-    ///   - fromLocalAction: A function that wraps a more local action in the reducer's action.
-    ///     Local actions can be "sent" to the store, while any reducer action may be received.
-    ///     Useful for testing view store action transformations.
-    public func scope<S, A>(
-      state toLocalState: @escaping (LocalState) -> S,
-      action fromLocalAction: @escaping (A) -> LocalAction
-    ) -> TestStore<State, S, Action, A, Environment> {
-      .init(
-        environment: self.environment,
-        file: self.file,
-        fromLocalAction: { self.fromLocalAction(fromLocalAction($0)) },
-        initialState: self.store.state.value,
-        line: self.line,
-        reducer: self.reducer,
-        toLocalState: { toLocalState(self.toLocalState($0)) }
-      )
-    }
-
-    /// Scopes a store to assert against more local state.
-    ///
-    /// Useful for testing view store-specific state.
-    ///
-    /// - Parameter toLocalState: A function that transforms the reducer's state into more local
-    ///   state. This state will be asserted against as it is mutated by the reducer. Useful for
-    ///   testing view store state transformations.
-    public func scope<S>(
-      state toLocalState: @escaping (LocalState) -> S
-    ) -> TestStore<State, S, Action, LocalAction, Environment> {
-      self.scope(state: toLocalState, action: { $0 })
-    }
-  }
-
-  /// The type returned from ``TestStore/send(_:_:file:line:)`` that represents the lifecycle
-  /// of the effect started from sending an action.
+  /// The type returned from ``TestStore/send(_:_:file:line:)`` that represents the lifecycle of the
+  /// effect started from sending an action.
   ///
-  /// You can use this value in tests to cancel the effect started from sending an action, or
-  /// to await until the effect finishes.
+  /// You can use this value in tests to cancel the effect started from sending an action, or to
+  /// await for the effect to finish.
   public struct TestTask {
     let task: Task<Void, Never>
 
@@ -651,6 +537,160 @@
           line: line
         )
       }
+    }
+  }
+
+  class TestReducer<Upstream>: ReducerProtocol where Upstream: ReducerProtocol {
+    let upstream: Upstream
+    var inFlightEffects: Set<LongLivingEffect> = []
+    var receivedActions: [(action: Upstream.Action, state: Upstream.State)] = []
+    var state: Upstream.State
+
+    init(
+      _ upstream: Upstream,
+      initialState: Upstream.State
+    ) {
+      self.upstream = upstream
+      self.state = initialState
+    }
+
+    func reduce(into state: inout Upstream.State, action: TestAction) -> Effect<TestAction, Never> {
+      let reducer = self.upstream
+        .dependency(\.isTesting, true)
+
+      let effects: Effect<Upstream.Action, Never>
+      switch action.origin {
+      case let .send(action):
+        effects = reducer.reduce(into: &state, action: action)
+        self.state = state
+
+      case let .receive(action):
+        effects = reducer.reduce(into: &state, action: action)
+        self.receivedActions.append((action, state))
+      }
+
+      let effect = LongLivingEffect(file: action.file, line: action.line)
+      return
+        effects
+        .handleEvents(
+          receiveSubscription: { [weak self] _ in self?.inFlightEffects.insert(effect) },
+          receiveCompletion: { [weak self] _ in self?.inFlightEffects.remove(effect) },
+          receiveCancel: { [weak self] in self?.inFlightEffects.remove(effect) }
+        )
+        .map { .init(origin: .receive($0), file: action.file, line: action.line) }
+        .eraseToEffect()
+    }
+
+    struct LongLivingEffect: Hashable {
+      let id = UUID()
+      let file: StaticString
+      let line: UInt
+
+      static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.id == rhs.id
+      }
+
+      func hash(into hasher: inout Hasher) {
+        self.id.hash(into: &hasher)
+      }
+    }
+
+    struct TestAction {
+      let origin: Origin
+      let file: StaticString
+      let line: UInt
+
+      enum Origin {
+        case send(Upstream.Action)
+        case receive(Upstream.Action)
+      }
+    }
+  }
+
+  private func expectedStateShouldMatch<State: Equatable>(
+    expected: inout State,
+    actual: State,
+    modify: ((inout State) throws -> Void)? = nil,
+    file: StaticString,
+    line: UInt
+  ) throws {
+    guard let modify = modify else { return }
+    let current = expected
+    try modify(&expected)
+
+    if expected != actual {
+      let difference =
+      diff(expected, actual, format: .proportional)
+        .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
+      ?? """
+          Expected:
+          \(String(describing: expected).indent(by: 2))
+
+          Actual:
+          \(String(describing: actual).indent(by: 2))
+          """
+
+      XCTFail(
+        """
+        A state change does not match expectation: …
+
+        \(difference)
+        """,
+        file: file,
+        line: line
+      )
+    } else if expected == current {
+      XCTFail(
+        """
+        Expected state to change, but no change occurred.
+
+        The trailing closure made no observable modifications to state. If no change to state is \
+        expected, omit the trailing closure.
+        """,
+        file: file,
+        line: line
+      )
+    }
+  }
+
+  extension TestStore {
+    /// Scopes a store to assert against more local state and actions.
+    ///
+    /// Useful for testing view store-specific state and actions.
+    ///
+    /// - Parameters:
+    ///   - toLocalState: A function that transforms the reducer's state into more local state. This
+    ///     state will be asserted against as it is mutated by the reducer. Useful for testing view
+    ///     store state transformations.
+    ///   - fromLocalAction: A function that wraps a more local action in the reducer's action.
+    ///     Local actions can be "sent" to the store, while any reducer action may be received.
+    ///     Useful for testing view store action transformations.
+    public func scope<S, A>(
+      state toLocalState: @escaping (LocalState) -> S,
+      action fromLocalAction: @escaping (A) -> LocalAction
+    ) -> TestStore<Reducer, S, A, Environment> {
+      .init(
+        _environment: self._environment,
+        file: self.file,
+        fromLocalAction: { self.fromLocalAction(fromLocalAction($0)) },
+        line: self.line,
+        reducer: self._reducer,
+        store: self.store,
+        toLocalState: { toLocalState(self.toLocalState($0)) }
+      )
+    }
+
+    /// Scopes a store to assert against more local state.
+    ///
+    /// Useful for testing view store-specific state.
+    ///
+    /// - Parameter toLocalState: A function that transforms the reducer's state into more local
+    ///   state. This state will be asserted against as it is mutated by the reducer. Useful for
+    ///   testing view store state transformations.
+    public func scope<S>(
+      state toLocalState: @escaping (LocalState) -> S
+    ) -> TestStore<Reducer, S, LocalAction, Environment> {
+      self.scope(state: toLocalState, action: { $0 })
     }
   }
 #endif

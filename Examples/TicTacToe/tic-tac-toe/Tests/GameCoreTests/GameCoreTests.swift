@@ -3,7 +3,7 @@ import GameCore
 import XCTest
 
 class GameCoreTests: XCTestCase {
-  let store = _TestStore(
+  let store = TestStore(
     initialState: .init(
       oPlayerName: "Blob Jr.",
       xPlayerName: "Blob Sr."

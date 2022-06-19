@@ -9,7 +9,7 @@ class AnimationTests: XCTestCase {
   func testRainbow() async {
     let mainQueue = DispatchQueue.test
 
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: Animations()
         .dependency(\.mainQueue, mainQueue.eraseToAnyScheduler())

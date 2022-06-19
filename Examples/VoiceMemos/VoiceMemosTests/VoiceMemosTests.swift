@@ -15,7 +15,7 @@ class VoiceMemosTests: XCTestCase {
     // TODO: CancellableAsyncValue instead of AsyncStream with first?
     let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
 
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: VoiceMemos()
         .dependency(\.audioRecorder.currentTime) { 2.5 }
@@ -75,7 +75,7 @@ class VoiceMemosTests: XCTestCase {
   func testPermissionDenied() async {
     let didOpenSettings = SendableState(false)
 
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: VoiceMemos()
         .dependency(\.audioRecorder.requestRecordPermission) { false }
@@ -99,7 +99,7 @@ class VoiceMemosTests: XCTestCase {
   func testRecordMemoFailure() async {
     let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
 
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(),
       reducer: VoiceMemos()
         .dependency(\.audioRecorder.currentTime) { 2.5 }
@@ -132,7 +132,7 @@ class VoiceMemosTests: XCTestCase {
 
   func testPlayMemoHappyPath() async {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(
         voiceMemos: [
           .init(
@@ -171,7 +171,7 @@ class VoiceMemosTests: XCTestCase {
 
   func testPlayMemoFailure() async {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(
         voiceMemos: [
           .init(
@@ -204,7 +204,7 @@ class VoiceMemosTests: XCTestCase {
 
   func testStopMemo() {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(
         voiceMemos: [
           .init(
@@ -226,7 +226,7 @@ class VoiceMemosTests: XCTestCase {
 
   func testDeleteMemo() {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(
         voiceMemos: [
           .init(
@@ -248,7 +248,7 @@ class VoiceMemosTests: XCTestCase {
 
   func testDeleteMemoWhilePlaying() {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(
         voiceMemos: [
           .init(

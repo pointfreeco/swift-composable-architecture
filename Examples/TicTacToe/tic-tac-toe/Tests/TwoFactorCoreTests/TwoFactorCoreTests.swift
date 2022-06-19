@@ -6,7 +6,7 @@ import XCTest
 @MainActor
 class TwoFactorCoreTests: XCTestCase {
   func testFlow_Success() async {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(token: "deadbeefdeadbeef"),
       reducer: TwoFactor(tearDownToken: Never.self)
         .dependency(\.mainQueue, .immediate)
@@ -39,7 +39,7 @@ class TwoFactorCoreTests: XCTestCase {
   }
 
   func testFlow_Failure() async {
-    let store = _TestStore(
+    let store = TestStore(
       initialState: .init(token: "deadbeefdeadbeef"),
       reducer: TwoFactor(tearDownToken: Never.self)
         .dependency(\.mainQueue, .immediate)

@@ -333,7 +333,7 @@ final class EffectCancellationTests: XCTestCase {
   }
 
   func testNavigationCancellation() {
-//    let store = _TestStore(
+//    let store = TestStore(
 //      initialState: <#T##_.State#>,
 //      reducer: Reduce<Int, Action>
 //    )
