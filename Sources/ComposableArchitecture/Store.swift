@@ -426,105 +426,104 @@ public final class Store<State, Action> {
     #endif
   }
 
-  @inline(__always)
-  private func threadCheck(event: Event) {
-    #if DEBUG
-      guard self.mainThreadChecksEnabled && !Thread.isMainThread
-      else { return }
-
-      switch event {
-      case let .effectCompletion(action):
-        runtimeWarning(
-          """
-          An effect completed on a non-main thread. …
-
-            Effect returned from:
-              %@
-
-          Make sure to use ".receive(on:)" on any effects that execute on background threads to \
-          receive their output on the main thread, or create your store via "Store.unchecked" to \
-          opt out of the main thread checker.
-
-          The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the same \
-          thread.
-          """,
-          [debugCaseOutput(action)]
-        )
-
-      case .`init`:
-        runtimeWarning(
-          """
-          A store initialized on a non-main thread. …
-
-          If a store is intended to be used on a background thread, create it via \
-          "Store.unchecked" to opt out of the main thread checker.
-
-          The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the same \
-          thread.
-          """
-        )
-
-      case .scope:
-        runtimeWarning(
-          """
-          "Store.scope" was called on a non-main thread. …
-
-          Make sure to use "Store.scope" on the main thread, or create your store via \
-          "Store.unchecked" to opt out of the main thread checker.
-
-          The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the same \
-          thread.
-          """
-        )
-
-      case let .send(action, originatingAction: nil):
-        runtimeWarning(
-          """
-          "ViewStore.send" was called on a non-main thread with: %@ …
-
-          Make sure that "ViewStore.send" is always called on the main thread, or create your \
-          store via "Store.unchecked" to opt out of the main thread checker.
-
-          The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the same \
-          thread.
-          """,
-          [debugCaseOutput(action)]
-        )
-
-      case let .send(action, originatingAction: .some(originatingAction)):
-        runtimeWarning(
-          """
-          An effect published an action on a non-main thread. …
-
-            Effect published:
-              %@
-
-            Effect returned from:
-              %@
-
-          Make sure to use ".receive(on:)" on any effects that execute on background threads to \
-          receive their output on the main thread, or create this store via "Store.unchecked" to \
-          disable the main thread checker.
-
-          The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the same \
-          thread.
-          """,
-          [
-            debugCaseOutput(action),
-            debugCaseOutput(originatingAction),
-          ]
-        )
-      }
-    #endif
-  }
-  
-  private func stackCheck(event: Event) {
   #if DEBUG
+  private func threadCheck(event: Event) {
+    guard self.mainThreadChecksEnabled && !Thread.isMainThread
+    else { return }
+
+    switch event {
+    case let .effectCompletion(action):
+      runtimeWarning(
+        """
+        An effect completed on a non-main thread. …
+
+          Effect returned from:
+            %@
+
+        Make sure to use ".receive(on:)" on any effects that execute on background threads to \
+        receive their output on the main thread, or create your store via "Store.unchecked" to \
+        opt out of the main thread checker.
+
+        The "Store" class is not thread-safe, and so all interactions with an instance of \
+        "Store" (including all of its scopes and derived view stores) must be done on the same \
+        thread.
+        """,
+        [debugCaseOutput(action)]
+      )
+
+    case .`init`:
+      runtimeWarning(
+        """
+        A store initialized on a non-main thread. …
+
+        If a store is intended to be used on a background thread, create it via \
+        "Store.unchecked" to opt out of the main thread checker.
+
+        The "Store" class is not thread-safe, and so all interactions with an instance of \
+        "Store" (including all of its scopes and derived view stores) must be done on the same \
+        thread.
+        """
+      )
+
+    case .scope:
+      runtimeWarning(
+        """
+        "Store.scope" was called on a non-main thread. …
+
+        Make sure to use "Store.scope" on the main thread, or create your store via \
+        "Store.unchecked" to opt out of the main thread checker.
+
+        The "Store" class is not thread-safe, and so all interactions with an instance of \
+        "Store" (including all of its scopes and derived view stores) must be done on the same \
+        thread.
+        """
+      )
+
+    case let .send(action, originatingAction: nil):
+      runtimeWarning(
+        """
+        "ViewStore.send" was called on a non-main thread with: %@ …
+
+        Make sure that "ViewStore.send" is always called on the main thread, or create your \
+        store via "Store.unchecked" to opt out of the main thread checker.
+
+        The "Store" class is not thread-safe, and so all interactions with an instance of \
+        "Store" (including all of its scopes and derived view stores) must be done on the same \
+        thread.
+        """,
+        [debugCaseOutput(action)]
+      )
+
+    case let .send(action, originatingAction: .some(originatingAction)):
+      runtimeWarning(
+        """
+        An effect published an action on a non-main thread. …
+
+          Effect published:
+            %@
+
+          Effect returned from:
+            %@
+
+        Make sure to use ".receive(on:)" on any effects that execute on background threads to \
+        receive their output on the main thread, or create this store via "Store.unchecked" to \
+        disable the main thread checker.
+
+        The "Store" class is not thread-safe, and so all interactions with an instance of \
+        "Store" (including all of its scopes and derived view stores) must be done on the same \
+        thread.
+        """,
+        [
+          debugCaseOutput(action),
+          debugCaseOutput(originatingAction),
+        ]
+      )
+    }
+  }
+  #endif
+  
+  #if DEBUG
+  private func stackCheck(event: Event) {
     guard self.stackChecksEnabled else { return }
     // Disable in scoped stores
     guard self.parentCancellable == nil else { return }
@@ -544,44 +543,44 @@ public final class Store<State, Action> {
     }
     
     runtimeWarning(
-    """
-    The thread's stack depth is reaching %@ of its capacity. …
-    
-      Stack size:
-        %@
-    
-      Used stack memory:
-        %@
-    
-      Available stack memory:
-        %@
-    
-      Size on the stack of the State managed by this store:
-        %@
-    
-    If the stack deepens more, it risks to overflow and the app will crash.
-        
-    The state that this store manages is occupying %@ bytes on the stack. If this value is \
-    too large with respect to the stack size and your app logic, you can relocate some of its \
-    properties on the heap. If a property is a value type, you can try to "box" it into a \
-    reference type. One way to achieve this is using a dedicated property wrapper (See \
-    "https://github.com/apple/swift/blob/main/docs/OptimizationTips.rst\
-    #advice-use-copy-on-write-semantics-for-large-values" for example). If the property is an \
-    "enum", you can simply mark it as "indirect", producing the same effect.
-    
-    "Array", "Set", "Dictionary" or "IdentifiedArray" are already storing their content on the heap.
-    """,
-    [
-      String(format: "%.0f%%", status.usedFraction * 100),
-      "\(status.stackSize)",
-      "\(status.used)",
-      "\(status.available)",
-      "\(MemoryLayout<State>.size)",
-      "\(MemoryLayout<State>.size)"
-    ]
+      """
+      The thread's stack depth is reaching %@ of its capacity. …
+      
+        Stack size:
+          %@
+      
+        Used stack memory:
+          %@
+      
+        Available stack memory:
+          %@
+      
+        Size on the stack of the State managed by this store:
+          %@
+      
+      If the stack deepens more, it risks to overflow and the app will crash.
+          
+      The state that this store manages is occupying %@ bytes on the stack. If this value is \
+      too large with respect to the stack size and your app logic, you can relocate some of its \
+      properties on the heap. If a property is a value type, you can try to "box" it into a \
+      reference type. One way to achieve this is using a dedicated property wrapper (See \
+      "https://github.com/apple/swift/blob/main/docs/OptimizationTips.rst\
+      #advice-use-copy-on-write-semantics-for-large-values" for example). If the property is an \
+      "enum", you can simply mark it as "indirect", producing the same effect.
+      
+      "Array", "Set", "Dictionary" or "IdentifiedArray" are already storing their content on the heap.
+      """,
+      [
+        String(format: "%.0f%%", status.usedFraction * 100),
+        "\(status.stackSize)",
+        "\(status.used)",
+        "\(status.available)",
+        "\(MemoryLayout<State>.size)",
+        "\(MemoryLayout<State>.size)"
+      ]
     )
-  #endif
   }
+  #endif
 
   private init<Environment>(
     initialState: State,
