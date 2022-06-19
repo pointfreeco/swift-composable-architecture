@@ -46,11 +46,6 @@ public struct AppReducer: ReducerProtocol {
       Login()
     }
 
-    self.core
-      .navigationDestination { self.destinations }
-  }
-
-  var core: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
       case let .login(.loginResponse(.success(response))):
@@ -87,27 +82,25 @@ public struct AppReducer: ReducerProtocol {
         return .none
       }
     }
-  }
-
-  @ReducerBuilder<DestinationState, DestinationAction>
-  var destinations: some ReducerProtocol<DestinationState, DestinationAction> {
-    PullbackCase(
-      state: CasePath(DestinationState.twoFactor),
-      action: CasePath(DestinationAction.twoFactor)
-    ) {
-      TwoFactor()
-    }
-    PullbackCase(
-      state: CasePath(DestinationState.newGame),
-      action: CasePath(DestinationAction.newGame)
-    ) {
-      NewGame()
-    }
-    PullbackCase(
-      state: CasePath(DestinationState.game),
-      action: CasePath(DestinationAction.game)
-    ) {
-      Game()
+    .navigationDestination {
+      PullbackCase(
+        state: CasePath(DestinationState.twoFactor),
+        action: CasePath(DestinationAction.twoFactor)
+      ) {
+        TwoFactor()
+      }
+      PullbackCase(
+        state: CasePath(DestinationState.newGame),
+        action: CasePath(DestinationAction.newGame)
+      ) {
+        NewGame()
+      }
+      PullbackCase(
+        state: CasePath(DestinationState.game),
+        action: CasePath(DestinationAction.game)
+      ) {
+        Game()
+      }
     }
   }
 }
