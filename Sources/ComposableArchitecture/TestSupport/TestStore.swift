@@ -159,7 +159,7 @@
   /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
   /// not expect it would cause a test failure.
   ///
-  public final class TestStore<State, LocalState, Action, LocalAction, Environment> {
+public final class TestStore<Reducer: ReducerProtocol, LocalState, LocalAction, Environment> {
     /// The current environment.
     ///
     /// The environment can be modified throughout a test store's lifecycle in order to influence
@@ -173,35 +173,30 @@
     ///
     /// When read from a trailing closure assertion in ``send(_:_:file:line:)`` or
     /// ``receive(_:_:file:line:)``, it will equal the `inout` state passed to the closure.
-    public var state: State {
+    public var state: Reducer.State {
       self.reducer.state
     }
 
     private var _environment: Box<Environment>
     private let file: StaticString
-    private let fromLocalAction: (LocalAction) -> Action
+    private let fromLocalAction: (LocalAction) -> Reducer.Action
     private var line: UInt
-    let reducer: TestReducer<Reduce<State, Action>>
-    private var store: Store<State, TestReducer<Reduce<State, Action>>.TestAction>!
-    private let toLocalState: (State) -> LocalState
+    let reducer: TestReducer<Reducer>
+    private var store: Store<Reducer.State, TestReducer<Reducer>.TestAction>!
+    private let toLocalState: (Reducer.State) -> LocalState
 
-    public init<R: ReducerProtocol>(
-      initialState: State,
-      reducer: R,
+    public init(
+      initialState: Reducer.State,
+      reducer: Reducer,
       file: StaticString = #file,
       line: UInt = #line
     )
     where
-      R.State == State,
-      R.Action == Action,
-      State == LocalState,
-      Action == LocalAction,
+      Reducer.State == LocalState,
+      Reducer.Action == LocalAction,
       Environment == Void
     {
-      let reducer = TestReducer(
-        Reduce(reducer.dependency(\.isTesting, true)),
-        initialState: initialState
-      )
+      let reducer = TestReducer(reducer, initialState: initialState)
       self.reducer = reducer
       self.store = Store(initialState: initialState, reducer: reducer)
       self.toLocalState = { $0 }
@@ -218,15 +213,14 @@
     ///   - reducer: A reducer.
     ///   - environment: The environment to start the test from.
     public init(
-      initialState: State,
-      reducer: Reducer<State, Action, Environment>,
+      initialState: LocalState,
+      reducer: ComposableArchitecture.Reducer<LocalState, LocalAction, Environment>,
       environment: Environment,
       file: StaticString = #file,
       line: UInt = #line
     )
     where
-      State == LocalState,
-      Action == LocalAction
+      Reducer == Reduce<LocalState, LocalAction>
     {
       let environment = Box(wrappedValue: environment)
       let reducer = TestReducer(
@@ -248,11 +242,11 @@
     private init(
       _environment: Box<Environment>,
       file: StaticString,
-      fromLocalAction: @escaping (LocalAction) -> Action,
+      fromLocalAction: @escaping (LocalAction) -> Reducer.Action,
       line: UInt,
-      reducer: TestReducer<Reduce<State, Action>>,
-      store: Store<State, TestReducer<Reduce<State, Action>>.TestAction>,
-      toLocalState: @escaping (State) -> LocalState
+      reducer: TestReducer<Reducer>,
+      store: Store<Reducer.State, TestReducer<Reducer>.TestAction>,
+      toLocalState: @escaping (Reducer.State) -> LocalState
     ) {
       self._environment = _environment
       self.file = file
@@ -334,7 +328,8 @@
 
           Unhandled actions: \(actions)
           """,
-          file: file, line: line
+          file: file,
+          line: line
         )
       }
       var expectedState = self.toLocalState(self.reducer.state)
@@ -364,7 +359,7 @@
     }
   }
 
-  extension TestStore where LocalState: Equatable, Action: Equatable {
+  extension TestStore where LocalState: Equatable, Reducer.Action: Equatable {
     /// Asserts an action was received from an effect and asserts when state changes.
     ///
     /// - Parameters:
@@ -374,7 +369,7 @@
     ///     store after processing the given action. Do not provide a closure if no change is
     ///     expected.
     public func receive(
-      _ expectedAction: Action,
+      _ expectedAction: Reducer.Action,
       _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
@@ -407,7 +402,8 @@
 
           \(difference)
           """,
-          file: file, line: line
+          file: file,
+          line: line
         )
       }
       var expectedState = self.toLocalState(self.reducer.state)
@@ -437,7 +433,7 @@
     ///     store after processing the given action. Do not provide a closure if no change is
     ///     expected.
     public func receive(
-      _ expectedAction: Action,
+      _ expectedAction: Reducer.Action,
       timeout nanoseconds: UInt64 = NSEC_PER_SEC,  // TODO: Better default? Remove default?
       _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString = #file,
@@ -530,11 +526,11 @@
         }
       } catch {
         XCTFail(
-            """
-            Expected task to finish, but it is still in-flight
-            """,
-            file: file,
-            line: line
+          """
+          Expected task to finish, but it is still in-flight
+          """,
+          file: file,
+          line: line
         )
       }
     }
@@ -555,14 +551,17 @@
     }
 
     func reduce(into state: inout Upstream.State, action: TestAction) -> Effect<TestAction, Never> {
+      let reducer = self.upstream
+        .dependency(\.isTesting, true)
+
       let effects: Effect<Upstream.Action, Never>
       switch action.origin {
       case let .send(action):
-        effects = self.upstream.reduce(into: &state, action: action)
+        effects = reducer.reduce(into: &state, action: action)
         self.state = state
 
       case let .receive(action):
-        effects = self.upstream.reduce(into: &state, action: action)
+        effects = reducer.reduce(into: &state, action: action)
         self.receivedActions.append((action, state))
       }
 
@@ -628,23 +627,24 @@
           """
 
       XCTFail(
-          """
-          A state change does not match expectation: …
+        """
+        A state change does not match expectation: …
 
-          \(difference)
-          """,
-          file: file,
-          line: line
+        \(difference)
+        """,
+        file: file,
+        line: line
       )
     } else if expected == current {
       XCTFail(
-          """
-          Expected state to change, but no change occurred.
+        """
+        Expected state to change, but no change occurred.
 
-          The trailing closure made no observable modifications to state. If no change to state is \
-          expected, omit the trailing closure.
-          """,
-          file: file, line: line
+        The trailing closure made no observable modifications to state. If no change to state is \
+        expected, omit the trailing closure.
+        """,
+        file: file,
+        line: line
       )
     }
   }
@@ -664,7 +664,7 @@
     public func scope<S, A>(
       state toLocalState: @escaping (LocalState) -> S,
       action fromLocalAction: @escaping (A) -> LocalAction
-    ) -> TestStore<State, S, Action, A, Environment> {
+    ) -> TestStore<Reducer, S, A, Environment> {
       .init(
         _environment: self._environment,
         file: self.file,
@@ -685,7 +685,7 @@
     ///   testing view store state transformations.
     public func scope<S>(
       state toLocalState: @escaping (LocalState) -> S
-    ) -> TestStore<State, S, Action, LocalAction, Environment> {
+    ) -> TestStore<Reducer, S, LocalAction, Environment> {
       self.scope(state: toLocalState, action: { $0 })
     }
   }

@@ -139,7 +139,7 @@ extension Reducer {
 // NB: Deprecated after 0.29.0:
 
 #if DEBUG
-  extension TestStore where LocalState: Equatable, Action: Equatable {
+  extension TestStore where LocalState: Equatable, Reducer.Action: Equatable {
     @available(
       *, deprecated, message: "Use 'TestStore.send' and 'TestStore.receive' directly, instead"
     )
@@ -245,7 +245,7 @@ extension Reducer {
 
       @available(*, deprecated, message: "Call 'TestStore.receive' directly, instead")
       public static func receive(
-        _ action: Action,
+        _ action: Reducer.Action,
         file: StaticString = #file,
         line: UInt = #line,
         _ update: @escaping (inout LocalState) throws -> Void = { _ in }
@@ -291,7 +291,7 @@ extension Reducer {
 
       fileprivate indirect enum StepType {
         case send(LocalAction, (inout LocalState) throws -> Void)
-        case receive(Action, (inout LocalState) throws -> Void)
+        case receive(Reducer.Action, (inout LocalState) throws -> Void)
         case environment((inout Environment) throws -> Void)
         case `do`(() throws -> Void)
         case sequence([Step])
