@@ -7,7 +7,6 @@ struct StackStatus {
 
   init() {
     let thread = pthread_self()
-    let stackSize = UInt(pthread_get_stacksize_np(thread))
     let stackAddress = UInt(bitPattern: pthread_get_stackaddr_np(thread))
     var used: UInt = 0
     withUnsafeMutablePointer(to: &used) {
@@ -19,7 +18,7 @@ struct StackStatus {
         ? stackAddress - pointerAddress
         : pointerAddress - stackAddress
     }
-    self.stackSize = stackSize
+    self.stackSize = UInt(pthread_get_stacksize_np(thread))
     self.used = used
   }
 }
