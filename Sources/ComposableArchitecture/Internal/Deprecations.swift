@@ -205,7 +205,7 @@ extension Reducer {
         _ action: LocalAction,
         file: StaticString = #file,
         line: UInt = #line,
-        _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+        _ update: ((inout LocalState) throws -> Void)? = nil
       ) -> Step {
         Step(.send(action, update), file: file, line: line)
       }
@@ -215,7 +215,7 @@ extension Reducer {
         _ action: Action,
         file: StaticString = #file,
         line: UInt = #line,
-        _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+        _ update: ((inout LocalState) throws -> Void)? = nil
       ) -> Step {
         Step(.receive(action, update), file: file, line: line)
       }
@@ -257,8 +257,8 @@ extension Reducer {
       }
 
       fileprivate indirect enum StepType {
-        case send(LocalAction, (inout LocalState) throws -> Void)
-        case receive(Action, (inout LocalState) throws -> Void)
+        case send(LocalAction, ((inout LocalState) throws -> Void)?)
+        case receive(Action, ((inout LocalState) throws -> Void)?)
         case environment((inout Environment) throws -> Void)
         case `do`(() throws -> Void)
         case sequence([Step])
