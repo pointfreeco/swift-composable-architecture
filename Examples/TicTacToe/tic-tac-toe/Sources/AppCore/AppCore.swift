@@ -20,11 +20,11 @@ public struct AppReducer: ReducerProtocol {
   public init() {}
 
   public var body: some ReducerProtocol<State, Action> {
-    PullbackCase(state: /State.login, action: /Action.login) {
+    ScopeCase(state: /State.login, action: /Action.login) {
       Login()
     }
 
-    PullbackCase(state: /State.newGame, action: /Action.newGame) {
+    ScopeCase(state: /State.newGame, action: /Action.newGame) {
       NewGame()
     }
 
