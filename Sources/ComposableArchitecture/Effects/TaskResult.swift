@@ -158,27 +158,3 @@ extension TaskResult: Hashable where Success: Hashable {
     }
   }
 }
-
-private enum _Witness<A> {}
-
-private protocol _AnyEquatable {
-  static func _isEqual(_ lhs: Any, _ rhs: Any) -> Bool
-}
-
-extension _Witness: _AnyEquatable where A: Equatable {
-  static func _isEqual(_ lhs: Any, _ rhs: Any) -> Bool {
-    guard
-      let lhs = lhs as? A,
-      let rhs = rhs as? A
-    else { return false }
-    return lhs == rhs
-  }
-}
-
-private func _isEqual(_ a: Any, _ b: Any) -> Bool? {
-  func `do`<A>(_: A.Type) -> Bool? {
-    (_Witness<A>.self as? _AnyEquatable.Type)?._isEqual(a, b)
-  }
-  return _openExistential(type(of: a), do: `do`)
-}
-
