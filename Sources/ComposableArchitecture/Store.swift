@@ -143,43 +143,19 @@ public final class Store<State, Action> {
     private let mainThreadChecksEnabled: Bool
   #endif
 
-  /// Initializes a store from an initial state, a reducer, and an environment.
+  /// Initializes a store from an initial state and a reducer.
   ///
   /// - Parameters:
   ///   - initialState: The state to start the application in.
   ///   - reducer: The reducer that powers the business logic of the application.
-  ///   - environment: The environment of dependencies for the application.
-  public convenience init<Environment>(
-    initialState: State,
-    reducer: Reducer<State, Action, Environment>,
-    environment: Environment
-  ) {
+  public convenience init<R: ReducerProtocol>(
+    initialState: R.State,
+    reducer: R
+  ) where R.State == State, R.Action == Action {
     self.init(
       initialState: initialState,
       reducer: reducer,
-      environment: environment,
       mainThreadChecksEnabled: true
-    )
-    self.threadCheck(status: .`init`)
-  }
-
-  /// Initializes a store from an initial state, a reducer, and an environment, and the main thread
-  /// check is disabled for all interactions with this store.
-  ///
-  /// - Parameters:
-  ///   - initialState: The state to start the application in.
-  ///   - reducer: The reducer that powers the business logic of the application.
-  ///   - environment: The environment of dependencies for the application.
-  public static func unchecked<Environment>(
-    initialState: State,
-    reducer: Reducer<State, Action, Environment>,
-    environment: Environment
-  ) -> Self {
-    Self(
-      initialState: initialState,
-      reducer: reducer,
-      environment: environment,
-      mainThreadChecksEnabled: false
     )
   }
 
@@ -549,18 +525,17 @@ public final class Store<State, Action> {
     #endif
   }
 
-  private init<Environment>(
-    initialState: State,
-    reducer: Reducer<State, Action, Environment>,
-    environment: Environment,
+  init<R: ReducerProtocol>(
+    initialState: R.State,
+    reducer: R,
     mainThreadChecksEnabled: Bool
-  ) {
+  ) where R.State == State, R.Action == Action {
     self.state = CurrentValueSubject(initialState)
-    self.reducer = { state, action in reducer.run(&state, action, environment) }
-
+    self.reducer = reducer.reduce
     #if DEBUG
       self.mainThreadChecksEnabled = mainThreadChecksEnabled
     #endif
+    self.threadCheck(status: .`init`)
   }
 }
 
