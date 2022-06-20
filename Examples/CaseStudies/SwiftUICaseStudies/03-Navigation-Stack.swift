@@ -35,8 +35,8 @@ struct NavigationDemo: ReducerProtocol {
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
-      case let .goBackToScreen(index):
-        state.path = state.path.dropLast(index)
+      case let .goBackToScreen(n):
+        state.path.removeLast(n)
         return .none
 
       case .goToABCButtonTapped:
@@ -46,7 +46,7 @@ struct NavigationDemo: ReducerProtocol {
         return .none
 
       case .shuffleButtonTapped:
-        state.path = NavigationState(path: .init(uniqueElements: state.path.shuffled()))
+        state.path.shuffle()
         return .none
 
       case .navigation(.element(id: _, .screenB(.screenAButtonTapped))):

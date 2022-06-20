@@ -9,8 +9,8 @@ public struct NavigationState<Element>:
 {
   public typealias ID = AnyHashable
 
-  public struct Route: Identifiable {
-    public var id: AnyHashable
+  public struct Destination: Identifiable {
+    public var id: ID
     public var element: Element
 
     public init(id: ID, element: Element) {
@@ -19,15 +19,9 @@ public struct NavigationState<Element>:
     }
   }
 
-  public init() {
-  }
+  public init() {}
 
-  public init(path: IdentifiedArrayOf<Route>) {
-    self.path = path
-  }
-
-  // TODO: replace IdentifiedArray with OrderedDictionary?
-  var path = IdentifiedArrayOf<Route>()
+  var path = IdentifiedArrayOf<Destination>()
 
   public var startIndex: Int {
     self.path.startIndex
@@ -41,17 +35,20 @@ public struct NavigationState<Element>:
     self.path.index(after: i)
   }
 
-  public subscript(position: Int) -> Route {
+  public subscript(position: Int) -> Destination {
     _read { yield self.path[position] }
     _modify {
       var element = self.path[position]
       yield &element
       self.path.update(element, at: position)
     }
+    set {
+      self.path.update(newValue, at: position)
+    }
   }
 
   public mutating func replaceSubrange<C>(_ subrange: Range<Int>, with newElements: C)
-  where C: Collection, Route == C.Element {
+  where C: Collection, Destination == C.Element {
     self.path.removeSubrange(subrange)
     for element in newElements.reversed() {
       self.path.insert(element, at: subrange.startIndex)
@@ -59,41 +56,32 @@ public struct NavigationState<Element>:
   }
 
   public subscript(id id: ID) -> Element? {
-    get {
-      self.path[id: id]?.element
+    _read { yield self.path[id: id]?.element }
+    _modify {
+      var element = self.path[id: id]?.element
+      yield &element
+      self.path[id: id] = element.map { .init(id: id, element: $0) }
     }
     set {
-      if let newValue = newValue {
-        self.path[id: id] = .init(id: id, element: newValue)
-      }
+      self.path[id: id] = newValue.map { .init(id: id, element: $0) }
     }
-  }
-
-  // TODO: more of these?
-  public func dropLast(_ k: Int = 1) -> Self {
-    .init(path: .init(uniqueElements: self.path.dropLast(k)))
   }
 }
 
 extension NavigationState: ExpressibleByDictionaryLiteral {
   public init(dictionaryLiteral elements: (ID, Element)...) {
-    self.path = .init(uniqueElements: elements.map(Route.init(id:element:)))
+    self.path = .init(uniqueElements: elements.map(Destination.init(id:element:)))
   }
 }
 
-extension NavigationState.Route: Equatable where Element: Equatable {}
-extension NavigationState.Route: Hashable where Element: Hashable {}
-// TODO: open up AnyHashable to detect codability?
-//extension NavigationState.Route: Encodable where Element: Encodable {}
-//extension NavigationState.Route: Decodable where Element: Decodable {}
+extension NavigationState.Destination: Equatable where Element: Equatable {}
+extension NavigationState.Destination: Hashable where Element: Hashable {}
 extension NavigationState: Equatable where Element: Equatable {}
 extension NavigationState: Hashable where Element: Hashable {}
-//extension NavigationState: Decodable where Element: Decodable {}
-//extension NavigationState: Encodable where Element: Encodable {}
 
 extension NavigationState: ExpressibleByArrayLiteral {
-  public init(arrayLiteral elements: Route...) {
-    self.init(path: .init(uniqueElements: elements))
+  public init(arrayLiteral elements: Destination...) {
+    self.init(elements)
   }
 }
 
@@ -128,7 +116,7 @@ where State.DestinationState == Action.DestinationState
     store: Store<State, Action>,
     @ViewBuilder content: () -> Content
   ) {
-    self.store = store.scope(state: \.path, action: { Action.navigation(.setPath($0)) })
+    self.store = store.scope(state: { $0.path }, action: { .navigation(.setPath($0)) })
     self.content = content()
   }
 
@@ -155,9 +143,9 @@ where State.DestinationState == Action.DestinationState
   }
 }
 
-public struct NavigationStackReducer<
+public struct NavigationDestinationReducer<
   Upstream: ReducerProtocol,
-    Destinations: ReducerProtocol
+  Destinations: ReducerProtocol
 >: ReducerProtocol
 where
   Upstream.State: NavigableState,
@@ -168,14 +156,6 @@ where
 {
   let upstream: Upstream
   let destinations: Destinations
-
-  public init(
-    @ReducerBuilder<Upstream.State, Upstream.Action> _ upstream: () -> Upstream,
-    @ReducerBuilder<Destinations.State, Destinations.Action> destinations: () -> Destinations
-  ) {
-    self.upstream = upstream()
-    self.destinations = destinations()
-  }
 
   public var body: some ReducerProtocol<Upstream.State, Upstream.Action> {
     Reduce { globalState, globalAction in
@@ -195,7 +175,7 @@ where
             into: &globalState.path[index].element,
             action: localAction
           )
-          .map { Action.navigation(.element(id: id, $0)) }
+          .map { .navigation(.element(id: id, $0)) }
           .cancellable(id: id)
 
       case let .setPath(path):
@@ -214,17 +194,8 @@ where
 extension ReducerProtocol where State: NavigableState, Action: NavigableAction {
   public func navigationDestination<Destinations: ReducerProtocol>(
     @ReducerBuilder<Destinations.State, Destinations.Action> destinations: () -> Destinations
-  )
-  -> NavigationStackReducer<Self, Destinations>
-  where
-    Destinations.State == Action.DestinationState,
-    Destinations.Action == Action.DestinationAction
-  {
-    .init {
-      self
-    } destinations: {
-      destinations()
-    }
+  ) -> NavigationDestinationReducer<Self, Destinations> {
+    .init(upstream: self, destinations: destinations())
   }
 }
 
@@ -288,13 +259,13 @@ extension View {
     Content: View,
     State.DestinationState == Action.DestinationState
   {
-    self.navigationDestination(for: NavigationState<State.DestinationState>.Route.self) { route in
+    self.navigationDestination(for: NavigationState<State.DestinationState>.Destination.self) { route in
       if let destinationState = store.state.value.path.last(where: { $0 == route }) {
         destination()
           .environmentObject(
             StoreObservableObject(
               id: destinationState.id,
-              store: store.scope(state: \.path, action: Action.navigation)
+              store: store.scope(state: { $0.path }, action: Action.navigation)
             )
           )
       } else {
@@ -307,15 +278,15 @@ extension View {
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationLink where Destination == Never {
   public init<D: Hashable>(state: D?, label: () -> Label) {
-    self.init(value: state.map { NavigationState.Route(id: UUID(), element: $0) }, label: label)
+    self.init(value: state.map { NavigationState.Destination(id: UUID(), element: $0) }, label: label)
   }
 
   public init<D: Hashable>(_ titleKey: LocalizedStringKey, state: D?) where Label == Text {
-    self.init(titleKey, value: state.map { NavigationState.Route(id: UUID(), element: $0) })
+    self.init(titleKey, value: state.map { NavigationState.Destination(id: UUID(), element: $0) })
   }
 
   public init<S: StringProtocol, D: Hashable>(_ title: S, state: D?) where Label == Text {
-    self.init(title, value: state.map { NavigationState.Route(id: UUID(), element: $0) })
+    self.init(title, value: state.map { NavigationState.Destination(id: UUID(), element: $0) })
   }
 }
 
