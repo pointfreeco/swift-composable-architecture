@@ -17,17 +17,11 @@ public struct DependencyValues {
     get {
       guard let dependency = self.storage[ObjectIdentifier(key)] as? Key.Value
       else {
-        func open<T>(_: T.Type) -> Any? {
-          let isTesting = self.storage[ObjectIdentifier(IsTestingKey.self)] as? Bool
-          // TODO: better way to detect tests running?
-          ?? (ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil)
-          guard !isTesting
-          else { return nil }
-          return (Witness<T>.self as? AnyLiveDependencyKey.Type)?.liveValue
-        }
-
-        return _openExistential(Key.self as Any.Type, do: open) as? Key.Value
-        ?? Key.testValue
+        let isTesting = self.storage[ObjectIdentifier(IsTestingKey.self)] as? Bool
+        // TODO: Better way to detect tests running?
+        ?? (ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil)
+        guard !isTesting else { return Key.testValue }
+        return _liveValue(Key.self) as? Key.Value ?? Key.testValue
       }
       return dependency
     }
@@ -141,12 +135,3 @@ extension DependencyValues {
   }
 }
 
-private enum Witness<T> {}
-
-private protocol AnyLiveDependencyKey {
-  static var liveValue: Any { get }
-}
-
-extension Witness: AnyLiveDependencyKey where T: LiveDependencyKey {
-  static var liveValue: Any { T.liveValue }
-}
