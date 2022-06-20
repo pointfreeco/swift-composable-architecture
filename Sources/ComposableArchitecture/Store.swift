@@ -553,12 +553,12 @@ public final class Store<State, Action> {
           Available stack memory:
             %@
         
-          Size on the stack of the State managed by this store:
+          Size on the stack of the %@ state managed by this store:
             %@
         
         If the stack deepens more, it risks to overflow and the app will crash.
             
-        The state that this store manages is occupying %@ bytes on the stack. If this value is \
+        The state that this store manages is occupying %@ on the stack. If this value is \
         too large with respect to the stack size and your app logic, you can relocate some of its \
         properties on the heap. If a property is a value type, you can try to "box" it into a \
         reference type. One way to achieve this is using a dedicated property wrapper (See \
@@ -571,11 +571,12 @@ public final class Store<State, Action> {
         """,
         [
           String(format: "%.0f%%", status.usedFraction * 100),
-          "\(status.stackSize)",
-          "\(status.used)",
-          "\(status.available)",
-          "\(MemoryLayout<State>.size)",
-          "\(MemoryLayout<State>.size)"
+          "\(status.stackSize) bytes",
+          "\(status.used) bytes",
+          "\(status.available) bytes",
+          "\(State.self)",
+          "\(MemoryLayout<State>.size) bytes",
+          "\(MemoryLayout<State>.size) bytes"
         ]
       )
     }
