@@ -74,10 +74,26 @@ extension NavigationState: ExpressibleByDictionaryLiteral {
   }
 }
 
+extension NavigationState.Destination: Decodable where Element: Decodable {
+  public init(from decoder: Decoder) throws {
+    fatalError("TODO")
+  }
+}
+
+extension NavigationState.Destination: Encodable where Element: Encodable {
+  public func encode(to encoder: Encoder) throws {
+    fatalError("TODO")
+  }
+}
+
 extension NavigationState.Destination: Equatable where Element: Equatable {}
 extension NavigationState.Destination: Hashable where Element: Hashable {}
+
 extension NavigationState: Equatable where Element: Equatable {}
 extension NavigationState: Hashable where Element: Hashable {}
+
+extension NavigationState: Decodable where Element: Decodable {}
+extension NavigationState: Encodable where Element: Encodable {}
 
 extension NavigationState: ExpressibleByArrayLiteral {
   public init(arrayLiteral elements: Destination...) {
