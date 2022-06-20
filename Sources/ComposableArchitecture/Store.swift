@@ -535,11 +535,11 @@ public final class Store<State, Action> {
       // parent cancellable is nil at this point. So we use the `threadDictionary`.
       // This path is only hit once per store lifetime, and only when the stack depth is
       // beyond the threshold.
-      let threadDictionaryKey = "co.pointfree.ComposableArchitecture.stack-check-warned"
-      guard Thread.current.threadDictionary[threadDictionaryKey] == nil else { return }
+      guard Thread.current.threadDictionary[ObjectIdentifier(StackStatus.self)] == nil
+      else { return }
       defer {
         self.stackChecksEnabled = false
-        Thread.current.threadDictionary[threadDictionaryKey] = ()
+        Thread.current.threadDictionary[ObjectIdentifier(StackStatus.self)] = ()
       }
       
       runtimeWarning(
