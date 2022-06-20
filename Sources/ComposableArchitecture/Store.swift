@@ -527,7 +527,7 @@ public final class Store<State, Action> {
       guard self.stackChecksEnabled else { return }
       // Disable in scoped stores
       guard self.parentCancellable == nil else { return }
-      let threshold: Double = 0.85
+      let threshold: Double = 0.95
       let status = StackStatus()
       guard status.usedFraction > threshold else { return }
       
