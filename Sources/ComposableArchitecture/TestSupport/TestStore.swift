@@ -233,9 +233,7 @@
             .eraseToEffect { .init(origin: .receive($0), file: action.file, line: action.line) }
 
         },
-        environment: (),
-        mainThreadChecksEnabled: true,
-        stackChecksEnabled: false
+        environment: ()
       )
     }
 
