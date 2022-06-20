@@ -1,9 +1,3 @@
-extension Reducer {
-  public init<R: ReducerProtocol>(_ reducer: R) where R.State == State, R.Action == Action {
-    self.init { state, action, _ in reducer.reduce(into: &state, action: action) }
-  }
-}
-
 extension Reduce {
   public init<Environment>(
     _ reducer: Reducer<State, Action, Environment>,
@@ -12,6 +6,12 @@ extension Reduce {
     self.init { state, action in
       reducer.run(&state, action, environment)
     }
+  }
+}
+
+extension Reducer {
+  public init<R: ReducerProtocol>(_ reducer: R) where R.State == State, R.Action == Action {
+    self.init { state, action, _ in reducer.reduce(into: &state, action: action) }
   }
 }
 
