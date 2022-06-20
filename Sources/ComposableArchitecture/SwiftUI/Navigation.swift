@@ -19,9 +19,9 @@ public struct NavigationState<Element>:
     }
   }
 
-  public init() {}
-
   var path = IdentifiedArrayOf<Destination>()
+
+  public init() {}
 
   public var startIndex: Int {
     self.path.startIndex
