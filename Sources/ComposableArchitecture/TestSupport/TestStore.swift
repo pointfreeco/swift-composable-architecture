@@ -159,7 +159,7 @@
   /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
   /// not expect it would cause a test failure.
   ///
-public final class TestStore<Reducer: ReducerProtocol, LocalState, LocalAction, Environment> {
+  public final class TestStore<Reducer: ReducerProtocol, LocalState, LocalAction, Environment> {
     /// The current environment.
     ///
     /// The environment can be modified throughout a test store's lifecycle in order to influence
