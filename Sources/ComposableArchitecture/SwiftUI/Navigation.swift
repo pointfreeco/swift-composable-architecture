@@ -74,15 +74,43 @@ extension NavigationState: ExpressibleByDictionaryLiteral {
   }
 }
 
+extension NavigationState.Destination {
+  private enum CodingKeys: CodingKey {
+    case idTypeName
+    case idString
+    case element
+  }
+}
+
 extension NavigationState.Destination: Decodable where Element: Decodable {
   public init(from decoder: Decoder) throws {
-    fatalError("TODO")
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    if
+      let idTypeName = try? container.decode(String.self, forKey: .idTypeName),
+      let idType = _typeByName(idTypeName),
+      let idString = try? container.decode(String.self, forKey: .idString),
+      let id = try? _decode(idType, from: Data(idString.utf8)) as? AnyHashable
+    {
+      self.id = id
+    } else {
+      self.id = UUID()
+    }
+    self.element = try container.decode(Element.self, forKey: .element)
   }
 }
 
 extension NavigationState.Destination: Encodable where Element: Encodable {
   public func encode(to encoder: Encoder) throws {
-    fatalError("TODO")
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    let id = self.id.base
+    if let idData = try? _encode(self.id.base) {
+      try container.encode(_typeName(type(of: id)), forKey: .idTypeName)
+      try container.encode(String(decoding: idData, as: UTF8.self), forKey: .idString)
+    } else if let idData = try? _encode(UUID()) {
+      try container.encode(_typeName(UUID.self), forKey: .idTypeName)
+      try container.encode(String(decoding: idData, as: UTF8.self), forKey: .idString)
+    }
+    try container.encode(element, forKey: .element)
   }
 }
 

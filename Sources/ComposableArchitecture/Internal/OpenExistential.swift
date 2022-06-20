@@ -1,5 +1,31 @@
+import Foundation
+
 #if swift(>=5.7)
   // MARK: swift(>=5.7)
+  // MARK: Decodable
+
+  func _decode(_ type: Any.Type, from data: Data) throws -> Any? {
+    try (type as? any Decodable.Type)?.init(from: data)
+  }
+
+  private extension Decodable {
+    init(from data: Data) throws {
+      self = try decoder.decode(Self.self, from: data)
+    }
+  }
+
+  // MARK: Encodable
+
+  func _encode(_ value: Any) throws -> Data? {
+    try (value as? any Encodable)?.encode()
+  }
+
+  private extension Encodable {
+    func encode() throws -> Data {
+      try encoder.encode(self)
+    }
+  }
+
   // MARK: Equatable
 
   func _isEqual(_ lhs: Any, _ rhs: Any) -> Bool? {
@@ -21,22 +47,60 @@
   // MARK: -
   // MARK: swift(<5.7)
 
-  private enum _Witness<T> {}
+  private enum Witness<T> {}
+
+  // MARK: Decodable
+
+  func _decode(_ type: Any.Type, from data: Data) throws -> Any? {
+    func open<T>(_: T.Type) throws -> Any? {
+      try (Witness<T>.self as? AnyDecodable.Type)?.decode(from: data)
+    }
+    return try _openExistential(type, do: open)
+  }
+
+  private protocol AnyDecodable {
+    static func decode(from data: Data) throws -> Any
+  }
+
+  extension Witness: AnyDecodable where T: Decodable {
+    static func decode(from data: Data) throws -> Any {
+      try decoder.decode(T.self, from: data)
+    }
+  }
+
+  // MARK: Encodable
+
+  func _encode(_ value: Any) throws -> Data? {
+    func open<T>(_: T.Type) throws -> Data? {
+      try (Witness<T>.self as? AnyEncodable.Type)?.encode(value)
+    }
+    return try _openExistential(type(of: value), do: open)
+  }
+
+  private protocol AnyEncodable {
+    static func encode(_ value: Any) throws -> Data?
+  }
+
+  extension Witness: AnyEncodable where T: Encodable {
+    static func encode(_ value: Any) throws -> Data? {
+      try (value as? T).map(encoder.encode)
+    }
+  }
 
   // MARK: Equatable
 
   func _isEqual(_ lhs: Any, _ rhs: Any) -> Bool? {
     func open<T>(_: T.Type) -> Bool? {
-      (_Witness<T>.self as? _AnyEquatable.Type)?.isEqual(lhs, rhs)
+      (Witness<T>.self as? AnyEquatable.Type)?.isEqual(lhs, rhs)
     }
     return _openExistential(type(of: lhs), do: open)
   }
 
-  private protocol _AnyEquatable {
+  private protocol AnyEquatable {
     static func isEqual(_ lhs: Any, _ rhs: Any) -> Bool
   }
 
-  extension _Witness: _AnyEquatable where T: Equatable {
+  extension Witness: AnyEquatable where T: Equatable {
     fileprivate static func isEqual(_ lhs: Any, _ rhs: Any) -> Bool {
       guard
         let lhs = lhs as? T,
@@ -50,16 +114,19 @@
 
   func _liveValue(_ key: Any.Type) -> Any? {
     func open<T>(_: T.Type) -> Any? {
-      (_Witness<T>.self as? _AnyLiveDependencyKey.Type)?.liveValue
+      (Witness<T>.self as? AnyLiveDependencyKey.Type)?.liveValue
     }
     return _openExistential(key, do: open)
   }
 
-  protocol _AnyLiveDependencyKey {
+  protocol AnyLiveDependencyKey {
     static var liveValue: Any { get }
   }
 
-  extension _Witness: _AnyLiveDependencyKey where T: LiveDependencyKey {
+  extension Witness: AnyLiveDependencyKey where T: LiveDependencyKey {
     static var liveValue: Any { T.liveValue }
   }
 #endif
+
+private let decoder = JSONDecoder()
+private let encoder = JSONEncoder()
