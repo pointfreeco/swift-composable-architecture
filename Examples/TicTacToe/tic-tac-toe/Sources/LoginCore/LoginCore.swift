@@ -33,12 +33,6 @@ public struct Login: ReducerProtocol {
   public init() {}
 
   public var body: some ReducerProtocol<State, Action> {
-    Pullback(state: \.twoFactor, action: /Action.twoFactor) {
-      IfLetReducer {
-        TwoFactor(tearDownToken: TwoFactorTearDownToken.self)
-      }
-    }
-
     Reduce { state, action in
       switch action {
       case .alertDismissed:
@@ -86,6 +80,9 @@ public struct Login: ReducerProtocol {
         state.twoFactor = nil
         return .cancel(id: TwoFactorTearDownToken.self)
       }
+    }
+    .ifLet(state: \.twoFactor, action: /Action.twoFactor) {
+      TwoFactor(tearDownToken: TwoFactorTearDownToken.self)
     }
   }
 }

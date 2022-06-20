@@ -19,12 +19,6 @@ struct LazyNavigationReducer: ReducerProtocol {
   @Dependency(\.mainQueue) var mainQueue
 
   var body: some ReducerProtocol<LazyNavigationState, LazyNavigationAction> {
-    Pullback(state: \.optionalCounter, action: /LazyNavigationAction.optionalCounter) {
-      IfLetReducer {
-        CounterReducer()
-      }
-    }
-
     Reduce { state, action in
       enum CancelId {}
 
@@ -52,6 +46,9 @@ struct LazyNavigationReducer: ReducerProtocol {
       case .optionalCounter:
         return .none
       }
+    }
+    .ifLet(state: \.optionalCounter, action: /LazyNavigationAction.optionalCounter) {
+      CounterReducer()
     }
   }
 }

@@ -18,12 +18,6 @@ struct EagerNavigationReducer: ReducerProtocol {
   @Dependency(\.mainQueue) var mainQueue
 
   var body: some ReducerProtocol<EagerNavigationState, EagerNavigationAction> {
-    Pullback(state: \.optionalCounter, action: /EagerNavigationAction.optionalCounter) {
-      IfLetReducer {
-        CounterReducer()
-      }
-    }
-
     Reduce { state, action in
       enum CancelId {}
 
@@ -48,6 +42,9 @@ struct EagerNavigationReducer: ReducerProtocol {
       case .optionalCounter:
         return .none
       }
+    }
+    .ifLet(state: \.optionalCounter, action: /EagerNavigationAction.optionalCounter) {
+      CounterReducer()
     }
   }
 }

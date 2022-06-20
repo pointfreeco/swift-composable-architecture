@@ -22,12 +22,6 @@ public struct NewGame: ReducerProtocol {
   public init() {}
 
   public var body: some ReducerProtocol<State, Action> {
-    Pullback(state: \.game, action: /Action.game) {
-      IfLetReducer {
-        Game()
-      }
-    }
-
     Reduce { state, action in
       switch action {
       case .game(.quitButtonTapped):
@@ -59,6 +53,9 @@ public struct NewGame: ReducerProtocol {
         state.xPlayerName = name
         return .none
       }
+    }
+    .ifLet(state: \.game, action: /Action.game) {
+      Game()
     }
   }
 }

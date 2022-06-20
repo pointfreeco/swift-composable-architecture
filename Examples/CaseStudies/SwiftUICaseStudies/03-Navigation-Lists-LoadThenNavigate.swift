@@ -36,14 +36,6 @@ struct LoadThenNavigateList: ReducerProtocol {
   @Dependency(\.mainQueue) var mainQueue
 
   var body: some ReducerProtocol<State, Action> {
-    Pullback(state: \.selection, action: /Action.counter) {
-      IfLetReducer {
-        Pullback(state: \Identified<State.Row.ID, Counter.State>.value, action: .self) {
-          Counter()
-        }
-      }
-    }
-
     Reduce { state, action in
       enum CancelId {}
 
@@ -78,6 +70,11 @@ struct LoadThenNavigateList: ReducerProtocol {
           id: id
         )
         return .none
+      }
+    }
+    .ifLet(state: \.selection, action: /Action.counter) {
+      Scope(state: \Identified<State.Row.ID, Counter.State>.value, action: .self) {
+        Counter()
       }
     }
   }

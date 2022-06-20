@@ -20,11 +20,11 @@ struct TwoCounters: ReducerProtocol {
   }
 
   var body: some ReducerProtocol<State, Action> {
-    Pullback(state: \.counter1, action: /Action.counter1) {
+    Scope(state: \.counter1, action: /Action.counter1) {
       Counter()
     }
 
-    Pullback(state: \.counter2, action: /Action.counter2) {
+    Scope(state: \.counter2, action: /Action.counter2) {
       Counter()
     }
   }

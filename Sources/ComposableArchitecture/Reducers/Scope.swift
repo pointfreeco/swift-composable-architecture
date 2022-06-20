@@ -3,8 +3,8 @@ extension ReducerProtocol {
   public func pullback<GlobalState, GlobalAction>(
     state toLocalState: WritableKeyPath<GlobalState, State>,
     action toLocalAction: CasePath<GlobalAction, Action>
-  ) -> Pullback<GlobalState, GlobalAction, Self> {
-    Pullback(state: toLocalState, action: toLocalAction) {
+  ) -> Scope<GlobalState, GlobalAction, Self> {
+    Scope(state: toLocalState, action: toLocalAction) {
       self
     }
   }
@@ -20,7 +20,7 @@ extension ReducerProtocol {
   }
 }
 
-public struct Pullback<State, Action, Local: ReducerProtocol>: ReducerProtocol {
+public struct Scope<State, Action, Local: ReducerProtocol>: ReducerProtocol {
   @usableFromInline
   let toLocalState: WritableKeyPath<State, Local.State>
 
@@ -52,8 +52,6 @@ public struct Pullback<State, Action, Local: ReducerProtocol>: ReducerProtocol {
       .map(self.toLocalAction.embed)
   }
 }
-
-public typealias Scope = Pullback
 
 // TODO: Single interface with `Pullback`
 public struct PullbackCase<State, Action, Local: ReducerProtocol>: ReducerProtocol {

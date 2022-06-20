@@ -23,12 +23,6 @@ struct OptionalBasics: ReducerProtocol {
   }
 
   var body: some ReducerProtocol<State, Action> {
-    Pullback(state: \.optionalCounter, action: /Action.optionalCounter) {
-      IfLetReducer {
-        Counter()
-      }
-    }
-
     Reduce { state, action in
       switch action {
       case .toggleCounterButtonTapped:
@@ -40,6 +34,9 @@ struct OptionalBasics: ReducerProtocol {
       case .optionalCounter:
         return .none
       }
+    }
+    .ifLet(state: \.optionalCounter, action: /Action.optionalCounter) {
+      Counter()
     }
   }
 }

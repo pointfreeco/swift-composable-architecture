@@ -32,9 +32,9 @@ struct NavigateAndLoadList: ReducerProtocol {
   @Dependency(\.mainQueue) var mainQueue
 
   var body: some ReducerProtocol<State, Action> {
-    Pullback(state: \.selection, action: /Action.counter) {
+    Scope(state: \.selection, action: /Action.counter) {
       IfLetReducer {
-        Pullback(
+        Scope(
           state: \Identified<State.Row.ID, Counter.State?>.value, action: .self
         ) {
           IfLetReducer {
