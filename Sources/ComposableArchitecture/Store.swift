@@ -529,7 +529,7 @@ public final class Store<State, Action> {
       guard self.parentCancellable == nil else { return }
       let threshold: UInt = 50_000
       let status = StackStatus()
-      guard status.available < threshold else { return }
+      if status.available > threshold { return }
       
       // We warn only once, but scoped stores could pass through on `init` as their
       // parent cancellable is nil at this point.
