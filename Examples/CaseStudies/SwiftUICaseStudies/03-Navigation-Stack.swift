@@ -100,7 +100,7 @@ struct NavigationDemo: ReducerProtocol {
   }
 }
 
-struct NavigationStackView: View {
+struct NavigationDemoView: View {
   let store: StoreOf<NavigationDemo>
 
   var body: some View {
@@ -224,20 +224,23 @@ struct FloatingMenuView: View {
   }
 }
 
-struct ScreenA: ReducerProtocol {
-  @Dependency(\.factClient) var fact
+// MARK: - Screen A
 
+struct ScreenA: ReducerProtocol {
   struct State: Codable, Equatable, Hashable {
     var count = 0
     var fact: String?
     var isLoading = false
   }
+
   enum Action: Equatable {
     case decrementButtonTapped
     case incrementButtonTapped
     case factButtonTapped
     case factResponse(TaskResult<String>)
   }
+
+  @Dependency(\.factClient) var factClient
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {
@@ -252,7 +255,7 @@ struct ScreenA: ReducerProtocol {
     case .factButtonTapped:
       state.isLoading = true
       return .task { [count = state.count] in
-        await .factResponse(.init { try await self.fact.fetch(count) })
+        await .factResponse(.init { try await self.factClient.fetch(count) })
       }
 
     case let .factResponse(.success(fact)):
@@ -263,7 +266,7 @@ struct ScreenA: ReducerProtocol {
     case .factResponse(.failure):
       state.isLoading = false
       state.fact = nil
-      // TODO: error handling
+      // TODO: Error handling?
       return .none
     }
   }
@@ -319,8 +322,11 @@ struct ScreenAView: View {
   }
 }
 
+// MARK: - Screen B
+
 struct ScreenB: ReducerProtocol {
   struct State: Codable, Equatable, Hashable {}
+
   enum Action: Equatable {
     case screenAButtonTapped
     case screenBButtonTapped
@@ -338,6 +344,7 @@ struct ScreenB: ReducerProtocol {
     }
   }
 }
+
 struct ScreenBView: View {
   let store: StoreOf<ScreenB>
 
@@ -359,26 +366,33 @@ struct ScreenBView: View {
   }
 }
 
-struct ScreenC: ReducerProtocol {
-  enum TimerId {}
-  @Dependency(\.mainQueue) var mainQueue
+// MARK: - Screen C
 
+struct ScreenC: ReducerProtocol {
   struct State: Codable, Equatable, Hashable {
     var count = 0
     var isTimerRunning = false
   }
+
   enum Action: Equatable {
     case startButtonTapped
     case stopButtonTapped
     case timerTick
   }
+
+  @Dependency(\.mainQueue) var mainQueue
+
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    enum TimerId {}
 
     switch action {
     case .startButtonTapped:
       state.isTimerRunning = true
-      return Effect.timer(id: TimerId.self, every: 1, on: self.mainQueue)
-        .map { _ in .timerTick }
+      return .run { send in
+        for await _ in self.mainQueue.timer(interval: 1) {
+          await send(.timerTick)
+        }
+      }
 
     case .stopButtonTapped:
       state.isTimerRunning = false
@@ -390,6 +404,7 @@ struct ScreenC: ReducerProtocol {
     }
   }
 }
+
 struct ScreenCView: View {
   let store: StoreOf<ScreenC>
 
@@ -425,9 +440,11 @@ struct ScreenCView: View {
   }
 }
 
+// MARK: - Previews
+
 struct NavigationStack_Previews: PreviewProvider {
   static var previews: some View {
-    NavigationStackView(
+    NavigationDemoView(
       store: .init(
         initialState: .init(),
         reducer: NavigationDemo()

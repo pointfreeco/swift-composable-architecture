@@ -182,7 +182,7 @@ struct RootView: View {
             // TODO: show in modal?
             NavigationLink(
               "Navigate stack",
-              destination: NavigationStackView(
+              destination: NavigationDemoView(
                 store: self.store.scope(
                   state: \.navigationStack,
                   action: Root.Action.navigationStack
