@@ -1,5 +1,6 @@
 #if swift(>=5.7)
-  // MARK: - Equatable
+  // MARK: swift(>=5.7)
+  // MARK: Equatable
 
   func _isEqual(_ lhs: Any, _ rhs: Any) -> Bool? {
     (lhs as? any Equatable)?.isEqual(other: rhs)
@@ -11,15 +12,18 @@
     }
   }
 
-  // MARK: - LiveDependencyKey
+  // MARK: LiveDependencyKey
 
   func _liveValue(_ key: Any.Type) -> Any? {
     (key as? any LiveDependencyKey.Type)?.liveValue
   }
 #else
+  // MARK: -
+  // MARK: swift(<5.7)
+
   private enum _Witness<T> {}
 
-  // MARK: - Equatable
+  // MARK: Equatable
 
   func _isEqual(_ lhs: Any, _ rhs: Any) -> Bool? {
     func open<T>(_: T.Type) -> Bool? {
@@ -42,7 +46,7 @@
     }
   }
 
-  // MARK: - LiveDependencyKey
+  // MARK: LiveDependencyKey
 
   func _liveValue(_ key: Any.Type) -> Any? {
     func open<T>(_: T.Type) -> Any? {
