@@ -1,24 +1,26 @@
-struct StackStatus {
-  let stackSize: UInt
-  let used: UInt
+#if DEBUG
+  struct StackStatus {
+    let stackSize: UInt
+    let used: UInt
 
-  var available: UInt { stackSize - used }
-  var usedFraction: Double { Double(used) / Double(stackSize) }
+    var available: UInt { stackSize - used }
+    var usedFraction: Double { Double(used) / Double(stackSize) }
 
-  init() {
-    let thread = pthread_self()
-    let stackAddress = UInt(bitPattern: pthread_get_stackaddr_np(thread))
-    var used: UInt = 0
-    withUnsafeMutablePointer(to: &used) {
-      let pointerAddress = UInt(bitPattern: $0)
-      // Stack goes down on x86/64 and arm, but we rectify the result in any case this code
-      // executes on another architecture using a different convention.
-      $0.pointee =
-        stackAddress > pointerAddress
-        ? stackAddress - pointerAddress
-        : pointerAddress - stackAddress
+    init() {
+      let thread = pthread_self()
+      let stackAddress = UInt(bitPattern: pthread_get_stackaddr_np(thread))
+      var used: UInt = 0
+      withUnsafeMutablePointer(to: &used) {
+        let pointerAddress = UInt(bitPattern: $0)
+        // Stack goes down on x86/64 and arm, but we rectify the result in any case this code
+        // executes on another architecture using a different convention.
+        $0.pointee =
+          stackAddress > pointerAddress
+          ? stackAddress - pointerAddress
+          : pointerAddress - stackAddress
+      }
+      self.stackSize = UInt(pthread_get_stacksize_np(thread))
+      self.used = used
     }
-    self.stackSize = UInt(pthread_get_stacksize_np(thread))
-    self.used = used
   }
-}
+#endif
