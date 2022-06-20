@@ -582,7 +582,7 @@ public final class Store<State, Action> {
     }
   #endif
 
-  private init<Environment>(
+  init<Environment>(
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
     environment: Environment,

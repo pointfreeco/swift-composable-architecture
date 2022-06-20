@@ -233,11 +233,10 @@
             .eraseToEffect { .init(origin: .receive($0), file: action.file, line: action.line) }
 
         },
-        environment: ()
+        environment: (),
+        mainThreadChecksEnabled: true,
+        stackChecksEnabled: false
       )
-      #if DEBUG
-      store.stackChecksEnabled = false
-      #endif
     }
 
     deinit {
