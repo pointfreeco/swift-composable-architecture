@@ -47,8 +47,8 @@ public struct NavigationState<Element>:
     }
   }
 
-  public mutating func replaceSubrange<C>(_ subrange: Range<Int>, with newElements: C)
-  where C: Collection, Destination == C.Element {
+  public mutating func replaceSubrange<C: Collection>(_ subrange: Range<Int>, with newElements: C)
+  where C.Element == Destination {
     self.path.removeSubrange(subrange)
     for element in newElements.reversed() {
       self.path.insert(element, at: subrange.startIndex)
