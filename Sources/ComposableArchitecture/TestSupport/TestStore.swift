@@ -159,7 +159,7 @@
   /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
   /// not expect it would cause a test failure.
   ///
-public final class TestStore<Reducer: ReducerProtocol, LocalState, LocalAction, Environment> {
+  public final class TestStore<Reducer: ReducerProtocol, LocalState, LocalAction, Environment> {
     /// The current environment.
     ///
     /// The environment can be modified throughout a test store's lifecycle in order to influence
@@ -198,7 +198,7 @@ public final class TestStore<Reducer: ReducerProtocol, LocalState, LocalAction, 
     where
       Reducer.State == LocalState,
       Reducer.Action == LocalAction,
-      Environment == Void
+      Environment == Void // TODO: could this be DependencyValues and can tests change enviroment through it?
     {
       let reducer = TestReducer(reducer, initialState: initialState)
       self._reducer = reducer
@@ -336,10 +336,15 @@ public final class TestStore<Reducer: ReducerProtocol, LocalState, LocalAction, 
           line: line
         )
       }
+
+      //
+
       var expectedState = self.toLocalState(self._reducer.state)
       let previousState = self._reducer.state
+
       let task = self.store
         .send(.init(origin: .send(self.fromLocalAction(action)), file: file, line: line))
+
       do {
         let currentState = self._reducer.state
         self._reducer.state = previousState
@@ -556,7 +561,7 @@ public final class TestStore<Reducer: ReducerProtocol, LocalState, LocalAction, 
 
     func reduce(into state: inout Upstream.State, action: TestAction) -> Effect<TestAction, Never> {
       let reducer = self.upstream
-        .dependency(\.isTesting, true)
+        .dependency(\.isTesting, true) // TODO: navigationID
 
       let effects: Effect<Upstream.Action, Never>
       switch action.origin {
