@@ -527,15 +527,15 @@ public final class Store<State, Action> {
       guard self.stackChecksEnabled else { return }
       // Disable in scoped stores
       guard self.parentCancellable == nil else { return }
-      let threshold: Double = 0.95
+      let threshold: UInt = 50_000
       let status = StackStatus()
-      guard status.usedFraction > threshold else { return }
+      guard status.available < threshold else { return }
       
       // We warn only once, but scoped stores could pass through on `init` as their
       // parent cancellable is nil at this point. So we use the `threadDictionary`.
       // This path is only hit once per store lifetime, and only when the stack depth is
       // beyond the threshold.
-      let threadDictionaryKey = "co.pointfree.ComposableArchitecture.stack-checked-warned"
+      let threadDictionaryKey = "co.pointfree.ComposableArchitecture.stack-check-warned"
       guard Thread.current.threadDictionary[threadDictionaryKey] == nil else { return }
       defer {
         self.stackChecksEnabled = false
@@ -568,7 +568,8 @@ public final class Store<State, Action> {
         #advice-use-copy-on-write-semantics-for-large-values" for example). If the property is an \
         "enum", you can simply mark it as "indirect", producing the same effect.
         
-        "Array", "Set", "Dictionary" or "IdentifiedArray" are already storing their content on the heap.
+        "Array", "Set", "Dictionary" or "IdentifiedArray" are already storing their content on the \
+        heap.
         """,
         [
           String(format: "%.0f%%", status.usedFraction * 100),
