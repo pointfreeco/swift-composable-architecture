@@ -532,9 +532,7 @@ public final class Store<State, Action> {
       guard status.available < threshold else { return }
       
       // We warn only once, but scoped stores could pass through on `init` as their
-      // parent cancellable is nil at this point. So we use the `threadDictionary`.
-      // This path is only hit once per store lifetime, and only when the stack depth is
-      // beyond the threshold.
+      // parent cancellable is nil at this point.
       guard Thread.current.threadDictionary[ObjectIdentifier(StackStatus.self)] == nil
       else { return }
       defer {
