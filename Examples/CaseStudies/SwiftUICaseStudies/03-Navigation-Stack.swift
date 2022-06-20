@@ -112,15 +112,15 @@ struct NavigationStackView: View {
           Section {
             NavigationLink(
               "Go to screen A",
-              state: NavigationStackDemo.DestinationState.screenA(.init())
+              state: NavigationDemo.DestinationState.screenA(.init())
             )
             NavigationLink(
               "Go to screen B",
-              state: NavigationStackDemo.DestinationState.screenB(.init())
+              state: NavigationDemo.DestinationState.screenB(.init())
             )
             NavigationLink(
               "Go to screen C",
-              state: NavigationStackDemo.DestinationState.screenC(.init())
+              state: NavigationDemo.DestinationState.screenC(.init())
             )
           }
 
@@ -302,15 +302,15 @@ struct ScreenAView: View {
         Section {
           NavigationLink(
             "Go to screen A",
-            state: NavigationStackDemo.DestinationState.screenA(.init(count: viewStore.count))
+            state: NavigationDemo.DestinationState.screenA(.init(count: viewStore.count))
           )
           NavigationLink(
             "Go to screen B",
-            state: NavigationStackDemo.DestinationState.screenB(.init())
+            state: NavigationDemo.DestinationState.screenB(.init())
           )
           NavigationLink(
             "Go to screen C",
-            state: NavigationStackDemo.DestinationState.screenC(.init())
+            state: NavigationDemo.DestinationState.screenC(.init())
           )
         }
       }
@@ -408,15 +408,15 @@ struct ScreenCView: View {
         Section {
           NavigationLink(
             "Go to screen A",
-            state: NavigationStackDemo.DestinationState.screenA(.init(count: viewStore.count))
+            state: NavigationDemo.DestinationState.screenA(.init(count: viewStore.count))
           )
           NavigationLink(
             "Go to screen B",
-            state: NavigationStackDemo.DestinationState.screenB(.init())
+            state: NavigationDemo.DestinationState.screenB(.init())
           )
           NavigationLink(
             "Go to screen C",
-            state: NavigationStackDemo.DestinationState.screenC(.init())
+            state: NavigationDemo.DestinationState.screenC(.init())
           )
         }
       }
