@@ -12,6 +12,12 @@ public struct DependencyValues {
 
   private var storage: [ObjectIdentifier: Any] = [:]
 
+  public init() {}
+
+  public init(isTesting: Bool) {
+    self.isTesting = isTesting
+  }
+
   // TODO: lock storage?
   public subscript<Key>(key: Key.Type) -> Key.Value where Key: DependencyKey {
     get {

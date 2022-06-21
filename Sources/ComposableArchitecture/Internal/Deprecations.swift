@@ -169,13 +169,13 @@ extension Reducer {
           self.receive(expectedAction, update, file: step.file, line: step.line)
 
         case let .environment(work):
-          if !self.reducer.receivedActions.isEmpty {
+          if !self._reducer.receivedActions.isEmpty {
             var actions = ""
-            customDump(self.reducer.receivedActions.map(\.action), to: &actions)
+            customDump(self._reducer.receivedActions.map(\.action), to: &actions)
             XCTFail(
               """
-              Must handle \(self.reducer.receivedActions.count) received \
-              action\(self.reducer.receivedActions.count == 1 ? "" : "s") before performing this work: …
+              Must handle \(self._reducer.receivedActions.count) received \
+              action\(self._reducer.receivedActions.count == 1 ? "" : "s") before performing this work: …
 
               Unhandled actions: \(actions)
               """,
@@ -189,13 +189,13 @@ extension Reducer {
           }
 
         case let .do(work):
-          if !self.reducer.receivedActions.isEmpty {
+          if !self._reducer.receivedActions.isEmpty {
             var actions = ""
-            customDump(self.reducer.receivedActions.map(\.action), to: &actions)
+            customDump(self._reducer.receivedActions.map(\.action), to: &actions)
             XCTFail(
               """
-              Must handle \(self.reducer.receivedActions.count) received \
-              action\(self.reducer.receivedActions.count == 1 ? "" : "s") before performing this work: …
+              Must handle \(self._reducer.receivedActions.count) received \
+              action\(self._reducer.receivedActions.count == 1 ? "" : "s") before performing this work: …
 
               Unhandled actions: \(actions)
               """,
