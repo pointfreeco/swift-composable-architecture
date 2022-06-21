@@ -263,7 +263,7 @@
 
           XCTFail(
             """
-            Expected effects to finish, but there are still effects in flight\
+            Expected effects to finish, but there are still effects in-flight\
             \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
 
             \(suggestion)
