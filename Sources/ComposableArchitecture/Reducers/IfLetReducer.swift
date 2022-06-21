@@ -1,4 +1,5 @@
 extension ReducerProtocol {
+  @inlinable
   public func ifLet<Wrapped: ReducerProtocol>(
     state toWrappedState: WritableKeyPath<State, Wrapped.State?>,
     action toWrappedAction: CasePath<Action, Wrapped.Action>,
@@ -18,13 +19,42 @@ extension ReducerProtocol {
 }
 
 public struct IfLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtocol>: ReducerProtocol {
+  @usableFromInline
   let upstream: Upstream
+
+  @usableFromInline
   let wrapped: Wrapped
+
+  @usableFromInline
   let toWrappedState: WritableKeyPath<State, Wrapped.State?>
+
+  @usableFromInline
   let toWrappedAction: CasePath<Action, Wrapped.Action>
+
+  @usableFromInline
   let file: StaticString
+
+  @usableFromInline
   let line: UInt
 
+  @inlinable
+  init(
+    upstream: Upstream,
+    wrapped: Wrapped,
+    toWrappedState: WritableKeyPath<State, Wrapped.State?>,
+    toWrappedAction: CasePath<Action, Wrapped.Action>,
+    file: StaticString,
+    line: UInt
+  ) {
+    self.upstream = upstream
+    self.wrapped = wrapped
+    self.toWrappedState = toWrappedState
+    self.toWrappedAction = toWrappedAction
+    self.file = file
+    self.line = line
+  }
+
+  @inlinable
   public func reduce(
     into state: inout Upstream.State, action: Upstream.Action
   ) -> Effect<Upstream.Action, Never> {

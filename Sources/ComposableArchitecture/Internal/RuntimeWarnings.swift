@@ -7,7 +7,9 @@
   //     To work around this, we hook into SwiftUI's runtime issue delivery mechanism, instead.
   //
   // Feedback filed: https://gist.github.com/stephencelis/a8d06383ed6ccde3e5ef5d1b3ad52bbc
-  private let rw = (
+
+  @usableFromInline
+  let rw = (
     dso: { () -> UnsafeMutableRawPointer in
       let count = _dyld_image_count()
       for i in 0..<count {
@@ -28,6 +30,7 @@
 
 @_transparent
 @inline(__always)
+@usableFromInline
 func runtimeWarning(
   _ message: @autoclosure () -> StaticString,
   _ args: @autoclosure () -> [CVarArg] = []
