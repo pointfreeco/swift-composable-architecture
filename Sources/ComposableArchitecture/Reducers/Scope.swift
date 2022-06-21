@@ -31,7 +31,8 @@ public struct Scope<State, Action, Local: ReducerProtocol>: ReducerProtocol {
   }
 }
 
-// TODO: Single interface with `Scope`
+// TODO: Single interface with `Scope`?
+// TODO: Use `ifLet`, or `ifCaseLet`, or `switch` instead?
 public struct ScopeCase<State, Action, Local: ReducerProtocol>: ReducerProtocol {
   @usableFromInline
   let toLocalState: CasePath<State, Local.State>
