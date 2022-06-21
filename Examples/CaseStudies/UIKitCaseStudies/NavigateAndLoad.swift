@@ -3,21 +3,21 @@ import ComposableArchitecture
 import SwiftUI
 import UIKit
 
-struct EagerNavigationState: Equatable {
-  var isNavigationActive = false
-  var optionalCounter: CounterState?
-}
+struct EagerNavigation: ReducerProtocol {
+  struct State: Equatable {
+    var isNavigationActive = false
+    var optionalCounter: Counter.State?
+  }
 
-enum EagerNavigationAction: Equatable {
-  case optionalCounter(CounterAction)
-  case setNavigation(isActive: Bool)
-  case setNavigationIsActiveDelayCompleted
-}
+  enum Action: Equatable {
+    case optionalCounter(Counter.Action)
+    case setNavigation(isActive: Bool)
+    case setNavigationIsActiveDelayCompleted
+  }
 
-struct EagerNavigationReducer: ReducerProtocol {
   @Dependency(\.mainQueue) var mainQueue
 
-  var body: some ReducerProtocol<EagerNavigationState, EagerNavigationAction> {
+  var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       enum CancelId {}
 
@@ -36,25 +36,25 @@ struct EagerNavigationReducer: ReducerProtocol {
         return .cancel(id: CancelId.self)
 
       case .setNavigationIsActiveDelayCompleted:
-        state.optionalCounter = CounterState()
+        state.optionalCounter = .init()
         return .none
 
       case .optionalCounter:
         return .none
       }
     }
-    .ifLet(state: \.optionalCounter, action: /EagerNavigationAction.optionalCounter) {
-      CounterReducer()
+    .ifLet(state: \.optionalCounter, action: /Action.optionalCounter) {
+      Counter()
     }
   }
 }
 
 class EagerNavigationViewController: UIViewController {
   var cancellables: [AnyCancellable] = []
-  let store: Store<EagerNavigationState, EagerNavigationAction>
-  let viewStore: ViewStore<EagerNavigationState, EagerNavigationAction>
+  let store: StoreOf<EagerNavigation>
+  let viewStore: ViewStoreOf<EagerNavigation>
 
-  init(store: Store<EagerNavigationState, EagerNavigationAction>) {
+  init(store: StoreOf<EagerNavigation>) {
     self.store = store
     self.viewStore = ViewStore(store)
     super.init(nibName: nil, bundle: nil)
@@ -88,7 +88,7 @@ class EagerNavigationViewController: UIViewController {
         self.navigationController?.pushViewController(
           IfLetStoreController(
             store: self.store
-              .scope(state: \.optionalCounter, action: EagerNavigationAction.optionalCounter)
+              .scope(state: \.optionalCounter, action: EagerNavigation.Action.optionalCounter)
           ) {
             CounterViewController(store: $0)
           } else: {
@@ -121,8 +121,8 @@ struct EagerNavigationViewController_Previews: PreviewProvider {
     let vc = UINavigationController(
       rootViewController: EagerNavigationViewController(
         store: Store(
-          initialState: EagerNavigationState(),
-          reducer: EagerNavigationReducer()
+          initialState: .init(),
+          reducer: EagerNavigation()
         )
       )
     )

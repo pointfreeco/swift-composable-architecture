@@ -6,8 +6,8 @@ import XCTest
 final class UIKitCaseStudiesTests: XCTestCase {
   func testCountDown() {
     let store = TestStore(
-      initialState: CounterState(),
-      reducer: CounterReducer()
+      initialState: .init(),
+      reducer: Counter()
     )
 
     store.send(.incrementButtonTapped) {
@@ -19,15 +19,15 @@ final class UIKitCaseStudiesTests: XCTestCase {
   }
 
   func testCountDownList() {
-    let firstState = CounterState()
-    let secondState = CounterState()
-    let thirdState = CounterState()
+    let firstState = Counter.State()
+    let secondState = Counter.State()
+    let thirdState = Counter.State()
 
     let store = TestStore(
-      initialState: CounterListState(
+      initialState: .init(
         counters: [firstState, secondState, thirdState]
       ),
-      reducer: CounterListReducer()
+      reducer: CounterList()
     )
 
     store.send(.counter(id: firstState.id, action: .incrementButtonTapped)) {

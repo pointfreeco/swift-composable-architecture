@@ -5,13 +5,13 @@ import UIKit
 
 struct LazyNavigation: ReducerProtocol {
   struct State: Equatable {
-    var optionalCounter: CounterState?
+    var optionalCounter: Counter.State?
     var isActivityIndicatorHidden = true
   }
 
   enum Action: Equatable {
     case onDisappear
-    case optionalCounter(CounterAction)
+    case optionalCounter(Counter.Action)
     case setNavigation(isActive: Bool)
     case setNavigationIsActiveDelayCompleted
   }
@@ -40,7 +40,7 @@ struct LazyNavigation: ReducerProtocol {
 
       case .setNavigationIsActiveDelayCompleted:
         state.isActivityIndicatorHidden = true
-        state.optionalCounter = CounterState()
+        state.optionalCounter = .init()
         return .none
 
       case .optionalCounter:
@@ -48,7 +48,7 @@ struct LazyNavigation: ReducerProtocol {
       }
     }
     .ifLet(state: \.optionalCounter, action: /Action.optionalCounter) {
-      CounterReducer()
+      Counter()
     }
   }
 }
