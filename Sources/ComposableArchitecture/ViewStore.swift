@@ -138,8 +138,9 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// be fed back into the store.
   ///
   /// - Parameter action: An action.
-  public func send(_ action: Action) {
-    _ = self._send(action)
+  @discardableResult
+  public func send(_ action: Action) -> ViewStoreTask {
+    .init(rawValue: self._send(action))
   }
 
   /// Sends an action to the store with a given animation.
@@ -149,7 +150,8 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// - Parameters:
   ///   - action: An action.
   ///   - animation: An animation.
-  public func send(_ action: Action, animation: Animation?) {
+  @discardableResult
+  public func send(_ action: Action, animation: Animation?) -> ViewStoreTask {
     withAnimation(animation) {
       self.send(action)
     }
@@ -353,16 +355,6 @@ private struct HashableWrapper<Value>: Hashable {
 
 #if canImport(_Concurrency) && compiler(>=5.5.2)
   extension ViewStore {
-    @MainActor
-    public func send(_ action: Action) async {
-      await self._send(action).cancellableValue
-    }
-
-    @MainActor
-    public func send(_ action: Action, animation: Animation?) async {
-      await withAnimation(animation) { self._send(action) }.cancellableValue
-    }
-
     /// Sends an action into the store and then suspends while a piece of state is `true`.
     ///
     /// This method can be used to interact with async/await code, allowing you to suspend while
@@ -450,7 +442,7 @@ private struct HashableWrapper<Value>: Hashable {
       _ action: Action,
       while predicate: @escaping (State) -> Bool
     ) async {
-      { self.send(action) }()
+      self.send(action)
       await self.suspend(while: predicate)
     }
 
@@ -469,7 +461,7 @@ private struct HashableWrapper<Value>: Hashable {
       animation: Animation?,
       while predicate: @escaping (State) -> Bool
     ) async {
-      withAnimation(animation) { self.send(action) }
+      _ = withAnimation(animation) { self.send(action) }
       await self.suspend(while: predicate)
     }
 
@@ -478,6 +470,7 @@ private struct HashableWrapper<Value>: Hashable {
     /// - Parameter predicate: A predicate on `State` that determines for how long this method
     ///   should suspend.
     @MainActor
+    // TODO: deprecate and rename to `yield(while:)`
     public func suspend(while predicate: @escaping (State) -> Bool) async {
       if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
         _ = await self.publisher
@@ -510,3 +503,16 @@ private struct HashableWrapper<Value>: Hashable {
 #endif
 
 public typealias ViewStoreOf<R: ReducerProtocol> = ViewStore<R.State, R.Action>
+
+public struct ViewStoreTask {
+  public let rawValue: Task<Void, Never>
+
+  public func cancel() async {
+    self.rawValue.cancel()
+    await self.rawValue.cancellableValue
+  }
+
+  public func finish() async {
+    await self.rawValue.cancellableValue
+  }
+}
