@@ -234,7 +234,7 @@
       line: UInt = #line
     ) async {
       let start = DispatchQueue.main.now
-      while !self.reducer.inFlightEffects.isEmpty {
+      while !self._reducer.inFlightEffects.isEmpty {
         guard start.distance(to: DispatchQueue.main.now) < .nanoseconds(Int(nanoseconds))
         else {
           let timeoutMessage = nanoseconds != nanoseconds
