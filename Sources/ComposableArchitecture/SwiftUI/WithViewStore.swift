@@ -6,9 +6,9 @@ import SwiftUI
 /// store state.
 public struct WithViewStore<State, Action, Content> {
   private let content: (ViewStore<State, Action>) -> Content
+  private let file: StaticString
+  private let line: UInt
   #if DEBUG
-    private let file: StaticString
-    private let line: UInt
     private var prefix: String?
     private var previousState: (State) -> State?
   #endif
@@ -22,16 +22,16 @@ public struct WithViewStore<State, Action, Content> {
     content: @escaping (ViewStore<State, Action>) -> Content
   ) {
     self.content = content
+    self.file = file
+    self.line = line
     #if DEBUG
-      self.file = file
-      self.line = line
       var previousState: State? = nil
       self.previousState = { currentState in
         defer { previousState = currentState }
         return previousState
       }
     #endif
-    self.viewStore = ViewStore(store, removeDuplicates: isDuplicate)
+    self.viewStore = ViewStore(store, removeDuplicates: isDuplicate, file: file, line: line)
   }
 
   /// Prints debug information to the console whenever the view is computed.
@@ -74,7 +74,7 @@ public struct WithViewStore<State, Action, Content> {
         )
       }
     #endif
-    return self.content(ViewStore(self.viewStore))
+    return self.content(ViewStore(self.viewStore, file: file, line: line))
   }
 }
 
