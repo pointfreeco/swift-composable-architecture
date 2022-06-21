@@ -50,8 +50,8 @@ let dataSource: [CaseStudy] = [
     title: "Load then navigate",
     viewController: LazyNavigationViewController(
       store: Store(
-        initialState: LazyNavigationState(),
-        reducer: LazyNavigationReducer()
+        initialState: .init(),
+        reducer: LazyNavigation()
       )
     )
   ),

@@ -60,6 +60,16 @@ public struct ForEachReducer<
   public func reduce(
     into state: inout Upstream.State, action: Upstream.Action
   ) -> Effect<Upstream.Action, Never> {
+    return .merge(
+      self.reduceForEach(into: &state, action: action),
+      self.upstream.reduce(into: &state, action: action)
+    )
+  }
+
+  @inlinable
+  func reduceForEach(
+    into state: inout Upstream.State, action: Upstream.Action
+  ) -> Effect<Upstream.Action, Never> {
     guard let (id, elementAction) = self.toElementAction.extract(from: action) else { return .none }
     if state[keyPath: self.toElementsState][id: id] == nil {
       // TODO: Update language
@@ -101,11 +111,8 @@ public struct ForEachReducer<
       )
       return .none
     }
-    return .merge(
-      self.element
-        .reduce(into: &state[keyPath: self.toElementsState][id: id]!, action: elementAction)
-        .map { self.toElementAction.embed((id, $0)) },
-      self.reduce(into: &state, action: action)
-    )
+    return self.element
+      .reduce(into: &state[keyPath: self.toElementsState][id: id]!, action: elementAction)
+      .map { self.toElementAction.embed((id, $0)) }
   }
 }
