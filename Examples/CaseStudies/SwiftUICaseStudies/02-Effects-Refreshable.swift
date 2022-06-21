@@ -95,7 +95,7 @@ struct Refreshable: ReducerProtocol {
           }
         }
         .refreshable {
-          await viewStore.send(.refresh)
+          await viewStore.send(.refresh).finish()
         }
       }
     }

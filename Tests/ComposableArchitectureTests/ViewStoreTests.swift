@@ -255,3 +255,5 @@ private struct Substate: Equatable {
 
 private var equalityChecks = 0
 private var subEqualityChecks = 0
+
+// TODO: write tests for viewStore.send that use the StoreTask

@@ -3,6 +3,7 @@ import XCTest
 
 @testable import ComposableArchitecture
 
+@MainActor
 final class EffectTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
   let scheduler = DispatchQueue.test

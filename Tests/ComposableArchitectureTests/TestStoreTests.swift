@@ -2,8 +2,9 @@ import Combine
 import ComposableArchitecture
 import XCTest
 
+@MainActor
 class TestStoreTests: XCTestCase {
-  func testEffectConcatenation() {
+  func testEffectConcatenation() async {
     struct State: Equatable {}
 
     enum Action: Equatable {
@@ -47,20 +48,19 @@ class TestStoreTests: XCTestCase {
 
     store.send(.a)
 
-    mainQueue.advance(by: 1)
+    await mainQueue.advance(by: 1)
 
-    store.receive(.b1)
-    store.receive(.b2)
-    store.receive(.b3)
+    await store.receive(.b1)
+    await store.receive(.b2)
+    await store.receive(.b3)
 
-    store.receive(.c1)
-    store.receive(.c2)
-    store.receive(.c3)
+    await store.receive(.c1)
+    await store.receive(.c2)
+    await store.receive(.c3)
 
     store.send(.d)
   }
 
-  @MainActor
   func testAsync() async {
     enum Action: Equatable {
       case tap, response(Int)
