@@ -3,22 +3,22 @@ import ComposableArchitecture
 import SwiftUI
 import UIKit
 
-struct LazyNavigationState: Equatable {
-  var optionalCounter: CounterState?
-  var isActivityIndicatorHidden = true
-}
+struct LazyNavigation: ReducerProtocol {
+  struct State: Equatable {
+    var optionalCounter: CounterState?
+    var isActivityIndicatorHidden = true
+  }
 
-enum LazyNavigationAction: Equatable {
-  case onDisappear
-  case optionalCounter(CounterAction)
-  case setNavigation(isActive: Bool)
-  case setNavigationIsActiveDelayCompleted
-}
+  enum Action: Equatable {
+    case onDisappear
+    case optionalCounter(CounterAction)
+    case setNavigation(isActive: Bool)
+    case setNavigationIsActiveDelayCompleted
+  }
 
-struct LazyNavigationReducer: ReducerProtocol {
   @Dependency(\.mainQueue) var mainQueue
 
-  var body: some ReducerProtocol<LazyNavigationState, LazyNavigationAction> {
+  var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       enum CancelId {}
 
@@ -47,7 +47,7 @@ struct LazyNavigationReducer: ReducerProtocol {
         return .none
       }
     }
-    .ifLet(state: \.optionalCounter, action: /LazyNavigationAction.optionalCounter) {
+    .ifLet(state: \.optionalCounter, action: /Action.optionalCounter) {
       CounterReducer()
     }
   }
@@ -55,10 +55,10 @@ struct LazyNavigationReducer: ReducerProtocol {
 
 class LazyNavigationViewController: UIViewController {
   var cancellables: [AnyCancellable] = []
-  let store: Store<LazyNavigationState, LazyNavigationAction>
-  let viewStore: ViewStore<LazyNavigationState, LazyNavigationAction>
+  let store: StoreOf<LazyNavigation>
+  let viewStore: ViewStoreOf<LazyNavigation>
 
-  init(store: Store<LazyNavigationState, LazyNavigationAction>) {
+  init(store: StoreOf<LazyNavigation>) {
     self.store = store
     self.viewStore = ViewStore(store)
     super.init(nibName: nil, bundle: nil)
@@ -99,7 +99,7 @@ class LazyNavigationViewController: UIViewController {
       .store(in: &self.cancellables)
 
     self.store
-      .scope(state: \.optionalCounter, action: LazyNavigationAction.optionalCounter)
+      .scope(state: \.optionalCounter, action: LazyNavigation.Action.optionalCounter)
       .ifLet(
         then: { [weak self] store in
           self?.navigationController?.pushViewController(
@@ -136,8 +136,8 @@ struct LazyNavigationViewController_Previews: PreviewProvider {
     let vc = UINavigationController(
       rootViewController: LazyNavigationViewController(
         store: Store(
-          initialState: LazyNavigationState(),
-          reducer: LazyNavigationReducer()
+          initialState: .init(),
+          reducer: LazyNavigation()
         )
       )
     )

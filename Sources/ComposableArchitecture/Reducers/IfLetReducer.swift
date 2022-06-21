@@ -58,6 +58,16 @@ public struct IfLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtocol>:
   public func reduce(
     into state: inout Upstream.State, action: Upstream.Action
   ) -> Effect<Upstream.Action, Never> {
+    return .merge(
+      self.reduceWrapped(into: &state, action: action),
+      self.upstream.reduce(into: &state, action: action)
+    )
+  }
+
+  @inlinable
+  func reduceWrapped(
+    into state: inout Upstream.State, action: Upstream.Action
+  ) -> Effect<Upstream.Action, Never> {
     guard let wrappedAction = self.toWrappedAction.extract(from: action)
     else { return .none }
     guard state[keyPath: self.toWrappedState] != nil else {
@@ -94,10 +104,7 @@ public struct IfLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtocol>:
       )
       return .none
     }
-    return .merge(
-      self.wrapped.reduce(into: &state[keyPath: self.toWrappedState]!, action: wrappedAction)
-        .map(self.toWrappedAction.embed),
-      self.reduce(into: &state, action: action)
-    )
+    return self.wrapped.reduce(into: &state[keyPath: self.toWrappedState]!, action: wrappedAction)
+      .map(self.toWrappedAction.embed)
   }
 }
