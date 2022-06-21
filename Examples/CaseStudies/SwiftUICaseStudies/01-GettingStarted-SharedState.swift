@@ -51,11 +51,11 @@ struct SharedState: ReducerProtocol {
   }
 
   var body: some ReducerProtocol<State, Action> {
-    Pullback(state: \.counter, action: /Action.counter) {
+    Scope(state: \.counter, action: /Action.counter) {
       Counter()
     }
 
-    Pullback(state: \.profile, action: /Action.profile) {
+    Scope(state: \.profile, action: /Action.profile) {
       Profile()
     }
 

@@ -42,7 +42,7 @@ public struct AppReducer: ReducerProtocol {
   }
 
   public var body: some ReducerProtocol<State, Action> {
-    Pullback(state: \State.login, action: CasePath(Action.login)) {
+    Scope(state: \State.login, action: CasePath(Action.login)) {
       Login()
     }
 
@@ -83,19 +83,19 @@ public struct AppReducer: ReducerProtocol {
       }
     }
     .navigationDestination {
-      PullbackCase(
+      ScopeCase(
         state: CasePath(DestinationState.twoFactor),
         action: CasePath(DestinationAction.twoFactor)
       ) {
         TwoFactor()
       }
-      PullbackCase(
+      ScopeCase(
         state: CasePath(DestinationState.newGame),
         action: CasePath(DestinationAction.newGame)
       ) {
         NewGame()
       }
-      PullbackCase(
+      ScopeCase(
         state: CasePath(DestinationState.game),
         action: CasePath(DestinationAction.game)
       ) {

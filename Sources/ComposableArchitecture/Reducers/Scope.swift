@@ -1,26 +1,4 @@
-extension ReducerProtocol {
-  @inlinable
-  public func pullback<GlobalState, GlobalAction>(
-    state toLocalState: WritableKeyPath<GlobalState, State>,
-    action toLocalAction: CasePath<GlobalAction, Action>
-  ) -> Pullback<GlobalState, GlobalAction, Self> {
-    Pullback(state: toLocalState, action: toLocalAction) {
-      self
-    }
-  }
-
-  @inlinable
-  public func pullback<GlobalState, GlobalAction>(
-    state toLocalState: CasePath<GlobalState, State>,
-    action toLocalAction: CasePath<GlobalAction, Action>
-  ) -> PullbackCase<GlobalState, GlobalAction, Self> {
-    PullbackCase(state: toLocalState, action: toLocalAction) {
-      self
-    }
-  }
-}
-
-public struct Pullback<State, Action, Local: ReducerProtocol>: ReducerProtocol {
+public struct Scope<State, Action, Local: ReducerProtocol>: ReducerProtocol {
   @usableFromInline
   let toLocalState: WritableKeyPath<State, Local.State>
 
@@ -53,10 +31,9 @@ public struct Pullback<State, Action, Local: ReducerProtocol>: ReducerProtocol {
   }
 }
 
-public typealias Scope = Pullback
-
-// TODO: Single interface with `Pullback`
-public struct PullbackCase<State, Action, Local: ReducerProtocol>: ReducerProtocol {
+// TODO: Single interface with `Scope`?
+// TODO: Use `ifLet`, or `ifCaseLet`, or `switch` instead?
+public struct ScopeCase<State, Action, Local: ReducerProtocol>: ReducerProtocol {
   @usableFromInline
   let toLocalState: CasePath<State, Local.State>
 

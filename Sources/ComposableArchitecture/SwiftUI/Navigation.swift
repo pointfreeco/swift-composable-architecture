@@ -236,6 +236,7 @@ where
 }
 
 extension ReducerProtocol where State: NavigableState, Action: NavigableAction {
+  // TODO: Should this be `navigationDestination(state:action:_:)` to avoid `ScopeCase`?
   public func navigationDestination<Destinations: ReducerProtocol>(
     @ReducerBuilder<Destinations.State, Destinations.Action> destinations: () -> Destinations
   ) -> NavigationDestinationReducer<Self, Destinations> {

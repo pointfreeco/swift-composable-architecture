@@ -11,7 +11,7 @@ enum RootAction {
 
 struct RootReducer: ReducerProtocol {
   var body: some ReducerProtocol<RootState, RootAction> {
-    Pullback(state: \.focus, action: /RootAction.focus) {
+    Scope(state: \.focus, action: /RootAction.focus) {
       FocusReducer()
     }
   }

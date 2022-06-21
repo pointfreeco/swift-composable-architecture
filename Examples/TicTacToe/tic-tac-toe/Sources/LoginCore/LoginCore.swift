@@ -65,5 +65,8 @@ public struct Login: ReducerProtocol {
         }
       }
     }
+    .ifLet(state: \.twoFactor, action: /Action.twoFactor) {
+      TwoFactor(tearDownToken: TwoFactorTearDownToken.self)
+    }
   }
 }

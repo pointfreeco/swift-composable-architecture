@@ -210,40 +210,7 @@
       self.line = line
     }
 
-    /// Initializes a test store from an initial state, a reducer, and an initial environment.
-    ///
-    /// - Parameters:
-    ///   - initialState: The state to start the test from.
-    ///   - reducer: A reducer.
-    ///   - environment: The environment to start the test from.
-    public init(
-      initialState: LocalState,
-      reducer: ComposableArchitecture.Reducer<LocalState, LocalAction, Environment>,
-      environment: Environment,
-      file: StaticString = #file,
-      line: UInt = #line
-    )
-    where
-      Reducer == Reduce<LocalState, LocalAction>
-    {
-      let environment = Box(wrappedValue: environment)
-      let reducer = TestReducer(
-        Reduce(
-          reducer.pullback(state: \.self, action: .self, environment: { $0.wrappedValue }),
-          environment: environment
-        ),
-        initialState: initialState
-      )
-      self._reducer = reducer
-      self.toLocalState = { $0 }
-      self.fromLocalAction = { $0 }
-      self.store = Store(initialState: initialState, reducer: reducer)
-      self._environment = environment
-      self.line = line
-      self.file = file
-    }
-
-    private init(
+    init(
       _environment: Box<Environment>,
       file: StaticString,
       fromLocalAction: @escaping (LocalAction) -> Reducer.Action,

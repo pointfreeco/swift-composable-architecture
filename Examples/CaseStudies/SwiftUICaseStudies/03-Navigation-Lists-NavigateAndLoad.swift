@@ -32,18 +32,6 @@ struct NavigateAndLoadList: ReducerProtocol {
   @Dependency(\.mainQueue) var mainQueue
 
   var body: some ReducerProtocol<State, Action> {
-    Pullback(state: \.selection, action: /Action.counter) {
-      IfLetReducer {
-        Pullback(
-          state: \Identified<State.Row.ID, Counter.State?>.value, action: .self
-        ) {
-          IfLetReducer {
-            Counter()
-          }
-        }
-      }
-    }
-
     Reduce { state, action in
       enum CancelId {}
 
@@ -71,6 +59,12 @@ struct NavigateAndLoadList: ReducerProtocol {
         state.selection?.value = .init(count: state.rows[id: id]?.count ?? 0)
         return .none
       }
+    }
+    .ifLet(state: \.selection, action: /Action.counter) {
+      EmptyReducer()
+        .ifLet(state: \Identified<State.Row.ID, Counter.State?>.value, action: .self) {
+          Counter()
+        }
     }
   }
 }

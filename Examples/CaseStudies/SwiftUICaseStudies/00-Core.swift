@@ -91,62 +91,62 @@ struct Root: ReducerProtocol {
       }
     }
 
-    Pullback(state: \.alertAndConfirmationDialog, action: /Action.alertAndConfirmationDialog) {
+    Scope(state: \.alertAndConfirmationDialog, action: /Action.alertAndConfirmationDialog) {
       AlertAndConfirmationDialog()
     }
-    Pullback(state: \.animation, action: /Action.animation) {
+    Scope(state: \.animation, action: /Action.animation) {
       Animations()
     }
-    Pullback(state: \.bindingBasics, action: /Action.bindingBasics) {
+    Scope(state: \.bindingBasics, action: /Action.bindingBasics) {
       BindingBasics()
     }
     #if compiler(>=5.4)
-      Pullback(state: \.bindingForm, action: /Action.bindingForm) {
+      Scope(state: \.bindingForm, action: /Action.bindingForm) {
         BindingForm()
       }
     #endif
-    Pullback(state: \.clock, action: /Action.clock) {
+    Scope(state: \.clock, action: /Action.clock) {
       Reduce(clockReducer, environment: .init(mainQueue: self.mainQueue))
     }
-    Pullback(state: \.counter, action: /Action.counter) {
+    Scope(state: \.counter, action: /Action.counter) {
       Counter()
     }
-    Pullback(state: \.effectsBasics, action: /Action.effectsBasics) {
+    Scope(state: \.effectsBasics, action: /Action.effectsBasics) {
       EffectsBasics()
     }
-    Pullback(state: \.effectsCancellation, action: /Action.effectsCancellation) {
+    Scope(state: \.effectsCancellation, action: /Action.effectsCancellation) {
       EffectsCancellation()
     }
-    Pullback(state: \.episodes, action: /Action.episodes) {
+    Scope(state: \.episodes, action: /Action.episodes) {
       Reduce(
         episodesReducer,
         environment: .init(favorite: favorite(id:isFavorite:))
       )
     }
     #if compiler(>=5.5)
-      Pullback(state: \.focusDemo, action: /Action.focusDemo) {
+      Scope(state: \.focusDemo, action: /Action.focusDemo) {
         FocusDemo()
       }
     #endif
-    Pullback(state: \.lifecycle, action: /Action.lifecycle) {
+    Scope(state: \.lifecycle, action: /Action.lifecycle) {
       Reduce(lifecycleDemoReducer, environment: .init(mainQueue: self.mainQueue))
     }
-    Pullback(state: \.loadThenNavigate, action: /Action.loadThenNavigate) {
+    Scope(state: \.loadThenNavigate, action: /Action.loadThenNavigate) {
       LoadThenNavigate()
     }
-    Pullback(state: \.loadThenNavigateList, action: /Action.loadThenNavigateList) {
+    Scope(state: \.loadThenNavigateList, action: /Action.loadThenNavigateList) {
       LoadThenNavigateList()
     }
-    Pullback(state: \.loadThenPresent, action: /Action.loadThenPresent) {
+    Scope(state: \.loadThenPresent, action: /Action.loadThenPresent) {
       LoadThenPresent()
     }
-    Pullback(state: \.longLivingEffects, action: /Action.longLivingEffects) {
+    Scope(state: \.longLivingEffects, action: /Action.longLivingEffects) {
       LongLivingEffects()
     }
-    Pullback(state: \.map, action: /Action.map) {
+    Scope(state: \.map, action: /Action.map) {
       Reduce(mapAppReducer, environment: .init(downloadClient: .live, mainQueue: self.mainQueue))
     }
-    Pullback(state: \.multipleDependencies, action: /Action.multipleDependencies) {
+    Scope(state: \.multipleDependencies, action: /Action.multipleDependencies) {
       Reduce(
         multipleDependenciesReducer,
         environment: .init(
@@ -157,37 +157,37 @@ struct Root: ReducerProtocol {
         )
       )
     }
-    Pullback(state: \.navigateAndLoad, action: /Action.navigateAndLoad) {
+    Scope(state: \.navigateAndLoad, action: /Action.navigateAndLoad) {
       NavigateAndLoad()
     }
-    Pullback(state: \.navigateAndLoadList, action: /Action.navigateAndLoadList) {
+    Scope(state: \.navigateAndLoadList, action: /Action.navigateAndLoadList) {
       NavigateAndLoadList()
     }
-    Pullback(state: \.navigationStack, action: /Action.navigationStack) {
+    Scope(state: \.navigationStack, action: /Action.navigationStack) {
       NavigationDemo()
     }
-    Pullback(state: \.nested, action: /Action.nested) {
+    Scope(state: \.nested, action: /Action.nested) {
       Nested()
     }
-    Pullback(state: \.optionalBasics, action: /Action.optionalBasics) {
+    Scope(state: \.optionalBasics, action: /Action.optionalBasics) {
       OptionalBasics()
     }
-    Pullback(state: \.presentAndLoad, action: /Action.presentAndLoad) {
+    Scope(state: \.presentAndLoad, action: /Action.presentAndLoad) {
       PresentAndLoad()
     }
-    Pullback(state: \.refreshable, action: /Action.refreshable) {
+    Scope(state: \.refreshable, action: /Action.refreshable) {
       Refreshable()
     }
-    Pullback(state: \.shared, action: /Action.shared) {
+    Scope(state: \.shared, action: /Action.shared) {
       SharedState()
     }
-    Pullback(state: \.timers, action: /Action.timers) {
+    Scope(state: \.timers, action: /Action.timers) {
       Timers()
     }
-    Pullback(state: \.twoCounters, action: /Action.twoCounters) {
+    Scope(state: \.twoCounters, action: /Action.twoCounters) {
       TwoCounters()
     }
-    Pullback(state: \.webSocket, action: /Action.webSocket) {
+    Scope(state: \.webSocket, action: /Action.webSocket) {
       WebSocket()
     }
   }

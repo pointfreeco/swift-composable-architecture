@@ -25,12 +25,6 @@ struct NavigateAndLoad: ReducerProtocol {
   @Dependency(\.mainQueue) var mainQueue
 
   var body: some ReducerProtocol<State, Action> {
-    Pullback(state: \.optionalCounter, action: /Action.optionalCounter) {
-      IfLetReducer {
-        Counter()
-      }
-    }
-
     Reduce { state, action in
       enum CancelId {}
 
@@ -55,6 +49,9 @@ struct NavigateAndLoad: ReducerProtocol {
       case .optionalCounter:
         return .none
       }
+    }
+    .ifLet(state: \.optionalCounter, action: /Action.optionalCounter) {
+      Counter()
     }
   }
 }
