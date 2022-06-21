@@ -1,5 +1,4 @@
 extension DependencyValues {
-
   public var navigationID: NavigationID {
     get { self[NavigationIDKey.self] }
     set { self[NavigationIDKey.self] = newValue }
@@ -12,6 +11,7 @@ extension DependencyValues {
 }
 
 // TODO: make sendable
+// TODO: should this be called `Navigation` with `nextID` and `currentID`?
 public struct NavigationID {
   public var next: () -> AnyHashable
   public var current: AnyHashable?
