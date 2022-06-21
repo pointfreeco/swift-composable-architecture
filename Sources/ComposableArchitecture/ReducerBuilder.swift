@@ -18,22 +18,26 @@ public enum ReducerBuilder<State, Action> {
   }
 
   @inlinable
-  public static func buildEither<R: ReducerProtocol>(first reducer: R) -> R {
+  public static func buildEither<R: ReducerProtocol>(first reducer: R) -> R
+  where R.State == State, R.Action == Action {
     reducer
   }
 
   @inlinable
-  public static func buildEither<R: ReducerProtocol>(second reducer: R) -> R {
+  public static func buildEither<R: ReducerProtocol>(second reducer: R) -> R
+  where R.State == State, R.Action == Action {
     reducer
   }
 
   @inlinable
-  public static func buildLimitedAvailability<R: ReducerProtocol>(_ wrapped: R) -> Optional<R> {
+  public static func buildLimitedAvailability<R: ReducerProtocol>(_ wrapped: R) -> Optional<R>
+  where R.State == State, R.Action == Action {
     .init(wrapped: wrapped)
   }
 
   @inlinable
-  public static func buildOptional<R: ReducerProtocol>(_ wrapped: R?) -> Optional<R> {
+  public static func buildOptional<R: ReducerProtocol>(_ wrapped: R?) -> Optional<R>
+  where R.State == State, R.Action == Action {
     .init(wrapped: wrapped)
   }
 
@@ -47,7 +51,7 @@ public enum ReducerBuilder<State, Action> {
   public static func buildPartialBlock<R0: ReducerProtocol, R1: ReducerProtocol>(
     accumulated: R0, next: R1
   ) -> Sequence<R0, R1>
-  where R0.State == State, R1.Action == Action {
+  where R0.State == State, R0.Action == Action {
     .init(r0: accumulated, r1: next)
   }
 
