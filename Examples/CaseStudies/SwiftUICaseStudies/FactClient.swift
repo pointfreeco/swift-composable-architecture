@@ -17,6 +17,7 @@ extension FactClient {
       fetch: { number in
         Effect.task {
           do {
+            try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
             let (data, _) = try await URLSession.shared
               .data(from: URL(string: "http://numbersapi.com/\(number)/trivia")!)
             return String(decoding: data, as: UTF8.self)

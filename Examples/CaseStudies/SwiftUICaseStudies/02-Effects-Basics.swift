@@ -33,6 +33,7 @@ struct EffectsBasicsState: Equatable {
 
 enum EffectsBasicsAction: Equatable {
   case decrementButtonTapped
+  case decrementDelayFinished
   case incrementButtonTapped
   case numberFactButtonTapped
   case numberFactResponse(Result<String, FactClient.Error>)
@@ -46,21 +47,39 @@ struct EffectsBasicsEnvironment {
 // MARK: - Feature business logic
 
 let effectsBasicsReducer = Reducer<
-  EffectsBasicsState, EffectsBasicsAction, EffectsBasicsEnvironment
+  EffectsBasicsState,
+  EffectsBasicsAction,
+    EffectsBasicsEnvironment
 > { state, action, environment in
+  struct DelayID {}
+
   switch action {
   case .decrementButtonTapped:
     state.count -= 1
     state.numberFact = nil
-    // Return an effect that re-increments the count after 1 second.
-    return Effect(value: EffectsBasicsAction.incrementButtonTapped)
-      .delay(for: 1, scheduler: environment.mainQueue)
-      .eraseToEffect()
+
+    // Return an effect that re-increments the count after 1 second if it dips below 0.
+    if state.count < 0 {
+      return Effect(value: EffectsBasicsAction.decrementDelayFinished)
+        .delay(for: 1, scheduler: environment.mainQueue)
+        .eraseToEffect()
+        .cancellable(id: DelayID.self)
+    } else {
+      return .none
+    }
+
+  case .decrementDelayFinished:
+    if state.count < 0 {
+      state.count += 1
+    }
+    return .none
 
   case .incrementButtonTapped:
     state.count += 1
     state.numberFact = nil
-    return .none
+    return state.count >= 0
+    ? .cancel(id: DelayID.self)
+    : .none
 
   case .numberFactButtonTapped:
     state.isNumberFactRequestInFlight = true
@@ -90,15 +109,11 @@ struct EffectsBasicsView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(readMe)) {
-          EmptyView()
-        }
+//        Section {
+//          Text(readMe)
+//        }
 
-        Section(
-          footer: Button("Number facts provided by numbersapi.com") {
-            UIApplication.shared.open(URL(string: "http://numbersapi.com")!)
-          }
-        ) {
+        Section {
           HStack {
             Spacer()
             Button("−") { viewStore.send(.decrementButtonTapped) }
@@ -109,13 +124,26 @@ struct EffectsBasicsView: View {
           }
           .buttonStyle(.borderless)
 
-          Button("Number fact") { viewStore.send(.numberFactButtonTapped) }
+          HStack {
+            Spacer()
+            Button("Number fact") { viewStore.send(.numberFactButtonTapped) }
+            Spacer()
+          }
+        }
+
+        Section {
           if viewStore.isNumberFactRequestInFlight {
             ProgressView()
+              .id(UUID()) // TODO: ????
           }
-
-          viewStore.numberFact.map(Text.init)
+          if let fact = viewStore.numberFact {
+            Text(fact)
+          }
         }
+
+//        Button("Number facts provided by numbersapi.com") {
+//          UIApplication.shared.open(URL(string: "http://numbersapi.com")!)
+//        }
       }
     }
     .navigationBarTitle("Effects")
