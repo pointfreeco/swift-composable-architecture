@@ -12,9 +12,29 @@ public enum ReducerBuilder<State, Action> {
   }
 
   @inlinable
-  public static func buildBlock<R: ReducerProtocol>(_ r: R) -> R
+  public static func buildBlock<R: ReducerProtocol>(_ reducer: R) -> R
   where R.State == State, R.Action == Action {
-    r
+    reducer
+  }
+
+  @inlinable
+  public static func buildEither<R: ReducerProtocol>(first reducer: R) -> R {
+    reducer
+  }
+
+  @inlinable
+  public static func buildEither<R: ReducerProtocol>(second reducer: R) -> R {
+    reducer
+  }
+
+  @inlinable
+  public static func buildLimitedAvailability<R: ReducerProtocol>(_ wrapped: R) -> Optional<R> {
+    .init(wrapped: wrapped)
+  }
+
+  @inlinable
+  public static func buildOptional<R: ReducerProtocol>(_ wrapped: R?) -> Optional<R> {
+    .init(wrapped: wrapped)
   }
 
   @inlinable
@@ -51,6 +71,28 @@ public enum ReducerBuilder<State, Action> {
         self.r0.reduce(into: &state, action: action),
         self.r1.reduce(into: &state, action: action)
       )
+    }
+  }
+
+  public struct Optional<Wrapped: ReducerProtocol>: ReducerProtocol {
+    @usableFromInline
+    let wrapped: Wrapped?
+
+    @usableFromInline
+    init(wrapped: Wrapped?) {
+      self.wrapped = wrapped
+    }
+
+    @inlinable
+    public func reduce(
+      into state: inout Wrapped.State, action: Wrapped.Action
+    ) -> Effect<Wrapped.Action, Never> {
+      switch wrapped {
+      case let .some(wrapped):
+        return wrapped.reduce(into: &state, action: action)
+      case .none:
+        return .none
+      }
     }
   }
 }
