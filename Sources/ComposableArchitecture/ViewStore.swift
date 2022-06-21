@@ -70,7 +70,9 @@ public final class ViewStore<State, Action>: ObservableObject {
   public init(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
-    instrumentation: Instrumentation = .shared
+    instrumentation: Instrumentation = .shared,
+    file: StaticString = #file,
+    line: UInt = #line
   ) {
     self._send = {
       let sendCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: $0).eraseToAny()
@@ -99,13 +101,16 @@ public final class ViewStore<State, Action>: ObservableObject {
         _state.value = $0
       }
 
+      instrumentation.viewStoreCreated?(self as AnyObject, file, line)
   }
 
-  internal init(_ viewStore: ViewStore<State, Action>, instrumentation: Instrumentation = .shared) {
+  internal init(_ viewStore: ViewStore<State, Action>, instrumentation: Instrumentation = .shared, file: StaticString = #file, line: UInt = #line) {
     self._send = viewStore._send
     self._state = viewStore._state
     self.objectWillChange = viewStore.objectWillChange
     self.viewCancellable = viewStore.viewCancellable
+
+    instrumentation.viewStoreCreated?(self as AnyObject, file, line)
   }
 
   /// A publisher that emits when state changes.
@@ -296,14 +301,14 @@ public final class ViewStore<State, Action>: ObservableObject {
 }
 
 extension ViewStore where State: Equatable {
-  public convenience init(_ store: Store<State, Action>, instrumentation: Instrumentation = .shared) {
-    self.init(store, removeDuplicates: ==, instrumentation: instrumentation)
+  public convenience init(_ store: Store<State, Action>, instrumentation: Instrumentation = .shared, file: StaticString = #file, line: UInt = #line) {
+    self.init(store, removeDuplicates: ==, instrumentation: instrumentation, file: file, line: line)
   }
 }
 
 extension ViewStore where State == Void {
-  public convenience init(_ store: Store<Void, Action>, instrumentation: Instrumentation = .shared) {
-    self.init(store, removeDuplicates: ==, instrumentation: instrumentation)
+  public convenience init(_ store: Store<Void, Action>, instrumentation: Instrumentation = .shared, file: StaticString = #file, line: UInt = #line) {
+    self.init(store, removeDuplicates: ==, instrumentation: instrumentation, file: file, line: line)
   }
 }
 

@@ -10,7 +10,7 @@ final class InstrumentationTests: XCTestCase {
     var sendCalls = 0
     var changeStateCalls = 0
     var processCalls = 0
-    let inst = ComposableArchitecture.Instrumentation { info, timing, kind in
+    let inst = ComposableArchitecture.Instrumentation(callback: { info, timing, kind in
       switch (timing, kind) {
       case (_, .viewStoreSend), (_, .viewStoreDeduplicate), (_, .viewStoreChangeState):
         XCTFail("ViewStore callbacks should not be called")
@@ -21,7 +21,7 @@ final class InstrumentationTests: XCTestCase {
       case (_, .storeProcessEvent):
         processCalls += 1
       }
-    }
+    })
 
 
     let store = Store(initialState: (), reducer: Reducer<Void, Void, Void>.empty, environment: ())
@@ -40,7 +40,7 @@ final class InstrumentationTests: XCTestCase {
     var sendCalls_s = 0
     var changeStateCalls_s = 0
     var processCalls_s = 0
-    let inst = ComposableArchitecture.Instrumentation { info, timing, kind in
+    let inst = ComposableArchitecture.Instrumentation(callback: { info, timing, kind in
       switch (timing, kind) {
       case (_, .storeSend):
         sendCalls_s += 1
@@ -55,7 +55,7 @@ final class InstrumentationTests: XCTestCase {
       case (_, .viewStoreChangeState):
         changeCalls_vs += 1
       }
-    }
+    })
 
     let store = Store(initialState: (), reducer: Reducer<Void, Void, Void>.empty, environment: ())
     let viewStore = ViewStore(store, instrumentation: inst)
@@ -78,7 +78,7 @@ final class InstrumentationTests: XCTestCase {
     var changeStateCalls_s = 0
     var processCalls_s = 0
 
-    let inst = ComposableArchitecture.Instrumentation { info, timing, kind in
+    let inst = ComposableArchitecture.Instrumentation(callback: { info, timing, kind in
       switch (timing, kind) {
       case (_, .storeSend):
         sendCalls_s += 1
@@ -93,7 +93,7 @@ final class InstrumentationTests: XCTestCase {
       case (_, .viewStoreChangeState):
         changeCalls_vs += 1
       }
-    }
+    })
 
     var reducerCount = 0
     let reducer = Reducer<Void, Void, Void> { _, _, _ in
@@ -123,7 +123,7 @@ final class InstrumentationTests: XCTestCase {
     var changeStateCalls_s = 0
     var processCalls_s = 0
 
-    let inst = ComposableArchitecture.Instrumentation { info, timing, kind in
+    let inst = ComposableArchitecture.Instrumentation(callback: { info, timing, kind in
       switch (timing, kind) {
       case (_, .storeSend):
         sendCalls_s += 1
@@ -138,7 +138,7 @@ final class InstrumentationTests: XCTestCase {
       case (_, .viewStoreChangeState):
         changeCalls_vs += 1
       }
-    }
+    })
 
     var reducerCount = 0
     let reducer = Reducer<Void, Void, Void> { _, _, _ in
@@ -178,7 +178,7 @@ final class InstrumentationTests: XCTestCase {
     var changeStateCalls_s = 0
     var processCalls_s = 0
 
-    let inst = ComposableArchitecture.Instrumentation { info, timing, kind in
+    let inst = ComposableArchitecture.Instrumentation(callback: { info, timing, kind in
       switch (timing, kind) {
       case (_, .storeSend):
         sendCalls_s += 1
@@ -193,7 +193,7 @@ final class InstrumentationTests: XCTestCase {
       case (_, .viewStoreChangeState):
         changeCalls_vs += 1
       }
-    }
+    })
 
     let counterReducer = Reducer<Int, Void, Void> { state, _, _ in
       state += 1
@@ -218,5 +218,21 @@ final class InstrumentationTests: XCTestCase {
     XCTAssertEqual(2, sendCalls_s)
     XCTAssertEqual(2, changeStateCalls_s)
     XCTAssertEqual(2, processCalls_s)
+  }
+
+  func test_tracks_viewStore_creation() {
+    var viewStoreCreated: AnyObject?
+
+    let inst = ComposableArchitecture.Instrumentation(callback: nil, viewStoreCreated: { viewStore, _, _ in
+      viewStoreCreated = viewStore
+    })
+
+    let reducer = Reducer<Int, Void, Void> { _, _, _ in
+      return .none
+    }
+    let parentStore = Store(initialState: 0, reducer: reducer, environment: ())
+    let parentViewStore = ViewStore(parentStore, instrumentation: inst)
+
+    XCTAssertIdentical(viewStoreCreated, parentViewStore)
   }
 }

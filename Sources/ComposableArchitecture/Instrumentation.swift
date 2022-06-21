@@ -3,6 +3,8 @@ import Foundation
 /// Interface to enable tracking/instrumenting the activity within TCA as ``Actions`` are sent into ``Store``s and
 /// ``ViewStores``, ``Reducers`` are executed, and ``Effects`` are observed.
 ///
+/// Additionally it can also track where `ViewStore` instances's are created.
+///
 /// The way the library will call the closures provided is identical to the way that the ``Actions`` and ``Effects`` are
 /// handled internally. That means that there are likely to be ``Instrumentation.ViewStore`` `will|did` pairs contained
 /// within the bounds of an ``Instrumentation.Store`` `will|did` pair. For example: Consider sending a simple ``Action``
@@ -57,11 +59,16 @@ public class Instrumentation {
   public typealias Callback = (_ info: CallbackInfo<Any, Any>, _ timing: CallbackTiming, _ kind: CallbackKind) -> Void
   let callback: Callback?
 
+  /// Used to track when an instance of a `ViewStore` was created
+  public typealias ViewStoreCreatedCallback = (_ instance: AnyObject, _ file: StaticString, _ line: UInt) -> Void
+  let viewStoreCreated: ViewStoreCreatedCallback?
+
   public static let noop = Instrumentation()
   public static var shared: Instrumentation = .noop
 
-  public init(callback: Callback? = nil) {
+  public init(callback: Callback? = nil, viewStoreCreated: ViewStoreCreatedCallback? = nil) {
     self.callback = callback
+    self.viewStoreCreated = viewStoreCreated
   }
 }
 
