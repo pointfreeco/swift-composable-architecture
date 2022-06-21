@@ -1,9 +1,8 @@
 @resultBuilder
 public enum ReducerBuilder<State, Action> {
-  @inlinable
-  public static func buildExpression<R: ReducerProtocol>(_ expression: R) -> R
+  public static func buildArray<R: ReducerProtocol>(_ reducers: [R]) -> SequenceMany<R>
   where R.State == State, R.Action == Action {
-    expression
+    .init(reducers: reducers)
   }
 
   @inlinable
@@ -27,6 +26,12 @@ public enum ReducerBuilder<State, Action> {
   public static func buildEither<R: ReducerProtocol>(second reducer: R) -> R
   where R.State == State, R.Action == Action {
     reducer
+  }
+
+  @inlinable
+  public static func buildExpression<R: ReducerProtocol>(_ expression: R) -> R
+  where R.State == State, R.Action == Action {
+    expression
   }
 
   @inlinable
@@ -96,6 +101,25 @@ public enum ReducerBuilder<State, Action> {
       .merge(
         self.r0.reduce(into: &state, action: action),
         self.r1.reduce(into: &state, action: action)
+      )
+    }
+  }
+
+  public struct SequenceMany<Element: ReducerProtocol>: ReducerProtocol {
+    @usableFromInline
+    let reducers: [Element]
+
+    @usableFromInline
+    init(reducers: [Element]) {
+      self.reducers = reducers
+    }
+
+    @inlinable
+    public func reduce(
+      into state: inout Element.State, action: Element.Action
+    ) -> Effect<Element.Action, Never> {
+      .merge(
+        reducers.map { $0.reduce(into: &state, action: action) }
       )
     }
   }
