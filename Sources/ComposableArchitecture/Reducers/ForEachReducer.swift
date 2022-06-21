@@ -62,7 +62,7 @@ public struct ForEachReducer<
   ) -> Effect<Upstream.Action, Never> {
     guard let (id, elementAction) = self.toElementAction.extract(from: action) else { return .none }
     if state[keyPath: self.toElementsState][id: id] == nil {
-      // TODO: Update wording
+      // TODO: Update language
       runtimeWarning(
         """
         A "forEach" reducer at "%@:%d" received an action when state contained no element with \
