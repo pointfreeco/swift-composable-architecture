@@ -131,18 +131,17 @@ struct NavigationDemoView: View {
         }
         .navigationDestination(store: self.store) {
           DestinationStore(
-            // NB: Using explicit CasePath(...) due to Swift compiler bugs
-            state: CasePath(NavigationDemo.DestinationState.screenA).extract(from:),
+            state: /NavigationDemo.DestinationState.screenA,
             action: NavigationDemo.DestinationAction.screenA,
             content: ScreenAView.init(store:)
           )
           DestinationStore(
-            state: CasePath(NavigationDemo.DestinationState.screenB).extract(from:),
+            state: /NavigationDemo.DestinationState.screenB,
             action: NavigationDemo.DestinationAction.screenB,
             content: ScreenBView.init(store:)
           )
           DestinationStore(
-            state: CasePath(NavigationDemo.DestinationState.screenC).extract(from:),
+            state: /NavigationDemo.DestinationState.screenC,
             action: NavigationDemo.DestinationAction.screenC,
             content: ScreenCView.init(store:)
           )
