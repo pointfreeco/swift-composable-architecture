@@ -3,20 +3,18 @@ import ComposableArchitecture
 import SwiftUI
 import UIKit
 
-struct CounterState: Equatable, Identifiable {
-  let id = UUID()
-  var count = 0
-}
+struct Counter: ReducerProtocol {
+  struct State: Equatable, Identifiable {
+    let id = UUID()
+    var count = 0
+  }
 
-enum CounterAction: Equatable {
-  case decrementButtonTapped
-  case incrementButtonTapped
-}
+  enum Action: Equatable {
+    case decrementButtonTapped
+    case incrementButtonTapped
+  }
 
-struct CounterReducer: ReducerProtocol {
-  func reduce(
-    into state: inout CounterState, action: CounterAction
-  ) -> Effect<CounterAction, Never> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {
     case .decrementButtonTapped:
       state.count -= 1
@@ -29,10 +27,10 @@ struct CounterReducer: ReducerProtocol {
 }
 
 final class CounterViewController: UIViewController {
-  let viewStore: ViewStore<CounterState, CounterAction>
+  let viewStore: ViewStoreOf<Counter>
   private var cancellables: Set<AnyCancellable> = []
 
-  init(store: Store<CounterState, CounterAction>) {
+  init(store: StoreOf<Counter>) {
     self.viewStore = ViewStore(store)
     super.init(nibName: nil, bundle: nil)
   }
@@ -89,8 +87,8 @@ struct CounterViewController_Previews: PreviewProvider {
   static var previews: some View {
     let vc = CounterViewController(
       store: Store(
-        initialState: CounterState(),
-        reducer: CounterReducer()
+        initialState: .init(),
+        reducer: Counter()
       )
     )
     return UIViewRepresented(makeUIView: { _ in vc.view })

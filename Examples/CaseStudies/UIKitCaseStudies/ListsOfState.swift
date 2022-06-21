@@ -3,19 +3,19 @@ import ComposableArchitecture
 import SwiftUI
 import UIKit
 
-struct CounterListState: Equatable {
-  var counters: IdentifiedArrayOf<CounterState> = []
-}
+struct CounterList: ReducerProtocol {
+  struct State: Equatable {
+    var counters: IdentifiedArrayOf<Counter.State> = []
+  }
 
-enum CounterListAction: Equatable {
-  case counter(id: CounterState.ID, action: CounterAction)
-}
+  enum Action: Equatable {
+    case counter(id: Counter.State.ID, action: Counter.Action)
+  }
 
-struct CounterListReducer: ReducerProtocol {
-  var body: some ReducerProtocol<CounterListState, CounterListAction> {
+  var body: some ReducerProtocol<State, Action> {
     EmptyReducer()
-      .forEach(state: \.counters, action: /CounterListAction.counter) {
-        CounterReducer()
+      .forEach(state: \.counters, action: /Action.counter) {
+        Counter()
       }
   }
 }
@@ -23,11 +23,11 @@ struct CounterListReducer: ReducerProtocol {
 let cellIdentifier = "Cell"
 
 final class CountersTableViewController: UITableViewController {
-  let store: Store<CounterListState, CounterListAction>
-  let viewStore: ViewStore<CounterListState, CounterListAction>
+  let store: StoreOf<CounterList>
+  let viewStore: ViewStoreOf<CounterList>
   var cancellables: Set<AnyCancellable> = []
 
-  init(store: Store<CounterListState, CounterListAction>) {
+  init(store: StoreOf<CounterList>) {
     self.store = store
     self.viewStore = ViewStore(store)
     super.init(nibName: nil, bundle: nil)
@@ -82,14 +82,14 @@ struct CountersTableViewController_Previews: PreviewProvider {
     let vc = UINavigationController(
       rootViewController: CountersTableViewController(
         store: Store(
-          initialState: CounterListState(
+          initialState: .init(
             counters: [
-              CounterState(),
-              CounterState(),
-              CounterState(),
+              .init(),
+              .init(),
+              .init(),
             ]
           ),
-          reducer: CounterListReducer()
+          reducer: CounterList()
         )
       )
     )
