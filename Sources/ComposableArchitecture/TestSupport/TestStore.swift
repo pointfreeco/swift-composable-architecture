@@ -160,6 +160,11 @@
   /// not expect it would cause a test failure.
   ///
   public final class TestStore<Reducer: ReducerProtocol, LocalState, LocalAction, Environment> {
+    public var dependencies: DependencyValues {
+      _read { yield self._reducer.dependencies }
+      _modify { yield &self._reducer.dependencies }
+    }
+
     /// The current environment.
     ///
     /// The environment can be modified throughout a test store's lifecycle in order to influence
@@ -341,8 +346,6 @@
           line: line
         )
       }
-
-      //
 
       var expectedState = self.toLocalState(self._reducer.state)
       let previousState = self._reducer.state
@@ -552,6 +555,7 @@
 
   class TestReducer<Upstream>: ReducerProtocol where Upstream: ReducerProtocol {
     let upstream: Upstream
+    var dependencies = DependencyValues(isTesting: true)
     var inFlightEffects: Set<LongLivingEffect> = []
     var receivedActions: [(action: Upstream.Action, state: Upstream.State)] = []
     var state: Upstream.State
@@ -565,8 +569,7 @@
     }
 
     func reduce(into state: inout Upstream.State, action: TestAction) -> Effect<TestAction, Never> {
-      let reducer = self.upstream
-        .dependency(\.isTesting, true) // TODO: navigationID
+      let reducer = self.upstream.dependency(\.self, dependencies)
 
       let effects: Effect<Upstream.Action, Never>
       switch action.origin {
