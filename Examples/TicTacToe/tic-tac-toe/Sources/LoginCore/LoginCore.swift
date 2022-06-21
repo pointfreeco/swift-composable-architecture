@@ -38,7 +38,7 @@ public struct Login: ReducerProtocol {
         state.isFormValid = !state.email.isEmpty && !state.password.isEmpty
         return .none
 
-      case let .loginResponse(.success(response)):
+      case .loginResponse(.success):
         state.isLoginRequestInFlight = false
         return .none
 
@@ -64,9 +64,6 @@ public struct Login: ReducerProtocol {
           )
         }
       }
-    }
-    .ifLet(state: \.twoFactor, action: /Action.twoFactor) {
-      TwoFactor(tearDownToken: TwoFactorTearDownToken.self)
     }
   }
 }

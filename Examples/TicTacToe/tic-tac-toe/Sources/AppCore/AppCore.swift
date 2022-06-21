@@ -82,25 +82,23 @@ public struct AppReducer: ReducerProtocol {
         return .none
       }
     }
-    .navigationDestination {
-      ScopeCase(
-        state: CasePath(DestinationState.twoFactor),
-        action: CasePath(DestinationAction.twoFactor)
-      ) {
-        TwoFactor()
-      }
-      ScopeCase(
-        state: CasePath(DestinationState.newGame),
-        action: CasePath(DestinationAction.newGame)
-      ) {
-        NewGame()
-      }
-      ScopeCase(
-        state: CasePath(DestinationState.game),
-        action: CasePath(DestinationAction.game)
-      ) {
-        Game()
-      }
+    .navigationDestination(
+      state: /DestinationState.twoFactor,
+      action: /DestinationAction.twoFactor
+    ) {
+      TwoFactor()
+    }
+    .navigationDestination(
+      state: /DestinationState.newGame,
+      action: /DestinationAction.newGame
+    ) {
+      NewGame()
+    }
+    .navigationDestination(
+      state: /DestinationState.game,
+      action: /DestinationAction.game
+    ) {
+      Game()
     }
   }
 }

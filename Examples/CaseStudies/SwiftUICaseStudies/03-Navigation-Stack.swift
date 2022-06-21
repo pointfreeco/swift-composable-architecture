@@ -76,26 +76,23 @@ struct NavigationDemo: ReducerProtocol {
         })
       }
     }
-    .navigationDestination {
-      ScopeCase(
-        // NB: Using explicit CasePath(...) due to Swift compiler bugs
-        state: CasePath(DestinationState.screenA),
-        action: CasePath(DestinationAction.screenA)
-      ) {
-        ScreenA()
-      }
-      ScopeCase(
-        state: CasePath(DestinationState.screenB),
-        action: CasePath(DestinationAction.screenB)
-      ) {
-        ScreenB()
-      }
-      ScopeCase(
-        state: CasePath(DestinationState.screenC),
-        action: CasePath(DestinationAction.screenC)
-      ) {
-        ScreenC()
-      }
+    .navigationDestination(
+      state: /DestinationState.screenA,
+      action: /DestinationAction.screenA
+    ) {
+      ScreenA()
+    }
+    .navigationDestination(
+      state: /DestinationState.screenB,
+      action: /DestinationAction.screenB
+    ) {
+      ScreenB()
+    }
+    .navigationDestination(
+      state: /DestinationState.screenC,
+      action: /DestinationAction.screenC
+    ) {
+      ScreenC()
     }
   }
 }

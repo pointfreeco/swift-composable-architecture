@@ -235,12 +235,31 @@ where
   }
 }
 
-extension ReducerProtocol where State: NavigableState, Action: NavigableAction {
+extension ReducerProtocol
+where
+  State: NavigableState,
+  Action: NavigableAction,
+  State.DestinationState == Action.DestinationState
+{
   // TODO: Should this be `navigationDestination(state:action:_:)` to avoid `ScopeCase`?
   public func navigationDestination<Destinations: ReducerProtocol>(
     @ReducerBuilder<Destinations.State, Destinations.Action> destinations: () -> Destinations
   ) -> NavigationDestinationReducer<Self, Destinations> {
     .init(upstream: self, destinations: destinations())
+  }
+
+  public func navigationDestination<Destination: ReducerProtocol>(
+    state toDestinationState: CasePath<State.DestinationState, Destination.State>,
+    action toDestinationAction: CasePath<Action.DestinationAction, Destination.Action>,
+    @ReducerBuilder<Destination.State, Destination.Action> destination: () -> Destination
+  ) -> NavigationDestinationReducer<
+    Self, ScopeCase<State.DestinationState, Action.DestinationAction, Destination>
+  > {
+    self.navigationDestination {
+      ScopeCase(state: toDestinationState, action: toDestinationAction) {
+        destination()
+      }
+    }
   }
 }
 
