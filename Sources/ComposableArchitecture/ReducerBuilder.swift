@@ -55,6 +55,28 @@ public enum ReducerBuilder<State, Action> {
     .init(r0: accumulated, r1: next)
   }
 
+  public struct Optional<Wrapped: ReducerProtocol>: ReducerProtocol {
+    @usableFromInline
+    let wrapped: Wrapped?
+
+    @usableFromInline
+    init(wrapped: Wrapped?) {
+      self.wrapped = wrapped
+    }
+
+    @inlinable
+    public func reduce(
+      into state: inout Wrapped.State, action: Wrapped.Action
+    ) -> Effect<Wrapped.Action, Never> {
+      switch wrapped {
+      case let .some(wrapped):
+        return wrapped.reduce(into: &state, action: action)
+      case .none:
+        return .none
+      }
+    }
+  }
+
   public struct Sequence<R0: ReducerProtocol, R1: ReducerProtocol>: ReducerProtocol
   where R0.State == R1.State, R0.Action == R1.Action {
     @usableFromInline
@@ -75,28 +97,6 @@ public enum ReducerBuilder<State, Action> {
         self.r0.reduce(into: &state, action: action),
         self.r1.reduce(into: &state, action: action)
       )
-    }
-  }
-
-  public struct Optional<Wrapped: ReducerProtocol>: ReducerProtocol {
-    @usableFromInline
-    let wrapped: Wrapped?
-
-    @usableFromInline
-    init(wrapped: Wrapped?) {
-      self.wrapped = wrapped
-    }
-
-    @inlinable
-    public func reduce(
-      into state: inout Wrapped.State, action: Wrapped.Action
-    ) -> Effect<Wrapped.Action, Never> {
-      switch wrapped {
-      case let .some(wrapped):
-        return wrapped.reduce(into: &state, action: action)
-      case .none:
-        return .none
-      }
     }
   }
 }
