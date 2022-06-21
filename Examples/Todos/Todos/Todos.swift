@@ -37,10 +37,6 @@ struct AppReducer: ReducerProtocol {
   @Dependency(\.uuid) var uuid
 
   var body: some ReducerProtocol<State, Action> {
-    ForEachReducer(state: \.todos, action: /Action.todo(id:action:)) {
-      Todo()
-    }
-
     Reduce { state, action in
       switch action {
       case .addTodoButtonTapped:
@@ -95,6 +91,9 @@ struct AppReducer: ReducerProtocol {
       case .todo:
         return .none
       }
+    }
+    .forEach(state: \.todos, action: /Action.todo(id:action:)) {
+      Todo()
     }
   }
 }

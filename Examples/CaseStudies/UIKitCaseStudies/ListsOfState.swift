@@ -13,9 +13,10 @@ enum CounterListAction: Equatable {
 
 struct CounterListReducer: ReducerProtocol {
   var body: some ReducerProtocol<CounterListState, CounterListAction> {
-    ForEachReducer(state: \.counters, action: /CounterListAction.counter) {
-      CounterReducer()
-    }
+    EmptyReducer()
+      .forEach(state: \.counters, action: /CounterListAction.counter) {
+        CounterReducer()
+      }
   }
 }
 

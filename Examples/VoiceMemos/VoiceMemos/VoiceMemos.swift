@@ -47,10 +47,6 @@ struct VoiceMemos: ReducerProtocol, Sendable {
   @Dependency(\.uuid) var uuid
 
   var body: some ReducerProtocol<State, Action> {
-    ForEachReducer(state: \.voiceMemos, action: /Action.voiceMemo(id:action:)) {
-      VoiceMemo()
-    }
-
     Reduce { state, action in
       enum RecordId {}
 
@@ -181,6 +177,9 @@ struct VoiceMemos: ReducerProtocol, Sendable {
       case .voiceMemo:
         return .none
       }
+    }
+    .forEach(state: \.voiceMemos, action: /Action.voiceMemo(id:action:)) {
+      VoiceMemo()
     }
   }
 }
