@@ -39,9 +39,9 @@ class TimersTests: XCTestCase {
     await store.receive(.timerTicked) {
       $0.secondsElapsed = 6
     }
-    await store.send(.toggleTimerButtonTapped) {
+    store.send(.toggleTimerButtonTapped) {
       $0.isTimerActive = false
     }
-    .finish()
+    await store.finish()
   }
 }

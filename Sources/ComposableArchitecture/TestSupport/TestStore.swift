@@ -239,6 +239,44 @@
       )
     }
 
+    public func finish(
+      timeout nanoseconds: UInt64 = NSEC_PER_SEC,  // TODO: Better default? Remove default?
+      file: StaticString = #file,
+      line: UInt = #line
+    ) async {
+      let start = DispatchQueue.main.now
+      while !self.inFlightEffects.isEmpty {
+        guard start.distance(to: DispatchQueue.main.now) < .nanoseconds(Int(nanoseconds))
+        else {
+          let timeoutMessage = nanoseconds != nanoseconds
+            ? #"try increasing the duration of this assertion's "timeout"#
+            : #"configure this assertion with an explicit "timeout"#
+          let suggestion = """
+            There are effects in-flight. If the effect that delivers this action uses a \
+            scheduler (via "receive(on:)", "delay", "debounce", etc.), make sure that you wait \
+            enough time for the scheduler to perform the effect. If you are using a test \
+            scheduler, advance the scheduler so that the effects may complete, or consider using \
+            an immediate scheduler to immediately perform the effect instead.
+
+            If you are not yet using a scheduler, or can not use a scheduler, \(timeoutMessage).
+            """
+
+          XCTFail(
+            """
+            Expected effects to finish, but there are still effects in flight\
+            \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
+
+            \(suggestion)
+            """,
+            file: file,
+            line: line
+          )
+          return
+        }
+        await Task.yield()
+      }
+    }
+
     deinit {
       self.completed()
     }
@@ -542,7 +580,7 @@
               expected to deliver this action have been cancelled?
               """
           } else {
-            let timeoutMessage = nanoseconds > 0
+            let timeoutMessage = nanoseconds != nanoseconds
               ? #"try increasing the duration of this assertion's "timeout"#
               : #"configure this assertion with an explicit "timeout"#
             suggestion = """
