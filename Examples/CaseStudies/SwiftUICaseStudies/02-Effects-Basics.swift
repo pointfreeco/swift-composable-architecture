@@ -69,18 +69,11 @@ let effectsBasicsReducer = Reducer<
 
     return .task { [count = state.count] in
       do {
-        return .numberFactResponse(
-          .success(try await environment.fact.fetchAsync(count))
-        )
+        return .numberFactResponse(.success(try await environment.fact.fetchAsync(count) + "!"))
       } catch {
-        return .numberFactResponse(.failure(.init())) // TODO: ???
+        return .numberFactResponse(.failure(.init()))
       }
     }
-
-    return environment.fact.fetch(state.count)
-      .map { $0 + "!" }
-      .receive(on: environment.mainQueue)
-      .catchToEffect(EffectsBasicsAction.numberFactResponse)
 
   case let .numberFactResponse(.success(response)):
     state.isNumberFactRequestInFlight = false
