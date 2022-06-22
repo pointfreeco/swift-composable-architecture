@@ -199,7 +199,7 @@
     where
       Reducer.State == LocalState,
       Reducer.Action == LocalAction,
-      Environment == Void // TODO: could this be DependencyValues and can tests change enviroment through it?
+      Environment == Void
     {
       let reducer = TestReducer(reducer, initialState: initialState)
       self.reducer = reducer
