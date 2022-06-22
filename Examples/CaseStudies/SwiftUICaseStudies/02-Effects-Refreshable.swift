@@ -66,7 +66,7 @@ let refreshableReducer = Reducer<
     state.isLoading = true
     return .task { [count = state.count] in
       try? await environment.mainQueue.sleep(for: 2)
-      return await .factResponse(.init { try await environment.fact.fetch(count) })
+      return await .factResponse(TaskResult { try await environment.fact.fetch(count) })
     }
     .animation()
     .cancellable(id: CancelId.self)

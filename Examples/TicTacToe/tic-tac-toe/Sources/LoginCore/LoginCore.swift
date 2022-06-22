@@ -80,7 +80,7 @@ public let loginReducer = Reducer<LoginState, LoginAction, LoginEnvironment>.com
       state.isLoginRequestInFlight = true
       return .task { [email = state.email, password = state.password] in
         .loginResponse(
-          await .init {
+          await TaskResult {
             try await environment.authenticationClient.login(
               .init(email: email, password: password)
             )

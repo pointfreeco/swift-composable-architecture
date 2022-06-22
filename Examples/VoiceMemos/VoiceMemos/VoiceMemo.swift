@@ -70,7 +70,7 @@ let voiceMemoReducer = Reducer<
           }
           group.addTask {
             await send(
-              .audioPlayerClient(.init { try await environment.audioPlayerClient.play(url) })
+              .audioPlayerClient(TaskResult { try await environment.audioPlayerClient.play(url) })
             )
           }
         }

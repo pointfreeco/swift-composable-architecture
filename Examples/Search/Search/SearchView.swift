@@ -81,9 +81,7 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
     }
 
     return .task {
-      await .searchResponse(
-        .init { try await environment.weatherClient.search(query) }
-      )
+      await .searchResponse(TaskResult { try await environment.weatherClient.search(query) })
     }
     .debounce(id: SearchLocationId.self, for: 0.3, scheduler: environment.mainQueue)
 
@@ -103,7 +101,7 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
     return .task {
       await .forecastResponse(
         location.id,
-        .init { try await environment.weatherClient.forecast(location) }
+        TaskResult { try await environment.weatherClient.forecast(location) }
       )
     }
     .cancellable(id: SearchWeatherId.self, cancelInFlight: true)

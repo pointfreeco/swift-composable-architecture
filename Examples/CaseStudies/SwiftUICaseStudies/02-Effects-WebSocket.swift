@@ -266,7 +266,7 @@ extension WebSocketClient {
         return .init { continuation in
           let task = Task {
             while !Task.isCancelled {
-              continuation.yield(await .init { try await Message(socket.receive()) })
+              continuation.yield(await TaskResult { try await Message(socket.receive()) })
             }
             continuation.finish()
           }
