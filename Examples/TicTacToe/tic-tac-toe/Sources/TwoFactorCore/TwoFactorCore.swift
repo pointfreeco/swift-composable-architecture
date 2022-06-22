@@ -57,15 +57,15 @@ public struct TwoFactor: ReducerProtocol {
       state.isTwoFactorRequestInFlight = true
       return .task { [code = state.code, token = state.token] in
         .twoFactorResponse(
-          await .init {
-            try await self.authenticationClient.twoFactor(.init(code: code, token: token))
+          await TaskResult {
+            try await self.authenticationClient.twoFactor(TwoFactorRequest(code: code, token: token))
           }
         )
       }
       .cancellable(id: self.tearDownToken)
 
     case let .twoFactorResponse(.failure(error)):
-      state.alert = .init(title: TextState(error.localizedDescription))
+      state.alert = AlertState(title: TextState(error.localizedDescription))
       state.isTwoFactorRequestInFlight = false
       return .none
 

@@ -1,16 +1,19 @@
 import AppCore
 import AuthenticationClient
 import ComposableArchitecture
+import LoginCore
+import NewGameCore
+import TwoFactorCore
 import XCTest
 
 @MainActor
 class AppCoreTests: XCTestCase {
   func testIntegration() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: AppReducer.State(),
       reducer: AppReducer()
         .dependency(\.authenticationClient.login) { _ in
-          .init(token: "deadbeef", twoFactorRequired: false)
+          AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
         }
         .dependency(\.mainQueue, .immediate)
     )
@@ -32,9 +35,13 @@ class AppCoreTests: XCTestCase {
       }
     }
     await store.receive(
-      .login(.loginResponse(.success(.init(token: "deadbeef", twoFactorRequired: false))))
+      .login(
+        .loginResponse(
+          .success(AuthenticationResponse(token: "deadbeef", twoFactorRequired: false))
+        )
+      )
     ) {
-      $0 = .newGame(.init())
+      $0 = .newGame(NewGame.State())
     }
     store.send(.newGame(.oPlayerNameChanged("Blob Sr."))) {
       try (/AppReducer.State.newGame).modify(&$0) {
@@ -42,19 +49,19 @@ class AppCoreTests: XCTestCase {
       }
     }
     store.send(.newGame(.logoutButtonTapped)) {
-      $0 = .login(.init())
+      $0 = .login(Login.State())
     }
   }
 
   func testIntegration_TwoFactor() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: AppReducer.State(),
       reducer: AppReducer()
         .dependency(\.authenticationClient.login) { _ in
-          .init(token: "deadbeef", twoFactorRequired: true)
+          AuthenticationResponse(token: "deadbeef", twoFactorRequired: true)
         }
         .dependency(\.authenticationClient.twoFactor) { _ in
-          .init(token: "deadbeef", twoFactorRequired: false)
+          AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
         }
         .dependency(\.mainQueue, .immediate)
     )
@@ -78,11 +85,13 @@ class AppCoreTests: XCTestCase {
       }
     }
     await store.receive(
-      .login(.loginResponse(.success(.init(token: "deadbeef", twoFactorRequired: true))))
+      .login(
+        .loginResponse(.success(AuthenticationResponse(token: "deadbeef", twoFactorRequired: true)))
+      )
     ) {
       try (/AppReducer.State.login).modify(&$0) {
         $0.isLoginRequestInFlight = false
-        $0.twoFactor = .init(token: "deadbeef")
+        $0.twoFactor = TwoFactor.State(token: "deadbeef")
       }
     }
 
@@ -100,10 +109,14 @@ class AppCoreTests: XCTestCase {
     }
     await store.receive(
       .login(
-        .twoFactor(.twoFactorResponse(.success(.init(token: "deadbeef", twoFactorRequired: false))))
+        .twoFactor(
+          .twoFactorResponse(
+            .success(AuthenticationResponse(token: "deadbeef", twoFactorRequired: false))
+          )
+        )
       )
     ) {
-      $0 = .newGame(.init())
+      $0 = .newGame(NewGame.State())
     }
   }
 }

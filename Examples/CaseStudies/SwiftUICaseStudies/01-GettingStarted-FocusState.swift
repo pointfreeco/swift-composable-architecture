@@ -88,7 +88,7 @@
       NavigationView {
         FocusDemoView(
           store: Store(
-            initialState: .init(),
+            initialState: FocusDemo.State(),
             reducer: FocusDemo()
           )
         )

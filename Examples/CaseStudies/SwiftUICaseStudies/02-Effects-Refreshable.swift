@@ -60,7 +60,7 @@ struct Refreshable: ReducerProtocol {
       state.isLoading = true
       return .task { [count = state.count] in
         try? await self.mainQueue.sleep(for: 2)
-        return await .factResponse(.init { try await self.factClient.fetch(count) })
+        return await .factResponse(TaskResult { try await self.factClient.fetch(count) })
       }
       .animation()
       .cancellable(id: CancelId.self)
@@ -104,8 +104,8 @@ struct Refreshable: ReducerProtocol {
   struct Refreshable_Previews: PreviewProvider {
     static var previews: some View {
       RefreshableView(
-        store: .init(
-          initialState: .init(),
+        store: Store(
+          initialState: Refreshable.State(),
           reducer: Refreshable()
         )
       )

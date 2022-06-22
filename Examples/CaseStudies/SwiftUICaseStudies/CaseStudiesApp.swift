@@ -6,8 +6,8 @@ struct CaseStudiesApp: App {
   var body: some Scene {
     WindowGroup {
       RootView(
-        store: .init(
-          initialState: .init(),
+        store: Store(
+          initialState: Root.State(),
           reducer: Root()
             .debug()
             .signpost()

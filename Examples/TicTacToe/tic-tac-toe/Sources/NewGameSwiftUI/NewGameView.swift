@@ -63,9 +63,10 @@ public struct NewGameView: View {
 
         NavigationLink(
           destination: IfLetStore(
-            self.store.scope(state: \.game, action: NewGame.Action.game),
-            then: GameView.init(store:)
-          ),
+            self.store.scope(state: \.game, action: NewGame.Action.game)
+          ) {
+            GameView(store: $0)
+          },
           isActive: viewStore.binding(
             get: \.isGameActive,
             send: { $0 ? .letsPlayButtonTapped : .gameDismissed }
@@ -103,7 +104,7 @@ struct NewGame_Previews: PreviewProvider {
     NavigationView {
       NewGameView(
         store: Store(
-          initialState: .init(),
+          initialState: NewGame.State(),
           reducer: NewGame()
         )
       )

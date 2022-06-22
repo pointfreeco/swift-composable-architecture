@@ -64,7 +64,7 @@ struct VoiceMemos: ReducerProtocol, Sendable {
 
         state.currentRecording = nil
         state.voiceMemos.insert(
-          .init(
+          VoiceMemo.State(
             date: currentRecording.date,
             duration: currentRecording.duration,
             url: currentRecording.url
@@ -74,7 +74,7 @@ struct VoiceMemos: ReducerProtocol, Sendable {
         return .cancel(id: RecordId.self)
 
       case .audioRecorderDidFinish(.success(false)), .audioRecorderDidFinish(.failure):
-        state.alert = .init(title: .init("Voice memo recording failed."))
+        state.alert = AlertState(title: TextState("Voice memo recording failed."))
         state.currentRecording = nil
         return .cancel(id: RecordId.self)
 
@@ -99,7 +99,7 @@ struct VoiceMemos: ReducerProtocol, Sendable {
           }
 
         case .denied:
-          state.alert = .init(title: .init("Permission is required to record voice memos."))
+          state.alert = AlertState(title: TextState("Permission is required to record voice memos."))
           return .none
 
         case .allowed:
@@ -128,12 +128,12 @@ struct VoiceMemos: ReducerProtocol, Sendable {
         if permission {
           return self.startRecording(state: &state)
         } else {
-          state.alert = .init(title: .init("Permission is required to record voice memos."))
+          state.alert = AlertState(title: TextState("Permission is required to record voice memos."))
           return .none
         }
 
       case .voiceMemo(id: _, action: .audioPlayerClient(.failure)):
-        state.alert = .init(title: .init("Voice memo playback failed."))
+        state.alert = AlertState(title: TextState("Voice memo playback failed."))
         return .none
 
       case let .voiceMemo(id: id, action: .delete):
@@ -159,7 +159,7 @@ struct VoiceMemos: ReducerProtocol, Sendable {
     let url = self.temporaryDirectory()
       .appendingPathComponent(self.uuid().uuidString)
       .appendingPathExtension("m4a")
-    state.currentRecording = .init(
+    state.currentRecording = State.CurrentRecording(
       date: self.mainRunLoop.now.date,
       url: url
     )
@@ -168,7 +168,7 @@ struct VoiceMemos: ReducerProtocol, Sendable {
       await withTaskGroup(of: Void.self) { group in
         group.addTask {
           await send(
-            .audioRecorderDidFinish(.init { try await self.audioRecorder.startRecording(url) })
+            .audioRecorderDidFinish(TaskResult { try await self.audioRecorder.startRecording(url) })
           )
         }
         group.addTask {
@@ -195,9 +195,10 @@ struct VoiceMemosView: View {
             ForEachStore(
               self.store.scope(
                 state: \.voiceMemos, action: VoiceMemos.Action.voiceMemo(id:action:)
-              ),
-              content: VoiceMemoView.init(store:)
-            )
+              )
+            ) {
+              VoiceMemoView(store: $0)
+            }
             .onDelete { indexSet in
               for index in indexSet {
                 viewStore.send(.voiceMemo(id: viewStore.voiceMemos[index].id, action: .delete))
@@ -255,16 +256,16 @@ struct VoiceMemos_Previews: PreviewProvider {
   static var previews: some View {
     VoiceMemosView(
       store: Store(
-        initialState: .init(
+        initialState: VoiceMemos.State(
           voiceMemos: [
-            .init(
+            VoiceMemo.State(
               date: Date(),
               duration: 30,
               mode: .playing(progress: 0.3),
               title: "Functions",
               url: URL(string: "https://www.pointfree.co/functions")!
             ),
-            .init(
+            VoiceMemo.State(
               date: Date(),
               duration: 2,
               mode: .notPlaying,

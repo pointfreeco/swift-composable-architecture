@@ -11,7 +11,7 @@ class TwoFactorCoreTests: XCTestCase {
       reducer: TwoFactor(tearDownToken: Never.self)
         .dependency(\.mainQueue, .immediate)
         .dependency(\.authenticationClient.twoFactor) { _ in
-          .init(token: "deadbeefdeadbeef", twoFactorRequired: false)
+          AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
         }
     )
 
@@ -32,7 +32,9 @@ class TwoFactorCoreTests: XCTestCase {
       $0.isTwoFactorRequestInFlight = true
     }
     await store.receive(
-      .twoFactorResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
+      .twoFactorResponse(
+        .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false))
+      )
     ) {
       $0.isTwoFactorRequestInFlight = false
     }
@@ -56,7 +58,7 @@ class TwoFactorCoreTests: XCTestCase {
       $0.isTwoFactorRequestInFlight = true
     }
     await store.receive(.twoFactorResponse(.failure(AuthenticationError.invalidTwoFactor))) {
-      $0.alert = .init(
+      $0.alert = AlertState(
         title: TextState(AuthenticationError.invalidTwoFactor.localizedDescription)
       )
       $0.isTwoFactorRequestInFlight = false

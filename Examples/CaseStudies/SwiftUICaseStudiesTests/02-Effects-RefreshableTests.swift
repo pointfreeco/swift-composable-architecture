@@ -7,9 +7,9 @@ import XCTest
 class RefreshableTests: XCTestCase {
   func testHappyPath() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: Refreshable.State(),
       reducer: Refreshable()
-        .dependency(\.factClient, .init { "\($0) is a good number." })
+        .dependency(\.factClient.fetch) { "\($0) is a good number." }
         .dependency(\.mainQueue, .immediate)
     )
 
@@ -28,9 +28,9 @@ class RefreshableTests: XCTestCase {
   func testUnhappyPath() async {
     struct FactError: Error {}
     let store = TestStore(
-      initialState: .init(),
+      initialState: Refreshable.State(),
       reducer: Refreshable()
-        .dependency(\.factClient, .init { _ in throw FactError() })
+        .dependency(\.factClient.fetch) { _ in throw FactError() }
         .dependency(\.mainQueue, .immediate)
     )
 
@@ -47,9 +47,9 @@ class RefreshableTests: XCTestCase {
 
   func testCancellation() {
     let store = TestStore(
-      initialState: .init(),
+      initialState: Refreshable.State(),
       reducer: Refreshable()
-        .dependency(\.factClient, .init { "\($0) is a good number." })
+        .dependency(\.factClient.fetch) { "\($0) is a good number." }
         .dependency(\.mainQueue, .immediate)
     )
 

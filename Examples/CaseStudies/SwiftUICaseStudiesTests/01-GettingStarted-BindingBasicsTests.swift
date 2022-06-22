@@ -26,7 +26,7 @@
         $0.toggleIsOn = true
       }
       store.send(.resetButtonTapped) {
-        $0 = .init(sliderValue: 5, stepCount: 10, text: "", toggleIsOn: false)
+        $0 = BindingForm.State(sliderValue: 5, stepCount: 10, text: "", toggleIsOn: false)
       }
     }
   }

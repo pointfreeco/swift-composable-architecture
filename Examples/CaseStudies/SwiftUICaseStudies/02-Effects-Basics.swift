@@ -110,7 +110,9 @@ struct EffectsBasicsView: View {
             ProgressView()
           }
 
-          viewStore.numberFact.map(Text.init)
+          if let numberFact = viewStore.numberFact {
+            Text(numberFact)
+          }
         }
       }
     }
@@ -125,7 +127,7 @@ struct EffectsBasicsView_Previews: PreviewProvider {
     NavigationView {
       EffectsBasicsView(
         store: Store(
-          initialState: .init(),
+          initialState: EffectsBasics.State(),
           reducer: EffectsBasics()
         )
       )

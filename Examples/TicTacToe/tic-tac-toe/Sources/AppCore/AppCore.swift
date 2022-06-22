@@ -9,7 +9,7 @@ public struct AppReducer: ReducerProtocol {
     case login(Login.State)
     case newGame(NewGame.State)
 
-    public init() { self = .login(.init()) }
+    public init() { self = .login(Login.State()) }
   }
 
   public enum Action: Equatable {
@@ -31,18 +31,18 @@ public struct AppReducer: ReducerProtocol {
     Reduce { state, action in
       switch action {
       case .login(.twoFactor(.twoFactorResponse(.success))):
-        state = .newGame(.init())
+        state = .newGame(NewGame.State())
         return .none
 
       case let .login(.loginResponse(.success(response))) where !response.twoFactorRequired:
-        state = .newGame(.init())
+        state = .newGame(NewGame.State())
         return .none
 
       case .login:
         return .none
 
       case .newGame(.logoutButtonTapped):
-        state = .login(.init())
+        state = .login(Login.State())
         return .none
 
       case .newGame:

@@ -68,9 +68,10 @@ public struct LoginView: View {
 
         NavigationLink(
           destination: IfLetStore(
-            self.store.scope(state: \.twoFactor, action: Login.Action.twoFactor),
-            then: TwoFactorView.init(store:)
-          ),
+            self.store.scope(state: \.twoFactor, action: Login.Action.twoFactor)
+          ) {
+            TwoFactorView(store: $0)
+          },
           isActive: viewStore.binding(
             get: \.isTwoFactorActive,
             send: {
@@ -122,13 +123,13 @@ struct LoginView_Previews: PreviewProvider {
     NavigationView {
       LoginView(
         store: Store(
-          initialState: .init(),
+          initialState: Login.State(),
           reducer: Login()
             .dependency(\.authenticationClient.login) { _ in
-              .init(token: "deadbeef", twoFactorRequired: false)
+              AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
             }
             .dependency(\.authenticationClient.twoFactor) { _ in
-              .init(token: "deadbeef", twoFactorRequired: false)
+              AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
             }
         )
       )

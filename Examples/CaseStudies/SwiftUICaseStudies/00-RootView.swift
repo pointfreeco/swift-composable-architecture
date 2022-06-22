@@ -302,8 +302,8 @@ struct RootView: View {
 struct RootView_Previews: PreviewProvider {
   static var previews: some View {
     RootView(
-      store: .init(
-        initialState: .init(),
+      store: Store(
+        initialState: Root.State(),
         reducer: Root()
       )
     )

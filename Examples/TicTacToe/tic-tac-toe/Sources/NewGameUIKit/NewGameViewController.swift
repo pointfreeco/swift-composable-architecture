@@ -97,7 +97,7 @@ public class NewGameViewController: UIViewController {
       letsPlayButton,
     ])
     rootStackView.isLayoutMarginsRelativeArrangement = true
-    rootStackView.layoutMargins = .init(top: 0, left: 32, bottom: 0, right: 32)
+    rootStackView.layoutMargins = UIEdgeInsets(top: 0, left: 32, bottom: 0, right: 32)
     rootStackView.translatesAutoresizingMaskIntoConstraints = false
     rootStackView.axis = .vertical
     rootStackView.spacing = 24

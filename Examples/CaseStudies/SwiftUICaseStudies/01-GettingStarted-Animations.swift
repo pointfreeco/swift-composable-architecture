@@ -67,18 +67,18 @@ struct Animations: ReducerProtocol {
       .cancellable(id: CancelId.self)
 
     case .resetButtonTapped:
-      state.alert = .init(
-        title: .init("Reset state?"),
+      state.alert = AlertState(
+        title: TextState("Reset state?"),
         primaryButton: .destructive(
-          .init("Reset"),
+          TextState("Reset"),
           action: .send(.resetConfirmationButtonTapped, animation: .default)
         ),
-        secondaryButton: .cancel(.init("Cancel"))
+        secondaryButton: .cancel(TextState("Cancel"))
       )
       return .none
 
     case .resetConfirmationButtonTapped:
-      state = .init()
+      state = State()
       return .cancel(id: CancelId.self)
 
     case let .setColor(color):
@@ -149,7 +149,7 @@ struct AnimationsView_Previews: PreviewProvider {
       NavigationView {
         AnimationsView(
           store: Store(
-            initialState: .init(),
+            initialState: Animations.State(),
             reducer: Animations()
           )
         )
@@ -158,7 +158,7 @@ struct AnimationsView_Previews: PreviewProvider {
       NavigationView {
         AnimationsView(
           store: Store(
-            initialState: .init(),
+            initialState: Animations.State(),
             reducer: Animations()
           )
         )

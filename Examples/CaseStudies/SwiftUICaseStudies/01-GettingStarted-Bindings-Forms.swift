@@ -38,7 +38,7 @@
           return .none
 
         case .resetButtonTapped:
-          state = .init()
+          state = State()
           return .none
         }
       }
@@ -109,7 +109,7 @@
       NavigationView {
         BindingFormView(
           store: Store(
-            initialState: .init(),
+            initialState: BindingForm.State(),
             reducer: BindingForm()
           )
         )

@@ -7,7 +7,7 @@ struct SpeechRecognitionApp: App {
     WindowGroup {
       SpeechRecognitionView(
         store: Store(
-          initialState: .init(),
+          initialState: AppReducer.State(),
           reducer: AppReducer()
             .debug(actionFormat: .labelsOnly)
         )

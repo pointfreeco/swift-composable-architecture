@@ -10,7 +10,7 @@ class SearchTests: XCTestCase {
 
   func testSearchAndClearQuery() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: SearchReducer.State(),
       reducer: SearchReducer()
         .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
         .dependency(\.weatherClient.search) { _ in .mock }
@@ -31,7 +31,7 @@ class SearchTests: XCTestCase {
 
   func testSearchFailure() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: SearchReducer.State(),
       reducer: SearchReducer()
         .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
         .dependency(\.weatherClient.search) { _ in throw SomethingWentWrong() }
@@ -46,7 +46,7 @@ class SearchTests: XCTestCase {
 
   func testClearQueryCancelsInFlightSearchRequest() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: SearchReducer.State(),
       reducer: SearchReducer()
         .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
         .dependency(\.weatherClient.search) { _ in .mock }
@@ -75,7 +75,7 @@ class SearchTests: XCTestCase {
     results.append(specialResult)
 
     let store = TestStore(
-      initialState: .init(results: results),
+      initialState: SearchReducer.State(results: results),
       reducer: SearchReducer()
         .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
         .dependency(\.weatherClient.forecast) { _ in .mock }
@@ -87,24 +87,24 @@ class SearchTests: XCTestCase {
     await self.mainQueue.advance()
     await store.receive(.forecastResponse(42, .success(.mock))) {
       $0.resultForecastRequestInFlight = nil
-      $0.weather = .init(
+      $0.weather = SearchReducer.State.Weather(
         id: 42,
         days: [
-          .init(
+          SearchReducer.State.Weather.Day(
             date: Date(timeIntervalSince1970: 0),
             temperatureMax: 90,
             temperatureMaxUnit: "°F",
             temperatureMin: 70,
             temperatureMinUnit: "°F"
           ),
-          .init(
+          SearchReducer.State.Weather.Day(
             date: Date(timeIntervalSince1970: 86_400),
             temperatureMax: 70,
             temperatureMaxUnit: "°F",
             temperatureMin: 50,
             temperatureMinUnit: "°F"
           ),
-          .init(
+          SearchReducer.State.Weather.Day(
             date: Date(timeIntervalSince1970: 172_800),
             temperatureMax: 100,
             temperatureMaxUnit: "°F",
@@ -129,7 +129,7 @@ class SearchTests: XCTestCase {
     results.append(specialResult)
 
     let store = TestStore(
-      initialState: .init(results: results),
+      initialState: SearchReducer.State(results: results),
       reducer: SearchReducer()
         .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
         .dependency(\.weatherClient.forecast) { _ in .mock }
@@ -144,24 +144,24 @@ class SearchTests: XCTestCase {
     await self.mainQueue.advance()
     await store.receive(.forecastResponse(42, .success(.mock))) {
       $0.resultForecastRequestInFlight = nil
-      $0.weather = .init(
+      $0.weather = SearchReducer.State.Weather(
         id: 42,
         days: [
-          .init(
+          SearchReducer.State.Weather.Day(
             date: Date(timeIntervalSince1970: 0),
             temperatureMax: 90,
             temperatureMaxUnit: "°F",
             temperatureMin: 70,
             temperatureMinUnit: "°F"
           ),
-          .init(
+          SearchReducer.State.Weather.Day(
             date: Date(timeIntervalSince1970: 86_400),
             temperatureMax: 70,
             temperatureMaxUnit: "°F",
             temperatureMin: 50,
             temperatureMinUnit: "°F"
           ),
-          .init(
+          SearchReducer.State.Weather.Day(
             date: Date(timeIntervalSince1970: 172_800),
             temperatureMax: 100,
             temperatureMaxUnit: "°F",
@@ -177,7 +177,7 @@ class SearchTests: XCTestCase {
     let results = Search.mock.results
 
     let store = TestStore(
-      initialState: .init(results: results),
+      initialState: SearchReducer.State(results: results),
       reducer: SearchReducer()
         .dependency(\.mainQueue, self.mainQueue.eraseToAnyScheduler())
         .dependency(\.weatherClient.forecast) { _ in throw SomethingWentWrong() }

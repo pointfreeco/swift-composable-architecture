@@ -40,7 +40,7 @@ struct AppReducer: ReducerProtocol {
     Reduce { state, action in
       switch action {
       case .addTodoButtonTapped:
-        state.todos.insert(.init(id: self.uuid()), at: 0)
+        state.todos.insert(Todo.State(id: self.uuid()), at: 0)
         return .none
 
       case .clearCompletedButtonTapped:
@@ -139,9 +139,10 @@ struct AppView: View {
 
         List {
           ForEachStore(
-            self.store.scope(state: \.filteredTodos, action: AppReducer.Action.todo(id:action:)),
-            content: TodoView.init(store:)
-          )
+            self.store.scope(state: \.filteredTodos, action: AppReducer.Action.todo(id:action:))
+          ) {
+            TodoView(store: $0)
+          }
           .onDelete { self.viewStore.send(.delete($0)) }
           .onMove { self.viewStore.send(.move($0, $1)) }
         }
@@ -190,7 +191,7 @@ struct AppView_Previews: PreviewProvider {
   static var previews: some View {
     AppView(
       store: Store(
-        initialState: .init(todos: .mock),
+        initialState: AppReducer.State(todos: .mock),
         reducer: AppReducer()
       )
     )

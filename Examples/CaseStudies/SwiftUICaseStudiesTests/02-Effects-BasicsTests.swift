@@ -27,7 +27,7 @@ class EffectsBasicsTests: XCTestCase {
     let store = TestStore(
       initialState: .init(),
       reducer: EffectsBasics()
-        .dependency(\.factClient, .init(fetch: { "\($0) is a good number Brent" }))
+        .dependency(\.factClient.fetch) { "\($0) is a good number Brent" }
         .dependency(\.mainQueue, .immediate)
     )
 

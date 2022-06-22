@@ -46,10 +46,10 @@ struct SearchReducer: ReducerProtocol {
       return .none
 
     case let .forecastResponse(id, .success(forecast)):
-      state.weather = .init(
+      state.weather = State.Weather(
         id: id,
         days: forecast.daily.time.indices.map {
-          .init(
+          State.Weather.Day(
             date: forecast.daily.time[$0],
             temperatureMax: forecast.daily.temperatureMax[$0],
             temperatureMaxUnit: forecast.dailyUnits.temperatureMax,
@@ -76,7 +76,7 @@ struct SearchReducer: ReducerProtocol {
 
       return .task {
         await .searchResponse(
-          .init { try await self.weatherClient.search(query) }
+          TaskResult { try await self.weatherClient.search(query) }
         )
       }
       .debounce(id: SearchLocationId.self, for: 0.3, scheduler: self.mainQueue)
@@ -97,7 +97,7 @@ struct SearchReducer: ReducerProtocol {
       return .task {
         await .forecastResponse(
           location.id,
-          .init { try await self.weatherClient.forecast(location) }
+          TaskResult { try await self.weatherClient.forecast(location) }
         )
       }
       .cancellable(id: SearchWeatherId.self, cancelInFlight: true)
@@ -209,7 +209,7 @@ private let dateFormatter: DateFormatter = {
 struct SearchView_Previews: PreviewProvider {
   static var previews: some View {
     let store = Store(
-      initialState: .init(),
+      initialState: SearchReducer.State(),
       reducer: SearchReducer()
         .dependency(\.weatherClient.forecast) { _ in .mock }
         .dependency(\.weatherClient.search) { _ in .mock }

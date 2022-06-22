@@ -109,7 +109,7 @@ struct WebSocket: ReducerProtocol {
       .cancellable(id: WebSocketId.self)
 
     case .sendResponse(didSucceed: false):
-      state.alert = .init(title: .init("Could not send socket message. Try again."))
+      state.alert = AlertState(title: TextState("Could not send socket message. Try again."))
       return .none
 
     case .sendResponse(didSucceed: true):
@@ -272,10 +272,10 @@ extension WebSocketClient {
 
       func receive(id: Any.Type) throws -> AsyncStream<TaskResult<Message>> {
         let socket = try self.socket(id: ObjectIdentifier(id))
-        return .init { continuation in
+        return AsyncStream { continuation in
           let task = Task {
             while !Task.isCancelled {
-              continuation.yield(await .init { try await Message(socket.receive()) })
+              continuation.yield(await TaskResult { try await Message(socket.receive()) })
             }
             continuation.finish()
           }
@@ -336,7 +336,7 @@ extension WebSocketClient {
   static let failing = Self(
     open: { _, _, _ in
       XCTFail("\(Self.self).open")
-      return .init { _ in }
+      return AsyncStream { _ in }
     },
     receive: { _ in throw Unimplemented("receive") },
     send: { _, _ in throw Unimplemented("send") },
@@ -351,7 +351,7 @@ struct WebSocketView_Previews: PreviewProvider {
     NavigationView {
       WebSocketView(
         store: Store(
-          initialState: .init(receivedMessages: ["Echo"]),
+          initialState: WebSocket.State(receivedMessages: ["Echo"]),
           reducer: WebSocket()
         )
       )
