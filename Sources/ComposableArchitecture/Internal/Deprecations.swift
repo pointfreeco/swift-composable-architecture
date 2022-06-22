@@ -3,13 +3,13 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
-// NB: Deprecated after 0.36.0:
+// NB: Deprecated after 0.37.0:
 
 extension Effect where Failure == Error {
   @available(
     *,
-    deprecated,
-    message: "Use the non-throwing version of 'Effect.task' and catch errors explicitly"
+     deprecated,
+     message: "Use the non-throwing version of 'Effect.task' and catch errors explicitly"
   )
   public static func task(
     priority: TaskPriority? = nil,
@@ -33,6 +33,16 @@ extension Effect where Failure == Error {
       return subject.handleEvents(receiveCancel: task.cancel)
     }
     .eraseToEffect()
+  }
+}
+
+// NB: Deprecated after 0.36.0:
+
+extension ViewStore {
+  @available(*, deprecated, renamed: "yield(while:)")
+  @MainActor
+  public func suspend(while predicate: @escaping (State) -> Bool) async {
+    await self.yield(while: predicate)
   }
 }
 
@@ -240,7 +250,7 @@ extension Reducer {
         _ action: LocalAction,
         file: StaticString = #file,
         line: UInt = #line,
-        _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+        _ update: ((inout LocalState) throws -> Void)? = nil
       ) -> Step {
         Step(.send(action, update), file: file, line: line)
       }
@@ -250,7 +260,7 @@ extension Reducer {
         _ action: Reducer.Action,
         file: StaticString = #file,
         line: UInt = #line,
-        _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+        _ update: ((inout LocalState) throws -> Void)? = nil
       ) -> Step {
         Step(.receive(action, update), file: file, line: line)
       }
@@ -292,8 +302,8 @@ extension Reducer {
       }
 
       fileprivate indirect enum StepType {
-        case send(LocalAction, (inout LocalState) throws -> Void)
-        case receive(Reducer.Action, (inout LocalState) throws -> Void)
+        case send(LocalAction, ((inout LocalState) throws -> Void)?)
+        case receive(Reducer.Action, ((inout LocalState) throws -> Void)?)
         case environment((inout Environment) throws -> Void)
         case `do`(() throws -> Void)
         case sequence([Step])

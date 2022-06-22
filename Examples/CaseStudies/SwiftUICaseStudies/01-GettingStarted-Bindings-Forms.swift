@@ -62,7 +62,11 @@
             }
             .disabled(viewStore.toggleIsOn)
 
-            Toggle("Disable other controls", isOn: viewStore.binding(\.$toggleIsOn))
+            Toggle(
+              "Disable other controls",
+              isOn: viewStore.binding(\.$toggleIsOn)
+                .resignFirstResponder()
+            )
 
             Stepper(value: viewStore.binding(\.$stepCount), in: 0...100) {
               Text("Max slider value: \(viewStore.stepCount)")
