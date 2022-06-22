@@ -21,7 +21,6 @@ public struct DependencyValues {
     }
   }
 
-  // TODO: lock storage?
   public subscript<Key>(key: Key.Type) -> Key.Value where Key: DependencyKey {
     get {
       guard let dependency = self.storage[ObjectIdentifier(key)] as? Key.Value
@@ -78,7 +77,6 @@ public struct Dependency<Value> {
 
 extension Dependency: @unchecked Sendable where Value: Sendable {}
 
-@dynamicMemberLookup
 public struct DependencyKeyWritingReducer<Upstream: ReducerProtocol, Value>: ReducerProtocol {
   @usableFromInline
   let upstream: Upstream
@@ -110,14 +108,6 @@ public struct DependencyKeyWritingReducer<Upstream: ReducerProtocol, Value>: Red
     .init(upstream: self.upstream) { values in
       self.update(&values)
       values[keyPath: keyPath] = value
-    }
-  }
-
-  public subscript<Value>(dynamicMember keyPath: KeyPath<Upstream, Value>) -> Value {
-    var values = DependencyValues.current
-    self.update(&values)
-    return DependencyValues.$current.withValue(values) {
-      self.upstream[keyPath: keyPath]
     }
   }
 }
