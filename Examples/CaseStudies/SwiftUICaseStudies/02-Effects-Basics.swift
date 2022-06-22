@@ -66,9 +66,20 @@ let effectsBasicsReducer = Reducer<
     state.numberFact = nil
     // Return an effect that fetches a number fact from the API and returns the
     // value back to the reducer's `numberFactResponse` action.
-    return environment.fact.fetch(state.count)
-      .receive(on: environment.mainQueue)
-      .catchToEffect(EffectsBasicsAction.numberFactResponse)
+
+    return .task { [count = state.count] in
+      do {
+        return .numberFactResponse(
+          .success(try await environment.fact.fetchAsync(count))
+        )
+      } catch {
+        return .numberFactResponse(.failure(.init())) // TODO: ???
+      }
+    }
+
+//    return environment.fact.fetch(state.count)
+//      .receive(on: environment.mainQueue)
+//      .catchToEffect(EffectsBasicsAction.numberFactResponse)
 
   case let .numberFactResponse(.success(response)):
     state.isNumberFactRequestInFlight = false
@@ -90,9 +101,9 @@ struct EffectsBasicsView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section {
-          Text(readMe)
-        }
+//        Section {
+//          Text(readMe)
+//        }
 
         Section {
           HStack {
@@ -112,7 +123,6 @@ struct EffectsBasicsView: View {
         Section {
           if viewStore.isNumberFactRequestInFlight {
             ProgressView()
-              .progressViewStyle(.circular)
               .frame(maxWidth: .infinity)
               .id(UUID()) // TODO: Progress view doesn't show a second time without this?
           }

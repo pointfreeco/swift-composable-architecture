@@ -4,7 +4,7 @@ import XCTestDynamicOverlay
 
 struct FactClient {
   var fetch: (Int) -> Effect<String, Error>
-  var random: () -> Effect<Int, Error>
+  var fetchAsync: (Int) async throws -> String
 
   struct Error: Swift.Error, Equatable {}
 }
@@ -30,7 +30,12 @@ extension FactClient {
         .setFailureType(to: Error.self)
         .eraseToEffect()
       },
-      random: { .init(value: .random(in: 0...1_000_000)) }
+      fetchAsync: { number in
+        try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+        let (data, _) = try await URLSession.shared
+          .data(from: URL(string: "http://numbersapi.com/\(number)/trivia")!)
+        return String(decoding: data, as: UTF8.self)
+      }
     )
   #else
     static let live = Self(
@@ -61,10 +66,7 @@ extension FactClient {
         XCTFail("\(Self.self).fact is unimplemented.")
         return .none
       },
-      random: {
-        XCTFail("\(Self.self).random is unimplemented.")
-        return .none
-      }
+      fetchAsync: unimplemented(Self.self, endpoint: "fetchAsync")
     )
   }
 #endif
