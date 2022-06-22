@@ -17,7 +17,7 @@ class NavigationStackTests: XCTestCase {
     )
 
     // Push Screen A, increment and fetch fact.
-    let screenAID = store.reducer.nextID()
+    let screenAID = store.dependencies.navigationID.next()
     store.send(.navigation(.setPath([.init(id: screenAID, element: .screenA(.init()))]))) {
       $0.path.append(.init(id: screenAID, element: .screenA(.init())))
     }
@@ -40,7 +40,7 @@ class NavigationStackTests: XCTestCase {
     }
 
     // Push Screen C, start timer, wait 2 seconds
-    let screenCID = store.reducer.nextID()
+    let screenCID = store.dependencies.navigationID.next()
     store.send(.navigation(.setPath(store.state.path + [.init(id: screenCID, element: .screenC(.init()))]))) {
       $0.path.append(.init(id: screenCID, element: .screenC(.init())))
     }
@@ -73,7 +73,7 @@ class NavigationStackTests: XCTestCase {
         .dependency(\.mainQueue, self.scheduler.eraseToAnyScheduler())
     )
 
-    let screenBID = store.reducer.nextID()
+    let screenBID = store.dependencies.navigationID.next()
     store.send(.navigation(.setPath([.init(id: screenBID, element: .screenB(.init()))]))) {
       $0.path = [.init(id: screenBID, element: .screenB(.init()))]
     }
