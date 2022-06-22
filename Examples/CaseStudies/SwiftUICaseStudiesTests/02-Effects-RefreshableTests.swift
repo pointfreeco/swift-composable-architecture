@@ -6,10 +6,10 @@ import XCTest
 class RefreshableTests: XCTestCase {
   func testHappyPath() {
     let store = TestStore(
-      initialState: .init(),
+      initialState: RefreshableState(),
       reducer: refreshableReducer,
-      environment: .init(
-        fact: .init { .init(value: "\($0) is a good number.") },
+      environment: RefreshableEnvironment(
+        fact: FactClient(fetch: { Effect(value: "\($0) is a good number.") }),
         mainQueue: .immediate
       )
     )
@@ -28,10 +28,10 @@ class RefreshableTests: XCTestCase {
 
   func testUnhappyPath() {
     let store = TestStore(
-      initialState: .init(),
+      initialState: RefreshableState(),
       reducer: refreshableReducer,
-      environment: .init(
-        fact: .init { _ in .init(error: .init()) },
+      environment: RefreshableEnvironment(
+        fact: FactClient(fetch: { _ in Effect(error: FactClient.Error()) }),
         mainQueue: .immediate
       )
     )
@@ -42,7 +42,7 @@ class RefreshableTests: XCTestCase {
     store.send(.refresh) {
       $0.isLoading = true
     }
-    store.receive(.factResponse(.failure(.init()))) {
+    store.receive(.factResponse(.failure(FactClient.Error()))) {
       $0.isLoading = false
     }
   }
@@ -51,10 +51,10 @@ class RefreshableTests: XCTestCase {
     let mainQueue = DispatchQueue.test
 
     let store = TestStore(
-      initialState: .init(),
+      initialState: RefreshableState(),
       reducer: refreshableReducer,
-      environment: .init(
-        fact: .init { .init(value: "\($0) is a good number.") },
+      environment: RefreshableEnvironment(
+        fact: FactClient(fetch: { Effect(value: "\($0) is a good number.") }),
         mainQueue: mainQueue.eraseToAnyScheduler()
       )
     )

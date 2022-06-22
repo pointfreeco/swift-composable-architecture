@@ -67,12 +67,12 @@
   /// class CounterTests: XCTestCase {
   ///   func testCounter() {
   ///     let store = TestStore(
-  ///       initialState: .init(count: 0),      // Given a counter state of 0
+  ///       initialState: CounterState(count: 0),  // Given a counter state of 0
   ///       reducer: counterReducer,
   ///       environment: ()
   ///     )
-  ///     store.send(.incrementButtonTapped) {  // When the increment button is tapped
-  ///       $0.count = 1                        // Then the count should be 1
+  ///     store.send(.incrementButtonTapped) {     // When the increment button is tapped
+  ///       $0.count = 1                           // Then the count should be 1
   ///     }
   ///   }
   /// }

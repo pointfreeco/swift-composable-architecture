@@ -9,9 +9,9 @@ class LongLivingEffectsTests: XCTestCase {
     let notificationCenter = NotificationCenter()
 
     let store = TestStore(
-      initialState: .init(),
+      initialState: LongLivingEffectsState(),
       reducer: longLivingEffectsReducer,
-      environment: .init(
+      environment: LongLivingEffectsEnvironment(
         notificationCenter: notificationCenter
       )
     )

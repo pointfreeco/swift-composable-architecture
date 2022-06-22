@@ -8,10 +8,10 @@ class LoginCoreTests: XCTestCase {
   func testFlow_Success_TwoFactor_Integration() {
     var authenticationClient = AuthenticationClient.failing
     authenticationClient.login = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: true))
+      Effect(value: AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true))
     }
     authenticationClient.twoFactor = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
+      Effect(value: AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false))
     }
 
     let store = TestStore(
@@ -34,7 +34,9 @@ class LoginCoreTests: XCTestCase {
       $0.isLoginRequestInFlight = true
     }
     store.receive(
-      .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: true)))
+      .loginResponse(
+        .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true))
+      )
     ) {
       $0.isLoginRequestInFlight = false
       $0.twoFactor = TwoFactorState(token: "deadbeefdeadbeef")
@@ -48,7 +50,9 @@ class LoginCoreTests: XCTestCase {
     }
     store.receive(
       .twoFactor(
-        .twoFactorResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
+        .twoFactorResponse(
+          .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false))
+        )
       )
     ) {
       $0.twoFactor?.isTwoFactorRequestInFlight = false
@@ -58,10 +62,10 @@ class LoginCoreTests: XCTestCase {
   func testFlow_DismissEarly_TwoFactor_Integration() {
     var authenticationClient = AuthenticationClient.failing
     authenticationClient.login = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: true))
+      Effect(value: AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true))
     }
     authenticationClient.twoFactor = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
+      Effect(value: AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false))
     }
     let scheduler = DispatchQueue.test
 
@@ -86,7 +90,9 @@ class LoginCoreTests: XCTestCase {
     }
     scheduler.advance()
     store.receive(
-      .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: true)))
+      .loginResponse(
+        .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true))
+      )
     ) {
       $0.isLoginRequestInFlight = false
       $0.twoFactor = TwoFactorState(token: "deadbeefdeadbeef")

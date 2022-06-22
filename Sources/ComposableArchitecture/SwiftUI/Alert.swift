@@ -50,7 +50,7 @@ import SwiftUI
 ///       // Do deletion logic...
 ///
 ///     case .deleteTapped:
-///       state.alert = .init(
+///       state.alert = AlertState(
 ///         title: TextState("Delete"),
 ///         message: TextState("Are you sure you want to delete this? It cannot be undone."),
 ///         primaryButton: .default(TextState("Confirm"), action: .send(.confirmTapped)),
@@ -86,7 +86,7 @@ import SwiftUI
 /// )
 ///
 /// store.send(.deleteTapped) {
-///   $0.alert = .init(
+///   $0.alert = AlertState(
 ///     title: TextState("Delete"),
 ///     message: TextState("Are you sure you want to delete this? It cannot be undone."),
 ///     primaryButton: .default(TextState("Confirm"), action: .send(.confirmTapped)),

@@ -62,10 +62,9 @@ public struct NewGameView: View {
         }
 
         NavigationLink(
-          destination: IfLetStore(
-            self.store.scope(state: \.game, action: NewGameAction.game),
-            then: GameView.init(store:)
-          ),
+          destination: IfLetStore(self.store.scope(state: \.game, action: NewGameAction.game)) {
+            GameView(store: $0)
+          },
           isActive: viewStore.binding(
             get: \.isGameActive,
             send: { $0 ? .letsPlayButtonTapped : .gameDismissed }

@@ -6,18 +6,34 @@ import Foundation
 extension AuthenticationClient {
   public static let live = AuthenticationClient(
     login: { request in
-      (request.email.contains("@") && request.password == "password"
-        ? Effect(value: .init(token: "deadbeef", twoFactorRequired: request.email.contains("2fa")))
-        : Effect(error: .invalidUserPassword))
+      var effect: Effect<AuthenticationResponse, AuthenticationError> {
+        if request.email.contains("@") && request.password == "password" {
+          return Effect(
+            value: AuthenticationResponse(
+              token: "deadbeef", twoFactorRequired: request.email.contains("2fa")
+            )
+          )
+        } else {
+          return Effect(error: .invalidUserPassword)
+        }
+      }
+      return effect
         .delay(for: 1, scheduler: queue)
         .eraseToEffect()
     },
     twoFactor: { request in
-      (request.token != "deadbeef"
-        ? Effect(error: .invalidIntermediateToken)
-        : request.code != "1234"
-          ? Effect(error: .invalidTwoFactor)
-          : Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
+      var effect: Effect<AuthenticationResponse, AuthenticationError> {
+        if request.token != "deadbeef" {
+          return Effect(error: .invalidIntermediateToken)
+        } else if request.code != "1234" {
+          return Effect(error: .invalidTwoFactor)
+        } else {
+          return Effect(
+            value: AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
+          )
+        }
+      }
+      return effect
         .delay(for: 1, scheduler: queue)
         .eraseToEffect()
     }

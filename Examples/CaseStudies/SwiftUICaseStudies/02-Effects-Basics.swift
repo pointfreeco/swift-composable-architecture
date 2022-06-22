@@ -114,7 +114,9 @@ struct EffectsBasicsView: View {
             ProgressView()
           }
 
-          viewStore.numberFact.map(Text.init)
+          if let numberFact = viewStore.numberFact {
+            Text(numberFact)
+          }
         }
       }
     }

@@ -80,9 +80,10 @@ struct LoadThenNavigateView: View {
               self.store.scope(
                 state: \.optionalCounter,
                 action: LoadThenNavigateAction.optionalCounter
-              ),
-              then: CounterView.init(store:)
-            ),
+              )
+            ) {
+              CounterView(store: $0)
+            },
             isActive: viewStore.binding(
               get: \.isNavigationActive,
               send: LoadThenNavigateAction.setNavigation(isActive:)

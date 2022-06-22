@@ -14,15 +14,15 @@ class AlertsAndConfirmationDialogsTests: XCTestCase {
     )
 
     store.send(.alertButtonTapped) {
-      $0.alert = .init(
-        title: .init("Alert!"),
-        message: .init("This is an alert"),
-        primaryButton: .cancel(.init("Cancel")),
-        secondaryButton: .default(.init("Increment"), action: .send(.incrementButtonTapped))
+      $0.alert = AlertState(
+        title: TextState("Alert!"),
+        message: TextState("This is an alert"),
+        primaryButton: .cancel(TextState("Cancel")),
+        secondaryButton: .default(TextState("Increment"), action: .send(.incrementButtonTapped))
       )
     }
     store.send(.incrementButtonTapped) {
-      $0.alert = .init(title: .init("Incremented!"))
+      $0.alert = AlertState(title: TextState("Incremented!"))
       $0.count = 1
     }
     store.send(.alertDismissed) {
@@ -38,18 +38,18 @@ class AlertsAndConfirmationDialogsTests: XCTestCase {
     )
 
     store.send(.confirmationDialogButtonTapped) {
-      $0.confirmationDialog = .init(
-        title: .init("Confirmation dialog"),
-        message: .init("This is a confirmation dialog."),
+      $0.confirmationDialog = ConfirmationDialogState(
+        title: TextState("Confirmation dialog"),
+        message: TextState("This is a confirmation dialog."),
         buttons: [
-          .cancel(.init("Cancel")),
-          .default(.init("Increment"), action: .send(.incrementButtonTapped)),
-          .default(.init("Decrement"), action: .send(.decrementButtonTapped)),
+          .cancel(TextState("Cancel")),
+          .default(TextState("Increment"), action: .send(.incrementButtonTapped)),
+          .default(TextState("Decrement"), action: .send(.decrementButtonTapped)),
         ]
       )
     }
     store.send(.incrementButtonTapped) {
-      $0.alert = .init(title: .init("Incremented!"))
+      $0.alert = AlertState(title: TextState("Incremented!"))
       $0.count = 1
     }
     store.send(.confirmationDialogDismissed) {

@@ -36,7 +36,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
   case .speech(.failure(.couldntConfigureAudioSession)),
     .speech(.failure(.couldntStartAudioEngine)):
-    state.alert = .init(title: .init("Problem with audio device. Please try again."))
+    state.alert = AlertState(title: TextState("Problem with audio device. Please try again."))
     return .none
 
   case .recordButtonTapped:
@@ -63,7 +63,9 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     }
 
   case let .speech(.failure(error)):
-    state.alert = .init(title: .init("An error occured while transcribing. Please try again."))
+    state.alert = AlertState(
+      title: TextState("An error occurred while transcribing. Please try again.")
+    )
     return environment.speechClient.finishTask()
       .fireAndForget()
 
@@ -73,12 +75,12 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
     switch status {
     case .notDetermined:
-      state.alert = .init(title: .init("Try again."))
+      state.alert = AlertState(title: TextState("Try again."))
       return .none
 
     case .denied:
-      state.alert = .init(
-        title: .init(
+      state.alert = AlertState(
+        title: TextState(
           """
           You denied access to speech recognition. This app needs access to transcribe your speech.
           """
@@ -87,7 +89,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
       return .none
 
     case .restricted:
-      state.alert = .init(title: .init("Your device does not allow speech recognition."))
+      state.alert = AlertState(title: TextState("Your device does not allow speech recognition."))
       return .none
 
     case .authorized:
@@ -153,7 +155,7 @@ struct SpeechRecognitionView_Previews: PreviewProvider {
   static var previews: some View {
     SpeechRecognitionView(
       store: Store(
-        initialState: .init(transcribedText: "Test test 123"),
+        initialState: AppState(transcribedText: "Test test 123"),
         reducer: appReducer,
         environment: AppEnvironment(
           mainQueue: .main,

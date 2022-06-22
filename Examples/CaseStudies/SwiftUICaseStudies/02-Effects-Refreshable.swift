@@ -107,10 +107,10 @@ let refreshableReducer = Reducer<
   struct Refreshable_Previews: PreviewProvider {
     static var previews: some View {
       RefreshableView(
-        store: .init(
-          initialState: .init(),
+        store: Store(
+          initialState: RefreshableState(),
           reducer: refreshableReducer,
-          environment: .init(
+          environment: RefreshableEnvironment(
             fact: .live,
             mainQueue: .main
           )
