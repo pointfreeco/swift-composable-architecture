@@ -17,7 +17,8 @@ extension AuthenticationClient {
           return Effect(error: .invalidUserPassword)
         }
       }
-      return effect
+      return
+        effect
         .delay(for: 1, scheduler: queue)
         .eraseToEffect()
     },
@@ -33,7 +34,8 @@ extension AuthenticationClient {
           )
         }
       }
-      return effect
+      return
+        effect
         .delay(for: 1, scheduler: queue)
         .eraseToEffect()
     }
