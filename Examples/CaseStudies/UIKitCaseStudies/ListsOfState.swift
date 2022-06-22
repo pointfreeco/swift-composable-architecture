@@ -82,11 +82,11 @@ struct CountersTableViewController_Previews: PreviewProvider {
     let vc = UINavigationController(
       rootViewController: CountersTableViewController(
         store: Store(
-          initialState: .init(
+          initialState: CounterList.State(
             counters: [
-              .init(),
-              .init(),
-              .init(),
+              Counter.State(),
+              Counter.State(),
+              Counter.State(),
             ]
           ),
           reducer: CounterList()

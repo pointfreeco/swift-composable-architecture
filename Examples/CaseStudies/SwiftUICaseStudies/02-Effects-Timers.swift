@@ -114,7 +114,7 @@ struct TimersView_Previews: PreviewProvider {
     NavigationView {
       TimersView(
         store: Store(
-          initialState: .init(),
+          initialState: Timers.State(),
           reducer: Timers()
         )
       )

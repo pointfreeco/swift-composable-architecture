@@ -51,7 +51,7 @@ extension DependencyValues {
   ///
   /// ```
   /// let store = TestStore(
-  ///   initialState: .init()
+  ///   initialState: DiceRollReducer.State()
   ///   reducer: DiceRollReducer()
   ///     .dependency(\.withRandomNumberGenerator, .init(LCRNG(seed: 0)))
   /// )
@@ -119,7 +119,7 @@ extension DependencyValues {
 ///
 /// ```
 /// let store = TestStore(
-///   initialState: .init()
+///   initialState: DiceRollReducer.State()
 ///   reducer: DiceRollReducer()
 ///     .dependency(\.withRandomNumberGenerator, .init(LCRNG(seed: 0)))
 /// )

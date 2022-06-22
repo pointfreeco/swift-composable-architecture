@@ -113,7 +113,7 @@ struct EffectsCancellation_Previews: PreviewProvider {
     NavigationView {
       EffectsCancellationView(
         store: Store(
-          initialState: .init(),
+          initialState: EffectsCancellation.State(),
           reducer: EffectsCancellation()
         )
       )

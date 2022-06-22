@@ -91,7 +91,7 @@ struct TwoFactorView_Previews: PreviewProvider {
     NavigationView {
       TwoFactorView(
         store: Store(
-          initialState: .init(token: "deadbeef"),
+          initialState: TwoFactor.State(token: "deadbeef"),
           reducer: TwoFactor(tearDownToken: Never.self)
             .dependency(\.authenticationClient.login) { _ in
               AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)

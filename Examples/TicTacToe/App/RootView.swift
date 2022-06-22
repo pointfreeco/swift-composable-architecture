@@ -29,7 +29,7 @@ enum GameType: Identifiable {
 
 struct RootView: View {
   let store = Store(
-    initialState: .init(),
+    initialState: AppReducer.State(),
     reducer: AppReducer()
       .debug()
   )

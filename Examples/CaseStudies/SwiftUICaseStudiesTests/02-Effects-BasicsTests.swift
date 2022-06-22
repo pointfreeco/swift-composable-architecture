@@ -7,7 +7,7 @@ import XCTest
 class EffectsBasicsTests: XCTestCase {
   func testCountDown() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: EffectsBasics.State(),
       reducer: EffectsBasics()
         .dependency(\.mainQueue, .immediate)
     )
@@ -25,7 +25,7 @@ class EffectsBasicsTests: XCTestCase {
 
   func testNumberFact() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: EffectsBasics.State(),
       reducer: EffectsBasics()
         .dependency(\.factClient.fetch) { "\($0) is a good number Brent" }
         .dependency(\.mainQueue, .immediate)

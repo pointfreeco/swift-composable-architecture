@@ -8,7 +8,7 @@ import XCTest
 class LoginCoreTests: XCTestCase {
   func testFlow_Success_TwoFactor_Integration() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: Login.State(),
       reducer: Login()
         .dependency(\.authenticationClient.login) { _ in
           AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
@@ -35,7 +35,7 @@ class LoginCoreTests: XCTestCase {
       )
     ) {
       $0.isLoginRequestInFlight = false
-      $0.twoFactor = .init(token: "deadbeefdeadbeef")
+      $0.twoFactor = TwoFactor.State(token: "deadbeefdeadbeef")
     }
     store.send(.twoFactor(.codeChanged("1234"))) {
       $0.twoFactor?.code = "1234"
@@ -57,7 +57,7 @@ class LoginCoreTests: XCTestCase {
 
   func testFlow_DismissEarly_TwoFactor_Integration() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: Login.State(),
       reducer: Login()
         .dependency(\.authenticationClient.login) { _ in
           AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
@@ -83,7 +83,7 @@ class LoginCoreTests: XCTestCase {
       )
     ) {
       $0.isLoginRequestInFlight = false
-      $0.twoFactor = .init(token: "deadbeefdeadbeef")
+      $0.twoFactor = TwoFactor.State(token: "deadbeefdeadbeef")
     }
     store.send(.twoFactor(.codeChanged("1234"))) {
       $0.twoFactor?.code = "1234"

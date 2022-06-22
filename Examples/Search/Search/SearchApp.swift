@@ -7,7 +7,7 @@ struct SearchApp: App {
     WindowGroup {
       SearchView(
         store: Store(
-          initialState: .init(),
+          initialState: SearchReducer.State(),
           reducer: SearchReducer()
             .debug()
         )

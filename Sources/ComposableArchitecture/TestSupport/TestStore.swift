@@ -37,7 +37,7 @@
   /// For example, given a simple counter reducer:
   ///
   /// ```swift
-  /// struct CounterReducer: ReducerProtocol {
+  /// struct Counter: ReducerProtocol {
   ///   struct State {
   ///     var count = 0
   ///   }
@@ -65,11 +65,11 @@
   /// class CounterTests: XCTestCase {
   ///   func testCounter() {
   ///     let store = TestStore(
-  ///       initialState: .init(count: 0),      // Given a counter state of 0
-  ///       reducer: CounterReducer()
+  ///       initialState: Counter.State(count: 0),  // Given a counter state of 0
+  ///       reducer: Counter()
   ///     )
-  ///     store.send(.incrementButtonTapped) {  // When the increment button is tapped
-  ///       $0.count = 1                        // Then the count should be 1
+  ///     store.send(.incrementButtonTapped) {      // When the increment button is tapped
+  ///       $0.count = 1                            // Then the count should be 1
   ///     }
   ///   }
   /// }
@@ -84,7 +84,7 @@
   /// typing before making a network request:
   ///
   /// ```swift
-  /// struct SearchReducer: ReducerProtocol {
+  /// struct Search: ReducerProtocol {
   ///   struct State: Equatable {
   ///     var query = ""
   ///     var results: [String] = []
@@ -123,8 +123,8 @@
   /// let mainQueue = DispatchQueue.test
   ///
   /// let store = TestStore(
-  ///   initialState: .init(),
-  ///   reducer: SearchReducer(request: { ["Composable Architecture"] })
+  ///   initialState: Search.State(),
+  ///   reducer: Search(request: { ["Composable Architecture"] })
   ///     // Override the main queue dependency with a type-erased scheduler
   ///     .dependency(\.mainQueue, mainQueue.eraseToAnyScheduler()
   /// )

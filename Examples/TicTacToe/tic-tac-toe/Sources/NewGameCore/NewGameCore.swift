@@ -36,7 +36,7 @@ public struct NewGame: ReducerProtocol {
         return .none
 
       case .letsPlayButtonTapped:
-        state.game = .init(
+        state.game = Game.State(
           oPlayerName: state.oPlayerName,
           xPlayerName: state.xPlayerName
         )

@@ -8,7 +8,7 @@ struct VoiceMemosApp: App {
     WindowGroup {
       VoiceMemosView(
         store: Store(
-          initialState: .init(),
+          initialState: VoiceMemos.State(),
           reducer: VoiceMemos()
             .debug()
         )

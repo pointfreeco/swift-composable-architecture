@@ -7,7 +7,7 @@ import XCTest
 class TwoFactorCoreTests: XCTestCase {
   func testFlow_Success() async {
     let store = TestStore(
-      initialState: .init(token: "deadbeefdeadbeef"),
+      initialState: TwoFactor.State(token: "deadbeefdeadbeef"),
       reducer: TwoFactor(tearDownToken: Never.self)
         .dependency(\.mainQueue, .immediate)
         .dependency(\.authenticationClient.twoFactor) { _ in
@@ -42,7 +42,7 @@ class TwoFactorCoreTests: XCTestCase {
 
   func testFlow_Failure() async {
     let store = TestStore(
-      initialState: .init(token: "deadbeefdeadbeef"),
+      initialState: TwoFactor.State(token: "deadbeefdeadbeef"),
       reducer: TwoFactor(tearDownToken: Never.self)
         .dependency(\.mainQueue, .immediate)
         .dependency(\.authenticationClient.twoFactor) { _ in

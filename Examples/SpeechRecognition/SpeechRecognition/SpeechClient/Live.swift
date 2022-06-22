@@ -25,7 +25,7 @@ extension SpeechClient {
       func recognitionTask(
         request: SFSpeechAudioBufferRecognitionRequest
       ) -> AsyncThrowingStream<Action, Error> {
-        .init { continuation in
+        AsyncThrowingStream { continuation in
           let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))!
           let speechRecognizerDelegate = Delegate { available in
             continuation.yield(.availabilityDidChange(isAvailable: available))

@@ -45,7 +45,7 @@ extension DependencyValues {
   /// let mainRunLoop = DispatchQueue.test
   ///
   /// let store = TestStore(
-  ///   initialState: .init()
+  ///   initialState: TimerReducer.State()
   ///   reducer: TimerReducer()
   ///     .dependency(\.mainRunLoop, mainQueue.eraseToAnyScheduler())
   /// )

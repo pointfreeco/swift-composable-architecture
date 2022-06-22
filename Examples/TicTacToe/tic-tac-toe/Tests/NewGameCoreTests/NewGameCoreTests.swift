@@ -4,7 +4,7 @@ import NewGameCore
 import XCTest
 
 class NewGameCoreTests: XCTestCase {
-  let store = TestStore(initialState: .init(), reducer: NewGame())
+  let store = TestStore(initialState: NewGame.State(), reducer: NewGame())
 
   func testFlow_NewGame_Integration() {
     self.store.send(.oPlayerNameChanged("Blob Sr.")) {
@@ -14,7 +14,7 @@ class NewGameCoreTests: XCTestCase {
       $0.xPlayerName = "Blob Jr."
     }
     self.store.send(.letsPlayButtonTapped) {
-      $0.game = .init(oPlayerName: "Blob Sr.", xPlayerName: "Blob Jr.")
+      $0.game = Game.State(oPlayerName: "Blob Sr.", xPlayerName: "Blob Jr.")
     }
     self.store.send(.game(.cellTapped(row: 0, column: 0))) {
       $0.game!.board[0][0] = .x
@@ -24,7 +24,7 @@ class NewGameCoreTests: XCTestCase {
       $0.game = nil
     }
     self.store.send(.letsPlayButtonTapped) {
-      $0.game = .init(oPlayerName: "Blob Sr.", xPlayerName: "Blob Jr.")
+      $0.game = Game.State(oPlayerName: "Blob Sr.", xPlayerName: "Blob Jr.")
     }
     self.store.send(.gameDismissed) {
       $0.game = nil
