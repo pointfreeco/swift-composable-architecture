@@ -10,9 +10,9 @@ private let readMe = """
 
 struct NavigateAndLoadListState: Equatable {
   var rows: IdentifiedArrayOf<Row> = [
-    .init(count: 1, id: UUID()),
-    .init(count: 42, id: UUID()),
-    .init(count: 100, id: UUID()),
+    Row(count: 1, id: UUID()),
+    Row(count: 42, id: UUID()),
+    Row(count: 100, id: UUID()),
   ]
   var selection: Identified<Row.ID, CounterState?>?
 
@@ -55,7 +55,7 @@ let navigateAndLoadListReducer =
 
       case let .setNavigation(selection: .some(id)):
         state.selection = Identified(nil, id: id)
-        return .task { 
+        return .task {
           try? await environment.mainQueue.sleep(for: 1)
           return .setNavigationSelectionDelayCompleted
         }
@@ -89,10 +89,12 @@ struct NavigateAndLoadListView: View {
                 self.store.scope(
                   state: \.selection?.value,
                   action: NavigateAndLoadListAction.counter
-                ),
-                then: CounterView.init(store:),
-                else: ProgressView.init
-              ),
+                )
+              ) {
+                CounterView(store: $0)
+              } else: {
+                ProgressView()
+              },
               tag: row.id,
               selection: viewStore.binding(
                 get: \.selection?.id,
@@ -116,9 +118,9 @@ struct NavigateAndLoadListView_Previews: PreviewProvider {
         store: Store(
           initialState: NavigateAndLoadListState(
             rows: [
-              .init(count: 1, id: UUID()),
-              .init(count: 42, id: UUID()),
-              .init(count: 100, id: UUID()),
+              NavigateAndLoadListState.Row(count: 1, id: UUID()),
+              NavigateAndLoadListState.Row(count: 42, id: UUID()),
+              NavigateAndLoadListState.Row(count: 100, id: UUID()),
             ]
           ),
           reducer: navigateAndLoadListReducer,

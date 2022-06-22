@@ -48,7 +48,7 @@ let loadThenPresentReducer =
 
       case .setSheet(isPresented: true):
         state.isActivityIndicatorVisible = true
-        return .task { 
+        return .task {
           try? await environment.mainQueue.sleep(for: 1)
           return .setSheetIsPresentedDelayCompleted
         }
@@ -97,9 +97,10 @@ struct LoadThenPresentView: View {
           self.store.scope(
             state: \.optionalCounter,
             action: LoadThenPresentAction.optionalCounter
-          ),
-          then: CounterView.init(store:)
-        )
+          )
+        ) {
+          CounterView(store: $0)
+        }
       }
       .navigationBarTitle("Load and present")
       .onDisappear { viewStore.send(.onDisappear) }

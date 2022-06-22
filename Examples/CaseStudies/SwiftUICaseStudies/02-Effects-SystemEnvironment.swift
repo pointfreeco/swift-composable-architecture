@@ -51,7 +51,7 @@ let multipleDependenciesReducer = Reducer<
     }
 
   case .alertDelayReceived:
-    state.alert = .init(title: .init("Here's an alert after a delay!"))
+    state.alert = AlertState(title: TextState("Here's an alert after a delay!"))
     return .none
 
   case .alertDismissed:
@@ -97,12 +97,16 @@ struct MultipleDependenciesView: View {
         ) {
           HStack {
             Button("Date") { viewStore.send(.dateButtonTapped) }
-            viewStore.dateString.map(Text.init)
+            if let dateString = viewStore.dateString {
+              Text(dateString)
+            }
           }
 
           HStack {
             Button("UUID") { viewStore.send(.uuidButtonTapped) }
-            viewStore.uuidString.map(Text.init)
+            if let uuidString = viewStore.uuidString {
+              Text(uuidString)
+            }
           }
 
           Button("Delayed Alert") { viewStore.send(.alertButtonTapped) }
@@ -118,7 +122,9 @@ struct MultipleDependenciesView: View {
         ) {
           HStack {
             Button("Fetch Number") { viewStore.send(.fetchNumberButtonTapped) }
-            viewStore.fetchedNumberString.map(Text.init)
+            if let fetchedNumberString = viewStore.fetchedNumberString {
+              Text(fetchedNumberString)
+            }
 
             Spacer()
 
@@ -139,7 +145,7 @@ struct MultipleDependenciesView_Previews: PreviewProvider {
     NavigationView {
       MultipleDependenciesView(
         store: Store(
-          initialState: .init(),
+          initialState: MultipleDependenciesState(),
           reducer: multipleDependenciesReducer,
           environment: .live(
             environment: MultipleDependenciesEnvironment(

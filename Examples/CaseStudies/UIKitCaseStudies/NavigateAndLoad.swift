@@ -36,7 +36,7 @@ let eagerNavigationReducer =
       switch action {
       case .setNavigation(isActive: true):
         state.isNavigationActive = true
-        return .task { 
+        return .task {
           try? await environment.mainQueue.sleep(for: 1)
           return .setNavigationIsActiveDelayCompleted
         }
@@ -96,10 +96,12 @@ class EagerNavigationViewController: UIViewController {
         self.navigationController?.pushViewController(
           IfLetStoreController(
             store: self.store
-              .scope(state: \.optionalCounter, action: EagerNavigationAction.optionalCounter),
-            then: CounterViewController.init(store:),
-            else: ActivityIndicatorViewController.init
-          ),
+              .scope(state: \.optionalCounter, action: EagerNavigationAction.optionalCounter)
+          ) {
+            CounterViewController(store: $0)
+          } else: {
+            ActivityIndicatorViewController()
+          },
           animated: true
         )
       } else {

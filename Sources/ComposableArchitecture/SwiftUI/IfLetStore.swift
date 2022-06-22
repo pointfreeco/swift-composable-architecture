@@ -10,25 +10,27 @@ import SwiftUI
 /// ```swift
 /// IfLetStore(
 ///   store.scope(state: \SearchState.results, action: SearchAction.results),
-///   then: SearchResultsView.init(store:),
-///   else: { Text("Loading search results...") }
-/// )
+/// ) {
+///   SearchResultsView(store: $0)
+/// } else: {
+///   Text("Loading search results...")
+/// }
 /// ```
 ///
-/// And for performing navigation when a piece of state becomes non-`nil`:
+/// And for showing a sheet when a piece of state becomes non-`nil`:
 ///
 /// ```swift
-/// NavigationLink(
-///   destination: IfLetStore(
-///     self.store.scope(state: \.detail, action: AppAction.detail),
-///     then: DetailView.init(store:)
-///   ),
+/// .sheet(
 ///   isActive: viewStore.binding(
 ///     get: \.isGameActive,
 ///     send: { $0 ? .startButtonTapped : .detailDismissed }
 ///   )
 /// ) {
-///   Text("Start!")
+///   IfLetStore(
+///     self.store.scope(state: \.detail, action: AppAction.detail)
+///   ) {
+///     DetailView(store: $0)
+///   }
 /// }
 /// ```
 ///

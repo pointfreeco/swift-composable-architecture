@@ -18,7 +18,9 @@ class VoiceMemosTests: XCTestCase {
     var environment = VoiceMemosEnvironment.failing
     environment.audioRecorder.currentTime = { 2.5 }
     environment.audioRecorder.requestRecordPermission = { true }
-    environment.audioRecorder.startRecording = { _ in try await didFinish.stream.first { _ in true }! }
+    environment.audioRecorder.startRecording = { _ in
+      try await didFinish.stream.first { _ in true }!
+    }
     environment.audioRecorder.stopRecording = {
       didFinish.continuation.yield(true)
       didFinish.continuation.finish()
@@ -37,7 +39,7 @@ class VoiceMemosTests: XCTestCase {
     await self.mainRunLoop.advance()
     await store.receive(.recordPermissionResponse(true)) {
       $0.audioRecorderPermission = .allowed
-      $0.currentRecording = .init(
+      $0.currentRecording = VoiceMemosState.CurrentRecording(
         date: Date(timeIntervalSince1970: 0),
         mode: .recording,
         url: URL(fileURLWithPath: "/tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")
@@ -89,7 +91,7 @@ class VoiceMemosTests: XCTestCase {
 
     store.send(.recordButtonTapped)
     await store.receive(.recordPermissionResponse(false)) {
-      $0.alert = .init(title: .init("Permission is required to record voice memos."))
+      $0.alert = AlertState(title: TextState("Permission is required to record voice memos."))
       $0.audioRecorderPermission = .denied
     }
     store.send(.alertDismissed) {
@@ -123,7 +125,7 @@ class VoiceMemosTests: XCTestCase {
     await self.mainRunLoop.advance(by: 0.5)
     await store.receive(.recordPermissionResponse(true)) {
       $0.audioRecorderPermission = .allowed
-      $0.currentRecording = .init(
+      $0.currentRecording = VoiceMemosState.CurrentRecording(
         date: Date(timeIntervalSince1970: 0),
         mode: .recording,
         url: URL(fileURLWithPath: "/tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")
@@ -131,8 +133,10 @@ class VoiceMemosTests: XCTestCase {
     }
     didFinish.continuation.finish(throwing: AudioRecorderClient.Failure.couldntActivateAudioSession)
     await self.mainRunLoop.advance(by: 0.5)
-    await store.receive(.audioRecorderDidFinish(.failure(AudioRecorderClient.Failure.couldntActivateAudioSession))) {
-      $0.alert = .init(title: .init("Voice memo recording failed."))
+    await store.receive(
+      .audioRecorderDidFinish(.failure(AudioRecorderClient.Failure.couldntActivateAudioSession))
+    ) {
+      $0.alert = AlertState(title: TextStatae("Voice memo recording failed."))
       $0.currentRecording = nil
     }
   }
@@ -209,7 +213,7 @@ class VoiceMemosTests: XCTestCase {
         id: url, action: .audioPlayerClient(.failure(AudioPlayerClient.Failure.decodeErrorDidOccur))
       )
     ) {
-      $0.alert = .init(title: .init("Voice memo playback failed."))
+      $0.alert = AlertState(title: TextState("Voice memo playback failed."))
       $0.voiceMemos[id: url]?.mode = .notPlaying
     }
     await task.cancel()

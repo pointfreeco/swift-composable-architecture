@@ -56,14 +56,14 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       VoiceMemoEnvironment(audioPlayerClient: $0.audioPlayer, mainRunLoop: $0.mainRunLoop)
     }
   ),
-  .init { state, action, environment in
+  Reducer { state, action, environment in
     enum RecordId {}
 
     func startRecording() -> Effect<VoiceMemosAction, Never> {
       let url = environment.temporaryDirectory()
         .appendingPathComponent(environment.uuid().uuidString)
         .appendingPathExtension("m4a")
-      state.currentRecording = .init(
+      state.currentRecording = VoiceMemosState.CurrentRecording(
         date: environment.mainRunLoop.now.date,
         url: url
       )
@@ -71,7 +71,11 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       return .run { send in
         await withTaskGroup(of: Void.self) { group in
           group.addTask {
-            await send(.audioRecorderDidFinish(.init { try await environment.audioRecorder.startRecording(url) }))
+            await send(
+              .audioRecorderDidFinish(
+                TaskResult { try await environment.audioRecorder.startRecording(url) }
+              )
+            )
           }
           group.addTask {
             for await _ in environment.mainRunLoop.timer(interval: .seconds(1)) {
@@ -109,7 +113,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       return .cancel(id: RecordId.self)
 
     case .audioRecorderDidFinish(.success(false)), .audioRecorderDidFinish(.failure):
-      state.alert = .init(title: .init("Voice memo recording failed."))
+      state.alert = AlertState(title: TextState("Voice memo recording failed."))
       state.currentRecording = nil
       return .cancel(id: RecordId.self)
 
@@ -122,19 +126,19 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       return .none
 
     case .openSettingsButtonTapped:
-      return .fireAndForget { 
+      return .fireAndForget {
         await environment.openSettings()
       }
 
     case .recordButtonTapped:
       switch state.audioRecorderPermission {
       case .undetermined:
-        return .task { 
+        return .task {
           await .recordPermissionResponse(environment.audioRecorder.requestRecordPermission())
         }
 
       case .denied:
-        state.alert = .init(title: .init("Permission is required to record voice memos."))
+        state.alert = AlertState(title: TextState("Permission is required to record voice memos."))
         return .none
 
       case .allowed:
@@ -163,12 +167,12 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       if permission {
         return startRecording()
       } else {
-        state.alert = .init(title: .init("Permission is required to record voice memos."))
+        state.alert = AlertState(title: TextState("Permission is required to record voice memos."))
         return .none
       }
 
     case .voiceMemo(id: _, action: .audioPlayerClient(.failure)):
-      state.alert = .init(title: .init("Voice memo playback failed."))
+      state.alert = AlertState(title: TextState("Voice memo playback failed."))
       return .none
 
     case let .voiceMemo(id: id, action: .delete):
@@ -198,9 +202,10 @@ struct VoiceMemosView: View {
             ForEachStore(
               self.store.scope(
                 state: \.voiceMemos, action: VoiceMemosAction.voiceMemo(id:action:)
-              ),
-              content: VoiceMemoView.init(store:)
-            )
+              )
+            ) {
+              VoiceMemoView(store: $0)
+            }
             .onDelete { indexSet in
               for index in indexSet {
                 viewStore.send(.voiceMemo(id: viewStore.voiceMemos[index].id, action: .delete))
@@ -280,14 +285,14 @@ struct VoiceMemos_Previews: PreviewProvider {
         environment: VoiceMemosEnvironment(
           audioPlayer: .live,
           // NB: AVAudioRecorder doesn't work in previews, so we stub out the dependency here.
-          audioRecorder: .init(
+          audioRecorder: AudioRecorderClient(
             currentTime: { 10 },
             requestRecordPermission: { true },
             startRecording: { _ in try await Task.never() },
-            stopRecording: { }
+            stopRecording: {}
           ),
           mainRunLoop: .main,
-          openSettings: { },
+          openSettings: {},
           temporaryDirectory: { URL(fileURLWithPath: NSTemporaryDirectory()) },
           uuid: { UUID() }
         )

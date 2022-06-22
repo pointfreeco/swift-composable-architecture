@@ -75,10 +75,10 @@ let focusReducer = Reducer<FocusState, FocusAction, FocusEnvironment> {
   struct FocusView_Previews: PreviewProvider {
     static var previews: some View {
       FocusView(
-        store: .init(
-          initialState: .init(),
+        store: Store(
+          initialState: FocusState(),
           reducer: focusReducer,
-          environment: .init()
+          environment: FocusEnvironment()
         )
       )
     }

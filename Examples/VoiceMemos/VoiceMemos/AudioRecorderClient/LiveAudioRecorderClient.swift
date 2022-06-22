@@ -1,6 +1,6 @@
-@preconcurrency import Foundation
 import AVFoundation
 import ComposableArchitecture
+@preconcurrency import Foundation
 
 extension AudioRecorderClient {
   static var live: Self {

@@ -392,7 +392,8 @@ public final class Store<State, Action> {
 
       var didComplete = false
       let uuid = UUID()
-      effectCancellable.wrappedValue = effect
+      effectCancellable.wrappedValue =
+        effect
         .handleEvents(
           receiveCancel: { [weak self] in
             self?.threadCheck(status: .effectCompletion(action))
@@ -424,7 +425,7 @@ public final class Store<State, Action> {
           defer { index += 1 }
           tasks.wrappedValue[index].cancel()
         }
-      } operation: { 
+      } operation: {
         var index = tasks.wrappedValue.startIndex
         while index < tasks.wrappedValue.endIndex {
           defer { index += 1 }

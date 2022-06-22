@@ -8,7 +8,9 @@ extension AuthenticationClient {
       else { throw AuthenticationError.invalidUserPassword }
 
       try await Task.sleep(nanoseconds: NSEC_PER_SEC)
-      return .init(token: "deadbeef", twoFactorRequired: request.email.contains("2fa"))
+      return AuthenticationResponse(
+        token: "deadbeef", twoFactorRequired: request.email.contains("2fa")
+      )
     },
     twoFactor: { request in
       guard request.token == "deadbeef"
@@ -18,7 +20,7 @@ extension AuthenticationClient {
       else { throw AuthenticationError.invalidTwoFactor }
 
       try await Task.sleep(nanoseconds: NSEC_PER_SEC)
-      return .init(token: "deadbeefdeadbeef", twoFactorRequired: false)
+      return AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
     }
   )
 }

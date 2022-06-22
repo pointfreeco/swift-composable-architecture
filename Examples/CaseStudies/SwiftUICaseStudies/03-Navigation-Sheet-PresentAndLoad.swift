@@ -41,7 +41,7 @@ let presentAndLoadReducer =
       switch action {
       case .setSheet(isPresented: true):
         state.isSheetPresented = true
-        return .task { 
+        return .task {
           try? await environment.mainQueue.sleep(for: 1)
           return .setSheetIsPresentedDelayCompleted
         }
@@ -84,10 +84,12 @@ struct PresentAndLoadView: View {
           self.store.scope(
             state: \.optionalCounter,
             action: PresentAndLoadAction.optionalCounter
-          ),
-          then: CounterView.init(store:),
-          else: ProgressView.init
-        )
+          )
+        ) {
+          CounterView(store: $0)
+        } else: {
+          ProgressView()
+        }
       }
       .navigationBarTitle("Present and load")
     }

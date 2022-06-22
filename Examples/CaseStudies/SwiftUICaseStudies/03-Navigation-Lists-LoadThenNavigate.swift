@@ -12,9 +12,9 @@ private let readMe = """
 
 struct LoadThenNavigateListState: Equatable {
   var rows: IdentifiedArrayOf<Row> = [
-    .init(count: 1, id: UUID()),
-    .init(count: 42, id: UUID()),
-    .init(count: 100, id: UUID()),
+    Row(count: 1, id: UUID()),
+    Row(count: 42, id: UUID()),
+    Row(count: 100, id: UUID()),
   ]
   var selection: Identified<Row.ID, CounterState>?
 
@@ -104,9 +104,10 @@ struct LoadThenNavigateListView: View {
                 self.store.scope(
                   state: \.selection?.value,
                   action: LoadThenNavigateListAction.counter
-                ),
-                then: CounterView.init(store:)
-              ),
+                )
+              ) {
+                CounterView(store: $0)
+              },
               tag: row.id,
               selection: viewStore.binding(
                 get: \.selection?.id,
@@ -137,9 +138,9 @@ struct LoadThenNavigateListView_Previews: PreviewProvider {
         store: Store(
           initialState: LoadThenNavigateListState(
             rows: [
-              .init(count: 1, id: UUID()),
-              .init(count: 42, id: UUID()),
-              .init(count: 100, id: UUID()),
+              LoadThenNavigateListState.Row(count: 1, id: UUID()),
+              LoadThenNavigateListState.Row(count: 42, id: UUID()),
+              LoadThenNavigateListState.Row(count: 100, id: UUID()),
             ]
           ),
           reducer: loadThenNavigateListReducer,

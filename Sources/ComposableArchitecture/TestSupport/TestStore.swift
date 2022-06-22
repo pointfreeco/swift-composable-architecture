@@ -67,12 +67,12 @@
   /// class CounterTests: XCTestCase {
   ///   func testCounter() {
   ///     let store = TestStore(
-  ///       initialState: .init(count: 0),      // Given a counter state of 0
+  ///       initialState: CounterState(count: 0),  // Given a counter state of 0
   ///       reducer: counterReducer,
   ///       environment: ()
   ///     )
-  ///     store.send(.incrementButtonTapped) {  // When the increment button is tapped
-  ///       $0.count = 1                        // Then the count should be 1
+  ///     store.send(.incrementButtonTapped) {     // When the increment button is tapped
+  ///       $0.count = 1                           // Then the count should be 1
   ///     }
   ///   }
   /// }
@@ -248,7 +248,8 @@
       while !self.inFlightEffects.isEmpty {
         guard start.distance(to: DispatchQueue.main.now) < .nanoseconds(Int(nanoseconds))
         else {
-          let timeoutMessage = nanoseconds != nanoseconds
+          let timeoutMessage =
+            nanoseconds != nanoseconds
             ? #"try increasing the duration of this assertion's "timeout"#
             : #"configure this assertion with an explicit "timeout"#
           let suggestion = """
@@ -580,7 +581,8 @@
               expected to deliver this action have been cancelled?
               """
           } else {
-            let timeoutMessage = nanoseconds != nanoseconds
+            let timeoutMessage =
+              nanoseconds != nanoseconds
               ? #"try increasing the duration of this assertion's "timeout"#
               : #"configure this assertion with an explicit "timeout"#
             suggestion = """

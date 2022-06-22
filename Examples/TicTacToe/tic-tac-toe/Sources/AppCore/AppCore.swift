@@ -8,7 +8,7 @@ public enum AppState: Equatable {
   case login(LoginState)
   case newGame(NewGameState)
 
-  public init() { self = .login(.init()) }
+  public init() { self = .login(LoginState()) }
 }
 
 public enum AppAction: Equatable {
@@ -45,14 +45,14 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     switch action {
     case let .login(.twoFactor(.twoFactorResponse(.success(response)))),
       let .login(.loginResponse(.success(response))) where !response.twoFactorRequired:
-      state = .newGame(.init())
+      state = .newGame(NewGameState())
       return .none
 
     case .login:
       return .none
 
     case .newGame(.logoutButtonTapped):
-      state = .login(.init())
+      state = .login(LoginState())
       return .none
 
     case .newGame:

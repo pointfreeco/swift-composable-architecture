@@ -68,7 +68,7 @@ extension Reducer {
           .cancellable(id: FavoriteCancelId(id: state.id), cancelInFlight: true)
 
         case let .response(.failure(error)):
-          state.alert = .init(title: TextState(error.localizedDescription))
+          state.alert = AlertState(title: TextState(error.localizedDescription))
           return .none
 
         case let .response(.success(isFavorite)):

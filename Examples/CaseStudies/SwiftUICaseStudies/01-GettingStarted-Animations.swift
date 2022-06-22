@@ -69,18 +69,18 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
     .cancellable(id: CancelId.self)
 
   case .resetButtonTapped:
-    state.alert = .init(
-      title: .init("Reset state?"),
+    state.alert = AlertState(
+      title: TextState("Reset state?"),
       primaryButton: .destructive(
-        .init("Reset"),
+        TextState("Reset"),
         action: .send(.resetConfirmationButtonTapped, animation: .default)
       ),
-      secondaryButton: .cancel(.init("Cancel"))
+      secondaryButton: .cancel(TextState("Cancel"))
     )
     return .none
 
   case .resetConfirmationButtonTapped:
-    state = .init()
+    state = AnimationsState()
     return .cancel(id: CancelId.self)
 
   case let .setColor(color):
@@ -150,7 +150,7 @@ struct AnimationsView_Previews: PreviewProvider {
       NavigationView {
         AnimationsView(
           store: Store(
-            initialState: .init(),
+            initialState: AnimationsState(),
             reducer: animationsReducer,
             environment: AnimationsEnvironment(
               mainQueue: .main
@@ -162,7 +162,7 @@ struct AnimationsView_Previews: PreviewProvider {
       NavigationView {
         AnimationsView(
           store: Store(
-            initialState: .init(),
+            initialState: AnimationsState(),
             reducer: animationsReducer,
             environment: AnimationsEnvironment(
               mainQueue: .main

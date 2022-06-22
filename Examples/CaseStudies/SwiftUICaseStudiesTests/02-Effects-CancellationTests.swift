@@ -8,10 +8,10 @@ import XCTest
 class EffectsCancellationTests: XCTestCase {
   func testTrivia_SuccessfulRequest() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: EffectsCancellationState(),
       reducer: effectsCancellationReducer,
-      environment: .init(
-        fact: .init(fetch: { "\($0) is a good number Brent" })
+      environment: EffectsCancellationEnvironment(
+        fact: FactClient(fetch: { "\($0) is a good number Brent" })
       )
     )
 
@@ -33,10 +33,10 @@ class EffectsCancellationTests: XCTestCase {
   func testTrivia_FailedRequest() async {
     struct FactError: Error {}
     let store = TestStore(
-      initialState: .init(),
+      initialState: EffectsCancellationState(),
       reducer: effectsCancellationReducer,
-      environment: .init(
-        fact: .init(fetch: { _ in throw FactError() })
+      environment: EffectsCancellationEnvironment(
+        fact: FactClient(fetch: { _ in throw FactError() })
       )
     )
 
@@ -57,10 +57,10 @@ class EffectsCancellationTests: XCTestCase {
   func testTrivia_CancelButtonCancelsRequest() {
     let scheduler = DispatchQueue.test
     let store = TestStore(
-      initialState: .init(),
+      initialState: EffectsCancellationState(),
       reducer: effectsCancellationReducer,
-      environment: .init(
-        fact: .init(fetch: { "\($0) is a good number Brent" })
+      environment: EffectsCancellationEnvironment(
+        fact: FactClient(fetch: { "\($0) is a good number Brent" })
       )
     )
 
@@ -76,10 +76,10 @@ class EffectsCancellationTests: XCTestCase {
   func testTrivia_PlusMinusButtonsCancelsRequest() {
     let scheduler = DispatchQueue.test
     let store = TestStore(
-      initialState: .init(),
+      initialState: EffectsCancellationState(),
       reducer: effectsCancellationReducer,
-      environment: .init(
-        fact: .init(fetch: { "\($0) is a good number Brent" })
+      environment: EffectsCancellationEnvironment(
+        fact: FactClient(fetch: { "\($0) is a good number Brent" })
       )
     )
 

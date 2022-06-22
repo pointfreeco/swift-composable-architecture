@@ -10,9 +10,9 @@ class LongLivingEffectsTests: XCTestCase {
     let (screenshots, takeScreenshot) = AsyncStream<Void>.streamWithContinuation()
 
     let store = TestStore(
-      initialState: .init(),
+      initialState: LongLivingEffectsState(),
       reducer: longLivingEffectsReducer,
-      environment: .init(
+      environment: LongLivingEffectsEnvironment(
         screenshots: { screenshots }
       )
     )

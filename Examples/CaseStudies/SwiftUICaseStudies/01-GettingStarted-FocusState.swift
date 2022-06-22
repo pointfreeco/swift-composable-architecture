@@ -90,9 +90,9 @@
       NavigationView {
         FocusDemoView(
           store: Store(
-            initialState: .init(),
+            initialState: FocusDemoState(),
             reducer: focusDemoReducer,
-            environment: .init()
+            environment: FocusDemoEnvironment()
           )
         )
       }

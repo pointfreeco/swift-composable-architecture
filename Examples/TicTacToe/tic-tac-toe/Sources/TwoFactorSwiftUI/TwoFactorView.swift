@@ -95,8 +95,10 @@ struct TwoFactorView_Previews: PreviewProvider {
           reducer: twoFactorReducer,
           environment: TwoFactorEnvironment(
             authenticationClient: AuthenticationClient(
-              login: { _ in .init(token: "deadbeef", twoFactorRequired: false) },
-              twoFactor: { _ in .init(token: "deadbeef", twoFactorRequired: false) }
+              login: { _ in AuthenticationResponse(token: "deadbeef", twoFactorRequired: false) },
+              twoFactor: { _ in
+                AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
+              }
             )
           )
         )

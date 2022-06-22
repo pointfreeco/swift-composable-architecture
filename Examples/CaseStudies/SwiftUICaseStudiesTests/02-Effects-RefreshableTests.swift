@@ -7,10 +7,10 @@ import XCTest
 class RefreshableTests: XCTestCase {
   func testHappyPath() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: RefreshableState(),
       reducer: refreshableReducer,
-      environment: .init(
-        fact: .init { "\($0) is a good number." },
+      environment: RefreshableEnvironment(
+        fact: FactClient(fetch: { "\($0) is a good number." }),
         mainQueue: .immediate
       )
     )
@@ -30,10 +30,10 @@ class RefreshableTests: XCTestCase {
   func testUnhappyPath() async {
     struct FactError: Error {}
     let store = TestStore(
-      initialState: .init(),
+      initialState: RefreshableState(),
       reducer: refreshableReducer,
-      environment: .init(
-        fact: .init { _ in throw FactError() },
+      environment: RefreshableEnvironment(
+        fact: FactClient(fetch: { _ in throw FactError() }),
         mainQueue: .immediate
       )
     )
@@ -51,9 +51,9 @@ class RefreshableTests: XCTestCase {
 
   func testCancellation() {
     let store = TestStore(
-      initialState: .init(),
+      initialState: RefreshableState(),
       reducer: refreshableReducer,
-      environment: .init(
+      environment: RefreshableEnvironment(
         fact: .init {
           try await Task.sleep(nanoseconds: NSEC_PER_SEC)
           return "\($0) is a good number."

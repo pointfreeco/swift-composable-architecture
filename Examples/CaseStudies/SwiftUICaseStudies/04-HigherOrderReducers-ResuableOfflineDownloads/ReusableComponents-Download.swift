@@ -195,9 +195,9 @@ struct DownloadList_Previews: PreviewProvider {
       NavigationView {
         CitiesView(
           store: Store(
-            initialState: .init(cityMaps: .mocks),
+            initialState: MapAppState(cityMaps: .mocks),
             reducer: mapAppReducer,
-            environment: .init(
+            environment: MapAppEnvironment(
               downloadClient: .live,
               mainQueue: .main
             )
@@ -220,9 +220,9 @@ struct DownloadList_Previews: PreviewProvider {
 
 extension IdentifiedArray where ID == CityMapState.ID, Element == CityMapState {
   static let mocks: Self = [
-    .init(
+    CityMapState(
       downloadMode: .notDownloaded,
-      cityMap: .init(
+      cityMap: CityMap(
         blurb: """
           New York City (NYC), known colloquially as New York (NY) and officially as the City of \
           New York, is the most populous city in the United States. With an estimated 2018 \
@@ -234,9 +234,9 @@ extension IdentifiedArray where ID == CityMapState.ID, Element == CityMapState {
         title: "New York, NY"
       )
     ),
-    .init(
+    CityMapState(
       downloadMode: .notDownloaded,
-      cityMap: .init(
+      cityMap: CityMap(
         blurb: """
           Los Angeles, officially the City of Los Angeles and often known by its initials L.A., \
           is the largest city in the U.S. state of California. With an estimated population of \
@@ -250,9 +250,9 @@ extension IdentifiedArray where ID == CityMapState.ID, Element == CityMapState {
         title: "Los Angeles, LA"
       )
     ),
-    .init(
+    CityMapState(
       downloadMode: .notDownloaded,
-      cityMap: .init(
+      cityMap: CityMap(
         blurb: """
           Paris is the capital and most populous city of France, with a population of 2,148,271 \
           residents (official estimate, 1 January 2020) in an area of 105 square kilometres (41 \
@@ -264,9 +264,9 @@ extension IdentifiedArray where ID == CityMapState.ID, Element == CityMapState {
         title: "Paris, France"
       )
     ),
-    .init(
+    CityMapState(
       downloadMode: .notDownloaded,
-      cityMap: .init(
+      cityMap: CityMap(
         blurb: """
           Tokyo, officially Tokyo Metropolis (東京都, Tōkyō-to), is the capital of Japan and the \
           most populous of the country's 47 prefectures. Located at the head of Tokyo Bay, the \
@@ -279,9 +279,9 @@ extension IdentifiedArray where ID == CityMapState.ID, Element == CityMapState {
         title: "Tokyo, Japan"
       )
     ),
-    .init(
+    CityMapState(
       downloadMode: .notDownloaded,
-      cityMap: .init(
+      cityMap: CityMap(
         blurb: """
           Buenos Aires is the capital and largest city of Argentina. The city is located on the \
           western shore of the estuary of the Río de la Plata, on the South American continent's \

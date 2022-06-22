@@ -10,7 +10,7 @@ class SearchTests: XCTestCase {
 
   func testSearchAndClearQuery() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: SearchState(),
       reducer: searchReducer,
       environment: SearchEnvironment(
         weatherClient: .failing,
@@ -34,7 +34,7 @@ class SearchTests: XCTestCase {
 
   func testSearchFailure() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: SearchState(),
       reducer: searchReducer,
       environment: SearchEnvironment(
         weatherClient: .failing,
@@ -55,7 +55,7 @@ class SearchTests: XCTestCase {
     weatherClient.search = { _ in .mock }
 
     let store = TestStore(
-      initialState: .init(),
+      initialState: SearchState(),
       reducer: searchReducer,
       environment: SearchEnvironment(
         weatherClient: weatherClient,
@@ -89,7 +89,7 @@ class SearchTests: XCTestCase {
     weatherClient.forecast = { _ in .mock }
 
     let store = TestStore(
-      initialState: .init(results: results),
+      initialState: SearchState(results: results),
       reducer: searchReducer,
       environment: SearchEnvironment(
         weatherClient: weatherClient,
@@ -103,24 +103,24 @@ class SearchTests: XCTestCase {
     await self.scheduler.advance()
     await store.receive(.forecastResponse(42, .success(.mock))) {
       $0.resultForecastRequestInFlight = nil
-      $0.weather = .init(
+      $0.weather = SearchState.Weather(
         id: 42,
         days: [
-          .init(
+          SearchState.Weather.Day(
             date: Date(timeIntervalSince1970: 0),
             temperatureMax: 90,
             temperatureMaxUnit: "°F",
             temperatureMin: 70,
             temperatureMinUnit: "°F"
           ),
-          .init(
+          SearchState.Weather.Day(
             date: Date(timeIntervalSince1970: 86_400),
             temperatureMax: 70,
             temperatureMaxUnit: "°F",
             temperatureMin: 50,
             temperatureMinUnit: "°F"
           ),
-          .init(
+          SearchState.Weather.Day(
             date: Date(timeIntervalSince1970: 172_800),
             temperatureMax: 100,
             temperatureMaxUnit: "°F",
@@ -148,7 +148,7 @@ class SearchTests: XCTestCase {
     weatherClient.forecast = { _ in .mock }
 
     let store = TestStore(
-      initialState: .init(results: results),
+      initialState: SearchState(results: results),
       reducer: searchReducer,
       environment: SearchEnvironment(
         weatherClient: weatherClient,
@@ -165,24 +165,24 @@ class SearchTests: XCTestCase {
     await self.scheduler.advance()
     await store.receive(.forecastResponse(42, .success(.mock))) {
       $0.resultForecastRequestInFlight = nil
-      $0.weather = .init(
+      $0.weather = SearchState.Weather(
         id: 42,
         days: [
-          .init(
+          SearchState.Weather.Day(
             date: Date(timeIntervalSince1970: 0),
             temperatureMax: 90,
             temperatureMaxUnit: "°F",
             temperatureMin: 70,
             temperatureMinUnit: "°F"
           ),
-          .init(
+          SearchState.Weather.Day(
             date: Date(timeIntervalSince1970: 86_400),
             temperatureMax: 70,
             temperatureMaxUnit: "°F",
             temperatureMin: 50,
             temperatureMinUnit: "°F"
           ),
-          .init(
+          SearchState.Weather.Day(
             date: Date(timeIntervalSince1970: 172_800),
             temperatureMax: 100,
             temperatureMaxUnit: "°F",
@@ -201,7 +201,7 @@ class SearchTests: XCTestCase {
     let results = Search.mock.results
 
     let store = TestStore(
-      initialState: .init(results: results),
+      initialState: SearchState(results: results),
       reducer: searchReducer,
       environment: SearchEnvironment(
         weatherClient: weatherClient,
