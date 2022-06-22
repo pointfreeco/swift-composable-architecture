@@ -3,6 +3,8 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+import SwiftUI
+
 class EffectsBasicsTests: XCTestCase {
   func testCountUpAndDown() {
     let store = TestStore(
@@ -32,7 +34,7 @@ class EffectsBasicsTests: XCTestCase {
       )
     )
 
-    store.environment.fact.fetch = { n in Effect(value: "\(n) is a good number Brent") }
+    store.environment.fact.fetchAsync = { n in "\(n) is a good number Brent" }
     store.environment.mainQueue = .immediate
 
     store.send(.incrementButtonTapped) {
@@ -41,14 +43,14 @@ class EffectsBasicsTests: XCTestCase {
     store.send(.numberFactButtonTapped) {
       $0.isNumberFactRequestInFlight = true
     }
-    _ = XCTWaiter.wait(for: [.init()], timeout: 1)
+    _ = XCTWaiter.wait(for: [.init()], timeout: 0.05)
     store.receive(.numberFactResponse(.success("1 is a good number Brent"))) {
        $0.isNumberFactRequestInFlight = false
       $0.numberFact = "1 is a good number Brent"
     }
   }
 
-  func testNumberFact_UnhappyPath() {
+  func testNumberFact_Failing() {
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,

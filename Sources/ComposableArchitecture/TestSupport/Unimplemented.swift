@@ -12,6 +12,13 @@ public func unimplemented<A, B>(_ type: Any.Type, endpoint: String) -> (A) async
   }
 }
 
+public func unimplemented<A, B>(_ type: Any.Type, endpoint: String, default: B) -> (A) async -> B {
+  { a in
+    XCTFail("\(type).\(endpoint) unimplemented.")
+    return `default`
+  }
+}
+
 private struct Unimplemented: Error {
   let endpoint: String
 }

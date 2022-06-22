@@ -77,9 +77,10 @@ let effectsBasicsReducer = Reducer<
       }
     }
 
-//    return environment.fact.fetch(state.count)
-//      .receive(on: environment.mainQueue)
-//      .catchToEffect(EffectsBasicsAction.numberFactResponse)
+    return environment.fact.fetch(state.count)
+      .map { $0 + "!" }
+      .receive(on: environment.mainQueue)
+      .catchToEffect(EffectsBasicsAction.numberFactResponse)
 
   case let .numberFactResponse(.success(response)):
     state.isNumberFactRequestInFlight = false
