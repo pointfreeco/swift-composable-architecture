@@ -240,11 +240,14 @@
     }
 
     public func finish(
-      timeout nanoseconds: UInt64 = NSEC_PER_SEC,  // TODO: Better default? Remove default?
+      timeout nanoseconds: UInt64 = 0,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
       let start = DispatchQueue.main.now
+      if nanoseconds == 0 {
+        await Task.megaYield()
+      }
       while !self.inFlightEffects.isEmpty {
         guard start.distance(to: DispatchQueue.main.now) < .nanoseconds(Int(nanoseconds))
         else {
@@ -550,11 +553,14 @@
 
     public func receive(
       _ expectedAction: Action,
-      timeout nanoseconds: UInt64 = NSEC_PER_SEC,  // TODO: Better default? Remove default?
+      timeout nanoseconds: UInt64 = 0,
       file: StaticString = #file,
       line: UInt = #line,
-      _ update: ((inout LocalState) throws -> Void)? = nil
+      _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil
     ) async {
+      if nanoseconds == 0 {
+        await Task.megaYield()
+      }
       await withTaskGroup(of: Void.self) { group in
         _ = group.addTaskUnlessCancelled { @MainActor in
           while !Task.isCancelled {
@@ -565,7 +571,7 @@
           guard !Task.isCancelled
           else { return }
 
-          { self.receive(expectedAction, update, file: file, line: line) }()
+          { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
         }
 
         _ = group.addTaskUnlessCancelled { @MainActor in
@@ -668,10 +674,13 @@
     }
 
     public func finish(
-      timeout nanoseconds: UInt64 = NSEC_PER_SEC,  // TODO: Better default? Remove default?
+      timeout nanoseconds: UInt64 = 0,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
+      if nanoseconds == 0 {
+        await Task.megaYield()
+      }
       do {
         try await withThrowingTaskGroup(of: Void.self) { group in
           group.addTask { await self.task.cancellableValue }
@@ -690,6 +699,14 @@
           file: file,
           line: line
         )
+      }
+    }
+  }
+
+  extension Task where Success == Failure, Failure == Never {
+    static func megaYield(count: Int = 3) async {
+      for _ in 1...count {
+        await Task<Void, _>.detached(priority: .background) { await Task.yield() }.value
       }
     }
   }
