@@ -217,4 +217,45 @@ class TestStoreTests: XCTestCase {
     }
     XCTAssertEqual(store.state, 4)
   }
+
+  func testDependencies() async {
+    struct MyReducer: ReducerProtocol {
+      struct State: Equatable {
+        var count = 0
+      }
+      enum Action: Equatable {
+        case updateCount
+      }
+      @Dependency(\.int) var int
+      func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+        switch action {
+        case .updateCount:
+          state.count = self.int
+          return .none
+        }
+      }
+    }
+
+    let store = TestStore(initialState: .init(), reducer: MyReducer())
+    store.send(.updateCount) {
+      $0.count = 1729
+    }
+    store.dependencies.int = -1
+    store.send(.updateCount) {
+      $0.count = -1
+    }
+  }
+}
+
+
+private extension DependencyValues {
+  public var int: Int {
+    get { self[IntKey.self] }
+    set { self[IntKey.self] = newValue }
+  }
+
+  private enum IntKey: LiveDependencyKey {
+    static let liveValue = 42
+    static let testValue = 1729
+  }
 }
