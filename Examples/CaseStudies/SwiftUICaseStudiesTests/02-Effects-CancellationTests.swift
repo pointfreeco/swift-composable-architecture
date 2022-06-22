@@ -10,10 +10,12 @@ class EffectsCancellationTests: XCTestCase {
       initialState: .init(),
       reducer: effectsCancellationReducer,
       environment: .init(
-        fact: .init(fetch: { n in Effect(value: "\(n) is a good number Brent") }),
+        fact: .failing,
         mainQueue: .immediate
       )
     )
+
+    store.environment.fact.fetch = { n in Effect(value: "\(n) is a good number Brent") }
 
     store.send(.stepperChanged(1)) {
       $0.count = 1
@@ -35,10 +37,12 @@ class EffectsCancellationTests: XCTestCase {
       initialState: .init(),
       reducer: effectsCancellationReducer,
       environment: .init(
-        fact: .init(fetch: { _ in Fail(error: FactClient.Error()).eraseToEffect() }),
+        fact: .failing,
         mainQueue: .immediate
       )
     )
+
+    store.environment.fact.fetch = { _ in Fail(error: FactClient.Error()).eraseToEffect() }
 
     store.send(.triviaButtonTapped) {
       $0.isTriviaRequestInFlight = true
@@ -60,10 +64,12 @@ class EffectsCancellationTests: XCTestCase {
       initialState: .init(),
       reducer: effectsCancellationReducer,
       environment: .init(
-        fact: .init(fetch: { n in Effect(value: "\(n) is a good number Brent") }),
+        fact: .failing,
         mainQueue: scheduler.eraseToAnyScheduler()
       )
     )
+
+    store.environment.fact.fetch = { n in Effect(value: "\(n) is a good number Brent") }
 
     store.send(.triviaButtonTapped) {
       $0.isTriviaRequestInFlight = true
@@ -80,10 +86,12 @@ class EffectsCancellationTests: XCTestCase {
       initialState: .init(),
       reducer: effectsCancellationReducer,
       environment: .init(
-        fact: .init(fetch: { n in Effect(value: "\(n) is a good number Brent") }),
+        fact: .failing,
         mainQueue: scheduler.eraseToAnyScheduler()
       )
     )
+
+    store.environment.fact.fetch = { n in Effect(value: "\(n) is a good number Brent") }
 
     store.send(.triviaButtonTapped) {
       $0.isTriviaRequestInFlight = true

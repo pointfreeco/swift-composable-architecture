@@ -69,10 +69,12 @@ class EffectsBasicsTests: XCTestCase {
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
       environment: EffectsBasicsEnvironment(
-        fact: .init(fetch: { n in Effect(value: "\(n) is a good number Brent") }),
+        fact: .failing,
         mainQueue: .immediate
       )
     )
+
+    store.environment.fact.fetch = { n in Effect(value: "\(n) is a good number Brent") }
 
     store.send(.incrementButtonTapped) {
       $0.count = 1

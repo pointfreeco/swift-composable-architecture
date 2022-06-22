@@ -51,8 +51,6 @@ let effectsBasicsReducer = Reducer<
   EffectsBasicsAction,
     EffectsBasicsEnvironment
 > { state, action, environment in
-  struct DelayID {}
-
   switch action {
   case .decrementButtonTapped:
     state.count -= 1
@@ -99,6 +97,8 @@ let effectsBasicsReducer = Reducer<
     state.isNumberFactRequestInFlight = false
     return .none
   }
+
+  struct DelayID {}
 }
 
 // MARK: - Feature view
@@ -124,29 +124,30 @@ struct EffectsBasicsView: View {
           }
           .buttonStyle(.borderless)
 
-          HStack {
-            Spacer()
-            Button("Number fact") { viewStore.send(.numberFactButtonTapped) }
-            Spacer()
-          }
+          Button("Number fact") { viewStore.send(.numberFactButtonTapped) }
+            .frame(maxWidth: .infinity)
         }
 
         Section {
           if viewStore.isNumberFactRequestInFlight {
             ProgressView()
-              .id(UUID()) // TODO: ????
+              .progressViewStyle(.circular)
+              .frame(maxWidth: .infinity)
+              .id(UUID()) // TODO: Progress view doesn't show a second time without this?
           }
           if let fact = viewStore.numberFact {
             Text(fact)
           }
+        } footer: {
+          Button("Number facts provided by numbersapi.com") {
+            UIApplication.shared.open(URL(string: "http://numbersapi.com")!)
+          }
+          .frame(maxWidth: .infinity)
+          .foregroundColor(.gray)
         }
-
-//        Button("Number facts provided by numbersapi.com") {
-//          UIApplication.shared.open(URL(string: "http://numbersapi.com")!)
-//        }
       }
     }
-    .navigationBarTitle("Effects")
+    .navigationBarTitle("Effect basics")
   }
 }
 

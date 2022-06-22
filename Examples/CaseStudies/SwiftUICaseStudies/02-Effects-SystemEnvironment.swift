@@ -118,7 +118,9 @@ struct MultipleDependenciesView: View {
         ) {
           HStack {
             Button("Fetch Number") { viewStore.send(.fetchNumberButtonTapped) }
-            viewStore.fetchedNumberString.map(Text.init)
+            if let numberString = viewStore.fetchedNumberString {
+              Text(numberString)
+            }
 
             Spacer()
 

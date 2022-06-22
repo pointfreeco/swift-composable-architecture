@@ -4,6 +4,7 @@ import XCTestDynamicOverlay
 
 struct FactClient {
   var fetch: (Int) -> Effect<String, Error>
+  var random: () -> Effect<Int, Error>
 
   struct Error: Swift.Error, Equatable {}
 }
@@ -28,7 +29,8 @@ extension FactClient {
         }
         .setFailureType(to: Error.self)
         .eraseToEffect()
-      }
+      },
+      random: { .init(value: .random(in: 0...1_000_000)) }
     )
   #else
     static let live = Self(
@@ -57,6 +59,10 @@ extension FactClient {
     static let failing = Self(
       fetch: { _ in
         XCTFail("\(Self.self).fact is unimplemented.")
+        return .none
+      },
+      random: {
+        XCTFail("\(Self.self).random is unimplemented.")
         return .none
       }
     )

@@ -9,10 +9,12 @@ class RefreshableTests: XCTestCase {
       initialState: .init(),
       reducer: refreshableReducer,
       environment: .init(
-        fact: .init { .init(value: "\($0) is a good number.") },
+        fact: .failing,
         mainQueue: .immediate
       )
     )
+
+    store.environment.fact.fetch = { .init(value: "\($0) is a good number.") }
 
     store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -31,10 +33,12 @@ class RefreshableTests: XCTestCase {
       initialState: .init(),
       reducer: refreshableReducer,
       environment: .init(
-        fact: .init { _ in .init(error: .init()) },
+        fact: .failing,
         mainQueue: .immediate
       )
     )
+
+    store.environment.fact.fetch = { _ in .init(error: .init()) }
 
     store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -54,10 +58,12 @@ class RefreshableTests: XCTestCase {
       initialState: .init(),
       reducer: refreshableReducer,
       environment: .init(
-        fact: .init { .init(value: "\($0) is a good number.") },
+        fact: .failing,
         mainQueue: mainQueue.eraseToAnyScheduler()
       )
     )
+
+    store.environment.fact.fetch = { .init(value: "\($0) is a good number.") }
 
     store.send(.incrementButtonTapped) {
       $0.count = 1

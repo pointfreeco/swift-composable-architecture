@@ -96,11 +96,14 @@ struct EffectsCancellationView: View {
           if viewStore.isTriviaRequestInFlight {
             HStack {
               Button("Cancel") { viewStore.send(.cancelButtonTapped) }
+                .buttonStyle(.borderless)
               Spacer()
               ProgressView()
+                .id(UUID())
             }
           } else {
             Button("Number fact") { viewStore.send(.triviaButtonTapped) }
+              .buttonStyle(.borderless)
               .disabled(viewStore.isTriviaRequestInFlight)
           }
 
