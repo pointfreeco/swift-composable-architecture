@@ -230,11 +230,14 @@
     }
 
     public func finish(
-      timeout nanoseconds: UInt64 = NSEC_PER_SEC,  // TODO: Better default? Remove default?
+      timeout nanoseconds: UInt64 = 0,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
       let start = DispatchQueue.main.now
+      if nanoseconds == 0 {
+        await Task.megaYield()
+      }
       while !self.reducer.inFlightEffects.isEmpty {
         guard start.distance(to: DispatchQueue.main.now) < .nanoseconds(Int(nanoseconds))
         else {
@@ -447,11 +450,14 @@
     ///     expected.
     public func receive(
       _ expectedAction: Reducer.Action,
-      timeout nanoseconds: UInt64 = NSEC_PER_SEC,  // TODO: Better default? Remove default?
+      timeout nanoseconds: UInt64 = 0,
       _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
+      if nanoseconds == 0 {
+        await Task.megaYield()
+      }
       await withTaskGroup(of: Void.self) { group in
         _ = group.addTaskUnlessCancelled { @MainActor in
           while !Task.isCancelled {
@@ -523,10 +529,13 @@
     }
 
     public func finish(
-      timeout nanoseconds: UInt64 = NSEC_PER_SEC,  // TODO: Better default? Remove default?
+      timeout nanoseconds: UInt64 = 0,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
+      if nanoseconds == 0 {
+        await Task.megaYield()
+      }
       do {
         try await withThrowingTaskGroup(of: Void.self) { group in
           group.addTask { await self.task.cancellableValue }
@@ -700,6 +709,14 @@
       state toLocalState: @escaping (LocalState) -> S
     ) -> TestStore<Reducer, S, LocalAction, Environment> {
       self.scope(state: toLocalState, action: { $0 })
+    }
+  }
+
+  extension Task where Success == Failure, Failure == Never {
+    static func megaYield(count: Int = 3) async {
+      for _ in 1...count {
+        await Task<Void, _>.detached(priority: .background) { await Task.yield() }.value
+      }
     }
   }
 #endif
