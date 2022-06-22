@@ -30,16 +30,17 @@ extension AudioPlayerClient {
 
   static let live = Self { url in
     let stream = AsyncThrowingStream<Bool, Error> { continuation in
-      guard let delegate = try? Delegate(
-        url: url,
-        didFinishPlaying: { successful in
-          continuation.yield(successful)
-          continuation.finish()
-        },
-        decodeErrorDidOccur: { _ in
-          continuation.finish(throwing: Failure.decodeErrorDidOccur)
-        }
-      )
+      guard
+        let delegate = try? Delegate(
+          url: url,
+          didFinishPlaying: { successful in
+            continuation.yield(successful)
+            continuation.finish()
+          },
+          decodeErrorDidOccur: { _ in
+            continuation.finish(throwing: Failure.decodeErrorDidOccur)
+          }
+        )
       else {
         continuation.finish(throwing: Failure.couldntCreateAudioPlayer)
         return

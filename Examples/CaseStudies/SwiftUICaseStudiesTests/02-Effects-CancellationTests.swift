@@ -8,9 +8,9 @@ import XCTest
 class EffectsCancellationTests: XCTestCase {
   func testTrivia_SuccessfulRequest() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: EffectsCancellation.State(),
       reducer: EffectsCancellation()
-        .dependency(\.factClient, .init(fetch: { "\($0) is a good number Brent" }))
+        .dependency(\.factClient.fetch) { "\($0) is a good number Brent" }
         .dependency(\.mainQueue, .immediate)
     )
 
@@ -32,9 +32,9 @@ class EffectsCancellationTests: XCTestCase {
   func testTrivia_FailedRequest() async {
     struct FactError: Error {}
     let store = TestStore(
-      initialState: .init(),
+      initialState: EffectsCancellation.State(),
       reducer: EffectsCancellation()
-        .dependency(\.factClient, .init(fetch: { _ in throw FactError() }))
+        .dependency(\.factClient.fetch) { _ in throw FactError() }
         .dependency(\.mainQueue, .immediate)
     )
 
@@ -55,9 +55,9 @@ class EffectsCancellationTests: XCTestCase {
   func testTrivia_CancelButtonCancelsRequest() {
     let mainQueue = DispatchQueue.test
     let store = TestStore(
-      initialState: .init(),
+      initialState: EffectsCancellation.State(),
       reducer: EffectsCancellation()
-        .dependency(\.factClient, .init(fetch: { "\($0) is a good number Brent" }))
+        .dependency(\.factClient.fetch) { "\($0) is a good number Brent" }
         .dependency(\.mainQueue, mainQueue.eraseToAnyScheduler())
     )
 
@@ -73,9 +73,9 @@ class EffectsCancellationTests: XCTestCase {
   func testTrivia_PlusMinusButtonsCancelsRequest() {
     let mainQueue = DispatchQueue.test
     let store = TestStore(
-      initialState: .init(),
+      initialState: EffectsCancellation.State(),
       reducer: EffectsCancellation()
-        .dependency(\.factClient, .init(fetch: { "\($0) is a good number Brent" }))
+        .dependency(\.factClient.fetch) { "\($0) is a good number Brent" }
         .dependency(\.mainQueue, mainQueue.eraseToAnyScheduler())
     )
 

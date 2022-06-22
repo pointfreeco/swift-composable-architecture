@@ -19,20 +19,21 @@ enum FocusAction {
 }
 
 struct FocusReducer: ReducerProtocol {
-  @Dependency(\.randomNumberGenerator) var randomNumberGenerator
+  @Dependency(\.withRandomNumberGenerator) var withRandomNumberGenerator
 
   func reduce(into state: inout FocusState, action: FocusAction) -> Effect<FocusAction, Never> {
     switch action {
     case .randomButtonClicked:
-      var randomNumberGenerator = self.randomNumberGenerator
-      state.currentFocus = (1..<numbers.count).randomElement(using: &randomNumberGenerator)!
+      state.currentFocus = self.withRandomNumberGenerator {
+        (1..<numbers.count).randomElement(using: &$0)!
+      }
       return .none
     }
   }
 }
 
 #if swift(>=5.3)
-  @available(tvOS 14.0, *)
+  @available(tvOS 14, *)
   struct FocusView: View {
     let store: Store<FocusState, FocusAction>
 
@@ -73,12 +74,12 @@ struct FocusReducer: ReducerProtocol {
     }
   }
 
-  @available(tvOS 14.0, *)
+  @available(tvOS 14, *)
   struct FocusView_Previews: PreviewProvider {
     static var previews: some View {
       FocusView(
-        store: .init(
-          initialState: .init(),
+        store: Store(
+          initialState: FocusReducer.State(),
           reducer: FocusReducer()
         )
       )

@@ -43,7 +43,7 @@ struct NavigateAndLoad: ReducerProtocol {
         return .cancel(id: CancelId.self)
 
       case .setNavigationIsActiveDelayCompleted:
-        state.optionalCounter = .init()
+        state.optionalCounter = Counter.State()
         return .none
 
       case .optionalCounter:
@@ -68,10 +68,12 @@ struct NavigateAndLoadView: View {
               self.store.scope(
                 state: \.optionalCounter,
                 action: NavigateAndLoad.Action.optionalCounter
-              ),
-              then: CounterView.init(store:),
-              else: ProgressView.init
-            ),
+              )
+            ) {
+              CounterView(store: $0)
+            } else: {
+              ProgressView()
+            },
             isActive: viewStore.binding(
               get: \.isNavigationActive,
               send: NavigateAndLoad.Action.setNavigation(isActive:)
@@ -93,7 +95,7 @@ struct NavigateAndLoadView_Previews: PreviewProvider {
     NavigationView {
       NavigateAndLoadView(
         store: Store(
-          initialState: .init(),
+          initialState: NavigateAndLoad.State(),
           reducer: NavigateAndLoad()
         )
       )

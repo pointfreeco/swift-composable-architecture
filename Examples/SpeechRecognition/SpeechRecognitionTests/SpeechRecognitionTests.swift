@@ -8,7 +8,7 @@ import XCTest
 class SpeechRecognitionTests: XCTestCase {
   func testDenyAuthorization() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: AppReducer.State(),
       reducer: AppReducer()
         .dependency(\.speechClient.requestAuthorization) { .denied }
     )
@@ -17,8 +17,8 @@ class SpeechRecognitionTests: XCTestCase {
       $0.isRecording = true
     }
     await store.receive(.speechRecognizerAuthorizationStatusResponse(.denied)) {
-      $0.alert = .init(
-        title: .init(
+      $0.alert = AlertState(
+        title: TextState(
           """
           You denied access to speech recognition. This app needs access to transcribe your speech.
           """
@@ -31,7 +31,7 @@ class SpeechRecognitionTests: XCTestCase {
 
   func testRestrictedAuthorization() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: AppReducer.State(),
       reducer: AppReducer()
         .dependency(\.speechClient.requestAuthorization) { .restricted }
     )
@@ -40,7 +40,7 @@ class SpeechRecognitionTests: XCTestCase {
       $0.isRecording = true
     }
     await store.receive(.speechRecognizerAuthorizationStatusResponse(.restricted)) {
-      $0.alert = .init(title: .init("Your device does not allow speech recognition."))
+      $0.alert = AlertState(title: TextState("Your device does not allow speech recognition."))
       $0.isRecording = false
       $0.speechRecognizerAuthorizationStatus = .restricted
     }
@@ -54,7 +54,7 @@ class SpeechRecognitionTests: XCTestCase {
     speechClient.requestAuthorization = { .authorized }
 
     let store = TestStore(
-      initialState: .init(),
+      initialState: AppReducer.State(),
       reducer: AppReducer()
         .dependency(\.speechClient.recognitionTask) { _ in recognitionTask.stream }
         .dependency(\.speechClient.requestAuthorization) { .authorized }
@@ -96,7 +96,7 @@ class SpeechRecognitionTests: XCTestCase {
     let recognitionTask = AsyncThrowingStream<SpeechClient.Action, Error>.streamWithContinuation()
 
     let store = TestStore(
-      initialState: .init(),
+      initialState: AppReducer.State(),
       reducer: AppReducer()
         .dependency(\.speechClient.recognitionTask) { _ in recognitionTask.stream }
         .dependency(\.speechClient.requestAuthorization) { .authorized }
@@ -112,7 +112,7 @@ class SpeechRecognitionTests: XCTestCase {
 
     recognitionTask.continuation.finish(throwing: SpeechClient.Failure.couldntConfigureAudioSession)
     await store.receive(.speech(.failure(SpeechClient.Failure.couldntConfigureAudioSession))) {
-      $0.alert = .init(title: .init("Problem with audio device. Please try again."))
+      $0.alert = AlertState(title: TextState("Problem with audio device. Please try again."))
     }
   }
 
@@ -124,7 +124,7 @@ class SpeechRecognitionTests: XCTestCase {
     speechClient.requestAuthorization = { .authorized }
 
     let store = TestStore(
-      initialState: .init(),
+      initialState: AppReducer.State(),
       reducer: AppReducer()
         .dependency(\.speechClient.recognitionTask) { _ in recognitionTask.stream }
         .dependency(\.speechClient.requestAuthorization) { .authorized }
@@ -140,7 +140,7 @@ class SpeechRecognitionTests: XCTestCase {
 
     recognitionTask.continuation.finish(throwing: SpeechClient.Failure.couldntStartAudioEngine)
     await store.receive(.speech(.failure(SpeechClient.Failure.couldntStartAudioEngine))) {
-      $0.alert = .init(title: .init("Problem with audio device. Please try again."))
+      $0.alert = AlertState(title: TextState("Problem with audio device. Please try again."))
     }
   }
 }

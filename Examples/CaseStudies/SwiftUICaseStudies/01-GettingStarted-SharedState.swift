@@ -26,7 +26,7 @@ struct SharedState: ReducerProtocol {
     // thing.
     var profile: Profile.State {
       get {
-        .init(
+        Profile.State(
           currentTab: self.currentTab,
           count: self.counter.count,
           maxCount: self.counter.maxCount,
@@ -105,10 +105,12 @@ struct SharedState: ReducerProtocol {
         return .none
 
       case .isPrimeButtonTapped:
-        state.alert = .init(
-          title: isPrime(state.count)
-            ? .init("👍 The number \(state.count) is prime!")
-            : .init("👎 The number \(state.count) is not prime :(")
+        state.alert = AlertState(
+          title: TextState(
+            isPrime(state.count)
+            ? "👍 The number \(state.count) is prime!"
+            : "👎 The number \(state.count) is not prime :("
+          )
         )
         return .none
       }
@@ -249,7 +251,7 @@ struct SharedState_Previews: PreviewProvider {
   static var previews: some View {
     SharedStateView(
       store: Store(
-        initialState: .init(),
+        initialState: SharedState.State(),
         reducer: SharedState()
       )
     )

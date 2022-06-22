@@ -43,7 +43,7 @@ public struct Login: ReducerProtocol {
         return .none
 
       case let .loginResponse(.failure(error)):
-        state.alert = .init(title: TextState(error.localizedDescription))
+        state.alert = AlertState(title: TextState(error.localizedDescription))
         state.isLoginRequestInFlight = false
         return .none
 
@@ -56,9 +56,9 @@ public struct Login: ReducerProtocol {
         state.isLoginRequestInFlight = true
         return .task { [email = state.email, password = state.password] in
           .loginResponse(
-            await .init {
+            await TaskResult {
               try await self.authenticationClient.login(
-                .init(email: email, password: password)
+                LoginRequest(email: email, password: password)
               )
             }
           )

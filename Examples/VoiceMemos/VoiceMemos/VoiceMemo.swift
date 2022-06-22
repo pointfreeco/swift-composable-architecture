@@ -67,7 +67,7 @@ struct VoiceMemo: ReducerProtocol {
             }
             group.addTask {
               await send(
-                .audioPlayerClient(.init { try await self.audioPlayer.play(url) })
+                .audioPlayerClient(TaskResult { try await self.audioPlayer.play(url) })
               )
             }
           }

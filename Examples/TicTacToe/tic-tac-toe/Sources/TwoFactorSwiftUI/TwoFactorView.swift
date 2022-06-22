@@ -91,13 +91,13 @@ struct TwoFactorView_Previews: PreviewProvider {
     NavigationView {
       TwoFactorView(
         store: Store(
-          initialState: .init(token: "deadbeef"),
+          initialState: TwoFactor.State(token: "deadbeef"),
           reducer: TwoFactor()
             .dependency(\.authenticationClient.login) { _ in
-              .init(token: "deadbeef", twoFactorRequired: false)
+              AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
             }
             .dependency(\.authenticationClient.twoFactor) { _ in
-              .init(token: "deadbeef", twoFactorRequired: false)
+              AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
             }
         )
       )

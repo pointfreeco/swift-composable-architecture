@@ -48,7 +48,7 @@ struct LoadThenNavigate: ReducerProtocol {
 
       case .setNavigationIsActiveDelayCompleted:
         state.isActivityIndicatorVisible = false
-        state.optionalCounter = .init()
+        state.optionalCounter = Counter.State()
         return .none
 
       case .optionalCounter:
@@ -73,9 +73,10 @@ struct LoadThenNavigateView: View {
               self.store.scope(
                 state: \.optionalCounter,
                 action: LoadThenNavigate.Action.optionalCounter
-              ),
-              then: CounterView.init(store:)
-            ),
+              )
+            ) {
+              CounterView(store: $0)
+            },
             isActive: viewStore.binding(
               get: \.isNavigationActive,
               send: LoadThenNavigate.Action.setNavigation(isActive:)
@@ -102,7 +103,7 @@ struct LoadThenNavigateView_Previews: PreviewProvider {
     NavigationView {
       LoadThenNavigateView(
         store: Store(
-          initialState: .init(),
+          initialState: LoadThenNavigate.State(),
           reducer: LoadThenNavigate()
         )
       )

@@ -7,7 +7,7 @@ struct TodosApp: App {
     WindowGroup {
       AppView(
         store: Store(
-          initialState: .init(),
+          initialState: AppReducer.State(),
           reducer: AppReducer()
             .debug()
         )

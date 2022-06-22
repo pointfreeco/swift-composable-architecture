@@ -11,9 +11,9 @@ private let readMe = """
 struct NavigateAndLoadList: ReducerProtocol {
   struct State: Equatable {
     var rows: IdentifiedArrayOf<Row> = [
-      .init(count: 1, id: UUID()),
-      .init(count: 42, id: UUID()),
-      .init(count: 100, id: UUID()),
+      Row(count: 1, id: UUID()),
+      Row(count: 42, id: UUID()),
+      Row(count: 100, id: UUID()),
     ]
     var selection: Identified<Row.ID, Counter.State?>?
 
@@ -56,7 +56,7 @@ struct NavigateAndLoadList: ReducerProtocol {
 
       case .setNavigationSelectionDelayCompleted:
         guard let id = state.selection?.id else { return .none }
-        state.selection?.value = .init(count: state.rows[id: id]?.count ?? 0)
+        state.selection?.value = Counter.State(count: state.rows[id: id]?.count ?? 0)
         return .none
       }
     }
@@ -82,10 +82,12 @@ struct NavigateAndLoadListView: View {
                 self.store.scope(
                   state: \.selection?.value,
                   action: NavigateAndLoadList.Action.counter
-                ),
-                then: CounterView.init(store:),
-                else: ProgressView.init
-              ),
+                )
+              ) {
+                CounterView(store: $0)
+              } else: {
+                ProgressView()
+              },
               tag: row.id,
               selection: viewStore.binding(
                 get: \.selection?.id,
@@ -107,11 +109,11 @@ struct NavigateAndLoadListView_Previews: PreviewProvider {
     NavigationView {
       NavigateAndLoadListView(
         store: Store(
-          initialState: .init(
+          initialState: NavigateAndLoadList.State(
             rows: [
-              .init(count: 1, id: UUID()),
-              .init(count: 42, id: UUID()),
-              .init(count: 100, id: UUID()),
+              NavigateAndLoadList.State.Row(count: 1, id: UUID()),
+              NavigateAndLoadList.State.Row(count: 42, id: UUID()),
+              NavigateAndLoadList.State.Row(count: 100, id: UUID()),
             ]
           ),
           reducer: NavigateAndLoadList()

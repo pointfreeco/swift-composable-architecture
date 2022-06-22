@@ -49,11 +49,11 @@ struct AppReducer: ReducerProtocol {
 
     case .speech(.failure(SpeechClient.Failure.couldntConfigureAudioSession)),
       .speech(.failure(SpeechClient.Failure.couldntStartAudioEngine)):
-      state.alert = .init(title: .init("Problem with audio device. Please try again."))
+      state.alert = AlertState(title: TextState("Problem with audio device. Please try again."))
       return .none
 
     case .speech(.failure):
-      state.alert = .init(title: .init("An error occurred while transcribing. Please try again."))
+      state.alert = AlertState(title: TextState("An error occurred while transcribing. Please try again."))
       return .none
 
     case .speech(.success(.availabilityDidChange)):
@@ -83,8 +83,8 @@ struct AppReducer: ReducerProtocol {
         }
 
       case .denied:
-        state.alert = .init(
-          title: .init(
+        state.alert = AlertState(
+          title: TextState(
             """
             You denied access to speech recognition. This app needs access to transcribe your \
             speech.
@@ -97,7 +97,7 @@ struct AppReducer: ReducerProtocol {
         return .none
 
       case .restricted:
-        state.alert = .init(title: .init("Your device does not allow speech recognition."))
+        state.alert = AlertState(title: TextState("Your device does not allow speech recognition."))
         return .none
 
       @unknown default:
@@ -150,7 +150,7 @@ struct SpeechRecognitionView_Previews: PreviewProvider {
   static var previews: some View {
     SpeechRecognitionView(
       store: Store(
-        initialState: .init(transcribedText: "Test test 123"),
+        initialState: AppReducer.State(transcribedText: "Test test 123"),
         reducer: AppReducer()
       )
     )

@@ -16,7 +16,7 @@ public struct AppReducer: ReducerProtocol {
     public var path: NavigationState<DestinationState>
 
     public init(
-      login: Login.State = .init(),
+      login: Login.State = Login.State(),
       path: NavigationState<DestinationState> = []
     ) {
       self.login = login
@@ -50,9 +50,9 @@ public struct AppReducer: ReducerProtocol {
       switch action {
       case let .login(.loginResponse(.success(response))):
         if response.twoFactorRequired {
-          state.path = [.init(id: self.nextID(), element: .twoFactor(.init(token: response.token)))]
+          state.path = [.init(id: self.nextID(), element: .twoFactor(TwoFactor.State(token: response.token)))]
         } else {
-          state.path = [.init(id: self.nextID(), element: .newGame(.init()))]
+          state.path = [.init(id: self.nextID(), element: .newGame(NewGame.State()))]
         }
         return .none
 
@@ -60,7 +60,7 @@ public struct AppReducer: ReducerProtocol {
         return .none
 
       case .navigation(.element(id: _, .twoFactor(.twoFactorResponse(.success)))):
-        state.path = [.init(id: self.nextID(), element: .newGame(.init()))]
+        state.path = [.init(id: self.nextID(), element: .newGame(NewGame.State()))]
         return .none
 
       case let .navigation(.element(id: id, .newGame(.letsPlayButtonTapped))):
@@ -69,7 +69,7 @@ public struct AppReducer: ReducerProtocol {
           .init(
             id: self.nextID(),
             element: .game(
-              .init(
+              Game.State(
                 oPlayerName: newGameState.oPlayerName,
                 xPlayerName: newGameState.xPlayerName
               )

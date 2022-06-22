@@ -17,7 +17,7 @@ let dataSource: [CaseStudy] = [
     title: "Basics",
     viewController: CounterViewController(
       store: Store(
-        initialState: .init(),
+        initialState: Counter.State(),
         reducer: Counter()
       )
     )
@@ -26,11 +26,11 @@ let dataSource: [CaseStudy] = [
     title: "Lists",
     viewController: CountersTableViewController(
       store: Store(
-        initialState: .init(
+        initialState: CounterList.State(
           counters: [
-            .init(),
-            .init(),
-            .init(),
+            Counter.State(),
+            Counter.State(),
+            Counter.State(),
           ]
         ),
         reducer: CounterList()
@@ -41,7 +41,7 @@ let dataSource: [CaseStudy] = [
     title: "Navigate and load",
     viewController: EagerNavigationViewController(
       store: Store(
-        initialState: .init(),
+        initialState: EagerNavigation.State(),
         reducer: EagerNavigation()
       )
     )
@@ -50,7 +50,7 @@ let dataSource: [CaseStudy] = [
     title: "Load then navigate",
     viewController: LazyNavigationViewController(
       store: Store(
-        initialState: .init(),
+        initialState: LazyNavigation.State(),
         reducer: LazyNavigation()
       )
     )

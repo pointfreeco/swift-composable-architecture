@@ -63,14 +63,15 @@ class TestStoreTests: XCTestCase {
 
   func testAsync() async {
     enum Action: Equatable {
-      case tap, response(Int)
+      case tap
+      case response(Int)
     }
     let store = TestStore(
       initialState: 0,
       reducer: Reducer<Int, Action, Void> { state, action, _ in
         switch action {
         case .tap:
-          return .task { 
+          return .task {
             try? await Task.sleep(nanoseconds: 1_000_000)
             return .response(42)
           }

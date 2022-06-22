@@ -16,7 +16,7 @@ class VoiceMemosTests: XCTestCase {
     let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
 
     let store = TestStore(
-      initialState: .init(),
+      initialState: VoiceMemos.State(),
       reducer: VoiceMemos()
         .dependency(\.audioRecorder.currentTime) { 2.5 }
         .dependency(\.audioRecorder.requestRecordPermission) { true }
@@ -36,7 +36,7 @@ class VoiceMemosTests: XCTestCase {
     await self.mainRunLoop.advance()
     await store.receive(.recordPermissionResponse(true)) {
       $0.audioRecorderPermission = .allowed
-      $0.currentRecording = .init(
+      $0.currentRecording = VoiceMemos.State.CurrentRecording(
         date: Date(timeIntervalSince1970: 0),
         mode: .recording,
         url: URL(fileURLWithPath: "/tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")
@@ -60,7 +60,7 @@ class VoiceMemosTests: XCTestCase {
     await store.receive(.audioRecorderDidFinish(.success(true))) {
       $0.currentRecording = nil
       $0.voiceMemos = [
-        .init(
+        VoiceMemo.State(
           date: Date(timeIntervalSince1970: 0),
           duration: 2.5,
           mode: .notPlaying,
@@ -76,7 +76,7 @@ class VoiceMemosTests: XCTestCase {
     let didOpenSettings = SendableState(false)
 
     let store = TestStore(
-      initialState: .init(),
+      initialState: VoiceMemos.State(),
       reducer: VoiceMemos()
         .dependency(\.audioRecorder.requestRecordPermission) { false }
         .dependency(\.mainRunLoop, .immediate)
@@ -85,7 +85,7 @@ class VoiceMemosTests: XCTestCase {
 
     store.send(.recordButtonTapped)
     await store.receive(.recordPermissionResponse(false)) {
-      $0.alert = .init(title: .init("Permission is required to record voice memos."))
+      $0.alert = AlertState(title: TextState("Permission is required to record voice memos."))
       $0.audioRecorderPermission = .denied
     }
     store.send(.alertDismissed) {
@@ -100,7 +100,7 @@ class VoiceMemosTests: XCTestCase {
     let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
 
     let store = TestStore(
-      initialState: .init(),
+      initialState: VoiceMemos.State(),
       reducer: VoiceMemos()
         .dependency(\.audioRecorder.currentTime) { 2.5 }
         .dependency(\.audioRecorder.requestRecordPermission) { true }
@@ -116,7 +116,7 @@ class VoiceMemosTests: XCTestCase {
     await self.mainRunLoop.advance(by: 0.5)
     await store.receive(.recordPermissionResponse(true)) {
       $0.audioRecorderPermission = .allowed
-      $0.currentRecording = .init(
+      $0.currentRecording = VoiceMemos.State.CurrentRecording(
         date: Date(timeIntervalSince1970: 0),
         mode: .recording,
         url: URL(fileURLWithPath: "/tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")
@@ -125,7 +125,7 @@ class VoiceMemosTests: XCTestCase {
     didFinish.continuation.finish(throwing: AudioRecorderClient.Failure.couldntActivateAudioSession)
     await self.mainRunLoop.advance(by: 0.5)
     await store.receive(.audioRecorderDidFinish(.failure(AudioRecorderClient.Failure.couldntActivateAudioSession))) {
-      $0.alert = .init(title: .init("Voice memo recording failed."))
+      $0.alert = AlertState(title: TextState("Voice memo recording failed."))
       $0.currentRecording = nil
     }
   }
@@ -133,9 +133,9 @@ class VoiceMemosTests: XCTestCase {
   func testPlayMemoHappyPath() async {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
-      initialState: .init(
+      initialState: VoiceMemos.State(
         voiceMemos: [
-          .init(
+          VoiceMemo.State(
             date: Date(),
             duration: 1,
             mode: .notPlaying,
@@ -172,9 +172,9 @@ class VoiceMemosTests: XCTestCase {
   func testPlayMemoFailure() async {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
-      initialState: .init(
+      initialState: VoiceMemos.State(
         voiceMemos: [
-          .init(
+          VoiceMemo.State(
             date: Date(),
             duration: 30,
             mode: .notPlaying,
@@ -196,7 +196,7 @@ class VoiceMemosTests: XCTestCase {
         id: url, action: .audioPlayerClient(.failure(AudioPlayerClient.Failure.decodeErrorDidOccur))
       )
     ) {
-      $0.alert = .init(title: .init("Voice memo playback failed."))
+      $0.alert = AlertState(title: TextState("Voice memo playback failed."))
       $0.voiceMemos[id: url]?.mode = .notPlaying
     }
     await task.cancel()
@@ -205,9 +205,9 @@ class VoiceMemosTests: XCTestCase {
   func testStopMemo() {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
-      initialState: .init(
+      initialState: VoiceMemos.State(
         voiceMemos: [
-          .init(
+          VoiceMemo.State(
             date: Date(),
             duration: 30,
             mode: .playing(progress: 0.3),
@@ -227,9 +227,9 @@ class VoiceMemosTests: XCTestCase {
   func testDeleteMemo() {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
-      initialState: .init(
+      initialState: VoiceMemos.State(
         voiceMemos: [
-          .init(
+          VoiceMemo.State(
             date: Date(),
             duration: 30,
             mode: .playing(progress: 0.3),
@@ -249,9 +249,9 @@ class VoiceMemosTests: XCTestCase {
   func testDeleteMemoWhilePlaying() {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
-      initialState: .init(
+      initialState: VoiceMemos.State(
         voiceMemos: [
-          .init(
+          VoiceMemo.State(
             date: Date(),
             duration: 10,
             mode: .notPlaying,

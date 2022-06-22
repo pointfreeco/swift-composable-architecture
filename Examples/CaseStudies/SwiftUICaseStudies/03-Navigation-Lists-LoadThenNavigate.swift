@@ -13,9 +13,9 @@ private let readMe = """
 struct LoadThenNavigateList: ReducerProtocol {
   struct State: Equatable {
     var rows: IdentifiedArrayOf<Row> = [
-      .init(count: 1, id: UUID()),
-      .init(count: 42, id: UUID()),
-      .init(count: 100, id: UUID()),
+      Row(count: 1, id: UUID()),
+      Row(count: 42, id: UUID()),
+      Row(count: 100, id: UUID()),
     ]
     var selection: Identified<Row.ID, Counter.State>?
 
@@ -66,7 +66,7 @@ struct LoadThenNavigateList: ReducerProtocol {
       case let .setNavigationSelectionDelayCompleted(id):
         state.rows[id: id]?.isActivityIndicatorVisible = false
         state.selection = Identified(
-          .init(count: state.rows[id: id]?.count ?? 0),
+          Counter.State(count: state.rows[id: id]?.count ?? 0),
           id: id
         )
         return .none
@@ -93,9 +93,10 @@ struct LoadThenNavigateListView: View {
                 self.store.scope(
                   state: \.selection?.value,
                   action: LoadThenNavigateList.Action.counter
-                ),
-                then: CounterView.init(store:)
-              ),
+                )
+              ) {
+                CounterView(store: $0)
+              },
               tag: row.id,
               selection: viewStore.binding(
                 get: \.selection?.id,
@@ -124,11 +125,11 @@ struct LoadThenNavigateListView_Previews: PreviewProvider {
     NavigationView {
       LoadThenNavigateListView(
         store: Store(
-          initialState: .init(
+          initialState: LoadThenNavigateList.State(
             rows: [
-              .init(count: 1, id: UUID()),
-              .init(count: 42, id: UUID()),
-              .init(count: 100, id: UUID()),
+              LoadThenNavigateList.State.Row(count: 1, id: UUID()),
+              LoadThenNavigateList.State.Row(count: 42, id: UUID()),
+              LoadThenNavigateList.State.Row(count: 100, id: UUID()),
             ]
           ),
           reducer: LoadThenNavigateList()

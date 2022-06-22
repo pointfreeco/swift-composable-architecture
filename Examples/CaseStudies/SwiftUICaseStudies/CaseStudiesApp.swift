@@ -6,8 +6,8 @@ struct CaseStudiesApp: App {
   var body: some Scene {
     WindowGroup {
 //      RootView(
-//        store: .init(
-//          initialState: .init(),
+//        store: Store(
+//          initialState: Root.State(),
 //          reducer: Root()
 //            .debug()
 //            .signpost()
@@ -15,9 +15,10 @@ struct CaseStudiesApp: App {
 //      )
 
       NavigationDemoView(
-        store: .init(
-          initialState: .init(),
-          reducer: NavigationDemo().debug()
+        store: Store(
+          initialState: NavigationDemo.State(),
+          reducer: NavigationDemo()
+            .debug()
         )
       )
     }

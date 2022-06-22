@@ -45,7 +45,7 @@ public struct Game: ReducerProtocol {
       return .none
 
     case .playAgainButtonTapped:
-      state = .init(oPlayerName: state.oPlayerName, xPlayerName: state.xPlayerName)
+      state = State(oPlayerName: state.oPlayerName, xPlayerName: state.xPlayerName)
       return .none
     }
   }

@@ -87,7 +87,7 @@ struct CounterViewController_Previews: PreviewProvider {
   static var previews: some View {
     let vc = CounterViewController(
       store: Store(
-        initialState: .init(),
+        initialState: Counter.State(),
         reducer: Counter()
       )
     )

@@ -12,7 +12,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   ) -> Bool {
     let contentView = RootView(
       store: Store(
-        initialState: .init(),
+        initialState: RootReducer.State(),
         reducer: RootReducer()
       )
     )

@@ -66,7 +66,7 @@ struct CounterView_Previews: PreviewProvider {
     NavigationView {
       CounterDemoView(
         store: Store(
-          initialState: .init(),
+          initialState: Counter.State(),
           reducer: Counter()
         )
       )

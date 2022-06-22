@@ -38,9 +38,12 @@ import SwiftUI
 ///
 /// ```swift
 /// SwitchStore(self.store) {
-///   CaseLet(state: /MyState.first, action: MyAction.first, then: FirstView.init(store:))
-///   CaseLet(state: /MyState.second, action: MyAction.second, then: SecondView.init(store:))
-///
+///   CaseLet(state: /MyState.first, action: MyAction.first) {
+///     FirstView(store: $0)
+///   }
+///   CaseLet(state: /MyState.second, action: MyAction.second) {
+///     SecondView(store: $0)
+///   }
 ///   Default {
 ///     Text("State is neither first nor second.")
 ///   }

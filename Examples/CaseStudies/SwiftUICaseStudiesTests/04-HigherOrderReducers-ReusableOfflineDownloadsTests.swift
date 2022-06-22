@@ -114,10 +114,10 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
     }
 
     store.send(.buttonTapped) {
-      $0.alert = .init(
-        title: .init("Do you want to stop downloading this map?"),
-        primaryButton: .destructive(.init("Stop"), action: .send(.stopButtonTapped)),
-        secondaryButton: .cancel(.init("Nevermind"), action: .send(.nevermindButtonTapped))
+      $0.alert = AlertState(
+        title: TextState("Do you want to stop downloading this map?"),
+        primaryButton: .destructive(TextState("Stop"), action: .send(.stopButtonTapped)),
+        secondaryButton: .cancel(TextState("Nevermind"), action: .send(.nevermindButtonTapped))
       )
     }
 
@@ -151,10 +151,10 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
     }
 
     store.send(.buttonTapped) {
-      $0.alert = .init(
-        title: .init("Do you want to stop downloading this map?"),
-        primaryButton: .destructive(.init("Stop"), action: .send(.stopButtonTapped)),
-        secondaryButton: .cancel(.init("Nevermind"), action: .send(.nevermindButtonTapped))
+      $0.alert = AlertState(
+        title: TextState("Do you want to stop downloading this map?"),
+        primaryButton: .destructive(TextState("Stop"), action: .send(.stopButtonTapped)),
+        secondaryButton: .cancel(TextState("Nevermind"), action: .send(.nevermindButtonTapped))
       )
     }
 
@@ -185,10 +185,10 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
     )
 
     store.send(.buttonTapped) {
-      $0.alert = .init(
-        title: .init("Do you want to delete this map from your offline storage?"),
-        primaryButton: .destructive(.init("Delete"), action: .send(.deleteButtonTapped)),
-        secondaryButton: .cancel(.init("Nevermind"), action: .send(.nevermindButtonTapped))
+      $0.alert = AlertState(
+        title: TextState("Do you want to delete this map from your offline storage?"),
+        primaryButton: .destructive(TextState("Delete"), action: .send(.deleteButtonTapped)),
+        secondaryButton: .cancel(TextState("Nevermind"), action: .send(.nevermindButtonTapped))
       )
     }
 

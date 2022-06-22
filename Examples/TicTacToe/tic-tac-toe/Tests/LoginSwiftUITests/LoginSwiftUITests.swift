@@ -10,10 +10,10 @@ import XCTest
 class LoginSwiftUITests: XCTestCase {
   func testFlow_Success() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: Login.State(),
       reducer: Login()
         .dependency(\.authenticationClient.login) { _ in
-          .init(token: "deadbeefdeadbeef", twoFactorRequired: false)
+          AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
         }
     )
     .scope(state: LoginView.ViewState.init, action: Login.Action.init)
@@ -30,7 +30,9 @@ class LoginSwiftUITests: XCTestCase {
       $0.isFormDisabled = true
     }
     await store.receive(
-      .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
+      .loginResponse(
+        .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false))
+      )
     ) {
       $0.isActivityIndicatorVisible = false
       $0.isFormDisabled = false
@@ -39,10 +41,10 @@ class LoginSwiftUITests: XCTestCase {
 
   func testFlow_Success_TwoFactor() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: Login.State(),
       reducer: Login()
         .dependency(\.authenticationClient.login) { _ in
-          .init(token: "deadbeefdeadbeef", twoFactorRequired: true)
+          AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
         }
     )
     .scope(state: LoginView.ViewState.init, action: Login.Action.init)
@@ -59,7 +61,9 @@ class LoginSwiftUITests: XCTestCase {
       $0.isFormDisabled = true
     }
     await store.receive(
-      .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: true)))
+      .loginResponse(
+        .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true))
+      )
     ) {
       $0.isActivityIndicatorVisible = false
       $0.isFormDisabled = false
@@ -72,7 +76,7 @@ class LoginSwiftUITests: XCTestCase {
 
   func testFlow_Failure() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: Login.State(),
       reducer: Login()
         .dependency(\.authenticationClient.login) { _ in
           throw AuthenticationError.invalidUserPassword
@@ -92,7 +96,7 @@ class LoginSwiftUITests: XCTestCase {
       $0.isFormDisabled = true
     }
     await store.receive(.loginResponse(.failure(AuthenticationError.invalidUserPassword))) {
-      $0.alert = .init(
+      $0.alert = AlertState(
         title: TextState(AuthenticationError.invalidUserPassword.localizedDescription)
       )
       $0.isActivityIndicatorVisible = false

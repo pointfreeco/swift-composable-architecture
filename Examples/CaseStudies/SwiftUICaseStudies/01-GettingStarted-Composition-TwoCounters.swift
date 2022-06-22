@@ -65,7 +65,7 @@ struct TwoCountersView_Previews: PreviewProvider {
     NavigationView {
       TwoCountersView(
         store: Store(
-          initialState: .init(),
+          initialState: TwoCounters.State(),
           reducer: TwoCounters()
         )
       )

@@ -55,7 +55,7 @@ struct ContentView_Previews: PreviewProvider {
     NavigationView {
       RootView(
         store: Store(
-          initialState: .init(),
+          initialState: RootReducer.State(),
           reducer: RootReducer()
         )
       )

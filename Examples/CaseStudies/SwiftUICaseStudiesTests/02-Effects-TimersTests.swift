@@ -9,7 +9,7 @@ class TimersTests: XCTestCase {
     let mainQueue = DispatchQueue.test
 
     let store = TestStore(
-      initialState: .init(),
+      initialState: Timers.State(),
       reducer: Timers()
         .dependency(\.mainQueue, mainQueue.eraseToAnyScheduler())
     )

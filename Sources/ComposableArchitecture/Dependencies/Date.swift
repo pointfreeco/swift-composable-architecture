@@ -21,22 +21,22 @@ public protocol DateGenerator {
 private struct LiveDateGenerator: DateGenerator {
   @inlinable
   func callAsFunction() -> Date {
-    .init()
+    Date()
   }
 }
 
 extension DateGenerator where Self == LiveDateGenerator {
-  static var live: Self { .init() }
+  static var live: Self { Self() }
 }
 
 private struct FailingDateGenerator: DateGenerator {
   @inlinable
   func callAsFunction() -> Date {
     XCTFail(#"@Dependency(\.date) is failing"#)
-    return .init()
+    return Date()
   }
 }
 
 extension DateGenerator where Self == FailingDateGenerator {
-  static var failing: Self { .init() }
+  static var failing: Self { Self() }
 }

@@ -8,7 +8,7 @@ import XCTestDynamicOverlay
     static let failing = Self(
       recognitionTask: { _ in
         XCTFail("\(Self.self).failing.recognitionTask was invoked")
-        return .init { _ in }
+        return AsyncStream { _ in }
       },
       requestAuthorization: {
         XCTFail("\(Self.self).failing.requestAuthorization was invoked")

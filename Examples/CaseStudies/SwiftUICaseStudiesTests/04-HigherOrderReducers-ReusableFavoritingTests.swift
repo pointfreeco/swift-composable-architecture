@@ -8,17 +8,17 @@ import XCTest
 class ReusableComponentsFavoritingTests: XCTestCase {
   func testFavoriteButton() async {
     let episodes: IdentifiedArrayOf<EpisodeState> = [
-      .init(
+      EpisodeState(
         id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
         isFavorite: false,
         title: "Functions"
       ),
-      .init(
+      EpisodeState(
         id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
         isFavorite: false,
         title: "Functions"
       ),
-      .init(
+      EpisodeState(
         id: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!,
         isFavorite: false,
         title: "Functions"
@@ -61,8 +61,8 @@ class ReusableComponentsFavoritingTests: XCTestCase {
       .episode(
         id: episodes[2].id, action: .favorite(.response(.failure(FavoriteError()))))
     ) {
-      $0.episodes[id: episodes[2].id]?.alert = .init(
-        title: .init("Favoriting failed.")
+      $0.episodes[id: episodes[2].id]?.alert = AlertState(
+        title: TextState("Favoriting failed.")
       )
     }
 

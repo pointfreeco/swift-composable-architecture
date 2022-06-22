@@ -4,7 +4,7 @@ import XCTest
 
 class GameCoreTests: XCTestCase {
   let store = TestStore(
-    initialState: .init(
+    initialState: Game.State(
       oPlayerName: "Blob Jr.",
       xPlayerName: "Blob Sr."
     ),
@@ -72,7 +72,7 @@ class GameCoreTests: XCTestCase {
       $0.currentPlayer = .o
     }
     self.store.send(.playAgainButtonTapped) {
-      $0 = .init(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr.")
+      $0 = Game.State(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr.")
     }
   }
 }

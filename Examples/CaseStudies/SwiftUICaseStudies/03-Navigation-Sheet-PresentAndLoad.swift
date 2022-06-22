@@ -41,7 +41,7 @@ struct PresentAndLoad: ReducerProtocol {
         return .cancel(id: CancelId.self)
 
       case .setSheetIsPresentedDelayCompleted:
-        state.optionalCounter = .init()
+        state.optionalCounter = Counter.State()
         return .none
 
       case .optionalCounter:
@@ -76,10 +76,12 @@ struct PresentAndLoadView: View {
           self.store.scope(
             state: \.optionalCounter,
             action: PresentAndLoad.Action.optionalCounter
-          ),
-          then: CounterView.init(store:),
-          else: ProgressView.init
-        )
+          )
+        ) {
+          CounterView(store: $0)
+        } else: {
+          ProgressView()
+        }
       }
       .navigationBarTitle("Present and load")
     }
@@ -91,7 +93,7 @@ struct PresentAndLoadView_Previews: PreviewProvider {
     NavigationView {
       PresentAndLoadView(
         store: Store(
-          initialState: .init(),
+          initialState: PresentAndLoad.State(),
           reducer: PresentAndLoad()
         )
       )

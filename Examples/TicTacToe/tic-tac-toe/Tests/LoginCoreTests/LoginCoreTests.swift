@@ -8,13 +8,13 @@ import XCTest
 class LoginCoreTests: XCTestCase {
   func testFlow_Success_TwoFactor_Integration() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: Login.State(),
       reducer: Login()
         .dependency(\.authenticationClient.login) { _ in
-          .init(token: "deadbeefdeadbeef", twoFactorRequired: true)
+          AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
         }
         .dependency(\.authenticationClient.twoFactor) { _ in
-          .init(token: "deadbeefdeadbeef", twoFactorRequired: false)
+          AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
         }
         .dependency(\.mainQueue, .immediate)
     )
@@ -30,10 +30,12 @@ class LoginCoreTests: XCTestCase {
       $0.isLoginRequestInFlight = true
     }
     await store.receive(
-      .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: true)))
+      .loginResponse(
+        .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true))
+      )
     ) {
       $0.isLoginRequestInFlight = false
-      $0.twoFactor = .init(token: "deadbeefdeadbeef")
+      $0.twoFactor = TwoFactor.State(token: "deadbeefdeadbeef")
     }
     store.send(.twoFactor(.codeChanged("1234"))) {
       $0.twoFactor?.code = "1234"
@@ -44,7 +46,9 @@ class LoginCoreTests: XCTestCase {
     }
     await store.receive(
       .twoFactor(
-        .twoFactorResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
+        .twoFactorResponse(
+          .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false))
+        )
       )
     ) {
       $0.twoFactor?.isTwoFactorRequestInFlight = false
@@ -53,13 +57,13 @@ class LoginCoreTests: XCTestCase {
 
   func testFlow_DismissEarly_TwoFactor_Integration() async {
     let store = TestStore(
-      initialState: .init(),
+      initialState: Login.State(),
       reducer: Login()
         .dependency(\.authenticationClient.login) { _ in
-          .init(token: "deadbeefdeadbeef", twoFactorRequired: true)
+          AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
         }
         .dependency(\.authenticationClient.twoFactor) { _ in
-          .init(token: "deadbeefdeadbeef", twoFactorRequired: false)
+          AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
         }
     )
 
@@ -74,10 +78,12 @@ class LoginCoreTests: XCTestCase {
       $0.isLoginRequestInFlight = true
     }
     await store.receive(
-      .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: true)))
+      .loginResponse(
+        .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true))
+      )
     ) {
       $0.isLoginRequestInFlight = false
-      $0.twoFactor = .init(token: "deadbeefdeadbeef")
+      $0.twoFactor = TwoFactor.State(token: "deadbeefdeadbeef")
     }
     store.send(.twoFactor(.codeChanged("1234"))) {
       $0.twoFactor?.code = "1234"

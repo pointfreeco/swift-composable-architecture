@@ -57,14 +57,14 @@ extension DependencyValues {
   ///
   /// ```
   /// let store = TestStore(
-  ///   initialState: .init()
+  ///   initialState: TodosReducer.State()
   ///   reducer: TodosReducer()
   ///     .dependency(\.uuid, .incrementing)
   /// )
   ///
   /// store.send(.create) {
   ///   $0.todos = [
-  ///     .init(id: UUID(string: "00000000-000-0000-0000-000000000000")!)
+  ///     Todo(id: UUID(string: "00000000-000-0000-0000-000000000000")!)
   ///   ]
   /// }
   /// ```
@@ -87,12 +87,12 @@ public struct LiveUUIDGenerator: UUIDGenerator {
   public init() {}
 
   public func callAsFunction() -> UUID {
-    .init()
+    UUID()
   }
 }
 
 extension UUIDGenerator where Self == LiveUUIDGenerator {
-  public static var live: Self { .init() }
+  public static var live: Self { Self() }
 }
 
 public struct FailingUUIDGenerator: UUIDGenerator {
@@ -100,12 +100,12 @@ public struct FailingUUIDGenerator: UUIDGenerator {
 
   public func callAsFunction() -> UUID {
     XCTFail(#"@Dependency(\.uuid) is failing"#)
-    return .init()
+    return UUID()
   }
 }
 
 extension UUIDGenerator where Self == FailingUUIDGenerator {
-  public static var failing: Self { .init() }
+  public static var failing: Self { Self() }
 }
 
 public final class IncrementingUUIDGenerator: UUIDGenerator, @unchecked Sendable {
@@ -125,13 +125,13 @@ public final class IncrementingUUIDGenerator: UUIDGenerator, @unchecked Sendable
   public func callAsFunction() -> UUID {
     self.lock.sync {
       defer { self.sequence += 1 }
-      return .init(uuidString: "00000000-0000-0000-0000-\(String(format: "%012x", self.sequence))")!
+      return UUID(uuidString: "00000000-0000-0000-0000-\(String(format: "%012x", self.sequence))")!
     }
   }
 }
 
 extension UUIDGenerator where Self == IncrementingUUIDGenerator {
-  public static var incrementing: Self { .init() }
+  public static var incrementing: Self { Self() }
 }
 
 public struct ConstantUUIDGenerator: UUIDGenerator {
@@ -147,5 +147,5 @@ public struct ConstantUUIDGenerator: UUIDGenerator {
 }
 
 extension UUIDGenerator where Self == ConstantUUIDGenerator {
-  public static func constant(_ uuid: UUID) -> Self { .init(uuid) }
+  public static func constant(_ uuid: UUID) -> Self { Self(uuid) }
 }

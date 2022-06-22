@@ -17,7 +17,7 @@ class WebSocketTests: XCTestCase {
     webSocket.sendPing = { _ in try await Task.never() }
 
     let store = TestStore(
-      initialState: .init(),
+      initialState: WebSocket.State(),
       reducer: WebSocket()
         .dependency(\.mainQueue, .immediate)
         .dependency(\.webSocket, webSocket)
@@ -73,7 +73,7 @@ class WebSocketTests: XCTestCase {
     webSocket.sendPing = { _ in try await Task.never() }
 
     let store = TestStore(
-      initialState: .init(),
+      initialState: WebSocket.State(),
       reducer: WebSocket()
         .dependency(\.mainQueue, .immediate)
         .dependency(\.webSocket, webSocket)
@@ -96,7 +96,7 @@ class WebSocketTests: XCTestCase {
       $0.messageToSend = ""
     }
     await store.receive(.sendResponse(didSucceed: false)) {
-      $0.alert = .init(title: .init("Could not send socket message. Try again."))
+      $0.alert = AlertState(title: TextState("Could not send socket message. Try again."))
     }
 
     // Disconnect from the socket
@@ -116,7 +116,7 @@ class WebSocketTests: XCTestCase {
 
     let mainQueue = DispatchQueue.test
     let store = TestStore(
-      initialState: .init(),
+      initialState: WebSocket.State(),
       reducer: WebSocket()
         .dependency(\.mainQueue, mainQueue.eraseToAnyScheduler())
         .dependency(\.webSocket, webSocket)
@@ -153,7 +153,7 @@ class WebSocketTests: XCTestCase {
     webSocket.sendPing = { _ in try await Task.never() }
 
     let store = TestStore(
-      initialState: .init(),
+      initialState: WebSocket.State(),
       reducer: WebSocket()
         .dependency(\.mainQueue, .immediate)
         .dependency(\.webSocket, webSocket)

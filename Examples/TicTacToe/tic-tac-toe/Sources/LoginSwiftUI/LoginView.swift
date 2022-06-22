@@ -108,13 +108,13 @@ struct LoginView_Previews: PreviewProvider {
     NavigationView {
       LoginView(
         store: Store(
-          initialState: .init(),
+          initialState: Login.State(),
           reducer: Login()
             .dependency(\.authenticationClient.login) { _ in
-              .init(token: "deadbeef", twoFactorRequired: false)
+              AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
             }
             .dependency(\.authenticationClient.twoFactor) { _ in
-              .init(token: "deadbeef", twoFactorRequired: false)
+              AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
             }
         )
       )

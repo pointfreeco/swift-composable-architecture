@@ -28,7 +28,7 @@ struct OptionalBasics: ReducerProtocol {
       case .toggleCounterButtonTapped:
         state.optionalCounter =
           state.optionalCounter == nil
-          ? .init()
+          ? Counter.State()
           : nil
         return .none
       case .optionalCounter:
@@ -81,7 +81,7 @@ struct OptionalBasicsView_Previews: PreviewProvider {
       NavigationView {
         OptionalBasicsView(
           store: Store(
-            initialState: .init(),
+            initialState: OptionalBasics.State(),
             reducer: OptionalBasics()
           )
         )
@@ -90,7 +90,9 @@ struct OptionalBasicsView_Previews: PreviewProvider {
       NavigationView {
         OptionalBasicsView(
           store: Store(
-            initialState: .init(optionalCounter: .init(count: 42)),
+            initialState: OptionalBasics.State(
+              optionalCounter: Counter.State(count: 42)
+            ),
             reducer: OptionalBasics()
           )
         )

@@ -36,7 +36,7 @@ struct EagerNavigation: ReducerProtocol {
         return .cancel(id: CancelId.self)
 
       case .setNavigationIsActiveDelayCompleted:
-        state.optionalCounter = .init()
+        state.optionalCounter = Counter.State()
         return .none
 
       case .optionalCounter:
@@ -121,7 +121,7 @@ struct EagerNavigationViewController_Previews: PreviewProvider {
     let vc = UINavigationController(
       rootViewController: EagerNavigationViewController(
         store: Store(
-          initialState: .init(),
+          initialState: EagerNavigation.State(),
           reducer: EagerNavigation()
         )
       )

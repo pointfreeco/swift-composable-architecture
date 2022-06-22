@@ -260,7 +260,7 @@ var body: some Scene {
       environment: AppEnvironment(
         numberFact: { number in 
           let (data, _) = try await URLSession.shared
-            .data(from: .init(string: "http://numbersapi.com/\(number)")!)
+            .data(from: URL(string: "http://numbersapi.com/\(number)")!)
           return String(decoding: data, using: UTF8.self)
         }
       )

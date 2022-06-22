@@ -125,7 +125,7 @@ struct BindingBasicsView_Previews: PreviewProvider {
     NavigationView {
       BindingBasicsView(
         store: Store(
-          initialState: .init(),
+          initialState: BindingBasics.State(),
           reducer: BindingBasics()
         )
       )

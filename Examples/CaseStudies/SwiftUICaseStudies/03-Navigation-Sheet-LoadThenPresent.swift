@@ -48,7 +48,7 @@ struct LoadThenPresent: ReducerProtocol {
 
       case .setSheetIsPresentedDelayCompleted:
         state.isActivityIndicatorVisible = false
-        state.optionalCounter = .init()
+        state.optionalCounter = Counter.State()
         return .none
 
       case .optionalCounter:
@@ -62,7 +62,7 @@ struct LoadThenPresent: ReducerProtocol {
 }
 
 struct LoadThenPresentView: View {
-  let store: Store<LoadThenPresent.State, LoadThenPresent.Action>
+  let store: StoreOf<LoadThenPresent>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -89,9 +89,10 @@ struct LoadThenPresentView: View {
           self.store.scope(
             state: \.optionalCounter,
             action: LoadThenPresent.Action.optionalCounter
-          ),
-          then: CounterView.init(store:)
-        )
+          )
+        ) {
+          CounterView(store: $0)
+        }
       }
       .navigationBarTitle("Load and present")
       .onDisappear { viewStore.send(.onDisappear) }
@@ -104,7 +105,7 @@ struct LoadThenPresentView_Previews: PreviewProvider {
     NavigationView {
       LoadThenPresentView(
         store: Store(
-          initialState: .init(),
+          initialState: LoadThenPresent.State(),
           reducer: LoadThenPresent()
         )
       )

@@ -8,7 +8,7 @@
   class BindingFormTests: XCTestCase {
     func testBasics() {
       let store = TestStore(
-        initialState: .init(),
+        initialState: BindingForm.State(),
         reducer: BindingForm()
       )
 
@@ -26,7 +26,7 @@
         $0.toggleIsOn = true
       }
       store.send(.resetButtonTapped) {
-        $0 = .init(sliderValue: 5, stepCount: 10, text: "", toggleIsOn: false)
+        $0 = BindingForm.State(sliderValue: 5, stepCount: 10, text: "", toggleIsOn: false)
       }
     }
   }

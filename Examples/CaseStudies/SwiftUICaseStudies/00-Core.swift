@@ -83,7 +83,7 @@ struct Root: ReducerProtocol {
     Reduce { state, action in
       switch action {
       case .onAppear:
-        state = .init()
+        state = State()
         return .none
 
       default:
@@ -106,7 +106,7 @@ struct Root: ReducerProtocol {
       }
     #endif
     Scope(state: \.clock, action: /Action.clock) {
-      Reduce(clockReducer, environment: .init(mainQueue: self.mainQueue))
+      Reduce(clockReducer, environment: ClockEnvironment(mainQueue: self.mainQueue))
     }
     Scope(state: \.counter, action: /Action.counter) {
       Counter()
@@ -120,7 +120,7 @@ struct Root: ReducerProtocol {
     Scope(state: \.episodes, action: /Action.episodes) {
       Reduce(
         episodesReducer,
-        environment: .init(favorite: favorite(id:isFavorite:))
+        environment: EpisodesEnvironment(favorite: favorite(id:isFavorite:))
       )
     }
     #if compiler(>=5.5)
@@ -129,7 +129,7 @@ struct Root: ReducerProtocol {
       }
     #endif
     Scope(state: \.lifecycle, action: /Action.lifecycle) {
-      Reduce(lifecycleDemoReducer, environment: .init(mainQueue: self.mainQueue))
+      Reduce(lifecycleDemoReducer, environment: LifecycleDemoEnvironment(mainQueue: self.mainQueue))
     }
     Scope(state: \.loadThenNavigate, action: /Action.loadThenNavigate) {
       LoadThenNavigate()
@@ -144,14 +144,17 @@ struct Root: ReducerProtocol {
       LongLivingEffects()
     }
     Scope(state: \.map, action: /Action.map) {
-      Reduce(mapAppReducer, environment: .init(downloadClient: .live, mainQueue: self.mainQueue))
+      Reduce(
+        mapAppReducer,
+        environment: MapAppEnvironment(downloadClient: .live, mainQueue: self.mainQueue)
+      )
     }
     Scope(state: \.multipleDependencies, action: /Action.multipleDependencies) {
       Reduce(
         multipleDependenciesReducer,
-        environment: .init(
+        environment: SystemEnvironment(
           date: { Date() },
-          environment: .init(fetchNumber: liveFetchNumber),
+          environment: MultipleDependenciesEnvironment(fetchNumber: liveFetchNumber),
           mainQueue: self.mainQueue,
           uuid: { self.uuid() }
         )

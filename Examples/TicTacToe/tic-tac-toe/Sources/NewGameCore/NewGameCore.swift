@@ -16,6 +16,27 @@ public struct NewGame: ReducerProtocol {
 
   public init() {}
 
+  public var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .game(.quitButtonTapped):
+        state.game = nil
+        return .none
+
+      case .gameDismissed:
+        state.game = nil
+        return .none
+
+      case .game:
+        return .none
+
+      case .letsPlayButtonTapped:
+        state.game = Game.State(
+          oPlayerName: state.oPlayerName,
+          xPlayerName: state.xPlayerName
+        )
+        return .none
+
   public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {
     case .letsPlayButtonTapped:

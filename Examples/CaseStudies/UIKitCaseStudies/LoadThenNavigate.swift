@@ -40,7 +40,7 @@ struct LazyNavigation: ReducerProtocol {
 
       case .setNavigationIsActiveDelayCompleted:
         state.isActivityIndicatorHidden = true
-        state.optionalCounter = .init()
+        state.optionalCounter = Counter.State()
         return .none
 
       case .optionalCounter:
@@ -136,7 +136,7 @@ struct LazyNavigationViewController_Previews: PreviewProvider {
     let vc = UINavigationController(
       rootViewController: LazyNavigationViewController(
         store: Store(
-          initialState: .init(),
+          initialState: LazyNavigation.State(),
           reducer: LazyNavigation()
         )
       )
