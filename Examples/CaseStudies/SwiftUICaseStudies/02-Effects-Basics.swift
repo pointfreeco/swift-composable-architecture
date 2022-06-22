@@ -48,7 +48,7 @@ struct EffectsBasicsEnvironment {
 let effectsBasicsReducer = Reducer<
   EffectsBasicsState,
   EffectsBasicsAction,
-    EffectsBasicsEnvironment
+  EffectsBasicsEnvironment
 > { state, action, environment in
   switch action {
   case .decrementButtonTapped:
