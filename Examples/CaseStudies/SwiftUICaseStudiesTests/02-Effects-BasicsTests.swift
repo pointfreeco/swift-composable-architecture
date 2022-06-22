@@ -22,48 +22,6 @@ class EffectsBasicsTests: XCTestCase {
     }
   }
 
-  func testCountDownLessThanZero() {
-    let scheduler = DispatchQueue.test
-
-    let store = TestStore(
-      initialState: EffectsBasicsState(),
-      reducer: effectsBasicsReducer,
-      environment: EffectsBasicsEnvironment(
-        fact: .failing,
-        mainQueue: .immediate
-      )
-    )
-
-    store.send(.decrementButtonTapped) {
-      $0.count = -1
-    }
-    scheduler.advance(by: .seconds(1))
-    store.receive(.decrementDelayFinished) {
-      $0.count = 0
-    }
-  }
-
-  func testCountDownLessThanZero_CountBackUpBeforeDelayFinishes() {
-    let scheduler = DispatchQueue.test
-
-    let store = TestStore(
-      initialState: EffectsBasicsState(),
-      reducer: effectsBasicsReducer,
-      environment: EffectsBasicsEnvironment(
-        fact: .failing,
-        mainQueue: scheduler.eraseToAnyScheduler()
-      )
-    )
-
-    store.send(.decrementButtonTapped) {
-      $0.count = -1
-    }
-    store.send(.incrementButtonTapped) {
-      $0.count = 0
-    }
-    scheduler.run()
-  }
-
   func testNumberFact() {
     let store = TestStore(
       initialState: EffectsBasicsState(),

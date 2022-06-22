@@ -33,7 +33,6 @@ struct EffectsBasicsState: Equatable {
 
 enum EffectsBasicsAction: Equatable {
   case decrementButtonTapped
-  case decrementDelayFinished
   case incrementButtonTapped
   case numberFactButtonTapped
   case numberFactResponse(Result<String, FactClient.Error>)
@@ -55,29 +54,12 @@ let effectsBasicsReducer = Reducer<
   case .decrementButtonTapped:
     state.count -= 1
     state.numberFact = nil
-
-    // Return an effect that re-increments the count after 1 second if it dips below 0.
-    if state.count < 0 {
-      return Effect(value: EffectsBasicsAction.decrementDelayFinished)
-        .delay(for: 1, scheduler: environment.mainQueue)
-        .eraseToEffect()
-        .cancellable(id: DelayID.self)
-    } else {
-      return .none
-    }
-
-  case .decrementDelayFinished:
-    if state.count < 0 {
-      state.count += 1
-    }
     return .none
-
+    
   case .incrementButtonTapped:
     state.count += 1
     state.numberFact = nil
-    return state.count >= 0
-    ? .cancel(id: DelayID.self)
-    : .none
+    return .none
 
   case .numberFactButtonTapped:
     state.isNumberFactRequestInFlight = true
@@ -94,11 +76,10 @@ let effectsBasicsReducer = Reducer<
     return .none
 
   case .numberFactResponse(.failure):
+    // TODO: Do some error handling. Show an alert?
     state.isNumberFactRequestInFlight = false
     return .none
   }
-
-  struct DelayID {}
 }
 
 // MARK: - Feature view
@@ -109,9 +90,9 @@ struct EffectsBasicsView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-//        Section {
-//          Text(readMe)
-//        }
+        Section {
+          Text(readMe)
+        }
 
         Section {
           HStack {
