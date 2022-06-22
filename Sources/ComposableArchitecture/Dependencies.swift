@@ -22,9 +22,7 @@ public struct DependencyValues {
     get {
       guard let dependency = self.storage[ObjectIdentifier(key)] as? Key.Value
       else {
-        let isTesting = self.storage[ObjectIdentifier(IsTestingKey.self)] as? Bool
-        // TODO: Better way to detect tests running?
-        ?? (ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil)
+        let isTesting = self.storage[ObjectIdentifier(IsTestingKey.self)] as? Bool ?? false
         guard !isTesting else { return Key.testValue }
         return _liveValue(Key.self) as? Key.Value ?? Key.testValue
       }
