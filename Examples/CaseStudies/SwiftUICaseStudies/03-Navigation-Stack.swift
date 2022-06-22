@@ -6,8 +6,6 @@ private let readMe = """
   """
 
 struct NavigationDemo: ReducerProtocol {
-  @Dependency(\.navigationID.next) var nextID
-
   struct State: Equatable, NavigableState {
     var path = NavigationState<DestinationState>()
   }
@@ -40,9 +38,9 @@ struct NavigationDemo: ReducerProtocol {
         return .none
 
       case .goToABCButtonTapped:
-        state.path.append(.init(id: self.nextID(), element: .screenA(.init())))
-        state.path.append(.init(id: self.nextID(), element: .screenB(.init())))
-        state.path.append(.init(id: self.nextID(), element: .screenC(.init())))
+        state.path.append(.screenA(.init()))
+        state.path.append(.screenB(.init()))
+        state.path.append(.screenC(.init()))
         return .none
 
       case .shuffleButtonTapped:
@@ -50,15 +48,15 @@ struct NavigationDemo: ReducerProtocol {
         return .none
 
       case .navigation(.element(id: _, .screenB(.screenAButtonTapped))):
-        state.path.append(.init(id: self.nextID(), element: .screenA(.init())))
+        state.path.append(.screenA(.init()))
         return .none
 
       case .navigation(.element(id: _, .screenB(.screenBButtonTapped))):
-        state.path.append(.init(id: self.nextID(), element: .screenB(.init())))
+        state.path.append(.screenB(.init()))
         return .none
 
       case .navigation(.element(id: _, .screenB(.screenCButtonTapped))):
-        state.path.append(.init(id: self.nextID(), element: .screenC(.init())))
+        state.path.append(.screenC(.init()))
         return .none
 
       case .navigation:

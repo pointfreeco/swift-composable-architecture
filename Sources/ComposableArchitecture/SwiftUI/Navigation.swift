@@ -66,6 +66,13 @@ public struct NavigationState<Element>:
       self.path[id: id] = newValue.map { .init(id: id, element: $0) }
     }
   }
+
+  @discardableResult
+  public mutating func append(_ element: Element) -> ID {
+    let id = DependencyValues.current.navigationID.next()
+    self.path.append(Destination(id: id, element: element))
+    return id
+  }
 }
 
 extension NavigationState: ExpressibleByDictionaryLiteral {
@@ -124,8 +131,12 @@ extension NavigationState: Decodable where Element: Decodable {}
 extension NavigationState: Encodable where Element: Encodable {}
 
 extension NavigationState: ExpressibleByArrayLiteral {
-  public init(arrayLiteral elements: Destination...) {
-    self.init(elements)
+  public init(arrayLiteral elements: Element...) {
+    self.init(
+      elements.map {
+        Destination(id: DependencyValues.current.navigationID.next(), element: $0)
+      }
+    )
   }
 }
 

@@ -18,7 +18,7 @@ class NavigationStackTests: XCTestCase {
 
     // Push Screen A, increment and fetch fact.
     let screenAID = store.dependencies.navigationID.next()
-    store.send(.navigation(.setPath([.init(id: screenAID, element: .screenA(.init()))]))) {
+    store.send(.navigation(.setPath([screenAID: .screenA(.init())]))) {
       $0.path.append(.init(id: screenAID, element: .screenA(.init())))
     }
     store.send(.navigation(.element(id: screenAID, .screenA(.incrementButtonTapped)))) {
@@ -74,8 +74,8 @@ class NavigationStackTests: XCTestCase {
     )
 
     let screenBID = store.dependencies.navigationID.next()
-    store.send(.navigation(.setPath([.init(id: screenBID, element: .screenB(.init()))]))) {
-      $0.path = [.init(id: screenBID, element: .screenB(.init()))]
+    store.send(.navigation(.setPath([screenBID: .screenB(.init())]))) {
+      $0.path = [screenBID: .screenB(.init())]
     }
 
     store.send(.navigation(.element(id: screenBID, .screenB(.screenAButtonTapped)))) {
