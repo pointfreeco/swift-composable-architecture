@@ -470,7 +470,6 @@ private struct HashableWrapper<Value>: Hashable {
     /// - Parameter predicate: A predicate on `State` that determines for how long this method
     ///   should suspend.
     @MainActor
-    // TODO: deprecate and rename to `yield(while:)`
     public func suspend(while predicate: @escaping (State) -> Bool) async {
       if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
         _ = await self.publisher
