@@ -58,7 +58,9 @@ class NavigationStackTests: XCTestCase {
     }
 
     // Pop screen C off stack
-    store.send(.navigation(.setPath(store.state.path.dropLast()))) {
+    var path = store.state.path
+    path.removeLast()
+    store.send(.navigation(.setPath(path))) {
       $0.path.removeLast()
     }
   }
