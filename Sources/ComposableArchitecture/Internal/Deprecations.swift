@@ -138,6 +138,8 @@ extension Reducer {
 
 // NB: Deprecated after 0.29.0:
 
+// NB: We can make `TestStore.reducer` private upon deleting these deprecations
+
 #if DEBUG
   extension TestStore where LocalState: Equatable, Reducer.Action: Equatable {
     @available(
@@ -169,13 +171,13 @@ extension Reducer {
           self.receive(expectedAction, update, file: step.file, line: step.line)
 
         case let .environment(work):
-          if !self._reducer.receivedActions.isEmpty {
+          if !self.reducer.receivedActions.isEmpty {
             var actions = ""
-            customDump(self._reducer.receivedActions.map(\.action), to: &actions)
+            customDump(self.reducer.receivedActions.map(\.action), to: &actions)
             XCTFail(
               """
-              Must handle \(self._reducer.receivedActions.count) received \
-              action\(self._reducer.receivedActions.count == 1 ? "" : "s") before performing this work: …
+              Must handle \(self.reducer.receivedActions.count) received \
+              action\(self.reducer.receivedActions.count == 1 ? "" : "s") before performing this work: …
 
               Unhandled actions: \(actions)
               """,
@@ -189,13 +191,13 @@ extension Reducer {
           }
 
         case let .do(work):
-          if !self._reducer.receivedActions.isEmpty {
+          if !self.reducer.receivedActions.isEmpty {
             var actions = ""
-            customDump(self._reducer.receivedActions.map(\.action), to: &actions)
+            customDump(self.reducer.receivedActions.map(\.action), to: &actions)
             XCTFail(
               """
-              Must handle \(self._reducer.receivedActions.count) received \
-              action\(self._reducer.receivedActions.count == 1 ? "" : "s") before performing this work: …
+              Must handle \(self.reducer.receivedActions.count) received \
+              action\(self.reducer.receivedActions.count == 1 ? "" : "s") before performing this work: …
 
               Unhandled actions: \(actions)
               """,

@@ -161,8 +161,8 @@
   ///
   public final class TestStore<Reducer: ReducerProtocol, LocalState, LocalAction, Environment> {
     public var dependencies: DependencyValues {
-      _read { yield self._reducer.dependencies }
-      _modify { yield &self._reducer.dependencies }
+      _read { yield self.reducer.dependencies }
+      _modify { yield &self.reducer.dependencies }
     }
 
     /// The current environment.
@@ -174,23 +174,19 @@
       _modify { yield &self._environment.wrappedValue }
     }
 
-    public var reducer: Reducer {
-      self._reducer.upstream
-    }
-
     /// The current state.
     ///
     /// When read from a trailing closure assertion in ``send(_:_:file:line:)`` or
     /// ``receive(_:_:file:line:)``, it will equal the `inout` state passed to the closure.
     public var state: Reducer.State {
-      self._reducer.state
+      self.reducer.state
     }
 
     private var _environment: Box<Environment>
     private let file: StaticString
     private let fromLocalAction: (LocalAction) -> Reducer.Action
     private var line: UInt
-    let _reducer: TestReducer<Reducer>
+    let reducer: TestReducer<Reducer>
     private var store: Store<Reducer.State, TestReducer<Reducer>.TestAction>!
     private let toLocalState: (Reducer.State) -> LocalState
 
@@ -206,7 +202,7 @@
       Environment == Void
     {
       let reducer = TestReducer(reducer, initialState: initialState)
-      self._reducer = reducer
+      self.reducer = reducer
       self.store = Store(initialState: initialState, reducer: reducer)
       self.toLocalState = { $0 }
       self.fromLocalAction = { $0 }
@@ -228,7 +224,7 @@
       self.file = file
       self.fromLocalAction = fromLocalAction
       self.line = line
-      self._reducer = reducer
+      self.reducer = reducer
       self.store = store
       self.toLocalState = toLocalState
     }
@@ -239,7 +235,7 @@
       line: UInt = #line
     ) async {
       let start = DispatchQueue.main.now
-      while !self._reducer.inFlightEffects.isEmpty {
+      while !self.reducer.inFlightEffects.isEmpty {
         guard start.distance(to: DispatchQueue.main.now) < .nanoseconds(Int(nanoseconds))
         else {
           let timeoutMessage = nanoseconds != nanoseconds
@@ -276,20 +272,20 @@
     }
 
     func completed() {
-      if !self._reducer.receivedActions.isEmpty {
+      if !self.reducer.receivedActions.isEmpty {
         var actions = ""
-        customDump(self._reducer.receivedActions.map(\.action), to: &actions)
+        customDump(self.reducer.receivedActions.map(\.action), to: &actions)
         XCTFail(
           """
-          The store received \(self._reducer.receivedActions.count) unexpected \
-          action\(self._reducer.receivedActions.count == 1 ? "" : "s") after this one: …
+          The store received \(self.reducer.receivedActions.count) unexpected \
+          action\(self.reducer.receivedActions.count == 1 ? "" : "s") after this one: …
 
           Unhandled actions: \(actions)
           """,
           file: self.file, line: self.line
         )
       }
-      for effect in self._reducer.inFlightEffects {
+      for effect in self.reducer.inFlightEffects {
         XCTFail(
           """
           An effect returned for this action is still running. It must complete before the end of \
@@ -332,13 +328,13 @@
       file: StaticString = #file,
       line: UInt = #line
     ) -> TestTask {
-      if !self._reducer.receivedActions.isEmpty {
+      if !self.reducer.receivedActions.isEmpty {
         var actions = ""
-        customDump(self._reducer.receivedActions.map(\.action), to: &actions)
+        customDump(self.reducer.receivedActions.map(\.action), to: &actions)
         XCTFail(
           """
-          Must handle \(self._reducer.receivedActions.count) received \
-          action\(self._reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
+          Must handle \(self.reducer.receivedActions.count) received \
+          action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
 
           Unhandled actions: \(actions)
           """,
@@ -347,16 +343,16 @@
         )
       }
 
-      var expectedState = self.toLocalState(self._reducer.state)
-      let previousState = self._reducer.state
+      var expectedState = self.toLocalState(self.reducer.state)
+      let previousState = self.reducer.state
 
       let task = self.store
         .send(.init(origin: .send(self.fromLocalAction(action)), file: file, line: line))
 
       do {
-        let currentState = self._reducer.state
-        self._reducer.state = previousState
-        defer { self._reducer.state = currentState }
+        let currentState = self.reducer.state
+        self.reducer.state = previousState
+        defer { self.reducer.state = currentState }
 
         try expectedStateShouldMatch(
           expected: &expectedState,
@@ -391,7 +387,7 @@
       file: StaticString = #file,
       line: UInt = #line
     ) {
-      guard !self._reducer.receivedActions.isEmpty else {
+      guard !self.reducer.receivedActions.isEmpty else {
         XCTFail(
           """
           Expected to receive an action, but received none.
@@ -400,7 +396,7 @@
         )
         return
       }
-      let (receivedAction, state) = self._reducer.receivedActions.removeFirst()
+      let (receivedAction, state) = self.reducer.receivedActions.removeFirst()
       if expectedAction != receivedAction {
         let difference =
           diff(expectedAction, receivedAction, format: .proportional)
@@ -423,7 +419,7 @@
           line: line
         )
       }
-      var expectedState = self.toLocalState(self._reducer.state)
+      var expectedState = self.toLocalState(self.reducer.state)
       do {
         try expectedStateShouldMatch(
           expected: &expectedState,
@@ -435,7 +431,7 @@
       } catch {
         XCTFail("Threw error: \(error)", file: file, line: line)
       }
-      self._reducer.state = state
+      self.reducer.state = state
       if "\(self.file)" == "\(file)" {
         self.line = line
       }
@@ -459,7 +455,7 @@
       await withTaskGroup(of: Void.self) { group in
         _ = group.addTaskUnlessCancelled { @MainActor in
           while !Task.isCancelled {
-            guard self._reducer.receivedActions.isEmpty
+            guard self.reducer.receivedActions.isEmpty
             else { break }
             await Task.yield()
           }
@@ -476,7 +472,7 @@
           else { return }
 
           let suggestion: String
-          if self._reducer.inFlightEffects.isEmpty {
+          if self.reducer.inFlightEffects.isEmpty {
             suggestion = """
               There are no in-flight effects that could deliver this action. Could the effect you \
               expected to deliver this action have been cancelled?
@@ -687,7 +683,7 @@
         file: self.file,
         fromLocalAction: { self.fromLocalAction(fromLocalAction($0)) },
         line: self.line,
-        reducer: self._reducer,
+        reducer: self.reducer,
         store: self.store,
         toLocalState: { toLocalState(self.toLocalState($0)) }
       )
