@@ -52,9 +52,6 @@ let loadThenNavigateListReducer =
     with: Reducer<
       LoadThenNavigateListState, LoadThenNavigateListAction, LoadThenNavigateListEnvironment
     > { state, action, environment in
-
-      enum CancelId {}
-
       switch action {
       case .counter:
         return .none
@@ -87,6 +84,8 @@ let loadThenNavigateListReducer =
         )
         return .none
       }
+
+      enum CancelId {}
     }
   )
 

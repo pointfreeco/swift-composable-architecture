@@ -56,8 +56,6 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
     }
   ),
   .init { state, action, environment in
-    enum TimerId {}
-
     func startRecording() -> Effect<VoiceMemosAction, Never> {
       let url = environment.temporaryDirectory()
         .appendingPathComponent(environment.uuid().uuidString)
@@ -179,6 +177,8 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
     case .voiceMemo:
       return .none
     }
+
+    enum TimerId {}
   }
 )
 

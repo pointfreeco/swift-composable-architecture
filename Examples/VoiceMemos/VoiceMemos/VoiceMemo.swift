@@ -43,8 +43,6 @@ struct VoiceMemoEnvironment {
 let voiceMemoReducer = Reducer<
   VoiceMemo, VoiceMemoAction, VoiceMemoEnvironment
 > { memo, action, environment in
-  enum TimerId {}
-
   switch action {
   case .audioPlayerClient(.success(.didFinishPlaying)), .audioPlayerClient(.failure):
     memo.mode = .notPlaying
@@ -93,6 +91,8 @@ let voiceMemoReducer = Reducer<
     memo.title = text
     return .none
   }
+
+  enum TimerId {}
 }
 
 struct VoiceMemoView: View {

@@ -39,9 +39,6 @@ let loadThenPresentReducer =
     with: Reducer<
       LoadThenPresentState, LoadThenPresentAction, LoadThenPresentEnvironment
     > { state, action, environment in
-
-      enum CancelId {}
-
       switch action {
       case .onDisappear:
         return .cancel(id: CancelId.self)
@@ -65,6 +62,8 @@ let loadThenPresentReducer =
       case .optionalCounter:
         return .none
       }
+
+      enum CancelId {}
     }
   )
 

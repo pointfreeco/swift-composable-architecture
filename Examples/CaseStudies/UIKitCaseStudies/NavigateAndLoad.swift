@@ -30,9 +30,6 @@ let eagerNavigationReducer =
     with: Reducer<
       EagerNavigationState, EagerNavigationAction, EagerNavigationEnvironment
     > { state, action, environment in
-
-      enum CancelId {}
-
       switch action {
       case .setNavigation(isActive: true):
         state.isNavigationActive = true
@@ -50,6 +47,8 @@ let eagerNavigationReducer =
       case .optionalCounter:
         return .none
       }
+
+      enum CancelId {}
     }
   )
 

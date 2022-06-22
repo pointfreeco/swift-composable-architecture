@@ -38,9 +38,6 @@ struct EffectsCancellationEnvironment {
 let effectsCancellationReducer = Reducer<
   EffectsCancellationState, EffectsCancellationAction, EffectsCancellationEnvironment
 > { state, action, environment in
-
-  enum TriviaRequestId {}
-
   switch action {
   case .cancelButtonTapped:
     state.isTriviaRequestInFlight = false
@@ -70,6 +67,8 @@ let effectsCancellationReducer = Reducer<
     state.isTriviaRequestInFlight = false
     return .none
   }
+
+  enum TriviaRequestId {}
 }
 
 // MARK: - Application view

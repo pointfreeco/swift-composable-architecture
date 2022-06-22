@@ -37,9 +37,6 @@ let navigateAndLoadReducer =
     with: Reducer<
       NavigateAndLoadState, NavigateAndLoadAction, NavigateAndLoadEnvironment
     > { state, action, environment in
-
-      enum CancelId {}
-
       switch action {
       case .setNavigation(isActive: true):
         state.isNavigationActive = true
@@ -60,6 +57,8 @@ let navigateAndLoadReducer =
       case .optionalCounter:
         return .none
       }
+
+      enum CancelId {}
     }
   )
 

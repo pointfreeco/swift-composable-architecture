@@ -31,9 +31,6 @@ let lazyNavigationReducer =
     with: Reducer<
       LazyNavigationState, LazyNavigationAction, LazyNavigationEnvironment
     > { state, action, environment in
-
-      enum CancelId {}
-
       switch action {
       case .onDisappear:
         return .cancel(id: CancelId.self)
@@ -53,6 +50,8 @@ let lazyNavigationReducer =
       case .optionalCounter:
         return .none
       }
+
+      enum CancelId {}
     }
   )
 

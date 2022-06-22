@@ -46,9 +46,6 @@ let navigateAndLoadListReducer =
     with: Reducer<
       NavigateAndLoadListState, NavigateAndLoadListAction, NavigateAndLoadListEnvironment
     > { state, action, environment in
-
-      enum CancelId {}
-
       switch action {
       case .counter:
         return .none
@@ -73,6 +70,8 @@ let navigateAndLoadListReducer =
         state.selection?.value = CounterState(count: state.rows[id: id]?.count ?? 0)
         return .none
       }
+
+      enum CancelId {}
     }
   )
 

@@ -28,9 +28,6 @@ struct TimersEnvironment {
 
 let timersReducer = Reducer<TimersState, TimersAction, TimersEnvironment> {
   state, action, environment in
-
-  enum TimerId {}
-
   switch action {
   case .timerTicked:
     state.secondsElapsed += 1
@@ -48,6 +45,8 @@ let timersReducer = Reducer<TimersState, TimersAction, TimersEnvironment> {
       .map { _ in TimersAction.timerTicked }
       : .cancel(id: TimerId.self)
   }
+
+  enum TimerId {}
 }
 
 // MARK: - Timer feature view

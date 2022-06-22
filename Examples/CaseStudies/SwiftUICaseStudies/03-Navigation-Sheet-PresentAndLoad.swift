@@ -35,9 +35,6 @@ let presentAndLoadReducer =
     with: Reducer<
       PresentAndLoadState, PresentAndLoadAction, PresentAndLoadEnvironment
     > { state, action, environment in
-
-      enum CancelId {}
-
       switch action {
       case .setSheet(isPresented: true):
         state.isSheetPresented = true
@@ -58,6 +55,8 @@ let presentAndLoadReducer =
       case .optionalCounter:
         return .none
       }
+
+      enum CancelId {}
     }
   )
 

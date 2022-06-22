@@ -39,9 +39,6 @@ let loadThenNavigateReducer =
     with: Reducer<
       LoadThenNavigateState, LoadThenNavigateAction, LoadThenNavigateEnvironment
     > { state, action, environment in
-
-      enum CancelId {}
-
       switch action {
       case .onDisappear:
         return .cancel(id: CancelId.self)
@@ -65,6 +62,8 @@ let loadThenNavigateReducer =
       case .optionalCounter:
         return .none
       }
+
+      enum CancelId {}
     }
   )
 

@@ -35,9 +35,6 @@ let refreshableReducer = Reducer<
   RefreshableAction,
   RefreshableEnvironment
 > { state, action, environment in
-
-  enum CancelId {}
-
   switch action {
   case .cancelButtonTapped:
     state.isLoading = false
@@ -69,6 +66,8 @@ let refreshableReducer = Reducer<
       .catchToEffect(RefreshableAction.factResponse)
       .cancellable(id: CancelId.self)
   }
+
+  enum CancelId {}
 }
 
 #if compiler(>=5.5)

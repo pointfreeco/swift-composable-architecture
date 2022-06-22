@@ -130,8 +130,6 @@ final class ComposableArchitectureTests: XCTestCase {
     }
 
     let reducer = Reducer<Int, Action, Environment> { state, action, environment in
-      enum CancelId {}
-
       switch action {
       case .cancel:
         return .cancel(id: CancelId.self)
@@ -148,6 +146,8 @@ final class ComposableArchitectureTests: XCTestCase {
         state = value
         return .none
       }
+
+      enum CancelId {}
     }
 
     let scheduler = DispatchQueue.test

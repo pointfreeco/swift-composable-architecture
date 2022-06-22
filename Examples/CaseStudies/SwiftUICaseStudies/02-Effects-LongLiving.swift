@@ -35,9 +35,6 @@ struct LongLivingEffectsEnvironment {
 let longLivingEffectsReducer = Reducer<
   LongLivingEffectsState, LongLivingEffectsAction, LongLivingEffectsEnvironment
 > { state, action, environment in
-
-  enum UserDidTakeScreenshotNotificationId {}
-
   switch action {
   case .userDidTakeScreenshotNotification:
     state.screenshotCount += 1
@@ -54,6 +51,8 @@ let longLivingEffectsReducer = Reducer<
     // When view disappears, stop the effect.
     return .cancel(id: UserDidTakeScreenshotNotificationId.self)
   }
+
+  enum UserDidTakeScreenshotNotificationId {}
 }
 
 // MARK: - SwiftUI view

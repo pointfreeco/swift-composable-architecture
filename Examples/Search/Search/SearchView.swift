@@ -68,8 +68,6 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
     return .none
 
   case let .searchQueryChanged(query):
-    enum SearchLocationId {}
-
     state.searchQuery = query
 
     // When the query is cleared we can clear the search results, but we have to make sure to cancel
@@ -85,6 +83,8 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
       .debounce(id: SearchLocationId.self, for: 0.3, scheduler: environment.mainQueue)
       .catchToEffect(SearchAction.searchResponse)
 
+    enum SearchLocationId {}
+
   case .searchResponse(.failure):
     state.results = []
     return .none
@@ -94,8 +94,6 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
     return .none
 
   case let .searchResultTapped(location):
-    enum SearchWeatherId {}
-
     state.resultForecastRequestInFlight = location
 
     return environment.weatherClient
@@ -104,6 +102,8 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
       .catchToEffect()
       .map { .forecastResponse(location.id, $0) }
       .cancellable(id: SearchWeatherId.self, cancelInFlight: true)
+
+    enum SearchWeatherId {}
   }
 }
 
