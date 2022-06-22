@@ -249,12 +249,12 @@ class TestStoreTests: XCTestCase {
 
 
 private extension DependencyValues {
-  public var int: Int {
+  var int: Int {
     get { self[IntKey.self] }
     set { self[IntKey.self] = newValue }
   }
 
-  private enum IntKey: LiveDependencyKey {
+  enum IntKey: LiveDependencyKey {
     static let liveValue = 42
     static let testValue = 1729
   }

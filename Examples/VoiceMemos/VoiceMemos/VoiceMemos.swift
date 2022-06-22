@@ -48,34 +48,6 @@ struct VoiceMemos: ReducerProtocol, Sendable {
 
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
-      enum RecordId {}
-
-      func startRecording() -> Effect<Action, Never> {
-        let url = self.temporaryDirectory()
-          .appendingPathComponent(self.uuid().uuidString)
-          .appendingPathExtension("m4a")
-        state.currentRecording = .init(
-          date: self.mainRunLoop.now.date,
-          url: url
-        )
-
-        return .run { send in
-          await withTaskGroup(of: Void.self) { group in
-            group.addTask {
-              await send(
-                .audioRecorderDidFinish(.init { try await self.audioRecorder.startRecording(url) })
-              )
-            }
-            group.addTask {
-              for await _ in self.mainRunLoop.timer(interval: .seconds(1)) {
-                await send(.currentRecordingTimerUpdated)
-              }
-            }
-          }
-        }
-        .cancellable(id: RecordId.self, cancelInFlight: true)
-      }
-
       switch action {
       case .alertDismissed:
         state.alert = nil
@@ -132,7 +104,7 @@ struct VoiceMemos: ReducerProtocol, Sendable {
 
         case .allowed:
           guard let currentRecording = state.currentRecording else {
-            return startRecording()
+            return self.startRecording(state: &state)
           }
 
           switch currentRecording.mode {
@@ -154,7 +126,7 @@ struct VoiceMemos: ReducerProtocol, Sendable {
       case let .recordPermissionResponse(permission):
         state.audioRecorderPermission = permission ? .allowed : .denied
         if permission {
-          return startRecording()
+          return self.startRecording(state: &state)
         } else {
           state.alert = .init(title: .init("Permission is required to record voice memos."))
           return .none
@@ -182,6 +154,34 @@ struct VoiceMemos: ReducerProtocol, Sendable {
       VoiceMemo()
     }
   }
+
+  private func startRecording(state: inout State) -> Effect<Action, Never> {
+    let url = self.temporaryDirectory()
+      .appendingPathComponent(self.uuid().uuidString)
+      .appendingPathExtension("m4a")
+    state.currentRecording = .init(
+      date: self.mainRunLoop.now.date,
+      url: url
+    )
+
+    return .run { send in
+      await withTaskGroup(of: Void.self) { group in
+        group.addTask {
+          await send(
+            .audioRecorderDidFinish(.init { try await self.audioRecorder.startRecording(url) })
+          )
+        }
+        group.addTask {
+          for await _ in self.mainRunLoop.timer(interval: .seconds(1)) {
+            await send(.currentRecordingTimerUpdated)
+          }
+        }
+      }
+    }
+    .cancellable(id: RecordId.self, cancelInFlight: true)
+  }
+
+  private enum RecordId {}
 }
 
 struct VoiceMemosView: View {
