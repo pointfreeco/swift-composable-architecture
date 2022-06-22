@@ -42,7 +42,7 @@
       return .none
 
     case .resetButtonTapped:
-      state = .init()
+      state = BindingFormState()
       return .none
     }
   }

@@ -51,10 +51,10 @@ extension WeatherClient {
     forecast: { result in
       var components = URLComponents(string: "https://api.open-meteo.com/v1/forecast")!
       components.queryItems = [
-        .init(name: "latitude", value: "\(result.latitude)"),
-        .init(name: "longitude", value: "\(result.longitude)"),
-        .init(name: "daily", value: "temperature_2m_max,temperature_2m_min"),
-        .init(name: "timezone", value: TimeZone.autoupdatingCurrent.identifier),
+        URLQueryItem(name: "latitude", value: "\(result.latitude)"),
+        URLQueryItem(name: "longitude", value: "\(result.longitude)"),
+        URLQueryItem(name: "daily", value: "temperature_2m_max,temperature_2m_min"),
+        URLQueryItem(name: "timezone", value: TimeZone.autoupdatingCurrent.identifier),
       ]
 
       return URLSession.shared.dataTaskPublisher(for: components.url!)
@@ -65,7 +65,7 @@ extension WeatherClient {
     },
     search: { query in
       var components = URLComponents(string: "https://geocoding-api.open-meteo.com/v1/search")!
-      components.queryItems = [.init(name: "name", value: query)]
+      components.queryItems = [URLQueryItem(name: "name", value: query)]
 
       return URLSession.shared.dataTaskPublisher(for: components.url!)
         .map { data, _ in data }
@@ -87,12 +87,12 @@ extension WeatherClient {
 
 extension Forecast {
   static let mock = Self(
-    daily: .init(
+    daily: Daily(
       temperatureMax: [90, 70, 100],
       temperatureMin: [70, 50, 80],
       time: [0, 86_400, 172_800].map(Date.init(timeIntervalSince1970:))
     ),
-    dailyUnits: .init(temperatureMax: "°F", temperatureMin: "°F")
+    dailyUnits: DailyUnits(temperatureMax: "°F", temperatureMin: "°F")
   )
 }
 

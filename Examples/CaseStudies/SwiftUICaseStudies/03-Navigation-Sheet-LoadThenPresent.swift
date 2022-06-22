@@ -96,9 +96,10 @@ struct LoadThenPresentView: View {
           self.store.scope(
             state: \.optionalCounter,
             action: LoadThenPresentAction.optionalCounter
-          ),
-          then: CounterView.init(store:)
-        )
+          )
+        ) {
+          CounterView(store: $0)
+        }
       }
       .navigationBarTitle("Load and present")
       .onDisappear { viewStore.send(.onDisappear) }

@@ -14,13 +14,15 @@ class SharedStateTests: XCTestCase {
 
     store.send(.selectTab(.profile)) {
       $0.currentTab = .profile
-      $0.profile = .init(
-        currentTab: .profile, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0)
+      $0.profile = SharedState.ProfileState(
+        currentTab: .profile, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0
+      )
     }
     store.send(.profile(.resetCounterButtonTapped)) {
       $0.currentTab = .counter
-      $0.profile = .init(
-        currentTab: .counter, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0)
+      $0.profile = SharedState.ProfileState(
+        currentTab: .counter, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0
+      )
     }
   }
 
@@ -33,13 +35,15 @@ class SharedStateTests: XCTestCase {
 
     store.send(.selectTab(.profile)) {
       $0.currentTab = .profile
-      $0.profile = .init(
-        currentTab: .profile, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0)
+      $0.profile = SharedState.ProfileState(
+        currentTab: .profile, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0
+      )
     }
     store.send(.selectTab(.counter)) {
       $0.currentTab = .counter
-      $0.profile = .init(
-        currentTab: .counter, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0)
+      $0.profile = SharedState.ProfileState(
+        currentTab: .counter, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0
+      )
     }
   }
 
@@ -69,14 +73,15 @@ class SharedStateTests: XCTestCase {
   func testIsPrimeWhenPrime() {
     let store = TestStore(
       initialState: SharedState.CounterState(
-        alert: nil, count: 3, maxCount: 0, minCount: 0, numberOfCounts: 0),
+        alert: nil, count: 3, maxCount: 0, minCount: 0, numberOfCounts: 0
+      ),
       reducer: sharedStateCounterReducer,
       environment: ()
     )
 
     store.send(.isPrimeButtonTapped) {
-      $0.alert = .init(
-        title: .init("👍 The number \($0.count) is prime!")
+      $0.alert = AlertState(
+        title: TextState("👍 The number \($0.count) is prime!")
       )
     }
     store.send(.alertDismissed) {
@@ -87,14 +92,15 @@ class SharedStateTests: XCTestCase {
   func testIsPrimeWhenNotPrime() {
     let store = TestStore(
       initialState: SharedState.CounterState(
-        alert: nil, count: 6, maxCount: 0, minCount: 0, numberOfCounts: 0),
+        alert: nil, count: 6, maxCount: 0, minCount: 0, numberOfCounts: 0
+      ),
       reducer: sharedStateCounterReducer,
       environment: ()
     )
 
     store.send(.isPrimeButtonTapped) {
-      $0.alert = .init(
-        title: .init("👎 The number \($0.count) is not prime :(")
+      $0.alert = AlertState(
+        title: TextState("👎 The number \($0.count) is not prime :(")
       )
     }
     store.send(.alertDismissed) {

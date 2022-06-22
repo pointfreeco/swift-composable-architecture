@@ -39,9 +39,9 @@ struct ContentView_Previews: PreviewProvider {
     NavigationView {
       RootView(
         store: Store(
-          initialState: .init(),
+          initialState: RootState(),
           reducer: rootReducer,
-          environment: .init()
+          environment: RootEnvironment()
         )
       )
     }

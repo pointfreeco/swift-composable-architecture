@@ -16,7 +16,7 @@ class WebSocketTests: XCTestCase {
     webSocket.sendPing = { _ in .none }
 
     let store = TestStore(
-      initialState: .init(),
+      initialState: WebSocketState(),
       reducer: webSocketReducer,
       environment: WebSocketEnvironment(
         mainQueue: .immediate,
@@ -65,7 +65,7 @@ class WebSocketTests: XCTestCase {
     webSocket.sendPing = { _ in .none }
 
     let store = TestStore(
-      initialState: .init(),
+      initialState: WebSocketState(),
       reducer: webSocketReducer,
       environment: WebSocketEnvironment(
         mainQueue: .immediate,
@@ -90,7 +90,7 @@ class WebSocketTests: XCTestCase {
       $0.messageToSend = ""
     }
     store.receive(.sendResponse(NSError(domain: "", code: 1))) {
-      $0.alert = .init(title: .init("Could not send socket message. Try again."))
+      $0.alert = AlertState(title: TextState("Could not send socket message. Try again."))
     }
 
     // Disconnect from the socket
@@ -110,7 +110,7 @@ class WebSocketTests: XCTestCase {
 
     let scheduler = DispatchQueue.test
     let store = TestStore(
-      initialState: .init(),
+      initialState: WebSocketState(),
       reducer: webSocketReducer,
       environment: WebSocketEnvironment(
         mainQueue: scheduler.eraseToAnyScheduler(),
@@ -148,7 +148,7 @@ class WebSocketTests: XCTestCase {
     webSocket.sendPing = { _ in .none }
 
     let store = TestStore(
-      initialState: .init(),
+      initialState: WebSocketState(),
       reducer: webSocketReducer,
       environment: WebSocketEnvironment(
         mainQueue: .immediate,

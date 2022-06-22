@@ -15,7 +15,7 @@ class TwoFactorCoreTests: XCTestCase {
     )
 
     store.environment.authenticationClient.twoFactor = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
+      Effect(value: AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false))
     }
     store.send(.codeChanged("1")) {
       $0.code = "1"
@@ -34,7 +34,9 @@ class TwoFactorCoreTests: XCTestCase {
       $0.isTwoFactorRequestInFlight = true
     }
     store.receive(
-      .twoFactorResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
+      .twoFactorResponse(
+        .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false))
+      )
     ) {
       $0.isTwoFactorRequestInFlight = false
     }
@@ -62,7 +64,7 @@ class TwoFactorCoreTests: XCTestCase {
       $0.isTwoFactorRequestInFlight = true
     }
     store.receive(.twoFactorResponse(.failure(.invalidTwoFactor))) {
-      $0.alert = .init(
+      $0.alert = AlertState(
         title: TextState(AuthenticationError.invalidTwoFactor.localizedDescription)
       )
       $0.isTwoFactorRequestInFlight = false

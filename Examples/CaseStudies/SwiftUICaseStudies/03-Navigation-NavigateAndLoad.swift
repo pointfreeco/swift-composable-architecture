@@ -75,10 +75,12 @@ struct NavigateAndLoadView: View {
               self.store.scope(
                 state: \.optionalCounter,
                 action: NavigateAndLoadAction.optionalCounter
-              ),
-              then: CounterView.init(store:),
-              else: ProgressView.init
-            ),
+              )
+            ) {
+              CounterView(store: $0)
+            } else: {
+              ProgressView()
+            },
             isActive: viewStore.binding(
               get: \.isNavigationActive,
               send: NavigateAndLoadAction.setNavigation(isActive:)

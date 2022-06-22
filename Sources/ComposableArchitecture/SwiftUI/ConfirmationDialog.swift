@@ -36,8 +36,8 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// Then, in the reducer you can construct an `ConfirmationDialogState` value to represent the
-/// dialog you want to show to the user:
+/// Then, in the reducer you can construct a `ConfirmationDialogState` value to represent the dialog
+/// you want to show to the user:
 ///
 /// ```swift
 /// let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, env in
@@ -55,7 +55,7 @@ import SwiftUI
 ///       // Do favoriting logic
 ///
 ///     case .infoTapped:
-///       state.confirmationDialog = .init(
+///       state.confirmationDialog = ConfirmationDialogState(
 ///         title: "What would you like to do?",
 ///         buttons: [
 ///           .default(TextState("Favorite"), action: .send(.favoriteTapped)),
@@ -93,7 +93,7 @@ import SwiftUI
 /// )
 ///
 /// store.send(.infoTapped) {
-///   $0.confirmationDialog = .init(
+///   $0.confirmationDialog = ConfirmationDialogState(
 ///     title: "What would you like to do?",
 ///     buttons: [
 ///       .default(TextState("Favorite"), send: .favoriteTapped),
