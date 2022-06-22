@@ -226,7 +226,7 @@ final class ViewStoreTests: XCTestCase {
         XCTAssertNoDifference(viewStore.state, false)
         _ = { viewStore.send(.tapped) }()
         XCTAssertNoDifference(viewStore.state, true)
-        await viewStore.suspend(while: { $0 })
+        await viewStore.yield(while: { $0 })
         XCTAssertNoDifference(viewStore.state, false)
         expectation.fulfill()
       }

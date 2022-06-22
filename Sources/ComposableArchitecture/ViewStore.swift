@@ -443,7 +443,7 @@ private struct HashableWrapper<Value>: Hashable {
       while predicate: @escaping (State) -> Bool
     ) async {
       self.send(action)
-      await self.suspend(while: predicate)
+      await self.yield(while: predicate)
     }
 
     /// Sends an action into the store and then suspends while a piece of state is `true`.
@@ -465,12 +465,15 @@ private struct HashableWrapper<Value>: Hashable {
       await self.suspend(while: predicate)
     }
 
-    /// Suspends while a predicate on state is `true`.
+    /// Suspends the current task while a predicate on state is `true`.
+    ///
+    /// If you want to suspend at the same time you send an action to the view store, use
+    /// ``send(_:while:)``.
     ///
     /// - Parameter predicate: A predicate on `State` that determines for how long this method
     ///   should suspend.
     @MainActor
-    public func suspend(while predicate: @escaping (State) -> Bool) async {
+    public func yield(while predicate: @escaping (State) -> Bool) async {
       if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
         _ = await self.publisher
           .values

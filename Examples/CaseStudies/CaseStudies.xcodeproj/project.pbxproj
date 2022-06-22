@@ -61,6 +61,7 @@
 		DC5B505125C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5B505025C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift */; };
 		DC630FDA2451016B00BAECBA /* ListsOfState.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC630FD92451016B00BAECBA /* ListsOfState.swift */; };
 		DC634B252448D15B00DAA016 /* 04-HigherOrderReducers-ReusableFavoritingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC634B242448D15B00DAA016 /* 04-HigherOrderReducers-ReusableFavoritingTests.swift */; };
+		DC85EBC3285A731E00431CF3 /* ResignFirstResponder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC85EBC2285A731E00431CF3 /* ResignFirstResponder.swift */; };
 		DC88D8A6245341EC0077F427 /* 01-GettingStarted-Animations.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC88D8A5245341EC0077F427 /* 01-GettingStarted-Animations.swift */; };
 		DC89C41B24460F95006900B9 /* 00-RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C41A24460F95006900B9 /* 00-RootView.swift */; };
 		DC89C41D24460F96006900B9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC89C41C24460F96006900B9 /* Assets.xcassets */; };
@@ -207,6 +208,7 @@
 		DC5B505025C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Bindings-Forms.swift"; sourceTree = "<group>"; };
 		DC630FD92451016B00BAECBA /* ListsOfState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListsOfState.swift; sourceTree = "<group>"; };
 		DC634B242448D15B00DAA016 /* 04-HigherOrderReducers-ReusableFavoritingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-ReusableFavoritingTests.swift"; sourceTree = "<group>"; };
+		DC85EBC2285A731E00431CF3 /* ResignFirstResponder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResignFirstResponder.swift; sourceTree = "<group>"; };
 		DC88D8A5245341EC0077F427 /* 01-GettingStarted-Animations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Animations.swift"; sourceTree = "<group>"; };
 		DC89C41324460F95006900B9 /* SwiftUICaseStudies.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftUICaseStudies.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC89C41A24460F95006900B9 /* 00-RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "00-RootView.swift"; sourceTree = "<group>"; };
@@ -450,6 +452,7 @@
 			isa = PBXGroup;
 			children = (
 				CA6AC2612451135C00C71CB3 /* CircularProgressView.swift */,
+				DC85EBC2285A731E00431CF3 /* ResignFirstResponder.swift */,
 				DCC68EDE2447BC810037F998 /* TemplateText.swift */,
 				DC9EB4162450CBD2005F413B /* UIViewRepresented.swift */,
 			);
@@ -758,6 +761,7 @@
 				DC89C41B24460F95006900B9 /* 00-RootView.swift in Sources */,
 				DCC68EDD2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift in Sources */,
 				CABC4F3926AEE00C00D5FA2C /* 02-Effects-Refreshable.swift in Sources */,
+				DC85EBC3285A731E00431CF3 /* ResignFirstResponder.swift in Sources */,
 				DCC68EAB244666AF0037F998 /* 03-Navigation-Sheet-PresentAndLoad.swift in Sources */,
 				CAE962FD24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndConfirmationDialogs.swift in Sources */,
 				CA25E5D224463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift in Sources */,
