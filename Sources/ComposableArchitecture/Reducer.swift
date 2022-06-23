@@ -898,3 +898,21 @@ public struct Reducer<State, Action, Environment> {
     self.reducer(&state, action, environment)
   }
 }
+
+// NB: `BindableAction` can produce crashes in Xcode 12.4 (Swift 5.3) and earlier due to an enum
+//     protocol witness bug: https://bugs.swift.org/browse/SR-14041
+#if compiler(>=5.4)
+public extension Reducer where Action: BindableAction, Action.State == State {
+  init(_ theReducer: @escaping (inout State, Action, Environment) -> Effect<Action, Never>) {
+    self.reducer = { state, action, environment in
+      guard let bindingAction = (/Action.binding).extract(from: action)
+      else {
+        return theReducer(&state, action, environment)
+      }
+
+      bindingAction.set(&state)
+      return theReducer(&state, action, environment)
+    }
+  }
+}
+#endif
