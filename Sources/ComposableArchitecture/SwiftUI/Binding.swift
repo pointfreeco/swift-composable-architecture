@@ -278,12 +278,14 @@ import SwiftUI
     /// - Returns: A new binding.
     public func binding<Value: Equatable>(
       _ keyPath: WritableKeyPath<State, BindableState<Value>>,
-      file: StaticString = #file,
+      file: StaticString = #fileID,
       line: UInt = #line
     ) -> Binding<Value> {
       self.binding(
         get: { $0[keyPath: keyPath].wrappedValue },
-        send: { .binding(.set(keyPath, $0, file: file, line: line)) }
+        send: {
+          .binding(.set(keyPath, $0, bindableActionType: Action.self, file: file, line: line))
+        }
       )
     }
   }
@@ -321,11 +323,14 @@ public struct BindingAction<Root>: Equatable {
     public static func set<Value: Equatable>(
       _ keyPath: WritableKeyPath<Root, BindableState<Value>>,
       _ value: Value,
-      file: StaticString = #file,
+      bindableActionType: Any.Type? = nil,
+      file: StaticString = #fileID,
       line: UInt = #line
     ) -> Self {
       #if DEBUG
-        let debugger = Debugger<Value>(file: file, line: line)
+        let debugger = Debugger<Value>(
+          bindableActionType: bindableActionType, file: file, line: line
+        )
         let set: (inout Root) -> Void = {
           $0[keyPath: keyPath].wrappedValue = value
           debugger.wasCalled = true
@@ -362,11 +367,13 @@ public struct BindingAction<Root>: Equatable {
 
     #if DEBUG
       private class Debugger<Value> {
+        let bindableActionType: Any.Type?
         let file: StaticString
         let line: UInt
         var wasCalled = false
 
-        init(file: StaticString, line: UInt) {
+        init(bindableActionType: Any.Type?, file: StaticString, line: UInt) {
+          self.bindableActionType = bindableActionType
           self.file = file
           self.line = line
         }
@@ -375,13 +382,13 @@ public struct BindingAction<Root>: Equatable {
           guard self.wasCalled else {
             runtimeWarning(
               """
-              A "%@" to "%@" was created at "%@:%d" but its setter was never invoked.
+              "%@" to "%@" was created at "%@:%d" but its setter was never invoked.
 
               Enhance reducers that receive binding actions with the "Reducer.binding()" modifier to \
               ensure the setter will mutate associated state.
               """,
               [
-                "\(BindingAction.self)",
+                bindableActionType.map { "\($0).binding" } ?? "\(BindingAction.self)",
                 "\(Value.self)",
                 "\(self.file)",
                 self.line,
