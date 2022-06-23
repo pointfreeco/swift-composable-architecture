@@ -328,8 +328,8 @@ public struct BindingAction<Root>: Equatable {
       line: UInt = #line
     ) -> Self {
       #if DEBUG
-        let debugger = Debugger<Value>(
-          bindableActionType: bindableActionType, file: file, line: line
+        let debugger = Debugger(
+          value: value, bindableActionType: bindableActionType, file: file, line: line
         )
         let set: (inout Root) -> Void = {
           $0[keyPath: keyPath].wrappedValue = value
@@ -367,12 +367,14 @@ public struct BindingAction<Root>: Equatable {
 
     #if DEBUG
       private class Debugger<Value> {
+        let value: Value
         let bindableActionType: Any.Type?
         let file: StaticString
         let line: UInt
         var wasCalled = false
 
-        init(bindableActionType: Any.Type?, file: StaticString, line: UInt) {
+        init(value: Value, bindableActionType: Any.Type?, file: StaticString, line: UInt) {
+          self.value = value
           self.bindableActionType = bindableActionType
           self.file = file
           self.line = line
@@ -380,18 +382,25 @@ public struct BindingAction<Root>: Equatable {
 
         deinit {
           guard self.wasCalled else {
+            let action = """
+              \(bindableActionType.map { "\($0).binding(" } ?? "\(BindingAction.self)")\
+              .set(_, \(self.value))\
+              \(bindableActionType != nil ? ")" : "")
+              """
             runtimeWarning(
               """
-              "%@" to "%@" was created at "%@:%d" but its setter was never invoked.
+              A binding action created at "%@:%d" never invoked its setter:
 
-              Enhance reducers that receive binding actions with the "Reducer.binding()" modifier to \
-              ensure the setter will mutate associated state.
+                Action:
+                  %@
+
+              Enhance reducers that receive binding actions with the "Reducer.binding()" modifier \
+              to ensure the setter will mutate associated state.
               """,
               [
-                bindableActionType.map { "\($0).binding" } ?? "\(BindingAction.self)",
-                "\(Value.self)",
                 "\(self.file)",
                 self.line,
+                action,
               ]
             )
             return
