@@ -277,11 +277,13 @@ import SwiftUI
     /// - Parameter keyPath: A key path to a specific bindable state.
     /// - Returns: A new binding.
     public func binding<Value: Equatable>(
-      _ keyPath: WritableKeyPath<State, BindableState<Value>>
+      _ keyPath: WritableKeyPath<State, BindableState<Value>>,
+      file: StaticString = #file,
+      line: UInt = #line
     ) -> Binding<Value> {
       self.binding(
         get: { $0[keyPath: keyPath].wrappedValue },
-        send: { .binding(.set(keyPath, $0)) }
+        send: { .binding(.set(keyPath, $0, file: file, line: line)) }
       )
     }
   }
@@ -318,11 +320,22 @@ public struct BindingAction<Root>: Equatable {
     ///   path.
     public static func set<Value: Equatable>(
       _ keyPath: WritableKeyPath<Root, BindableState<Value>>,
-      _ value: Value
+      _ value: Value,
+      file: StaticString = #file,
+      line: UInt = #line
     ) -> Self {
-      .init(
+      #if DEBUG
+        let debugger = Debugger<Value>(file: file, line: line)
+        let set: (inout Root) -> Void = {
+          $0[keyPath: keyPath].wrappedValue = value
+          debugger.wasCalled = true
+        }
+      #else
+        let set: (inout Root) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
+      #endif
+      return .init(
         keyPath: keyPath,
-        set: { $0[keyPath: keyPath].wrappedValue = value },
+        set: set,
         value: value,
         valueIsEqualTo: { $0 as? Value == value }
       )
@@ -346,6 +359,39 @@ public struct BindingAction<Root>: Equatable {
     ) -> Bool {
       keyPath == bindingAction.keyPath
     }
+
+    #if DEBUG
+      private class Debugger<Value> {
+        let file: StaticString
+        let line: UInt
+        var wasCalled = false
+
+        init(file: StaticString, line: UInt) {
+          self.file = file
+          self.line = line
+        }
+
+        deinit {
+          guard self.wasCalled else {
+            runtimeWarning(
+              """
+              A "%@" to "%@" was created at "%@:%d" but its setter was never invoked.
+
+              Enhance reducers that receive binding actions with the "Reducer.binding()" modifier to \
+              ensure the setter will mutate associated state.
+              """,
+              [
+                "\(BindingAction.self)",
+                "\(Value.self)",
+                "\(self.file)",
+                self.line,
+              ]
+            )
+            return
+          }
+        }
+      }
+    #endif
   }
 #endif
 
