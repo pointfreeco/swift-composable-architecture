@@ -5,14 +5,14 @@ import XCTest
 
 import SwiftUI
 
+@MainActor
 class EffectsBasicsTests: XCTestCase {
   func testCountUpAndDown() {
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
       environment: EffectsBasicsEnvironment(
-        fact: .failing,
-        mainQueue: .failing
+        fact: .failing
       )
     )
 
@@ -24,18 +24,16 @@ class EffectsBasicsTests: XCTestCase {
     }
   }
 
-  func testNumberFact_HappyPath() {
+  func testNumberFact_HappyPath() async {
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
       environment: EffectsBasicsEnvironment(
-        fact: .failing,
-        mainQueue: .failing
+        fact: .failing
       )
     )
 
     store.environment.fact.fetchAsync = { n in "\(n) is a good number Brent" }
-    store.environment.mainQueue = .immediate
 
     store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -43,7 +41,11 @@ class EffectsBasicsTests: XCTestCase {
     store.send(.numberFactButtonTapped) {
       $0.isNumberFactRequestInFlight = true
     }
-    _ = XCTWaiter.wait(for: [.init()], timeout: 0.05)
+      await Task.yield()
+      await Task.yield()
+      await Task.yield()
+      await Task.yield()
+      await Task.yield()
     store.receive(.numberFactResponse(.success("1 is a good number Brent"))) {
        $0.isNumberFactRequestInFlight = false
       $0.numberFact = "1 is a good number Brent"
@@ -55,13 +57,11 @@ class EffectsBasicsTests: XCTestCase {
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
       environment: EffectsBasicsEnvironment(
-        fact: .failing,
-        mainQueue: .failing
+        fact: .failing
       )
     )
 
     store.environment.fact.fetch = { _ in .init(error: .init()) }
-    store.environment.mainQueue = .immediate
 
     store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -72,5 +72,18 @@ class EffectsBasicsTests: XCTestCase {
     store.receive(.numberFactResponse(.failure(.init()))) {
       $0.isNumberFactRequestInFlight = false
     }
+  }
+
+  @MainActor
+  func testBasics() async throws {
+    let task = Task {
+      for await _ in NotificationCenter.default.notifications(named: UIApplication.userDidTakeScreenshotNotification) {
+      }
+    }
+
+    await Task.yield()
+
+    task.cancel()
+    await task.value
   }
 }

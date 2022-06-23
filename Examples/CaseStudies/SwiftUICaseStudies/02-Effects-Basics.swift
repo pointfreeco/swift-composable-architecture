@@ -40,7 +40,6 @@ enum EffectsBasicsAction: Equatable {
 
 struct EffectsBasicsEnvironment {
   var fact: FactClient
-  var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
 // MARK: - Feature business logic
@@ -66,10 +65,9 @@ let effectsBasicsReducer = Reducer<
     state.numberFact = nil
     // Return an effect that fetches a number fact from the API and returns the
     // value back to the reducer's `numberFactResponse` action.
-
     return .task { [count = state.count] in
       do {
-        return .numberFactResponse(.success(try await environment.fact.fetchAsync(count) + "!"))
+        return .numberFactResponse(.success(try await environment.fact.fetchAsync(count)))
       } catch {
         return .numberFactResponse(.failure(.init()))
       }
@@ -146,8 +144,7 @@ struct EffectsBasicsView_Previews: PreviewProvider {
           initialState: EffectsBasicsState(),
           reducer: effectsBasicsReducer,
           environment: EffectsBasicsEnvironment(
-            fact: .live,
-            mainQueue: .main
+            fact: .live
           )
         )
       )
