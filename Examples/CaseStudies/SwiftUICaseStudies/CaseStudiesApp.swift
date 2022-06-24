@@ -4,13 +4,13 @@ import SwiftUI
 struct CaseStudiesApp: App {
   var body: some Scene {
     WindowGroup {
-      RootView(
-        store: .init(
-          initialState: RootState(),
-          reducer: rootReducer,
-          environment: .live
-        )
-      )
+//      RootView(
+//        store: .init(
+//          initialState: RootState(),
+//          reducer: rootReducer,
+//          environment: .live
+//        )
+//      )
     }
   }
 }

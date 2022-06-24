@@ -2,6 +2,38 @@ import Combine
 import ComposableArchitecture
 import SwiftUI
 
+func equals(_ lhs: Any, _ rhs: Any) -> Bool {
+  func open<A: Equatable>(_ lhs: A, _ rhs: any Equatable) -> Bool {
+    lhs == (rhs as? A)
+  }
+
+  guard
+    let lhs = lhs as? any Equatable,
+    let rhs = rhs as? any Equatable
+  else { return false }
+
+  return open(lhs, rhs)
+}
+public enum TaskResult<Success: Sendable>: Sendable {
+  case success(Success)
+  case failure(Error)
+}
+extension TaskResult: Equatable where Success: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    switch (lhs, rhs) {
+    case let (.success(lhs), .success(rhs)):
+      return lhs == rhs
+    case let (.failure(lhs), .failure(rhs)):
+      return equals(lhs, rhs)
+    default:
+      return false
+    }
+  }
+}
+
+
+
+
 private let readMe = """
   This screen demonstrates how to introduce side effects into a feature built with the \
   Composable Architecture.
@@ -35,7 +67,7 @@ enum EffectsBasicsAction: Equatable {
   case decrementButtonTapped
   case incrementButtonTapped
   case numberFactButtonTapped
-  case numberFactResponse(Result<String, FactClient.Error>)
+  case numberFactResponse(TaskResult<String>)
 }
 
 struct EffectsBasicsEnvironment {
@@ -69,7 +101,7 @@ let effectsBasicsReducer = Reducer<
       do {
         return .numberFactResponse(.success(try await environment.fact.fetchAsync(count)))
       } catch {
-        return .numberFactResponse(.failure(.init()))
+        return .numberFactResponse(.failure(error))
       }
     }
 
@@ -78,8 +110,13 @@ let effectsBasicsReducer = Reducer<
     state.numberFact = response
     return .none
 
+  case let .numberFactResponse(.failure(error as URLError)):
+    // TODO: handle URL error
+    state.isNumberFactRequestInFlight = false
+    return .none
+
   case .numberFactResponse(.failure):
-    // TODO: Do some error handling. Show an alert?
+    // TODO: error handling
     state.isNumberFactRequestInFlight = false
     return .none
   }

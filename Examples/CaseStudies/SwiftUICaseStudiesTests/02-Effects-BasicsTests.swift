@@ -41,13 +41,13 @@ class EffectsBasicsTests: XCTestCase {
     store.send(.numberFactButtonTapped) {
       $0.isNumberFactRequestInFlight = true
     }
-    await store.receive(.numberFactResponse(.success("2 is a good number Brent"))) {
+    await store.receive(.numberFactResponse(.success("1 is a good number Brent"))) {
        $0.isNumberFactRequestInFlight = false
-      $0.numberFact = "2 is a good number Brent"
+      $0.numberFact = "1 is a good number Brent"
     }
   }
 
-  func testNumberFact_Failing() {
+  func testNumberFact_Failing() async {
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
@@ -56,7 +56,9 @@ class EffectsBasicsTests: XCTestCase {
       )
     )
 
-    store.environment.fact.fetch = { _ in .init(error: .init()) }
+    struct SomeOtherError: Error, Equatable {}
+
+    store.environment.fact.fetchAsync = { _ in throw SomeOtherError() }
 
     store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -64,7 +66,7 @@ class EffectsBasicsTests: XCTestCase {
     store.send(.numberFactButtonTapped) {
       $0.isNumberFactRequestInFlight = true
     }
-    store.receive(.numberFactResponse(.failure(.init()))) {
+    await store.receive(.numberFactResponse(.failure(SomeOtherError()))) {
       $0.isNumberFactRequestInFlight = false
     }
   }
