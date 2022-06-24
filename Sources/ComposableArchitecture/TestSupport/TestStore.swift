@@ -229,6 +229,10 @@
       self.toLocalState = toLocalState
     }
 
+    /// Asserts all in-flight effects have finished.
+    ///
+    /// - Parameter nanoseconds: The amount of time to wait before asserting.
+    @MainActor
     public func finish(
       timeout nanoseconds: UInt64 = 0,
       file: StaticString = #file,
@@ -241,9 +245,10 @@
       while !self.reducer.inFlightEffects.isEmpty {
         guard start.distance(to: DispatchQueue.main.now) < .nanoseconds(Int(nanoseconds))
         else {
-          let timeoutMessage = nanoseconds != nanoseconds
-            ? #"try increasing the duration of this assertion's "timeout"#
-            : #"configure this assertion with an explicit "timeout"#
+          let timeoutMessage =
+            nanoseconds > 0
+            ? #"try increasing the duration of this assertion's "timeout""#
+            : #"configure this assertion with an explicit "timeout""#
           let suggestion = """
             There are effects in-flight. If the effect that delivers this action uses a \
             scheduler (via "receive(on:)", "delay", "debounce", etc.), make sure that you wait \
@@ -330,7 +335,7 @@
       _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
-    ) -> TestTask {
+    ) -> TestStoreTask {
       if !self.reducer.receivedActions.isEmpty {
         var actions = ""
         customDump(self.reducer.receivedActions.map(\.action), to: &actions)
@@ -371,7 +376,7 @@
         self.line = line
       }
 
-      return .init(task: task)
+      return .init(rawValue: task)
     }
   }
 
@@ -403,7 +408,7 @@
       if expectedAction != receivedAction {
         let difference =
           diff(expectedAction, receivedAction, format: .proportional)
-          .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
+            .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
           ?? """
           Expected:
           \(String(describing: expectedAction).indent(by: 2))
@@ -444,10 +449,12 @@
     ///
     /// - Parameters:
     ///   - expectedAction: An action expected from an effect.
+    ///   - nanoseconds: The amount of time to wait for the expected action.
     ///   - updateExpectingResult: A closure that asserts state changed by sending the action to the
     ///     store. The mutable state sent to this closure must be modified to match the state of the
     ///     store after processing the given action. Do not provide a closure if no change is
     ///     expected.
+    @MainActor
     public func receive(
       _ expectedAction: Reducer.Action,
       timeout nanoseconds: UInt64 = 0,
@@ -458,25 +465,14 @@
       if nanoseconds == 0 {
         await Task.megaYield()
       }
-      await withTaskGroup(of: Void.self) { group in
-        _ = group.addTaskUnlessCancelled { @MainActor in
-          while !Task.isCancelled {
-            guard self.reducer.receivedActions.isEmpty
-            else { break }
-            await Task.yield()
-          }
-          guard !Task.isCancelled
-          else { return }
+      let start = DispatchTime.now().uptimeNanoseconds
+      while !Task.isCancelled {
+        await Task.detached(priority: .low) { await Task.yield() }.value
 
-          { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
-        }
+        guard self.reducer.receivedActions.isEmpty
+        else { break }
 
-        _ = group.addTaskUnlessCancelled { @MainActor in
-          await Task(priority: .low) { try? await Task.sleep(nanoseconds: nanoseconds) }
-            .cancellableValue
-          guard !Task.isCancelled
-          else { return }
-
+        if (DispatchTime.now().uptimeNanoseconds - start) >= nanoseconds {
           let suggestion: String
           if self.reducer.inFlightEffects.isEmpty {
             suggestion = """
@@ -484,9 +480,10 @@
               expected to deliver this action have been cancelled?
               """
           } else {
-            let timeoutMessage = nanoseconds != nanoseconds
-              ? #"try increasing the duration of this assertion's "timeout"#
-              : #"configure this assertion with an explicit "timeout"#
+            let timeoutMessage =
+              nanoseconds > 0
+              ? #"try increasing the duration of this assertion's "timeout""#
+              : #"configure this assertion with an explicit "timeout""#
             suggestion = """
               There are effects in-flight. If the effect that delivers this action uses a \
               scheduler (via "receive(on:)", "delay", "debounce", etc.), make sure that you wait \
@@ -508,26 +505,57 @@
             line: line
           )
         }
-
-        await group.next()
-        group.cancelAll()
       }
+
+      guard !Task.isCancelled
+      else { return }
+
+      { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
     }
   }
 
   /// The type returned from ``TestStore/send(_:_:file:line:)`` that represents the lifecycle of the
   /// effect started from sending an action.
   ///
-  /// You can use this value in tests to cancel the effect started from sending an action, or to
-  /// await for the effect to finish.
-  public struct TestTask {
-    let task: Task<Void, Never>
+  /// For example you can use this value in tests to cancel the effect started from sending an
+  /// action:
+  ///
+  /// ```swift
+  /// // Simulate the "task" view modifier invoking some async work
+  /// let task = store.send(.task)
+  ///
+  /// // Simulate the view cancelling this work on dismissal
+  /// await task.cancel()
+  /// ```
+  ///
+  /// You can also explicitly wait for an effect to finish:
+  ///
+  /// ```swift
+  /// store.send(.timerToggleButtonTapped)
+  ///
+  /// await mainQueue.advance(by: .seconds(1))
+  /// await store.receive(.timerTick) { $0.elapsed = 1 }
+  ///
+  /// // Wait for cleanup effects to finish before completing the test
+  /// await store.send(.timerToggleButtonTapped).finish()
+  /// ```
+  ///
+  /// See ``TestStore/finish(timeout:file:line:)`` for the ability to await all in-flight effects.
+  ///
+  /// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.
+  public struct TestStoreTask {
+    /// The underlying task.
+    public let rawValue: Task<Void, Never>
 
+    /// Cancels the underlying task and waits for it to finish.
     public func cancel() async {
-      self.task.cancel()
-      await self.task.cancellableValue
+      self.rawValue.cancel()
+      await self.rawValue.cancellableValue
     }
 
+    /// Asserts the underlying task finished.
+    ///
+    /// - Parameter nanoseconds: The amount of time to wait before asserting.
     public func finish(
       timeout nanoseconds: UInt64 = 0,
       file: StaticString = #file,
@@ -538,7 +566,7 @@
       }
       do {
         try await withThrowingTaskGroup(of: Void.self) { group in
-          group.addTask { await self.task.cancellableValue }
+          group.addTask { await self.rawValue.cancellableValue }
           group.addTask {
             try await Task.sleep(nanoseconds: nanoseconds)
             throw CancellationError()
@@ -625,39 +653,44 @@
     }
   }
 
-  private func expectedStateShouldMatch<State: Equatable>(
-    expected: inout State,
-    actual: State,
-    modify: ((inout State) throws -> Void)? = nil,
+  private func expectedStateShouldMatch<LocalState: Equatable>(
+    expected: inout LocalState,
+    actual: LocalState,
+    modify: ((inout LocalState) throws -> Void)? = nil,
     file: StaticString,
     line: UInt
   ) throws {
-    guard let modify = modify else { return }
     let current = expected
-    try modify(&expected)
+    if let modify = modify {
+      try modify(&expected)
+    }
 
     if expected != actual {
       let difference =
-      diff(expected, actual, format: .proportional)
+        diff(expected, actual, format: .proportional)
         .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
-      ?? """
-          Expected:
-          \(String(describing: expected).indent(by: 2))
+        ?? """
+        Expected:
+        \(String(describing: expected).indent(by: 2))
 
-          Actual:
-          \(String(describing: actual).indent(by: 2))
-          """
+        Actual:
+        \(String(describing: actual).indent(by: 2))
+        """
 
+      let messageHeading =
+        modify != nil
+        ? "A state change does not match expectation"
+        : "State was not expected to change, but a change occurred"
       XCTFail(
         """
-        A state change does not match expectation: …
+        \(messageHeading): …
 
         \(difference)
         """,
         file: file,
         line: line
       )
-    } else if expected == current {
+    } else if expected == current && modify != nil {
       XCTFail(
         """
         Expected state to change, but no change occurred.
@@ -665,8 +698,7 @@
         The trailing closure made no observable modifications to state. If no change to state is \
         expected, omit the trailing closure.
         """,
-        file: file,
-        line: line
+        file: file, line: line
       )
     }
   }

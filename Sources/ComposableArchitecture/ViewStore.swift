@@ -442,8 +442,11 @@ private struct HashableWrapper<Value>: Hashable {
       _ action: Action,
       while predicate: @escaping (State) -> Bool
     ) async {
-      self.send(action)
-      await self.yield(while: predicate)
+      let task = self.send(action)
+      await withTaskCancellationHandler(
+        handler: { task.rawValue.cancel() },
+        operation: { await self.yield(while: predicate) }
+      )
     }
 
     /// Sends an action into the store and then suspends while a piece of state is `true`.
@@ -461,8 +464,11 @@ private struct HashableWrapper<Value>: Hashable {
       animation: Animation?,
       while predicate: @escaping (State) -> Bool
     ) async {
-      _ = withAnimation(animation) { self.send(action) }
-      await self.suspend(while: predicate)
+      let task = withAnimation(animation) { self.send(action) }
+      await withTaskCancellationHandler(
+        handler: { task.rawValue.cancel() },
+        operation: { await self.yield(while: predicate) }
+      )
     }
 
     /// Suspends the current task while a predicate on state is `true`.
@@ -504,16 +510,46 @@ private struct HashableWrapper<Value>: Hashable {
   }
 #endif
 
+/// A convenience type alias for referring to a view store of a given reducer's domain.
+///
+/// Instead of specifying two generics:
+///
+/// ```swift
+/// let viewStore: ViewStore<Feature.State, Feature.Action>
+/// ```
+///
+/// You can specify a single generic:
+///
+/// ```swift
+/// let viewStore: ViewStoreOf<Feature>
+/// ```
 public typealias ViewStoreOf<R: ReducerProtocol> = ViewStore<R.State, R.Action>
 
+/// The type returned from ``ViewStore/send(_:)`` that represents the lifecycle of the effect
+/// started from sending an action.
+///
+/// You can use this value to tie the effect's lifecycle _and_ cancellation to an asynchronous
+/// context, such as the `task` view modifier.
+///
+/// ```swift
+/// .task { await viewStore.send(.task).finish() }
+/// ```
+///
+/// > Note: Unlike `Task`, ``ViewStoreTask`` automatically sets up a cancellation handler between
+/// > the current async context and the task.
+///
+/// See ``TestStoreTask`` for the analog provided to ``TestStore``.
 public struct ViewStoreTask {
+  /// The underlying task.
   public let rawValue: Task<Void, Never>
 
+  /// Cancels the underlying task and waits for it to finish.
   public func cancel() async {
     self.rawValue.cancel()
-    await self.rawValue.cancellableValue
+    await self.finish()
   }
 
+  /// Waits for the task to finish.
   public func finish() async {
     await self.rawValue.cancellableValue
   }

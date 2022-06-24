@@ -3,7 +3,7 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
-// NB: Deprecated after 0.37.0:
+// NB: Deprecated after 0.38.0:
 
 extension Effect where Failure == Error {
   @available(
