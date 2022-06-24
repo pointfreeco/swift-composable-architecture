@@ -579,7 +579,7 @@
               """
           } else {
             let timeoutMessage =
-              nanoseconds != nanoseconds // TODO: ???
+              nanoseconds != 0
               ? #"try increasing the duration of this assertion's "timeout"#
               : #"configure this assertion with an explicit "timeout"#
             suggestion = """

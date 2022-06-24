@@ -462,7 +462,7 @@ private struct HashableWrapper<Value>: Hashable {
       while predicate: @escaping (State) -> Bool
     ) async {
       _ = withAnimation(animation) { self.send(action) }
-      await self.suspend(while: predicate)
+      await self.yield(while: predicate)
     }
 
     /// Suspends the current task while a predicate on state is `true`.
