@@ -403,7 +403,7 @@
       _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
-    ) -> TestTask {
+    ) -> TestStoreTask {
       if !self.receivedActions.isEmpty {
         var actions = ""
         customDump(self.receivedActions.map(\.action), to: &actions)
@@ -439,7 +439,7 @@
         self.line = line
       }
 
-      return .init(task: task)
+      return .init(rawValue: task)
     }
 
     private func expectedStateShouldMatch(
@@ -658,17 +658,19 @@
     }
   }
 
-  /// The type returned from ``TestStore/send(_:_:file:line:)`` that represents the lifecycle
-  /// of the effect started from sending an action.
+  /// The type returned from ``TestStore/send(_:_:file:line:)`` that represents the lifecycle of the
+  /// effect started from sending an action.
   ///
   /// You can use this value in tests to cancel the effect started from sending an action, or
   /// to await until the effect finishes.
-  public struct TestTask {
-    let task: Task<Void, Never>
+  ///
+  /// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.
+  public struct TestStoreTask {
+    public let rawValue: Task<Void, Never>
 
     public func cancel() async {
-      self.task.cancel()
-      await self.task.cancellableValue
+      self.rawValue.cancel()
+      await self.rawValue.cancellableValue
     }
 
     public func finish(
@@ -681,7 +683,7 @@
       }
       do {
         try await withThrowingTaskGroup(of: Void.self) { group in
-          group.addTask { await self.task.cancellableValue }
+          group.addTask { await self.rawValue.cancellableValue }
           group.addTask {
             try await Task.sleep(nanoseconds: nanoseconds)
             throw CancellationError()

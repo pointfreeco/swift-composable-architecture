@@ -510,6 +510,17 @@ private struct HashableWrapper<Value>: Hashable {
   }
 #endif
 
+/// The type returned from ``ViewStore/send(_:)`` that represents the lifecycle of the effect
+/// started from sending an action.
+///
+/// You can use this value to tie the effect's lifecycle and cancellation to an asynchronous
+/// context, such as the `task` view modifier.
+///
+/// ```swift
+/// .task { await viewStore.send(.task).finish() }
+/// ```
+///
+/// See ``TestStoreTask`` for the analog provided to ``TestStore``.
 public struct ViewStoreTask {
   public let rawValue: Task<Void, Never>
 
