@@ -200,10 +200,6 @@ final class DebugTests: XCTestCase {
         )
         """#
       )
-
-      // NB: Call setter to avoid runtime warning
-      var state = State()
-      action.set(&state)
     }
   #endif
 }

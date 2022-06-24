@@ -46,7 +46,7 @@
       return .none
     }
   }
-  .binding()
+//  .binding()
 
   struct BindingFormView: View {
     let store: Store<BindingFormState, BindingFormAction>

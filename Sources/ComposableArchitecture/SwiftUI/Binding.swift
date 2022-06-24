@@ -283,8 +283,19 @@ import SwiftUI
     ) -> Binding<Value> {
       self.binding(
         get: { $0[keyPath: keyPath].wrappedValue },
-        send: {
-          .binding(.set(keyPath, $0, bindableActionType: Action.self, file: file, line: line))
+        send: { value in
+          #if DEBUG
+            let debugger = BindableActionViewStoreDebugger(
+              value: value, bindableActionType: Action.self, file: file, line: line
+            )
+            let set: (inout State) -> Void = {
+              $0[keyPath: keyPath].wrappedValue = value
+              debugger.wasCalled = true
+            }
+          #else
+            let set: (inout State) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
+          #endif
+          return .binding(.init(keyPath: keyPath, set: set, value: value))
         }
       )
     }
@@ -322,27 +333,12 @@ public struct BindingAction<Root>: Equatable {
     ///   path.
     public static func set<Value: Equatable>(
       _ keyPath: WritableKeyPath<Root, BindableState<Value>>,
-      _ value: Value,
-      bindableActionType: Any.Type? = nil,
-      file: StaticString = #fileID,
-      line: UInt = #line
+      _ value: Value
     ) -> Self {
-      #if DEBUG
-        let debugger = Debugger(
-          value: value, bindableActionType: bindableActionType, file: file, line: line
-        )
-        let set: (inout Root) -> Void = {
-          $0[keyPath: keyPath].wrappedValue = value
-          debugger.wasCalled = true
-        }
-      #else
-        let set: (inout Root) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
-      #endif
       return .init(
         keyPath: keyPath,
-        set: set,
-        value: value,
-        valueIsEqualTo: { $0 as? Value == value }
+        set: { $0[keyPath: keyPath].wrappedValue = value },
+        value: value
       )
     }
 
@@ -365,48 +361,18 @@ public struct BindingAction<Root>: Equatable {
       keyPath == bindingAction.keyPath
     }
 
-    #if DEBUG
-      private class Debugger<Value> {
-        let value: Value
-        let bindableActionType: Any.Type?
-        let file: StaticString
-        let line: UInt
-        var wasCalled = false
-
-        init(value: Value, bindableActionType: Any.Type?, file: StaticString, line: UInt) {
-          self.value = value
-          self.bindableActionType = bindableActionType
-          self.file = file
-          self.line = line
-        }
-
-        deinit {
-          guard self.wasCalled else {
-            let action = """
-              \(bindableActionType.map { "\($0).binding(" } ?? "\(BindingAction.self)")\
-              .set(_, \(self.value))\
-              \(bindableActionType != nil ? ")" : "")
-              """
-            runtimeWarning(
-              """
-              A binding action created at "%@:%d" was not handled:
-
-                Action:
-                  %@
-
-              To fix this, invoke the "binding()" method on your feature's reducer.
-              """,
-              [
-                "\(self.file)",
-                self.line,
-                action,
-              ]
-            )
-            return
-          }
-        }
-      }
-    #endif
+    init<Value: Equatable>(
+      keyPath: WritableKeyPath<Root, BindableState<Value>>,
+      set: @escaping (inout Root) -> Void,
+      value: Value
+    ) {
+      self.init(
+        keyPath: keyPath,
+        set: set,
+        value: value,
+        valueIsEqualTo: { $0 as? Value == value }
+      )
+    }
   }
 #endif
 
@@ -589,6 +555,44 @@ extension BindingAction: CustomDumpReflectable {
 
         bindingAction.set(&state)
         return self.run(&state, action, environment)
+      }
+    }
+  }
+#endif
+
+#if DEBUG
+  private class BindableActionViewStoreDebugger<Value> {
+    let value: Value
+    let bindableActionType: Any.Type
+    let file: StaticString
+    let line: UInt
+    var wasCalled = false
+
+    init(value: Value, bindableActionType: Any.Type, file: StaticString, line: UInt) {
+      self.value = value
+      self.bindableActionType = bindableActionType
+      self.file = file
+      self.line = line
+    }
+
+    deinit {
+      guard self.wasCalled else {
+        runtimeWarning(
+          """
+          A binding action created at "%@:%d" was not handled:
+
+            Action:
+              %@
+
+          To fix this, invoke the "binding()" method on your feature's reducer.
+          """,
+          [
+            "\(self.file)",
+            self.line,
+            "\(self.bindableActionType).binding(.set(_, \(self.value)))",
+          ]
+        )
+        return
       }
     }
   }
