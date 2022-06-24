@@ -248,12 +248,12 @@
       file: StaticString = #file,
       line: UInt = #line
     ) async {
-      let start = DispatchQueue.main.now
+      let start = DispatchTime.now().uptimeNanoseconds
       if nanoseconds == 0 {
         await Task.megaYield()
       }
       while !self.inFlightEffects.isEmpty {
-        guard start.distance(to: DispatchQueue.main.now) < .nanoseconds(Int(nanoseconds))
+        guard start.distance(to: DispatchTime.now().uptimeNanoseconds) < nanoseconds
         else {
           let timeoutMessage =
             nanoseconds != nanoseconds
@@ -587,7 +587,8 @@
         guard self.receivedActions.isEmpty
         else { break }
 
-        if (DispatchTime.now().uptimeNanoseconds - start) >= nanoseconds {
+        guard start.distance(to: DispatchTime.now().uptimeNanoseconds) < nanoseconds
+        else {
           let suggestion: String
           if self.inFlightEffects.isEmpty {
             suggestion = """
@@ -619,6 +620,7 @@
             file: file,
             line: line
           )
+          return
         }
       }
 
