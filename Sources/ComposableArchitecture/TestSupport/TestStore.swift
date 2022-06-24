@@ -449,9 +449,10 @@
       file: StaticString,
       line: UInt
     ) throws {
-      guard let modify = modify else { return }
       let current = expected
-      try modify(&expected)
+      if let modify = modify {
+        try modify(&expected)
+      }
 
       if expected != actual {
         let difference =
@@ -465,16 +466,20 @@
           \(String(describing: actual).indent(by: 2))
           """
 
+        let messageHeading =
+          modify != nil
+          ? "A state change does not match expectation"
+          : "State was not expected to change, but a change occurred"
         XCTFail(
           """
-          A state change does not match expectation: …
+          \(messageHeading): …
 
           \(difference)
           """,
           file: file,
           line: line
         )
-      } else if expected == current {
+      } else if expected == current && modify != nil {
         XCTFail(
           """
           Expected state to change, but no change occurred.
