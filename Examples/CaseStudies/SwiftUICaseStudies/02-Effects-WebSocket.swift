@@ -117,7 +117,7 @@ struct WebSocket: ReducerProtocol {
 
     case .webSocket(.didClose):
       state.connectivityState = .disconnected
-      return .none
+      return .cancel(id: WebSocketId.self)
 
     case .webSocket(.didOpen):
       state.connectivityState = .connected
@@ -132,39 +132,39 @@ struct WebSocketView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       VStack(alignment: .leading) {
-//        Text(template: readMe, .body)
-//          .padding(.bottom)
-//
-//        HStack {
-//          TextField(
-//            "Message to send",
-//            text: viewStore.binding(
-//              get: \.messageToSend, send: WebSocket.Action.messageToSendChanged
-//            )
-//          )
-//
-//          Button(
-//            viewStore.connectivityState == .connected
-//              ? "Disconnect"
-//              : viewStore.connectivityState == .disconnected
-//                ? "Connect"
-//                : "Connecting..."
-//          ) {
-//            viewStore.send(.connectButtonTapped)
-//          }
-//        }
-//
-//        Button("Send message") {
-//          viewStore.send(.sendButtonTapped)
-//        }
-//
-//        Spacer()
-//
-//        Text("Status: \(viewStore.connectivityState.rawValue)")
-//          .foregroundColor(.secondary)
-//        Text("Received messages:")
-//          .foregroundColor(.secondary)
-//        Text(viewStore.receivedMessages.joined(separator: "\n"))
+        Text(template: readMe, .body)
+          .padding(.bottom)
+
+        HStack {
+          TextField(
+            "Message to send",
+            text: viewStore.binding(
+              get: \.messageToSend, send: WebSocket.Action.messageToSendChanged
+            )
+          )
+
+          Button(
+            viewStore.connectivityState == .connected
+              ? "Disconnect"
+              : viewStore.connectivityState == .disconnected
+                ? "Connect"
+                : "Connecting..."
+          ) {
+            viewStore.send(.connectButtonTapped)
+          }
+        }
+
+        Button("Send message") {
+          viewStore.send(.sendButtonTapped)
+        }
+
+        Spacer()
+
+        Text("Status: \(viewStore.connectivityState.rawValue)")
+          .foregroundColor(.secondary)
+        Text("Received messages:")
+          .foregroundColor(.secondary)
+        Text(viewStore.receivedMessages.joined(separator: "\n"))
       }
       .padding()
       .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
