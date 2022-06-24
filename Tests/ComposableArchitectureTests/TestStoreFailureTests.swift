@@ -94,7 +94,9 @@ class TestStoreFailureTests: XCTestCase {
       reducer: Reducer<State, Action, Void> { state, action, _ in
         switch action {
         case .first: return .init(value: .second)
-        case .second: state.count += 1; return .none
+        case .second:
+          state.count += 1
+          return .none
         }
       },
       environment: ()

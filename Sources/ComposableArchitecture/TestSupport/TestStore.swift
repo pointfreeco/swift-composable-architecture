@@ -418,9 +418,10 @@
           \(String(describing: actual).indent(by: 2))
           """
 
-        let messageHeading = modify != nil ?
-          "A state change does not match expectation" :
-          "State was not expected to change, but a change occurred"
+        let messageHeading =
+          modify != nil
+          ? "A state change does not match expectation"
+          : "State was not expected to change, but a change occurred"
         XCTFail(
           """
           \(messageHeading): …
