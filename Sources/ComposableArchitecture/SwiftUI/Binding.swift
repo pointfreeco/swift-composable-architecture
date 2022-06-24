@@ -389,13 +389,12 @@ public struct BindingAction<Root>: Equatable {
               """
             runtimeWarning(
               """
-              A binding action created at "%@:%d" never invoked its setter:
+              A binding action created at "%@:%d" was not properly handled:
 
                 Action:
                   %@
 
-              Enhance reducers that receive binding actions with the "Reducer.binding()" modifier \
-              to ensure the setter will mutate associated state.
+              To fix this invoke the "binding()" method on your feature's reducer.
               """,
               [
                 "\(self.file)",
