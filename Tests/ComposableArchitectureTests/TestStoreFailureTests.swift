@@ -62,6 +62,59 @@ class TestStoreFailureTests: XCTestCase {
     }
   }
 
+  func testUnexpectedStateChangeOnSendFailure() {
+    struct State: Equatable { var count = 0 }
+    let store = TestStore(
+      initialState: .init(),
+      reducer: Reducer<State, Void, Void> { state, action, _ in state.count += 1
+        return .none
+      },
+      environment: ()
+    )
+
+    XCTExpectFailure {
+      store.send(())
+    } issueMatcher: {
+      $0.compactDescription == """
+        State was not expected to change, but a change occurred: …
+
+            − TestStoreFailureTests.State(count: 0)
+            + TestStoreFailureTests.State(count: 1)
+
+        (Expected: −, Actual: +)
+        """
+    }
+  }
+
+  func testUnexpectedStateChangeOnReceiveFailure() {
+    struct State: Equatable { var count = 0 }
+    enum Action { case first, second }
+    let store = TestStore(
+      initialState: .init(),
+      reducer: Reducer<State, Action, Void> { state, action, _ in
+        switch action {
+        case .first: return .init(value: .second)
+        case .second: state.count += 1; return .none
+        }
+      },
+      environment: ()
+    )
+
+    store.send(.first)
+    XCTExpectFailure {
+      store.receive(.second)
+    } issueMatcher: {
+      $0.compactDescription == """
+        State was not expected to change, but a change occurred: …
+
+            − TestStoreFailureTests.State(count: 0)
+            + TestStoreFailureTests.State(count: 1)
+
+        (Expected: −, Actual: +)
+        """
+    }
+  }
+
   func testReceivedActionAfterDeinit() {
     XCTExpectFailure {
       do {
