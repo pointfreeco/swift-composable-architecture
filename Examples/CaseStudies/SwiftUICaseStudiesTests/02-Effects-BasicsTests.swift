@@ -41,14 +41,9 @@ class EffectsBasicsTests: XCTestCase {
     store.send(.numberFactButtonTapped) {
       $0.isNumberFactRequestInFlight = true
     }
-      await Task.yield()
-      await Task.yield()
-      await Task.yield()
-      await Task.yield()
-      await Task.yield()
-    store.receive(.numberFactResponse(.success("1 is a good number Brent"))) {
+    await store.receive(.numberFactResponse(.success("2 is a good number Brent"))) {
        $0.isNumberFactRequestInFlight = false
-      $0.numberFact = "1 is a good number Brent"
+      $0.numberFact = "2 is a good number Brent"
     }
   }
 
@@ -72,18 +67,5 @@ class EffectsBasicsTests: XCTestCase {
     store.receive(.numberFactResponse(.failure(.init()))) {
       $0.isNumberFactRequestInFlight = false
     }
-  }
-
-  @MainActor
-  func testBasics() async throws {
-    let task = Task {
-      for await _ in NotificationCenter.default.notifications(named: UIApplication.userDidTakeScreenshotNotification) {
-      }
-    }
-
-    await Task.yield()
-
-    task.cancel()
-    await task.value
   }
 }

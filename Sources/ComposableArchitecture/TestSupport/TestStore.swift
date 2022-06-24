@@ -441,6 +441,23 @@
   }
 
   extension TestStore where LocalState: Equatable, Action: Equatable {
+
+    public func receive(
+      _ expectedAction: Action,
+      _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
+      file: StaticString = #file,
+      line: UInt = #line
+    ) async {
+      while true {
+        await Task.yield()
+        guard self.receivedActions.isEmpty
+        else { break }
+      }
+
+      { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
+    }
+
+
     /// Asserts an action was received from an effect and asserts when state changes.
     ///
     /// - Parameters:
