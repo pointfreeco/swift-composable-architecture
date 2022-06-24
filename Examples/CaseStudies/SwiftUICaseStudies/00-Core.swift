@@ -156,7 +156,7 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.effectsBasics,
       action: /RootAction.effectsBasics,
-      environment: { .init(fact: $0.fact) }
+      environment: { .init(fact: $0.fact, mainQueue: $0.mainQueue) }
     ),
   effectsCancellationReducer
     .pullback(

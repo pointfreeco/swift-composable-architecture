@@ -74,6 +74,7 @@ struct EffectsBasicsState: Equatable {
 
 enum EffectsBasicsAction: Equatable {
   case decrementButtonTapped
+  case delayedDecrementButtonTapped
   case incrementButtonTapped
   case numberFactButtonTapped
   case numberFactResponse(TaskResult<String>)
@@ -81,6 +82,7 @@ enum EffectsBasicsAction: Equatable {
 
 struct EffectsBasicsEnvironment {
   var fact: FactClient
+  var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
 // MARK: - Feature business logic
@@ -90,16 +92,32 @@ let effectsBasicsReducer = Reducer<
   EffectsBasicsAction,
   EffectsBasicsEnvironment
 > { state, action, environment in
+  struct DelayID {}
+
   switch action {
   case .decrementButtonTapped:
     state.count -= 1
     state.numberFact = nil
+    return state.count >= 0
+    ? .none
+    : .task {
+      try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
+      return .delayedDecrementButtonTapped
+    }
+    .cancellable(id: DelayID.self)
+
+  case .delayedDecrementButtonTapped:
+    if state.count < 0 {
+      state.count += 1
+    }
     return .none
     
   case .incrementButtonTapped:
     state.count += 1
     state.numberFact = nil
-    return .none
+    return state.count >= 0
+    ? .cancel(id: DelayID.self)
+    : .none
 
   case .numberFactButtonTapped:
     state.isNumberFactRequestInFlight = true
@@ -107,22 +125,12 @@ let effectsBasicsReducer = Reducer<
     // Return an effect that fetches a number fact from the API and returns the
     // value back to the reducer's `numberFactResponse` action.
     return .task { [count = state.count] in
-        await .numberFactResponse(TaskResult { try await environment.fact.fetchAsync(count) })
-//      do {
-//        return .numberFactResponse(.success(try await environment.fact.fetchAsync(count)))
-//      } catch {
-//        return .numberFactResponse(.failure(error))
-//      }
+      await .numberFactResponse(TaskResult { try await environment.fact.fetchAsync(count) })
     }
 
   case let .numberFactResponse(.success(response)):
     state.isNumberFactRequestInFlight = false
     state.numberFact = response
-    return .none
-
-  case let .numberFactResponse(.failure(error as URLError)):
-    // TODO: handle URL error
-    state.isNumberFactRequestInFlight = false
     return .none
 
   case .numberFactResponse(.failure):
@@ -191,7 +199,8 @@ struct EffectsBasicsView_Previews: PreviewProvider {
           initialState: EffectsBasicsState(),
           reducer: effectsBasicsReducer,
           environment: EffectsBasicsEnvironment(
-            fact: .live
+            fact: .live,
+            mainQueue: .main
           )
         )
       )

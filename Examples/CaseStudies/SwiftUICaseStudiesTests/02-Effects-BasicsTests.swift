@@ -12,7 +12,8 @@ class EffectsBasicsTests: XCTestCase {
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
       environment: EffectsBasicsEnvironment(
-        fact: .failing
+        fact: .failing,
+        mainQueue: .failing
       )
     )
 
@@ -24,12 +25,51 @@ class EffectsBasicsTests: XCTestCase {
     }
   }
 
+  func testDecrement() async {
+    let store = TestStore(
+      initialState: EffectsBasicsState(),
+      reducer: effectsBasicsReducer,
+      environment: EffectsBasicsEnvironment(
+        fact: .failing,
+        mainQueue: .failing
+      )
+    )
+
+    store.send(.decrementButtonTapped) {
+      $0.count = -1
+    }
+    await store.receive(.delayedDecrementButtonTapped) {
+      $0.count = 0
+    }
+  }
+
+
+  func testDecrementCancellation() async {
+    let store = TestStore(
+      initialState: EffectsBasicsState(),
+      reducer: effectsBasicsReducer,
+      environment: EffectsBasicsEnvironment(
+        fact: .failing,
+        mainQueue: .failing
+      )
+    )
+
+    store.send(.decrementButtonTapped) {
+      $0.count = -1
+    }
+    store.send(.incrementButtonTapped) {
+      $0.count = 0
+    }
+  }
+
+
   func testNumberFact_HappyPath() async {
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
       environment: EffectsBasicsEnvironment(
-        fact: .failing
+        fact: .failing,
+        mainQueue: .failing
       )
     )
 
@@ -52,7 +92,8 @@ class EffectsBasicsTests: XCTestCase {
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
       environment: EffectsBasicsEnvironment(
-        fact: .failing
+        fact: .failing,
+        mainQueue: .failing
       )
     ) 
 
