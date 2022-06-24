@@ -239,6 +239,7 @@
       )
     }
 
+    @MainActor
     public func finish(
       timeout nanoseconds: UInt64 = 0,
       file: StaticString = #file,
@@ -515,7 +516,7 @@
       if expectedAction != receivedAction {
         let difference =
           diff(expectedAction, receivedAction, format: .proportional)
-          .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
+            .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
           ?? """
           Expected:
           \(String(describing: expectedAction).indent(by: 2))
@@ -551,35 +552,25 @@
       }
     }
 
+    @MainActor
     public func receive(
       _ expectedAction: Action,
       timeout nanoseconds: UInt64 = 0,
+      _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString = #file,
-      line: UInt = #line,
-      _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil
+      line: UInt = #line
     ) async {
       if nanoseconds == 0 {
         await Task.megaYield()
       }
-      await withTaskGroup(of: Void.self) { group in
-        _ = group.addTaskUnlessCancelled { @MainActor in
-          while !Task.isCancelled {
-            guard self.receivedActions.isEmpty
-            else { break }
-            await Task.yield()
-          }
-          guard !Task.isCancelled
-          else { return }
+      let start = DispatchTime.now().uptimeNanoseconds
+      while !Task.isCancelled {
+        await Task.detached(priority: .low) { await Task.yield() }.value
 
-          { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
-        }
+        guard self.receivedActions.isEmpty
+        else { break }
 
-        _ = group.addTaskUnlessCancelled { @MainActor in
-          await Task(priority: .low) { try? await Task.sleep(nanoseconds: nanoseconds) }
-            .cancellableValue
-          guard !Task.isCancelled
-          else { return }
-
+        if (DispatchTime.now().uptimeNanoseconds - start) >= nanoseconds {
           let suggestion: String
           if self.inFlightEffects.isEmpty {
             suggestion = """
@@ -588,7 +579,7 @@
               """
           } else {
             let timeoutMessage =
-              nanoseconds != nanoseconds
+              nanoseconds != nanoseconds // TODO: ???
               ? #"try increasing the duration of this assertion's "timeout"#
               : #"configure this assertion with an explicit "timeout"#
             suggestion = """
@@ -612,10 +603,12 @@
             line: line
           )
         }
-
-        await group.next()
-        group.cancelAll()
       }
+
+      guard !Task.isCancelled
+      else { return }
+
+      { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
     }
   }
 

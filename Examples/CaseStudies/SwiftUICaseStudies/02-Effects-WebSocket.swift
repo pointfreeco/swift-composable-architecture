@@ -120,7 +120,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
 
   case .webSocket(.didClose):
     state.connectivityState = .disconnected
-    return .none
+    return .cancel(id: WebSocketId.self)
 
   case .webSocket(.didOpen):
     state.connectivityState = .connected
