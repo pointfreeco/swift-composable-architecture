@@ -561,7 +561,7 @@ extension BindingAction: CustomDumpReflectable {
 #endif
 
 #if DEBUG
-  private class BindableActionViewStoreDebugger<Value> {
+  private final class BindableActionViewStoreDebugger<Value> {
     let value: Value
     let bindableActionType: Any.Type
     let file: StaticString
