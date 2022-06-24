@@ -442,8 +442,11 @@ private struct HashableWrapper<Value>: Hashable {
       _ action: Action,
       while predicate: @escaping (State) -> Bool
     ) async {
-      self.send(action)
-      await self.yield(while: predicate)
+      let task = self.send(action)
+      await withTaskCancellationHandler(
+        handler: { task.rawValue.cancel() },
+        operation: { await self.yield(while: predicate) }
+      )
     }
 
     /// Sends an action into the store and then suspends while a piece of state is `true`.
@@ -461,8 +464,11 @@ private struct HashableWrapper<Value>: Hashable {
       animation: Animation?,
       while predicate: @escaping (State) -> Bool
     ) async {
-      _ = withAnimation(animation) { self.send(action) }
-      await self.yield(while: predicate)
+      let task = withAnimation(animation) { self.send(action) }
+      await withTaskCancellationHandler(
+        handler: { task.rawValue.cancel() },
+        operation: { await self.yield(while: predicate) }
+      )
     }
 
     /// Suspends the current task while a predicate on state is `true`.
