@@ -54,7 +54,7 @@ class EffectsBasicsTests: XCTestCase {
       environment: EffectsBasicsEnvironment(
         fact: .failing
       )
-    )
+    ) 
 
     struct SomeOtherError: Error, Equatable {}
 

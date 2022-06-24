@@ -17,6 +17,15 @@ func equals(_ lhs: Any, _ rhs: Any) -> Bool {
 public enum TaskResult<Success: Sendable>: Sendable {
   case success(Success)
   case failure(Error)
+
+
+  init(catching body: @Sendable () async throws -> Success) async {
+    do {
+      self = .success(try await body())
+    } catch {
+      self = .failure(error)
+    }
+  }
 }
 extension TaskResult: Equatable where Success: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
@@ -98,11 +107,12 @@ let effectsBasicsReducer = Reducer<
     // Return an effect that fetches a number fact from the API and returns the
     // value back to the reducer's `numberFactResponse` action.
     return .task { [count = state.count] in
-      do {
-        return .numberFactResponse(.success(try await environment.fact.fetchAsync(count)))
-      } catch {
-        return .numberFactResponse(.failure(error))
-      }
+        await .numberFactResponse(TaskResult { try await environment.fact.fetchAsync(count) })
+//      do {
+//        return .numberFactResponse(.success(try await environment.fact.fetchAsync(count)))
+//      } catch {
+//        return .numberFactResponse(.failure(error))
+//      }
     }
 
   case let .numberFactResponse(.success(response)):
