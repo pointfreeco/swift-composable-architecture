@@ -389,12 +389,12 @@ public struct BindingAction<Root>: Equatable {
               """
             runtimeWarning(
               """
-              A binding action created at "%@:%d" was not properly handled:
+              A binding action created at "%@:%d" was not handled:
 
                 Action:
                   %@
 
-              To fix this invoke the "binding()" method on your feature's reducer.
+              To fix this, invoke the "binding()" method on your feature's reducer.
               """,
               [
                 "\(self.file)",
