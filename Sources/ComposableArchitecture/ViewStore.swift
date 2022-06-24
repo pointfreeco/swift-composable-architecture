@@ -513,22 +513,28 @@ private struct HashableWrapper<Value>: Hashable {
 /// The type returned from ``ViewStore/send(_:)`` that represents the lifecycle of the effect
 /// started from sending an action.
 ///
-/// You can use this value to tie the effect's lifecycle and cancellation to an asynchronous
+/// You can use this value to tie the effect's lifecycle _and_ cancellation to an asynchronous
 /// context, such as the `task` view modifier.
 ///
 /// ```swift
 /// .task { await viewStore.send(.task).finish() }
 /// ```
 ///
+/// > Note: Unlike `Task`, ``ViewStoreTask`` automatically sets up a cancellation handler between
+/// > the current async context and the task.
+///
 /// See ``TestStoreTask`` for the analog provided to ``TestStore``.
 public struct ViewStoreTask {
+  /// The underlying task.
   public let rawValue: Task<Void, Never>
 
+  /// Cancels the underlying task and waits for it to finish.
   public func cancel() async {
     self.rawValue.cancel()
-    await self.rawValue.cancellableValue
+    await self.finish()
   }
 
+  /// Waits for the task to finish.
   public func finish() async {
     await self.rawValue.cancellableValue
   }

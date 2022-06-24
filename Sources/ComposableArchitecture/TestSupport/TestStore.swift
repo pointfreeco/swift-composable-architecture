@@ -239,6 +239,9 @@
       )
     }
 
+    /// Asserts all in-flight effects have finished.
+    ///
+    /// - Parameter nanoseconds: The amount of time to wait before asserting.
     @MainActor
     public func finish(
       timeout nanoseconds: UInt64 = 0,
@@ -254,8 +257,8 @@
         else {
           let timeoutMessage =
             nanoseconds != nanoseconds
-            ? #"try increasing the duration of this assertion's "timeout"#
-            : #"configure this assertion with an explicit "timeout"#
+            ? #"try increasing the duration of this assertion's "timeout""#
+            : #"configure this assertion with an explicit "timeout""#
           let suggestion = """
             There are effects in-flight. If the effect that delivers this action uses a \
             scheduler (via "receive(on:)", "delay", "debounce", etc.), make sure that you wait \
@@ -557,6 +560,15 @@
       }
     }
 
+    /// Asserts an action was received from an effect and asserts when state changes.
+    ///
+    /// - Parameters:
+    ///   - expectedAction: An action expected from an effect.
+    ///   - nanoseconds: The amount of time to wait for the expected action.
+    ///   - updateExpectingResult: A closure that asserts state changed by sending the action to the
+    ///     store. The mutable state sent to this closure must be modified to match the state of the
+    ///     store after processing the given action. Do not provide a closure if no change is
+    ///     expected.
     @MainActor
     public func receive(
       _ expectedAction: Action,
@@ -585,8 +597,8 @@
           } else {
             let timeoutMessage =
               nanoseconds != 0
-              ? #"try increasing the duration of this assertion's "timeout"#
-              : #"configure this assertion with an explicit "timeout"#
+              ? #"try increasing the duration of this assertion's "timeout""#
+              : #"configure this assertion with an explicit "timeout""#
             suggestion = """
               There are effects in-flight. If the effect that delivers this action uses a \
               scheduler (via "receive(on:)", "delay", "debounce", etc.), make sure that you wait \
@@ -661,18 +673,45 @@
   /// The type returned from ``TestStore/send(_:_:file:line:)`` that represents the lifecycle of the
   /// effect started from sending an action.
   ///
-  /// You can use this value in tests to cancel the effect started from sending an action, or
-  /// to await until the effect finishes.
+  /// For example you can use this value in tests to cancel the effect started from sending an
+  /// action:
+  ///
+  /// ```swift
+  /// // Simulate the "task" view modifier invoking some async work
+  /// let task = store.send(.task)
+  ///
+  /// // Simulate the view cancelling this work on dismissal
+  /// await task.cancel()
+  /// ```
+  ///
+  /// You can also explicitly wait for an effect to finish:
+  ///
+  /// ```swift
+  /// store.send(.timerToggleButtonTapped)
+  ///
+  /// await mainQueue.advance(by: .seconds(1))
+  /// await store.receive(.timerTick) { $0.elapsed = 1 }
+  ///
+  /// // Wait for cleanup effects to finish before completing the test
+  /// await store.send(.timerToggleButtonTapped).finish()
+  /// ```
+  ///
+  /// See ``TestStore/finish(timeout:file:line:)`` for the ability to await all in-flight effects.
   ///
   /// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.
   public struct TestStoreTask {
+    /// The underlying task.
     public let rawValue: Task<Void, Never>
 
+    /// Cancels the underlying task and waits for it to finish.
     public func cancel() async {
       self.rawValue.cancel()
       await self.rawValue.cancellableValue
     }
 
+    /// Asserts the underlying task finished.
+    ///
+    /// - Parameter nanoseconds: The amount of time to wait before asserting.
     public func finish(
       timeout nanoseconds: UInt64 = 0,
       file: StaticString = #file,
