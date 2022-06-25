@@ -53,6 +53,7 @@ extension Store {
   }
 }
 
+#if DEBUG
 extension TestStore {
   /// Initializes a test store from an initial state, a reducer, and an initial environment.
   ///
@@ -89,3 +90,4 @@ extension TestStore {
     )
   }
 }
+#endif
