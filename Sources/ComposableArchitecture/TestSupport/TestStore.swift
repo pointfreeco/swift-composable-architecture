@@ -448,10 +448,22 @@
       file: StaticString = #file,
       line: UInt = #line
     ) async {
+      let start = DispatchTime.now().uptimeNanoseconds
       while true {
         await Task.yield()
         guard self.receivedActions.isEmpty
         else { break }
+        guard (DispatchTime.now().uptimeNanoseconds - start) < NSEC_PER_SEC
+        else {
+          XCTFail(
+            """
+            Expected to receive an action, but received none.
+            """,
+            file: file,
+            line: line
+          )
+          break
+        }
       }
 
       { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()

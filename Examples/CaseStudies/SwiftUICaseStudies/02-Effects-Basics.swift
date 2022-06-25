@@ -100,11 +100,15 @@ let effectsBasicsReducer = Reducer<
     state.numberFact = nil
     return state.count >= 0
     ? .none
-    : .task {
-      try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
-      return .delayedDecrementButtonTapped
-    }
-    .cancellable(id: DelayID.self)
+    : Effect(value: .delayedDecrementButtonTapped)
+      .delay(for: 1, scheduler: environment.mainQueue)
+      .eraseToEffect()
+
+//      .task {
+//      try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
+//      return .delayedDecrementButtonTapped
+//    }
+//    .cancellable(id: DelayID.self)
 
   case .delayedDecrementButtonTapped:
     if state.count < 0 {

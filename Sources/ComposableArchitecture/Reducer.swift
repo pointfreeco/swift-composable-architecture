@@ -53,6 +53,10 @@ public struct Reducer<State, Action, Environment> {
     self.reducer = reducer
   }
 
+  func foo(work: @escaping () -> any Publisher<Action, Never>) -> any Publisher<Action, Never> {
+    Empty()
+  }
+
   /// A reducer that performs no state mutations and returns no effects.
   public static var empty: Reducer {
     Self { _, _, _ in .none }
