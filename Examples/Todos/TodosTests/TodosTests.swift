@@ -48,7 +48,7 @@ class TodosTests: XCTestCase {
     )
 
     store.send(
-      .todo(id: state.todos[0].id, action: .textFieldChanged("Learn Composable Architecture"))
+      .todo(id: state.todos[0].id, action: .binding(.set(\.$description, "Learn Composable Architecture")))
     ) {
       $0.todos[id: state.todos[0].id]?.description = "Learn Composable Architecture"
     }
@@ -222,7 +222,7 @@ class TodosTests: XCTestCase {
       )
     )
 
-    store.send(.editModeChanged(.active)) {
+    store.send(.binding(.set(\.$editMode, .active))) {
       $0.editMode = .active
     }
     store.send(.move([0], 2)) {
@@ -270,10 +270,10 @@ class TodosTests: XCTestCase {
       )
     )
 
-    store.send(.editModeChanged(.active)) {
+    store.send(.binding(.set(\.$editMode, .active))) {
       $0.editMode = .active
     }
-    store.send(.filterPicked(.completed)) {
+    store.send(.binding(.set(\.$filter, .completed))) {
       $0.filter = .completed
     }
     store.send(.move([0], 1)) {
@@ -312,10 +312,10 @@ class TodosTests: XCTestCase {
       )
     )
 
-    store.send(.filterPicked(.completed)) {
+    store.send(.binding(.set(\.$filter, .completed))) {
       $0.filter = .completed
     }
-    store.send(.todo(id: state.todos[1].id, action: .textFieldChanged("Did this already"))) {
+    store.send(.todo(id: state.todos[1].id, action: .binding(.set(\.$description, "Did this already")))) {
       $0.todos[id: state.todos[1].id]?.description = "Did this already"
     }
   }

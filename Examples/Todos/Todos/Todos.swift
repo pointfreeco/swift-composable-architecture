@@ -8,8 +8,8 @@ enum Filter: LocalizedStringKey, CaseIterable, Hashable {
 }
 
 struct AppState: Equatable {
-  var editMode: EditMode = .inactive
-  var filter: Filter = .all
+  @BindableState var editMode: EditMode = .inactive
+  @BindableState var filter: Filter = .all
   var todos: IdentifiedArrayOf<Todo> = []
 
   var filteredTodos: IdentifiedArrayOf<Todo> {
@@ -21,12 +21,11 @@ struct AppState: Equatable {
   }
 }
 
-enum AppAction: Equatable {
+enum AppAction: BindableAction, Equatable {
   case addTodoButtonTapped
+  case binding(BindingAction<AppState>)
   case clearCompletedButtonTapped
   case delete(IndexSet)
-  case editModeChanged(EditMode)
-  case filterPicked(Filter)
   case move(IndexSet, Int)
   case sortCompletedTodos
   case todo(id: Todo.ID, action: TodoAction)
@@ -49,20 +48,15 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
       state.todos.insert(Todo(id: environment.uuid()), at: 0)
       return .none
 
+    case .binding:
+      return .none
+
     case .clearCompletedButtonTapped:
       state.todos.removeAll(where: \.isComplete)
       return .none
 
     case let .delete(indexSet):
       state.todos.remove(atOffsets: indexSet)
-      return .none
-
-    case let .editModeChanged(editMode):
-      state.editMode = editMode
-      return .none
-
-    case let .filterPicked(filter):
-      state.filter = filter
       return .none
 
     case var .move(source, destination):
@@ -97,27 +91,31 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     }
   }
 )
+.binding()
 .debug()
 
 struct AppView: View {
   let store: Store<AppState, AppAction>
-  @ObservedObject var viewStore: ViewStore<ViewState, AppAction>
+  @ObservedObject var viewStore: ViewStore<ViewState, ViewAction>
 
   init(store: Store<AppState, AppAction>) {
     self.store = store
-    self.viewStore = ViewStore(self.store.scope(state: ViewState.init(state:)))
+    self.viewStore = ViewStore(self.store.scope(state: \.view, action: AppAction.view))
   }
 
   struct ViewState: Equatable {
-    let editMode: EditMode
-    let filter: Filter
-    let isClearCompletedButtonDisabled: Bool
+    @BindableState var editMode: EditMode
+    @BindableState var filter: Filter
+    var todos: IdentifiedArrayOf<Todo>
+    var isClearCompletedButtonDisabled: Bool { !self.todos.contains(where: \.isComplete) }
+  }
 
-    init(state: AppState) {
-      self.editMode = state.editMode
-      self.filter = state.filter
-      self.isClearCompletedButtonDisabled = !state.todos.contains(where: \.isComplete)
-    }
+  enum ViewAction: BindableAction {
+    case addTodoButtonTapped
+    case binding(BindingAction<ViewState>)
+    case clearCompletedButtonTapped
+    case delete(IndexSet)
+    case move(IndexSet, Int)
   }
 
   var body: some View {
@@ -125,7 +123,7 @@ struct AppView: View {
       VStack(alignment: .leading) {
         Picker(
           "Filter",
-          selection: self.viewStore.binding(get: \.filter, send: AppAction.filterPicked).animation()
+          selection: self.viewStore.binding(\.$filter).animation()
         ) {
           ForEach(Filter.allCases, id: \.self) { filter in
             Text(filter.rawValue).tag(filter)
@@ -157,10 +155,34 @@ struct AppView: View {
       )
       .environment(
         \.editMode,
-        self.viewStore.binding(get: \.editMode, send: AppAction.editModeChanged)
+        self.viewStore.binding(\.$editMode)
       )
     }
     .navigationViewStyle(.stack)
+  }
+}
+
+private extension AppState {
+
+  var view: AppView.ViewState {
+    get { .init(editMode: self.editMode, filter: self.filter, todos: self.todos) }
+    set {
+      self.editMode = newValue.editMode
+      self.filter = newValue.filter
+    }
+  }
+}
+
+private extension AppAction {
+
+  static func view(_ viewAction: AppView.ViewAction) -> Self {
+    switch viewAction {
+    case .addTodoButtonTapped: return .addTodoButtonTapped
+    case let .binding(action): return .binding(action.pullback(\.view))
+    case .clearCompletedButtonTapped: return .clearCompletedButtonTapped
+    case let .delete(indexSet): return .delete(indexSet)
+    case let .move(indexSet, index): return .move(indexSet, index)
+    }
   }
 }
 
