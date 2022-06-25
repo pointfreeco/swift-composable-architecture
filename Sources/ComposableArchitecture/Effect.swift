@@ -14,6 +14,7 @@ import Foundation
 /// constructing some common types of effects.
 public struct Effect<Output, Failure: Error>: Publisher {
   public let upstream: AnyPublisher<Output, Failure>
+  public let base: Any
 
   /// Initializes an effect that wraps a publisher. Each emission of the wrapped publisher will be
   /// emitted by the effect.
@@ -39,6 +40,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   /// - Parameter publisher: A publisher.
   public init<P: Publisher>(_ publisher: P) where P.Output == Output, P.Failure == Failure {
     self.upstream = publisher.eraseToAnyPublisher()
+    self.base = publisher
   }
 
   public func receive<S: Combine.Subscriber>(

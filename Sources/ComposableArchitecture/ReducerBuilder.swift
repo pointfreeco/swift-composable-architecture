@@ -1,3 +1,5 @@
+import Combine
+
 @resultBuilder
 public enum ReducerBuilder<State, Action> {
   public static func buildArray<R: ReducerProtocol>(_ reducers: [R]) -> SequenceMany<R>
@@ -98,9 +100,19 @@ public enum ReducerBuilder<State, Action> {
 
     @inlinable
     public func reduce(into state: inout R0.State, action: R0.Action) -> Effect<R0.Action, Never> {
-      .merge(
-        self.r0.reduce(into: &state, action: action),
-        self.r1.reduce(into: &state, action: action)
+      let e0 = self.r0.reduce(into: &state, action: action)
+      let e1 = self.r1.reduce(into: &state, action: action)
+
+      if e1.base is Empty<Action, Never> {
+        return e0
+      }
+      if e0.base is Empty<Action, Never> {
+        return e1
+      }
+
+      return .merge(
+        e0,
+        e1
       )
     }
   }
@@ -119,7 +131,11 @@ public enum ReducerBuilder<State, Action> {
       into state: inout Element.State, action: Element.Action
     ) -> Effect<Element.Action, Never> {
       .merge(
-        reducers.map { $0.reduce(into: &state, action: action) }
+        reducers
+          .compactMap {
+            let e = $0.reduce(into: &state, action: action)
+            return e.base is Empty<Action, Never> ? nil : e
+          }
       )
     }
   }
