@@ -41,7 +41,6 @@ private let rootReducer = Reducer<RootState, RootAction, Void>.combine(
     switch action {
     case .doSomething:
       state.int += 1
-      state.string += "\(state.int),"
       state.bool.toggle()
     default:
       return .none
@@ -74,7 +73,6 @@ private let screenAReducer = Reducer<ScreenAState, ScreenAAction, Void>.combine(
     switch action {
     case .doSomething:
       state.int += 1
-      state.string += "\(state.int),"
       state.bool.toggle()
     default:
       return .none
@@ -108,7 +106,6 @@ private let screenBReducer = Reducer<ScreenBState, ScreenBAction, Void>.combine(
     switch action {
     case .doSomething:
       state.int += 1
-      state.string += "\(state.int),"
       state.bool.toggle()
     default:
       return .none
@@ -132,18 +129,10 @@ private let screenCReducer = Reducer<ScreenCState, ScreenCAction, Void> { state,
 private struct Root: ReducerProtocol {
   typealias State = RootState
   typealias Action = RootAction
+  @inlinable init() {}
+  @inlinable
   var body: some ReducerProtocol<State, Action> {
-    Reduce { state, action in
-      switch action {
-      case .doSomething:
-        state.int += 1
-        state.string += "\(state.int),"
-        state.bool.toggle()
-      default:
-        return .none
-      }
-      return .none
-    }
+    Core()
     Scope(state: \.stateA1, action: /Action.stateA1) {
       ScreenA()
     }
@@ -154,23 +143,29 @@ private struct Root: ReducerProtocol {
       ScreenA()
     }
   }
-}
-
-private struct ScreenA: ReducerProtocol {
-  typealias State = ScreenAState
-  typealias Action = ScreenAAction
-  var body: some ReducerProtocol<State, Action> {
-    Reduce { state, action in
+  struct Core: ReducerProtocol {
+    @inlinable init() {}
+    @inlinable
+    func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
       switch action {
       case .doSomething:
         state.int += 1
-        state.string += "\(state.int),"
         state.bool.toggle()
       default:
         return .none
       }
       return .none
     }
+  }
+}
+
+private struct ScreenA: ReducerProtocol {
+  typealias State = ScreenAState
+  typealias Action = ScreenAAction
+  @inlinable init() {}
+  @inlinable
+  var body: some ReducerProtocol<State, Action> {
+    Core()
     Scope(state: \.stateB1, action: /Action.stateB1) {
       ScreenB()
     }
@@ -181,23 +176,29 @@ private struct ScreenA: ReducerProtocol {
       ScreenB()
     }
   }
-}
-
-private struct ScreenB: ReducerProtocol {
-  typealias State = ScreenBState
-  typealias Action = ScreenBAction
-  var body: some ReducerProtocol<State, Action> {
-    Reduce { state, action in
+  struct Core: ReducerProtocol {
+    @inlinable init() {}
+    @inlinable
+    func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
       switch action {
       case .doSomething:
         state.int += 1
-        state.string += "\(state.int),"
         state.bool.toggle()
       default:
         return .none
       }
       return .none
     }
+  }
+}
+
+private struct ScreenB: ReducerProtocol {
+  typealias State = ScreenBState
+  typealias Action = ScreenBAction
+  @inlinable init() {}
+  @inlinable
+  var body: some ReducerProtocol<State, Action> {
+    Core()
     Scope(state: \.stateC1, action: /Action.stateC1) {
       ScreenC()
     }
@@ -208,12 +209,28 @@ private struct ScreenB: ReducerProtocol {
       ScreenC()
     }
   }
+  struct Core: ReducerProtocol {
+    @inlinable init() {}
+    @inlinable
+    func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+      switch action {
+      case .doSomething:
+        state.int += 1
+        state.bool.toggle()
+      default:
+        return .none
+      }
+      return .none
+    }
+  }
 }
 
 private struct ScreenC: ReducerProtocol {
   typealias State = ScreenCState
   typealias Action = ScreenCAction
-  func reduce(into state: inout ScreenCState, action: ScreenCAction) -> Effect<ScreenCAction, Never> {
+  @inlinable init() {}
+  @inlinable
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     .none
   }
 }
