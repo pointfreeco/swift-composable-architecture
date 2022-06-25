@@ -28,7 +28,9 @@ public struct DependencyValues {
       }
       return dependency
     }
-    set { self.storage[ObjectIdentifier(key)] = newValue }
+    set {
+      self.storage[ObjectIdentifier(key)] = newValue
+    }
   }
 }
 

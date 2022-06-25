@@ -1,23 +1,23 @@
-#if swift(>=5.7)
-  // MARK: swift(>=5.7)
-  // MARK: Equatable
-
-  func _isEqual(_ lhs: Any, _ rhs: Any) -> Bool? {
-    (lhs as? any Equatable)?.isEqual(other: rhs)
-  }
-
-  private extension Equatable {
-    func isEqual(other: Any) -> Bool {
-      self == other as? Self
-    }
-  }
-
-  // MARK: LiveDependencyKey
-
-  func _liveValue(_ key: Any.Type) -> Any? {
-    (key as? any LiveDependencyKey.Type)?.liveValue
-  }
-#else
+//#if swift(>=5.7)
+//  // MARK: swift(>=5.7)
+//  // MARK: Equatable
+//
+//  func _isEqual(_ lhs: Any, _ rhs: Any) -> Bool? {
+//    (lhs as? any Equatable)?.isEqual(other: rhs)
+//  }
+//
+//  private extension Equatable {
+//    func isEqual(other: Any) -> Bool {
+//      self == other as? Self
+//    }
+//  }
+//
+//  // MARK: LiveDependencyKey
+//
+//  func _liveValue(_ key: Any.Type) -> Any? {
+//    (key as? any LiveDependencyKey.Type)?.liveValue
+//  }
+//#else
   // MARK: -
   // MARK: swift(<5.7)
 
@@ -62,4 +62,4 @@
   extension Witness: AnyLiveDependencyKey where T: LiveDependencyKey {
     static var liveValue: Any { T.liveValue }
   }
-#endif
+//#endif

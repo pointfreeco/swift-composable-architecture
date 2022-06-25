@@ -39,4 +39,9 @@ benchmark("Scoping (4)") {
   viewStore4.send(true)
 }
 
-Benchmark.main()
+Benchmark.main(
+  [
+    defaultBenchmarkSuite,
+    reducerVsProtocol,
+  ]
+)
