@@ -31,7 +31,7 @@ class EffectsBasicsTests: XCTestCase {
       reducer: effectsBasicsReducer,
       environment: EffectsBasicsEnvironment(
         fact: .failing,
-        mainQueue: .failing
+        mainQueue: .immediate
       )
     )
 
