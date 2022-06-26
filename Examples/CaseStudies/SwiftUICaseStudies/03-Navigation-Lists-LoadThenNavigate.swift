@@ -11,9 +11,9 @@ private let readMe = """
 
 struct LoadThenNavigateListState: Equatable {
   var rows: IdentifiedArrayOf<Row> = [
-    .init(count: 1, id: UUID()),
-    .init(count: 42, id: UUID()),
-    .init(count: 100, id: UUID()),
+    Row(count: 1, id: UUID()),
+    Row(count: 42, id: UUID()),
+    Row(count: 100, id: UUID()),
   ]
   var selection: Identified<Row.ID, CounterState>?
 
@@ -52,14 +52,15 @@ let loadThenNavigateListReducer =
     with: Reducer<
       LoadThenNavigateListState, LoadThenNavigateListAction, LoadThenNavigateListEnvironment
     > { state, action, environment in
-      struct CancelId: Hashable {}
+
+      enum CancelId {}
 
       switch action {
       case .counter:
         return .none
 
       case .onDisappear:
-        return .cancel(id: CancelId())
+        return .cancel(id: CancelId.self)
 
       case let .setNavigation(selection: .some(navigatedId)):
         for row in state.rows {
@@ -69,14 +70,14 @@ let loadThenNavigateListReducer =
         return Effect(value: .setNavigationSelectionDelayCompleted(navigatedId))
           .delay(for: 1, scheduler: environment.mainQueue)
           .eraseToEffect()
-          .cancellable(id: CancelId(), cancelInFlight: true)
+          .cancellable(id: CancelId.self, cancelInFlight: true)
 
       case .setNavigation(selection: .none):
         if let selection = state.selection {
           state.rows[id: selection.id]?.count = selection.count
         }
         state.selection = nil
-        return .cancel(id: CancelId())
+        return .cancel(id: CancelId.self)
 
       case let .setNavigationSelectionDelayCompleted(id):
         state.rows[id: id]?.isActivityIndicatorVisible = false
@@ -102,9 +103,10 @@ struct LoadThenNavigateListView: View {
                 self.store.scope(
                   state: \.selection?.value,
                   action: LoadThenNavigateListAction.counter
-                ),
-                then: CounterView.init(store:)
-              ),
+                )
+              ) {
+                CounterView(store: $0)
+              },
               tag: row.id,
               selection: viewStore.binding(
                 get: \.selection?.id,
@@ -135,9 +137,9 @@ struct LoadThenNavigateListView_Previews: PreviewProvider {
         store: Store(
           initialState: LoadThenNavigateListState(
             rows: [
-              .init(count: 1, id: UUID()),
-              .init(count: 42, id: UUID()),
-              .init(count: 100, id: UUID()),
+              LoadThenNavigateListState.Row(count: 1, id: UUID()),
+              LoadThenNavigateListState.Row(count: 42, id: UUID()),
+              LoadThenNavigateListState.Row(count: 100, id: UUID()),
             ]
           ),
           reducer: loadThenNavigateListReducer,

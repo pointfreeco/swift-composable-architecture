@@ -49,7 +49,6 @@
 		DC25DC612450F2B000082E81 /* LoadThenNavigate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC25DC602450F2B000082E81 /* LoadThenNavigate.swift */; };
 		DC25DC642450F2DF00082E81 /* ActivityIndicatorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC25DC632450F2DF00082E81 /* ActivityIndicatorViewController.swift */; };
 		DC27215625BF84FC00D9C8DB /* 01-GettingStarted-BindingBasicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC27215525BF84FC00D9C8DB /* 01-GettingStarted-BindingBasicsTests.swift */; };
-		DC2E370D24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC2E370C24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift */; };
 		DC4C6EAC2450DD380066A05D /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4C6EAB2450DD380066A05D /* SceneDelegate.swift */; };
 		DC4C6EAE2450DD380066A05D /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4C6EAD2450DD380066A05D /* RootViewController.swift */; };
 		DC4C6EB02450DD380066A05D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC4C6EAF2450DD380066A05D /* Assets.xcassets */; };
@@ -62,6 +61,7 @@
 		DC5B505125C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5B505025C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift */; };
 		DC630FDA2451016B00BAECBA /* ListsOfState.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC630FD92451016B00BAECBA /* ListsOfState.swift */; };
 		DC634B252448D15B00DAA016 /* 04-HigherOrderReducers-ReusableFavoritingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC634B242448D15B00DAA016 /* 04-HigherOrderReducers-ReusableFavoritingTests.swift */; };
+		DC85EBC3285A731E00431CF3 /* ResignFirstResponder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC85EBC2285A731E00431CF3 /* ResignFirstResponder.swift */; };
 		DC88D8A6245341EC0077F427 /* 01-GettingStarted-Animations.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC88D8A5245341EC0077F427 /* 01-GettingStarted-Animations.swift */; };
 		DC89C41B24460F95006900B9 /* 00-RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C41A24460F95006900B9 /* 00-RootView.swift */; };
 		DC89C41D24460F96006900B9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC89C41C24460F96006900B9 /* Assets.xcassets */; };
@@ -192,7 +192,6 @@
 		DC25DC602450F2B000082E81 /* LoadThenNavigate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadThenNavigate.swift; sourceTree = "<group>"; };
 		DC25DC632450F2DF00082E81 /* ActivityIndicatorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityIndicatorViewController.swift; sourceTree = "<group>"; };
 		DC27215525BF84FC00D9C8DB /* 01-GettingStarted-BindingBasicsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-BindingBasicsTests.swift"; sourceTree = "<group>"; };
-		DC2E370C24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-StrictReducers.swift"; sourceTree = "<group>"; };
 		DC4C6EA72450DD380066A05D /* UIKitCaseStudies.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UIKitCaseStudies.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC4C6EAB2450DD380066A05D /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		DC4C6EAD2450DD380066A05D /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
@@ -209,6 +208,7 @@
 		DC5B505025C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Bindings-Forms.swift"; sourceTree = "<group>"; };
 		DC630FD92451016B00BAECBA /* ListsOfState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListsOfState.swift; sourceTree = "<group>"; };
 		DC634B242448D15B00DAA016 /* 04-HigherOrderReducers-ReusableFavoritingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-ReusableFavoritingTests.swift"; sourceTree = "<group>"; };
+		DC85EBC2285A731E00431CF3 /* ResignFirstResponder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResignFirstResponder.swift; sourceTree = "<group>"; };
 		DC88D8A5245341EC0077F427 /* 01-GettingStarted-Animations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Animations.swift"; sourceTree = "<group>"; };
 		DC89C41324460F95006900B9 /* SwiftUICaseStudies.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftUICaseStudies.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC89C41A24460F95006900B9 /* 00-RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "00-RootView.swift"; sourceTree = "<group>"; };
@@ -419,7 +419,6 @@
 				CA3E4C5A24B4FA0E00447C0B /* 04-HigherOrderReducers-Lifecycle.swift */,
 				DCE63B70245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift */,
 				DCC68EE22447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift */,
-				DC2E370C24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift */,
 				DCFE195F278DBF0600C14CCF /* CaseStudiesApp.swift */,
 				CA5ECF91267A79F0002067FF /* FactClient.swift */,
 				DC89C41C24460F96006900B9 /* Assets.xcassets */,
@@ -453,6 +452,7 @@
 			isa = PBXGroup;
 			children = (
 				CA6AC2612451135C00C71CB3 /* CircularProgressView.swift */,
+				DC85EBC2285A731E00431CF3 /* ResignFirstResponder.swift */,
 				DCC68EDE2447BC810037F998 /* TemplateText.swift */,
 				DC9EB4162450CBD2005F413B /* UIViewRepresented.swift */,
 			);
@@ -749,7 +749,6 @@
 				DCAC2A4F2452352E0094DEF5 /* 04-HigherOrderReducers-ElmLikeSubscriptions.swift in Sources */,
 				CA6AC2672451135C00C71CB3 /* DownloadClient.swift in Sources */,
 				CAA9ADC624465C810003A984 /* 02-Effects-Cancellation.swift in Sources */,
-				DC2E370D24573ACB00B94699 /* 04-HigherOrderReducers-StrictReducers.swift in Sources */,
 				CA5ECF92267A79F0002067FF /* FactClient.swift in Sources */,
 				DC9EB4172450CBD2005F413B /* UIViewRepresented.swift in Sources */,
 				CA6AC2652451135C00C71CB3 /* CircularProgressView.swift in Sources */,
@@ -762,6 +761,7 @@
 				DC89C41B24460F95006900B9 /* 00-RootView.swift in Sources */,
 				DCC68EDD2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift in Sources */,
 				CABC4F3926AEE00C00D5FA2C /* 02-Effects-Refreshable.swift in Sources */,
+				DC85EBC3285A731E00431CF3 /* ResignFirstResponder.swift in Sources */,
 				DCC68EAB244666AF0037F998 /* 03-Navigation-Sheet-PresentAndLoad.swift in Sources */,
 				CAE962FD24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndConfirmationDialogs.swift in Sources */,
 				CA25E5D224463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift in Sources */,

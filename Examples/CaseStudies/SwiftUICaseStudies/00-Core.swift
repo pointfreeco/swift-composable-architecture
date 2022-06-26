@@ -12,7 +12,6 @@ struct RootState {
   #endif
   var clock = ClockState()
   var counter = CounterState()
-  var dieRoll = DieRollState()
   var effectsBasics = EffectsBasicsState()
   var effectsCancellation = EffectsCancellationState()
   var effectsTimers = TimersState()
@@ -48,7 +47,6 @@ enum RootAction {
   #endif
   case clock(ClockAction)
   case counter(CounterAction)
-  case dieRoll(DieRollAction)
   case effectsBasics(EffectsBasicsAction)
   case effectsCancellation(EffectsCancellationAction)
   case episodes(EpisodesAction)
@@ -82,7 +80,7 @@ struct RootEnvironment {
   var favorite: (UUID, Bool) -> Effect<Bool, Error>
   var fetchNumber: () -> Effect<Int, Never>
   var mainQueue: AnySchedulerOf<DispatchQueue>
-  var userDidTakeScreenshot: Effect<Void, Never>
+  var notificationCenter: NotificationCenter
   var uuid: () -> UUID
   var webSocket: WebSocketClient
 
@@ -93,7 +91,7 @@ struct RootEnvironment {
     favorite: favorite(id:isFavorite:),
     fetchNumber: liveFetchNumber,
     mainQueue: .main,
-    userDidTakeScreenshot: liveUserDidTakeScreenshot,
+    notificationCenter: .default,
     uuid: UUID.init,
     webSocket: .live
   )
@@ -153,12 +151,6 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       state: \.counter,
       action: /RootAction.counter,
       environment: { _ in .init() }
-    ),
-  dieRollReducer
-    .pullback(
-      state: \.dieRoll,
-      action: /RootAction.dieRoll,
-      environment: { _ in .init(rollDie: { .random(in: 1...6) }) }
     ),
   effectsBasicsReducer
     .pullback(
@@ -220,7 +212,7 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.longLivingEffects,
       action: /RootAction.longLivingEffects,
-      environment: { .init(userDidTakeScreenshot: $0.userDidTakeScreenshot) }
+      environment: { .init(notificationCenter: $0.notificationCenter) }
     ),
   mapAppReducer
     .pullback(
@@ -312,8 +304,3 @@ private func liveFetchNumber() -> Effect<Int, Never> {
     .delay(for: 1, scheduler: DispatchQueue.main)
     .eraseToEffect()
 }
-
-private let liveUserDidTakeScreenshot = NotificationCenter.default
-  .publisher(for: UIApplication.userDidTakeScreenshotNotification)
-  .map { _ in () }
-  .eraseToEffect()

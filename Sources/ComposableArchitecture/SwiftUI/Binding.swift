@@ -263,27 +263,40 @@ import SwiftUI
     /// Shorthand for `.binding(.set(\.$keyPath, value))`.
     ///
     /// - Returns: A binding action.
-    public static func set<Value>(
+    public static func set<Value: Equatable>(
       _ keyPath: WritableKeyPath<State, BindableState<Value>>,
       _ value: Value
-    ) -> Self
-    where Value: Equatable {
+    ) -> Self {
       self.binding(.set(keyPath, value))
     }
   }
 
-  extension ViewStore {
+  extension ViewStore where Action: BindableAction, Action.State == State {
     /// Returns a binding to the resulting bindable state of a given key path.
     ///
     /// - Parameter keyPath: A key path to a specific bindable state.
     /// - Returns: A new binding.
-    public func binding<Value>(
-      _ keyPath: WritableKeyPath<State, BindableState<Value>>
-    ) -> Binding<Value>
-    where Action: BindableAction, Action.State == State, Value: Equatable {
+    public func binding<Value: Equatable>(
+      _ keyPath: WritableKeyPath<State, BindableState<Value>>,
+      file: StaticString = #fileID,
+      line: UInt = #line
+    ) -> Binding<Value> {
       self.binding(
         get: { $0[keyPath: keyPath].wrappedValue },
-        send: { .binding(.set(keyPath, $0)) }
+        send: { value in
+          #if DEBUG
+            let debugger = BindableActionViewStoreDebugger(
+              value: value, bindableActionType: Action.self, file: file, line: line
+            )
+            let set: (inout State) -> Void = {
+              $0[keyPath: keyPath].wrappedValue = value
+              debugger.wasCalled = true
+            }
+          #else
+            let set: (inout State) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
+          #endif
+          return .binding(.init(keyPath: keyPath, set: set, value: value))
+        }
       )
     }
   }
@@ -318,15 +331,14 @@ public struct BindingAction<Root>: Equatable {
     ///   - value: A value to assign at the given key path.
     /// - Returns: An action that describes simple mutations to some root state at a writable key
     ///   path.
-    public static func set<Value>(
+    public static func set<Value: Equatable>(
       _ keyPath: WritableKeyPath<Root, BindableState<Value>>,
       _ value: Value
-    ) -> Self where Value: Equatable {
-      .init(
+    ) -> Self {
+      return .init(
         keyPath: keyPath,
         set: { $0[keyPath: keyPath].wrappedValue = value },
-        value: value,
-        valueIsEqualTo: { $0 as? Value == value }
+        value: value
       )
     }
 
@@ -347,6 +359,19 @@ public struct BindingAction<Root>: Equatable {
       bindingAction: Self
     ) -> Bool {
       keyPath == bindingAction.keyPath
+    }
+
+    init<Value: Equatable>(
+      keyPath: WritableKeyPath<Root, BindableState<Value>>,
+      set: @escaping (inout Root) -> Void,
+      value: Value
+    ) {
+      self.init(
+        keyPath: keyPath,
+        set: set,
+        value: value,
+        valueIsEqualTo: { $0 as? Value == value }
+      )
     }
   }
 #endif
@@ -530,6 +555,44 @@ extension BindingAction: CustomDumpReflectable {
 
         bindingAction.set(&state)
         return self.run(&state, action, environment)
+      }
+    }
+  }
+#endif
+
+#if DEBUG
+  private final class BindableActionViewStoreDebugger<Value> {
+    let value: Value
+    let bindableActionType: Any.Type
+    let file: StaticString
+    let line: UInt
+    var wasCalled = false
+
+    init(value: Value, bindableActionType: Any.Type, file: StaticString, line: UInt) {
+      self.value = value
+      self.bindableActionType = bindableActionType
+      self.file = file
+      self.line = line
+    }
+
+    deinit {
+      guard self.wasCalled else {
+        runtimeWarning(
+          """
+          A binding action sent from a view store at "%@:%d" was not handled:
+
+            Action:
+              %@
+
+          To fix this, invoke the "binding()" method on your feature's reducer.
+          """,
+          [
+            "\(self.file)",
+            self.line,
+            "\(self.bindableActionType).binding(.set(_, \(self.value)))",
+          ]
+        )
+        return
       }
     }
   }

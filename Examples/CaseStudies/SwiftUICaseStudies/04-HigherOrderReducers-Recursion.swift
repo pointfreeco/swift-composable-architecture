@@ -15,11 +15,11 @@ private let readMe = """
 
 extension Reducer {
   static func recurse(
-    _ reducer: @escaping (Reducer, inout State, Action, Environment) -> Effect<Action, Never>
-  ) -> Reducer {
+    _ reducer: @escaping (Self, inout State, Action, Environment) -> Effect<Action, Never>
+  ) -> Self {
 
-    var `self`: Reducer!
-    self = Reducer { state, action, environment in
+    var `self`: Self!
+    self = Self { state, action, environment in
       reducer(self, &state, action, environment)
     }
     return self

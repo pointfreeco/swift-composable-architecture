@@ -38,9 +38,12 @@ import SwiftUI
 ///
 /// ```swift
 /// SwitchStore(self.store) {
-///   CaseLet(state: /MyState.first, action: MyAction.first, then: FirstView.init(store:))
-///   CaseLet(state: /MyState.second, action: MyAction.second, then: SecondView.init(store:))
-///
+///   CaseLet(state: /MyState.first, action: MyAction.first) {
+///     FirstView(store: $0)
+///   }
+///   CaseLet(state: /MyState.second, action: MyAction.second) {
+///     SecondView(store: $0)
+///   }
 ///   Default {
 ///     Text("State is neither first nor second.")
 ///   }
@@ -50,7 +53,7 @@ import SwiftUI
 /// - See also: ``Reducer/pullback(state:action:environment:file:line:)``, a method that aids in
 ///   transforming reducers that operate on each case of an enum into reducers that operate on the
 ///   entire enum.
-public struct SwitchStore<State, Action, Content>: View where Content: View {
+public struct SwitchStore<State, Action, Content: View>: View {
   public let store: Store<State, Action>
   public let content: () -> Content
 
@@ -69,8 +72,7 @@ public struct SwitchStore<State, Action, Content>: View where Content: View {
 }
 
 /// A view that handles a specific case of enum state in a ``SwitchStore``.
-public struct CaseLet<GlobalState, GlobalAction, LocalState, LocalAction, Content>: View
-where Content: View {
+public struct CaseLet<GlobalState, GlobalAction, LocalState, LocalAction, Content: View>: View {
   @EnvironmentObject private var store: StoreObservableObject<GlobalState, GlobalAction>
   public let toLocalState: (GlobalState) -> LocalState?
   public let fromLocalAction: (LocalAction) -> GlobalAction
@@ -132,7 +134,7 @@ extension CaseLet where GlobalAction == LocalAction {
 /// If you wish to use ``SwitchStore`` in a non-exhaustive manner (i.e. you do not want to provide
 /// a ``CaseLet`` for each case of the enum), then you must insert a ``Default`` view at the end of
 /// the ``SwitchStore``'s body.
-public struct Default<Content>: View where Content: View {
+public struct Default<Content: View>: View {
   private let content: () -> Content
 
   /// Initializes a ``Default`` view that computes content depending on if a store of enum state
@@ -1196,22 +1198,22 @@ public struct _ExhaustivityCheckView<State, Action>: View {
       .padding()
       .background(Color.red.edgesIgnoringSafeArea(.all))
       .onAppear {
-        #if DEBUG
-          runtimeWarning(
-            """
-            SwitchStore@%@:%d does not handle the current case. …
+        runtimeWarning(
+          """
+          SwitchStore@%@:%d does not handle the current case. …
 
-              Unhandled case:
-                %@
+            Unhandled case:
+              %@
 
-            Make sure that you exhaustively provide a "CaseLet" view for each case in your state, \
-            or provide a "Default" view at the end of the "SwitchStore".
-            """,
+          Make sure that you exhaustively provide a "CaseLet" view for each case in your state, \
+          or provide a "Default" view at the end of the "SwitchStore".
+          """,
+          [
             "\(self.file)",
             self.line,
-            debugCaseOutput(self.store.wrappedValue.state.value)
-          )
-        #endif
+            debugCaseOutput(self.store.wrappedValue.state.value),
+          ]
+        )
       }
     #else
       return EmptyView()

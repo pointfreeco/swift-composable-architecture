@@ -7,10 +7,10 @@ import XCTest
 class EffectsCancellationTests: XCTestCase {
   func testTrivia_SuccessfulRequest() {
     let store = TestStore(
-      initialState: .init(),
+      initialState: EffectsCancellationState(),
       reducer: effectsCancellationReducer,
-      environment: .init(
-        fact: .init(fetch: { n in Effect(value: "\(n) is a good number Brent") }),
+      environment: EffectsCancellationEnvironment(
+        fact: FactClient(fetch: { n in Effect(value: "\(n) is a good number Brent") }),
         mainQueue: .immediate
       )
     )
@@ -32,10 +32,10 @@ class EffectsCancellationTests: XCTestCase {
 
   func testTrivia_FailedRequest() {
     let store = TestStore(
-      initialState: .init(),
+      initialState: EffectsCancellationState(),
       reducer: effectsCancellationReducer,
-      environment: .init(
-        fact: .init(fetch: { _ in Fail(error: FactClient.Error()).eraseToEffect() }),
+      environment: EffectsCancellationEnvironment(
+        fact: FactClient(fetch: { _ in Fail(error: FactClient.Error()).eraseToEffect() }),
         mainQueue: .immediate
       )
     )
@@ -57,10 +57,10 @@ class EffectsCancellationTests: XCTestCase {
   func testTrivia_CancelButtonCancelsRequest() {
     let scheduler = DispatchQueue.test
     let store = TestStore(
-      initialState: .init(),
+      initialState: EffectsCancellationState(),
       reducer: effectsCancellationReducer,
-      environment: .init(
-        fact: .init(fetch: { n in Effect(value: "\(n) is a good number Brent") }),
+      environment: EffectsCancellationEnvironment(
+        fact: FactClient(fetch: { n in Effect(value: "\(n) is a good number Brent") }),
         mainQueue: scheduler.eraseToAnyScheduler()
       )
     )
@@ -77,10 +77,10 @@ class EffectsCancellationTests: XCTestCase {
   func testTrivia_PlusMinusButtonsCancelsRequest() {
     let scheduler = DispatchQueue.test
     let store = TestStore(
-      initialState: .init(),
+      initialState: EffectsCancellationState(),
       reducer: effectsCancellationReducer,
-      environment: .init(
-        fact: .init(fetch: { n in Effect(value: "\(n) is a good number Brent") }),
+      environment: EffectsCancellationEnvironment(
+        fact: FactClient(fetch: { n in Effect(value: "\(n) is a good number Brent") }),
         mainQueue: scheduler.eraseToAnyScheduler()
       )
     )

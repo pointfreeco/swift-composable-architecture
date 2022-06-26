@@ -305,31 +305,30 @@ final class EffectCancellationTests: XCTestCase {
 
   func testMultipleCancellations() {
     let scheduler = DispatchQueue.test
-    var values: [Int] = []
+    var output: [AnyHashable] = []
 
-    struct CancellationId: Hashable {
-      var id: Int
-    }
+    struct A: Hashable {}
+    struct B: Hashable {}
+    struct C: Hashable {}
 
-    let effects = [1, 2, 3, 4, 5].map { id in
+    let ids: [AnyHashable] = [A(), B(), C()]
+    let effects = ids.map { id in
       Just(id)
         .delay(for: 1, scheduler: scheduler)
         .eraseToEffect()
-        .cancellable(id: CancellationId(id: id))
+        .cancellable(id: id)
     }
 
-    Effect<Int, Never>.merge(effects)
-      .sink { values.append($0) }
+    Effect<AnyHashable, Never>.merge(effects)
+      .sink { output.append($0) }
       .store(in: &self.cancellables)
 
-    Effect<Int, Never>.merge(
-      .cancel(ids: CancellationId(id: 1), CancellationId(id: 2)),
-      .cancel(ids: [CancellationId(id: 4), CancellationId(id: 5)][...])
-    )
-    .sink { _ in }
-    .store(in: &self.cancellables)
+    Effect<AnyHashable, Never>
+      .cancel(ids: [A(), C()])
+      .sink { _ in }
+      .store(in: &self.cancellables)
 
     scheduler.advance(by: 1)
-    XCTAssertEqual(values, [3])
+    XCTAssertNoDifference(output, [B()])
   }
 }

@@ -10,7 +10,7 @@ class LoginSwiftUITests: XCTestCase {
   func testFlow_Success() {
     var authenticationClient = AuthenticationClient.failing
     authenticationClient.login = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
+      Effect(value: AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false))
     }
 
     let store = TestStore(
@@ -35,7 +35,9 @@ class LoginSwiftUITests: XCTestCase {
       $0.isFormDisabled = true
     }
     store.receive(
-      .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
+      .loginResponse(
+        .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false))
+      )
     ) {
       $0.isActivityIndicatorVisible = false
       $0.isFormDisabled = false
@@ -45,7 +47,7 @@ class LoginSwiftUITests: XCTestCase {
   func testFlow_Success_TwoFactor() {
     var authenticationClient = AuthenticationClient.failing
     authenticationClient.login = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: true))
+      Effect(value: AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true))
     }
 
     let store = TestStore(
@@ -70,7 +72,9 @@ class LoginSwiftUITests: XCTestCase {
       $0.isFormDisabled = true
     }
     store.receive(
-      .loginResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: true)))
+      .loginResponse(
+        .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true))
+      )
     ) {
       $0.isActivityIndicatorVisible = false
       $0.isFormDisabled = false
@@ -107,7 +111,7 @@ class LoginSwiftUITests: XCTestCase {
       $0.isFormDisabled = true
     }
     store.receive(.loginResponse(.failure(.invalidUserPassword))) {
-      $0.alert = .init(
+      $0.alert = AlertState(
         title: TextState(AuthenticationError.invalidUserPassword.localizedDescription)
       )
       $0.isActivityIndicatorVisible = false

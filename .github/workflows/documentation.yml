@@ -1,29 +1,104 @@
+# Build and deploy DocC to GitHub pages. Based off of @karwa's work here:
+# https://github.com/karwa/swift-url/blob/main/.github/workflows/docs.yml
 name: Documentation
+
 on:
   release:
     types:
       - published
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    runs-on: macos-12
     steps:
-      - uses: actions/checkout@v2
-      - name: Generate Documentation
-        uses: SwiftDocOrg/swift-doc@master
+      - name: Checkout Package
+        uses: actions/checkout@v2
         with:
-          base-url: /swift-composable-architecture/
-          format: html
-          inputs: Sources/ComposableArchitecture
-          module-name: ComposableArchitecture
-          output: Documentation
-      - name: Update Permissions
-        run: 'sudo chown --recursive $USER Documentation'
-      - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@releases/v3
+          fetch-depth: 0
+
+      - name: Checkout swift-docc
+        uses: actions/checkout@v2
         with:
-          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          BRANCH: gh-pages
-          FOLDER: Documentation
+          repository: apple/swift-docc
+          ref: main
+          path: swift-docc
+      - name: Cache DocC
+        id: cache-docc
+        uses: actions/cache@v2
+        with:
+          key: swift-url-docc-build
+          path: swift-docc/.build
+      - name: Build swift-docc
+        if: ${{ !steps.cache-docc.outputs.cache-hit }}
+        run: |
+          cd swift-docc; swift build --product docc -c release; cd ..
+
+      - name: Checkout swift-docc-render
+        uses: actions/checkout@v2
+        with:
+          repository: apple/swift-docc-render
+          ref: main
+          path: swift-docc-render
+      - name: Build swift-docc-render
+        run: |
+          cd swift-docc-render; npm install && npm run build; cd ..
+
+      - name: Checkout gh-pages Branch
+        uses: actions/checkout@v2
+        with:
+          ref: gh-pages
+          path: docs-out
+
+      - name: Build documentation
+        run: >
+          rm -rf docs-out/.git;
+          rm -rf docs-out/main;
+
+          for tag in $(echo "main"; git tag);
+          do
+            echo "⏳ Generating documentation for "$tag" release.";
+
+            if [ -d "docs-out/$tag" ] 
+            then 
+                echo "✅ Documentation for "$tag" already exists.";
+            else 
+                git checkout "$tag";
+                mkdir -p Sources/ComposableArchitecture/Documentation.docc;
+                export DOCC_HTML_DIR="$(pwd)/swift-docc-render/dist";
+
+                rm -rf .build/symbol-graphs;
+                mkdir -p .build/symbol-graphs;
+                swift build \
+                  --target ComposableArchitecture \
+                  -Xswiftc \
+                  -emit-symbol-graph \
+                  -Xswiftc \
+                  -emit-symbol-graph-dir \
+                  -Xswiftc \
+                  .build/symbol-graphs \
+                  && swift-docc/.build/release/docc convert Sources/ComposableArchitecture/Documentation.docc \
+                    --fallback-display-name ComposableArchitecture \
+                    --fallback-bundle-identifier co.pointfree.ComposableArchitecture \
+                    --fallback-bundle-version 0.0.0 \
+                    --additional-symbol-graph-dir \
+                    .build/symbol-graphs \
+                    --transform-for-static-hosting \
+                    --hosting-base-path /swift-composable-architecture/"$tag" \
+                    --output-path docs-out/"$tag" \
+                    && echo "✅ Documentation generated for "$tag" release." \
+                    || echo "⚠️ Documentation skipped for "$tag".";
+            fi;
+          done
+
+      - name: Fix permissions
+        run: 'sudo chown -R $USER docs-out'
+      - name: Publish documentation to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@4.1.7
+        with:
+          branch: gh-pages
+          folder: docs-out
+          single-commit: true

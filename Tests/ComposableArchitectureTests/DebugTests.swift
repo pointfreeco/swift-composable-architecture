@@ -188,9 +188,9 @@ final class DebugTests: XCTestCase {
       struct State {
         @BindableState var width = 0
       }
-
+      let action = BindingAction.set(\State.$width, 50)
       var dump = ""
-      customDump(BindingAction.set(\State.$width, 50), to: &dump)
+      customDump(action, to: &dump)
       XCTAssertNoDifference(
         dump,
         #"""

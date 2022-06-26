@@ -165,6 +165,19 @@ public final class ViewStore<State, Action>: ObservableObject {
     self._send(action)
   }
 
+  /// Sends an action to the store with a given animation.
+  ///
+  /// See ``ViewStore/send(_:)`` for more info.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - animation: An animation.
+  public func send(_ action: Action, animation: Animation?) {
+    withAnimation(animation) {
+      self.send(action)
+    }
+  }
+
   /// Derives a binding from the store that prevents direct writes to state and instead sends
   /// actions to the store.
   ///
@@ -326,8 +339,7 @@ public struct StorePublisher<State>: Publisher {
     self.upstream = viewStore._state.eraseToAnyPublisher()
   }
 
-  public func receive<S>(subscriber: S)
-  where S: Subscriber, Failure == S.Failure, Output == S.Input {
+  public func receive<S: Subscriber>(subscriber: S) where S.Input == Output, S.Failure == Failure {
     self.upstream.subscribe(
       AnySubscriber(
         receiveSubscription: subscriber.receive(subscription:),
@@ -340,19 +352,18 @@ public struct StorePublisher<State>: Publisher {
     )
   }
 
-  private init<P>(
+  private init<P: Publisher>(
     upstream: P,
     viewStore: Any
-  ) where P: Publisher, Failure == P.Failure, Output == P.Output {
+  ) where P.Output == Output, P.Failure == Failure {
     self.upstream = upstream.eraseToAnyPublisher()
     self.viewStore = viewStore
   }
 
   /// Returns the resulting publisher of a given key path.
-  public subscript<LocalState>(
+  public subscript<LocalState: Equatable>(
     dynamicMember keyPath: KeyPath<State, LocalState>
-  ) -> StorePublisher<LocalState>
-  where LocalState: Equatable {
+  ) -> StorePublisher<LocalState> {
     .init(upstream: self.upstream.map(keyPath).removeDuplicates(), viewStore: self.viewStore)
   }
 }
@@ -446,12 +457,13 @@ private struct HashableWrapper<Value>: Hashable {
     ///   - action: An action.
     ///   - predicate: A predicate on `State` that determines for how long this method should
     ///     suspend.
+    @MainActor
     public func send(
       _ action: Action,
       while predicate: @escaping (State) -> Bool
     ) async {
       self.send(action)
-      await self.suspend(while: predicate)
+      await self.yield(while: predicate)
     }
 
     /// Sends an action into the store and then suspends while a piece of state is `true`.
@@ -469,14 +481,17 @@ private struct HashableWrapper<Value>: Hashable {
       while predicate: @escaping (State) -> Bool
     ) async {
       withAnimation(animation) { self.send(action) }
-      await self.suspend(while: predicate)
+      await self.yield(while: predicate)
     }
 
-    /// Suspends while a predicate on state is `true`.
+    /// Suspends the current task while a predicate on state is `true`.
+    ///
+    /// If you want to suspend at the same time you send an action to the view store, use
+    /// ``send(_:while:)``.
     ///
     /// - Parameter predicate: A predicate on `State` that determines for how long this method
     ///   should suspend.
-    public func suspend(while predicate: @escaping (State) -> Bool) async {
+    public func yield(while predicate: @escaping (State) -> Bool) async {
       if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
         _ = await self.publisher
           .values

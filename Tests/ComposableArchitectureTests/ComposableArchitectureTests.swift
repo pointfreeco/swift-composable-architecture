@@ -130,11 +130,11 @@ final class ComposableArchitectureTests: XCTestCase {
     }
 
     let reducer = Reducer<Int, Action, Environment> { state, action, environment in
-      struct CancelId: Hashable {}
+      enum CancelId {}
 
       switch action {
       case .cancel:
-        return .cancel(id: CancelId())
+        return .cancel(id: CancelId.self)
 
       case .incr:
         state += 1
@@ -142,7 +142,7 @@ final class ComposableArchitectureTests: XCTestCase {
           .receive(on: environment.mainQueue)
           .map(Action.response)
           .eraseToEffect()
-          .cancellable(id: CancelId())
+          .cancellable(id: CancelId.self)
 
       case let .response(value):
         state = value
@@ -163,7 +163,7 @@ final class ComposableArchitectureTests: XCTestCase {
 
     store.send(.incr) { $0 = 1 }
     scheduler.advance()
-    store.receive(.response(1)) { $0 = 1 }
+    store.receive(.response(1))
 
     store.send(.incr) { $0 = 2 }
     store.send(.cancel)

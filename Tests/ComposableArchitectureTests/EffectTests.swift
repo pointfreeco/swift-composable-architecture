@@ -152,7 +152,7 @@ final class EffectTests: XCTestCase {
   }
 
   func testEffectSubscriberInitializer_WithCancellation() {
-    struct CancelId: Hashable {}
+    enum CancelId {}
 
     let effect = Effect<Int, Never>.run { subscriber in
       subscriber.send(1)
@@ -162,7 +162,7 @@ final class EffectTests: XCTestCase {
 
       return AnyCancellable {}
     }
-    .cancellable(id: CancelId())
+    .cancellable(id: CancelId.self)
 
     var values: [Int] = []
     var isComplete = false
@@ -173,7 +173,7 @@ final class EffectTests: XCTestCase {
     XCTAssertNoDifference(values, [1])
     XCTAssertNoDifference(isComplete, false)
 
-    Effect<Void, Never>.cancel(id: CancelId())
+    Effect<Void, Never>.cancel(id: CancelId.self)
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
@@ -218,6 +218,8 @@ final class EffectTests: XCTestCase {
         effect
           .sink(receiveValue: { _ in })
           .store(in: &self.cancellables)
+      } issueMatcher: { issue in
+        issue.compactDescription == "failing - A failing effect ran."
       }
     }
   #endif
@@ -226,7 +228,7 @@ final class EffectTests: XCTestCase {
     func testTask() {
       let expectation = self.expectation(description: "Complete")
       var result: Int?
-      Effect<Int, Never>.task {
+      Effect<Int, Never>.task { @MainActor in
         expectation.fulfill()
         return 42
       }
@@ -240,7 +242,7 @@ final class EffectTests: XCTestCase {
       let expectation = self.expectation(description: "Complete")
       struct MyError: Error {}
       var result: Error?
-      Effect<Int, Error>.task {
+      Effect<Int, Error>.task { @MainActor in
         expectation.fulfill()
         throw MyError()
       }
@@ -260,28 +262,45 @@ final class EffectTests: XCTestCase {
       XCTAssertNotNil(result)
     }
 
-    func testCancellingTask() {
+    func testCancellingTask_Failable() {
       @Sendable func work() async throws -> Int {
-        var task: Task<Int, Error>!
-        task = Task {
-          try? await Task.sleep(nanoseconds: NSEC_PER_MSEC)
-          try Task.checkCancellation()
-          return 42
-        }
-        task.cancel()
-        return try await task.value
+        try await Task.sleep(nanoseconds: NSEC_PER_MSEC)
+        XCTFail()
+        return 42
       }
 
-      let expectation = self.expectation(description: "Complete")
-      Effect<Int, Error>.task {
-        try await work()
+      Effect<Int, Error>.task { try await work() }
+        .sink(
+          receiveCompletion: { _ in XCTFail() },
+          receiveValue: { _ in XCTFail() }
+        )
+        .store(in: &self.cancellables)
+
+      self.cancellables = []
+
+      _ = XCTWaiter.wait(for: [.init()], timeout: 1.1)
+    }
+
+    func testCancellingTask_Infalable() {
+      @Sendable func work() async -> Int {
+        do {
+          try await Task.sleep(nanoseconds: NSEC_PER_MSEC)
+          XCTFail()
+        } catch {
+        }
+        return 42
       }
-      .sink(
-        receiveCompletion: { _ in expectation.fulfill() },
-        receiveValue: { _ in XCTFail() }
-      )
-      .store(in: &self.cancellables)
-      self.wait(for: [expectation], timeout: 1)
+
+      Effect<Int, Never>.task { await work() }
+        .sink(
+          receiveCompletion: { _ in XCTFail() },
+          receiveValue: { _ in XCTFail() }
+        )
+        .store(in: &self.cancellables)
+
+      self.cancellables = []
+
+      _ = XCTWaiter.wait(for: [.init()], timeout: 1.1)
     }
   #endif
 }

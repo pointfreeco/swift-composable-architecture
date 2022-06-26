@@ -56,13 +56,13 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
     }
   ),
   .init { state, action, environment in
-    struct TimerId: Hashable {}
+    enum TimerId {}
 
     func startRecording() -> Effect<VoiceMemosAction, Never> {
       let url = environment.temporaryDirectory()
         .appendingPathComponent(environment.uuid().uuidString)
         .appendingPathExtension("m4a")
-      state.currentRecording = .init(
+      state.currentRecording = VoiceMemosState.CurrentRecording(
         date: environment.mainRunLoop.now.date,
         url: url
       )
@@ -71,7 +71,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
         environment.audioRecorder.startRecording(url)
           .catchToEffect(VoiceMemosAction.audioRecorder),
 
-        Effect.timer(id: TimerId(), every: 1, tolerance: .zero, on: environment.mainRunLoop)
+        Effect.timer(id: TimerId.self, every: 1, tolerance: .zero, on: environment.mainRunLoop)
           .map { _ in .currentRecordingTimerUpdated }
       )
     }
@@ -103,9 +103,9 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
 
     case .audioRecorder(.success(.didFinishRecording(successfully: false))),
       .audioRecorder(.failure):
-      state.alert = .init(title: .init("Voice memo recording failed."))
+      state.alert = AlertState(title: TextState("Voice memo recording failed."))
       state.currentRecording = nil
-      return .cancel(id: TimerId())
+      return .cancel(id: TimerId.self)
 
     case .currentRecordingTimerUpdated:
       state.currentRecording?.duration += 1
@@ -123,12 +123,11 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       switch state.audioRecorderPermission {
       case .undetermined:
         return environment.audioRecorder.requestRecordPermission()
-          .map(VoiceMemosAction.recordPermissionResponse)
           .receive(on: environment.mainRunLoop)
-          .eraseToEffect()
+          .eraseToEffect(VoiceMemosAction.recordPermissionResponse)
 
       case .denied:
-        state.alert = .init(title: .init("Permission is required to record voice memos."))
+        state.alert = AlertState(title: TextState("Permission is required to record voice memos."))
         return .none
 
       case .allowed:
@@ -143,12 +142,11 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
         case .recording:
           state.currentRecording?.mode = .encoding
           return .concatenate(
-            .cancel(id: TimerId()),
+            .cancel(id: TimerId.self),
 
             environment.audioRecorder.currentTime()
               .compactMap { $0 }
-              .map(VoiceMemosAction.finalRecordingTime)
-              .eraseToEffect(),
+              .eraseToEffect(VoiceMemosAction.finalRecordingTime),
 
             environment.audioRecorder.stopRecording().fireAndForget()
           )
@@ -160,12 +158,12 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       if permission {
         return startRecording()
       } else {
-        state.alert = .init(title: .init("Permission is required to record voice memos."))
+        state.alert = AlertState(title: TextState("Permission is required to record voice memos."))
         return .none
       }
 
     case .voiceMemo(id: _, action: .audioPlayerClient(.failure)):
-      state.alert = .init(title: .init("Voice memo playback failed."))
+      state.alert = AlertState(title: TextState("Voice memo playback failed."))
       return .none
 
     case let .voiceMemo(id: id, action: .delete):
@@ -195,9 +193,10 @@ struct VoiceMemosView: View {
             ForEachStore(
               self.store.scope(
                 state: \.voiceMemos, action: VoiceMemosAction.voiceMemo(id:action:)
-              ),
-              content: VoiceMemoView.init(store:)
-            )
+              )
+            ) {
+              VoiceMemoView(store: $0)
+            }
             .onDelete { indexSet in
               for index in indexSet {
                 viewStore.send(.voiceMemo(id: viewStore.voiceMemos[index].id, action: .delete))
@@ -277,7 +276,7 @@ struct VoiceMemos_Previews: PreviewProvider {
         environment: VoiceMemosEnvironment(
           audioPlayer: .live,
           // NB: AVAudioRecorder doesn't work in previews, so we stub out the dependency here.
-          audioRecorder: .init(
+          audioRecorder: AudioRecorderClient(
             currentTime: { Effect(value: 10) },
             requestRecordPermission: { Effect(value: true) },
             startRecording: { _ in .none },

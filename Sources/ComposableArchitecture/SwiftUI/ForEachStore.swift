@@ -70,8 +70,9 @@ import SwiftUI
 /// }
 /// ```
 ///
-public struct ForEachStore<EachState, EachAction, Data, ID, Content>: DynamicViewContent
-where Data: Collection, ID: Hashable, Content: View {
+public struct ForEachStore<
+  EachState, EachAction, Data: Collection, ID: Hashable, Content: View
+>: DynamicViewContent {
   public let data: Data
   let content: () -> Content
 
@@ -86,7 +87,6 @@ where Data: Collection, ID: Hashable, Content: View {
     @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
   )
   where
-    EachContent: View,
     Data == IdentifiedArray<ID, EachState>,
     Content == WithViewStore<
       OrderedSet<ID>, (ID, EachAction), ForEach<OrderedSet<ID>, ID, EachContent>

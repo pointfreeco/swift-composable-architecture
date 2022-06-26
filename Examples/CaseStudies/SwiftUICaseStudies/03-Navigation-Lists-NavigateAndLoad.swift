@@ -10,9 +10,9 @@ private let readMe = """
 
 struct NavigateAndLoadListState: Equatable {
   var rows: IdentifiedArrayOf<Row> = [
-    .init(count: 1, id: UUID()),
-    .init(count: 42, id: UUID()),
-    .init(count: 100, id: UUID()),
+    Row(count: 1, id: UUID()),
+    Row(count: 42, id: UUID()),
+    Row(count: 100, id: UUID()),
   ]
   var selection: Identified<Row.ID, CounterState?>?
 
@@ -47,7 +47,7 @@ let navigateAndLoadListReducer =
       NavigateAndLoadListState, NavigateAndLoadListAction, NavigateAndLoadListEnvironment
     > { state, action, environment in
 
-      struct CancelId: Hashable {}
+      enum CancelId {}
 
       switch action {
       case .counter:
@@ -59,14 +59,14 @@ let navigateAndLoadListReducer =
         return Effect(value: .setNavigationSelectionDelayCompleted)
           .delay(for: 1, scheduler: environment.mainQueue)
           .eraseToEffect()
-          .cancellable(id: CancelId())
+          .cancellable(id: CancelId.self)
 
       case .setNavigation(selection: .none):
         if let selection = state.selection, let count = selection.value?.count {
           state.rows[id: selection.id]?.count = count
         }
         state.selection = nil
-        return .cancel(id: CancelId())
+        return .cancel(id: CancelId.self)
 
       case .setNavigationSelectionDelayCompleted:
         guard let id = state.selection?.id else { return .none }
@@ -89,10 +89,12 @@ struct NavigateAndLoadListView: View {
                 self.store.scope(
                   state: \.selection?.value,
                   action: NavigateAndLoadListAction.counter
-                ),
-                then: CounterView.init(store:),
-                else: ProgressView.init
-              ),
+                )
+              ) {
+                CounterView(store: $0)
+              } else: {
+                ProgressView()
+              },
               tag: row.id,
               selection: viewStore.binding(
                 get: \.selection?.id,
@@ -116,9 +118,9 @@ struct NavigateAndLoadListView_Previews: PreviewProvider {
         store: Store(
           initialState: NavigateAndLoadListState(
             rows: [
-              .init(count: 1, id: UUID()),
-              .init(count: 42, id: UUID()),
-              .init(count: 100, id: UUID()),
+              NavigateAndLoadListState.Row(count: 1, id: UUID()),
+              NavigateAndLoadListState.Row(count: 42, id: UUID()),
+              NavigateAndLoadListState.Row(count: 100, id: UUID()),
             ]
           ),
           reducer: navigateAndLoadListReducer,

@@ -9,17 +9,17 @@ class ReusableComponentsFavoritingTests: XCTestCase {
 
   func testFavoriteButton() {
     let episodes: IdentifiedArrayOf<EpisodeState> = [
-      .init(
+      EpisodeState(
         id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
         isFavorite: false,
         title: "Functions"
       ),
-      .init(
+      EpisodeState(
         id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
         isFavorite: false,
         title: "Functions"
       ),
-      .init(
+      EpisodeState(
         id: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!,
         isFavorite: false,
         title: "Functions"
@@ -62,8 +62,8 @@ class ReusableComponentsFavoritingTests: XCTestCase {
       .episode(
         id: episodes[2].id, action: .favorite(.response(.failure(FavoriteError(error: error)))))
     ) {
-      $0.episodes[id: episodes[2].id]?.alert = .init(
-        title: .init("The operation couldn’t be completed. (co.pointfree error -1.)")
+      $0.episodes[id: episodes[2].id]?.alert = AlertState(
+        title: TextState("The operation couldn’t be completed. (co.pointfree error -1.)")
       )
     }
 
