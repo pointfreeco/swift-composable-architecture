@@ -1,6 +1,8 @@
 import Combine
 import Foundation
 
+var count = 0
+
 /// The ``Effect`` type encapsulates a unit of work that can be run in the outside world, and can
 /// feed data back to the ``Store``. It is the perfect place to do side effects, such as network
 /// requests, saving/loading from disk, creating timers, interacting with dependencies, and more.
@@ -14,6 +16,7 @@ import Foundation
 /// constructing some common types of effects.
 public struct Effect<Output, Failure: Error>: Publisher {
   public let upstream: AnyPublisher<Output, Failure>
+  public let base: Any
 
   /// Initializes an effect that wraps a publisher. Each emission of the wrapped publisher will be
   /// emitted by the effect.
@@ -39,6 +42,7 @@ public struct Effect<Output, Failure: Error>: Publisher {
   /// - Parameter publisher: A publisher.
   public init<P: Publisher>(_ publisher: P) where P.Output == Output, P.Failure == Failure {
     self.upstream = publisher.eraseToAnyPublisher()
+    self.base = publisher
   }
 
   public func receive<S: Combine.Subscriber>(
@@ -234,7 +238,20 @@ public struct Effect<Output, Failure: Error>: Publisher {
   /// - Parameter effects: A sequence of effects.
   /// - Returns: A new effect
   public static func merge<S: Sequence>(_ effects: S) -> Self where S.Element == Effect {
-    Publishers.MergeMany(effects).eraseToEffect()
+    Publishers.MergeMany(
+      effects
+        .compactMap { effect -> Effect<Output, Failure>? in
+          guard let empty = effect.base as? Empty<Output, Failure>
+          else { return effect }
+
+          if empty.completeImmediately {
+            ComposableArchitecture.count += 1
+            Swift.print("This effect didn't need to run", ComposableArchitecture.count)
+          }
+          return empty.completeImmediately ? nil : effect
+        }
+    )
+    .eraseToEffect()
   }
 
   /// Creates an effect that executes some work in the real world that doesn't need to feed data
