@@ -43,9 +43,9 @@ private let rootReducer = Reducer<RootState, RootAction, Void>.combine(
       state.int += 1
       state.bool.toggle()
     default:
-      return .none
+      break
     }
-    return .none
+    return .fireAndForget {}
   },
   screenAReducer
     .pullback(state: \.stateA1, action: /RootAction.stateA1, environment: { $0 }),
@@ -75,9 +75,9 @@ private let screenAReducer = Reducer<ScreenAState, ScreenAAction, Void>.combine(
       state.int += 1
       state.bool.toggle()
     default:
-      return .none
+      break
     }
-    return .none
+    return .fireAndForget {}
   },
   screenBReducer
     .pullback(state: \.stateB1, action: /ScreenAAction.stateB1, environment: { $0 }),
@@ -108,9 +108,9 @@ private let screenBReducer = Reducer<ScreenBState, ScreenBAction, Void>.combine(
       state.int += 1
       state.bool.toggle()
     default:
-      return .none
+      break
     }
-    return .none
+    return .fireAndForget {}
   },
   screenCReducer
     .pullback(state: \.stateC1, action: /ScreenBAction.stateC1, environment: { $0 }),
@@ -152,9 +152,9 @@ private struct Root: ReducerProtocol {
         state.int += 1
         state.bool.toggle()
       default:
-        return .none
+        return .fireAndForget {}
       }
-      return .none
+      return .fireAndForget {}
     }
   }
 }
@@ -185,9 +185,9 @@ private struct ScreenA: ReducerProtocol {
         state.int += 1
         state.bool.toggle()
       default:
-        return .none
+        return .fireAndForget {}
       }
-      return .none
+      return .fireAndForget {}
     }
   }
 }
@@ -218,9 +218,9 @@ private struct ScreenB: ReducerProtocol {
         state.int += 1
         state.bool.toggle()
       default:
-        return .none
+        return .fireAndForget {}
       }
-      return .none
+      return .fireAndForget {}
     }
   }
 }
