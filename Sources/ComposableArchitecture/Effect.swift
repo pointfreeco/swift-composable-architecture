@@ -1,8 +1,6 @@
 import Combine
 import Foundation
 
-var count = 0
-
 /// The ``Effect`` type encapsulates a unit of work that can be run in the outside world, and can
 /// feed data back to the ``Store``. It is the perfect place to do side effects, such as network
 /// requests, saving/loading from disk, creating timers, interacting with dependencies, and more.
@@ -240,16 +238,12 @@ public struct Effect<Output, Failure: Error>: Publisher {
   public static func merge<S: Sequence>(_ effects: S) -> Self where S.Element == Effect {
     Publishers.MergeMany(
       effects
-        .compactMap { effect -> Effect<Output, Failure>? in
-          guard let empty = effect.base as? Empty<Output, Failure>
-          else { return effect }
-
-          if empty.completeImmediately {
-            ComposableArchitecture.count += 1
-            Swift.print("This effect didn't need to run", ComposableArchitecture.count)
-          }
-          return empty.completeImmediately ? nil : effect
-        }
+//        .compactMap { effect -> Effect<Output, Failure>? in
+//          effect.base is Empty<Output, Failure> ? nil : effect
+//          guard let empty = effect.base as? Empty<Output, Failure>
+//          else { return effect }
+//          return empty.completeImmediately ? nil : effect
+//        }
     )
     .eraseToEffect()
   }

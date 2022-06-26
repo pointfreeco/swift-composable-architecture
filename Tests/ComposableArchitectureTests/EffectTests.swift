@@ -153,7 +153,7 @@ final class EffectTests: XCTestCase {
 
   func testEffectSubscriberInitializer_WithCancellation() {
     enum CancelId {}
-
+ 
     let effect = Effect<Int, Never>.run { subscriber in
       subscriber.send(1)
       self.scheduler.schedule(after: self.scheduler.now.advanced(by: .seconds(1))) {

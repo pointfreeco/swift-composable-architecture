@@ -1,7 +1,7 @@
 import Benchmark
 import ComposableArchitecture
 
-let counterReducer = Reducer<Int, Bool, Void> { state, action, _ in
+private let counterReducer = Reducer<Int, Bool, Void> { state, action, _ in
   if action {
     state += 1
   } else {
@@ -39,4 +39,9 @@ benchmark("Scoping (4)") {
   viewStore4.send(true)
 }
 
-Benchmark.main()
+Benchmark.main(
+  [
+    defaultBenchmarkSuite,
+    pullbackAndCombine,
+  ]
+)

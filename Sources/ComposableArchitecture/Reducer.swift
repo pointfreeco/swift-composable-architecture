@@ -166,7 +166,18 @@ public struct Reducer<State, Action, Environment> {
   /// - Returns: A single reducer.
   public static func combine(_ reducers: [Self]) -> Self {
     Self { value, action, environment in
-      .merge(reducers.map { $0.reducer(&value, action, environment) })
+      .merge(
+        reducers
+//          .map { $0(&value, action, environment) }
+          .compactMap { reducer -> Effect<Action, Never>? in
+            let effect = reducer(&value, action, environment)
+            return effect.base is Empty<Action, Never> ? nil : effect
+            
+            guard let empty = effect.base as? Empty<Action, Never>
+            else { return effect }
+            return empty.completeImmediately ? nil : effect
+          }
+      )
     }
   }
 
