@@ -100,19 +100,28 @@ public enum ReducerBuilder<State, Action> {
 
     @inlinable
     public func reduce(into state: inout R0.State, action: R0.Action) -> Effect<R0.Action, Never> {
-      let e0 = self.r0.reduce(into: &state, action: action)
-      let e1 = self.r1.reduce(into: &state, action: action)
+      let effects0 = self.r0.reduce(into: &state, action: action)
+      let effects1 = self.r1.reduce(into: &state, action: action)
 
-      if e1.base is Empty<Action, Never> {
-        return e0
+      if (effects0.base as? Empty<Action, Never>)?.completeImmediately == true {
+        return effects1
       }
-      if e0.base is Empty<Action, Never> {
-        return e1
+      if (effects1.base as? Empty<Action, Never>)?.completeImmediately == true {
+        return effects0
+      }
+
+      if let e0 = effects0.base as? Publishers.MergeMany<Effect<Action, Never>> {
+        if let e1 = effects1.base as? Publishers.MergeMany<Effect<Action, Never>> {
+          return Publishers.MergeMany(e0.publishers + e1.publishers).eraseToEffect()
+        }
+        return Publishers.MergeMany(e0.publishers + [effects1]).eraseToEffect()
+      } else if let e1 = effects1.base as? Publishers.MergeMany<Effect<Action, Never>> {
+        return Publishers.MergeMany([effects0] + e1.publishers).eraseToEffect()
       }
 
       return .merge(
-        e0,
-        e1
+        effects0,
+        effects1
       )
     }
   }
@@ -132,9 +141,9 @@ public enum ReducerBuilder<State, Action> {
     ) -> Effect<Element.Action, Never> {
       .merge(
         reducers
-          .compactMap {
-            let e = $0.reduce(into: &state, action: action)
-            return e.base is Empty<Action, Never> ? nil : e
+          .compactMap { reducer in
+            let effect = reducer.reduce(into: &state, action: action)
+            return effect.base is Empty<Action, Never> ? nil : effect
           }
       )
     }

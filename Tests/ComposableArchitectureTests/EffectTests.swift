@@ -261,4 +261,63 @@ final class EffectTests: XCTestCase {
       _ = XCTWaiter.wait(for: [.init()], timeout: 1.1)
     }
   #endif
+
+  func testMergeFusion() throws {
+    struct R: ReducerProtocol {
+      var body: some ReducerProtocol<Int, Bool> {
+        Reduce { _, _ in .fireAndForget { } }
+        Reduce { _, _ in .fireAndForget { } }
+        Reduce { _, _ in .fireAndForget { } }
+        Reduce { _, _ in .fireAndForget { } }
+      }
+    }
+
+    var state = 0
+    let effect = R().reduce(into: &state, action: true)
+    XCTAssertEqual(
+      // TODO: Will this work someday? Publishers.MergeMany<some Publisher<Bool, Never>>
+      try XCTUnwrap(effect.base as? Publishers.MergeMany<Effect<Bool, Never>>).publishers.count,
+      4
+    )
+  }
+
+  func testDiscardsEmptyEffects() throws {
+    struct R: ReducerProtocol {
+      var body: some ReducerProtocol<Int, Bool> {
+        Reduce { _, _ in .none }
+        Reduce { _, _ in .none }
+        Reduce { _, _ in .none }
+        Reduce { _, _ in .none }
+      }
+    }
+
+    var state = 0
+    let effect = R().reduce(into: &state, action: true)
+    XCTAssertEqual(
+      try XCTUnwrap(effect.base as? Empty<Bool, Never>).completeImmediately,
+      true
+    )
+  }
+
+  func testDoesNotDiscardEmptiesThatDontCompleteImmediately() throws {
+    struct R: ReducerProtocol {
+      var body: some ReducerProtocol<Int, Bool> {
+        Reduce { _, _ in Empty(completeImmediately: false).eraseToEffect() }
+        Reduce { _, _ in .none }
+        Reduce { _, _ in Empty(completeImmediately: false).eraseToEffect() }
+        Reduce { _, _ in .none }
+      }
+    }
+
+    var state = 0
+    let effect = R().reduce(into: &state, action: true)
+    let mergeMany = try XCTUnwrap(effect.base as? Publishers.MergeMany<Effect<Bool, Never>>)
+    XCTAssertEqual(
+      try mergeMany.publishers.map { try XCTUnwrap($0.base as? Empty<Bool, Never>) },
+      [
+        Empty(completeImmediately: false),
+        Empty(completeImmediately: false)
+      ]
+    )
+  }
 }
