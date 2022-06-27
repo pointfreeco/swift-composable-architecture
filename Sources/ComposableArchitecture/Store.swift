@@ -375,9 +375,10 @@ public final class Store<State, Action> {
   /// - Parameter toLocalState: A function that transforms `State` into `LocalState`.
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<LocalState>(
-    state toLocalState: @escaping (State) -> LocalState
+    state toLocalState: @escaping (State) -> LocalState,
+    instrumentation: Instrumentation = .shared
   ) -> Store<LocalState, Action> {
-    self.scope(state: toLocalState, action: { $0 })
+    self.scope(state: toLocalState, action: { $0 }, instrumentation: instrumentation)
   }
 
   func send(_ action: Action, originatingFrom originatingAction: Action? = nil, instrumentation: Instrumentation = .shared) {
