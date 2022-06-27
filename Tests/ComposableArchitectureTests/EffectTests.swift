@@ -263,20 +263,21 @@ final class EffectTests: XCTestCase {
   #endif
 
   func testClockSimple() async throws {
-    let clock = ManualClock()
+    let clock = TestClock()
+    let anyClock = AnyClock(clock: clock)
 
     let task = Task {
-      try await clock.sleep(until: clock.now.advanced(by: .seconds(1)))
+      try await anyClock.sleep(until: anyClock.now.advanced(by: .seconds(1)))
     }
 
     let start = DispatchTime.now().uptimeNanoseconds
     await clock.advance(by: .seconds(1))
     try await task.value
-    XCTAssertLessThan(DispatchTime.now().uptimeNanoseconds - start, 2_000_000)
+    XCTAssertLessThan(DispatchTime.now().uptimeNanoseconds - start, 10_000_000)
   }
 
   func testClockDoubleSleep() async throws {
-    let clock = ManualClock()
+    let clock = TestClock()
 
     let task = Task {
       try await clock.sleep(until: clock.now.advanced(by: .seconds(10)))
@@ -290,12 +291,13 @@ final class EffectTests: XCTestCase {
   }
 
   func testClock_AsyncStream() async throws {
-    let clock = ManualClock()
+    let clock = TestClock()
+    let anyClock = AnyClock(clock: clock)
 
     let stream = AsyncStream<Int> { c in
       Task {
         for index in  1...10 {
-          try await clock.sleep(until: clock.now.advanced(by: .seconds(1)))
+          try await anyClock.sleep(until: anyClock.now.advanced(by: .seconds(1)))
           c.yield(index)
         }
         c.finish()

@@ -37,7 +37,7 @@ enum AnimationsAction: Equatable, Sendable {
 }
 
 struct AnimationsEnvironment {
-  var clock: AnyClockOf<SuspendingClock>
+  var clock: AnyClock
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
@@ -60,8 +60,8 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
         let colors = [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .white]
         for (index, color) in colors.enumerated() {
           if index > 0 {
-            try await environment.mainQueue.sleep(for: 1)
-//            try await environment.clock.sleep(until: environment.clock.now.advanced(by: .seconds(1)))
+//            try await environment.mainQueue.sleep(for: 1)
+            try await environment.clock.sleep(until: environment.clock.now.advanced(by: .seconds(1)))
           }
           await send(.setColor(color), animation: .linear)
         }

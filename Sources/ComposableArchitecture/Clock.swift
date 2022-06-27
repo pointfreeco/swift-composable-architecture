@@ -1,15 +1,34 @@
 
 
 
-public struct AnyClock<Instant: InstantProtocol>: Clock where Instant.Duration == Duration {
+public struct AnyClock: Clock {
+  public struct Instant: InstantProtocol {
+    var duration: Duration
+
+    public func advanced(by duration: Duration) -> Self {
+      .init(duration: self.duration + duration)
+    }
+
+    public func duration(to other: Self) -> Duration {
+      other.duration - self.duration
+    }
+
+    public static func < (lhs: Self, rhs: Self) -> Bool {
+      lhs.duration < rhs.duration
+    }
+  }
+
   var _now: @Sendable () -> Instant
   var _minimumResolution: @Sendable () -> Duration
   var _sleep: @Sendable (Instant, Duration?) async throws -> Void
 
-  public init<C: Clock>(clock: C) where C.Instant == Instant {
-    self._now = { clock.now }
+  public init<C: Clock>(clock: C) where C.Instant.Duration == Duration {
+    let start = clock.now
+    self._now = { Instant(duration: start.duration(to: clock.now)) }
     self._minimumResolution = { clock.minimumResolution }
-    self._sleep = { try await clock.sleep(until: $0, tolerance: $1) }
+    self._sleep = { until, tolerance in
+      try await clock.sleep(until: start.advanced(by: until.duration), tolerance: tolerance)
+    }
   }
 
   public var now: Instant {
@@ -23,29 +42,39 @@ public struct AnyClock<Instant: InstantProtocol>: Clock where Instant.Duration =
   }
 }
 
-public typealias AnyClockOf<C: Clock> = AnyClock<C.Instant> where C.Instant.Duration == Duration
-
-extension AnyClock where Instant == SuspendingClock.Instant {
+extension AnyClock {
   public static var suspending: Self {
     .init(clock: SuspendingClock())
   }
 }
 
-public final class TestClock<Instant: InstantProtocol>: Clock, @unchecked Sendable
-where
-  Instant.Duration == Duration
-{
+public final class TestClock: Clock, @unchecked Sendable {
+  public struct Instant: InstantProtocol {
+    var duration: Duration
+
+    public func advanced(by duration: Duration) -> Self {
+      .init(duration: self.duration + duration)
+    }
+
+    public func duration(to other: Self) -> Duration {
+      other.duration - self.duration
+    }
+
+    public static func < (lhs: Self, rhs: Self) -> Bool {
+      lhs.duration < rhs.duration
+    }
+  }
+
   public var minimumResolution: Duration = .zero
+
+  public init() {}
 
   struct WakeUp {
     var when: Instant
     var continuation: UnsafeContinuation<Void, Never>
   }
 
-  public private(set) var now: Instant
-  public init(now: Instant) {
-    self.now = now
-  }
+  public private(set) var now: Instant = .init(duration: .zero)
 
   // General storage for the sleep points we want to wake-up for
   // this could be optimized to be a more efficient data structure

@@ -74,7 +74,7 @@ enum RootAction {
 }
 
 struct RootEnvironment {
-  var clock: AnyClockOf<SuspendingClock>
+  var clock: AnyClock
   var date: @Sendable () -> Date
   var downloadClient: DownloadClient
   var fact: FactClient

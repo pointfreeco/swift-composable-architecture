@@ -6,7 +6,7 @@ import XCTest
 
 class AnimationTests: XCTestCase {
   let scheduler = DispatchQueue.test
-  let clock = TestClock<SuspendingClock.Instant>(now: .now)
+  let clock = TestClock()
 
   @MainActor
   func testRainbow() async {
