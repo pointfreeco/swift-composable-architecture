@@ -581,6 +581,13 @@
       file: StaticString = #file,
       line: UInt = #line
     ) async {
+      
+      guard !self.inFlightEffects.isEmpty
+      else {
+        { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
+        return
+      }
+
       if nanoseconds == 0 {
         await Task.megaYield()
       }
