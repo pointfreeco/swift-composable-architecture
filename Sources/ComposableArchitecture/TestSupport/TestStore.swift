@@ -505,6 +505,10 @@
     ///     store. The mutable state sent to this closure must be modified to match the state of the
     ///     store after processing the given action. Do not provide a closure if no change is
     ///     expected.
+    @available(iOS, deprecated: 100000.0, message: "Call the async-friendly 'receive' instead.")
+    @available(macOS, deprecated: 100000.0, message: "Call the async-friendly 'receive' instead.")
+    @available(tvOS, deprecated: 100000.0, message: "Call the async-friendly 'receive' instead.")
+    @available(watchOS, deprecated: 100000.0, message: "Call the async-friendly 'receive' instead.")
     public func receive(
       _ expectedAction: Action,
       _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
