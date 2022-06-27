@@ -261,4 +261,56 @@ final class EffectTests: XCTestCase {
       _ = XCTWaiter.wait(for: [.init()], timeout: 1.1)
     }
   #endif
+
+  func testClockSimple() async throws {
+    let clock = ManualClock()
+
+    let task = Task {
+      try await clock.sleep(until: clock.now.advanced(by: .seconds(1)))
+    }
+
+    let start = DispatchTime.now().uptimeNanoseconds
+    await clock.advance(by: .seconds(1))
+    try await task.value
+    XCTAssertLessThan(DispatchTime.now().uptimeNanoseconds - start, 2_000_000)
+  }
+
+  func testClockDoubleSleep() async throws {
+    let clock = ManualClock()
+
+    let task = Task {
+      try await clock.sleep(until: clock.now.advanced(by: .seconds(10)))
+      try await clock.sleep(until: clock.now.advanced(by: .seconds(10)))
+    }
+
+    let start = DispatchTime.now().uptimeNanoseconds
+    await clock.advance(by: .seconds(20))
+    try await task.value
+    XCTAssertLessThan(DispatchTime.now().uptimeNanoseconds - start, 100_000_000)
+  }
+
+  func testClock_AsyncStream() async throws {
+    let clock = ManualClock()
+
+    let stream = AsyncStream<Int> { c in
+      Task {
+        for index in  1...10 {
+          try await clock.sleep(until: clock.now.advanced(by: .seconds(1)))
+          c.yield(index)
+        }
+        c.finish()
+      }
+    }
+    let task = Task {
+      var values: [Int] = []
+      for await index in stream {
+        values.append(index)
+      }
+      return values
+    }
+
+    await clock.advance(by: .seconds(10))
+    let values = await task.value
+    XCTAssertEqual(values, Array(1...10))
+  }
 }

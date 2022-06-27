@@ -74,6 +74,7 @@ enum RootAction {
 }
 
 struct RootEnvironment {
+  var clock: AnyClockOf<SuspendingClock>
   var date: @Sendable () -> Date
   var downloadClient: DownloadClient
   var fact: FactClient
@@ -85,6 +86,7 @@ struct RootEnvironment {
   var webSocket: WebSocketClient
 
   static let live = Self(
+    clock: .suspending,
     date: { Date() },
     downloadClient: .live,
     fact: .live,
@@ -124,7 +126,7 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.animation,
       action: /RootAction.animation,
-      environment: { .init(mainQueue: $0.mainQueue) }
+      environment: { .init(clock: $0.clock, mainQueue: $0.mainQueue) }
     ),
   bindingBasicsReducer
     .pullback(
