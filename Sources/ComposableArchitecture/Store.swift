@@ -346,15 +346,22 @@ public final class Store<State, Action> {
       .dropFirst()
       .sink { [weak localStore] newValue in
         guard !isSending else { return }
-        let callbackInfo = Instrumentation.CallbackInfo<Self.Type, Any>(storeKind: Self.self, action: nil, originatingAction: nil).eraseToAny()
+
+        let callbackInfo = Instrumentation.CallbackInfo<Self.Type, Any>(storeKind: Self.self, action: nil).eraseToAny()
         instrumentation.callback?(callbackInfo, .pre, .storeToLocal)
         let newLocalState = toLocalState(newValue)
         instrumentation.callback?(callbackInfo, .post, .storeToLocal)
+
         guard let previousState = localStore?.state.value, let isDuplicate = isDuplicate else {
             localStore?.state.value = newLocalState
             return
         }
-        if !isDuplicate(newLocalState, previousState) {
+
+        instrumentation.callback?(callbackInfo, .pre, .storeDeduplicate)
+        let newStateIsDuplicate = isDuplicate(newLocalState, previousState)
+        instrumentation.callback?(callbackInfo, .post, .storeDeduplicate)
+
+        if !newStateIsDuplicate {
             localStore?.state.value = newLocalState
         }
       }
