@@ -1,6 +1,3 @@
-
-
-
 public struct AnyClock: Clock {
   public struct Instant: InstantProtocol {
     var duration: Duration
@@ -95,83 +92,35 @@ public final class TestClock: Clock, @unchecked Sendable {
       if deadline <= now {
         $0.resume()
       } else {
-        //        os_unfair_lock_lock(lock)
+        os_unfair_lock_lock(lock)
         wakeUps.append(WakeUp(when: deadline, continuation: $0))
-        //        os_unfair_lock_unlock(lock)
+        os_unfair_lock_unlock(lock)
       }
     }
   }
 
   @MainActor
   public func advance(by amount: Duration) async {
-    // step the now forward and gather all of the pending
-    // wake-ups that are in need of execution
-    //    os_unfair_lock_lock(lock)
     let finalDate = self.now.advanced(by: amount)
     while self.now <= finalDate {
       await Task.megaYield()
+      os_unfair_lock_lock(lock)
       self.wakeUps.sort { lhs, rhs in lhs.when < rhs.when }
 
       guard
-        let nextDate = self.wakeUps.first?.when,
-        finalDate >= nextDate
+        let next = self.wakeUps.first,
+        finalDate >= next.when
       else {
         self.now = finalDate
+        os_unfair_lock_unlock(lock)
         return
       }
 
-      self.now = nextDate
-
-      while let wakeUp = self.wakeUps.first, wakeUp.when == nextDate {
-        await Task.megaYield()
-        self.wakeUps.removeFirst()
-        wakeUp.continuation.resume()
-      }
+      self.now = next.when
+      await Task.megaYield()
+      self.wakeUps.removeFirst()
+      os_unfair_lock_unlock(lock)
+      next.continuation.resume()
     }
-    //    os_unfair_lock_unlock(lock)
-
-
-    //    // ---
-    //    now = now.advanced(by: amount)
-    //    var toService = [WakeUp]()
-    //    for index in (0..<(wakeUps.count)).reversed() {
-    //      let wakeUp = wakeUps[index]
-    //      if wakeUp.when <= now {
-    //        toService.insert(wakeUp, at: 0)
-    //        wakeUps.remove(at: index)
-    //      }
-    //    }
-    //    os_unfair_lock_unlock(lock)
-    //
-    //    // make sure to service them outside of the lock
-    //    toService.sort { lhs, rhs -> Bool in lhs.when < rhs.when }
-    //    for item in toService {
-    //      item.continuation.resume()
-    //    }
   }
 }
-
-/*
- public func advance(by stride: SchedulerTimeType.Stride = .zero) {
- let finalDate = self.now.advanced(by: stride)
-
- while self.now <= finalDate {
- self.scheduled.sort { ($0.date, $0.sequence) < ($1.date, $1.sequence) }
-
- guard
- let nextDate = self.scheduled.first?.date,
- finalDate >= nextDate
- else {
- self.now = finalDate
- return
- }
-
- self.now = nextDate
-
- while let (_, date, action) = self.scheduled.first, date == nextDate {
- self.scheduled.removeFirst()
- action()
- }
- }
- }
- */
