@@ -18,7 +18,7 @@ let combine = BenchmarkSuite(name: "Combine") { suite in
     }
     precondition(state == count)
   }
-  suite.benchmark("Reducer: 10 counters") {
+  suite.benchmark("Reducer: Ten counters") {
     var state = 0
     for _ in 1...count {
       _ = tenCountersReducer.run(&state, true, ())
@@ -68,16 +68,18 @@ private struct Counter: ReducerProtocol {
   }
 }
 
-private let tenCountersReducer = counterReducer
-  .combined(with: counterReducer)
-  .combined(with: counterReducer)
-  .combined(with: counterReducer)
-  .combined(with: counterReducer)
-  .combined(with: counterReducer)
-  .combined(with: counterReducer)
-  .combined(with: counterReducer)
-  .combined(with: counterReducer)
-  .combined(with: counterReducer)
+private let tenCountersReducer = Reducer.combine(
+  counterReducer,
+  counterReducer,
+  counterReducer,
+  counterReducer,
+  counterReducer,
+  counterReducer,
+  counterReducer,
+  counterReducer,
+  counterReducer,
+  counterReducer
+)
 
 private struct TenCounters: ReducerProtocol {
   var body: some ReducerProtocol<Int, Bool> {

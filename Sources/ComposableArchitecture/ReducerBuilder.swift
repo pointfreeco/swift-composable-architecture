@@ -103,21 +103,22 @@ public enum ReducerBuilder<State, Action> {
       let effects0 = self.r0.reduce(into: &state, action: action)
       let effects1 = self.r1.reduce(into: &state, action: action)
 
-      if (effects0.base as? Empty<Action, Never>)?.completeImmediately == true {
-        return effects1
-      }
       if (effects1.base as? Empty<Action, Never>)?.completeImmediately == true {
         return effects0
       }
-
-      if let e0 = effects0.base as? Publishers.MergeMany<Effect<Action, Never>> {
-        if let e1 = effects1.base as? Publishers.MergeMany<Effect<Action, Never>> {
-          return Publishers.MergeMany(e0.publishers + e1.publishers).eraseToEffect()
-        }
-        return Publishers.MergeMany(e0.publishers + [effects1]).eraseToEffect()
-      } else if let e1 = effects1.base as? Publishers.MergeMany<Effect<Action, Never>> {
-        return Publishers.MergeMany([effects0] + e1.publishers).eraseToEffect()
+      if (effects0.base as? Empty<Action, Never>)?.completeImmediately == true {
+        return effects1
       }
+
+      // TODO: benchmark running the effect with or without this
+//      if let e0 = effects0.base as? Publishers.MergeMany<Effect<Action, Never>> {
+//        if let e1 = effects1.base as? Publishers.MergeMany<Effect<Action, Never>> {
+//          return Publishers.MergeMany(e0.publishers + e1.publishers).eraseToEffect()
+//        }
+//        return Publishers.MergeMany(e0.publishers + [effects1]).eraseToEffect()
+//      } else if let e1 = effects1.base as? Publishers.MergeMany<Effect<Action, Never>> {
+//        return Publishers.MergeMany([effects0] + e1.publishers).eraseToEffect()
+//      }
 
       return .merge(
         effects0,

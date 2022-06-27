@@ -42,7 +42,7 @@ benchmark("Scoping (4)") {
 Benchmark.main(
   [
 //    defaultBenchmarkSuite,
-//    combine,
-    reducerVsProtocol,
+    combine,
+//    reducerVsProtocol,
   ]
 )
