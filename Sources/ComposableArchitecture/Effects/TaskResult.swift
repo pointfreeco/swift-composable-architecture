@@ -137,7 +137,12 @@ extension TaskResult: Equatable where Success: Equatable {
       return lhs == rhs
     case let (.failure(lhs), .failure(rhs)):
       return _isEqual(lhs, rhs) ?? {
-        XCTFail("Tried to compare a non-equatable error: \(_typeName(type(of: lhs)))")
+        runtimeWarning(
+          "Tried to compare a non-equatable error type: %@",
+          [
+            "\(type(of: lhs))"
+          ]
+        )
         return false
       }()
     default:
