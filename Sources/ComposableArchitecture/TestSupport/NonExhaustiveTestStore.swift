@@ -187,16 +187,15 @@
 
         do {
           try update(&stateAfterApplyingUpdate)
+          try TCATestStoreType.expectedStateShouldMatch(
+            expected: &stateAfterApplyingUpdate,
+            actual: stateAfterReducerApplication,
+            file: file,
+            line: line
+          )
         } catch {
           XCTFail("Threw error: \(error)", file: file, line: line)
         }
-
-        TCATestStoreType.expectedStateShouldMatch(
-          expected: stateAfterApplyingUpdate,
-          actual: stateAfterReducerApplication,
-          file: file,
-          line: line
-        )
     }
   }
 

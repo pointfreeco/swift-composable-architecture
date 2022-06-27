@@ -59,4 +59,43 @@ class TestStoreTests: XCTestCase {
 
     store.send(.d)
   }
+
+  func testStateAccess() {
+    enum Action { case a, b, c, d }
+    let store = TestStore(
+      initialState: 0,
+      reducer: Reducer<Int, Action, Void> { count, action, _ in
+        switch action {
+        case .a:
+          count += 1
+          return .merge(.init(value: .b), .init(value: .c), .init(value: .d))
+        case .b, .c, .d:
+          count += 1
+          return .none
+        }
+      },
+      environment: ()
+    )
+
+    store.send(.a) {
+      $0 = 1
+      XCTAssertEqual(store.state, 0)
+    }
+    XCTAssertEqual(store.state, 1)
+    store.receive(.b) {
+      $0 = 2
+      XCTAssertEqual(store.state, 1)
+    }
+    XCTAssertEqual(store.state, 2)
+    store.receive(.c) {
+      $0 = 3
+      XCTAssertEqual(store.state, 2)
+    }
+    XCTAssertEqual(store.state, 3)
+    store.receive(.d) {
+      $0 = 4
+      XCTAssertEqual(store.state, 3)
+    }
+    XCTAssertEqual(store.state, 4)
+  }
 }

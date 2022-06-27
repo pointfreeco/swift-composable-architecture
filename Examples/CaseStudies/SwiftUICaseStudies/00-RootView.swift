@@ -272,16 +272,6 @@ struct RootView: View {
             )
 
             NavigationLink(
-              "Strict reducers",
-              destination: DieRollView(
-                store: self.store.scope(
-                  state: \.dieRoll,
-                  action: RootAction.dieRoll
-                )
-              )
-            )
-
-            NavigationLink(
               "Elm-like subscriptions",
               destination: ClockView(
                 store: self.store.scope(
@@ -312,7 +302,7 @@ struct RootView: View {
 struct RootView_Previews: PreviewProvider {
   static var previews: some View {
     RootView(
-      store: .init(
+      store: Store(
         initialState: RootState(),
         reducer: rootReducer,
         environment: .live

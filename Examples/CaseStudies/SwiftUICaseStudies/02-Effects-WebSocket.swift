@@ -41,6 +41,7 @@ struct WebSocketEnvironment {
 
 let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnvironment> {
   state, action, environment in
+
   struct WebSocketId: Hashable {}
 
   var receiveSocketMessageEffect: Effect<WebSocketAction, Never> {
@@ -52,8 +53,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
   var sendPingEffect: Effect<WebSocketAction, Never> {
     return environment.webSocket.sendPing(WebSocketId())
       .delay(for: 10, scheduler: environment.mainQueue)
-      .map(WebSocketAction.pingResponse)
-      .eraseToEffect()
+      .eraseToEffect(WebSocketAction.pingResponse)
       .cancellable(id: WebSocketId())
   }
 
@@ -70,11 +70,12 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
 
     case .disconnected:
       state.connectivityState = .connecting
-      return environment.webSocket.open(WebSocketId(), URL(string: "wss://echo.websocket.org")!, [])
-        .receive(on: environment.mainQueue)
-        .map(WebSocketAction.webSocket)
-        .eraseToEffect()
-        .cancellable(id: WebSocketId())
+      return environment.webSocket.open(
+        WebSocketId(), URL(string: "wss://echo.websocket.events")!, []
+      )
+      .receive(on: environment.mainQueue)
+      .eraseToEffect(WebSocketAction.webSocket)
+      .cancellable(id: WebSocketId())
     }
 
   case let .messageToSendChanged(message):
@@ -104,12 +105,11 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
 
     return environment.webSocket.send(WebSocketId(), .string(messageToSend))
       .receive(on: environment.mainQueue)
-      .eraseToEffect()
-      .map(WebSocketAction.sendResponse)
+      .eraseToEffect(WebSocketAction.sendResponse)
 
   case let .sendResponse(error):
     if error != nil {
-      state.alert = .init(title: .init("Could not send socket message. Try again."))
+      state.alert = AlertState(title: TextState("Could not send socket message. Try again."))
     }
     return .none
 
@@ -121,7 +121,9 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
     let .webSocket(.didCompleteWithError(error)):
     state.connectivityState = .disconnected
     if error != nil {
-      state.alert = .init(title: .init("Disconnected from socket for some reason. Try again."))
+      state.alert = AlertState(
+        title: TextState("Disconnected from socket for some reason. Try again.")
+      )
     }
     return .cancel(id: WebSocketId())
 
@@ -267,7 +269,7 @@ extension WebSocketClient {
           case let .success(.some(message)):
             callback(.success(message))
           case .success(.none):
-            callback(.failure(NSError.init(domain: "co.pointfree", code: 1)))
+            callback(.failure(NSError(domain: "co.pointfree", code: 1)))
           case let .failure(error):
             callback(.failure(error as NSError))
           }
@@ -349,7 +351,7 @@ struct WebSocketView_Previews: PreviewProvider {
     NavigationView {
       WebSocketView(
         store: Store(
-          initialState: .init(receivedMessages: ["Echo"]),
+          initialState: WebSocketState(receivedMessages: ["Echo"]),
           reducer: webSocketReducer,
           environment: WebSocketEnvironment(
             mainQueue: .main,

@@ -75,7 +75,7 @@
   }
 
   extension View {
-    func synchronize<Value: Equatable>(
+    func synchronize<Value>(
       _ first: Binding<Value>,
       _ second: FocusState<Value>.Binding
     ) -> some View {
@@ -90,9 +90,9 @@
       NavigationView {
         FocusDemoView(
           store: Store(
-            initialState: .init(),
+            initialState: FocusDemoState(),
             reducer: focusDemoReducer,
-            environment: .init()
+            environment: FocusDemoEnvironment()
           )
         )
       }

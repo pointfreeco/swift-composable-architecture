@@ -3,6 +3,30 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
+// NB: Deprecated after 0.36.0:
+
+extension ViewStore {
+  @available(*, deprecated, renamed: "yield(while:)")
+  public func suspend(while predicate: @escaping (State) -> Bool) async {
+    await self.yield(while: predicate)
+  }
+}
+
+// NB: Deprecated after 0.34.0:
+
+extension Effect {
+  @available(
+    *,
+    deprecated,
+    message:
+      "Using a variadic list is no longer supported. Use an array of identifiers instead. For more on this change, see: https://github.com/pointfreeco/swift-composable-architecture/pull/1041"
+  )
+  @_disfavoredOverload
+  public static func cancel(ids: AnyHashable...) -> Self {
+    .cancel(ids: ids)
+  }
+}
+
 // NB: Deprecated after 0.31.0:
 
 extension Reducer {
@@ -115,10 +139,10 @@ extension Reducer {
       func assert(step: Step) {
         switch step.type {
         case let .send(action, update):
-          self.send(action, file: step.file, line: step.line, update)
+          self.send(action, update, file: step.file, line: step.line)
 
         case let .receive(expectedAction, update):
-          self.receive(expectedAction, file: step.file, line: step.line, update)
+          self.receive(expectedAction, update, file: step.file, line: step.line)
 
         case let .environment(work):
           if !self.receivedActions.isEmpty {
@@ -190,7 +214,7 @@ extension Reducer {
         _ action: LocalAction,
         file: StaticString = #file,
         line: UInt = #line,
-        _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+        _ update: ((inout LocalState) throws -> Void)? = nil
       ) -> Step {
         Step(.send(action, update), file: file, line: line)
       }
@@ -200,7 +224,7 @@ extension Reducer {
         _ action: Action,
         file: StaticString = #file,
         line: UInt = #line,
-        _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+        _ update: ((inout LocalState) throws -> Void)? = nil
       ) -> Step {
         Step(.receive(action, update), file: file, line: line)
       }
@@ -242,8 +266,8 @@ extension Reducer {
       }
 
       fileprivate indirect enum StepType {
-        case send(LocalAction, (inout LocalState) throws -> Void)
-        case receive(Action, (inout LocalState) throws -> Void)
+        case send(LocalAction, ((inout LocalState) throws -> Void)?)
+        case receive(Action, ((inout LocalState) throws -> Void)?)
         case environment((inout Environment) throws -> Void)
         case `do`(() throws -> Void)
         case sequence([Step])
@@ -339,16 +363,15 @@ extension Store {
 }
 
 #if compiler(>=5.4)
-  extension ViewStore {
+  extension ViewStore where Action: BindableAction, Action.State == State {
     @available(
       *, deprecated,
       message:
         "Dynamic member lookup is no longer supported for bindable state. Instead of dot-chaining on the view store, e.g. 'viewStore.$value', invoke the 'binding' method on view store with a key path to the value, e.g. 'viewStore.binding(\\.$value)'. For more on this change, see: https://github.com/pointfreeco/swift-composable-architecture/pull/810"
     )
-    public subscript<Value>(
+    public subscript<Value: Equatable>(
       dynamicMember keyPath: WritableKeyPath<State, BindableState<Value>>
-    ) -> Binding<Value>
-    where Action: BindableAction, Action.State == State, Value: Equatable {
+    ) -> Binding<Value> {
       self.binding(
         get: { $0[keyPath: keyPath].wrappedValue },
         send: { .binding(.set(keyPath, $0)) }
@@ -366,11 +389,10 @@ extension Store {
       message:
         "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\\.$value'"
     )
-    public static func set<Value>(
+    public static func set<Value: Equatable>(
       _ keyPath: WritableKeyPath<Root, Value>,
       _ value: Value
-    ) -> Self
-    where Value: Equatable {
+    ) -> Self {
       .init(
         keyPath: keyPath,
         set: { $0[keyPath: keyPath] = value },
@@ -413,11 +435,10 @@ extension Store {
       message:
         "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. Bindings are now derived via 'ViewStore.binding' with a key path to that 'BindableState' (for example, 'viewStore.binding(\\.$value)'). For dynamic member lookup to be available, the view store's 'Action' type must also conform to 'BindableAction'."
     )
-    public func binding<LocalState>(
+    public func binding<LocalState: Equatable>(
       keyPath: WritableKeyPath<State, LocalState>,
       send action: @escaping (BindingAction<State>) -> Action
-    ) -> Binding<LocalState>
-    where LocalState: Equatable {
+    ) -> Binding<LocalState> {
       self.binding(
         get: { $0[keyPath: keyPath] },
         send: { action(.set(keyPath, $0)) }
@@ -431,11 +452,10 @@ extension Store {
       message:
         "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\\.$value'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'."
     )
-    public static func set<Value>(
+    public static func set<Value: Equatable>(
       _ keyPath: WritableKeyPath<Root, Value>,
       _ value: Value
-    ) -> Self
-    where Value: Equatable {
+    ) -> Self {
       .init(
         keyPath: keyPath,
         set: { $0[keyPath: keyPath] = value },
@@ -478,11 +498,10 @@ extension Store {
       message:
         "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. Bindings are now derived via 'ViewStore.binding' with a key path to that 'BindableState' (for example, 'viewStore.binding(\\.$value)'). For dynamic member lookup to be available, the view store's 'Action' type must also conform to 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'BindableState' and 'BindableAction'."
     )
-    public func binding<LocalState>(
+    public func binding<LocalState: Equatable>(
       keyPath: WritableKeyPath<State, LocalState>,
       send action: @escaping (BindingAction<State>) -> Action
-    ) -> Binding<LocalState>
-    where LocalState: Equatable {
+    ) -> Binding<LocalState> {
       self.binding(
         get: { $0[keyPath: keyPath] },
         send: { action(.set(keyPath, $0)) }
@@ -543,43 +562,43 @@ extension Reducer {
         return .none
       }
       if index >= globalState[keyPath: toLocalState].endIndex {
-        #if DEBUG
-          runtimeWarning(
-            """
-            A "forEach" reducer at "%@:%d" received an action when state contained no element at \
-            that index. …
+        runtimeWarning(
+          """
+          A "forEach" reducer at "%@:%d" received an action when state contained no element at \
+          that index. …
 
-              Action:
-                %@
-              Index:
-                %d
+            Action:
+              %@
+            Index:
+              %d
 
-            This is generally considered an application logic error, and can happen for a few \
-            reasons:
+          This is generally considered an application logic error, and can happen for a few \
+          reasons:
 
-            • This "forEach" reducer was combined with or run from another reducer that removed \
-            the element at this index when it handled this action. To fix this make sure that this \
-            "forEach" reducer is run before any other reducers that can move or remove elements \
-            from state. This ensures that "forEach" reducers can handle their actions for the \
-            element at the intended index.
+          • This "forEach" reducer was combined with or run from another reducer that removed \
+          the element at this index when it handled this action. To fix this make sure that this \
+          "forEach" reducer is run before any other reducers that can move or remove elements \
+          from state. This ensures that "forEach" reducers can handle their actions for the \
+          element at the intended index.
 
-            • An in-flight effect emitted this action while state contained no element at this \
-            index. While it may be perfectly reasonable to ignore this action, you may want to \
-            cancel the associated effect when moving or removing an element. If your "forEach" \
-            reducer returns any long-living effects, you should use the identifier-based "forEach" \
-            instead.
+          • An in-flight effect emitted this action while state contained no element at this \
+          index. While it may be perfectly reasonable to ignore this action, you may want to \
+          cancel the associated effect when moving or removing an element. If your "forEach" \
+          reducer returns any long-living effects, you should use the identifier-based "forEach" \
+          instead.
 
-            • This action was sent to the store while its state contained no element at this index \
-            To fix this make sure that actions for this reducer can only be sent to a view store \
-            when its state contains an element at this index. In SwiftUI applications, use \
-            "ForEachStore".
-            """,
+          • This action was sent to the store while its state contained no element at this index \
+          To fix this make sure that actions for this reducer can only be sent to a view store \
+          when its state contains an element at this index. In SwiftUI applications, use \
+          "ForEachStore".
+          """,
+          [
             "\(file)",
             line,
             debugCaseOutput(localAction),
-            index
-          )
-        #endif
+            index,
+          ]
+        )
         return .none
       }
       return self.run(
@@ -601,7 +620,6 @@ extension ForEachStore {
   )
   where
     Data == [EachState],
-    EachContent: View,
     Content == WithViewStore<
       [ID], (Data.Index, EachAction), ForEach<[(offset: Int, element: ID)], ID, EachContent>
     >
@@ -629,7 +647,6 @@ extension ForEachStore {
   )
   where
     Data == [EachState],
-    EachContent: View,
     Content == WithViewStore<
       [ID], (Data.Index, EachAction), ForEach<[(offset: Int, element: ID)], ID, EachContent>
     >,

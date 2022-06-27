@@ -12,7 +12,7 @@ private let readMe = """
 extension Reducer {
   static func subscriptions(
     _ subscriptions: @escaping (State, Environment) -> [AnyHashable: Effect<Action, Never>]
-  ) -> Reducer {
+  ) -> Self {
     var activeSubscriptions: [AnyHashable: Effect<Action, Never>] = [:]
 
     return Reducer { state, _, environment in

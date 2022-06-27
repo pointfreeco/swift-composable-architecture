@@ -133,7 +133,7 @@ extension TextState {
   }
 
   @_disfavoredOverload
-  public init<S>(_ content: S) where S: StringProtocol {
+  public init<S: StringProtocol>(_ content: S) {
     self.init(verbatim: String(content))
   }
 

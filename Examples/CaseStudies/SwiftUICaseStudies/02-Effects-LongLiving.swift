@@ -27,10 +27,7 @@ enum LongLivingEffectsAction {
 }
 
 struct LongLivingEffectsEnvironment {
-  // An effect that emits Void whenever the user takes a screenshot of the device. We use this
-  // instead of `NotificationCenter.default.publisher` directly in the reducer so that we can test
-  // it.
-  var userDidTakeScreenshot: Effect<Void, Never>
+  var notificationCenter: NotificationCenter
 }
 
 // MARK: - Business logic
@@ -39,7 +36,7 @@ let longLivingEffectsReducer = Reducer<
   LongLivingEffectsState, LongLivingEffectsAction, LongLivingEffectsEnvironment
 > { state, action, environment in
 
-  struct UserDidTakeScreenshotNotificationId: Hashable {}
+  enum UserDidTakeScreenshotNotificationId {}
 
   switch action {
   case .userDidTakeScreenshotNotification:
@@ -48,13 +45,14 @@ let longLivingEffectsReducer = Reducer<
 
   case .onAppear:
     // When the view appears, start the effect that emits when screenshots are taken.
-    return environment.userDidTakeScreenshot
-      .map { LongLivingEffectsAction.userDidTakeScreenshotNotification }
-      .cancellable(id: UserDidTakeScreenshotNotificationId())
+    return environment.notificationCenter
+      .publisher(for: UIApplication.userDidTakeScreenshotNotification)
+      .eraseToEffect { _ in LongLivingEffectsAction.userDidTakeScreenshotNotification }
+      .cancellable(id: UserDidTakeScreenshotNotificationId.self)
 
   case .onDisappear:
     // When view disappears, stop the effect.
-    return .cancel(id: UserDidTakeScreenshotNotificationId())
+    return .cancel(id: UserDidTakeScreenshotNotificationId.self)
   }
 }
 
@@ -103,7 +101,7 @@ struct EffectsLongLiving_Previews: PreviewProvider {
         initialState: LongLivingEffectsState(),
         reducer: longLivingEffectsReducer,
         environment: LongLivingEffectsEnvironment(
-          userDidTakeScreenshot: .none
+          notificationCenter: .default
         )
       )
     )

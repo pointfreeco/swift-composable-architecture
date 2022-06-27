@@ -20,7 +20,7 @@ private let readMe = """
 
 // MARK: - Favorite domain
 
-struct FavoriteState<ID>: Equatable, Identifiable where ID: Hashable {
+struct FavoriteState<ID: Hashable>: Equatable, Identifiable {
   var alert: AlertState<FavoriteAction>?
   let id: ID
   var isFavorite: Bool
@@ -38,7 +38,7 @@ struct FavoriteEnvironment<ID> {
 }
 
 /// A cancellation token that cancels in-flight favoriting requests.
-struct FavoriteCancelId<ID>: Hashable where ID: Hashable {
+struct FavoriteCancelId<ID: Hashable>: Hashable {
   var id: ID
 }
 
@@ -52,11 +52,11 @@ struct FavoriteError: Equatable, Error, Identifiable {
 
 extension Reducer {
   /// Enhances a reducer with favoriting logic.
-  func favorite<ID>(
+  func favorite<ID: Hashable>(
     state: WritableKeyPath<State, FavoriteState<ID>>,
     action: CasePath<Action, FavoriteAction>,
     environment: @escaping (Environment) -> FavoriteEnvironment<ID>
-  ) -> Reducer where ID: Hashable {
+  ) -> Self {
     .combine(
       self,
       Reducer<FavoriteState<ID>, FavoriteAction, FavoriteEnvironment> {
@@ -77,7 +77,7 @@ extension Reducer {
             .cancellable(id: FavoriteCancelId(id: state.id), cancelInFlight: true)
 
         case let .response(.failure(error)):
-          state.alert = .init(title: TextState(error.localizedDescription))
+          state.alert = AlertState(title: TextState(error.localizedDescription))
           return .none
 
         case let .response(.success(isFavorite)):
@@ -90,7 +90,7 @@ extension Reducer {
   }
 }
 
-struct FavoriteButton<ID>: View where ID: Hashable {
+struct FavoriteButton<ID: Hashable>: View {
   let store: Store<FavoriteState<ID>, FavoriteAction>
 
   var body: some View {

@@ -40,7 +40,7 @@ import SwiftUI
     ) -> Self where Failure == Never {
       var task: Task<Void, Never>?
       return .future { callback in
-        task = Task(priority: priority) {
+        task = Task(priority: priority) { @MainActor in
           guard !Task.isCancelled else { return }
           let output = await operation()
           guard !Task.isCancelled else { return }
@@ -85,7 +85,7 @@ import SwiftUI
     ) -> Self where Failure == Error {
       Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
         let subject = PassthroughSubject<Output, Failure>()
-        let task = Task(priority: priority) {
+        let task = Task(priority: priority) { @MainActor in
           do {
             try Task.checkCancellation()
             let output = try await operation()
@@ -101,6 +101,22 @@ import SwiftUI
         return subject.handleEvents(receiveCancel: task.cancel)
       }
       .eraseToEffect()
+    }
+
+    /// Creates an effect that executes some work in the real world that doesn't need to feed data
+    /// back into the store. If an error is thrown, the effect will complete and the error will be ignored.
+    ///
+    /// - Parameters:
+    ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
+    ///     `Task.currentPriority`.
+    ///   - work: A closure encapsulating some work to execute in the real world.
+    /// - Returns: An effect.
+    public static func fireAndForget(
+      priority: TaskPriority? = nil,
+      _ work: @escaping @Sendable () async throws -> Void
+    ) -> Self {
+      Effect<Void, Never>.task(priority: priority) { try? await work() }
+        .fireAndForget()
     }
   }
 #endif

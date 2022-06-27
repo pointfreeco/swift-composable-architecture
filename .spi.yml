@@ -1,5 +1,12 @@
 version: 1
 builder:
   configs:
+  - platform: ios
+    scheme: ComposableArchitecture
+  - platform: macos-xcodebuild
+    scheme: ComposableArchitecture
+  - platform: tvos
+    scheme: ComposableArchitecture
   - platform: watchos
     scheme: ComposableArchitecture_watchOS
+  - documentation_targets: [ComposableArchitecture]

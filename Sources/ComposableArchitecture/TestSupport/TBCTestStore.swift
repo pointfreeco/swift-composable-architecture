@@ -112,7 +112,7 @@ extension TBCTestStore where LocalState: Equatable {
     ) {
         switch storeImplementation {
         case let .exhaustive(store):
-            store.send(action, file: file, line: line, update)
+            store.send(action, update, file: file, line: line)
         case let .nonExhaustive(store):
             store.send(action, file: file, line: line, update)
         }
@@ -128,7 +128,7 @@ extension TBCTestStore where LocalState: Equatable, Action: Equatable {
     ) {
         switch storeImplementation {
         case let .exhaustive(store):
-            store.receive(expectedAction, file: file, line: line, update)
+            store.receive(expectedAction, update, file: file, line: line)
         case let .nonExhaustive(store):
             store.receive(expectedAction, file: file, line: line, update)
         }

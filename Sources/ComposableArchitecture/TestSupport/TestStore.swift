@@ -43,7 +43,6 @@
   /// struct CounterState {
   ///   var count = 0
   /// }
-  ///
   /// enum CounterAction: Equatable {
   ///   case decrementButtonTapped
   ///   case incrementButtonTapped
@@ -68,12 +67,12 @@
   /// class CounterTests: XCTestCase {
   ///   func testCounter() {
   ///     let store = TestStore(
-  ///       initialState: .init(count: 0),     // GIVEN counter state of 0
+  ///       initialState: CounterState(count: 0),  // Given a counter state of 0
   ///       reducer: counterReducer,
   ///       environment: ()
   ///     )
-  ///     store.send(.incrementButtonTapped) { // WHEN the increment button is tapped
-  ///       $0.count = 1                       // THEN the count should be 1
+  ///     store.send(.incrementButtonTapped) {     // When the increment button is tapped
+  ///       $0.count = 1                           // Then the count should be 1
   ///     }
   ///   }
   /// }
@@ -84,8 +83,8 @@
   /// to match the state after the action was sent. In this case the `count` field changes to `1`.
   ///
   /// For a more complex example, consider the following bare-bones search feature that uses the
-  /// ``Effect/debounce(id:for:scheduler:options:)`` operator to wait for the user to stop typing
-  /// before making a network request:
+  /// ``Effect/debounce(id:for:scheduler:options:)-76yye`` operator to wait for the user to stop
+  /// typing before making a network request:
   ///
   /// ```swift
   /// struct SearchState: Equatable {
@@ -106,13 +105,13 @@
   /// let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
   ///   state, action, environment in
   ///
-  ///     struct SearchId: Hashable {}
+  ///     enum SearchId {}
   ///
   ///     switch action {
   ///     case let .queryChanged(query):
   ///       state.query = query
   ///       return environment.request(self.query)
-  ///         .debounce(id: SearchId(), for: 0.5, scheduler: environment.mainQueue)
+  ///         .debounce(id: SearchId.self, for: 0.5, scheduler: environment.mainQueue)
   ///
   ///     case let .response(results):
   ///       state.results = results
@@ -169,12 +168,22 @@
   /// not expect it would cause a test failure.
   ///
   public final class TestStore<State, LocalState, Action, LocalAction, Environment> {
+    /// The current environment.
+    ///
+    /// The environment can be modified throughout a test store's lifecycle in order to influence
+    /// how it produces effects.
     public var environment: Environment
+
+    /// The current state.
+    ///
+    /// When read from a trailing closure assertion in ``send(_:_:file:line:)`` or
+    /// ``receive(_:_:file:line:)``, it will equal the `inout` state passed to the closure.
+    public private(set) var state: State
 
     private let file: StaticString
     private let fromLocalAction: (LocalAction) -> Action
     private var line: UInt
-    private var longLivingEffects: Set<LongLivingEffect> = []
+    private var inFlightEffects: Set<LongLivingEffect> = []
     var receivedActions: [(action: Action, state: State)] = []
     private let reducer: Reducer<State, Action, Environment>
     private(set) var snapshotState: State
@@ -195,6 +204,7 @@
       self.fromLocalAction = fromLocalAction
       self.line = line
       self.reducer = reducer
+      self.state = initialState
       self.snapshotState = initialState
       self.toLocalState = toLocalState
 
@@ -205,7 +215,7 @@
           switch action.origin {
           case let .send(localAction):
             effects = self.reducer.run(&state, self.fromLocalAction(localAction), self.environment)
-            self.snapshotState = state
+            self.state = state
 
           case let .receive(action):
             effects = self.reducer.run(&state, action, self.environment)
@@ -217,13 +227,12 @@
             effects
             .handleEvents(
               receiveSubscription: { [weak self] _ in
-                self?.longLivingEffects.insert(effect)
+                self?.inFlightEffects.insert(effect)
               },
-              receiveCompletion: { [weak self] _ in self?.longLivingEffects.remove(effect) },
-              receiveCancel: { [weak self] in self?.longLivingEffects.remove(effect) }
+              receiveCompletion: { [weak self] _ in self?.inFlightEffects.remove(effect) },
+              receiveCancel: { [weak self] in self?.inFlightEffects.remove(effect) }
             )
-            .map { .init(origin: .receive($0), file: action.file, line: action.line) }
-            .eraseToEffect()
+            .eraseToEffect { .init(origin: .receive($0), file: action.file, line: action.line) }
 
         },
         environment: ()
@@ -248,7 +257,7 @@
           file: self.file, line: self.line
         )
       }
-      for effect in self.longLivingEffects {
+      for effect in self.inFlightEffects {
         XCTFail(
           """
           An effect returned for this action is still running. It must complete before the end of \
@@ -337,11 +346,19 @@
   }
 
   extension TestStore where LocalState: Equatable {
+    /// Sends an action to the store and asserts when state changes.
+    ///
+    /// - Parameters:
+    ///   - action: An action.
+    ///   - updateExpectingResult: A closure that asserts state changed by sending the action to the
+    ///     store. The mutable state sent to this closure must be modified to match the state of the
+    ///     store after processing the given action. Do not provide a closure if no change is
+    ///     expected.
     public func send(
       _ action: LocalAction,
+      _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString = #file,
-      line: UInt = #line,
-      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+      line: UInt = #line
     ) {
       if !self.receivedActions.isEmpty {
         var actions = ""
@@ -356,30 +373,41 @@
           file: file, line: line
         )
       }
-      var expectedState = self.toLocalState(self.snapshotState)
+      var expectedState = self.toLocalState(self.state)
+      let previousState = self.state
       self.store.send(.init(origin: .send(action), file: file, line: line))
       do {
-        try update(&expectedState)
+        let currentState = self.state
+        self.state = previousState
+        defer { self.state = currentState }
+
+        try Self.expectedStateShouldMatch(
+          expected: &expectedState,
+          actual: self.toLocalState(currentState),
+          modify: updateExpectingResult,
+          file: file,
+          line: line
+        )
       } catch {
         XCTFail("Threw error: \(error)", file: file, line: line)
       }
-      Self.expectedStateShouldMatch(
-        expected: expectedState,
-        actual: self.toLocalState(self.snapshotState),
-        file: file,
-        line: line
-      )
       if "\(self.file)" == "\(file)" {
         self.line = line
       }
     }
 
     static func expectedStateShouldMatch(
-      expected: LocalState,
+      expected: inout LocalState,
       actual: LocalState,
+      modify: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString,
       line: UInt
-    ) {
+    ) throws {
+      let current = expected
+      if let modify = modify {
+        try modify(&expected)
+      }
+
       if expected != actual {
         let difference =
           diff(expected, actual, format: .proportional)
@@ -392,25 +420,47 @@
           \(String(describing: actual).indent(by: 2))
           """
 
+        let messageHeading =
+          modify != nil
+          ? "A state change does not match expectation"
+          : "State was not expected to change, but a change occurred"
         XCTFail(
           """
-          State change does not match expectation: …
+          \(messageHeading): …
 
           \(difference)
           """,
           file: file,
           line: line
         )
+      } else if expected == current && modify != nil {
+        XCTFail(
+          """
+          Expected state to change, but no change occurred.
+
+          The trailing closure made no observable modifications to state. If no change to state is \
+          expected, omit the trailing closure.
+          """,
+          file: file, line: line
+        )
       }
     }
   }
 
   extension TestStore where LocalState: Equatable, Action: Equatable {
+    /// Asserts an action was received from an effect and asserts when state changes.
+    ///
+    /// - Parameters:
+    ///   - expectedAction: An action expected from an effect.
+    ///   - updateExpectingResult: A closure that asserts state changed by sending the action to the
+    ///     store. The mutable state sent to this closure must be modified to match the state of the
+    ///     store after processing the given action. Do not provide a closure if no change is
+    ///     expected.
     public func receive(
       _ expectedAction: Action,
+      _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString = #file,
-      line: UInt = #line,
-      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+      line: UInt = #line
     ) {
       guard !self.receivedActions.isEmpty else {
         XCTFail(
@@ -443,19 +493,20 @@
           file: file, line: line
         )
       }
-      var expectedState = self.toLocalState(self.snapshotState)
+      var expectedState = self.toLocalState(self.state)
       do {
-        try update(&expectedState)
+      try Self.expectedStateShouldMatch(
+          expected: &expectedState,
+          actual: self.toLocalState(state),
+          modify: updateExpectingResult,
+          file: file,
+          line: line
+        )
       } catch {
         XCTFail("Threw error: \(error)", file: file, line: line)
       }
-      Self.expectedStateShouldMatch(
-        expected: expectedState,
-        actual: self.toLocalState(state),
-        file: file,
-        line: line
-      )
       snapshotState = state
+      self.state = state
       if "\(self.file)" == "\(file)" {
         self.line = line
       }

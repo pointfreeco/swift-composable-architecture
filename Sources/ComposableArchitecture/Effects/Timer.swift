@@ -15,12 +15,12 @@ extension Effect where Failure == Never {
   /// we can see how effects emit. However, because `Timer.publish` takes a concrete `RunLoop` as
   /// its scheduler, we can't substitute in a `TestScheduler` during tests`.
   ///
-  /// That is why we provide the ``Effect/timer(id:every:tolerance:on:options:)`` effect. It allows you to create a timer that works
-  /// with any scheduler, not just a run loop, which means you can use a `DispatchQueue` or
-  /// `RunLoop` when running your live app, but use a `TestScheduler` in tests.
+  /// That is why we provide `Effect.timer`. It allows you to create a timer that works with any
+  /// scheduler, not just a run loop, which means you can use a `DispatchQueue` or `RunLoop` when
+  /// running your live app, but use a `TestScheduler` in tests.
   ///
   /// To start and stop a timer in your feature you can create the timer effect from an action
-  /// and then use the ``Effect/cancel(id:)`` effect to stop the timer:
+  /// and then use the ``Effect/cancel(id:)-iun1`` effect to stop the timer:
   ///
   /// ```swift
   /// struct AppState {
@@ -89,24 +89,55 @@ extension Effect where Failure == Never {
   ///   [`CombineSchedulers`](https://github.com/pointfreeco/combine-schedulers) module.
   ///
   /// - Parameters:
+  ///   - id: The effect's identifier.
   ///   - interval: The time interval on which to publish events. For example, a value of `0.5`
   ///     publishes an event approximately every half-second.
   ///   - scheduler: The scheduler on which the timer runs.
   ///   - tolerance: The allowed timing variance when emitting events. Defaults to `nil`, which
   ///     allows any variance.
   ///   - options: Scheduler options passed to the timer. Defaults to `nil`.
-  public static func timer<S>(
+  public static func timer<S: Scheduler>(
     id: AnyHashable,
     every interval: S.SchedulerTimeType.Stride,
     tolerance: S.SchedulerTimeType.Stride? = nil,
     on scheduler: S,
     options: S.SchedulerOptions? = nil
-  ) -> Effect where S: Scheduler, S.SchedulerTimeType == Output {
+  ) -> Self where S.SchedulerTimeType == Output {
 
     Publishers.Timer(every: interval, tolerance: tolerance, scheduler: scheduler, options: options)
       .autoconnect()
       .setFailureType(to: Failure.self)
       .eraseToEffect()
       .cancellable(id: id, cancelInFlight: true)
+  }
+
+  /// Returns an effect that repeatedly emits the current time of the given scheduler on the given
+  /// interval.
+  ///
+  /// A convenience for calling ``Effect/timer(id:every:tolerance:on:options:)-4exe6`` with a
+  /// static type as the effect's unique identifier.
+  ///
+  /// - Parameters:
+  ///   - id: A unique type identifying the effect.
+  ///   - interval: The time interval on which to publish events. For example, a value of `0.5`
+  ///     publishes an event approximately every half-second.
+  ///   - scheduler: The scheduler on which the timer runs.
+  ///   - tolerance: The allowed timing variance when emitting events. Defaults to `nil`, which
+  ///     allows any variance.
+  ///   - options: Scheduler options passed to the timer. Defaults to `nil`.
+  public static func timer<S: Scheduler>(
+    id: Any.Type,
+    every interval: S.SchedulerTimeType.Stride,
+    tolerance: S.SchedulerTimeType.Stride? = nil,
+    on scheduler: S,
+    options: S.SchedulerOptions? = nil
+  ) -> Self where S.SchedulerTimeType == Output {
+    self.timer(
+      id: ObjectIdentifier(id),
+      every: interval,
+      tolerance: tolerance,
+      on: scheduler,
+      options: options
+    )
   }
 }

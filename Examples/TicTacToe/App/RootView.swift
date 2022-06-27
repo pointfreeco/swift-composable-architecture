@@ -42,9 +42,9 @@ struct RootView: View {
   var body: some View {
     NavigationView {
       Form {
-        Section(
-          header: Text(readMe).padding([.bottom], 16)
-        ) {
+        Text(readMe)
+
+        Section {
           Button("SwiftUI version") { self.showGame = .swiftui }
           Button("UIKit version") { self.showGame = .uikit }
         }

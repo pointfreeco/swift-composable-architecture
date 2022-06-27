@@ -82,10 +82,9 @@ struct LifecycleDemoView: View {
       VStack {
         Button("Toggle Timer") { viewStore.send(.toggleTimerButtonTapped) }
 
-        IfLetStore(
-          self.store.scope(state: \.count, action: LifecycleDemoAction.timer),
-          then: TimerView.init(store:)
-        )
+        IfLetStore(self.store.scope(state: \.count, action: LifecycleDemoAction.timer)) {
+          TimerView(store: $0)
+        }
 
         Spacer()
       }
@@ -94,7 +93,7 @@ struct LifecycleDemoView: View {
   }
 }
 
-private struct TimerId: Hashable {}
+private enum TimerId {}
 
 enum TimerAction {
   case decrementButtonTapped
@@ -124,11 +123,11 @@ private let timerReducer = Reducer<Int, TimerAction, TimerEnvironment> {
 }
 .lifecycle(
   onAppear: {
-    Effect.timer(id: TimerId(), every: 1, tolerance: 0, on: $0.mainQueue)
+    Effect.timer(id: TimerId.self, every: 1, tolerance: 0, on: $0.mainQueue)
       .map { _ in TimerAction.tick }
   },
   onDisappear: { _ in
-    .cancel(id: TimerId())
+    .cancel(id: TimerId.self)
   }
 )
 
@@ -155,10 +154,10 @@ struct Lifecycle_Previews: PreviewProvider {
     Group {
       NavigationView {
         LifecycleDemoView(
-          store: .init(
-            initialState: .init(),
+          store: Store(
+            initialState: LifecycleDemoState(),
             reducer: lifecycleDemoReducer,
-            environment: .init(
+            environment: LifecycleDemoEnvironment(
               mainQueue: .main
             )
           )

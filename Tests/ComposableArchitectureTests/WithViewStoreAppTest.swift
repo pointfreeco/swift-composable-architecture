@@ -1,10 +1,12 @@
-// NB: This file gathers coverage of `WithViewStore` use as a `Scene`.
+// NB: This file gathers coverage of various `WithViewStore` conformances.
 
 import ComposableArchitecture
 import SwiftUI
 
 @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 struct TestApp: App {
+  @Namespace var namespace
+
   let store = Store(
     initialState: 0,
     reducer: Reducer<Int, Void, Void> { state, _, _ in
@@ -16,23 +18,48 @@ struct TestApp: App {
 
   var body: some Scene {
     WithViewStore(self.store) { viewStore in
-      #if os(iOS) || os(macOS)
-        WindowGroup {
-          EmptyView()
-        }
-        .commands {
+      WindowGroup {
+        checkAccessibilityRotor()
+        checkToolbar()
+      }
+    }
+  }
+
+  #if os(iOS) || os(macOS)
+    var commands: some Scene {
+      self.body.commands {
+        WithViewStore(self.store) { viewStore in
           CommandMenu("Commands") {
             Button("Increment") {
               viewStore.send(())
             }
-            .keyboardShortcut("+")
           }
         }
-      #else
-        WindowGroup {
-          EmptyView()
+      }
+    }
+  #endif
+
+  @ViewBuilder
+  func checkToolbar() -> some View {
+    Color.clear
+      .toolbar {
+        WithViewStore(store) { viewStore in
+          ToolbarItem {
+            Button(action: { viewStore.send(()) }, label: { Text("Increment") })
+          }
         }
-      #endif
+      }
+  }
+
+  @ViewBuilder
+  func checkAccessibilityRotor() -> some View {
+    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+      Color.clear
+        .accessibilityRotor("Rotor") {
+          WithViewStore(store) { viewStore in
+            AccessibilityRotorEntry("Value: \(viewStore.state)", 0, in: namespace)
+          }
+        }
     }
   }
 }

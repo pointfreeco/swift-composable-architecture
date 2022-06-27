@@ -88,9 +88,9 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
       return .none
 
     case .todo(id: _, action: .checkBoxToggled):
-      struct TodoCompletionId: Hashable {}
+      enum TodoCompletionId {}
       return Effect(value: .sortCompletedTodos)
-        .debounce(id: TodoCompletionId(), for: 1, scheduler: environment.mainQueue.animation())
+        .debounce(id: TodoCompletionId.self, for: 1, scheduler: environment.mainQueue.animation())
 
     case .todo:
       return .none
@@ -136,9 +136,10 @@ struct AppView: View {
 
         List {
           ForEachStore(
-            self.store.scope(state: \.filteredTodos, action: AppAction.todo(id:action:)),
-            content: TodoView.init(store:)
-          )
+            self.store.scope(state: \.filteredTodos, action: AppAction.todo(id:action:))
+          ) {
+            TodoView(store: $0)
+          }
           .onDelete { self.viewStore.send(.delete($0)) }
           .onMove { self.viewStore.send(.move($0, $1)) }
         }
