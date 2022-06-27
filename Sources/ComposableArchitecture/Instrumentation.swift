@@ -38,6 +38,7 @@ public class Instrumentation {
   /// Type indicating the action being taken by the store
   public enum CallbackKind: CaseIterable, Hashable {
     case storeSend
+    case storeToLocal
     case storeChangeState
     case storeProcessEvent
     case viewStoreSend

@@ -326,7 +326,8 @@ public final class Store<State, Action> {
   public func scope<LocalState, LocalAction>(
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action,
-    removeDuplicates isDuplicate: ((LocalState, LocalState) -> Bool)? = nil
+    removeDuplicates isDuplicate: ((LocalState, LocalState) -> Bool)? = nil,
+    instrumentation: Instrumentation = .shared
   ) -> Store<LocalState, LocalAction> {
     self.threadCheck(status: .scope)
     var isSending = false
@@ -345,7 +346,10 @@ public final class Store<State, Action> {
       .dropFirst()
       .sink { [weak localStore] newValue in
         guard !isSending else { return }
+        let callbackInfo = Instrumentation.CallbackInfo<Self.Type, Any>(storeKind: Self.self, action: nil, originatingAction: nil).eraseToAny()
+        instrumentation.callback?(callbackInfo, .pre, .storeToLocal)
         let newLocalState = toLocalState(newValue)
+        instrumentation.callback?(callbackInfo, .post, .storeToLocal)
         guard let previousState = localStore?.state.value, let isDuplicate = isDuplicate else {
             localStore?.state.value = newLocalState
             return
