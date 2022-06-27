@@ -1,5 +1,6 @@
 import Combine
 import ComposableArchitecture
+import Foundation
 import SwiftUI
 
 func equals(_ lhs: Any, _ rhs: Any) -> Bool {
@@ -69,15 +70,23 @@ private let readMe = """
 struct EffectsBasicsState: Equatable {
   var count = 0
   var isNumberFactRequestInFlight = false
+  var isTimerActive = false
   var numberFact: String?
+  var nthPrimeEvent: NthPrimeEvent?
 }
 
 enum EffectsBasicsAction: Equatable {
   case decrementButtonTapped
   case delayedDecrementButtonTapped
   case incrementButtonTapped
+  case megaIncrementButtonTapped
+  case nthPrimeButtonTapped
+  case nthPrimeEvent(NthPrimeEvent)
   case numberFactButtonTapped
   case numberFactResponse(TaskResult<String>)
+  case startTimerButtonTapped
+  case stopTimerButtonTapped
+  case timerTicked(increment: Int)
 }
 
 struct EffectsBasicsEnvironment {
@@ -87,12 +96,42 @@ struct EffectsBasicsEnvironment {
 
 // MARK: - Feature business logic
 
+extension Scheduler {
+  public func sleep(
+    for duration: SchedulerTimeType.Stride
+  ) async throws {
+    await withUnsafeContinuation { c in
+      self.schedule(after: self.now.advanced(by: duration)) {
+        c.resume()
+      }
+    }
+    try Task.checkCancellation()
+  }
+
+  public func timer(
+    interval: SchedulerTimeType.Stride
+  ) -> AsyncStream<SchedulerTimeType> {
+    .init { continuation in
+      let cancellable = self.schedule(
+        after: self.now.advanced(by: interval),
+        interval: interval
+      ) {
+        continuation.yield(self.now)
+      }
+      continuation.onTermination = { _ in
+        cancellable.cancel()
+      }
+    }
+  }
+}
+
 let effectsBasicsReducer = Reducer<
   EffectsBasicsState,
   EffectsBasicsAction,
   EffectsBasicsEnvironment
 > { state, action, environment in
-  struct DelayID {}
+  enum DelayID {}
+  enum TimerID {}
 
   switch action {
   case .decrementButtonTapped:
@@ -100,15 +139,11 @@ let effectsBasicsReducer = Reducer<
     state.numberFact = nil
     return state.count >= 0
     ? .none
-    : Effect(value: .delayedDecrementButtonTapped)
-      .delay(for: 1, scheduler: environment.mainQueue)
-      .eraseToEffect()
-
-//      .task {
-//      try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
-//      return .delayedDecrementButtonTapped
-//    }
-//    .cancellable(id: DelayID.self)
+    : .task {
+      try? await environment.mainQueue.sleep(for: .seconds(1))
+      return .delayedDecrementButtonTapped
+    }
+    .cancellable(id: DelayID.self)
 
   case .delayedDecrementButtonTapped:
     if state.count < 0 {
@@ -122,6 +157,21 @@ let effectsBasicsReducer = Reducer<
     return state.count >= 0
     ? .cancel(id: DelayID.self)
     : .none
+
+  case .megaIncrementButtonTapped:
+    state.count += 10_000
+    return .none
+
+  case .nthPrimeButtonTapped:
+    return .run { [count = state.count] send in
+      for await event in nthPrime(count) {
+        await send(.nthPrimeEvent(event), animation: .default)
+      }
+    }
+
+  case let .nthPrimeEvent(event):
+    state.nthPrimeEvent = event
+    return .none
 
   case .numberFactButtonTapped:
     state.isNumberFactRequestInFlight = true
@@ -140,6 +190,42 @@ let effectsBasicsReducer = Reducer<
   case .numberFactResponse(.failure):
     // TODO: error handling
     state.isNumberFactRequestInFlight = false
+    return .none
+
+  case .startTimerButtonTapped:
+    state.isTimerActive = true
+    return .run { send in
+      var n = 0
+      for await _ in environment.mainQueue.timer(interval: .seconds(1)) {
+        n += 1
+        await send(.timerTicked(increment: Int(pow(3, Double(n)))))
+      }
+    }
+    .cancellable(id: TimerID.self)
+
+    return .run { subscriber in
+      var n = 0
+      let cancellable = environment.mainQueue.schedule(
+        after: .init(.now()),
+        interval: .seconds(1)
+      ) {
+        n += 1
+        subscriber.send(.timerTicked(increment: Int(pow(3, Double(n)))))
+      }
+
+      return cancellable
+    }
+    .cancellable(id: TimerID.self)
+
+//    return Effect.timer(id: TimerID.self, every: .seconds(1), on: environment.mainQueue)
+//      .map { _ in EffectsBasicsAction.timerTicked }
+
+  case .stopTimerButtonTapped:
+    state.isTimerActive = false
+    return .cancel(id: TimerID.self)
+
+  case let .timerTicked(increment):
+    state.count += increment
     return .none
   }
 }
@@ -163,14 +249,35 @@ struct EffectsBasicsView: View {
             Text("\(viewStore.count)")
               .font(.body.monospacedDigit())
             Button("+") { viewStore.send(.incrementButtonTapped) }
+            Button("++") { viewStore.send(.megaIncrementButtonTapped) }
+              .bold()
             Spacer()
           }
           .buttonStyle(.borderless)
 
+          if viewStore.isTimerActive {
+            Button("Stop timer") { viewStore.send(.stopTimerButtonTapped) }
+              .frame(maxWidth: .infinity)
+              .buttonStyle(.borderless)
+          } else {
+            Button("Start timer") { viewStore.send(.startTimerButtonTapped) }
+              .frame(maxWidth: .infinity)
+              .buttonStyle(.borderless)
+          }
+
           Button("Number fact") { viewStore.send(.numberFactButtonTapped) }
             .frame(maxWidth: .infinity)
+            .buttonStyle(.borderless)
+
+          Button("\(viewStore.count)th prime") { viewStore.send(.nthPrimeButtonTapped) }
+            .frame(maxWidth: .infinity)
+            .buttonStyle(.borderless)
         }
 
+        if let nthPrimeEvent = viewStore.nthPrimeEvent {
+          self.nthPrime(event: nthPrimeEvent)
+        }
+        
         Section {
           if viewStore.isNumberFactRequestInFlight {
             ProgressView()
@@ -191,6 +298,21 @@ struct EffectsBasicsView: View {
     }
     .navigationBarTitle("Effect basics")
   }
+
+  func nthPrime(event: NthPrimeEvent) -> some View {
+    Section {
+      switch event {
+      case let .progress(progress):
+        VStack {
+          Text("Computing prime")
+          ProgressView("", value: progress)
+            .progressViewStyle(.linear)
+        }
+      case let .finished(nthPrime):
+        Text("Prime: \(nthPrime)")
+      }
+    }
+  }
 }
 
 // MARK: - Feature SwiftUI previews
@@ -210,4 +332,107 @@ struct EffectsBasicsView_Previews: PreviewProvider {
       )
     }
   }
+}
+
+
+@testable import ComposableArchitecture
+extension Reducer {
+  func cancellable(
+    id: @escaping (State) -> AnyHashable,
+    taskAction: @escaping (Action) -> Bool
+  ) -> Self {
+    .init { state, action, environment in
+      let id = id(state)
+      let effect: Effect<Action, Never>
+      if taskAction(action) {
+        effect = .fireAndForget {
+          await withTaskCancellationHandler(
+            handler: {
+              cancellationCancellables[CancelToken(id: id)] = nil
+            },
+            operation: {
+              for await _ in AsyncStream<Void> { _ in } {}
+            }
+          )
+        }
+      } else {
+        effect = .none
+      }
+
+      return .merge(
+        effect,
+        self.run(&state, action, environment).cancellable(id: id)
+      )
+    }
+  }
+}
+
+extension Effect {
+  public static func run(
+    priority: TaskPriority? = nil,
+    _ operation: @escaping @Sendable (_ send: Send<Output>) async -> Void
+  ) -> Self {
+    .run { subscriber in
+      let task = Task(priority: priority) { @MainActor in
+        await operation(Send(send: { subscriber.send($0) }))
+        subscriber.send(completion: .finished)
+      }
+      return AnyCancellable {
+        task.cancel()
+      }
+    }
+  }
+}
+@MainActor
+public struct Send<Action> {
+  fileprivate let send: @Sendable (Action) -> Void
+
+  public func callAsFunction(_ action: Action) {
+    self.send(action)
+  }
+
+  public func callAsFunction(_ action: Action, animation: Animation? = nil) {
+    withAnimation(animation) {
+      self.send(action)
+    }
+  }
+}
+
+extension Send: Sendable where Action: Sendable {}
+
+enum NthPrimeEvent: Equatable {
+  case progress(Double)
+  case finished(Int)
+}
+private func nthPrime(_ n: Int) -> AsyncStream<NthPrimeEvent> {
+  .init { continuation in
+    Task {
+      var primeCount = 0
+      var prime = 2
+      var lastProgress = 0
+      while primeCount < n {
+        defer { prime += 1 }
+        if isPrime(prime) {
+          primeCount += 1
+        } else if prime.isMultiple(of: 1_000) {
+          await Task.yield()
+        }
+
+        let progress = Int(Double(primeCount) / Double(n) * 100)
+        defer { lastProgress = progress }
+        if progress != lastProgress {
+          continuation.yield(.progress(Double(progress) / 100))
+        }
+      }
+      continuation.yield(.finished(prime - 1))
+    }
+  }
+}
+private func isPrime(_ p: Int) -> Bool {
+  if p <= 1 { return false }
+  if p <= 3 { return true }
+  for i in 2...Int(sqrtf(Float(p))) {
+    if p % i == 0 { return false }
+  }
+  return true
 }

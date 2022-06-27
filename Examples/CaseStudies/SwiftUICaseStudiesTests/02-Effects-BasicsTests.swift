@@ -1,3 +1,4 @@
+@testable import CombineSchedulers
 import ComposableArchitecture
 import XCTest
 
@@ -26,23 +27,25 @@ class EffectsBasicsTests: XCTestCase {
   }
 
   func testDecrement() async {
+    let scheduler = DispatchQueue.test
+
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
       environment: EffectsBasicsEnvironment(
         fact: .failing,
-        mainQueue: .immediate
+        mainQueue: scheduler.eraseToAnyScheduler()
       )
     )
 
     store.send(.decrementButtonTapped) {
       $0.count = -1
     }
+    await scheduler.advance(by: .seconds(1))
     await store.receive(.delayedDecrementButtonTapped) {
       $0.count = 0
     }
   }
-
 
   func testDecrementCancellation() async {
     let store = TestStore(
@@ -87,7 +90,7 @@ class EffectsBasicsTests: XCTestCase {
     }
   }
 
-  func testNumberFact_Failing() async {
+  func testNumberFact_UnhappyPath() async {
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
@@ -109,6 +112,34 @@ class EffectsBasicsTests: XCTestCase {
     }
     await store.receive(.numberFactResponse(.failure(SomeOtherError()))) {
       $0.isNumberFactRequestInFlight = false
+    }
+  }
+}
+
+
+extension TestScheduler {
+  @MainActor
+  public func advance(by stride: SchedulerTimeType.Stride = .zero) async {
+    let finalDate = self.now.advanced(by: stride)
+
+    while self.now < finalDate {
+      for _ in 1...10 { await Task.yield() }
+      self.scheduled.sort { ($0.date, $0.sequence) < ($1.date, $1.sequence) }
+
+      guard
+        let nextDate = self.scheduled.first?.date,
+        finalDate >= nextDate
+      else {
+        self.now = finalDate
+        return
+      }
+
+      self.now = nextDate
+
+      while let (_, date, action) = self.scheduled.first, date == nextDate {
+        self.scheduled.removeFirst()
+        action()
+      }
     }
   }
 }

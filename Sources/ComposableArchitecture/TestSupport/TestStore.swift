@@ -453,7 +453,7 @@
         await Task.yield()
         guard self.receivedActions.isEmpty
         else { break }
-        guard (DispatchTime.now().uptimeNanoseconds - start) < NSEC_PER_SEC
+        guard (DispatchTime.now().uptimeNanoseconds - start) < 2*NSEC_PER_SEC
         else {
           XCTFail(
             """
