@@ -64,7 +64,7 @@ extension Effect {
   ///     initialState: CounterState(count: 0)
   ///     reducer: counterReducer,
   ///     environment: CounterEnvironment(
-  ///       playSound: .failing("playSound")
+  ///       playSound: .unimplemented("playSound")
   ///     )
   ///   )
   ///
@@ -74,16 +74,16 @@ extension Effect {
   /// }
   /// ```
   ///
-  /// By using a `.failing` effect in our environment we have strengthened the assertion and made
-  /// the test easier to understand at the same time. We can see, without consulting the reducer
-  /// itself, that this particular action should not access this effect.
+  /// By using an `.unimplemented` effect in our environment we have strengthened the assertion and
+  /// made the test easier to understand at the same time. We can see, without consulting the
+  /// reducer itself, that this particular action should not access this effect.
   ///
   /// - Parameter prefix: A string that identifies this scheduler and will prefix all failure
   ///   messages.
   /// - Returns: An effect that causes a test to fail if it runs.
-  public static func failing(_ prefix: String) -> Self {
+  public static func unimplemented(_ prefix: String) -> Self {
     .fireAndForget {
-      XCTFail("\(prefix.isEmpty ? "" : "\(prefix) - ")A failing effect ran.")
+      XCTFail("\(prefix.isEmpty ? "" : "\(prefix) - ")An unimplemented effect ran.")
     }
   }
 }

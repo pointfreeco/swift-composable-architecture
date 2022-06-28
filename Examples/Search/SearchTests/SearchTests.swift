@@ -12,7 +12,7 @@ class SearchTests: XCTestCase {
       initialState: SearchState(),
       reducer: searchReducer,
       environment: SearchEnvironment(
-        weatherClient: .failing,
+        weatherClient: .unimplemented,
         mainQueue: self.scheduler.eraseToAnyScheduler()
       )
     )
@@ -36,7 +36,7 @@ class SearchTests: XCTestCase {
       initialState: SearchState(),
       reducer: searchReducer,
       environment: SearchEnvironment(
-        weatherClient: .failing,
+        weatherClient: .unimplemented,
         mainQueue: self.scheduler.eraseToAnyScheduler()
       )
     )
@@ -50,7 +50,7 @@ class SearchTests: XCTestCase {
   }
 
   func testClearQueryCancelsInFlightSearchRequest() {
-    var weatherClient = WeatherClient.failing
+    var weatherClient = WeatherClient.unimplemented
     weatherClient.search = { _ in Effect(value: .mock) }
 
     let store = TestStore(
@@ -84,7 +84,7 @@ class SearchTests: XCTestCase {
     var results = Search.mock.results
     results.append(specialResult)
 
-    var weatherClient = WeatherClient.failing
+    var weatherClient = WeatherClient.unimplemented
     weatherClient.forecast = { _ in Effect(value: .mock) }
 
     let store = TestStore(
@@ -143,7 +143,7 @@ class SearchTests: XCTestCase {
     var results = Search.mock.results
     results.append(specialResult)
 
-    var weatherClient = WeatherClient.failing
+    var weatherClient = WeatherClient.unimplemented
     weatherClient.forecast = { _ in Effect(value: .mock) }
 
     let store = TestStore(
@@ -194,7 +194,7 @@ class SearchTests: XCTestCase {
   }
 
   func testTapOnLocationFailure() {
-    var weatherClient = WeatherClient.failing
+    var weatherClient = WeatherClient.unimplemented
     weatherClient.forecast = { _ in Effect(error: WeatherClient.Failure()) }
 
     let results = Search.mock.results

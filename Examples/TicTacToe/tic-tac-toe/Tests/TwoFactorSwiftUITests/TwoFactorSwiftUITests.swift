@@ -8,7 +8,7 @@ import XCTest
 
 class TwoFactorSwiftUITests: XCTestCase {
   func testFlow_Success() {
-    var authenticationClient = AuthenticationClient.failing
+    var authenticationClient = AuthenticationClient.unimplemented
     authenticationClient.twoFactor = { _ in
       Effect(value: AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false))
     }
@@ -56,7 +56,7 @@ class TwoFactorSwiftUITests: XCTestCase {
   }
 
   func testFlow_Failure() {
-    var authenticationClient = AuthenticationClient.failing
+    var authenticationClient = AuthenticationClient.unimplemented
     authenticationClient.twoFactor = { _ in Effect(error: .invalidTwoFactor) }
 
     let store = TestStore(

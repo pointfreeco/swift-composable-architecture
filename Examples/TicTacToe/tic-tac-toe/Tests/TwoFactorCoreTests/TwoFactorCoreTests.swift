@@ -9,7 +9,7 @@ class TwoFactorCoreTests: XCTestCase {
       initialState: TwoFactorState(token: "deadbeefdeadbeef"),
       reducer: twoFactorReducer,
       environment: TwoFactorEnvironment(
-        authenticationClient: .failing,
+        authenticationClient: .unimplemented,
         mainQueue: .immediate
       )
     )
@@ -47,7 +47,7 @@ class TwoFactorCoreTests: XCTestCase {
       initialState: TwoFactorState(token: "deadbeefdeadbeef"),
       reducer: twoFactorReducer,
       environment: TwoFactorEnvironment(
-        authenticationClient: .failing,
+        authenticationClient: .unimplemented,
         mainQueue: .immediate
       )
     )

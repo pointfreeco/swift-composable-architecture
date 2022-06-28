@@ -3,6 +3,18 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
+// NB: Deprecated after 0.38.0:
+
+extension Effect {
+  @available(iOS, deprecated: 9999.0, renamed: "unimplemented")
+  @available(macOS, deprecated: 9999.0, renamed: "unimplemented")
+  @available(tvOS, deprecated: 9999.0, renamed: "unimplemented")
+  @available(watchOS, deprecated: 9999.0, renamed: "unimplemented")
+  public static func failing(_ prefix: String) -> Self {
+    self.unimplemented(prefix)
+  }
+}
+
 // NB: Deprecated after 0.36.0:
 
 extension ViewStore {

@@ -3,11 +3,11 @@ import Foundation
 
 #if DEBUG
   extension AudioRecorderClient {
-    static let failing = Self(
-      currentTime: { .failing("AudioRecorderClient.currentTime") },
-      requestRecordPermission: { .failing("AudioRecorderClient.requestRecordPermission") },
-      startRecording: { _ in .failing("AudioRecorderClient.startRecording") },
-      stopRecording: { .failing("AudioRecorderClient.stopRecording") }
+    static let unimplemented = Self(
+      currentTime: { .unimplemented("\(Self.self).currentTime") },
+      requestRecordPermission: { .unimplemented("\(Self.self).requestRecordPermission") },
+      startRecording: { _ in .unimplemented("\(Self.self).startRecording") },
+      stopRecording: { .unimplemented("\(Self.self).stopRecording") }
     )
   }
 #endif

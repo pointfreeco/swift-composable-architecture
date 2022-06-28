@@ -212,14 +212,14 @@ final class EffectTests: XCTestCase {
   }
 
   #if compiler(>=5.4)
-    func testFailing() {
-      let effect = Effect<Never, Never>.failing("failing")
+    func testUnimplemented() {
+      let effect = Effect<Never, Never>.unimplemented("unimplemented")
       XCTExpectFailure {
         effect
           .sink(receiveValue: { _ in })
           .store(in: &self.cancellables)
       } issueMatcher: { issue in
-        issue.compactDescription == "failing - A failing effect ran."
+        issue.compactDescription == "unimplemented - An unimplemented effect ran."
       }
     }
   #endif
