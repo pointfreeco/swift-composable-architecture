@@ -45,14 +45,10 @@ extension FactClient {
 
 #if DEBUG
   extension FactClient {
-    private struct Unimplemented: Error {
-      let endpoint: String
-    }
-
     // This is the "failing" fact dependency that is useful to plug into tests that you want
     // to prove do not need the dependency.
     static let failing = Self(
-      fetch: { _ in throw Unimplemented(endpoint: "fetch") }
+      fetch: XCTUnimplemented("\(Self.self).fetch")
     )
   }
 #endif

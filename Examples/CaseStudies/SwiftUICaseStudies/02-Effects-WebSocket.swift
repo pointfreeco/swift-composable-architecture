@@ -314,22 +314,11 @@ extension WebSocketClient {
 }
 
 extension WebSocketClient {
-  private struct Unimplemented: Error {
-    let endpoint: String
-    init(_ endpoint: String) {
-      XCTFail(endpoint)
-      self.endpoint = endpoint
-    }
-  }
-
   static let failing = Self(
-    open: { _, _, _ in
-      XCTFail("\(Self.self).open")
-      return AsyncStream { _ in }
-    },
-    receive: { _ in throw Unimplemented("receive") },
-    send: { _, _ in throw Unimplemented("send") },
-    sendPing: { _ in throw Unimplemented("sendPing") }
+    open: XCTUnimplemented("\(Self.self).open", placeholder: AsyncStream { _ in }),
+    receive: XCTUnimplemented("\(Self.self).receive"),
+    send: XCTUnimplemented("\(Self.self).send"),
+    sendPing: XCTUnimplemented("\(Self.self).sendPing")
   )
 }
 
