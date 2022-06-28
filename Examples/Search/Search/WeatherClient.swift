@@ -79,9 +79,9 @@ extension WeatherClient {
 // MARK: - Mock API implementations
 
 extension WeatherClient {
-  static let failing = Self(
-    forecast: { _ in .failing("\(Self.self).forecast") },
-    search: { _ in .failing("\(Self.self).search") }
+  static let unimplemented = Self(
+    forecast: { _ in .unimplemented("\(Self.self).forecast") },
+    search: { _ in .unimplemented("\(Self.self).search") }
   )
 }
 

@@ -8,7 +8,7 @@ class SpeechRecognitionTests: XCTestCase {
   let recognitionTaskSubject = PassthroughSubject<SpeechClient.Action, SpeechClient.Error>()
 
   func testDenyAuthorization() {
-    var speechClient = SpeechClient.failing
+    var speechClient = SpeechClient.unimplemented
     speechClient.requestAuthorization = { Effect(value: .denied) }
 
     let store = TestStore(
@@ -37,7 +37,7 @@ class SpeechRecognitionTests: XCTestCase {
   }
 
   func testRestrictedAuthorization() {
-    var speechClient = SpeechClient.failing
+    var speechClient = SpeechClient.unimplemented
     speechClient.requestAuthorization = { Effect(value: .restricted) }
 
     let store = TestStore(
@@ -60,7 +60,7 @@ class SpeechRecognitionTests: XCTestCase {
   }
 
   func testAllowAndRecord() {
-    var speechClient = SpeechClient.failing
+    var speechClient = SpeechClient.unimplemented
     speechClient.finishTask = {
       .fireAndForget { self.recognitionTaskSubject.send(completion: .finished) }
     }
@@ -108,7 +108,7 @@ class SpeechRecognitionTests: XCTestCase {
   }
 
   func testAudioSessionFailure() {
-    var speechClient = SpeechClient.failing
+    var speechClient = SpeechClient.unimplemented
     speechClient.recognitionTask = { _ in self.recognitionTaskSubject.eraseToEffect() }
     speechClient.requestAuthorization = { Effect(value: .authorized) }
 
@@ -138,7 +138,7 @@ class SpeechRecognitionTests: XCTestCase {
   }
 
   func testAudioEngineFailure() {
-    var speechClient = SpeechClient.failing
+    var speechClient = SpeechClient.unimplemented
     speechClient.recognitionTask = { _ in self.recognitionTaskSubject.eraseToEffect() }
     speechClient.requestAuthorization = { Effect(value: .authorized) }
 

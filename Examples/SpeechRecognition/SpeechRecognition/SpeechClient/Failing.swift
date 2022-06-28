@@ -4,10 +4,10 @@ import Speech
 
 #if DEBUG
   extension SpeechClient {
-    static let failing = Self(
-      finishTask: { .failing("SpeechClient.finishTask") },
-      recognitionTask: { _ in .failing("SpeechClient.recognitionTask") },
-      requestAuthorization: { .failing("SpeechClient.requestAuthorization") }
+    static let unimplemented = Self(
+      finishTask: { .unimplemented("\(Self.self).finishTask") },
+      recognitionTask: { _ in .unimplemented("\(Self.self).recognitionTask") },
+      requestAuthorization: { .unimplemented("\(Self.self).requestAuthorization") }
     )
   }
 #endif

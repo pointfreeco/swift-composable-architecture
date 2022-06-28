@@ -1,6 +1,7 @@
 import Combine
 import ComposableArchitecture
 import XCTest
+import XCTestDynamicOverlay
 
 @testable import VoiceMemos
 
@@ -15,7 +16,7 @@ class VoiceMemosTests: XCTestCase {
       AudioRecorderClient.Action, AudioRecorderClient.Failure
     >()
 
-    var environment = VoiceMemosEnvironment.failing
+    var environment = VoiceMemosEnvironment.unimplemented
     environment.audioRecorder.currentTime = { Effect(value: 2.5) }
     environment.audioRecorder.requestRecordPermission = { Effect(value: true) }
     environment.audioRecorder.startRecording = { _ in
@@ -79,7 +80,7 @@ class VoiceMemosTests: XCTestCase {
   func testPermissionDenied() {
     var didOpenSettings = false
 
-    var environment = VoiceMemosEnvironment.failing
+    var environment = VoiceMemosEnvironment.unimplemented
     environment.audioRecorder.requestRecordPermission = { Effect(value: false) }
     environment.mainRunLoop = .immediate
     environment.openSettings = .fireAndForget { didOpenSettings = true }
@@ -107,7 +108,7 @@ class VoiceMemosTests: XCTestCase {
       AudioRecorderClient.Action, AudioRecorderClient.Failure
     >()
 
-    var environment = VoiceMemosEnvironment.failing
+    var environment = VoiceMemosEnvironment.unimplemented
     environment.audioRecorder.currentTime = { Effect(value: 2.5) }
     environment.audioRecorder.requestRecordPermission = { Effect(value: true) }
     environment.audioRecorder.startRecording = { _ in
@@ -142,7 +143,7 @@ class VoiceMemosTests: XCTestCase {
   }
 
   func testPlayMemoHappyPath() {
-    var environment = VoiceMemosEnvironment.failing
+    var environment = VoiceMemosEnvironment.unimplemented
     environment.audioPlayer.play = { _ in
       Effect(value: .didFinishPlaying(successfully: true))
         .delay(for: 1, scheduler: self.mainRunLoop)
@@ -189,7 +190,7 @@ class VoiceMemosTests: XCTestCase {
   }
 
   func testPlayMemoFailure() {
-    var environment = VoiceMemosEnvironment.failing
+    var environment = VoiceMemosEnvironment.unimplemented
     environment.audioPlayer.play = { _ in Effect(error: .decodeErrorDidOccur) }
     environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
@@ -221,7 +222,7 @@ class VoiceMemosTests: XCTestCase {
 
   func testStopMemo() {
     var didStopAudioPlayerClient = false
-    var environment = VoiceMemosEnvironment.failing
+    var environment = VoiceMemosEnvironment.unimplemented
     environment.audioPlayer.stop = { .fireAndForget { didStopAudioPlayerClient = true } }
 
     let url = URL(string: "https://www.pointfree.co/functions")!
@@ -249,7 +250,7 @@ class VoiceMemosTests: XCTestCase {
 
   func testDeleteMemo() {
     var didStopAudioPlayerClient = false
-    var environment = VoiceMemosEnvironment.failing
+    var environment = VoiceMemosEnvironment.unimplemented
     environment.audioPlayer.stop = { .fireAndForget { didStopAudioPlayerClient = true } }
 
     let url = URL(string: "https://www.pointfree.co/functions")!
@@ -277,7 +278,7 @@ class VoiceMemosTests: XCTestCase {
 
   func testDeleteMemoWhilePlaying() {
     let url = URL(string: "https://www.pointfree.co/functions")!
-    var environment = VoiceMemosEnvironment.failing
+    var environment = VoiceMemosEnvironment.unimplemented
     environment.audioPlayer.play = { _ in .none }
     environment.audioPlayer.stop = { .none }
     environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
@@ -308,18 +309,14 @@ class VoiceMemosTests: XCTestCase {
 }
 
 extension VoiceMemosEnvironment {
-  static let failing = Self(
-    audioPlayer: .failing,
-    audioRecorder: .failing,
-    mainRunLoop: .failing,
-    openSettings: .failing("VoiceMemosEnvironment.openSettings"),
-    temporaryDirectory: {
-      XCTFail("VoiceMemosEnvironment.temporaryDirectory is unimplemented")
-      return URL(fileURLWithPath: NSTemporaryDirectory())
-    },
-    uuid: {
-      XCTFail("VoiceMemosEnvironment.uuid is unimplemented")
-      return UUID()
-    }
+  static let unimplemented = Self(
+    audioPlayer: .unimplemented,
+    audioRecorder: .unimplemented,
+    mainRunLoop: .unimplemented,
+    openSettings: .unimplemented("\(Self.self).openSettings"),
+    temporaryDirectory: XCTUnimplemented(
+      "\(Self.self).temporaryDirectory", placeholder: URL(fileURLWithPath: NSTemporaryDirectory())
+    ),
+    uuid: XCTUnimplemented("\(Self.self).uuid", placeholder: UUID())
   )
 }

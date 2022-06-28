@@ -206,17 +206,11 @@ struct SystemEnvironment<Environment> {
   import XCTestDynamicOverlay
 
   extension SystemEnvironment {
-    static func failing(
-      date: @escaping () -> Date = {
-        XCTFail("date dependency is unimplemented.")
-        return Date()
-      },
+    static func unimplemented(
+      date: @escaping () -> Date = XCTUnimplemented("\(Self.self).date", placeholder: Date()),
       environment: Environment,
-      mainQueue: AnySchedulerOf<DispatchQueue> = .failing,
-      uuid: @escaping () -> UUID = {
-        XCTFail("UUID dependency is unimplemented.")
-        return UUID()
-      }
+      mainQueue: AnySchedulerOf<DispatchQueue> = .unimplemented,
+      uuid: @escaping () -> UUID = XCTUnimplemented("\(Self.self).uuid", placeholder: UUID())
     ) -> Self {
       Self(
         date: date,

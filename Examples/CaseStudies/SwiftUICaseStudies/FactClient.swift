@@ -28,10 +28,10 @@ extension FactClient {
 
 #if DEBUG
   extension FactClient {
-    // This is the "failing" fact dependency that is useful to plug into tests that you want
+    // This is the "unimplemented" fact dependency that is useful to plug into tests that you want
     // to prove do not need the dependency.
-    static let failing = Self(
-      fetch: { _ in .failing("\(Self.self).fact is unimplemented.") }
+    static let unimplemented = Self(
+      fetch: { _ in .unimplemented("\(Self.self).fact") }
     )
   }
 #endif

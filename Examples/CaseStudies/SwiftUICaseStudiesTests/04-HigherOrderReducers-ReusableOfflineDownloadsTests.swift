@@ -18,7 +18,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   let scheduler = DispatchQueue.test
 
   func testDownloadFlow() {
-    var downloadClient = DownloadClient.failing
+    var downloadClient = DownloadClient.unimplemented
     downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
 
     let store = TestStore(
@@ -53,7 +53,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   }
 
   func testDownloadThrottling() {
-    var downloadClient = DownloadClient.failing
+    var downloadClient = DownloadClient.unimplemented
     downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
 
     let store = TestStore(
@@ -93,7 +93,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   }
 
   func testCancelDownloadFlow() {
-    var downloadClient = DownloadClient.failing
+    var downloadClient = DownloadClient.unimplemented
     downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
 
     let store = TestStore(
@@ -130,7 +130,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   }
 
   func testDownloadFinishesWhileTryingToCancel() {
-    var downloadClient = DownloadClient.failing
+    var downloadClient = DownloadClient.unimplemented
     downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
 
     let store = TestStore(
@@ -168,7 +168,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
   }
 
   func testDeleteDownloadFlow() {
-    var downloadClient = DownloadClient.failing
+    var downloadClient = DownloadClient.unimplemented
     downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
 
     let store = TestStore(
@@ -200,7 +200,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 }
 
 extension DownloadClient {
-  static let failing = Self(
-    download: { _ in .failing("DownloadClient.download") }
+  static let unimplemented = Self(
+    download: { _ in .unimplemented("\(Self.self).download") }
   )
 }

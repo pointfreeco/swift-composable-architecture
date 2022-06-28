@@ -72,9 +72,9 @@ public struct AuthenticationClient {
 
 #if DEBUG
   extension AuthenticationClient {
-    public static let failing = Self(
-      login: { _ in .failing("AuthenticationClient.login") },
-      twoFactor: { _ in .failing("AuthenticationClient.twoFactor") }
+    public static let unimplemented = Self(
+      login: { _ in .unimplemented("\(Self.self).login") },
+      twoFactor: { _ in .unimplemented("\(Self.self).twoFactor") }
     )
   }
 #endif
