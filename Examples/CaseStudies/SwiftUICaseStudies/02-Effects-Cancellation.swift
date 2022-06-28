@@ -97,6 +97,7 @@ struct EffectsCancellationView: View {
               Button("Cancel") { viewStore.send(.cancelButtonTapped) }
               Spacer()
               ProgressView()
+                .id(UUID())
             }
           } else {
             Button("Number fact") { viewStore.send(.triviaButtonTapped) }

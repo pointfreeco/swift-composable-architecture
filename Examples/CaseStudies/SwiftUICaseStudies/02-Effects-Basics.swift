@@ -106,12 +106,12 @@ struct EffectsBasicsView: View {
 
           if viewStore.isNumberFactRequestInFlight {
             ProgressView()
+              .frame(maxWidth: .infinity)
               .id(UUID())
           }
 
           if let numberFact = viewStore.numberFact {
             Text(numberFact)
-
           }
         }
 
