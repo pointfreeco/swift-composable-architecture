@@ -12,10 +12,7 @@ class EffectsBasicsTests: XCTestCase {
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
-      environment: EffectsBasicsEnvironment(
-        fact: .failing,
-        mainQueue: .failing
-      )
+      environment: .failing
     )
 
     store.send(.incrementButtonTapped) {
@@ -32,11 +29,10 @@ class EffectsBasicsTests: XCTestCase {
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
-      environment: EffectsBasicsEnvironment(
-        fact: .failing,
-        mainQueue: scheduler.eraseToAnyScheduler()
-      )
+      environment: .failing
     )
+
+    store.environment.mainQueue = scheduler.eraseToAnyScheduler()
 
     store.send(.decrementButtonTapped) {
       $0.count = -1
@@ -51,10 +47,7 @@ class EffectsBasicsTests: XCTestCase {
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
-      environment: EffectsBasicsEnvironment(
-        fact: .failing,
-        mainQueue: .failing
-      )
+      environment: .failing
     )
 
     store.send(.decrementButtonTapped) {
@@ -70,10 +63,7 @@ class EffectsBasicsTests: XCTestCase {
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
-      environment: EffectsBasicsEnvironment(
-        fact: .failing,
-        mainQueue: .failing
-      )
+      environment: .failing
     )
 
     store.environment.fact.fetchAsync = { n in "\(n) is a good number Brent" }
@@ -94,10 +84,7 @@ class EffectsBasicsTests: XCTestCase {
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
-      environment: EffectsBasicsEnvironment(
-        fact: .failing,
-        mainQueue: .failing
-      )
+      environment: .failing
     ) 
 
     struct SomeOtherError: Error, Equatable {}
@@ -142,4 +129,8 @@ extension TestScheduler {
       }
     }
   }
+}
+
+extension EffectsBasicsEnvironment {
+  static let failing = Self(fact: .failing, mainQueue: .failing)
 }

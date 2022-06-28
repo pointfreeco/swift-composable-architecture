@@ -575,3 +575,71 @@
     }
   }
 #endif
+
+enum APIError: Error, Equatable {
+  case malformedHostURL(String),
+       operationFailed(String),
+       dataCorrupted(String),
+       missingInformation(String)
+}
+
+struct AuthClient {
+  enum WebAPIError: Error, Equatable {
+    case identityTokenMissing
+    case unableToDecodeIdentityToken
+    case unableToEncodeJSONData
+    case unableToDecodeJSONData
+    case unauthorized
+    case invalidResponse
+    case httpError(statusCode: Int)
+  }
+
+  struct SIWAAuthRequestBody: Encodable, CustomStringConvertible {
+    let name: String?
+    let email: String?
+    let appleIdentityToken: String
+
+    var description: String {
+      "name: \(name ?? "nil"), email: \(email ?? "nil"), appleIdentityToken: \(appleIdentityToken)"
+    }
+  }
+
+  var signInWithApple: (String?, String?, Data?) -> Effect<AuthContent, Error>
+}
+
+struct AuthContent: Codable {}
+
+extension AuthClient {
+  static let serviceHost = "http://localhost:8080"
+
+  static let live = Self(
+    signInWithApple: { name, email, identityToken in
+      Effect.task {
+        guard let identityToken = identityToken else { throw WebAPIError.identityTokenMissing }
+
+        guard let identityTokenString = String(data: identityToken, encoding: .utf8)
+        else { throw WebAPIError.unableToDecodeIdentityToken }
+
+        let body = SIWAAuthRequestBody(name: name ?? "",
+                                       email: email ?? "",
+                                       appleIdentityToken: identityTokenString)
+
+        guard let jsonBody = try? JSONEncoder().encode(body) else { throw WebAPIError.unableToEncodeJSONData }
+        guard let url = URL(string: "\(serviceHost)/v1/siwa/auth") else { throw APIError.malformedHostURL(serviceHost) }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonBody
+        do {
+          let authContent: AuthContent = try await { () -> AuthContent in fatalError() }()
+          return authContent
+        } catch {
+          throw APIError.operationFailed(error.localizedDescription)
+        }
+      }
+//      .setFailureType(to: Error.self)
+      .eraseToEffect()
+    }
+  )
+}
+
