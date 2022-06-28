@@ -23,13 +23,23 @@ import Foundation
 ///     The above(willProcess -> didProcess) is repeated for each queued up action within Store
 ///     .pre, .storeChangeState
 ///       The Store updates its state
-///       Any Stores that have been created via scoping off the current Store object will have their states updated at this point too, thus there may be multiple instances of `.pre|.post` `.(view)[sS]toreChangeState` and `.pre|post` `.viewStoreDeduplicate` contained within a `.pre|.post` `.storeChangeState`
-///       .pre, .viewStoreDeduplicate for impacted ViewStores
-///       The existing state of the ViewStore instance is compared newly generated state and determined if it is a duplicate (this is unique to our branch of TCA)
-///       .post, .viewStoreDeduplicate
-///       .pre, .viewStoreChangeState
-///       If the value for a ViewStores state was not a duplicate, then it is updated
-///       .post, .viewStoreChangeState
+///       For each child Store scoped off the Store using a scoped local state
+///         The Store computes the scoped local state
+///         .pre, .storeToLocal
+///         .post, .storeToLocal
+///         The Store determines if the scoped local state is has changed
+///         .pre, .storeDeduplicate
+///         .post, .storeDeduplicate
+///         If the scoped local state has changed then the scoped child Store's state is updated, along with any further
+///         downstream scoped Stores
+///       For each ViewStore subscribed to a Store, if the state has changed will have their states updated at this too,
+///       thus there may be multiple instances of the below
+///         .pre, .viewStoreDeduplicate for impacted ViewStores
+///         The existing state of the ViewStore instance is compared newly generated state and determined if it is a duplicate (this is unique to our branch of TCA)
+///         .post, .viewStoreDeduplicate
+///         .pre, .viewStoreChangeState
+///         If the value for a ViewStores state was not a duplicate, then it is updated
+///         .post, .viewStoreChangeState
 ///     .post, .storeChangeState
 ///   .post, .store.didSend
 /// .post, .viewStoreSend
@@ -38,6 +48,8 @@ public class Instrumentation {
   /// Type indicating the action being taken by the store
   public enum CallbackKind: CaseIterable, Hashable {
     case storeSend
+    case storeToLocal
+    case storeDeduplicate
     case storeChangeState
     case storeProcessEvent
     case viewStoreSend

@@ -326,7 +326,8 @@ public final class Store<State, Action> {
   public func scope<LocalState, LocalAction>(
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action,
-    removeDuplicates isDuplicate: ((LocalState, LocalState) -> Bool)? = nil
+    removeDuplicates isDuplicate: ((LocalState, LocalState) -> Bool)? = nil,
+    instrumentation: Instrumentation = .shared
   ) -> Store<LocalState, LocalAction> {
     self.threadCheck(status: .scope)
     var isSending = false
@@ -345,12 +346,22 @@ public final class Store<State, Action> {
       .dropFirst()
       .sink { [weak localStore] newValue in
         guard !isSending else { return }
+
+        let callbackInfo = Instrumentation.CallbackInfo<Self.Type, Any>(storeKind: Self.self, action: nil).eraseToAny()
+        instrumentation.callback?(callbackInfo, .pre, .storeToLocal)
         let newLocalState = toLocalState(newValue)
+        instrumentation.callback?(callbackInfo, .post, .storeToLocal)
+
         guard let previousState = localStore?.state.value, let isDuplicate = isDuplicate else {
             localStore?.state.value = newLocalState
             return
         }
-        if !isDuplicate(newLocalState, previousState) {
+
+        instrumentation.callback?(callbackInfo, .pre, .storeDeduplicate)
+        let newStateIsDuplicate = isDuplicate(newLocalState, previousState)
+        instrumentation.callback?(callbackInfo, .post, .storeDeduplicate)
+
+        if !newStateIsDuplicate {
             localStore?.state.value = newLocalState
         }
       }
@@ -364,9 +375,10 @@ public final class Store<State, Action> {
   /// - Parameter toLocalState: A function that transforms `State` into `LocalState`.
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<LocalState>(
-    state toLocalState: @escaping (State) -> LocalState
+    state toLocalState: @escaping (State) -> LocalState,
+    instrumentation: Instrumentation = .shared
   ) -> Store<LocalState, Action> {
-    self.scope(state: toLocalState, action: { $0 })
+    self.scope(state: toLocalState, action: { $0 }, instrumentation: instrumentation)
   }
 
   func send(_ action: Action, originatingFrom originatingAction: Action? = nil, instrumentation: Instrumentation = .shared) {
