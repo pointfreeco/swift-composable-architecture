@@ -126,14 +126,14 @@
   ///
   /// ```swift
   /// // Create a test dispatch scheduler to control the timing of effects
-  /// let scheduler = DispatchQueue.test
+  /// let mainQueue = DispatchQueue.test
   ///
   /// let store = TestStore(
   ///   initialState: SearchState(),
   ///   reducer: searchReducer,
   ///   environment: SearchEnvironment(
   ///     // Wrap the test scheduler in a type-erased scheduler
-  ///     mainQueue: scheduler.eraseToAnyScheduler(),
+  ///     mainQueue: mainQueue.eraseToAnyScheduler(),
   ///     // Simulate a search response with one item
   ///     request: { ["Composable Architecture"] }
   ///   )
@@ -145,16 +145,16 @@
   ///   $0.query = "c"
   /// }
   ///
-  /// // Advance the scheduler by a period shorter than the debounce
-  /// await scheduler.advance(by: 0.25)
+  /// // Advance the queue by a period shorter than the debounce
+  /// await mainQueue.advance(by: 0.25)
   ///
   /// // Change the query again
   /// store.send(.searchFieldChanged("co") {
   ///   $0.query = "co"
   /// }
   ///
-  /// // Advance the scheduler by a period shorter than the debounce
-  /// await scheduler.advance(by: 0.25)
+  /// // Advance the queue by a period shorter than the debounce
+  /// await mainQueue.advance(by: 0.25)
   /// // Advance the scheduler to the debounce
   /// await scheduler.advance(by: 0.25)
   ///

@@ -6,7 +6,7 @@ import XCTest
 
 @MainActor
 class SearchTests: XCTestCase {
-  let scheduler = DispatchQueue.test
+  let mainQueue = DispatchQueue.test
 
   func testSearchAndClearQuery() async {
     let store = TestStore(
@@ -14,7 +14,7 @@ class SearchTests: XCTestCase {
       reducer: searchReducer,
       environment: SearchEnvironment(
         weatherClient: .unimplemented,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
+        mainQueue: self.mainQueue.eraseToAnyScheduler()
       )
     )
 
@@ -22,8 +22,10 @@ class SearchTests: XCTestCase {
     store.send(.searchQueryChanged("S")) {
       $0.searchQuery = "S"
     }
-    await self.scheduler.advance(by: 0.3)
+    await self.mainQueue.advance(by: 0.3)
     await store.receive(.searchResponse(.success(.mock))) {
+    self.mainQueue.advance(by: 0.3)
+    store.receive(.searchResponse(.success(.mock))) {
       $0.results = Search.mock.results
     }
     store.send(.searchQueryChanged("")) {
@@ -38,7 +40,7 @@ class SearchTests: XCTestCase {
       reducer: searchReducer,
       environment: SearchEnvironment(
         weatherClient: .unimplemented,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
+        mainQueue: self.mainQueue.eraseToAnyScheduler()
       )
     )
 
@@ -46,7 +48,7 @@ class SearchTests: XCTestCase {
     store.send(.searchQueryChanged("S")) {
       $0.searchQuery = "S"
     }
-    await self.scheduler.advance(by: 0.3)
+    await self.mainQueue.advance(by: 0.3)
     await store.receive(.searchResponse(.failure(SomethingWentWrong())))
   }
 
@@ -59,18 +61,18 @@ class SearchTests: XCTestCase {
       reducer: searchReducer,
       environment: SearchEnvironment(
         weatherClient: weatherClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
+        mainQueue: self.mainQueue.eraseToAnyScheduler()
       )
     )
 
     store.send(.searchQueryChanged("S")) {
       $0.searchQuery = "S"
     }
-    await self.scheduler.advance(by: 0.2)
+    await self.mainQueue.advance(by: 0.2)
     store.send(.searchQueryChanged("")) {
       $0.searchQuery = ""
     }
-    await self.scheduler.run()
+    await self.mainQueue.run()
   }
 
   func testTapOnLocation() async {
@@ -93,14 +95,14 @@ class SearchTests: XCTestCase {
       reducer: searchReducer,
       environment: SearchEnvironment(
         weatherClient: weatherClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
+        mainQueue: self.mainQueue.eraseToAnyScheduler()
       )
     )
 
     store.send(.searchResultTapped(specialResult)) {
       $0.resultForecastRequestInFlight = specialResult
     }
-    await self.scheduler.advance()
+    await self.mainQueue.advance()
     await store.receive(.forecastResponse(42, .success(.mock))) {
       $0.resultForecastRequestInFlight = nil
       $0.weather = SearchState.Weather(
@@ -152,7 +154,7 @@ class SearchTests: XCTestCase {
       reducer: searchReducer,
       environment: SearchEnvironment(
         weatherClient: weatherClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
+        mainQueue: self.mainQueue.eraseToAnyScheduler()
       )
     )
 
@@ -162,7 +164,7 @@ class SearchTests: XCTestCase {
     store.send(.searchResultTapped(specialResult)) {
       $0.resultForecastRequestInFlight = specialResult
     }
-    await self.scheduler.advance()
+    await self.mainQueue.advance()
     await store.receive(.forecastResponse(42, .success(.mock))) {
       $0.resultForecastRequestInFlight = nil
       $0.weather = SearchState.Weather(
@@ -205,14 +207,14 @@ class SearchTests: XCTestCase {
       reducer: searchReducer,
       environment: SearchEnvironment(
         weatherClient: weatherClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
+        mainQueue: self.mainQueue.eraseToAnyScheduler()
       )
     )
 
     store.send(.searchResultTapped(results.first!)) {
       $0.resultForecastRequestInFlight = results.first!
     }
-    await self.scheduler.advance()
+    await self.mainQueue.advance()
     await store.receive(.forecastResponse(1, .failure(SomethingWentWrong()))) {
       $0.resultForecastRequestInFlight = nil
     }

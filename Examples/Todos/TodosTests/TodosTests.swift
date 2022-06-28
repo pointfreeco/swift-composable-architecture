@@ -5,14 +5,14 @@ import XCTest
 
 @MainActor
 class TodosTests: XCTestCase {
-  let scheduler = DispatchQueue.test
+  let mainQueue = DispatchQueue.test
 
   func testAddTodo() {
     let store = TestStore(
       initialState: AppState(),
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: self.scheduler.eraseToAnyScheduler(),
+        mainQueue: self.mainQueue.eraseToAnyScheduler(),
         uuid: UUID.incrementing
       )
     )
@@ -43,7 +43,7 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: self.scheduler.eraseToAnyScheduler(),
+        mainQueue: self.mainQueue.eraseToAnyScheduler(),
         uuid: UUID.incrementing
       )
     )
@@ -74,7 +74,7 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: self.scheduler.eraseToAnyScheduler(),
+        mainQueue: self.mainQueue.eraseToAnyScheduler(),
         uuid: UUID.incrementing
       )
     )
@@ -82,7 +82,7 @@ class TodosTests: XCTestCase {
     store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
       $0.todos[id: state.todos[0].id]?.isComplete = true
     }
-    await self.scheduler.advance(by: 1)
+    await self.mainQueue.advance(by: 1)
     await store.receive(.sortCompletedTodos) {
       $0.todos = [
         $0.todos[1],
@@ -110,7 +110,7 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: self.scheduler.eraseToAnyScheduler(),
+        mainQueue: self.mainQueue.eraseToAnyScheduler(),
         uuid: UUID.incrementing
       )
     )
@@ -118,11 +118,11 @@ class TodosTests: XCTestCase {
     store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
       $0.todos[id: state.todos[0].id]?.isComplete = true
     }
-    await self.scheduler.advance(by: 0.5)
+    await self.mainQueue.advance(by: 0.5)
     store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
       $0.todos[id: state.todos[0].id]?.isComplete = false
     }
-    await self.scheduler.advance(by: 1)
+    await self.mainQueue.advance(by: 1)
     await store.receive(.sortCompletedTodos)
   }
 
@@ -145,7 +145,7 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: self.scheduler.eraseToAnyScheduler(),
+        mainQueue: self.mainQueue.eraseToAnyScheduler(),
         uuid: UUID.incrementing
       )
     )
@@ -181,7 +181,7 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: self.scheduler.eraseToAnyScheduler(),
+        mainQueue: self.mainQueue.eraseToAnyScheduler(),
         uuid: UUID.incrementing
       )
     )
@@ -218,7 +218,7 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: self.scheduler.eraseToAnyScheduler(),
+        mainQueue: self.mainQueue.eraseToAnyScheduler(),
         uuid: UUID.incrementing
       )
     )
@@ -233,7 +233,7 @@ class TodosTests: XCTestCase {
         $0.todos[2],
       ]
     }
-    await self.scheduler.advance(by: .milliseconds(100))
+    await self.mainQueue.advance(by: .milliseconds(100))
     await store.receive(.sortCompletedTodos)
   }
 
@@ -266,7 +266,7 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: self.scheduler.eraseToAnyScheduler(),
+        mainQueue: self.mainQueue.eraseToAnyScheduler(),
         uuid: UUID.incrementing
       )
     )
@@ -285,7 +285,7 @@ class TodosTests: XCTestCase {
         $0.todos[3],
       ]
     }
-    await self.scheduler.advance(by: .milliseconds(100))
+    await self.mainQueue.advance(by: .milliseconds(100))
     await store.receive(.sortCompletedTodos)
   }
 
@@ -308,7 +308,7 @@ class TodosTests: XCTestCase {
       initialState: state,
       reducer: appReducer,
       environment: AppEnvironment(
-        mainQueue: self.scheduler.eraseToAnyScheduler(),
+        mainQueue: self.mainQueue.eraseToAnyScheduler(),
         uuid: UUID.incrementing
       )
     )

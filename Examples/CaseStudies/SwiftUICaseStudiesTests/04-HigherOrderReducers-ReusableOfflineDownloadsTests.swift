@@ -16,7 +16,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
     action: .self,
     environment: { $0 }
   )
-  let scheduler = DispatchQueue.test
+  let mainQueue = DispatchQueue.test
 
   func testDownloadFlow() async {
     var downloadClient = DownloadClient.unimplemented
@@ -31,7 +31,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       reducer: reducer,
       environment: DownloadComponentEnvironment(
         downloadClient: downloadClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
+        mainQueue: self.mainQueue.eraseToAnyScheduler()
       )
     )
 
@@ -40,14 +40,14 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
     }
 
     self.downloadSubject.send(.updateProgress(0.2))
-    await self.scheduler.advance()
+    await self.mainQueue.advance()
     await store.receive(.downloadClient(.success(.updateProgress(0.2)))) {
       $0.mode = .downloading(progress: 0.2)
     }
 
     self.downloadSubject.send(.response(Data()))
     self.downloadSubject.send(completion: .finished)
-    await self.scheduler.advance(by: 1)
+    await self.mainQueue.advance(by: 1)
     await store.receive(.downloadClient(.success(.response(Data())))) {
       $0.mode = .downloaded
     }
@@ -66,7 +66,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       reducer: reducer,
       environment: DownloadComponentEnvironment(
         downloadClient: downloadClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
+        mainQueue: self.mainQueue.eraseToAnyScheduler()
       )
     )
 
@@ -75,22 +75,22 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
     }
 
     self.downloadSubject.send(.updateProgress(0.5))
-    await self.scheduler.advance()
+    await self.mainQueue.advance()
     await store.receive(.downloadClient(.success(.updateProgress(0.5)))) {
       $0.mode = .downloading(progress: 0.5)
     }
 
     self.downloadSubject.send(.updateProgress(0.6))
-    await self.scheduler.advance(by: 0.5)
+    await self.mainQueue.advance(by: 0.5)
 
     self.downloadSubject.send(.updateProgress(0.7))
-    await self.scheduler.advance(by: 0.5)
+    await self.mainQueue.advance(by: 0.5)
     await store.receive(.downloadClient(.success(.updateProgress(0.7)))) {
       $0.mode = .downloading(progress: 0.7)
     }
 
     self.downloadSubject.send(completion: .finished)
-    await self.scheduler.run()
+    await self.mainQueue.run()
   }
 
   func testCancelDownloadFlow() async {
@@ -106,7 +106,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       reducer: reducer,
       environment: DownloadComponentEnvironment(
         downloadClient: downloadClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
+        mainQueue: self.mainQueue.eraseToAnyScheduler()
       )
     )
 
@@ -127,7 +127,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       $0.mode = .notDownloaded
     }
 
-    await self.scheduler.run()
+    await self.mainQueue.run()
   }
 
   func testDownloadFinishesWhileTryingToCancel() async {
@@ -143,7 +143,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       reducer: reducer,
       environment: DownloadComponentEnvironment(
         downloadClient: downloadClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
+        mainQueue: self.mainQueue.eraseToAnyScheduler()
       )
     )
 
@@ -161,7 +161,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 
     self.downloadSubject.send(.response(Data()))
     self.downloadSubject.send(completion: .finished)
-    await self.scheduler.advance(by: 1)
+    await self.mainQueue.advance(by: 1)
     await store.receive(.downloadClient(.success(.response(Data())))) {
       $0.alert = nil
       $0.mode = .downloaded
@@ -181,7 +181,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       reducer: reducer,
       environment: DownloadComponentEnvironment(
         downloadClient: downloadClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
+        mainQueue: self.mainQueue.eraseToAnyScheduler()
       )
     )
 

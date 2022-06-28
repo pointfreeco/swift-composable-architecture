@@ -87,11 +87,11 @@ final class EffectCancellationTests: XCTestCase {
   }
 
   func testCancellationAfterDelay_WithTestScheduler() {
-    let scheduler = DispatchQueue.test
+    let mainQueue = DispatchQueue.test
     var value: Int?
 
     Just(1)
-      .delay(for: 2, scheduler: scheduler)
+      .delay(for: 2, scheduler: mainQueue)
       .eraseToEffect()
       .cancellable(id: CancelToken())
       .sink { value = $0 }
@@ -99,12 +99,12 @@ final class EffectCancellationTests: XCTestCase {
 
     XCTAssertNoDifference(value, nil)
 
-    scheduler.advance(by: 1)
+    mainQueue.advance(by: 1)
     Effect<Never, Never>.cancel(id: CancelToken())
       .sink { _ in }
       .store(in: &self.cancellables)
 
-    scheduler.run()
+    mainQueue.run()
 
     XCTAssertNoDifference(value, nil)
   }
@@ -120,9 +120,9 @@ final class EffectCancellationTests: XCTestCase {
   }
 
   func testCancellablesCleanUp_OnCancel() {
-    let scheduler = DispatchQueue.test
+    let mainQueue = DispatchQueue.test
     Just(1)
-      .delay(for: 1, scheduler: scheduler)
+      .delay(for: 1, scheduler: mainQueue)
       .eraseToEffect()
       .cancellable(id: 1)
       .sink(receiveValue: { _ in })
@@ -244,15 +244,15 @@ final class EffectCancellationTests: XCTestCase {
   }
 
   func testSharedId() {
-    let scheduler = DispatchQueue.test
+    let mainQueue = DispatchQueue.test
 
     let effect1 = Just(1)
-      .delay(for: 1, scheduler: scheduler)
+      .delay(for: 1, scheduler: mainQueue)
       .eraseToEffect()
       .cancellable(id: "id")
 
     let effect2 = Just(2)
-      .delay(for: 2, scheduler: scheduler)
+      .delay(for: 2, scheduler: mainQueue)
       .eraseToEffect()
       .cancellable(id: "id")
 
@@ -265,25 +265,25 @@ final class EffectCancellationTests: XCTestCase {
       .store(in: &cancellables)
 
     XCTAssertNoDifference(expectedOutput, [])
-    scheduler.advance(by: 1)
+    mainQueue.advance(by: 1)
     XCTAssertNoDifference(expectedOutput, [1])
-    scheduler.advance(by: 1)
+    mainQueue.advance(by: 1)
     XCTAssertNoDifference(expectedOutput, [1, 2])
   }
 
   func testImmediateCancellation() {
-    let scheduler = DispatchQueue.test
+    let mainQueue = DispatchQueue.test
 
     var expectedOutput: [Int] = []
     // Don't hold onto cancellable so that it is deallocated immediately.
     _ = Deferred { Just(1) }
-      .delay(for: 1, scheduler: scheduler)
+      .delay(for: 1, scheduler: mainQueue)
       .eraseToEffect()
       .cancellable(id: "id")
       .sink { expectedOutput.append($0) }
 
     XCTAssertNoDifference(expectedOutput, [])
-    scheduler.advance(by: 1)
+    mainQueue.advance(by: 1)
     XCTAssertNoDifference(expectedOutput, [])
   }
 
@@ -304,7 +304,7 @@ final class EffectCancellationTests: XCTestCase {
   }
 
   func testMultipleCancellations() {
-    let scheduler = DispatchQueue.test
+    let mainQueue = DispatchQueue.test
     var output: [AnyHashable] = []
 
     struct A: Hashable {}
@@ -314,7 +314,7 @@ final class EffectCancellationTests: XCTestCase {
     let ids: [AnyHashable] = [A(), B(), C()]
     let effects = ids.map { id in
       Just(id)
-        .delay(for: 1, scheduler: scheduler)
+        .delay(for: 1, scheduler: mainQueue)
         .eraseToEffect()
         .cancellable(id: id)
     }
@@ -328,7 +328,7 @@ final class EffectCancellationTests: XCTestCase {
       .sink { _ in }
       .store(in: &self.cancellables)
 
-    scheduler.advance(by: 1)
+    mainQueue.advance(by: 1)
     XCTAssertNoDifference(output, [B()])
   }
 }

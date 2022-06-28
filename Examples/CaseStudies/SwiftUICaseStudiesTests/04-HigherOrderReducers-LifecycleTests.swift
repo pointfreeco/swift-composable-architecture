@@ -7,13 +7,13 @@ import XCTest
 @MainActor
 class LifecycleTests: XCTestCase {
   func testLifecycle() async {
-    let scheduler = DispatchQueue.test
+    let mainQueue = DispatchQueue.test
 
     let store = TestStore(
       initialState: LifecycleDemoState(),
       reducer: lifecycleDemoReducer,
       environment: LifecycleDemoEnvironment(
-        mainQueue: scheduler.eraseToAnyScheduler()
+        mainQueue: mainQueue.eraseToAnyScheduler()
       )
     )
 
@@ -23,12 +23,12 @@ class LifecycleTests: XCTestCase {
 
     store.send(.timer(.onAppear))
 
-    await scheduler.advance(by: .seconds(1))
+    await mainQueue.advance(by: .seconds(1))
     await store.receive(.timer(.action(.tick))) {
       $0.count = 1
     }
 
-    await scheduler.advance(by: .seconds(1))
+    await mainQueue.advance(by: .seconds(1))
     await store.receive(.timer(.action(.tick))) {
       $0.count = 2
     }
