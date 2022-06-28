@@ -5,22 +5,12 @@ import XCTestDynamicOverlay
 #if DEBUG
   extension AudioRecorderClient {
     static let failing = Self(
-      currentTime: {
-        XCTFail("AudioRecorderClient.currentTime")
-        return nil
-      },
-      requestRecordPermission: {
-        XCTFail("AudioRecorderClient.requestRecordPermission")
-        return false
-      },
-      startRecording: { _ in
-        XCTFail("AudioRecorderClient.startRecording")
-        try await Task.sleep(nanoseconds: NSEC_PER_SEC * NSEC_PER_SEC)
-        fatalError()
-      },
-      stopRecording: {
-        XCTFail("AudioRecorderClient.stopRecording")
-      }
+      currentTime: XCTUnimplemented("\(Self.self).currentTime", placeholder: nil),
+      requestRecordPermission: XCTUnimplemented(
+        "\(Self.self).requestRecordPermission", placeholder: false
+      ),
+      startRecording: XCTUnimplemented("\(Self.self).startRecording", placeholder: false),
+      stopRecording: XCTUnimplemented("\(Self.self).stopRecording")
     )
   }
 #endif

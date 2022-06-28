@@ -6,14 +6,12 @@ import XCTestDynamicOverlay
 #if DEBUG
   extension SpeechClient {
     static let failing = Self(
-      recognitionTask: { _ in
-        XCTFail("\(Self.self).failing.recognitionTask was invoked")
-        return .init { _ in }
-      },
-      requestAuthorization: {
-        XCTFail("\(Self.self).failing.requestAuthorization was invoked")
-        return .notDetermined
-      }
+      recognitionTask: XCTUnimplemented(
+        "\(Self.self).recognitionTask", placeholder: AsyncThrowingStream { _ in }
+      ),
+      requestAuthorization: XCTUnimplemented(
+        "\(Self.self).requestAuthorization", placeholder: .notDetermined
+      )
     )
   }
 #endif
