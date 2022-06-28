@@ -417,8 +417,7 @@ extension Reducer {
     message:
       "'Reducer.binding()' no longer takes an explicit extract function and instead the reducer's 'Action' type must conform to 'BindableAction'"
   )
-  public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self
-  {
+  public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self {
     Self { state, action, environment in
       toBindingAction(action)?.set(&state)
       return self.run(&state, action, environment)
