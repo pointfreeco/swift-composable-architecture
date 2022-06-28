@@ -7,7 +7,7 @@ import XCTest
 @MainActor
 class LoginCoreTests: XCTestCase {
   func testFlow_Success_TwoFactor_Integration() async {
-    var authenticationClient = AuthenticationClient.failing
+    var authenticationClient = AuthenticationClient.unimplemented
     authenticationClient.login = { _ in
       AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
     }
@@ -60,7 +60,7 @@ class LoginCoreTests: XCTestCase {
   }
 
   func testFlow_DismissEarly_TwoFactor_Integration() async {
-    var authenticationClient = AuthenticationClient.failing
+    var authenticationClient = AuthenticationClient.unimplemented
     authenticationClient.login = { _ in
       AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
     }

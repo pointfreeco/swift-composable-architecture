@@ -10,7 +10,7 @@ class WebSocketTests: XCTestCase {
     let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
     let messages = AsyncStream<TaskResult<WebSocketClient.Message>>.streamWithContinuation()
 
-    var webSocket = WebSocketClient.failing
+    var webSocket = WebSocketClient.unimplemented
     webSocket.open = { _, _, _ in actions.stream }
     webSocket.send = { _, _ in }
     webSocket.receive = { _ in messages.stream }
@@ -65,7 +65,7 @@ class WebSocketTests: XCTestCase {
     let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
     let messages = AsyncStream<TaskResult<WebSocketClient.Message>>.streamWithContinuation()
 
-    var webSocket = WebSocketClient.failing
+    var webSocket = WebSocketClient.unimplemented
     webSocket.open = { _, _, _ in actions.stream }
     webSocket.receive = { _ in messages.stream }
     webSocket.send = { _, _ in
@@ -113,7 +113,7 @@ class WebSocketTests: XCTestCase {
     let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
     let pingsCount = SendableState(0)
 
-    var webSocket = WebSocketClient.failing
+    var webSocket = WebSocketClient.unimplemented
     webSocket.open = { _, _, _ in actions.stream }
     webSocket.receive = { _ in try await Task.never() }
     webSocket.sendPing = { _ in await pingsCount.modify { $0 += 1 } }
@@ -153,7 +153,7 @@ class WebSocketTests: XCTestCase {
   func testWebSocketConnectError() async {
     let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
 
-    var webSocket = WebSocketClient.failing
+    var webSocket = WebSocketClient.unimplemented
     webSocket.open = { _, _, _ in actions.stream }
     webSocket.receive = { _ in try await Task.never() }
     webSocket.sendPing = { _ in try await Task.never() }

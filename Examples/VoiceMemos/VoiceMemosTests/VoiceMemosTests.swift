@@ -16,7 +16,7 @@ class VoiceMemosTests: XCTestCase {
     // TODO: CancellableAsyncValue instead of AsyncStream with first?
     let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
 
-    var environment = VoiceMemosEnvironment.failing
+    var environment = VoiceMemosEnvironment.unimplemented
     environment.audioRecorder.currentTime = { 2.5 }
     environment.audioRecorder.requestRecordPermission = { true }
     environment.audioRecorder.startRecording = { _ in
@@ -79,7 +79,7 @@ class VoiceMemosTests: XCTestCase {
   func testPermissionDenied() async {
     let didOpenSettings = SendableState(false)
 
-    var environment = VoiceMemosEnvironment.failing
+    var environment = VoiceMemosEnvironment.unimplemented
     environment.audioRecorder.requestRecordPermission = { false }
     environment.mainRunLoop = .immediate
     environment.openSettings = { await didOpenSettings.set(true) }
@@ -106,7 +106,7 @@ class VoiceMemosTests: XCTestCase {
   func testRecordMemoFailure() async {
     let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
 
-    var environment = VoiceMemosEnvironment.failing
+    var environment = VoiceMemosEnvironment.unimplemented
     environment.audioRecorder.currentTime = { 2.5 }
     environment.audioRecorder.requestRecordPermission = { true }
     environment.audioRecorder.startRecording = { _ in
@@ -143,7 +143,7 @@ class VoiceMemosTests: XCTestCase {
   }
 
   func testPlayMemoHappyPath() async {
-    var environment = VoiceMemosEnvironment.failing
+    var environment = VoiceMemosEnvironment.unimplemented
     environment.audioPlayer.play = { _ in
       try await self.mainRunLoop.sleep(for: 1)
       return true
@@ -185,7 +185,7 @@ class VoiceMemosTests: XCTestCase {
   }
 
   func testPlayMemoFailure() async {
-    var environment = VoiceMemosEnvironment.failing
+    var environment = VoiceMemosEnvironment.unimplemented
     environment.audioPlayer.play = { _ in throw AudioPlayerClient.Failure.decodeErrorDidOccur }
     environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
@@ -235,7 +235,7 @@ class VoiceMemosTests: XCTestCase {
         ]
       ),
       reducer: voiceMemosReducer,
-      environment: .failing
+      environment: .unimplemented
     )
 
     store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
@@ -258,7 +258,7 @@ class VoiceMemosTests: XCTestCase {
         ]
       ),
       reducer: voiceMemosReducer,
-      environment: .failing
+      environment: .unimplemented
     )
 
     store.send(.voiceMemo(id: url, action: .delete)) {
@@ -268,7 +268,7 @@ class VoiceMemosTests: XCTestCase {
 
   func testDeleteMemoWhilePlaying() {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
-    var environment = VoiceMemosEnvironment.failing
+    var environment = VoiceMemosEnvironment.unimplemented
     environment.audioPlayer.play = { _ in try await Task.never() }
     environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
@@ -298,10 +298,10 @@ class VoiceMemosTests: XCTestCase {
 }
 
 extension VoiceMemosEnvironment {
-  static let failing = Self(
-    audioPlayer: .failing,
-    audioRecorder: .failing,
-    mainRunLoop: .failing,
+  static let unimplemented = Self(
+    audioPlayer: .unimplemented,
+    audioRecorder: .unimplemented,
+    mainRunLoop: .unimplemented,
     openSettings: XCTUnimplemented("\(Self.self).openSettings"),
     temporaryDirectory: XCTUnimplemented(
       "\(Self.self).temporaryDirectory",

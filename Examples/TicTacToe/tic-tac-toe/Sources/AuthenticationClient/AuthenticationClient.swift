@@ -73,7 +73,7 @@ public struct AuthenticationClient: Sendable {
 
 #if DEBUG
   extension AuthenticationClient {
-    public static let failing = Self(
+    public static let unimplemented = Self(
       login: XCTUnimplemented("\(Self.self).login"),
       twoFactor: XCTUnimplemented("\(Self.self).twoFactor")
     )

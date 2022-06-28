@@ -4,7 +4,7 @@ import XCTestDynamicOverlay
 
 #if DEBUG
   extension AudioPlayerClient {
-    static let failing = Self(
+    static let unimplemented = Self(
       play: XCTUnimplemented("\(Self.self).play")
     )
   }

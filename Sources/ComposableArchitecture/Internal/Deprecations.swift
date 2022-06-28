@@ -8,8 +8,8 @@ import XCTestDynamicOverlay
 extension Effect where Failure == Error {
   @available(
     *,
-    deprecated,
-    message: "Use the non-throwing version of 'Effect.task' and catch errors explicitly"
+     deprecated,
+     message: "Use the non-throwing version of 'Effect.task' and catch errors explicitly"
   )
   public static func task(
     priority: TaskPriority? = nil,
@@ -33,6 +33,16 @@ extension Effect where Failure == Error {
       return subject.handleEvents(receiveCancel: task.cancel)
     }
     .eraseToEffect()
+  }
+}
+
+extension Effect {
+  @available(iOS, deprecated: 9999.0, renamed: "unimplemented")
+  @available(macOS, deprecated: 9999.0, renamed: "unimplemented")
+  @available(tvOS, deprecated: 9999.0, renamed: "unimplemented")
+  @available(watchOS, deprecated: 9999.0, renamed: "unimplemented")
+  public static func failing(_ prefix: String) -> Self {
+    self.unimplemented(prefix)
   }
 }
 
@@ -396,153 +406,85 @@ extension Store {
   }
 }
 
-#if compiler(>=5.4)
-  extension ViewStore where Action: BindableAction, Action.State == State {
-    @available(
-      *, deprecated,
-      message:
-        "Dynamic member lookup is no longer supported for bindable state. Instead of dot-chaining on the view store, e.g. 'viewStore.$value', invoke the 'binding' method on view store with a key path to the value, e.g. 'viewStore.binding(\\.$value)'. For more on this change, see: https://github.com/pointfreeco/swift-composable-architecture/pull/810"
+extension ViewStore where Action: BindableAction, Action.State == State {
+  @available(
+    *, deprecated,
+    message:
+      "Dynamic member lookup is no longer supported for bindable state. Instead of dot-chaining on the view store, e.g. 'viewStore.$value', invoke the 'binding' method on view store with a key path to the value, e.g. 'viewStore.binding(\\.$value)'. For more on this change, see: https://github.com/pointfreeco/swift-composable-architecture/pull/810"
+  )
+  public subscript<Value: Equatable>(
+    dynamicMember keyPath: WritableKeyPath<State, BindableState<Value>>
+  ) -> Binding<Value> {
+    self.binding(
+      get: { $0[keyPath: keyPath].wrappedValue },
+      send: { .binding(.set(keyPath, $0)) }
     )
-    public subscript<Value: Equatable>(
-      dynamicMember keyPath: WritableKeyPath<State, BindableState<Value>>
-    ) -> Binding<Value> {
-      self.binding(
-        get: { $0[keyPath: keyPath].wrappedValue },
-        send: { .binding(.set(keyPath, $0)) }
-      )
-    }
   }
-#endif
+}
 
 // NB: Deprecated after 0.25.0:
 
-#if compiler(>=5.4)
-  extension BindingAction {
-    @available(
-      *, deprecated,
-      message:
-        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\\.$value'"
+extension BindingAction {
+  @available(
+    *, deprecated,
+    message:
+      "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\\.$value'"
+  )
+  public static func set<Value: Equatable>(
+    _ keyPath: WritableKeyPath<Root, Value>,
+    _ value: Value
+  ) -> Self {
+    .init(
+      keyPath: keyPath,
+      set: { $0[keyPath: keyPath] = value },
+      value: value,
+      valueIsEqualTo: { $0 as? Value == value }
     )
-    public static func set<Value: Equatable>(
-      _ keyPath: WritableKeyPath<Root, Value>,
-      _ value: Value
-    ) -> Self {
-      .init(
-        keyPath: keyPath,
-        set: { $0[keyPath: keyPath] = value },
-        value: value,
-        valueIsEqualTo: { $0 as? Value == value }
-      )
-    }
-
-    @available(
-      *, deprecated,
-      message:
-        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\\.$value'"
-    )
-    public static func ~= <Value>(
-      keyPath: WritableKeyPath<Root, Value>,
-      bindingAction: Self
-    ) -> Bool {
-      keyPath == bindingAction.keyPath
-    }
   }
 
-  extension Reducer {
-    @available(
-      *, deprecated,
-      message:
-        "'Reducer.binding()' no longer takes an explicit extract function and instead the reducer's 'Action' type must conform to 'BindableAction'"
-    )
-    public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self
-    {
-      Self { state, action, environment in
-        toBindingAction(action)?.set(&state)
-        return self.run(&state, action, environment)
-      }
-    }
+  @available(
+    *, deprecated,
+    message:
+      "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\\.$value'"
+  )
+  public static func ~= <Value>(
+    keyPath: WritableKeyPath<Root, Value>,
+    bindingAction: Self
+  ) -> Bool {
+    keyPath == bindingAction.keyPath
   }
+}
 
-  extension ViewStore {
-    @available(
-      *, deprecated,
-      message:
-        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. Bindings are now derived via 'ViewStore.binding' with a key path to that 'BindableState' (for example, 'viewStore.binding(\\.$value)'). For dynamic member lookup to be available, the view store's 'Action' type must also conform to 'BindableAction'."
-    )
-    public func binding<LocalState: Equatable>(
-      keyPath: WritableKeyPath<State, LocalState>,
-      send action: @escaping (BindingAction<State>) -> Action
-    ) -> Binding<LocalState> {
-      self.binding(
-        get: { $0[keyPath: keyPath] },
-        send: { action(.set(keyPath, $0)) }
-      )
+extension Reducer {
+  @available(
+    *, deprecated,
+    message:
+      "'Reducer.binding()' no longer takes an explicit extract function and instead the reducer's 'Action' type must conform to 'BindableAction'"
+  )
+  public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self {
+    Self { state, action, environment in
+      toBindingAction(action)?.set(&state)
+      return self.run(&state, action, environment)
     }
   }
-#else
-  extension BindingAction {
-    @available(
-      *, deprecated,
-      message:
-        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\\.$value'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'."
-    )
-    public static func set<Value: Equatable>(
-      _ keyPath: WritableKeyPath<Root, Value>,
-      _ value: Value
-    ) -> Self {
-      .init(
-        keyPath: keyPath,
-        set: { $0[keyPath: keyPath] = value },
-        value: value,
-        valueIsEqualTo: { $0 as? Value == value }
-      )
-    }
+}
 
-    @available(
-      *, deprecated,
-      message:
-        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\\.$value'. Upgrade to Xcode 12.5 or greater for access to 'BindableState'."
+extension ViewStore {
+  @available(
+    *, deprecated,
+    message:
+      "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. Bindings are now derived via 'ViewStore.binding' with a key path to that 'BindableState' (for example, 'viewStore.binding(\\.$value)'). For dynamic member lookup to be available, the view store's 'Action' type must also conform to 'BindableAction'."
+  )
+  public func binding<LocalState: Equatable>(
+    keyPath: WritableKeyPath<State, LocalState>,
+    send action: @escaping (BindingAction<State>) -> Action
+  ) -> Binding<LocalState> {
+    self.binding(
+      get: { $0[keyPath: keyPath] },
+      send: { action(.set(keyPath, $0)) }
     )
-    public static func ~= <Value>(
-      keyPath: WritableKeyPath<Root, Value>,
-      bindingAction: Self
-    ) -> Bool {
-      keyPath == bindingAction.keyPath
-    }
   }
-
-  extension Reducer {
-    @available(
-      *, deprecated,
-      message:
-        "'Reducer.binding()' no longer takes an explicit extract function and instead the reducer's 'Action' type must conform to 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'Reducer.binding()' and 'BindableAction'."
-    )
-    public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self
-    {
-      Self { state, action, environment in
-        toBindingAction(action)?.set(&state)
-        return self.run(&state, action, environment)
-      }
-    }
-  }
-
-  extension ViewStore {
-    @available(
-      *, deprecated,
-      message:
-        "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. Bindings are now derived via 'ViewStore.binding' with a key path to that 'BindableState' (for example, 'viewStore.binding(\\.$value)'). For dynamic member lookup to be available, the view store's 'Action' type must also conform to 'BindableAction'. Upgrade to Xcode 12.5 or greater for access to 'BindableState' and 'BindableAction'."
-    )
-    public func binding<LocalState: Equatable>(
-      keyPath: WritableKeyPath<State, LocalState>,
-      send action: @escaping (BindingAction<State>) -> Action
-    ) -> Binding<LocalState> {
-      self.binding(
-        get: { $0[keyPath: keyPath] },
-        send: { action(.set(keyPath, $0)) }
-      )
-    }
-  }
-#endif
+}
 
 // NB: Deprecated after 0.23.0:
 

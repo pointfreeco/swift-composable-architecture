@@ -314,7 +314,7 @@ extension WebSocketClient {
 }
 
 extension WebSocketClient {
-  static let failing = Self(
+  static let unimplemented = Self(
     open: XCTUnimplemented("\(Self.self).open", placeholder: AsyncStream { _ in }),
     receive: XCTUnimplemented("\(Self.self).receive"),
     send: XCTUnimplemented("\(Self.self).send"),

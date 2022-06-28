@@ -4,7 +4,7 @@ import XCTestDynamicOverlay
 
 #if DEBUG
   extension AudioRecorderClient {
-    static let failing = Self(
+    static let unimplemented = Self(
       currentTime: XCTUnimplemented("\(Self.self).currentTime", placeholder: nil),
       requestRecordPermission: XCTUnimplemented(
         "\(Self.self).requestRecordPermission", placeholder: false
