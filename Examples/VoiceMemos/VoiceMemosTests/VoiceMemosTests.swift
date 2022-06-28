@@ -1,5 +1,6 @@
 import Combine
 import ComposableArchitecture
+import XCTest
 import XCTestDynamicOverlay
 
 @testable import VoiceMemos
@@ -97,7 +98,7 @@ class VoiceMemosTests: XCTestCase {
     store.send(.alertDismissed) {
       $0.alert = nil
     }
-    await store.send(.openSettingsButtonTapped).finish
+    await store.send(.openSettingsButtonTapped).finish()
     let didOpen = await didOpenSettings.value
     XCTAssert(didOpen)
   }
@@ -136,7 +137,7 @@ class VoiceMemosTests: XCTestCase {
     await store.receive(
       .audioRecorderDidFinish(.failure(AudioRecorderClient.Failure.couldntActivateAudioSession))
     ) {
-      $0.alert = AlertState(title: TextStatae("Voice memo recording failed."))
+      $0.alert = AlertState(title: TextState("Voice memo recording failed."))
       $0.currentRecording = nil
     }
   }

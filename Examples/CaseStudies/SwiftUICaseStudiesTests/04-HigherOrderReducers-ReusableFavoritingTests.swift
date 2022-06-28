@@ -47,7 +47,7 @@ class ReusableComponentsFavoritingTests: XCTestCase {
 
     await store.receive(.episode(id: episodes[1].id, action: .favorite(.response(.success(false)))))
 
-    struct FavoriteError: LocalizedError {
+    struct FavoriteError: Equatable, LocalizedError {
       var errorDescription: String? {
         "Favoriting failed."
       }

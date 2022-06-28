@@ -28,7 +28,7 @@ class RefreshableTests: XCTestCase {
   }
 
   func testUnhappyPath() async {
-    struct FactError: Error {}
+    struct FactError: Equatable, Error {}
     let store = TestStore(
       initialState: RefreshableState(),
       reducer: refreshableReducer,

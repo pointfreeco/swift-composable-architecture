@@ -526,7 +526,7 @@
       }
       let (receivedAction, state) = self.receivedActions.removeFirst()
       if expectedAction != receivedAction {
-        let difference =
+        let difference = TaskResultDebugging.$emitRuntimeWarnings.withValue(false) {
           diff(expectedAction, receivedAction, format: .proportional)
             .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
           ?? """
@@ -536,6 +536,7 @@
           Received:
           \(String(describing: receivedAction).indent(by: 2))
           """
+        }
 
         XCTFail(
           """

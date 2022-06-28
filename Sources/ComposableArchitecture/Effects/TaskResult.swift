@@ -130,6 +130,10 @@ public enum TaskResult<Success: Sendable>: Sendable {
   }
 }
 
+enum TaskResultDebugging {
+  @TaskLocal static var emitRuntimeWarnings = true
+}
+
 extension TaskResult: Equatable where Success: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
     switch (lhs, rhs) {
@@ -137,12 +141,14 @@ extension TaskResult: Equatable where Success: Equatable {
       return lhs == rhs
     case let (.failure(lhs), .failure(rhs)):
       return _isEqual(lhs, rhs) ?? {
-        runtimeWarning(
-          "Tried to compare a non-equatable error type: %@",
-          [
-            "\(type(of: lhs))"
-          ]
-        )
+        if TaskResultDebugging.emitRuntimeWarnings {
+          runtimeWarning(
+            "Tried to compare a non-equatable error type: %@",
+            [
+              "\(type(of: lhs))"
+            ]
+          )
+        }
         return false
       }()
     default:
