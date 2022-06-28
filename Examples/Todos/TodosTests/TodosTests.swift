@@ -55,7 +55,7 @@ class TodosTests: XCTestCase {
     }
   }
 
-  func testCompleteTodo() {
+  func testCompleteTodo() async {
     let state = AppState(
       todos: [
         Todo(
@@ -82,8 +82,8 @@ class TodosTests: XCTestCase {
     store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
       $0.todos[id: state.todos[0].id]?.isComplete = true
     }
-    self.scheduler.advance(by: 1)
-    store.receive(.sortCompletedTodos) {
+    await self.scheduler.advance(by: 1)
+    await store.receive(.sortCompletedTodos) {
       $0.todos = [
         $0.todos[1],
         $0.todos[0],
@@ -91,7 +91,7 @@ class TodosTests: XCTestCase {
     }
   }
 
-  func testCompleteTodoDebounces() {
+  func testCompleteTodoDebounces() async {
     let state = AppState(
       todos: [
         Todo(
@@ -118,12 +118,12 @@ class TodosTests: XCTestCase {
     store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
       $0.todos[id: state.todos[0].id]?.isComplete = true
     }
-    self.scheduler.advance(by: 0.5)
+    await self.scheduler.advance(by: 0.5)
     store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
       $0.todos[id: state.todos[0].id]?.isComplete = false
     }
-    self.scheduler.advance(by: 1)
-    store.receive(.sortCompletedTodos)
+    await self.scheduler.advance(by: 1)
+    await store.receive(.sortCompletedTodos)
   }
 
   func testClearCompleted() {

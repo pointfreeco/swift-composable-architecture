@@ -127,11 +127,9 @@ struct LoginView_Previews: PreviewProvider {
           reducer: loginReducer,
           environment: LoginEnvironment(
             authenticationClient: AuthenticationClient(
-              login: { _ in
               login: { _ in AuthenticationResponse(token: "deadbeef", twoFactorRequired: false) },
-              },
               twoFactor: { _ in
-              twoFactor: { _ in AuthenticationResponse(token: "deadbeef", twoFactorRequired: false) }
+                AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
               }
             )
           )

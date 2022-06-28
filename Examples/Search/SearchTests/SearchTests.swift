@@ -219,4 +219,4 @@ class SearchTests: XCTestCase {
   }
 }
 
-private struct SomethingWentWrong: Error {}
+private struct SomethingWentWrong: Equatable, Error {}
