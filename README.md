@@ -272,13 +272,13 @@ And that is enough to get something on the screen to play around with. It's defi
 To test, you first create a `TestStore` with the same information that you would to create a regular `Store`, except this time we can supply test-friendly dependencies. In particular, we use a test scheduler instead of the live `DispatchQueue.main` scheduler because that allows us to control when work is executed, and we don't have to artificially wait for queues to catch up.
 
 ```swift
-let scheduler = DispatchQueue.test
+let mainQueue = DispatchQueue.test
 
 let store = TestStore(
   initialState: AppState(),
   reducer: appReducer,
   environment: AppEnvironment(
-    mainQueue: scheduler.eraseToAnyScheduler(),
+    mainQueue: mainQueue.eraseToAnyScheduler(),
     numberFact: { number in Effect(value: "\(number) is a good number Brent") }
   )
 )
@@ -301,7 +301,7 @@ store.send(.decrementButtonTapped) {
 // that we have to advance the scheduler because we used `.receive(on:)` in the reducer.
 store.send(.numberFactButtonTapped)
 
-scheduler.advance()
+mainQueue.advance()
 store.receive(.numberFactResponse(.success("0 is a good number Brent"))) {
   $0.numberFactAlert = "0 is a good number Brent"
 }

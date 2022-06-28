@@ -211,13 +211,13 @@ scheduler instead of the live `DispatchQueue.main` scheduler because that allows
 work is executed, and we don't have to artificially wait for queues to catch up.
 
 ```swift
-let scheduler = DispatchQueue.test
+let mainQueue = DispatchQueue.test
 
 let store = TestStore(
   initialState: AppState(),
   reducer: appReducer,
   environment: AppEnvironment(
-    mainQueue: scheduler.eraseToAnyScheduler(),
+    mainQueue: mainQueue.eraseToAnyScheduler(),
     numberFact: { number in Effect(value: "\(number) is a good number Brent") }
   )
 )
@@ -246,7 +246,7 @@ store.send(.decrementButtonTapped) {
 // `.receive(on:)` in the reducer.
 store.send(.numberFactButtonTapped)
 
-scheduler.advance()
+mainQueue.advance()
 store.receive(.numberFactResponse(.success("0 is a good number Brent"))) {
   $0.numberFactAlert = "0 is a good number Brent"
 }

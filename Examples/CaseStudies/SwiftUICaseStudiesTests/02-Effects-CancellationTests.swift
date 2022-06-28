@@ -55,13 +55,13 @@ class EffectsCancellationTests: XCTestCase {
   // test to fail, showing that we are exhaustively asserting that the effect truly is canceled and
   // will never emit.
   func testTrivia_CancelButtonCancelsRequest() {
-    let scheduler = DispatchQueue.test
+    let mainQueue = DispatchQueue.test
     let store = TestStore(
       initialState: EffectsCancellationState(),
       reducer: effectsCancellationReducer,
       environment: EffectsCancellationEnvironment(
         fact: FactClient(fetch: { n in Effect(value: "\(n) is a good number Brent") }),
-        mainQueue: scheduler.eraseToAnyScheduler()
+        mainQueue: mainQueue.eraseToAnyScheduler()
       )
     )
 
@@ -71,17 +71,17 @@ class EffectsCancellationTests: XCTestCase {
     store.send(.cancelButtonTapped) {
       $0.isTriviaRequestInFlight = false
     }
-    scheduler.run()
+    mainQueue.run()
   }
 
   func testTrivia_PlusMinusButtonsCancelsRequest() {
-    let scheduler = DispatchQueue.test
+    let mainQueue = DispatchQueue.test
     let store = TestStore(
       initialState: EffectsCancellationState(),
       reducer: effectsCancellationReducer,
       environment: EffectsCancellationEnvironment(
         fact: FactClient(fetch: { n in Effect(value: "\(n) is a good number Brent") }),
-        mainQueue: scheduler.eraseToAnyScheduler()
+        mainQueue: mainQueue.eraseToAnyScheduler()
       )
     )
 
@@ -92,6 +92,6 @@ class EffectsCancellationTests: XCTestCase {
       $0.count = 1
       $0.isTriviaRequestInFlight = false
     }
-    scheduler.advance()
+    mainQueue.advance()
   }
 }

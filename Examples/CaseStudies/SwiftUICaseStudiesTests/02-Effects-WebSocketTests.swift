@@ -108,12 +108,12 @@ class WebSocketTests: XCTestCase {
     webSocket.receive = { _ in .none }
     webSocket.sendPing = { _ in pingSubject.eraseToEffect() }
 
-    let scheduler = DispatchQueue.test
+    let mainQueue = DispatchQueue.test
     let store = TestStore(
       initialState: WebSocketState(),
       reducer: webSocketReducer,
       environment: WebSocketEnvironment(
-        mainQueue: scheduler.eraseToAnyScheduler(),
+        mainQueue: mainQueue.eraseToAnyScheduler(),
         webSocket: webSocket
       )
     )
@@ -123,14 +123,14 @@ class WebSocketTests: XCTestCase {
     }
 
     socketSubject.send(.didOpenWithProtocol(nil))
-    scheduler.advance()
+    mainQueue.advance()
     store.receive(.webSocket(.didOpenWithProtocol(nil))) {
       $0.connectivityState = .connected
     }
 
     pingSubject.send(nil)
-    scheduler.advance(by: .seconds(5))
-    scheduler.advance(by: .seconds(5))
+    mainQueue.advance(by: .seconds(5))
+    mainQueue.advance(by: .seconds(5))
     store.receive(.pingResponse(nil))
 
     store.send(.connectButtonTapped) {

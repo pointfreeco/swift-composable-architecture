@@ -56,7 +56,7 @@ extension Effect where Failure == Never {
   ///
   /// ```swift
   /// func testTimer() {
-  ///   let scheduler = DispatchQueue.test
+  ///   let mainQueue = DispatchQueue.test
   ///
   ///   let store = TestStore(
   ///     initialState: .init(),
@@ -68,10 +68,10 @@ extension Effect where Failure == Never {
   ///
   ///   store.send(.startButtonTapped)
   ///
-  ///   scheduler.advance(by: .seconds(1))
+  ///   mainQueue.advance(by: .seconds(1))
   ///   store.receive(.timerTicked) { $0.count = 1 }
   ///
-  ///   scheduler.advance(by: .seconds(5))
+  ///   mainQueue.advance(by: .seconds(5))
   ///   store.receive(.timerTicked) { $0.count = 2 }
   ///   store.receive(.timerTicked) { $0.count = 3 }
   ///   store.receive(.timerTicked) { $0.count = 4 }

@@ -67,14 +67,14 @@ class LoginCoreTests: XCTestCase {
     authenticationClient.twoFactor = { _ in
       Effect(value: AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false))
     }
-    let scheduler = DispatchQueue.test
+    let mainQueue = DispatchQueue.test
 
     let store = TestStore(
       initialState: LoginState(),
       reducer: loginReducer,
       environment: LoginEnvironment(
         authenticationClient: authenticationClient,
-        mainQueue: scheduler.eraseToAnyScheduler()
+        mainQueue: mainQueue.eraseToAnyScheduler()
       )
     )
 
@@ -88,7 +88,7 @@ class LoginCoreTests: XCTestCase {
     store.send(.loginButtonTapped) {
       $0.isLoginRequestInFlight = true
     }
-    scheduler.advance()
+    mainQueue.advance()
     store.receive(
       .loginResponse(
         .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true))

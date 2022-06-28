@@ -18,9 +18,9 @@ final class StoreTests: XCTestCase {
   }
 
   func testCancellableIsRemovedWhenEffectCompletes() {
-    let scheduler = DispatchQueue.test
+    let mainQueue = DispatchQueue.test
     let effect = Effect<Void, Never>(value: ())
-      .delay(for: 1, scheduler: scheduler)
+      .delay(for: 1, scheduler: mainQueue)
       .eraseToEffect()
 
     enum Action { case start, end }
@@ -41,7 +41,7 @@ final class StoreTests: XCTestCase {
 
     XCTAssertNoDifference(store.effectCancellables.count, 1)
 
-    scheduler.advance(by: 2)
+    mainQueue.advance(by: 2)
 
     XCTAssertNoDifference(store.effectCancellables.count, 0)
   }
