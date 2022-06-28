@@ -1,5 +1,6 @@
 import ComposableArchitecture
 import Foundation
+import XCTestDynamicOverlay
 
 public struct LoginRequest {
   public var email: String
@@ -72,13 +73,9 @@ public struct AuthenticationClient: Sendable {
 
 #if DEBUG
   extension AuthenticationClient {
-    private struct Unimplemented: Error {
-      let endpoint: String
-    }
-
     public static let failing = Self(
-      login: { _ in throw Unimplemented(endpoint: "login") },
-      twoFactor: { _ in throw Unimplemented(endpoint: "twoFactor") }
+      login: XCTUnimplemented("\(Self.self).login"),
+      twoFactor: XCTUnimplemented("\(Self.self).twoFactor")
     )
   }
 #endif

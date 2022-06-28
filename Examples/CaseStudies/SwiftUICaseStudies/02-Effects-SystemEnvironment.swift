@@ -208,16 +208,14 @@ extension SystemEnvironment: Sendable where Environment: Sendable {}
 
   extension SystemEnvironment {
     static func failing(
-      date: @escaping @Sendable () -> Date = {
-        XCTFail("date dependency is unimplemented.")
-        return Date()
-      },
+      date: @escaping @Sendable () -> Date = XCTUnimplemented(
+        "\(Self.self).date", placeholder: Date()
+      ),
       environment: Environment,
       mainQueue: AnySchedulerOf<DispatchQueue> = .failing,
-      uuid: @escaping @Sendable () -> UUID = {
-        XCTFail("UUID dependency is unimplemented.")
-        return UUID()
-      }
+      uuid: @escaping @Sendable () -> UUID = XCTUnimplemented(
+        "\(Self.self).uuid", placeholder: UUID()
+      )
     ) -> Self {
       Self(
         date: date,

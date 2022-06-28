@@ -1,6 +1,6 @@
 import Combine
 import ComposableArchitecture
-import XCTest
+import XCTestDynamicOverlay
 
 @testable import VoiceMemos
 
@@ -301,16 +301,11 @@ extension VoiceMemosEnvironment {
     audioPlayer: .failing,
     audioRecorder: .failing,
     mainRunLoop: .failing,
-    openSettings: {
-      XCTFail("\(Self.self).openSettings")
-    },
-    temporaryDirectory: {
-      XCTFail("\(Self.self).temporaryDirectory is unimplemented")
-      return URL(fileURLWithPath: NSTemporaryDirectory())
-    },
-    uuid: {
-      XCTFail("\(Self.self).uuid is unimplemented")
-      return UUID()
-    }
+    openSettings: XCTUnimplemented("\(Self.self).openSettings"),
+    temporaryDirectory: XCTUnimplemented(
+      "\(Self.self).temporaryDirectory",
+      placeholder: URL(fileURLWithPath: NSTemporaryDirectory())
+    ),
+    uuid: XCTUnimplemented("\(Self.self).uuid", placeholder: UUID())
   )
 }
