@@ -16,12 +16,12 @@ extension FactClient {
     static let live = Self(
       fetch: { number in
         Effect.task {
+          try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
           do {
             let (data, _) = try await URLSession.shared
               .data(from: URL(string: "http://numbersapi.com/\(number)/trivia")!)
             return String(decoding: data, as: UTF8.self)
           } catch {
-            try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
             return "\(number) is a good number Brent"
           }
         }
@@ -54,10 +54,7 @@ extension FactClient {
     // This is the "failing" fact dependency that is useful to plug into tests that you want
     // to prove do not need the dependency.
     static let failing = Self(
-      fetch: { _ in
-        XCTFail("\(Self.self).fact is unimplemented.")
-        return .none
-      }
+      fetch: { _ in .failing("\(Self.self).fact is unimplemented.") }
     )
   }
 #endif

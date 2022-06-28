@@ -14,13 +14,9 @@ private let readMe = """
   file access, socket connections, and anytime a scheduler is involved (such as debouncing, \
   throttling and delaying), and they are typically difficult to test.
 
-  This application has two simple side effects:
-
-  • Each time you count down the number will be incremented back up after a delay of 1 second.
-  • Tapping "Number fact" will trigger an API request to load a piece of trivia about that number.
-
-  Both effects are handled by the reducer, and a full test suite is written to confirm that the \
-  effects behave in the way we expect.
+  This application has a simple side effects: tapping "Number fact" will trigger an API request to \
+  load a piece of trivia about that number. This effect is handled by the reducer, and a full test \
+  suite is written to confirm that the effect behaves in the way we expect.
   """
 
 // MARK: - Feature domain
@@ -46,16 +42,15 @@ struct EffectsBasicsEnvironment {
 // MARK: - Feature business logic
 
 let effectsBasicsReducer = Reducer<
-  EffectsBasicsState, EffectsBasicsAction, EffectsBasicsEnvironment
+  EffectsBasicsState,
+  EffectsBasicsAction,
+  EffectsBasicsEnvironment
 > { state, action, environment in
   switch action {
   case .decrementButtonTapped:
     state.count -= 1
     state.numberFact = nil
-    // Return an effect that re-increments the count after 1 second.
-    return Effect(value: EffectsBasicsAction.incrementButtonTapped)
-      .delay(for: 1, scheduler: environment.mainQueue)
-      .eraseToEffect()
+    return .none
 
   case .incrementButtonTapped:
     state.count += 1
@@ -77,6 +72,7 @@ let effectsBasicsReducer = Reducer<
     return .none
 
   case .numberFactResponse(.failure):
+    // NB: This is where we could handle the error is some way, such as showing an alert.
     state.isNumberFactRequestInFlight = false
     return .none
   }
@@ -90,15 +86,11 @@ struct EffectsBasicsView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(readMe)) {
-          EmptyView()
+        Section {
+          Text(readMe)
         }
 
-        Section(
-          footer: Button("Number facts provided by numbersapi.com") {
-            UIApplication.shared.open(URL(string: "http://numbersapi.com")!)
-          }
-        ) {
+        Section {
           HStack {
             Spacer()
             Button("−") { viewStore.send(.decrementButtonTapped) }
@@ -110,15 +102,27 @@ struct EffectsBasicsView: View {
           .buttonStyle(.borderless)
 
           Button("Number fact") { viewStore.send(.numberFactButtonTapped) }
+            .frame(maxWidth: .infinity)
+
           if viewStore.isNumberFactRequestInFlight {
             ProgressView()
+              .id(UUID())
           }
 
           if let numberFact = viewStore.numberFact {
             Text(numberFact)
+
           }
         }
+
+        Section {
+          Button("Number facts provided by numbersapi.com") {
+            UIApplication.shared.open(URL(string: "http://numbersapi.com")!)
+          }
+          .foregroundColor(.gray)
+        }
       }
+      .buttonStyle(.borderless)
     }
     .navigationBarTitle("Effects")
   }

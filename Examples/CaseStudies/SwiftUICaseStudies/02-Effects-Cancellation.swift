@@ -80,12 +80,11 @@ struct EffectsCancellationView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(
-          header: Text(readMe),
-          footer: Button("Number facts provided by numbersapi.com") {
-            UIApplication.shared.open(URL(string: "http://numbersapi.com")!)
-          }
-        ) {
+        Section {
+          Text(readMe)
+        }
+
+        Section {
           Stepper(
             value: viewStore.binding(
               get: \.count, send: EffectsCancellationAction.stepperChanged)
@@ -108,7 +107,15 @@ struct EffectsCancellationView: View {
             Text($0).padding(.vertical, 8)
           }
         }
+
+        Section {
+          Button("Number facts provided by numbersapi.com") {
+            UIApplication.shared.open(URL(string: "http://numbersapi.com")!)
+          }
+          .foregroundColor(.gray)
+        }
       }
+      .buttonStyle(.borderless)
     }
     .navigationBarTitle("Effect cancellation")
   }
