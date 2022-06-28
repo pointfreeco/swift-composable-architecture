@@ -183,23 +183,21 @@ final class DebugTests: XCTestCase {
     )
   }
 
-  #if compiler(>=5.4)
-    func testBindingAction() {
-      struct State {
-        @BindableState var width = 0
-      }
-      let action = BindingAction.set(\State.$width, 50)
-      var dump = ""
-      customDump(action, to: &dump)
-      XCTAssertNoDifference(
-        dump,
-        #"""
-        BindingAction.set(
-          WritableKeyPath<State, BindableState<Int>>,
-          50
-        )
-        """#
-      )
+  func testBindingAction() {
+    struct State {
+      @BindableState var width = 0
     }
-  #endif
+    let action = BindingAction.set(\State.$width, 50)
+    var dump = ""
+    customDump(action, to: &dump)
+    XCTAssertNoDifference(
+      dump,
+      #"""
+      BindingAction.set(
+        WritableKeyPath<State, BindableState<Int>>,
+        50
+      )
+      """#
+    )
+  }
 }
