@@ -226,9 +226,7 @@
           return
             effects
             .handleEvents(
-              receiveSubscription: { [weak self] _ in
-                self?.inFlightEffects.insert(effect)
-              },
+              receiveSubscription: { [weak self] _ in self?.inFlightEffects.insert(effect) },
               receiveCompletion: { [weak self] _ in self?.inFlightEffects.remove(effect) },
               receiveCancel: { [weak self] in self?.inFlightEffects.remove(effect) }
             )
@@ -244,14 +242,12 @@
     /// - Parameter nanoseconds: The amount of time to wait before asserting.
     @MainActor
     public func finish(
-      timeout nanoseconds: UInt64 = 0,
+      timeout nanoseconds: UInt64 = NSEC_PER_MSEC,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
       let start = DispatchTime.now().uptimeNanoseconds
-      if nanoseconds == 0 {
-        await Task.megaYield()
-      }
+      await Task.megaYield()
       while !self.inFlightEffects.isEmpty {
         guard start.distance(to: DispatchTime.now().uptimeNanoseconds) < nanoseconds
         else {
@@ -577,7 +573,7 @@
     @MainActor
     public func receive(
       _ expectedAction: Action,
-      timeout nanoseconds: UInt64 = 0,
+      timeout nanoseconds: UInt64 = NSEC_PER_MSEC,
       _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
@@ -589,9 +585,7 @@
         return
       }
 
-      if nanoseconds == 0 {
-        await Task.megaYield()
-      }
+      await Task.megaYield()
       let start = DispatchTime.now().uptimeNanoseconds
       while !Task.isCancelled {
         await Task.detached(priority: .low) { await Task.yield() }.value
@@ -727,13 +721,11 @@
     ///
     /// - Parameter nanoseconds: The amount of time to wait before asserting.
     public func finish(
-      timeout nanoseconds: UInt64 = 0,
+      timeout nanoseconds: UInt64 = NSEC_PER_MSEC,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
-      if nanoseconds == 0 {
-        await Task.megaYield()
-      }
+      await Task.megaYield()
       do {
         try await withThrowingTaskGroup(of: Void.self) { group in
           group.addTask { await self.rawValue.cancellableValue }
