@@ -31,7 +31,7 @@ extension FactClient {
     // This is the "unimplemented" fact dependency that is useful to plug into tests that you want
     // to prove do not need the dependency.
     static let unimplemented = Self(
-      fetch: { _ in .unimplemented("\(Self.self).fact") }
+      fetch: { _ in .unimplemented("\(Self.self).fetch") }
     )
   }
 #endif
