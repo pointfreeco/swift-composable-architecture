@@ -17,6 +17,7 @@ class SearchTests: XCTestCase {
         mainQueue: self.mainQueue.eraseToAnyScheduler()
       )
     )
+    store.environment.weatherClient.search = { _ in .mock }
 
     store.send(.searchQueryChanged("S")) {
       $0.searchQuery = "S"
