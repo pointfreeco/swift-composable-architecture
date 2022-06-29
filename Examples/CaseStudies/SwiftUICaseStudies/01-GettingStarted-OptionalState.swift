@@ -54,28 +54,30 @@ struct OptionalBasicsView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(template: readMe, .caption)) {
-          Button("Toggle counter state") {
-            viewStore.send(.toggleCounterButtonTapped)
-          }
-
-          IfLetStore(
-            self.store.scope(
-              state: \.optionalCounter,
-              action: OptionalBasicsAction.optionalCounter
-            ),
-            then: { store in
-              VStack(alignment: .leading, spacing: 16) {
-                Text(template: "`CounterState` is non-`nil`", .body)
-                CounterView(store: store)
-                  .buttonStyle(.borderless)
-              }
-            },
-            else: {
-              Text(template: "`CounterState` is `nil`", .body)
-            }
-          )
+        Section {
+          AboutView(readMe: readMe)
         }
+
+        Button("Toggle counter state") {
+          viewStore.send(.toggleCounterButtonTapped)
+        }
+
+        IfLetStore(
+          self.store.scope(
+            state: \.optionalCounter,
+            action: OptionalBasicsAction.optionalCounter
+          ),
+          then: { store in
+            VStack(alignment: .leading, spacing: 16) {
+              Text(template: "`CounterState` is non-`nil`")
+              CounterView(store: store)
+                .buttonStyle(.borderless)
+            }
+          },
+          else: {
+            Text(template: "`CounterState` is `nil`")
+          }
+        )
       }
     }
     .navigationBarTitle("Optional state")

@@ -74,14 +74,15 @@ struct LoadThenPresentView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(readMe)) {
-          Button(action: { viewStore.send(.setSheet(isPresented: true)) }) {
-            HStack {
-              Text("Load optional counter")
-              if viewStore.isActivityIndicatorVisible {
-                Spacer()
-                ProgressView()
-              }
+        Section {
+          AboutView(readMe: readMe)
+        }
+        Button(action: { viewStore.send(.setSheet(isPresented: true)) }) {
+          HStack {
+            Text("Load optional counter")
+            if viewStore.isActivityIndicatorVisible {
+              Spacer()
+              ProgressView()
             }
           }
         }

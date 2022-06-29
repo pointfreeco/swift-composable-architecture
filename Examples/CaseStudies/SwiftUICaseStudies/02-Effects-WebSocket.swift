@@ -142,7 +142,7 @@ struct WebSocketView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       VStack(alignment: .leading) {
-        Text(template: readMe, .body)
+        AboutView(readMe: readMe)
           .padding(.bottom)
 
         HStack {

@@ -74,27 +74,28 @@ struct LoadThenNavigateView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(readMe)) {
-          NavigationLink(
-            destination: IfLetStore(
-              self.store.scope(
-                state: \.optionalCounter,
-                action: LoadThenNavigateAction.optionalCounter
-              )
-            ) {
-              CounterView(store: $0)
-            },
-            isActive: viewStore.binding(
-              get: \.isNavigationActive,
-              send: LoadThenNavigateAction.setNavigation(isActive:)
+        Section {
+          AboutView(readMe: readMe)
+        }
+        NavigationLink(
+          destination: IfLetStore(
+            self.store.scope(
+              state: \.optionalCounter,
+              action: LoadThenNavigateAction.optionalCounter
             )
           ) {
-            HStack {
-              Text("Load optional counter")
-              if viewStore.isActivityIndicatorVisible {
-                Spacer()
-                ProgressView()
-              }
+            CounterView(store: $0)
+          },
+          isActive: viewStore.binding(
+            get: \.isNavigationActive,
+            send: LoadThenNavigateAction.setNavigation(isActive:)
+          )
+        ) {
+          HStack {
+            Text("Load optional counter")
+            if viewStore.isActivityIndicatorVisible {
+              Spacer()
+              ProgressView()
             }
           }
         }

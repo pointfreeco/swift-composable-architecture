@@ -53,41 +53,43 @@ struct BindingFormView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(template: readMe, .caption)) {
-          HStack {
-            TextField("Type here", text: viewStore.binding(\.$text))
-              .disableAutocorrection(true)
-              .foregroundColor(viewStore.toggleIsOn ? .gray : .primary)
-
-            Text(alternate(viewStore.text))
-          }
-          .disabled(viewStore.toggleIsOn)
-
-          Toggle(
-            "Disable other controls",
-            isOn: viewStore.binding(\.$toggleIsOn)
-              .resignFirstResponder()
-          )
-
-          Stepper(value: viewStore.binding(\.$stepCount), in: 0...100) {
-            Text("Max slider value: \(viewStore.stepCount)")
-              .font(.body.monospacedDigit())
-          }
-          .disabled(viewStore.toggleIsOn)
-
-          HStack {
-            Text("Slider value: \(Int(viewStore.sliderValue))")
-              .font(.body.monospacedDigit())
-
-            Slider(value: viewStore.binding(\.$sliderValue), in: 0...Double(viewStore.stepCount))
-          }
-          .disabled(viewStore.toggleIsOn)
-
-          Button("Reset") {
-            viewStore.send(.resetButtonTapped)
-          }
-          .foregroundColor(.red)
+        Section {
+          AboutView(readMe: readMe)
         }
+
+        HStack {
+          TextField("Type here", text: viewStore.binding(\.$text))
+            .disableAutocorrection(true)
+            .foregroundColor(viewStore.toggleIsOn ? .gray : .primary)
+
+          Text(alternate(viewStore.text))
+        }
+        .disabled(viewStore.toggleIsOn)
+
+        Toggle(
+          "Disable other controls",
+          isOn: viewStore.binding(\.$toggleIsOn)
+            .resignFirstResponder()
+        )
+
+        Stepper(value: viewStore.binding(\.$stepCount), in: 0...100) {
+          Text("Max slider value: \(viewStore.stepCount)")
+            .font(.body.monospacedDigit())
+        }
+        .disabled(viewStore.toggleIsOn)
+
+        HStack {
+          Text("Slider value: \(Int(viewStore.sliderValue))")
+            .font(.body.monospacedDigit())
+
+          Slider(value: viewStore.binding(\.$sliderValue), in: 0...Double(viewStore.stepCount))
+        }
+        .disabled(viewStore.toggleIsOn)
+
+        Button("Reset") {
+          viewStore.send(.resetButtonTapped)
+        }
+        .foregroundColor(.red)
       }
     }
     .navigationBarTitle("Bindings form")

@@ -174,15 +174,14 @@ struct CitiesView: View {
 
   var body: some View {
     Form {
-      Section(
-        header: Text(readMe)
-      ) {
-        ForEachStore(
-          self.store.scope(state: \.cityMaps, action: MapAppAction.cityMaps(id:action:))
-        ) { cityMapStore in
-          CityMapRowView(store: cityMapStore)
-            .buttonStyle(.borderless)
-        }
+      Section {
+        AboutView(readMe: readMe)
+      }
+      ForEachStore(
+        self.store.scope(state: \.cityMaps, action: MapAppAction.cityMaps(id:action:))
+      ) { cityMapStore in
+        CityMapRowView(store: cityMapStore)
+          .buttonStyle(.borderless)
       }
     }
     .navigationBarTitle("Offline Downloads")

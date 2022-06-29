@@ -174,13 +174,14 @@ struct EpisodesView: View {
 
   var body: some View {
     Form {
-      Section(header: Text(template: readMe, .caption)) {
-        ForEachStore(
-          self.store.scope(state: \.episodes, action: EpisodesAction.episode(id:action:))
-        ) { rowStore in
-          EpisodeView(store: rowStore)
-            .buttonStyle(.borderless)
-        }
+      Section {
+        AboutView(readMe: readMe)
+      }
+      ForEachStore(
+        self.store.scope(state: \.episodes, action: EpisodesAction.episode(id:action:))
+      ) { rowStore in
+        EpisodeView(store: rowStore)
+          .buttonStyle(.borderless)
       }
     }
     .navigationBarTitle("Favoriting")

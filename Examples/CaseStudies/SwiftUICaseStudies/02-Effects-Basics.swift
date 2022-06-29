@@ -87,7 +87,7 @@ struct EffectsBasicsView: View {
     WithViewStore(self.store) { viewStore in
       Form {
         Section {
-          Text(readMe)
+          AboutView(readMe: readMe)
         }
 
         Section {
@@ -122,6 +122,7 @@ struct EffectsBasicsView: View {
             UIApplication.shared.open(URL(string: "http://numbersapi.com")!)
           }
           .foregroundColor(.gray)
+          .frame(maxWidth: .infinity)
         }
       }
       .buttonStyle(.borderless)

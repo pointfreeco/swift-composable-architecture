@@ -78,6 +78,7 @@
 		DCC68EDF2447BC810037F998 /* TemplateText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EDE2447BC810037F998 /* TemplateText.swift */; };
 		DCC68EE12447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EE02447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift */; };
 		DCC68EE32447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EE22447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift */; };
+		DCD442C6286CA91F008B4EA7 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCD442C5286CA91F008B4EA7 /* AboutView.swift */; };
 		DCE63B71245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCE63B70245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift */; };
 		DCFE1960278DBF0600C14CCF /* CaseStudiesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCFE195F278DBF0600C14CCF /* CaseStudiesApp.swift */; };
 /* End PBXBuildFile section */
@@ -230,6 +231,7 @@
 		DCC68EDE2447BC810037F998 /* TemplateText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateText.swift; sourceTree = "<group>"; };
 		DCC68EE02447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Composition-TwoCounters.swift"; sourceTree = "<group>"; };
 		DCC68EE22447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-ReusableFavoriting.swift"; sourceTree = "<group>"; };
+		DCD442C5286CA91F008B4EA7 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		DCE63B70245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-Recursion.swift"; sourceTree = "<group>"; };
 		DCFE195F278DBF0600C14CCF /* CaseStudiesApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CaseStudiesApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -455,6 +457,7 @@
 				DC85EBC2285A731E00431CF3 /* ResignFirstResponder.swift */,
 				DCC68EDE2447BC810037F998 /* TemplateText.swift */,
 				DC9EB4162450CBD2005F413B /* UIViewRepresented.swift */,
+				DCD442C5286CA91F008B4EA7 /* AboutView.swift */,
 			);
 			path = Internal;
 			sourceTree = "<group>";
@@ -754,6 +757,7 @@
 				CA6AC2652451135C00C71CB3 /* CircularProgressView.swift in Sources */,
 				CA6AC2642451135C00C71CB3 /* ReusableComponents-Download.swift in Sources */,
 				DCFE1960278DBF0600C14CCF /* CaseStudiesApp.swift in Sources */,
+				DCD442C6286CA91F008B4EA7 /* AboutView.swift in Sources */,
 				CA6AC2662451135C00C71CB3 /* DownloadComponent.swift in Sources */,
 				CA3E4C5B24B4FA0E00447C0B /* 04-HigherOrderReducers-Lifecycle.swift in Sources */,
 				DC5B505125C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift in Sources */,
