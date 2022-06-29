@@ -74,7 +74,9 @@ struct RefreshableView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       List {
-        Text(template: readMe, .body)
+        Section {
+          AboutView(readMe: readMe)
+        }
 
         HStack {
           Button("-") { viewStore.send(.decrementButtonTapped) }

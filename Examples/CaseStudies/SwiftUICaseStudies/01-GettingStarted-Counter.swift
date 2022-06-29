@@ -51,7 +51,11 @@ struct CounterDemoView: View {
 
   var body: some View {
     Form {
-      Section(header: Text(readMe)) {
+      Section {
+        AboutView(readMe: readMe)
+      }
+
+      Section {
         CounterView(store: self.store)
           .buttonStyle(.borderless)
           .frame(maxWidth: .infinity, maxHeight: .infinity)

@@ -62,32 +62,33 @@ struct LoadThenNavigate: ReducerProtocol {
 }
 
 struct LoadThenNavigateView: View {
-  let store: Store<LoadThenNavigate.State, LoadThenNavigate.Action>
+  let store: StoreOf<LoadThenNavigate>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(readMe)) {
-          NavigationLink(
-            destination: IfLetStore(
-              self.store.scope(
-                state: \.optionalCounter,
-                action: LoadThenNavigate.Action.optionalCounter
-              )
-            ) {
-              CounterView(store: $0)
-            },
-            isActive: viewStore.binding(
-              get: \.isNavigationActive,
-              send: LoadThenNavigate.Action.setNavigation(isActive:)
+        Section {
+          AboutView(readMe: readMe)
+        }
+        NavigationLink(
+          destination: IfLetStore(
+            self.store.scope(
+              state: \.optionalCounter,
+              action: LoadThenNavigate.Action.optionalCounter
             )
           ) {
-            HStack {
-              Text("Load optional counter")
-              if viewStore.isActivityIndicatorVisible {
-                Spacer()
-                ProgressView()
-              }
+            CounterView(store: $0)
+          },
+          isActive: viewStore.binding(
+            get: \.isNavigationActive,
+            send: LoadThenNavigate.Action.setNavigation(isActive:)
+          )
+        ) {
+          HStack {
+            Text("Load optional counter")
+            if viewStore.isActivityIndicatorVisible {
+              Spacer()
+              ProgressView()
             }
           }
         }

@@ -81,34 +81,35 @@ struct LoadThenNavigateList: ReducerProtocol {
 }
 
 struct LoadThenNavigateListView: View {
-  let store: Store<LoadThenNavigateList.State, LoadThenNavigateList.Action>
+  let store: StoreOf<LoadThenNavigateList>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(readMe)) {
-          ForEach(viewStore.rows) { row in
-            NavigationLink(
-              destination: IfLetStore(
-                self.store.scope(
-                  state: \.selection?.value,
-                  action: LoadThenNavigateList.Action.counter
-                )
-              ) {
-                CounterView(store: $0)
-              },
-              tag: row.id,
-              selection: viewStore.binding(
-                get: \.selection?.id,
-                send: LoadThenNavigateList.Action.setNavigation(selection:)
+        Section {
+          AboutView(readMe: readMe)
+        }
+        ForEach(viewStore.rows) { row in
+          NavigationLink(
+            destination: IfLetStore(
+              self.store.scope(
+                state: \.selection?.value,
+                action: LoadThenNavigateList.Action.counter
               )
             ) {
-              HStack {
-                Text("Load optional counter that starts from \(row.count)")
-                if row.isActivityIndicatorVisible {
-                  Spacer()
-                  ProgressView()
-                }
+              CounterView(store: $0)
+            },
+            tag: row.id,
+            selection: viewStore.binding(
+              get: \.selection?.id,
+              send: LoadThenNavigateList.Action.setNavigation(selection:)
+            )
+          ) {
+            HStack {
+              Text("Load optional counter that starts from \(row.count)")
+              if row.isActivityIndicatorVisible {
+                Spacer()
+                ProgressView()
               }
             }
           }

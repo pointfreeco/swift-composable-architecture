@@ -61,48 +61,50 @@ struct BindingBasicsView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(template: readMe, .caption)) {
-          HStack {
-            TextField(
-              "Type here",
-              text: viewStore.binding(get: \.text, send: BindingBasics.Action.textChanged)
-            )
-            .disableAutocorrection(true)
-            .foregroundColor(viewStore.toggleIsOn ? .gray : .primary)
-            Text(alternate(viewStore.text))
-          }
-          .disabled(viewStore.toggleIsOn)
-
-          Toggle(
-            isOn: viewStore.binding(get: \.toggleIsOn, send: BindingBasics.Action.toggleChanged)
-              .resignFirstResponder()
-          ) {
-            Text("Disable other controls")
-          }
-
-          Stepper(
-            value: viewStore.binding(
-              get: \.stepCount, send: BindingBasics.Action.stepCountChanged),
-            in: 0...100
-          ) {
-            Text("Max slider value: \(viewStore.stepCount)")
-              .font(.body.monospacedDigit())
-          }
-          .disabled(viewStore.toggleIsOn)
-
-          HStack {
-            Text("Slider value: \(Int(viewStore.sliderValue))")
-              .font(.body.monospacedDigit())
-            Slider(
-              value: viewStore.binding(
-                get: \.sliderValue,
-                send: BindingBasics.Action.sliderValueChanged
-              ),
-              in: 0...Double(viewStore.stepCount)
-            )
-          }
-          .disabled(viewStore.toggleIsOn)
+        Section {
+          AboutView(readMe: readMe)
         }
+
+        HStack {
+          TextField(
+            "Type here",
+            text: viewStore.binding(get: \.text, send: BindingBasics.Action.textChanged)
+          )
+          .disableAutocorrection(true)
+          .foregroundColor(viewStore.toggleIsOn ? .gray : .primary)
+          Text(alternate(viewStore.text))
+        }
+        .disabled(viewStore.toggleIsOn)
+
+        Toggle(
+          isOn: viewStore.binding(get: \.toggleIsOn, send: BindingBasics.Action.toggleChanged)
+            .resignFirstResponder()
+        ) {
+          Text("Disable other controls")
+        }
+
+        Stepper(
+          value: viewStore.binding(
+            get: \.stepCount, send: BindingBasics.Action.stepCountChanged),
+          in: 0...100
+        ) {
+          Text("Max slider value: \(viewStore.stepCount)")
+            .font(.body.monospacedDigit())
+        }
+        .disabled(viewStore.toggleIsOn)
+
+        HStack {
+          Text("Slider value: \(Int(viewStore.sliderValue))")
+            .font(.body.monospacedDigit())
+          Slider(
+            value: viewStore.binding(
+              get: \.sliderValue,
+              send: BindingBasics.Action.sliderValueChanged
+            ),
+            in: 0...Double(viewStore.stepCount)
+          )
+        }
+        .disabled(viewStore.toggleIsOn)
       }
     }
     .navigationBarTitle("Bindings basics")

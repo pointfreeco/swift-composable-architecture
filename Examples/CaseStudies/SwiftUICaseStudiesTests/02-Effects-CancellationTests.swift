@@ -67,7 +67,6 @@ class EffectsCancellationTests: XCTestCase {
     store.send(.cancelButtonTapped) {
       $0.isTriviaRequestInFlight = false
     }
-    mainQueue.run()
   }
 
   func testTrivia_PlusMinusButtonsCancelsRequest() {
@@ -86,6 +85,5 @@ class EffectsCancellationTests: XCTestCase {
       $0.count = 1
       $0.isTriviaRequestInFlight = false
     }
-    mainQueue.advance()
   }
 }

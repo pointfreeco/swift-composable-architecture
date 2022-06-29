@@ -85,14 +85,16 @@ struct AlertAndConfirmationDialogView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(template: readMe, .caption)) {
-          Text("Count: \(viewStore.count)")
-          Button("Alert") { viewStore.send(.alertButtonTapped) }
-          Button("Confirmation Dialog") { viewStore.send(.confirmationDialogButtonTapped) }
+        Section {
+          AboutView(readMe: readMe)
         }
+
+        Text("Count: \(viewStore.count)")
+        Button("Alert") { viewStore.send(.alertButtonTapped) }
+        Button("Confirmation Dialog") { viewStore.send(.confirmationDialogButtonTapped) }
       }
     }
-    .navigationBarTitle("Alerts & Confirmation Dialogs")
+    .navigationBarTitle("Alerts & Dialogs")
     .alert(
       self.store.scope(state: \.alert),
       dismiss: .alertDismissed
