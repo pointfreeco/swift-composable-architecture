@@ -8,10 +8,7 @@ class EffectsBasicsTests: XCTestCase {
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
-      environment: EffectsBasicsEnvironment(
-        fact: .unimplemented,
-        mainQueue: .immediate
-      )
+      environment: .unimplemented
     )
 
     store.send(.incrementButtonTapped) {
