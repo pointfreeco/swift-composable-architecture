@@ -10,7 +10,7 @@ extension DependencyValues {
 
   private enum SpeechClientKey: LiveDependencyKey {
     static let liveValue = SpeechClient.live
-    static let testValue = SpeechClient.failing
+    static let testValue = SpeechClient.unimplemented
   }
 }
 

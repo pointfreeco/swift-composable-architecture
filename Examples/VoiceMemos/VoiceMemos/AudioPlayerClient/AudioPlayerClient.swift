@@ -9,7 +9,7 @@ extension DependencyValues {
 
   private enum AudioPlayerClientKey: LiveDependencyKey {
     static let liveValue = AudioPlayerClient.live
-    static let testValue = AudioPlayerClient.failing
+    static let testValue = AudioPlayerClient.unimplemented
   }
 }
 

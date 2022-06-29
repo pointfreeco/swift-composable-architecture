@@ -85,7 +85,7 @@ public struct AuthenticationClient: Sendable {
       set { self[AuthenticationClientKey.self] = newValue }
     }
     public enum AuthenticationClientKey: DependencyKey {
-      public static var testValue = AuthenticationClient.failing
+      public static var testValue = AuthenticationClient.unimplemented
     }
   }
 #endif

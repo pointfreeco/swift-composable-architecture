@@ -9,7 +9,7 @@ extension DependencyValues {
 
   private enum AudioRecorderClientKey: LiveDependencyKey {
     static let liveValue = AudioRecorderClient.live
-    static let testValue = AudioRecorderClient.failing
+    static let testValue = AudioRecorderClient.unimplemented
   }
 }
 

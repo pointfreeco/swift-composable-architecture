@@ -183,7 +183,7 @@ extension DependencyValues {
 
   private enum WebSocketKey: LiveDependencyKey {
     static let liveValue = WebSocketClient.live
-    static let testValue = WebSocketClient.failing
+    static let testValue = WebSocketClient.unimplemented
   }
 }
 

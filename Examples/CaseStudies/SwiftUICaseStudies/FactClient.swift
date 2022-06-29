@@ -14,7 +14,7 @@ extension DependencyValues {
 
   private enum FactClientKey: LiveDependencyKey {
     static let liveValue = FactClient.live
-    static let testValue = FactClient.failing
+    static let testValue = FactClient.unimplemented
   }
 }
 

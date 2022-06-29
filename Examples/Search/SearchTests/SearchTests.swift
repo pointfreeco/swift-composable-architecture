@@ -21,8 +21,6 @@ class SearchTests: XCTestCase {
     }
     await self.mainQueue.advance(by: 0.3)
     await store.receive(.searchResponse(.success(.mock))) {
-    self.mainQueue.advance(by: 0.3)
-    store.receive(.searchResponse(.success(.mock))) {
       $0.results = Search.mock.results
     }
     store.send(.searchQueryChanged("")) {

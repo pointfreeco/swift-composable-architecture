@@ -51,7 +51,7 @@ extension DependencyValues {
 
   private enum WeatherClientKey: LiveDependencyKey {
     static let liveValue = WeatherClient.live
-    static let testValue = WeatherClient.failing
+    static let testValue = WeatherClient.unimplemented
   }
 }
 

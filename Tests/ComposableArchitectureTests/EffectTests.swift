@@ -212,18 +212,16 @@ final class EffectTests: XCTestCase {
     XCTAssertEqual(result, 42)
   }
 
-  #if compiler(>=5.4)
-    func testFailing() {
-      let effect = Effect<Never, Never>.failing("failing")
-      XCTExpectFailure {
-        effect
-          .sink(receiveValue: { _ in })
-          .store(in: &self.cancellables)
-      } issueMatcher: { issue in
-        issue.compactDescription == "failing - A failing effect ran."
-      }
+  func testFailing() {
+    let effect = Effect<Never, Never>.unimplemented("unimplemented")
+    XCTExpectFailure {
+      effect
+        .sink(receiveValue: { _ in })
+        .store(in: &self.cancellables)
+    } issueMatcher: { issue in
+      issue.compactDescription == "unimplemented - An unimplemented effect ran."
     }
-  #endif
+  }
 
   #if canImport(_Concurrency) && compiler(>=5.5.2)
     func testTask() {
@@ -262,24 +260,24 @@ final class EffectTests: XCTestCase {
     }
   #endif
 
-  func testMergeFusion() throws {
-    struct R: ReducerProtocol {
-      var body: some ReducerProtocol<Int, Bool> {
-        Reduce { _, _ in .fireAndForget { } }
-        Reduce { _, _ in .fireAndForget { } }
-        Reduce { _, _ in .fireAndForget { } }
-        Reduce { _, _ in .fireAndForget { } }
-      }
-    }
-
-    var state = 0
-    let effect = R().reduce(into: &state, action: true)
-    XCTAssertEqual(
-      // TODO: Will this work someday? Publishers.MergeMany<some Publisher<Bool, Never>>
-      try XCTUnwrap(effect.base as? Publishers.MergeMany<Effect<Bool, Never>>).publishers.count,
-      4
-    )
-  }
+//  func testMergeFusion() throws {
+//    struct R: ReducerProtocol {
+//      var body: some ReducerProtocol<Int, Bool> {
+//        Reduce { _, _ in .fireAndForget { } }
+//        Reduce { _, _ in .fireAndForget { } }
+//        Reduce { _, _ in .fireAndForget { } }
+//        Reduce { _, _ in .fireAndForget { } }
+//      }
+//    }
+//
+//    var state = 0
+//    let effect = R().reduce(into: &state, action: true)
+//    XCTAssertEqual(
+//      // TODO: Will this work someday? Publishers.MergeMany<some Publisher<Bool, Never>>
+//      try XCTUnwrap(effect.base as? Publishers.MergeMany<Effect<Bool, Never>>).publishers.count,
+//      4
+//    )
+//  }
 
   func testDiscardsEmptyEffects() throws {
     struct R: ReducerProtocol {
@@ -319,76 +317,5 @@ final class EffectTests: XCTestCase {
         Empty(completeImmediately: false)
       ]
     )
-  }
-
-
-
-  func testNonDeterministicActions() async {
-    struct State: Equatable {
-      var count1 = 0
-      var count2 = 0
-    }
-    enum Action { case tap, response1, response2 }
-    let store = TestStore(
-      initialState: State(),
-      reducer: Reducer<State, Action, Void> { state, action, _ in
-        switch action {
-        case .tap:
-          return .merge(
-            .task { .response1 },
-            .task { .response2 }
-          )
-        case .response1:
-          state.count1 = 1
-          return .none
-        case .response2:
-          state.count2 = 2
-          return .none
-        }
-      },
-      environment: ()
-    )
-
-    store.send(.tap)
-    await store.receive(inAnyOrder: .response1, .response2) {
-      $0.count1 = 1
-      $0.count2 = 2
-    }
-  }
-
-  func testNonDeterministicActions_TaskGroup() async {
-    struct State: Equatable {
-      var count = 0
-    }
-    enum Action: Equatable {
-      case tap
-      case response(Int)
-    }
-    let store = TestStore(
-      initialState: State(),
-      reducer: Reducer<State, Action, Void> { state, action, _ in
-        switch action {
-        case .tap:
-          return .run { send in
-            await withTaskGroup(of: Void.self) { group in
-              for index in 1...5 {
-                group.addTask { await send(.response(index)) }
-              }
-            }
-          }
-        case let .response(value):
-          state.count += value
-          return .none
-        }
-      },
-      environment: ()
-    )
-
-    store.send(.tap)
-    await store.receive(
-      inAnyOrder: .response(1), .response(2), .response(3), .response(4), .response(5)
-    ) {
-      $0.count = 15
-    }
   }
 }

@@ -69,6 +69,6 @@ extension DependencyValues {
 
   private enum MainQueueKey: LiveDependencyKey {
     static let liveValue = AnySchedulerOf<DispatchQueue>.main
-    static let testValue = AnySchedulerOf<DispatchQueue>.failing
+    static let testValue = AnySchedulerOf<DispatchQueue>.unimplemented
   }
 }

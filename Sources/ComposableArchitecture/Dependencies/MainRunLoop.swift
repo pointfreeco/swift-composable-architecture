@@ -69,6 +69,6 @@ extension DependencyValues {
 
   private enum MainRunLoopKey: LiveDependencyKey {
     static let liveValue = AnySchedulerOf<RunLoop>.main
-    static let testValue = AnySchedulerOf<RunLoop>.failing
+    static let testValue = AnySchedulerOf<RunLoop>.unimplemented
   }
 }

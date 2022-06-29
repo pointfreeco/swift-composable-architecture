@@ -43,7 +43,7 @@ struct EffectsBasics: ReducerProtocol {
       state.numberFact = nil
       // Return an effect that re-increments the count after 1 second.
       return .task {
-        try? await environment.mainQueue.sleep(for: 1)
+        try? await self.mainQueue.sleep(for: 1)
         return .incrementButtonTapped
       }
 
@@ -58,7 +58,7 @@ struct EffectsBasics: ReducerProtocol {
       // Return an effect that fetches a number fact from the API and returns the
       // value back to the reducer's `numberFactResponse` action.
       return .task { [count = state.count] in
-        await .numberFactResponse(TaskResult { try await environment.fact.fetch(count) })
+        await .numberFactResponse(TaskResult { try await self.factClient.fetch(count) })
       }
 
     case let .numberFactResponse(.success(response)):
