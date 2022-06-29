@@ -6,7 +6,7 @@ import XCTest
 final class InstrumentationTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
-  func testNoneEffectReducer_Store() {
+  func testNoneEffectReducer_IntStateStore() {
     var sendCalls = 0
     var changeStateCalls = 0
     var processCalls = 0
@@ -26,7 +26,7 @@ final class InstrumentationTests: XCTestCase {
     })
 
 
-    let store = Store(initialState: (), reducer: Reducer<Void, Void, Void>.empty, environment: ())
+    let store = Store(initialState: 0, reducer: Reducer<Int, Void, Void>.empty, environment: ())
     store.send((), instrumentation: inst)
 
     XCTAssertEqual(2, sendCalls)
@@ -34,7 +34,7 @@ final class InstrumentationTests: XCTestCase {
     XCTAssertEqual(2, processCalls)
   }
 
-  func testNoneEffectReducer_ViewStore() {
+  func testNoneEffectReducer_IntStateViewStore() {
     var sendCalls_vs = 0
     var dedupCalls_vs = 0
     var changeCalls_vs = 0
@@ -61,7 +61,7 @@ final class InstrumentationTests: XCTestCase {
       }
     })
 
-    let store = Store(initialState: (), reducer: Reducer<Void, Void, Void>.empty, environment: ())
+    let store = Store(initialState: 0, reducer: Reducer<Int, Void, Void>.empty, environment: ())
     let viewStore = ViewStore(store, instrumentation: inst)
 
     viewStore.send(())
@@ -69,6 +69,42 @@ final class InstrumentationTests: XCTestCase {
     XCTAssertEqual(2, sendCalls_vs)
     XCTAssertEqual(2, dedupCalls_vs)
     XCTAssertEqual(2, changeCalls_vs)
+    XCTAssertEqual(2, sendCalls_s)
+    XCTAssertEqual(2, changeStateCalls_s)
+    XCTAssertEqual(2, processCalls_s)
+  }
+
+  func testNoneEffectReducer_StatelessViewStore() {
+    var sendCalls_vs = 0
+
+    var sendCalls_s = 0
+    var changeStateCalls_s = 0
+    var processCalls_s = 0
+    let inst = ComposableArchitecture.Instrumentation(callback: { info, timing, kind in
+      switch (timing, kind) {
+      case (_, .storeSend):
+        sendCalls_s += 1
+      case (_, .storeChangeState):
+        changeStateCalls_s += 1
+      case (_, .storeProcessEvent):
+        processCalls_s += 1
+      case (_, .viewStoreSend):
+        sendCalls_vs += 1
+      case (_, .viewStoreDeduplicate):
+        XCTFail("View store deduplicate callback should not be called")
+      case (_, .viewStoreChangeState):
+        XCTFail("View store state change callback should not be called")
+      case (_, .storeToLocal), (_, .storeDeduplicate):
+        XCTFail("Scope based callbacks should not be called")
+      }
+    })
+
+    let store = Store(initialState: 0, reducer: Reducer<Int, Void, Void>.empty, environment: ())
+    let viewStore = ViewStore(store.stateless, instrumentation: inst)
+
+    viewStore.send(())
+
+    XCTAssertEqual(2, sendCalls_vs)
     XCTAssertEqual(2, sendCalls_s)
     XCTAssertEqual(2, changeStateCalls_s)
     XCTAssertEqual(2, processCalls_s)
@@ -102,12 +138,12 @@ final class InstrumentationTests: XCTestCase {
     })
 
     var reducerCount = 0
-    let reducer = Reducer<Void, Void, Void> { _, _, _ in
+    let reducer = Reducer<Int, Void, Void> { state, _, _ in
       guard reducerCount == 0 else { return .none }
       reducerCount += 1
       return .init(value: ())
     }
-    let store = Store(initialState: (), reducer: reducer, environment: ())
+    let store = Store(initialState: 0, reducer: reducer, environment: ())
     let viewStore = ViewStore(store, instrumentation: inst)
 
     viewStore.send(())
@@ -149,12 +185,12 @@ final class InstrumentationTests: XCTestCase {
     })
 
     var reducerCount = 0
-    let reducer = Reducer<Void, Void, Void> { _, _, _ in
+    let reducer = Reducer<Int, Void, Void> { _, _, _ in
       guard reducerCount == 0 else { return .none }
       reducerCount += 1
       return .init(value: ())
     }
-    let store = Store(initialState: (), reducer: reducer, environment: ())
+    let store = Store(initialState: 0, reducer: reducer, environment: ())
     let viewStore = ViewStore(store, instrumentation: inst)
     viewStore.publisher
       .sink { [unowned viewStore] _ in

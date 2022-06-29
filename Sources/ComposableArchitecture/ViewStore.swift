@@ -104,6 +104,30 @@ public final class ViewStore<State, Action>: ObservableObject {
       instrumentation.viewStoreCreated?(self as AnyObject, file, line)
   }
 
+  /// Initializes a view store from a store that has a state of type void. This special initializer prevents this view
+  /// store from taking part in state propagation for any actions sent since a void state has not value to update.
+  ///
+  /// - Parameters:
+  ///   - store: A store
+  ///   - instrumentation: Instrumentation instance that may be used to trace behavior of this ViewStore
+  public init(
+    _ store: Store<State, Action>,
+    instrumentation: Instrumentation = .shared,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) where State == Void {
+    self._send = {
+      let sendCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: $0).eraseToAny()
+      instrumentation.callback?(sendCallbackInfo, .pre, .viewStoreSend)
+      defer { instrumentation.callback?(sendCallbackInfo, .post, .viewStoreSend) }
+
+      store.send($0, instrumentation: instrumentation)
+    }
+    self._state = CurrentValueRelay(())
+
+    instrumentation.viewStoreCreated?(self as AnyObject, file, line)
+  }
+
   internal init(_ viewStore: ViewStore<State, Action>, instrumentation: Instrumentation = .shared, file: StaticString = #file, line: UInt = #line) {
     self._send = viewStore._send
     self._state = viewStore._state
@@ -315,12 +339,6 @@ public final class ViewStore<State, Action>: ObservableObject {
 
 extension ViewStore where State: Equatable {
   public convenience init(_ store: Store<State, Action>, instrumentation: Instrumentation = .shared, file: StaticString = #file, line: UInt = #line) {
-    self.init(store, removeDuplicates: ==, instrumentation: instrumentation, file: file, line: line)
-  }
-}
-
-extension ViewStore where State == Void {
-  public convenience init(_ store: Store<Void, Action>, instrumentation: Instrumentation = .shared, file: StaticString = #file, line: UInt = #line) {
     self.init(store, removeDuplicates: ==, instrumentation: instrumentation, file: file, line: line)
   }
 }
