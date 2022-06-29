@@ -532,7 +532,7 @@ final class StoreTests: XCTestCase {
   }
   
   func testScopeCancellation() async throws {
-    let neverEndingTask = Task<Never, _> { try await Task.never() }
+    let neverEndingTask = Task<Never, Error> { try await Task.never() }
 
     let store = Store(
       initialState: (),

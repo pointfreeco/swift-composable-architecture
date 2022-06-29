@@ -10,7 +10,8 @@ final class EffectDebounceTests: XCTestCase {
     let mainQueue = DispatchQueue.test
     var values: [Int] = []
 
-    func runDebouncedEffect(value: Int) {
+    // NB: Explicit @MainActor is needed for Swift 5.5.2
+    @MainActor func runDebouncedEffect(value: Int) {
       struct CancelToken: Hashable {}
       Just(value)
         .eraseToEffect()
@@ -56,7 +57,8 @@ final class EffectDebounceTests: XCTestCase {
     var values: [Int] = []
     var effectRuns = 0
 
-    func runDebouncedEffect(value: Int) {
+    // NB: Explicit @MainActor is needed for Swift 5.5.2
+    @MainActor func runDebouncedEffect(value: Int) {
       struct CancelToken: Hashable {}
 
       Deferred { () -> Just<Int> in
