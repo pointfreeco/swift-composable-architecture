@@ -18,14 +18,11 @@ class SearchTests: XCTestCase {
       )
     )
 
-    store.environment.weatherClient.search = { _ in .mock }
     store.send(.searchQueryChanged("S")) {
       $0.searchQuery = "S"
     }
     await self.mainQueue.advance(by: 0.3)
     await store.receive(.searchResponse(.success(.mock))) {
-    self.mainQueue.advance(by: 0.3)
-    store.receive(.searchResponse(.success(.mock))) {
       $0.results = Search.mock.results
     }
     store.send(.searchQueryChanged("")) {
