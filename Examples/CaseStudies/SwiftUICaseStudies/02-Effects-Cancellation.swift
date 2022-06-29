@@ -25,7 +25,7 @@ enum EffectsCancellationAction: Equatable {
   case cancelButtonTapped
   case stepperChanged(Int)
   case triviaButtonTapped
-  case triviaResponse(Result<String, FactClient.Error>)
+  case triviaResponse(Result<String, FactClient.Failure>)
 }
 
 struct EffectsCancellationEnvironment {
