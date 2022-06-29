@@ -624,8 +624,7 @@ class TestReducer<Upstream>: ReducerProtocol where Upstream: ReducerProtocol {
     }
 
     let effect = LongLivingEffect(file: action.file, line: action.line)
-    return
-    effects
+    return effects
       .handleEvents(
         receiveSubscription: { [weak self] _ in self?.inFlightEffects.insert(effect) },
         receiveCompletion: { [weak self] _ in self?.inFlightEffects.remove(effect) },
@@ -660,8 +659,6 @@ class TestReducer<Upstream>: ReducerProtocol where Upstream: ReducerProtocol {
     }
   }
 }
-
-
 
 private func expectedStateShouldMatch<LocalState: Equatable>(
   expected: inout LocalState,
@@ -713,58 +710,52 @@ private func expectedStateShouldMatch<LocalState: Equatable>(
   }
 }
 
-
-
-
-
-
-  
-  extension TestStore {
-    /// Scopes a store to assert against more local state and actions.
-    ///
-    /// Useful for testing view store-specific state and actions.
-    ///
-    /// - Parameters:
-    ///   - toLocalState: A function that transforms the reducer's state into more local state. This
-    ///     state will be asserted against as it is mutated by the reducer. Useful for testing view
-    ///     store state transformations.
-    ///   - fromLocalAction: A function that wraps a more local action in the reducer's action.
-    ///     Local actions can be "sent" to the store, while any reducer action may be received.
-    ///     Useful for testing view store action transformations.
-    public func scope<S, A>(
-      state toLocalState: @escaping (LocalState) -> S,
-      action fromLocalAction: @escaping (A) -> LocalAction
-    ) -> TestStore<Reducer, S, A, Environment> {
-      .init(
-        _environment: self._environment,
-        file: self.file,
-        fromLocalAction: { self.fromLocalAction(fromLocalAction($0)) },
-        line: self.line,
-        reducer: self.reducer,
-        store: self.store,
-        toLocalState: { toLocalState(self.toLocalState($0)) }
-      )
-    }
-
-    /// Scopes a store to assert against more local state.
-    ///
-    /// Useful for testing view store-specific state.
-    ///
-    /// - Parameter toLocalState: A function that transforms the reducer's state into more local
-    ///   state. This state will be asserted against as it is mutated by the reducer. Useful for
-    ///   testing view store state transformations.
-    public func scope<S>(
-      state toLocalState: @escaping (LocalState) -> S
-    ) -> TestStore<Reducer, S, LocalAction, Environment> {
-      self.scope(state: toLocalState, action: { $0 })
-    }
+extension TestStore {
+  /// Scopes a store to assert against more local state and actions.
+  ///
+  /// Useful for testing view store-specific state and actions.
+  ///
+  /// - Parameters:
+  ///   - toLocalState: A function that transforms the reducer's state into more local state. This
+  ///     state will be asserted against as it is mutated by the reducer. Useful for testing view
+  ///     store state transformations.
+  ///   - fromLocalAction: A function that wraps a more local action in the reducer's action.
+  ///     Local actions can be "sent" to the store, while any reducer action may be received.
+  ///     Useful for testing view store action transformations.
+  public func scope<S, A>(
+    state toLocalState: @escaping (LocalState) -> S,
+    action fromLocalAction: @escaping (A) -> LocalAction
+  ) -> TestStore<Reducer, S, A, Environment> {
+    .init(
+      _environment: self._environment,
+      file: self.file,
+      fromLocalAction: { self.fromLocalAction(fromLocalAction($0)) },
+      line: self.line,
+      reducer: self.reducer,
+      store: self.store,
+      toLocalState: { toLocalState(self.toLocalState($0)) }
+    )
   }
 
-  extension Task where Success == Failure, Failure == Never {
-    static func megaYield(count: Int = 3) async {
-      for _ in 1...count {
-        await Task<Void, _>.detached(priority: .background) { await Task.yield() }.value
-      }
+  /// Scopes a store to assert against more local state.
+  ///
+  /// Useful for testing view store-specific state.
+  ///
+  /// - Parameter toLocalState: A function that transforms the reducer's state into more local
+  ///   state. This state will be asserted against as it is mutated by the reducer. Useful for
+  ///   testing view store state transformations.
+  public func scope<S>(
+    state toLocalState: @escaping (LocalState) -> S
+  ) -> TestStore<Reducer, S, LocalAction, Environment> {
+    self.scope(state: toLocalState, action: { $0 })
+  }
+}
+
+extension Task where Success == Failure, Failure == Never {
+  static func megaYield(count: Int = 3) async {
+    for _ in 1...count {
+      await Task<Void, _>.detached(priority: .background) { await Task.yield() }.value
     }
   }
+}
 #endif
