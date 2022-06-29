@@ -9,11 +9,11 @@ class RefreshableTests: XCTestCase {
     let store = TestStore(
       initialState: RefreshableState(),
       reducer: refreshableReducer,
-      environment: RefreshableEnvironment(
-        fact: FactClient(fetch: { "\($0) is a good number." }),
-        mainQueue: .immediate
-      )
+      environment: .unimplemented
     )
+
+    store.environment.fact.fetch = { "\($0) is a good number." }
+    store.environment.mainQueue = .immediate
 
     store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -32,11 +32,11 @@ class RefreshableTests: XCTestCase {
     let store = TestStore(
       initialState: RefreshableState(),
       reducer: refreshableReducer,
-      environment: RefreshableEnvironment(
-        fact: FactClient(fetch: { _ in throw FactError() }),
-        mainQueue: .immediate
-      )
+      environment: .unimplemented
     )
+
+    store.environment.fact.fetch = { _ in throw FactError() }
+    store.environment.mainQueue = .immediate
 
     store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -53,14 +53,10 @@ class RefreshableTests: XCTestCase {
     let store = TestStore(
       initialState: RefreshableState(),
       reducer: refreshableReducer,
-      environment: RefreshableEnvironment(
-        fact: .init {
-          try await Task.sleep(nanoseconds: NSEC_PER_SEC)
-          return "\($0) is a good number."
-        },
-        mainQueue: .immediate
-      )
+      environment: .unimplemented
     )
+
+    store.environment.fact.fetch = { "\($0) is a good number." }
 
     store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -72,4 +68,11 @@ class RefreshableTests: XCTestCase {
       $0.isLoading = false
     }
   }
+}
+
+extension RefreshableEnvironment {
+  static let unimplemented = Self(
+    fact: .unimplemented,
+    mainQueue: .unimplemented
+  )
 }

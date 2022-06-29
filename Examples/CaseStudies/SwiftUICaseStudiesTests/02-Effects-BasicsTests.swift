@@ -9,11 +9,10 @@ class EffectsBasicsTests: XCTestCase {
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
-      environment: EffectsBasicsEnvironment(
-        fact: .unimplemented,
-        mainQueue: .immediate
-      )
+      environment: .unimplemented
     )
+
+    store.environment.mainQueue = .immediate
 
     store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -30,11 +29,11 @@ class EffectsBasicsTests: XCTestCase {
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
-      environment: EffectsBasicsEnvironment(
-        fact: FactClient(fetch: { "\($0) is a good number Brent" }),
-        mainQueue: .immediate
-      )
+      environment: .unimplemented
     )
+
+    store.environment.fact.fetch = { "\($0) is a good number Brent" }
+    store.environment.mainQueue = .immediate
 
     store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -47,4 +46,11 @@ class EffectsBasicsTests: XCTestCase {
       $0.numberFact = "1 is a good number Brent"
     }
   }
+}
+
+extension EffectsBasicsEnvironment {
+  static let unimplemented = Self(
+    fact: .unimplemented,
+    mainQueue: .unimplemented
+  )
 }
