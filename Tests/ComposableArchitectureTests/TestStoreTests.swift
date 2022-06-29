@@ -248,14 +248,13 @@ class TestStoreTests: XCTestCase {
   }
 }
 
-
-private extension DependencyValues {
-  var int: Int {
+extension DependencyValues {
+  fileprivate var int: Int {
     get { self[IntKey.self] }
     set { self[IntKey.self] = newValue }
   }
 
-  enum IntKey: LiveDependencyKey {
+  fileprivate enum IntKey: LiveDependencyKey {
     static let liveValue = 42
     static let testValue = 1729
   }

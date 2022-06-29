@@ -99,7 +99,9 @@ struct VoiceMemos: ReducerProtocol, Sendable {
           }
 
         case .denied:
-          state.alert = AlertState(title: TextState("Permission is required to record voice memos."))
+          state.alert = AlertState(
+            title: TextState("Permission is required to record voice memos.")
+          )
           return .none
 
         case .allowed:
@@ -128,7 +130,9 @@ struct VoiceMemos: ReducerProtocol, Sendable {
         if permission {
           return self.startRecording(state: &state)
         } else {
-          state.alert = AlertState(title: TextState("Permission is required to record voice memos."))
+          state.alert = AlertState(
+            title: TextState("Permission is required to record voice memos.")
+          )
           return .none
         }
 

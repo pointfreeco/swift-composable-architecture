@@ -65,7 +65,9 @@ class SharedStateTests: XCTestCase {
 
   func testIsPrimeWhenPrime() {
     let store = TestStore(
-      initialState: SharedState.Counter.State(alert: nil, count: 3, maxCount: 0, minCount: 0, numberOfCounts: 0),
+      initialState: SharedState.Counter.State(
+        alert: nil, count: 3, maxCount: 0, minCount: 0, numberOfCounts: 0
+      ),
       reducer: SharedState.Counter()
     )
 
@@ -81,7 +83,9 @@ class SharedStateTests: XCTestCase {
 
   func testIsPrimeWhenNotPrime() {
     let store = TestStore(
-      initialState: SharedState.Counter.State(alert: nil, count: 6, maxCount: 0, minCount: 0, numberOfCounts: 0),
+      initialState: SharedState.Counter.State(
+        alert: nil, count: 6, maxCount: 0, minCount: 0, numberOfCounts: 0
+      ),
       reducer: SharedState.Counter()
     )
 

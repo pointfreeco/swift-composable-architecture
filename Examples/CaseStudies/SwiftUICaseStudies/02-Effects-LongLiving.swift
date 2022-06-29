@@ -15,7 +15,6 @@ private let readMe = """
   *not* count those screenshots.
   """
 
-
 struct LongLivingEffects: ReducerProtocol {
   struct State: Equatable {
     var screenshotCount = 0

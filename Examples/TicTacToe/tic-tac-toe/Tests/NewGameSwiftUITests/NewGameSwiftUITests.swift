@@ -9,7 +9,7 @@ class NewGameSwiftUITests: XCTestCase {
     initialState: NewGame.State(),
     reducer: NewGame()
   )
-    .scope(state: NewGameView.ViewState.init, action: NewGame.Action.init)
+  .scope(state: NewGameView.ViewState.init, action: NewGame.Action.init)
 
   func testNewGame() {
     self.store.send(.xPlayerNameChanged("Blob Sr.")) {

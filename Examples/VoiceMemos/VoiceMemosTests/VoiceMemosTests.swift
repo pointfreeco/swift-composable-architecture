@@ -125,7 +125,9 @@ class VoiceMemosTests: XCTestCase {
     }
     didFinish.continuation.finish(throwing: AudioRecorderClient.Failure.couldntActivateAudioSession)
     await self.mainRunLoop.advance(by: 0.5)
-    await store.receive(.audioRecorderDidFinish(.failure(AudioRecorderClient.Failure.couldntActivateAudioSession))) {
+    await store.receive(
+      .audioRecorderDidFinish(.failure(AudioRecorderClient.Failure.couldntActivateAudioSession))
+    ) {
       $0.alert = AlertState(title: TextState("Voice memo recording failed."))
       $0.currentRecording = nil
     }

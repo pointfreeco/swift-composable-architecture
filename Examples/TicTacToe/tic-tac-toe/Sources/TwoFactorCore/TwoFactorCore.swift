@@ -58,7 +58,9 @@ public struct TwoFactor: ReducerProtocol {
       return .task { [code = state.code, token = state.token] in
         .twoFactorResponse(
           await TaskResult {
-            try await self.authenticationClient.twoFactor(TwoFactorRequest(code: code, token: token))
+            try await self.authenticationClient.twoFactor(
+              TwoFactorRequest(code: code, token: token)
+            )
           }
         )
       }

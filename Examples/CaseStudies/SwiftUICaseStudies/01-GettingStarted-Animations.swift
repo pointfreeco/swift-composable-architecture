@@ -41,7 +41,7 @@ struct Animations: ReducerProtocol {
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     enum CancelId {}
-    
+
     switch action {
     case let .circleScaleToggleChanged(isScaled):
       state.isCircleScaled = isScaled

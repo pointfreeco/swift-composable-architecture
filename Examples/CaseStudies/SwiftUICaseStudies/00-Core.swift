@@ -183,4 +183,3 @@ struct Root: ReducerProtocol {
   try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
   return Int.random(in: 1...1_000)
 }
-      var bindingForm = BindingForm.State()

@@ -37,13 +37,15 @@ public enum ReducerBuilder<State, Action> {
   }
 
   @inlinable
-  public static func buildLimitedAvailability<R: ReducerProtocol>(_ wrapped: R) -> Optional<R>
+  public static func buildLimitedAvailability<R: ReducerProtocol>(
+    _ wrapped: R
+  ) -> OptionalReducer<R>
   where R.State == State, R.Action == Action {
     .init(wrapped: wrapped)
   }
 
   @inlinable
-  public static func buildOptional<R: ReducerProtocol>(_ wrapped: R?) -> Optional<R>
+  public static func buildOptional<R: ReducerProtocol>(_ wrapped: R?) -> OptionalReducer<R>
   where R.State == State, R.Action == Action {
     .init(wrapped: wrapped)
   }
@@ -62,7 +64,7 @@ public enum ReducerBuilder<State, Action> {
     .init(r0: accumulated, r1: next)
   }
 
-  public struct Optional<Wrapped: ReducerProtocol>: ReducerProtocol {
+  public struct OptionalReducer<Wrapped: ReducerProtocol>: ReducerProtocol {
     @usableFromInline
     let wrapped: Wrapped?
 
@@ -111,14 +113,14 @@ public enum ReducerBuilder<State, Action> {
       }
 
       // TODO: benchmark running the effect with or without this
-//      if let e0 = effects0.base as? Publishers.MergeMany<Effect<Action, Never>> {
-//        if let e1 = effects1.base as? Publishers.MergeMany<Effect<Action, Never>> {
-//          return Publishers.MergeMany(e0.publishers + e1.publishers).eraseToEffect()
-//        }
-//        return Publishers.MergeMany(e0.publishers + [effects1]).eraseToEffect()
-//      } else if let e1 = effects1.base as? Publishers.MergeMany<Effect<Action, Never>> {
-//        return Publishers.MergeMany([effects0] + e1.publishers).eraseToEffect()
-//      }
+      //      if let e0 = effects0.base as? Publishers.MergeMany<Effect<Action, Never>> {
+      //        if let e1 = effects1.base as? Publishers.MergeMany<Effect<Action, Never>> {
+      //          return Publishers.MergeMany(e0.publishers + e1.publishers).eraseToEffect()
+      //        }
+      //        return Publishers.MergeMany(e0.publishers + [effects1]).eraseToEffect()
+      //      } else if let e1 = effects1.base as? Publishers.MergeMany<Effect<Action, Never>> {
+      //        return Publishers.MergeMany([effects0] + e1.publishers).eraseToEffect()
+      //      }
 
       return .merge(
         effects0,

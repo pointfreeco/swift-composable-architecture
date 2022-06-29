@@ -53,7 +53,9 @@ struct AppReducer: ReducerProtocol {
       return .none
 
     case .speech(.failure):
-      state.alert = AlertState(title: TextState("An error occurred while transcribing. Please try again."))
+      state.alert = AlertState(
+        title: TextState("An error occurred while transcribing. Please try again.")
+      )
       return .none
 
     case .speech(.success(.availabilityDidChange)):

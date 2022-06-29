@@ -260,24 +260,24 @@ final class EffectTests: XCTestCase {
     }
   #endif
 
-//  func testMergeFusion() throws {
-//    struct R: ReducerProtocol {
-//      var body: some ReducerProtocol<Int, Bool> {
-//        Reduce { _, _ in .fireAndForget { } }
-//        Reduce { _, _ in .fireAndForget { } }
-//        Reduce { _, _ in .fireAndForget { } }
-//        Reduce { _, _ in .fireAndForget { } }
-//      }
-//    }
-//
-//    var state = 0
-//    let effect = R().reduce(into: &state, action: true)
-//    XCTAssertEqual(
-//      // TODO: Will this work someday? Publishers.MergeMany<some Publisher<Bool, Never>>
-//      try XCTUnwrap(effect.base as? Publishers.MergeMany<Effect<Bool, Never>>).publishers.count,
-//      4
-//    )
-//  }
+  //  func testMergeFusion() throws {
+  //    struct R: ReducerProtocol {
+  //      var body: some ReducerProtocol<Int, Bool> {
+  //        Reduce { _, _ in .fireAndForget { } }
+  //        Reduce { _, _ in .fireAndForget { } }
+  //        Reduce { _, _ in .fireAndForget { } }
+  //        Reduce { _, _ in .fireAndForget { } }
+  //      }
+  //    }
+  //
+  //    var state = 0
+  //    let effect = R().reduce(into: &state, action: true)
+  //    XCTAssertEqual(
+  //      // TODO: Will this work someday? Publishers.MergeMany<some Publisher<Bool, Never>>
+  //      try XCTUnwrap(effect.base as? Publishers.MergeMany<Effect<Bool, Never>>).publishers.count,
+  //      4
+  //    )
+  //  }
 
   func testDiscardsEmptyEffects() throws {
     struct R: ReducerProtocol {
@@ -314,7 +314,7 @@ final class EffectTests: XCTestCase {
       try mergeMany.publishers.map { try XCTUnwrap($0.base as? Empty<Bool, Never>) },
       [
         Empty(completeImmediately: false),
-        Empty(completeImmediately: false)
+        Empty(completeImmediately: false),
       ]
     )
   }

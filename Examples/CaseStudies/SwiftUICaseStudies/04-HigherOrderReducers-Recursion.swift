@@ -64,15 +64,15 @@ struct NestedView: View {
           AboutView(readMe: readMe)
         }
 
-          ForEachStore(
-            self.store.scope(state: \.children, action: Nested.Action.node(id:action:))
-          ) { childStore in
-            WithViewStore(childStore) { childViewStore in
-              HStack {
-                TextField(
-                  "Untitled",
-                  text: childViewStore.binding(get: \.description, send: Nested.Action.rename)
-                )
+        ForEachStore(
+          self.store.scope(state: \.children, action: Nested.Action.node(id:action:))
+        ) { childStore in
+          WithViewStore(childStore) { childViewStore in
+            HStack {
+              TextField(
+                "Untitled",
+                text: childViewStore.binding(get: \.description, send: Nested.Action.rename)
+              )
 
               Spacer()
 
