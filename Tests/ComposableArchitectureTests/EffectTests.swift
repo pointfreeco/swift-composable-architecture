@@ -259,4 +259,73 @@ final class EffectTests: XCTestCase {
       _ = XCTWaiter.wait(for: [.init()], timeout: 1.1)
     }
   #endif
+
+  func testNonDeterministicActions() async {
+    struct State: Equatable {
+      var count1 = 0
+      var count2 = 0
+    }
+    enum Action { case tap, response1, response2 }
+    let store = TestStore(
+      initialState: State(),
+      reducer: Reducer<State, Action, Void> { state, action, _ in
+        switch action {
+        case .tap:
+          return .merge(
+            .task { .response1 },
+            .task { .response2 }
+          )
+        case .response1:
+          state.count1 = 1
+          return .none
+        case .response2:
+          state.count2 = 2
+          return .none
+        }
+      },
+      environment: ()
+    )
+
+    store.send(.tap)
+    await store.receive(inAnyOrder: .response1, .response2) {
+      $0.count1 = 1
+      $0.count2 = 2
+    }
+  }
+
+  func testNonDeterministicActions_TaskGroup() async {
+    struct State: Equatable {
+      var count = 0
+    }
+    enum Action: Equatable {
+      case tap
+      case response(Int)
+    }
+    let store = TestStore(
+      initialState: State(),
+      reducer: Reducer<State, Action, Void> { state, action, _ in
+        switch action {
+        case .tap:
+          return .run { send in
+            await withTaskGroup(of: Void.self) { group in
+              for index in 1...5 {
+                group.addTask { await send(.response(index)) }
+              }
+            }
+          }
+        case let .response(value):
+          state.count += value
+          return .none
+        }
+      },
+      environment: ()
+    )
+
+    store.send(.tap)
+    await store.receive(
+      inAnyOrder: .response(1), .response(2), .response(3), .response(4), .response(5)
+    ) {
+      $0.count = 15
+    }
+  }
 }
