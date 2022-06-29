@@ -40,9 +40,7 @@ struct TwoCountersView: View {
   var body: some View {
     Form {
       Section {
-        DisclosureGroup("About this case study") {
-          Text(template: readMe)
-        }
+        AboutView(readMe: readMe)
       }
       HStack {
         Text("Counter 1")

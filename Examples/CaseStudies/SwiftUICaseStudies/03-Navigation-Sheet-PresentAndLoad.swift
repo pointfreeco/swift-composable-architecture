@@ -68,9 +68,7 @@ struct PresentAndLoadView: View {
     WithViewStore(self.store) { viewStore in
       Form {
         Section {
-          DisclosureGroup("About this case study") {
-            Text(readMe)
-          }
+          AboutView(readMe: readMe)
         }
         Button("Load optional counter") {
           viewStore.send(.setSheet(isPresented: true))

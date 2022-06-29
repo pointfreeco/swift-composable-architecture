@@ -76,9 +76,7 @@ struct NestedView: View {
     WithViewStore(self.store.scope(state: \.description)) { viewStore in
       Form {
         Section {
-          DisclosureGroup("About this case study") {
-            Text(template: readMe)
-          }
+          AboutView(readMe: readMe)
         }
 
         ForEachStore(

@@ -78,9 +78,7 @@ struct RefreshableView: View {
     WithViewStore(self.store) { viewStore in
       List {
         Section {
-          DisclosureGroup("About this case study") {
-            Text(template: readMe)
-          }
+          AboutView(readMe: readMe)
         }
 
         HStack {

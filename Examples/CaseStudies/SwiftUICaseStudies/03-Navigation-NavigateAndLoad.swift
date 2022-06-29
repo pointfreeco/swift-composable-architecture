@@ -70,9 +70,7 @@ struct NavigateAndLoadView: View {
     WithViewStore(self.store) { viewStore in
       Form {
         Section {
-          DisclosureGroup("About this case study") {
-            Text(readMe)
-          }
+          AboutView(readMe: readMe)
         }
         NavigationLink(
           destination: IfLetStore(

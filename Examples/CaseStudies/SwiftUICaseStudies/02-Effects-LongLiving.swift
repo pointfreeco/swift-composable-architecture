@@ -65,9 +65,7 @@ struct LongLivingEffectsView: View {
     WithViewStore(self.store) { viewStore in
       Form {
         Section {
-          DisclosureGroup("About this case study") {
-            Text(template: readMe)
-          }
+          AboutView(readMe: readMe)
         }
 
         Text("A screenshot of this screen has been taken \(viewStore.screenshotCount) times.")

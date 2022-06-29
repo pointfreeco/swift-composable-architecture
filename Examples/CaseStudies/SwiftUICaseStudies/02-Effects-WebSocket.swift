@@ -142,10 +142,8 @@ struct WebSocketView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       VStack(alignment: .leading) {
-        DisclosureGroup("About this case study") {
-          Text(template: readMe)
-        }
-        .padding(.bottom)
+        AboutView(readMe: readMe)
+          .padding(.bottom)
 
         HStack {
           TextField(

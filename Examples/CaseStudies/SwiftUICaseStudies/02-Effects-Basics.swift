@@ -87,9 +87,7 @@ struct EffectsBasicsView: View {
     WithViewStore(self.store) { viewStore in
       Form {
         Section {
-          DisclosureGroup("About this case study") {
-            Text(readMe)
-          }
+          AboutView(readMe: readMe)
         }
 
         Section {

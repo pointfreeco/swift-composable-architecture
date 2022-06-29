@@ -175,9 +175,7 @@ struct CitiesView: View {
   var body: some View {
     Form {
       Section {
-        DisclosureGroup("About this case study") {
-          Text(readMe)
-        }
+        AboutView(readMe: readMe)
       }
       ForEachStore(
         self.store.scope(state: \.cityMaps, action: MapAppAction.cityMaps(id:action:))

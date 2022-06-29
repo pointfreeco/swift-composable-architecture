@@ -75,9 +75,7 @@ struct LoadThenPresentView: View {
     WithViewStore(self.store) { viewStore in
       Form {
         Section {
-          DisclosureGroup("About this case study") {
-            Text(readMe)
-          }
+          AboutView(readMe: readMe)
         }
         Button(action: { viewStore.send(.setSheet(isPresented: true)) }) {
           HStack {

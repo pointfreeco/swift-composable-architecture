@@ -81,9 +81,7 @@ struct LifecycleDemoView: View {
     WithViewStore(self.store) { viewStore in
       Form {
         Section {
-          DisclosureGroup("About this case study") {
-            Text(template: readMe)
-          }
+          AboutView(readMe: readMe)
         }
 
         Button("Toggle Timer") { viewStore.send(.toggleTimerButtonTapped) }

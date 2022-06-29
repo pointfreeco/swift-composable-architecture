@@ -52,9 +52,7 @@ struct CounterDemoView: View {
   var body: some View {
     Form {
       Section {
-        DisclosureGroup("About this case study") {
-          Text(readMe)
-        }
+        AboutView(readMe: readMe)
       }
 
       Section {
