@@ -8,8 +8,8 @@ import XCTestDynamicOverlay
 extension Effect where Failure == Error {
   @available(
     *,
-     deprecated,
-     message: "Use the non-throwing version of 'Effect.task' and catch errors explicitly"
+    deprecated,
+    message: "Use the non-throwing version of 'Effect.task' and catch errors explicitly"
   )
   public static func task(
     priority: TaskPriority? = nil,

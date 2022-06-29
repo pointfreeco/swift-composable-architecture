@@ -525,13 +525,13 @@
         let difference = TaskResultDebugging.$emitRuntimeWarnings.withValue(false) {
           diff(expectedAction, receivedAction, format: .proportional)
             .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
-          ?? """
-          Expected:
-          \(String(describing: expectedAction).indent(by: 2))
+            ?? """
+            Expected:
+            \(String(describing: expectedAction).indent(by: 2))
 
-          Received:
-          \(String(describing: receivedAction).indent(by: 2))
-          """
+            Received:
+            \(String(describing: receivedAction).indent(by: 2))
+            """
         }
 
         XCTFail(
@@ -578,7 +578,7 @@
       file: StaticString = #file,
       line: UInt = #line
     ) async {
-      
+
       guard !self.inFlightEffects.isEmpty
       else {
         { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
