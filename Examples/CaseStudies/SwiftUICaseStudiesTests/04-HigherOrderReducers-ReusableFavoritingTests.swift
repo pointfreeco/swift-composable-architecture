@@ -7,6 +7,8 @@ import XCTest
 @MainActor
 class ReusableComponentsFavoritingTests: XCTestCase {
   func testFavoriteButton() async {
+    let mainQueue = DispatchQueue.test
+
     let episodes: IdentifiedArrayOf<EpisodeState> = [
       EpisodeState(
         id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
@@ -47,7 +49,7 @@ class ReusableComponentsFavoritingTests: XCTestCase {
 
     await store.receive(.episode(id: episodes[1].id, action: .favorite(.response(.success(false)))))
 
-    struct FavoriteError: LocalizedError {
+    struct FavoriteError: Equatable, LocalizedError {
       var errorDescription: String? {
         "Favoriting failed."
       }

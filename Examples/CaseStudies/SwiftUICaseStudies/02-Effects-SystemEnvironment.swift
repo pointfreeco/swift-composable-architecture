@@ -207,17 +207,15 @@ extension SystemEnvironment: Sendable where Environment: Sendable {}
   import XCTestDynamicOverlay
 
   extension SystemEnvironment {
-    static func failing(
-      date: @escaping @Sendable () -> Date = {
-        XCTFail("date dependency is unimplemented.")
-        return Date()
-      },
+    static func unimplemented(
+      date: @escaping @Sendable () -> Date = XCTUnimplemented(
+        "\(Self.self).date", placeholder: Date()
+      ),
       environment: Environment,
-      mainQueue: AnySchedulerOf<DispatchQueue> = .failing,
-      uuid: @escaping @Sendable () -> UUID = {
-        XCTFail("UUID dependency is unimplemented.")
-        return UUID()
-      }
+      mainQueue: AnySchedulerOf<DispatchQueue> = .unimplemented,
+      uuid: @escaping @Sendable () -> UUID = XCTUnimplemented(
+        "\(Self.self).uuid", placeholder: UUID()
+      )
     ) -> Self {
       Self(
         date: date,

@@ -40,17 +40,15 @@ struct RootView: View {
               )
             )
 
-            #if compiler(>=5.4)
-              NavigationLink(
-                "Form bindings",
-                destination: BindingFormView(
-                  store: self.store.scope(
-                    state: \.bindingForm,
-                    action: Root.Action.bindingForm
-                  )
+            NavigationLink(
+              "Form bindings",
+              destination: BindingFormView(
+                store: self.store.scope(
+                  state: \.bindingForm,
+                  action: Root.Action.bindingForm
                 )
               )
-            #endif
+            )
 
             NavigationLink(
               "Optional state",
@@ -82,17 +80,15 @@ struct RootView: View {
               )
             )
 
-            #if compiler(>=5.5)
-              NavigationLink(
-                "Focus State",
-                destination: FocusDemoView(
-                  store: self.store.scope(
-                    state: \.focusDemo,
-                    action: Root.Action.focusDemo
-                  )
+            NavigationLink(
+              "Focus State",
+              destination: FocusDemoView(
+                store: self.store.scope(
+                  state: \.focusDemo,
+                  action: Root.Action.focusDemo
                 )
               )
-            #endif
+            )
 
             NavigationLink(
               "Animations",
@@ -135,17 +131,15 @@ struct RootView: View {
               )
             )
 
-            #if compiler(>=5.5)
-              NavigationLink(
-                "Refreshable",
-                destination: RefreshableView(
-                  store: self.store.scope(
-                    state: \.refreshable,
-                    action: Root.Action.refreshable
-                  )
+            NavigationLink(
+              "Refreshable",
+              destination: RefreshableView(
+                store: self.store.scope(
+                  state: \.refreshable,
+                  action: Root.Action.refreshable
                 )
               )
-            #endif
+            )
 
             NavigationLink(
               "Timers",

@@ -21,6 +21,8 @@ class SearchTests: XCTestCase {
     }
     await self.mainQueue.advance(by: 0.3)
     await store.receive(.searchResponse(.success(.mock))) {
+    self.mainQueue.advance(by: 0.3)
+    store.receive(.searchResponse(.success(.mock))) {
       $0.results = Search.mock.results
     }
     store.send(.searchQueryChanged("")) {
@@ -73,6 +75,9 @@ class SearchTests: XCTestCase {
 
     var results = Search.mock.results
     results.append(specialResult)
+
+    var weatherClient = WeatherClient.unimplemented
+    weatherClient.forecast = { _ in .mock }
 
     let store = TestStore(
       initialState: SearchReducer.State(results: results),
@@ -193,4 +198,4 @@ class SearchTests: XCTestCase {
   }
 }
 
-private struct SomethingWentWrong: Error {}
+private struct SomethingWentWrong: Equatable, Error {}

@@ -135,16 +135,16 @@
   ///   $0.query = "c"
   /// }
   ///
-  /// // Advance the scheduler by a period shorter than the debounce
-  /// await scheduler.advance(by: 0.25)
+  /// // Advance the queue by a period shorter than the debounce
+  /// await mainQueue.advance(by: 0.25)
   ///
   /// // Change the query again
   /// store.send(.searchFieldChanged("co") {
   ///   $0.query = "co"
   /// }
   ///
-  /// // Advance the scheduler by a period shorter than the debounce
-  /// await scheduler.advance(by: 0.25)
+  /// // Advance the queue by a period shorter than the debounce
+  /// await mainQueue.advance(by: 0.25)
   /// // Advance the scheduler to the debounce
   /// await scheduler.advance(by: 0.25)
   ///
@@ -234,16 +234,14 @@
     /// - Parameter nanoseconds: The amount of time to wait before asserting.
     @MainActor
     public func finish(
-      timeout nanoseconds: UInt64 = 0,
+      timeout nanoseconds: UInt64 = NSEC_PER_MSEC,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
-      let start = DispatchQueue.main.now
-      if nanoseconds == 0 {
-        await Task.megaYield()
-      }
+      let start = DispatchTime.now().uptimeNanoseconds
+      await Task.megaYield()
       while !self.reducer.inFlightEffects.isEmpty {
-        guard start.distance(to: DispatchQueue.main.now) < .nanoseconds(Int(nanoseconds))
+        guard start.distance(to: DispatchTime.now().uptimeNanoseconds) < nanoseconds
         else {
           let timeoutMessage =
             nanoseconds > 0
@@ -389,6 +387,10 @@
     ///     store. The mutable state sent to this closure must be modified to match the state of the
     ///     store after processing the given action. Do not provide a closure if no change is
     ///     expected.
+    @available(iOS, deprecated: 100000.0, message: "Call the async-friendly 'receive' instead.")
+    @available(macOS, deprecated: 100000.0, message: "Call the async-friendly 'receive' instead.")
+    @available(tvOS, deprecated: 100000.0, message: "Call the async-friendly 'receive' instead.")
+    @available(watchOS, deprecated: 100000.0, message: "Call the async-friendly 'receive' instead.")
     public func receive(
       _ expectedAction: Reducer.Action,
       _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
@@ -406,7 +408,7 @@
       }
       let (receivedAction, state) = self.reducer.receivedActions.removeFirst()
       if expectedAction != receivedAction {
-        let difference =
+        let difference = TaskResultDebugging.$emitRuntimeWarnings.withValue(false) {
           diff(expectedAction, receivedAction, format: .proportional)
             .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
           ?? """
@@ -416,6 +418,7 @@
           Received:
           \(String(describing: receivedAction).indent(by: 2))
           """
+        }
 
         XCTFail(
           """
@@ -445,6 +448,92 @@
       }
     }
 
+    @MainActor
+    public func receive(
+      inAnyOrder expectedActions: Action...,
+      timeout nanoseconds: UInt64 = NSEC_PER_MSEC,
+      _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
+      file: StaticString = #file,
+      line: UInt = #line
+    ) async {
+      guard !self.inFlightEffects.isEmpty
+      else {
+//        { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
+        return
+      }
+
+      await Task.megaYield()
+      let start = DispatchTime.now().uptimeNanoseconds
+      while !Task.isCancelled {
+        await Task.detached(priority: .low) { await Task.yield() }.value
+
+        guard self.receivedActions.count < expectedActions.count
+        else { break }
+
+        guard start.distance(to: DispatchTime.now().uptimeNanoseconds) < nanoseconds
+        else {
+          let suggestion: String
+          if self.inFlightEffects.isEmpty {
+            suggestion = """
+              There are no in-flight effects that could deliver this action. Could the effect you \
+              expected to deliver this action have been cancelled?
+              """
+          } else {
+            let timeoutMessage =
+            nanoseconds != 0
+            ? #"try increasing the duration of this assertion's "timeout""#
+            : #"configure this assertion with an explicit "timeout""#
+            suggestion = """
+              There are effects in-flight. If the effect that delivers this action uses a \
+              scheduler (via "receive(on:)", "delay", "debounce", etc.), make sure that you wait \
+              enough time for the scheduler to perform the effect. If you are using a test \
+              scheduler, advance the scheduler so that the effects may complete, or consider using \
+              an immediate scheduler to immediately perform the effect instead.
+
+              If you are not yet using a scheduler, or can not use a scheduler, \(timeoutMessage).
+              """
+          }
+          XCTFail(
+            """
+            Expected to receive an action, but received none\
+            \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
+
+            \(suggestion)
+            """,
+            file: file,
+            line: line
+          )
+          return
+        }
+      }
+
+      guard !Task.isCancelled
+      else { return }
+
+      let expectedActionsCount = expectedActions.count
+      var receivedActions = self.receivedActions[0..<expectedActions.count]
+      var expectedActions = expectedActions
+      var crossReferencedActions: [(action: Action, state: State)] = []
+      while let receivedAction = receivedActions.first {
+        guard let index = expectedActions.firstIndex(where: { $0 == receivedAction.action })
+        else {
+          fatalError()
+        }
+        expectedActions.remove(at: index)
+        receivedActions.removeFirst()
+        crossReferencedActions.append(receivedAction)
+      }
+
+      if crossReferencedActions.count == expectedActionsCount {
+        for expectedAction in crossReferencedActions.dropLast() {
+          { self.receive(expectedAction.action, { $0 = self.toLocalState(expectedAction.state) }, file: file, line: line) }()
+        }
+        { self.receive(crossReferencedActions.last!.action, updateExpectingResult, file: file, line: line) }()
+      }
+    }
+
+
+
     /// Asserts an action was received from an effect and asserts when state changes.
     ///
     /// - Parameters:
@@ -457,14 +546,19 @@
     @MainActor
     public func receive(
       _ expectedAction: Reducer.Action,
-      timeout nanoseconds: UInt64 = 0,
+      timeout nanoseconds: UInt64 = NSEC_PER_MSEC,
       _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
-      if nanoseconds == 0 {
-        await Task.megaYield()
+      
+      guard !self.inFlightEffects.isEmpty
+      else {
+        { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
+        return
       }
+
+      await Task.megaYield()
       let start = DispatchTime.now().uptimeNanoseconds
       while !Task.isCancelled {
         await Task.detached(priority: .low) { await Task.yield() }.value
@@ -472,7 +566,8 @@
         guard self.reducer.receivedActions.isEmpty
         else { break }
 
-        if (DispatchTime.now().uptimeNanoseconds - start) >= nanoseconds {
+        guard start.distance(to: DispatchTime.now().uptimeNanoseconds) < nanoseconds
+        else {
           let suggestion: String
           if self.reducer.inFlightEffects.isEmpty {
             suggestion = """
@@ -504,6 +599,7 @@
             file: file,
             line: line
           )
+          return
         }
       }
 
@@ -557,13 +653,11 @@
     ///
     /// - Parameter nanoseconds: The amount of time to wait before asserting.
     public func finish(
-      timeout nanoseconds: UInt64 = 0,
+      timeout nanoseconds: UInt64 = NSEC_PER_MSEC,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
-      if nanoseconds == 0 {
-        await Task.megaYield()
-      }
+      await Task.megaYield()
       do {
         try await withThrowingTaskGroup(of: Void.self) { group in
           group.addTask { await self.rawValue.cancellableValue }
@@ -653,56 +747,63 @@
     }
   }
 
-  private func expectedStateShouldMatch<LocalState: Equatable>(
-    expected: inout LocalState,
-    actual: LocalState,
-    modify: ((inout LocalState) throws -> Void)? = nil,
-    file: StaticString,
-    line: UInt
-  ) throws {
-    let current = expected
-    if let modify = modify {
-      try modify(&expected)
-    }
 
-    if expected != actual {
-      let difference =
-        diff(expected, actual, format: .proportional)
-        .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
-        ?? """
-        Expected:
-        \(String(describing: expected).indent(by: 2))
 
-        Actual:
-        \(String(describing: actual).indent(by: 2))
-        """
+    private func expectedStateShouldMatch(
+      expected: inout LocalState,
+      actual: LocalState,
+      modify: ((inout LocalState) throws -> Void)? = nil,
+      file: StaticString,
+      line: UInt
+    ) throws {
+      let current = expected
+      if let modify = modify {
+        try modify(&expected)
+      }
 
-      let messageHeading =
-        modify != nil
-        ? "A state change does not match expectation"
-        : "State was not expected to change, but a change occurred"
-      XCTFail(
-        """
-        \(messageHeading): …
+      if expected != actual {
+        let difference =
+          diff(expected, actual, format: .proportional)
+          .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
+          ?? """
+          Expected:
+          \(String(describing: expected).indent(by: 2))
 
-        \(difference)
-        """,
-        file: file,
-        line: line
-      )
-    } else if expected == current && modify != nil {
-      XCTFail(
-        """
-        Expected state to change, but no change occurred.
+          Actual:
+          \(String(describing: actual).indent(by: 2))
+          """
 
-        The trailing closure made no observable modifications to state. If no change to state is \
-        expected, omit the trailing closure.
-        """,
-        file: file, line: line
-      )
-    }
-  }
+        let messageHeading =
+          modify != nil
+          ? "A state change does not match expectation"
+          : "State was not expected to change, but a change occurred"
+        XCTFail(
+          """
+          \(messageHeading): …
 
+          \(difference)
+          """,
+          file: file,
+          line: line
+        )
+      } else if expected == current && modify != nil {
+        XCTFail(
+          """
+          Expected state to change, but no change occurred.
+
+          The trailing closure made no observable modifications to state. If no change to state is \
+          expected, omit the trailing closure.
+          """,
+          file: file, line: line
+        )
+      }
+
+
+
+
+
+
+  
   extension TestStore {
     /// Scopes a store to assert against more local state and actions.
     ///

@@ -185,17 +185,15 @@ public struct AlertState<Action> {
     case cancel
     case destructive
 
-    #if compiler(>=5.5)
-      @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-      var toSwiftUI: SwiftUI.ButtonRole {
-        switch self {
-        case .cancel:
-          return .cancel
-        case .destructive:
-          return .destructive
-        }
+    @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+    var toSwiftUI: SwiftUI.ButtonRole {
+      switch self {
+      case .cancel:
+        return .cancel
+      case .destructive:
+        return .destructive
       }
-    #endif
+    }
   }
 }
 
@@ -212,51 +210,40 @@ extension View {
     _ store: Store<AlertState<Action>?, Action>,
     dismiss: Action
   ) -> some View {
-    #if compiler(>=5.5)
-      if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
-        self.modifier(
-          NewAlertModifier(
-            viewStore: ViewStore(store, removeDuplicates: { $0?.id == $1?.id }),
-            dismiss: dismiss
-          )
+    if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
+      self.modifier(
+        NewAlertModifier(
+          viewStore: ViewStore(store, removeDuplicates: { $0?.id == $1?.id }),
+          dismiss: dismiss
         )
-      } else {
-        self.modifier(
-          OldAlertModifier(
-            viewStore: ViewStore(store, removeDuplicates: { $0?.id == $1?.id }),
-            dismiss: dismiss
-          )
-        )
-      }
-    #else
+      )
+    } else {
       self.modifier(
         OldAlertModifier(
           viewStore: ViewStore(store, removeDuplicates: { $0?.id == $1?.id }),
           dismiss: dismiss
         )
       )
-    #endif
+    }
   }
 }
 
-#if compiler(>=5.5)
-  // NB: Workaround for iOS 14 runtime crashes during iOS 15 availability checks.
-  @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-  private struct NewAlertModifier<Action>: ViewModifier {
-    @ObservedObject var viewStore: ViewStore<AlertState<Action>?, Action>
-    let dismiss: Action
+// NB: Workaround for iOS 14 runtime crashes during iOS 15 availability checks.
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+private struct NewAlertModifier<Action>: ViewModifier {
+  @ObservedObject var viewStore: ViewStore<AlertState<Action>?, Action>
+  let dismiss: Action
 
-    func body(content: Content) -> some View {
-      content.alert(
-        (viewStore.state?.title).map { Text($0) } ?? Text(""),
-        isPresented: viewStore.binding(send: dismiss).isPresent(),
-        presenting: viewStore.state,
-        actions: { $0.toSwiftUIActions(send: { viewStore.send($0) }) },
-        message: { $0.message.map { Text($0) } }
-      )
-    }
+  func body(content: Content) -> some View {
+    content.alert(
+      (viewStore.state?.title).map { Text($0) } ?? Text(""),
+      isPresented: viewStore.binding(send: dismiss).isPresent(),
+      presenting: viewStore.state,
+      actions: { $0.toSwiftUIActions(send: { viewStore.send($0) }) },
+      message: { $0.message.map { Text($0) } }
+    )
   }
-#endif
+}
 
 private struct OldAlertModifier<Action>: ViewModifier {
   @ObservedObject var viewStore: ViewStore<AlertState<Action>?, Action>
@@ -388,29 +375,25 @@ extension AlertState.Button {
     }
   }
 
-  #if compiler(>=5.5)
-    @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-    func toSwiftUIButton(send: @escaping (Action) -> Void) -> some View {
-      SwiftUI.Button(
-        role: self.role?.toSwiftUI,
-        action: self.toSwiftUIAction(send: send)
-      ) {
-        Text(self.label)
-      }
+  @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+  func toSwiftUIButton(send: @escaping (Action) -> Void) -> some View {
+    SwiftUI.Button(
+      role: self.role?.toSwiftUI,
+      action: self.toSwiftUIAction(send: send)
+    ) {
+      Text(self.label)
     }
-  #endif
+  }
 }
 
 extension AlertState {
-  #if compiler(>=5.5)
-    @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-    @ViewBuilder
-    fileprivate func toSwiftUIActions(send: @escaping (Action) -> Void) -> some View {
-      ForEach(self.buttons.indices, id: \.self) {
-        self.buttons[$0].toSwiftUIButton(send: send)
-      }
+  @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+  @ViewBuilder
+  fileprivate func toSwiftUIActions(send: @escaping (Action) -> Void) -> some View {
+    ForEach(self.buttons.indices, id: \.self) {
+      self.buttons[$0].toSwiftUIButton(send: send)
     }
-  #endif
+  }
 
   fileprivate func toSwiftUIAlert(send: @escaping (Action) -> Void) -> SwiftUI.Alert {
     if self.buttons.count == 2 {

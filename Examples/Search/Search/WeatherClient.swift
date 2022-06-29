@@ -1,5 +1,6 @@
 import ComposableArchitecture
 import Foundation
+import XCTestDynamicOverlay
 
 // MARK: - API models
 
@@ -83,13 +84,9 @@ extension WeatherClient {
 // MARK: - Mock API implementations
 
 extension WeatherClient {
-  private struct Unimplemented: Error {
-    let endpoint: String
-  }
-
-  static let failing = Self(
-    forecast: { _ in throw Unimplemented(endpoint: "forecast") },
-    search: { _ in throw Unimplemented(endpoint: "search") }
+  static let unimplemented = Self(
+    forecast: XCTUnimplemented("\(Self.self).forecast"),
+    search: XCTUnimplemented("\(Self.self).search")
   )
 }
 

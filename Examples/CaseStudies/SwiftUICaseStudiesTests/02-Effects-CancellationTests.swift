@@ -30,7 +30,7 @@ class EffectsCancellationTests: XCTestCase {
   }
 
   func testTrivia_FailedRequest() async {
-    struct FactError: Error {}
+    struct FactError: Equatable, Error {}
     let store = TestStore(
       initialState: EffectsCancellation.State(),
       reducer: EffectsCancellation()

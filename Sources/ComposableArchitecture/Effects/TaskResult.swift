@@ -1,4 +1,5 @@
 import Foundation
+import XCTestDynamicOverlay
 
 /// A value that represents either a success or a failure. This type differs from Swift's `Result`
 /// type in that it uses only one generic for the success case, leaving the failure case as an
@@ -99,22 +100,22 @@ public enum TaskResult<Success: Sendable>: Sendable {
   case success(Success)
   case failure(Error)
 
-#if canImport(_Concurrency) && compiler(>=5.5.2)
-  /// Creates a new task result by evaluating an async throwing closure, capturing the returned
-  /// value as a success, or any thrown error as a failure.
-  ///
-  /// This initializer is most often used in an async effect being returned from a reducer. See
-  /// the documentation for ``TaskResult`` for a concrete example.
-  ///
-  /// - Parameter body: An async, throwing closure.
-  public init(catching body: @Sendable () async throws -> Success) async {
-    do {
-      self = .success(try await body())
-    } catch {
-      self = .failure(error)
+  #if canImport(_Concurrency) && compiler(>=5.5.2)
+    /// Creates a new task result by evaluating an async throwing closure, capturing the returned
+    /// value as a success, or any thrown error as a failure.
+    ///
+    /// This initializer is most often used in an async effect being returned from a reducer. See
+    /// the documentation for ``TaskResult`` for a concrete example.
+    ///
+    /// - Parameter body: An async, throwing closure.
+    public init(catching body: @Sendable () async throws -> Success) async {
+      do {
+        self = .success(try await body())
+      } catch {
+        self = .failure(error)
+      }
     }
-  }
-#endif
+  #endif
 
   /// Returns the success value as a throwing property.
   public var value: Success {
@@ -129,7 +130,9 @@ public enum TaskResult<Success: Sendable>: Sendable {
   }
 }
 
-public typealias TaskFailure = TaskResult<Never>
+enum TaskResultDebugging {
+  @TaskLocal static var emitRuntimeWarnings = true
+}
 
 extension TaskResult: Equatable where Success: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
@@ -137,7 +140,17 @@ extension TaskResult: Equatable where Success: Equatable {
     case let (.success(lhs), .success(rhs)):
       return lhs == rhs
     case let (.failure(lhs), .failure(rhs)):
-      return _isEqual(lhs, rhs) ?? ((lhs as NSError) == (rhs as NSError))
+      return _isEqual(lhs, rhs) ?? {
+        if TaskResultDebugging.emitRuntimeWarnings {
+          runtimeWarning(
+            "Tried to compare a non-equatable error type: %@",
+            [
+              "\(type(of: lhs))"
+            ]
+          )
+        }
+        return false
+      }()
     default:
       return false
     }

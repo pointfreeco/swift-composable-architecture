@@ -49,7 +49,7 @@ class SpeechRecognitionTests: XCTestCase {
   func testAllowAndRecord() async {
     let recognitionTask = AsyncThrowingStream<SpeechClient.Action, Error>.streamWithContinuation()
 
-    var speechClient = SpeechClient.failing
+    var speechClient = SpeechClient.unimplemented
     speechClient.recognitionTask = { _ in recognitionTask.stream }
     speechClient.requestAuthorization = { .authorized }
 
@@ -119,7 +119,7 @@ class SpeechRecognitionTests: XCTestCase {
   func testAudioEngineFailure() async {
     let recognitionTask = AsyncThrowingStream<SpeechClient.Action, Error>.streamWithContinuation()
 
-    var speechClient = SpeechClient.failing
+    var speechClient = SpeechClient.unimplemented
     speechClient.recognitionTask = { _ in recognitionTask.stream }
     speechClient.requestAuthorization = { .authorized }
 

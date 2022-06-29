@@ -41,22 +41,22 @@ final class ReducerTests: XCTestCase {
         .eraseToEffect()
     }
 
-    let scheduler = DispatchQueue.test
+    let mainQueue = DispatchQueue.test
     let store = TestStore(
       initialState: 0,
       reducer: .combine(fastReducer, slowReducer),
-      environment: scheduler.eraseToAnyScheduler()
+      environment: mainQueue.eraseToAnyScheduler()
     )
 
     store.send(.increment) {
       $0 = 2
     }
     // Waiting a second causes the fast effect to fire.
-    scheduler.advance(by: 1)
+    mainQueue.advance(by: 1)
     XCTAssertNoDifference(fastValue, 42)
     // Waiting one more second causes the slow effect to fire. This proves that the effects
     // are merged together, as opposed to concatenated.
-    scheduler.advance(by: 1)
+    mainQueue.advance(by: 1)
     XCTAssertNoDifference(slowValue, 1729)
   }
 

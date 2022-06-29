@@ -8,18 +8,14 @@ struct Root: ReducerProtocol {
     var alertAndConfirmationDialog = AlertAndConfirmationDialog.State()
     var animation = Animations.State()
     var bindingBasics = BindingBasics.State()
-    #if compiler(>=5.4)
-      var bindingForm = BindingForm.State()
-    #endif
+    var bindingForm = BindingForm.State()
     var clock = ClockState()
     var counter = Counter.State()
     var effectsBasics = EffectsBasics.State()
     var effectsCancellation = EffectsCancellation.State()
     var effectsTimers = Timers.State()
     var episodes = EpisodesState(episodes: .mocks)
-    #if compiler(>=5.5)
-      var focusDemo = FocusDemo.State()
-    #endif
+    var focusDemo = FocusDemo.State()
     var lifecycle = LifecycleDemoState()
     var loadThenNavigate = LoadThenNavigate.State()
     var loadThenNavigateList = LoadThenNavigateList.State()
@@ -43,17 +39,13 @@ struct Root: ReducerProtocol {
     case alertAndConfirmationDialog(AlertAndConfirmationDialog.Action)
     case animation(Animations.Action)
     case bindingBasics(BindingBasics.Action)
-    #if compiler(>=5.4)
-      case bindingForm(BindingForm.Action)
-    #endif
+    case bindingForm(BindingForm.Action)
     case clock(ClockAction)
     case counter(Counter.Action)
     case effectsBasics(EffectsBasics.Action)
     case effectsCancellation(EffectsCancellation.Action)
     case episodes(EpisodesAction)
-    #if compiler(>=5.5)
-      case focusDemo(FocusDemo.Action)
-    #endif
+    case focusDemo(FocusDemo.Action)
     case lifecycle(LifecycleDemoAction)
     case loadThenNavigate(LoadThenNavigate.Action)
     case loadThenNavigateList(LoadThenNavigateList.Action)
@@ -98,11 +90,9 @@ struct Root: ReducerProtocol {
     Scope(state: \.bindingBasics, action: /Action.bindingBasics) {
       BindingBasics()
     }
-    #if compiler(>=5.4)
-      Scope(state: \.bindingForm, action: /Action.bindingForm) {
-        BindingForm()
-      }
-    #endif
+    Scope(state: \.bindingForm, action: /Action.bindingForm) {
+      BindingForm()
+    }
     Scope(state: \.clock, action: /Action.clock) {
       Reduce(clockReducer, environment: ClockEnvironment(mainQueue: self.mainQueue))
     }
@@ -121,11 +111,9 @@ struct Root: ReducerProtocol {
         environment: EpisodesEnvironment(favorite: favorite(id:isFavorite:))
       )
     }
-    #if compiler(>=5.5)
-      Scope(state: \.focusDemo, action: /Action.focusDemo) {
-        FocusDemo()
-      }
-    #endif
+    Scope(state: \.focusDemo, action: /Action.focusDemo) {
+      FocusDemo()
+    }
     Scope(state: \.lifecycle, action: /Action.lifecycle) {
       Reduce(lifecycleDemoReducer, environment: LifecycleDemoEnvironment(mainQueue: self.mainQueue))
     }
@@ -195,3 +183,4 @@ struct Root: ReducerProtocol {
   try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
   return Int.random(in: 1...1_000)
 }
+      var bindingForm = BindingForm.State()

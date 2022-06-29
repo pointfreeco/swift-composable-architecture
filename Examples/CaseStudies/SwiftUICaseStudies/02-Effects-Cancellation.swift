@@ -73,12 +73,11 @@ struct EffectsCancellationView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(
-          header: Text(readMe),
-          footer: Button("Number facts provided by numbersapi.com") {
-            UIApplication.shared.open(URL(string: "http://numbersapi.com")!)
-          }
-        ) {
+        Section {
+          Text(readMe)
+        }
+
+        Section {
           Stepper(
             value: viewStore.binding(get: \.count, send: EffectsCancellation.Action.stepperChanged)
           ) {
@@ -90,6 +89,9 @@ struct EffectsCancellationView: View {
               Button("Cancel") { viewStore.send(.cancelButtonTapped) }
               Spacer()
               ProgressView()
+                // NB: There seems to be a bug in SwiftUI where the progress view does not show
+                // a second time unless it is given a new identity.
+                .id(UUID())
             }
           } else {
             Button("Number fact") { viewStore.send(.triviaButtonTapped) }
@@ -100,7 +102,15 @@ struct EffectsCancellationView: View {
             Text($0).padding(.vertical, 8)
           }
         }
+
+        Section {
+          Button("Number facts provided by numbersapi.com") {
+            UIApplication.shared.open(URL(string: "http://numbersapi.com")!)
+          }
+          .foregroundColor(.gray)
+        }
       }
+      .buttonStyle(.borderless)
     }
     .navigationBarTitle("Effect cancellation")
   }

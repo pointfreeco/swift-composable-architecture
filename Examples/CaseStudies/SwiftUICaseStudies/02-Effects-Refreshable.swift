@@ -68,47 +68,45 @@ struct Refreshable: ReducerProtocol {
   }
 }
 
-#if compiler(>=5.5)
-  struct RefreshableView: View {
-    let store: StoreOf<Refreshable>
+struct RefreshableView: View {
+  let store: StoreOf<Refreshable>
 
-    var body: some View {
-      WithViewStore(self.store) { viewStore in
-        List {
-          Text(template: readMe, .body)
+  var body: some View {
+    WithViewStore(self.store) { viewStore in
+      List {
+        Text(template: readMe, .body)
 
-          HStack {
-            Button("-") { viewStore.send(.decrementButtonTapped) }
-            Text("\(viewStore.count)")
-            Button("+") { viewStore.send(.incrementButtonTapped) }
-          }
-          .buttonStyle(.plain)
+        HStack {
+          Button("-") { viewStore.send(.decrementButtonTapped) }
+          Text("\(viewStore.count)")
+          Button("+") { viewStore.send(.incrementButtonTapped) }
+        }
+        .buttonStyle(.plain)
 
-          if let fact = viewStore.fact {
-            Text(fact)
-              .bold()
-          }
-          if viewStore.isLoading {
-            Button("Cancel") {
-              viewStore.send(.cancelButtonTapped, animation: .default)
-            }
+        if let fact = viewStore.fact {
+          Text(fact)
+            .bold()
+        }
+        if viewStore.isLoading {
+          Button("Cancel") {
+            viewStore.send(.cancelButtonTapped, animation: .default)
           }
         }
-        .refreshable {
-          await viewStore.send(.refresh).finish()
-        }
+      }
+      .refreshable {
+        await viewStore.send(.refresh).finish()
       }
     }
   }
+}
 
-  struct Refreshable_Previews: PreviewProvider {
-    static var previews: some View {
-      RefreshableView(
-        store: Store(
-          initialState: Refreshable.State(),
-          reducer: Refreshable()
-        )
+struct Refreshable_Previews: PreviewProvider {
+  static var previews: some View {
+    RefreshableView(
+      store: Store(
+        initialState: Refreshable.State(),
+        reducer: Refreshable()
       )
-    }
+    )
   }
-#endif
+}
