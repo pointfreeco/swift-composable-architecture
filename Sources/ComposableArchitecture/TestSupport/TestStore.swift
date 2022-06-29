@@ -146,7 +146,7 @@
   /// // Advance the queue by a period shorter than the debounce
   /// await mainQueue.advance(by: 0.25)
   /// // Advance the scheduler to the debounce
-  /// await scheduler.advance(by: 0.25)
+  /// await mainQueue.advance(by: 0.25)
   ///
   /// // Assert that the expected response is received
   /// await store.receive(.response(["Composable Architecture"])) {
@@ -177,7 +177,7 @@
     /// The current state.
     ///
     /// When read from a trailing closure assertion in ``send(_:_:file:line:)`` or
-    /// ``receive(_:_:file:line:)``, it will equal the `inout` state passed to the closure.
+    /// ``receive(_:timeout:_:file:line:)``, it will equal the `inout` state passed to the closure.
     public var state: Reducer.State {
       self.reducer.state
     }
@@ -387,10 +387,10 @@
     ///     store. The mutable state sent to this closure must be modified to match the state of the
     ///     store after processing the given action. Do not provide a closure if no change is
     ///     expected.
-    @available(iOS, deprecated: 100000.0, message: "Call the async-friendly 'receive' instead.")
-    @available(macOS, deprecated: 100000.0, message: "Call the async-friendly 'receive' instead.")
-    @available(tvOS, deprecated: 100000.0, message: "Call the async-friendly 'receive' instead.")
-    @available(watchOS, deprecated: 100000.0, message: "Call the async-friendly 'receive' instead.")
+    @available(iOS, deprecated: 9999.0, message: "Call the async-friendly 'receive' instead.")
+    @available(macOS, deprecated: 9999.0, message: "Call the async-friendly 'receive' instead.")
+    @available(tvOS, deprecated: 9999.0, message: "Call the async-friendly 'receive' instead.")
+    @available(watchOS, deprecated: 9999.0, message: "Call the async-friendly 'receive' instead.")
     public func receive(
       _ expectedAction: Reducer.Action,
       _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
