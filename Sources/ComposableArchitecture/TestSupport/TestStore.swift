@@ -179,7 +179,7 @@
     /// The current state.
     ///
     /// When read from a trailing closure assertion in ``send(_:_:file:line:)`` or
-    /// ``receive(_:_:file:line:)``, it will equal the `inout` state passed to the closure.
+    /// ``receive(_:timeout:_:file:line:)``, it will equal the `inout` state passed to the closure.
     public private(set) var state: State
 
     private let file: StaticString
@@ -501,10 +501,10 @@
     ///     store. The mutable state sent to this closure must be modified to match the state of the
     ///     store after processing the given action. Do not provide a closure if no change is
     ///     expected.
-    @available(iOS, deprecated: 100000.0, message: "Call the async-friendly 'receive' instead.")
-    @available(macOS, deprecated: 100000.0, message: "Call the async-friendly 'receive' instead.")
-    @available(tvOS, deprecated: 100000.0, message: "Call the async-friendly 'receive' instead.")
-    @available(watchOS, deprecated: 100000.0, message: "Call the async-friendly 'receive' instead.")
+    @available(iOS, deprecated: 9999.0, message: "Call the async-friendly 'receive' instead.")
+    @available(macOS, deprecated: 9999.0, message: "Call the async-friendly 'receive' instead.")
+    @available(tvOS, deprecated: 9999.0, message: "Call the async-friendly 'receive' instead.")
+    @available(watchOS, deprecated: 9999.0, message: "Call the async-friendly 'receive' instead.")
     public func receive(
       _ expectedAction: Action,
       _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
@@ -560,92 +560,6 @@
         self.line = line
       }
     }
-
-    @MainActor
-    public func receive(
-      inAnyOrder expectedActions: Action...,
-      timeout nanoseconds: UInt64 = NSEC_PER_MSEC,
-      _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
-      file: StaticString = #file,
-      line: UInt = #line
-    ) async {
-      guard !self.inFlightEffects.isEmpty
-      else {
-//        { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
-        return
-      }
-
-      await Task.megaYield()
-      let start = DispatchTime.now().uptimeNanoseconds
-      while !Task.isCancelled {
-        await Task.detached(priority: .low) { await Task.yield() }.value
-
-        guard self.receivedActions.count < expectedActions.count
-        else { break }
-
-        guard start.distance(to: DispatchTime.now().uptimeNanoseconds) < nanoseconds
-        else {
-          let suggestion: String
-          if self.inFlightEffects.isEmpty {
-            suggestion = """
-              There are no in-flight effects that could deliver this action. Could the effect you \
-              expected to deliver this action have been cancelled?
-              """
-          } else {
-            let timeoutMessage =
-            nanoseconds != 0
-            ? #"try increasing the duration of this assertion's "timeout""#
-            : #"configure this assertion with an explicit "timeout""#
-            suggestion = """
-              There are effects in-flight. If the effect that delivers this action uses a \
-              scheduler (via "receive(on:)", "delay", "debounce", etc.), make sure that you wait \
-              enough time for the scheduler to perform the effect. If you are using a test \
-              scheduler, advance the scheduler so that the effects may complete, or consider using \
-              an immediate scheduler to immediately perform the effect instead.
-
-              If you are not yet using a scheduler, or can not use a scheduler, \(timeoutMessage).
-              """
-          }
-          XCTFail(
-            """
-            Expected to receive an action, but received none\
-            \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
-
-            \(suggestion)
-            """,
-            file: file,
-            line: line
-          )
-          return
-        }
-      }
-
-      guard !Task.isCancelled
-      else { return }
-
-      let expectedActionsCount = expectedActions.count
-      var receivedActions = self.receivedActions[0..<expectedActions.count]
-      var expectedActions = expectedActions
-      var crossReferencedActions: [(action: Action, state: State)] = []
-      while let receivedAction = receivedActions.first {
-        guard let index = expectedActions.firstIndex(where: { $0 == receivedAction.action })
-        else {
-          fatalError()
-        }
-        expectedActions.remove(at: index)
-        receivedActions.removeFirst()
-        crossReferencedActions.append(receivedAction)
-      }
-
-      if crossReferencedActions.count == expectedActionsCount {
-        for expectedAction in crossReferencedActions.dropLast() {
-          { self.receive(expectedAction.action, { $0 = self.toLocalState(expectedAction.state) }, file: file, line: line) }()
-        }
-        { self.receive(crossReferencedActions.last!.action, updateExpectingResult, file: file, line: line) }()
-      }
-    }
-
-
 
     /// Asserts an action was received from an effect and asserts when state changes.
     ///
