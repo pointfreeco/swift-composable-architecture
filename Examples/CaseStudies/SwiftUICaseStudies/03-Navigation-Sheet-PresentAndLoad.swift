@@ -55,7 +55,7 @@ struct PresentAndLoad: ReducerProtocol {
 }
 
 struct PresentAndLoadView: View {
-  let store: Store<PresentAndLoad.State, PresentAndLoad.Action>
+  let store: StoreOf<PresentAndLoad>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
