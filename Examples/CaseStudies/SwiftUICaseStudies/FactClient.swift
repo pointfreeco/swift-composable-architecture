@@ -3,9 +3,9 @@ import ComposableArchitecture
 import XCTestDynamicOverlay
 
 struct FactClient {
-  var fetch: (Int) -> Effect<String, Error>
+  var fetch: (Int) -> Effect<String, Failure>
 
-  struct Error: Swift.Error, Equatable {}
+  struct Failure: Error, Equatable {}
 }
 
 // This is the "live" fact dependency that reaches into the outside world to fetch trivia.
@@ -20,7 +20,7 @@ extension FactClient {
           .data(from: URL(string: "http://numbersapi.com/\(number)/trivia")!)
         return String(decoding: data, as: UTF8.self)
       }
-      .mapError { _ in Error() }
+      .mapError { _ in Failure() }
       .eraseToEffect()
     }
   )
@@ -31,7 +31,7 @@ extension FactClient {
     // This is the "unimplemented" fact dependency that is useful to plug into tests that you want
     // to prove do not need the dependency.
     static let unimplemented = Self(
-      fetch: { _ in .unimplemented("\(Self.self).fact") }
+      fetch: { _ in .unimplemented("\(Self.self).fetch") }
     )
   }
 #endif

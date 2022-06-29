@@ -20,7 +20,7 @@ struct RefreshableState: Equatable {
 enum RefreshableAction: Equatable {
   case cancelButtonTapped
   case decrementButtonTapped
-  case factResponse(Result<String, FactClient.Error>)
+  case factResponse(Result<String, FactClient.Failure>)
   case incrementButtonTapped
   case refresh
 }

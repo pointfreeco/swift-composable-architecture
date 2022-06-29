@@ -31,7 +31,7 @@ enum EffectsBasicsAction: Equatable {
   case decrementButtonTapped
   case incrementButtonTapped
   case numberFactButtonTapped
-  case numberFactResponse(Result<String, FactClient.Error>)
+  case numberFactResponse(Result<String, FactClient.Failure>)
 }
 
 struct EffectsBasicsEnvironment {
