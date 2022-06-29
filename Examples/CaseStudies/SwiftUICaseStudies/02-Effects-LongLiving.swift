@@ -64,10 +64,14 @@ struct LongLivingEffectsView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(template: readMe, .body)) {
-          Text("A screenshot of this screen has been taken \(viewStore.screenshotCount) times.")
-            .font(.headline)
+        Section {
+          DisclosureGroup("About this case study") {
+            Text(template: readMe)
+          }
         }
+
+        Text("A screenshot of this screen has been taken \(viewStore.screenshotCount) times.")
+          .font(.headline)
 
         Section {
           NavigationLink(destination: self.detailView) {

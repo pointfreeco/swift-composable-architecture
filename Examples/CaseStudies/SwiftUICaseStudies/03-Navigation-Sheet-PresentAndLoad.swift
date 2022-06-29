@@ -67,10 +67,13 @@ struct PresentAndLoadView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(readMe)) {
-          Button("Load optional counter") {
-            viewStore.send(.setSheet(isPresented: true))
+        Section {
+          DisclosureGroup("About this case study") {
+            Text(readMe)
           }
+        }
+        Button("Load optional counter") {
+          viewStore.send(.setSheet(isPresented: true))
         }
       }
       .sheet(

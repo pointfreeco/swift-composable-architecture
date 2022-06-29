@@ -96,29 +96,32 @@ struct LoadThenNavigateListView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(readMe)) {
-          ForEach(viewStore.rows) { row in
-            NavigationLink(
-              destination: IfLetStore(
-                self.store.scope(
-                  state: \.selection?.value,
-                  action: LoadThenNavigateListAction.counter
-                )
-              ) {
-                CounterView(store: $0)
-              },
-              tag: row.id,
-              selection: viewStore.binding(
-                get: \.selection?.id,
-                send: LoadThenNavigateListAction.setNavigation(selection:)
+        Section {
+          DisclosureGroup("About this case study") {
+            Text(readMe)
+          }
+        }
+        ForEach(viewStore.rows) { row in
+          NavigationLink(
+            destination: IfLetStore(
+              self.store.scope(
+                state: \.selection?.value,
+                action: LoadThenNavigateListAction.counter
               )
             ) {
-              HStack {
-                Text("Load optional counter that starts from \(row.count)")
-                if row.isActivityIndicatorVisible {
-                  Spacer()
-                  ProgressView()
-                }
+              CounterView(store: $0)
+            },
+            tag: row.id,
+            selection: viewStore.binding(
+              get: \.selection?.id,
+              send: LoadThenNavigateListAction.setNavigation(selection:)
+            )
+          ) {
+            HStack {
+              Text("Load optional counter that starts from \(row.count)")
+              if row.isActivityIndicatorVisible {
+                Spacer()
+                ProgressView()
               }
             }
           }

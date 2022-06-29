@@ -75,30 +75,33 @@ struct NestedView: View {
   var body: some View {
     WithViewStore(self.store.scope(state: \.description)) { viewStore in
       Form {
-        Section(header: Text(template: readMe, .caption)) {
+        Section {
+          DisclosureGroup("About this case study") {
+            Text(template: readMe)
+          }
+        }
 
-          ForEachStore(
-            self.store.scope(state: \.children, action: NestedAction.node(id:action:))
-          ) { childStore in
-            WithViewStore(childStore) { childViewStore in
-              HStack {
-                TextField(
-                  "Untitled",
-                  text: childViewStore.binding(get: \.description, send: NestedAction.rename)
-                )
+        ForEachStore(
+          self.store.scope(state: \.children, action: NestedAction.node(id:action:))
+        ) { childStore in
+          WithViewStore(childStore) { childViewStore in
+            HStack {
+              TextField(
+                "Untitled",
+                text: childViewStore.binding(get: \.description, send: NestedAction.rename)
+              )
 
-                Spacer()
+              Spacer()
 
-                NavigationLink(
-                  destination: NestedView(store: childStore)
-                ) {
-                  Text("")
-                }
+              NavigationLink(
+                destination: NestedView(store: childStore)
+              ) {
+                Text("")
               }
             }
           }
-          .onDelete { viewStore.send(.remove($0)) }
         }
+        .onDelete { viewStore.send(.remove($0)) }
       }
       .navigationBarTitle(viewStore.state.isEmpty ? "Untitled" : viewStore.state)
       .navigationBarItems(

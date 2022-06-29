@@ -69,26 +69,29 @@ struct NavigateAndLoadView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(readMe)) {
-          NavigationLink(
-            destination: IfLetStore(
-              self.store.scope(
-                state: \.optionalCounter,
-                action: NavigateAndLoadAction.optionalCounter
-              )
-            ) {
-              CounterView(store: $0)
-            } else: {
-              ProgressView()
-            },
-            isActive: viewStore.binding(
-              get: \.isNavigationActive,
-              send: NavigateAndLoadAction.setNavigation(isActive:)
+        Section {
+          DisclosureGroup("About this case study") {
+            Text(readMe)
+          }
+        }
+        NavigationLink(
+          destination: IfLetStore(
+            self.store.scope(
+              state: \.optionalCounter,
+              action: NavigateAndLoadAction.optionalCounter
             )
           ) {
-            HStack {
-              Text("Load optional counter")
-            }
+            CounterView(store: $0)
+          } else: {
+            ProgressView()
+          },
+          isActive: viewStore.binding(
+            get: \.isNavigationActive,
+            send: NavigateAndLoadAction.setNavigation(isActive:)
+          )
+        ) {
+          HStack {
+            Text("Load optional counter")
           }
         }
       }
