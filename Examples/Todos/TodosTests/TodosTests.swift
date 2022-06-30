@@ -13,7 +13,7 @@ class TodosTests: XCTestCase {
       reducer: appReducer,
       environment: AppEnvironment(
         mainQueue: self.mainQueue.eraseToAnyScheduler(),
-        uuid: UUID.incrementing
+        uuid: { UUID.incrementing() }
       )
     )
 
@@ -44,7 +44,7 @@ class TodosTests: XCTestCase {
       reducer: appReducer,
       environment: AppEnvironment(
         mainQueue: self.mainQueue.eraseToAnyScheduler(),
-        uuid: UUID.incrementing
+        uuid: { UUID.incrementing() }
       )
     )
 
@@ -75,7 +75,7 @@ class TodosTests: XCTestCase {
       reducer: appReducer,
       environment: AppEnvironment(
         mainQueue: self.mainQueue.eraseToAnyScheduler(),
-        uuid: UUID.incrementing
+        uuid: { UUID.incrementing() }
       )
     )
 
@@ -111,7 +111,7 @@ class TodosTests: XCTestCase {
       reducer: appReducer,
       environment: AppEnvironment(
         mainQueue: self.mainQueue.eraseToAnyScheduler(),
-        uuid: UUID.incrementing
+        uuid: { UUID.incrementing() }
       )
     )
 
@@ -146,7 +146,7 @@ class TodosTests: XCTestCase {
       reducer: appReducer,
       environment: AppEnvironment(
         mainQueue: self.mainQueue.eraseToAnyScheduler(),
-        uuid: UUID.incrementing
+        uuid: { UUID.incrementing() }
       )
     )
 
@@ -182,7 +182,7 @@ class TodosTests: XCTestCase {
       reducer: appReducer,
       environment: AppEnvironment(
         mainQueue: self.mainQueue.eraseToAnyScheduler(),
-        uuid: UUID.incrementing
+        uuid: { UUID.incrementing() }
       )
     )
 
@@ -219,7 +219,7 @@ class TodosTests: XCTestCase {
       reducer: appReducer,
       environment: AppEnvironment(
         mainQueue: self.mainQueue.eraseToAnyScheduler(),
-        uuid: UUID.incrementing
+        uuid: { UUID.incrementing() }
       )
     )
 
@@ -267,7 +267,7 @@ class TodosTests: XCTestCase {
       reducer: appReducer,
       environment: AppEnvironment(
         mainQueue: self.mainQueue.eraseToAnyScheduler(),
-        uuid: UUID.incrementing
+        uuid: { UUID.incrementing() }
       )
     )
 
@@ -309,7 +309,7 @@ class TodosTests: XCTestCase {
       reducer: appReducer,
       environment: AppEnvironment(
         mainQueue: self.mainQueue.eraseToAnyScheduler(),
-        uuid: UUID.incrementing
+        uuid: { UUID.incrementing() }
       )
     )
 
