@@ -218,7 +218,7 @@ final class EffectTests: XCTestCase {
         .sink(receiveValue: { _ in })
         .store(in: &self.cancellables)
     } issueMatcher: { issue in
-      issue.compactDescription == "unimplemented - An unimplemented effect ran."
+      issue.compactDescription == "Unimplemented: unimplemented - An unimplemented effect ran."
     }
   }
 
