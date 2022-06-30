@@ -4,7 +4,7 @@ import XCTestDynamicOverlay
 
 struct FactClient {
   var fetch: (Int) -> Effect<String, Failure>
-  var fetchAsync: @Sendable (Int) async throws -> String
+  var fetchAsync: @Sendable (Int) async throws /* Any */ -> String
 
   struct Failure: Error, Equatable {}
 }

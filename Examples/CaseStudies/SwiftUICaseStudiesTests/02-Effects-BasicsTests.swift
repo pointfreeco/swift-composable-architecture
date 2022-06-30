@@ -66,7 +66,27 @@ class EffectsBasicsTests: XCTestCase {
       $0.isNumberFactRequestInFlight = false
     }
   }
+
+  func testIsEquatable() {
+
+    XCTAssertTrue(isEquatable(1))
+    XCTAssertTrue(isEquatable("Hello"))
+    XCTAssertTrue(isEquatable(true))
+
+    XCTAssertFalse(isEquatable({ $0 + 1 }))
+    XCTAssertFalse(isEquatable(()))
+    XCTAssertFalse(isEquatable((1, 2)))
+    XCTAssertFalse(isEquatable(VStack {}))
+
+    XCTAssertTrue(equals(1, 1))
+    XCTAssertTrue(equals("Hello", "Hello"))
+    XCTAssertFalse(equals(true, false))
+
+//    XCTAssertFalse(equals((), ()))
+
+  }
 }
+import SwiftUI
 
 extension EffectsBasicsEnvironment {
   static let unimplemented = Self(
