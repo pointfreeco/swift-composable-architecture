@@ -73,7 +73,7 @@ class TestStoreFailureTests: XCTestCase {
       environment: ()
     )
 
-    XCTExpectFailure {
+    _ = XCTExpectFailure {
       store.send(())
     } issueMatcher: {
       $0.compactDescription == """

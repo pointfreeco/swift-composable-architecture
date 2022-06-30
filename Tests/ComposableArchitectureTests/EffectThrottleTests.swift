@@ -12,7 +12,8 @@ final class EffectThrottleTests: XCTestCase {
     var values: [Int] = []
     var effectRuns = 0
 
-    func runThrottledEffect(value: Int) {
+    // NB: Explicit @MainActor is needed for Swift 5.5.2
+    @MainActor func runThrottledEffect(value: Int) {
       enum CancelToken {}
 
       Deferred { () -> Just<Int> in
@@ -66,7 +67,8 @@ final class EffectThrottleTests: XCTestCase {
     var values: [Int] = []
     var effectRuns = 0
 
-    func runThrottledEffect(value: Int) {
+    // NB: Explicit @MainActor is needed for Swift 5.5.2
+    @MainActor func runThrottledEffect(value: Int) {
       enum CancelToken {}
 
       Deferred { () -> Just<Int> in
@@ -133,7 +135,8 @@ final class EffectThrottleTests: XCTestCase {
     var values: [Int] = []
     var effectRuns = 0
 
-    func runThrottledEffect(value: Int) {
+    // NB: Explicit @MainActor is needed for Swift 5.5.2
+    @MainActor func runThrottledEffect(value: Int) {
       enum CancelToken {}
 
       Deferred { () -> Just<Int> in
@@ -178,7 +181,8 @@ final class EffectThrottleTests: XCTestCase {
     var values: [Int] = []
     var effectRuns = 0
 
-    func runThrottledEffect(value: Int) {
+    // NB: Explicit @MainActor is needed for Swift 5.5.2
+    @MainActor func runThrottledEffect(value: Int) {
       enum CancelToken {}
 
       Deferred { () -> Just<Int> in
