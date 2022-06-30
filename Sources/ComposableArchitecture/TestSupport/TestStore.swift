@@ -756,3 +756,72 @@
     }
   }
 #endif
+
+import _CAsyncSequenceValidationSupport
+
+public func withSerialExecutor(_ work: @escaping () async -> Void) {
+  executor.do {
+    await work()
+  }
+}
+
+let executor = Executor()
+
+func start_thread(_ raw: UnsafeMutableRawPointer) -> UnsafeMutableRawPointer? {
+  Unmanaged<Executor>.fromOpaque(raw).takeRetainedValue().run()
+  return nil
+}
+
+final class Executor: SerialExecutor {
+  var thread: pthread_t?
+
+  var jobs: [JobRef] = []
+  var work: (() -> Void)?
+
+  func enqueue(_ job: UnownedJob) {
+    job._runSynchronously(on: self.asUnownedSerialExecutor())
+  }
+
+  func asUnownedSerialExecutor() -> UnownedSerialExecutor {
+    UnownedSerialExecutor(ordinary: self)
+  }
+
+  func enqueue(_ job: JobRef) {
+    jobs.append(job)
+  }
+
+  func `do`(_ work: @escaping () async -> Void) {
+    self.work = {
+      Task {
+        await work()
+      }
+    }
+    pthread_create(&self.thread, nil, start_thread, Unmanaged.passRetained(self).toOpaque())
+    self.join()
+  }
+
+  func run() {
+    //pthread_setname_np("Executor")
+    swift_task_enqueueGlobal_hook = { job, original in
+      executor.enqueue(job)
+    }
+    self.work?()
+    while !self.jobs.isEmpty {
+      _swiftJobRun(
+        unsafeBitCast(self.jobs.removeFirst(), to: UnownedJob.self), self.asUnownedSerialExecutor()
+      )
+    }
+  }
+
+  func join() {
+    pthread_join(self.thread!, nil)
+    swift_task_enqueueGlobal_hook = nil
+  }
+}
+
+@_silgen_name("swift_job_run")
+@usableFromInline
+internal func _swiftJobRun(
+  _ job: UnownedJob,
+  _ executor: UnownedSerialExecutor
+) -> ()
