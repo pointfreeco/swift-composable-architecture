@@ -63,7 +63,7 @@ let effectsBasicsReducer = Reducer<
     // Return an effect that fetches a number fact from the API and returns the
     // value back to the reducer's `numberFactResponse` action.
 
-    return Effect.task { [count = state.count] in
+    return .task { [count = state.count] in
       do {
         return .numberFactResponse(
           .success(
