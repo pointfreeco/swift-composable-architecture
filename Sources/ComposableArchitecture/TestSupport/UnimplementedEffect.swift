@@ -82,8 +82,8 @@ extension Effect {
   ///   messages.
   /// - Returns: An effect that causes a test to fail if it runs.
   public static func unimplemented(_ prefix: String) -> Self {
-    .fireAndForget {
-      XCTFail("\(prefix.isEmpty ? "" : "\(prefix) - ")An unimplemented effect ran.")
-    }
+    .fireAndForget(
+      XCTUnimplemented("\(prefix.isEmpty ? "" : "\(prefix) - ")An unimplemented effect ran.")
+    )
   }
 }
