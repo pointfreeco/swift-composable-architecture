@@ -62,9 +62,23 @@ let effectsBasicsReducer = Reducer<
     state.numberFact = nil
     // Return an effect that fetches a number fact from the API and returns the
     // value back to the reducer's `numberFactResponse` action.
-    return environment.fact.fetch(state.count)
-      .receive(on: environment.mainQueue)
-      .catchToEffect(EffectsBasicsAction.numberFactResponse)
+
+    return Effect.task { [count = state.count] in
+      do {
+        return .numberFactResponse(
+          .success(
+            try await environment.fact.fetchAsync(count)
+          )
+        )
+      } catch {
+        return .numberFactResponse(.failure(FactClient.Failure()))
+      }
+    }
+
+//    return environment.fact.fetch(state.count)
+//      .map { fact in fact + "!!!" }
+//      .receive(on: environment.mainQueue)
+//      .catchToEffect(EffectsBasicsAction.numberFactResponse)
 
   case let .numberFactResponse(.success(response)):
     state.isNumberFactRequestInFlight = false
@@ -141,11 +155,7 @@ struct EffectsBasicsView_Previews: PreviewProvider {
           initialState: EffectsBasicsState(),
           reducer: effectsBasicsReducer,
           environment: EffectsBasicsEnvironment(
-            fact: FactClient(
-              fetch: { n in
-                Effect(value: "\(n) is a good number.")
-              }
-            ),
+            fact: .live,
             mainQueue: .main
           )
         )
