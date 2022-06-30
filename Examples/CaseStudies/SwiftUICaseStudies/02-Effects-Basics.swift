@@ -141,7 +141,11 @@ struct EffectsBasicsView_Previews: PreviewProvider {
           initialState: EffectsBasicsState(),
           reducer: effectsBasicsReducer,
           environment: EffectsBasicsEnvironment(
-            fact: .live,
+            fact: FactClient(
+              fetch: { n in
+                Effect(value: "\(n) is a good number.")
+              }
+            ),
             mainQueue: .main
           )
         )
