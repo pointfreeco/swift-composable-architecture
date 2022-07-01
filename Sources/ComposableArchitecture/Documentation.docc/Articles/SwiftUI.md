@@ -36,9 +36,9 @@ The Composable Architecture can be used to power applications built in many fram
 - ``ConfirmationDialogState``
 - ``TextState``
 
+<!--TODO: Can't currently document `View` extensions-->
+<!--### View Modifiers-->
+
 ### Deprecations
 
 - <doc:SwiftUIDeprecations>
-
-<!--TODO: Can't currently document `View` extensions-->
-<!--### View Modifiers-->

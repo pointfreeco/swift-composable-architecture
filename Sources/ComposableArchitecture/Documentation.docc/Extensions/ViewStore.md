@@ -16,10 +16,10 @@
 ### Sending Actions
 
 - ``send(_:)``
-- ``send(_:while:)``
 
 ### Interacting with Concurrency
 
+- ``send(_:while:)``
 - ``yield(while:)``
 
 ### SwiftUI Integration
