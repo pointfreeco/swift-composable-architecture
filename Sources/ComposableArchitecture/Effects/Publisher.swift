@@ -1,5 +1,9 @@
 import Combine
 
+@available(iOS, deprecated: 9999.0)
+@available(macOS, deprecated: 9999.0)
+@available(tvOS, deprecated: 9999.0)
+@available(watchOS, deprecated: 9999.0)
 extension Effect: Publisher {
   public func receive<S: Combine.Subscriber>(
     subscriber: S
@@ -9,26 +13,20 @@ extension Effect: Publisher {
 }
 
 extension Effect {
-  /// Initializes an effect that wraps a publisher. Each emission of the wrapped publisher will be
-  /// emitted by the effect.
+  /// Initializes an effect that wraps a publisher.
   ///
-  /// This initializer is useful for turning any publisher into an effect. For example:
-  ///
-  /// ```swift
-  /// Effect(
-  ///   NotificationCenter.default
-  ///     .publisher(for: UIApplication.userDidTakeScreenshotNotification)
-  /// )
-  /// ```
-  ///
-  /// Alternatively, you can use the `.eraseToEffect()` method that is defined on the `Publisher`
-  /// protocol:
-  ///
-  /// ```swift
-  /// NotificationCenter.default
-  ///   .publisher(for: UIApplication.userDidTakeScreenshotNotification)
-  ///   .eraseToEffect()
-  /// ```
+  /// > Important: This Combine interface has been soft-deprecated in favor of Swift concurrency.
+  /// > Prefer performing asynchronous work directly in ``Effect/run(priority:_:)`` by adopting a
+  /// > non-Combine interface, or by iterating over the publisher's asynchronous sequence of
+  /// > `values`:
+  /// >
+  /// > ```swift
+  /// > return .run { send in
+  /// >   for await value in publisher.values {
+  /// >     send(.response(value))
+  /// >   }
+  /// > }
+  /// > ```
   ///
   /// - Parameter publisher: A publisher.
   @available(
