@@ -2,7 +2,7 @@ import Combine
 import ComposableArchitecture
 import XCTest
 
-//@MainActor
+@MainActor
 class TestStoreTests: XCTestCase {
   func testEffectConcatenation() async {
     struct State: Equatable {}
@@ -220,88 +220,88 @@ class TestStoreTests: XCTestCase {
   }
 
 
-  @MainActor
-  func testNonDeterministicActions() async {
-    struct State: Equatable {
-      var count1 = 0
-      var count2 = 0
-    }
-    enum Action { case tap, response1, response2 }
-    let store = TestStore(
-      initialState: State(),
-      reducer: Reducer<State, Action, Void> { state, action, _ in
-        switch action {
-        case .tap:
-          return .merge(
-            .task { .response1 },
-            .task { .response2 }
-          )
-        case .response1:
-          state.count1 = 1
-          return .none
-        case .response2:
-          state.count2 = 2
-          return .none
-        }
-      },
-      environment: ()
-    )
+//  @MainActor
+//  func testNonDeterministicActions() async {
+//    struct State: Equatable {
+//      var count1 = 0
+//      var count2 = 0
+//    }
+//    enum Action { case tap, response1, response2 }
+//    let store = TestStore(
+//      initialState: State(),
+//      reducer: Reducer<State, Action, Void> { state, action, _ in
+//        switch action {
+//        case .tap:
+//          return .merge(
+//            .task { .response1 },
+//            .task { .response2 }
+//          )
+//        case .response1:
+//          state.count1 = 1
+//          return .none
+//        case .response2:
+//          state.count2 = 2
+//          return .none
+//        }
+//      },
+//      environment: ()
+//    )
+//
+//    store.send(.tap)
+//    await store.receive(.response1) {
+//      $0.count1 = 1
+//    }
+//    await store.receive(.response2) {
+//      $0.count2 = 2
+//    }
+//  }
 
-    store.send(.tap)
-    await store.receive(.response1) {
-      $0.count1 = 1
-    }
-    await store.receive(.response2) {
-      $0.count2 = 2
-    }
-  }
-
-  @MainActor
-  func testSerialExecutor() async {
-    struct State: Equatable {
-      var count = 0
-    }
-    enum Action: Equatable {
-      case tap
-      case response(Int)
-    }
-    let store = TestStore(
-      initialState: State(),
-      reducer: Reducer<State, Action, Void> { state, action, _ in
-        switch action {
-        case .tap:
-          return .run { send in
-            await withTaskGroup(of: Void.self) { group in
-              for index in 1...5 {
-                group.addTask {
-                  await send(.response(index))
-                }
-              }
-            }
-          }
-        case let .response(value):
-          state.count += value
-          return .none
-        }
-      },
-      environment: ()
-    )
-
-    store.send(.tap)
-    await store.receive(.response(1)) {
-      $0.count = 1
-    }
-    await store.receive(.response(2)) {
-      $0.count = 3
-    }
-    await store.receive(.response(3)) {
-      $0.count = 6
-    }
-    await store.receive(.response(4)) {
-      $0.count = 10
-    }
-    await store.receive(.response(5)) {
-      $0.count = 15
-    }
-  }
+//  @MainActor
+//  func testSerialExecutor() async {
+//    struct State: Equatable {
+//      var count = 0
+//    }
+//    enum Action: Equatable {
+//      case tap
+//      case response(Int)
+//    }
+//    let store = TestStore(
+//      initialState: State(),
+//      reducer: Reducer<State, Action, Void> { state, action, _ in
+//        switch action {
+//        case .tap:
+//          return .run { send in
+//            await withTaskGroup(of: Void.self) { group in
+//              for index in 1...5 {
+//                group.addTask {
+//                  await send(.response(index))
+//                }
+//              }
+//            }
+//          }
+//        case let .response(value):
+//          state.count += value
+//          return .none
+//        }
+//      },
+//      environment: ()
+//    )
+//
+//    store.send(.tap)
+//    await store.receive(.response(1)) {
+//      $0.count = 1
+//    }
+//    await store.receive(.response(2)) {
+//      $0.count = 3
+//    }
+//    await store.receive(.response(3)) {
+//      $0.count = 6
+//    }
+//    await store.receive(.response(4)) {
+//      $0.count = 10
+//    }
+//    await store.receive(.response(5)) {
+//      $0.count = 15
+//    }
+//  }
 }
