@@ -1,9 +1,16 @@
 import CasePaths
-import Combine
+@preconcurrency import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
-// NB: Deprecated after 0.38.0:
+// NB: Deprecated after 0.38.2:
+
+extension Effect {
+  @available(*, deprecated)
+  public var upstream: AnyPublisher<Output, Failure> {
+    self.publisher
+  }
+}
 
 extension Effect where Failure == Error {
   @available(
@@ -35,6 +42,8 @@ extension Effect where Failure == Error {
     .eraseToEffect()
   }
 }
+
+// NB: Deprecated after 0.38.0:
 
 extension Effect {
   @available(iOS, deprecated: 9999.0, renamed: "unimplemented")

@@ -1,4 +1,4 @@
-import Combine
+@preconcurrency import Combine
 import SwiftUI
 
 #if canImport(_Concurrency) && compiler(>=5.5.2)
@@ -126,8 +126,8 @@ import SwiftUI
     /// back into the store. If an error is thrown, the effect will complete and the error will be
     /// ignored.
     ///
-    /// This effect is handy for executing some asynchronous work that your feature doesn't
-    /// need to react to. One such example is analytics:
+    /// This effect is handy for executing some asynchronous work that your feature doesn't need to
+    /// react to. One such example is analytics:
     ///
     /// ```swift
     /// case .buttonTapped:
@@ -172,14 +172,6 @@ import SwiftUI
   /// defer { send(.finished, animation: .default) }
   /// ```
   ///
-  /// And if your action conforms to ``BindableAction`` you can send ``BindableAction/set(_:_:)``
-  /// actions with a concise syntax:
-  ///
-  /// ```swift
-  /// send(set: \.$isLoading, to: true)
-  /// defer { send(set: \.$isLoading, to: false) }
-  /// ```
-  ///
   /// See ``Effect/run(priority:_:)`` for more information on how to use this value to construct
   /// effects that can emit any number of times in an asynchronous context.
   ///
@@ -200,21 +192,4 @@ import SwiftUI
   }
 
   extension Send: Sendable where Action: Sendable {}
-
-  extension Send where Action: BindableAction {
-    public func callAsFunction<Value>(
-      set keyPath: WritableKeyPath<Action.State, BindableState<Value>>,
-      to value: Value
-    ) where Value: Equatable {
-      self.send(.set(keyPath, value))
-    }
-
-    public func callAsFunction<Value>(
-      set keyPath: WritableKeyPath<Action.State, BindableState<Value>>,
-      to value: Value,
-      animation: Animation? = nil
-    ) where Value: Equatable {
-      self(.set(keyPath, value), animation: animation)
-    }
-  }
 #endif
