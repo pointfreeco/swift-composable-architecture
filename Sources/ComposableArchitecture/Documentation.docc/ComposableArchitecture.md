@@ -45,9 +45,25 @@ day-to-day when building applications, such as:
 
 ## Topics
 
-### Articles
+### Essentials
 
 - <doc:GettingStarted>
+
+### State Management
+
+- ``Reducer``
+- ``Effect``
+- ``Store``
+- ``ViewStore``
+
+### Integrations
+
+- <doc:SwiftUI>
+- <doc:UIKit>
+
+### Testing
+
+- ``TestStore``
 
 ## See Also
 
