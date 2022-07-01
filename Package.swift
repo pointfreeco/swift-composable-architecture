@@ -29,7 +29,6 @@ let package = Package(
     .target(
       name: "ComposableArchitecture",
       dependencies: [
-        "_CAsyncSequenceValidationSupport",
         .product(name: "CasePaths", package: "swift-case-paths"),
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
         .product(name: "CustomDump", package: "swift-custom-dump"),
@@ -50,7 +49,6 @@ let package = Package(
         .product(name: "Benchmark", package: "Benchmark"),
       ]
     ),
-    .systemLibrary(name: "_CAsyncSequenceValidationSupport"),
   ]
 )
 

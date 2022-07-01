@@ -1,4 +1,0 @@
-module _CAsyncSequenceValidationSupport [system] {
-  header "_CAsyncSequenceValidationSupport.h"
-  export *
-}
