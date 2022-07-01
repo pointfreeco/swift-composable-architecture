@@ -1,5 +1,5 @@
 import Combine
-@preconcurrency import ComposableArchitecture  // FIXME
+import ComposableArchitecture
 import SwiftUI
 
 private let readMe = """

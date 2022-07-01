@@ -4,8 +4,8 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+@MainActor
 class AnimationTests: XCTestCase {
-  @MainActor
   func testRainbow() async {
     let mainQueue = DispatchQueue.test
 

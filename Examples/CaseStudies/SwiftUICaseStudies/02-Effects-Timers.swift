@@ -34,10 +34,10 @@ let timersReducer = Reducer<TimersState, TimersAction, TimersEnvironment> {
 
   case .toggleTimerButtonTapped:
     state.isTimerActive.toggle()
-    return .run { @MainActor [isTimerActive = state.isTimerActive] send in
+    return .run { [isTimerActive = state.isTimerActive] send in
       guard isTimerActive else { return }
       for await _ in environment.mainQueue.timer(interval: 1) {
-        send(.timerTicked, animation: .interpolatingSpring(stiffness: 3000, damping: 40))
+        await send(.timerTicked, animation: .interpolatingSpring(stiffness: 3000, damping: 40))
       }
     }
     .cancellable(id: TimerId.self, cancelInFlight: true)
