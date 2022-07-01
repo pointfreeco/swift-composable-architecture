@@ -26,7 +26,7 @@
 
 ### Composition
 
-<!--NB: DocC has a bug that prevents `map` from being resolved-->
+<!--NB: DocC bug prevents the following from being resolved-->
 <!--- ``map(_:)``-->
 - ``merge(_:)-3al9f``
 - ``merge(_:)-4n451``
