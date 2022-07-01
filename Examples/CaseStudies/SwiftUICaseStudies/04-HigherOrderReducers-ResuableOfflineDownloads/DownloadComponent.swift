@@ -32,7 +32,7 @@ enum Mode: Equatable {
 enum DownloadComponentAction: Equatable {
   case alert(AlertAction)
   case buttonTapped
-  case downloadClient(Result<DownloadClient.Action, DownloadClient.Error>)
+  case downloadClient(TaskResult<DownloadClient.Event>)
 
   enum AlertAction: Equatable {
     case deleteButtonTapped
@@ -44,7 +44,6 @@ enum DownloadComponentAction: Equatable {
 
 struct DownloadComponentEnvironment {
   var downloadClient: DownloadClient
-  var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
 extension Reducer {
@@ -84,11 +83,17 @@ extension Reducer {
 
           case .notDownloaded:
             state.mode = .startingToDownload
-            return environment.downloadClient
-              .download(state.url)
-              .throttle(for: 1, scheduler: environment.mainQueue, latest: true)
-              .catchToEffect(DownloadComponentAction.downloadClient)
-              .cancellable(id: state.id)
+
+            return .run { [url = state.url] send in
+              do {
+                for try await event in environment.downloadClient.download(url) {
+                  await send(.downloadClient(.success(event)))
+                }
+              } catch {
+                await send(.downloadClient(.failure(error)))
+              }
+            }
+            .cancellable(id: state.id)
 
           case .startingToDownload:
             state.alert = stopAlert

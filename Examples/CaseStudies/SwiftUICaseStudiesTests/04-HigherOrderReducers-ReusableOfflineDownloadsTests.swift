@@ -1,14 +1,17 @@
 import Combine
 import ComposableArchitecture
 import XCTest
+import XCTestDynamicOverlay
 
 @testable import SwiftUICaseStudies
 
 @MainActor
 class ReusableComponentsDownloadComponentTests: XCTestCase {
-  let downloadSubject = PassthroughSubject<DownloadClient.Action, DownloadClient.Error>()
+  let download = AsyncThrowingStream<DownloadClient.Event, Error>.streamWithContinuation()
   let reducer = Reducer<
-    DownloadComponentState<Int>, DownloadComponentAction, DownloadComponentEnvironment
+    DownloadComponentState<Int>,
+    DownloadComponentAction,
+    DownloadComponentEnvironment
   >
   .empty
   .downloadable(
@@ -20,7 +23,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 
   func testDownloadFlow() async {
     var downloadClient = DownloadClient.unimplemented
-    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
+    downloadClient.download = { _ in self.download.stream }
 
     let store = TestStore(
       initialState: DownloadComponentState(
@@ -29,73 +32,28 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
         url: URL(string: "https://www.pointfree.co")!
       ),
       reducer: reducer,
-      environment: DownloadComponentEnvironment(
-        downloadClient: downloadClient,
-        mainQueue: self.mainQueue.eraseToAnyScheduler()
-      )
+      environment: DownloadComponentEnvironment(downloadClient: downloadClient)
     )
 
     store.send(.buttonTapped) {
       $0.mode = .startingToDownload
     }
 
-    self.downloadSubject.send(.updateProgress(0.2))
-    await self.mainQueue.advance()
+    self.download.continuation.yield(.updateProgress(0.2))
     await store.receive(.downloadClient(.success(.updateProgress(0.2)))) {
       $0.mode = .downloading(progress: 0.2)
     }
 
-    self.downloadSubject.send(.response(Data()))
-    self.downloadSubject.send(completion: .finished)
-    await self.mainQueue.advance(by: 1)
+    self.download.continuation.yield(.response(Data()))
+    self.download.continuation.finish()
     await store.receive(.downloadClient(.success(.response(Data())))) {
       $0.mode = .downloaded
     }
   }
 
-  func testDownloadThrottling() async {
-    var downloadClient = DownloadClient.unimplemented
-    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
-
-    let store = TestStore(
-      initialState: DownloadComponentState(
-        id: 1,
-        mode: .notDownloaded,
-        url: URL(string: "https://www.pointfree.co")!
-      ),
-      reducer: reducer,
-      environment: DownloadComponentEnvironment(
-        downloadClient: downloadClient,
-        mainQueue: self.mainQueue.eraseToAnyScheduler()
-      )
-    )
-
-    store.send(.buttonTapped) {
-      $0.mode = .startingToDownload
-    }
-
-    self.downloadSubject.send(.updateProgress(0.5))
-    await self.mainQueue.advance()
-    await store.receive(.downloadClient(.success(.updateProgress(0.5)))) {
-      $0.mode = .downloading(progress: 0.5)
-    }
-
-    self.downloadSubject.send(.updateProgress(0.6))
-    await self.mainQueue.advance(by: 0.5)
-
-    self.downloadSubject.send(.updateProgress(0.7))
-    await self.mainQueue.advance(by: 0.5)
-    await store.receive(.downloadClient(.success(.updateProgress(0.7)))) {
-      $0.mode = .downloading(progress: 0.7)
-    }
-
-    self.downloadSubject.send(completion: .finished)
-    await self.mainQueue.run()
-  }
-
   func testCancelDownloadFlow() async {
     var downloadClient = DownloadClient.unimplemented
-    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
+    downloadClient.download = { _ in self.download.stream }
 
     let store = TestStore(
       initialState: DownloadComponentState(
@@ -104,14 +62,16 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
         url: URL(string: "https://www.pointfree.co")!
       ),
       reducer: reducer,
-      environment: DownloadComponentEnvironment(
-        downloadClient: downloadClient,
-        mainQueue: self.mainQueue.eraseToAnyScheduler()
-      )
+      environment: DownloadComponentEnvironment(downloadClient: downloadClient)
     )
 
     store.send(.buttonTapped) {
       $0.mode = .startingToDownload
+    }
+
+    self.download.continuation.yield(.updateProgress(0.2))
+    await store.receive(.downloadClient(.success(.updateProgress(0.2)))) {
+      $0.mode = .downloading(progress: 0.2)
     }
 
     store.send(.buttonTapped) {
@@ -126,13 +86,11 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       $0.alert = nil
       $0.mode = .notDownloaded
     }
-
-    await self.mainQueue.run()
   }
 
   func testDownloadFinishesWhileTryingToCancel() async {
     var downloadClient = DownloadClient.unimplemented
-    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
+    downloadClient.download = { _ in self.download.stream }
 
     let store = TestStore(
       initialState: DownloadComponentState(
@@ -141,13 +99,10 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
         url: URL(string: "https://www.pointfree.co")!
       ),
       reducer: reducer,
-      environment: DownloadComponentEnvironment(
-        downloadClient: downloadClient,
-        mainQueue: self.mainQueue.eraseToAnyScheduler()
-      )
+      environment: DownloadComponentEnvironment(downloadClient: downloadClient)
     )
 
-    store.send(.buttonTapped) {
+    let task = store.send(.buttonTapped) {
       $0.mode = .startingToDownload
     }
 
@@ -159,18 +114,19 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       )
     }
 
-    self.downloadSubject.send(.response(Data()))
-    self.downloadSubject.send(completion: .finished)
-    await self.mainQueue.advance(by: 1)
+    self.download.continuation.yield(.response(Data()))
+    self.download.continuation.finish()
     await store.receive(.downloadClient(.success(.response(Data())))) {
       $0.alert = nil
       $0.mode = .downloaded
     }
+
+    await task.finish()
   }
 
   func testDeleteDownloadFlow() {
     var downloadClient = DownloadClient.unimplemented
-    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
+    downloadClient.download = { _ in self.download.stream }
 
     let store = TestStore(
       initialState: DownloadComponentState(
@@ -179,10 +135,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
         url: URL(string: "https://www.pointfree.co")!
       ),
       reducer: reducer,
-      environment: DownloadComponentEnvironment(
-        downloadClient: downloadClient,
-        mainQueue: self.mainQueue.eraseToAnyScheduler()
-      )
+      environment: DownloadComponentEnvironment(downloadClient: downloadClient)
     )
 
     store.send(.buttonTapped) {
@@ -202,6 +155,6 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
 
 extension DownloadClient {
   static let unimplemented = Self(
-    download: { _ in .unimplemented("\(Self.self).download") }
+    download: XCTUnimplemented("\(Self.self).asyncDownload")
   )
 }

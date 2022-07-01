@@ -72,12 +72,7 @@ let cityMapReducer = Reducer<CityMapState, CityMapAction, CityMapEnvironment> {
 .downloadable(
   state: \.downloadComponent,
   action: /CityMapAction.downloadComponent,
-  environment: {
-    DownloadComponentEnvironment(
-      downloadClient: $0.downloadClient,
-      mainQueue: $0.mainQueue
-    )
-  }
+  environment: { DownloadComponentEnvironment(downloadClient: $0.downloadClient) }
 )
 
 struct CityMapRowView: View {
