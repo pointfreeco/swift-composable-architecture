@@ -126,6 +126,16 @@ import SwiftUI
     /// back into the store. If an error is thrown, the effect will complete and the error will be
     /// ignored.
     ///
+    /// This effect is handy for executing some asynchronous work that your feature doesn't
+    /// need to react to. One such example is analytics:
+    ///
+    /// ```swift
+    /// case .buttonTapped:
+    ///   return .fireAndForget {
+    ///     try await environment.analytics.track("Button Tapped")
+    ///   }
+    /// ```
+    ///
     /// - Parameters:
     ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
     ///     `Task.currentPriority`.

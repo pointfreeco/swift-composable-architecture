@@ -1,5 +1,5 @@
 import ComposableArchitecture
-import SwiftUI
+@preconcurrency import SwiftUI
 
 struct DownloadComponentState<ID: Equatable>: Equatable {
   var alert: AlertState<DownloadComponentAction.AlertAction>?
@@ -87,10 +87,10 @@ extension Reducer {
             return .run { [url = state.url] send in
               do {
                 for try await event in environment.downloadClient.download(url) {
-                  await send(.downloadClient(.success(event)))
+                  await send(.downloadClient(.success(event)), animation: .default)
                 }
               } catch {
-                await send(.downloadClient(.failure(error)))
+                await send(.downloadClient(.failure(error)), animation: .default)
               }
             }
             .cancellable(id: state.id)
@@ -123,13 +123,19 @@ extension Reducer {
 
 private let deleteAlert = AlertState(
   title: TextState("Do you want to delete this map from your offline storage?"),
-  primaryButton: .destructive(TextState("Delete"), action: .send(.deleteButtonTapped)),
+  primaryButton: .destructive(
+    TextState("Delete"),
+    action: .send(.deleteButtonTapped, animation: .default)
+  ),
   secondaryButton: nevermindButton
 )
 
 private let stopAlert = AlertState(
   title: TextState("Do you want to stop downloading this map?"),
-  primaryButton: .destructive(TextState("Stop"), action: .send(.stopButtonTapped)),
+  primaryButton: .destructive(
+    TextState("Stop"),
+    action: .send(.stopButtonTapped, animation: .default)
+  ),
   secondaryButton: nevermindButton
 )
 
