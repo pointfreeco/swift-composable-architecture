@@ -418,7 +418,7 @@ public final class Store<State, Action> {
       }
     }
 
-    return Task { @MainActor in
+    return Task { //@MainActor in
       await withTaskCancellationHandler {
         var index = tasks.wrappedValue.startIndex
         while index < tasks.wrappedValue.endIndex {

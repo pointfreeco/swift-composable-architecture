@@ -208,7 +208,7 @@
       self.state = initialState
       self.toLocalState = toLocalState
 
-      self.store = Store(
+      self.store = Store.unchecked(
         initialState: initialState,
         reducer: Reducer<State, TestAction, Void> { [unowned self] state, action, _ in
           let effects: Effect<Action, Never>
@@ -240,7 +240,7 @@
     /// Asserts all in-flight effects have finished.
     ///
     /// - Parameter nanoseconds: The amount of time to wait before asserting.
-    @MainActor
+//    @MainActor
     public func finish(
       timeout nanoseconds: UInt64 = NSEC_PER_MSEC,
       file: StaticString = #file,
@@ -570,7 +570,7 @@
     ///     store. The mutable state sent to this closure must be modified to match the state of the
     ///     store after processing the given action. Do not provide a closure if no change is
     ///     expected.
-    @MainActor
+//    @MainActor
     public func receive(
       _ expectedAction: Action,
       timeout nanoseconds: UInt64 = NSEC_PER_MSEC,
@@ -777,6 +777,7 @@ final class Executor: SerialExecutor {
 
   var jobs: [JobRef] = []
   var work: (() -> Void)?
+  let lock = NSRecursiveLock()
 
   func enqueue(_ job: UnownedJob) {
     job._runSynchronously(on: self.asUnownedSerialExecutor())
@@ -806,11 +807,22 @@ final class Executor: SerialExecutor {
       executor.enqueue(job)
     }
     self.work?()
-    while !self.jobs.isEmpty {
-      _swiftJobRun(
+    while true {
+      self.lock.lock()
+      if self.jobs.isEmpty {
+        self.lock.unlock()
+        break
+      }
+       _swiftJobRun(
         unsafeBitCast(self.jobs.removeFirst(), to: UnownedJob.self), self.asUnownedSerialExecutor()
       )
+      self.lock.unlock()
     }
+//    while self.lock.sync(work: { !self.jobs.isEmpty }) {
+//      _swiftJobRun(
+//        unsafeBitCast(self.lock.sync { self.jobs.removeFirst() }, to: UnownedJob.self), self.asUnownedSerialExecutor()
+//      )
+//    }
   }
 
   func join() {

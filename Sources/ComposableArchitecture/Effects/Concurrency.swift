@@ -56,7 +56,7 @@ import SwiftUI
     ) -> Self {
       Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
         let subject = PassthroughSubject<Output, Failure>()
-        let task = Task(priority: priority) { @MainActor in
+        let task = Task(priority: priority) { // @MainActor in
           do {
             try Task.checkCancellation()
             let output = await operation()
@@ -112,7 +112,7 @@ import SwiftUI
       _ operation: @escaping @Sendable (_ send: Send<Output>) async -> Void
     ) -> Self {
       .run { subscriber in
-        let task = Task(priority: priority) { @MainActor in
+        let task = Task(priority: priority) { //in
           await operation(Send(send: { subscriber.send($0) }))
           subscriber.send(completion: .finished)
         }
@@ -174,7 +174,7 @@ import SwiftUI
   /// effects that can emit any number of times in an asynchronous context.
   ///
   /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
-  @MainActor
+//  @MainActor
   public struct Send<Action> {
     fileprivate let send: @Sendable (Action) -> Void
 

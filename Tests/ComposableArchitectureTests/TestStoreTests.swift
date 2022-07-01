@@ -256,7 +256,6 @@ class TestStoreTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testSerialExecutor() async {
     struct State: Equatable {
       var count = 0
@@ -265,43 +264,44 @@ class TestStoreTests: XCTestCase {
       case tap
       case response(Int)
     }
-    let store = TestStore(
-      initialState: State(),
-      reducer: Reducer<State, Action, Void> { state, action, _ in
-        switch action {
-        case .tap:
-          return .run { send in
-            await withTaskGroup(of: Void.self) { group in
-              for index in 1...5 {
-                group.addTask {
-                  await send(.response(index))
+    withSerialExecutor {
+      let store = TestStore(
+        initialState: State(),
+        reducer: Reducer<State, Action, Void> { state, action, _ in
+          switch action {
+          case .tap:
+            return .run { send in
+              await withTaskGroup(of: Void.self) { group in
+                for index in 1...5 {
+                  group.addTask {
+                    await send(.response(index))
+                  }
                 }
               }
             }
+          case let .response(value):
+            state.count += value
+            return .none
           }
-        case let .response(value):
-          state.count += value
-          return .none
-        }
-      },
-      environment: ()
-    )
-
-    store.send(.tap)
-    await store.receive(.response(1)) {
-      $0.count = 1
-    }
-    await store.receive(.response(2)) {
-      $0.count = 3
-    }
-    await store.receive(.response(3)) {
-      $0.count = 6
-    }
-    await store.receive(.response(4)) {
-      $0.count = 10
-    }
-    await store.receive(.response(5)) {
-      $0.count = 15
+        },
+        environment: ()
+      )
+      store.send(.tap)
+      await store.receive(.response(1)) {
+        $0.count = 1
+      }
+      await store.receive(.response(2)) {
+        $0.count = 3
+      }
+      await store.receive(.response(3)) {
+        $0.count = 6
+      }
+      await store.receive(.response(4)) {
+        $0.count = 10
+      }
+      await store.receive(.response(5)) {
+        $0.count = 15
+      }
     }
   }
 }
