@@ -484,6 +484,7 @@ The following translations of this README have been contributed by members of th
 * [Italian](https://gist.github.com/Bellaposa/5114e6d4d55fdb1388e8186886d48958)
 * [Korean](https://gist.github.com/pilgwon/ea05e2207ab68bdd1f49dff97b293b17)
 * [Simplified Chinese](https://gist.github.com/sh3l6orrr/10c8f7c634a892a9c37214f3211242ad)
+* [Japanese](https://gist.github.com/kalupas226/bdf577e4a7066377ea0a8aaeebcad428)
 
 If you'd like to contribute a translation, please [open a PR](https://github.com/pointfreeco/swift-composable-architecture/edit/main/README.md) with a link to a [Gist](https://gist.github.com)!
 
