@@ -77,7 +77,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
           let request = SFSpeechAudioBufferRecognitionRequest()
           request.shouldReportPartialResults = true
           request.requiresOnDeviceRecognition = false
-          for try await action in await environment.speechClient.recognitionTask(request) {
+          for try await action in environment.speechClient.recognitionTask(request) {
             await send(.speech(.success(action)))
           }
         } catch {

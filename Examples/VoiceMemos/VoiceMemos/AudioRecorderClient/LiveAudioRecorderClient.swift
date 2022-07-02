@@ -6,18 +6,10 @@ extension AudioRecorderClient {
   static var live: Self {
     let audioRecorder = AudioRecorder()
     return Self(
-      currentTime: {
-        await audioRecorder.currentTime
-      },
-      requestRecordPermission: {
-        await audioRecorder.requestPermission()
-      },
-      startRecording: { url in
-        try await audioRecorder.start(url: url)
-      },
-      stopRecording: {
-        await audioRecorder.stop()
-      }
+      currentTime: { await audioRecorder.currentTime },
+      requestRecordPermission: { await audioRecorder.requestPermission() },
+      startRecording: { url in try await audioRecorder.start(url: url) },
+      stopRecording: { await audioRecorder.stop() }
     )
   }
 }
