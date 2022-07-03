@@ -5,15 +5,9 @@
 ### Creating an Effect
 
 - ``none``
-- ``init(value:)``
-- ``init(error:)``
-- ``run(_:)``
-- ``future(_:)``
-- ``catching(_:)``
-- ``result(_:)``
-- ``fireAndForget(_:)``
+- ``task(priority:operation:)-4llhw``
+- ``run(priority:_:)``
 - ``fireAndForget(priority:_:)``
-- ``task(priority:operation:)-7lrdd``
 
 ### Cancellation
 
@@ -30,18 +24,6 @@
 <!--- ``map(_:)``-->
 - ``merge(_:)-3al9f``
 - ``merge(_:)-4n451``
-- ``concatenate(_:)-3awnj``
-- ``concatenate(_:)-8x6rz``
-
-### Timing
-
-- ``deferred(for:scheduler:options:)``
-- ``debounce(id:for:scheduler:options:)-8x633``
-- ``debounce(id:for:scheduler:options:)-76yye``
-- ``throttle(id:for:scheduler:latest:)-9kwd5``
-- ``throttle(id:for:scheduler:latest:)-5jfpx``
-- ``timer(id:every:tolerance:on:options:)-4exe6``
-- ``timer(id:every:tolerance:on:options:)-7po0d``
 
 ### Testing
 
@@ -50,14 +32,6 @@
 ### SwiftUI Integration
 
 - ``animation(_:)``
-
-### Combine Integration
-
-- ``receive(subscriber:)``
-- ``init(_:)``
-- ``upstream``
-- ``Subscriber``
-<!--TODO: Can't currently document `Publisher` extensions-->
 
 ### Deprecations
 

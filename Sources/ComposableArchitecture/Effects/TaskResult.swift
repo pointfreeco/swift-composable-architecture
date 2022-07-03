@@ -100,22 +100,20 @@ public enum TaskResult<Success: Sendable>: Sendable {
   case success(Success)
   case failure(Error)
 
-  #if canImport(_Concurrency) && compiler(>=5.5.2)
-    /// Creates a new task result by evaluating an async throwing closure, capturing the returned
-    /// value as a success, or any thrown error as a failure.
-    ///
-    /// This initializer is most often used in an async effect being returned from a reducer. See
-    /// the documentation for ``TaskResult`` for a concrete example.
-    ///
-    /// - Parameter body: An async, throwing closure.
-    public init(catching body: @Sendable () async throws -> Success) async {
-      do {
-        self = .success(try await body())
-      } catch {
-        self = .failure(error)
-      }
+  /// Creates a new task result by evaluating an async throwing closure, capturing the returned
+  /// value as a success, or any thrown error as a failure.
+  ///
+  /// This initializer is most often used in an async effect being returned from a reducer. See the
+  /// documentation for ``TaskResult`` for a concrete example.
+  ///
+  /// - Parameter body: An async, throwing closure.
+  public init(catching body: @Sendable () async throws -> Success) async {
+    do {
+      self = .success(try await body())
+    } catch {
+      self = .failure(error)
     }
-  #endif
+  }
 
   /// Returns the success value as a throwing property.
   public var value: Success {

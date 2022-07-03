@@ -9,7 +9,7 @@
 ### Testing a Reducer
 
 - ``send(_:_:file:line:)``
-- ``receive(_:_:file:line:)``
+- ``receive(_:timeout:_:file:line:)``
 
 ### Controlling Dependencies
 

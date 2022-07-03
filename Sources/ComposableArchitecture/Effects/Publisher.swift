@@ -203,7 +203,7 @@ extension Effect {
   @available(tvOS, deprecated: 9999.0, message: "Use the async version of 'Effect.run', instead")
   @available(watchOS, deprecated: 9999.0, message: "Use the async version of 'Effect.run', instead")
   public static func run(
-    _ work: @escaping @Sendable (Effect.Subscriber) -> Cancellable
+    _ work: @escaping (Effect.Subscriber) -> Cancellable
   ) -> Self {
     AnyPublisher.create(work).eraseToEffect()
   }

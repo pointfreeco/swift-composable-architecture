@@ -223,40 +223,38 @@ final class EffectTests: XCTestCase {
     }
   }
 
-  #if canImport(_Concurrency) && compiler(>=5.5.2)
-    func testTask() {
-      let expectation = self.expectation(description: "Complete")
-      var result: Int?
-      Effect<Int, Never>.task { @MainActor in
-        expectation.fulfill()
-        return 42
+  func testTask() {
+    let expectation = self.expectation(description: "Complete")
+    var result: Int?
+    Effect<Int, Never>.task { @MainActor in
+      expectation.fulfill()
+      return 42
+    }
+    .sink(receiveValue: { result = $0 })
+    .store(in: &self.cancellables)
+    self.wait(for: [expectation], timeout: 1)
+    XCTAssertNoDifference(result, 42)
+  }
+
+  func testCancellingTask_Infallible() {
+    @Sendable func work() async -> Int {
+      do {
+        try await Task.sleep(nanoseconds: NSEC_PER_MSEC)
+        XCTFail()
+      } catch {
       }
-      .sink(receiveValue: { result = $0 })
+      return 42
+    }
+
+    Effect<Int, Never>.task { await work() }
+      .sink(
+        receiveCompletion: { _ in XCTFail() },
+        receiveValue: { _ in XCTFail() }
+      )
       .store(in: &self.cancellables)
-      self.wait(for: [expectation], timeout: 1)
-      XCTAssertNoDifference(result, 42)
-    }
 
-    func testCancellingTask_Infallible() {
-      @Sendable func work() async -> Int {
-        do {
-          try await Task.sleep(nanoseconds: NSEC_PER_MSEC)
-          XCTFail()
-        } catch {
-        }
-        return 42
-      }
+    self.cancellables = []
 
-      Effect<Int, Never>.task { await work() }
-        .sink(
-          receiveCompletion: { _ in XCTFail() },
-          receiveValue: { _ in XCTFail() }
-        )
-        .store(in: &self.cancellables)
-
-      self.cancellables = []
-
-      _ = XCTWaiter.wait(for: [.init()], timeout: 1.1)
-    }
-  #endif
+    _ = XCTWaiter.wait(for: [.init()], timeout: 1.1)
+  }
 }

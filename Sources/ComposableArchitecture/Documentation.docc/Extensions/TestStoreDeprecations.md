@@ -10,6 +10,7 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ### Testing a Reducer
 
+- ``receive(_:timeout:_:file:line:)``
 - ``TestStore/assert(_:file:line:)-707lb``
 - ``TestStore/assert(_:file:line:)-4gff7``
 - ``TestStore/Step``
