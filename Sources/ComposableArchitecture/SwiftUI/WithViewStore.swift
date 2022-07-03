@@ -104,7 +104,7 @@ extension WithViewStore: View where Content: View {
     )
   }
 
-  public var body: Content {
+  public var body: some View {
     self._body
   }
 }
@@ -177,6 +177,7 @@ extension WithViewStore: AccessibilityRotorContent where Content: AccessibilityR
       content: content
     )
   }
+
   public var body: some AccessibilityRotorContent {
     self._body
   }
@@ -246,6 +247,7 @@ extension WithViewStore: Commands where Content: Commands {
       content: content
     )
   }
+
   public var body: some Commands {
     self._body
   }
@@ -318,7 +320,7 @@ extension WithViewStore: Scene where Content: Scene {
     )
   }
 
-  public var body: Content {
+  public var body: some Scene {
     self._body
   }
 }
