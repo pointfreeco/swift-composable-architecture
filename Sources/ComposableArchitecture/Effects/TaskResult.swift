@@ -115,15 +115,76 @@ public enum TaskResult<Success: Sendable>: Sendable {
     }
   }
 
+  /// Transforms a `Result` into a `TaskResult`, erasing its `Failure` to `Error`.
+  ///
+  /// - Parameter result: A result.
+  public init<Failure>(_ result: Result<Success, Failure>) {
+    switch result {
+    case let .success(value):
+      self = .success(value)
+    case let .failure(error):
+      self = .failure(error)
+    }
+  }
+
   /// Returns the success value as a throwing property.
   public var value: Success {
     get throws {
       switch self {
-      case let .success(success):
-        return success
+      case let .success(value):
+        return value
       case let .failure(error):
         throw error
       }
+    }
+  }
+
+  /// Returns a new task result, mapping any success value using the given transformation.
+  ///
+  /// Like `map` on `Result`, `Optional`, and many other types.
+  ///
+  /// - Parameter transform: A closure that takes the success value of this instance.
+  /// - Returns: A `TaskResult` instance with the result of evaluating `transform` as the new
+  ///   success value if this instance represents a success.
+  public func map<NewSuccess>(_ transform: (Success) -> NewSuccess) -> TaskResult<NewSuccess> {
+    switch self {
+    case let .success(value):
+      return .success(transform(value))
+    case let .failure(error):
+      return .failure(error)
+    }
+  }
+
+  /// Returns a new task result, mapping any success value using the given transformation and
+  /// unwrapping the produced result.
+  ///
+  /// Like `flatMap` on `Result`, `Optional`, and many other types.
+  ///
+  /// - Parameter transform: A closure that takes the success value of the instance.
+  /// - Returns: A `TaskResult` instance, either from the closure or the previous `.failure`.
+  public func flatMap<NewSuccess>(
+    _ transform: (Success) -> TaskResult<NewSuccess>
+  ) -> TaskResult<NewSuccess> {
+    switch self {
+    case let .success(value):
+      return transform(value)
+    case let .failure(error):
+      return .failure(error)
+    }
+  }
+}
+
+// TODO: Should there also be a failable initializer that preserves the `Failure` type?
+extension Result where Failure == Error {
+  /// Transforms a `TaskResult` into a `Result`.
+  ///
+  /// - Parameter result: A task result.
+  init(_ result: TaskResult<Success>) {
+    switch result {
+    case let .success(value):
+      self = .success(value)
+    case let .failure(error):
+      self = .failure(error)
     }
   }
 }
@@ -167,6 +228,15 @@ extension TaskResult: Hashable where Success: Hashable {
         hasher.combine(failure as NSError)
       }
     }
+  }
+}
+
+extension TaskResult {
+  // TODO: Is this worth shipping?
+  // NB: For those that try to interface with `TaskResult` using `Result`'s old API.
+  @available(*, unavailable, renamed: "value")
+  public func get() throws -> Success {
+    try self.value
   }
 }
 
