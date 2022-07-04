@@ -1,5 +1,42 @@
 import Combine
 
+public func withCancellation<T: Sendable>(
+  id: AnyHashable,
+  cancelInFlight: Bool = false,
+  resultType: T.Type = T.self,
+  operation: @Sendable @escaping () async throws -> T
+) async rethrows -> T {
+  cancellablesLock.lock()
+  defer { cancellablesLock.unlock() }
+  let id = CancelToken(id: id)
+  if cancelInFlight {
+    cancellationCancellables[id]?.forEach { $0.cancel() }
+  }
+  let task = Task { try await operation() }
+  cancellationCancellables[id, default: []].insert(
+    AnyCancellable(task.cancel)
+  )
+  do {
+    return try await task.cancellableValue
+  } catch {
+    return try Result<T, Error>.failure(error)._rethrowGet()
+  }
+}
+
+public func withCancellation<T: Sendable>(
+  id: Any.Type,
+  cancelInFlight: Bool = false,
+  resultType: T.Type = T.self,
+  operation: @Sendable @escaping () async throws -> T
+) async rethrows -> T {
+  try await withCancellation(
+    id: ObjectIdentifier(id),
+    cancelInFlight: cancelInFlight,
+    resultType: resultType,
+    operation: operation
+  )
+}
+
 extension Effect {
   /// Turns an effect into one that is capable of being canceled.
   ///
@@ -145,3 +182,22 @@ struct CancelToken: Hashable {
 
 var cancellationCancellables: [CancelToken: Set<AnyCancellable>] = [:]
 let cancellablesLock = NSRecursiveLock()
+
+@rethrows
+private protocol _ErrorMechanism {
+  associatedtype Output
+  func get() throws -> Output
+}
+
+extension _ErrorMechanism {
+  internal func _rethrowError() rethrows -> Never {
+    _ = try _rethrowGet()
+    fatalError()
+  }
+
+  internal func _rethrowGet() rethrows -> Output {
+    return try get()
+  }
+}
+
+extension Result: _ErrorMechanism {}
