@@ -37,6 +37,18 @@ public func withCancellation<T: Sendable>(
   )
 }
 
+extension Task where Failure == Never {
+  public static func cancel(id: AnyHashable) async {
+    cancellablesLock.lock()
+    defer { cancellablesLock.unlock() }
+    cancellationCancellables[.init(id: id)]?.forEach { $0.cancel() }
+  }
+
+  public static func cancel(id: Any.Type) async {
+    await self.cancel(id: ObjectIdentifier(id))
+  }
+}
+
 extension Effect {
   /// Turns an effect into one that is capable of being canceled.
   ///
