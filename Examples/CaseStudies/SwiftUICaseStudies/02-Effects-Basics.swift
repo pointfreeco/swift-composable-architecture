@@ -22,7 +22,7 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct EffectsBasicsState: Equatable {
-  var count = 0
+  var count = 50_000
   var isNumberFactRequestInFlight = false
   var isTimerRunning = false
   var nthPrimeProgress: Double?
@@ -33,6 +33,8 @@ enum EffectsBasicsAction: Equatable {
   case decrementButtonTapped
   case decrementDelayResponse
   case incrementButtonTapped
+  case onAppear
+  case onDisappear
   case nthPrime(NthPrimeAction)
   case nthPrimeButtonTapped
   case numberFactButtonTapped
@@ -60,6 +62,7 @@ let effectsBasicsReducer = Reducer<
   EffectsBasicsEnvironment
 > { state, action, environment in
   enum DelayID {}
+  enum NthPrimeID {}
 
   switch action {
   case .decrementButtonTapped:
@@ -88,21 +91,15 @@ let effectsBasicsReducer = Reducer<
     ? .cancel(id: DelayID.self)
     : .none
 
+  case .onAppear:
+    return nthPrime(number: state.count)
+      .cancellable(id: NthPrimeID.self)
+
+  case .onDisappear:
+    return .cancel(id: NthPrimeID.self)
+
   case .nthPrimeButtonTapped:
-    return .run { [count = state.count] send in
-      var primeCount = 0
-      var prime = 2
-      while primeCount < count {
-        defer { prime += 1 }
-        if isPrime(prime) {
-          primeCount += 1
-        } else if prime.isMultiple(of: 1_000) {
-          await send(.nthPrime(.progress(Double(primeCount) / Double(count))), animation: .default)
-          await Task.yield()
-        }
-      }
-      await send(.nthPrime(.response(prime - 1)), animation: .default)
-    }
+    return nthPrime(number: state.count)
 
   case let .nthPrime(.progress(progress)):
     state.nthPrimeProgress = progress
@@ -267,6 +264,12 @@ struct EffectsBasicsView: View {
         }
       }
       .buttonStyle(.borderless)
+      .task {
+        await viewStore.send(.onAppear)
+      }
+//      .onDisappear {
+//        viewStore.send(.onDisappear)
+//      }
     }
     .navigationBarTitle("Effects")
   }
@@ -346,3 +349,19 @@ extension Scheduler {
   }
 }
 
+func nthPrime(number: Int) -> Effect<EffectsBasicsAction, Never> {
+  .run { send in
+    var primeCount = 0
+    var prime = 2
+    while primeCount < number {
+      defer { prime += 1 }
+      if isPrime(prime) {
+        primeCount += 1
+      } else if prime.isMultiple(of: 1_000) {
+        await send(.nthPrime(.progress(Double(primeCount) / Double(number))), animation: .default)
+        await Task.yield()
+      }
+    }
+    await send(.nthPrime(.response(prime - 1)), animation: .default)
+  }
+}
