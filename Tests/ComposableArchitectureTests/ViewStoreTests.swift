@@ -2,6 +2,7 @@ import Combine
 import ComposableArchitecture
 import XCTest
 
+@MainActor
 final class ViewStoreTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
@@ -231,6 +232,59 @@ final class ViewStoreTests: XCTestCase {
     }
     self.wait(for: [expectation], timeout: 1)
   }
+
+  func testAsyncSend() async throws {
+    enum Action { case tap, response(Int) }
+    let store = Store(
+      initialState: 0,
+      reducer: Reducer<Int, Action, Void> { state, action, _ in
+        switch action {
+        case .tap:
+          return .task {
+            return .response(42)
+          }
+        case let .response(value):
+          state = value
+          return .none
+        }
+      },
+      environment: ()
+    )
+
+    let viewStore = ViewStore(store)
+
+    XCTAssertEqual(viewStore.state, 0)
+    await viewStore.send(.tap).finish()
+    XCTAssertEqual(viewStore.state, 42)
+  }
+
+  func testAsyncSendCancellation() async throws {
+    enum Action { case tap, response(Int) }
+    let store = Store(
+      initialState: 0,
+      reducer: Reducer<Int, Action, Void> { state, action, _ in
+        switch action {
+        case .tap:
+          return .task {
+            try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+            return .response(42)
+          }
+        case let .response(value):
+          state = value
+          return .none
+        }
+      },
+      environment: ()
+    )
+
+    let viewStore = ViewStore(store)
+
+    XCTAssertEqual(viewStore.state, 0)
+    let task = viewStore.send(.tap)
+    await task.cancel()
+    try await Task.sleep(nanoseconds: NSEC_PER_MSEC)
+    XCTAssertEqual(viewStore.state, 0)
+  }
 }
 
 private struct State: Equatable {
@@ -253,5 +307,3 @@ private struct Substate: Equatable {
 
 private var equalityChecks = 0
 private var subEqualityChecks = 0
-
-// TODO: write tests for viewStore.send that use the StoreTask
