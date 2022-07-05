@@ -33,14 +33,13 @@ func runtimeWarning(
   _ args: @autoclosure () -> [CVarArg] = []
 ) {
   #if DEBUG
-    let message = message()
     if _XCTIsTesting {
-      XCTFail(String(format: "\(message)", arguments: args()))
+      XCTFail(String(format: "\(message())", arguments: args()))
     } else {
       unsafeBitCast(
         os_log as (OSLogType, UnsafeRawPointer, OSLog, StaticString, CVarArg...) -> Void,
         to: ((OSLogType, UnsafeRawPointer, OSLog, StaticString, [CVarArg]) -> Void).self
-      )(.fault, rw.dso, rw.log, message, args())
+      )(.fault, rw.dso, rw.log, message(), args())
     }
   #endif
 }
