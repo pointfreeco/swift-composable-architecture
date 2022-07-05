@@ -19,7 +19,7 @@ struct AppState: Equatable {
 enum AppAction: Equatable {
   case dismissAuthorizationStateAlert
   case recordButtonTapped
-  case speech(TaskResult<SpeechClient.Action>)
+  case speech(TaskResult<SpeechRecognitionResult>)
   case speechRecognizerAuthorizationStatusResponse(SFSpeechRecognizerAuthorizationStatus)
 }
 
@@ -59,10 +59,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     )
     return .none
 
-  case .speech(.success(.availabilityDidChange)):
-    return .none
-
-  case let .speech(.success(.taskResult(result))):
+  case let .speech(.success(result)):
     state.transcribedText = result.bestTranscription.formattedString
     return result.isFinal ? .cancel(id: CancelId.self) : .none
 

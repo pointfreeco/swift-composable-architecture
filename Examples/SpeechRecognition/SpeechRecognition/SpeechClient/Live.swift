@@ -8,10 +8,6 @@ extension SpeechClient {
       AsyncThrowingStream { continuation in
         let audioEngine = AVAudioEngine()
         let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))!
-        let speechRecognizerDelegate = Delegate { available in
-          continuation.yield(.availabilityDidChange(isAvailable: available))
-        }
-        speechRecognizer.delegate = speechRecognizerDelegate
 
         let audioSession = AVAudioSession.sharedInstance()
         do {
@@ -25,7 +21,7 @@ extension SpeechClient {
         let recognitionTask = speechRecognizer.recognitionTask(with: request) { result, error in
           switch (result, error) {
           case let (.some(result), _):
-            continuation.yield(.taskResult(SpeechRecognitionResult(result)))
+            continuation.yield(SpeechRecognitionResult(result))
           case (_, .some):
             continuation.finish(throwing: Failure.taskError)
           case (.none, .none):
@@ -35,7 +31,6 @@ extension SpeechClient {
 
         continuation.onTermination = { _ in
           _ = speechRecognizer
-          _ = speechRecognizerDelegate
           audioEngine.stop()
           audioEngine.inputNode.removeTap(onBus: 0)
           recognitionTask.finish()
@@ -66,18 +61,4 @@ extension SpeechClient {
       }
     }
   )
-}
-
-private final class Delegate: NSObject, Sendable, SFSpeechRecognizerDelegate {
-  let availabilityDidChange: @Sendable (Bool) -> Void
-
-  init(availabilityDidChange: @escaping @Sendable (Bool) -> Void) {
-    self.availabilityDidChange = availabilityDidChange
-  }
-
-  func speechRecognizer(
-    _ speechRecognizer: SFSpeechRecognizer, availabilityDidChange available: Bool
-  ) {
-    self.availabilityDidChange(available)
-  }
 }

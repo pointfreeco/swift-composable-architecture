@@ -27,7 +27,6 @@ struct TranscriptionSegment: Equatable {
   var confidence: Float
   var duration: TimeInterval
   var substring: String
-  var substringRange: Range<String.Index>
   var timestamp: TimeInterval
 }
 
@@ -74,10 +73,6 @@ extension TranscriptionSegment {
     self.confidence = transcriptionSegment.confidence
     self.duration = transcriptionSegment.duration
     self.substring = transcriptionSegment.substring
-    self.substringRange = Range(
-      transcriptionSegment.substringRange,
-      in: transcriptionSegment.substring
-    )!
     self.timestamp = transcriptionSegment.timestamp
   }
 }
