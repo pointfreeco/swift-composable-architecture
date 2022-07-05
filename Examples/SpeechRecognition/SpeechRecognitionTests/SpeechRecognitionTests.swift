@@ -57,7 +57,7 @@ class SpeechRecognitionTests: XCTestCase {
   }
 
   func testAllowAndRecord() async {
-    let recognitionTask = AsyncThrowingStream<SpeechClient.Action, Error>.streamWithContinuation()
+    let recognitionTask = AsyncThrowingStream<SpeechRecognitionResult, Error>.streamWithContinuation()
 
     var speechClient = SpeechClient.unimplemented
     speechClient.recognitionTask = { _ in recognitionTask.stream }
@@ -91,20 +91,20 @@ class SpeechRecognitionTests: XCTestCase {
       $0.speechRecognizerAuthorizationStatus = .authorized
     }
 
-    recognitionTask.continuation.yield(.taskResult(result))
-    await store.receive(.speech(.success(.taskResult(result)))) {
+    recognitionTask.continuation.yield(result)
+    await store.receive(.speech(.success(result))) {
       $0.transcribedText = "Hello"
     }
 
-    recognitionTask.continuation.yield(.taskResult(finalResult))
-    await store.receive(.speech(.success(.taskResult(finalResult)))) {
+    recognitionTask.continuation.yield(finalResult)
+    await store.receive(.speech(.success(finalResult))) {
       $0.transcribedText = "Hello world"
     }
     await task.cancel()
   }
 
   func testAudioSessionFailure() async {
-    let recognitionTask = AsyncThrowingStream<SpeechClient.Action, Error>.streamWithContinuation()
+    let recognitionTask = AsyncThrowingStream<SpeechRecognitionResult, Error>.streamWithContinuation()
 
     var speechClient = SpeechClient.unimplemented
     speechClient.recognitionTask = { _ in recognitionTask.stream }
@@ -133,7 +133,7 @@ class SpeechRecognitionTests: XCTestCase {
   }
 
   func testAudioEngineFailure() async {
-    let recognitionTask = AsyncThrowingStream<SpeechClient.Action, Error>.streamWithContinuation()
+    let recognitionTask = AsyncThrowingStream<SpeechRecognitionResult, Error>.streamWithContinuation()
 
     var speechClient = SpeechClient.unimplemented
     speechClient.recognitionTask = { _ in recognitionTask.stream }
