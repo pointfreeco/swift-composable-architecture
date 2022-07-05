@@ -104,7 +104,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
     return .task {
       try await environment.webSocket.send(WebSocketId.self, .string(messageToSend))
       return .sendResponse(didSucceed: true)
-    } catch: {
+    } catch: { _ in
       .sendResponse(didSucceed: false)
     }
     .cancellable(id: WebSocketId.self)

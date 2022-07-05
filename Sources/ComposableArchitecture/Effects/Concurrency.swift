@@ -48,6 +48,7 @@ extension Effect where Failure == Never {
   ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
   ///     `Task.currentPriority`.
   ///   - operation: The operation to execute.
+  ///   - catch: An error handler, invoked if the operation throws an error.
   /// - Returns: An effect wrapping the given asynchronous work.
   public static func task(
     priority: TaskPriority? = nil,
@@ -130,6 +131,7 @@ extension Effect where Failure == Never {
   ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
   ///     `Task.currentPriority`.
   ///   - operation: The operation to execute.
+  ///   - catch: An error handler, invoked if the operation throws an error.
   /// - Returns: An effect wrapping the given asynchronous work.
   public static func run(
     priority: TaskPriority? = nil,
