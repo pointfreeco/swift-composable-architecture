@@ -42,6 +42,7 @@ extension Task where Failure == Never {
     cancellablesLock.lock()
     defer { cancellablesLock.unlock() }
     cancellationCancellables[.init(id: id)]?.forEach { $0.cancel() }
+    // TODO: Should this `Task.megaYield()` for to allow for enough time to pass?
   }
 
   public static func cancel(id: Any.Type) async {

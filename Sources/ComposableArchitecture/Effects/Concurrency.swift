@@ -1,4 +1,4 @@
-@preconcurrency import Combine
+import Combine
 import SwiftUI
 
 extension Effect where Failure == Never {
