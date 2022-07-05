@@ -24,8 +24,8 @@ extension Effect where Failure == Never {
   /// let featureReducer = Reducer<State, Action, Environment> { state, action, environment in
   ///   switch action {
   ///     case .factButtonTapped:
-  ///       return .task {
-  ///         await .factResponse(TaskResult { try await environment.numberFact(state.number) })
+  ///       return .task { [number = state.number] in
+  ///         await .factResponse(TaskResult { try await environment.numberFact(number) })
   ///       }
   ///
   ///     case .factResponse(.success(fact)):
@@ -39,10 +39,12 @@ extension Effect where Failure == Never {
   /// }
   /// ```
   ///
-  /// Note that the operation provided to ``Effect/task(priority:operation:)-4llhw`` cannot throw
-  /// and so you must either handle errors directly in the closure or use the catching initializer
-  /// of ``TaskResult/init(catching:)`` to package the response into a ``TaskResult`` and send it
-  /// back into the system via an action.
+  /// The above code sample makes use of ``TaskResult`` in order to automatically bundle the success
+  /// or failure of the `numberFact` endpoint into a single type that can be sent in an action.
+  ///
+  /// The closure provided to ``Effect/task(priority:operation:catch:file:fileID:line:)`` is allowed
+  /// to throw, but any non-cancellation errors thrown will cause a runtime warning when run in the
+  /// simulator or on a device, and will cause a test failure in tests.
   ///
   /// - Parameters:
   ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
@@ -127,6 +129,10 @@ extension Effect where Failure == Never {
   ///
   /// See ``Send`` for more information on how to use the `send` argument passed to `run`'s closure.
   ///
+  /// The closure provided to ``Effect/run(priority:_:catch:file:fileID:line:)`` is allowed
+  /// to throw, but any non-cancellation errors thrown will cause a runtime warning when run in the
+  /// simulator or on a device, and will cause a test failure in tests.
+  ///
   /// - Parameters:
   ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
   ///     `Task.currentPriority`.
@@ -195,6 +201,9 @@ extension Effect where Failure == Never {
   ///   }
   /// ```
   ///
+  /// The closure provided to ``Effect/fireAndForget(priority:_:)`` is allowed to throw, and any
+  /// error thrown will be ignored.
+  ///
   /// - Parameters:
   ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
   ///     `Task.currentPriority`.
@@ -209,7 +218,8 @@ extension Effect where Failure == Never {
   }
 }
 
-/// A type that can send actions back into the system when used from ``Effect/run(priority:_:)``.
+/// A type that can send actions back into the system when used from
+/// ``Effect/run(priority:_:catch:file:fileID:line:)``.
 ///
 /// This type implements [`callAsFunction`][callAsFunction] so that you invoke it as a function
 /// rather than calling methods on it:
