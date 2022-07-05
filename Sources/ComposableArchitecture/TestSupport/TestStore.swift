@@ -446,6 +446,7 @@
   }
 
   extension TestStore where LocalState: Equatable, Action: Equatable {
+    @MainActor
     public func receive(
       _ expectedAction: Action,
       timeout: UInt64 = NSEC_PER_SEC,

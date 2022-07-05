@@ -24,14 +24,27 @@ private let readMe = """
 struct EffectsBasicsState: Equatable {
   var count = 0
   var isNumberFactRequestInFlight = false
+  var isTimerRunning = false
+  var nthPrimeProgress: Double?
   var numberFact: String?
 }
 
 enum EffectsBasicsAction: Equatable {
   case decrementButtonTapped
+  case decrementDelayResponse
   case incrementButtonTapped
+  case nthPrime(NthPrimeAction)
+  case nthPrimeButtonTapped
   case numberFactButtonTapped
   case numberFactResponse(Result<String, FactClient.Failure>)
+  case startTimerButtonTapped
+  case stopTimerButtonTapped
+  case timerTick
+
+  enum NthPrimeAction: Equatable {
+    case progress(Double)
+    case response(Int)
+  }
 }
 
 struct EffectsBasicsEnvironment {
@@ -46,15 +59,58 @@ let effectsBasicsReducer = Reducer<
   EffectsBasicsAction,
   EffectsBasicsEnvironment
 > { state, action, environment in
+  enum DelayID {}
+
   switch action {
   case .decrementButtonTapped:
     state.count -= 1
     state.numberFact = nil
+    return state.count >= 0
+    ? .none
+    : .task {
+//      try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
+      print("Task started")
+      try? await environment.mainQueue.sleep(for: .seconds(1))
+      return .decrementDelayResponse
+    }
+    .cancellable(id: DelayID.self)
+
+  case .decrementDelayResponse:
+    if state.count < 0 {
+      state.count += 1
+    }
     return .none
 
   case .incrementButtonTapped:
     state.count += 1
     state.numberFact = nil
+    return state.count >= 0
+    ? .cancel(id: DelayID.self)
+    : .none
+
+  case .nthPrimeButtonTapped:
+    return .run { [count = state.count] send in
+      var primeCount = 0
+      var prime = 2
+      while primeCount < count {
+        defer { prime += 1 }
+        if isPrime(prime) {
+          primeCount += 1
+        } else if prime.isMultiple(of: 1_000) {
+          await send(.nthPrime(.progress(Double(primeCount) / Double(count))), animation: .default)
+          await Task.yield()
+        }
+      }
+      await send(.nthPrime(.response(prime - 1)), animation: .default)
+    }
+
+  case let .nthPrime(.progress(progress)):
+    state.nthPrimeProgress = progress
+    return .none
+
+  case let .nthPrime(.response(answer)):
+    state.numberFact = "The \(state.count)th prime is \(answer)."
+    state.nthPrimeProgress = nil
     return .none
 
   case .numberFactButtonTapped:
@@ -89,7 +145,52 @@ let effectsBasicsReducer = Reducer<
     // NB: This is where we could handle the error is some way, such as showing an alert.
     state.isNumberFactRequestInFlight = false
     return .none
+
+  case .startTimerButtonTapped:
+    state.isTimerRunning = true
+
+    return .run { send in
+      var count = 0
+      while true {
+        try? await environment.mainQueue.sleep(
+          for: .milliseconds(max(10, 1000 - count * 50))
+        )
+        await send(.timerTick)
+        count += 1
+      }
+    }
+    .cancellable(id: TimerID.self)
+
+
+    return .run { send in
+      while true {
+        try await environment.mainQueue.sleep(for: .seconds(1))
+        await send(.timerTick)
+      }
+    }
+    .cancellable(id: TimerID.self)
+
+  case .stopTimerButtonTapped:
+    state.isTimerRunning = false
+    return .cancel(id: TimerID.self)
+
+  case .timerTick:
+    state.count += 1
+    return .none
   }
+
+  enum TimerID {}
+}
+.debug()
+
+
+private func isPrime(_ p: Int) -> Bool {
+  if p <= 1 { return false }
+  if p <= 3 { return true }
+  for i in 2...Int(sqrtf(Float(p))) {
+    if p % i == 0 { return false }
+  }
+  return true
 }
 
 // MARK: - Feature view
@@ -132,6 +233,32 @@ struct EffectsBasicsView: View {
         }
 
         Section {
+          if viewStore.isTimerRunning {
+            Button("Stop timer") {
+              viewStore.send(.stopTimerButtonTapped)
+            }
+            .frame(maxWidth: .infinity)
+          } else {
+            Button("Start timer") {
+              viewStore.send(.startTimerButtonTapped)
+            }
+            .frame(maxWidth: .infinity)
+          }
+        }
+
+        Section {
+          Button("Compute \(viewStore.count)th prime") {
+            viewStore.send(.nthPrimeButtonTapped)
+          }
+          .frame(maxWidth: .infinity)
+
+          if let nthPrimeProgress = viewStore.nthPrimeProgress {
+            ProgressView(value: nthPrimeProgress)
+              .progressViewStyle(.linear)
+          }
+        }
+
+        Section {
           Button("Number facts provided by numbersapi.com") {
             UIApplication.shared.open(URL(string: "http://numbersapi.com")!)
           }
@@ -152,7 +279,7 @@ struct EffectsBasicsView_Previews: PreviewProvider {
     NavigationView {
       EffectsBasicsView(
         store: Store(
-          initialState: EffectsBasicsState(),
+          initialState: EffectsBasicsState(count: 50_000),
           reducer: effectsBasicsReducer,
           environment: EffectsBasicsEnvironment(
             fact: .live,
@@ -163,3 +290,59 @@ struct EffectsBasicsView_Previews: PreviewProvider {
     }
   }
 }
+
+extension Effect where Failure == Never {
+  public static func run(
+    priority: TaskPriority? = nil,
+    _ operation: @escaping @Sendable (_ send: Send<Output>) async throws -> Void,
+    catching: (@Sendable (Error, Send<Output>) async -> Void)? = nil
+  ) -> Self {
+    .run { subscriber in
+      let task = Task(priority: priority) { @MainActor in
+        let send = Send(send: { subscriber.send($0) })
+        do {
+          try await operation(send)
+        } catch {
+          // TODO: runtimeWarning if `catching` is nil and error is not CancellationError
+          await catching?(error, send)
+        }
+        subscriber.send(completion: .finished)
+      }
+      return AnyCancellable {
+        task.cancel()
+      }
+    }
+  }
+}
+
+
+@MainActor
+public struct Send<Action> {
+  fileprivate let send: @Sendable (Action) -> Void
+
+  public func callAsFunction(_ action: Action) {
+    self.send(action)
+  }
+
+  public func callAsFunction(_ action: Action, animation: Animation? = nil) {
+    withAnimation(animation) {
+      self.send(action)
+    }
+  }
+}
+
+extension Send: Sendable where Action: Sendable {}
+
+extension Scheduler {
+  public func sleep(
+    for duration: SchedulerTimeType.Stride
+  ) async throws {
+    await withUnsafeContinuation { continuation in
+      self.schedule(after: self.now.advanced(by: duration)) {
+        continuation.resume()
+      }
+    }
+    try Task.checkCancellation()
+  }
+}
+

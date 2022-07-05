@@ -33,6 +33,15 @@ extension FactClient {
   )
 }
 
+private func isPrime(_ p: Int) -> Bool {
+  if p <= 1 { return false }
+  if p <= 3 { return true }
+  for i in 2...Int(sqrtf(Float(p))) {
+    if p % i == 0 { return false }
+  }
+  return true
+}
+
 #if DEBUG
   extension FactClient {
     // This is the "unimplemented" fact dependency that is useful to plug into tests that you want
