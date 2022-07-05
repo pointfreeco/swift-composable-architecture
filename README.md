@@ -482,6 +482,7 @@ The following translations of this README have been contributed by members of th
 * [French](https://gist.github.com/nikitamounier/0e93eb832cf389db12f9a69da030a2dc)
 * [Indonesian](https://gist.github.com/wendyliga/792ea9ac5cc887f59de70a9e39cc7343)
 * [Italian](https://gist.github.com/Bellaposa/5114e6d4d55fdb1388e8186886d48958)
+* [Japanese](https://gist.github.com/kalupas226/bdf577e4a7066377ea0a8aaeebcad428)
 * [Korean](https://gist.github.com/pilgwon/ea05e2207ab68bdd1f49dff97b293b17)
 * [Simplified Chinese](https://gist.github.com/sh3l6orrr/10c8f7c634a892a9c37214f3211242ad)
 
