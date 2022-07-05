@@ -1,5 +1,5 @@
 import CasePaths
-@preconcurrency import Combine
+import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 

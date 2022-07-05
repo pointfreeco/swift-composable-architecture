@@ -175,7 +175,7 @@ public enum TaskResult<Success: Sendable>: Sendable {
 }
 
 // TODO: Should there also be a failable initializer that preserves the `Failure` type?
-extension Result where Failure == Error {
+extension Result where Success: Sendable, Failure == Error {
   /// Transforms a `TaskResult` into a `Result`.
   ///
   /// - Parameter result: A task result.
