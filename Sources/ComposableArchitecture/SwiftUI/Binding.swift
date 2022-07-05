@@ -275,7 +275,8 @@ extension ViewStore where Action: BindableAction, Action.State == State {
   /// - Returns: A new binding.
   public func binding<Value: Equatable>(
     _ keyPath: WritableKeyPath<State, BindableState<Value>>,
-    file: StaticString = #fileID,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Binding<Value> {
     self.binding(
@@ -283,7 +284,7 @@ extension ViewStore where Action: BindableAction, Action.State == State {
       send: { value in
         #if DEBUG
           let debugger = BindableActionViewStoreDebugger(
-            value: value, bindableActionType: Action.self, file: file, line: line
+            value: value, bindableActionType: Action.self, file: file, fileID: fileID, line: line
           )
           let set: (inout State) -> Void = {
             $0[keyPath: keyPath].wrappedValue = value
@@ -557,13 +558,21 @@ extension Reducer where Action: BindableAction, State == Action.State {
     let value: Value
     let bindableActionType: Any.Type
     let file: StaticString
+    let fileID: StaticString
     let line: UInt
     var wasCalled = false
 
-    init(value: Value, bindableActionType: Any.Type, file: StaticString, line: UInt) {
+    init(
+      value: Value,
+      bindableActionType: Any.Type,
+      file: StaticString,
+      fileID: StaticString,
+      line: UInt
+    ) {
       self.value = value
       self.bindableActionType = bindableActionType
       self.file = file
+      self.fileID = fileID
       self.line = line
     }
 
@@ -579,10 +588,12 @@ extension Reducer where Action: BindableAction, State == Action.State {
           To fix this, invoke the "binding()" method on your feature's reducer.
           """,
           [
-            "\(self.file)",
+            "\(self.fileID)",
             self.line,
             "\(self.bindableActionType).binding(.set(_, \(self.value)))",
-          ]
+          ],
+          file: self.file,
+          line: self.line
         )
         return
       }

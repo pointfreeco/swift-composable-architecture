@@ -51,21 +51,47 @@ extension Effect where Failure == Never {
   /// - Returns: An effect wrapping the given asynchronous work.
   public static func task(
     priority: TaskPriority? = nil,
-    operation: @escaping @Sendable () async -> Output
+    operation: @escaping @Sendable () async throws -> Output,
+    catch handler: (@Sendable (Error) async -> Output)? = nil,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
   ) -> Self {
     Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
       let subject = PassthroughSubject<Output, Failure>()
       let task = Task(priority: priority) { @MainActor in
+        defer { subject.send(completion: .finished) }
         do {
           try Task.checkCancellation()
-          let output = await operation()
+          let output = try await operation()
           try Task.checkCancellation()
           subject.send(output)
-          subject.send(completion: .finished)
         } catch is CancellationError {
-          subject.send(completion: .finished)
+          return
         } catch {
-          subject.send(completion: .finished)
+          guard let handler = handler else {
+            var errorDump = ""
+            customDump(error, to: &errorDump, indent: 2)
+            runtimeWarning(
+              """
+              An 'Effect.task' returned from "%@:%d" threw an unhandled error:
+
+              %@
+
+              All non-cancellation errors must be explicitly handled via the 'catch' parameter on \
+              'Effect.task', or via a 'do' block.
+              """,
+              [
+                "\(fileID)",
+                line,
+                errorDump
+              ],
+              file: file,
+              line: line
+            )
+            return
+          }
+          await subject.send(handler(error))
         }
       }
       return subject.handleEvents(receiveCancel: task.cancel)
@@ -107,12 +133,45 @@ extension Effect where Failure == Never {
   /// - Returns: An effect wrapping the given asynchronous work.
   public static func run(
     priority: TaskPriority? = nil,
-    _ operation: @escaping @Sendable (_ send: Send<Output>) async -> Void
+    _ operation: @escaping @Sendable (Send<Output>) async throws -> Void,
+    catch handler: (@Sendable (Error, Send<Output>) async -> Void)? = nil,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
   ) -> Self {
     .run { subscriber in
       let task = Task(priority: priority) { @MainActor in
-        await operation(Send(send: { subscriber.send($0) }))
-        subscriber.send(completion: .finished)
+        defer { subscriber.send(completion: .finished) }
+        let send = Send(send: { subscriber.send($0) })
+        do {
+          try await operation(send)
+        } catch is CancellationError {
+          return
+        } catch {
+          guard let handler = handler else {
+            var errorDump = ""
+            customDump(error, to: &errorDump, indent: 2)
+            runtimeWarning(
+              """
+              An 'Effect.run' returned from "%@:%d" threw an unhandled error:
+
+              %@
+
+              All non-cancellation errors must be explicitly handled via the 'catch' parameter on \
+              'Effect.run', or via a 'do' block.
+              """,
+              [
+                "\(fileID)",
+                line,
+                errorDump
+              ],
+              file: file,
+              line: line
+            )
+            return
+          }
+          await handler(error, send)
+        }
       }
       return AnyCancellable {
         task.cancel()

@@ -73,16 +73,14 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     switch status {
     case .authorized:
       return .run { send in
-        do {
-          let request = SFSpeechAudioBufferRecognitionRequest()
-          request.shouldReportPartialResults = true
-          request.requiresOnDeviceRecognition = false
-          for try await action in environment.speechClient.recognitionTask(request) {
-            await send(.speech(.success(action)))
-          }
-        } catch {
-          await send(.speech(.failure(error)))
+        let request = SFSpeechAudioBufferRecognitionRequest()
+        request.shouldReportPartialResults = true
+        request.requiresOnDeviceRecognition = false
+        for try await action in environment.speechClient.recognitionTask(request) {
+          await send(.speech(.success(action)))
         }
+      } catch: { error, send in
+        await send(.speech(.failure(error)))
       }
 
     case .denied:

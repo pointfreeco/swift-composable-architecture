@@ -102,12 +102,10 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
     let messageToSend = state.messageToSend
     state.messageToSend = ""
     return .task {
-      do {
-        try await environment.webSocket.send(WebSocketId.self, .string(messageToSend))
-        return .sendResponse(didSucceed: true)
-      } catch {
-        return .sendResponse(didSucceed: false)
-      }
+      try await environment.webSocket.send(WebSocketId.self, .string(messageToSend))
+      return .sendResponse(didSucceed: true)
+    } catch: {
+      .sendResponse(didSucceed: false)
     }
     .cancellable(id: WebSocketId.self)
 

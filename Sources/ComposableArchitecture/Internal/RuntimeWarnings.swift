@@ -30,7 +30,9 @@
 @inline(__always)
 func runtimeWarning(
   _ message: @autoclosure () -> StaticString,
-  _ args: @autoclosure () -> [CVarArg] = []
+  _ args: @autoclosure () -> [CVarArg] = [],
+  file: StaticString? = nil,
+  line: UInt? = nil
 ) {
   #if DEBUG
     let message = message()
@@ -40,6 +42,10 @@ func runtimeWarning(
         to: ((OSLogType, UnsafeRawPointer, OSLog, StaticString, [CVarArg]) -> Void).self
       )(.fault, rw.dso, rw.log, message, args())
     }
-    XCTFail(String(format: "\(message)", arguments: args()))
+    if let file = file, let line = line {
+      XCTFail(String(format: "\(message)", arguments: args()), file: file, line: line)
+    } else {
+      XCTFail(String(format: "\(message)", arguments: args()))
+    }
   #endif
 }

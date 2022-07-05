@@ -55,15 +55,12 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
 
   case .rainbowButtonTapped:
     return .run { send in
-      do {
-        let colors = [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .white]
-        for (index, color) in colors.enumerated() {
-          if index > 0 {
-            try await environment.mainQueue.sleep(for: 1)
-          }
-          await send(.setColor(color), animation: .linear)
+      let colors = [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .white]
+      for (index, color) in colors.enumerated() {
+        if index > 0 {
+          try await environment.mainQueue.sleep(for: 1)
         }
-      } catch {
+        await send(.setColor(color), animation: .linear)
       }
     }
     .cancellable(id: CancelId.self)

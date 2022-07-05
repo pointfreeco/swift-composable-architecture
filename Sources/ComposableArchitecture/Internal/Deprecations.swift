@@ -13,10 +13,11 @@ extension Effect {
 }
 
 extension Effect where Failure == Error {
+  @_disfavoredOverload
   @available(
     *,
     deprecated,
-    message: "Use the non-throwing version of 'Effect.task' and catch errors explicitly"
+    message: "Use the non-failing version of 'Effect.task'"
   )
   public static func task(
     priority: TaskPriority? = nil,
@@ -539,7 +540,8 @@ extension Reducer {
     action toLocalAction: CasePath<GlobalAction, (Int, Action)>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
     breakpointOnNil: Bool = true,
-    file: StaticString = #fileID,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
     .init { globalState, globalAction, globalEnvironment in
@@ -578,11 +580,13 @@ extension Reducer {
           "ForEachStore".
           """,
           [
-            "\(file)",
+            "\(fileID)",
             line,
             debugCaseOutput(localAction),
             index,
-          ]
+          ],
+          file: file,
+          line: line
         )
         return .none
       }

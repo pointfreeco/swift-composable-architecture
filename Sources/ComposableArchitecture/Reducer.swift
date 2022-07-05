@@ -456,7 +456,8 @@ public struct Reducer<State, Action, Environment> {
     state toLocalState: CasePath<GlobalState, State>,
     action toLocalAction: CasePath<GlobalAction, Action>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
-    file: StaticString = #fileID,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
     .init { globalState, globalAction, globalEnvironment in
@@ -489,11 +490,13 @@ public struct Reducer<State, Action, Environment> {
           In SwiftUI applications, use "SwitchStore".
           """,
           [
-            "\(file)",
+            "\(fileID)",
             line,
             debugCaseOutput(localAction),
             "\(State.self)",
-          ]
+          ],
+          file: file,
+          line: line
         )
         return .none
       }
@@ -665,7 +668,8 @@ public struct Reducer<State, Action, Environment> {
   ///
   /// - Returns: A reducer that works on optional state.
   public func optional(
-    file: StaticString = #fileID,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Reducer<
     State?, Action, Environment
@@ -696,11 +700,13 @@ public struct Reducer<State, Action, Environment> {
           applications, use "IfLetStore".
           """,
           [
-            "\(file)",
+            "\(fileID)",
             line,
             debugCaseOutput(action),
             "\(State.self)",
-          ]
+          ],
+          file: file,
+          line: line
         )
         return .none
       }
@@ -749,7 +755,8 @@ public struct Reducer<State, Action, Environment> {
     state toLocalState: WritableKeyPath<GlobalState, IdentifiedArray<ID, State>>,
     action toLocalAction: CasePath<GlobalAction, (ID, Action)>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
-    file: StaticString = #fileID,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
     .init { globalState, globalAction, globalEnvironment in
@@ -785,11 +792,13 @@ public struct Reducer<State, Action, Environment> {
           "ForEachStore".
           """,
           [
-            "\(file)",
+            "\(fileID)",
             line,
             debugCaseOutput(localAction),
             "\(id)",
-          ]
+          ],
+          file: file,
+          line: line
         )
         return .none
       }
@@ -822,7 +831,8 @@ public struct Reducer<State, Action, Environment> {
     state toLocalState: WritableKeyPath<GlobalState, [Key: State]>,
     action toLocalAction: CasePath<GlobalAction, (Key, Action)>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
-    file: StaticString = #fileID,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
     .init { globalState, globalAction, globalEnvironment in
@@ -858,11 +868,13 @@ public struct Reducer<State, Action, Environment> {
           store when its state contains an element at this key.
           """,
           [
-            "\(file)",
+            "\(fileID)",
             line,
             debugCaseOutput(localAction),
             "\(key)",
-          ]
+          ],
+          file: file,
+          line: line
         )
         return .none
       }

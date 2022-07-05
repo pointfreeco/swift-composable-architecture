@@ -85,13 +85,11 @@ extension Reducer {
             state.mode = .startingToDownload
 
             return .run { [url = state.url] send in
-              do {
-                for try await event in environment.downloadClient.download(url) {
-                  await send(.downloadClient(.success(event)), animation: .default)
-                }
-              } catch {
-                await send(.downloadClient(.failure(error)), animation: .default)
+              for try await event in environment.downloadClient.download(url) {
+                await send(.downloadClient(.success(event)), animation: .default)
               }
+            } catch: { error, send in
+              await send(.downloadClient(.failure(error)), animation: .default)
             }
             .cancellable(id: state.id)
 
