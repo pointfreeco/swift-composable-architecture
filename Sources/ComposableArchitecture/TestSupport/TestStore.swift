@@ -300,6 +300,7 @@
         )
       }
       for effect in self.inFlightEffects {
+        // TODO: Add remediation item for using TestStoreTask
         XCTFail(
           """
           An effect returned for this action is still running. It must complete before the end of \
@@ -727,6 +728,7 @@
     ) async {
       await Task.megaYield()
       do {
+        // TODO: should we avoid racing tasks with task group?
         try await withThrowingTaskGroup(of: Void.self) { group in
           group.addTask { await self.rawValue.cancellableValue }
           group.addTask {
