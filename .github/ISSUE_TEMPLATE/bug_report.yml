@@ -27,7 +27,7 @@ body:
       required: true
 - type: textarea
   attributes:
-    label: Expected Behavior
+    label: Expected behavior
     description: Describe what you expected to happen.
   validations:
     required: false
@@ -39,7 +39,7 @@ body:
     required: false
 - type: textarea
   attributes:
-    label: Steps To Reproduce
+    label: Steps to reproduce
     description: |
       Explanation of how to reproduce the incorrect behavior. 
       
@@ -50,12 +50,22 @@ body:
     required: false
 - type: input
   attributes:
-    label: The Composable Architecture Version Information
+    label: The Composable Architecture version information
     description: The version of the Composable Architecture used to reproduce this issue.
     placeholder: "'0.38.0' for example, or a commit hash"
 - type: textarea
   attributes:
-    label: Swift Compiler Version Information
+    label: Swift Compiler version information
     description: The version of Swift used to reproduce this issue. 
     placeholder: Output from 'xcrun swiftc --version'
     render: shell
+- type: textarea
+  attributes:
+    label: Xcode version information
+    description: The version of Xcode used to reproduce this issue.
+    placeholder: "The version displayed from 'Xcode 〉About Xcode'"
+- type: textarea
+  attributes:
+    label: OS version
+    description: The OS used to reproduce this issue.
+    placeholder: "'iOS 15' for example"
