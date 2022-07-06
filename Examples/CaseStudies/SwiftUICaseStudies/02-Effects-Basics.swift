@@ -33,14 +33,13 @@ enum EffectsBasicsAction: Equatable {
   case decrementButtonTapped
   case decrementDelayResponse
   case incrementButtonTapped
-  case onAppear
-  case onDisappear
   case nthPrime(NthPrimeAction)
   case nthPrimeButtonTapped
   case numberFactButtonTapped
   case numberFactResponse(Result<String, FactClient.Failure>)
   case startTimerButtonTapped
   case stopTimerButtonTapped
+  case task
   case timerTick
 
   enum NthPrimeAction: Equatable {
@@ -62,7 +61,6 @@ let effectsBasicsReducer = Reducer<
   EffectsBasicsEnvironment
 > { state, action, environment in
   enum DelayID {}
-  enum NthPrimeID {}
 
   switch action {
   case .decrementButtonTapped:
@@ -91,12 +89,8 @@ let effectsBasicsReducer = Reducer<
     ? .cancel(id: DelayID.self)
     : .none
 
-  case .onAppear:
+  case .task:
     return nthPrime(number: state.count)
-      .cancellable(id: NthPrimeID.self)
-
-  case .onDisappear:
-    return .cancel(id: NthPrimeID.self)
 
   case .nthPrimeButtonTapped:
     return nthPrime(number: state.count)
@@ -265,11 +259,9 @@ struct EffectsBasicsView: View {
       }
       .buttonStyle(.borderless)
       .task {
-        await viewStore.send(.onAppear)
+        await viewStore.send(.task)
+        print("Done!")
       }
-//      .onDisappear {
-//        viewStore.send(.onDisappear)
-//      }
     }
     .navigationBarTitle("Effects")
   }
@@ -354,6 +346,9 @@ func nthPrime(number: Int) -> Effect<EffectsBasicsAction, Never> {
     var primeCount = 0
     var prime = 2
     while primeCount < number {
+      guard !Task.isCancelled
+      else { return }
+
       defer { prime += 1 }
       if isPrime(prime) {
         primeCount += 1

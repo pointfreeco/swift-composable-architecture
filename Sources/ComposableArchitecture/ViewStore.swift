@@ -57,7 +57,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
 
-  private let _send: (Action) -> Void
+  private let _send: (Action) -> Task<Void, Never>
   fileprivate let _state: CurrentValueRelay<State>
   private var viewCancellable: AnyCancellable?
 
@@ -89,6 +89,14 @@ public final class ViewStore<State, Action>: ObservableObject {
     self.objectWillChange = viewStore.objectWillChange
     self.viewCancellable = viewStore.viewCancellable
   }
+
+
+  @MainActor
+  public func send(_ action: Action) async {
+    await self._send(action).value
+  }
+
+
 
   /// A publisher that emits when state changes.
   ///
@@ -139,7 +147,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///
   /// - Parameter action: An action.
   public func send(_ action: Action) {
-    self._send(action)
+    _ = self._send(action)
   }
 
   /// Sends an action to the store with a given animation.
@@ -439,7 +447,7 @@ private struct HashableWrapper<Value>: Hashable {
       _ action: Action,
       while predicate: @escaping (State) -> Bool
     ) async {
-      self.send(action)
+      { self.send(action) }()
       await self.yield(while: predicate)
     }
 

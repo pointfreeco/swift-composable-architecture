@@ -361,11 +361,14 @@ public final class Store<State, Action> {
     self.scope(state: toLocalState, action: { $0 })
   }
 
-  func send(_ action: Action, originatingFrom originatingAction: Action? = nil) {
+  func send(
+    _ action: Action,
+    originatingFrom originatingAction: Action? = nil
+  ) -> Task<Void, Never> {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
     self.bufferedActions.append(action)
-    guard !self.isSending else { return }
+    guard !self.isSending else { return Task {} }
 
     self.isSending = true
     var currentState = self.state.value
@@ -374,9 +377,13 @@ public final class Store<State, Action> {
       self.state.value = currentState
     }
 
+    var tasks: [Task<Void, Never>] = []
+
     while !self.bufferedActions.isEmpty {
       let action = self.bufferedActions.removeFirst()
       let effect = self.reducer(&currentState, action)
+      let task = Task { _ = try? await Task.sleep(nanoseconds: NSEC_PER_SEC * 1_000_000_000) }
+      tasks.append(task)
 
       var didComplete = false
       let uuid = UUID()
@@ -385,6 +392,7 @@ public final class Store<State, Action> {
           self?.threadCheck(status: .effectCompletion(action))
           didComplete = true
           self?.effectCancellables[uuid] = nil
+          task.cancel()
         },
         receiveValue: { [weak self] effectAction in
           self?.send(effectAction, originatingFrom: action)
@@ -393,6 +401,12 @@ public final class Store<State, Action> {
 
       if !didComplete {
         self.effectCancellables[uuid] = effectCancellable
+      }
+    }
+
+    return Task { [tasks] in
+      for task in tasks {
+        await task.value
       }
     }
   }
