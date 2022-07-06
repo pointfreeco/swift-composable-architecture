@@ -120,7 +120,7 @@ import SwiftUI
 /// ```
 ///
 /// Binding actions are constructed and sent to the store by calling
-/// ``ViewStore/binding(_:file:line:)`` with a key path to the bindable state:
+/// ``ViewStore/binding(_:file:fileID:line:)`` with a key path to the bindable state:
 ///
 /// ```swift
 /// TextField("Display name", text: viewStore.binding(\.$displayName))

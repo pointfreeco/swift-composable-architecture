@@ -16,9 +16,9 @@ extension Effect {
   /// Initializes an effect that wraps a publisher.
   ///
   /// > Important: This Combine interface has been soft-deprecated in favor of Swift concurrency.
-  /// > Prefer performing asynchronous work directly in ``Effect/run(priority:_:)`` by adopting a
-  /// > non-Combine interface, or by iterating over the publisher's asynchronous sequence of
-  /// > `values`:
+  /// > Prefer performing asynchronous work directly in
+  /// > ``Effect/run(priority:_:catch:file:fileID:line:)`` by adopting a non-Combine interface, or
+  /// > by iterating over the publisher's asynchronous sequence of `values`:
   /// >
   /// > ```swift
   /// > return .run { send in

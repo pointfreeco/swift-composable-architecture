@@ -4,8 +4,6 @@ import SwiftUI
 extension Effect {
   /// Wraps the emission of each element with SwiftUI's `withAnimation`.
   ///
-  /// This publisher is most useful when using with ``Effect/task(priority:operation:)-2czg0``
-  ///
   /// ```swift
   /// case .buttonTapped:
   ///   return .task {

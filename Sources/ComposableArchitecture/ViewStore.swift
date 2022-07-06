@@ -145,7 +145,7 @@ public final class ViewStore<State, Action>: ObservableObject {
 
   /// Sends an action to the store with a given animation.
   ///
-  /// See ``ViewStore/send(_:)-1dr17`` for more info.
+  /// See ``ViewStore/send(_:)`` for more info.
   ///
   /// - Parameters:
   ///   - action: An action.

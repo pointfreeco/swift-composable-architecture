@@ -28,7 +28,7 @@ The Composable Architecture can be used to power applications built in many fram
 - ``BindableAction``
 - ``BindingAction``
 - ``Reducer/binding()``
-- ``ViewStore/binding(_:file:line:)``
+- ``ViewStore/binding(_:file:fileID:line:)``
 
 ### View State
 

@@ -10,7 +10,7 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ### Creating an Effect
 
-- ``Effect/task(priority:operation:)-6fbi7``
+- ``Effect/task(priority:operation:)``
 
 ### Cancellation
 

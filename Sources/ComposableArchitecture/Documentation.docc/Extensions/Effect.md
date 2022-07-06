@@ -5,8 +5,8 @@
 ### Creating an Effect
 
 - ``none``
-- ``task(priority:operation:)-4llhw``
-- ``run(priority:_:)``
+- ``task(priority:operation:catch:file:fileID:line:)``
+- ``run(priority:_:catch:file:fileID:line:)``
 - ``fireAndForget(priority:_:)``
 
 ### Cancellation
@@ -17,6 +17,8 @@
 - ``cancellable(id:cancelInFlight:)-17skv``
 - ``cancel(id:)-iun1``
 - ``cancel(ids:)-dmwy``
+- ``withTaskCancellation(id:cancelInFlight:resultType:operation:)-1m27c``
+- ``withTaskCancellation(id:cancelInFlight:resultType:operation:)-8exbl``
 
 ### Composition
 

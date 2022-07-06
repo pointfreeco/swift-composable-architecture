@@ -69,23 +69,23 @@ public struct Reducer<State, Action, Environment> {
   /// its state, it can make a difference if `reducerA` chooses to modify `reducerB`'s state
   /// _before_ or _after_ `reducerB` runs.
   ///
-  /// This is perhaps most easily seen when working with ``optional(file:line:)`` reducers, where
-  /// the parent domain may listen to the child domain and `nil` out its state. If the parent
+  /// This is perhaps most easily seen when working with ``optional(file:fileID:line:)`` reducers,
+  /// where the parent domain may listen to the child domain and `nil` out its state. If the parent
   /// reducer runs before the child reducer, then the child reducer will not be able to react to its
   /// own action.
   ///
-  /// Similar can be said for a ``forEach(state:action:environment:file:line:)-gvte`` reducer. If
-  /// the parent domain modifies the child collection by moving, removing, or modifying an element
-  /// before the ``forEach(state:action:environment:file:line:)-gvte`` reducer runs, the
-  /// ``forEach(state:action:environment:file:line:)-gvte`` reducer may perform its action against
-  /// the wrong element, an element that no longer exists, or an element in an unexpected state.
+  /// Similar can be said for a ``forEach(state:action:environment:file:fileID:line:)-n7qj``
+  /// reducer. If the parent domain modifies the child collection by moving, removing, or modifying
+  /// an element before the `forEach` reducer runs, the `forEach` reducer may perform its action
+  /// against the wrong element, an element that no longer exists, or an element in an unexpected
+  /// state.
   ///
   /// Running a parent reducer before a child reducer can be considered an application logic
   /// error, and can produce assertion failures. So you should almost always combine reducers in
   /// order from child to parent domain.
   ///
-  /// Here is an example of how you should combine an ``optional(file:line:)`` reducer with a parent
-  /// domain:
+  /// Here is an example of how you should combine an ``optional(file:fileID:line:)`` reducer with a
+  /// parent domain:
   ///
   /// ```swift
   /// let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
@@ -124,23 +124,23 @@ public struct Reducer<State, Action, Environment> {
   /// its state, it can make a difference if `reducerA` chooses to modify `reducerB`'s state
   /// _before_ or _after_ `reducerB` runs.
   ///
-  /// This is perhaps most easily seen when working with ``optional(file:line:)`` reducers, where
-  /// the parent domain may listen to the child domain and `nil` out its state. If the parent
+  /// This is perhaps most easily seen when working with ``optional(file:fileID:line:)`` reducers,
+  /// where the parent domain may listen to the child domain and `nil` out its state. If the parent
   /// reducer runs before the child reducer, then the child reducer will not be able to react to its
   /// own action.
   ///
-  /// Similar can be said for a ``forEach(state:action:environment:file:line:)-gvte`` reducer. If
-  /// the parent domain modifies the child collection by moving, removing, or modifying an element
-  /// before the ``forEach(state:action:environment:file:line:)-gvte`` reducer runs, the
-  /// ``forEach(state:action:environment:file:line:)-gvte`` reducer may perform its action against
-  /// the wrong element, an element that no longer exists, or an element in an unexpected state.
+  /// Similar can be said for a ``forEach(state:action:environment:file:fileID:line:)-n7qj``
+  /// reducer. If the parent domain modifies the child collection by moving, removing, or modifying
+  /// an element before the `forEach` reducer runs, the `forEach` reducer may perform its action
+  /// against the wrong element, an element that no longer exists, or an element in an unexpected
+  /// state.
   ///
   /// Running a parent reducer before a child reducer can be considered an application logic error,
   /// and can produce assertion failures. So you should almost always combine reducers in order from
   /// child to parent domain.
   ///
-  /// Here is an example of how you should combine an ``optional(file:line:)`` reducer with a parent
-  /// domain:
+  /// Here is an example of how you should combine an ``optional(file:fileID:line:)`` reducer with a
+  /// parent domain:
   ///
   /// ```swift
   /// let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
@@ -181,23 +181,23 @@ public struct Reducer<State, Action, Environment> {
   /// its state, it can make a difference if `reducerA` chooses to modify `reducerB`'s state
   /// _before_ or _after_ `reducerB` runs.
   ///
-  /// This is perhaps most easily seen when working with ``optional(file:line:)`` reducers, where
-  /// the parent domain may listen to the child domain and `nil` out its state. If the parent
+  /// This is perhaps most easily seen when working with ``optional(file:fileID:line:)`` reducers,
+  /// where the parent domain may listen to the child domain and `nil` out its state. If the parent
   /// reducer runs before the child reducer, then the child reducer will not be able to react to its
   /// own action.
   ///
-  /// Similar can be said for a ``forEach(state:action:environment:file:line:)-gvte`` reducer. If
-  /// the parent domain modifies the child collection by moving, removing, or modifying an element
-  /// before the ``forEach(state:action:environment:file:line:)-gvte`` reducer runs, the
-  /// ``forEach(state:action:environment:file:line:)-gvte`` reducer may perform its action against
-  /// the wrong element, an element that no longer exists, or an element in an unexpected state.
+  /// Similar can be said for a ``forEach(state:action:environment:file:fileID:line:)-n7qj``
+  /// reducer. If the parent domain modifies the child collection by moving, removing, or modifying
+  /// an element before the `forEach` reducer runs, the `forEach` reducer may perform its action
+  /// against the wrong element, an element that no longer exists, or an element in an unexpected
+  /// state.
   ///
   /// Running a parent reducer before a child reducer can be considered an application logic error,
   /// and can produce assertion failures. So you should almost always combine reducers in order from
   /// child to parent domain.
   ///
-  /// Here is an example of how you should combine an ``optional(file:line:)`` reducer with a parent
-  /// domain:
+  /// Here is an example of how you should combine an ``optional(file:fileID:line:)`` reducer with a
+  /// parent domain:
   ///
   /// ```swift
   /// let parentReducer: Reducer<ParentState, ParentAction, ParentEnvironment> =
@@ -739,10 +739,8 @@ public struct Reducer<State, Action, Environment> {
   /// )
   /// ```
   ///
-  /// Take care when combining ``forEach(state:action:environment:file:line:)-gvte`` reducers into
-  /// parent domains, as order matters. Always combine
-  /// ``forEach(state:action:environment:file:line:)-gvte`` reducers _before_ parent reducers that
-  /// can modify the collection.
+  /// Take care when combining `forEach` reducers into parent domains, as order matters. Always
+  /// combine `forEach` reducers _before_ parent reducers that can modify the collection.
   ///
   /// - Parameters:
   ///   - toLocalState: A key path that can get/set a collection of `State` elements inside
@@ -816,10 +814,8 @@ public struct Reducer<State, Action, Environment> {
   /// A version of ``pullback(state:action:environment:)`` that transforms a reducer that works on
   /// an element into one that works on a dictionary of element values.
   ///
-  /// Take care when combining ``forEach(state:action:environment:file:line:)-21wow`` reducers into
-  /// parent domains, as order matters. Always combine
-  /// ``forEach(state:action:environment:file:line:)-21wow`` reducers _before_ parent reducers that
-  /// can modify the dictionary.
+  /// Take care when combining `forEach` reducers into parent domains, as order matters. Always
+  /// combine `forEach`` reducers _before_ parent reducers that can modify the dictionary.
   ///
   /// - Parameters:
   ///   - toLocalState: A key path that can get/set a dictionary of `State` values inside

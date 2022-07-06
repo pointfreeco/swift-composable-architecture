@@ -8,8 +8,8 @@ extension Effect where Failure == Never {
   /// in an ``Effect`` so that the reducer, a non-asynchronous context, can process it.
   ///
   /// For example, if your environment contains a dependency that exposes an `async` function, you
-  /// can use ``Effect/task(priority:operation:)-4llhw`` to provide an asynchronous context for
-  /// invoking that endpoint:
+  /// can use ``Effect/task(priority:operation:catch:file:fileID:line:)`` to provide an asynchronous
+  /// context for invoking that endpoint:
   ///
   /// ```swift
   /// struct FeatureEnvironment {
@@ -104,8 +104,8 @@ extension Effect where Failure == Never {
 
   /// Wraps an asynchronous unit of work that can emit any number of times in an effect.
   ///
-  /// This effect is similar to ``Effect/task(priority:operation:)-4llhw`` except it is capable of
-  /// emitting any number of times times, not just once.
+  /// This effect is similar to ``Effect/task(priority:operation:catch:file:fileID:line:)`` except
+  /// it is capable of emitting any number of times times, not just once.
   ///
   /// For example, if you had an async stream in your environment:
   ///
@@ -241,8 +241,8 @@ extension Effect where Failure == Never {
 /// defer { send(.finished, animation: .default) }
 /// ```
 ///
-/// See ``Effect/run(priority:_:)`` for more information on how to use this value to construct
-/// effects that can emit any number of times in an asynchronous context.
+/// See ``Effect/run(priority:_:catch:file:fileID:line:)`` for more information on how to use this
+/// value to construct effects that can emit any number of times in an asynchronous context.
 ///
 /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
 @MainActor
