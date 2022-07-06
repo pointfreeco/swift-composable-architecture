@@ -50,7 +50,8 @@ extension Effect where Failure == Never {
   ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
   ///     `Task.currentPriority`.
   ///   - operation: The operation to execute.
-  ///   - catch: An error handler, invoked if the operation throws an error.
+  ///   - catch: An error handler, invoked if the operation throws an error other than
+  ///     `CancellationError`.
   /// - Returns: An effect wrapping the given asynchronous work.
   public static func task(
     priority: TaskPriority? = nil,
@@ -63,16 +64,28 @@ extension Effect where Failure == Never {
     Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
       let subject = PassthroughSubject<Output, Failure>()
       let task = Task(priority: priority) { @MainActor in
-        defer { subject.send(completion: .finished) }
+        defer {
+          Swift.print("task", #line)
+          subject.send(completion: .finished)
+          Swift.print("task", #line)
+        }
         do {
+          Swift.print("task", #line)
           try Task.checkCancellation()
+          Swift.print("task", #line)
           let output = try await operation()
+          Swift.print("task", #line)
           try Task.checkCancellation()
+          Swift.print("task", #line)
           subject.send(output)
+          Swift.print("task", #line)
         } catch is CancellationError {
+          Swift.print("task", #line)
           return
         } catch {
+          Swift.print("task", #line)
           guard let handler = handler else {
+            Swift.print("task", #line)
             var errorDump = ""
             customDump(error, to: &errorDump, indent: 2)
             runtimeWarning(
@@ -129,15 +142,16 @@ extension Effect where Failure == Never {
   ///
   /// See ``Send`` for more information on how to use the `send` argument passed to `run`'s closure.
   ///
-  /// The closure provided to ``Effect/run(priority:_:catch:file:fileID:line:)`` is allowed
-  /// to throw, but any non-cancellation errors thrown will cause a runtime warning when run in the
+  /// The closure provided to ``Effect/run(priority:_:catch:file:fileID:line:)`` is allowed to
+  /// throw, but any non-cancellation errors thrown will cause a runtime warning when run in the
   /// simulator or on a device, and will cause a test failure in tests.
   ///
   /// - Parameters:
   ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
   ///     `Task.currentPriority`.
   ///   - operation: The operation to execute.
-  ///   - catch: An error handler, invoked if the operation throws an error.
+  ///   - catch: An error handler, invoked if the operation throws an error other than
+  ///     `CancellationError`.
   /// - Returns: An effect wrapping the given asynchronous work.
   public static func run(
     priority: TaskPriority? = nil,
@@ -249,13 +263,22 @@ extension Effect where Failure == Never {
 public struct Send<Action> {
   fileprivate let send: @Sendable (Action) -> Void
 
+  /// Sends an action back into the system from an effect.
+  ///
+  /// - Parameter action: An action.
   public func callAsFunction(_ action: Action) {
+    guard !Task.isCancelled else { return }
     self.send(action)
   }
 
-  public func callAsFunction(_ action: Action, animation: Animation? = nil) {
+  /// Sends an action back into the system from an effect with animation.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - animation: An animation.
+  public func callAsFunction(_ action: Action, animation: Animation?) {
     withAnimation(animation) {
-      self.send(action)
+      self(action)
     }
   }
 }

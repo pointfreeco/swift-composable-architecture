@@ -742,9 +742,26 @@
           group.cancelAll()
         }
       } catch {
+        let timeoutMessage =
+          nanoseconds != nanoseconds
+          ? #"try increasing the duration of this assertion's "timeout""#
+          : #"configure this assertion with an explicit "timeout""#
+        let suggestion = """
+          If this task delivers its action with a scheduler (via "receive(on:)", "delay", \
+          "debounce", etc.), make sure that you wait enough time for the scheduler to perform its \
+          work. If you are using a test scheduler, advance the scheduler so that the effects may \
+          complete, or consider using an immediate scheduler to immediately perform the effect \
+          instead.
+
+          If you are not yet using a scheduler, or can not use a scheduler, \(timeoutMessage).
+          """
+
         XCTFail(
           """
-          Expected task to finish, but it is still in-flight
+          Expected task to finish, but it is still in-flight\
+          \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
+
+          \(suggestion)
           """,
           file: file,
           line: line
@@ -753,7 +770,7 @@
     }
   }
 
-  extension Task where Success == Failure, Failure == Never {
+  extension Task where Success == Never, Failure == Never {
     static func megaYield(count: Int = 3) async {
       for _ in 1...count {
         await Task<Void, Never>.detached(priority: .low) { await Task.yield() }.value
