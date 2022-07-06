@@ -30,7 +30,7 @@ final class EffectRunTests: XCTestCase {
         return .run { _ in
           struct Failure: Error {}
           throw Failure()
-        } catch: { _, send in
+        } catch: { @Sendable _, send in  // NB: Explicit '@Sendable' required in 5.5.2
           await send(.response)
         }
       case .response:
@@ -128,7 +128,7 @@ final class EffectRunTests: XCTestCase {
           withUnsafeCurrentTask { $0?.cancel() }
           try Task.checkCancellation()
           await send(.responseA)
-        } catch: { _, send in
+        } catch: { @Sendable _, send in  // NB: Explicit '@Sendable' required in 5.5.2
           await send(.responseB)
         }
       case .responseA, .responseB:

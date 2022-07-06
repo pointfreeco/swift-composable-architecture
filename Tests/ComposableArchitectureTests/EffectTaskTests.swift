@@ -23,14 +23,14 @@ final class EffectTaskTests: XCTestCase {
 
   func testTaskCatch() async {
     struct State: Equatable {}
-    enum Action: Equatable { case tapped, response }
+    enum Action: Equatable, Sendable { case tapped, response }
     let reducer = Reducer<State, Action, Void> { state, action, _ in
       switch action {
       case .tapped:
         return .task {
           struct Failure: Error {}
           throw Failure()
-        } catch: { _ in
+        } catch: { @Sendable _ in  // NB: Explicit '@Sendable' required in 5.5.2
           .response
         }
       case .response:
@@ -100,7 +100,7 @@ final class EffectTaskTests: XCTestCase {
           withUnsafeCurrentTask { $0?.cancel() }
           try Task.checkCancellation()
           return .responseA
-        } catch: { _ in
+        } catch: { @Sendable _ in  // NB: Explicit '@Sendable' required in 5.5.2
           .responseB
         }
       case .responseA, .responseB:
