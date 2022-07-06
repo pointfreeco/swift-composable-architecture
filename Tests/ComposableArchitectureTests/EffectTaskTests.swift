@@ -73,15 +73,18 @@ final class EffectTaskTests: XCTestCase {
   }
 
   func testTaskCancellation() async {
+    enum CancelID {}
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
     let reducer = Reducer<State, Action, Void> { state, action, _ in
       switch action {
       case .tapped:
         return .task {
-          withUnsafeCurrentTask { $0?.cancel() }
+          await Task.cancel(id: CancelID.self)
+          try Task.checkCancellation()
           return .response
         }
+        .cancellable(id: CancelID.self)
       case .response:
         return .none
       }
@@ -91,18 +94,20 @@ final class EffectTaskTests: XCTestCase {
   }
 
   func testTaskCancellationCatch() async {
+    enum CancelID {}
     struct State: Equatable {}
     enum Action: Equatable { case tapped, responseA, responseB }
     let reducer = Reducer<State, Action, Void> { state, action, _ in
       switch action {
       case .tapped:
         return .task {
-          withUnsafeCurrentTask { $0?.cancel() }
+          await Task.cancel(id: CancelID.self)
           try Task.checkCancellation()
           return .responseA
         } catch: { @Sendable _ in  // NB: Explicit '@Sendable' required in 5.5.2
           .responseB
         }
+        .cancellable(id: CancelID.self)
       case .responseA, .responseB:
         return .none
       }

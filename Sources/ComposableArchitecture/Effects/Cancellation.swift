@@ -210,7 +210,9 @@ extension Task where Success == Never, Failure == Never {
   ///
   /// - Parameter id: An identifier.
   public static func cancel(id: AnyHashable) async {
-    cancellablesLock.sync { cancellationCancellables[.init(id: id)]?.forEach { $0.cancel() } }
+    await MainActor.run {
+      cancellablesLock.sync { cancellationCancellables[.init(id: id)]?.forEach { $0.cancel() } }
+    }
   }
 
   /// Cancel any currently in-flight operation with the given identifier.

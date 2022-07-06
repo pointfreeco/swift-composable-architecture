@@ -73,15 +73,18 @@ final class EffectRunTests: XCTestCase {
   }
 
   func testRunCancellation() async {
+    enum CancelID {}
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
     let reducer = Reducer<State, Action, Void> { state, action, _ in
       switch action {
       case .tapped:
         return .run { send in
-          withUnsafeCurrentTask { $0?.cancel() }
+          await Task.cancel(id: CancelID.self)
+          try Task.checkCancellation()
           await send(.response)
         }
+        .cancellable(id: CancelID.self)
       case .response:
         return .none
       }
@@ -90,47 +93,21 @@ final class EffectRunTests: XCTestCase {
     await store.send(.tapped).finish()
   }
 
-  func testRunCancellation2() async {
-    struct State: Equatable {}
-    enum Action: Equatable { case tapped, responseA, responseB }
-    let reducer = Reducer<State, Action, Void> { state, action, _ in
-      switch action {
-      case .tapped:
-        return .run { send in
-          try await withThrowingTaskGroup(of: Void.self) { group in
-            _ = group.addTaskUnlessCancelled {
-              withUnsafeCurrentTask { $0?.cancel() }
-              await send(.responseA)
-            }
-            _ = group.addTaskUnlessCancelled {
-              await send(.responseB)
-            }
-            try await group.waitForAll()
-          }
-        }
-      case .responseA, .responseB:
-        return .none
-      }
-    }
-    let store = TestStore(initialState: State(), reducer: reducer, environment: ())
-    store.send(.tapped)
-    await store.receive(.responseB)
-    await store.finish()
-  }
-
   func testRunCancellationCatch() async {
+    enum CancelID {}
     struct State: Equatable {}
     enum Action: Equatable { case tapped, responseA, responseB }
     let reducer = Reducer<State, Action, Void> { state, action, _ in
       switch action {
       case .tapped:
         return .run { send in
-          withUnsafeCurrentTask { $0?.cancel() }
+          await Task.cancel(id: CancelID.self)
           try Task.checkCancellation()
           await send(.responseA)
         } catch: { @Sendable _, send in  // NB: Explicit '@Sendable' required in 5.5.2
           await send(.responseB)
         }
+        .cancellable(id: CancelID.self)
       case .responseA, .responseB:
         return .none
       }
