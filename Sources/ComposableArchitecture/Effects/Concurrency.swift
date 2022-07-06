@@ -64,28 +64,16 @@ extension Effect where Failure == Never {
     Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
       let subject = PassthroughSubject<Output, Failure>()
       let task = Task(priority: priority) { @MainActor in
-        defer {
-          Swift.print("task", #line)
-          subject.send(completion: .finished)
-          Swift.print("task", #line)
-        }
+        defer { subject.send(completion: .finished) }
         do {
-          Swift.print("task", #line)
           try Task.checkCancellation()
-          Swift.print("task", #line)
           let output = try await operation()
-          Swift.print("task", #line)
           try Task.checkCancellation()
-          Swift.print("task", #line)
           subject.send(output)
-          Swift.print("task", #line)
         } catch is CancellationError {
-          Swift.print("task", #line)
           return
         } catch {
-          Swift.print("task", #line)
           guard let handler = handler else {
-            Swift.print("task", #line)
             var errorDump = ""
             customDump(error, to: &errorDump, indent: 2)
             runtimeWarning(
@@ -117,8 +105,8 @@ extension Effect where Failure == Never {
 
   /// Wraps an asynchronous unit of work that can emit any number of times in an effect.
   ///
-  /// This effect is similar to ``Effect/task(priority:operation:catch:file:fileID:line:)`` except
-  /// it is capable of emitting any number of times times, not just once.
+  /// This effect is similar to ``task(priority:operation:catch:file:fileID:line:)`` except it is
+  /// capable of emitting any number of times times, not just once.
   ///
   /// For example, if you had an async stream in your environment:
   ///
@@ -142,7 +130,7 @@ extension Effect where Failure == Never {
   ///
   /// See ``Send`` for more information on how to use the `send` argument passed to `run`'s closure.
   ///
-  /// The closure provided to ``Effect/run(priority:_:catch:file:fileID:line:)`` is allowed to
+  /// The closure provided to ``run(priority:operation:catch:file:fileID:line:)`` is allowed to
   /// throw, but any non-cancellation errors thrown will cause a runtime warning when run in the
   /// simulator or on a device, and will cause a test failure in tests.
   ///
@@ -155,7 +143,7 @@ extension Effect where Failure == Never {
   /// - Returns: An effect wrapping the given asynchronous work.
   public static func run(
     priority: TaskPriority? = nil,
-    _ operation: @escaping @Sendable (Send<Output>) async throws -> Void,
+    operation: @escaping @Sendable (Send<Output>) async throws -> Void,
     catch handler: (@Sendable (Error, Send<Output>) async -> Void)? = nil,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
@@ -233,7 +221,7 @@ extension Effect where Failure == Never {
 }
 
 /// A type that can send actions back into the system when used from
-/// ``Effect/run(priority:_:catch:file:fileID:line:)``.
+/// ``Effect/run(priority:operation:catch:file:fileID:line:)``.
 ///
 /// This type implements [`callAsFunction`][callAsFunction] so that you invoke it as a function
 /// rather than calling methods on it:
@@ -255,8 +243,9 @@ extension Effect where Failure == Never {
 /// defer { send(.finished, animation: .default) }
 /// ```
 ///
-/// See ``Effect/run(priority:_:catch:file:fileID:line:)`` for more information on how to use this
-/// value to construct effects that can emit any number of times in an asynchronous context.
+/// See ``Effect/run(priority:operation:catch:file:fileID:line:)`` for more information on how to
+/// use this value to construct effects that can emit any number of times in an asynchronous
+/// context.
 ///
 /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
 @MainActor
