@@ -239,10 +239,11 @@ public final class ViewStore<State, Action>: ObservableObject {
   @MainActor
   public func send(_ action: Action, while predicate: @escaping (State) -> Bool) async {
     let task = self.send(action)
-    await withTaskCancellationHandler(
-      handler: { task.rawValue.cancel() },
-      operation: { await self.yield(while: predicate) }
-    )
+    await withTaskCancellationHandler {
+      task.rawValue.cancel()
+    } operation: {
+      await self.yield(while: predicate)
+    }
   }
 
   /// Sends an action into the store and then suspends while a piece of state is `true`.
@@ -260,10 +261,11 @@ public final class ViewStore<State, Action>: ObservableObject {
     while predicate: @escaping (State) -> Bool
   ) async {
     let task = withAnimation(animation) { self.send(action) }
-    await withTaskCancellationHandler(
-      handler: { task.rawValue.cancel() },
-      operation: { await self.yield(while: predicate) }
-    )
+    await withTaskCancellationHandler {
+      task.rawValue.cancel()
+    } operation: {
+      await self.yield(while: predicate)
+    }
   }
 
   /// Suspends the current task while a predicate on state is `true`.
