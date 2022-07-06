@@ -6,17 +6,17 @@
 
 - ``init(initialState:reducer:environment:file:line:)``
 
+### Configuring a Test Store
+
+- ``environment``
+- ``timeout``
+
 ### Testing a Reducer
 
 - ``send(_:_:file:line:)``
 - ``receive(_:timeout:_:file:line:)``
+- ``finish(timeout:file:line:)``
 - ``TestStoreTask``
-
-### Controlling Dependencies
-
-Controlling a reducer's dependencies are a crucial part of building a reliable test suite. Mutating the environment provides a means of influencing a reducer's dependencies over the course of a test.
-
-- ``environment``
 
 ### Accessing State
 
