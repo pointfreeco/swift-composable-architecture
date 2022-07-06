@@ -53,19 +53,19 @@ body:
     label: The Composable Architecture version information
     description: The version of the Composable Architecture used to reproduce this issue.
     placeholder: "'0.38.0' for example, or a commit hash"
-- type: textarea
+- type: input
   attributes:
-    label: Swift Compiler version information
-    description: The version of Swift used to reproduce this issue. 
-    placeholder: Output from 'xcrun swiftc --version'
-    render: shell
-- type: textarea
+    label: OS version
+    description: The OS used to reproduce this issue.
+    placeholder: "'iOS 15' for example"
+- type: input
   attributes:
     label: Xcode version information
     description: The version of Xcode used to reproduce this issue.
     placeholder: "The version displayed from 'Xcode 〉About Xcode'"
 - type: textarea
   attributes:
-    label: OS version
-    description: The OS used to reproduce this issue.
-    placeholder: "'iOS 15' for example"
+    label: Swift Compiler version information
+    description: The version of Swift used to reproduce this issue. 
+    placeholder: Output from 'xcrun swiftc --version'
+    render: shell
