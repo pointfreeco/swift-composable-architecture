@@ -205,6 +205,7 @@ public func withTaskCancellation<T: Sendable>(
   )
 }
 
+// TODO: Do these endpoints even need to be `async`?
 extension Task where Success == Never, Failure == Never {
   /// Cancel any currently in-flight operation with the given identifier.
   ///
