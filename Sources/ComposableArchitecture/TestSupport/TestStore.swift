@@ -182,6 +182,9 @@
     /// ``receive(_:timeout:_:file:line:)``, it will equal the `inout` state passed to the closure.
     public private(set) var state: State
 
+    /// The timeout to await for in-flight effects.
+    public var timeout: UInt64
+
     private let file: StaticString
     private let fromLocalAction: (LocalAction) -> Action
     private var line: UInt
@@ -207,6 +210,7 @@
       self.reducer = reducer
       self.state = initialState
       self.toLocalState = toLocalState
+      self.timeout = NSEC_PER_MSEC
 
       self.store = Store(
         initialState: initialState,
@@ -242,17 +246,18 @@
     /// - Parameter nanoseconds: The amount of time to wait before asserting.
     @MainActor
     public func finish(
-      timeout nanoseconds: UInt64 = NSEC_PER_MSEC,
+      timeout nanoseconds: UInt64? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
+      let nanoseconds = nanoseconds ?? self.timeout
       let start = DispatchTime.now().uptimeNanoseconds
       await Task.megaYield()
       while !self.inFlightEffects.isEmpty {
         guard start.distance(to: DispatchTime.now().uptimeNanoseconds) < nanoseconds
         else {
           let timeoutMessage =
-            nanoseconds != nanoseconds
+            nanoseconds != self.self.timeout
             ? #"try increasing the duration of this assertion's "timeout""#
             : #"configure this assertion with an explicit "timeout""#
           let suggestion = """
@@ -443,7 +448,7 @@
         self.line = line
       }
 
-      return .init(rawValue: task)
+      return .init(rawValue: task, timeout: self.timeout)
     }
 
     private func expectedStateShouldMatch(
@@ -578,11 +583,12 @@
     @MainActor
     public func receive(
       _ expectedAction: Action,
-      timeout nanoseconds: UInt64 = NSEC_PER_MSEC,
+      timeout nanoseconds: UInt64? = nil,
       _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
+      let nanoseconds = nanoseconds ?? self.timeout
 
       guard !self.inFlightEffects.isEmpty
       else {
@@ -608,7 +614,7 @@
               """
           } else {
             let timeoutMessage =
-              nanoseconds != 0
+              nanoseconds != self.timeout
               ? #"try increasing the duration of this assertion's "timeout""#
               : #"configure this assertion with an explicit "timeout""#
             suggestion = """
@@ -716,6 +722,8 @@
     /// The underlying task.
     public let rawValue: Task<Void, Never>
 
+    fileprivate let timeout: UInt64
+
     /// Cancels the underlying task and waits for it to finish.
     public func cancel() async {
       self.rawValue.cancel()
@@ -726,10 +734,11 @@
     ///
     /// - Parameter nanoseconds: The amount of time to wait before asserting.
     public func finish(
-      timeout nanoseconds: UInt64 = NSEC_PER_MSEC,
+      timeout nanoseconds: UInt64? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
+      let nanoseconds = nanoseconds ?? self.timeout
       await Task.megaYield()
       do {
         try await withThrowingTaskGroup(of: Void.self) { group in
@@ -743,7 +752,7 @@
         }
       } catch {
         let timeoutMessage =
-          nanoseconds != nanoseconds
+          nanoseconds != self.timeout
           ? #"try increasing the duration of this assertion's "timeout""#
           : #"configure this assertion with an explicit "timeout""#
         let suggestion = """
