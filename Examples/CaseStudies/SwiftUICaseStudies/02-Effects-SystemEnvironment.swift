@@ -47,19 +47,18 @@ let multipleDependenciesReducer = Reducer<
   case .alertButtonTapped:
     return Effect(value: .alertDelayReceived)
       .delay(for: 1, scheduler: environment.mainQueue)
-      .eraseToEffect()
 
   case .alertDelayReceived:
     state.alert = AlertState(title: TextState("Here's an alert after a delay!"))
-    return .none
+    return Effect.none
 
   case .alertDismissed:
     state.alert = nil
-    return .none
+    return Effect.none
 
   case .dateButtonTapped:
     state.dateString = "\(environment.date())"
-    return .none
+    return Effect.none
 
   case .fetchNumberButtonTapped:
     state.isFetchInFlight = true
@@ -69,11 +68,11 @@ let multipleDependenciesReducer = Reducer<
   case let .fetchNumberResponse(number):
     state.isFetchInFlight = false
     state.fetchedNumberString = "\(number)"
-    return .none
+    return Effect.none
 
   case .uuidButtonTapped:
     state.uuidString = "\(environment.uuid())"
-    return .none
+    return Effect.none
   }
 }
 

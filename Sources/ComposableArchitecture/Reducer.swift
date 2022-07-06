@@ -53,6 +53,12 @@ public struct Reducer<State, Action, Environment> {
     self.reducer = reducer
   }
 
+  #if swift(>=5.7)
+  public init(_ reducer: @escaping (inout State, Action, Environment) -> any Publisher<Action, Never>) {
+    self.reducer = { reducer(&$0, $1, $2).eraseToEffect() }
+  }
+  #endif
+
   /// A reducer that performs no state mutations and returns no effects.
   public static var empty: Reducer {
     Self { _, _, _ in .none }
