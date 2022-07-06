@@ -1,5 +1,6 @@
 import AVFoundation
 import ComposableArchitecture
+import Dependencies
 @preconcurrency import Foundation
 
 extension AudioRecorderClient {

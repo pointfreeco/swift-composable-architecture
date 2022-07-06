@@ -1,4 +1,5 @@
 import Combine
+import Dependencies
 import SwiftUI
 
 /// A ``ViewStore`` is an object that can observe state changes and send actions. They are most

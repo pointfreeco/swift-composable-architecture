@@ -29,6 +29,7 @@ let package = Package(
     .target(
       name: "ComposableArchitecture",
       dependencies: [
+        "Dependencies",
         .product(name: "CasePaths", package: "swift-case-paths"),
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
         .product(name: "CustomDump", package: "swift-custom-dump"),
@@ -41,6 +42,9 @@ let package = Package(
       dependencies: [
         "ComposableArchitecture"
       ]
+    ),
+    .target(
+      name: "Dependencies"
     ),
     .executableTarget(
       name: "swift-composable-architecture-benchmark",

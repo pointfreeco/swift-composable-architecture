@@ -1,5 +1,6 @@
 import Combine
 import ComposableArchitecture
+import Dependencies
 import XCTest
 
 @testable import SwiftUICaseStudies
