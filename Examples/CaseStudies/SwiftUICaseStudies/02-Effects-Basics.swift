@@ -247,11 +247,16 @@ struct EffectsBasicsView: View {
           .foregroundColor(.gray)
           .frame(maxWidth: .infinity)
         }
+        .navigationDestination(isPresented: .constant(false)) {
+          Text("")
+        }
       }
       .buttonStyle(.borderless)
       .task {
         await viewStore.send(.task)
         print("Done!")
+        print("Task.isCancelled", Task.isCancelled)
+        print("---")
       }
     }
     .navigationBarTitle("Effects")

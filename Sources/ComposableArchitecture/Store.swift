@@ -334,9 +334,9 @@ public final class Store<State, Action> {
       reducer: .init { localState, localAction, _ in
         isSending = true
         defer { isSending = false }
-        self.send(fromLocalAction(localAction))
+        let task = self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
-        return .none
+        return .fireAndForget { await task.value }
       },
       environment: ()
     )
@@ -382,7 +382,7 @@ public final class Store<State, Action> {
     while !self.bufferedActions.isEmpty {
       let action = self.bufferedActions.removeFirst()
       let effect = self.reducer(&currentState, action)
-      let task = Task { _ = try? await Task.sleep(nanoseconds: NSEC_PER_SEC * 1_000_000_000) }
+      let task = Task { _ = try? await Task.sleep(nanoseconds: NSEC_PER_SEC * 20) }
       tasks.append(task)
 
       var didComplete = false
@@ -392,10 +392,11 @@ public final class Store<State, Action> {
           self?.threadCheck(status: .effectCompletion(action))
           didComplete = true
           self?.effectCancellables[uuid] = nil
+          print("action", action)
           task.cancel()
         },
         receiveValue: { [weak self] effectAction in
-          self?.send(effectAction, originatingFrom: action)
+          _ = self?.send(effectAction, originatingFrom: action)
         }
       )
 
