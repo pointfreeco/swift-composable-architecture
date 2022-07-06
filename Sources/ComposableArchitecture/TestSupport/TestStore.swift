@@ -210,7 +210,7 @@
       self.reducer = reducer
       self.state = initialState
       self.toLocalState = toLocalState
-      self.timeout = NSEC_PER_MSEC
+      self.timeout = 5 * NSEC_PER_MSEC
 
       self.store = Store(
         initialState: initialState,
