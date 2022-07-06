@@ -152,15 +152,6 @@ let effectsBasicsReducer = Reducer<
     }
     .cancellable(id: TimerID.self)
 
-
-    return .run { send in
-      while true {
-        try await environment.mainQueue.sleep(for: .seconds(1))
-        await send(.timerTick)
-      }
-    }
-    .cancellable(id: TimerID.self)
-
   case .stopTimerButtonTapped:
     state.isTimerRunning = false
     return .cancel(id: TimerID.self)
