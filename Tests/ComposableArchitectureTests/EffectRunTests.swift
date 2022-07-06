@@ -48,7 +48,7 @@ final class EffectRunTests: XCTestCase {
         An 'Effect.run' returned from "ComposableArchitectureTests/EffectRunTests.swift:62" threw \
         an unhandled error:
 
-          EffectRunTests.Failure()
+            EffectRunTests.Failure()
 
         All non-cancellation errors must be explicitly handled via the 'catch' parameter on \
         'Effect.run', or via a 'do' block.

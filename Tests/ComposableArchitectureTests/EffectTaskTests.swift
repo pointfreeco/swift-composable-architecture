@@ -48,7 +48,7 @@ final class EffectTaskTests: XCTestCase {
         An 'Effect.task' returned from "ComposableArchitectureTests/EffectTaskTests.swift:62" \
         threw an unhandled error:
 
-          EffectTaskTests.Failure()
+            EffectTaskTests.Failure()
 
         All non-cancellation errors must be explicitly handled via the 'catch' parameter on \
         'Effect.task', or via a 'do' block.

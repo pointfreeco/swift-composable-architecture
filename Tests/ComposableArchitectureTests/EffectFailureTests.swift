@@ -21,7 +21,7 @@ final class EffectFailureTests: XCTestCase {
         An 'Effect.task' returned from "ComposableArchitectureTests/EffectFailureTests.swift:11" \
         threw an unhandled error:
 
-          EffectFailureTests.Unexpected()
+            EffectFailureTests.Unexpected()
 
         All non-cancellation errors must be explicitly handled via the 'catch' parameter on \
         'Effect.task', or via a 'do' block.
@@ -44,7 +44,7 @@ final class EffectFailureTests: XCTestCase {
         An 'Effect.run' returned from "ComposableArchitectureTests/EffectFailureTests.swift:34" \
         threw an unhandled error:
 
-          EffectFailureTests.Unexpected()
+            EffectFailureTests.Unexpected()
 
         All non-cancellation errors must be explicitly handled via the 'catch' parameter on \
         'Effect.run', or via a 'do' block.

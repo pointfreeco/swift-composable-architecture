@@ -60,42 +60,47 @@ import XCTestDynamicOverlay
 /// be equatable even if the success type is. This negatively affects your ability to test features
 /// that use ``TaskResult`` in their actions with the ``TestStore``.
 ///
-///  ``TaskResult`` does extra work to try to maintain equatability when possible. If the underlying
-///  type masked by the `Error` is `Equatable`, then it will use that `Equatable` conformance
-///  on two failures. If the underlying task is _not_ `Equatable`, then it will cast the failures
-///  to `NSError` and check equality there, which works for most simple types.
+/// ``TaskResult`` does extra work to try to maintain equatability when possible. If the underlying
+/// type masked by the `Error` is `Equatable`, then it will use that `Equatable` conformance
+/// on two failures. Luckily, most errors thrown by Apple's frameworks are already equatable, and
+/// because errors are typically simple value types, it is usually possible to have the compiler
+/// synthesize a conformance for you.
 ///
-///  Still, sometimes equality on two ``TaskResult`` values can give a false positive, in particular
-///  when the custom error type uses features that are not visible to Objective-C, such as enums
-///  with associated values:
+/// If you are testing the unhappy path of a feature that feeds a ``TaskResult`` back into the
+/// system, be sure to conform the error to equatable, or the test will fail:
 ///
-///  ```swift
-///  enum CustomError: Error {
-///    case server(message: String)
-///    case other(Error)
-///  }
+/// ```swift
+/// // Set up a failing dependency
+/// struct RefreshFailure: Error {}
+/// store.environment.apiClient.fetchFeed = { throw RefreshFailure() }
 ///
-///  let error1 = CustomError.server(message: "Not found")
-///  let error2 = CustomError.server(message: "Bad request")
+/// // Simulate pull-to-refresh
+/// store.send(.refresh) { $0.isLoading = true }
 ///
-///  TaskResult<Int>.failure(error1) == .failure(error2) ✅
-///  ```
+/// // Assert against failure
+/// await store.receive(.refreshResponse(.failure(RefreshFailure())) { // ❌
+///   $0.errorLabelText = "An error occurred."
+///   $0.isLoading = false
+/// }
+/// // ❌ 'RefreshFailure' is not equatable
+/// ```
 ///
-///  These task results are clearly not equal, but when cast to `NSError` they look the same.
+/// To get a passing test, explicitly conform your custom error to the `Equatable` protocol:
 ///
-///  To be safe it is best to always mark your error types as `Equatable`:
+/// ```swift
+/// // Set up a failing dependency
+/// struct RefreshFailure: Error, Equatable {} // 👈
+/// store.environment.apiClient.fetchFeed = { throw RefreshFailure() }
 ///
-///  ```swift
-///  enum CustomError: Error, Equatable👈 {
-///    case server(message: String)
-///    case other(Error)
-///  }
+/// // Simulate pull-to-refresh
+/// store.send(.refresh) { $0.isLoading = true }
 ///
-///  let error1 = CustomError.server(message: "Not found")
-///  let error2 = CustomError.server(message: "Bad request")
-///
-///  TaskResult<Int>.failure(error1) == .failure(error2) ❌
-///  ```
+/// // Assert against failure
+/// await store.receive(.refreshResponse(.failure(RefreshFailure())) { // ✅
+///   $0.errorLabelText = "An error occurred."
+///   $0.isLoading = false
+/// }
+/// ```
 public enum TaskResult<Success: Sendable>: Sendable {
   case success(Success)
   case failure(Error)
@@ -202,9 +207,18 @@ extension TaskResult: Equatable where Success: Equatable {
       return _isEqual(lhs, rhs) ?? {
         if TaskResultDebugging.emitRuntimeWarnings {
           runtimeWarning(
-            "Tried to compare a non-equatable error type: %@",
+            """
+            '%1$@' is not equatable
+
+            To test two values of this type, it must conform to the 'Equatable' protocol. For \
+            example:
+
+                extension %1$@: Equatable {}
+
+            See the documentation of 'TaskResult' for more information.
+            """,
             [
-              "\(type(of: lhs))"
+              "\(type(of: lhs))",
             ]
           )
         }

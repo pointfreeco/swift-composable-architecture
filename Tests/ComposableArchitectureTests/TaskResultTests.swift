@@ -14,7 +14,13 @@ class TaskResultTests: XCTestCase {
       )
     } issueMatcher: {
       $0.compactDescription == """
-        Tried to compare a non-equatable error type: Failure
+        'Failure' is not equatable
+
+        To test two values of this type, it must conform to the 'Equatable' protocol. For example:
+
+            extension Failure: Equatable {}
+
+        See the documentation of 'TaskResult' for more information.
         """
     }
   }

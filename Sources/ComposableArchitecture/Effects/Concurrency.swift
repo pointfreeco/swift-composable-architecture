@@ -82,7 +82,7 @@ extension Effect where Failure == Never {
           } catch {
             guard let handler = handler else {
               var errorDump = ""
-              customDump(error, to: &errorDump, indent: 2)
+              customDump(error, to: &errorDump, indent: 4)
               runtimeWarning(
                 """
                 An 'Effect.task' returned from "%@:%d" threw an unhandled error:
@@ -175,7 +175,7 @@ extension Effect where Failure == Never {
           } catch {
             guard let handler = handler else {
               var errorDump = ""
-              customDump(error, to: &errorDump, indent: 2)
+              customDump(error, to: &errorDump, indent: 4)
               runtimeWarning(
                 """
                 An 'Effect.run' returned from "%@:%d" threw an unhandled error:
