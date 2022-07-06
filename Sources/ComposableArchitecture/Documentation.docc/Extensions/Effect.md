@@ -8,6 +8,7 @@
 - ``task(priority:operation:catch:file:fileID:line:)``
 - ``run(priority:_:catch:file:fileID:line:)``
 - ``fireAndForget(priority:_:)``
+- ``TaskResult``
 
 ### Cancellation
 

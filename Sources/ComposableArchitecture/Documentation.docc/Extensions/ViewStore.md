@@ -16,11 +16,9 @@
 ### Sending Actions
 
 - ``send(_:)``
-
-### Interacting with Concurrency
-
 - ``send(_:while:)``
 - ``yield(while:)``
+- ``ViewStoreTask``
 
 ### SwiftUI Integration
 

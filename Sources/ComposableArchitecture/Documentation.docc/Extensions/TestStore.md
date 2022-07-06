@@ -10,6 +10,7 @@
 
 - ``send(_:_:file:line:)``
 - ``receive(_:timeout:_:file:line:)``
+- ``TestStoreTask``
 
 ### Controlling Dependencies
 
