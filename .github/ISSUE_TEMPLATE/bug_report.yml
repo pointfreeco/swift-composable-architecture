@@ -55,8 +55,8 @@ body:
     placeholder: "'0.38.0' for example, or a commit hash"
 - type: input
   attributes:
-    label: OS version
-    description: The OS used to reproduce this issue.
+    label: Destination operating system
+    description: The OS running your TCA application.
     placeholder: "'iOS 15' for example"
 - type: input
   attributes:
