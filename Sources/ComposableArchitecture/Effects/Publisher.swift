@@ -370,7 +370,8 @@ extension Publisher {
 
   /// Turns any publisher into an ``Effect``.
   ///
-  /// This is a convenience operator for writing ``Effect/eraseToEffect()`` followed by `map`.
+  /// This is a convenience operator for writing ``Effect/eraseToEffect()`` followed by
+  /// ``Effect/map(_:)-28ghh`.
   ///
   /// ```swift
   /// case .buttonTapped:
@@ -440,7 +441,8 @@ extension Publisher {
   /// Turns any publisher into an ``Effect`` that cannot fail by wrapping its output and failure
   /// into a result and then applying passed in function to it.
   ///
-  /// This is a convenience operator for writing ``Effect/catchToEffect()`` followed by `map`.
+  /// This is a convenience operator for writing ``Effect/eraseToEffect()`` followed by
+  /// ``Effect/map(_:)-28ghh`.
   ///
   /// ```swift
   /// case .buttonTapped:

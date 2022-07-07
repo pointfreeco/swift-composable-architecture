@@ -23,8 +23,7 @@
 
 ### Composition
 
-<!--NB: DocC bug prevents the following from being resolved-->
-<!--- ``map(_:)``-->
+- ``map(_:)-28ghh``
 - ``merge(_:)-3al9f``
 - ``merge(_:)-4n451``
 
