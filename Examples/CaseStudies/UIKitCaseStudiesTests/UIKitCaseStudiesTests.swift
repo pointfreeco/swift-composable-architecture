@@ -11,10 +11,10 @@ final class UIKitCaseStudiesTests: XCTestCase {
       environment: CounterEnvironment()
     )
 
-    await store.send(.incrementButtonTapped) {
+    store.send(.incrementButtonTapped) {
       $0.count = 1
     }
-    await store.send(.decrementButtonTapped) {
+    store.send(.decrementButtonTapped) {
       $0.count = 0
     }
   }
@@ -32,24 +32,24 @@ final class UIKitCaseStudiesTests: XCTestCase {
       environment: CounterListEnvironment()
     )
 
-    await store.send(.counter(id: firstState.id, action: .incrementButtonTapped)) {
+    store.send(.counter(id: firstState.id, action: .incrementButtonTapped)) {
       $0.counters[id: firstState.id]?.count = 1
     }
-    await store.send(.counter(id: firstState.id, action: .decrementButtonTapped)) {
+    store.send(.counter(id: firstState.id, action: .decrementButtonTapped)) {
       $0.counters[id: firstState.id]?.count = 0
     }
 
-    await store.send(.counter(id: secondState.id, action: .incrementButtonTapped)) {
+    store.send(.counter(id: secondState.id, action: .incrementButtonTapped)) {
       $0.counters[id: secondState.id]?.count = 1
     }
-    await store.send(.counter(id: secondState.id, action: .decrementButtonTapped)) {
+    store.send(.counter(id: secondState.id, action: .decrementButtonTapped)) {
       $0.counters[id: secondState.id]?.count = 0
     }
 
-    await store.send(.counter(id: thirdState.id, action: .incrementButtonTapped)) {
+    store.send(.counter(id: thirdState.id, action: .incrementButtonTapped)) {
       $0.counters[id: thirdState.id]?.count = 1
     }
-    await store.send(.counter(id: thirdState.id, action: .decrementButtonTapped)) {
+    store.send(.counter(id: thirdState.id, action: .decrementButtonTapped)) {
       $0.counters[id: thirdState.id]?.count = 0
     }
   }
