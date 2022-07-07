@@ -108,7 +108,7 @@ extension TBCTestStore where LocalState: Equatable {
         _ action: LocalAction,
         file: StaticString = #file,
         line: UInt = #line,
-        _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+        _ update: ((inout LocalState) throws -> Void)? = nil
     ) {
         switch storeImplementation {
         case let .exhaustive(store):
@@ -124,7 +124,7 @@ extension TBCTestStore where LocalState: Equatable, Action: Equatable {
         _ expectedAction: Action,
         file: StaticString = #file,
         line: UInt = #line,
-        _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+        _ update: ((inout LocalState) throws -> Void)? = nil
     ) {
         switch storeImplementation {
         case let .exhaustive(store):
