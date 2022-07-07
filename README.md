@@ -294,7 +294,7 @@ The test below has the user increment and decrement the count, then they ask for
 
 ```swift
 // Test that tapping on the increment/decrement buttons changes the count
-awaitnstore.send(.incrementButtonTapped) {
+await store.send(.incrementButtonTapped) {
   $0.count = 1
 }
 await store.send(.decrementButtonTapped) {
