@@ -131,9 +131,9 @@ public final class ViewStore<State, Action>: ObservableObject {
 
   /// Sends an action to the store.
   ///
-  /// This method returns a ``ViewStoreTask``, which represents the lifetime of the effect started
-  /// from sending an action. You can use this value to tie the effect's lifetime _and_ cancellation
-  /// to an asynchronous context, such as SwiftUI's `task` view modifier:
+  /// This method returns a ``ViewStoreTask``, which represents the lifecycle of the effect started
+  /// from sending an action. You can use this value to tie the effect's lifecycle _and_
+  /// cancellation to an asynchronous context, such as SwiftUI's `task` view modifier:
   ///
   /// ```swift
   /// .task { await viewStore.send(.task).finish() }
@@ -148,7 +148,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// back into the store.
   ///
   /// - Parameter action: An action.
-  /// - Returns: A ``ViewStoreTask`` that represents the lifetime of the effect executed when
+  /// - Returns: A ``ViewStoreTask`` that represents the lifecycle of the effect executed when
   ///            sending the action.
   @discardableResult
   public func send(_ action: Action) -> ViewStoreTask {

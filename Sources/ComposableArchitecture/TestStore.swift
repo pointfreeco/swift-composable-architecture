@@ -400,13 +400,34 @@
   extension TestStore where LocalState: Equatable {
     /// Sends an action to the store and asserts when state changes.
     ///
+    /// This method returns a ``TestStoreTask``, which represents the lifecycle of the effect
+    /// started from sending an action. You can use this value to force the cancellation of the
+    /// effect, which is helpful for effects that are tied to a view's lifecycle and not torn
+    /// down when an action is sent, such as actions sent in SwiftUI's `task` view modifier.
+    ///
+    /// For example, if your feature kicks off a long-living effect when the view appears by using
+    /// SwiftUI's `task` view modifier, then you can write a test for such a feature by explicitly
+    /// canceling the effect's task after you make all assertions:
+    ///
+    /// ```swift
+    /// let store = TestStore(...)
+    ///
+    /// // emulate the view appearing
+    /// let task = store.send(.task)
+    ///
+    /// // assertions
+    ///
+    /// // emulate the view disappearing
+    /// await task.cancel()
+    /// ```
+    ///
     /// - Parameters:
     ///   - action: An action.
     ///   - updateExpectingResult: A closure that asserts state changed by sending the action to the
     ///     store. The mutable state sent to this closure must be modified to match the state of the
     ///     store after processing the given action. Do not provide a closure if no change is
     ///     expected.
-    /// - Returns: A ``TestStoreTask`` that represents the lifetime of the effect executed when
+    /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
     ///            sending the action.
     @discardableResult
     public func send(
