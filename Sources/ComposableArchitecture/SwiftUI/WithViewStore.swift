@@ -16,7 +16,7 @@ public struct WithViewStore<State, Action, Content> {
 
   fileprivate init(
     store: Store<State, Action>,
-    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
+    viewStore: ViewStore<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
     content: @escaping (ViewStore<State, Action>) -> Content
@@ -31,7 +31,22 @@ public struct WithViewStore<State, Action, Content> {
         return previousState
       }
     #endif
-    self.viewStore = ViewStore(store, removeDuplicates: isDuplicate, file: file, line: line)
+    self.viewStore = viewStore
+  }
+
+  fileprivate init(
+    store: Store<State, Action>,
+    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self.init(
+      store: store,
+      viewStore: ViewStore(store, removeDuplicates: isDuplicate, file: file, line: line),
+      file: file,
+      line: line,
+      content: content)
   }
 
   /// Prints debug information to the console whenever the view is computed.
@@ -139,7 +154,12 @@ extension WithViewStore where State == Void, Content: View {
     line: UInt = #line,
     @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
   ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+    self.init(
+      store: store,
+      viewStore: ViewStore(store, file: file, line: line),
+      file: file,
+      line: line,
+      content: content)
   }
 }
 
