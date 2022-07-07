@@ -208,66 +208,6 @@ extension Effect {
     AnyPublisher.create(work).eraseToEffect()
   }
 
-  /// Concatenates a variadic list of effects together into a single effect, which runs the effects
-  /// one after the other.
-  ///
-  /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
-  ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
-  ///   Composable Architecture in functions like ``Reducer/combine(_:)-1ern2``.
-  ///
-  ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
-  ///
-  /// - Parameter effects: A variadic list of effects.
-  /// - Returns: A new effect
-  @available(
-    iOS, deprecated: 9999.0, message: "Use 'Effect.run' to sequence asynchronous work, instead"
-  )
-  @available(
-    macOS, deprecated: 9999.0, message: "Use 'Effect.run' to sequence asynchronous work, instead"
-  )
-  @available(
-    tvOS, deprecated: 9999.0, message: "Use 'Effect.run' to sequence asynchronous work, instead"
-  )
-  @available(
-    watchOS, deprecated: 9999.0, message: "Use 'Effect.run' to sequence asynchronous work, instead"
-  )
-  public static func concatenate(_ effects: Self...) -> Self {
-    .concatenate(effects)
-  }
-
-  /// Concatenates a collection of effects together into a single effect, which runs the effects one
-  /// after the other.
-  ///
-  /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
-  ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
-  ///   Composable Architecture in functions like ``Reducer/combine(_:)-1ern2``.
-  ///
-  ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
-  ///
-  /// - Parameter effects: A collection of effects.
-  /// - Returns: A new effect
-  @available(
-    iOS, deprecated: 9999.0, message: "Use 'Effect.run' to sequence asynchronous work, instead"
-  )
-  @available(
-    macOS, deprecated: 9999.0, message: "Use 'Effect.run' to sequence asynchronous work, instead"
-  )
-  @available(
-    tvOS, deprecated: 9999.0, message: "Use 'Effect.run' to sequence asynchronous work, instead"
-  )
-  @available(
-    watchOS, deprecated: 9999.0, message: "Use 'Effect.run' to sequence asynchronous work, instead"
-  )
-  public static func concatenate<C: Collection>(_ effects: C) -> Self where C.Element == Effect {
-    effects.isEmpty
-      ? .none
-      : effects
-        .dropFirst()
-        .reduce(into: effects[effects.startIndex]) { effects, effect in
-          effects = effects.append(effect).eraseToEffect()
-        }
-  }
-
   /// Creates an effect that executes some work in the real world that doesn't need to feed data
   /// back into the store. If an error is thrown, the effect will complete and the error will be
   /// ignored.

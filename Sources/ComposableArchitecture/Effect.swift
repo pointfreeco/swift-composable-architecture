@@ -41,6 +41,42 @@ public struct Effect<Output, Failure: Error> {
     Publishers.MergeMany(effects).eraseToEffect()
   }
 
+  /// Concatenates a variadic list of effects together into a single effect, which runs the effects
+  /// one after the other.
+  ///
+  /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
+  ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
+  ///   Composable Architecture in functions like ``Reducer/combine(_:)-1ern2``.
+  ///
+  ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
+  ///
+  /// - Parameter effects: A variadic list of effects.
+  /// - Returns: A new effect
+  public static func concatenate(_ effects: Self...) -> Self {
+    .concatenate(effects)
+  }
+
+  /// Concatenates a collection of effects together into a single effect, which runs the effects one
+  /// after the other.
+  ///
+  /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
+  ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
+  ///   Composable Architecture in functions like ``Reducer/combine(_:)-1ern2``.
+  ///
+  ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
+  ///
+  /// - Parameter effects: A collection of effects.
+  /// - Returns: A new effect
+  public static func concatenate<C: Collection>(_ effects: C) -> Self where C.Element == Effect {
+    effects.isEmpty
+    ? .none
+    : effects
+      .dropFirst()
+      .reduce(into: effects[effects.startIndex]) { effects, effect in
+        effects = effects.append(effect).eraseToEffect()
+      }
+  }
+
   /// Transforms all elements from the upstream effect with a provided closure.
   ///
   /// - Parameter transform: A closure that transforms the upstream effect's output to a new output.
