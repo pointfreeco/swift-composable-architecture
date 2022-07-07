@@ -519,7 +519,7 @@
     /// let store = TestStore(...)
     ///
     /// // emulate the view appearing
-    /// let task = store.send(.task)
+    /// let task = await store.send(.task)
     ///
     /// // assertions
     ///
