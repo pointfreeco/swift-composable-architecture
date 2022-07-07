@@ -51,11 +51,6 @@ private actor AudioRecorder {
             try? AVAudioSession.sharedInstance().setActive(false)
           },
           encodeErrorDidOccur: { error in
-            guard let error = error
-            else {
-              continuation.finish(throwing: AudioRecorderClient.Failure.encodeErrorDidOccur)
-              return
-            }
             continuation.finish(throwing: error)
             try? AVAudioSession.sharedInstance().setActive(false)
           }
