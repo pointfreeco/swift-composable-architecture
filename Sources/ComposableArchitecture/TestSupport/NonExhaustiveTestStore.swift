@@ -120,7 +120,7 @@
       _ action: LocalAction,
       file: StaticString = #file,
       line: UInt = #line,
-      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+      _ update: ((inout LocalState) throws -> Void)? = nil
     ) {
       receivedActions.removeAll() // When developer explicitly sends an action, reset all recorded ones so we can compare from this point in time
       
@@ -140,7 +140,7 @@
       _ action: Action,
       file: StaticString = #file,
       line: UInt = #line,
-      _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+      _ update: ((inout LocalState) throws -> Void)? = nil
     ) {
       guard receivedActions.contains(where: { $0.action == action }) else {
           XCTFail(
@@ -168,7 +168,7 @@
         actionToSend: LocalAction?,
         file: StaticString = #file,
         line: UInt = #line,
-        _ update: @escaping (inout LocalState) throws -> Void = { _ in }
+        _ update: ((inout LocalState) throws -> Void)? = nil
     ) {
         let viewStore = ViewStore(
           self.store.scope(
@@ -186,7 +186,9 @@
         var stateAfterApplyingUpdate = stateAfterReducerApplication
 
         do {
-          try update(&stateAfterApplyingUpdate)
+          if let update = update {
+            try update(&stateAfterApplyingUpdate)
+          }
           try TCATestStoreType.expectedStateShouldMatch(
             expected: &stateAfterApplyingUpdate,
             actual: stateAfterReducerApplication,
