@@ -403,7 +403,7 @@ extension Effect where Failure == Never {
     priority: TaskPriority? = nil,
     _ work: @escaping @Sendable () async throws -> Void
   ) -> Self {
-    Effect<Void, Never>.task(priority: priority) { try? await work() }
+    Effect<Void, Never>.task(priority: priority) { try await work() }
       .fireAndForget()
   }
 }

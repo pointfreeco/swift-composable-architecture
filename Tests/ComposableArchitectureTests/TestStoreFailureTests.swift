@@ -151,7 +151,7 @@ class TestStoreFailureTests: XCTestCase {
         let store = TestStore(
           initialState: 0,
           reducer: Reducer<Int, Void, Void> { state, action, _ in
-            .task { try? await Task.sleep(nanoseconds: NSEC_PER_SEC) }
+            .task { try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
           },
           environment: ()
         )

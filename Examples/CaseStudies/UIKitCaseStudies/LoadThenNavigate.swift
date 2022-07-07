@@ -41,7 +41,7 @@ let lazyNavigationReducer =
       case .setNavigation(isActive: true):
         state.isActivityIndicatorHidden = false
         return .task {
-          try? await environment.mainQueue.sleep(for: 1)
+          try await environment.mainQueue.sleep(for: 1)
           return .setNavigationIsActiveDelayCompleted
         }
         .cancellable(id: CancelId.self)

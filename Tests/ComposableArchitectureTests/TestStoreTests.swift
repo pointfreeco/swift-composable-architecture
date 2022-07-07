@@ -72,7 +72,7 @@ class TestStoreTests: XCTestCase {
         switch action {
         case .tap:
           return .task {
-            try? await Task.sleep(nanoseconds: 1_000_000)
+            try await Task.sleep(nanoseconds: 1_000_000)
             return .response(42)
           }
         case let .response(number):
