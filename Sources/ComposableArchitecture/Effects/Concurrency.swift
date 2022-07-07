@@ -4,7 +4,7 @@ import SwiftUI
 extension Effect where Failure == Never {
   /// Wraps an asynchronous unit of work in an effect.
   ///
-  /// This function is useful for executing work in an asynchronous context and capture the result
+  /// This function is useful for executing work in an asynchronous context and capturing the result
   /// in an ``Effect`` so that the reducer, a non-asynchronous context, can process it.
   ///
   /// For example, if your environment contains a dependency that exposes an `async` function, you
@@ -65,12 +65,12 @@ extension Effect where Failure == Never {
       let subject = PassthroughSubject<Output, Failure>()
       let task = Task(priority: priority) { @MainActor in
         await withTaskCancellationHandler {
-          if Thread.isMainThread {
+          if isMainQueue {
             subject.send(completion: .finished)
           } else {
             DispatchQueue.main.sync { subject.send(completion: .finished) }
           }
-        } operation: {
+        } operation: {  
           defer { subject.send(completion: .finished) }
           do {
             try Task.checkCancellation()
@@ -114,7 +114,7 @@ extension Effect where Failure == Never {
   /// Wraps an asynchronous unit of work that can emit any number of times in an effect.
   ///
   /// This effect is similar to ``task(priority:operation:catch:file:fileID:line:)`` except it is
-  /// capable of emitting any number of times times, not just once.
+  /// capable of emitting 0 or more times, not just once.
   ///
   /// For example, if you had an async stream in your environment:
   ///
@@ -160,7 +160,7 @@ extension Effect where Failure == Never {
     .run { subscriber in
       let task = Task(priority: priority) { @MainActor in
         await withTaskCancellationHandler {
-          if Thread.isMainThread {
+          if isMainQueue {
             subscriber.send(completion: .finished)
           } else {
             DispatchQueue.main.sync { subscriber.send(completion: .finished) }
@@ -289,3 +289,9 @@ public struct Send<Action> {
 }
 
 extension Send: Sendable where Action: Sendable {}
+
+private var isMainQueue: Bool {
+  DispatchQueue.main.setSpecific(key: key, value: true)
+  return DispatchQueue.getSpecific(key: key) == true
+}
+private let key = DispatchSpecificKey<Bool>()

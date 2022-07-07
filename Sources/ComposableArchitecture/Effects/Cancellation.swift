@@ -6,21 +6,20 @@ extension Effect {
   /// To turn an effect into a cancellable one you must provide an identifier, which is used in
   /// ``Effect/cancel(id:)-iun1`` to identify which in-flight effect should be canceled. Any
   /// hashable value can be used for the identifier, such as a string, but you can add a bit of
-  /// protection against typos by defining a new type for the identifier, or by defining a custom
-  /// hashable type:
+  /// protection against typos by defining a new type for the identifier:
   ///
   /// ```swift
-  /// struct LoadUserId: Hashable {}
+  /// struct LoadUserId {}
   ///
   /// case .reloadButtonTapped:
   ///   // Start a new effect to load the user
   ///   return environment.loadUser
   ///     .map(Action.userResponse)
-  ///     .cancellable(id: LoadUserId(), cancelInFlight: true)
+  ///     .cancellable(id: LoadUserId.self, cancelInFlight: true)
   ///
   /// case .cancelButtonTapped:
   ///   // Cancel any in-flight requests to load the user
-  ///   return .cancel(id: LoadUserId())
+  ///   return .cancel(id: LoadUserId.self)
   /// ```
   ///
   /// - Parameters:
