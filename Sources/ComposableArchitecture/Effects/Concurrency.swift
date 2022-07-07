@@ -70,7 +70,7 @@ extension Effect where Failure == Never {
           } else {
             DispatchQueue.main.sync { subject.send(completion: .finished) }
           }
-        } operation: {  
+        } operation: {
           defer { subject.send(completion: .finished) }
           do {
             try Task.checkCancellation()
@@ -282,6 +282,7 @@ public struct Send<Action> {
   ///   - action: An action.
   ///   - animation: An animation.
   public func callAsFunction(_ action: Action, animation: Animation?) {
+    guard !Task.isCancelled else { return }
     withAnimation(animation) {
       self(action)
     }
