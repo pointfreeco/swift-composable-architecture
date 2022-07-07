@@ -1,6 +1,6 @@
 import Combine
 import ComposableArchitecture
-@preconcurrency import SwiftUI
+@preconcurrency import SwiftUI  // NB: SwiftUI.Color and SwiftUI.Animation are not Sendable yet.
 
 private let readMe = """
   This screen demonstrates how changes to application state can drive animations. Because the \

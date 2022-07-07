@@ -7,8 +7,6 @@ import XCTest
 @MainActor
 class ReusableComponentsFavoritingTests: XCTestCase {
   func testFavoriteButton() async {
-    let mainQueue = DispatchQueue.test
-
     let episodes: IdentifiedArrayOf<EpisodeState> = [
       EpisodeState(
         id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,

@@ -1,6 +1,6 @@
 import Combine
 import ComposableArchitecture
-import SwiftUI
+@preconcurrency import SwiftUI  // NB: SwiftUI.Animation is not Sendable yet.
 
 private let readMe = """
   This application demonstrates how to work with timers in the Composable Architecture.

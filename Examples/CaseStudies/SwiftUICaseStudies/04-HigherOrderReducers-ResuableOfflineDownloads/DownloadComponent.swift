@@ -1,5 +1,5 @@
 import ComposableArchitecture
-@preconcurrency import SwiftUI
+@preconcurrency import SwiftUI  // NB: SwiftUI.Animation is not Sendable yet.
 
 struct DownloadComponentState<ID: Equatable>: Equatable {
   var alert: AlertState<DownloadComponentAction.AlertAction>?

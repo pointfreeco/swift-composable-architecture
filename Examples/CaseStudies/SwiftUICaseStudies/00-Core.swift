@@ -83,10 +83,10 @@ struct RootEnvironment {
     favorite: favorite(id:isFavorite:),
     fetchNumber: liveFetchNumber,
     mainQueue: .main,
-    screenshots: {
+    screenshots: { @MainActor in
       AsyncStream(
         NotificationCenter.default
-          .notifications(named: await UIApplication.userDidTakeScreenshotNotification)
+          .notifications(named: UIApplication.userDidTakeScreenshotNotification)
           .map { _ in }
       )
     },
