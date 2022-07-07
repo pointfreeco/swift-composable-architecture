@@ -534,7 +534,7 @@
     ///     store after processing the given action. Do not provide a closure if no change is
     ///     expected.
     /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
-    ///            sending the action.
+    ///   sending the action.
     @MainActor
     @discardableResult
     public func send(
