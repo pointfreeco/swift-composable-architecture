@@ -144,7 +144,8 @@ public struct Effect<Output, Failure: Error> {
   /// fail if it ever executes:
   ///
   /// ```swift
-  /// func testIncrement() {
+  /// @MainActor
+  /// func testIncrement() async {
   ///   let store = TestStore(
   ///     initialState: CounterState(count: 0)
   ///     reducer: counterReducer,
@@ -153,7 +154,7 @@ public struct Effect<Output, Failure: Error> {
   ///     )
   ///   )
   ///
-  ///   store.send(.increment) {
+  ///   await store.send(.increment) {
   ///     $0.count = 1
   ///   }
   /// }

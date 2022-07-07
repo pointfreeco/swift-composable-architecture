@@ -55,7 +55,8 @@ extension Effect where Failure == Never {
   /// Then to test the timer in this feature you can use a test scheduler to advance time:
   ///
   /// ```swift
-  /// func testTimer() {
+  /// @MainActor
+  /// func testTimer() async {
   ///   let mainQueue = DispatchQueue.test
   ///
   ///   let store = TestStore(
@@ -66,19 +67,19 @@ extension Effect where Failure == Never {
   ///     )
   ///   )
   ///
-  ///   store.send(.startButtonTapped)
+  ///   await store.send(.startButtonTapped)
   ///
-  ///   mainQueue.advance(by: .seconds(1))
-  ///   store.receive(.timerTicked) { $0.count = 1 }
+  ///   await mainQueue.advance(by: .seconds(1))
+  ///   await store.receive(.timerTicked) { $0.count = 1 }
   ///
-  ///   mainQueue.advance(by: .seconds(5))
-  ///   store.receive(.timerTicked) { $0.count = 2 }
-  ///   store.receive(.timerTicked) { $0.count = 3 }
-  ///   store.receive(.timerTicked) { $0.count = 4 }
-  ///   store.receive(.timerTicked) { $0.count = 5 }
-  ///   store.receive(.timerTicked) { $0.count = 6 }
+  ///   await mainQueue.advance(by: .seconds(5))
+  ///   await store.receive(.timerTicked) { $0.count = 2 }
+  ///   await store.receive(.timerTicked) { $0.count = 3 }
+  ///   await store.receive(.timerTicked) { $0.count = 4 }
+  ///   await store.receive(.timerTicked) { $0.count = 5 }
+  ///   await store.receive(.timerTicked) { $0.count = 6 }
   ///
-  ///   store.send(.stopButtonTapped)
+  ///   await store.send(.stopButtonTapped)
   /// }
   /// ```
   ///
