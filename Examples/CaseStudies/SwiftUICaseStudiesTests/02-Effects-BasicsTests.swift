@@ -210,6 +210,17 @@ class EffectsBasicsTests: XCTestCase {
 
     await task.finish()
   }
+
+  func testOnAppear() async throws {
+    let store = TestStore(
+      initialState: EffectsBasicsState(count: 200),
+      reducer: effectsBasicsReducer,
+      environment: .unimplemented
+    )
+
+    let task = store.send(.task)
+    await task.cancel()
+  }
 }
 import SwiftUI
 

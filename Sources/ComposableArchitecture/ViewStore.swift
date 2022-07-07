@@ -93,7 +93,12 @@ public final class ViewStore<State, Action>: ObservableObject {
 
   @MainActor
   public func send(_ action: Action) async {
-    await self._send(action).value
+    let task = self._send(action)
+    await withTaskCancellationHandler {
+      task.cancel()
+    } operation: {
+      await task.value
+    }
   }
 
 
