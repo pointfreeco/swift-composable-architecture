@@ -46,7 +46,7 @@ class TestStoreTests: XCTestCase {
       environment: mainQueue.eraseToAnyScheduler()
     )
 
-    store.send(.a)
+    await store.send(.a)
 
     await mainQueue.advance(by: 1)
 
@@ -58,7 +58,7 @@ class TestStoreTests: XCTestCase {
     await store.receive(.c2)
     await store.receive(.c3)
 
-    store.send(.d)
+    await store.send(.d)
   }
 
   func testAsync() async {
@@ -83,7 +83,7 @@ class TestStoreTests: XCTestCase {
       environment: ()
     )
 
-    store.send(.tap)
+    await store.send(.tap)
     await store.receive(.response(42), timeout: 2_000_000) {
       $0 = 42
     }

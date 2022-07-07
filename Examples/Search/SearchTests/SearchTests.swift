@@ -19,14 +19,14 @@ class SearchTests: XCTestCase {
     )
     store.environment.weatherClient.search = { _ in .mock }
 
-    store.send(.searchQueryChanged("S")) {
+    await store.send(.searchQueryChanged("S")) {
       $0.searchQuery = "S"
     }
     await self.mainQueue.advance(by: 0.3)
     await store.receive(.searchResponse(.success(.mock))) {
       $0.results = Search.mock.results
     }
-    store.send(.searchQueryChanged("")) {
+    await store.send(.searchQueryChanged("")) {
       $0.results = []
       $0.searchQuery = ""
     }
@@ -43,7 +43,7 @@ class SearchTests: XCTestCase {
     )
 
     store.environment.weatherClient.search = { _ in throw SomethingWentWrong() }
-    store.send(.searchQueryChanged("S")) {
+    await store.send(.searchQueryChanged("S")) {
       $0.searchQuery = "S"
     }
     await self.mainQueue.advance(by: 0.3)
@@ -63,11 +63,11 @@ class SearchTests: XCTestCase {
       )
     )
 
-    store.send(.searchQueryChanged("S")) {
+    await store.send(.searchQueryChanged("S")) {
       $0.searchQuery = "S"
     }
     await self.mainQueue.advance(by: 0.2)
-    store.send(.searchQueryChanged("")) {
+    await store.send(.searchQueryChanged("")) {
       $0.searchQuery = ""
     }
     await self.mainQueue.run()
@@ -97,7 +97,7 @@ class SearchTests: XCTestCase {
       )
     )
 
-    store.send(.searchResultTapped(specialResult)) {
+    await store.send(.searchResultTapped(specialResult)) {
       $0.resultForecastRequestInFlight = specialResult
     }
     await self.mainQueue.advance()
@@ -145,7 +145,10 @@ class SearchTests: XCTestCase {
     results.append(specialResult)
 
     var weatherClient = WeatherClient.unimplemented
-    weatherClient.forecast = { _ in .mock }
+    weatherClient.forecast = { _ in
+      try await self.mainQueue.sleep(for: .seconds(0))
+      return .mock
+    }
 
     let store = TestStore(
       initialState: SearchState(results: results),
@@ -156,10 +159,10 @@ class SearchTests: XCTestCase {
       )
     )
 
-    store.send(.searchResultTapped(results.first!)) {
+    await store.send(.searchResultTapped(results.first!)) {
       $0.resultForecastRequestInFlight = results.first!
     }
-    store.send(.searchResultTapped(specialResult)) {
+    await store.send(.searchResultTapped(specialResult)) {
       $0.resultForecastRequestInFlight = specialResult
     }
     await self.mainQueue.advance()
@@ -209,7 +212,7 @@ class SearchTests: XCTestCase {
       )
     )
 
-    store.send(.searchResultTapped(results.first!)) {
+    await store.send(.searchResultTapped(results.first!)) {
       $0.resultForecastRequestInFlight = results.first!
     }
     await self.mainQueue.advance()

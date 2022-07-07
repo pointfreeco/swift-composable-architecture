@@ -429,6 +429,10 @@
     ///     expected.
     /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
     ///            sending the action.
+    @available(iOS, deprecated: 9999.0, message: "Call the async-friendly 'send' instead.")
+    @available(macOS, deprecated: 9999.0, message: "Call the async-friendly 'send' instead.")
+    @available(tvOS, deprecated: 9999.0, message: "Call the async-friendly 'send' instead.")
+    @available(watchOS, deprecated: 9999.0, message: "Call the async-friendly 'send' instead.")
     @discardableResult
     public func send(
       _ action: LocalAction,
@@ -472,6 +476,19 @@
       }
 
       return .init(rawValue: task, timeout: self.timeout)
+    }
+
+    @MainActor
+    @discardableResult
+    public func send(
+      _ action: LocalAction,
+      _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
+      file: StaticString = #file,
+      line: UInt = #line
+    ) async -> TestStoreTask {
+      let task = { self.send(action, updateExpectingResult, file: file, line: line) }()
+      await Task.megaYield()
+      return task
     }
 
     private func expectedStateShouldMatch(
@@ -668,6 +685,7 @@
       else { return }
 
       { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
+      await Task.megaYield()
     }
   }
 

@@ -17,7 +17,7 @@ final class EffectRunTests: XCTestCase {
       }
     }
     let store = TestStore(initialState: State(), reducer: reducer, environment: ())
-    store.send(.tapped)
+    await store.send(.tapped)
     await store.receive(.response)
   }
 
@@ -38,7 +38,7 @@ final class EffectRunTests: XCTestCase {
       }
     }
     let store = TestStore(initialState: State(), reducer: reducer, environment: ())
-    store.send(.tapped)
+    await store.send(.tapped)
     await store.receive(.response)
   }
 

@@ -36,7 +36,7 @@ class VoiceMemosTests: XCTestCase {
       environment: environment
     )
 
-    let recordButtonTappedTask = store.send(.recordButtonTapped)
+    let recordButtonTappedTask = await store.send(.recordButtonTapped)
     await self.mainRunLoop.advance()
     await store.receive(.recordPermissionResponse(true)) {
       $0.audioRecorderPermission = .allowed
@@ -55,7 +55,7 @@ class VoiceMemosTests: XCTestCase {
       $0.currentRecording?.duration = 2
     }
     await self.mainRunLoop.advance(by: 0.5)
-    store.send(.recordButtonTapped) {
+    await store.send(.recordButtonTapped) {
       $0.currentRecording?.mode = .encoding
     }
     await store.receive(.finalRecordingTime(2.5)) {
@@ -90,12 +90,12 @@ class VoiceMemosTests: XCTestCase {
       environment: environment
     )
 
-    store.send(.recordButtonTapped)
+    await store.send(.recordButtonTapped)
     await store.receive(.recordPermissionResponse(false)) {
       $0.alert = AlertState(title: TextState("Permission is required to record voice memos."))
       $0.audioRecorderPermission = .denied
     }
-    store.send(.alertDismissed) {
+    await store.send(.alertDismissed) {
       $0.alert = nil
     }
     await store.send(.openSettingsButtonTapped).finish()
@@ -123,7 +123,7 @@ class VoiceMemosTests: XCTestCase {
       environment: environment
     )
 
-    store.send(.recordButtonTapped)
+    await store.send(.recordButtonTapped)
     await self.mainRunLoop.advance(by: 0.5)
     await store.receive(.recordPermissionResponse(true)) {
       $0.audioRecorderPermission = .allowed
@@ -167,7 +167,7 @@ class VoiceMemosTests: XCTestCase {
       environment: environment
     )
 
-    let task = store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
+    let task = await store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
     }
     await self.mainRunLoop.advance(by: 0.5)
@@ -208,7 +208,7 @@ class VoiceMemosTests: XCTestCase {
       environment: environment
     )
 
-    let task = store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
+    let task = await store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
     }
     await store.receive(.voiceMemo(id: url, action: .audioPlayerClient(.failure(SomeError())))) {
@@ -218,7 +218,7 @@ class VoiceMemosTests: XCTestCase {
     await task.cancel()
   }
 
-  func testStopMemo() {
+  func testStopMemo() async {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
       initialState: VoiceMemosState(
@@ -236,12 +236,12 @@ class VoiceMemosTests: XCTestCase {
       environment: .unimplemented
     )
 
-    store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
+    await store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .notPlaying
     }
   }
 
-  func testDeleteMemo() {
+  func testDeleteMemo() async {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
       initialState: VoiceMemosState(
@@ -259,12 +259,12 @@ class VoiceMemosTests: XCTestCase {
       environment: .unimplemented
     )
 
-    store.send(.voiceMemo(id: url, action: .delete)) {
+    await store.send(.voiceMemo(id: url, action: .delete)) {
       $0.voiceMemos = []
     }
   }
 
-  func testDeleteMemoWhilePlaying() {
+  func testDeleteMemoWhilePlaying() async {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     var environment = VoiceMemosEnvironment.unimplemented
     environment.audioPlayer.play = { _ in try await Task.never() }
@@ -286,10 +286,10 @@ class VoiceMemosTests: XCTestCase {
       environment: environment
     )
 
-    store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
+    await store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
     }
-    store.send(.voiceMemo(id: url, action: .delete)) {
+    await store.send(.voiceMemo(id: url, action: .delete)) {
       $0.voiceMemos = []
     }
   }

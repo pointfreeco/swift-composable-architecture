@@ -395,6 +395,7 @@ public final class Store<State, Action> {
       effectCancellable.wrappedValue =
         effect
         .handleEvents(
+//          receiveSubscription: <#T##((Subscription) -> Void)?##((Subscription) -> Void)?##(Subscription) -> Void#>
           receiveCancel: { [weak self] in
             self?.threadCheck(status: .effectCompletion(action))
             self?.effectCancellables[uuid] = nil

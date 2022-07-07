@@ -16,7 +16,7 @@ class TimersTests: XCTestCase {
       )
     )
 
-    store.send(.toggleTimerButtonTapped) {
+    await store.send(.toggleTimerButtonTapped) {
       $0.isTimerActive = true
     }
     await mainQueue.advance(by: 1)
@@ -39,7 +39,7 @@ class TimersTests: XCTestCase {
     await store.receive(.timerTicked) {
       $0.secondsElapsed = 6
     }
-    store.send(.toggleTimerButtonTapped) {
+    await store.send(.toggleTimerButtonTapped) {
       $0.isTimerActive = false
     }
     await store.finish()

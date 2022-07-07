@@ -17,7 +17,7 @@ class AnimationTests: XCTestCase {
       )
     )
 
-    store.send(.rainbowButtonTapped)
+    await store.send(.rainbowButtonTapped)
 
     await store.receive(.setColor(.red)) {
       $0.circleColor = .red

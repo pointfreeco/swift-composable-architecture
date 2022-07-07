@@ -23,14 +23,14 @@ class LoginCoreTests: XCTestCase {
       )
     )
 
-    store.send(.emailChanged("2fa@pointfree.co")) {
+    await store.send(.emailChanged("2fa@pointfree.co")) {
       $0.email = "2fa@pointfree.co"
     }
-    store.send(.passwordChanged("password")) {
+    await store.send(.passwordChanged("password")) {
       $0.password = "password"
       $0.isFormValid = true
     }
-    store.send(.loginButtonTapped) {
+    await store.send(.loginButtonTapped) {
       $0.isLoginRequestInFlight = true
     }
     await store.receive(
@@ -41,11 +41,11 @@ class LoginCoreTests: XCTestCase {
       $0.isLoginRequestInFlight = false
       $0.twoFactor = TwoFactorState(token: "deadbeefdeadbeef")
     }
-    store.send(.twoFactor(.codeChanged("1234"))) {
+    await store.send(.twoFactor(.codeChanged("1234"))) {
       $0.twoFactor?.code = "1234"
       $0.twoFactor?.isFormValid = true
     }
-    store.send(.twoFactor(.submitButtonTapped)) {
+    await store.send(.twoFactor(.submitButtonTapped)) {
       $0.twoFactor?.isTwoFactorRequestInFlight = true
     }
     await store.receive(
@@ -65,7 +65,8 @@ class LoginCoreTests: XCTestCase {
       AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
     }
     authenticationClient.twoFactor = { _ in
-      AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
+      try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+      return AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
     }
 
     let store = TestStore(
@@ -76,14 +77,14 @@ class LoginCoreTests: XCTestCase {
       )
     )
 
-    store.send(.emailChanged("2fa@pointfree.co")) {
+    await store.send(.emailChanged("2fa@pointfree.co")) {
       $0.email = "2fa@pointfree.co"
     }
-    store.send(.passwordChanged("password")) {
+    await store.send(.passwordChanged("password")) {
       $0.password = "password"
       $0.isFormValid = true
     }
-    store.send(.loginButtonTapped) {
+    await store.send(.loginButtonTapped) {
       $0.isLoginRequestInFlight = true
     }
     await store.receive(
@@ -94,14 +95,14 @@ class LoginCoreTests: XCTestCase {
       $0.isLoginRequestInFlight = false
       $0.twoFactor = TwoFactorState(token: "deadbeefdeadbeef")
     }
-    store.send(.twoFactor(.codeChanged("1234"))) {
+    await store.send(.twoFactor(.codeChanged("1234"))) {
       $0.twoFactor?.code = "1234"
       $0.twoFactor?.isFormValid = true
     }
-    store.send(.twoFactor(.submitButtonTapped)) {
+    await store.send(.twoFactor(.submitButtonTapped)) {
       $0.twoFactor?.isTwoFactorRequestInFlight = true
     }
-    store.send(.twoFactorDismissed) {
+    await store.send(.twoFactorDismissed) {
       $0.twoFactor = nil
     }
   }

@@ -79,7 +79,7 @@ class TodosTests: XCTestCase {
       )
     )
 
-    store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
+    await store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
       $0.todos[id: state.todos[0].id]?.isComplete = true
     }
     await self.mainQueue.advance(by: 1)
@@ -115,11 +115,11 @@ class TodosTests: XCTestCase {
       )
     )
 
-    store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
+    await store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
       $0.todos[id: state.todos[0].id]?.isComplete = true
     }
     await self.mainQueue.advance(by: 0.5)
-    store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
+    await store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
       $0.todos[id: state.todos[0].id]?.isComplete = false
     }
     await self.mainQueue.advance(by: 1)
@@ -223,10 +223,10 @@ class TodosTests: XCTestCase {
       )
     )
 
-    store.send(.editModeChanged(.active)) {
+    await store.send(.editModeChanged(.active)) {
       $0.editMode = .active
     }
-    store.send(.move([0], 2)) {
+    await store.send(.move([0], 2)) {
       $0.todos = [
         $0.todos[1],
         $0.todos[0],
@@ -271,13 +271,13 @@ class TodosTests: XCTestCase {
       )
     )
 
-    store.send(.editModeChanged(.active)) {
+    await store.send(.editModeChanged(.active)) {
       $0.editMode = .active
     }
-    store.send(.filterPicked(.completed)) {
+    await store.send(.filterPicked(.completed)) {
       $0.filter = .completed
     }
-    store.send(.move([0], 1)) {
+    await store.send(.move([0], 1)) {
       $0.todos = [
         $0.todos[0],
         $0.todos[2],

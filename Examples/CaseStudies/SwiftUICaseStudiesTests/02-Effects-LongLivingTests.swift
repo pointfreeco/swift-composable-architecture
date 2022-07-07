@@ -17,7 +17,7 @@ class LongLivingEffectsTests: XCTestCase {
       )
     )
 
-    let task = store.send(.task)
+    let task = await store.send(.task)
 
     // Simulate a screenshot being taken
     takeScreenshot.yield()

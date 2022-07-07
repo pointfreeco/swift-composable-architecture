@@ -2,7 +2,7 @@ import ComposableArchitecture
 import Foundation
 import XCTestDynamicOverlay
 
-public struct LoginRequest {
+public struct LoginRequest: Sendable {
   public var email: String
   public var password: String
 
@@ -28,7 +28,7 @@ public struct TwoFactorRequest {
   }
 }
 
-public struct AuthenticationResponse: Equatable {
+public struct AuthenticationResponse: Equatable, Sendable {
   public var token: String
   public var twoFactorRequired: Bool
 
@@ -41,7 +41,7 @@ public struct AuthenticationResponse: Equatable {
   }
 }
 
-public enum AuthenticationError: Equatable, LocalizedError {
+public enum AuthenticationError: Equatable, LocalizedError, Sendable {
   case invalidUserPassword
   case invalidTwoFactor
   case invalidIntermediateToken

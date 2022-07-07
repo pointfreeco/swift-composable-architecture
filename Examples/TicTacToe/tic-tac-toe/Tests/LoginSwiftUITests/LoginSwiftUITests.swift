@@ -23,14 +23,14 @@ class LoginSwiftUITests: XCTestCase {
     )
     .scope(state: LoginView.ViewState.init, action: LoginAction.init)
 
-    store.send(.emailChanged("blob@pointfree.co")) {
+    await store.send(.emailChanged("blob@pointfree.co")) {
       $0.email = "blob@pointfree.co"
     }
-    store.send(.passwordChanged("password")) {
+    await store.send(.passwordChanged("password")) {
       $0.password = "password"
       $0.isLoginButtonDisabled = false
     }
-    store.send(.loginButtonTapped) {
+    await store.send(.loginButtonTapped) {
       $0.isActivityIndicatorVisible = true
       $0.isFormDisabled = true
     }
@@ -59,14 +59,14 @@ class LoginSwiftUITests: XCTestCase {
     )
     .scope(state: LoginView.ViewState.init, action: LoginAction.init)
 
-    store.send(.emailChanged("2fa@pointfree.co")) {
+    await store.send(.emailChanged("2fa@pointfree.co")) {
       $0.email = "2fa@pointfree.co"
     }
-    store.send(.passwordChanged("password")) {
+    await store.send(.passwordChanged("password")) {
       $0.password = "password"
       $0.isLoginButtonDisabled = false
     }
-    store.send(.loginButtonTapped) {
+    await store.send(.loginButtonTapped) {
       $0.isActivityIndicatorVisible = true
       $0.isFormDisabled = true
     }
@@ -79,7 +79,7 @@ class LoginSwiftUITests: XCTestCase {
       $0.isFormDisabled = false
       $0.isTwoFactorActive = true
     }
-    store.send(.twoFactorDismissed) {
+    await store.send(.twoFactorDismissed) {
       $0.isTwoFactorActive = false
     }
   }
@@ -97,14 +97,14 @@ class LoginSwiftUITests: XCTestCase {
     )
     .scope(state: LoginView.ViewState.init, action: LoginAction.init)
 
-    store.send(.emailChanged("blob")) {
+    await store.send(.emailChanged("blob")) {
       $0.email = "blob"
     }
-    store.send(.passwordChanged("password")) {
+    await store.send(.passwordChanged("password")) {
       $0.password = "password"
       $0.isLoginButtonDisabled = false
     }
-    store.send(.loginButtonTapped) {
+    await store.send(.loginButtonTapped) {
       $0.isActivityIndicatorVisible = true
       $0.isFormDisabled = true
     }
@@ -115,7 +115,7 @@ class LoginSwiftUITests: XCTestCase {
       $0.isActivityIndicatorVisible = false
       $0.isFormDisabled = false
     }
-    store.send(.alertDismissed) {
+    await store.send(.alertDismissed) {
       $0.alert = nil
     }
   }
