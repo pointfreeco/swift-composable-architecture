@@ -65,7 +65,7 @@ extension Effect where Failure == Never {
       let subject = PassthroughSubject<Output, Failure>()
       let task = Task(priority: priority) { @MainActor in
         await withTaskCancellationHandler {
-          if isMainQueue {
+          if Thread.isMainThread {
             subject.send(completion: .finished)
           } else {
             DispatchQueue.main.sync { subject.send(completion: .finished) }
@@ -160,7 +160,7 @@ extension Effect where Failure == Never {
     .run { subscriber in
       let task = Task(priority: priority) { @MainActor in
         await withTaskCancellationHandler {
-          if isMainQueue {
+          if Thread.isMainThread {
             subscriber.send(completion: .finished)
           } else {
             DispatchQueue.main.sync { subscriber.send(completion: .finished) }
@@ -290,9 +290,3 @@ public struct Send<Action> {
 }
 
 extension Send: Sendable where Action: Sendable {}
-
-private var isMainQueue: Bool {
-  DispatchQueue.main.setSpecific(key: key, value: true)
-  return DispatchQueue.getSpecific(key: key) == true
-}
-private let key = DispatchSpecificKey<Bool>()
