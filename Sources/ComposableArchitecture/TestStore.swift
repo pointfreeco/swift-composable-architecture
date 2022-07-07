@@ -406,6 +406,7 @@
     /// you can assert on that behavior immediately after awaiting `store.send`:
     ///
     /// ```swift
+    /// @MainActor
     /// func testAnalytics() async {
     ///   let events = SendableState<[String]>([])
     ///   let analytics = AnalyticsClient(
