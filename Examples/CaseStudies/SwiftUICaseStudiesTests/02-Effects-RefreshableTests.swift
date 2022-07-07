@@ -49,22 +49,27 @@ class RefreshableTests: XCTestCase {
     }
   }
 
-  func testCancellation() {
+  func testCancellation() async {
     let store = TestStore(
       initialState: RefreshableState(),
       reducer: refreshableReducer,
       environment: .unimplemented
     )
 
-    store.environment.fact.fetch = { "\($0) is a good number." }
+    store.environment.mainQueue = .immediate
 
-    store.send(.incrementButtonTapped) {
+    store.environment.fact.fetch = {
+      try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+      return "\($0) is a good number."
+    }
+
+    await store.send(.incrementButtonTapped) {
       $0.count = 1
     }
-    store.send(.refresh) {
+    await store.send(.refresh) {
       $0.isLoading = true
     }
-    store.send(.cancelButtonTapped) {
+    await store.send(.cancelButtonTapped) {
       $0.isLoading = false
     }
   }

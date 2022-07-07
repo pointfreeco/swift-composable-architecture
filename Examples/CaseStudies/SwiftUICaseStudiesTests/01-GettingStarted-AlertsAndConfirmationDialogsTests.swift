@@ -5,15 +5,16 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+@MainActor
 class AlertsAndConfirmationDialogsTests: XCTestCase {
-  func testAlert() {
+  func testAlert() async {
     let store = TestStore(
       initialState: AlertAndConfirmationDialogState(),
       reducer: alertAndConfirmationDialogReducer,
       environment: AlertAndConfirmationDialogEnvironment()
     )
 
-    store.send(.alertButtonTapped) {
+    await store.send(.alertButtonTapped) {
       $0.alert = AlertState(
         title: TextState("Alert!"),
         message: TextState("This is an alert"),
@@ -21,23 +22,23 @@ class AlertsAndConfirmationDialogsTests: XCTestCase {
         secondaryButton: .default(TextState("Increment"), action: .send(.incrementButtonTapped))
       )
     }
-    store.send(.incrementButtonTapped) {
+    await store.send(.incrementButtonTapped) {
       $0.alert = AlertState(title: TextState("Incremented!"))
       $0.count = 1
     }
-    store.send(.alertDismissed) {
+    await store.send(.alertDismissed) {
       $0.alert = nil
     }
   }
 
-  func testConfirmationDialog() {
+  func testConfirmationDialog() async {
     let store = TestStore(
       initialState: AlertAndConfirmationDialogState(),
       reducer: alertAndConfirmationDialogReducer,
       environment: AlertAndConfirmationDialogEnvironment()
     )
 
-    store.send(.confirmationDialogButtonTapped) {
+    await store.send(.confirmationDialogButtonTapped) {
       $0.confirmationDialog = ConfirmationDialogState(
         title: TextState("Confirmation dialog"),
         message: TextState("This is a confirmation dialog."),
@@ -48,11 +49,11 @@ class AlertsAndConfirmationDialogsTests: XCTestCase {
         ]
       )
     }
-    store.send(.incrementButtonTapped) {
+    await store.send(.incrementButtonTapped) {
       $0.alert = AlertState(title: TextState("Incremented!"))
       $0.count = 1
     }
-    store.send(.confirmationDialogDismissed) {
+    await store.send(.confirmationDialogDismissed) {
       $0.confirmationDialog = nil
     }
   }

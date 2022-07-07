@@ -306,7 +306,7 @@ final class StoreTests: XCTestCase {
       .store(in: &self.cancellables)
   }
 
-  func testActionQueuing() {
+  func testActionQueuing() async {
     let subject = PassthroughSubject<Void, Never>()
 
     enum Action: Equatable {
@@ -334,13 +334,13 @@ final class StoreTests: XCTestCase {
       environment: ()
     )
 
-    store.send(.`init`)
-    store.send(.incrementTapped)
-    store.receive(.doIncrement) {
+    await store.send(.`init`)
+    await store.send(.incrementTapped)
+    await store.receive(.doIncrement) {
       $0 = 1
     }
-    store.send(.incrementTapped)
-    store.receive(.doIncrement) {
+    await store.send(.incrementTapped)
+    await store.receive(.doIncrement) {
       $0 = 2
     }
     subject.send(completion: .finished)

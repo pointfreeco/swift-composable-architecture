@@ -5,7 +5,7 @@ import SwiftUI
 public struct GameView: View {
   let store: Store<GameState, GameAction>
 
-  struct ViewState: Equatable {
+  struct ViewState: Equatable, Sendable {
     var board: [[String]]
     var isGameDisabled: Bool
     var isPlayAgainButtonVisible: Bool

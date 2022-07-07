@@ -65,7 +65,7 @@ let refreshableReducer = Reducer<
     state.fact = nil
     state.isLoading = true
     return .task { [count = state.count] in
-      try? await environment.mainQueue.sleep(for: .seconds(1))
+      try await environment.mainQueue.sleep(for: .seconds(1))
       return await .factResponse(TaskResult { try await environment.fact.fetch(count) })
     }
     .animation()

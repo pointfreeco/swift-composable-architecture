@@ -54,36 +54,42 @@ class EffectsCancellationTests: XCTestCase {
   // in the `.cancelButtonTapped` action of the `effectsCancellationReducer`. This will cause the
   // test to fail, showing that we are exhaustively asserting that the effect truly is canceled and
   // will never emit.
-  func testTrivia_CancelButtonCancelsRequest() {
+  func testTrivia_CancelButtonCancelsRequest() async {
     let store = TestStore(
       initialState: EffectsCancellationState(),
       reducer: effectsCancellationReducer,
       environment: .unimplemented
     )
 
-    store.environment.fact.fetch = { "\($0) is a good number Brent" }
+    store.environment.fact.fetch = {
+      try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+      return "\($0) is a good number Brent"
+    }
 
-    store.send(.triviaButtonTapped) {
+    await store.send(.triviaButtonTapped) {
       $0.isTriviaRequestInFlight = true
     }
-    store.send(.cancelButtonTapped) {
+    await store.send(.cancelButtonTapped) {
       $0.isTriviaRequestInFlight = false
     }
   }
 
-  func testTrivia_PlusMinusButtonsCancelsRequest() {
+  func testTrivia_PlusMinusButtonsCancelsRequest() async {
     let store = TestStore(
       initialState: EffectsCancellationState(),
       reducer: effectsCancellationReducer,
       environment: .unimplemented
     )
 
-    store.environment.fact.fetch = { "\($0) is a good number Brent" }
+    store.environment.fact.fetch = {
+      try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+      return "\($0) is a good number Brent"
+    }
 
-    store.send(.triviaButtonTapped) {
+    await store.send(.triviaButtonTapped) {
       $0.isTriviaRequestInFlight = true
     }
-    store.send(.stepperChanged(1)) {
+    await store.send(.stepperChanged(1)) {
       $0.count = 1
       $0.isTriviaRequestInFlight = false
     }

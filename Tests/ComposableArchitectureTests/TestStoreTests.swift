@@ -89,7 +89,7 @@ class TestStoreTests: XCTestCase {
     }
   }
 
-  func testExpectedStateEquality() {
+  func testExpectedStateEquality() async {
     struct State: Equatable {
       var count: Int = 0
       var isChanging: Bool = false
@@ -120,10 +120,10 @@ class TestStoreTests: XCTestCase {
       environment: ()
     )
 
-    store.send(.increment) {
+    await store.send(.increment) {
       $0.isChanging = true
     }
-    store.receive(.changed(from: 0, to: 1)) {
+    await store.receive(.changed(from: 0, to: 1)) {
       $0.isChanging = false
       $0.count = 1
     }
@@ -141,7 +141,7 @@ class TestStoreTests: XCTestCase {
     }
   }
 
-  func testExpectedStateEqualityMustModify() {
+  func testExpectedStateEqualityMustModify() async {
     struct State: Equatable {
       var count: Int = 0
     }
@@ -165,8 +165,8 @@ class TestStoreTests: XCTestCase {
       environment: ()
     )
 
-    store.send(.noop)
-    store.receive(.finished)
+    await store.send(.noop)
+    await store.receive(.finished)
 
     XCTExpectFailure {
       _ = store.send(.noop) {
@@ -180,7 +180,7 @@ class TestStoreTests: XCTestCase {
     }
   }
 
-  func testStateAccess() {
+  func testStateAccess() async {
     enum Action { case a, b, c, d }
     let store = TestStore(
       initialState: 0,
@@ -197,22 +197,22 @@ class TestStoreTests: XCTestCase {
       environment: ()
     )
 
-    store.send(.a) {
+    await store.send(.a) {
       $0 = 1
       XCTAssertEqual(store.state, 0)
     }
     XCTAssertEqual(store.state, 1)
-    store.receive(.b) {
+    await store.receive(.b) {
       $0 = 2
       XCTAssertEqual(store.state, 1)
     }
     XCTAssertEqual(store.state, 2)
-    store.receive(.c) {
+    await store.receive(.c) {
       $0 = 3
       XCTAssertEqual(store.state, 2)
     }
     XCTAssertEqual(store.state, 3)
-    store.receive(.d) {
+    await store.receive(.d) {
       $0 = 4
       XCTAssertEqual(store.state, 3)
     }

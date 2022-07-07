@@ -759,7 +759,7 @@
   /// See ``TestStore/finish(timeout:file:line:)`` for the ability to await all in-flight effects.
   ///
   /// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.
-  public struct TestStoreTask {
+  public struct TestStoreTask: Sendable {
     /// The underlying task.
     public let rawValue: Task<Void, Never>
 

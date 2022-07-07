@@ -130,7 +130,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
     await task.finish()
   }
 
-  func testDeleteDownloadFlow() {
+  func testDeleteDownloadFlow() async {
     var downloadClient = DownloadClient.unimplemented
     downloadClient.download = { _ in self.download.stream }
 
@@ -144,7 +144,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       environment: DownloadComponentEnvironment(downloadClient: downloadClient)
     )
 
-    store.send(.buttonTapped) {
+    await store.send(.buttonTapped) {
       $0.alert = AlertState(
         title: TextState("Do you want to delete this map from your offline storage?"),
         primaryButton: .destructive(
@@ -155,7 +155,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       )
     }
 
-    store.send(.alert(.deleteButtonTapped)) {
+    await store.send(.alert(.deleteButtonTapped)) {
       $0.alert = nil
       $0.mode = .notDownloaded
     }
