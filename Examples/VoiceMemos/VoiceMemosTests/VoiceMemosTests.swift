@@ -104,6 +104,7 @@ class VoiceMemosTests: XCTestCase {
   }
 
   func testRecordMemoFailure() async {
+    struct SomeError: Error, Equatable {}
     let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
 
     var environment = VoiceMemosEnvironment.unimplemented
@@ -132,11 +133,10 @@ class VoiceMemosTests: XCTestCase {
         url: URL(fileURLWithPath: "/tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")
       )
     }
-    didFinish.continuation.finish(throwing: AudioRecorderClient.Failure.couldntActivateAudioSession)
+
+    didFinish.continuation.finish(throwing: SomeError())
     await self.mainRunLoop.advance(by: 0.5)
-    await store.receive(
-      .audioRecorderDidFinish(.failure(AudioRecorderClient.Failure.couldntActivateAudioSession))
-    ) {
+    await store.receive(.audioRecorderDidFinish(.failure(SomeError()))) {
       $0.alert = AlertState(title: TextState("Voice memo recording failed."))
       $0.currentRecording = nil
     }
@@ -185,8 +185,10 @@ class VoiceMemosTests: XCTestCase {
   }
 
   func testPlayMemoFailure() async {
+    struct SomeError: Error, Equatable {}
+
     var environment = VoiceMemosEnvironment.unimplemented
-    environment.audioPlayer.play = { _ in throw AudioPlayerClient.Failure.decodeErrorDidOccur }
+    environment.audioPlayer.play = { _ in throw SomeError() }
     environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
@@ -209,11 +211,7 @@ class VoiceMemosTests: XCTestCase {
     let task = store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
     }
-    await store.receive(
-      .voiceMemo(
-        id: url, action: .audioPlayerClient(.failure(AudioPlayerClient.Failure.decodeErrorDidOccur))
-      )
-    ) {
+    await store.receive(.voiceMemo(id: url, action: .audioPlayerClient(.failure(SomeError())))) {
       $0.alert = AlertState(title: TextState("Voice memo playback failed."))
       $0.voiceMemos[id: url]?.mode = .notPlaying
     }
