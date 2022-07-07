@@ -35,7 +35,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       environment: DownloadComponentEnvironment(downloadClient: downloadClient)
     )
 
-    store.send(.buttonTapped) {
+    await store.send(.buttonTapped) {
       $0.mode = .startingToDownload
     }
 
@@ -65,7 +65,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       environment: DownloadComponentEnvironment(downloadClient: downloadClient)
     )
 
-    store.send(.buttonTapped) {
+    await store.send(.buttonTapped) {
       $0.mode = .startingToDownload
     }
 
@@ -74,7 +74,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       $0.mode = .downloading(progress: 0.2)
     }
 
-    store.send(.buttonTapped) {
+    await store.send(.buttonTapped) {
       $0.alert = AlertState(
         title: TextState("Do you want to stop downloading this map?"),
         primaryButton: .destructive(
@@ -85,7 +85,7 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       )
     }
 
-    store.send(.alert(.stopButtonTapped)) {
+    await store.send(.alert(.stopButtonTapped)) {
       $0.alert = nil
       $0.mode = .notDownloaded
     }
@@ -105,11 +105,11 @@ class ReusableComponentsDownloadComponentTests: XCTestCase {
       environment: DownloadComponentEnvironment(downloadClient: downloadClient)
     )
 
-    let task = store.send(.buttonTapped) {
+    let task = await store.send(.buttonTapped) {
       $0.mode = .startingToDownload
     }
 
-    store.send(.buttonTapped) {
+    await store.send(.buttonTapped) {
       $0.alert = AlertState(
         title: TextState("Do you want to stop downloading this map?"),
         primaryButton: .destructive(

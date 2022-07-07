@@ -115,6 +115,8 @@ final class ComposableArchitectureTests: XCTestCase {
   }
 
   func testCancellation() async {
+    let mainQueue = DispatchQueue.test
+
     enum Action: Equatable {
       case cancel
       case incr
@@ -134,8 +136,11 @@ final class ComposableArchitectureTests: XCTestCase {
 
       case .incr:
         state += 1
-        return .task { [state] in .response(await environment.fetch(state)) }
-          .cancellable(id: CancelId.self)
+        return .task { [state] in
+          try await mainQueue.sleep(for: .seconds(1))
+          return .response(await environment.fetch(state))
+        }
+        .cancellable(id: CancelId.self)
 
       case let .response(value):
         state = value
@@ -151,10 +156,11 @@ final class ComposableArchitectureTests: XCTestCase {
       )
     )
 
-    store.send(.incr) { $0 = 1 }
+    await store.send(.incr) { $0 = 1 }
+    await mainQueue.advance(by: .seconds(1))
     await store.receive(.response(1))
 
-    store.send(.incr) { $0 = 2 }
-    store.send(.cancel)
+    await store.send(.incr) { $0 = 2 }
+    await store.send(.cancel)
   }
 }

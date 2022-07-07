@@ -15,10 +15,10 @@ class RefreshableTests: XCTestCase {
     store.environment.fact.fetch = { "\($0) is a good number." }
     store.environment.mainQueue = .immediate
 
-    store.send(.incrementButtonTapped) {
+    await store.send(.incrementButtonTapped) {
       $0.count = 1
     }
-    store.send(.refresh) {
+    await store.send(.refresh) {
       $0.isLoading = true
     }
     await store.receive(.factResponse(.success("1 is a good number."))) {
@@ -38,10 +38,10 @@ class RefreshableTests: XCTestCase {
     store.environment.fact.fetch = { _ in throw FactError() }
     store.environment.mainQueue = .immediate
 
-    store.send(.incrementButtonTapped) {
+    await store.send(.incrementButtonTapped) {
       $0.count = 1
     }
-    store.send(.refresh) {
+    await store.send(.refresh) {
       $0.isLoading = true
     }
     await store.receive(.factResponse(.failure(FactError()))) {

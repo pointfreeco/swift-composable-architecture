@@ -14,10 +14,10 @@ class EffectsBasicsTests: XCTestCase {
 
     store.environment.mainQueue = .immediate
 
-    store.send(.incrementButtonTapped) {
+    await store.send(.incrementButtonTapped) {
       $0.count = 1
     }
-    store.send(.decrementButtonTapped) {
+    await store.send(.decrementButtonTapped) {
       $0.count = 0
     }
     await store.receive(.incrementButtonTapped) {
@@ -35,10 +35,10 @@ class EffectsBasicsTests: XCTestCase {
     store.environment.fact.fetch = { "\($0) is a good number Brent" }
     store.environment.mainQueue = .immediate
 
-    store.send(.incrementButtonTapped) {
+    await store.send(.incrementButtonTapped) {
       $0.count = 1
     }
-    store.send(.numberFactButtonTapped) {
+    await store.send(.numberFactButtonTapped) {
       $0.isNumberFactRequestInFlight = true
     }
     await store.receive(.numberFactResponse(.success("1 is a good number Brent"))) {

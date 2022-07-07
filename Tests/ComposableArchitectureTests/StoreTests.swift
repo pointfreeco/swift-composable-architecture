@@ -505,7 +505,7 @@ final class StoreTests: XCTestCase {
       environment: ()
     )
 
-    let task = store.send(.task)
+    let task = await store.send(.task)
     await store.receive(.response)
     await store.receive(.response1)
     await store.receive(.response2)
@@ -527,7 +527,7 @@ final class StoreTests: XCTestCase {
       environment: ()
     )
 
-    let task = store.send(.task)
+    let task = await store.send(.task)
     await task.cancel()
   }
   

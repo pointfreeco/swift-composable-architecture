@@ -7,6 +7,8 @@ import XCTest
 @MainActor
 class ReusableComponentsFavoritingTests: XCTestCase {
   func testFavoriteButton() async {
+    let scheduler = DispatchQueue.test
+
     let episodes: IdentifiedArrayOf<EpisodeState> = [
       EpisodeState(
         id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
@@ -28,23 +30,26 @@ class ReusableComponentsFavoritingTests: XCTestCase {
       initialState: EpisodesState(episodes: episodes),
       reducer: episodesReducer,
       environment: EpisodesEnvironment(
-        favorite: { _, isFavorite in isFavorite }
+        favorite: { _, isFavorite in
+          try await scheduler.sleep(for: .seconds(1))
+          return isFavorite
+        }
       )
     )
 
-    store.send(.episode(id: episodes[0].id, action: .favorite(.buttonTapped))) {
+    await store.send(.episode(id: episodes[0].id, action: .favorite(.buttonTapped))) {
       $0.episodes[id: episodes[0].id]?.isFavorite = true
     }
-
+    await scheduler.advance(by: .seconds(1))
     await store.receive(.episode(id: episodes[0].id, action: .favorite(.response(.success(true)))))
 
-    store.send(.episode(id: episodes[1].id, action: .favorite(.buttonTapped))) {
+    await store.send(.episode(id: episodes[1].id, action: .favorite(.buttonTapped))) {
       $0.episodes[id: episodes[1].id]?.isFavorite = true
     }
-    store.send(.episode(id: episodes[1].id, action: .favorite(.buttonTapped))) {
+    await store.send(.episode(id: episodes[1].id, action: .favorite(.buttonTapped))) {
       $0.episodes[id: episodes[1].id]?.isFavorite = false
     }
-
+    await scheduler.advance(by: .seconds(1))
     await store.receive(.episode(id: episodes[1].id, action: .favorite(.response(.success(false)))))
 
     struct FavoriteError: Equatable, LocalizedError {
@@ -53,7 +58,7 @@ class ReusableComponentsFavoritingTests: XCTestCase {
       }
     }
     store.environment.favorite = { _, _ in throw FavoriteError() }
-    store.send(.episode(id: episodes[2].id, action: .favorite(.buttonTapped))) {
+    await store.send(.episode(id: episodes[2].id, action: .favorite(.buttonTapped))) {
       $0.episodes[id: episodes[2].id]?.isFavorite = true
     }
 
@@ -66,7 +71,7 @@ class ReusableComponentsFavoritingTests: XCTestCase {
       )
     }
 
-    store.send(.episode(id: episodes[2].id, action: .favorite(.alertDismissed))) {
+    await store.send(.episode(id: episodes[2].id, action: .favorite(.alertDismissed))) {
       $0.episodes[id: episodes[2].id]?.alert = nil
       $0.episodes[id: episodes[2].id]?.isFavorite = false
     }

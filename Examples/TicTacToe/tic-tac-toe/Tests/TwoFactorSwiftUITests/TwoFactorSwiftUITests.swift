@@ -26,20 +26,20 @@ class TwoFactorSwiftUITests: XCTestCase {
     store.environment.authenticationClient.twoFactor = { _ in
       AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
     }
-    store.send(.codeChanged("1")) {
+    await store.send(.codeChanged("1")) {
       $0.code = "1"
     }
-    store.send(.codeChanged("12")) {
+    await store.send(.codeChanged("12")) {
       $0.code = "12"
     }
-    store.send(.codeChanged("123")) {
+    await store.send(.codeChanged("123")) {
       $0.code = "123"
     }
-    store.send(.codeChanged("1234")) {
+    await store.send(.codeChanged("1234")) {
       $0.code = "1234"
       $0.isSubmitButtonDisabled = false
     }
-    store.send(.submitButtonTapped) {
+    await store.send(.submitButtonTapped) {
       $0.isActivityIndicatorVisible = true
       $0.isFormDisabled = true
     }
@@ -68,11 +68,11 @@ class TwoFactorSwiftUITests: XCTestCase {
     )
     .scope(state: TwoFactorView.ViewState.init, action: TwoFactorAction.init)
 
-    store.send(.codeChanged("1234")) {
+    await store.send(.codeChanged("1234")) {
       $0.code = "1234"
       $0.isSubmitButtonDisabled = false
     }
-    store.send(.submitButtonTapped) {
+    await store.send(.submitButtonTapped) {
       $0.isActivityIndicatorVisible = true
       $0.isFormDisabled = true
     }
@@ -83,7 +83,7 @@ class TwoFactorSwiftUITests: XCTestCase {
       $0.isActivityIndicatorVisible = false
       $0.isFormDisabled = false
     }
-    store.send(.alertDismissed) {
+    await store.send(.alertDismissed) {
       $0.alert = nil
     }
   }
