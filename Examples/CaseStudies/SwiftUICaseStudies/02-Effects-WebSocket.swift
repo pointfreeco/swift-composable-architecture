@@ -313,7 +313,7 @@ extension WebSocketClient {
 
 extension WebSocketClient {
   static let unimplemented = Self(
-    open: XCTUnimplemented("\(Self.self).open", placeholder: AsyncStream { _ in }),
+    open: XCTUnimplemented("\(Self.self).open", placeholder: AsyncStream.never),
     receive: XCTUnimplemented("\(Self.self).receive"),
     send: XCTUnimplemented("\(Self.self).send"),
     sendPing: XCTUnimplemented("\(Self.self).sendPing")

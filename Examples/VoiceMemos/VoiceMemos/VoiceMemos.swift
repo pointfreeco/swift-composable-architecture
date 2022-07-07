@@ -69,19 +69,14 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       )
 
       return .run { send in
-        await withTaskGroup(of: Void.self) { group in
-          group.addTask {
-            await send(
-              .audioRecorderDidFinish(
-                TaskResult { try await environment.audioRecorder.startRecording(url) }
-              )
-            )
-          }
-          group.addTask {
-            for await _ in environment.mainRunLoop.timer(interval: .seconds(1)) {
-              await send(.currentRecordingTimerUpdated)
-            }
-          }
+        async let startRecording: Void = await send(
+          .audioRecorderDidFinish(
+            TaskResult { try await environment.audioRecorder.startRecording(url) }
+          )
+        )
+
+        for await _ in environment.mainRunLoop.timer(interval: .seconds(1)) {
+          await send(.currentRecordingTimerUpdated)
         }
       }
       .cancellable(id: RecordId.self, cancelInFlight: true)

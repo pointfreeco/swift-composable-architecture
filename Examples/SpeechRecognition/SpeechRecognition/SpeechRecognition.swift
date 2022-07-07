@@ -12,7 +12,6 @@ private let readMe = """
 struct AppState: Equatable {
   var alert: AlertState<AppAction>?
   var isRecording = false
-  var speechRecognizerAuthorizationStatus = SFSpeechRecognizerAuthorizationStatus.notDetermined
   var transcribedText = ""
 }
 
@@ -37,16 +36,27 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
   case .recordButtonTapped:
     state.isRecording.toggle()
-    if state.isRecording {
-      return .task {
-        .speechRecognizerAuthorizationStatusResponse(
-          await environment.speechClient.requestAuthorization()
-        )
+
+    guard state.isRecording
+    else { return .cancel(id: CancelId.self) }
+
+    return .run { send in
+      let status = await environment.speechClient.requestAuthorization()
+      await send(.speechRecognizerAuthorizationStatusResponse(status))
+
+      guard status == .authorized
+      else { return }
+
+      let request = SFSpeechAudioBufferRecognitionRequest()
+      request.shouldReportPartialResults = true
+      request.requiresOnDeviceRecognition = false
+      for try await action in environment.speechClient.recognitionTask(request) {
+        await send(.speech(.success(action)))
       }
-      .cancellable(id: CancelId.self)
-    } else {
-      return .cancel(id: CancelId.self)
+    } catch: { error, send in
+      await send(.speech(.failure(error)))
     }
+    .cancellable(id: CancelId.self)
 
   case .speech(.failure(SpeechClient.Failure.couldntConfigureAudioSession)),
     .speech(.failure(SpeechClient.Failure.couldntStartAudioEngine)):
@@ -61,24 +71,14 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
   case let .speech(.success(result)):
     state.transcribedText = result.bestTranscription.formattedString
-    return result.isFinal ? .cancel(id: CancelId.self) : .none
+    return .none
 
   case let .speechRecognizerAuthorizationStatusResponse(status):
     state.isRecording = status == .authorized
-    state.speechRecognizerAuthorizationStatus = status
 
     switch status {
     case .authorized:
-      return .run { send in
-        let request = SFSpeechAudioBufferRecognitionRequest()
-        request.shouldReportPartialResults = true
-        request.requiresOnDeviceRecognition = false
-        for try await action in environment.speechClient.recognitionTask(request) {
-          await send(.speech(.success(action)))
-        }
-      } catch: { error, send in
-        await send(.speech(.failure(error)))
-      }
+      return .none
 
     case .denied:
       state.alert = AlertState(

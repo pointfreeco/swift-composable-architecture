@@ -7,7 +7,7 @@ import XCTestDynamicOverlay
   extension SpeechClient {
     static let unimplemented = Self(
       recognitionTask: XCTUnimplemented(
-        "\(Self.self).recognitionTask", placeholder: AsyncThrowingStream { _ in }
+        "\(Self.self).recognitionTask", placeholder: AsyncThrowingStream.never
       ),
       requestAuthorization: XCTUnimplemented(
         "\(Self.self).requestAuthorization", placeholder: .notDetermined

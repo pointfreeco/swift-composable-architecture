@@ -72,6 +72,10 @@ public final actor SendableState<Value> {
 /// sendability. If we feel confident that the type is truly sendable, and we don't want to blanket
 /// disable concurrency warnings for a module via `@precondition import`, then we can selectively
 /// make that single type sendable by wrapping it in ``UncheckedSendable``.
+///
+/// Note that by wrapping something in ``UncheckedSendable`` you are asking the compiler to trust
+/// you that the type is safe to use from multiple threads, and the compiler cannot help you find
+/// potential race conditions in your code.
 @propertyWrapper
 public struct UncheckedSendable<Wrapped>: @unchecked Sendable {
   public var wrappedValue: Wrapped
@@ -231,6 +235,11 @@ extension AsyncThrowingStream where Failure == Error {
   ) -> (stream: Self, continuation: Continuation) {
     var continuation: Continuation!
     return (Self(elementType, bufferingPolicy: limit) { continuation = $0 }, continuation)
+  }
+
+  /// An `AsyncThrowingStream` that never emits and never completes unless cancelled.
+  public static var never: Self {
+    .init { _ in }
   }
 }
 
