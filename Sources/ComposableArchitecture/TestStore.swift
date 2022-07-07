@@ -478,6 +478,63 @@
       return .init(rawValue: task, timeout: self.timeout)
     }
 
+    /// Sends an action to the store and asserts when state changes.
+    ///
+    /// This method suspends briefly in order to allow any effects to start. For example, if you
+    /// track some analytics in a ``Effect/fireAndForget(priority:_:)`` when an action is sent,
+    /// you can assert on that behavior immediately after awaiting `store.send`:
+    ///
+    /// ```swift
+    /// func testAnalytics() async {
+    ///   let events = SendableState<[String]>([])
+    ///   let analytics = AnalyticsClient(
+    ///     track: { event in
+    ///       await events.modify { $0.append(event) }
+    ///     }
+    ///   )
+    ///
+    ///   let store = TestStore(
+    ///     initialState: State(),
+    ///     reducer: reducer,
+    ///     environment: Environment(analytics: analytics)
+    ///   )
+    ///
+    ///   await store.send(.buttonTapped)
+    ///
+    ///   let trackedEvents = await events.value
+    ///   XCTAssertEqual(trackedEvents, ["Button Tapped"])
+    /// }
+    /// ```
+    ///
+    /// This method also returns a ``TestStoreTask``, which represents the lifecycle of the effect
+    /// started from sending an action. You can use this value to force the cancellation of the
+    /// effect, which is helpful for effects that are tied to a view's lifecycle and not torn down
+    /// when an action is sent, such as actions sent in SwiftUI's `task` view modifier.
+    ///
+    /// For example, if your feature kicks off a long-living effect when the view appears by using
+    /// SwiftUI's `task` view modifier, then you can write a test for such a feature by explicitly
+    /// canceling the effect's task after you make all assertions:
+    ///
+    /// ```swift
+    /// let store = TestStore(...)
+    ///
+    /// // emulate the view appearing
+    /// let task = store.send(.task)
+    ///
+    /// // assertions
+    ///
+    /// // emulate the view disappearing
+    /// await task.cancel()
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - action: An action.
+    ///   - updateExpectingResult: A closure that asserts state changed by sending the action to the
+    ///     store. The mutable state sent to this closure must be modified to match the state of the
+    ///     store after processing the given action. Do not provide a closure if no change is
+    ///     expected.
+    /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
+    ///            sending the action.
     @MainActor
     @discardableResult
     public func send(
@@ -486,9 +543,43 @@
       file: StaticString = #file,
       line: UInt = #line
     ) async -> TestStoreTask {
-      let task = { self.send(action, updateExpectingResult, file: file, line: line) }()
+      if !self.receivedActions.isEmpty {
+        var actions = ""
+        customDump(self.receivedActions.map(\.action), to: &actions)
+        XCTFail(
+          """
+          Must handle \(self.receivedActions.count) received \
+          action\(self.receivedActions.count == 1 ? "" : "s") before sending an action: …
+
+          Unhandled actions: \(actions)
+          """,
+          file: file, line: line
+        )
+      }
+      var expectedState = self.toLocalState(self.state)
+      let previousState = self.state
+      let task = self.store.send(.init(origin: .send(action), file: file, line: line))
       await Task.megaYield()
-      return task
+      do {
+        let currentState = self.state
+        self.state = previousState
+        defer { self.state = currentState }
+
+        try self.expectedStateShouldMatch(
+          expected: &expectedState,
+          actual: self.toLocalState(currentState),
+          modify: updateExpectingResult,
+          file: file,
+          line: line
+        )
+      } catch {
+        XCTFail("Threw error: \(error)", file: file, line: line)
+      }
+      if "\(self.file)" == "\(file)" {
+        self.line = line
+      }
+
+      return .init(rawValue: task, timeout: self.timeout)
     }
 
     private func expectedStateShouldMatch(
