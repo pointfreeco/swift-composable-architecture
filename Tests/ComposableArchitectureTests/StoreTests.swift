@@ -527,8 +527,7 @@ final class StoreTests: XCTestCase {
       environment: ()
     )
 
-    let task = await store.send(.task)
-    await task.cancel()
+    await store.send(.task).cancel()
   }
   
   func testScopeCancellation() async throws {
