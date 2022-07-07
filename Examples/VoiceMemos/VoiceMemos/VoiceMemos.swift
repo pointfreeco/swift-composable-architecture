@@ -1,6 +1,6 @@
 import AVFoundation
 import ComposableArchitecture
-@preconcurrency import Foundation
+import Foundation
 import SwiftUI
 
 struct VoiceMemosState: Equatable {

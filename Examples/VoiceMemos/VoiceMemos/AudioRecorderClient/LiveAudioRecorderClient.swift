@@ -1,14 +1,13 @@
 import AVFoundation
 import ComposableArchitecture
-import Dependencies
-@preconcurrency import Foundation
+import Foundation
 
 extension AudioRecorderClient {
   static var live: Self {
     let audioRecorder = AudioRecorder()
     return Self(
       currentTime: { await audioRecorder.currentTime },
-      requestRecordPermission: { await audioRecorder.requestPermission() },
+      requestRecordPermission: { await AudioRecorder.requestPermission() },
       startRecording: { url in try await audioRecorder.start(url: url) },
       stopRecording: { await audioRecorder.stop() }
     )
@@ -27,7 +26,7 @@ private actor AudioRecorder {
     return recorder.currentTime
   }
 
-  func requestPermission() async -> Bool {
+  static func requestPermission() async -> Bool {
     await withUnsafeContinuation { continuation in
       AVAudioSession.sharedInstance().requestRecordPermission { granted in
         continuation.resume(returning: granted)
@@ -84,7 +83,7 @@ private actor AudioRecorder {
       }
     }
 
-    guard let action = try await stream.first(where: { _ in true })
+    guard let action = try await stream.first(where: { @Sendable _ in true })
     else { throw CancellationError() }
     return action
   }

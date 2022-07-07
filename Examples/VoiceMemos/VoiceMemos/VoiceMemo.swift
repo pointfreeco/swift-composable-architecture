@@ -1,5 +1,5 @@
 import ComposableArchitecture
-@preconcurrency import Foundation
+import Foundation
 import SwiftUI
 
 struct VoiceMemo: Equatable, Identifiable {
@@ -29,8 +29,8 @@ struct VoiceMemo: Equatable, Identifiable {
 
 enum VoiceMemoAction: Equatable {
   case audioPlayerClient(TaskResult<Bool>)
-  case playButtonTapped
   case delete
+  case playButtonTapped
   case timerUpdated(TimeInterval)
   case titleTextFieldChanged(String)
 }
@@ -43,16 +43,15 @@ struct VoiceMemoEnvironment {
 let voiceMemoReducer = Reducer<
   VoiceMemo, VoiceMemoAction, VoiceMemoEnvironment
 > { memo, action, environment in
-  enum PlayId {}
-  enum TimerId {}
+  enum PlayID {}
 
   switch action {
   case .audioPlayerClient:
     memo.mode = .notPlaying
-    return .cancel(id: TimerId.self)
+    return .cancel(id: PlayID.self)
 
   case .delete:
-    return .cancel(ids: [PlayId.self, TimerId.self])
+    return .cancel(id: PlayID.self)
 
   case .playButtonTapped:
     switch memo.mode {
@@ -62,24 +61,19 @@ let voiceMemoReducer = Reducer<
       return .run { [url = memo.url] send in
         let start = environment.mainRunLoop.now
 
-        await withThrowingTaskGroup(of: Void.self) { group in
-          group.addTask {
-            for try await tick in environment.mainRunLoop.timer(interval: 0.5) {
-              await send(.timerUpdated(tick.date.timeIntervalSince(start.date)))
-            }
-          }
-          group.addTask {
-            await send(
-              .audioPlayerClient(TaskResult { try await environment.audioPlayerClient.play(url) })
-            )
-          }
+        async let playAudio: Void = send(
+          .audioPlayerClient(TaskResult { try await environment.audioPlayerClient.play(url) })
+        )
+
+        for try await tick in environment.mainRunLoop.timer(interval: 0.5) {
+          await send(.timerUpdated(tick.date.timeIntervalSince(start.date)))
         }
       }
-      .cancellable(id: PlayId.self, cancelInFlight: true)
+      .cancellable(id: PlayID.self, cancelInFlight: true)
 
     case .playing:
       memo.mode = .notPlaying
-      return .cancel(ids: [PlayId.self, TimerId.self])
+      return .cancel(id: PlayID.self)
     }
 
   case let .timerUpdated(time):
