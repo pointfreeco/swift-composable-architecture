@@ -1,5 +1,4 @@
 import Combine
-import Dependencies
 import SwiftUI
 
 /// A ``ViewStore`` is an object that can observe state changes and send actions. They are most
@@ -132,6 +131,16 @@ public final class ViewStore<State, Action>: ObservableObject {
 
   /// Sends an action to the store.
   ///
+  /// This method returns a ``ViewStoreTask``, which represents the lifetime of the effect started
+  /// from sending an action. You can use this value to tie the effect's lifetime _and_ cancellation
+  /// to an asynchronous context, such as SwiftUI's `task` view modifier:
+  ///
+  /// ```swift
+  /// .task { await viewStore.send(.task).finish() }
+  /// ```
+  ///
+  /// ## Thread safety
+  ///
   /// ``ViewStore`` is not thread safe and you should only send actions to it from the main thread.
   /// If you are wanting to send actions on background threads due to the fact that the reducer is
   /// performing computationally expensive work, then a better way to handle this is to wrap that
@@ -139,6 +148,8 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// back into the store.
   ///
   /// - Parameter action: An action.
+  /// - Returns: A ``ViewStoreTask`` that represents the lifetime of the effect executed when
+  ///            sending the action.
   @discardableResult
   public func send(_ action: Action) -> ViewStoreTask {
     .init(rawValue: self._send(action))

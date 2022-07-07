@@ -406,6 +406,8 @@
     ///     store. The mutable state sent to this closure must be modified to match the state of the
     ///     store after processing the given action. Do not provide a closure if no change is
     ///     expected.
+    /// - Returns: A ``TestStoreTask`` that represents the lifetime of the effect executed when
+    ///            sending the action.
     @discardableResult
     public func send(
       _ action: LocalAction,

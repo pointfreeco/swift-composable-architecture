@@ -1,5 +1,7 @@
 import Combine
 import Foundation
+import SwiftUI
+import XCTestDynamicOverlay
 
 /// The ``Effect`` type encapsulates a unit of work that can be run in the outside world, and can
 /// feed data back to the ``Store``. It is the perfect place to do side effects, such as network
@@ -47,4 +49,380 @@ public struct Effect<Output, Failure: Error> {
   public func map<T>(_ transform: @escaping (Output) -> T) -> Effect<T, Failure> {
     .init(self.map(transform) as Publishers.Map<Self, T>)
   }
+
+  /// An effect that causes a test to fail if it runs.
+  ///
+  /// This effect can provide an additional layer of certainty that a tested code path does not
+  /// execute a particular effect.
+  ///
+  /// For example, let's say we have a very simple counter application, where a user can increment
+  /// and decrement a number. The state and actions are simple enough:
+  ///
+  /// ```swift
+  /// struct CounterState: Equatable {
+  ///   var count = 0
+  /// }
+  ///
+  /// enum CounterAction: Equatable {
+  ///   case decrementButtonTapped
+  ///   case incrementButtonTapped
+  /// }
+  /// ```
+  ///
+  /// Let's throw in a side effect. If the user attempts to decrement the counter below zero, the
+  /// application should refuse and play an alert sound instead.
+  ///
+  /// We can model playing a sound in the environment with an effect:
+  ///
+  /// ```swift
+  /// struct CounterEnvironment {
+  ///   let playAlertSound: () -> Effect<Never, Never>
+  /// }
+  /// ```
+  ///
+  /// Now that we've defined the domain, we can describe the logic in a reducer:
+  ///
+  /// ```swift
+  /// let counterReducer = Reducer<
+  ///   CounterState, CounterAction, CounterEnvironment
+  /// > { state, action, environment in
+  ///   switch action {
+  ///   case .decrementButtonTapped:
+  ///     if state > 0 {
+  ///       state.count -= 0
+  ///       return .none
+  ///     } else {
+  ///       return environment.playAlertSound()
+  ///         .fireAndForget()
+  ///     }
+  ///
+  ///   case .incrementButtonTapped:
+  ///     state.count += 1
+  ///     return .none
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// Let's say we want to write a test for the increment path. We can see in the reducer that it
+  /// should never play an alert, so we can configure the environment with an effect that will
+  /// fail if it ever executes:
+  ///
+  /// ```swift
+  /// func testIncrement() {
+  ///   let store = TestStore(
+  ///     initialState: CounterState(count: 0)
+  ///     reducer: counterReducer,
+  ///     environment: CounterEnvironment(
+  ///       playSound: .unimplemented("playSound")
+  ///     )
+  ///   )
+  ///
+  ///   store.send(.increment) {
+  ///     $0.count = 1
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// By using an `.unimplemented` effect in our environment we have strengthened the assertion and
+  /// made the test easier to understand at the same time. We can see, without consulting the
+  /// reducer itself, that this particular action should not access this effect.
+  ///
+  /// - Parameter prefix: A string that identifies this scheduler and will prefix all failure
+  ///   messages.
+  /// - Returns: An effect that causes a test to fail if it runs.
+  public static func unimplemented(_ prefix: String) -> Self {
+    .fireAndForget {
+      XCTFail("\(prefix.isEmpty ? "" : "\(prefix) - ")An unimplemented effect ran.")
+    }
+  }
 }
+
+extension Effect where Failure == Never {
+  /// Wraps an asynchronous unit of work in an effect.
+  ///
+  /// This function is useful for executing work in an asynchronous context and capturing the result
+  /// in an ``Effect`` so that the reducer, a non-asynchronous context, can process it.
+  ///
+  /// For example, if your environment contains a dependency that exposes an `async` function, you
+  /// can use ``Effect/task(priority:operation:catch:file:fileID:line:)`` to provide an asynchronous
+  /// context for invoking that endpoint:
+  ///
+  /// ```swift
+  /// struct FeatureEnvironment {
+  ///   var numberFact: @Sendable (Int) async throws -> String
+  /// }
+  ///
+  /// enum FeatureAction {
+  ///   case factButtonTapped
+  ///   case faceResponse(TaskResult<String>)
+  /// }
+  ///
+  /// let featureReducer = Reducer<State, Action, Environment> { state, action, environment in
+  ///   switch action {
+  ///     case .factButtonTapped:
+  ///       return .task { [number = state.number] in
+  ///         await .factResponse(TaskResult { try await environment.numberFact(number) })
+  ///       }
+  ///
+  ///     case .factResponse(.success(fact)):
+  ///       // do something with fact
+  ///
+  ///     case .factResponse(.failure):
+  ///       // handle error
+  ///
+  ///     ...
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// The above code sample makes use of ``TaskResult`` in order to automatically bundle the success
+  /// or failure of the `numberFact` endpoint into a single type that can be sent in an action.
+  ///
+  /// The closure provided to ``Effect/task(priority:operation:catch:file:fileID:line:)`` is allowed
+  /// to throw, but any non-cancellation errors thrown will cause a runtime warning when run in the
+  /// simulator or on a device, and will cause a test failure in tests.
+  ///
+  /// - Parameters:
+  ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
+  ///     `Task.currentPriority`.
+  ///   - operation: The operation to execute.
+  ///   - catch: An error handler, invoked if the operation throws an error other than
+  ///     `CancellationError`.
+  /// - Returns: An effect wrapping the given asynchronous work.
+  public static func task(
+    priority: TaskPriority? = nil,
+    operation: @escaping @Sendable () async throws -> Output,
+    catch handler: (@Sendable (Error) async -> Output)? = nil,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> Self {
+    Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
+      let subject = PassthroughSubject<Output, Failure>()
+      let task = Task(priority: priority) { @MainActor in
+        await withTaskCancellationHandler {
+          if Thread.isMainThread {
+            subject.send(completion: .finished)
+          } else {
+            DispatchQueue.main.sync { subject.send(completion: .finished) }
+          }
+        } operation: {
+          defer { subject.send(completion: .finished) }
+          do {
+            try Task.checkCancellation()
+            let output = try await operation()
+            try Task.checkCancellation()
+            subject.send(output)
+          } catch is CancellationError {
+            return
+          } catch {
+            guard let handler = handler else {
+              var errorDump = ""
+              customDump(error, to: &errorDump, indent: 4)
+              runtimeWarning(
+                """
+                An 'Effect.task' returned from "%@:%d" threw an unhandled error:
+
+                %@
+
+                All non-cancellation errors must be explicitly handled via the 'catch' parameter \
+                on 'Effect.task', or via a 'do' block.
+                """,
+                [
+                  "\(fileID)",
+                  line,
+                  errorDump
+                ],
+                file: file,
+                line: line
+              )
+              return
+            }
+            await subject.send(handler(error))
+          }
+        }
+      }
+      return subject.handleEvents(receiveCancel: task.cancel)
+    }
+    .eraseToEffect()
+  }
+
+  /// Wraps an asynchronous unit of work that can emit any number of times in an effect.
+  ///
+  /// This effect is similar to ``task(priority:operation:catch:file:fileID:line:)`` except it is
+  /// capable of emitting 0 or more times, not just once.
+  ///
+  /// For example, if you had an async stream in your environment:
+  ///
+  /// ```swift
+  /// struct FeatureEnvironment {
+  ///   var events: @Sendable () -> AsyncStream<Event>
+  /// }
+  /// ```
+  ///
+  /// Then you could attach to it in a `run` effect by using `for await` and sending each output of
+  /// the stream back into the system:
+  ///
+  /// ```swift
+  /// case .startButtonTapped:
+  ///   return .run { send in
+  ///     for await event in environment.events() {
+  ///       send(.event(event))
+  ///     }
+  ///   }
+  /// ```
+  ///
+  /// See ``Send`` for more information on how to use the `send` argument passed to `run`'s closure.
+  ///
+  /// The closure provided to ``run(priority:operation:catch:file:fileID:line:)`` is allowed to
+  /// throw, but any non-cancellation errors thrown will cause a runtime warning when run in the
+  /// simulator or on a device, and will cause a test failure in tests.
+  ///
+  /// - Parameters:
+  ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
+  ///     `Task.currentPriority`.
+  ///   - operation: The operation to execute.
+  ///   - catch: An error handler, invoked if the operation throws an error other than
+  ///     `CancellationError`.
+  /// - Returns: An effect wrapping the given asynchronous work.
+  public static func run(
+    priority: TaskPriority? = nil,
+    operation: @escaping @Sendable (Send<Output>) async throws -> Void,
+    catch handler: (@Sendable (Error, Send<Output>) async -> Void)? = nil,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> Self {
+    .run { subscriber in
+      let task = Task(priority: priority) { @MainActor in
+        await withTaskCancellationHandler {
+          if Thread.isMainThread {
+            subscriber.send(completion: .finished)
+          } else {
+            DispatchQueue.main.sync { subscriber.send(completion: .finished) }
+          }
+        } operation: {
+          defer { subscriber.send(completion: .finished) }
+          let send = Send(send: { subscriber.send($0) })
+          do {
+            try await operation(send)
+          } catch is CancellationError {
+            return
+          } catch {
+            guard let handler = handler else {
+              var errorDump = ""
+              customDump(error, to: &errorDump, indent: 4)
+              runtimeWarning(
+                """
+                An 'Effect.run' returned from "%@:%d" threw an unhandled error:
+
+                %@
+
+                All non-cancellation errors must be explicitly handled via the 'catch' parameter \
+                on 'Effect.run', or via a 'do' block.
+                """,
+                [
+                  "\(fileID)",
+                  line,
+                  errorDump
+                ],
+                file: file,
+                line: line
+              )
+              return
+            }
+            await handler(error, send)
+          }
+        }
+      }
+      return AnyCancellable {
+        task.cancel()
+      }
+    }
+  }
+
+  /// Creates an effect that executes some work in the real world that doesn't need to feed data
+  /// back into the store. If an error is thrown, the effect will complete and the error will be
+  /// ignored.
+  ///
+  /// This effect is handy for executing some asynchronous work that your feature doesn't need to
+  /// react to. One such example is analytics:
+  ///
+  /// ```swift
+  /// case .buttonTapped:
+  ///   return .fireAndForget {
+  ///     try await environment.analytics.track("Button Tapped")
+  ///   }
+  /// ```
+  ///
+  /// The closure provided to ``Effect/fireAndForget(priority:_:)`` is allowed to throw, and any
+  /// error thrown will be ignored.
+  ///
+  /// - Parameters:
+  ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
+  ///     `Task.currentPriority`.
+  ///   - work: A closure encapsulating some work to execute in the real world.
+  /// - Returns: An effect.
+  public static func fireAndForget(
+    priority: TaskPriority? = nil,
+    _ work: @escaping @Sendable () async throws -> Void
+  ) -> Self {
+    Effect<Void, Never>.task(priority: priority) { try? await work() }
+      .fireAndForget()
+  }
+}
+
+/// A type that can send actions back into the system when used from
+/// ``Effect/run(priority:operation:catch:file:fileID:line:)``.
+///
+/// This type implements [`callAsFunction`][callAsFunction] so that you invoke it as a function
+/// rather than calling methods on it:
+///
+/// ```swift
+/// return .run { send in
+///   send(.started)
+///   defer { send(.finished) }
+///   for await event in environment.events {
+///     send(.event(event))
+///   }
+/// }
+/// ```
+///
+/// You can also send actions with animation:
+///
+/// ```swift
+/// send(.started, animation: .spring())
+/// defer { send(.finished, animation: .default) }
+/// ```
+///
+/// See ``Effect/run(priority:operation:catch:file:fileID:line:)`` for more information on how to
+/// use this value to construct effects that can emit any number of times in an asynchronous
+/// context.
+///
+/// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
+@MainActor
+public struct Send<Action> {
+  fileprivate let send: @Sendable (Action) -> Void
+
+  /// Sends an action back into the system from an effect.
+  ///
+  /// - Parameter action: An action.
+  public func callAsFunction(_ action: Action) {
+    guard !Task.isCancelled else { return }
+    self.send(action)
+  }
+
+  /// Sends an action back into the system from an effect with animation.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - animation: An animation.
+  public func callAsFunction(_ action: Action, animation: Animation?) {
+    guard !Task.isCancelled else { return }
+    withAnimation(animation) {
+      self(action)
+    }
+  }
+}
+
+extension Send: Sendable where Action: Sendable {}
