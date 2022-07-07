@@ -499,7 +499,7 @@
       if "\(self.file)" == "\(file)" {
         self.line = line
       }
-
+      await Task.megaYield()
       return .init(rawValue: task, timeout: self.timeout)
     }
 
