@@ -1,4 +1,3 @@
-import Foundation
 import XCTestDynamicOverlay
 
 /// A value that represents either a success or a failure. This type differs from Swift's `Result`
@@ -102,7 +101,10 @@ import XCTestDynamicOverlay
 /// }
 /// ```
 public enum TaskResult<Success: Sendable>: Sendable {
+  /// A success, storing a `Success` value.
   case success(Success)
+
+  /// A failure, storing an error.
   case failure(Error)
 
   /// Creates a new task result by evaluating an async throwing closure, capturing the returned
@@ -112,6 +114,7 @@ public enum TaskResult<Success: Sendable>: Sendable {
   /// documentation for ``TaskResult`` for a concrete example.
   ///
   /// - Parameter body: An async, throwing closure.
+  @_transparent
   public init(catching body: @Sendable () async throws -> Success) async {
     do {
       self = .success(try await body())
@@ -123,6 +126,7 @@ public enum TaskResult<Success: Sendable>: Sendable {
   /// Transforms a `Result` into a `TaskResult`, erasing its `Failure` to `Error`.
   ///
   /// - Parameter result: A result.
+  @inlinable
   public init<Failure>(_ result: Result<Success, Failure>) {
     switch result {
     case let .success(value):
@@ -133,6 +137,7 @@ public enum TaskResult<Success: Sendable>: Sendable {
   }
 
   /// Returns the success value as a throwing property.
+  @inlinable
   public var value: Success {
     get throws {
       switch self {
@@ -151,6 +156,7 @@ public enum TaskResult<Success: Sendable>: Sendable {
   /// - Parameter transform: A closure that takes the success value of this instance.
   /// - Returns: A `TaskResult` instance with the result of evaluating `transform` as the new
   ///   success value if this instance represents a success.
+  @inlinable
   public func map<NewSuccess>(_ transform: (Success) -> NewSuccess) -> TaskResult<NewSuccess> {
     switch self {
     case let .success(value):
@@ -167,6 +173,7 @@ public enum TaskResult<Success: Sendable>: Sendable {
   ///
   /// - Parameter transform: A closure that takes the success value of the instance.
   /// - Returns: A `TaskResult` instance, either from the closure or the previous `.failure`.
+  @inlinable
   public func flatMap<NewSuccess>(
     _ transform: (Success) -> TaskResult<NewSuccess>
   ) -> TaskResult<NewSuccess> {
@@ -184,7 +191,8 @@ extension Result where Success: Sendable, Failure == Error {
   /// Transforms a `TaskResult` into a `Result`.
   ///
   /// - Parameter result: A task result.
-  init(_ result: TaskResult<Success>) {
+  @inlinable
+  public init(_ result: TaskResult<Success>) {
     switch result {
     case let .success(value):
       self = .success(value)
