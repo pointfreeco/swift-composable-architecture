@@ -438,7 +438,7 @@ extension Effect where Failure == Never {
 /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
 @MainActor
 public struct Send<Action> {
-  fileprivate let send: @Sendable (Action) -> Void
+  fileprivate let send: (Action) -> Void
 
   /// Sends an action back into the system from an effect.
   ///
