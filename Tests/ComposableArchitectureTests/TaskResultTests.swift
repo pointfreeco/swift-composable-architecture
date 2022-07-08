@@ -25,6 +25,33 @@ class TaskResultTests: XCTestCase {
     }
   }
 
+  func testEqualityMismatchingError() {
+    struct Failure1: Error {
+      let message: String
+    }
+    struct Failure2: Error {
+      let message: String
+    }
+
+    XCTExpectFailure {
+      XCTAssertNoDifference(
+        TaskResult<Never>.failure(Failure1(message: "Something went wrong")),
+        TaskResult<Never>.failure(Failure2(message: "Something went wrong"))
+      )
+    } issueMatcher: {
+      $0.compactDescription == """
+        XCTAssertNoDifference failed: …
+
+            TaskResult.failure(
+          −   TaskResultTests.Failure1(message: "Something went wrong")
+          +   TaskResultTests.Failure2(message: "Something went wrong")
+            )
+
+        (First: −, Second: +)
+        """
+    }
+  }
+
   func testHashabilityNonHashableError() {
     struct Failure: Error {
       let message: String
