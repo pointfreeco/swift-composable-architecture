@@ -233,13 +233,30 @@ extension TaskResult: Equatable where Success: Equatable {
 extension TaskResult: Hashable where Success: Hashable {
   public func hash(into hasher: inout Hasher) {
     switch self {
-    case let .success(success):
-      hasher.combine(success)
-    case let .failure(failure):
-      if let failure = (failure as Any) as? AnyHashable {
-        hasher.combine(failure)
+    case let .success(value):
+      hasher.combine(value)
+      hasher.combine(0)
+    case let .failure(error):
+      if let error = (error as Any) as? AnyHashable {
+        hasher.combine(error)
+        hasher.combine(1)
       } else {
-        hasher.combine(failure as NSError)
+        if TaskResultDebugging.emitRuntimeWarnings {
+          runtimeWarning(
+            """
+            '%1$@' is not hashable
+
+            To hash a value of this type, it must conform to the 'Hashable' protocol. For example:
+
+                extension %1$@: Hashable {}
+
+            See the documentation of 'TaskResult' for more information.
+            """,
+            [
+              "\(type(of: error))",
+            ]
+          )
+        }
       }
     }
   }
