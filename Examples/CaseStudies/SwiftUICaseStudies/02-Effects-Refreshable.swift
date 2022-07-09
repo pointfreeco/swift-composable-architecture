@@ -54,7 +54,7 @@ let refreshableReducer = Reducer<
 
   case .factResponse(.failure):
     state.isLoading = false
-    // TODO: do some error handling
+    // NB: This is where you could do some error handling.
     return .none
 
   case .incrementButtonTapped:
