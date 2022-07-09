@@ -39,7 +39,7 @@ extension Effect where Failure == Never {
 }
 
 struct AnimationsState: Equatable {
-  var alert: AlertState<AnimationsAction>? = nil
+  var alert: AlertState<AnimationsAction>?
   var circleCenter = CGPoint(x: 50, y: 50)
   var circleColor = Color.white
   var isCircleScaled = false

@@ -7,7 +7,7 @@ private let readMe = """
   """
 
 struct FocusDemoState: Equatable {
-  @BindableState var focusedField: Field? = nil
+  @BindableState var focusedField: Field?
   @BindableState var password: String = ""
   @BindableState var username: String = ""
 
