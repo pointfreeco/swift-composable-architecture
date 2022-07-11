@@ -27,9 +27,7 @@ class EffectsBasicsTests: XCTestCase {
       environment: .unimplemented
     )
 
-//    store.environment.fact.fetch = { Effect(value: "\($0) is a good number Brent") }
     store.environment.fact.fetchAsync = { "\($0) is a good number Brent" }
-//    store.environment.mainQueue = .immediate
 
     store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -37,13 +35,10 @@ class EffectsBasicsTests: XCTestCase {
     store.send(.numberFactButtonTapped) {
       $0.isNumberFactRequestInFlight = true
     }
-//    _ = XCTWaiter.wait(for: [.init()], timeout: 0.1)
     await store.receive(.numberFactResponse(.success("1 is a good number Brent"))) {
       $0.isNumberFactRequestInFlight = false
       $0.numberFact = "1 is a good number Brent"
     }
-
-//    _ = { store.receive(.decrementButtonTapped) }()
   }
 
   func testNumberFact_UnhappyPath() async {
@@ -54,7 +49,6 @@ class EffectsBasicsTests: XCTestCase {
     )
 
     struct SomeError: Equatable, Error {}
-//    store.environment.fact.fetch = { _ in Effect(error: FactClient.Failure()) }
     store.environment.fact.fetchAsync = { _ in throw SomeError() }
 
     store.send(.incrementButtonTapped) {
@@ -68,8 +62,48 @@ class EffectsBasicsTests: XCTestCase {
     }
   }
 
-  func testIsEquatable() {
+  func testDecrement() async {
+    let mainQueue = DispatchQueue.test
 
+    let store = TestStore(
+      initialState: EffectsBasicsState(),
+      reducer: effectsBasicsReducer,
+      environment: .unimplemented
+    )
+
+    store.environment.mainQueue = mainQueue.eraseToAnyScheduler()
+
+    store.send(.decrementButtonTapped) {
+      $0.count = -1
+    }
+
+    mainQueue.advance(by: .seconds(1))
+
+    await store.receive(.decrementDelayResponse, timeout: 2*NSEC_PER_SEC) {
+      $0.count = 0
+    }
+  }
+
+  func testDecrementCancellation() async {
+    let mainQueue = DispatchQueue.test
+
+    let store = TestStore(
+      initialState: EffectsBasicsState(),
+      reducer: effectsBasicsReducer,
+      environment: .unimplemented
+    )
+
+    store.environment.mainQueue = mainQueue.eraseToAnyScheduler()
+
+    store.send(.decrementButtonTapped) {
+      $0.count = -1
+    }
+    store.send(.incrementButtonTapped) {
+      $0.count = 0
+    }
+  }
+
+  func testIsEquatable() {
     XCTAssertTrue(isEquatable(1))
     XCTAssertTrue(isEquatable("Hello"))
     XCTAssertTrue(isEquatable(true))
@@ -82,9 +116,6 @@ class EffectsBasicsTests: XCTestCase {
     XCTAssertTrue(equals(1, 1))
     XCTAssertTrue(equals("Hello", "Hello"))
     XCTAssertFalse(equals(true, false))
-
-//    XCTAssertFalse(equals((), ()))
-
   }
 }
 import SwiftUI
