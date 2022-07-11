@@ -178,8 +178,9 @@
 
     /// The current state.
     ///
-    /// When read from a trailing closure assertion in ``send(_:_:file:line:)`` or
-    /// ``receive(_:timeout:_:file:line:)``, it will equal the `inout` state passed to the closure.
+    /// When read from a trailing closure assertion in ``send(_:_:file:line:)-7vwv9`` or
+    /// ``receive(_:timeout:_:file:line:)-3iwdm``, it will equal the `inout` state passed to the
+    /// closure.
     public private(set) var state: State
 
     /// The timeout to await for in-flight effects.
@@ -240,6 +241,21 @@
         environment: ()
       )
     }
+
+    #if swift(>=5.7)
+      /// Asserts all in-flight effects have finished.
+      ///
+      /// - Parameter duration: The amount of time to wait before asserting.
+      @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+      @MainActor
+      public func finish(
+        timeout duration: Duration? = nil,
+        file: StaticString = #file,
+        line: UInt = #line
+      ) async {
+        await self.finish(timeout: duration?.nanoseconds, file: file, line: line)
+      }
+    #endif
 
     /// Asserts all in-flight effects have finished.
     ///
@@ -428,7 +444,7 @@
     ///     store after processing the given action. Do not provide a closure if no change is
     ///     expected.
     /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
-    ///            sending the action.
+    ///   sending the action.
     @available(iOS, deprecated: 9999.0, message: "Call the async-friendly 'send' instead.")
     @available(macOS, deprecated: 9999.0, message: "Call the async-friendly 'send' instead.")
     @available(tvOS, deprecated: 9999.0, message: "Call the async-friendly 'send' instead.")
@@ -478,8 +494,39 @@
       return .init(rawValue: task, timeout: self.timeout)
     }
 
-    @MainActor
+    /// Sends an action to the store and asserts when state changes.
+    ///
+    /// This method returns a ``TestStoreTask``, which represents the lifecycle of the effect
+    /// started from sending an action. You can use this value to force the cancellation of the
+    /// effect, which is helpful for effects that are tied to a view's lifecycle and not torn
+    /// down when an action is sent, such as actions sent in SwiftUI's `task` view modifier.
+    ///
+    /// For example, if your feature kicks off a long-living effect when the view appears by using
+    /// SwiftUI's `task` view modifier, then you can write a test for such a feature by explicitly
+    /// canceling the effect's task after you make all assertions:
+    ///
+    /// ```swift
+    /// let store = TestStore(...)
+    ///
+    /// // emulate the view appearing
+    /// let task = await store.send(.task)
+    ///
+    /// // assertions
+    ///
+    /// // emulate the view disappearing
+    /// await task.cancel()
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - action: An action.
+    ///   - updateExpectingResult: A closure that asserts state changed by sending the action to the
+    ///     store. The mutable state sent to this closure must be modified to match the state of the
+    ///     store after processing the given action. Do not provide a closure if no change is
+    ///     expected.
+    /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
+    ///   sending the action.
     @discardableResult
+    @MainActor
     public func send(
       _ action: LocalAction,
       _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
@@ -611,6 +658,35 @@
       }
     }
 
+    #if swift(>=5.7)
+      /// Asserts an action was received from an effect and asserts when state changes.
+      ///
+      /// - Parameters:
+      ///   - expectedAction: An action expected from an effect.
+      ///   - duration: The amount of time to wait for the expected action.
+      ///   - updateExpectingResult: A closure that asserts state changed by sending the action to
+      ///     the store. The mutable state sent to this closure must be modified to match the state
+      ///     of the store after processing the given action. Do not provide a closure if no change
+      ///     is expected.
+      @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+      @MainActor
+      public func receive(
+        _ expectedAction: Action,
+        timeout duration: Duration? = nil,
+        _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
+        file: StaticString = #file,
+        line: UInt = #line
+      ) async {
+        await self.receive(
+          expectedAction,
+          timeout: duration?.nanoseconds,
+          updateExpectingResult,
+          file: file,
+          line: line
+        )
+      }
+    #endif
+
     /// Asserts an action was received from an effect and asserts when state changes.
     ///
     /// - Parameters:
@@ -730,8 +806,8 @@
     }
   }
 
-  /// The type returned from ``TestStore/send(_:_:file:line:)`` that represents the lifecycle of the
-  /// effect started from sending an action.
+  /// The type returned from ``TestStore/send(_:_:file:line:)-7vwv9`` that represents the lifecycle
+  /// of the effect started from sending an action.
   ///
   /// For example you can use this value in tests to cancel the effect started from sending an
   /// action:
@@ -756,7 +832,8 @@
   /// await store.send(.timerToggleButtonTapped).finish()
   /// ```
   ///
-  /// See ``TestStore/finish(timeout:file:line:)`` for the ability to await all in-flight effects.
+  /// See ``TestStore/finish(timeout:file:line:)-7pmv3`` for the ability to await all in-flight
+  /// effects.
   ///
   /// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.
   public struct TestStoreTask {
@@ -770,6 +847,20 @@
       self.rawValue.cancel()
       await self.rawValue.cancellableValue
     }
+
+    #if swift(>=5.7)
+      @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+      /// Asserts the underlying task finished.
+      ///
+      /// - Parameter duration: The amount of time to wait before asserting.
+      public func finish(
+        timeout duration: Duration? = nil,
+        file: StaticString = #file,
+        line: UInt = #line
+      ) async {
+        await self.finish(timeout: duration?.nanoseconds, file: file, line: line)
+      }
+    #endif
 
     /// Asserts the underlying task finished.
     ///
@@ -827,4 +918,14 @@
       }
     }
   }
+
+  #if swift(>=5.7)
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+    extension Duration {
+      fileprivate var nanoseconds: UInt64 {
+        UInt64(self.components.seconds) * NSEC_PER_SEC
+          + UInt64(self.components.attoseconds) / 1_000_000_000
+      }
+    }
+  #endif
 #endif
