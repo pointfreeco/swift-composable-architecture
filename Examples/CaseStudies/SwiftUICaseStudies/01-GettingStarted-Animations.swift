@@ -40,7 +40,7 @@ extension Effect where Failure == Never {
 
 struct AnimationsState: Equatable {
   var alert: AlertState<AnimationsAction>?
-  var circleCenter = CGPoint(x: 175, y: 300)
+  var circleCenter = CGPoint.zero
   var circleColor = Color.black
   var isCircleScaled = false
 }
@@ -152,6 +152,11 @@ struct AnimationsView: View {
             .padding([.horizontal, .bottom])
         }
         .alert(self.store.scope(state: \.alert), dismiss: .dismissAlert)
+        .onAppear {
+          viewStore.send(.tapped(
+            CGPoint(x: proxy.size.width / 2, y: proxy.size.height / 2)
+          ))
+        }
       }
       .navigationBarTitleDisplayMode(.inline)
     }
