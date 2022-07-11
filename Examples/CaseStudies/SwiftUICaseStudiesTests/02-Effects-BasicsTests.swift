@@ -53,8 +53,9 @@ class EffectsBasicsTests: XCTestCase {
       environment: .unimplemented
     )
 
+    struct SomeError: Equatable, Error {}
 //    store.environment.fact.fetch = { _ in Effect(error: FactClient.Failure()) }
-    store.environment.fact.fetchAsync = { _ in throw FactClient.Failure() }
+    store.environment.fact.fetchAsync = { _ in throw SomeError() }
 
     store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -62,7 +63,7 @@ class EffectsBasicsTests: XCTestCase {
     store.send(.numberFactButtonTapped) {
       $0.isNumberFactRequestInFlight = true
     }
-    await store.receive(.numberFactResponse(.failure(FactClient.Failure()))) {
+    await store.receive(.numberFactResponse(.failure(SomeError()))) {
       $0.isNumberFactRequestInFlight = false
     }
   }

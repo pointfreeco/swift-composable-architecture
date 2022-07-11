@@ -1,6 +1,14 @@
-public enum TaskResult<Success> {
+public enum TaskResult<Success: Sendable>: Sendable {
   case success(Success)
   case failure(Error)
+
+  public init(catching body: @Sendable () async throws -> Success) async {
+    do {
+      self = .success(try await body())
+    } catch {
+      self = .failure(error)
+    }
+  }
 }
 
 extension TaskResult: Equatable where Success: Equatable {
@@ -8,9 +16,8 @@ extension TaskResult: Equatable where Success: Equatable {
     switch (lhs, rhs) {
     case let (.success(lhs), .success(rhs)):
       return lhs == rhs
-    case (.failure, .failure):
-      // ???
-      fatalError()
+    case let (.failure(lhs), .failure(rhs)):
+      return equals(lhs, rhs)
     case (.success, .failure), (.failure, .success):
       return false
     }

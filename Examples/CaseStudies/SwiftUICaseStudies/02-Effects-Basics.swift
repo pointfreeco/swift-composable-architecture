@@ -31,7 +31,7 @@ enum EffectsBasicsAction: Equatable {
   case decrementButtonTapped
   case incrementButtonTapped
   case numberFactButtonTapped
-  case numberFactResponse(Result<String, FactClient.Failure>)
+  case numberFactResponse(TaskResult<String>)
 }
 
 struct EffectsBasicsEnvironment {
@@ -64,15 +64,7 @@ let effectsBasicsReducer = Reducer<
     // value back to the reducer's `numberFactResponse` action.
 
     return .task { [count = state.count] in
-      do {
-        return .numberFactResponse(
-          .success(
-            try await environment.fact.fetchAsync(count)
-          )
-        )
-      } catch {
-        return .numberFactResponse(.failure(FactClient.Failure()))
-      }
+      .numberFactResponse(await TaskResult { try await environment.fact.fetchAsync(count) })
     }
 
 //    return environment.fact.fetch(state.count)
@@ -83,6 +75,11 @@ let effectsBasicsReducer = Reducer<
   case let .numberFactResponse(.success(response)):
     state.isNumberFactRequestInFlight = false
     state.numberFact = response
+    return .none
+
+  case let .numberFactResponse(.failure(failure as URLError)):
+    // TODO: Handle the URL error
+    state.isNumberFactRequestInFlight = false
     return .none
 
   case .numberFactResponse(.failure):
