@@ -8,168 +8,22 @@ import XCTestDynamicOverlay
 /// requests, saving/loading from disk, creating timers, interacting with dependencies, and more.
 ///
 /// Effects are returned from reducers so that the ``Store`` can perform the effects after the
-/// reducer is done running. It is important to note that ``Store`` is not thread safe, and so all
-/// effects must receive values on the same thread, **and** if the store is being used to drive UI
-/// then it must receive values on the main thread.
+/// reducer is done running.
 ///
-/// An effect simply wraps a `Publisher` value and provides some convenience initializers for
-/// constructing some common types of effects.
+/// > **Important**: ``Store`` is not thread safe, and so all effects must receive values on the
+/// > same thread. This is typically the main thread,  **and** if the store is being used to drive UI then it must receive
+/// > values on the main thread.
 public struct Effect<Output, Failure: Error> {
   let publisher: AnyPublisher<Output, Failure>
+}
 
+// MARK: - Creating Effects
+
+extension Effect {
   /// An effect that does nothing and completes immediately. Useful for situations where you must
   /// return an effect, but you don't need to do anything.
   public static var none: Self {
     Empty(completeImmediately: true).eraseToEffect()
-  }
-
-  /// Merges a variadic list of effects together into a single effect, which runs the effects at the
-  /// same time.
-  ///
-  /// - Parameter effects: A list of effects.
-  /// - Returns: A new effect
-  public static func merge(_ effects: Self...) -> Self {
-    .merge(effects)
-  }
-
-  /// Merges a sequence of effects together into a single effect, which runs the effects at the same
-  /// time.
-  ///
-  /// - Parameter effects: A sequence of effects.
-  /// - Returns: A new effect
-  public static func merge<S: Sequence>(_ effects: S) -> Self where S.Element == Effect {
-    Publishers.MergeMany(effects).eraseToEffect()
-  }
-
-  /// Concatenates a variadic list of effects together into a single effect, which runs the effects
-  /// one after the other.
-  ///
-  /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
-  ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
-  ///   Composable Architecture in functions like ``Reducer/combine(_:)-1ern2``.
-  ///
-  ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
-  ///
-  /// - Parameter effects: A variadic list of effects.
-  /// - Returns: A new effect
-  public static func concatenate(_ effects: Self...) -> Self {
-    .concatenate(effects)
-  }
-
-  /// Concatenates a collection of effects together into a single effect, which runs the effects one
-  /// after the other.
-  ///
-  /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
-  ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
-  ///   Composable Architecture in functions like ``Reducer/combine(_:)-1ern2``.
-  ///
-  ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
-  ///
-  /// - Parameter effects: A collection of effects.
-  /// - Returns: A new effect
-  public static func concatenate<C: Collection>(_ effects: C) -> Self where C.Element == Effect {
-    effects.isEmpty
-    ? .none
-    : effects
-      .dropFirst()
-      .reduce(into: effects[effects.startIndex]) { effects, effect in
-        effects = effects.append(effect).eraseToEffect()
-      }
-  }
-
-  /// Transforms all elements from the upstream effect with a provided closure.
-  ///
-  /// - Parameter transform: A closure that transforms the upstream effect's output to a new output.
-  /// - Returns: A publisher that uses the provided closure to map elements from the upstream effect
-  ///   to new elements that it then publishes.
-  public func map<T>(_ transform: @escaping (Output) -> T) -> Effect<T, Failure> {
-    .init(self.map(transform) as Publishers.Map<Self, T>)
-  }
-
-  /// An effect that causes a test to fail if it runs.
-  ///
-  /// This effect can provide an additional layer of certainty that a tested code path does not
-  /// execute a particular effect.
-  ///
-  /// For example, let's say we have a very simple counter application, where a user can increment
-  /// and decrement a number. The state and actions are simple enough:
-  ///
-  /// ```swift
-  /// struct CounterState: Equatable {
-  ///   var count = 0
-  /// }
-  ///
-  /// enum CounterAction: Equatable {
-  ///   case decrementButtonTapped
-  ///   case incrementButtonTapped
-  /// }
-  /// ```
-  ///
-  /// Let's throw in a side effect. If the user attempts to decrement the counter below zero, the
-  /// application should refuse and play an alert sound instead.
-  ///
-  /// We can model playing a sound in the environment with an effect:
-  ///
-  /// ```swift
-  /// struct CounterEnvironment {
-  ///   let playAlertSound: () -> Effect<Never, Never>
-  /// }
-  /// ```
-  ///
-  /// Now that we've defined the domain, we can describe the logic in a reducer:
-  ///
-  /// ```swift
-  /// let counterReducer = Reducer<
-  ///   CounterState, CounterAction, CounterEnvironment
-  /// > { state, action, environment in
-  ///   switch action {
-  ///   case .decrementButtonTapped:
-  ///     if state > 0 {
-  ///       state.count -= 0
-  ///       return .none
-  ///     } else {
-  ///       return environment.playAlertSound()
-  ///         .fireAndForget()
-  ///     }
-  ///
-  ///   case .incrementButtonTapped:
-  ///     state.count += 1
-  ///     return .none
-  ///   }
-  /// }
-  /// ```
-  ///
-  /// Let's say we want to write a test for the increment path. We can see in the reducer that it
-  /// should never play an alert, so we can configure the environment with an effect that will
-  /// fail if it ever executes:
-  ///
-  /// ```swift
-  /// func testIncrement() {
-  ///   let store = TestStore(
-  ///     initialState: CounterState(count: 0)
-  ///     reducer: counterReducer,
-  ///     environment: CounterEnvironment(
-  ///       playSound: .unimplemented("playSound")
-  ///     )
-  ///   )
-  ///
-  ///   store.send(.increment) {
-  ///     $0.count = 1
-  ///   }
-  /// }
-  /// ```
-  ///
-  /// By using an `.unimplemented` effect in our environment we have strengthened the assertion and
-  /// made the test easier to understand at the same time. We can see, without consulting the
-  /// reducer itself, that this particular action should not access this effect.
-  ///
-  /// - Parameter prefix: A string that identifies this scheduler and will prefix all failure
-  ///   messages.
-  /// - Returns: An effect that causes a test to fail if it runs.
-  public static func unimplemented(_ prefix: String) -> Self {
-    .fireAndForget {
-      XCTFail("\(prefix.isEmpty ? "" : "\(prefix) - ")An unimplemented effect ran.")
-    }
   }
 }
 
@@ -236,26 +90,19 @@ extension Effect where Failure == Never {
     Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
       let subject = PassthroughSubject<Output, Failure>()
       let task = Task(priority: priority) { @MainActor in
-        await withTaskCancellationHandler {
-          if Thread.isMainThread {
-            subject.send(completion: .finished)
-          } else {
-            DispatchQueue.main.sync { subject.send(completion: .finished) }
-          }
-        } operation: {
-          defer { subject.send(completion: .finished) }
-          do {
-            try Task.checkCancellation()
-            let output = try await operation()
-            try Task.checkCancellation()
-            subject.send(output)
-          } catch is CancellationError {
-            return
-          } catch {
-            guard let handler = handler else {
-              var errorDump = ""
-              customDump(error, to: &errorDump, indent: 4)
-              runtimeWarning(
+        defer { subject.send(completion: .finished) }
+        do {
+          try Task.checkCancellation()
+          let output = try await operation()
+          try Task.checkCancellation()
+          subject.send(output)
+        } catch is CancellationError {
+          return
+        } catch {
+          guard let handler = handler else {
+            var errorDump = ""
+            customDump(error, to: &errorDump, indent: 4)
+            runtimeWarning(
                 """
                 An 'Effect.task' returned from "%@:%d" threw an unhandled error:
 
@@ -271,11 +118,10 @@ extension Effect where Failure == Never {
                 ],
                 file: file,
                 line: line
-              )
-              return
-            }
-            await subject.send(handler(error))
+            )
+            return
           }
+          await subject.send(handler(error))
         }
       }
       return subject.handleEvents(receiveCancel: task.cancel)
@@ -331,24 +177,17 @@ extension Effect where Failure == Never {
   ) -> Self {
     .run { subscriber in
       let task = Task(priority: priority) { @MainActor in
-        await withTaskCancellationHandler {
-          if Thread.isMainThread {
-            subscriber.send(completion: .finished)
-          } else {
-            DispatchQueue.main.sync { subscriber.send(completion: .finished) }
-          }
-        } operation: {
-          defer { subscriber.send(completion: .finished) }
-          let send = Send(send: { subscriber.send($0) })
-          do {
-            try await operation(send)
-          } catch is CancellationError {
-            return
-          } catch {
-            guard let handler = handler else {
-              var errorDump = ""
-              customDump(error, to: &errorDump, indent: 4)
-              runtimeWarning(
+        defer { subscriber.send(completion: .finished) }
+        let send = Send(send: { subscriber.send($0) })
+        do {
+          try await operation(send)
+        } catch is CancellationError {
+          return
+        } catch {
+          guard let handler = handler else {
+            var errorDump = ""
+            customDump(error, to: &errorDump, indent: 4)
+            runtimeWarning(
                 """
                 An 'Effect.run' returned from "%@:%d" threw an unhandled error:
 
@@ -364,11 +203,10 @@ extension Effect where Failure == Never {
                 ],
                 file: file,
                 line: line
-              )
-              return
-            }
-            await handler(error, send)
+            )
+            return
           }
+          await handler(error, send)
         }
       }
       return AnyCancellable {
@@ -461,4 +299,159 @@ public struct Send<Action> {
   }
 }
 
-extension Send: Sendable where Action: Sendable {}
+// MARK: - Composing Effects
+
+extension Effect {
+  /// Merges a variadic list of effects together into a single effect, which runs the effects at the
+  /// same time.
+  ///
+  /// - Parameter effects: A list of effects.
+  /// - Returns: A new effect
+  public static func merge(_ effects: Self...) -> Self {
+    .merge(effects)
+  }
+
+  /// Merges a sequence of effects together into a single effect, which runs the effects at the same
+  /// time.
+  ///
+  /// - Parameter effects: A sequence of effects.
+  /// - Returns: A new effect
+  public static func merge<S: Sequence>(_ effects: S) -> Self where S.Element == Effect {
+    Publishers.MergeMany(effects).eraseToEffect()
+  }
+
+  /// Concatenates a variadic list of effects together into a single effect, which runs the effects
+  /// one after the other.
+  ///
+  /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
+  ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
+  ///   Composable Architecture in functions like ``Reducer/combine(_:)-1ern2``.
+  ///
+  ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
+  ///
+  /// - Parameter effects: A variadic list of effects.
+  /// - Returns: A new effect
+  public static func concatenate(_ effects: Self...) -> Self {
+    .concatenate(effects)
+  }
+
+  /// Concatenates a collection of effects together into a single effect, which runs the effects one
+  /// after the other.
+  ///
+  /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
+  ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
+  ///   Composable Architecture in functions like ``Reducer/combine(_:)-1ern2``.
+  ///
+  ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
+  ///
+  /// - Parameter effects: A collection of effects.
+  /// - Returns: A new effect
+  public static func concatenate<C: Collection>(_ effects: C) -> Self where C.Element == Effect {
+    effects.isEmpty
+    ? .none
+    : effects
+      .dropFirst()
+      .reduce(into: effects[effects.startIndex]) { effects, effect in
+        effects = effects.append(effect).eraseToEffect()
+      }
+  }
+
+  /// Transforms all elements from the upstream effect with a provided closure.
+  ///
+  /// - Parameter transform: A closure that transforms the upstream effect's output to a new output.
+  /// - Returns: A publisher that uses the provided closure to map elements from the upstream effect
+  ///   to new elements that it then publishes.
+  public func map<T>(_ transform: @escaping (Output) -> T) -> Effect<T, Failure> {
+    .init(self.map(transform) as Publishers.Map<Self, T>)
+  }
+}
+
+// MARK: - Testing Effects
+
+extension Effect {
+  /// An effect that causes a test to fail if it runs.
+  ///
+  /// This effect can provide an additional layer of certainty that a tested code path does not
+  /// execute a particular effect.
+  ///
+  /// For example, let's say we have a very simple counter application, where a user can increment
+  /// and decrement a number. The state and actions are simple enough:
+  ///
+  /// ```swift
+  /// struct CounterState: Equatable {
+  ///   var count = 0
+  /// }
+  ///
+  /// enum CounterAction: Equatable {
+  ///   case decrementButtonTapped
+  ///   case incrementButtonTapped
+  /// }
+  /// ```
+  ///
+  /// Let's throw in a side effect. If the user attempts to decrement the counter below zero, the
+  /// application should refuse and play an alert sound instead.
+  ///
+  /// We can model playing a sound in the environment with an effect:
+  ///
+  /// ```swift
+  /// struct CounterEnvironment {
+  ///   let playAlertSound: () -> Effect<Never, Never>
+  /// }
+  /// ```
+  ///
+  /// Now that we've defined the domain, we can describe the logic in a reducer:
+  ///
+  /// ```swift
+  /// let counterReducer = Reducer<
+  ///   CounterState, CounterAction, CounterEnvironment
+  /// > { state, action, environment in
+  ///   switch action {
+  ///   case .decrementButtonTapped:
+  ///     if state > 0 {
+  ///       state.count -= 0
+  ///       return .none
+  ///     } else {
+  ///       return environment.playAlertSound()
+  ///         .fireAndForget()
+  ///     }
+  ///
+  ///   case .incrementButtonTapped:
+  ///     state.count += 1
+  ///     return .none
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// Let's say we want to write a test for the increment path. We can see in the reducer that it
+  /// should never play an alert, so we can configure the environment with an effect that will
+  /// fail if it ever executes:
+  ///
+  /// ```swift
+  /// func testIncrement() {
+  ///   let store = TestStore(
+  ///     initialState: CounterState(count: 0)
+  ///     reducer: counterReducer,
+  ///     environment: CounterEnvironment(
+  ///       playSound: .unimplemented("playSound")
+  ///     )
+  ///   )
+  ///
+  ///   store.send(.increment) {
+  ///     $0.count = 1
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// By using an `.unimplemented` effect in our environment we have strengthened the assertion and
+  /// made the test easier to understand at the same time. We can see, without consulting the
+  /// reducer itself, that this particular action should not access this effect.
+  ///
+  /// - Parameter prefix: A string that identifies this scheduler and will prefix all failure
+  ///   messages.
+  /// - Returns: An effect that causes a test to fail if it runs.
+  public static func unimplemented(_ prefix: String) -> Self {
+    .fireAndForget {
+      XCTFail("\(prefix.isEmpty ? "" : "\(prefix) - ")An unimplemented effect ran.")
+    }
+  }
+}
