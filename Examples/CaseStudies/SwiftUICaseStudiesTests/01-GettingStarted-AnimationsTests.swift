@@ -92,7 +92,7 @@ class AnimationTests: XCTestCase {
         secondaryButton: .cancel(TextState("Cancel"))
       )
     }
-    
+
     store.send(.resetConfirmationButtonTapped) {
       $0 = AnimationsState()
     }
