@@ -42,7 +42,7 @@ let presentAndLoadReducer =
       case .setSheet(isPresented: true):
         state.isSheetPresented = true
         return .task {
-          try? await environment.mainQueue.sleep(for: 1)
+          try await environment.mainQueue.sleep(for: 1)
           return .setSheetIsPresentedDelayCompleted
         }
         .cancellable(id: CancelID.self)
