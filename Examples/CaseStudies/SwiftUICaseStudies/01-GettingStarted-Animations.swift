@@ -40,7 +40,7 @@ extension Effect where Failure == Never {
 
 struct AnimationsState: Equatable {
   var alert: AlertState<AnimationsAction>?
-  var circleCenter = CGPoint(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height / 2)
+  var circleCenter = CGPoint(x: 175, y: 300)
   var circleColor = Color.black
   var isCircleScaled = false
 }
@@ -61,6 +61,7 @@ struct AnimationsEnvironment {
 
 let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnvironment> {
   state, action, environment in
+  enum CancelID {}
 
   switch action {
   case let .circleScaleToggleChanged(isScaled):
@@ -77,6 +78,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
         .map { (output: .setColor($0), duration: 1) },
       scheduler: environment.mainQueue.animation(.linear)
     )
+    .cancellable(id: CancelID.self)
 
   case .resetButtonTapped:
     state.alert = AlertState(
@@ -91,7 +93,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
 
   case .resetConfirmationButtonTapped:
     state = AnimationsState()
-    return .none
+    return .cancel(id: CancelID.self)
 
   case let .setColor(color):
     state.circleColor = color
