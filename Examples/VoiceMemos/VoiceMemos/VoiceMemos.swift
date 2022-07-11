@@ -57,7 +57,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
     }
   ),
   Reducer { state, action, environment in
-    enum RecordId {}
+    enum RecordID {}
 
     func startRecording() -> Effect<VoiceMemosAction, Never> {
       let url = environment.temporaryDirectory()
@@ -79,7 +79,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
           await send(.currentRecordingTimerUpdated)
         }
       }
-      .cancellable(id: RecordId.self, cancelInFlight: true)
+      .cancellable(id: RecordID.self, cancelInFlight: true)
     }
 
     switch action {
@@ -105,12 +105,12 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
         ),
         at: 0
       )
-      return .cancel(id: RecordId.self)
+      return .cancel(id: RecordID.self)
 
     case .audioRecorderDidFinish(.success(false)), .audioRecorderDidFinish(.failure):
       state.alert = AlertState(title: TextState("Voice memo recording failed."))
       state.currentRecording = nil
-      return .cancel(id: RecordId.self)
+      return .cancel(id: RecordID.self)
 
     case .currentRecordingTimerUpdated:
       state.currentRecording?.duration += 1

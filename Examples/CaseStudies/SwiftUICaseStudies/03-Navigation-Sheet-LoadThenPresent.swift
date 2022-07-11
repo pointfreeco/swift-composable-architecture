@@ -40,11 +40,11 @@ let loadThenPresentReducer =
       LoadThenPresentState, LoadThenPresentAction, LoadThenPresentEnvironment
     > { state, action, environment in
 
-      enum CancelId {}
+      enum CancelID {}
 
       switch action {
       case .onDisappear:
-        return .cancel(id: CancelId.self)
+        return .cancel(id: CancelID.self)
 
       case .setSheet(isPresented: true):
         state.isActivityIndicatorVisible = true
@@ -52,7 +52,7 @@ let loadThenPresentReducer =
           try await environment.mainQueue.sleep(for: 1)
           return .setSheetIsPresentedDelayCompleted
         }
-        .cancellable(id: CancelId.self)
+        .cancellable(id: CancelID.self)
 
       case .setSheet(isPresented: false):
         state.optionalCounter = nil

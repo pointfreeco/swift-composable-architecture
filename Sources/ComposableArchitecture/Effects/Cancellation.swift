@@ -9,17 +9,17 @@ extension Effect {
   /// protection against typos by defining a new type for the identifier:
   ///
   /// ```swift
-  /// struct LoadUserId {}
+  /// struct LoadUserID {}
   ///
   /// case .reloadButtonTapped:
   ///   // Start a new effect to load the user
   ///   return environment.loadUser
   ///     .map(Action.userResponse)
-  ///     .cancellable(id: LoadUserId.self, cancelInFlight: true)
+  ///     .cancellable(id: LoadUserID.self, cancelInFlight: true)
   ///
   /// case .cancelButtonTapped:
   ///   // Cancel any in-flight requests to load the user
-  ///   return .cancel(id: LoadUserId.self)
+  ///   return .cancel(id: LoadUserID.self)
   /// ```
   ///
   /// - Parameters:

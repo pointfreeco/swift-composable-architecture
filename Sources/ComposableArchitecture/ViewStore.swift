@@ -45,12 +45,10 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// ### Thread safety
-///
-/// The ``ViewStore`` class is not thread-safe, and all interactions with it (and the store it was
-/// derived from) must happen on the same thread. Further, for SwiftUI applications, all
-/// interactions must happen on the _main_ thread. See the documentation of the ``Store`` class for
-/// more information as to why this decision was made.
+/// > Important: The ``ViewStore`` class is not thread-safe, and all interactions with it (and the
+/// > store it was derived from) must happen on the same thread. Further, for SwiftUI applications,
+/// > all interactions must happen on the _main_ thread. See the documentation of the ``Store``
+/// > class for more information as to why this decision was made.
 @dynamicMemberLookup
 public final class ViewStore<State, Action>: ObservableObject {
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
@@ -139,17 +137,15 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// .task { await viewStore.send(.task).finish() }
   /// ```
   ///
-  /// ## Thread safety
-  ///
-  /// ``ViewStore`` is not thread safe and you should only send actions to it from the main thread.
-  /// If you are wanting to send actions on background threads due to the fact that the reducer is
-  /// performing computationally expensive work, then a better way to handle this is to wrap that
-  /// work in an ``Effect`` that is performed on a background thread so that the result can be fed
-  /// back into the store.
+  /// > Important: ``ViewStore`` is not thread safe and you should only send actions to it from the
+  /// > main thread. If you want to send actions on background threads due to the fact that the
+  /// > reducer is performing computationally expensive work, then a better way to handle this is to
+  /// > wrap that work in an ``Effect`` that is performed on a background thread so that the result
+  /// > can be fed back into the store.
   ///
   /// - Parameter action: An action.
   /// - Returns: A ``ViewStoreTask`` that represents the lifecycle of the effect executed when
-  ///            sending the action.
+  ///   sending the action.
   @discardableResult
   public func send(_ action: Action) -> ViewStoreTask {
     .init(rawValue: self._send(action))
@@ -237,12 +233,6 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// Here we've used the ``send(_:while:)`` method to suspend while the `isLoading` state is
   /// `true`. Once that piece of state flips back to `false` the method will resume, signaling to
   /// `.refreshable` that the work has finished which will cause the loading indicator to disappear.
-  ///
-  /// **Note:** ``ViewStore`` is not thread safe and you should only send actions to it from the
-  /// main thread. If you are wanting to send actions on background threads due to the fact that the
-  /// reducer is performing computationally expensive work, then a better way to handle this is to
-  /// wrap that work in an ``Effect`` that is performed on a background thread so that the result
-  /// can be fed back into the store.
   ///
   /// - Parameters:
   ///   - action: An action.

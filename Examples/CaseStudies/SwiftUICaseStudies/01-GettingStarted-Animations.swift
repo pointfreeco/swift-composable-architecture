@@ -20,9 +20,9 @@ private let readMe = """
   """
 
 struct AnimationsState: Equatable {
-  var alert: AlertState<AnimationsAction>? = nil
-  var circleCenter = CGPoint(x: 50, y: 50)
-  var circleColor = Color.white
+  var alert: AlertState<AnimationsAction>?
+  var circleCenter = CGPoint(x: 175, y: 300)
+  var circleColor = Color.black
   var isCircleScaled = false
 }
 
@@ -42,7 +42,7 @@ struct AnimationsEnvironment {
 
 let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnvironment> {
   state, action, environment in
-  struct CancelId {}
+  enum CancelID {}
 
   switch action {
   case let .circleScaleToggleChanged(isScaled):
@@ -55,13 +55,13 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
 
   case .rainbowButtonTapped:
     return .run { send in
-      let colors = [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .white]
+      let colors = [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .black]
       for (index, color) in colors.enumerated() {
         await send(.setColor(color), animation: .linear)
         try await environment.mainQueue.sleep(for: 1)
       }
     }
-    .cancellable(id: CancelId.self)
+    .cancellable(id: CancelID.self)
 
   case .resetButtonTapped:
     state.alert = AlertState(
@@ -76,7 +76,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
 
   case .resetConfirmationButtonTapped:
     state = AnimationsState()
-    return .cancel(id: CancelId.self)
+    return .cancel(id: CancelID.self)
 
   case let .setColor(color):
     state.circleColor = color
@@ -102,6 +102,7 @@ struct AnimationsView: View {
 
             Circle()
               .fill(viewStore.circleColor)
+              .colorInvert()
               .blendMode(.difference)
               .frame(width: 50, height: 50)
               .scaleEffect(viewStore.isCircleScaled ? 2 : 1)
@@ -135,6 +136,7 @@ struct AnimationsView: View {
         }
         .alert(self.store.scope(state: \.alert), dismiss: .dismissAlert)
       }
+      .navigationBarTitleDisplayMode(.inline)
     }
   }
 }

@@ -153,7 +153,7 @@ final class EffectTests: XCTestCase {
   }
 
   func testEffectSubscriberInitializer_WithCancellation() {
-    enum CancelId {}
+    enum CancelID {}
 
     let effect = Effect<Int, Never>.run { subscriber in
       subscriber.send(1)
@@ -163,7 +163,7 @@ final class EffectTests: XCTestCase {
 
       return AnyCancellable {}
     }
-    .cancellable(id: CancelId.self)
+    .cancellable(id: CancelID.self)
 
     var values: [Int] = []
     var isComplete = false
@@ -174,7 +174,7 @@ final class EffectTests: XCTestCase {
     XCTAssertNoDifference(values, [1])
     XCTAssertNoDifference(isComplete, false)
 
-    Effect<Void, Never>.cancel(id: CancelId.self)
+    Effect<Void, Never>.cancel(id: CancelID.self)
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 

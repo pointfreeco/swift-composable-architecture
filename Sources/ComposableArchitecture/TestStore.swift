@@ -68,12 +68,12 @@
   /// class CounterTests: XCTestCase {
   ///   func testCounter() async {
   ///     let store = TestStore(
-  ///       initialState: CounterState(count: 0),    // Given a counter state of 0
+  ///       initialState: CounterState(count: 0),     // Given a counter state of 0
   ///       reducer: counterReducer,
   ///       environment: ()
   ///     )
-  ///     await store.send(.incrementButtonTapped) { // When the increment button is tapped
-  ///       $0.count = 1                             // Then the count should be 1
+  ///     await store.send(.incrementButtonTapped) {  // When the increment button is tapped
+  ///       $0.count = 1                              // Then the count should be 1
   ///     }
   ///   }
   /// }
@@ -107,14 +107,14 @@
   ///   state, action, environment in
   ///     switch action {
   ///     case let .queryChanged(query):
-  ///       enum SearchId {}
+  ///       enum SearchID {}
   ///
   ///       state.query = query
   ///       return .run { send in
   ///         guard let results = try? await environment.request(query) else { return }
   ///         send(.response(results))
   ///       }
-  ///       .debounce(id: SearchId.self, for: 0.5, scheduler: environment.mainQueue)
+  ///       .debounce(id: SearchID.self, for: 0.5, scheduler: environment.mainQueue)
   ///
   ///     case let .response(results):
   ///       state.results = results
@@ -141,7 +141,7 @@
   /// )
   ///
   /// // Change the query
-  /// store.send(.searchFieldChanged("c") {
+  /// await store.send(.searchFieldChanged("c") {
   ///   // Assert that state updates accordingly
   ///   $0.query = "c"
   /// }
@@ -150,7 +150,7 @@
   /// await mainQueue.advance(by: 0.25)
   ///
   /// // Change the query again
-  /// store.send(.searchFieldChanged("co") {
+  /// await store.send(.searchFieldChanged("co") {
   ///   $0.query = "co"
   /// }
   ///
@@ -179,8 +179,9 @@
 
     /// The current state.
     ///
-    /// When read from a trailing closure assertion in ``send(_:_:file:line:)`` or
-    /// ``receive(_:timeout:_:file:line:)``, it will equal the `inout` state passed to the closure.
+    /// When read from a trailing closure assertion in ``send(_:_:file:line:)-7vwv9`` or
+    /// ``receive(_:timeout:_:file:line:)-3iwdm``, it will equal the `inout` state passed to the
+    /// closure.
     public private(set) var state: State
 
     /// The timeout to await for in-flight effects.
@@ -241,6 +242,21 @@
         environment: ()
       )
     }
+
+    #if swift(>=5.7)
+      /// Asserts all in-flight effects have finished.
+      ///
+      /// - Parameter duration: The amount of time to wait before asserting.
+      @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+      @MainActor
+      public func finish(
+        timeout duration: Duration,
+        file: StaticString = #file,
+        line: UInt = #line
+      ) async {
+        await self.finish(timeout: duration.nanoseconds, file: file, line: line)
+      }
+    #endif
 
     /// Asserts all in-flight effects have finished.
     ///
@@ -704,6 +720,35 @@
       }
     }
 
+    #if swift(>=5.7)
+      /// Asserts an action was received from an effect and asserts when state changes.
+      ///
+      /// - Parameters:
+      ///   - expectedAction: An action expected from an effect.
+      ///   - duration: The amount of time to wait for the expected action.
+      ///   - updateExpectingResult: A closure that asserts state changed by sending the action to
+      ///     the store. The mutable state sent to this closure must be modified to match the state
+      ///     of the store after processing the given action. Do not provide a closure if no change
+      ///     is expected.
+      @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+      @MainActor
+      public func receive(
+        _ expectedAction: Action,
+        timeout duration: Duration,
+        _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
+        file: StaticString = #file,
+        line: UInt = #line
+      ) async {
+        await self.receive(
+          expectedAction,
+          timeout: duration.nanoseconds,
+          updateExpectingResult,
+          file: file,
+          line: line
+        )
+      }
+    #endif
+
     /// Asserts an action was received from an effect and asserts when state changes.
     ///
     /// - Parameters:
@@ -823,8 +868,8 @@
     }
   }
 
-  /// The type returned from ``TestStore/send(_:_:file:line:)`` that represents the lifecycle of the
-  /// effect started from sending an action.
+  /// The type returned from ``TestStore/send(_:_:file:line:)-7vwv9`` that represents the lifecycle
+  /// of the effect started from sending an action.
   ///
   /// For example you can use this value in tests to cancel the effect started from sending an
   /// action:
@@ -849,7 +894,8 @@
   /// await store.send(.timerToggleButtonTapped).finish()
   /// ```
   ///
-  /// See ``TestStore/finish(timeout:file:line:)`` for the ability to await all in-flight effects.
+  /// See ``TestStore/finish(timeout:file:line:)-7pmv3`` for the ability to await all in-flight
+  /// effects.
   ///
   /// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.
   public struct TestStoreTask: Sendable {
@@ -863,6 +909,20 @@
       self.rawValue.cancel()
       await self.rawValue.cancellableValue
     }
+
+    #if swift(>=5.7)
+      @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+      /// Asserts the underlying task finished.
+      ///
+      /// - Parameter duration: The amount of time to wait before asserting.
+      public func finish(
+        timeout duration: Duration,
+        file: StaticString = #file,
+        line: UInt = #line
+      ) async {
+        await self.finish(timeout: duration.nanoseconds, file: file, line: line)
+      }
+    #endif
 
     /// Asserts the underlying task finished.
     ///
@@ -920,4 +980,14 @@
       }
     }
   }
+
+  #if swift(>=5.7)
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+    extension Duration {
+      fileprivate var nanoseconds: UInt64 {
+        UInt64(self.components.seconds) * NSEC_PER_SEC
+          + UInt64(self.components.attoseconds) / 1_000_000_000
+      }
+    }
+  #endif
 #endif

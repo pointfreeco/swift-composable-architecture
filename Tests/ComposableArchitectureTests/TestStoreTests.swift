@@ -71,10 +71,7 @@ class TestStoreTests: XCTestCase {
       reducer: Reducer<Int, Action, Void> { state, action, _ in
         switch action {
         case .tap:
-          return .task {
-            try await Task.sleep(nanoseconds: 1_000_000)
-            return .response(42)
-          }
+          return .task { .response(42) }
         case let .response(number):
           state = number
           return .none
@@ -84,7 +81,7 @@ class TestStoreTests: XCTestCase {
     )
 
     await store.send(.tap)
-    await store.receive(.response(42), timeout: 2_000_000) {
+    await store.receive(.response(42)) {
       $0 = 42
     }
   }

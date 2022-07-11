@@ -370,7 +370,7 @@ If you are interested in contributing a wrapper library for a framework that we 
     And then there are certain things that TCA prioritizes highly that are not points of focus for Redux, Elm, or most other libraries. For example, composition is very important aspect of TCA, which is the process of breaking down large features into smaller units that can be glued together. This is accomplished with the `pullback` and `combine` operators on reducers, and it aids in handling complex features as well as modularization for a better-isolated code base and improved compile times.
   </details>
 
-* Why isn't `Store` thread-safe? <br> Why isn't `send` queued? <br> Why isn't `send` run on the main thread?
+* Why isn't `Store` thread-safe? <br> Why isn't `send` queued? <br> Why isn't `ViewStore.`send` run on the main thread?
   <details>
     <summary>Expand to see answer</summary>
 

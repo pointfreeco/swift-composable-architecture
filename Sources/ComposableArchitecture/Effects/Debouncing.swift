@@ -11,10 +11,10 @@ extension Effect {
   ///
   /// ```swift
   /// case let .textChanged(text):
-  ///   struct SearchId: Hashable {}
+  ///   enum SearchID {}
   ///
   ///   return environment.search(text)
-  ///     .debounce(id: SearchId(), for: 0.5, scheduler: environment.mainQueue)
+  ///     .debounce(id: SearchID.self, for: 0.5, scheduler: environment.mainQueue)
   ///     .map(Action.searchResponse)
   /// ```
   ///

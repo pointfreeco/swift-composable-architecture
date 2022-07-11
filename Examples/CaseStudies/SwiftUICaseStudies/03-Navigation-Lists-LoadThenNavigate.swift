@@ -54,14 +54,14 @@ let loadThenNavigateListReducer =
       LoadThenNavigateListState, LoadThenNavigateListAction, LoadThenNavigateListEnvironment
     > { state, action, environment in
 
-      enum CancelId {}
+      enum CancelID {}
 
       switch action {
       case .counter:
         return .none
 
       case .onDisappear:
-        return .cancel(id: CancelId.self)
+        return .cancel(id: CancelID.self)
 
       case let .setNavigation(selection: .some(navigatedId)):
         for row in state.rows {
@@ -71,14 +71,14 @@ let loadThenNavigateListReducer =
           try await environment.mainQueue.sleep(for: 1)
           return .setNavigationSelectionDelayCompleted(navigatedId)
         }
-        .cancellable(id: CancelId.self, cancelInFlight: true)
+        .cancellable(id: CancelID.self, cancelInFlight: true)
 
       case .setNavigation(selection: .none):
         if let selection = state.selection {
           state.rows[id: selection.id]?.count = selection.count
         }
         state.selection = nil
-        return .cancel(id: CancelId.self)
+        return .cancel(id: CancelID.self)
 
       case let .setNavigationSelectionDelayCompleted(id):
         state.rows[id: id]?.isActivityIndicatorVisible = false
