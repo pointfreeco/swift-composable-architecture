@@ -57,10 +57,8 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
     return .run { send in
       let colors = [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .white]
       for (index, color) in colors.enumerated() {
-        if index > 0 {
-          try await environment.mainQueue.sleep(for: 1)
-        }
         await send(.setColor(color), animation: .linear)
+        try await environment.mainQueue.sleep(for: 1)
       }
     }
     .cancellable(id: CancelId.self)

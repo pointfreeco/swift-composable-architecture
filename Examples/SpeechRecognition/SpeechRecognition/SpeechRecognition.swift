@@ -58,8 +58,9 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     }
     .cancellable(id: CancelId.self)
 
-  case .speech(.failure(SpeechClient.Failure.couldntConfigureAudioSession)),
-    .speech(.failure(SpeechClient.Failure.couldntStartAudioEngine)):
+  case
+      .speech(.failure(SpeechClient.Failure.couldntConfigureAudioSession)),
+      .speech(.failure(SpeechClient.Failure.couldntStartAudioEngine)):
     state.alert = AlertState(title: TextState("Problem with audio device. Please try again."))
     return .none
 

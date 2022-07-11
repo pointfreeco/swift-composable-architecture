@@ -54,7 +54,7 @@ let refreshableReducer = Reducer<
 
   case .factResponse(.failure):
     state.isLoading = false
-    // TODO: do some error handling
+    // NB: This is where you could do some error handling.
     return .none
 
   case .incrementButtonTapped:
@@ -65,8 +65,7 @@ let refreshableReducer = Reducer<
     state.fact = nil
     state.isLoading = true
     return .task { [count = state.count] in
-      try await environment.mainQueue.sleep(for: .seconds(1))
-      return await .factResponse(TaskResult { try await environment.fact.fetch(count) })
+      await .factResponse(TaskResult { try await environment.fact.fetch(count) })
     }
     .animation()
     .cancellable(id: CancelId.self)
