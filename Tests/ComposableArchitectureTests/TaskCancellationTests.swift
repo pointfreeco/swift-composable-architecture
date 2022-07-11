@@ -18,6 +18,10 @@ final class TaskCancellationTests: XCTestCase {
     await stream.first(where: { true })
     await Task.cancel(id: ID.self)
     XCTAssertEqual(cancellationCancellables, [:])
-    try? await task.cancellableValue
+    do {
+      try await task.cancellableValue
+      XCTFail()
+    } catch {
+    }
   }
 }

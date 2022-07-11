@@ -7,7 +7,7 @@ import XCTest
 final class ComposableArchitectureTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
-  func testScheduling() {
+  func testScheduling() async {
     enum CounterAction: Equatable {
       case incrAndSquareLater
       case incrNow
@@ -46,18 +46,18 @@ final class ComposableArchitectureTests: XCTestCase {
       environment: mainQueue.eraseToAnyScheduler()
     )
 
-    store.send(.incrAndSquareLater)
-    mainQueue.advance(by: 1)
-    store.receive(.squareNow) { $0 = 4 }
-    mainQueue.advance(by: 1)
-    store.receive(.incrNow) { $0 = 5 }
-    store.receive(.squareNow) { $0 = 25 }
+    await store.send(.incrAndSquareLater)
+    await mainQueue.advance(by: 1)
+    await store.receive(.squareNow) { $0 = 4 }
+    await mainQueue.advance(by: 1)
+    await store.receive(.incrNow) { $0 = 5 }
+    await store.receive(.squareNow) { $0 = 25 }
 
-    store.send(.incrAndSquareLater)
-    mainQueue.advance(by: 2)
-    store.receive(.squareNow) { $0 = 625 }
-    store.receive(.incrNow) { $0 = 626 }
-    store.receive(.squareNow) { $0 = 391876 }
+    await store.send(.incrAndSquareLater)
+    await mainQueue.advance(by: 2)
+    await store.receive(.squareNow) { $0 = 625 }
+    await store.receive(.incrNow) { $0 = 626 }
+    await store.receive(.squareNow) { $0 = 391876 }
   }
 
   func testSimultaneousWorkOrdering() {
@@ -76,7 +76,7 @@ final class ComposableArchitectureTests: XCTestCase {
     XCTAssertNoDifference(values, [1, 42, 1, 1, 42])
   }
 
-  func testLongLivingEffects() {
+  func testLongLivingEffects() async {
     typealias Environment = (
       startEffect: Effect<Void, Never>,
       stopEffect: Effect<Never, Never>
@@ -107,14 +107,16 @@ final class ComposableArchitectureTests: XCTestCase {
       )
     )
 
-    store.send(.start)
-    store.send(.incr) { $0 = 1 }
+    await store.send(.start)
+    await store.send(.incr) { $0 = 1 }
     subject.send()
-    store.receive(.incr) { $0 = 2 }
-    store.send(.end)
+    await store.receive(.incr) { $0 = 2 }
+    await store.send(.end)
   }
 
   func testCancellation() async {
+    let mainQueue = DispatchQueue.test
+
     enum Action: Equatable {
       case cancel
       case incr
@@ -134,8 +136,11 @@ final class ComposableArchitectureTests: XCTestCase {
 
       case .incr:
         state += 1
-        return .task { [state] in .response(await environment.fetch(state)) }
-          .cancellable(id: CancelId.self)
+        return .task { [state] in
+          try await mainQueue.sleep(for: .seconds(1))
+          return .response(await environment.fetch(state))
+        }
+        .cancellable(id: CancelId.self)
 
       case let .response(value):
         state = value
@@ -151,10 +156,11 @@ final class ComposableArchitectureTests: XCTestCase {
       )
     )
 
-    store.send(.incr) { $0 = 1 }
+    await store.send(.incr) { $0 = 1 }
+    await mainQueue.advance(by: .seconds(1))
     await store.receive(.response(1))
 
-    store.send(.incr) { $0 = 2 }
-    store.send(.cancel)
+    await store.send(.incr) { $0 = 2 }
+    await store.send(.cancel)
   }
 }

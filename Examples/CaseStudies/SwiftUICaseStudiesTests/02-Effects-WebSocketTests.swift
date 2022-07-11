@@ -26,7 +26,7 @@ class WebSocketTests: XCTestCase {
     )
 
     // Connect to the socket
-    store.send(.connectButtonTapped) {
+    await store.send(.connectButtonTapped) {
       $0.connectivityState = .connecting
     }
     actions.continuation.yield(.didOpen(protocol: nil))
@@ -41,10 +41,10 @@ class WebSocketTests: XCTestCase {
     }
 
     // Send a message
-    store.send(.messageToSendChanged("Hi")) {
+    await store.send(.messageToSendChanged("Hi")) {
       $0.messageToSend = "Hi"
     }
-    store.send(.sendButtonTapped) {
+    await store.send(.sendButtonTapped) {
       $0.messageToSend = ""
     }
     await store.receive(.sendResponse(didSucceed: true))
@@ -56,7 +56,7 @@ class WebSocketTests: XCTestCase {
     }
 
     // Disconnect from the socket
-    store.send(.connectButtonTapped) {
+    await store.send(.connectButtonTapped) {
       $0.connectivityState = .disconnected
     }
   }
@@ -84,7 +84,7 @@ class WebSocketTests: XCTestCase {
     )
 
     // Connect to the socket
-    store.send(.connectButtonTapped) {
+    await store.send(.connectButtonTapped) {
       $0.connectivityState = .connecting
     }
     actions.continuation.yield(.didOpen(protocol: nil))
@@ -93,10 +93,10 @@ class WebSocketTests: XCTestCase {
     }
 
     // Send a message
-    store.send(.messageToSendChanged("Hi")) {
+    await store.send(.messageToSendChanged("Hi")) {
       $0.messageToSend = "Hi"
     }
-    store.send(.sendButtonTapped) {
+    await store.send(.sendButtonTapped) {
       $0.messageToSend = ""
     }
     await store.receive(.sendResponse(didSucceed: false)) {
@@ -104,7 +104,7 @@ class WebSocketTests: XCTestCase {
     }
 
     // Disconnect from the socket
-    store.send(.connectButtonTapped) {
+    await store.send(.connectButtonTapped) {
       $0.connectivityState = .disconnected
     }
   }
@@ -129,7 +129,7 @@ class WebSocketTests: XCTestCase {
     )
 
     // Connect to the socket
-    store.send(.connectButtonTapped) {
+    await store.send(.connectButtonTapped) {
       $0.connectivityState = .connecting
     }
     actions.continuation.yield(.didOpen(protocol: nil))
@@ -145,7 +145,7 @@ class WebSocketTests: XCTestCase {
     XCTAssertEqual(after, 1)
 
     // Disconnect from the socket
-    store.send(.connectButtonTapped) {
+    await store.send(.connectButtonTapped) {
       $0.connectivityState = .disconnected
     }
   }
@@ -168,7 +168,7 @@ class WebSocketTests: XCTestCase {
     )
 
     // Attempt to connect to the socket
-    store.send(.connectButtonTapped) {
+    await store.send(.connectButtonTapped) {
       $0.connectivityState = .connecting
     }
     actions.continuation.yield(.didClose(code: .internalServerError, reason: nil))

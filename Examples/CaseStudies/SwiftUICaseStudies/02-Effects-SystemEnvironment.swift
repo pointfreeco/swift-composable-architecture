@@ -46,7 +46,7 @@ let multipleDependenciesReducer = Reducer<
   switch action {
   case .alertButtonTapped:
     return .task {
-      try? await environment.mainQueue.sleep(for: 1)
+      try await environment.mainQueue.sleep(for: 1)
       return .alertDelayReceived
     }
 

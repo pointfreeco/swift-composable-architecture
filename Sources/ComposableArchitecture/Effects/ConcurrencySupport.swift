@@ -32,7 +32,7 @@
 ///     environment: Environment(analytics: analytics)
 ///   )
 ///
-///   store.send(.buttonTapped)
+///   await store.send(.buttonTapped)
 ///
 ///   let trackedEvents = await events.value
 ///   XCTAssertEqual(trackedEvents, ["Button Tapped"])

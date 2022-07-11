@@ -276,6 +276,7 @@ And that is enough to get something on the screen to play around with. It's defi
 To test, you first create a `TestStore` with the same information that you would to create a regular `Store`, except this time we can supply test-friendly dependencies. In particular, we can now use a `numberFact` implementation that immediately returns a value we control rather than reaching out into the real world:
 
 ```swift
+@MainActor
 func testFeature() async {
   let store = TestStore(
     initialState: AppState(),
@@ -293,24 +294,24 @@ The test below has the user increment and decrement the count, then they ask for
 
 ```swift
 // Test that tapping on the increment/decrement buttons changes the count
-store.send(.incrementButtonTapped) {
+await store.send(.incrementButtonTapped) {
   $0.count = 1
 }
-store.send(.decrementButtonTapped) {
+await store.send(.decrementButtonTapped) {
   $0.count = 0
 }
 
 // Test that tapping the fact button causes us to receive a response from the effect. Note
 // that we have to await the receive because the effect is asynchronous and so takes a small
 // amount of time to emit.
-store.send(.numberFactButtonTapped)
+await store.send(.numberFactButtonTapped)
 
 await store.receive(.numberFactResponse(.success("0 is a good number Brent"))) {
   $0.numberFactAlert = "0 is a good number Brent"
 }
 
 // And finally dismiss the alert
-store.send(.factAlertDismissed) {
+await store.send(.factAlertDismissed) {
   $0.numberFactAlert = nil
 }
 ```

@@ -64,15 +64,16 @@
   /// One can assert against its behavior over time:
   ///
   /// ```swift
+  /// @MainActor
   /// class CounterTests: XCTestCase {
-  ///   func testCounter() {
+  ///   func testCounter() async {
   ///     let store = TestStore(
-  ///       initialState: CounterState(count: 0),  // Given a counter state of 0
+  ///       initialState: CounterState(count: 0),    // Given a counter state of 0
   ///       reducer: counterReducer,
   ///       environment: ()
   ///     )
-  ///     store.send(.incrementButtonTapped) {     // When the increment button is tapped
-  ///       $0.count = 1                           // Then the count should be 1
+  ///     await store.send(.incrementButtonTapped) { // When the increment button is tapped
+  ///       $0.count = 1                             // Then the count should be 1
   ///     }
   ///   }
   /// }
@@ -400,10 +401,37 @@
   extension TestStore where LocalState: Equatable {
     /// Sends an action to the store and asserts when state changes.
     ///
-    /// This method returns a ``TestStoreTask``, which represents the lifecycle of the effect
+    /// This method suspends briefly in order to allow any effects to start. For example, if you
+    /// track some analytics in a ``Effect/fireAndForget(priority:_:)`` when an action is sent,
+    /// you can assert on that behavior immediately after awaiting `store.send`:
+    ///
+    /// ```swift
+    /// @MainActor
+    /// func testAnalytics() async {
+    ///   let events = SendableState<[String]>([])
+    ///   let analytics = AnalyticsClient(
+    ///     track: { event in
+    ///       await events.modify { $0.append(event) }
+    ///     }
+    ///   )
+    ///
+    ///   let store = TestStore(
+    ///     initialState: State(),
+    ///     reducer: reducer,
+    ///     environment: Environment(analytics: analytics)
+    ///   )
+    ///
+    ///   await store.send(.buttonTapped)
+    ///
+    ///   let trackedEvents = await events.value
+    ///   XCTAssertEqual(trackedEvents, ["Button Tapped"])
+    /// }
+    /// ```
+    ///
+    /// This method also returns a ``TestStoreTask``, which represents the lifecycle of the effect
     /// started from sending an action. You can use this value to force the cancellation of the
-    /// effect, which is helpful for effects that are tied to a view's lifecycle and not torn
-    /// down when an action is sent, such as actions sent in SwiftUI's `task` view modifier.
+    /// effect, which is helpful for effects that are tied to a view's lifecycle and not torn down
+    /// when an action is sent, such as actions sent in SwiftUI's `task` view modifier.
     ///
     /// For example, if your feature kicks off a long-living effect when the view appears by using
     /// SwiftUI's `task` view modifier, then you can write a test for such a feature by explicitly
@@ -413,7 +441,7 @@
     /// let store = TestStore(...)
     ///
     /// // emulate the view appearing
-    /// let task = store.send(.task)
+    /// let task = await store.send(.task)
     ///
     /// // assertions
     ///
@@ -428,7 +456,89 @@
     ///     store after processing the given action. Do not provide a closure if no change is
     ///     expected.
     /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
-    ///            sending the action.
+    ///   sending the action.
+    @MainActor
+    @discardableResult
+    public func send(
+      _ action: LocalAction,
+      _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
+      file: StaticString = #file,
+      line: UInt = #line
+    ) async -> TestStoreTask {
+      if !self.receivedActions.isEmpty {
+        var actions = ""
+        customDump(self.receivedActions.map(\.action), to: &actions)
+        XCTFail(
+          """
+          Must handle \(self.receivedActions.count) received \
+          action\(self.receivedActions.count == 1 ? "" : "s") before sending an action: …
+
+          Unhandled actions: \(actions)
+          """,
+          file: file, line: line
+        )
+      }
+      var expectedState = self.toLocalState(self.state)
+      let previousState = self.state
+      let task = self.store.send(.init(origin: .send(action), file: file, line: line))
+      await Task.megaYield()
+      do {
+        let currentState = self.state
+        self.state = previousState
+        defer { self.state = currentState }
+
+        try self.expectedStateShouldMatch(
+          expected: &expectedState,
+          actual: self.toLocalState(currentState),
+          modify: updateExpectingResult,
+          file: file,
+          line: line
+        )
+      } catch {
+        XCTFail("Threw error: \(error)", file: file, line: line)
+      }
+      if "\(self.file)" == "\(file)" {
+        self.line = line
+      }
+      await Task.megaYield()
+      return .init(rawValue: task, timeout: self.timeout)
+    }
+
+    /// Sends an action to the store and asserts when state changes.
+    ///
+    /// This method returns a ``TestStoreTask``, which represents the lifecycle of the effect
+    /// started from sending an action. You can use this value to force the cancellation of the
+    /// effect, which is helpful for effects that are tied to a view's lifecycle and not torn
+    /// down when an action is sent, such as actions sent in SwiftUI's `task` view modifier.
+    ///
+    /// For example, if your feature kicks off a long-living effect when the view appears by using
+    /// SwiftUI's `task` view modifier, then you can write a test for such a feature by explicitly
+    /// canceling the effect's task after you make all assertions:
+    ///
+    /// ```swift
+    /// let store = TestStore(...)
+    ///
+    /// // emulate the view appearing
+    /// let task = await store.send(.task)
+    ///
+    /// // assertions
+    ///
+    /// // emulate the view disappearing
+    /// await task.cancel()
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - action: An action.
+    ///   - updateExpectingResult: A closure that asserts state changed by sending the action to the
+    ///     store. The mutable state sent to this closure must be modified to match the state of the
+    ///     store after processing the given action. Do not provide a closure if no change is
+    ///     expected.
+    /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
+    ///   sending the action.
+    @available(iOS, deprecated: 9999.0, message: "Call the async-friendly 'send' instead.")
+    @available(macOS, deprecated: 9999.0, message: "Call the async-friendly 'send' instead.")
+    @available(tvOS, deprecated: 9999.0, message: "Call the async-friendly 'send' instead.")
+    @available(watchOS, deprecated: 9999.0, message: "Call the async-friendly 'send' instead.")
     @discardableResult
     public func send(
       _ action: LocalAction,
@@ -668,6 +778,7 @@
       else { return }
 
       { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
+      await Task.megaYield()
     }
   }
 
@@ -741,7 +852,7 @@
   /// See ``TestStore/finish(timeout:file:line:)`` for the ability to await all in-flight effects.
   ///
   /// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.
-  public struct TestStoreTask {
+  public struct TestStoreTask: Sendable {
     /// The underlying task.
     public let rawValue: Task<Void, Never>
 

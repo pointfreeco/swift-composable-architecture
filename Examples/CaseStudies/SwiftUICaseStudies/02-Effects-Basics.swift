@@ -52,7 +52,7 @@ let effectsBasicsReducer = Reducer<
     state.numberFact = nil
     // Return an effect that re-increments the count after 1 second.
     return .task {
-      try? await environment.mainQueue.sleep(for: 1)
+      try await environment.mainQueue.sleep(for: 1)
       return .incrementButtonTapped
     }
 

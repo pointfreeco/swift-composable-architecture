@@ -4,6 +4,7 @@ import XCTest
 
 @testable import GameSwiftUI
 
+@MainActor
 class GameSwiftUITests: XCTestCase {
   let store = TestStore(
     initialState: GameState(
@@ -15,72 +16,72 @@ class GameSwiftUITests: XCTestCase {
   )
   .scope(state: GameView.ViewState.init)
 
-  func testFlow_Winner_Quit() {
-    self.store.send(.cellTapped(row: 0, column: 0)) {
+  func testFlow_Winner_Quit() async {
+    await self.store.send(.cellTapped(row: 0, column: 0)) {
       $0.board[0][0] = "❌"
       $0.title = "Blob Jr., place your ⭕️"
     }
-    self.store.send(.cellTapped(row: 2, column: 1)) {
+    await self.store.send(.cellTapped(row: 2, column: 1)) {
       $0.board[2][1] = "⭕️"
       $0.title = "Blob Sr., place your ❌"
     }
-    self.store.send(.cellTapped(row: 1, column: 0)) {
+    await self.store.send(.cellTapped(row: 1, column: 0)) {
       $0.board[1][0] = "❌"
       $0.title = "Blob Jr., place your ⭕️"
     }
-    self.store.send(.cellTapped(row: 1, column: 1)) {
+    await self.store.send(.cellTapped(row: 1, column: 1)) {
       $0.board[1][1] = "⭕️"
       $0.title = "Blob Sr., place your ❌"
     }
-    self.store.send(.cellTapped(row: 2, column: 0)) {
+    await self.store.send(.cellTapped(row: 2, column: 0)) {
       $0.board[2][0] = "❌"
       $0.isGameDisabled = true
       $0.isPlayAgainButtonVisible = true
       $0.title = "Winner! Congrats Blob Sr.!"
     }
-    self.store.send(.quitButtonTapped)
+    await self.store.send(.quitButtonTapped)
   }
 
-  func testFlow_Tie() {
-    self.store.send(.cellTapped(row: 0, column: 0)) {
+  func testFlow_Tie() async {
+    await self.store.send(.cellTapped(row: 0, column: 0)) {
       $0.board[0][0] = "❌"
       $0.title = "Blob Jr., place your ⭕️"
     }
-    self.store.send(.cellTapped(row: 2, column: 2)) {
+    await self.store.send(.cellTapped(row: 2, column: 2)) {
       $0.board[2][2] = "⭕️"
       $0.title = "Blob Sr., place your ❌"
     }
-    self.store.send(.cellTapped(row: 1, column: 0)) {
+    await self.store.send(.cellTapped(row: 1, column: 0)) {
       $0.board[1][0] = "❌"
       $0.title = "Blob Jr., place your ⭕️"
     }
-    self.store.send(.cellTapped(row: 2, column: 0)) {
+    await self.store.send(.cellTapped(row: 2, column: 0)) {
       $0.board[2][0] = "⭕️"
       $0.title = "Blob Sr., place your ❌"
     }
-    self.store.send(.cellTapped(row: 2, column: 1)) {
+    await self.store.send(.cellTapped(row: 2, column: 1)) {
       $0.board[2][1] = "❌"
       $0.title = "Blob Jr., place your ⭕️"
     }
-    self.store.send(.cellTapped(row: 1, column: 2)) {
+    await self.store.send(.cellTapped(row: 1, column: 2)) {
       $0.board[1][2] = "⭕️"
       $0.title = "Blob Sr., place your ❌"
     }
-    self.store.send(.cellTapped(row: 0, column: 2)) {
+    await self.store.send(.cellTapped(row: 0, column: 2)) {
       $0.board[0][2] = "❌"
       $0.title = "Blob Jr., place your ⭕️"
     }
-    self.store.send(.cellTapped(row: 0, column: 1)) {
+    await self.store.send(.cellTapped(row: 0, column: 1)) {
       $0.board[0][1] = "⭕️"
       $0.title = "Blob Sr., place your ❌"
     }
-    self.store.send(.cellTapped(row: 1, column: 1)) {
+    await self.store.send(.cellTapped(row: 1, column: 1)) {
       $0.board[1][1] = "❌"
       $0.isGameDisabled = true
       $0.isPlayAgainButtonVisible = true
       $0.title = "Tied game!"
     }
-    self.store.send(.playAgainButtonTapped) {
+    await self.store.send(.playAgainButtonTapped) {
       $0 = GameView.ViewState(state: GameState(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr."))
     }
   }

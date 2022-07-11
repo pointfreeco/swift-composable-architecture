@@ -37,7 +37,7 @@ let eagerNavigationReducer =
       case .setNavigation(isActive: true):
         state.isNavigationActive = true
         return .task {
-          try? await environment.mainQueue.sleep(for: 1)
+          try await environment.mainQueue.sleep(for: 1)
           return .setNavigationIsActiveDelayCompleted
         }
         .cancellable(id: CancelId.self)

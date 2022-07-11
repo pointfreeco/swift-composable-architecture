@@ -18,7 +18,7 @@ class SpeechRecognitionTests: XCTestCase {
       )
     )
 
-    store.send(.recordButtonTapped) {
+    await store.send(.recordButtonTapped) {
       $0.isRecording = true
     }
     await store.receive(.speechRecognizerAuthorizationStatusResponse(.denied)) {
@@ -45,7 +45,7 @@ class SpeechRecognitionTests: XCTestCase {
       )
     )
 
-    store.send(.recordButtonTapped) {
+    await store.send(.recordButtonTapped) {
       $0.isRecording = true
     }
     await store.receive(.speechRecognizerAuthorizationStatusResponse(.restricted)) {
@@ -81,7 +81,7 @@ class SpeechRecognitionTests: XCTestCase {
     finalResult.bestTranscription.formattedString = "Hello world"
     finalResult.isFinal = true
 
-    let task = store.send(.recordButtonTapped) {
+    let task = await store.send(.recordButtonTapped) {
       $0.isRecording = true
     }
 
@@ -114,7 +114,7 @@ class SpeechRecognitionTests: XCTestCase {
       )
     )
 
-    store.send(.recordButtonTapped) {
+    await store.send(.recordButtonTapped) {
       $0.isRecording = true
     }
 
@@ -141,7 +141,7 @@ class SpeechRecognitionTests: XCTestCase {
       )
     )
 
-    store.send(.recordButtonTapped) {
+    await store.send(.recordButtonTapped) {
       $0.isRecording = true
     }
 

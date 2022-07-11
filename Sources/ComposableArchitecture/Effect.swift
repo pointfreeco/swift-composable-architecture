@@ -144,7 +144,8 @@ public struct Effect<Output, Failure: Error> {
   /// fail if it ever executes:
   ///
   /// ```swift
-  /// func testIncrement() {
+  /// @MainActor
+  /// func testIncrement() async {
   ///   let store = TestStore(
   ///     initialState: CounterState(count: 0)
   ///     reducer: counterReducer,
@@ -153,7 +154,7 @@ public struct Effect<Output, Failure: Error> {
   ///     )
   ///   )
   ///
-  ///   store.send(.increment) {
+  ///   await store.send(.increment) {
   ///     $0.count = 1
   ///   }
   /// }
@@ -403,7 +404,7 @@ extension Effect where Failure == Never {
     priority: TaskPriority? = nil,
     _ work: @escaping @Sendable () async throws -> Void
   ) -> Self {
-    Effect<Void, Never>.task(priority: priority) { try? await work() }
+    Effect<Void, Never>.task(priority: priority) { try await work() }
       .fireAndForget()
   }
 }
@@ -462,3 +463,4 @@ public struct Send<Action> {
 }
 
 extension Send: Sendable where Action: Sendable {}
+

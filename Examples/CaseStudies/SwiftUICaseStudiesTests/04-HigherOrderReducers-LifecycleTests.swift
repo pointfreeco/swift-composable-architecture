@@ -17,11 +17,11 @@ class LifecycleTests: XCTestCase {
       )
     )
 
-    store.send(.toggleTimerButtonTapped) {
+    await store.send(.toggleTimerButtonTapped) {
       $0.count = 0
     }
 
-    store.send(.timer(.onAppear))
+    await store.send(.timer(.onAppear))
 
     await mainQueue.advance(by: .seconds(1))
     await store.receive(.timer(.action(.tick))) {
@@ -33,18 +33,18 @@ class LifecycleTests: XCTestCase {
       $0.count = 2
     }
 
-    store.send(.timer(.action(.incrementButtonTapped))) {
+    await store.send(.timer(.action(.incrementButtonTapped))) {
       $0.count = 3
     }
 
-    store.send(.timer(.action(.decrementButtonTapped))) {
+    await store.send(.timer(.action(.decrementButtonTapped))) {
       $0.count = 2
     }
 
-    store.send(.toggleTimerButtonTapped) {
+    await store.send(.toggleTimerButtonTapped) {
       $0.count = nil
     }
 
-    store.send(.timer(.onDisappear))
+    await store.send(.timer(.onDisappear))
   }
 }
