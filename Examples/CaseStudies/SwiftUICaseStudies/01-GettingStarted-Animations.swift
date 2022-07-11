@@ -20,9 +20,9 @@ private let readMe = """
   """
 
 struct AnimationsState: Equatable {
-  var alert: AlertState<AnimationsAction>? = nil
-  var circleCenter = CGPoint(x: 50, y: 50)
-  var circleColor = Color.white
+  var alert: AlertState<AnimationsAction>?
+  var circleCenter = CGPoint(x: 175, y: 300)
+  var circleColor = Color.black
   var isCircleScaled = false
 }
 
@@ -55,7 +55,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
 
   case .rainbowButtonTapped:
     return .run { send in
-      let colors = [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .white]
+      let colors = [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .black]
       for (index, color) in colors.enumerated() {
         if index > 0 {
           try await environment.mainQueue.sleep(for: 1)
@@ -104,6 +104,7 @@ struct AnimationsView: View {
 
             Circle()
               .fill(viewStore.circleColor)
+              .colorInvert()
               .blendMode(.difference)
               .frame(width: 50, height: 50)
               .scaleEffect(viewStore.isCircleScaled ? 2 : 1)
@@ -137,6 +138,7 @@ struct AnimationsView: View {
         }
         .alert(self.store.scope(state: \.alert), dismiss: .dismissAlert)
       }
+      .navigationBarTitleDisplayMode(.inline)
     }
   }
 }

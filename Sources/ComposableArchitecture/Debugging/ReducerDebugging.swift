@@ -165,5 +165,5 @@ public struct DebugEnvironment {
 
 private let _queue = DispatchQueue(
   label: "co.pointfree.ComposableArchitecture.DebugEnvironment",
-  qos: .background
+  qos: .default
 )

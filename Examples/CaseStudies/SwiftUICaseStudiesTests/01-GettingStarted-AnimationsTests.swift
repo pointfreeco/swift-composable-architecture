@@ -54,8 +54,8 @@ class AnimationTests: XCTestCase {
     }
 
     await mainQueue.advance(by: .seconds(1))
-    await store.receive(.setColor(.white)) {
-      $0.circleColor = .white
+    await store.receive(.setColor(.black)) {
+      $0.circleColor = .black
     }
 
     await mainQueue.run()
