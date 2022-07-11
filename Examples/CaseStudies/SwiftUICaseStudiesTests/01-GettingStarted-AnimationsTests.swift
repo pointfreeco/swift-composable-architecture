@@ -53,8 +53,8 @@ class AnimationTests: XCTestCase {
     }
 
     mainQueue.advance(by: .seconds(1))
-    store.receive(.setColor(.white)) {
-      $0.circleColor = .white
+    store.receive(.setColor(.black)) {
+      $0.circleColor = .black
     }
 
     mainQueue.run()
