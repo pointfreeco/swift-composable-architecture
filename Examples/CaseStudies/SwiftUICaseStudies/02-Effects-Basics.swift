@@ -42,6 +42,19 @@ struct EffectsBasicsEnvironment {
 
 // MARK: - Feature business logic
 
+extension Scheduler {
+  func sleep(
+    for duration: SchedulerTimeType.Stride
+  ) async throws {
+    await withUnsafeContinuation { continuation in
+      self.schedule(after: self.now.advanced(by: duration)) {
+        continuation.resume()
+      }
+    }
+    try Task.checkCancellation()
+  }
+}
+
 let effectsBasicsReducer = Reducer<
   EffectsBasicsState,
   EffectsBasicsAction,
@@ -55,15 +68,16 @@ let effectsBasicsReducer = Reducer<
     state.numberFact = nil
     return state.count >= 0
     ? .none
-    : Effect(value: .decrementDelayResponse)
-      .delay(for: 1, scheduler: environment.mainQueue)
-      .eraseToEffect()
-      .cancellable(id: DelayID.self)
-//    : .task {
-//      try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
-//      return .decrementDelayResponse
-//    }
-//    .cancellable(id: DelayID.self)
+//    : Effect(value: .decrementDelayResponse)
+//      .delay(for: 1, scheduler: environment.mainQueue)
+//      .eraseToEffect()
+//      .cancellable(id: DelayID.self)
+    : .task {
+      print("Task started")
+      try? await environment.mainQueue.sleep(for: .seconds(1))
+      return .decrementDelayResponse
+    }
+    .cancellable(id: DelayID.self)
 
   case .decrementDelayResponse:
     if state.count < 0 {
