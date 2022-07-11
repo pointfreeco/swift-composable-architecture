@@ -106,14 +106,14 @@
   ///   state, action, environment in
   ///     switch action {
   ///     case let .queryChanged(query):
-  ///       enum SearchId {}
+  ///       enum SearchID {}
   ///
   ///       state.query = query
   ///       return .run { send in
   ///         guard let results = try? await environment.request(query) else { return }
   ///         send(.response(results))
   ///       }
-  ///       .debounce(id: SearchId.self, for: 0.5, scheduler: environment.mainQueue)
+  ///       .debounce(id: SearchID.self, for: 0.5, scheduler: environment.mainQueue)
   ///
   ///     case let .response(results):
   ///       state.results = results

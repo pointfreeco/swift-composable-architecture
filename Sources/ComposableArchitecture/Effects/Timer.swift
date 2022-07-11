@@ -36,15 +36,15 @@ extension Effect where Failure == Never {
   /// }
   ///
   /// let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, env in
-  ///   struct TimerId: Hashable {}
+  ///   struct TimerID: Hashable {}
   ///
   ///   switch action {
   ///   case .startButtonTapped:
-  ///     return Effect.timer(id: TimerId(), every: 1, on: env.mainQueue)
+  ///     return Effect.timer(id: TimerID(), every: 1, on: env.mainQueue)
   ///       .map { _ in .timerTicked }
   ///
   ///   case .stopButtonTapped:
-  ///     return .cancel(id: TimerId())
+  ///     return .cancel(id: TimerID())
   ///
   ///   case let .timerTicked:
   ///     state.count += 1

@@ -61,9 +61,9 @@ let clockReducer = Reducer<ClockState, ClockAction, ClockEnvironment>.combine(
   },
   .subscriptions { state, environment in
     guard state.isTimerActive else { return [:] }
-    struct TimerId: Hashable {}
+    struct TimerID: Hashable {}
     return [
-      TimerId(): .run { send in
+      TimerID(): .run { send in
         for await _ in environment.mainQueue.timer(interval: 1) {
           await send(.timerTicked, animation: .interpolatingSpring(stiffness: 3000, damping: 40))
         }

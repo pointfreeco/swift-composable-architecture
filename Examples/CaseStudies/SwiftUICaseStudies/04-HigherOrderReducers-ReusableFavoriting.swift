@@ -38,7 +38,7 @@ struct FavoriteEnvironment<ID: Sendable> {
 }
 
 /// A cancellation token that cancels in-flight favoriting requests.
-struct FavoriteCancelId<ID: Hashable>: Hashable {
+struct FavoriteCancelID<ID: Hashable>: Hashable {
   var id: ID
 }
 
@@ -65,7 +65,7 @@ extension Reducer {
           return .task { [id = state.id, isFavorite = state.isFavorite] in
             await .response(TaskResult { try await environment.request(id, isFavorite) })
           }
-          .cancellable(id: FavoriteCancelId(id: state.id), cancelInFlight: true)
+          .cancellable(id: FavoriteCancelID(id: state.id), cancelInFlight: true)
 
         case let .response(.failure(error)):
           state.alert = AlertState(title: TextState(error.localizedDescription))

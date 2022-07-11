@@ -89,9 +89,9 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
       return .none
 
     case .todo(id: _, action: .checkBoxToggled):
-      enum TodoCompletionId {}
+      enum TodoCompletionID {}
       return .task { .sortCompletedTodos }
-        .debounce(id: TodoCompletionId.self, for: 1, scheduler: environment.mainQueue.animation())
+        .debounce(id: TodoCompletionID.self, for: 1, scheduler: environment.mainQueue.animation())
 
     case .todo:
       return .none

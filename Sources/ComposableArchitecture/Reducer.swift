@@ -400,7 +400,7 @@ public struct Reducer<State, Action, Environment> {
   ///     let childReducer = Reducer<
   ///       ChildState, ChildAction, ChildEnvironment
   ///     > { state, action environment in
-  ///       enum MotionId {}
+  ///       enum MotionID {}
   ///
   ///       switch action {
   ///       case .onAppear:
@@ -408,11 +408,11 @@ public struct Reducer<State, Action, Environment> {
   ///         return environment.motionClient
   ///           .start()
   ///           .map(ChildAction.motion)
-  ///           .cancellable(id: MotionId.self)
+  ///           .cancellable(id: MotionID.self)
   ///
   ///       case .onDisappear:
   ///         // And explicitly cancel them when the domain is torn down
-  ///         return .cancel(id: MotionId.self)
+  ///         return .cancel(id: MotionID.self)
   ///       ...
   ///       }
   ///     }
@@ -617,7 +617,7 @@ public struct Reducer<State, Action, Environment> {
   ///     let childReducer = Reducer<
   ///       ChildState, ChildAction, ChildEnvironment
   ///     > { state, action environment in
-  ///       enum MotionId {}
+  ///       enum MotionID {}
   ///
   ///       switch action {
   ///       case .onAppear:
@@ -625,11 +625,11 @@ public struct Reducer<State, Action, Environment> {
   ///         return environment.motionClient
   ///           .start()
   ///           .map(ChildAction.motion)
-  ///           .cancellable(id: MotionId.self)
+  ///           .cancellable(id: MotionID.self)
   ///
   ///       case .onDisappear:
   ///         // And explicitly cancel them when the domain is torn down
-  ///         return .cancel(id: MotionId.self)
+  ///         return .cancel(id: MotionID.self)
   ///       ...
   ///       }
   ///     }

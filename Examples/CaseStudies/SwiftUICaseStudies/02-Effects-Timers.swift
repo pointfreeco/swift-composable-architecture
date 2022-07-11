@@ -25,7 +25,7 @@ struct TimersEnvironment {
 let timersReducer = Reducer<TimersState, TimersAction, TimersEnvironment> {
   state, action, environment in
 
-  enum TimerId {}
+  enum TimerID {}
 
   switch action {
   case .timerTicked:
@@ -40,7 +40,7 @@ let timersReducer = Reducer<TimersState, TimersAction, TimersEnvironment> {
         await send(.timerTicked, animation: .interpolatingSpring(stiffness: 3000, damping: 40))
       }
     }
-    .cancellable(id: TimerId.self, cancelInFlight: true)
+    .cancellable(id: TimerID.self, cancelInFlight: true)
   }
 }
 

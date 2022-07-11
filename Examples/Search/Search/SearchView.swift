@@ -68,7 +68,7 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
     return .none
 
   case let .searchQueryChanged(query):
-    enum SearchLocationId {}
+    enum SearchLocationID {}
 
     state.searchQuery = query
 
@@ -77,13 +77,13 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
     guard !query.isEmpty else {
       state.results = []
       state.weather = nil
-      return .cancel(id: SearchLocationId.self)
+      return .cancel(id: SearchLocationID.self)
     }
 
     return .task {
       await .searchResponse(TaskResult { try await environment.weatherClient.search(query) })
     }
-    .debounce(id: SearchLocationId.self, for: 0.3, scheduler: environment.mainQueue)
+    .debounce(id: SearchLocationID.self, for: 0.3, scheduler: environment.mainQueue)
 
   case .searchResponse(.failure):
     state.results = []
@@ -94,7 +94,7 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
     return .none
 
   case let .searchResultTapped(location):
-    enum SearchWeatherId {}
+    enum SearchWeatherID {}
 
     state.resultForecastRequestInFlight = location
 
@@ -104,7 +104,7 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
         TaskResult { try await environment.weatherClient.forecast(location) }
       )
     }
-    .cancellable(id: SearchWeatherId.self, cancelInFlight: true)
+    .cancellable(id: SearchWeatherID.self, cancelInFlight: true)
   }
 }
 

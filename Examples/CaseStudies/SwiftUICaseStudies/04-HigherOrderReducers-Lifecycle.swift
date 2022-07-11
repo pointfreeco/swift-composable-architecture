@@ -95,7 +95,7 @@ struct LifecycleDemoView: View {
   }
 }
 
-private enum TimerId {}
+private enum TimerID {}
 
 enum TimerAction {
   case decrementButtonTapped
@@ -130,10 +130,10 @@ private let timerReducer = Reducer<Int, TimerAction, TimerEnvironment> {
         await send(.tick)
       }
     }
-    .cancellable(id: TimerId.self)
+    .cancellable(id: TimerID.self)
   },
   onDisappear: { _ in
-    .cancel(id: TimerId.self)
+    .cancel(id: TimerID.self)
   }
 )
 

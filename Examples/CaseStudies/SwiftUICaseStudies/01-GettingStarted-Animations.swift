@@ -42,7 +42,7 @@ struct AnimationsEnvironment {
 
 let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnvironment> {
   state, action, environment in
-  struct CancelId {}
+  enum CancelID {}
 
   switch action {
   case let .circleScaleToggleChanged(isScaled):
@@ -63,7 +63,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
         await send(.setColor(color), animation: .linear)
       }
     }
-    .cancellable(id: CancelId.self)
+    .cancellable(id: CancelID.self)
 
   case .resetButtonTapped:
     state.alert = AlertState(
@@ -78,7 +78,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
 
   case .resetConfirmationButtonTapped:
     state = AnimationsState()
-    return .cancel(id: CancelId.self)
+    return .cancel(id: CancelID.self)
 
   case let .setColor(color):
     state.circleColor = color

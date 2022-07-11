@@ -47,7 +47,7 @@ let navigateAndLoadListReducer =
       NavigateAndLoadListState, NavigateAndLoadListAction, NavigateAndLoadListEnvironment
     > { state, action, environment in
 
-      enum CancelId {}
+      enum CancelID {}
 
       switch action {
       case .counter:
@@ -59,14 +59,14 @@ let navigateAndLoadListReducer =
           try? await environment.mainQueue.sleep(for: 1)
           return .setNavigationSelectionDelayCompleted
         }
-        .cancellable(id: CancelId.self, cancelInFlight: true)
+        .cancellable(id: CancelID.self, cancelInFlight: true)
 
       case .setNavigation(selection: .none):
         if let selection = state.selection, let count = selection.value?.count {
           state.rows[id: selection.id]?.count = count
         }
         state.selection = nil
-        return .cancel(id: CancelId.self)
+        return .cancel(id: CancelID.self)
 
       case .setNavigationSelectionDelayCompleted:
         guard let id = state.selection?.id else { return .none }

@@ -38,18 +38,18 @@ let effectsCancellationReducer = Reducer<
   EffectsCancellationState, EffectsCancellationAction, EffectsCancellationEnvironment
 > { state, action, environment in
 
-  enum TriviaRequestId {}
+  enum TriviaRequestID {}
 
   switch action {
   case .cancelButtonTapped:
     state.isTriviaRequestInFlight = false
-    return .cancel(id: TriviaRequestId.self)
+    return .cancel(id: TriviaRequestID.self)
 
   case let .stepperChanged(value):
     state.count = value
     state.currentTrivia = nil
     state.isTriviaRequestInFlight = false
-    return .cancel(id: TriviaRequestId.self)
+    return .cancel(id: TriviaRequestID.self)
 
   case .triviaButtonTapped:
     state.currentTrivia = nil
@@ -58,7 +58,7 @@ let effectsCancellationReducer = Reducer<
     return .task { [count = state.count] in
       await .triviaResponse(TaskResult { try await environment.fact.fetch(count) })
     }
-    .cancellable(id: TriviaRequestId.self)
+    .cancellable(id: TriviaRequestID.self)
 
   case let .triviaResponse(.success(response)):
     state.isTriviaRequestInFlight = false

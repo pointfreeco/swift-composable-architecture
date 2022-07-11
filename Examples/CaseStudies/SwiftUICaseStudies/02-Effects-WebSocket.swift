@@ -42,7 +42,7 @@ struct WebSocketEnvironment {
 let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnvironment> {
   state, action, environment in
 
-  enum WebSocketId {}
+  enum WebSocketID {}
 
   switch action {
   case .alertDismissed:
@@ -53,13 +53,13 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
     switch state.connectivityState {
     case .connected, .connecting:
       state.connectivityState = .disconnected
-      return .cancel(id: WebSocketId.self)
+      return .cancel(id: WebSocketID.self)
 
     case .disconnected:
       state.connectivityState = .connecting
       return .run { send in
         let actions = await environment.webSocket
-          .open(WebSocketId.self, URL(string: "wss://echo.websocket.events")!, [])
+          .open(WebSocketID.self, URL(string: "wss://echo.websocket.events")!, [])
         await withThrowingTaskGroup(of: Void.self) { group in
           for await action in actions {
             await send(.webSocket(action))
@@ -68,11 +68,11 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
               group.addTask {
                 while !Task.isCancelled {
                   try await environment.mainQueue.sleep(for: .seconds(10))
-                  try? await environment.webSocket.sendPing(WebSocketId.self)
+                  try? await environment.webSocket.sendPing(WebSocketID.self)
                 }
               }
               group.addTask {
-                for await result in try await environment.webSocket.receive(WebSocketId.self) {
+                for await result in try await environment.webSocket.receive(WebSocketID.self) {
                   await send(.receivedSocketMessage(result))
                 }
               }
@@ -82,7 +82,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
           }
         }
       }
-      .cancellable(id: WebSocketId.self)
+      .cancellable(id: WebSocketID.self)
     }
 
   case let .messageToSendChanged(message):
@@ -102,12 +102,12 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
     let messageToSend = state.messageToSend
     state.messageToSend = ""
     return .task {
-      try await environment.webSocket.send(WebSocketId.self, .string(messageToSend))
+      try await environment.webSocket.send(WebSocketID.self, .string(messageToSend))
       return .sendResponse(didSucceed: true)
     } catch: { _ in
       .sendResponse(didSucceed: false)
     }
-    .cancellable(id: WebSocketId.self)
+    .cancellable(id: WebSocketID.self)
 
   case .sendResponse(didSucceed: false):
     state.alert = AlertState(title: TextState("Could not send socket message. Try again."))
@@ -118,7 +118,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
 
   case .webSocket(.didClose):
     state.connectivityState = .disconnected
-    return .cancel(id: WebSocketId.self)
+    return .cancel(id: WebSocketID.self)
 
   case .webSocket(.didOpen):
     state.connectivityState = .connected
