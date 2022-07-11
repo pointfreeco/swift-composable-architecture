@@ -10,9 +10,9 @@ import XCTestDynamicOverlay
 /// Effects are returned from reducers so that the ``Store`` can perform the effects after the
 /// reducer is done running.
 ///
-/// > **Important**: ``Store`` is not thread safe, and so all effects must receive values on the
-/// > same thread. This is typically the main thread,  **and** if the store is being used to drive UI then it must receive
-/// > values on the main thread.
+/// > Important: ``Store`` is not thread safe, and so all effects must receive values on the same
+/// > thread. This is typically the main thread,  **and** if the store is being used to drive UI
+/// > then it must receive values on the main thread.
 public struct Effect<Output, Failure: Error> {
   let publisher: AnyPublisher<Output, Failure>
 }
