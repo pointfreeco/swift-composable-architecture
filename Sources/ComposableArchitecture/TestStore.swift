@@ -65,14 +65,15 @@
   ///
   /// ```swift
   /// class CounterTests: XCTestCase {
-  ///   func testCounter() {
+  ///   @MainActor
+  ///   func testCounter() async {
   ///     let store = TestStore(
-  ///       initialState: CounterState(count: 0),  // Given a counter state of 0
+  ///       initialState: CounterState(count: 0),     // Given a counter state of 0
   ///       reducer: counterReducer,
   ///       environment: ()
   ///     )
-  ///     store.send(.incrementButtonTapped) {     // When the increment button is tapped
-  ///       $0.count = 1                           // Then the count should be 1
+  ///     await store.send(.incrementButtonTapped) {  // When the increment button is tapped
+  ///       $0.count = 1                              // Then the count should be 1
   ///     }
   ///   }
   /// }
@@ -140,7 +141,7 @@
   /// )
   ///
   /// // Change the query
-  /// store.send(.searchFieldChanged("c") {
+  /// await store.send(.searchFieldChanged("c") {
   ///   // Assert that state updates accordingly
   ///   $0.query = "c"
   /// }
@@ -149,7 +150,7 @@
   /// await mainQueue.advance(by: 0.25)
   ///
   /// // Change the query again
-  /// store.send(.searchFieldChanged("co") {
+  /// await store.send(.searchFieldChanged("co") {
   ///   $0.query = "co"
   /// }
   ///
