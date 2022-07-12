@@ -58,12 +58,12 @@ struct FocusDemoView: View {
 
           SecureField("Password", text: viewStore.binding(\.$password))
             .focused($focusedField, equals: .password)
-
           Button("Sign In") {
             viewStore.send(.signInButtonTapped)
           }
+          .buttonStyle(.borderedProminent)
         }
-
+        .textFieldStyle(.roundedBorder)
         Spacer()
       }
       .padding()
