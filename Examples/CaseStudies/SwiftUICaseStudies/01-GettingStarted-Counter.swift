@@ -61,7 +61,7 @@ struct CounterDemoView: View {
           .frame(maxWidth: .infinity, maxHeight: .infinity)
       }
     }
-    .navigationBarTitle("Counter demo")
+    .navigationTitle("Counter demo")
   }
 }
 

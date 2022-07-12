@@ -177,7 +177,7 @@ struct WebSocketView: View {
       }
       .padding()
       .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
-      .navigationBarTitle("Web Socket")
+      .navigationTitle("Web Socket")
     }
   }
 }

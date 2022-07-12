@@ -62,7 +62,7 @@ struct TwoCountersView: View {
 
       }
     }
-    .navigationBarTitle("Two counter demo")
+    .navigationTitle("Two counter demo")
   }
 }
 

@@ -69,7 +69,7 @@ struct FocusDemoView: View {
       .padding()
       .synchronize(viewStore.binding(\.$focusedField), self.$focusedField)
     }
-    .navigationBarTitle("Focus demo")
+    .navigationTitle("Focus demo")
   }
 }
 

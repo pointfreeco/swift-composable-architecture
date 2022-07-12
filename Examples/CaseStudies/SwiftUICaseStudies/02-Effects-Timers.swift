@@ -110,7 +110,7 @@ struct TimersView: View {
         Spacer()
       }
       .padding()
-      .navigationBarTitle("Timers")
+      .navigationTitle("Timers")
     }
   }
 }

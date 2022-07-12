@@ -144,7 +144,7 @@ struct AppView: View {
           .onMove { self.viewStore.send(.move($0, $1)) }
         }
       }
-      .navigationBarTitle("Todos")
+      .navigationTitle("Todos")
       .navigationBarItems(
         trailing: HStack(spacing: 20) {
           EditButton()

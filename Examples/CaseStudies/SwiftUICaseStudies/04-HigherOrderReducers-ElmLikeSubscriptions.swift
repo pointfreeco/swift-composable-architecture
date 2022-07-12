@@ -134,7 +134,7 @@ struct ClockView: View {
         Spacer()
       }
       .padding()
-      .navigationBarTitle("Elm-like subscriptions")
+      .navigationTitle("Elm-like subscriptions")
     }
   }
 }

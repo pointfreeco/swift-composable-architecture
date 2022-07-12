@@ -206,7 +206,7 @@ struct SharedStateCounterView: View {
       }
       .padding(16)
       .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity, alignment: .top)
-      .navigationBarTitle("Shared State Demo")
+      .navigationTitle("Shared State Demo")
       .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
     }
   }
@@ -240,7 +240,7 @@ struct SharedStateProfileView: View {
       }
       .padding(16)
       .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity, alignment: .top)
-      .navigationBarTitle("Profile")
+      .navigationTitle("Profile")
     }
   }
 }

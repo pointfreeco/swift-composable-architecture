@@ -101,7 +101,7 @@ struct NestedView: View {
         }
         .onDelete { viewStore.send(.remove($0)) }
       }
-      .navigationBarTitle(viewStore.state.isEmpty ? "Untitled" : viewStore.state)
+      .navigationTitle(viewStore.state.isEmpty ? "Untitled" : viewStore.state)
       .navigationBarItems(
         trailing: Button("Add row") { viewStore.send(.append) }
       )

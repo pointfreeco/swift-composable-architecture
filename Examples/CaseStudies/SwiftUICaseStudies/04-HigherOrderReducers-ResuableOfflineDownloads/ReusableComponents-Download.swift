@@ -139,7 +139,7 @@ struct CityMapDetailView: View {
 
         Spacer()
       }
-      .navigationBarTitle(viewStore.cityMap.title)
+      .navigationTitle(viewStore.cityMap.title)
       .padding()
     }
   }
@@ -184,7 +184,7 @@ struct CitiesView: View {
           .buttonStyle(.borderless)
       }
     }
-    .navigationBarTitle("Offline Downloads")
+    .navigationTitle("Offline Downloads")
   }
 }
 

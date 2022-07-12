@@ -108,7 +108,7 @@ struct NavigateAndLoadListView: View {
         }
       }
     }
-    .navigationBarTitle("Navigate and load")
+    .navigationTitle("Navigate and load")
   }
 }
 

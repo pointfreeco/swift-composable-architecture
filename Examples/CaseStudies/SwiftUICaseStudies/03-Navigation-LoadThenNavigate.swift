@@ -102,7 +102,7 @@ struct LoadThenNavigateView: View {
       }
       .onDisappear { viewStore.send(.onDisappear) }
     }
-    .navigationBarTitle("Load then navigate")
+    .navigationTitle("Load then navigate")
   }
 }
 

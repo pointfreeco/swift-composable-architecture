@@ -80,7 +80,7 @@ struct OptionalBasicsView: View {
         )
       }
     }
-    .navigationBarTitle("Optional state")
+    .navigationTitle("Optional state")
   }
 }
 

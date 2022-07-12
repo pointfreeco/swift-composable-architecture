@@ -184,7 +184,7 @@ struct EpisodesView: View {
           .buttonStyle(.borderless)
       }
     }
-    .navigationBarTitle("Favoriting")
+    .navigationTitle("Favoriting")
   }
 }
 

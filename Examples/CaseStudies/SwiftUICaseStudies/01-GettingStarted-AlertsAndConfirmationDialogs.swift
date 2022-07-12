@@ -98,7 +98,7 @@ struct AlertAndConfirmationDialogView: View {
         Button("Confirmation Dialog") { viewStore.send(.confirmationDialogButtonTapped) }
       }
     }
-    .navigationBarTitle("Alerts & Dialogs")
+    .navigationTitle("Alerts & Dialogs")
     .alert(
       self.store.scope(state: \.alert),
       dismiss: .alertDismissed

@@ -102,7 +102,7 @@ struct LoadThenPresentView: View {
           CounterView(store: $0)
         }
       }
-      .navigationBarTitle("Load and present")
+      .navigationTitle("Load and present")
       .onDisappear { viewStore.send(.onDisappear) }
     }
   }

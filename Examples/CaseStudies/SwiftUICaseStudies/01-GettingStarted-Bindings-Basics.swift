@@ -111,7 +111,7 @@ struct BindingBasicsView: View {
         .disabled(viewStore.toggleIsOn)
       }
     }
-    .navigationBarTitle("Bindings basics")
+    .navigationTitle("Bindings basics")
   }
 }
 

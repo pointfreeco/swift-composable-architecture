@@ -92,7 +92,7 @@ struct BindingFormView: View {
         .foregroundColor(.red)
       }
     }
-    .navigationBarTitle("Bindings form")
+    .navigationTitle("Bindings form")
   }
 }
 

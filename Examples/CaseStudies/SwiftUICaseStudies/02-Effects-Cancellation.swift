@@ -121,7 +121,7 @@ struct EffectsCancellationView: View {
       }
       .buttonStyle(.borderless)
     }
-    .navigationBarTitle("Effect cancellation")
+    .navigationTitle("Effect cancellation")
   }
 }
 

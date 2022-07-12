@@ -77,7 +77,7 @@ struct LongLivingEffectsView: View {
           }
         }
       }
-      .navigationBarTitle("Long-living effects")
+      .navigationTitle("Long-living effects")
       .onAppear { viewStore.send(.onAppear) }
       .onDisappear { viewStore.send(.onDisappear) }
     }

@@ -91,7 +91,7 @@ struct LifecycleDemoView: View {
         }
       }
     }
-    .navigationBarTitle("Lifecycle")
+    .navigationTitle("Lifecycle")
   }
 }
 
