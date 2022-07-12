@@ -448,7 +448,7 @@ extension Reducer {
     *, deprecated,
     message:
       """
-      "'Reducer.binding()' no longer takes an explicit extract function and instead the reducer's \
+      'Reducer.binding()' no longer takes an explicit extract function and instead the reducer's \
       'Action' type must conform to 'BindableAction'
       """
   )
