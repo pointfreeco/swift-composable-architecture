@@ -14,7 +14,7 @@ import XCTestDynamicOverlay
 ///   - environment: The environment of dependencies for the application.
 @available(
   *, deprecated,
-   message:
+  message:
     """
     If you use this initializer, please open a discussion on GitHub and let us know how: \
     https://github.com/pointfreeco/swift-composable-architecture/discussions/new

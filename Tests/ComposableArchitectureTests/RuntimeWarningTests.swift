@@ -69,7 +69,7 @@ final class RuntimeWarningTests: XCTestCase {
 
         The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
         (including all of its scopes and derived view stores) must be done on the main thread.
-        """
+        """,
       ].contains($0.compactDescription)
     }
 
@@ -101,7 +101,7 @@ final class RuntimeWarningTests: XCTestCase {
 
         The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
         (including all of its scopes and derived view stores) must be done on the main thread.
-        """
+        """,
       ].contains($0.compactDescription)
     }
 
@@ -141,9 +141,9 @@ final class RuntimeWarningTests: XCTestCase {
 
         The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
         (including all of its scopes and derived view stores) must be done on the main thread.
-        """
+        """,
       ]
-        .contains($0.compactDescription)
+      .contains($0.compactDescription)
     }
 
     enum Action { case tap, response }
