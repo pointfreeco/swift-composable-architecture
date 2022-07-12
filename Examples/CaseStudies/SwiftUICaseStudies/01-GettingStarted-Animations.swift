@@ -106,7 +106,6 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
 }
 
 struct AnimationsView: View {
-  @Environment(\.colorScheme) var colorScheme
   let store: Store<AnimationsState, AnimationsAction>
 
   var body: some View {
@@ -151,7 +150,6 @@ struct AnimationsView: View {
         Button("Reset") { viewStore.send(.resetButtonTapped) }
           .padding([.horizontal, .bottom])
       }
-      .background(self.colorScheme == .dark ? Color.black : .white)
       .alert(self.store.scope(state: \.alert), dismiss: .dismissAlert)
       .navigationBarTitleDisplayMode(.inline)
     }
