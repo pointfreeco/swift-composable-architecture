@@ -465,7 +465,7 @@ extension ViewStore {
     *, deprecated,
     message:
       """
-      "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. \
+      For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. \
       Bindings are now derived via 'ViewStore.binding' with a key path to that 'BindableState' \
       (for example, 'viewStore.binding(\\.$value)'). For dynamic member lookup to be available, \
       the view store's 'Action' type must also conform to 'BindableAction'.
