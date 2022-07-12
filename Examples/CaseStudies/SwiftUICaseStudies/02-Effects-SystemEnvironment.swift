@@ -83,21 +83,16 @@ struct MultipleDependenciesView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(
-          header: Text(template: readMe, .caption)
-        ) {
-          EmptyView()
+        Section {} header: {
+          Text(template: readMe, .caption)
+            .textCase(.none)
         }
 
-        Section(
-          header: Text(
-            template: """
-              The actions below make use of the dependencies in the `SystemEnvironment`.
-              """, .caption)
-        ) {
+        Section {
           HStack {
             Button("Date") { viewStore.send(.dateButtonTapped) }
             if let dateString = viewStore.dateString {
+              Spacer()
               Text(dateString)
             }
           }
@@ -105,34 +100,44 @@ struct MultipleDependenciesView: View {
           HStack {
             Button("UUID") { viewStore.send(.uuidButtonTapped) }
             if let uuidString = viewStore.uuidString {
+              Spacer()
               Text(uuidString)
+                .minimumScaleFactor(0.5)
+                .lineLimit(1)
             }
           }
 
           Button("Delayed Alert") { viewStore.send(.alertButtonTapped) }
             .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
+        } header: {
+          Text(
+            template: """
+              The actions below make use of the dependencies in the `SystemEnvironment`.
+              """, .caption)
+          .textCase(.none)
         }
 
-        Section(
-          header: Text(
-            template: """
-              The actions below make use of the custom environment for this screen, which holds a \
-              dependency for fetching a random number.
-              """, .caption)
-        ) {
+        Section {
           HStack {
             Button("Fetch Number") { viewStore.send(.fetchNumberButtonTapped) }
-            if let fetchedNumberString = viewStore.fetchedNumberString {
-              Text(fetchedNumberString)
-            }
-
+              .disabled(viewStore.isFetchInFlight)
             Spacer()
 
             if viewStore.isFetchInFlight {
               ProgressView()
+            } else if let fetchedNumberString = viewStore.fetchedNumberString {
+              Text(fetchedNumberString)
             }
           }
+        } header: {
+          Text(
+            template: """
+              The actions below make use of the custom environment for this screen, which holds a \
+              dependency for fetching a random number.
+              """, .caption)
+          .textCase(.none)
         }
+      
       }
       .buttonStyle(.borderless)
     }
@@ -203,23 +208,23 @@ struct SystemEnvironment<Environment> {
 }
 
 #if DEBUG
-  import XCTestDynamicOverlay
+import XCTestDynamicOverlay
 
-  extension SystemEnvironment {
-    static func unimplemented(
-      date: @escaping () -> Date = XCTUnimplemented("\(Self.self).date", placeholder: Date()),
-      environment: Environment,
-      mainQueue: AnySchedulerOf<DispatchQueue> = .unimplemented,
-      uuid: @escaping () -> UUID = XCTUnimplemented("\(Self.self).uuid", placeholder: UUID())
-    ) -> Self {
-      Self(
-        date: date,
-        environment: environment,
-        mainQueue: mainQueue,
-        uuid: uuid
-      )
-    }
+extension SystemEnvironment {
+  static func unimplemented(
+    date: @escaping () -> Date = XCTUnimplemented("\(Self.self).date", placeholder: Date()),
+    environment: Environment,
+    mainQueue: AnySchedulerOf<DispatchQueue> = .unimplemented,
+    uuid: @escaping () -> UUID = XCTUnimplemented("\(Self.self).uuid", placeholder: UUID())
+  ) -> Self {
+    Self(
+      date: date,
+      environment: environment,
+      mainQueue: mainQueue,
+      uuid: uuid
+    )
   }
+}
 #endif
 
 extension UUID {
