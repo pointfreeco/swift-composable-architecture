@@ -86,11 +86,9 @@ struct EffectsCancellationView: View {
 
         Section {
           Stepper(
-            value: viewStore.binding(
-              get: \.count, send: EffectsCancellationAction.stepperChanged)
-          ) {
-            Text("\(viewStore.count)")
-          }
+            "\(viewStore.count)",
+            value: viewStore.binding( get: \.count, send: EffectsCancellationAction.stepperChanged)
+          )
 
           if viewStore.isTriviaRequestInFlight {
             HStack {
@@ -115,7 +113,7 @@ struct EffectsCancellationView: View {
           Button("Number facts provided by numbersapi.com") {
             UIApplication.shared.open(URL(string: "http://numbersapi.com")!)
           }
-          .foregroundColor(.gray)
+          .foregroundStyle(.secondary)
           .frame(maxWidth: .infinity)
         }
       }
