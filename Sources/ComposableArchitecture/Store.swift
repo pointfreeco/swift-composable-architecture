@@ -163,26 +163,6 @@ public final class Store<State, Action> {
     self.threadCheck(status: .`init`)
   }
 
-  /// Initializes a store from an initial state, a reducer, and an environment, and the main thread
-  /// check is disabled for all interactions with this store.
-  ///
-  /// - Parameters:
-  ///   - initialState: The state to start the application in.
-  ///   - reducer: The reducer that powers the business logic of the application.
-  ///   - environment: The environment of dependencies for the application.
-  public static func unchecked<Environment>(
-    initialState: State,
-    reducer: Reducer<State, Action, Environment>,
-    environment: Environment
-  ) -> Self {
-    Self(
-      initialState: initialState,
-      reducer: reducer,
-      environment: environment,
-      mainThreadChecksEnabled: false
-    )
-  }
-
   /// Scopes the store to one that exposes local state and actions.
   ///
   /// This can be useful for deriving new stores to hand to child views in an application. For
@@ -512,7 +492,7 @@ public final class Store<State, Action> {
     #endif
   }
 
-  private init<Environment>(
+  init<Environment>(
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
     environment: Environment,
