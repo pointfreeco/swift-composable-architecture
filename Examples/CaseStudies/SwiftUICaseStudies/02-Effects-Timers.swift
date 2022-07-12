@@ -62,7 +62,7 @@ struct TimersView: View {
 
         ZStack {
           Circle()
-            .fill(
+            .foregroundStyle(
               AngularGradient(
                 gradient: Gradient(
                   colors: [
@@ -84,28 +84,26 @@ struct TimersView: View {
               )
             )
             .rotationEffect(.degrees(-90))
-
           GeometryReader { proxy in
-            Path { path in
-              path.move(to: CGPoint(x: proxy.size.width / 2, y: proxy.size.height / 2))
-              path.addLine(to: CGPoint(x: proxy.size.width / 2, y: 0))
-            }
-            .stroke(Color.black, lineWidth: 3)
-            .rotationEffect(.degrees(Double(viewStore.secondsElapsed) * 360 / 60))
+            Capsule()
+              .frame(width: 3, height: proxy.size.height / 2)
+              .position(x: proxy.size.width/2, y: proxy.size.height / 2)
+              .offset(y: -proxy.size.height / 4)
+              .rotationEffect(.degrees(Double(viewStore.secondsElapsed) * 360 / 60))
           }
         }
-        .frame(width: 280, height: 280)
-        .padding(.bottom, 16)
+        .aspectRatio(1, contentMode: .fit)
+        .frame(width: 280)
+        .padding(.vertical, 16)
 
-        Button(action: { viewStore.send(.toggleTimerButtonTapped) }) {
-          HStack {
-            Text(viewStore.isTimerActive ? "Stop" : "Start")
-          }
-          .foregroundColor(.white)
-          .padding()
-          .background(viewStore.isTimerActive ? Color.red : .blue)
-          .cornerRadius(16)
+        Button {
+          viewStore.send(.toggleTimerButtonTapped)
+        } label: {
+          Text(viewStore.isTimerActive ? "Stop" : "Start")
+            .padding(8)
         }
+        .tint(viewStore.isTimerActive ? Color.red : .accentColor)
+        .buttonStyle(.borderedProminent)
 
         Spacer()
       }
