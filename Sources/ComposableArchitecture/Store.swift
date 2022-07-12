@@ -411,11 +411,10 @@ public final class Store<State, Action> {
               %@
 
           Make sure to use ".receive(on:)" on any effects that execute on background threads to \
-          receive their output on the main thread, or create your store via "Store.unchecked" to \
-          opt out of the main thread checker.
+          receive their output on the main thread.
 
           The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the same \
+          "Store" (including all of its scopes and derived view stores) must be done on the main \
           thread.
           """,
           [debugCaseOutput(action)]
@@ -426,11 +425,8 @@ public final class Store<State, Action> {
           """
           A store initialized on a non-main thread. …
 
-          If a store is intended to be used on a background thread, create it via \
-          "Store.unchecked" to opt out of the main thread checker.
-
           The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the same \
+          "Store" (including all of its scopes and derived view stores) must be done on the main \
           thread.
           """
         )
@@ -440,11 +436,8 @@ public final class Store<State, Action> {
           """
           "Store.scope" was called on a non-main thread. …
 
-          Make sure to use "Store.scope" on the main thread, or create your store via \
-          "Store.unchecked" to opt out of the main thread checker.
-
           The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the same \
+          "Store" (including all of its scopes and derived view stores) must be done on the main \
           thread.
           """
         )
@@ -454,11 +447,8 @@ public final class Store<State, Action> {
           """
           "ViewStore.send" was called on a non-main thread with: %@ …
 
-          Make sure that "ViewStore.send" is always called on the main thread, or create your \
-          store via "Store.unchecked" to opt out of the main thread checker.
-
           The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the same \
+          "Store" (including all of its scopes and derived view stores) must be done on the main \
           thread.
           """,
           [debugCaseOutput(action)]
@@ -476,11 +466,10 @@ public final class Store<State, Action> {
               %@
 
           Make sure to use ".receive(on:)" on any effects that execute on background threads to \
-          receive their output on the main thread, or create this store via "Store.unchecked" to \
-          disable the main thread checker.
+          receive their output on the main thread.
 
           The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the same \
+          "Store" (including all of its scopes and derived view stores) must be done on the main \
           thread.
           """,
           [
