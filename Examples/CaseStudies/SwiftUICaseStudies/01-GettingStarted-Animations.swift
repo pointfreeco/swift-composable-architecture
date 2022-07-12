@@ -114,7 +114,30 @@ struct AnimationsView: View {
       VStack(alignment: .leading) {
         Text(template: readMe, .body)
           .padding()
-          .allowsHitTesting(false)
+          .gesture(
+            DragGesture(minimumDistance: 0).onChanged { gesture in
+              viewStore.send(
+                .tapped(gesture.location),
+                animation: .interactiveSpring(response: 0.25, dampingFraction: 0.1)
+              )
+            }
+          )
+          .overlay {
+            GeometryReader { proxy in
+              Circle()
+                .fill(viewStore.circleColor)
+                .colorInvert()
+                .blendMode(.difference)
+                .frame(width: 50, height: 50)
+                .scaleEffect(viewStore.isCircleScaled ? 2 : 1)
+                .position(
+                  x: viewStore.circleCenter?.x ?? proxy.size.width / 2,
+                  y: viewStore.circleCenter?.y ?? proxy.size.height / 2
+                )
+                .offset(y: viewStore.circleCenter == nil ? 0 : -44)
+            }
+            .allowsHitTesting(false)
+          }
         Toggle(
           "Big mode",
           isOn:
@@ -127,34 +150,6 @@ struct AnimationsView: View {
           .padding([.horizontal, .bottom])
         Button("Reset") { viewStore.send(.resetButtonTapped) }
           .padding([.horizontal, .bottom])
-      }
-      .overlay {
-        GeometryReader { proxy in
-          Circle()
-            .fill(viewStore.circleColor)
-            .colorInvert()
-            .blendMode(.difference)
-            .frame(width: 50, height: 50)
-            .scaleEffect(viewStore.isCircleScaled ? 2 : 1)
-            .position(
-              x: viewStore.circleCenter?.x ?? proxy.size.width / 2,
-              y: viewStore.circleCenter?.y ?? proxy.size.height / 2
-            )
-            .offset(y: viewStore.circleCenter == nil ? 0 : -44)
-            .allowsHitTesting(false)
-        }
-      }
-      .background {
-        Color.clear
-          .contentShape(Rectangle())
-          .gesture(
-            DragGesture(minimumDistance: 0).onChanged { gesture in
-              viewStore.send(
-                .tapped(gesture.location),
-                animation: .interactiveSpring(response: 0.25, dampingFraction: 0.1)
-              )
-            }
-          )
       }
       .background(self.colorScheme == .dark ? Color.black : .white)
       .alert(self.store.scope(state: \.alert), dismiss: .dismissAlert)
