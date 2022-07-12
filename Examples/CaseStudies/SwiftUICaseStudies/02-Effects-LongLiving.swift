@@ -91,6 +91,7 @@ struct LongLivingEffectsView: View {
       """
     )
     .padding(.horizontal, 64)
+    .navigationBarTitleDisplayMode(.inline)
   }
 }
 
