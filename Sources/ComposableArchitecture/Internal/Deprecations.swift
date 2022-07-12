@@ -3,7 +3,7 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
-// NB: Deprecated after 0.38.0:
+// NB: Deprecated after 0.38.2:
 
 /// Initializes a store from an initial state, a reducer, and an environment, and the main thread
 /// check is disabled for all interactions with this store.
@@ -34,6 +34,8 @@ extension Store {
     )
   }
 }
+
+// NB: Deprecated after 0.38.0:
 
 extension Effect {
   @available(iOS, deprecated: 9999.0, renamed: "unimplemented")
