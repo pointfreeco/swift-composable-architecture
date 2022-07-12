@@ -3,6 +3,38 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
+// NB: Deprecated after 0.38.2:
+
+/// Initializes a store from an initial state, a reducer, and an environment, and the main thread
+/// check is disabled for all interactions with this store.
+///
+/// - Parameters:
+///   - initialState: The state to start the application in.
+///   - reducer: The reducer that powers the business logic of the application.
+///   - environment: The environment of dependencies for the application.
+@available(
+  *, deprecated,
+   message:
+    """
+    If you use this initializer, please open a discussion on GitHub and let us know how: \
+    https://github.com/pointfreeco/swift-composable-architecture/discussions/new
+    """
+)
+extension Store {
+  public static func unchecked<Environment>(
+    initialState: State,
+    reducer: Reducer<State, Action, Environment>,
+    environment: Environment
+  ) -> Self {
+    Self(
+      initialState: initialState,
+      reducer: reducer,
+      environment: environment,
+      mainThreadChecksEnabled: false
+    )
+  }
+}
+
 // NB: Deprecated after 0.38.0:
 
 extension Effect {
