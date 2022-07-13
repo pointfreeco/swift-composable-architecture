@@ -38,8 +38,7 @@ enum EffectsBasicsAction: Equatable {
   case nthPrimeResponse(Int)
   case numberFactButtonTapped
   case numberFactResponse(TaskResult<String>)
-  case onAppear
-  case onDisappear
+  case task
   case startTimerButtonTapped
   case stopTimerButtonTapped
   case timerTick
@@ -101,7 +100,6 @@ let effectsBasicsReducer = Reducer<
   EffectsBasicsEnvironment
 > { state, action, environment in
   enum DelayID {}
-  enum NthPrimeID {}
   enum TimerID {}
 
   switch action {
@@ -134,12 +132,8 @@ let effectsBasicsReducer = Reducer<
     ? .cancel(id: DelayID.self)
     : .none
 
-  case .onAppear:
+  case .task:
     return nthPrime(number: state.count)
-      .cancellable(id: NthPrimeID.self)
-
-  case .onDisappear:
-    return .cancel(id: NthPrimeID.self)
 
   case .nthPrimeButtonTapped:
     return nthPrime(number: state.count)
@@ -310,7 +304,10 @@ struct EffectsBasicsView: View {
       .buttonStyle(.borderless)
 //      .onAppear { viewStore.send(.onAppear) }
 //      .onDisappear { viewStore.send(.onDisappear) }
-      .task { await viewStore.send(.task) }
+      .task {
+        await viewStore.send(.task).finish()
+        print("Effect finished!")
+      }
     }
     .navigationBarTitle("Effects")
   }
