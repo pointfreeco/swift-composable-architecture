@@ -208,23 +208,23 @@ struct SystemEnvironment<Environment> {
 }
 
 #if DEBUG
-import XCTestDynamicOverlay
+  import XCTestDynamicOverlay
 
-extension SystemEnvironment {
-  static func unimplemented(
-    date: @escaping () -> Date = XCTUnimplemented("\(Self.self).date", placeholder: Date()),
-    environment: Environment,
-    mainQueue: AnySchedulerOf<DispatchQueue> = .unimplemented,
-    uuid: @escaping () -> UUID = XCTUnimplemented("\(Self.self).uuid", placeholder: UUID())
-  ) -> Self {
-    Self(
-      date: date,
-      environment: environment,
-      mainQueue: mainQueue,
-      uuid: uuid
-    )
+  extension SystemEnvironment {
+    static func unimplemented(
+      date: @escaping () -> Date = XCTUnimplemented("\(Self.self).date", placeholder: Date()),
+      environment: Environment,
+      mainQueue: AnySchedulerOf<DispatchQueue> = .unimplemented,
+      uuid: @escaping () -> UUID = XCTUnimplemented("\(Self.self).uuid", placeholder: UUID())
+    ) -> Self {
+      Self(
+        date: date,
+        environment: environment,
+        mainQueue: mainQueue,
+        uuid: uuid
+      )
+    }
   }
-}
 #endif
 
 extension UUID {
