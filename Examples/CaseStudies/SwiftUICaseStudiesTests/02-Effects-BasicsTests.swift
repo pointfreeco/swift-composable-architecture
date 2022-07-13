@@ -156,7 +156,7 @@ class EffectsBasicsTests: XCTestCase {
       environment: .unimplemented
     )
 
-    store.send(.nthPrimeButtonTapped)
+    let task = store.send(.nthPrimeButtonTapped)
 
     await store.receive(.nthPrimeProgress(0.84)) {
       $0.nthPrimeProgress = 0.84
@@ -166,7 +166,7 @@ class EffectsBasicsTests: XCTestCase {
       $0.nthPrimeProgress = nil
     }
 
-    await Task.yield()
+    await task.finish()
   }
 
   func testIsEquatable() {

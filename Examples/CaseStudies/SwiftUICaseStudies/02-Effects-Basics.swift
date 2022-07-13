@@ -22,7 +22,7 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct EffectsBasicsState: Equatable {
-  var count = 0
+  var count = 50_000
   var isNumberFactRequestInFlight = false
   var isTimerRunning = false
   var nthPrimeProgress: Double?
@@ -38,6 +38,8 @@ enum EffectsBasicsAction: Equatable {
   case nthPrimeResponse(Int)
   case numberFactButtonTapped
   case numberFactResponse(TaskResult<String>)
+  case onAppear
+  case onDisappear
   case startTimerButtonTapped
   case stopTimerButtonTapped
   case timerTick
@@ -99,6 +101,7 @@ let effectsBasicsReducer = Reducer<
   EffectsBasicsEnvironment
 > { state, action, environment in
   enum DelayID {}
+  enum NthPrimeID {}
   enum TimerID {}
 
   switch action {
@@ -131,26 +134,15 @@ let effectsBasicsReducer = Reducer<
     ? .cancel(id: DelayID.self)
     : .none
 
+  case .onAppear:
+    return nthPrime(number: state.count)
+      .cancellable(id: NthPrimeID.self)
+
+  case .onDisappear:
+    return .cancel(id: NthPrimeID.self)
+
   case .nthPrimeButtonTapped:
-    return .run { [count = state.count] send in
-      var primeCount = 0
-      var prime = 2
-      while primeCount < count {
-
-        defer { prime += 1 }
-        if isPrime(prime) {
-          primeCount += 1
-        } else if prime.isMultiple(of: 1_000) {
-
-          await send(.nthPrimeProgress(Double(primeCount) / Double(count)), animation: .default)
-          await Task.yield()
-        }
-      }
-
-      await send(.nthPrimeResponse(prime - 1), animation: .default)
-
-      // viewStore.send(action, animation: .default)
-    }
+    return nthPrime(number: state.count)
 
   case let .nthPrimeProgress(progress):
     state.nthPrimeProgress = progress
@@ -219,6 +211,28 @@ let effectsBasicsReducer = Reducer<
   }
 }
 .debug()
+
+private func nthPrime(number: Int) -> Effect<EffectsBasicsAction, Never> {
+  .run { send in
+    var primeCount = 0
+    var prime = 2
+    while primeCount < number {
+
+      defer { prime += 1 }
+      if isPrime(prime) {
+        primeCount += 1
+      } else if prime.isMultiple(of: 1_000) {
+
+        await send(.nthPrimeProgress(Double(primeCount) / Double(number)), animation: .default)
+        await Task.yield()
+      }
+    }
+
+    await send(.nthPrimeResponse(prime - 1), animation: .default)
+
+    // viewStore.send(action, animation: .default)
+  }
+}
 
 // MARK: - Feature view
 
@@ -294,6 +308,9 @@ struct EffectsBasicsView: View {
         }
       }
       .buttonStyle(.borderless)
+//      .onAppear { viewStore.send(.onAppear) }
+//      .onDisappear { viewStore.send(.onDisappear) }
+      .task { await viewStore.send(.task) }
     }
     .navigationBarTitle("Effects")
   }
