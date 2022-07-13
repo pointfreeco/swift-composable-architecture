@@ -108,14 +108,8 @@ struct ClockView: View {
               )
             )
             .rotationEffect(.degrees(-90))
-
-          GeometryReader { proxy in
-            Capsule()
-              .frame(width: 3, height: proxy.size.height / 2)
-              .position(x: proxy.size.width/2, y: proxy.size.height / 2)
-              .offset(y: -proxy.size.height / 4)
-              .rotationEffect(.degrees(Double(viewStore.secondsElapsed) * 360 / 60))
-          }
+          ClockHand()
+            .rotationEffect(.degrees(Double(viewStore.secondsElapsed) * 360 / 60))
         }
         .aspectRatio(1, contentMode: .fit)
         .frame(width: 280)
