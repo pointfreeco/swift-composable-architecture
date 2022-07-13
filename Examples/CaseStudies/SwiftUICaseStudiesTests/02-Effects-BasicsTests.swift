@@ -104,6 +104,45 @@ class EffectsBasicsTests: XCTestCase {
     }
   }
 
+  func testTimer() {
+    let mainQueue = DispatchQueue.test
+
+    let store = TestStore(
+      initialState: EffectsBasicsState(),
+      reducer: effectsBasicsReducer,
+      environment: .unimplemented
+    )
+
+    store.environment.mainQueue = mainQueue.eraseToAnyScheduler()
+
+    store.send(.startTimerButtonTapped) {
+      $0.isTimerRunning = true
+    }
+
+    mainQueue.advance(by: .seconds(1))
+    store.receive(.timerTick) {
+      $0.count = 1
+    }
+
+    mainQueue.advance(by: .seconds(4))
+    store.receive(.timerTick) {
+      $0.count = 2
+    }
+    store.receive(.timerTick) {
+      $0.count = 3
+    }
+    store.receive(.timerTick) {
+      $0.count = 4
+    }
+    store.receive(.timerTick) {
+      $0.count = 5
+    }
+
+    store.send(.stopTimerButtonTapped) {
+      $0.isTimerRunning = false
+    }
+  }
+
   func testIsEquatable() {
     XCTAssertTrue(isEquatable(1))
     XCTAssertTrue(isEquatable("Hello"))

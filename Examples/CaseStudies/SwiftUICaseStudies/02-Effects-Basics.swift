@@ -24,6 +24,7 @@ private let readMe = """
 struct EffectsBasicsState: Equatable {
   var count = 0
   var isNumberFactRequestInFlight = false
+  var isTimerRunning = false
   var numberFact: String?
 }
 
@@ -33,6 +34,9 @@ enum EffectsBasicsAction: Equatable {
   case incrementButtonTapped
   case numberFactButtonTapped
   case numberFactResponse(TaskResult<String>)
+  case startTimerButtonTapped
+  case stopTimerButtonTapped
+  case timerTick
 }
 
 struct EffectsBasicsEnvironment {
@@ -61,6 +65,7 @@ let effectsBasicsReducer = Reducer<
   EffectsBasicsEnvironment
 > { state, action, environment in
   enum DelayID {}
+  enum TimerID {}
 
   switch action {
   case .decrementButtonTapped:
@@ -116,6 +121,23 @@ let effectsBasicsReducer = Reducer<
     // NB: This is where we could handle the error is some way, such as showing an alert.
     state.isNumberFactRequestInFlight = false
     return .none
+
+  case .startTimerButtonTapped:
+    state.isTimerRunning = true
+    return Effect.timer(
+      id: TimerID.self,
+      every: .seconds(1),
+      on: environment.mainQueue
+    )
+    .map { _ in .timerTick }
+
+  case .stopTimerButtonTapped:
+    state.isTimerRunning = false
+    return .cancel(id: TimerID.self)
+
+  case .timerTick:
+    state.count += 1
+    return .none
   }
 }
 .debug()
@@ -156,6 +178,20 @@ struct EffectsBasicsView: View {
 
           if let numberFact = viewStore.numberFact {
             Text(numberFact)
+          }
+        }
+
+        Section {
+          if viewStore.isTimerRunning {
+            Button("Stop timer") {
+              viewStore.send(.stopTimerButtonTapped)
+            }
+            .frame(maxWidth: .infinity)
+          } else {
+            Button("Start timer") {
+              viewStore.send(.startTimerButtonTapped)
+            }
+            .frame(maxWidth: .infinity)
           }
         }
 
