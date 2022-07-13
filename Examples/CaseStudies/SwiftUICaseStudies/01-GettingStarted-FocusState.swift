@@ -49,8 +49,8 @@ struct FocusDemoView: View {
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
-      VStack(alignment: .leading, spacing: 32) {
-        Text(template: readMe, .caption)
+      Form {
+        AboutView(readMe: readMe)
 
         VStack {
           TextField("Username", text: viewStore.binding(\.$username))
@@ -58,18 +58,16 @@ struct FocusDemoView: View {
 
           SecureField("Password", text: viewStore.binding(\.$password))
             .focused($focusedField, equals: .password)
-
           Button("Sign In") {
             viewStore.send(.signInButtonTapped)
           }
+          .buttonStyle(.borderedProminent)
         }
-
-        Spacer()
+        .textFieldStyle(.roundedBorder)
       }
-      .padding()
       .synchronize(viewStore.binding(\.$focusedField), self.$focusedField)
     }
-    .navigationBarTitle("Focus demo")
+    .navigationTitle("Focus demo")
   }
 }
 

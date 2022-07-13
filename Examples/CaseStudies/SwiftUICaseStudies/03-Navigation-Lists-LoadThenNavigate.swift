@@ -125,7 +125,7 @@ struct LoadThenNavigateListView: View {
           }
         }
       }
-      .navigationBarTitle("Load then navigate")
+      .navigationTitle("Load then navigate")
       .onDisappear { viewStore.send(.onDisappear) }
     }
   }

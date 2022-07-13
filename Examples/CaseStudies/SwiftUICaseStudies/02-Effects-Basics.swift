@@ -92,14 +92,22 @@ struct EffectsBasicsView: View {
 
         Section {
           HStack {
-            Spacer()
-            Button("−") { viewStore.send(.decrementButtonTapped) }
+            Button {
+              viewStore.send(.decrementButtonTapped)
+            } label: {
+              Image(systemName: "minus")
+            }
+
             Text("\(viewStore.count)")
-              .font(.body.monospacedDigit())
-            Button("+") { viewStore.send(.incrementButtonTapped) }
-            Spacer()
+              .monospacedDigit()
+            
+            Button {
+              viewStore.send(.incrementButtonTapped)
+            } label: {
+              Image(systemName: "plus")
+            }
           }
-          .buttonStyle(.borderless)
+          .frame(maxWidth: .infinity)
 
           Button("Number fact") { viewStore.send(.numberFactButtonTapped) }
             .frame(maxWidth: .infinity)
@@ -121,13 +129,13 @@ struct EffectsBasicsView: View {
           Button("Number facts provided by numbersapi.com") {
             UIApplication.shared.open(URL(string: "http://numbersapi.com")!)
           }
-          .foregroundColor(.gray)
+          .foregroundStyle(.secondary)
           .frame(maxWidth: .infinity)
         }
       }
       .buttonStyle(.borderless)
     }
-    .navigationBarTitle("Effects")
+    .navigationTitle("Effects")
   }
 }
 

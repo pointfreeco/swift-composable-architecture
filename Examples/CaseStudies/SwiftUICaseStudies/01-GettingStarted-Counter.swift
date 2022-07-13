@@ -37,10 +37,20 @@ struct CounterView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       HStack {
-        Button("−") { viewStore.send(.decrementButtonTapped) }
+        Button {
+          viewStore.send(.decrementButtonTapped)
+        } label: {
+          Image(systemName: "minus")
+        }
+
         Text("\(viewStore.count)")
-          .font(.body.monospacedDigit())
-        Button("+") { viewStore.send(.incrementButtonTapped) }
+          .monospacedDigit()
+        
+        Button {
+          viewStore.send(.incrementButtonTapped)
+        } label: {
+          Image(systemName: "plus")
+        }
       }
     }
   }
@@ -57,11 +67,11 @@ struct CounterDemoView: View {
 
       Section {
         CounterView(store: self.store)
-          .buttonStyle(.borderless)
-          .frame(maxWidth: .infinity, maxHeight: .infinity)
+          .frame(maxWidth: .infinity)
       }
     }
-    .navigationBarTitle("Counter demo")
+    .buttonStyle(.borderless)
+    .navigationTitle("Counter demo")
   }
 }
 

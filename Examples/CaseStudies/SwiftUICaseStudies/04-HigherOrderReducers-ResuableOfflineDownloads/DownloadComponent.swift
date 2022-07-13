@@ -136,32 +136,30 @@ struct DownloadComponent<ID: Equatable>: View {
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
-      Button(action: { viewStore.send(.buttonTapped) }) {
+      Button {
+        viewStore.send(.buttonTapped)
+      } label: {
         if viewStore.mode == .downloaded {
           Image(systemName: "checkmark.circle")
-            .accentColor(.blue)
+            .tint(.accentColor)
         } else if viewStore.mode.progress > 0 {
           ZStack {
             CircularProgressView(value: viewStore.mode.progress)
               .frame(width: 16, height: 16)
-
             Rectangle()
               .frame(width: 6, height: 6)
-              .foregroundColor(.black)
           }
         } else if viewStore.mode == .notDownloaded {
           Image(systemName: "icloud.and.arrow.down")
-            .accentColor(.black)
         } else if viewStore.mode == .startingToDownload {
           ZStack {
             ProgressView()
-
             Rectangle()
               .frame(width: 6, height: 6)
-              .foregroundColor(.black)
           }
         }
       }
+      .foregroundStyle(.primary)
       .alert(
         self.store.scope(state: \.alert, action: DownloadComponentAction.alert),
         dismiss: .dismiss

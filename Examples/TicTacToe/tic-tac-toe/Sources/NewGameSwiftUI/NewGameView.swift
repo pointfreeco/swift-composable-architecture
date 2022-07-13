@@ -73,7 +73,7 @@ public struct NewGameView: View {
           Text("Let's play!")
         }
         .disabled(viewStore.isLetsPlayButtonDisabled)
-        .navigationBarTitle("New Game")
+        .navigationTitle("New Game")
         .navigationBarItems(trailing: Button("Logout") { viewStore.send(.logoutButtonTapped) })
       }
     }

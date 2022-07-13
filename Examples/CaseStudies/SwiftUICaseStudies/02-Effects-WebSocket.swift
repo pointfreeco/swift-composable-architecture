@@ -170,14 +170,14 @@ struct WebSocketView: View {
         Spacer()
 
         Text("Status: \(viewStore.connectivityState.rawValue)")
-          .foregroundColor(.secondary)
+          .foregroundStyle(.secondary)
         Text("Received messages:")
-          .foregroundColor(.secondary)
+          .foregroundStyle(.secondary)
         Text(viewStore.receivedMessages.joined(separator: "\n"))
       }
       .padding()
       .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
-      .navigationBarTitle("Web Socket")
+      .navigationTitle("Web Socket")
     }
   }
 }

@@ -193,20 +193,27 @@ struct SharedStateCounterView: View {
 
         VStack(spacing: 16) {
           HStack {
-            Button("−") { viewStore.send(.decrementButtonTapped) }
+            Button {
+              viewStore.send(.decrementButtonTapped)
+            } label: {
+              Image(systemName: "minus")
+            }
 
             Text("\(viewStore.count)")
-              .font(.body.monospacedDigit())
-
-            Button("+") { viewStore.send(.incrementButtonTapped) }
+              .monospacedDigit()
+            
+            Button {
+              viewStore.send(.incrementButtonTapped)
+            } label: {
+              Image(systemName: "plus")
+            }
           }
 
           Button("Is this prime?") { viewStore.send(.isPrimeButtonTapped) }
         }
       }
-      .padding(16)
-      .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity, alignment: .top)
-      .navigationBarTitle("Shared State Demo")
+      .padding(.top)
+      .navigationTitle("Shared State Demo")
       .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
     }
   }
@@ -238,9 +245,8 @@ struct SharedStateProfileView: View {
           Button("Reset") { viewStore.send(.resetCounterButtonTapped) }
         }
       }
-      .padding(16)
-      .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity, alignment: .top)
-      .navigationBarTitle("Profile")
+      .padding(.top)
+      .navigationTitle("Profile")
     }
   }
 }

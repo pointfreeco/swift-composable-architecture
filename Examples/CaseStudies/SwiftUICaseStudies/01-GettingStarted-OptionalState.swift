@@ -68,11 +68,10 @@ struct OptionalBasicsView: View {
             action: OptionalBasicsAction.optionalCounter
           ),
           then: { store in
-            VStack(alignment: .leading, spacing: 16) {
               Text(template: "`CounterState` is non-`nil`")
               CounterView(store: store)
-                .buttonStyle(.borderless)
-            }
+              .buttonStyle(.borderless)
+              .frame(maxWidth: .infinity)
           },
           else: {
             Text(template: "`CounterState` is `nil`")
@@ -80,7 +79,7 @@ struct OptionalBasicsView: View {
         )
       }
     }
-    .navigationBarTitle("Optional state")
+    .navigationTitle("Optional state")
   }
 }
 
