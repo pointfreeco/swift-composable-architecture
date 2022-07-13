@@ -149,6 +149,26 @@ class EffectsBasicsTests: XCTestCase {
     }
   }
 
+  func testNthPrime() async {
+    let store = TestStore(
+      initialState: EffectsBasicsState(count: 200),
+      reducer: effectsBasicsReducer,
+      environment: .unimplemented
+    )
+
+    store.send(.nthPrimeButtonTapped)
+
+    await store.receive(.nthPrimeProgress(0.84)) {
+      $0.nthPrimeProgress = 0.84
+    }
+    await store.receive(.nthPrimeResponse(1_223)) {
+      $0.numberFact = "The 200th prime is 1223."
+      $0.nthPrimeProgress = nil
+    }
+
+    await Task.yield()
+  }
+
   func testIsEquatable() {
     XCTAssertTrue(isEquatable(1))
     XCTAssertTrue(isEquatable("Hello"))
