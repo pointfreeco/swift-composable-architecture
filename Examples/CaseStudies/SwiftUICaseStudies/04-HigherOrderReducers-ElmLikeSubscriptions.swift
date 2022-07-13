@@ -86,7 +86,7 @@ struct ClockView: View {
 
         ZStack {
           Circle()
-            .foregroundStyle(
+            .fill(
               AngularGradient(
                 gradient: Gradient(
                   colors: [

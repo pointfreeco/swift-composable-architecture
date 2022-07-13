@@ -62,7 +62,7 @@ struct TimersView: View {
 
         ZStack {
           Circle()
-            .foregroundStyle(
+            .fill(
               AngularGradient(
                 gradient: Gradient(
                   colors: [

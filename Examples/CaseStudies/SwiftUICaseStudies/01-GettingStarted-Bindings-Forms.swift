@@ -89,7 +89,7 @@ struct BindingFormView: View {
         Button("Reset") {
           viewStore.send(.resetButtonTapped)
         }
-        .foregroundStyle(.red)
+        .tint(.red)
       }
     }
     .monospacedDigit()
