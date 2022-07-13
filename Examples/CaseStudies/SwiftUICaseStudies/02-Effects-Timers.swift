@@ -94,7 +94,8 @@ struct TimersView: View {
           }
         }
         .aspectRatio(1, contentMode: .fit)
-        .frame(width: 280)
+        .frame(maxWidth: 280)
+        .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
 
         Button {
