@@ -110,7 +110,8 @@ struct MultipleDependenciesView: View {
           Text(
             template: """
               The actions below make use of the dependencies in the `SystemEnvironment`.
-              """, .caption)
+              """, .caption
+          )
           .textCase(.none)
         }
 
@@ -131,10 +132,11 @@ struct MultipleDependenciesView: View {
             template: """
               The actions below make use of the custom environment for this screen, which holds a \
               dependency for fetching a random number.
-              """, .caption)
+              """, .caption
+          )
           .textCase(.none)
         }
-      
+
       }
       .buttonStyle(.borderless)
     }

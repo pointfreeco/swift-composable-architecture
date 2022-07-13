@@ -87,7 +87,7 @@ struct EffectsCancellationView: View {
         Section {
           Stepper(
             "\(viewStore.count)",
-            value: viewStore.binding( get: \.count, send: EffectsCancellationAction.stepperChanged)
+            value: viewStore.binding(get: \.count, send: EffectsCancellationAction.stepperChanged)
           )
 
           if viewStore.isTriviaRequestInFlight {

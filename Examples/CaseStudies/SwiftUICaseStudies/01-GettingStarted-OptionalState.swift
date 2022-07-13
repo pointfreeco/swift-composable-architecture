@@ -68,8 +68,8 @@ struct OptionalBasicsView: View {
             action: OptionalBasicsAction.optionalCounter
           ),
           then: { store in
-              Text(template: "`CounterState` is non-`nil`")
-              CounterView(store: store)
+            Text(template: "`CounterState` is non-`nil`")
+            CounterView(store: store)
               .buttonStyle(.borderless)
               .frame(maxWidth: .infinity)
           },

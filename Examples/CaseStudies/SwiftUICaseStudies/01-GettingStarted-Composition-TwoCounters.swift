@@ -42,7 +42,7 @@ struct TwoCountersView: View {
       Section {
         AboutView(readMe: readMe)
       }
-      
+
       HStack {
         Text("Counter 1")
         Spacer()
@@ -50,7 +50,7 @@ struct TwoCountersView: View {
           store: self.store.scope(state: \.counter1, action: TwoCountersAction.counter1)
         )
       }
-      
+
       HStack {
         Text("Counter 2")
         Spacer()

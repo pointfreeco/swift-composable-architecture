@@ -100,7 +100,7 @@ struct EffectsBasicsView: View {
 
             Text("\(viewStore.count)")
               .monospacedDigit()
-            
+
             Button {
               viewStore.send(.incrementButtonTapped)
             } label: {

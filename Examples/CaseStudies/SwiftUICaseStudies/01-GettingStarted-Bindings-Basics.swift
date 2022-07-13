@@ -79,7 +79,7 @@ struct BindingBasicsView: View {
           Text(alternate(viewStore.text))
         }
         .disabled(viewStore.toggleIsOn)
-        
+
         Toggle(
           "Disable other controls",
           isOn: viewStore.binding(get: \.toggleIsOn, send: BindingBasicsAction.toggleChanged)
