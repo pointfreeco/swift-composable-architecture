@@ -108,8 +108,14 @@ struct ClockView: View {
               )
             )
             .rotationEffect(.degrees(-90))
-          ClockHand()
+          GeometryReader { proxy in
+            Path { path in
+              path.move(to: CGPoint(x: proxy.size.width / 2, y: proxy.size.height / 2))
+              path.addLine(to: CGPoint(x: proxy.size.width / 2, y: 0))
+            }
+            .stroke(.primary, lineWidth: 3)
             .rotationEffect(.degrees(Double(viewStore.secondsElapsed) * 360 / 60))
+          }
         }
         .aspectRatio(1, contentMode: .fit)
         .frame(width: 280)
