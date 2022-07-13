@@ -104,7 +104,7 @@ class EffectsBasicsTests: XCTestCase {
     }
   }
 
-  func testTimer() {
+  func testTimer() async {
     let mainQueue = DispatchQueue.test
 
     let store = TestStore(
@@ -119,22 +119,28 @@ class EffectsBasicsTests: XCTestCase {
       $0.isTimerRunning = true
     }
 
-    mainQueue.advance(by: .seconds(1))
-    store.receive(.timerTick) {
+    await mainQueue.advance(by: .seconds(1))
+    await store.receive(.timerTick) {
       $0.count = 1
     }
 
-    mainQueue.advance(by: .seconds(4))
-    store.receive(.timerTick) {
+    await mainQueue.advance(by: .milliseconds(950))
+    await store.receive(.timerTick) {
       $0.count = 2
     }
-    store.receive(.timerTick) {
+
+    await mainQueue.advance(by: .milliseconds(900))
+    await store.receive(.timerTick) {
       $0.count = 3
     }
-    store.receive(.timerTick) {
+
+    await mainQueue.advance(by: .milliseconds(850))
+    await store.receive(.timerTick) {
       $0.count = 4
     }
-    store.receive(.timerTick) {
+
+    await mainQueue.advance(by: .milliseconds(800))
+    await store.receive(.timerTick) {
       $0.count = 5
     }
 

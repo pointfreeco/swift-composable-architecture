@@ -59,6 +59,24 @@ extension Scheduler {
   }
 }
 
+extension Effect {
+  static func run(
+    operation: @escaping @Sendable (_ send: @MainActor (Output) -> Void) async -> Void
+  ) -> Self {
+    .run { subscriber in
+      let task = Task { @MainActor in
+        await operation { output in
+          subscriber.send(output)
+        }
+        subscriber.send(completion: .finished)
+      }
+      return AnyCancellable {
+        task.cancel()
+      }
+    }
+  }
+}
+
 let effectsBasicsReducer = Reducer<
   EffectsBasicsState,
   EffectsBasicsAction,
@@ -124,12 +142,26 @@ let effectsBasicsReducer = Reducer<
 
   case .startTimerButtonTapped:
     state.isTimerRunning = true
-    return Effect.timer(
-      id: TimerID.self,
-      every: .seconds(1),
-      on: environment.mainQueue
-    )
-    .map { _ in .timerTick }
+    return .run { send in
+      var count = 0
+      do {
+        while true {
+          print("Hello!")
+          defer { count += 1 }
+          try await environment.mainQueue.sleep(
+            for: .milliseconds(max(50, 1_000 - count * 50))
+          )
+          await send(.timerTick)
+        }
+      } catch {}
+    }
+    .cancellable(id: TimerID.self)
+//    return Effect.timer(
+//      id: TimerID.self,
+//      every: .seconds(1),
+//      on: environment.mainQueue
+//    )
+//    .map { _ in .timerTick }
 
   case .stopTimerButtonTapped:
     state.isTimerRunning = false
