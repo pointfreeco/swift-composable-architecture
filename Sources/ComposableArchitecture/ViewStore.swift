@@ -513,6 +513,10 @@ private struct HashableWrapper<Value>: Hashable {
 public struct ViewStoreTask {
   let rawValue: Task<Void, Never>
   public func finish() async {
-    await self.rawValue.value
+    await withTaskCancellationHandler {
+      self.rawValue.cancel()
+    } operation: {
+      await self.rawValue.value
+    }
   }
 }

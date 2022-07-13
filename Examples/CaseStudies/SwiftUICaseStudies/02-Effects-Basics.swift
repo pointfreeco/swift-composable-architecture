@@ -210,13 +210,14 @@ private func nthPrime(number: Int) -> Effect<EffectsBasicsAction, Never> {
   .run { send in
     var primeCount = 0
     var prime = 2
-    while primeCount < number {
+    while primeCount < number, !Task.isCancelled {
 
       defer { prime += 1 }
       if isPrime(prime) {
         primeCount += 1
       } else if prime.isMultiple(of: 1_000) {
 
+        print("Progress", Double(primeCount) / Double(number))
         await send(.nthPrimeProgress(Double(primeCount) / Double(number)), animation: .default)
         await Task.yield()
       }

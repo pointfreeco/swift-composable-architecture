@@ -337,7 +337,11 @@ public final class Store<State, Action> {
         let task = self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
         return .fireAndForget {
-          await task.value
+          await withTaskCancellationHandler {
+            task.cancel()
+          } operation: {
+            await task.value
+          }
         }
       },
       environment: ()
@@ -385,14 +389,16 @@ public final class Store<State, Action> {
       let action = self.bufferedActions.removeFirst()
       let effect = self.reducer(&currentState, action)
 
-      let task = Task {
+      let effectCancellable = Box<AnyCancellable?>(nil)
+      let task = Task { @MainActor in
         _ = try? await Task.sleep(nanoseconds: 1_000_000_000 * NSEC_PER_SEC)
+        effectCancellable.value?.cancel()
       }
       tasks.append(task)
 
       var didComplete = false
       let uuid = UUID()
-      let effectCancellable = effect.sink(
+      effectCancellable.value = effect.sink(
         receiveCompletion: { [weak self] _ in
           self?.threadCheck(status: .effectCompletion(action))
           didComplete = true
@@ -405,13 +411,19 @@ public final class Store<State, Action> {
       )
 
       if !didComplete {
-        self.effectCancellables[uuid] = effectCancellable
+        self.effectCancellables[uuid] = effectCancellable.value
       }
     }
 
     return Task { [tasks] in
-      for task in tasks {
-        await task.value
+      await withTaskCancellationHandler {
+        for task in tasks {
+          task.cancel()
+        }
+      } operation: {
+        for task in tasks {
+          await task.value
+        }
       }
     }
   }
@@ -543,5 +555,12 @@ public final class Store<State, Action> {
     #if DEBUG
       self.mainThreadChecksEnabled = mainThreadChecksEnabled
     #endif
+  }
+}
+
+private final class Box<Value> {
+  var value: Value
+  init(_ value: Value) {
+    self.value = value
   }
 }
