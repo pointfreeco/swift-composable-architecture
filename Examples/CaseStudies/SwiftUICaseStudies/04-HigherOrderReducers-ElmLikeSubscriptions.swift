@@ -81,8 +81,8 @@ struct ClockView: View {
 
   var body: some View {
     WithViewStore(store) { viewStore in
-      VStack {
-        Text(template: readMe, .body)
+      Form {
+        AboutView(readMe: readMe)
 
         ZStack {
           Circle()
@@ -127,12 +127,10 @@ struct ClockView: View {
           Text(viewStore.isTimerActive ? "Stop" : "Start")
             .padding(8)
         }
+        .frame(maxWidth: .infinity)
         .tint(viewStore.isTimerActive ? Color.red : .accentColor)
         .buttonStyle(.borderedProminent)
-
-        Spacer()
       }
-      .padding()
       .navigationTitle("Elm-like subscriptions")
     }
   }

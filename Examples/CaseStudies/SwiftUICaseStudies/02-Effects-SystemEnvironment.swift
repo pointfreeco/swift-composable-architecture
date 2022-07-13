@@ -83,10 +83,7 @@ struct MultipleDependenciesView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section {} header: {
-          Text(template: readMe, .caption)
-            .textCase(.none)
-        }
+        AboutView(readMe: readMe)
 
         Section {
           HStack {

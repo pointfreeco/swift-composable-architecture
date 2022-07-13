@@ -49,8 +49,8 @@ struct FocusDemoView: View {
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
-      VStack(alignment: .leading, spacing: 32) {
-        Text(template: readMe, .caption)
+      Form {
+        AboutView(readMe: readMe)
 
         VStack {
           TextField("Username", text: viewStore.binding(\.$username))
@@ -64,9 +64,7 @@ struct FocusDemoView: View {
           .buttonStyle(.borderedProminent)
         }
         .textFieldStyle(.roundedBorder)
-        Spacer()
       }
-      .padding()
       .synchronize(viewStore.binding(\.$focusedField), self.$focusedField)
     }
     .navigationTitle("Focus demo")
