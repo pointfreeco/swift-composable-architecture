@@ -5,6 +5,20 @@ import XCTest
 
 @MainActor
 class EffectsBasicsTests: XCTestCase {
+  func testLongLivingEffect() async {
+    enum Action { case task }
+    let store = TestStore(
+      initialState: 0,
+      reducer: Reducer<Int, Action, Void> { _, _, _ in
+        .run { _ in try? await Task.sleep(nanoseconds: 1_000_000_000 * NSEC_PER_SEC) }
+      },
+      environment: ()
+    )
+
+    let task = store.send(.task)
+    await task.cancel()
+  }
+
   func testCountUpAndDown() {
     let store = TestStore(
       initialState: EffectsBasicsState(),
@@ -156,7 +170,7 @@ class EffectsBasicsTests: XCTestCase {
       environment: .unimplemented
     )
 
-    let task = store.send(.nthPrimeButtonTapped)
+    store.send(.nthPrimeButtonTapped)
 
     await store.receive(.nthPrimeProgress(0.84)) {
       $0.nthPrimeProgress = 0.84
@@ -166,7 +180,12 @@ class EffectsBasicsTests: XCTestCase {
       $0.nthPrimeProgress = nil
     }
 
-    await task.finish()
+//    await task.finish()
+
+    await store.finish()
+
+//    await Task.yield()
+    //await task.finish()
   }
 
   func testIsEquatable() {

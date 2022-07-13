@@ -352,12 +352,13 @@
     ///     store. The mutable state sent to this closure must be modified to match the state of the
     ///     store after processing the given action. Do not provide a closure if no change is
     ///     expected.
+    @discardableResult
     public func send(
       _ action: LocalAction,
       _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
-    ) {
+    ) -> TestStoreTask {
       if !self.receivedActions.isEmpty {
         var actions = ""
         customDump(self.receivedActions.map(\.action), to: &actions)
@@ -373,7 +374,7 @@
       }
       var expectedState = self.toLocalState(self.state)
       let previousState = self.state
-      self.store.send(.init(origin: .send(action), file: file, line: line))
+      let task = self.store.send(.init(origin: .send(action), file: file, line: line))
       do {
         let currentState = self.state
         self.state = previousState
@@ -392,6 +393,8 @@
       if "\(self.file)" == "\(file)" {
         self.line = line
       }
+
+      return TestStoreTask(rawValue: task)
     }
 
     private func expectedStateShouldMatch(
@@ -571,3 +574,14 @@
     }
   }
 #endif
+
+public struct TestStoreTask {
+  let rawValue: Task<Void, Never>
+  public func cancel() async {
+    self.rawValue.cancel()
+    await self.rawValue.value
+  }
+  public func finish() async {
+    await self.rawValue.value
+  }
+}
