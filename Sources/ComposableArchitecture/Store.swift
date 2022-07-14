@@ -363,16 +363,10 @@ public final class Store<State, Action> {
       let action = self.bufferedActions.removeFirst()
       let effect = self.reducer(&currentState, action)
 
-      let effectCancellable = Box<AnyCancellable?>(wrappedValue: nil)
-      let task = Task<Void, Never> { @MainActor in
-        for await _ in AsyncStream<Void>.never {}
-        effectCancellable.wrappedValue?.cancel()
-      }
-      tasks.wrappedValue.append(task)
-
       var didComplete = false
+      let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
       let uuid = UUID()
-      effectCancellable.wrappedValue =
+      let effectCancellable =
         effect
         .handleEvents(
           receiveCancel: { [weak self] in
@@ -383,7 +377,7 @@ public final class Store<State, Action> {
         .sink(
           receiveCompletion: { [weak self] _ in
             self?.threadCheck(status: .effectCompletion(action))
-            task.cancel()
+            boxedTask.wrappedValue?.cancel()
             didComplete = true
             self?.effectCancellables[uuid] = nil
           },
@@ -394,7 +388,13 @@ public final class Store<State, Action> {
         )
 
       if !didComplete {
-        self.effectCancellables[uuid] = effectCancellable.wrappedValue
+        let task = Task<Void, Never> { @MainActor in
+          for await _ in AsyncStream<Void>.never {}
+          effectCancellable.cancel()
+        }
+        boxedTask.wrappedValue = task
+        tasks.wrappedValue.append(task)
+        self.effectCancellables[uuid] = effectCancellable
       }
     }
 
