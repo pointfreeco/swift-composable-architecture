@@ -100,9 +100,10 @@ extension Effect where Failure == Never {
           return
         } catch {
           guard let handler = handler else {
-            var errorDump = ""
-            customDump(error, to: &errorDump, indent: 4)
-            runtimeWarning(
+            #if DEBUG
+              var errorDump = ""
+              customDump(error, to: &errorDump, indent: 4)
+              runtimeWarning(
                 """
                 An 'Effect.task' returned from "%@:%d" threw an unhandled error:
 
@@ -118,7 +119,8 @@ extension Effect where Failure == Never {
                 ],
                 file: file,
                 line: line
-            )
+              )
+            #endif
             return
           }
           await subject.send(handler(error))
@@ -185,25 +187,27 @@ extension Effect where Failure == Never {
           return
         } catch {
           guard let handler = handler else {
-            var errorDump = ""
-            customDump(error, to: &errorDump, indent: 4)
-            runtimeWarning(
-                """
-                An 'Effect.run' returned from "%@:%d" threw an unhandled error:
+            #if DEBUG
+              var errorDump = ""
+              customDump(error, to: &errorDump, indent: 4)
+              runtimeWarning(
+                  """
+                  An 'Effect.run' returned from "%@:%d" threw an unhandled error:
 
-                %@
+                  %@
 
-                All non-cancellation errors must be explicitly handled via the 'catch' parameter \
-                on 'Effect.run', or via a 'do' block.
-                """,
-                [
-                  "\(fileID)",
-                  line,
-                  errorDump
-                ],
-                file: file,
-                line: line
-            )
+                  All non-cancellation errors must be explicitly handled via the 'catch' parameter \
+                  on 'Effect.run', or via a 'do' block.
+                  """,
+                  [
+                    "\(fileID)",
+                    line,
+                    errorDump
+                  ],
+                  file: file,
+                  line: line
+              )
+            #endif
             return
           }
           await handler(error, send)
