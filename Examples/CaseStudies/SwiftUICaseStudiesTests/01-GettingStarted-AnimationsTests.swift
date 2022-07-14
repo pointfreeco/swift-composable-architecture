@@ -61,7 +61,7 @@ class AnimationTests: XCTestCase {
     await mainQueue.run()
   }
 
-  func testReset() {
+  func testReset() async {
     let mainQueue = DispatchQueue.test
 
     let store = TestStore(
@@ -72,18 +72,18 @@ class AnimationTests: XCTestCase {
       )
     )
 
-    store.send(.rainbowButtonTapped)
+    await store.send(.rainbowButtonTapped)
 
-    store.receive(.setColor(.red)) {
+    await store.receive(.setColor(.red)) {
       $0.circleColor = .red
     }
 
-    mainQueue.advance(by: .seconds(1))
-    store.receive(.setColor(.blue)) {
+    await mainQueue.advance(by: .seconds(1))
+    await store.receive(.setColor(.blue)) {
       $0.circleColor = .blue
     }
 
-    store.send(.resetButtonTapped) {
+    await store.send(.resetButtonTapped) {
       $0.alert = AlertState(
         title: TextState("Reset state?"),
         primaryButton: .destructive(
@@ -94,10 +94,10 @@ class AnimationTests: XCTestCase {
       )
     }
 
-    store.send(.resetConfirmationButtonTapped) {
+    await store.send(.resetConfirmationButtonTapped) {
       $0 = AnimationsState()
     }
 
-    mainQueue.run()
+    await mainQueue.run()
   }
 }

@@ -34,7 +34,7 @@ enum MultipleDependenciesAction: Equatable {
 }
 
 struct MultipleDependenciesEnvironment {
-  var fetchNumber: @Sendable () async -> Int
+  var fetchNumber: @Sendable () async throws -> Int
 }
 
 let multipleDependenciesReducer = Reducer<
@@ -64,7 +64,7 @@ let multipleDependenciesReducer = Reducer<
 
   case .fetchNumberButtonTapped:
     state.isFetchInFlight = true
-    return .task { .fetchNumberResponse(await environment.fetchNumber()) }
+    return .task { .fetchNumberResponse(try await environment.fetchNumber()) }
 
   case let .fetchNumberResponse(number):
     state.isFetchInFlight = false
@@ -154,7 +154,7 @@ struct MultipleDependenciesView_Previews: PreviewProvider {
           environment: .live(
             environment: MultipleDependenciesEnvironment(
               fetchNumber: {
-                try? await Task.sleep(nanoseconds: NSEC_PER_SEC)
+                try await Task.sleep(nanoseconds: NSEC_PER_SEC)
                 return Int.random(in: 1...1_000)
               }
             )
