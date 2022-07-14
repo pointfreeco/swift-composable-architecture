@@ -191,21 +191,21 @@ extension Effect where Failure == Never {
               var errorDump = ""
               customDump(error, to: &errorDump, indent: 4)
               runtimeWarning(
-                  """
-                  An 'Effect.run' returned from "%@:%d" threw an unhandled error:
+                """
+                An 'Effect.run' returned from "%@:%d" threw an unhandled error:
 
-                  %@
+                %@
 
-                  All non-cancellation errors must be explicitly handled via the 'catch' parameter \
-                  on 'Effect.run', or via a 'do' block.
-                  """,
-                  [
-                    "\(fileID)",
-                    line,
-                    errorDump
-                  ],
-                  file: file,
-                  line: line
+                All non-cancellation errors must be explicitly handled via the 'catch' parameter \
+                on 'Effect.run', or via a 'do' block.
+                """,
+                [
+                  "\(fileID)",
+                  line,
+                  errorDump
+                ],
+                file: file,
+                line: line
               )
             #endif
             return
