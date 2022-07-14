@@ -968,7 +968,10 @@
       }
     }
 
-    // TODO: Document
+    /// A Boolean value that indicates whether the task should stop executing.
+    ///
+    /// After the value of this property becomes `true`, it remains `true` indefinitely. There is
+    /// no way to uncancel a task.
     public var isCancelled: Bool {
       self.rawValue?.isCancelled ?? true
     }
