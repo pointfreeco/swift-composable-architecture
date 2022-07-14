@@ -14,7 +14,6 @@ private let readMe = """
 struct RefreshableState: Equatable {
   var count = 0
   var fact: String?
-  var isLoading = false
 }
 
 enum RefreshableAction: Equatable {
@@ -40,7 +39,6 @@ let refreshableReducer = Reducer<
 
   switch action {
   case .cancelButtonTapped:
-    state.isLoading = false
     return .cancel(id: CancelID.self)
 
   case .decrementButtonTapped:
@@ -48,12 +46,10 @@ let refreshableReducer = Reducer<
     return .none
 
   case let .factResponse(.success(fact)):
-    state.isLoading = false
     state.fact = fact
     return .none
 
   case .factResponse(.failure):
-    state.isLoading = false
     // NB: This is where you could do some error handling.
     return .none
 
@@ -63,7 +59,6 @@ let refreshableReducer = Reducer<
 
   case .refresh:
     state.fact = nil
-    state.isLoading = true
     return .task { [count = state.count] in
       await .factResponse(TaskResult { try await environment.fact.fetch(count) })
     }
@@ -73,6 +68,7 @@ let refreshableReducer = Reducer<
 }
 
 struct RefreshableView: View {
+  @State var isLoading = false
   let store: Store<RefreshableState, RefreshableAction>
 
   var body: some View {
@@ -105,13 +101,15 @@ struct RefreshableView: View {
           Text(fact)
             .bold()
         }
-        if viewStore.isLoading {
+        if self.isLoading {
           Button("Cancel") {
             viewStore.send(.cancelButtonTapped, animation: .default)
           }
         }
       }
       .refreshable {
+        self.isLoading = true
+        defer { self.isLoading = false }
         await viewStore.send(.refresh).finish()
       }
     }

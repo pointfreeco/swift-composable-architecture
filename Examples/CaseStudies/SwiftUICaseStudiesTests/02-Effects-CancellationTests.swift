@@ -21,12 +21,12 @@ class EffectsCancellationTests: XCTestCase {
     await store.send(.stepperChanged(0)) {
       $0.count = 0
     }
-    await store.send(.triviaButtonTapped) {
-      $0.isTriviaRequestInFlight = true
+    await store.send(.factButtonTapped) {
+      $0.isFactRequestInFlight = true
     }
-    await store.receive(.triviaResponse(.success("0 is a good number Brent"))) {
-      $0.currentTrivia = "0 is a good number Brent"
-      $0.isTriviaRequestInFlight = false
+    await store.receive(.factResponse(.success("0 is a good number Brent"))) {
+      $0.currentFact = "0 is a good number Brent"
+      $0.isFactRequestInFlight = false
     }
   }
 
@@ -40,11 +40,11 @@ class EffectsCancellationTests: XCTestCase {
 
     store.environment.fact.fetch = { _ in throw FactError() }
 
-    await store.send(.triviaButtonTapped) {
-      $0.isTriviaRequestInFlight = true
+    await store.send(.factButtonTapped) {
+      $0.isFactRequestInFlight = true
     }
-    await store.receive(.triviaResponse(.failure(FactError()))) {
-      $0.isTriviaRequestInFlight = false
+    await store.receive(.factResponse(.failure(FactError()))) {
+      $0.isFactRequestInFlight = false
     }
   }
 
@@ -66,11 +66,11 @@ class EffectsCancellationTests: XCTestCase {
       return "\($0) is a good number Brent"
     }
 
-    await store.send(.triviaButtonTapped) {
-      $0.isTriviaRequestInFlight = true
+    await store.send(.factButtonTapped) {
+      $0.isFactRequestInFlight = true
     }
     await store.send(.cancelButtonTapped) {
-      $0.isTriviaRequestInFlight = false
+      $0.isFactRequestInFlight = false
     }
   }
 
@@ -86,12 +86,12 @@ class EffectsCancellationTests: XCTestCase {
       return "\($0) is a good number Brent"
     }
 
-    await store.send(.triviaButtonTapped) {
-      $0.isTriviaRequestInFlight = true
+    await store.send(.factButtonTapped) {
+      $0.isFactRequestInFlight = true
     }
     await store.send(.stepperChanged(1)) {
       $0.count = 1
-      $0.isTriviaRequestInFlight = false
+      $0.isFactRequestInFlight = false
     }
   }
 }

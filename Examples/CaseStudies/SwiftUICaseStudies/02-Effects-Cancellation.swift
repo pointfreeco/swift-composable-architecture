@@ -17,15 +17,15 @@ private let readMe = """
 
 struct EffectsCancellationState: Equatable {
   var count = 0
-  var currentTrivia: String?
-  var isTriviaRequestInFlight = false
+  var currentFact: String?
+  var isFactRequestInFlight = false
 }
 
 enum EffectsCancellationAction: Equatable {
   case cancelButtonTapped
   case stepperChanged(Int)
-  case triviaButtonTapped
-  case triviaResponse(TaskResult<String>)
+  case factButtonTapped
+  case factResponse(TaskResult<String>)
 }
 
 struct EffectsCancellationEnvironment {
@@ -38,35 +38,35 @@ let effectsCancellationReducer = Reducer<
   EffectsCancellationState, EffectsCancellationAction, EffectsCancellationEnvironment
 > { state, action, environment in
 
-  enum TriviaRequestID {}
+  enum NumberFactRequestID {}
 
   switch action {
   case .cancelButtonTapped:
-    state.isTriviaRequestInFlight = false
-    return .cancel(id: TriviaRequestID.self)
+    state.isFactRequestInFlight = false
+    return .cancel(id: NumberFactRequestID.self)
 
   case let .stepperChanged(value):
     state.count = value
-    state.currentTrivia = nil
-    state.isTriviaRequestInFlight = false
-    return .cancel(id: TriviaRequestID.self)
+    state.currentFact = nil
+    state.isFactRequestInFlight = false
+    return .cancel(id: NumberFactRequestID.self)
 
-  case .triviaButtonTapped:
-    state.currentTrivia = nil
-    state.isTriviaRequestInFlight = true
+  case .factButtonTapped:
+    state.currentFact = nil
+    state.isFactRequestInFlight = true
 
     return .task { [count = state.count] in
-      await .triviaResponse(TaskResult { try await environment.fact.fetch(count) })
+      await .factResponse(TaskResult { try await environment.fact.fetch(count) })
     }
-    .cancellable(id: TriviaRequestID.self)
+    .cancellable(id: NumberFactRequestID.self)
 
-  case let .triviaResponse(.success(response)):
-    state.isTriviaRequestInFlight = false
-    state.currentTrivia = response
+  case let .factResponse(.success(response)):
+    state.isFactRequestInFlight = false
+    state.currentFact = response
     return .none
 
-  case .triviaResponse(.failure):
-    state.isTriviaRequestInFlight = false
+  case .factResponse(.failure):
+    state.isFactRequestInFlight = false
     return .none
   }
 }
@@ -89,7 +89,7 @@ struct EffectsCancellationView: View {
             value: viewStore.binding(get: \.count, send: EffectsCancellationAction.stepperChanged)
           )
 
-          if viewStore.isTriviaRequestInFlight {
+          if viewStore.isFactRequestInFlight {
             HStack {
               Button("Cancel") { viewStore.send(.cancelButtonTapped) }
               Spacer()
@@ -99,11 +99,11 @@ struct EffectsCancellationView: View {
                 .id(UUID())
             }
           } else {
-            Button("Number fact") { viewStore.send(.triviaButtonTapped) }
-              .disabled(viewStore.isTriviaRequestInFlight)
+            Button("Number fact") { viewStore.send(.factButtonTapped) }
+              .disabled(viewStore.isFactRequestInFlight)
           }
 
-          viewStore.currentTrivia.map {
+          viewStore.currentFact.map {
             Text($0).padding(.vertical, 8)
           }
         }

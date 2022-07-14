@@ -18,11 +18,8 @@ class RefreshableTests: XCTestCase {
     await store.send(.incrementButtonTapped) {
       $0.count = 1
     }
-    await store.send(.refresh) {
-      $0.isLoading = true
-    }
+    await store.send(.refresh)
     await store.receive(.factResponse(.success("1 is a good number."))) {
-      $0.isLoading = false
       $0.fact = "1 is a good number."
     }
   }
@@ -41,12 +38,8 @@ class RefreshableTests: XCTestCase {
     await store.send(.incrementButtonTapped) {
       $0.count = 1
     }
-    await store.send(.refresh) {
-      $0.isLoading = true
-    }
-    await store.receive(.factResponse(.failure(FactError()))) {
-      $0.isLoading = false
-    }
+    await store.send(.refresh)
+    await store.receive(.factResponse(.failure(FactError())))
   }
 
   func testCancellation() async {
@@ -66,12 +59,8 @@ class RefreshableTests: XCTestCase {
     await store.send(.incrementButtonTapped) {
       $0.count = 1
     }
-    await store.send(.refresh) {
-      $0.isLoading = true
-    }
-    await store.send(.cancelButtonTapped) {
-      $0.isLoading = false
-    }
+    await store.send(.refresh) 
+    await store.send(.cancelButtonTapped)
   }
 }
 
