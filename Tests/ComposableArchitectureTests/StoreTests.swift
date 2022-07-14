@@ -449,35 +449,6 @@ final class StoreTests: XCTestCase {
       ])
   }
 
-  func testNonMainQueueStore() {
-    var expectations: [XCTestExpectation] = []
-    for i in 1...100 {
-      let expectation = XCTestExpectation(description: "\(i)th iteration is complete")
-      expectations.append(expectation)
-      DispatchQueue.global().async {
-        let viewStore = ViewStore(
-          Store.unchecked(
-            initialState: 0,
-            reducer: Reducer<Int, Void, XCTestExpectation> { state, _, expectation in
-              state += 1
-              if state == 2 {
-                return .fireAndForget { expectation.fulfill() }
-              }
-              return .none
-            },
-            environment: expectation
-          )
-        )
-        viewStore.send(())
-        DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
-          viewStore.send(())
-        }
-      }
-    }
-
-    wait(for: expectations, timeout: 1)
-  }
-
   func testCascadingTaskCancellation() async {
     enum Action { case task, response, response1, response2 }
     let reducer = Reducer<Int, Action, Void> { state, action, _ in
@@ -547,7 +518,7 @@ final class StoreTests: XCTestCase {
     let sendTask = scopedStore.send(())
     await Task.yield()
     neverEndingTask.cancel()
-    await sendTask.value
+    try await XCTUnwrap(sendTask).value
     XCTAssertEqual(store.effectCancellables.count, 0)
     XCTAssertEqual(scopedStore.effectCancellables.count, 0)
   }

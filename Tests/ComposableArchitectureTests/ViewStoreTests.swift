@@ -171,7 +171,7 @@ final class ViewStoreTests: XCTestCase {
 
   func testSendWhile() {
     let expectation = self.expectation(description: "await")
-    Task { @MainActor in
+    Task {
       enum Action {
         case response
         case tapped
@@ -202,7 +202,7 @@ final class ViewStoreTests: XCTestCase {
 
   func testSuspend() {
     let expectation = self.expectation(description: "await")
-    Task { @MainActor in
+    Task {
       enum Action {
         case response
         case tapped

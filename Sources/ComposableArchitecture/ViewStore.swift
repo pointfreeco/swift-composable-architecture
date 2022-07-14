@@ -55,7 +55,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
 
-  private let _send: (Action) -> Task<Void, Never>
+  private let _send: (Action) -> Task<Void, Never>?
   fileprivate let _state: CurrentValueRelay<State>
   private var viewCancellable: AnyCancellable?
 
@@ -241,7 +241,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   public func send(_ action: Action, while predicate: @escaping (State) -> Bool) async {
     let task = self.send(action)
     await withTaskCancellationHandler {
-      task.rawValue.cancel()
+      task.rawValue?.cancel()
     } operation: {
       await self.yield(while: predicate)
     }
@@ -263,7 +263,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ) async {
     let task = withAnimation(animation) { self.send(action) }
     await withTaskCancellationHandler {
-      task.rawValue.cancel()
+      task.rawValue?.cancel()
     } operation: {
       await self.yield(while: predicate)
     }
@@ -466,19 +466,26 @@ extension ViewStore where State == Void {
 /// > the current async context and the task.
 ///
 /// See ``TestStoreTask`` for the analog provided to ``TestStore``.
-public struct ViewStoreTask: Sendable {
-  /// The underlying task.
-  public let rawValue: Task<Void, Never>
+public struct ViewStoreTask: Hashable, Sendable {
+  fileprivate let rawValue: Task<Void, Never>?
 
   /// Cancels the underlying task and waits for it to finish.
   public func cancel() async {
-    self.rawValue.cancel()
+    self.rawValue?.cancel()
     await self.finish()
   }
 
   /// Waits for the task to finish.
   public func finish() async {
-    await self.rawValue.cancellableValue
+    await self.rawValue?.cancellableValue
+  }
+
+  /// A Boolean value that indicates whether the task should stop executing.
+  ///
+  /// After the value of this property becomes `true`, it remains `true` indefinitely. There is no
+  /// way to uncancel a task.
+  public var isCancelled: Bool {
+    self.rawValue?.isCancelled ?? true
   }
 }
 
