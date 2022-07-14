@@ -44,6 +44,36 @@ extension Effect where Failure == Error {
   }
 }
 
+/// Initializes a store from an initial state, a reducer, and an environment, and the main thread
+/// check is disabled for all interactions with this store.
+///
+/// - Parameters:
+///   - initialState: The state to start the application in.
+///   - reducer: The reducer that powers the business logic of the application.
+///   - environment: The environment of dependencies for the application.
+@available(
+  *, deprecated,
+  message:
+    """
+    If you use this initializer, please open a discussion on GitHub and let us know how: \
+    https://github.com/pointfreeco/swift-composable-architecture/discussions/new
+    """
+)
+extension Store {
+  public static func unchecked<Environment>(
+    initialState: State,
+    reducer: Reducer<State, Action, Environment>,
+    environment: Environment
+  ) -> Self {
+    Self(
+      initialState: initialState,
+      reducer: reducer,
+      environment: environment,
+      mainThreadChecksEnabled: false
+    )
+  }
+}
+
 // NB: Deprecated after 0.38.0:
 
 extension Effect {
@@ -73,7 +103,10 @@ extension Effect {
     *,
     deprecated,
     message:
-      "Using a variadic list is no longer supported. Use an array of identifiers instead. For more on this change, see: https://github.com/pointfreeco/swift-composable-architecture/pull/1041"
+      """
+      Using a variadic list is no longer supported. Use an array of identifiers instead. For more \
+      on this change, see: https://github.com/pointfreeco/swift-composable-architecture/pull/1041
+      """
   )
   @_disfavoredOverload
   public static func cancel(ids: AnyHashable...) -> Self {
@@ -366,7 +399,10 @@ extension Store {
   @available(
     *, deprecated,
     message:
-      "If you use this method, please open a discussion on GitHub and let us know how: https://github.com/pointfreeco/swift-composable-architecture/discussions/new"
+      """
+      If you use this method, please open a discussion on GitHub and let us know how: \
+      https://github.com/pointfreeco/swift-composable-architecture/discussions/new
+      """
   )
   public func publisherScope<P: Publisher, LocalState, LocalAction>(
     state toLocalState: @escaping (AnyPublisher<State, Never>) -> P,
@@ -406,7 +442,10 @@ extension Store {
   @available(
     *, deprecated,
     message:
-      "If you use this method, please open a discussion on GitHub and let us know how: https://github.com/pointfreeco/swift-composable-architecture/discussions/new"
+      """
+      If you use this method, please open a discussion on GitHub and let us know how: \
+      https://github.com/pointfreeco/swift-composable-architecture/discussions/new
+      """
   )
   public func publisherScope<P: Publisher, LocalState>(
     state toLocalState: @escaping (AnyPublisher<State, Never>) -> P
@@ -420,7 +459,12 @@ extension ViewStore where Action: BindableAction, Action.State == State {
   @available(
     *, deprecated,
     message:
-      "Dynamic member lookup is no longer supported for bindable state. Instead of dot-chaining on the view store, e.g. 'viewStore.$value', invoke the 'binding' method on view store with a key path to the value, e.g. 'viewStore.binding(\\.$value)'. For more on this change, see: https://github.com/pointfreeco/swift-composable-architecture/pull/810"
+      """
+      Dynamic member lookup is no longer supported for bindable state. Instead of dot-chaining on \
+      the view store, e.g. 'viewStore.$value', invoke the 'binding' method on view store with a \
+      key path to the value, e.g. 'viewStore.binding(\\.$value)'. For more on this change, see: \
+      https://github.com/pointfreeco/swift-composable-architecture/pull/810
+      """
   )
   public subscript<Value: Equatable>(
     dynamicMember keyPath: WritableKeyPath<State, BindableState<Value>>
@@ -438,7 +482,10 @@ extension BindingAction {
   @available(
     *, deprecated,
     message:
-      "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\\.$value'"
+      """
+      For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', \
+      and accessed via key paths to that 'BindableState', like '\\.$value'
+      """
   )
   public static func set<Value: Equatable>(
     _ keyPath: WritableKeyPath<Root, Value>,
@@ -455,7 +502,10 @@ extension BindingAction {
   @available(
     *, deprecated,
     message:
-      "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', and accessed via key paths to that 'BindableState', like '\\.$value'"
+      """
+      For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', \
+      and accessed via key paths to that 'BindableState', like '\\.$value'
+      """
   )
   public static func ~= <Value>(
     keyPath: WritableKeyPath<Root, Value>,
@@ -469,7 +519,10 @@ extension Reducer {
   @available(
     *, deprecated,
     message:
-      "'Reducer.binding()' no longer takes an explicit extract function and instead the reducer's 'Action' type must conform to 'BindableAction'"
+      """
+      'Reducer.binding()' no longer takes an explicit extract function and instead the reducer's \
+      'Action' type must conform to 'BindableAction'
+      """
   )
   public func binding(action toBindingAction: @escaping (Action) -> BindingAction<State>?) -> Self {
     Self { state, action, environment in
@@ -483,7 +536,12 @@ extension ViewStore {
   @available(
     *, deprecated,
     message:
-      "For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. Bindings are now derived via 'ViewStore.binding' with a key path to that 'BindableState' (for example, 'viewStore.binding(\\.$value)'). For dynamic member lookup to be available, the view store's 'Action' type must also conform to 'BindableAction'."
+      """
+      For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. \
+      Bindings are now derived via 'ViewStore.binding' with a key path to that 'BindableState' \
+      (for example, 'viewStore.binding(\\.$value)'). For dynamic member lookup to be available, \
+      the view store's 'Action' type must also conform to 'BindableAction'.
+      """
   )
   public func binding<LocalState: Equatable>(
     keyPath: WritableKeyPath<State, LocalState>,

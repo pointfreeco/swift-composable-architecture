@@ -83,11 +83,23 @@ struct RefreshableView: View {
         }
 
         HStack {
-          Button("-") { viewStore.send(.decrementButtonTapped) }
+          Button {
+            viewStore.send(.decrementButtonTapped)
+          } label: {
+            Image(systemName: "minus")
+          }
+
           Text("\(viewStore.count)")
-          Button("+") { viewStore.send(.incrementButtonTapped) }
+            .monospacedDigit()
+
+          Button {
+            viewStore.send(.incrementButtonTapped)
+          } label: {
+            Image(systemName: "plus")
+          }
         }
-        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity)
+        .buttonStyle(.borderless)
 
         if let fact = viewStore.fact {
           Text(fact)

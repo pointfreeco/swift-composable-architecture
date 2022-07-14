@@ -247,7 +247,7 @@ struct VoiceMemosView: View {
           self.store.scope(state: \.alert),
           dismiss: .alertDismissed
         )
-        .navigationBarTitle("Voice memos")
+        .navigationTitle("Voice memos")
       }
       .navigationViewStyle(.stack)
     }

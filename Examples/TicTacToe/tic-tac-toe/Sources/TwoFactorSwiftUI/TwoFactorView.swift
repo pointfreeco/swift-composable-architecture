@@ -68,7 +68,7 @@ public struct TwoFactorView: View {
       }
       .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
       .disabled(viewStore.isFormDisabled)
-      .navigationBarTitle("Confirmation Code")
+      .navigationTitle("Confirmation Code")
     }
   }
 }

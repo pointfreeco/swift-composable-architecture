@@ -89,13 +89,11 @@ struct NavigateAndLoadView: View {
             send: NavigateAndLoadAction.setNavigation(isActive:)
           )
         ) {
-          HStack {
-            Text("Load optional counter")
-          }
+          Text("Load optional counter")
         }
       }
     }
-    .navigationBarTitle("Navigate and load")
+    .navigationTitle("Navigate and load")
   }
 }
 

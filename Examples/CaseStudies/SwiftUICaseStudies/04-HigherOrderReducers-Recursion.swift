@@ -83,28 +83,29 @@ struct NestedView: View {
           self.store.scope(state: \.children, action: NestedAction.node(id:action:))
         ) { childStore in
           WithViewStore(childStore) { childViewStore in
-            HStack {
-              TextField(
-                "Untitled",
-                text: childViewStore.binding(get: \.description, send: NestedAction.rename)
-              )
-
-              Spacer()
-
-              NavigationLink(
-                destination: NestedView(store: childStore)
-              ) {
-                Text("")
+            NavigationLink(
+              destination: NestedView(store: childStore)
+            ) {
+              HStack {
+                TextField(
+                  "Untitled",
+                  text: childViewStore.binding(get: \.description, send: NestedAction.rename)
+                )
+                Text("Next")
+                  .font(.callout)
+                  .foregroundStyle(.secondary)
               }
             }
           }
         }
         .onDelete { viewStore.send(.remove($0)) }
       }
-      .navigationBarTitle(viewStore.state.isEmpty ? "Untitled" : viewStore.state)
-      .navigationBarItems(
-        trailing: Button("Add row") { viewStore.send(.append) }
-      )
+      .navigationTitle(viewStore.state.isEmpty ? "Untitled" : viewStore.state)
+      .toolbar {
+        ToolbarItem(placement: .navigationBarTrailing) {
+          Button("Add row") { viewStore.send(.append) }
+        }
+      }
     }
   }
 }

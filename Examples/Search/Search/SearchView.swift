@@ -160,7 +160,7 @@ struct SearchView: View {
           .foregroundColor(.gray)
           .padding(.all, 16)
         }
-        .navigationBarTitle("Search")
+        .navigationTitle("Search")
       }
       .navigationViewStyle(.stack)
     }

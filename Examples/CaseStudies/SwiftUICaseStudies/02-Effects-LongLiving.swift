@@ -70,7 +70,7 @@ struct LongLivingEffectsView: View {
           }
         }
       }
-      .navigationBarTitle("Long-living effects")
+      .navigationTitle("Long-living effects")
       .task { await viewStore.send(.task).finish() }
     }
   }
@@ -83,6 +83,7 @@ struct LongLivingEffectsView: View {
       """
     )
     .padding(.horizontal, 64)
+    .navigationBarTitleDisplayMode(.inline)
   }
 }
 

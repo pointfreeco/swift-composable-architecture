@@ -53,7 +53,7 @@ public struct GameView: View {
           }
           .disabled(viewStore.isGameDisabled)
         }
-        .navigationBarTitle("Tic-tac-toe")
+        .navigationTitle("Tic-tac-toe")
         .navigationBarItems(leading: Button("Quit") { viewStore.send(.quitButtonTapped) })
         .navigationBarBackButtonHidden(true)
       }

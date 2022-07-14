@@ -60,4 +60,44 @@ class AnimationTests: XCTestCase {
 
     await mainQueue.run()
   }
+
+  func testReset() {
+    let mainQueue = DispatchQueue.test
+
+    let store = TestStore(
+      initialState: AnimationsState(),
+      reducer: animationsReducer,
+      environment: AnimationsEnvironment(
+        mainQueue: mainQueue.eraseToAnyScheduler()
+      )
+    )
+
+    store.send(.rainbowButtonTapped)
+
+    store.receive(.setColor(.red)) {
+      $0.circleColor = .red
+    }
+
+    mainQueue.advance(by: .seconds(1))
+    store.receive(.setColor(.blue)) {
+      $0.circleColor = .blue
+    }
+
+    store.send(.resetButtonTapped) {
+      $0.alert = AlertState(
+        title: TextState("Reset state?"),
+        primaryButton: .destructive(
+          TextState("Reset"),
+          action: .send(.resetConfirmationButtonTapped, animation: .default)
+        ),
+        secondaryButton: .cancel(TextState("Cancel"))
+      )
+    }
+
+    store.send(.resetConfirmationButtonTapped) {
+      $0 = AnimationsState()
+    }
+
+    mainQueue.run()
+  }
 }

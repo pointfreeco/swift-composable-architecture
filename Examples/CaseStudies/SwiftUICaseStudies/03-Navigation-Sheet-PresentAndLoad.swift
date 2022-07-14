@@ -92,7 +92,7 @@ struct PresentAndLoadView: View {
           ProgressView()
         }
       }
-      .navigationBarTitle("Present and load")
+      .navigationTitle("Present and load")
     }
   }
 }

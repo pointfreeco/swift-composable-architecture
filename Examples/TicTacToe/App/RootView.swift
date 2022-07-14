@@ -55,7 +55,7 @@ struct RootView: View {
           UIKitAppView(store: self.store)
         }
       }
-      .navigationBarTitle("Tic-Tac-Toe")
+      .navigationTitle("Tic-Tac-Toe")
     }
     .navigationViewStyle(.stack)
   }

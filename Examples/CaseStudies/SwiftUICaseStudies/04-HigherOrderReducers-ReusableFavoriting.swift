@@ -86,8 +86,11 @@ struct FavoriteButton<ID: Hashable>: View {
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
-      Button(action: { viewStore.send(.buttonTapped) }) {
-        Image(systemName: viewStore.isFavorite ? "heart.fill" : "heart")
+      Button {
+        viewStore.send(.buttonTapped)
+      } label: {
+        Image(systemName: "heart")
+          .symbolVariant(viewStore.isFavorite ? .fill : .none)
       }
       .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
     }
@@ -170,10 +173,10 @@ struct EpisodesView: View {
         self.store.scope(state: \.episodes, action: EpisodesAction.episode(id:action:))
       ) { rowStore in
         EpisodeView(store: rowStore)
-          .buttonStyle(.borderless)
       }
+      .buttonStyle(.borderless)
     }
-    .navigationBarTitle("Favoriting")
+    .navigationTitle("Favoriting")
   }
 }
 

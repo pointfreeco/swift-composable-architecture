@@ -60,8 +60,7 @@ struct BindingFormView: View {
         HStack {
           TextField("Type here", text: viewStore.binding(\.$text))
             .disableAutocorrection(true)
-            .foregroundColor(viewStore.toggleIsOn ? .gray : .primary)
-
+            .foregroundStyle(viewStore.toggleIsOn ? Color.secondary : .primary)
           Text(alternate(viewStore.text))
         }
         .disabled(viewStore.toggleIsOn)
@@ -72,27 +71,29 @@ struct BindingFormView: View {
             .resignFirstResponder()
         )
 
-        Stepper(value: viewStore.binding(\.$stepCount), in: 0...100) {
-          Text("Max slider value: \(viewStore.stepCount)")
-            .font(.body.monospacedDigit())
-        }
+        Stepper(
+          "Max slider value: \(viewStore.stepCount)",
+          value: viewStore.binding(\.$stepCount),
+          in: 0...100
+        )
         .disabled(viewStore.toggleIsOn)
 
         HStack {
           Text("Slider value: \(Int(viewStore.sliderValue))")
-            .font(.body.monospacedDigit())
 
           Slider(value: viewStore.binding(\.$sliderValue), in: 0...Double(viewStore.stepCount))
+            .tint(.accentColor)
         }
         .disabled(viewStore.toggleIsOn)
 
         Button("Reset") {
           viewStore.send(.resetButtonTapped)
         }
-        .foregroundColor(.red)
+        .tint(.red)
       }
     }
-    .navigationBarTitle("Bindings form")
+    .monospacedDigit()
+    .navigationTitle("Bindings form")
   }
 }
 
