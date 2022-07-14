@@ -55,8 +55,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
 
   case .rainbowButtonTapped:
     return .run { send in
-      let colors = [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .black]
-      for (index, color) in colors.enumerated() {
+      for color in [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .black] {
         await send(.setColor(color), animation: .linear)
         try await environment.mainQueue.sleep(for: 1)
       }
