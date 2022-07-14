@@ -322,7 +322,6 @@
         )
       }
       for effect in self.inFlightEffects {
-        // TODO: Add remediation item for using TestStoreTask
         XCTFail(
           """
           An effect returned for this action is still running. It must complete before the end of \
@@ -333,8 +332,7 @@
           completed:
 
           • If using async/await in your effect, it may need a little bit of time to properly \
-          finish. To fix you can capture the task returned from sending an action and await its \
-          completion by invoking the "finish" method at then end of your test.
+          finish. To fix you can simply perform "await store.finish()" at the end of your test.
 
           • If an effect uses a scheduler (via "receive(on:)", "delay", "debounce", etc.), make \
           sure that you wait enough time for the scheduler to perform the effect. If you are using \
