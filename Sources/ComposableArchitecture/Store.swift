@@ -118,20 +118,10 @@ import Foundation
 /// #### Thread safety checks
 ///
 /// The store performs some basic thread safety checks in order to help catch mistakes. Stores
-/// constructed via the initializer ``Store/init(initialState:reducer:environment:)`` are assumed
-/// to run only on the main thread, and so a check is executed immediately to make sure that is the
-/// case. Further, all actions sent to the store and all scopes (see ``Store/scope(state:action:)``)
-/// of the store are also checked to make sure that work is performed on the main thread.
-///
-/// If you need a store that runs on a non-main thread, which should be very rare and you should
-/// have a very good reason to do so, then you can construct a store via the
-/// ``Store/unchecked(initialState:reducer:environment:)`` static method to opt out of all main
-/// thread checks.
-///
-/// ---
-///
-/// See also: ``ViewStore`` to understand how one observes changes to the state in a ``Store`` and
-/// sends user actions.
+/// constructed via the initializer ``init(initialState:reducer:environment:)`` are assumed to run
+/// only on the main thread, and so a check is executed immediately to make sure that is the case.
+/// Further, all actions sent to the store and all scopes (see ``scope(state:action:)``) of the
+/// store are also checked to make sure that work is performed on the main thread.
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
   var effectCancellables: [UUID: AnyCancellable] = [:]

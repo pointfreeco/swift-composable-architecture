@@ -180,7 +180,7 @@
     /// The current state.
     ///
     /// When read from a trailing closure assertion in ``send(_:_:file:line:)-7vwv9`` or
-    /// ``receive(_:timeout:_:file:line:)-3iwdm``, it will equal the `inout` state passed to the
+    /// ``receive(_:timeout:_:file:line:)-88eyr``, it will equal the `inout` state passed to the
     /// closure.
     public private(set) var state: State
 
@@ -892,7 +892,7 @@
   /// await store.send(.timerToggleButtonTapped).finish()
   /// ```
   ///
-  /// See ``TestStore/finish(timeout:file:line:)-7pmv3`` for the ability to await all in-flight
+  /// See ``TestStore/finish(timeout:file:line:)-53gi5`` for the ability to await all in-flight
   /// effects.
   ///
   /// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.

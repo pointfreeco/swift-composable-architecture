@@ -14,13 +14,13 @@
 ### Testing a Reducer
 
 - ``send(_:_:file:line:)-7vwv9``
-- ``receive(_:timeout:_:file:line:)-3iwdm``
-- ``finish(timeout:file:line:)-7pmv3``
+- ``receive(_:timeout:_:file:line:)-88eyr``
+- ``finish(timeout:file:line:)-53gi5``
 - ``TestStoreTask``
 
 ### Accessing State
 
-While the most common way of interacting with a test store's state is via its ``send(_:_:file:line:)-7vwv9`` and ``receive(_:timeout:_:file:line:)-3iwdm`` methods, you may also access it directly throughout a test.
+While the most common way of interacting with a test store's state is via its ``send(_:_:file:line:)-7vwv9`` and ``receive(_:timeout:_:file:line:)-88eyr`` methods, you may also access it directly throughout a test.
 
 - ``state``
 

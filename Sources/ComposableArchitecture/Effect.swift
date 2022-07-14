@@ -34,7 +34,7 @@ extension Effect where Failure == Never {
   /// in an ``Effect`` so that the reducer, a non-asynchronous context, can process it.
   ///
   /// For example, if your environment contains a dependency that exposes an `async` function, you
-  /// can use ``Effect/task(priority:operation:catch:file:fileID:line:)`` to provide an asynchronous
+  /// can use ``task(priority:operation:catch:file:fileID:line:)`` to provide an asynchronous
   /// context for invoking that endpoint:
   ///
   /// ```swift
@@ -68,8 +68,8 @@ extension Effect where Failure == Never {
   /// The above code sample makes use of ``TaskResult`` in order to automatically bundle the success
   /// or failure of the `numberFact` endpoint into a single type that can be sent in an action.
   ///
-  /// The closure provided to ``Effect/task(priority:operation:catch:file:fileID:line:)`` is allowed
-  /// to throw, but any non-cancellation errors thrown will cause a runtime warning when run in the
+  /// The closure provided to ``task(priority:operation:catch:file:fileID:line:)`` is allowed to
+  /// throw, but any non-cancellation errors thrown will cause a runtime warning when run in the
   /// simulator or on a device, and will cause a test failure in tests.
   ///
   /// - Parameters:
@@ -233,8 +233,8 @@ extension Effect where Failure == Never {
   ///   }
   /// ```
   ///
-  /// The closure provided to ``Effect/fireAndForget(priority:_:)`` is allowed to throw, and any
-  /// error thrown will be ignored.
+  /// The closure provided to ``fireAndForget(priority:_:)`` is allowed to throw, and any error
+  /// thrown will be ignored.
   ///
   /// - Parameters:
   ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
