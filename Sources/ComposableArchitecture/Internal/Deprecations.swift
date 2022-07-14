@@ -424,7 +424,11 @@ extension Store {
           reducer: .init { localState, localAction, _ in
             let task = self.send(fromLocalAction(localAction))
             localState = extractLocalState(self.state.value) ?? localState
-            return .fireAndForget { await task.cancellableValue }
+            if let task = task {
+              return .fireAndForget { await task.cancellableValue }
+            } else {
+              return .none
+            }
           },
           environment: ()
         )

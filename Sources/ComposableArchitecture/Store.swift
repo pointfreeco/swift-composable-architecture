@@ -316,7 +316,11 @@ public final class Store<State, Action> {
         defer { isSending = false }
         let task = self.send(fromLocalAction(localAction))
         localState = toLocalState(self.state.value)
-        return .fireAndForget { await task.cancellableValue }
+        if let task = task {
+          return .fireAndForget { await task.cancellableValue }
+        } else {
+          return .none
+        }
       },
       environment: ()
     )
@@ -344,11 +348,11 @@ public final class Store<State, Action> {
   func send(
     _ action: Action,
     originatingFrom originatingAction: Action? = nil
-  ) -> Task<Void, Never> {
+  ) -> Task<Void, Never>? {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
     self.bufferedActions.append(action)
-    guard !self.isSending else { return Task {} }
+    guard !self.isSending else { return nil }
 
     self.isSending = true
     var currentState = self.state.value
@@ -383,7 +387,9 @@ public final class Store<State, Action> {
           },
           receiveValue: { [weak self] effectAction in
             guard let self = self else { return }
-            tasks.wrappedValue.append(self.send(effectAction, originatingFrom: action))
+            if let task = self.send(effectAction, originatingFrom: action) {
+              tasks.wrappedValue.append(task)
+            }
           }
         )
 

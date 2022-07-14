@@ -896,16 +896,14 @@
   /// effects.
   ///
   /// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.
-  public struct TestStoreTask: Sendable {
-    /// The underlying task.
-    public let rawValue: Task<Void, Never>
-
+  public struct TestStoreTask: Hashable, Sendable {
+    fileprivate let rawValue: Task<Void, Never>?
     fileprivate let timeout: UInt64
 
     /// Cancels the underlying task and waits for it to finish.
     public func cancel() async {
-      self.rawValue.cancel()
-      await self.rawValue.cancellableValue
+      self.rawValue?.cancel()
+      await self.rawValue?.cancellableValue
     }
 
     #if swift(>=5.7)
@@ -934,7 +932,7 @@
       await Task.megaYield()
       do {
         try await withThrowingTaskGroup(of: Void.self) { group in
-          group.addTask { await self.rawValue.cancellableValue }
+          group.addTask { await self.rawValue?.cancellableValue }
           group.addTask {
             try await Task.sleep(nanoseconds: nanoseconds)
             throw CancellationError()
@@ -968,6 +966,11 @@
           line: line
         )
       }
+    }
+
+    // TODO: Document
+    public var isCancelled: Bool {
+      self.rawValue?.isCancelled ?? true
     }
   }
 
