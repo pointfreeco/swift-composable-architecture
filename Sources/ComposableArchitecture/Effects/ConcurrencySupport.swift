@@ -1,3 +1,196 @@
+extension AsyncStream {
+  /// Initializes an `AsyncStream` from any `AsyncSequence`.
+  ///
+  /// Useful as a type eraser for live `AsyncSequence`-based dependencies.
+  ///
+  /// For example, your feature may want to subscribe to screenshot notifications. You can model
+  /// this in your environment as a dependency returning an `AsyncStream`:
+  ///
+  /// ```swift
+  /// struct ScreenshotsEnvironment {
+  ///   var screenshots: () -> AsyncStream<Void>
+  /// }
+  /// ```
+  ///
+  /// Your "live" environment can supply a stream by erasing the appropriate
+  /// `NotificationCenter.Notifications` async sequence:
+  ///
+  /// ```swift
+  /// ScreenshotsEnvironment(
+  ///   screenshots: {
+  ///     AsyncStream(
+  ///       NotificationCenter.default
+  ///         .notifications(named: UIApplication.userDidTakeScreenshotNotification)
+  ///         .map { _ in }
+  ///     )
+  ///   }
+  /// )
+  /// ```
+  ///
+  /// While your tests can use `AsyncStream.streamWithContinuation` to spin up a controllable stream
+  /// for tests:
+  ///
+  /// ```swift
+  /// let (stream, continuation) = AsyncStream<Void>.streamWithContinuation()
+  ///
+  /// let store = TestStore(
+  ///   initialState: ScreenshotsState(),
+  ///   reducer: screenshotsReducer,
+  ///   environment: ScreenshotsEnvironment(
+  ///     screenshots: { stream }
+  ///   )
+  /// )
+  ///
+  /// continuation.yield()  // Simulate a screenshot being taken.
+  ///
+  /// await store.receive(.screenshotTaken) { ... }
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - sequence: An `AsyncSequence`.
+  ///   - limit: The maximum number of elements to hold in the buffer. By default, this value is
+  ///   unlimited. Use a `Continuation.BufferingPolicy` to buffer a specified number of oldest or
+  ///   newest elements.
+  public init<S: AsyncSequence & Sendable>(
+    _ sequence: S,
+    bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
+  ) where S.Element == Element {
+    self.init(bufferingPolicy: limit) { (continuation: Continuation) in
+      let task = Task {
+        do {
+          for try await element in sequence {
+            continuation.yield(element)
+          }
+        } catch {}
+        continuation.finish()
+      }
+      continuation.onTermination = { _ in
+        task.cancel()
+      }
+      // NB: This explicit cast is needed to work around a compiler bug in Swift 5.5.2
+      as @Sendable (Continuation.Termination) -> Void
+    }
+  }
+
+  /// Constructs and returns a stream along with its backing continuation.
+  ///
+  /// This is handy for immediately escaping the continuation from an async stream, which typically
+  /// requires multiple steps:
+  ///
+  /// ```swift
+  /// var _continuation: AsyncStream<Int>.Continuation!
+  /// let stream = AsyncStream<Int> { continuation = $0 }
+  /// let continuation = _continuation!
+  ///
+  /// // vs.
+  ///
+  /// let (stream, continuation) = AsyncStream<Int>.streamWithContinuation()
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - elementType: The type of element the `AsyncStream` produces.
+  ///   - limit: A Continuation.BufferingPolicy value to set the stream’s buffering behavior. By
+  ///   default, the stream buffers an unlimited number of elements. You can also set the policy to
+  ///   buffer a specified number of oldest or newest elements.
+  /// - Returns: An `AsyncStream`.
+  public static func streamWithContinuation(
+    _ elementType: Element.Type = Element.self,
+    bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
+  ) -> (stream: Self, continuation: Continuation) {
+    var continuation: Continuation!
+    return (Self(elementType, bufferingPolicy: limit) { continuation = $0 }, continuation)
+  }
+
+  /// An `AsyncStream` that never emits and never completes unless cancelled.
+  public static var never: Self {
+    Self { _ in }
+  }
+}
+
+extension AsyncThrowingStream where Failure == Error {
+  /// Initializes an `AsyncStream` from any `AsyncSequence`.
+  ///
+  /// - Parameters:
+  ///   - sequence: An `AsyncSequence`.
+  ///   - limit: The maximum number of elements to hold in the buffer. By default, this value is
+  ///   unlimited. Use a `Continuation.BufferingPolicy` to buffer a specified number of oldest or
+  ///   newest elements.
+  public init<S: AsyncSequence & Sendable>(
+    _ sequence: S,
+    bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
+  ) where S.Element == Element {
+    self.init(bufferingPolicy: limit) { (continuation: Continuation) in
+      let task = Task {
+        do {
+          for try await element in sequence {
+            continuation.yield(element)
+          }
+          continuation.finish()
+        } catch {
+          continuation.finish(throwing: error)
+        }
+      }
+      continuation.onTermination = { _ in
+        task.cancel()
+      }
+      // NB: This explicit cast is needed to work around a compiler bug in Swift 5.5.2
+      as @Sendable (Continuation.Termination) -> Void
+    }
+  }
+
+  /// Constructs and returns a stream along with its backing continuation.
+  ///
+  /// This is handy for immediately escaping the continuation from an async stream, which typically
+  /// requires multiple steps:
+  ///
+  /// ```swift
+  /// var _continuation: AsyncThrowingStream<Int, Error>.Continuation!
+  /// let stream = AsyncThrowingStream<Int, Error> { continuation = $0 }
+  /// let continuation = _continuation!
+  ///
+  /// // vs.
+  ///
+  /// let (stream, continuation) = AsyncThrowingStream<Int, Error>.streamWithContinuation()
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - elementType: The type of element the `AsyncThrowingStream` produces.
+  ///   - limit: A Continuation.BufferingPolicy value to set the stream’s buffering behavior. By
+  ///   default, the stream buffers an unlimited number of elements. You can also set the policy to
+  ///   buffer a specified number of oldest or newest elements.
+  /// - Returns: An `AsyncThrowingStream`.
+  public static func streamWithContinuation(
+    _ elementType: Element.Type = Element.self,
+    bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
+  ) -> (stream: Self, continuation: Continuation) {
+    var continuation: Continuation!
+    return (Self(elementType, bufferingPolicy: limit) { continuation = $0 }, continuation)
+  }
+
+  /// An `AsyncThrowingStream` that never emits and never completes unless cancelled.
+  public static var never: Self {
+    Self { _ in }
+  }
+}
+
+extension Task where Failure == Never {
+  /// An async function that never returns.
+  public static func never() async throws -> Success {
+    for await element in AsyncStream<Success>.never {
+      return element
+    }
+    throw _Concurrency.CancellationError()
+  }
+}
+
+extension Task where Success == Never, Failure == Never {
+  /// An async function that never returns.
+  public static func never() async throws {
+    for await _ in AsyncStream<Never>.never {}
+    throw _Concurrency.CancellationError()
+  }
+}
+
 /// A generic wrapper for protecting a piece of mutable state inside an actor.
 ///
 /// This type is most useful when writing tests for when you want to inspect what happens inside
@@ -92,195 +285,5 @@ public struct UncheckedSendable<Wrapped>: @unchecked Sendable {
   public var projectedValue: Self {
     get { self }
     set { self = newValue }
-  }
-}
-
-@propertyWrapper
-public final class Box<Wrapped> {
-  public var wrappedValue: Wrapped
-
-  public init(wrappedValue: Wrapped) {
-    self.wrappedValue = wrappedValue
-  }
-
-  public var boxedValue: Wrapped {
-    _read { yield self.wrappedValue }
-    _modify { yield &self.wrappedValue }
-  }
-
-  public var projectedValue: Box<Wrapped> {
-    self
-  }
-}
-
-extension AsyncStream {
-  /// Initializes an `AsyncStream` from any `AsyncSequence`.
-  ///
-  /// - Parameters:
-  ///   - sequence: An `AsyncSequence`.
-  ///   - limit: The maximum number of elements to hold in the buffer. By default, this value is
-  ///   unlimited. Use a `Continuation.BufferingPolicy` to buffer a specified number of oldest or
-  ///   newest elements.
-  public init<S: AsyncSequence & Sendable>(
-    _ sequence: S,
-    bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
-  ) where S.Element == Element {
-    self.init(bufferingPolicy: limit) { (continuation: Continuation) in
-      let task = Task {
-        do {
-          for try await element in sequence {
-            continuation.yield(element)
-          }
-        } catch {}
-        continuation.finish()
-      }
-      continuation.onTermination = { _ in
-        task.cancel()
-      }
-      // NB: This explicit cast is needed to work around a compiler bug in Swift 5.5.2
-      as @Sendable (Continuation.Termination) -> Void
-    }
-  }
-
-  /// Simultaneously constructs a stream and its backing continuation.
-  ///
-  /// This is handy for immediately escaping the continuation from an async stream, which typically
-  /// requires multiple steps:
-  ///
-  /// ```swift
-  /// var _continuation: AsyncStream<Int>.Continuation!
-  /// let stream = AsyncStream<Int> { continuation = $0 }
-  /// let continuation = _continuation!
-  ///
-  /// // vs
-  ///
-  /// let (stream, continuation) = AsyncStream<Int>.streamWithContinuation()
-  /// ```
-  ///
-  /// - Parameters:
-  ///   - elementType: The type of element the `AsyncStream` produces.
-  ///   - limit: A Continuation.BufferingPolicy value to set the stream’s buffering behavior. By
-  ///   default, the stream buffers an unlimited number of elements. You can also set the policy to
-  ///   buffer a specified number of oldest or newest elements.
-  /// - Returns: An `AsyncStream`.
-  public static func streamWithContinuation(
-    _ elementType: Element.Type = Element.self,
-    bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
-  ) -> (stream: Self, continuation: Continuation) {
-    var continuation: Continuation!
-    return (Self(elementType, bufferingPolicy: limit) { continuation = $0 }, continuation)
-  }
-
-  /// An `AsyncStream` that never emits and never completes unless cancelled.
-  public static var never: Self {
-    .init { _ in }
-  }
-}
-
-extension AsyncThrowingStream where Failure == Error {
-  /// Initializes an `AsyncStream` from any `AsyncSequence`.
-  ///
-  /// - Parameters:
-  ///   - sequence: An `AsyncSequence`.
-  ///   - limit: The maximum number of elements to hold in the buffer. By default, this value is
-  ///   unlimited. Use a `Continuation.BufferingPolicy` to buffer a specified number of oldest or
-  ///   newest elements.
-  public init<S: AsyncSequence & Sendable>(
-    _ sequence: S,
-    bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
-  ) where S.Element == Element {
-    self.init(bufferingPolicy: limit) { (continuation: Continuation) in
-      let task = Task {
-        do {
-          for try await element in sequence {
-            continuation.yield(element)
-          }
-          continuation.finish()
-        } catch {
-          continuation.finish(throwing: error)
-        }
-      }
-      continuation.onTermination = { _ in
-        task.cancel()
-      }
-      // NB: This explicit cast is needed to work around a compiler bug in Swift 5.5.2
-      as @Sendable (Continuation.Termination) -> Void
-    }
-  }
-
-  /// Simultaneously constructs a stream and its backing continuation.
-  ///
-  /// This is handy for immediately escaping the continuation from an async stream, which typically
-  /// requires multiple steps:
-  ///
-  /// ```swift
-  /// var _continuation: AsyncThrowingStream<Int, Error>.Continuation!
-  /// let stream = AsyncThrowingStream<Int, Error> { continuation = $0 }
-  /// let continuation = _continuation!
-  ///
-  /// // vs
-  ///
-  /// let (stream, continuation) = AsyncThrowingStream<Int, Error>.streamWithContinuation()
-  /// ```
-  ///
-  /// - Parameters:
-  ///   - elementType: The type of element the `AsyncThrowingStream` produces.
-  ///   - limit: A Continuation.BufferingPolicy value to set the stream’s buffering behavior. By
-  ///   default, the stream buffers an unlimited number of elements. You can also set the policy to
-  ///   buffer a specified number of oldest or newest elements.
-  /// - Returns: An `AsyncThrowingStream`.
-  public static func streamWithContinuation(
-    _ elementType: Element.Type = Element.self,
-    bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
-  ) -> (stream: Self, continuation: Continuation) {
-    var continuation: Continuation!
-    return (Self(elementType, bufferingPolicy: limit) { continuation = $0 }, continuation)
-  }
-
-  /// An `AsyncThrowingStream` that never emits and never completes unless cancelled.
-  public static var never: Self {
-    .init { _ in }
-  }
-}
-
-extension Task where Failure == Never {
-  /// An async function that never returns.
-  public static func never() async throws -> Success {
-    for await element in AsyncStream<Success>.never {
-      return element
-    }
-    throw _Concurrency.CancellationError()
-  }
-}
-
-extension Task where Success == Never, Failure == Never {
-  /// An async function that never returns.
-  public static func never() async throws {
-    for await _ in AsyncStream<Never>.never {}
-    throw _Concurrency.CancellationError()
-  }
-}
-
-extension Task where Failure == Error {
-  var cancellableValue: Success {
-    get async throws {
-      try await withTaskCancellationHandler {
-        self.cancel()
-      } operation: {
-        try await self.value
-      }
-    }
-  }
-}
-
-extension Task where Failure == Never {
-  var cancellableValue: Success {
-    get async {
-      await withTaskCancellationHandler {
-        self.cancel()
-      } operation: {
-        await self.value
-      }
-    }
   }
 }
