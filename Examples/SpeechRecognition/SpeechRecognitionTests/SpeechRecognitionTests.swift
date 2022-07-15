@@ -64,7 +64,7 @@ class SpeechRecognitionTests: XCTestCase {
     speechClient.finishTask = {
       .fireAndForget { self.recognitionTaskSubject.send(completion: .finished) }
     }
-    speechClient.recognitionTask = { _ in self.recognitionTaskSubject.eraseToEffect() }
+    speechClient.startTask = { _ in self.recognitionTaskSubject.eraseToEffect() }
     speechClient.requestAuthorization = { Effect(value: .authorized) }
 
     let store = TestStore(
@@ -109,7 +109,7 @@ class SpeechRecognitionTests: XCTestCase {
 
   func testAudioSessionFailure() {
     var speechClient = SpeechClient.unimplemented
-    speechClient.recognitionTask = { _ in self.recognitionTaskSubject.eraseToEffect() }
+    speechClient.startTask = { _ in self.recognitionTaskSubject.eraseToEffect() }
     speechClient.requestAuthorization = { Effect(value: .authorized) }
 
     let store = TestStore(
@@ -139,7 +139,7 @@ class SpeechRecognitionTests: XCTestCase {
 
   func testAudioEngineFailure() {
     var speechClient = SpeechClient.unimplemented
-    speechClient.recognitionTask = { _ in self.recognitionTaskSubject.eraseToEffect() }
+    speechClient.startTask = { _ in self.recognitionTaskSubject.eraseToEffect() }
     speechClient.requestAuthorization = { Effect(value: .authorized) }
 
     let store = TestStore(

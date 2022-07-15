@@ -93,7 +93,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
       let request = SFSpeechAudioBufferRecognitionRequest()
       request.shouldReportPartialResults = true
       request.requiresOnDeviceRecognition = false
-      return environment.speechClient.recognitionTask(request)
+      return environment.speechClient.startTask(request)
         .animation()
         .catchToEffect(AppAction.speech)
 
@@ -173,7 +173,10 @@ extension SpeechClient {
           isRunning = false
         }
       },
-      recognitionTask: { _ in
+      requestAuthorization: {
+        .init(value: .authorized)
+      },
+      startTask: { _ in
         isRunning = true
         var finalText = """
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor \
@@ -208,9 +211,6 @@ extension SpeechClient {
               )
             }
         }
-      },
-      requestAuthorization: {
-        .init(value: .authorized)
       }
     )
   }
