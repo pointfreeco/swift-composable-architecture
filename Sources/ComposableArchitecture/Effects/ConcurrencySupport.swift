@@ -105,6 +105,10 @@ extension AsyncStream {
   public static var never: Self {
     Self { _ in }
   }
+
+  public static var finished: Self {
+    Self { $0.finish() }
+  }
 }
 
 extension AsyncThrowingStream where Failure == Error {
@@ -170,6 +174,10 @@ extension AsyncThrowingStream where Failure == Error {
   /// An `AsyncThrowingStream` that never emits and never completes unless cancelled.
   public static var never: Self {
     Self { _ in }
+  }
+
+  public static var finished: Self {
+    Self { $0.finish() }
   }
 }
 
