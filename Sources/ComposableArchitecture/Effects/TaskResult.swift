@@ -27,7 +27,7 @@ import XCTestDynamicOverlay
 ///
 /// ```swift
 /// struct FeatureEnvironment {
-///   var numberFact: @Sendable (Int) async throws -> String
+///   var numberFact: (Int) async throws -> String
 /// }
 /// ```
 ///

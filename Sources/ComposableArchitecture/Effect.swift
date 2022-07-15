@@ -39,7 +39,7 @@ extension Effect where Failure == Never {
   ///
   /// ```swift
   /// struct FeatureEnvironment {
-  ///   var numberFact: @Sendable (Int) async throws -> String
+  ///   var numberFact: (Int) async throws -> String
   /// }
   ///
   /// enum FeatureAction {
@@ -140,7 +140,7 @@ extension Effect where Failure == Never {
   ///
   /// ```swift
   /// struct FeatureEnvironment {
-  ///   var events: @Sendable () -> AsyncStream<Event>
+  ///   var events: () -> AsyncStream<Event>
   /// }
   /// ```
   ///

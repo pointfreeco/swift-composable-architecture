@@ -396,7 +396,7 @@ extension BindingAction {
   /// }
   ///
   /// struct AppEnvironment {
-  ///   var numberFact: @Sendable (Int) async throws -> String
+  ///   var numberFact: (Int) async throws -> String
   ///   ...
   /// }
   ///
