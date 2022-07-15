@@ -1,6 +1,6 @@
 import Combine
 import ComposableArchitecture
-@preconcurrency import Speech
+import Speech
 
 extension SpeechClient {
   static let live = Self(
@@ -29,11 +29,16 @@ extension SpeechClient {
           }
         }
 
-        continuation.onTermination = { _ in
+        continuation.onTermination = {
+          [speechRecognizer = UncheckedSendable(wrappedValue: speechRecognizer),
+           audioEngine = UncheckedSendable(wrappedValue: audioEngine),
+           recognitionTask = UncheckedSendable(wrappedValue: recognitionTask)]
+          _ in
+
           _ = speechRecognizer
-          audioEngine.stop()
-          audioEngine.inputNode.removeTap(onBus: 0)
-          recognitionTask.finish()
+          audioEngine.wrappedValue.stop()
+          audioEngine.wrappedValue.inputNode.removeTap(onBus: 0)
+          recognitionTask.wrappedValue.finish()
         }
 
         audioEngine.inputNode.installTap(
