@@ -8,11 +8,6 @@ struct SpeechClient {
     (SFSpeechAudioBufferRecognitionRequest) -> Effect<SpeechRecognitionResult, Error>
   var requestAuthorization: () -> Effect<SFSpeechRecognizerAuthorizationStatus, Never>
 
-  enum Action: Equatable {
-    case availabilityDidChange(isAvailable: Bool)
-    case taskResult(SpeechRecognitionResult)
-  }
-
   enum Error: Swift.Error, Equatable {
     case taskError
     case couldntStartAudioEngine
