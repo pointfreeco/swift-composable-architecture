@@ -105,7 +105,7 @@ public struct AlertState<Action> {
   public var message: TextState?
   public var title: TextState
 
-  @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+  @available(iOS 15, macOS 11, tvOS 15, watchOS 8, *)
   public init(
     title: TextState,
     message: TextState? = nil,
