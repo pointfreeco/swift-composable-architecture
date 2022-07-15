@@ -32,7 +32,6 @@ class SpeechRecognitionTests: XCTestCase {
         )
       )
       $0.isRecording = false
-      $0.speechRecognizerAuthorizationStatus = .denied
     }
   }
 
@@ -55,7 +54,6 @@ class SpeechRecognitionTests: XCTestCase {
     store.receive(.speechRecognizerAuthorizationStatusResponse(.restricted)) {
       $0.alert = AlertState(title: TextState("Your device does not allow speech recognition."))
       $0.isRecording = false
-      $0.speechRecognizerAuthorizationStatus = .restricted
     }
   }
 
@@ -92,9 +90,7 @@ class SpeechRecognitionTests: XCTestCase {
       $0.isRecording = true
     }
 
-    store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized)) {
-      $0.speechRecognizerAuthorizationStatus = .authorized
-    }
+    store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized))
 
     self.recognitionTaskSubject.send(result)
     store.receive(.speech(.success(result))) {
@@ -125,9 +121,7 @@ class SpeechRecognitionTests: XCTestCase {
       $0.isRecording = true
     }
 
-    store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized)) {
-      $0.speechRecognizerAuthorizationStatus = .authorized
-    }
+    store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized))
 
     self.recognitionTaskSubject.send(completion: .failure(.couldntConfigureAudioSession))
     store.receive(.speech(.failure(.couldntConfigureAudioSession))) {
@@ -155,9 +149,7 @@ class SpeechRecognitionTests: XCTestCase {
       $0.isRecording = true
     }
 
-    store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized)) {
-      $0.speechRecognizerAuthorizationStatus = .authorized
-    }
+    store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized)) 
 
     self.recognitionTaskSubject.send(completion: .failure(.couldntStartAudioEngine))
     store.receive(.speech(.failure(.couldntStartAudioEngine))) {
