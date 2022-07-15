@@ -1,6 +1,48 @@
 import Combine
 import SwiftUI
 
+/// A property wrapper type that always returns true meaning the same value
+/// when performing a comparison operation (==),
+/// even if the values ​​are different.
+///
+/// This type can solve the problem of popping at a specific depth when using NavigationLink,
+/// which occurs when the local state in the global state changes.
+///
+/// For example, if you write the code as below,
+/// ``objectWillChange.send()`` of ViewStore will not be called
+/// when the value of displayname or localState is changed.
+///
+/// ```swift
+/// struct LocalState { ... }
+/// ```
+///
+/// ```swift
+/// struct GlobalState {
+///   var digest = Digest.daily
+///   @AlwaysEquatable var displayName = ""
+///   var enableNotifications = false
+///   var isLoading = false
+///   var protectMyPosts = false
+///   var sendEmailNotifications = false
+///   var sendMobileNotifications = false
+///   @AlwaysEquatable var localState: LocalState
+/// }
+/// ```
+@propertyWrapper
+public struct AlwaysEquatable<Value> {
+  public var wrappedValue: Value
+
+  public init(wrappedValue: Value) {
+    self.wrappedValue = wrappedValue
+  }
+}
+
+extension AlwaysEquatable: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    true
+  }
+}
+
 /// A ``ViewStore`` is an object that can observe state changes and send actions. They are most
 /// commonly used in views, such as SwiftUI views, UIView or UIViewController, but they can be
 /// used anywhere it makes sense to observe state and send actions.
