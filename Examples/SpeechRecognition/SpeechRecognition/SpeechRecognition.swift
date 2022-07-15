@@ -159,9 +159,63 @@ struct SpeechRecognitionView_Previews: PreviewProvider {
         reducer: appReducer,
         environment: AppEnvironment(
           mainQueue: .main,
-          speechClient: .live
+          speechClient: .lorem
         )
       )
+    )
+  }
+}
+
+extension SpeechClient {
+  static var lorem: Self {
+    var isRunning = false
+    return Self(
+      finishTask: {
+        .fireAndForget {
+          isRunning = false
+        }
+      },
+      recognitionTask: { _ in
+        isRunning = true
+        var finalText = """
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor \
+        incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud \
+        exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure \
+        dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. \
+        Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt \
+        mollit anim id est laborum.
+        """
+        var text = ""
+
+        return .run { subscriber in
+          return Timer.publish(every: 0.33, on: .main, in: .default)
+            .autoconnect()
+            .prefix { _ in !finalText.isEmpty && isRunning }
+            .sink { _ in
+              let word = finalText.prefix { $0 != " " }
+              finalText.removeFirst(word.count)
+              if finalText.first == " " {
+                finalText.removeFirst()
+              }
+              text += word + " "
+              subscriber.send(
+                .taskResult(
+                  .init(
+                    bestTranscription: .init(
+                      formattedString: text,
+                      segments: []
+                    ),
+                    isFinal: false,
+                    transcriptions: []
+                  )
+                )
+              )
+            }
+        }
+      },
+      requestAuthorization: {
+        .init(value: .authorized)
+      }
     )
   }
 }
