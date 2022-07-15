@@ -19,7 +19,7 @@ struct AppState: Equatable {
 enum AppAction: Equatable {
   case dismissAuthorizationStateAlert
   case recordButtonTapped
-  case speech(Result<SpeechClient.Action, SpeechClient.Error>)
+  case speech(Result<SpeechRecognitionResult, SpeechClient.Error>)
   case speechRecognizerAuthorizationStatusResponse(SFSpeechRecognizerAuthorizationStatus)
 }
 
@@ -50,10 +50,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
         .fireAndForget()
     }
 
-  case let .speech(.success(.availabilityDidChange(isAvailable))):
-    return .none
-
-  case let .speech(.success(.taskResult(result))):
+  case let .speech(.success(result)):
     state.transcribedText = result.bestTranscription.formattedString
     if result.isFinal {
       return environment.speechClient.finishTask()
@@ -200,15 +197,13 @@ extension SpeechClient {
               }
               text += word + " "
               subscriber.send(
-                .taskResult(
-                  .init(
-                    bestTranscription: .init(
-                      formattedString: text,
-                      segments: []
-                    ),
-                    isFinal: false,
-                    transcriptions: []
-                  )
+                .init(
+                  bestTranscription: .init(
+                    formattedString: text,
+                    segments: []
+                  ),
+                  isFinal: false,
+                  transcriptions: []
                 )
               )
             }

@@ -5,7 +5,7 @@ import XCTest
 @testable import SpeechRecognition
 
 class SpeechRecognitionTests: XCTestCase {
-  let recognitionTaskSubject = PassthroughSubject<SpeechClient.Action, SpeechClient.Error>()
+  let recognitionTaskSubject = PassthroughSubject<SpeechRecognitionResult, SpeechClient.Error>()
 
   func testDenyAuthorization() {
     var speechClient = SpeechClient.unimplemented
@@ -96,13 +96,13 @@ class SpeechRecognitionTests: XCTestCase {
       $0.speechRecognizerAuthorizationStatus = .authorized
     }
 
-    self.recognitionTaskSubject.send(.taskResult(result))
-    store.receive(.speech(.success(.taskResult(result)))) {
+    self.recognitionTaskSubject.send(result)
+    store.receive(.speech(.success(result))) {
       $0.transcribedText = "Hello"
     }
 
-    self.recognitionTaskSubject.send(.taskResult(finalResult))
-    store.receive(.speech(.success(.taskResult(finalResult)))) {
+    self.recognitionTaskSubject.send(finalResult)
+    store.receive(.speech(.success(finalResult))) {
       $0.transcribedText = "Hello world"
     }
   }
