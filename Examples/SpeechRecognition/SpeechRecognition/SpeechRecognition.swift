@@ -97,6 +97,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
       request.shouldReportPartialResults = true
       request.requiresOnDeviceRecognition = false
       return environment.speechClient.recognitionTask(request)
+        .animation()
         .catchToEffect(AppAction.speech)
 
     @unknown default:
