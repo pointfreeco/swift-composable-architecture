@@ -75,17 +75,3 @@ extension SpeechClient {
     )
   }
 }
-
-private class SpeechRecognizerDelegate: NSObject, SFSpeechRecognizerDelegate {
-  var availabilityDidChange: (Bool) -> Void
-
-  init(availabilityDidChange: @escaping (Bool) -> Void) {
-    self.availabilityDidChange = availabilityDidChange
-  }
-
-  func speechRecognizer(
-    _ speechRecognizer: SFSpeechRecognizer, availabilityDidChange available: Bool
-  ) {
-    self.availabilityDidChange(available)
-  }
-}
