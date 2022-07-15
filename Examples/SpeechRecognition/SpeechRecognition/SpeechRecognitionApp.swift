@@ -11,7 +11,7 @@ struct SpeechRecognitionApp: App {
           reducer: appReducer,
           environment: AppEnvironment(
             mainQueue: .main,
-            speechClient: .lorem
+            speechClient: .live
           )
         )
       )
