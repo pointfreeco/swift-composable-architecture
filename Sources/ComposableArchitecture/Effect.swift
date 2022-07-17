@@ -282,6 +282,10 @@ extension Effect where Failure == Never {
 public struct Send<Action> {
   fileprivate let send: (Action) -> Void
 
+  public init(send: @escaping (Action) -> Void) {
+    self.send = send
+  }
+
   /// Sends an action back into the system from an effect.
   ///
   /// - Parameter action: An action.
