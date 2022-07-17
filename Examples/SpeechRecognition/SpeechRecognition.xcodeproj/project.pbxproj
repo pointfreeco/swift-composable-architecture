@@ -396,7 +396,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				OTHER_SWIFT_FLAGS = "-strict-concurrency=complete -Xfrontend -enable-actor-data-race-checks -Xfrontend -warn-concurrency";
+				OTHER_SWIFT_FLAGS = "-Xfrontend -enable-actor-data-race-checks -Xfrontend -warn-concurrency";
 				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.SpeechRecognition;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -415,7 +415,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				OTHER_SWIFT_FLAGS = "-strict-concurrency=complete -Xfrontend -enable-actor-data-race-checks -Xfrontend -warn-concurrency";
+				OTHER_SWIFT_FLAGS = "-Xfrontend -enable-actor-data-race-checks -Xfrontend -warn-concurrency";
 				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.SpeechRecognition;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
