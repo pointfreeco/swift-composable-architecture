@@ -12,7 +12,6 @@ private let readMe = """
 struct AppState: Equatable {
   var alert: AlertState<AppAction>?
   var isRecording = false
-  var speechRecognizerAuthorizationStatus = SFSpeechRecognizerAuthorizationStatus.notDetermined
   var transcribedText = ""
 }
 
@@ -68,7 +67,6 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
   case let .speechRecognizerAuthorizationStatusResponse(status):
     state.isRecording = status == .authorized
-    state.speechRecognizerAuthorizationStatus = status
 
     switch status {
     case .notDetermined:
