@@ -58,8 +58,7 @@ class AnimationTests: XCTestCase {
       $0.circleColor = .black
     }
 
-
-    await mainQueue.advance(by: .seconds(1))
+    await mainQueue.run()
   }
 
   func testReset() async {
@@ -98,5 +97,7 @@ class AnimationTests: XCTestCase {
     await store.send(.resetConfirmationButtonTapped) {
       $0 = AnimationsState()
     }
+
+    await mainQueue.run()
   }
 }
