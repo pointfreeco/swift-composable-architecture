@@ -134,7 +134,7 @@ class SpeechRecognitionTests: XCTestCase {
       $0.isRecording = true
     }
 
-    store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized)) 
+    store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized))
 
     self.recognitionTaskSubject.send(completion: .failure(.couldntStartAudioEngine))
     store.receive(.speech(.failure(.couldntStartAudioEngine))) {
