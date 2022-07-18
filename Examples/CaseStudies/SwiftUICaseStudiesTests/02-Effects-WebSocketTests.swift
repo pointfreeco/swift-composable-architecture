@@ -111,12 +111,12 @@ class WebSocketTests: XCTestCase {
 
   func testWebSocketPings() async {
     let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
-    let pingsCount = SendableState(0)
+    let pingsCount = ActorIsolated(0)
 
     var webSocket = WebSocketClient.unimplemented
     webSocket.open = { _, _, _ in actions.stream }
     webSocket.receive = { _ in try await Task.never() }
-    webSocket.sendPing = { _ in await pingsCount.modify { $0 += 1 } }
+    webSocket.sendPing = { _ in await pingsCount.withValue { $0 += 1 } }
 
     let scheduler = DispatchQueue.test
     let store = TestStore(
@@ -138,11 +138,9 @@ class WebSocketTests: XCTestCase {
     }
 
     // Wait for ping
-    let before = await pingsCount.value
-    XCTAssertEqual(before, 0)
+    await pingsCount.withValue { XCTAssertEqual($0, 0) }
     await scheduler.advance(by: .seconds(10))
-    let after = await pingsCount.value
-    XCTAssertEqual(after, 1)
+    await pingsCount.withValue { XCTAssertEqual($0, 1) }
 
     // Disconnect from the socket
     await store.send(.connectButtonTapped) {

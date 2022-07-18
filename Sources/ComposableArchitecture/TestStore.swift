@@ -422,10 +422,10 @@
     /// ```swift
     /// @MainActor
     /// func testAnalytics() async {
-    ///   let events = SendableState<[String]>([])
+    ///   let events = ActorIsolated<[String]>([])
     ///   let analytics = AnalyticsClient(
     ///     track: { event in
-    ///       await events.modify { $0.append(event) }
+    ///       await events.withValue { $0.append(event) }
     ///     }
     ///   )
     ///
@@ -437,8 +437,7 @@
     ///
     ///   await store.send(.buttonTapped)
     ///
-    ///   let trackedEvents = await events.value
-    ///   XCTAssertEqual(trackedEvents, ["Button Tapped"])
+    ///   await events.withValue { XCTAssertEqual($0, ["Button Tapped"]) }
     /// }
     /// ```
     ///

@@ -77,12 +77,12 @@ class VoiceMemosTests: XCTestCase {
   }
 
   func testPermissionDenied() async {
-    let didOpenSettings = SendableState(false)
+    let didOpenSettings = ActorIsolated(false)
 
     var environment = VoiceMemosEnvironment.unimplemented
     environment.audioRecorder.requestRecordPermission = { false }
     environment.mainRunLoop = .immediate
-    environment.openSettings = { await didOpenSettings.set(true) }
+    environment.openSettings = { await didOpenSettings.setValue(true) }
 
     let store = TestStore(
       initialState: VoiceMemosState(),
@@ -99,8 +99,7 @@ class VoiceMemosTests: XCTestCase {
       $0.alert = nil
     }
     await store.send(.openSettingsButtonTapped).finish()
-    let didOpen = await didOpenSettings.value
-    XCTAssert(didOpen)
+    await didOpenSettings.withValue { XCTAssert($0) }
   }
 
   func testRecordMemoFailure() async {

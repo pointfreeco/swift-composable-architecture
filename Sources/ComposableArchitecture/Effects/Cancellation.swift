@@ -141,14 +141,12 @@ extension Effect {
 ///   - id: A unique identifier for the operation.
 ///   - cancelInFlight: Determines if any in-flight operation with the same identifier should be
 ///     canceled before starting this new one.
-///   - resultType: The type of value produced by the operation.
 ///   - operation: An async operation.
 /// - Throws: An error thrown by the operation.
 /// - Returns: A value produced by operation.
 public func withTaskCancellation<T: Sendable>(
   id: AnyHashable,
   cancelInFlight: Bool = false,
-  resultType: T.Type = T.self,
   operation: @Sendable @escaping () async throws -> T
 ) async rethrows -> T {
   cancellablesLock.lock()
@@ -178,28 +176,24 @@ public func withTaskCancellation<T: Sendable>(
 
 /// Execute an operation with a cancellation identifier.
 ///
-/// A convenience for calling
-/// ``withTaskCancellation(id:cancelInFlight:resultType:operation:)-1m27c`` with a static type as
-/// the operation's unique identifier.
+/// A convenience for calling ``withTaskCancellation(id:cancelInFlight:operation:)-4dtr6`` with a
+/// static type as the operation's unique identifier.
 ///
 /// - Parameters:
 ///   - id: A unique type identifying the operation.
 ///   - cancelInFlight: Determines if any in-flight operation with the same identifier should be
 ///     canceled before starting this new one.
-///   - resultType: The type of value produced by the operation.
 ///   - operation: An async operation.
 /// - Throws: An error thrown by the operation.
 /// - Returns: A value produced by operation.
 public func withTaskCancellation<T: Sendable>(
   id: Any.Type,
   cancelInFlight: Bool = false,
-  resultType: T.Type = T.self,
   operation: @Sendable @escaping () async throws -> T
 ) async rethrows -> T {
   try await withTaskCancellation(
     id: ObjectIdentifier(id),
     cancelInFlight: cancelInFlight,
-    resultType: resultType,
     operation: operation
   )
 }

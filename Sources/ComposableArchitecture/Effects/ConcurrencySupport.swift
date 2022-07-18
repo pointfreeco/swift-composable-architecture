@@ -199,7 +199,7 @@ extension Task where Success == Never, Failure == Never {
   }
 }
 
-/// A generic wrapper for protecting a piece of mutable state inside an actor.
+/// A generic wrapper for isolating a mutable value to an actor.
 ///
 /// This type is most useful when writing tests for when you want to inspect what happens inside
 /// an effect. For example, suppose you have a feature such that when a button is tapped you
@@ -216,14 +216,14 @@ extension Task where Success == Never, Failure == Never {
 ///
 /// Then, in tests we can construct an analytics client that appends events to a mutable array
 /// rather than actually sending events to an analytics server. However, in order to do this in
-/// a safe way we should use an actor, and ``SendableState`` makes this easy:
+/// a safe way we should use an actor, and ``ActorIsolated`` makes this easy:
 ///
 /// ```swift
 /// func testAnalytics() async {
-///   let events = SendableState<[String]>([])
+///   let events = ActorIsolated<[String]>([])
 ///   let analytics = AnalyticsClient(
 ///     track: { event in
-///       await events.modify { $0.append(event) }
+///       await events.withValue { $0.append(event) }
 ///     }
 ///   )
 ///
@@ -235,35 +235,39 @@ extension Task where Success == Never, Failure == Never {
 ///
 ///   await store.send(.buttonTapped)
 ///
-///   let trackedEvents = await events.value
-///   XCTAssertEqual(trackedEvents, ["Button Tapped"])
+///   await events.withValue { XCTAssertEqual($0, ["Button Tapped"]) }
 /// }
 /// ```
 @dynamicMemberLookup
-public final actor SendableState<Value> {
+public final actor ActorIsolated<Value: Sendable> {
   public var value: Value
 
   public init(_ wrappedValue: Value) {
     self.value = wrappedValue
   }
 
-  public convenience init<Wrapped>() where Value == Wrapped? {
-    self.init(nil)
-  }
-
   public subscript<Subject>(dynamicMember keyPath: KeyPath<Value, Subject>) -> Subject {
     self.value[keyPath: keyPath]
   }
 
-  public func modify<R>(_ operation: (inout Value) async throws -> R) async rethrows -> R {
+  /// Perform an operation with isolated access to the underlying value.
+  ///
+  /// - Parameters: operation: An operation to be performed on the actor with the underlying value.
+  /// - Returns: The result of the operation.
+  public func withValue<T: Sendable>(
+    _ operation: @Sendable (inout Value) async throws -> T
+  ) async rethrows -> T {
     var wrappedValue = self.value
     let returnValue = try await operation(&wrappedValue)
     self.value = wrappedValue
     return returnValue
   }
 
-  public func set(_ value: Value) {
-    self.value = value
+  /// Overwrite the isolated value with a new value.
+  ///
+  /// - Parameter newValue: The value to replace the current isolated value with.
+  public func setValue(_ newValue: Value) {
+    self.value = newValue
   }
 }
 

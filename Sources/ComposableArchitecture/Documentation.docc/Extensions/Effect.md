@@ -18,8 +18,8 @@
 - ``cancellable(id:cancelInFlight:)-17skv``
 - ``cancel(id:)-iun1``
 - ``cancel(ids:)-dmwy``
-- ``withTaskCancellation(id:cancelInFlight:resultType:operation:)-1m27c``
-- ``withTaskCancellation(id:cancelInFlight:resultType:operation:)-8exbl``
+- ``withTaskCancellation(id:cancelInFlight:operation:)-88kxz``
+- ``withTaskCancellation(id:cancelInFlight:operation:)-4dtr6``
 
 ### Composition
 
