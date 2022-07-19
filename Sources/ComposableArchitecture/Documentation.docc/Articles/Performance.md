@@ -162,7 +162,7 @@ for your application. High-frequency actions, such as sending dozens of actions 
 should be avoided unless your application truly needs that volume of actions in order to implement
 its logic.
 
-However, there are often times that actions are sent at a high frequency, but the reducer doesn't
+However, there are often times that actions are sent at a high frequency but the reducer doesn't
 actually need that volumen of information. For example, say you were constructing an effect that 
 wanted to report it's progress back to the system for each step of its work. You could choose
 to send the progress for literally every step:
