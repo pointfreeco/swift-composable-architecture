@@ -281,21 +281,30 @@ public final actor ActorIsolated<Value: Sendable> {
 /// Note that by wrapping something in ``UncheckedSendable`` you are asking the compiler to trust
 /// you that the type is safe to use from multiple threads, and the compiler cannot help you find
 /// potential race conditions in your code.
+@dynamicMemberLookup
 @propertyWrapper
-public struct UncheckedSendable<Wrapped>: @unchecked Sendable {
-  public var wrappedValue: Wrapped
+public struct UncheckedSendable<Value>: @unchecked Sendable {
+  public var value: Value
 
-  public init(wrappedValue: Wrapped) {
-    self.wrappedValue = wrappedValue
+  public init(_ value: Value) {
+    self.value = value
   }
 
-  public var uncheckedValue: Wrapped {
-    _read { yield self.wrappedValue }
-    _modify { yield &self.wrappedValue }
+  public init(wrappedValue: Value) {
+    self.init(wrappedValue)
+  }
+
+  public var wrappedValue: Value {
+    _read { yield self.value }
+    _modify { yield &self.value }
   }
 
   public var projectedValue: Self {
     get { self }
     set { self = newValue }
+  }
+
+  public subscript<Subject>(dynamicMember keyPath: KeyPath<Value, Subject>) -> Subject {
+    self.value[keyPath: keyPath]
   }
 }
