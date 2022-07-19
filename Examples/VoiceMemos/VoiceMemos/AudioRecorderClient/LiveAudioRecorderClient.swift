@@ -66,7 +66,7 @@ private actor AudioRecorder {
         self.recorder = recorder
         recorder.delegate = self.delegate
 
-        continuation.onTermination = { [recorder = UncheckedSendable(wrappedValue: recorder)] _ in
+        continuation.onTermination = { [recorder = UncheckedSendable(recorder)] _ in
           recorder.wrappedValue.stop()
         }
 

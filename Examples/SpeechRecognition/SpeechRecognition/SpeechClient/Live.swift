@@ -30,9 +30,9 @@ extension SpeechClient {
         }
 
         continuation.onTermination = {
-          [speechRecognizer = UncheckedSendable(wrappedValue: speechRecognizer),
-           audioEngine = UncheckedSendable(wrappedValue: audioEngine),
-           recognitionTask = UncheckedSendable(wrappedValue: recognitionTask)]
+          [speechRecognizer = UncheckedSendable(speechRecognizer),
+           audioEngine = UncheckedSendable(audioEngine),
+           recognitionTask = UncheckedSendable(recognitionTask)]
           _ in
 
           _ = speechRecognizer
