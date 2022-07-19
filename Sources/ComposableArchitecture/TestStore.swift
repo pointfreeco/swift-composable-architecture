@@ -174,7 +174,24 @@
     /// The current environment.
     ///
     /// The environment can be modified throughout a test store's lifecycle in order to influence
-    /// how it produces effects.
+    /// how it produces effects. This can be handy for testing flows that require a dependency
+    /// to start in a failing state and then later change into a succeeding state:
+    ///
+    /// ```swift
+    /// // Start dependency endpoint in a failing state
+    /// store.environment.client.fetch = { _ in throw FetchError() }
+    /// await store.send(.buttonTapped)
+    /// await store.receive(.response(.failure(FetchError())) {
+    ///   …
+    /// }
+    ///
+    /// // Change dependency endpoint into a succeeding state
+    /// await store.environment.client.fetch = { "Hello \($0)!" }
+    /// await store.send(.buttonTapped)
+    /// await store.receive(.response(.success("Hello Blob!") {
+    ///   …
+    /// }
+    /// ```
     public var environment: Environment
 
     /// The current state.
@@ -185,6 +202,10 @@
     public private(set) var state: State
 
     /// The timeout to await for in-flight effects.
+    ///
+    /// This is the default timeout used in all methods that take an optional timeout, such as
+    /// ``send(_:_:file:line:)-7vwv9``, ``receive(_:timeout:_:file:line:)-88eyr`` and
+    /// ``finish(timeout:file:line:)-53gi5``.
     public var timeout: UInt64
 
     private let file: StaticString

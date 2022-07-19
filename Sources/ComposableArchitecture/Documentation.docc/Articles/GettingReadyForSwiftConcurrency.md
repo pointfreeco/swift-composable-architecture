@@ -1,4 +1,4 @@
-#  Getting ready for Swift concurrency
+# Getting ready for Swift concurrency
 
 Learn how to write safe, concurrent effects using Swift structured concurrency.
 
