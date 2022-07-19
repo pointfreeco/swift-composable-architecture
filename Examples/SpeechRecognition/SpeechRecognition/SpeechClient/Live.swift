@@ -1,13 +1,15 @@
 import Combine
 import ComposableArchitecture
-@preconcurrency import Speech
+import Speech
 
 extension SpeechClient {
   static var live: Self {
     let speech = Speech()
 
     return Self(
-      finishTask: { await speech.finishTask() },
+      finishTask: {
+        await speech.finishTask()
+      },
       requestAuthorization: {
         await withCheckedContinuation { continuation in
           SFSpeechRecognizer.requestAuthorization { status in
@@ -15,7 +17,10 @@ extension SpeechClient {
           }
         }
       },
-      startTask: { request in await speech.startTask(request: request) }
+      startTask: { request in
+        let request = UncheckedSendable(request)
+        return await speech.startTask(request: request)
+      }
     )
   }
 }
@@ -33,9 +38,11 @@ private actor Speech {
   }
 
   func startTask(
-    request: SFSpeechAudioBufferRecognitionRequest
+    request: UncheckedSendable<SFSpeechAudioBufferRecognitionRequest>
   ) -> AsyncThrowingStream<SpeechRecognitionResult, Error> {
-    AsyncThrowingStream { continuation in
+    let request = request.wrappedValue
+
+    return AsyncThrowingStream { continuation in
       self.recognitionContinuation = continuation
       let audioSession = AVAudioSession.sharedInstance()
       do {
