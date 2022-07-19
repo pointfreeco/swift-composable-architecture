@@ -106,6 +106,8 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 }
 .debug()
 
+struct TranscriptionID: Hashable {}
+
 struct SpeechRecognitionView: View {
   let store: Store<AppState, AppAction>
 
@@ -115,12 +117,16 @@ struct SpeechRecognitionView: View {
         VStack(alignment: .leading) {
           Text(readMe)
             .padding(.bottom, 32)
-
-          Text(viewStore.transcribedText)
-            .font(.largeTitle)
-            .minimumScaleFactor(0.1)
-            .frame(minHeight: 0, maxHeight: .infinity, alignment: .topLeading)
         }
+
+        ScrollView {
+          ScrollViewReader { proxy in
+            Text(viewStore.transcribedText)
+              .font(.largeTitle)
+              .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+          }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
         Spacer()
 
@@ -184,8 +190,11 @@ extension SpeechClient {
               """
             var text = ""
             while await isRecording.value {
-              try await Task.sleep(nanoseconds: NSEC_PER_SEC / 3)
               let word = finalText.prefix { $0 != " " }
+              try await Task.sleep(
+                nanoseconds: UInt64(word.count) * NSEC_PER_MSEC * 50
+//                + .random(in: 0 ... (NSEC_PER_MSEC * 200))
+              )
               finalText.removeFirst(word.count)
               if finalText.first == " " {
                 finalText.removeFirst()
