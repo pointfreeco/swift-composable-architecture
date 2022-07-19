@@ -164,7 +164,7 @@ its logic.
 
 However, there are often times that actions are sent at a high frequency but the reducer doesn't
 actually need that volumen of information. For example, say you were constructing an effect that 
-wanted to report it's progress back to the system for each step of its work. You could choose
+wanted to report its progress back to the system for each step of its work. You could choose
 to send the progress for literally every step:
 
 ```swift
@@ -181,8 +181,8 @@ case .startButtonTapped:
 }
 ```
 
-However, what if the effect required 10,000 steps to finish. Or 100,000? Or more? It would be 
-immensely wasteful to send 100,000 actions into the system to report a progress that is only
+However, what if the effect required 10,000 steps to finish? Or 100,000? Or more? It would be 
+immensely wasteful to send 100,000 actions into the system to report a progress value that is only
 going to vary from 0.0 to 1.0.
 
 Instead, you can choose to report the progress every once in awhile. You can even do the math
