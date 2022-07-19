@@ -14,7 +14,7 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/pointfreeco/swift-composable-architecture",
-      from: "0.34.0"
+      from: "0.39.0"
     ),
   ],
   targets: [
@@ -97,7 +97,11 @@ the current state to the next state, and describes what effects need to be execu
 don't need to execute effects, and they can return `.none` to represent that:
 
 ```swift
-let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
+let appReducer = Reducer<
+  AppState,
+  AppAction,
+  AppEnvironment
+> { state, action, environment in
   switch action {
   case .factAlertDismissed:
     state.numberFactAlert = nil
@@ -113,7 +117,9 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
 
   case .numberFactButtonTapped:
     return .task {
-      await .numberFactResponse(TaskResult { try await environment.numberFact(state.count) })
+      await .numberFactResponse(
+        TaskResult { try await environment.numberFact(state.count) }
+      )
     }
 
   case let .numberFactResponse(.success(fact)):
@@ -229,24 +235,24 @@ alert to go away.
 
 ```swift
 // Test that tapping on the increment/decrement buttons changes the count
-store.send(.incrementButtonTapped) {
+await store.send(.incrementButtonTapped) {
   $0.count = 1
 }
-store.send(.decrementButtonTapped) {
+await store.send(.decrementButtonTapped) {
   $0.count = 0
 }
 
 // Test that tapping the fact button causes us to receive a response from the effect. Note
 // that we have to await the receive because the effect is asynchronous and so takes a small
 // amount of time to emit.
-store.send(.numberFactButtonTapped)
+await store.send(.numberFactButtonTapped)
 
 await store.receive(.numberFactResponse(.success("0 is a good number Brent"))) {
   $0.numberFactAlert = "0 is a good number Brent"
 }
 
 // And finally dismiss the alert
-store.send(.factAlertDismissed) {
+await store.send(.factAlertDismissed) {
   $0.numberFactAlert = nil
 }
 ```
