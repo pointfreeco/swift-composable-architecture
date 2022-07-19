@@ -50,8 +50,8 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
       else { return }
 
       let request = SFSpeechAudioBufferRecognitionRequest()
-      for try await action in await environment.speechClient.startTask(request) {
-        await send(.speech(.success(action.bestTranscription.formattedString)), animation: .linear)
+      for try await result in await environment.speechClient.startTask(request) {
+        await send(.speech(.success(result.bestTranscription.formattedString)), animation: .linear)
       }
     } catch: { error, send in
       await send(.speech(.failure(error)))

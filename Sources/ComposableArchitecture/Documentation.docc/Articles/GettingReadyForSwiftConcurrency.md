@@ -2,8 +2,6 @@
 
 Learn how to write safe, concurrent effects using Swift structured concurrency.
 
-## Sendable and @Sendable
-
 There are 3 primary ways to create an effect in the library:
 
 * ``Effect/task(priority:operation:catch:file:fileID:line:)``
@@ -18,4 +16,71 @@ There are 3 primary ways to create an effect in the library:
 
   Creates an asynchronous context that can never send actions back into the system. 
 
-Each of these effect constructors takes a `@Sendable` async closure, which restricts the types of closures you can use for your effects. In particular, the closure can only capture immutable `Sendable` values or isolated, mutable values.
+Each of these effect constructors takes a `@Sendable` async closure, which restricts the types of closures you can use for your effects. In particular, the closure can only capture `Sendable` variables that are bound with `let`. Mutable variables and non-`Sendable` types are simply not allowed to be passed to `@Sendable` closures.
+
+There are two primary ways you will run into this restriction when building a feature in the Composable Architecture.
+
+### Capturing state in an effect
+
+Reducers are executed with a mutable, `inout` state variable, and such variables cannot be accessed from within `@Sendable` closures:
+
+```swift
+Reducer { state, action, environment in 
+  switch action {
+  case .buttonTapped:
+    return .task {
+      try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+      return .delayed(state.count) 
+      // 🛑 Mutable capture of 'inout' parameter 'state' is 
+      //    not allowed in concurrently-executing code
+    }
+
+    …
+  }
+}
+```
+
+To work around this you must explicitly capture the state as an immutable value for the scope of the closure:
+
+```swift
+return .task { [state] in 
+  try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+  return .delayed(state.count) // ✅
+}
+```
+
+You can also capture just the minimal parts of the state you need for the effect by binding a new variable name for the capture:
+
+```swift
+return .task { [count = state.count] in 
+  try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+  return .delayed(count) // ✅
+}
+```
+
+### Using dependencies in an effect
+
+In the Composable Architecture one designs an environment of dependencies that your feature needs to do its job. These are all the clients and objects that interact with the messy, unpredictable outside world, but provide an interface to us that is easy to control so that we can still write tests.
+
+Typically dependencies are accessed inside the effect, which means it must be `Sendable`, otherwise we will get the following warning (and error in Swift 6):
+
+```swift
+case .numberFactButtonTapped:
+  return .task { [count = state.count] in
+    await .numberFactResponse(
+      TaskResult { try await environment.factClient.fetch(count) }
+    )
+    // ⚠️ Capture of 'environment' with non-sendable type 'AppEnvironment' 
+    //    in a `@Sendable` closure
+  }
+```
+
+To fix this we need to make each dependency `Sendable`. This usually just means making sure that the interface type only holds onto `Sendable` data, and in particular, any closure-based endpoints should be annotated as `@Sendable`:
+
+```swift
+struct FactClient {
+  var fetch: @Sendable (Int) async throws -> String
+}
+```
+
+This will restrict the kinds of closures that can be used when construct `FactClient` values, thus making the entire `FactClient` sendable itself.

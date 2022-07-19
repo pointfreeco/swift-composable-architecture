@@ -415,8 +415,8 @@
   extension TestStore where LocalState: Equatable {
     /// Sends an action to the store and asserts when state changes.
     ///
-    /// This method suspends briefly in order to allow any effects to start. For example, if you
-    /// track some analytics in a ``Effect/fireAndForget(priority:_:)`` when an action is sent,
+    /// This method suspends in order to allow any effects to start. For example, if you
+    /// track an analytics event in a ``Effect/fireAndForget(priority:_:)`` when an action is sent,
     /// you can assert on that behavior immediately after awaiting `store.send`:
     ///
     /// ```swift
@@ -441,10 +441,15 @@
     /// }
     /// ```
     ///
-    /// This method also returns a ``TestStoreTask``, which represents the lifecycle of the effect
-    /// started from sending an action. You can use this value to force the cancellation of the
-    /// effect, which is helpful for effects that are tied to a view's lifecycle and not torn down
-    /// when an action is sent, such as actions sent in SwiftUI's `task` view modifier.
+    /// It's important to note that the method does not suspend for the duration of the effect. It
+    /// only suspends for the duration until the effect _starts_.
+    ///
+    /// In order to suspend for the duration of the effect you can use its return value, a
+    /// ``TestStoreTask``, which represents the lifecycle of the effect started from sending an
+    /// action. You can use this value to suspend until the effect finishes, or to force the
+    /// cancellation of the effect, which is helpful for effects that are tied to a view's lifecycle
+    /// and not torn down when an action is sent, such as actions sent in SwiftUI's `task` view
+    /// modifier.
     ///
     /// For example, if your feature kicks off a long-living effect when the view appears by using
     /// SwiftUI's `task` view modifier, then you can write a test for such a feature by explicitly
