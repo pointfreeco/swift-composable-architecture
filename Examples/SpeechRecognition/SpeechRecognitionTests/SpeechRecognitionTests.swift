@@ -65,7 +65,7 @@ class SpeechRecognitionTests: XCTestCase {
     store.environment.speechClient.requestAuthorization = { Effect(value: .authorized) }
     store.environment.speechClient.startTask = { _ in self.recognitionTaskSubject.eraseToEffect() }
 
-    let result = SpeechRecognitionResult(
+    let firstResult = SpeechRecognitionResult(
       bestTranscription: Transcription(
         formattedString: "Hello",
         segments: []
@@ -73,9 +73,8 @@ class SpeechRecognitionTests: XCTestCase {
       isFinal: false,
       transcriptions: []
     )
-    var finalResult = result
-    finalResult.bestTranscription.formattedString = "Hello world"
-    finalResult.isFinal = true
+    var secondResult = firstResult
+    secondResult.bestTranscription.formattedString = "Hello world"
 
     store.send(.recordButtonTapped) {
       $0.isRecording = true
@@ -83,14 +82,18 @@ class SpeechRecognitionTests: XCTestCase {
 
     store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized))
 
-    self.recognitionTaskSubject.send(result)
-    store.receive(.speech(.success(result))) {
+    self.recognitionTaskSubject.send(firstResult)
+    store.receive(.speech(.success("Hello"))) {
       $0.transcribedText = "Hello"
     }
 
-    self.recognitionTaskSubject.send(finalResult)
-    store.receive(.speech(.success(finalResult))) {
+    self.recognitionTaskSubject.send(secondResult)
+    store.receive(.speech(.success("Hello world"))) {
       $0.transcribedText = "Hello world"
+    }
+
+    store.send(.recordButtonTapped) {
+      $0.isRecording = false
     }
   }
 

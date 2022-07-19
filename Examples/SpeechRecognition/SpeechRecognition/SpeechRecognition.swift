@@ -18,7 +18,7 @@ struct AppState: Equatable {
 enum AppAction: Equatable {
   case dismissAuthorizationStateAlert
   case recordButtonTapped
-  case speech(Result<SpeechRecognitionResult, SpeechClient.Error>)
+  case speech(Result<String, SpeechClient.Error>)
   case speechRecognizerAuthorizationStatusResponse(SFSpeechRecognizerAuthorizationStatus)
 }
 
@@ -49,14 +49,9 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
         .fireAndForget()
     }
 
-  case let .speech(.success(result)):
-    state.transcribedText = result.bestTranscription.formattedString
-    if result.isFinal {
-      return environment.speechClient.finishTask()
-        .fireAndForget()
-    } else {
-      return .none
-    }
+  case let .speech(.success(transcribedText)):
+    state.transcribedText = transcribedText
+    return .none
 
   case let .speech(.failure(error)):
     state.alert = AlertState(
@@ -92,6 +87,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
       request.shouldReportPartialResults = true
       request.requiresOnDeviceRecognition = false
       return environment.speechClient.startTask(request)
+        .map(\.bestTranscription.formattedString)
         .animation()
         .catchToEffect(AppAction.speech)
 
@@ -100,7 +96,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     }
   }
 }
-.debug(actionFormat: .labelsOnly)
+.debug()
 
 struct AuthorizationStateAlert: Equatable, Identifiable {
   var title: String

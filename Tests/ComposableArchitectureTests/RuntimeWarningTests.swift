@@ -153,11 +153,11 @@ final class RuntimeWarningTests: XCTestCase {
         switch action {
         case .tap:
           return .run { subscriber in
-            DispatchQueue(label: "background").async {
+            Thread.detachNewThread {
+              XCTAssertFalse(Thread.isMainThread, "Effect should send on non-main thread.")
               subscriber.send(.response)
             }
-            return AnyCancellable {
-            }
+            return AnyCancellable {}
           }
         case .response:
           return .none
@@ -166,7 +166,7 @@ final class RuntimeWarningTests: XCTestCase {
       environment: ()
     )
     ViewStore(store).send(.tap)
-    _ = XCTWaiter.wait(for: [.init()], timeout: 2)
+    _ = XCTWaiter.wait(for: [.init()], timeout: 4)
   }
 
   func testBindingUnhandledAction() {
