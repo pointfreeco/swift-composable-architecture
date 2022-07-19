@@ -23,17 +23,20 @@ extension SpeechClient {
 private actor Speech {
   var audioEngine: AVAudioEngine? = nil
   var recognitionTask: SFSpeechRecognitionTask? = nil
+  var recognitionContinuation: AsyncThrowingStream<SpeechRecognitionResult, Error>.Continuation?
 
   func finishTask() {
     self.audioEngine?.stop()
     self.audioEngine?.inputNode.removeTap(onBus: 0)
     self.recognitionTask?.finish()
+    self.recognitionContinuation?.finish()
   }
 
   func startTask(
     request: SFSpeechAudioBufferRecognitionRequest
   ) -> AsyncThrowingStream<SpeechRecognitionResult, Error> {
     AsyncThrowingStream { continuation in
+      self.recognitionContinuation = continuation
       let audioSession = AVAudioSession.sharedInstance()
       do {
         try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)

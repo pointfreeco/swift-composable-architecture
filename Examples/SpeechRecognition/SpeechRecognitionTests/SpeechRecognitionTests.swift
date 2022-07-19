@@ -57,6 +57,7 @@ class SpeechRecognitionTests: XCTestCase {
       environment: .unimplemented
     )
 
+    store.environment.speechClient.finishTask = { self.recognitionTask.continuation.finish() }
     store.environment.speechClient.startTask = { _ in self.recognitionTask.stream }
     store.environment.speechClient.requestAuthorization = { .authorized }
 
@@ -71,7 +72,7 @@ class SpeechRecognitionTests: XCTestCase {
     var secondResult = firstResult
     secondResult.bestTranscription.formattedString = "Hello world"
 
-    let task = await store.send(.recordButtonTapped) {
+    await store.send(.recordButtonTapped) {
       $0.isRecording = true
     }
 
@@ -90,7 +91,8 @@ class SpeechRecognitionTests: XCTestCase {
     await store.send(.recordButtonTapped) {
       $0.isRecording = false
     }
-    await task.finish(timeout: .seconds(1))
+
+    await store.finish()
   }
 
   func testAudioSessionFailure() async {
