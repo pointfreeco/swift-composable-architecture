@@ -188,7 +188,7 @@
     /// // Change dependency endpoint into a succeeding state
     /// await store.environment.client.fetch = { "Hello \($0)!" }
     /// await store.send(.buttonTapped)
-    /// await store.receive(.response(.success("Hello Blob!") {
+    /// await store.receive(.response(.success("Hello Blob!"))) {
     ///   …
     /// }
     /// ```
@@ -265,7 +265,9 @@
     }
 
     #if swift(>=5.7)
-      /// Asserts all in-flight effects have finished.
+      /// Suspends until all in-flight effects have finished, or until it times out.
+      ///
+      /// Can be used to assert that all effects have finished.
       ///
       /// - Parameter duration: The amount of time to wait before asserting.
       @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
@@ -279,7 +281,9 @@
       }
     #endif
 
-    /// Asserts all in-flight effects have finished.
+    /// Suspends until all in-flight effects have finished, or until it times out.
+    ///
+    /// Can be used to assert that all effects have finished.
     ///
     /// - Parameter nanoseconds: The amount of time to wait before asserting.
     @MainActor
@@ -744,7 +748,7 @@
     }
 
     #if swift(>=5.7)
-      /// Asserts an action was received from an effect and asserts when state changes.
+      /// Asserts an action was received from an effect and asserts how the state changes.
       ///
       /// - Parameters:
       ///   - expectedAction: An action expected from an effect.
@@ -772,7 +776,7 @@
       }
     #endif
 
-    /// Asserts an action was received from an effect and asserts when state changes.
+    /// Asserts an action was received from an effect and asserts how the state changes.
     ///
     /// - Parameters:
     ///   - expectedAction: An action expected from an effect.

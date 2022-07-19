@@ -1,4 +1,4 @@
-# Getting Started
+# Getting started
 
 Learn how to integrate the Composable Architecture into your project and write your first 
 application.

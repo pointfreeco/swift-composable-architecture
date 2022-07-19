@@ -2,15 +2,26 @@
 
 Learn how to write safe, concurrent effects using Swift structured concurrency.
 
-As of version 5.6, Swift can provide numerous warnings for situations in which you might be using types and functions that are not thread-safe in concurrent contexts. Many of these warnings can be ignored for the time being, but in Swift 6 most (if not all) of these warnings will become errors, and so you will need to know how to prove to the compiler that your types are safe to use concurrently.
+As of version 5.6, Swift can provide numerous warnings for situations in which you might be using 
+types and functions that are not thread-safe in concurrent contexts. Many of these warnings can be 
+ignored for the time being, but in Swift 6 most (if not all) of these warnings will become errors, 
+and so you will need to know how to prove to the compiler that your types are safe to use 
+concurrently.
 
-There are 3 primary ways to create an effect in the library (`Effect.task`, `Effect.run` and `Effect.fireAndForget`), and each of their constructors takes a `@Sendable` async closure, which restricts the types of closures you can use for your effects. In particular, the closure can only capture `Sendable` variables that are bound with `let`. Mutable variables and non-`Sendable` types are simply not allowed to be passed to `@Sendable` closures.
+There are 3 primary ways to create an effect in the library (`Effect.task`, `Effect.run` and 
+`Effect.fireAndForget`), and each of their constructors takes a `@Sendable` async closure, which 
+restricts the types of closures you can use for your effects. In particular, the closure can only 
+capture `Sendable` variables that are bound with `let`. Mutable variables and non-`Sendable` types 
+are simply not allowed to be passed to `@Sendable` closures.
 
-There are two primary ways you will run into this restriction when building a feature in the Composable Architecture: accessing state from within an effect and accessing a dependency from within an effect.
+There are two primary ways you will run into this restriction when building a feature in the 
+Composable Architecture: accessing state from within an effect and accessing a dependency from 
+within an effect.
 
 ### Accessing state in an effect
 
-Reducers are executed with a mutable, `inout` state variable, and such variables cannot be accessed from within `@Sendable` closures:
+Reducers are executed with a mutable, `inout` state variable, and such variables cannot be accessed 
+from within `@Sendable` closures:
 
 ```swift
 Reducer { state, action, environment in 
@@ -28,7 +39,8 @@ Reducer { state, action, environment in
 }
 ```
 
-To work around this you must explicitly capture the state as an immutable value for the scope of the closure:
+To work around this you must explicitly capture the state as an immutable value for the scope of the 
+closure:
 
 ```swift
 return .task { [state] in 
@@ -37,7 +49,8 @@ return .task { [state] in
 }
 ```
 
-You can also capture just the minimal parts of the state you need for the effect by binding a new variable name for the capture:
+You can also capture just the minimal parts of the state you need for the effect by binding a new 
+variable name for the capture:
 
 ```swift
 return .task { [count = state.count] in 
@@ -48,9 +61,13 @@ return .task { [count = state.count] in
 
 ### Accessing dependencies in an effect
 
-In the Composable Architecture one designs an environment of dependencies that your feature needs to do its job. These are all the clients and objects that interact with the messy, unpredictable outside world, but provide an interface to us that is easy to control so that we can still write tests.
+In the Composable Architecture one designs an environment of dependencies that your feature needs 
+to do its job. These are all the clients and objects that interact with the messy, unpredictable 
+outside world, but provide an interface to us that is easy to control so that we can still write 
+tests.
 
-Typically dependencies are accessed inside the effect, which means it must be `Sendable`, otherwise we will get the following warning (and error in Swift 6):
+Typically dependencies are accessed inside the effect, which means it must be `Sendable`, otherwise 
+we will get the following warning (and error in Swift 6):
 
 ```swift
 case .numberFactButtonTapped:
@@ -63,7 +80,9 @@ case .numberFactButtonTapped:
   }
 ```
 
-To fix this we need to make each dependency held in the environment `Sendable`. This usually just means making sure that the interface type only holds onto `Sendable` data, and in particular, any closure-based endpoints should be annotated as `@Sendable`:
+To fix this we need to make each dependency held in the environment `Sendable`. This usually just 
+means making sure that the interface type only holds onto `Sendable` data, and in particular, any 
+closure-based endpoints should be annotated as `@Sendable`:
 
 ```swift
 struct FactClient {
@@ -71,4 +90,5 @@ struct FactClient {
 }
 ```
 
-This will restrict the kinds of closures that can be used when construct `FactClient` values, thus making the entire `FactClient` sendable itself.
+This will restrict the kinds of closures that can be used when construct `FactClient` values, thus 
+making the entire `FactClient` sendable itself.
