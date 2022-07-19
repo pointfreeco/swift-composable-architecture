@@ -34,7 +34,6 @@ private actor Speech {
     request: SFSpeechAudioBufferRecognitionRequest
   ) -> AsyncThrowingStream<SpeechRecognitionResult, Error> {
     AsyncThrowingStream { continuation in
-
       let audioSession = AVAudioSession.sharedInstance()
       do {
         try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)

@@ -60,7 +60,7 @@ class SpeechRecognitionTests: XCTestCase {
     store.environment.speechClient.startTask = { _ in self.recognitionTask.stream }
     store.environment.speechClient.requestAuthorization = { .authorized }
 
-    let result = SpeechRecognitionResult(
+    let firstResult = SpeechRecognitionResult(
       bestTranscription: Transcription(
         formattedString: "Hello",
         segments: []
@@ -68,9 +68,8 @@ class SpeechRecognitionTests: XCTestCase {
       isFinal: false,
       transcriptions: []
     )
-    var finalResult = result
-    finalResult.bestTranscription.formattedString = "Hello world"
-    finalResult.isFinal = true
+    var secondResult = firstResult
+    secondResult.bestTranscription.formattedString = "Hello world"
 
     let task = await store.send(.recordButtonTapped) {
       $0.isRecording = true
@@ -78,16 +77,20 @@ class SpeechRecognitionTests: XCTestCase {
 
     await store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized))
 
-    recognitionTask.continuation.yield(result)
+    self.recognitionTask.continuation.yield(firstResult)
     await store.receive(.speech(.success("Hello"))) {
       $0.transcribedText = "Hello"
     }
 
-    recognitionTask.continuation.yield(finalResult)
+    self.recognitionTask.continuation.yield(secondResult)
     await store.receive(.speech(.success("Hello world"))) {
       $0.transcribedText = "Hello world"
     }
-    await task.cancel()
+
+    await store.send(.recordButtonTapped) {
+      $0.isRecording = false
+    }
+    await task.finish(timeout: .seconds(1))
   }
 
   func testAudioSessionFailure() async {
