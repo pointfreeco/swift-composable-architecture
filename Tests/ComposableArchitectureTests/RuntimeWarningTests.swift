@@ -154,7 +154,7 @@ final class RuntimeWarningTests: XCTestCase {
         case .tap:
           return .run { subscriber in
             Thread.detachNewThread {
-              XCTAssertFalse(Thread.isMainThread)
+              XCTAssertFalse(Thread.isMainThread, "Effect should send on non-main thread.")
               subscriber.send(.response)
             }
             return AnyCancellable {}
