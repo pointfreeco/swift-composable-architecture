@@ -58,7 +58,7 @@ class SpeechRecognitionTests: XCTestCase {
     let recognitionTask = AsyncThrowingStream<SpeechRecognitionResult, Error>.streamWithContinuation()
 
     var speechClient = SpeechClient.unimplemented
-    speechClient.recognitionTask = { _ in recognitionTask.stream }
+    speechClient.startTask = { _ in recognitionTask.stream }
     speechClient.requestAuthorization = { .authorized }
 
     let store = TestStore(
@@ -103,7 +103,7 @@ class SpeechRecognitionTests: XCTestCase {
     let recognitionTask = AsyncThrowingStream<SpeechRecognitionResult, Error>.streamWithContinuation()
 
     var speechClient = SpeechClient.unimplemented
-    speechClient.recognitionTask = { _ in recognitionTask.stream }
+    speechClient.startTask = { _ in recognitionTask.stream }
     speechClient.requestAuthorization = { .authorized }
 
     let store = TestStore(
@@ -130,7 +130,7 @@ class SpeechRecognitionTests: XCTestCase {
     let recognitionTask = AsyncThrowingStream<SpeechRecognitionResult, Error>.streamWithContinuation()
 
     var speechClient = SpeechClient.unimplemented
-    speechClient.recognitionTask = { _ in recognitionTask.stream }
+    speechClient.startTask = { _ in recognitionTask.stream }
     speechClient.requestAuthorization = { .authorized }
 
     let store = TestStore(
