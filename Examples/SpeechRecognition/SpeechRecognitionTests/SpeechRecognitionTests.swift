@@ -84,13 +84,17 @@ class SpeechRecognitionTests: XCTestCase {
     store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized))
 
     self.recognitionTaskSubject.send(result)
-    store.receive(.speech(.success(result))) {
+    store.receive(.speech(.success("Hello"))) {
       $0.transcribedText = "Hello"
     }
 
     self.recognitionTaskSubject.send(finalResult)
-    store.receive(.speech(.success(finalResult))) {
+    store.receive(.speech(.success("Hello world"))) {
       $0.transcribedText = "Hello world"
+    }
+
+    store.send(.recordButtonTapped) {
+      $0.isRecording = false
     }
   }
 
