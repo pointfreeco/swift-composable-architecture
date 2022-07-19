@@ -131,8 +131,8 @@
 			children = (
 				CACC04212447C66C000C5725 /* Client.swift */,
 				CACC04232447D96D000C5725 /* Live.swift */,
-				CACC04282447DF0B000C5725 /* Unimplemented.swift */,
 				CACC04262447DBAF000C5725 /* Models.swift */,
+				CACC04282447DF0B000C5725 /* Unimplemented.swift */,
 			);
 			path = SpeechClient;
 			sourceTree = "<group>";

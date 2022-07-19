@@ -1,7 +1,7 @@
 import Combine
 import ComposableArchitecture
 import Speech
-import SwiftUI
+@preconcurrency import SwiftUI
 
 private let readMe = """
   This application demonstrates how to work with a complex dependency in the Composable \
@@ -18,7 +18,7 @@ struct AppState: Equatable {
 enum AppAction: Equatable {
   case dismissAuthorizationStateAlert
   case recordButtonTapped
-  case speech(TaskResult<SpeechRecognitionResult>)
+  case speech(TaskResult<String>)
   case speechRecognizerAuthorizationStatusResponse(SFSpeechRecognizerAuthorizationStatus)
 }
 
@@ -51,7 +51,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
       request.shouldReportPartialResults = true
       request.requiresOnDeviceRecognition = false
       for try await action in await environment.speechClient.startTask(request) {
-        await send(.speech(.success(action)), animation: .linear)
+        await send(.speech(.success(action.bestTranscription.formattedString)), animation: .linear)
       }
     } catch: { error, send in
       await send(.speech(.failure(error)))
@@ -70,8 +70,8 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     )
     return .none
 
-  case let .speech(.success(result)):
-    state.transcribedText = result.bestTranscription.formattedString
+  case let .speech(.success(transcribedText)):
+    state.transcribedText = transcribedText
     return .none
 
   case let .speechRecognizerAuthorizationStatusResponse(status):
@@ -103,6 +103,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     }
   }
 }
+.debug()
 
 struct SpeechRecognitionView: View {
   let store: Store<AppState, AppAction>
@@ -158,45 +159,51 @@ struct SpeechRecognitionView_Previews: PreviewProvider {
 }
 
 extension SpeechClient {
-  static let lorem = Self(
-    finishTask: {
-    },
-    requestAuthorization: {
-      .authorized
-    },
-    startTask: { _ in
-      .init { c in
-        Task {
-          var finalText = """
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor \
-          incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud \
-          exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure \
-          dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. \
-          Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt \
-          mollit anim id est laborum.
-          """
-          var text = ""
-          while true {
-            try await Task.sleep(nanoseconds: NSEC_PER_SEC / 3)
-            let word = finalText.prefix { $0 != " " }
-            finalText.removeFirst(word.count)
-            if finalText.first == " " {
-              finalText.removeFirst()
+  static var lorem: Self {
+    let isRecording = ActorIsolated(false)
+
+    return Self(
+      finishTask: {
+        await isRecording.setValue(false)
+      },
+      requestAuthorization: {
+        .authorized
+      },
+      startTask: { _ in
+          .init { c in
+            Task {
+              await isRecording.setValue(true)
+              var finalText = """
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor \
+                incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud \
+                exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute \
+                irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla \
+                pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui \
+                officia deserunt mollit anim id est laborum.
+                """
+              var text = ""
+              while true {
+                try await Task.sleep(nanoseconds: NSEC_PER_SEC / 3)
+                let word = finalText.prefix { $0 != " " }
+                finalText.removeFirst(word.count)
+                if finalText.first == " " {
+                  finalText.removeFirst()
+                }
+                text += word + " "
+                c.yield(
+                  .init(
+                    bestTranscription: .init(
+                      formattedString: text,
+                      segments: []
+                    ),
+                    isFinal: false,
+                    transcriptions: []
+                  )
+                )
+              }
             }
-            text += word + " "
-            c.yield(
-              .init(
-                bestTranscription: .init(
-                  formattedString: text,
-                  segments: []
-                ),
-                isFinal: false,
-                transcriptions: []
-              )
-            )
           }
-        }
       }
-    }
-  )
+    )
+  }
 }

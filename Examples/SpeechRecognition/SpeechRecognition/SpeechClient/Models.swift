@@ -1,7 +1,7 @@
 import Speech
 
 // The core data types in the Speech framework are reference types and are not constructible by us,
-// and so they aren't super testable out the box. We define struct versions of those types to make
+// and so they aren't testable out the box. We define struct versions of those types to make
 // them easier to use and test.
 
 struct SpeechRecognitionMetadata: Equatable {

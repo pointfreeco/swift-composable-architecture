@@ -2,7 +2,25 @@ import Combine
 import ComposableArchitecture
 @preconcurrency import Speech
 
-actor Speech {
+extension SpeechClient {
+  static var live: Self {
+    let speech = Speech()
+
+    return Self(
+      finishTask: { await speech.finishTask() },
+      requestAuthorization: {
+        await withCheckedContinuation { continuation in
+          SFSpeechRecognizer.requestAuthorization { status in
+            continuation.resume(returning: status)
+          }
+        }
+      },
+      startTask: { request in await speech.startTask(request: request) }
+    )
+  }
+}
+
+private actor Speech {
   var audioEngine: AVAudioEngine? = nil
   var recognitionTask: SFSpeechRecognitionTask? = nil
 
@@ -67,23 +85,5 @@ actor Speech {
         return
       }
     }
-  }
-}
-
-extension SpeechClient {
-  static var live: Self {
-    let speech = Speech()
-
-    return Self(
-      finishTask: { await speech.finishTask() },
-      requestAuthorization: {
-        await withCheckedContinuation { continuation in
-          SFSpeechRecognizer.requestAuthorization { status in
-            continuation.resume(returning: status)
-          }
-        }
-      },
-      startTask: { request in await speech.startTask(request: request) }
-    )
   }
 }
