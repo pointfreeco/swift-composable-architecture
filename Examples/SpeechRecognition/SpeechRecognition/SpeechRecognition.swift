@@ -27,8 +27,6 @@ struct AppEnvironment {
 }
 
 let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
-  enum CancelID {}
-
   switch action {
   case .dismissAuthorizationStateAlert:
     state.alert = nil
@@ -38,7 +36,11 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     state.isRecording.toggle()
 
     guard state.isRecording
-    else { return .cancel(id: CancelID.self) }
+    else {
+      return .fireAndForget {
+        await environment.speechClient.finishTask()
+      }
+    }
 
     return .run { send in
       let status = await environment.speechClient.requestAuthorization()
@@ -56,7 +58,6 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     } catch: { error, send in
       await send(.speech(.failure(error)))
     }
-    .cancellable(id: CancelID.self)
 
   case
       .speech(.failure(SpeechClient.Failure.couldntConfigureAudioSession)),
