@@ -20,14 +20,15 @@ naively, using either view store's initializer ``ViewStore/init(_:)-1pfeq`` or t
 ```swift
 WithViewStore(self.store) { viewStore in 
   // This is executed for every action sent into the system 
-  // causes store.state to change. 
+  // that causes store.state to change. 
 }
 ```
 
 Most of the time this observes far too much state. A typical feature in the Composable Architecture
 holds onto not only the state the view needs to present UI, but also state that the feature 
 only needs internally, as well as state of child features embedded in the feature. Changes to the
-internal and child state do not usually need the view's body to be re-computed.
+internal and child state should not cause the view's body to re-compute since that state is not
+needed in the view.
 
 For example, if the root of our application was a tab view, then we could model that in state as
 a struct that holds each tab's state as a property:
@@ -107,7 +108,7 @@ by applying it to views closer to the root.
 
 Reducers are run on the main thread and so they are not appropriate for performing intense CPU
 work. If you need to perform lots CPU-bound work, then it is more appropriate to use an ``Effect``,
-which will operator in the cooperative thread pool, and then send it's output back into the system
+which will operate in the cooperative thread pool, and then send it's output back into the system
 via an action. You should also make sure to perform your CPU intensive work in a cooperative
 manner by periodically suspending with `Task.yield()` so that you do not block a thread in the 
 cooperative pool for too long.
@@ -145,7 +146,8 @@ case let .response(result):
   state.result = result
 ```
 
-This will keep CPU intense work from being performed in the reduce, and hence on the main thread.
+This will keep CPU intense work from being performed in the reducer, and hence not on the main 
+thread.
 
 ### High-frequency actions
 
