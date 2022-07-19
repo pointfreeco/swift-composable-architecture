@@ -293,15 +293,7 @@ public struct UncheckedSendable<Value>: @unchecked Sendable {
 
   public init(_ value: Value) where Value: Sendable {
     #if DEBUG
-      runtimeWarning(
-        """
-        '%1$@' already conforms to the 'Sendable' protocol. There is no need to wrap values of \
-        '%1$@' with 'UncheckedSendable'.
-        """,
-        [
-          "\(Value.self)"
-        ]
-      )
+      runtimeWarning(warning, ["\(Value.self)"])
     #endif
     self.value = value
   }
@@ -313,15 +305,7 @@ public struct UncheckedSendable<Value>: @unchecked Sendable {
 
   public init(wrappedValue: Value) where Value: Sendable {
     #if DEBUG
-      runtimeWarning(
-        """
-        '%1$@' already conforms to the 'Sendable' protocol. There is no need to wrap values of \
-        '%1$@' with 'UncheckedSendable'.
-        """,
-        [
-          "\(Value.self)"
-        ]
-      )
+      runtimeWarning(warning, ["\(Value.self)"])
     #endif
     self.value = wrappedValue
   }
@@ -340,3 +324,10 @@ public struct UncheckedSendable<Value>: @unchecked Sendable {
     self.value[keyPath: keyPath]
   }
 }
+
+#if DEBUG
+  private let warning: StaticString = """
+    Redundant use of 'UncheckedSendable' with '%1$@'. '%1$@' already conforms to the \
+    'Sendable' protocol. There is no need to wrap values of '%1$@' with 'UncheckedSendable'.
+    """
+#endif

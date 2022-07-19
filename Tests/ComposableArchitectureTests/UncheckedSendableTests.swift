@@ -22,8 +22,8 @@ class UncheckedSendableTests: XCTestCase {
       _ = UncheckedSendable(Foo())
     } issueMatcher: {
       $0.compactDescription == """
-        'Foo' already conforms to the 'Sendable' protocol. There is no need to wrap values of \
-        'Foo' with 'UncheckedSendable'.
+        Redundant use of 'UncheckedSendable' with 'Foo'. 'Foo' already conforms to the \
+        'Sendable' protocol. There is no need to wrap values of 'Foo' with 'UncheckedSendable'.
         """
     }
   }
@@ -36,8 +36,8 @@ class UncheckedSendableTests: XCTestCase {
       _ = foo
     } issueMatcher: {
       $0.compactDescription == """
-        'Foo' already conforms to the 'Sendable' protocol. There is no need to wrap values of \
-        'Foo' with 'UncheckedSendable'.
+        Redundant use of 'UncheckedSendable' with 'Foo'. 'Foo' already conforms to the \
+        'Sendable' protocol. There is no need to wrap values of 'Foo' with 'UncheckedSendable'.
         """
     }
   }
