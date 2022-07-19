@@ -286,12 +286,44 @@ public final actor ActorIsolated<Value: Sendable> {
 public struct UncheckedSendable<Value>: @unchecked Sendable {
   public var value: Value
 
+  @_disfavoredOverload
   public init(_ value: Value) {
     self.value = value
   }
 
+  public init(_ value: Value) where Value: Sendable {
+    #if DEBUG
+      runtimeWarning(
+        """
+        '%1$@' already conforms to the 'Sendable' protocol. There is no need to wrap values of \
+        '%1$@' with 'UncheckedSendable'.
+        """,
+        [
+          "\(Value.self)"
+        ]
+      )
+    #endif
+    self.value = value
+  }
+
+  @_disfavoredOverload
   public init(wrappedValue: Value) {
-    self.init(wrappedValue)
+    self.value = wrappedValue
+  }
+
+  public init(wrappedValue: Value) where Value: Sendable {
+    #if DEBUG
+      runtimeWarning(
+        """
+        '%1$@' already conforms to the 'Sendable' protocol. There is no need to wrap values of \
+        '%1$@' with 'UncheckedSendable'.
+        """,
+        [
+          "\(Value.self)"
+        ]
+      )
+    #endif
+    self.value = wrappedValue
   }
 
   public var wrappedValue: Value {
