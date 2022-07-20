@@ -87,6 +87,33 @@ extension AsyncStream {
   /// let (stream, continuation) = AsyncStream<Int>.streamWithContinuation()
   /// ```
   ///
+  /// This tool is usually used for tests where we need to supply an async sequence to a dependency
+  /// endpoint and get access to its continuation so that we can emulating the dependency
+  /// emitting data. For example, suppose you have a dependency exposes an async sequence for
+  /// listening to notifications. To test this you can use `streamWithContinuation`:
+  ///
+  /// ```swift
+  /// let notifications = AsyncStream<Void>.streamWithContinuation()
+  ///
+  /// let store = TestStore(
+  ///   initialState: LongLivingEffectsState(),
+  ///   reducer: longLivingEffectsReducer,
+  ///   environment: LongLivingEffectsEnvironment(
+  ///     notifications: { notifications.stream }
+  ///   )
+  /// )
+  ///
+  /// await store.send(.task)
+  /// notifications.continuation.yield("Hello")
+  /// await store.receive(.notification("Hello")) {
+  ///   $0.message = "Hello"
+  /// }
+  /// ```
+  ///
+  /// > Warning: ⚠️ `AsyncStream` does not support multiple subscribers, therefore you can only use
+  /// > this helper to test features that do not subscribe multiple times to the dependency
+  /// > endpoint.
+  ///
   /// - Parameters:
   ///   - elementType: The type of element the `AsyncStream` produces.
   ///   - limit: A Continuation.BufferingPolicy value to set the stream’s buffering behavior. By
@@ -156,6 +183,33 @@ extension AsyncThrowingStream where Failure == Error {
   ///
   /// let (stream, continuation) = AsyncThrowingStream<Int, Error>.streamWithContinuation()
   /// ```
+  ///
+  /// This tool is usually used for tests where we need to supply an async sequence to a dependency
+  /// endpoint and get access to its continuation so that we can emulating the dependency
+  /// emitting data. For example, suppose you have a dependency exposes an async sequence for
+  /// listening to notifications. To test this you can use `streamWithContinuation`:
+  ///
+  /// ```swift
+  /// let notifications = AsyncThrowingStream<Void>.streamWithContinuation()
+  ///
+  /// let store = TestStore(
+  ///   initialState: LongLivingEffectsState(),
+  ///   reducer: longLivingEffectsReducer,
+  ///   environment: LongLivingEffectsEnvironment(
+  ///     notifications: { notifications.stream }
+  ///   )
+  /// )
+  ///
+  /// await store.send(.task)
+  /// notifications.continuation.yield("Hello")
+  /// await store.receive(.notification("Hello")) {
+  ///   $0.message = "Hello"
+  /// }
+  /// ```
+  ///
+  /// > Warning: ⚠️ `AsyncStream` does not support multiple subscribers, therefore you can only use
+  /// > this helper to test features that do not subscribe multiple times to the dependency
+  /// > endpoint.
   ///
   /// - Parameters:
   ///   - elementType: The type of element the `AsyncThrowingStream` produces.
