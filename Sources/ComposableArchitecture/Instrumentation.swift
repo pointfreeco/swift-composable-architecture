@@ -25,13 +25,15 @@ import Foundation
 ///       The Store updates its state
 ///       For each child Store scoped off the Store using a scoped local state
 ///         The Store computes the scoped local state
-///         .pre, .storeToLocal
-///         .post, .storeToLocal
+///         .pre, .scopedscopedStoreToLocal
+///         .post, .scopedscopedStoreToLocal
 ///         The Store determines if the scoped local state is has changed
-///         .pre, .storeDeduplicate
-///         .post, .storeDeduplicate
+///         .pre, .scopedStoreDeduplicate
+///         .post, .scopedtoreDeduplicate
 ///         If the scoped local state has changed then the scoped child Store's state is updated, along with any further
 ///         downstream scoped Stores
+///         .pre, .scopedStoreChangeState
+///         .post, .scopedStoreChangeState
 ///       For each ViewStore subscribed to a Store, if the state has changed will have their states updated at this too,
 ///       thus there may be multiple instances of the below
 ///         .pre, .viewStoreDeduplicate for impacted ViewStores
@@ -48,10 +50,11 @@ public class Instrumentation {
   /// Type indicating the action being taken by the store
   public enum CallbackKind: CaseIterable, Hashable {
     case storeSend
-    case storeToLocal
-    case storeDeduplicate
     case storeChangeState
     case storeProcessEvent
+    case scopedStoreToLocal
+    case scopedStoreDeduplicate
+    case scopedStoreChangeState
     case viewStoreSend
     case viewStoreChangeState
     case viewStoreDeduplicate
