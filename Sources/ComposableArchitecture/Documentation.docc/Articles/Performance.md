@@ -7,7 +7,7 @@ becoming slow to execute, SwiftUI view bodies executing more often than expected
 <!--memory usage growing.-->
 
 * [View stores](#View-stores)
-* [CPU intensive calculations](#CPU-intensive-calculations)
+* [CPU-intensive calculations](#CPU-intensive-calculations)
 * [High-frequency actions](#High-frequency-actions)
 <!--* [Memory usage](#Memory-usage)-->
 
@@ -20,18 +20,18 @@ naively, using either view store's initializer ``ViewStore/init(_:)-1pfeq`` or t
 ```swift
 WithViewStore(self.store) { viewStore in 
   // This is executed for every action sent into the system 
-  // that causes store.state to change. 
+  // that causes self.store.state to change. 
 }
 ```
 
 Most of the time this observes far too much state. A typical feature in the Composable Architecture
-holds onto not only the state the view needs to present UI, but also state that the feature 
-only needs internally, as well as state of child features embedded in the feature. Changes to the
+holds onto not only the state the view needs to present UI, but also state that the feature only
+needs internally, as well as state of child features embedded in the feature. Changes to the
 internal and child state should not cause the view's body to re-compute since that state is not
 needed in the view.
 
-For example, if the root of our application was a tab view, then we could model that in state as
-a struct that holds each tab's state as a property:
+For example, if the root of our application was a tab view, then we could model that in state as a
+struct that holds each tab's state as a property:
 
 ```swift
 struct AppState {
@@ -53,16 +53,25 @@ struct AppView: View {
     // not need access to the state.
 
     TabView {
-      ActivityView(store: self.store.scope(state: \.activity, action: AppAction.activity)
-      SearchView(store: self.store.scope(state: \.search, action: AppAction.search)
-      ProfileView(store: self.store.scope(state: \.profile, action: AppAction.profile)
+      ActivityView(
+        store: self.store
+          .scope(state: \.activity, action: AppAction.activity)
+      )
+      SearchView(
+        store: self.store
+          .scope(state: \.search, action: AppAction.search)
+      )
+      ProfileView(
+        store: self.store
+          .scope(state: \.profile, action: AppAction.profile)
+      )
     }
   }
 }
 ```
 
 This means `AppView` does not actually need to observe any state changes. This view will only be
-created a single time, whereas if we observed the store then it would re-compute everytime a single
+created a single time, whereas if we observed the store then it would re-compute every time a single
 thing changed in either the activity, search or profile child features.
 
 If sometime in the future we do actually need some state from the store, we can create a localized
@@ -82,10 +91,15 @@ struct AppView: View {
   }
 
   var body: some View {
-    WithViewStore(self.store.scope(state: ViewState.init)) { viewStore in 
+    WithViewStore(
+      self.store.scope(state: ViewState.init)
+    ) { viewStore in 
       TabView {
-        ActivityView(store: self.store.scope(state: \.activity, action: AppAction.activity)
-          .badge("\(viewStore.unreadActivityCount)")
+        ActivityView(
+          store: self.store
+            .scope(state: \.activity, action: AppAction.activity
+        )
+        .badge("\(viewStore.unreadActivityCount)")
 
         …
       }
@@ -99,19 +113,19 @@ no changes to the search or profile features will cause the view to re-compute, 
 reduces how often the view must re-compute.
 
 This technique for reducing view re-computations is most effective towards the root of your app
-heirarchy and least effective towards the leaf nodes of your app. Root features tend to hold lots
-of state that it's view does not need, such as child features, and leaf features tend to only
-hold what's necessary. If you are going to employ this technique you will get the most benefit 
-by applying it to views closer to the root.
+hierarchy and least effective towards the leaf nodes of your app. Root features tend to hold lots
+of state that its view does not need, such as child features, and leaf features tend to only hold
+what's necessary. If you are going to employ this technique you will get the most benefit by
+applying it to views closer to the root.
 
 ### CPU intensive calculations
 
 Reducers are run on the main thread and so they are not appropriate for performing intense CPU
-work. If you need to perform lots CPU-bound work, then it is more appropriate to use an ``Effect``,
-which will operate in the cooperative thread pool, and then send it's output back into the system
-via an action. You should also make sure to perform your CPU intensive work in a cooperative
-manner by periodically suspending with `Task.yield()` so that you do not block a thread in the 
-cooperative pool for too long.
+work. If you need to perform lots of CPU-bound work, then it is more appropriate to use an
+``Effect``, which will operate in the cooperative thread pool, and then send it's output back into
+the system via an action. You should also make sure to perform your CPU intensive work in a
+cooperative manner by periodically suspending with `Task.yield()` so that you do not block a thread
+in the cooperative pool for too long.
 
 So, instead of performing intense work like this in your reducer:
 
@@ -163,9 +177,9 @@ should be avoided unless your application truly needs that volume of actions in 
 its logic.
 
 However, there are often times that actions are sent at a high frequency but the reducer doesn't
-actually need that volumen of information. For example, say you were constructing an effect that 
-wanted to report its progress back to the system for each step of its work. You could choose
-to send the progress for literally every step:
+actually need that volume of information. For example, say you were constructing an effect that 
+wanted to report its progress back to the system for each step of its work. You could choose to send
+the progress for literally every step:
 
 ```swift
 case .startButtonTapped:
@@ -206,6 +220,6 @@ case .startButtonTapped:
 ```
 
 This greatly reduces the bandwidth of actions being sent into the system so that you are not 
-incurring unneccessary costs for sending actions.
+incurring unnecessary costs for sending actions.
 
 <!--### Memory usage-->
