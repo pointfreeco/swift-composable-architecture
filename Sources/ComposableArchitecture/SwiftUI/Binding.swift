@@ -308,6 +308,7 @@ extension ViewStore where Action: BindableAction, Action.State == State {
 public struct BindingAction<Root>: Equatable {
   public let keyPath: PartialKeyPath<Root>
 
+  @usableFromInline
   let set: (inout Root) -> Void
   let value: Any
   let valueIsEqualTo: (Any) -> Bool

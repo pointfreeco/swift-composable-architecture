@@ -65,10 +65,9 @@ extension Store {
     reducer: Reducer<State, Action, Environment>,
     environment: Environment
   ) -> Self {
-    Self(
+    self.init(
       initialState: initialState,
-      reducer: reducer,
-      environment: environment,
+      reducer: Reduce(reducer, environment: environment),
       mainThreadChecksEnabled: false
     )
   }
@@ -202,7 +201,7 @@ extension Reducer {
 // NB: Deprecated after 0.29.0:
 
 #if DEBUG
-  extension TestStore where LocalState: Equatable, Action: Equatable {
+  extension TestStore where LocalState: Equatable, Reducer.Action: Equatable {
     @available(
       *, deprecated, message: "Use 'TestStore.send' and 'TestStore.receive' directly, instead"
     )
@@ -232,13 +231,14 @@ extension Reducer {
           self.receive(expectedAction, update, file: step.file, line: step.line)
 
         case let .environment(work):
-          if !self.receivedActions.isEmpty {
+          if !self.reducer.receivedActions.isEmpty {
             var actions = ""
-            customDump(self.receivedActions.map(\.action), to: &actions)
+            customDump(self.reducer.receivedActions.map(\.action), to: &actions)
             XCTFail(
               """
-              Must handle \(self.receivedActions.count) received \
-              action\(self.receivedActions.count == 1 ? "" : "s") before performing this work: …
+              Must handle \(self.reducer.receivedActions.count) received \
+              action\(self.reducer.receivedActions.count == 1 ? "" : "s") before performing this \
+              work: …
 
               Unhandled actions: \(actions)
               """,
@@ -252,13 +252,14 @@ extension Reducer {
           }
 
         case let .do(work):
-          if !receivedActions.isEmpty {
+          if !self.reducer.receivedActions.isEmpty {
             var actions = ""
-            customDump(self.receivedActions.map(\.action), to: &actions)
+            customDump(self.reducer.receivedActions.map(\.action), to: &actions)
             XCTFail(
               """
-              Must handle \(self.receivedActions.count) received \
-              action\(self.receivedActions.count == 1 ? "" : "s") before performing this work: …
+              Must handle \(self.reducer.receivedActions.count) received \
+              action\(self.reducer.receivedActions.count == 1 ? "" : "s") before performing this \
+              work: …
 
               Unhandled actions: \(actions)
               """,
@@ -308,7 +309,7 @@ extension Reducer {
 
       @available(*, deprecated, message: "Call 'TestStore.receive' directly, instead")
       public static func receive(
-        _ action: Action,
+        _ action: Reducer.Action,
         file: StaticString = #file,
         line: UInt = #line,
         _ update: ((inout LocalState) throws -> Void)? = nil
@@ -354,7 +355,7 @@ extension Reducer {
 
       fileprivate indirect enum StepType {
         case send(LocalAction, ((inout LocalState) throws -> Void)?)
-        case receive(Action, ((inout LocalState) throws -> Void)?)
+        case receive(Reducer.Action, ((inout LocalState) throws -> Void)?)
         case environment((inout Environment) throws -> Void)
         case `do`(() throws -> Void)
         case sequence([Step])

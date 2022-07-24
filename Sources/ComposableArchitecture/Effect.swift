@@ -87,46 +87,49 @@ extension Effect where Failure == Never {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {
-    Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
-      let subject = PassthroughSubject<Output, Failure>()
-      let task = Task(priority: priority) { @MainActor in
-        defer { subject.send(completion: .finished) }
-        do {
-          try Task.checkCancellation()
-          let output = try await operation()
-          try Task.checkCancellation()
-          subject.send(output)
-        } catch is CancellationError {
-          return
-        } catch {
-          guard let handler = handler else {
-            #if DEBUG
-              var errorDump = ""
-              customDump(error, to: &errorDump, indent: 4)
-              runtimeWarning(
-                """
-                An 'Effect.task' returned from "%@:%d" threw an unhandled error:
-
-                %@
-
-                All non-cancellation errors must be explicitly handled via the 'catch' parameter \
-                on 'Effect.task', or via a 'do' block.
-                """,
-                [
-                  "\(fileID)",
-                  line,
-                  errorDump
-                ],
-                file: file,
-                line: line
-              )
-            #endif
+    let dependencies = DependencyValues.current
+    return Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
+      DependencyValues.$current.withValue(dependencies) {
+        let subject = PassthroughSubject<Output, Failure>()
+        let task = Task(priority: priority) { @MainActor in
+          defer { subject.send(completion: .finished) }
+          do {
+            try Task.checkCancellation()
+            let output = try await operation()
+            try Task.checkCancellation()
+            subject.send(output)
+          } catch is CancellationError {
             return
+          } catch {
+            guard let handler = handler else {
+              #if DEBUG
+                var errorDump = ""
+                customDump(error, to: &errorDump, indent: 4)
+                runtimeWarning(
+                  """
+                  An 'Effect.task' returned from "%@:%d" threw an unhandled error:
+
+                  %@
+
+                  All non-cancellation errors must be explicitly handled via the 'catch' parameter \
+                  on 'Effect.task', or via a 'do' block.
+                  """,
+                  [
+                    "\(fileID)",
+                    line,
+                    errorDump,
+                  ],
+                  file: file,
+                  line: line
+                )
+              #endif
+              return
+            }
+            await subject.send(handler(error))
           }
-          await subject.send(handler(error))
         }
+        return subject.handleEvents(receiveCancel: task.cancel)
       }
-      return subject.handleEvents(receiveCancel: task.cancel)
     }
     .eraseToEffect()
   }
@@ -177,44 +180,47 @@ extension Effect where Failure == Never {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {
-    .run { subscriber in
-      let task = Task(priority: priority) { @MainActor in
-        defer { subscriber.send(completion: .finished) }
-        let send = Send(send: { subscriber.send($0) })
-        do {
-          try await operation(send)
-        } catch is CancellationError {
-          return
-        } catch {
-          guard let handler = handler else {
-            #if DEBUG
-              var errorDump = ""
-              customDump(error, to: &errorDump, indent: 4)
-              runtimeWarning(
-                """
-                An 'Effect.run' returned from "%@:%d" threw an unhandled error:
-
-                %@
-
-                All non-cancellation errors must be explicitly handled via the 'catch' parameter \
-                on 'Effect.run', or via a 'do' block.
-                """,
-                [
-                  "\(fileID)",
-                  line,
-                  errorDump
-                ],
-                file: file,
-                line: line
-              )
-            #endif
+    let dependencies = DependencyValues.current
+    return .run { subscriber in
+      DependencyValues.$current.withValue(dependencies) {
+        let task = Task(priority: priority) { @MainActor in
+          defer { subscriber.send(completion: .finished) }
+          let send = Send(send: { subscriber.send($0) })
+          do {
+            try await operation(send)
+          } catch is CancellationError {
             return
+          } catch {
+            guard let handler = handler else {
+              #if DEBUG
+                var errorDump = ""
+                customDump(error, to: &errorDump, indent: 4)
+                runtimeWarning(
+                  """
+                  An 'Effect.run' returned from "%@:%d" threw an unhandled error:
+
+                  %@
+
+                  All non-cancellation errors must be explicitly handled via the 'catch' parameter \
+                  on 'Effect.run', or via a 'do' block.
+                  """,
+                  [
+                    "\(fileID)",
+                    line,
+                    errorDump,
+                  ],
+                  file: file,
+                  line: line
+                )
+              #endif
+              return
+            }
+            await handler(error, send)
           }
-          await handler(error, send)
         }
-      }
-      return AnyCancellable {
-        task.cancel()
+        return AnyCancellable {
+          task.cancel()
+        }
       }
     }
   }
@@ -245,8 +251,9 @@ extension Effect where Failure == Never {
     priority: TaskPriority? = nil,
     _ work: @escaping @Sendable () async throws -> Void
   ) -> Self {
-    Effect<Void, Never>.task(priority: priority) { try? await work() }
-      .fireAndForget()
+    .run(priority: priority) { _ in
+      try? await work()
+    }
   }
 }
 
@@ -356,12 +363,12 @@ extension Effect {
   /// - Returns: A new effect
   public static func concatenate<C: Collection>(_ effects: C) -> Self where C.Element == Effect {
     effects.isEmpty
-    ? .none
-    : effects
-      .dropFirst()
-      .reduce(into: effects[effects.startIndex]) { effects, effect in
-        effects = effects.append(effect).eraseToEffect()
-      }
+      ? .none
+      : effects
+        .dropFirst()
+        .reduce(into: effects[effects.startIndex]) { effects, effect in
+          effects = effects.append(effect).eraseToEffect()
+        }
   }
 
   /// Transforms all elements from the upstream effect with a provided closure.

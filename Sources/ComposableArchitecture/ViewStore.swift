@@ -440,6 +440,21 @@ public final class ViewStore<State, Action>: ObservableObject {
   }
 }
 
+/// A convenience type alias for referring to a view store of a given reducer's domain.
+///
+/// Instead of specifying two generics:
+///
+/// ```swift
+/// let viewStore: ViewStore<Feature.State, Feature.Action>
+/// ```
+///
+/// You can specify a single generic:
+///
+/// ```swift
+/// let viewStore: ViewStoreOf<Feature>
+/// ```
+public typealias ViewStoreOf<R: ReducerProtocol> = ViewStore<R.State, R.Action>
+
 extension ViewStore where State: Equatable {
   public convenience init(_ store: Store<State, Action>) {
     self.init(store, removeDuplicates: ==)

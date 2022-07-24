@@ -133,24 +133,20 @@ public final class Store<State, Action> {
     private let mainThreadChecksEnabled: Bool
   #endif
 
-  /// Initializes a store from an initial state, a reducer, and an environment.
+  /// Initializes a store from an initial state and a reducer.
   ///
   /// - Parameters:
   ///   - initialState: The state to start the application in.
   ///   - reducer: The reducer that powers the business logic of the application.
-  ///   - environment: The environment of dependencies for the application.
-  public convenience init<Environment>(
-    initialState: State,
-    reducer: Reducer<State, Action, Environment>,
-    environment: Environment
-  ) {
+  public convenience init<R: ReducerProtocol>(
+    initialState: R.State,
+    reducer: R
+  ) where R.State == State, R.Action == Action {
     self.init(
       initialState: initialState,
       reducer: reducer,
-      environment: environment,
       mainThreadChecksEnabled: true
     )
-    self.threadCheck(status: .`init`)
   }
 
   /// Scopes the store to one that exposes local state and actions.
@@ -515,17 +511,34 @@ public final class Store<State, Action> {
     #endif
   }
 
-  init<Environment>(
-    initialState: State,
-    reducer: Reducer<State, Action, Environment>,
-    environment: Environment,
+  init<R: ReducerProtocol>(
+    initialState: R.State,
+    reducer: R,
     mainThreadChecksEnabled: Bool
-  ) {
+  ) where R.State == State, R.Action == Action {
     self.state = CurrentValueSubject(initialState)
-    self.reducer = { state, action in reducer.run(&state, action, environment) }
-
+    self.reducer = reducer.reduce
     #if DEBUG
       self.mainThreadChecksEnabled = mainThreadChecksEnabled
     #endif
+    self.threadCheck(status: .`init`)
   }
 }
+
+// TODO: Is the following (and `ViewStoreOf` necessary if we have `ReducerOf`?)
+// Store<some ReducerOf<Feature>>
+
+/// A convenience type alias for referring to a store of a given reducer's domain.
+///
+/// Instead of specifying two generics:
+///
+/// ```swift
+/// let store: Store<Feature.State, Feature.Action>
+/// ```
+///
+/// You can specify a single generic:
+///
+/// ```swift
+/// let store: StoreOf<Feature>
+/// ```
+public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>

@@ -170,12 +170,17 @@
   /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
   /// not expect it would cause a test failure.
   ///
-  public final class TestStore<State, LocalState, Action, LocalAction, Environment> {
+  public final class TestStore<Reducer: ReducerProtocol, LocalState, LocalAction, Environment> {
+    public var dependencies: DependencyValues {
+      _read { yield self.reducer.dependencies }
+      _modify { yield &self.reducer.dependencies }
+    }
+
     /// The current environment.
     ///
     /// The environment can be modified throughout a test store's lifecycle in order to influence
-    /// how it produces effects. This can be handy for testing flows that require a dependency
-    /// to start in a failing state and then later change into a succeeding state:
+    /// how it produces effects. This can be handy for testing flows that require a dependency to
+    /// start in a failing state and then later change into a succeeding state:
     ///
     /// ```swift
     /// // Start dependency endpoint in a failing state
@@ -192,14 +197,19 @@
     ///   …
     /// }
     /// ```
-    public var environment: Environment
+    public var environment: Environment {
+      _read { yield self._environment.wrappedValue }
+      _modify { yield &self._environment.wrappedValue }
+    }
 
     /// The current state.
     ///
     /// When read from a trailing closure assertion in ``send(_:_:file:line:)-7vwv9`` or
     /// ``receive(_:timeout:_:file:line:)-88eyr``, it will equal the `inout` state passed to the
     /// closure.
-    public private(set) var state: State
+    public var state: Reducer.State {
+      self.reducer.state
+    }
 
     /// The timeout to await for in-flight effects.
     ///
@@ -208,60 +218,83 @@
     /// ``finish(timeout:file:line:)-53gi5``.
     public var timeout: UInt64
 
+    private var _environment: Box<Environment>
     private let file: StaticString
-    private let fromLocalAction: (LocalAction) -> Action
+    private let fromLocalAction: (LocalAction) -> Reducer.Action
     private var line: UInt
-    private var inFlightEffects: Set<LongLivingEffect> = []
-    var receivedActions: [(action: Action, state: State)] = []
-    private let reducer: Reducer<State, Action, Environment>
-    private var store: Store<State, TestAction>!
-    private let toLocalState: (State) -> LocalState
+    let reducer: TestReducer<Reducer>
+    private var store: Store<Reducer.State, TestReducer<Reducer>.Action>!
+    private let toLocalState: (Reducer.State) -> LocalState
 
-    private init(
+    public init(
+      initialState: Reducer.State,
+      reducer: Reducer,
+      file: StaticString = #file,
+      line: UInt = #line
+    )
+    where
+      Reducer.State == LocalState,
+      Reducer.Action == LocalAction,
+      Environment == Void
+    {
+      let reducer = TestReducer(reducer, initialState: initialState)
+      self._environment = .init(wrappedValue: ())
+      self.file = file
+      self.fromLocalAction = { $0 }
+      self.line = line
+      self.reducer = reducer
+      self.store = Store(initialState: initialState, reducer: reducer)
+      self.timeout = 100 * NSEC_PER_MSEC
+      self.toLocalState = { $0 }
+    }
+
+    // NB: Can't seem to define this as a convenience initializer in 'ReducerCompatibility.swift'.
+    public init(
+      initialState: LocalState,
+      reducer: ComposableArchitecture.Reducer<LocalState, LocalAction, Environment>,
       environment: Environment,
+      file: StaticString = #file,
+      line: UInt = #line
+    )
+    where
+      Reducer == Reduce<LocalState, LocalAction>
+    {
+      let environment = Box(wrappedValue: environment)
+      let reducer = TestReducer(
+        Reduce(
+          reducer.pullback(state: \.self, action: .self, environment: { $0.wrappedValue }),
+          environment: environment
+        ),
+        initialState: initialState
+      )
+      self._environment = environment
+      self.file = file
+      self.fromLocalAction = { $0 }
+      self.line = line
+      self.reducer = reducer
+      self.store = Store(initialState: initialState, reducer: reducer)
+      self.timeout = 100 * NSEC_PER_MSEC
+      self.toLocalState = { $0 }
+    }
+
+    init(
+      _environment: Box<Environment>,
       file: StaticString,
-      fromLocalAction: @escaping (LocalAction) -> Action,
-      initialState: State,
+      fromLocalAction: @escaping (LocalAction) -> Reducer.Action,
       line: UInt,
-      reducer: Reducer<State, Action, Environment>,
-      toLocalState: @escaping (State) -> LocalState
+      reducer: TestReducer<Reducer>,
+      store: Store<Reducer.State, TestReducer<Reducer>.Action>,
+      timeout: UInt64 = 100 * NSEC_PER_MSEC,
+      toLocalState: @escaping (Reducer.State) -> LocalState
     ) {
-      self.environment = environment
+      self._environment = _environment
       self.file = file
       self.fromLocalAction = fromLocalAction
       self.line = line
       self.reducer = reducer
-      self.state = initialState
+      self.store = store
+      self.timeout = timeout
       self.toLocalState = toLocalState
-      self.timeout = 100 * NSEC_PER_MSEC
-
-      self.store = Store(
-        initialState: initialState,
-        reducer: Reducer<State, TestAction, Void> { [unowned self] state, action, _ in
-          let effects: Effect<Action, Never>
-          switch action.origin {
-          case let .send(localAction):
-            effects = self.reducer.run(&state, self.fromLocalAction(localAction), self.environment)
-            self.state = state
-
-          case let .receive(action):
-            effects = self.reducer.run(&state, action, self.environment)
-            self.receivedActions.append((action, state))
-          }
-
-          let effect = LongLivingEffect(file: action.file, line: action.line)
-          return
-            effects
-            .handleEvents(
-              receiveSubscription: { [weak self] _ in self?.inFlightEffects.insert(effect) },
-              receiveCompletion: { [weak self] _ in self?.inFlightEffects.remove(effect) },
-              receiveCancel: { [weak self] in self?.inFlightEffects.remove(effect) }
-            )
-            .eraseToEffect { .init(origin: .receive($0), file: action.file, line: action.line) }
-
-        },
-        environment: ()
-      )
     }
 
     #if swift(>=5.7)
@@ -295,7 +328,7 @@
       let nanoseconds = nanoseconds ?? self.timeout
       let start = DispatchTime.now().uptimeNanoseconds
       await Task.megaYield()
-      while !self.inFlightEffects.isEmpty {
+      while !self.reducer.inFlightEffects.isEmpty {
         guard start.distance(to: DispatchTime.now().uptimeNanoseconds) < nanoseconds
         else {
           let timeoutMessage =
@@ -333,20 +366,20 @@
     }
 
     func completed() {
-      if !self.receivedActions.isEmpty {
+      if !self.reducer.receivedActions.isEmpty {
         var actions = ""
-        customDump(self.receivedActions.map(\.action), to: &actions)
+        customDump(self.reducer.receivedActions.map(\.action), to: &actions)
         XCTFail(
           """
-          The store received \(self.receivedActions.count) unexpected \
-          action\(self.receivedActions.count == 1 ? "" : "s") after this one: …
+          The store received \(self.reducer.receivedActions.count) unexpected \
+          action\(self.reducer.receivedActions.count == 1 ? "" : "s") after this one: …
 
           Unhandled actions: \(actions)
           """,
           file: self.file, line: self.line
         )
       }
-      for effect in self.inFlightEffects {
+      for effect in self.reducer.inFlightEffects {
         XCTFail(
           """
           An effect returned for this action is still running. It must complete before the end of \
@@ -373,67 +406,6 @@
           line: effect.line
         )
       }
-    }
-
-    private struct LongLivingEffect: Hashable {
-      let id = UUID()
-      let file: StaticString
-      let line: UInt
-
-      static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.id == rhs.id
-      }
-
-      func hash(into hasher: inout Hasher) {
-        self.id.hash(into: &hasher)
-      }
-    }
-
-    private struct TestAction: CustomDebugStringConvertible {
-      let origin: Origin
-      let file: StaticString
-      let line: UInt
-
-      enum Origin {
-        case send(LocalAction)
-        case receive(Action)
-      }
-
-      var debugDescription: String {
-        switch self.origin {
-        case let .send(action):
-          return debugCaseOutput(action)
-
-        case let .receive(action):
-          return debugCaseOutput(action)
-        }
-      }
-    }
-  }
-
-  extension TestStore where State == LocalState, Action == LocalAction {
-    /// Initializes a test store from an initial state, a reducer, and an initial environment.
-    ///
-    /// - Parameters:
-    ///   - initialState: The state to start the test from.
-    ///   - reducer: A reducer.
-    ///   - environment: The environment to start the test from.
-    public convenience init(
-      initialState: State,
-      reducer: Reducer<State, Action, Environment>,
-      environment: Environment,
-      file: StaticString = #file,
-      line: UInt = #line
-    ) {
-      self.init(
-        environment: environment,
-        file: file,
-        fromLocalAction: { $0 },
-        initialState: initialState,
-        line: line,
-        reducer: reducer,
-        toLocalState: { $0 }
-      )
     }
   }
 
@@ -508,13 +480,13 @@
       file: StaticString = #file,
       line: UInt = #line
     ) async -> TestStoreTask {
-      if !self.receivedActions.isEmpty {
+      if !self.reducer.receivedActions.isEmpty {
         var actions = ""
-        customDump(self.receivedActions.map(\.action), to: &actions)
+        customDump(self.reducer.receivedActions.map(\.action), to: &actions)
         XCTFail(
           """
-          Must handle \(self.receivedActions.count) received \
-          action\(self.receivedActions.count == 1 ? "" : "s") before sending an action: …
+          Must handle \(self.reducer.receivedActions.count) received \
+          action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
 
           Unhandled actions: \(actions)
           """,
@@ -522,13 +494,14 @@
         )
       }
       var expectedState = self.toLocalState(self.state)
-      let previousState = self.state
-      let task = self.store.send(.init(origin: .send(action), file: file, line: line))
+      let previousState = self.reducer.state
+      let task = self.store
+        .send(.init(origin: .send(self.fromLocalAction(action)), file: file, line: line))
       await Task.megaYield()
       do {
         let currentState = self.state
-        self.state = previousState
-        defer { self.state = currentState }
+        self.reducer.state = previousState
+        defer { self.reducer.state = currentState }
 
         try self.expectedStateShouldMatch(
           expected: &expectedState,
@@ -589,13 +562,13 @@
       file: StaticString = #file,
       line: UInt = #line
     ) -> TestStoreTask {
-      if !self.receivedActions.isEmpty {
+      if !self.reducer.receivedActions.isEmpty {
         var actions = ""
-        customDump(self.receivedActions.map(\.action), to: &actions)
+        customDump(self.reducer.receivedActions.map(\.action), to: &actions)
         XCTFail(
           """
-          Must handle \(self.receivedActions.count) received \
-          action\(self.receivedActions.count == 1 ? "" : "s") before sending an action: …
+          Must handle \(self.reducer.receivedActions.count) received \
+          action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
 
           Unhandled actions: \(actions)
           """,
@@ -604,11 +577,12 @@
       }
       var expectedState = self.toLocalState(self.state)
       let previousState = self.state
-      let task = self.store.send(.init(origin: .send(action), file: file, line: line))
+      let task = self.store
+        .send(.init(origin: .send(self.fromLocalAction(action)), file: file, line: line))
       do {
         let currentState = self.state
-        self.state = previousState
-        defer { self.state = currentState }
+        self.reducer.state = previousState
+        defer { self.reducer.state = currentState }
 
         try self.expectedStateShouldMatch(
           expected: &expectedState,
@@ -678,7 +652,7 @@
     }
   }
 
-  extension TestStore where LocalState: Equatable, Action: Equatable {
+  extension TestStore where LocalState: Equatable, Reducer.Action: Equatable {
     /// Asserts an action was received from an effect and asserts when state changes.
     ///
     /// - Parameters:
@@ -692,12 +666,12 @@
     @available(tvOS, deprecated: 9999.0, message: "Call the async-friendly 'receive' instead.")
     @available(watchOS, deprecated: 9999.0, message: "Call the async-friendly 'receive' instead.")
     public func receive(
-      _ expectedAction: Action,
+      _ expectedAction: Reducer.Action,
       _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) {
-      guard !self.receivedActions.isEmpty else {
+      guard !self.reducer.receivedActions.isEmpty else {
         XCTFail(
           """
           Expected to receive an action, but received none.
@@ -706,7 +680,7 @@
         )
         return
       }
-      let (receivedAction, state) = self.receivedActions.removeFirst()
+      let (receivedAction, state) = self.reducer.receivedActions.removeFirst()
       if expectedAction != receivedAction {
         let difference = TaskResultDebugging.$emitRuntimeWarnings.withValue(false) {
           diff(expectedAction, receivedAction, format: .proportional)
@@ -741,7 +715,7 @@
       } catch {
         XCTFail("Threw error: \(error)", file: file, line: line)
       }
-      self.state = state
+      self.reducer.state = state
       if "\(self.file)" == "\(file)" {
         self.line = line
       }
@@ -760,7 +734,7 @@
       @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
       @MainActor
       public func receive(
-        _ expectedAction: Action,
+        _ expectedAction: Reducer.Action,
         timeout duration: Duration,
         _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
         file: StaticString = #file,
@@ -787,7 +761,7 @@
     ///     expected.
     @MainActor
     public func receive(
-      _ expectedAction: Action,
+      _ expectedAction: Reducer.Action,
       timeout nanoseconds: UInt64? = nil,
       _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString = #file,
@@ -795,7 +769,7 @@
     ) async {
       let nanoseconds = nanoseconds ?? self.timeout
 
-      guard !self.inFlightEffects.isEmpty
+      guard !self.reducer.inFlightEffects.isEmpty
       else {
         { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
         return
@@ -806,13 +780,13 @@
       while !Task.isCancelled {
         await Task.detached(priority: .low) { await Task.yield() }.value
 
-        guard self.receivedActions.isEmpty
+        guard self.reducer.receivedActions.isEmpty
         else { break }
 
         guard start.distance(to: DispatchTime.now().uptimeNanoseconds) < nanoseconds
         else {
           let suggestion: String
-          if self.inFlightEffects.isEmpty {
+          if self.reducer.inFlightEffects.isEmpty {
             suggestion = """
               There are no in-flight effects that could deliver this action. Could the effect you \
               expected to deliver this action have been cancelled?
@@ -869,14 +843,15 @@
     public func scope<S, A>(
       state toLocalState: @escaping (LocalState) -> S,
       action fromLocalAction: @escaping (A) -> LocalAction
-    ) -> TestStore<State, S, Action, A, Environment> {
+    ) -> TestStore<Reducer, S, A, Environment> {
       .init(
-        environment: self.environment,
+        _environment: self._environment,
         file: self.file,
         fromLocalAction: { self.fromLocalAction(fromLocalAction($0)) },
-        initialState: self.store.state.value,
         line: self.line,
         reducer: self.reducer,
+        store: self.store,
+        timeout: self.timeout,
         toLocalState: { toLocalState(self.toLocalState($0)) }
       )
     }
@@ -890,7 +865,7 @@
     ///   testing view store state transformations.
     public func scope<S>(
       state toLocalState: @escaping (LocalState) -> S
-    ) -> TestStore<State, S, Action, LocalAction, Environment> {
+    ) -> TestStore<Reducer, S, LocalAction, Environment> {
       self.scope(state: toLocalState, action: { $0 })
     }
   }
@@ -1003,6 +978,73 @@
     /// no way to uncancel a task.
     public var isCancelled: Bool {
       self.rawValue?.isCancelled ?? true
+    }
+  }
+
+  class TestReducer<Upstream>: ReducerProtocol where Upstream: ReducerProtocol {
+    let upstream: Upstream
+    var dependencies = DependencyValues(isTesting: true)
+    var inFlightEffects: Set<LongLivingEffect> = []
+    var receivedActions: [(action: Upstream.Action, state: Upstream.State)] = []
+    var state: Upstream.State
+
+    init(
+      _ upstream: Upstream,
+      initialState: Upstream.State
+    ) {
+      self.upstream = upstream
+      self.state = initialState
+    }
+
+    func reduce(into state: inout Upstream.State, action: Action) -> Effect<Action, Never> {
+      let reducer = self.upstream.dependency(\.self, self.dependencies)
+
+      let effects: Effect<Upstream.Action, Never>
+      switch action.origin {
+      case let .send(action):
+        effects = reducer.reduce(into: &state, action: action)
+        self.state = state
+
+      case let .receive(action):
+        effects = reducer.reduce(into: &state, action: action)
+        self.receivedActions.append((action, state))
+      }
+
+      let effect = LongLivingEffect(file: action.file, line: action.line)
+      return
+        effects
+        .handleEvents(
+          receiveSubscription: { [weak self] _ in self?.inFlightEffects.insert(effect) },
+          receiveCompletion: { [weak self] _ in self?.inFlightEffects.remove(effect) },
+          receiveCancel: { [weak self] in self?.inFlightEffects.remove(effect) }
+        )
+        .map { .init(origin: .receive($0), file: action.file, line: action.line) }
+        .eraseToEffect()
+    }
+
+    struct LongLivingEffect: Hashable {
+      let id = UUID()
+      let file: StaticString
+      let line: UInt
+
+      static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.id == rhs.id
+      }
+
+      func hash(into hasher: inout Hasher) {
+        self.id.hash(into: &hasher)
+      }
+    }
+
+    struct Action {
+      let origin: Origin
+      let file: StaticString
+      let line: UInt
+
+      enum Origin {
+        case send(Upstream.Action)
+        case receive(Upstream.Action)
+      }
     }
   }
 
