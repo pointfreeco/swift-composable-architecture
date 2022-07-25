@@ -5,12 +5,11 @@ import XCTest
 @MainActor
 class GameCoreTests: XCTestCase {
   let store = TestStore(
-    initialState: GameState(
+    initialState: Game.State(
       oPlayerName: "Blob Jr.",
       xPlayerName: "Blob Sr."
     ),
-    reducer: gameReducer,
-    environment: GameEnvironment()
+    reducer: Game()
   )
 
   func testFlow_Winner_Quit() async {
@@ -74,7 +73,7 @@ class GameCoreTests: XCTestCase {
       $0.currentPlayer = .o
     }
     await self.store.send(.playAgainButtonTapped) {
-      $0 = GameState(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr.")
+      $0 = Game.State(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr.")
     }
   }
 }

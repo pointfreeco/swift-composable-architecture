@@ -2,6 +2,16 @@ import ComposableArchitecture
 import Foundation
 import XCTestDynamicOverlay
 
+extension DependencyValues {
+  public var authenticationClient: AuthenticationClient {
+    get { self[AuthenticationClientKey.self] }
+    set { self[AuthenticationClientKey.self] = newValue }
+  }
+  public enum AuthenticationClientKey: DependencyKey {
+    public static var testValue = AuthenticationClient.unimplemented
+  }
+}
+
 public struct LoginRequest: Sendable {
   public var email: String
   public var password: String
@@ -71,11 +81,9 @@ public struct AuthenticationClient: Sendable {
   }
 }
 
-#if DEBUG
-  extension AuthenticationClient {
-    public static let unimplemented = Self(
-      login: XCTUnimplemented("\(Self.self).login"),
-      twoFactor: XCTUnimplemented("\(Self.self).twoFactor")
-    )
-  }
-#endif
+extension AuthenticationClient {
+  public static let unimplemented = Self(
+    login: XCTUnimplemented("\(Self.self).login"),
+    twoFactor: XCTUnimplemented("\(Self.self).twoFactor")
+  )
+}

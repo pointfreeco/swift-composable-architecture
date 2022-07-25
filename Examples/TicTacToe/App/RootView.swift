@@ -29,11 +29,8 @@ enum GameType: Identifiable {
 
 struct RootView: View {
   let store = Store(
-    initialState: AppState(),
-    reducer: appReducer,
-    environment: AppEnvironment(
-      authenticationClient: .live
-    )
+    initialState: TicTacToe.State(),
+    reducer: TicTacToe()
   )
 
   @State var showGame: GameType?
