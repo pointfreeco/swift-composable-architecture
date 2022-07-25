@@ -8,7 +8,7 @@ struct Root: ReducerProtocol {
     var alertAndConfirmationDialog = AlertAndConfirmationDialog.State()
     var animation = Animations.State()
     var bindingBasics = BindingBasics.State()
-    var bindingForm = BindingFormState()
+    var bindingForm = BindingForm.State()
     var clock = ClockState()
     var counter = Counter.State()
     var effectsBasics = EffectsBasics.State()
@@ -16,7 +16,7 @@ struct Root: ReducerProtocol {
     var effectsTimers = Timers.State()
     var episodes = EpisodesState(episodes: .mocks)
     var focusDemo = FocusDemo.State()
-    var lifecycle = LifecycleDemoState()
+    var lifecycle = LifecycleDemo.State()
     var loadThenNavigate = LoadThenNavigate.State()
     var loadThenNavigateList = LoadThenNavigateList.State()
     var loadThenPresent = LoadThenPresent.State()
@@ -38,14 +38,14 @@ struct Root: ReducerProtocol {
     case alertAndConfirmationDialog(AlertAndConfirmationDialog.Action)
     case animation(Animations.Action)
     case bindingBasics(BindingBasics.Action)
-    case bindingForm(BindingFormAction)
+    case bindingForm(BindingForm.Action)
     case clock(ClockAction)
     case counter(Counter.Action)
     case effectsBasics(EffectsBasics.Action)
     case effectsCancellation(EffectsCancellation.Action)
     case episodes(EpisodesAction)
     case focusDemo(FocusDemo.Action)
-    case lifecycle(LifecycleDemoAction)
+    case lifecycle(LifecycleDemo.Action)
     case loadThenNavigate(LoadThenNavigate.Action)
     case loadThenNavigateList(LoadThenNavigateList.Action)
     case loadThenPresent(LoadThenPresent.Action)
@@ -88,7 +88,7 @@ struct Root: ReducerProtocol {
       BindingBasics()
     }
     Scope(state: \.bindingForm, action: /Action.bindingForm) {
-      Reduce(bindingFormReducer, environment: BindingFormEnvironment())
+      BindingForm()
     }
     Scope(state: \.clock, action: /Action.clock) {
       Reduce(clockReducer, environment: ClockEnvironment(mainQueue: self.mainQueue))
@@ -112,10 +112,7 @@ struct Root: ReducerProtocol {
       FocusDemo()
     }
     Scope(state: \.lifecycle, action: /Action.lifecycle) {
-      Reduce(
-        lifecycleDemoReducer,
-        environment: LifecycleDemoEnvironment(mainQueue: self.mainQueue)
-      )
+      LifecycleDemo()
     }
     Scope(state: \.loadThenNavigate, action: /Action.loadThenNavigate) {
       LoadThenNavigate()
