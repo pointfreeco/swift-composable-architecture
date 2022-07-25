@@ -9,37 +9,25 @@ private let readMe = """
   depends on this data.
   """
 
-struct LoadThenPresentState: Equatable {
-  var optionalCounter: CounterState?
-  var isActivityIndicatorVisible = false
+struct LoadThenPresent: ReducerProtocol {
+  struct State: Equatable {
+    var optionalCounter: Counter.State?
+    var isActivityIndicatorVisible = false
 
-  var isSheetPresented: Bool { self.optionalCounter != nil }
-}
+    var isSheetPresented: Bool { self.optionalCounter != nil }
+  }
 
-enum LoadThenPresentAction {
-  case onDisappear
-  case optionalCounter(CounterAction)
-  case setSheet(isPresented: Bool)
-  case setSheetIsPresentedDelayCompleted
-}
+  enum Action {
+    case onDisappear
+    case optionalCounter(Counter.Action)
+    case setSheet(isPresented: Bool)
+    case setSheetIsPresentedDelayCompleted
+  }
 
-struct LoadThenPresentEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+  @Dependency(\.mainQueue) var mainQueue
 
-let loadThenPresentReducer =
-  counterReducer
-  .optional()
-  .pullback(
-    state: \.optionalCounter,
-    action: /LoadThenPresentAction.optionalCounter,
-    environment: { _ in CounterEnvironment() }
-  )
-  .combined(
-    with: Reducer<
-      LoadThenPresentState, LoadThenPresentAction, LoadThenPresentEnvironment
-    > { state, action, environment in
-
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
       enum CancelID {}
 
       switch action {
@@ -49,7 +37,7 @@ let loadThenPresentReducer =
       case .setSheet(isPresented: true):
         state.isActivityIndicatorVisible = true
         return .task {
-          try await environment.mainQueue.sleep(for: 1)
+          try await self.mainQueue.sleep(for: 1)
           return .setSheetIsPresentedDelayCompleted
         }
         .cancellable(id: CancelID.self)
@@ -60,17 +48,21 @@ let loadThenPresentReducer =
 
       case .setSheetIsPresentedDelayCompleted:
         state.isActivityIndicatorVisible = false
-        state.optionalCounter = CounterState()
+        state.optionalCounter = Counter.State()
         return .none
 
       case .optionalCounter:
         return .none
       }
     }
-  )
+    .ifLet(state: \.optionalCounter, action: /Action.optionalCounter) {
+      Counter()
+    }
+  }
+}
 
 struct LoadThenPresentView: View {
-  let store: Store<LoadThenPresentState, LoadThenPresentAction>
+  let store: StoreOf<LoadThenPresent>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -91,13 +83,13 @@ struct LoadThenPresentView: View {
       .sheet(
         isPresented: viewStore.binding(
           get: \.isSheetPresented,
-          send: LoadThenPresentAction.setSheet(isPresented:)
+          send: LoadThenPresent.Action.setSheet(isPresented:)
         )
       ) {
         IfLetStore(
           self.store.scope(
             state: \.optionalCounter,
-            action: LoadThenPresentAction.optionalCounter
+            action: LoadThenPresent.Action.optionalCounter
           )
         ) {
           CounterView(store: $0)
@@ -114,11 +106,8 @@ struct LoadThenPresentView_Previews: PreviewProvider {
     NavigationView {
       LoadThenPresentView(
         store: Store(
-          initialState: LoadThenPresentState(),
-          reducer: loadThenPresentReducer,
-          environment: LoadThenPresentEnvironment(
-            mainQueue: .main
-          )
+          initialState: LoadThenPresent.State(),
+          reducer: LoadThenPresent()
         )
       )
     }

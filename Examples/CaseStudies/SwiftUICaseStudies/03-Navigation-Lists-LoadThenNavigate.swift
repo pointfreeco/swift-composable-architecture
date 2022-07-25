@@ -10,50 +10,33 @@ private let readMe = """
   depends on this data.
   """
 
-struct LoadThenNavigateListState: Equatable {
-  var rows: IdentifiedArrayOf<Row> = [
-    Row(count: 1, id: UUID()),
-    Row(count: 42, id: UUID()),
-    Row(count: 100, id: UUID()),
-  ]
-  var selection: Identified<Row.ID, CounterState>?
+struct LoadThenNavigateList: ReducerProtocol {
+  struct State: Equatable {
+    var rows: IdentifiedArrayOf<Row> = [
+      Row(count: 1, id: UUID()),
+      Row(count: 42, id: UUID()),
+      Row(count: 100, id: UUID()),
+    ]
+    var selection: Identified<Row.ID, Counter.State>?
 
-  struct Row: Equatable, Identifiable {
-    var count: Int
-    let id: UUID
-    var isActivityIndicatorVisible = false
+    struct Row: Equatable, Identifiable {
+      var count: Int
+      let id: UUID
+      var isActivityIndicatorVisible = false
+    }
   }
-}
 
-enum LoadThenNavigateListAction: Equatable {
-  case counter(CounterAction)
-  case onDisappear
-  case setNavigation(selection: UUID?)
-  case setNavigationSelectionDelayCompleted(UUID)
-}
+  enum Action: Equatable {
+    case counter(Counter.Action)
+    case onDisappear
+    case setNavigation(selection: UUID?)
+    case setNavigationSelectionDelayCompleted(UUID)
+  }
 
-struct LoadThenNavigateListEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+  @Dependency(\.mainQueue) var mainQueue
 
-let loadThenNavigateListReducer =
-  counterReducer
-  .pullback(
-    state: \Identified.value,
-    action: .self,
-    environment: { $0 }
-  )
-  .optional()
-  .pullback(
-    state: \LoadThenNavigateListState.selection,
-    action: /LoadThenNavigateListAction.counter,
-    environment: { _ in CounterEnvironment() }
-  )
-  .combined(
-    with: Reducer<
-      LoadThenNavigateListState, LoadThenNavigateListAction, LoadThenNavigateListEnvironment
-    > { state, action, environment in
-
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
       enum CancelID {}
 
       switch action {
@@ -68,7 +51,7 @@ let loadThenNavigateListReducer =
           state.rows[id: row.id]?.isActivityIndicatorVisible = row.id == navigatedId
         }
         return .task {
-          try await environment.mainQueue.sleep(for: 1)
+          try await self.mainQueue.sleep(for: 1)
           return .setNavigationSelectionDelayCompleted(navigatedId)
         }
         .cancellable(id: CancelID.self, cancelInFlight: true)
@@ -83,16 +66,22 @@ let loadThenNavigateListReducer =
       case let .setNavigationSelectionDelayCompleted(id):
         state.rows[id: id]?.isActivityIndicatorVisible = false
         state.selection = Identified(
-          CounterState(count: state.rows[id: id]?.count ?? 0),
+          Counter.State(count: state.rows[id: id]?.count ?? 0),
           id: id
         )
         return .none
       }
     }
-  )
+    .ifLet(state: \.selection, action: .self) {
+      Scope(state: \Identified<State.Row.ID, Counter.State>.value, action: /Action.counter) {
+        Counter()
+      }
+    }
+  }
+}
 
 struct LoadThenNavigateListView: View {
-  let store: Store<LoadThenNavigateListState, LoadThenNavigateListAction>
+  let store: StoreOf<LoadThenNavigateList>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -105,7 +94,7 @@ struct LoadThenNavigateListView: View {
             destination: IfLetStore(
               self.store.scope(
                 state: \.selection?.value,
-                action: LoadThenNavigateListAction.counter
+                action: LoadThenNavigateList.Action.counter
               )
             ) {
               CounterView(store: $0)
@@ -113,7 +102,7 @@ struct LoadThenNavigateListView: View {
             tag: row.id,
             selection: viewStore.binding(
               get: \.selection?.id,
-              send: LoadThenNavigateListAction.setNavigation(selection:)
+              send: LoadThenNavigateList.Action.setNavigation(selection:)
             )
           ) {
             HStack {
@@ -137,17 +126,14 @@ struct LoadThenNavigateListView_Previews: PreviewProvider {
     NavigationView {
       LoadThenNavigateListView(
         store: Store(
-          initialState: LoadThenNavigateListState(
+          initialState: LoadThenNavigateList.State(
             rows: [
-              LoadThenNavigateListState.Row(count: 1, id: UUID()),
-              LoadThenNavigateListState.Row(count: 42, id: UUID()),
-              LoadThenNavigateListState.Row(count: 100, id: UUID()),
+              LoadThenNavigateList.State.Row(count: 1, id: UUID()),
+              LoadThenNavigateList.State.Row(count: 42, id: UUID()),
+              LoadThenNavigateList.State.Row(count: 100, id: UUID()),
             ]
           ),
-          reducer: loadThenNavigateListReducer,
-          environment: LoadThenNavigateListEnvironment(
-            mainQueue: .main
-          )
+          reducer: LoadThenNavigateList()
         )
       )
     }

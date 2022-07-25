@@ -8,46 +8,44 @@ private let readMe = """
 
 // MARK: - Timer feature domain
 
-struct TimersState: Equatable {
-  var isTimerActive = false
-  var secondsElapsed = 0
-}
+struct Timers: ReducerProtocol {
+  struct State: Equatable {
+    var isTimerActive = false
+    var secondsElapsed = 0
+  }
 
-enum TimersAction {
-  case timerTicked
-  case toggleTimerButtonTapped
-}
+  enum Action {
+    case timerTicked
+    case toggleTimerButtonTapped
+  }
 
-struct TimersEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+  @Dependency(\.mainQueue) var mainQueue
 
-let timersReducer = Reducer<TimersState, TimersAction, TimersEnvironment> {
-  state, action, environment in
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    enum TimerID {}
 
-  enum TimerID {}
+    switch action {
+    case .timerTicked:
+      state.secondsElapsed += 1
+      return .none
 
-  switch action {
-  case .timerTicked:
-    state.secondsElapsed += 1
-    return .none
-
-  case .toggleTimerButtonTapped:
-    state.isTimerActive.toggle()
-    return .run { [isTimerActive = state.isTimerActive] send in
-      guard isTimerActive else { return }
-      for await _ in environment.mainQueue.timer(interval: 1) {
-        await send(.timerTicked, animation: .interpolatingSpring(stiffness: 3000, damping: 40))
+    case .toggleTimerButtonTapped:
+      state.isTimerActive.toggle()
+      return .run { [isTimerActive = state.isTimerActive] send in
+        guard isTimerActive else { return }
+        for await _ in self.mainQueue.timer(interval: 1) {
+          await send(.timerTicked, animation: .interpolatingSpring(stiffness: 3000, damping: 40))
+        }
       }
+      .cancellable(id: TimerID.self, cancelInFlight: true)
     }
-    .cancellable(id: TimerID.self, cancelInFlight: true)
   }
 }
 
 // MARK: - Timer feature view
 
 struct TimersView: View {
-  let store: Store<TimersState, TimersAction>
+  let store: StoreOf<Timers>
 
   var body: some View {
     WithViewStore(store) { viewStore in
@@ -114,11 +112,8 @@ struct TimersView_Previews: PreviewProvider {
     NavigationView {
       TimersView(
         store: Store(
-          initialState: TimersState(),
-          reducer: timersReducer,
-          environment: TimersEnvironment(
-            mainQueue: .main
-          )
+          initialState: Timers.State(),
+          reducer: Timers()
         )
       )
     }

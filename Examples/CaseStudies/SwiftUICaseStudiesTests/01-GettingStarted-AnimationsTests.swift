@@ -7,15 +7,13 @@ import XCTest
 @MainActor
 class AnimationTests: XCTestCase {
   func testRainbow() async {
-    let mainQueue = DispatchQueue.test
-
     let store = TestStore(
-      initialState: AnimationsState(),
-      reducer: animationsReducer,
-      environment: AnimationsEnvironment(
-        mainQueue: mainQueue.eraseToAnyScheduler()
-      )
+      initialState: Animations.State(),
+      reducer: Animations()
     )
+
+    let mainQueue = DispatchQueue.test
+    store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
 
     await store.send(.rainbowButtonTapped)
 
@@ -63,15 +61,13 @@ class AnimationTests: XCTestCase {
   }
 
   func testReset() async {
-    let mainQueue = DispatchQueue.test
-
     let store = TestStore(
-      initialState: AnimationsState(),
-      reducer: animationsReducer,
-      environment: AnimationsEnvironment(
-        mainQueue: mainQueue.eraseToAnyScheduler()
-      )
+      initialState: Animations.State(),
+      reducer: Animations()
     )
+
+    let mainQueue = DispatchQueue.test
+    store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
 
     await store.send(.rainbowButtonTapped)
 
@@ -96,7 +92,7 @@ class AnimationTests: XCTestCase {
     }
 
     await store.send(.resetConfirmationButtonTapped) {
-      $0 = AnimationsState()
+      $0 = Animations.State()
     }
   }
 }

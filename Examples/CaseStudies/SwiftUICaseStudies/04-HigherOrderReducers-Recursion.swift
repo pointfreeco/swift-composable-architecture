@@ -26,51 +26,49 @@ extension Reducer {
   }
 }
 
-struct NestedState: Equatable, Identifiable {
-  var children: IdentifiedArrayOf<NestedState> = []
-  let id: UUID
-  var description: String = ""
-}
+struct Nested: ReducerProtocol {
+  struct State: Equatable, Identifiable {
+    var children: IdentifiedArrayOf<State> = []
+    let id: UUID
+    var description: String = ""
+  }
 
-indirect enum NestedAction: Equatable {
-  case append
-  case node(id: NestedState.ID, action: NestedAction)
-  case remove(IndexSet)
-  case rename(String)
-}
+  enum Action: Equatable {
+    case append
+    indirect case node(id: State.ID, action: Action)
+    case remove(IndexSet)
+    case rename(String)
+  }
 
-struct NestedEnvironment {
-  var uuid: () -> UUID
-}
+  @Dependency(\.uuid) var uuid
 
-let nestedReducer = Reducer<
-  NestedState, NestedAction, NestedEnvironment
->.recurse { `self`, state, action, environment in
-  switch action {
-  case .append:
-    state.children.append(NestedState(id: environment.uuid()))
-    return .none
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .append:
+        state.children.append(State(id: self.uuid()))
+        return .none
 
-  case .node:
-    return self.forEach(
-      state: \.children,
-      action: /NestedAction.node(id:action:),
-      environment: { $0 }
-    )
-    .run(&state, action, environment)
+      case .node:
+        return .none
 
-  case let .remove(indexSet):
-    state.children.remove(atOffsets: indexSet)
-    return .none
+      case let .remove(indexSet):
+        state.children.remove(atOffsets: indexSet)
+        return .none
 
-  case let .rename(name):
-    state.description = name
-    return .none
+      case let .rename(name):
+        state.description = name
+        return .none
+      }
+    }
+    .forEach(state: \.children, action: /Action.node(id:action:)) {
+      Nested()
+    }
   }
 }
 
 struct NestedView: View {
-  let store: Store<NestedState, NestedAction>
+  let store: StoreOf<Nested>
 
   var body: some View {
     WithViewStore(self.store.scope(state: \.description)) { viewStore in
@@ -80,7 +78,7 @@ struct NestedView: View {
         }
 
         ForEachStore(
-          self.store.scope(state: \.children, action: NestedAction.node(id:action:))
+          self.store.scope(state: \.children, action: Nested.Action.node(id:action:))
         ) { childStore in
           WithViewStore(childStore) { childViewStore in
             NavigationLink(
@@ -89,7 +87,7 @@ struct NestedView: View {
               HStack {
                 TextField(
                   "Untitled",
-                  text: childViewStore.binding(get: \.description, send: NestedAction.rename)
+                  text: childViewStore.binding(get: \.description, send: Nested.Action.rename)
                 )
                 Text("Next")
                   .font(.callout)
@@ -110,12 +108,12 @@ struct NestedView: View {
   }
 }
 
-extension NestedState {
-  static let mock = NestedState(
+extension Nested.State {
+  static let mock = Nested.State(
     children: [
-      NestedState(
+      Nested.State(
         children: [
-          NestedState(
+          Nested.State(
             children: [],
             id: UUID(),
             description: ""
@@ -124,14 +122,14 @@ extension NestedState {
         id: UUID(),
         description: "Bar"
       ),
-      NestedState(
+      Nested.State(
         children: [
-          NestedState(
+          Nested.State(
             children: [],
             id: UUID(),
             description: "Fizz"
           ),
-          NestedState(
+          Nested.State(
             children: [],
             id: UUID(),
             description: "Buzz"
@@ -140,7 +138,7 @@ extension NestedState {
         id: UUID(),
         description: "Baz"
       ),
-      NestedState(
+      Nested.State(
         children: [],
         id: UUID(),
         description: ""
@@ -158,10 +156,7 @@ extension NestedState {
         NestedView(
           store: Store(
             initialState: .mock,
-            reducer: nestedReducer,
-            environment: NestedEnvironment(
-              uuid: UUID.init
-            )
+            reducer: Nested()
           )
         )
       }
