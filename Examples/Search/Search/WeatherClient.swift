@@ -4,7 +4,7 @@ import XCTestDynamicOverlay
 
 // MARK: - API models
 
-struct Search: Decodable, Equatable, Sendable {
+struct GeocodingSearch: Decodable, Equatable, Sendable {
   var results: [Result]
 
   struct Result: Decodable, Equatable, Identifiable, Sendable {
@@ -39,8 +39,20 @@ struct Forecast: Decodable, Equatable, Sendable {
 // This allows the search feature to compile faster since it only depends on the interface.
 
 struct WeatherClient: Sendable {
-  var forecast: @Sendable (Search.Result) async throws -> Forecast
-  var search: @Sendable (String) async throws -> Search
+  var forecast: @Sendable (GeocodingSearch.Result) async throws -> Forecast
+  var search: @Sendable (String) async throws -> GeocodingSearch
+}
+
+extension DependencyValues {
+  var weatherClient: WeatherClient {
+    get { self[WeatherClientKey.self] }
+    set { self[WeatherClientKey.self] = newValue }
+  }
+
+  private enum WeatherClientKey: LiveDependencyKey {
+    static let liveValue = WeatherClient.live
+    static let testValue = WeatherClient.unimplemented
+  }
 }
 
 // MARK: - Live API implementation
@@ -64,7 +76,7 @@ extension WeatherClient {
       components.queryItems = [URLQueryItem(name: "name", value: query)]
 
       let (data, _) = try await URLSession.shared.data(from: components.url!)
-      return try jsonDecoder.decode(Search.self, from: data)
+      return try jsonDecoder.decode(GeocodingSearch.self, from: data)
     }
   )
 }
@@ -89,10 +101,10 @@ extension Forecast {
   )
 }
 
-extension Search {
+extension GeocodingSearch {
   static let mock = Self(
     results: [
-      Search.Result(
+      GeocodingSearch.Result(
         country: "United States",
         latitude: 40.6782,
         longitude: -73.9442,
@@ -100,7 +112,7 @@ extension Search {
         name: "Brooklyn",
         admin1: nil
       ),
-      Search.Result(
+      GeocodingSearch.Result(
         country: "United States",
         latitude: 34.0522,
         longitude: -118.2437,
@@ -108,7 +120,7 @@ extension Search {
         name: "Los Angeles",
         admin1: nil
       ),
-      Search.Result(
+      GeocodingSearch.Result(
         country: "United States",
         latitude: 37.7749,
         longitude: -122.4194,
