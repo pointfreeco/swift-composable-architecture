@@ -21,7 +21,7 @@ struct Root: ReducerProtocol {
     var loadThenNavigateList = LoadThenNavigateList.State()
     var loadThenPresent = LoadThenPresent.State()
     var longLivingEffects = LongLivingEffects.State()
-    var map = MapAppState(cityMaps: .mocks)
+    var map = MapApp.State(cityMaps: .mocks)
     var navigateAndLoad = NavigateAndLoad.State()
     var navigateAndLoadList = NavigateAndLoadList.State()
     var nested = Nested.State.mock
@@ -50,7 +50,7 @@ struct Root: ReducerProtocol {
     case loadThenNavigateList(LoadThenNavigateList.Action)
     case loadThenPresent(LoadThenPresent.Action)
     case longLivingEffects(LongLivingEffects.Action)
-    case map(MapAppAction)
+    case map(MapApp.Action)
     case navigateAndLoad(NavigateAndLoad.Action)
     case navigateAndLoadList(NavigateAndLoadList.Action)
     case nested(Nested.Action)
@@ -127,10 +127,7 @@ struct Root: ReducerProtocol {
       LongLivingEffects()
     }
     Scope(state: \.map, action: /Action.map) {
-      Reduce(
-        mapAppReducer,
-        environment: MapAppEnvironment(downloadClient: .live, mainQueue: self.mainQueue)
-      )
+      MapApp()
     }
     Scope(state: \.navigateAndLoad, action: /Action.navigateAndLoad) {
       NavigateAndLoad()
