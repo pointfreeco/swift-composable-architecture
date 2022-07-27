@@ -12,7 +12,7 @@
     var body: Body { get }
   }
 #else
-  public protocol ReducerProtocol: _ReducerBody {
+  public protocol ReducerProtocol {
     associatedtype State
 
     associatedtype Action

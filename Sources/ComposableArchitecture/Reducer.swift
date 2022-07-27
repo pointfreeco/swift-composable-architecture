@@ -17,6 +17,10 @@ import Combine
 ///   values on the same thread, **and** if the ``Store`` is being used to drive UI then all output
 ///   must be on the main thread. You can use the `Publisher` method `receive(on:)` for make the
 ///   effect output its values on the thread of your choice.
+@available(iOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead")
+@available(macOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead")
+@available(tvOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead")
+@available(watchOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead")
 public struct Reducer<State, Action, Environment> {
   private let reducer: (inout State, Action, Environment) -> Effect<Action, Never>
 

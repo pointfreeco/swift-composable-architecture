@@ -216,7 +216,6 @@ class TestStoreTests: XCTestCase {
     XCTAssertEqual(store.state, 4)
   }
 
-
 //  @MainActor
 //  func testNonDeterministicActions() async {
 //    struct State: Equatable {

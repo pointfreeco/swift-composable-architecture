@@ -18,7 +18,7 @@ public struct DependencyValues {
     self.isTesting = isTesting
   }
 
-  public subscript<Key>(key: Key.Type) -> Key.Value where Key: DependencyKey {
+  public subscript<Key: DependencyKey>(key: Key.Type) -> Key.Value {
     get {
       guard let dependency = self.storage[ObjectIdentifier(key)] as? Key.Value
       else {

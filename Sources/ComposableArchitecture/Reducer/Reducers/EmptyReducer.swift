@@ -3,7 +3,7 @@ public struct EmptyReducer<State, Action>: ReducerProtocol {
   public init() {}
 
   @inlinable
-  public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  public func reduce(into _: inout State, action _: Action) -> Effect<Action, Never> {
     .none
   }
 }
