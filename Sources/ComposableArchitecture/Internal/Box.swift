@@ -1,4 +1,4 @@
-public class Box<Wrapped> {
+public final class Box<Wrapped> {
   public var wrappedValue: Wrapped
 
   public init(wrappedValue: Wrapped) {
