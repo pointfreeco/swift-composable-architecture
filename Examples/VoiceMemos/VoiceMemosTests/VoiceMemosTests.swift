@@ -155,7 +155,7 @@ class VoiceMemosTests: XCTestCase {
         voiceMemos: [
           VoiceMemo(
             date: Date(),
-            duration: 1,
+            duration: 1.25,
             mode: .notPlaying,
             title: "",
             url: url
@@ -171,12 +171,13 @@ class VoiceMemosTests: XCTestCase {
     }
     await self.mainRunLoop.advance(by: 0.5)
     await store.receive(.voiceMemo(id: url, action: .timerUpdated(0.5))) {
-      $0.voiceMemos[id: url]?.mode = .playing(progress: 0.5)
+      $0.voiceMemos[id: url]?.mode = .playing(progress: 0.4)
     }
     await self.mainRunLoop.advance(by: 0.5)
     await store.receive(.voiceMemo(id: url, action: .timerUpdated(1))) {
-      $0.voiceMemos[id: url]?.mode = .playing(progress: 1)
+      $0.voiceMemos[id: url]?.mode = .playing(progress: 0.8)
     }
+    await self.mainRunLoop.advance(by: 0.25)
     await store.receive(.voiceMemo(id: url, action: .audioPlayerClient(.success(true)))) {
       $0.voiceMemos[id: url]?.mode = .notPlaying
     }
