@@ -112,7 +112,8 @@ final class RuntimeWarningTests: XCTestCase {
     _ = XCTWaiter.wait(for: [.init()], timeout: 2)
   }
 
-  func testEffectEmitMainThread() {
+  @MainActor
+  func testEffectEmitMainThread() async {
     XCTExpectFailure {
       [
         """
@@ -120,6 +121,18 @@ final class RuntimeWarningTests: XCTestCase {
 
           Effect returned from:
             Action.response
+
+        Make sure to use ".receive(on:)" on any effects that execute on background threads to \
+        receive their output on the main thread.
+
+        The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
+        (including all of its scopes and derived view stores) must be done on the main thread.
+        """,
+        """
+        An effect completed on a non-main thread. …
+
+          Effect returned from:
+            Action.tap
 
         Make sure to use ".receive(on:)" on any effects that execute on background threads to \
         receive their output on the main thread.
@@ -156,6 +169,7 @@ final class RuntimeWarningTests: XCTestCase {
             Thread.detachNewThread {
               XCTAssertFalse(Thread.isMainThread, "Effect should send on non-main thread.")
               subscriber.send(.response)
+              subscriber.send(completion: .finished)
             }
             return AnyCancellable {}
           }
@@ -165,8 +179,7 @@ final class RuntimeWarningTests: XCTestCase {
       },
       environment: ()
     )
-    ViewStore(store).send(.tap)
-    _ = XCTWaiter.wait(for: [.init()], timeout: 4)
+    await ViewStore(store).send(.tap).finish()
   }
 
   func testBindingUnhandledAction() {
