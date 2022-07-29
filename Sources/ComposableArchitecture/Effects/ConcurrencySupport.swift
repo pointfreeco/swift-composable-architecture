@@ -296,8 +296,8 @@ extension Task where Success == Never, Failure == Never {
 public final actor ActorIsolated<Value: Sendable> {
   public var value: Value
 
-  public init(_ wrappedValue: Value) {
-    self.value = wrappedValue
+  public init(_ value: Value) {
+    self.value = value
   }
 
   public subscript<Subject>(dynamicMember keyPath: KeyPath<Value, Subject>) -> Subject {
@@ -311,10 +311,9 @@ public final actor ActorIsolated<Value: Sendable> {
   public func withValue<T: Sendable>(
     _ operation: @Sendable (inout Value) async throws -> T
   ) async rethrows -> T {
-    var wrappedValue = self.value
-    let returnValue = try await operation(&wrappedValue)
-    self.value = wrappedValue
-    return returnValue
+    var value = self.value
+    defer { self.value = value }
+    return try await operation(&value)
   }
 
   /// Overwrite the isolated value with a new value.
@@ -340,27 +339,11 @@ public final actor ActorIsolated<Value: Sendable> {
 public struct UncheckedSendable<Value>: @unchecked Sendable {
   public var value: Value
 
-  @_disfavoredOverload
   public init(_ value: Value) {
     self.value = value
   }
 
-  public init(_ value: Value) where Value: Sendable {
-    #if DEBUG
-      runtimeWarning(warning, ["\(Value.self)"])
-    #endif
-    self.value = value
-  }
-
-  @_disfavoredOverload
   public init(wrappedValue: Value) {
-    self.value = wrappedValue
-  }
-
-  public init(wrappedValue: Value) where Value: Sendable {
-    #if DEBUG
-      runtimeWarning(warning, ["\(Value.self)"])
-    #endif
     self.value = wrappedValue
   }
 
@@ -377,11 +360,9 @@ public struct UncheckedSendable<Value>: @unchecked Sendable {
   public subscript<Subject>(dynamicMember keyPath: KeyPath<Value, Subject>) -> Subject {
     self.value[keyPath: keyPath]
   }
-}
 
-#if DEBUG
-  private let warning: StaticString = """
-    Redundant use of 'UncheckedSendable' with '%1$@'. '%1$@' already conforms to the \
-    'Sendable' protocol. There is no need to wrap values of '%1$@' with 'UncheckedSendable'.
-    """
-#endif
+  public subscript<Subject>(dynamicMember keyPath: WritableKeyPath<Value, Subject>) -> Subject {
+    _read { yield self.value[keyPath: keyPath] }
+    _modify { yield &self.value[keyPath: keyPath] }
+  }
+}
