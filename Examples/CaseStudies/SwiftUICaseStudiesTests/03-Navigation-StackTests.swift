@@ -44,7 +44,11 @@ class NavigationStackTests: XCTestCase {
     await store.send(.navigation(.setPath(store.state.path + [.init(id: screenCID, element: .screenC(.init()))]))) {
       $0.path.append(.init(id: screenCID, element: .screenC(.init())))
     }
-    await store.send(.navigation(.element(id: screenCID, .screenC(.startButtonTapped))))
+    await store.send(.navigation(.element(id: screenCID, .screenC(.startButtonTapped)))) {
+      try CasePath(NavigationDemo.DestinationState.screenC).unwrapModify(&$0.path[id: screenCID]) {
+        $0.isTimerRunning = true
+      }
+    }
     await self.scheduler.advance(by: .seconds(2))
     await store.receive(.navigation(.element(id: screenCID, .screenC(.timerTick)))) {
       try CasePath(NavigationDemo.DestinationState.screenC).unwrapModify(&$0.path[id: screenCID]) {
@@ -71,6 +75,7 @@ class NavigationStackTests: XCTestCase {
       reducer: NavigationDemo()
         .dependency(\.factClient.fetch) { "\($0) is a good number." }
         .dependency(\.mainQueue, self.scheduler.eraseToAnyScheduler())
+        .dependency(\.navigationID, .incrementing)
     )
 
     let screenBID = store.dependencies.navigationID.next()

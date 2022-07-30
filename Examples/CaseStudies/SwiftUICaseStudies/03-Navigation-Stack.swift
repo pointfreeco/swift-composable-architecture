@@ -144,13 +144,14 @@ struct NavigationDemoView: View {
             content: ScreenCView.init(store:)
           )
         }
-        .navigationTitle("Navigation Stack")
+        .navigationTitle("Root")
       }
       .zIndex(0)
 
       FloatingMenuView(store: self.store)
         .zIndex(1)
     }
+    .navigationTitle("Navigation Stack")
   }
 }
 

@@ -18,7 +18,7 @@ public struct NavigationID {
 
   public static let live = Self { UUID() }
   public static var incrementing: Self {
-    var count = 0
+    var count = 1
     return Self {
       defer { count += 1 }
       return count
