@@ -19,65 +19,84 @@ public struct NavigationState<Element>:
     }
   }
 
-  var path = IdentifiedArrayOf<Destination>()
+  var destinations: [Destination] = []
 
   public init() {}
 
   public var startIndex: Int {
-    self.path.startIndex
+    self.destinations.startIndex
   }
 
   public var endIndex: Int {
-    self.path.endIndex
+    self.destinations.endIndex
   }
 
   public func index(after i: Int) -> Int {
-    self.path.index(after: i)
+    self.destinations.index(after: i)
   }
 
   public subscript(position: Int) -> Destination {
-    _read { yield self.path[position] }
-    _modify {
-      var element = self.path[position]
-      yield &element
-      self.path.update(element, at: position)
-    }
-    set {
-      self.path.update(newValue, at: position)
-    }
+    _read { yield self.destinations[position] }
+    _modify { yield &self.destinations[position] }
+    set { self.destinations[position] = newValue }
   }
 
   public mutating func replaceSubrange<C: Collection>(_ subrange: Range<Int>, with newElements: C)
   where C.Element == Destination {
-    self.path.removeSubrange(subrange)
+    self.destinations.removeSubrange(subrange)
     for element in newElements.reversed() {
-      self.path.insert(element, at: subrange.startIndex)
+      self.destinations.insert(element, at: subrange.startIndex)
     }
   }
 
   public subscript(id id: ID) -> Element? {
-    _read { yield self.path[id: id]?.element }
+    _read {
+      guard let index = self.destinations.firstIndex(where: { $0.id == id })
+      else {
+        yield nil
+        return
+      }
+      yield self.destinations[index].element
+    }
     _modify {
-      var element = self.path[id: id]?.element
+      guard let index = self.destinations.firstIndex(where: { $0.id == id })
+      else {
+        var element: Element? = nil
+        yield &element
+        return
+      }
+      var element: Element! = self.destinations[index].element
       yield &element
-      self.path[id: id] = element.map { .init(id: id, element: $0) }
+      self.destinations[index].element = element
     }
     set {
-      self.path[id: id] = newValue.map { .init(id: id, element: $0) }
+      switch (self.destinations.firstIndex(where: { $0.id == id }), newValue) {
+      case let (.some(index), .some(newValue)):
+        self.destinations[index].element = newValue
+
+      case let (.some(index), .none):
+        self.destinations.remove(at: index)
+
+      case let (.none, .some(newValue)):
+        self.append(newValue)
+
+      case (.none, .none):
+        break
+      }
     }
   }
 
   @discardableResult
   public mutating func append(_ element: Element) -> ID {
     let id = DependencyValues.current.navigationID.next()
-    self.path.append(Destination(id: id, element: element))
+    self.destinations.append(Destination(id: id, element: element))
     return id
   }
 }
 
 extension NavigationState: ExpressibleByDictionaryLiteral {
   public init(dictionaryLiteral elements: (ID, Element)...) {
-    self.path = .init(uniqueElements: elements.map(Destination.init(id:element:)))
+    self.destinations = .init(elements.map(Destination.init(id:element:)))
   }
 }
 
@@ -234,11 +253,15 @@ where
           .cancellable(id: id)
 
       case let .setPath(path):
-        let removedIds = globalState.path.path.ids.compactMap {
-          !path.path.ids.contains($0) ? $0 : nil
+        var removedIds: Set<AnyHashable> = []
+        for destination in globalState.path.destinations {
+          removedIds.insert(destination.id)
+        }
+        for destination in path {
+          removedIds.remove(destination.id)
         }
         globalState.path = path
-        return .cancel(ids: removedIds)
+        return .merge(removedIds.map { .cancel(id: $0) })
       }
     }
 
@@ -313,8 +336,8 @@ public struct DestinationStore<
   public var body: some View {
     IfLetStore(
       self.store.wrappedValue.scope(
-        state: cachedLastSome { _state in (_state.path[id: store.id]?.element).flatMap(state) },
-        action: { _action in .element(id: store.id, action(_action)) }
+        state: cachedLastSome { $0[id: store.id].flatMap(state) },
+        action: { .element(id: store.id, action($0)) }
       )
     ) {
       content($0)
