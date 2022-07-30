@@ -12,7 +12,7 @@ public struct Scope<State, Action, Local: ReducerProtocol>: ReducerProtocol {
   public init(
     state toLocalState: WritableKeyPath<State, Local.State>,
     action toLocalAction: CasePath<Action, Local.Action>,
-    @ReducerBuilder<Local.State, Local.Action> _ local: () -> Local
+    @ReducerBuilderOf<Local> _ local: () -> Local
   ) {
     self.toLocalState = toLocalState
     self.toLocalAction = toLocalAction
@@ -47,7 +47,7 @@ public struct ScopeCase<State, Action, Local: ReducerProtocol>: ReducerProtocol 
   public init(
     state toLocalState: CasePath<State, Local.State>,
     action toLocalAction: CasePath<Action, Local.Action>,
-    @ReducerBuilder<Local.State, Local.Action> _ local: () -> Local
+    @ReducerBuilderOf<Local> _ local: () -> Local
   ) {
     self.toLocalState = toLocalState
     self.toLocalAction = toLocalAction

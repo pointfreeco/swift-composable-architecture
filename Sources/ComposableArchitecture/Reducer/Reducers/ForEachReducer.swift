@@ -3,7 +3,7 @@ extension ReducerProtocol {
   public func forEach<ID: Hashable, Element: ReducerProtocol>(
     state toElementsState: WritableKeyPath<State, IdentifiedArray<ID, Element.State>>,
     action toElementAction: CasePath<Action, (ID, Element.Action)>,
-    @ReducerBuilder<Element.State, Element.Action> _ element: () -> Element,
+    @ReducerBuilderOf<Element> _ element: () -> Element,
     file: StaticString = #file,
     line: UInt = #line
   ) -> ForEachReducer<Self, ID, Element> {

@@ -3,7 +3,7 @@ extension ReducerProtocol {
   public func ifLet<Wrapped: ReducerProtocol>(
     state toWrappedState: WritableKeyPath<State, Wrapped.State?>,
     action toWrappedAction: CasePath<Action, Wrapped.Action>,
-    @ReducerBuilder<Wrapped.State, Wrapped.Action> then wrapped: () -> Wrapped,
+    @ReducerBuilderOf<Wrapped> then wrapped: () -> Wrapped,
     file: StaticString = #file,
     line: UInt = #line
   ) -> IfLetReducer<Self, Wrapped> {
@@ -21,7 +21,7 @@ extension ReducerProtocol {
   public func ifLet<Wrapped: ReducerProtocol>(
     state toWrappedState: CasePath<State, Wrapped.State>,
     action toWrappedAction: CasePath<Action, Wrapped.Action>,
-    @ReducerBuilder<Wrapped.State, Wrapped.Action> then wrapped: () -> Wrapped,
+    @ReducerBuilderOf<Wrapped> then wrapped: () -> Wrapped,
     file: StaticString = #file,
     line: UInt = #line
   ) -> IfCaseLetReducer<Self, Wrapped> {
