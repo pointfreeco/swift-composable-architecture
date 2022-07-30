@@ -72,6 +72,7 @@
 		DC89C45524465C44006900B9 /* 02-Effects-Timers.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C45424465C44006900B9 /* 02-Effects-Timers.swift */; };
 		DC9EB4172450CBD2005F413B /* UIViewRepresented.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9EB4162450CBD2005F413B /* UIViewRepresented.swift */; };
 		DCAC2A4F2452352E0094DEF5 /* 04-HigherOrderReducers-ElmLikeSubscriptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAC2A4E2452352E0094DEF5 /* 04-HigherOrderReducers-ElmLikeSubscriptions.swift */; };
+		DCC60D252895B1670005D514 /* 03-Navigation-Sheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC60D242895B1670005D514 /* 03-Navigation-Sheet.swift */; };
 		DCC68EAB244666AF0037F998 /* 03-Navigation-Sheet-PresentAndLoad.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EAA244666AF0037F998 /* 03-Navigation-Sheet-PresentAndLoad.swift */; };
 		DCC68EDD2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EDC2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift */; };
 		DCC68EDF2447BC810037F998 /* TemplateText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EDE2447BC810037F998 /* TemplateText.swift */; };
@@ -226,6 +227,7 @@
 		DC89C45424465C44006900B9 /* 02-Effects-Timers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-Timers.swift"; sourceTree = "<group>"; };
 		DC9EB4162450CBD2005F413B /* UIViewRepresented.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIViewRepresented.swift; sourceTree = "<group>"; };
 		DCAC2A4E2452352E0094DEF5 /* 04-HigherOrderReducers-ElmLikeSubscriptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-ElmLikeSubscriptions.swift"; sourceTree = "<group>"; };
+		DCC60D242895B1670005D514 /* 03-Navigation-Sheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Navigation-Sheet.swift"; sourceTree = "<group>"; };
 		DCC68EAA244666AF0037F998 /* 03-Navigation-Sheet-PresentAndLoad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Navigation-Sheet-PresentAndLoad.swift"; sourceTree = "<group>"; };
 		DCC68EDC2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-OptionalState.swift"; sourceTree = "<group>"; };
 		DCC68EDE2447BC810037F998 /* TemplateText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateText.swift; sourceTree = "<group>"; };
@@ -415,6 +417,7 @@
 				DC89C45024462DE7006900B9 /* 03-Navigation-Lists-LoadThenNavigate.swift */,
 				DC89C45224465451006900B9 /* 03-Navigation-Lists-NavigateAndLoad.swift */,
 				DCCA5B0A2894CF7A005C1BD9 /* 03-Navigation-Stack.swift */,
+				DCC60D242895B1670005D514 /* 03-Navigation-Sheet.swift */,
 				DC89C448244618D5006900B9 /* 03-Navigation-LoadThenNavigate.swift */,
 				DC89C44C244621A5006900B9 /* 03-Navigation-NavigateAndLoad.swift */,
 				DC072321244663B1003A8B65 /* 03-Navigation-Sheet-LoadThenPresent.swift */,
@@ -780,6 +783,7 @@
 				CAA9ADCA2446605B0003A984 /* 02-Effects-LongLiving.swift in Sources */,
 				DC89C45124462DE7006900B9 /* 03-Navigation-Lists-LoadThenNavigate.swift in Sources */,
 				DC89C45524465C44006900B9 /* 02-Effects-Timers.swift in Sources */,
+				DCC60D252895B1670005D514 /* 03-Navigation-Sheet.swift in Sources */,
 				CA410EE0247A15FE00E41798 /* 02-Effects-WebSocket.swift in Sources */,
 				CA7BC8EE245CCFE4001FB69F /* 01-GettingStarted-SharedState.swift in Sources */,
 			);

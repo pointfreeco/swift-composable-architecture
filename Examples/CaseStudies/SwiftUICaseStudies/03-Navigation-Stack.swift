@@ -440,8 +440,8 @@ struct ScreenCView: View {
 struct NavigationStack_Previews: PreviewProvider {
   static var previews: some View {
     NavigationDemoView(
-      store: .init(
-        initialState: .init(),
+      store: Store(
+        initialState: NavigationDemo.State(),
         reducer: NavigationDemo()
       )
     )
