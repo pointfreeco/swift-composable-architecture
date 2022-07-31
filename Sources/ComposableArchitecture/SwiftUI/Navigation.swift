@@ -166,16 +166,16 @@ public enum NavigationAction<State, Action> {
 extension NavigationAction: Equatable where State: Equatable, Action: Equatable {}
 extension NavigationAction: Hashable where State: Hashable, Action: Hashable {}
 
-public protocol NavigableAction {
-  associatedtype DestinationState
-  associatedtype DestinationAction
-  static func navigation(_: NavigationAction<DestinationState, DestinationAction>) -> Self
-}
-
 public protocol NavigableState {
   associatedtype DestinationState: Hashable
   // TODO: other names? stack?
   var path: NavigationState<DestinationState> { get set }
+}
+
+public protocol NavigableAction {
+  associatedtype DestinationState
+  associatedtype DestinationAction
+  static func navigation(_: NavigationAction<DestinationState, DestinationAction>) -> Self
 }
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)

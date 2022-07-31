@@ -6,6 +6,14 @@ public enum PresentationState<State> {
   case dismissed
   indirect case presented(id: AnyHashable, State)
 
+  public mutating func present(_ value: State) {
+    self.wrappedValue = value
+  }
+
+  public mutating func dismiss() {
+    self = .dismissed
+  }
+
   public init(wrappedValue: State?) {
     self = wrappedValue.map { .presented(id: UUID(), $0) } ?? .dismissed
   }

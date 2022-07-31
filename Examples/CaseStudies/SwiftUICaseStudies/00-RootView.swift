@@ -174,6 +174,16 @@ struct RootView: View {
             )
 
             NavigationLink(
+              "Presentation sheet",
+              destination: SheetDemoView(
+                store: self.store.scope(
+                  state: \.presentation,
+                  action: Root.Action.presentation
+                )
+              )
+            )
+
+            NavigationLink(
               "Navigate and load data",
               destination: NavigateAndLoadView(
                 store: self.store.scope(
