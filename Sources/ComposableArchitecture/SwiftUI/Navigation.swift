@@ -111,8 +111,7 @@ extension NavigationState.Destination {
 extension NavigationState.Destination: Decodable where Element: Decodable {
   public init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
-    if
-      let idTypeName = try? container.decode(String.self, forKey: .idTypeName),
+    if let idTypeName = try? container.decode(String.self, forKey: .idTypeName),
       let idType = _typeByName(idTypeName),
       let idString = try? container.decode(String.self, forKey: .idString),
       let id = try? _decode(idType, from: Data(idString.utf8)) as? AnyHashable
@@ -180,9 +179,10 @@ public protocol NavigableState {
 }
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
-public struct NavigationStackStore<State: NavigableState, Action: NavigableAction, Content: View>: View
-where State.DestinationState == Action.DestinationState
-{
+public struct NavigationStackStore<
+  State: NavigableState, Action: NavigableAction, Content: View
+>: View
+where State.DestinationState == Action.DestinationState {
   let store: Store<NavigationState<State.DestinationState>, NavigationState<State.DestinationState>>
   let content: Content
 
@@ -314,10 +314,11 @@ public struct DestinationStore<
   DestinationAction,
   Destination: View
 >: View {
-  @EnvironmentObject private var store: StoreObservableObject<
-    NavigationState<State>,
-    NavigationAction<State, Action>
-  >
+  @EnvironmentObject private var store:
+    StoreObservableObject<
+      NavigationState<State>,
+      NavigationAction<State, Action>
+    >
 
   let state: (State) -> DestinationState?
   let action: (DestinationAction) -> Action
@@ -352,12 +353,13 @@ extension View {
     store: Store<State, Action>,
     @ViewBuilder destination: @escaping () -> Content
   )
-  -> some View
+    -> some View
   where
     Content: View,
     State.DestinationState == Action.DestinationState
   {
-    self.navigationDestination(for: NavigationState<State.DestinationState>.Destination.self) { route in
+    self.navigationDestination(for: NavigationState<State.DestinationState>.Destination.self) {
+      route in
       if let destinationState = store.state.value.path.last(where: { $0 == route }) {
         destination()
           .environmentObject(
@@ -376,7 +378,8 @@ extension View {
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationLink where Destination == Never {
   public init<D: Hashable>(state: D?, label: () -> Label) {
-    self.init(value: state.map { NavigationState.Destination(id: UUID(), element: $0) }, label: label)
+    self.init(
+      value: state.map { NavigationState.Destination(id: UUID(), element: $0) }, label: label)
   }
 
   public init<D: Hashable>(_ titleKey: LocalizedStringKey, state: D?) where Label == Text {

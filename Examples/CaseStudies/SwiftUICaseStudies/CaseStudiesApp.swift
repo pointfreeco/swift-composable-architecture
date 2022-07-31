@@ -5,14 +5,15 @@ import SwiftUI
 struct CaseStudiesApp: App {
   var body: some Scene {
     WindowGroup {
-      RootView(
-        store: Store(
-          initialState: Root.State(),
-          reducer: Root()
-            .debug()
-            .signpost()
-        )
-      )
+      SheetDemoView(store: Store(initialState: SheetDemo.State(), reducer: SheetDemo().debug()))
+//      RootView(
+//        store: Store(
+//          initialState: Root.State(),
+//          reducer: Root()
+//            .debug()
+//            .signpost()
+//        )
+//      )
     }
   }
 }
