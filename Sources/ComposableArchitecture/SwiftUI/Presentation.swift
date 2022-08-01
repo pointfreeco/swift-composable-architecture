@@ -1,6 +1,6 @@
 import SwiftUI
 
-// TODO: `@dynamicMemberLookup`?
+// TODO: `@dynamicMemberLookup`? `Sendable where State: Sendable`
 @propertyWrapper
 public enum PresentationState<State> {
   case dismissed
@@ -181,7 +181,7 @@ extension View {
       self.fullScreenCover(isPresented: viewStore.binding(send: { $0 ? .present : .dismiss })) {
         IfLetStore(
           store.scope(
-            state: cachedLastSome { $0.wrappedValue },
+            state: returningLastNonNilValue { $0.wrappedValue },
             action: PresentationAction.presented
           ),
           then: content
@@ -206,7 +206,7 @@ extension View {
       ) {
         IfLetStore(
           store.scope(
-            state: cachedLastSome { $0.wrappedValue },
+            state: returningLastNonNilValue { $0.wrappedValue },
             action: PresentationAction.presented
           ),
           then: content
@@ -224,20 +224,12 @@ extension View {
       self.sheet(isPresented: viewStore.binding(send: { $0 ? .present : .dismiss })) {
         IfLetStore(
           store.scope(
-            state: cachedLastSome { $0.wrappedValue },
+            state: returningLastNonNilValue { $0.wrappedValue },
             action: PresentationAction.presented
           ),
           then: content
         )
       }
     }
-  }
-}
-
-private func cachedLastSome<A, B>(_ f: @escaping (A) -> B?) -> (A) -> B? {
-  var lastWrapped: B?
-  return { wrapped in
-    lastWrapped = f(wrapped) ?? lastWrapped
-    return lastWrapped
   }
 }

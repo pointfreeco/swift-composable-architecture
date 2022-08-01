@@ -2,6 +2,7 @@ import SwiftUI
 
 // TODO: Other names? `NavigationPathState`? `NavigationStatePath`?
 // TODO: Should `NavigationState` flatten to just work on `Identifiable` elements?
+// TODO: `Sendable where Element: Sendable`
 public struct NavigationState<Element>:
   MutableCollection,
   RandomAccessCollection,
@@ -266,6 +267,8 @@ where
     }
 
     self.upstream
+
+    // TODO: Run `upstream` before dismissal? See presentation for this behavior.
   }
 }
 
@@ -337,7 +340,7 @@ public struct DestinationStore<
   public var body: some View {
     IfLetStore(
       self.store.wrappedValue.scope(
-        state: cachedLastSome { $0[id: store.id].flatMap(state) },
+        state: returningLastNonNilValue { $0[id: store.id].flatMap(state) },
         action: { .element(id: store.id, action($0)) }
       )
     ) {
@@ -388,14 +391,6 @@ extension NavigationLink where Destination == Never {
 
   public init<S: StringProtocol, D: Hashable>(_ title: S, state: D?) where Label == Text {
     self.init(title, value: state.map { NavigationState.Destination(id: UUID(), element: $0) })
-  }
-}
-
-private func cachedLastSome<A, B>(_ f: @escaping (A) -> B?) -> (A) -> B? {
-  var lastWrapped: B?
-  return { wrapped in
-    lastWrapped = f(wrapped) ?? lastWrapped
-    return lastWrapped
   }
 }
 
