@@ -170,6 +170,51 @@ public struct PresentationReducer<
 }
 
 extension View {
+  @available(iOS 14, tvOS 14, watchOS 7, *)
+  @available(macOS, unavailable)
+  public func fullScreenCover<State, Action, Content>(
+    store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+    @ViewBuilder content: @escaping (Store<State, Action>) -> Content
+  ) -> some View
+  where Content: View {
+    WithViewStore(store.scope(state: { $0.wrappedValue != nil })) { viewStore in
+      self.fullScreenCover(isPresented: viewStore.binding(send: { $0 ? .present : .dismiss })) {
+        IfLetStore(
+          store.scope(
+            state: cachedLastSome { $0.wrappedValue },
+            action: PresentationAction.presented
+          ),
+          then: content
+        )
+      }
+    }
+  }
+
+  @available(tvOS, unavailable)
+  public func popover<State, Action, Content>(
+    store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+    attachmentAnchor: PopoverAttachmentAnchor,
+    arrowEdge: Edge,
+    @ViewBuilder content: @escaping (Store<State, Action>) -> Content
+  ) -> some View
+  where Content: View {
+    WithViewStore(store.scope(state: { $0.wrappedValue != nil })) { viewStore in
+      self.popover(
+        isPresented: viewStore.binding(send: { $0 ? .present : .dismiss }),
+        attachmentAnchor: attachmentAnchor,
+        arrowEdge: arrowEdge
+      ) {
+        IfLetStore(
+          store.scope(
+            state: cachedLastSome { $0.wrappedValue },
+            action: PresentationAction.presented
+          ),
+          then: content
+        )
+      }
+    }
+  }
+
   public func sheet<State, Action, Content>(
     store: Store<PresentationState<State>, PresentationAction<State, Action>>,
     @ViewBuilder content: @escaping (Store<State, Action>) -> Content
