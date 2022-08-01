@@ -77,6 +77,8 @@
 		DCC68EDF2447BC810037F998 /* TemplateText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EDE2447BC810037F998 /* TemplateText.swift */; };
 		DCC68EE12447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EE02447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift */; };
 		DCC68EE32447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EE22447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift */; };
+		DCCA5B0B2894CF7A005C1BD9 /* 03-Navigation-Stack.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCCA5B0A2894CF7A005C1BD9 /* 03-Navigation-Stack.swift */; };
+		DCCA5B0D2894CF98005C1BD9 /* 03-Navigation-StackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCCA5B0C2894CF98005C1BD9 /* 03-Navigation-StackTests.swift */; };
 		DCD442C6286CA91F008B4EA7 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCD442C5286CA91F008B4EA7 /* AboutView.swift */; };
 		DCE63B71245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCE63B70245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift */; };
 		DCFE1960278DBF0600C14CCF /* CaseStudiesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCFE195F278DBF0600C14CCF /* CaseStudiesApp.swift */; };
@@ -229,6 +231,8 @@
 		DCC68EDE2447BC810037F998 /* TemplateText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateText.swift; sourceTree = "<group>"; };
 		DCC68EE02447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Composition-TwoCounters.swift"; sourceTree = "<group>"; };
 		DCC68EE22447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-ReusableFavoriting.swift"; sourceTree = "<group>"; };
+		DCCA5B0A2894CF7A005C1BD9 /* 03-Navigation-Stack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Navigation-Stack.swift"; sourceTree = "<group>"; };
+		DCCA5B0C2894CF98005C1BD9 /* 03-Navigation-StackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Navigation-StackTests.swift"; sourceTree = "<group>"; };
 		DCD442C5286CA91F008B4EA7 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		DCE63B70245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-Recursion.swift"; sourceTree = "<group>"; };
 		DCFE195F278DBF0600C14CCF /* CaseStudiesApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CaseStudiesApp.swift; sourceTree = "<group>"; };
@@ -410,6 +414,7 @@
 				CA410EDF247A15FE00E41798 /* 02-Effects-WebSocket.swift */,
 				DC89C45024462DE7006900B9 /* 03-Navigation-Lists-LoadThenNavigate.swift */,
 				DC89C45224465451006900B9 /* 03-Navigation-Lists-NavigateAndLoad.swift */,
+				DCCA5B0A2894CF7A005C1BD9 /* 03-Navigation-Stack.swift */,
 				DC89C448244618D5006900B9 /* 03-Navigation-LoadThenNavigate.swift */,
 				DC89C44C244621A5006900B9 /* 03-Navigation-NavigateAndLoad.swift */,
 				DC072321244663B1003A8B65 /* 03-Navigation-Sheet-LoadThenPresent.swift */,
@@ -440,6 +445,7 @@
 				CABC4F3A26AEE20200D5FA2C /* 02-Effects-RefreshableTests.swift */,
 				DC07231624465D1E003A8B65 /* 02-Effects-TimersTests.swift */,
 				CA410EE1247C73B400E41798 /* 02-Effects-WebSocketTests.swift */,
+				DCCA5B0C2894CF98005C1BD9 /* 03-Navigation-StackTests.swift */,
 				CA0C0C4624B89BEC00CBDD8A /* 04-HigherOrderReducers-LifecycleTests.swift */,
 				DC634B242448D15B00DAA016 /* 04-HigherOrderReducers-ReusableFavoritingTests.swift */,
 				CA0C51FA245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift */,
@@ -741,6 +747,7 @@
 				DC89C449244618D5006900B9 /* 03-Navigation-LoadThenNavigate.swift in Sources */,
 				DCC68EE12447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift in Sources */,
 				DC072322244663B1003A8B65 /* 03-Navigation-Sheet-LoadThenPresent.swift in Sources */,
+				DCCA5B0B2894CF7A005C1BD9 /* 03-Navigation-Stack.swift in Sources */,
 				DC89C45324465452006900B9 /* 03-Navigation-Lists-NavigateAndLoad.swift in Sources */,
 				CAF069D024ACC5AF00A1AAEF /* 00-Core.swift in Sources */,
 				DCC68EE32447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift in Sources */,
@@ -789,6 +796,7 @@
 				CA410EE2247C73B400E41798 /* 02-Effects-WebSocketTests.swift in Sources */,
 				CABC4F3B26AEE20200D5FA2C /* 02-Effects-RefreshableTests.swift in Sources */,
 				CA34170824A4E89500FAF950 /* 01-GettingStarted-AnimationsTests.swift in Sources */,
+				DCCA5B0D2894CF98005C1BD9 /* 03-Navigation-StackTests.swift in Sources */,
 				CA0C0C4724B89BEC00CBDD8A /* 04-HigherOrderReducers-LifecycleTests.swift in Sources */,
 				DC07231724465D1E003A8B65 /* 02-Effects-TimersTests.swift in Sources */,
 				CA50BE6024A8F46500FE7DBA /* 01-GettingStarted-AlertsAndConfirmationDialogsTests.swift in Sources */,
