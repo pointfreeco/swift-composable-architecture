@@ -15,25 +15,23 @@ class NavigationSheetTests: XCTestCase {
     let mainQueue = DispatchQueue.test
     store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
 
-    await store.send(.animations(.present(Animations.State()))) {
-      $0.animations = Animations.State()
+    await store.send(.sheet(.present(.animations(Animations.State())))) {
+      $0.sheet = .animations(Animations.State())
     }
-    await store.send(.animations(.presented(.rainbowButtonTapped)))
-    await store.receive(.animations(.presented(.setColor(.red)))) {
-      try (/Optional.some).modify(&$0.animations) {
-        $0.circleColor = .red
-      }
+    await store.send(.sheet(.presented(.animations(.rainbowButtonTapped))))
+    await store.receive(.sheet(.presented(.animations(.setColor(.red))))) {
+      try (/Optional.some).appending(path: /SheetDemo.DestinationState.animations)
+        .modify(&$0.sheet) { $0.circleColor = .red }
     }
 
     await mainQueue.advance(by: .seconds(1))
-    await store.receive(.animations(.presented(.setColor(.blue)))) {
-      try (/Optional.some).modify(&$0.animations) {
-        $0.circleColor = .blue
-      }
+    await store.receive(.sheet(.presented(.animations(.setColor(.blue))))) {
+      try (/Optional.some).appending(path: /SheetDemo.DestinationState.animations)
+        .modify(&$0.sheet) { $0.circleColor = .blue }
     }
 
-    await store.send(.animations(.dismiss)) {
-      $0.animations = nil
+    await store.send(.sheet(.dismiss)) {
+      $0.sheet = nil
     }
   }
 }
