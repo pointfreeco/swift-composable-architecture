@@ -145,9 +145,9 @@ public final class WithRandomNumberGenerator: @unchecked Sendable {
   }
 
   public func callAsFunction<R>(_ work: (inout any RandomNumberGenerator) -> R) -> R {
-    self.lock.sync {
-      work(&self.generator)
-    }
+    os_unfair_lock_lock(self.lock)
+    defer { os_unfair_lock_unlock(self.lock) }
+    return work(&self.generator)
   }
 }
 

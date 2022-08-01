@@ -14,6 +14,10 @@ let package = Package(
     .library(
       name: "ComposableArchitecture",
       targets: ["ComposableArchitecture"]
+    ),
+    .library(
+      name: "Dependencies",
+      targets: ["Dependencies"]
     )
   ],
   dependencies: [
@@ -29,6 +33,7 @@ let package = Package(
     .target(
       name: "ComposableArchitecture",
       dependencies: [
+        "Dependencies",
         .product(name: "CasePaths", package: "swift-case-paths"),
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
         .product(name: "CustomDump", package: "swift-custom-dump"),
@@ -40,6 +45,13 @@ let package = Package(
       name: "ComposableArchitectureTests",
       dependencies: [
         "ComposableArchitecture"
+      ]
+    ),
+    .target(
+      name: "Dependencies",
+      dependencies: [
+        .product(name: "CombineSchedulers", package: "combine-schedulers"),
+        .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
       ]
     ),
     .executableTarget(

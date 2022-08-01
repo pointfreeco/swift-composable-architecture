@@ -123,10 +123,12 @@ public final class IncrementingUUIDGenerator: UUIDGenerator, @unchecked Sendable
   }
 
   public func callAsFunction() -> UUID {
-    self.lock.sync {
-      defer { self.sequence += 1 }
-      return UUID(uuidString: "00000000-0000-0000-0000-\(String(format: "%012x", self.sequence))")!
+    os_unfair_lock_lock(self.lock)
+    defer {
+      self.sequence += 1
+      os_unfair_lock_unlock(self.lock)
     }
+    return UUID(uuidString: "00000000-0000-0000-0000-\(String(format: "%012x", self.sequence))")!
   }
 }
 
