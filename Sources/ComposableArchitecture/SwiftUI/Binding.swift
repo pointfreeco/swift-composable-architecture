@@ -591,7 +591,7 @@ extension Reducer where Action: BindableAction, State == Action.State {
           [
             "\(self.fileID)",
             self.line,
-            "\(self.bindableActionType).binding(.set(_, \(self.value)))",
+            "\(typeName(self.bindableActionType)).binding(.set(_, \(self.value)))",
           ],
           file: self.file,
           line: self.line

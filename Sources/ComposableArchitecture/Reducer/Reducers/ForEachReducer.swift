@@ -5,6 +5,7 @@ extension ReducerProtocol {
     action toElementAction: CasePath<Action, (ID, Element.Action)>,
     @ReducerBuilderOf<Element> _ element: () -> Element,
     file: StaticString = #file,
+    fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> ForEachReducer<Self, ID, Element> {
     .init(
@@ -13,6 +14,7 @@ extension ReducerProtocol {
       toElementAction: toElementAction,
       element: element(),
       file: file,
+      fileID: fileID,
       line: line
     )
   }
@@ -37,6 +39,9 @@ public struct ForEachReducer<
   let file: StaticString
 
   @usableFromInline
+  let fileID: StaticString
+
+  @usableFromInline
   let line: UInt
 
   @inlinable
@@ -46,6 +51,7 @@ public struct ForEachReducer<
     toElementAction: CasePath<Upstream.Action, (ID, Element.Action)>,
     element: Element,
     file: StaticString,
+    fileID: StaticString,
     line: UInt
   ) {
     self.upstream = upstream
@@ -53,6 +59,7 @@ public struct ForEachReducer<
     self.toElementAction = toElementAction
     self.element = element
     self.file = file
+    self.fileID = fileID
     self.line = line
   }
 
@@ -100,11 +107,13 @@ public struct ForEachReducer<
         state contains an element at this id. In SwiftUI applications, use "ForEachStore".
         """,
         [
-          "\(file)",
+          "\(self.fileID)",
           line,
           debugCaseOutput(elementAction),
           "\(id)",
-        ]
+        ],
+        file: self.file,
+        line: self.line
       )
       return .none
     }

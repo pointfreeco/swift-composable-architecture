@@ -125,7 +125,7 @@ public struct IfLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtocol>:
           "\(self.fileID)",
           self.line,
           debugCaseOutput(action),
-          "\(Wrapped.State.self)",
+          typeName(Wrapped.State.self),
         ],
         file: self.file,
         line: self.line
@@ -223,7 +223,7 @@ public struct IfCaseLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtoc
           "\(self.fileID)",
           self.line,
           debugCaseOutput(action),
-          "\(Wrapped.State.self)",
+          typeName(Wrapped.State.self),
         ],
         file: self.file,
         line: self.line

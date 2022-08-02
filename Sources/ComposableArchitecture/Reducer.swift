@@ -497,7 +497,7 @@ public struct Reducer<State, Action, Environment> {
             "\(fileID)",
             line,
             debugCaseOutput(localAction),
-            "\(State.self)",
+            typeName(State.self),
           ],
           file: file,
           line: line
@@ -707,7 +707,7 @@ public struct Reducer<State, Action, Environment> {
             "\(fileID)",
             line,
             debugCaseOutput(action),
-            "\(State.self)",
+            typeName(State.self),
           ],
           file: file,
           line: line
