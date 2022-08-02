@@ -75,15 +75,15 @@ public final class ViewStore<State, Action>: ObservableObject {
     line: UInt = #line
   ) {
     self._send = {
-      let sendCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: $0).eraseToAny()
+      let sendCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: $0, file: file, line: line).eraseToAny()
       instrumentation.callback?(sendCallbackInfo, .pre, .viewStoreSend)
       defer { instrumentation.callback?(sendCallbackInfo, .post, .viewStoreSend) }
 
-      store.send($0, instrumentation: instrumentation)
+      store.send($0, file: file, line: line, instrumentation: instrumentation)
     }
     self._state = CurrentValueRelay(store.state.value)
 
-    let stateChangeCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: nil as Action?).eraseToAny()
+    let stateChangeCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: nil as Action?, file: file, line: line).eraseToAny()
     self.viewCancellable = store.state
       .removeDuplicates(by: {
         instrumentation.callback?(stateChangeCallbackInfo, .pre, .viewStoreDeduplicate)
@@ -117,11 +117,11 @@ public final class ViewStore<State, Action>: ObservableObject {
     line: UInt = #line
   ) where State == Void {
     self._send = {
-      let sendCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: $0).eraseToAny()
+      let sendCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: $0, file: file, line: line).eraseToAny()
       instrumentation.callback?(sendCallbackInfo, .pre, .viewStoreSend)
       defer { instrumentation.callback?(sendCallbackInfo, .post, .viewStoreSend) }
 
-      store.send($0, instrumentation: instrumentation)
+      store.send($0, file: file, line: line, instrumentation: instrumentation)
     }
     self._state = CurrentValueRelay(())
 

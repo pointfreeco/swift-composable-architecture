@@ -327,6 +327,8 @@ public final class Store<State, Action> {
     state toLocalState: @escaping (State) -> LocalState,
     action fromLocalAction: @escaping (LocalAction) -> Action,
     removeDuplicates isDuplicate: ((LocalState, LocalState) -> Bool)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line,
     instrumentation: Instrumentation = .shared
   ) -> Store<LocalState, LocalAction> {
     self.threadCheck(status: .scope)
@@ -336,7 +338,7 @@ public final class Store<State, Action> {
       reducer: .init { localState, localAction, _ in
         isSending = true
         defer { isSending = false }
-        self.send(fromLocalAction(localAction))
+        self.send(fromLocalAction(localAction), file: file, line: line)
         localState = toLocalState(self.state.value)
         return .none
       },
@@ -347,7 +349,7 @@ public final class Store<State, Action> {
       .sink { [weak localStore] newValue in
         guard !isSending else { return }
 
-        let callbackInfo = Instrumentation.CallbackInfo<Self.Type, Any>(storeKind: Self.self, action: nil).eraseToAny()
+        let callbackInfo = Instrumentation.CallbackInfo<Self.Type, Any>(storeKind: Self.self, action: nil, file: file, line: line).eraseToAny()
         instrumentation.callback?(callbackInfo, .pre, .storeToLocal)
         let newLocalState = toLocalState(newValue)
         instrumentation.callback?(callbackInfo, .post, .storeToLocal)
@@ -376,12 +378,14 @@ public final class Store<State, Action> {
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<LocalState>(
     state toLocalState: @escaping (State) -> LocalState,
+    file: StaticString = #file,
+    line: UInt = #line,
     instrumentation: Instrumentation = .shared
   ) -> Store<LocalState, Action> {
-    self.scope(state: toLocalState, action: { $0 }, instrumentation: instrumentation)
+      self.scope(state: toLocalState, action: { $0 }, file: file, line: line, instrumentation: instrumentation)
   }
 
-  func send(_ action: Action, originatingFrom originatingAction: Action? = nil, instrumentation: Instrumentation = .shared) {
+  func send(_ action: Action, originatingFrom originatingAction: Action? = nil, file: StaticString = #file, line: UInt = #line, instrumentation: Instrumentation = .shared) {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
     self.bufferedActions.append(action)
@@ -390,7 +394,7 @@ public final class Store<State, Action> {
     self.isSending = true
     var currentState = self.state.value
 
-    let callbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: action, originatingAction: originatingAction).eraseToAny()
+    let callbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: action, originatingAction: originatingAction, file: file, line: line).eraseToAny()
     instrumentation.callback?(callbackInfo, .pre, .storeSend)
     defer { instrumentation.callback?(callbackInfo, .post, .storeSend) }
 
@@ -404,14 +408,14 @@ public final class Store<State, Action> {
       // as part of state publisher updates,
       // process them now
       if !self.bufferedActions.isEmpty {
-        send(self.bufferedActions.removeLast())
+        send(self.bufferedActions.removeLast(), file: file, line: line)
       }
     }
 
     while !self.bufferedActions.isEmpty {
       let action = self.bufferedActions.removeFirst()
 
-      let processCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: action, originatingAction: nil).eraseToAny()
+      let processCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: action, originatingAction: nil, file: file, line: line).eraseToAny()
       instrumentation.callback?(processCallbackInfo, .pre, .storeProcessEvent)
       defer { instrumentation.callback?(processCallbackInfo, .post, .storeProcessEvent) }
 
@@ -426,7 +430,7 @@ public final class Store<State, Action> {
           self?.effectCancellables[uuid] = nil
         },
         receiveValue: { [weak self] effectAction in
-          self?.send(effectAction, originatingFrom: action, instrumentation: instrumentation)
+          self?.send(effectAction, originatingFrom: action, file: file, line: line, instrumentation: instrumentation)
         }
       )
 
