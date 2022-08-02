@@ -77,7 +77,7 @@ public struct IfLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtocol>:
     self.toWrappedState = toWrappedState
     self.toWrappedAction = toWrappedAction
     self.file = file
-    self.fileID = file
+    self.fileID = fileID
     self.line = line
   }
 
