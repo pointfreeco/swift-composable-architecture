@@ -4,5 +4,11 @@ func typeName(_ type: Any.Type) -> String {
   if let index = name.firstIndex(of: ".") {
     name.removeSubrange(...index)
   }
-  return name
+  return
+    name
+    .replacingOccurrences(
+      of: #"<.+>|\(unknown context at \$[[:xdigit:]]+\)\."#,
+      with: "",
+      options: .regularExpression
+    )
 }

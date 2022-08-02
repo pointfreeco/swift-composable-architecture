@@ -25,7 +25,7 @@ final class RuntimeWarningTests: XCTestCase {
         An effect completed on a non-main thread. …
 
           Effect returned from:
-            Action.tap
+            RuntimeWarningTests.Action.tap
 
         Make sure to use ".receive(on:)" on any effects that execute on background threads to \
         receive their output on the main thread.
@@ -120,7 +120,7 @@ final class RuntimeWarningTests: XCTestCase {
         An effect completed on a non-main thread. …
 
           Effect returned from:
-            Action.response
+            RuntimeWarningTests.Action.response
 
         Make sure to use ".receive(on:)" on any effects that execute on background threads to \
         receive their output on the main thread.
@@ -132,7 +132,7 @@ final class RuntimeWarningTests: XCTestCase {
         An effect completed on a non-main thread. …
 
           Effect returned from:
-            Action.tap
+            RuntimeWarningTests.Action.tap
 
         Make sure to use ".receive(on:)" on any effects that execute on background threads to \
         receive their output on the main thread.
@@ -144,10 +144,10 @@ final class RuntimeWarningTests: XCTestCase {
         An effect published an action on a non-main thread. …
 
           Effect published:
-            Action.response
+            RuntimeWarningTests.Action.response
 
           Effect returned from:
-            Action.tap
+            RuntimeWarningTests.Action.tap
 
         Make sure to use ".receive(on:)" on any effects that execute on background threads to \
         receive their output on the main thread.
@@ -204,7 +204,7 @@ final class RuntimeWarningTests: XCTestCase {
         A binding action sent from a view store at "ComposableArchitectureTests/RuntimeWarningTests.swift:\(line+1)" was not handled:
 
           Action:
-            Action.binding(.set(_, 42))
+            RuntimeWarningTests.Action.binding(.set(_, 42))
 
         To fix this, invoke the "binding()" method on your feature's reducer.
         """
