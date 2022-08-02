@@ -95,14 +95,19 @@ extension Instrumentation {
     /// "originating" action (that action which was passed to the reducer that then returned the current ``action``)
     public let originatingAction: Action?
 
-    init(storeKind: StoreKind, action: Action? = nil, originatingAction: Action? = nil) {
+    public let file: StaticString?
+    public let line: UInt?
+
+    init(storeKind: StoreKind, action: Action? = nil, originatingAction: Action? = nil, file: StaticString? = nil, line: UInt? = nil) {
       self.storeKind = storeKind
       self.action = action
       self.originatingAction = originatingAction
+      self.file = file
+      self.line = line
     }
 
     func eraseToAny() -> CallbackInfo<Any, Any> {
-      return .init(storeKind: (storeKind as Any), action: action.map { $0 as Any }, originatingAction: originatingAction.map { $0 as Any })
+        return .init(storeKind: (storeKind as Any), action: action.map { $0 as Any }, originatingAction: originatingAction.map { $0 as Any }, file: file, line: line)
     }
   }
 }
