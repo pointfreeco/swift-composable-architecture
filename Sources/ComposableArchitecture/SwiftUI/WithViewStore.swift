@@ -58,13 +58,6 @@ public struct WithViewStore<State, Action, Content> {
               ?? "(No difference in state detected)"
           }
           ?? "(Initial state)\n\(stateDump)"
-        func typeName(_ type: Any.Type) -> String {
-          var name = String(reflecting: type)
-          if let index = name.firstIndex(of: ".") {
-            name.removeSubrange(...index)
-          }
-          return name
-        }
         print(
           """
           \(prefix.isEmpty ? "" : "\(prefix): ")\

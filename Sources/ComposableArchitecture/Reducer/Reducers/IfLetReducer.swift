@@ -5,6 +5,7 @@ extension ReducerProtocol {
     action toWrappedAction: CasePath<Action, Wrapped.Action>,
     @ReducerBuilderOf<Wrapped> then wrapped: () -> Wrapped,
     file: StaticString = #file,
+    fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> IfLetReducer<Self, Wrapped> {
     .init(
@@ -13,6 +14,7 @@ extension ReducerProtocol {
       toWrappedState: toWrappedState,
       toWrappedAction: toWrappedAction,
       file: file,
+      fileID: fileID,
       line: line
     )
   }
@@ -23,6 +25,7 @@ extension ReducerProtocol {
     action toWrappedAction: CasePath<Action, Wrapped.Action>,
     @ReducerBuilderOf<Wrapped> then wrapped: () -> Wrapped,
     file: StaticString = #file,
+    fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> IfCaseLetReducer<Self, Wrapped> {
     .init(
@@ -31,6 +34,7 @@ extension ReducerProtocol {
       toWrappedState: toWrappedState,
       toWrappedAction: toWrappedAction,
       file: file,
+      fileID: fileID,
       line: line
     )
   }
@@ -53,6 +57,9 @@ public struct IfLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtocol>:
   let file: StaticString
 
   @usableFromInline
+  let fileID: StaticString
+
+  @usableFromInline
   let line: UInt
 
   @inlinable
@@ -62,6 +69,7 @@ public struct IfLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtocol>:
     toWrappedState: WritableKeyPath<State, Wrapped.State?>,
     toWrappedAction: CasePath<Action, Wrapped.Action>,
     file: StaticString,
+    fileID: StaticString,
     line: UInt
   ) {
     self.upstream = upstream
@@ -69,6 +77,7 @@ public struct IfLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtocol>:
     self.toWrappedState = toWrappedState
     self.toWrappedAction = toWrappedAction
     self.file = file
+    self.fileID = file
     self.line = line
   }
 
@@ -113,11 +122,13 @@ public struct IfLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtocol>:
         use "IfLetStore".
         """,
         [
-          "\(file)",
-          line,
+          "\(self.fileID)",
+          self.line,
           debugCaseOutput(action),
           "\(Wrapped.State.self)",
-        ]
+        ],
+        file: self.file,
+        line: self.line
       )
       return .none
     }
@@ -144,6 +155,9 @@ public struct IfCaseLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtoc
   let file: StaticString
 
   @usableFromInline
+  let fileID: StaticString
+
+  @usableFromInline
   let line: UInt
 
   @inlinable
@@ -153,6 +167,7 @@ public struct IfCaseLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtoc
     toWrappedState: CasePath<State, Wrapped.State>,
     toWrappedAction: CasePath<Action, Wrapped.Action>,
     file: StaticString,
+    fileID: StaticString,
     line: UInt
   ) {
     self.upstream = upstream
@@ -160,6 +175,7 @@ public struct IfCaseLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtoc
     self.toWrappedState = toWrappedState
     self.toWrappedAction = toWrappedAction
     self.file = file
+    self.fileID = fileID
     self.line = line
   }
 
@@ -204,11 +220,13 @@ public struct IfCaseLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtoc
         use "IfLetStore".
         """,
         [
-          "\(file)",
-          line,
+          "\(self.fileID)",
+          self.line,
           debugCaseOutput(action),
           "\(Wrapped.State.self)",
-        ]
+        ],
+        file: self.file,
+        line: self.line
       )
       return .none
     }
