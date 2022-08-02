@@ -11,6 +11,8 @@
     @ReducerBuilder<State, Action>
     var body: Body { get }
   }
+
+  public typealias ReducerProtocolOf<R: ReducerProtocol> = ReducerProtocol<R.State, R.Action>
 #else
   public protocol ReducerProtocol {
     associatedtype State
