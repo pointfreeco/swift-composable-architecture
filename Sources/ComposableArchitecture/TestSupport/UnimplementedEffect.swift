@@ -39,7 +39,7 @@ extension Effect {
   /// > { state, action, environment in
   ///   switch action {
   ///   case .decrementButtonTapped:
-  ///     if state > 0 {
+  ///     if state.count > 0 {
   ///       state.count -= 0
   ///       return .none
   ///     } else {
@@ -61,14 +61,14 @@ extension Effect {
   /// ```swift
   /// func testIncrement() {
   ///   let store = TestStore(
-  ///     initialState: CounterState(count: 0)
+  ///     initialState: CounterState(count: 0),
   ///     reducer: counterReducer,
   ///     environment: CounterEnvironment(
-  ///       playSound: .unimplemented("playSound")
+  ///       playAlertSound: { .unimplemented("playAlertSound") }
   ///     )
   ///   )
   ///
-  ///   store.send(.increment) {
+  ///   store.send(.incrementButtonTapped) {
   ///     $0.count = 1
   ///   }
   /// }
