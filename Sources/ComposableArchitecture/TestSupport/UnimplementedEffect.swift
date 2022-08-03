@@ -64,7 +64,7 @@ extension Effect {
   ///     initialState: CounterState(count: 0),
   ///     reducer: counterReducer,
   ///     environment: CounterEnvironment(
-  ///       playAlertSound:  { .unimplemented("playAlertSound") }
+  ///       playAlertSound: { .unimplemented("playAlertSound") }
   ///     )
   ///   )
   ///
