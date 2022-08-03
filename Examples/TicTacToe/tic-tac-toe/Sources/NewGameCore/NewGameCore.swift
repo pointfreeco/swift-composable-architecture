@@ -47,6 +47,5 @@ public struct NewGame: ReducerProtocol {
     .presentationDestination(state: \.$game, action: /Action.game) {
       Game()
     }
-    .debug()
   }
 }
