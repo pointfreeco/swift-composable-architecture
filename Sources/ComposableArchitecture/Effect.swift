@@ -107,7 +107,7 @@ extension Effect where Failure == Never {
                 customDump(error, to: &errorDump, indent: 4)
                 runtimeWarning(
                   """
-                  An 'Effect.task' returned from "%@:%d" threw an unhandled error:
+                  An 'Effect.task' returned from "%@:%d" threw an unhandled error. …
 
                   %@
 
@@ -197,7 +197,7 @@ extension Effect where Failure == Never {
                 customDump(error, to: &errorDump, indent: 4)
                 runtimeWarning(
                   """
-                  An 'Effect.run' returned from "%@:%d" threw an unhandled error:
+                  An 'Effect.run' returned from "%@:%d" threw an unhandled error. …
 
                   %@
 

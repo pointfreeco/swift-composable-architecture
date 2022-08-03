@@ -581,7 +581,7 @@ extension Reducer where Action: BindableAction, State == Action.State {
       guard self.wasCalled else {
         runtimeWarning(
           """
-          A binding action sent from a view store at "%@:%d" was not handled:
+          A binding action sent from a view store at "%@:%d" was not handled. …
 
             Action:
               %@
