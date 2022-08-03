@@ -18,25 +18,25 @@ public protocol DateGenerator {
   func callAsFunction() -> Date
 }
 
-private struct LiveDateGenerator: DateGenerator {
+extension DateGenerator where Self == LiveDateGenerator {
+  public static var live: Self { Self() }
+}
+
+public struct LiveDateGenerator: DateGenerator {
   @inlinable
-  func callAsFunction() -> Date {
+  public func callAsFunction() -> Date {
     Date()
   }
 }
 
-extension DateGenerator where Self == LiveDateGenerator {
-  static var live: Self { Self() }
+extension DateGenerator where Self == UnimplementedDateGenerator {
+  public static var unimplemented: Self { Self() }
 }
 
-private struct UnimplementedDateGenerator: DateGenerator {
+public struct UnimplementedDateGenerator: DateGenerator {
   @inlinable
-  func callAsFunction() -> Date {
+  public func callAsFunction() -> Date {
     XCTFail(#"Unimplemented: @Dependency(\.date)"#)
     return Date()
   }
-}
-
-extension DateGenerator where Self == UnimplementedDateGenerator {
-  static var unimplemented: Self { Self() }
 }
