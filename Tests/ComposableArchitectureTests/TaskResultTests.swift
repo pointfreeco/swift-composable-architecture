@@ -14,7 +14,7 @@ class TaskResultTests: XCTestCase {
       )
     } issueMatcher: {
       $0.compactDescription == """
-        'Failure' is not equatable
+        'Failure' is not equatable. …
 
         To test two values of this type, it must conform to the 'Equatable' protocol. For example:
 
@@ -61,7 +61,7 @@ class TaskResultTests: XCTestCase {
       _ = TaskResult<Never>.failure(Failure(message: "Something went wrong")).hashValue
     } issueMatcher: {
       $0.compactDescription == """
-        'Failure' is not hashable
+        'Failure' is not hashable. …
 
         To hash a value of this type, it must conform to the 'Hashable' protocol. For example:
 

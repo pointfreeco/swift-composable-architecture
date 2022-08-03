@@ -19,7 +19,7 @@ final class EffectFailureTests: XCTestCase {
     } issueMatcher: {
       $0.compactDescription == """
         An 'Effect.task' returned from "ComposableArchitectureTests/EffectFailureTests.swift:11" \
-        threw an unhandled error:
+        threw an unhandled error. …
 
             EffectFailureTests.Unexpected()
 
@@ -42,7 +42,7 @@ final class EffectFailureTests: XCTestCase {
     } issueMatcher: {
       $0.compactDescription == """
         An 'Effect.run' returned from "ComposableArchitectureTests/EffectFailureTests.swift:34" \
-        threw an unhandled error:
+        threw an unhandled error. …
 
             EffectFailureTests.Unexpected()
 
