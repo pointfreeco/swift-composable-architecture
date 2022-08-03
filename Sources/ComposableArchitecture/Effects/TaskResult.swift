@@ -217,7 +217,7 @@ extension TaskResult: Equatable where Success: Equatable {
           if TaskResultDebugging.emitRuntimeWarnings, type(of: lhs) == type(of: rhs) {
             runtimeWarning(
               """
-              '%1$@' is not equatable
+              '%1$@' is not equatable. …
 
               To test two values of this type, it must conform to the 'Equatable' protocol. For \
               example:
@@ -255,7 +255,7 @@ extension TaskResult: Hashable where Success: Hashable {
           if TaskResultDebugging.emitRuntimeWarnings {
             runtimeWarning(
               """
-              '%1$@' is not hashable
+              '%1$@' is not hashable. …
 
               To hash a value of this type, it must conform to the 'Hashable' protocol. For example:
 

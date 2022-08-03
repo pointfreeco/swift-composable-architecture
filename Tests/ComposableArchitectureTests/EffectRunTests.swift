@@ -46,7 +46,7 @@ final class EffectRunTests: XCTestCase {
     XCTExpectFailure(nil, enabled: nil, strict: nil) {
       $0.compactDescription == """
         An 'Effect.run' returned from "ComposableArchitectureTests/EffectRunTests.swift:62" threw \
-        an unhandled error:
+        an unhandled error. …
 
             EffectRunTests.Failure()
 
