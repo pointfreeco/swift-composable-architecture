@@ -112,63 +112,6 @@ final class RuntimeWarningTests: XCTestCase {
     _ = XCTWaiter.wait(for: [.init()], timeout: 2)
   }
 
-  func testEffectEmitMainThread() {
-    XCTExpectFailure {
-      [
-        """
-        An effect completed on a non-main thread. …
-
-          Effect returned from:
-            Action.response
-
-        Make sure to use ".receive(on:)" on any effects that execute on background threads to \
-        receive their output on the main thread.
-
-        The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
-        (including all of its scopes and derived view stores) must be done on the main thread.
-        """,
-        """
-        An effect published an action on a non-main thread. …
-
-          Effect published:
-            Action.response
-
-          Effect returned from:
-            Action.tap
-
-        Make sure to use ".receive(on:)" on any effects that execute on background threads to \
-        receive their output on the main thread.
-
-        The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
-        (including all of its scopes and derived view stores) must be done on the main thread.
-        """,
-      ]
-      .contains($0.compactDescription)
-    }
-
-    enum Action { case tap, response }
-    let store = Store(
-      initialState: 0,
-      reducer: Reducer<Int, Action, Void> { state, action, _ in
-        switch action {
-        case .tap:
-          return .run { subscriber in
-            Thread.detachNewThread {
-              XCTAssertFalse(Thread.isMainThread, "Effect should send on non-main thread.")
-              subscriber.send(.response)
-            }
-            return AnyCancellable {}
-          }
-        case .response:
-          return .none
-        }
-      },
-      environment: ()
-    )
-    ViewStore(store).send(.tap)
-    _ = XCTWaiter.wait(for: [.init()], timeout: 4)
-  }
-
   func testBindingUnhandledAction() {
     struct State: Equatable {
       @BindableState var value = 0
