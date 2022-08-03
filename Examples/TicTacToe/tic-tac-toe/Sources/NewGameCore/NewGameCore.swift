@@ -3,7 +3,7 @@ import GameCore
 
 public struct NewGame: ReducerProtocol {
   public struct State: Equatable {
-    public var game: Game.State?
+    @PresentationStateOf<Game> public var game
     public var oPlayerName = ""
     public var xPlayerName = ""
 
@@ -11,9 +11,7 @@ public struct NewGame: ReducerProtocol {
   }
 
   public enum Action: Equatable {
-    case game(Game.Action)
-    case gameDismissed
-    case letsPlayButtonTapped
+    case game(PresentationActionOf<Game>)
     case logoutButtonTapped
     case oPlayerNameChanged(String)
     case xPlayerNameChanged(String)
@@ -24,22 +22,14 @@ public struct NewGame: ReducerProtocol {
   public var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
-      case .game(.quitButtonTapped):
-        state.game = nil
-        return .none
-
-      case .gameDismissed:
-        state.game = nil
-        return .none
-
-      case .game:
-        return .none
-
-      case .letsPlayButtonTapped:
+      case .game(.present):
         state.game = Game.State(
           oPlayerName: state.oPlayerName,
           xPlayerName: state.xPlayerName
         )
+        return .none
+
+      case .game:
         return .none
 
       case .logoutButtonTapped:
@@ -54,8 +44,9 @@ public struct NewGame: ReducerProtocol {
         return .none
       }
     }
-    .ifLet(state: \.game, action: /NewGame.Action.game) {
+    .presentationDestination(state: \.$game, action: /Action.game) {
       Game()
     }
+    .debug()
   }
 }

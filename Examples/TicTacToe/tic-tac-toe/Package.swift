@@ -1,11 +1,11 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.7
 
 import PackageDescription
 
 let package = Package(
   name: "tic-tac-toe",
   platforms: [
-    .iOS(.v14)
+    .iOS(.v16)
   ],
   products: [
     .library(name: "AppCore", targets: ["AppCore"]),

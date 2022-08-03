@@ -123,7 +123,7 @@ public class NewGameViewController: UIViewController {
       .store(in: &self.cancellables)
 
     self.store
-      .scope(state: \.game, action: NewGame.Action.game)
+      .scope(state: \.game, action: { .game(.presented($0)) })
       .ifLet(
         then: { [weak self] gameStore in
           self?.navigationController?.pushViewController(
@@ -133,7 +133,7 @@ public class NewGameViewController: UIViewController {
         },
         else: { [weak self] in
           guard let self = self else { return }
-          self.navigationController?.popToViewController(self, animated: true)
+          _ = self.navigationController?.popToViewController(self, animated: true)
         }
       )
       .store(in: &self.cancellables)
@@ -168,9 +168,9 @@ extension NewGame.Action {
   init(action: NewGameViewController.ViewAction) {
     switch action {
     case .gameDismissed:
-      self = .gameDismissed
+      self = .game(.dismiss)
     case .letsPlayButtonTapped:
-      self = .letsPlayButtonTapped
+      self = .game(.present)
     case .logoutButtonTapped:
       self = .logoutButtonTapped
     case let .oPlayerNameChanged(name):

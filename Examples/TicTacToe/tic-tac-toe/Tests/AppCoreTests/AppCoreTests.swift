@@ -29,7 +29,7 @@ class AppCoreTests: XCTestCase {
         $0.isFormValid = true
       }
     }
-    await store.send(.login(.loginButtonTapped)) {
+    await store.send(.login(.twoFactor(.present))) {
       try (/TicTacToe.State.login).modify(&$0) {
         $0.isLoginRequestInFlight = true
       }
@@ -79,7 +79,7 @@ class AppCoreTests: XCTestCase {
       }
     }
 
-    await store.send(.login(.loginButtonTapped)) {
+    await store.send(.login(.twoFactor(.present))) {
       try (/TicTacToe.State.login).modify(&$0) {
         $0.isLoginRequestInFlight = true
       }
@@ -95,14 +95,14 @@ class AppCoreTests: XCTestCase {
       }
     }
 
-    await store.send(.login(.twoFactor(.codeChanged("1234")))) {
+    await store.send(.login(.twoFactor(.presented(.codeChanged("1234"))))) {
       try (/TicTacToe.State.login).modify(&$0) {
         $0.twoFactor?.code = "1234"
         $0.twoFactor?.isFormValid = true
       }
     }
 
-    await store.send(.login(.twoFactor(.submitButtonTapped))) {
+    await store.send(.login(.twoFactor(.presented(.submitButtonTapped)))) {
       try (/TicTacToe.State.login).modify(&$0) {
         $0.twoFactor?.isTwoFactorRequestInFlight = true
       }
@@ -110,8 +110,10 @@ class AppCoreTests: XCTestCase {
     await store.receive(
       .login(
         .twoFactor(
-          .twoFactorResponse(
-            .success(AuthenticationResponse(token: "deadbeef", twoFactorRequired: false))
+          .presented(
+            .twoFactorResponse(
+              .success(AuthenticationResponse(token: "deadbeef", twoFactorRequired: false))
+            )
           )
         )
       )

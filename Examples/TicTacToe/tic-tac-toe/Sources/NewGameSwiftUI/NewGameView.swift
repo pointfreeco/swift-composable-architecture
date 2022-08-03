@@ -22,7 +22,6 @@ public struct NewGameView: View {
   }
 
   enum ViewAction {
-    case gameDismissed
     case letsPlayButtonTapped
     case logoutButtonTapped
     case oPlayerNameChanged(String)
@@ -61,20 +60,16 @@ public struct NewGameView: View {
           Text("O Player Name")
         }
 
-        NavigationLink(
-          destination: IfLetStore(self.store.scope(state: \.game, action: NewGame.Action.game)) {
-            GameView(store: $0)
-          },
-          isActive: viewStore.binding(
-            get: \.isGameActive,
-            send: { $0 ? .letsPlayButtonTapped : .gameDismissed }
-          )
-        ) {
-          Text("Let's play!")
+        Button("Let's play!") {
+          viewStore.send(.letsPlayButtonTapped)
         }
         .disabled(viewStore.isLetsPlayButtonDisabled)
         .navigationTitle("New Game")
         .navigationBarItems(trailing: Button("Logout") { viewStore.send(.logoutButtonTapped) })
+        .navigationDestination(
+          store: self.store.scope(state: \.$game, action: NewGame.Action.game),
+          destination: GameView.init(store:)
+        )
       }
     }
   }
@@ -83,10 +78,8 @@ public struct NewGameView: View {
 extension NewGame.Action {
   init(action: NewGameView.ViewAction) {
     switch action {
-    case .gameDismissed:
-      self = .gameDismissed
     case .letsPlayButtonTapped:
-      self = .letsPlayButtonTapped
+      self = .game(.present)
     case .logoutButtonTapped:
       self = .logoutButtonTapped
     case let .oPlayerNameChanged(name):
@@ -99,7 +92,7 @@ extension NewGame.Action {
 
 struct NewGame_Previews: PreviewProvider {
   static var previews: some View {
-    NavigationView {
+    NavigationStack {
       NewGameView(
         store: Store(
           initialState: NewGame.State(),

@@ -71,9 +71,6 @@ class LoginSwiftUITests: XCTestCase {
       $0.isFormDisabled = false
       $0.isTwoFactorActive = true
     }
-    await store.send(.twoFactorDismissed) {
-      $0.isTwoFactorActive = false
-    }
   }
 
   func testFlow_Failure() async {

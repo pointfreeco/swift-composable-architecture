@@ -14,7 +14,7 @@ public enum PresentationState<State> {
     self = .dismissed
   }
 
-  public init(wrappedValue: State?) {
+  public init(wrappedValue: State? = nil) {
     self = wrappedValue.map { .presented(id: UUID(), $0) } ?? .dismissed
   }
 
@@ -58,6 +58,8 @@ public enum PresentationState<State> {
   }
 }
 
+public typealias PresentationStateOf<R: ReducerProtocol> = PresentationState<R.State>
+
 extension PresentationState: Decodable where State: Decodable {
   public init(from decoder: Decoder) throws {
     self.init(wrappedValue: try State?(from: decoder))
@@ -94,6 +96,8 @@ public enum PresentationAction<State, Action> {
   public static var present: Self { .present(nil) }
 }
 
+public typealias PresentationActionOf<R: ReducerProtocol> = PresentationAction<R.State, R.Action>
+
 extension PresentationAction: Decodable where State: Decodable, Action: Decodable {}
 extension PresentationAction: Encodable where State: Encodable, Action: Encodable {}
 
@@ -101,7 +105,7 @@ extension PresentationAction: Equatable where State: Equatable, Action: Equatabl
 extension PresentationAction: Hashable where State: Hashable, Action: Hashable {}
 
 extension ReducerProtocol {
-  public func presents<Destination: ReducerProtocol>(
+  public func presentationDestination<Destination: ReducerProtocol>(
     state: WritableKeyPath<State, PresentationState<Destination.State>>,
     action: CasePath<Action, PresentationAction<Destination.State, Destination.Action>>,
     @ReducerBuilderOf<Destination> destination: () -> Destination
@@ -172,11 +176,10 @@ public struct PresentationReducer<
 extension View {
   @available(iOS 14, tvOS 14, watchOS 7, *)
   @available(macOS, unavailable)
-  public func fullScreenCover<State, Action, Content>(
+  public func fullScreenCover<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<State, Action>>,
     @ViewBuilder content: @escaping (Store<State, Action>) -> Content
-  ) -> some View
-  where Content: View {
+  ) -> some View {
     WithViewStore(store.scope(state: { $0.wrappedValue != nil })) { viewStore in
       self.fullScreenCover(isPresented: viewStore.binding(send: { $0 ? .present : .dismiss })) {
         IfLetStore(
@@ -191,13 +194,12 @@ extension View {
   }
 
   @available(tvOS, unavailable)
-  public func popover<State, Action, Content>(
+  public func popover<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<State, Action>>,
     attachmentAnchor: PopoverAttachmentAnchor,
     arrowEdge: Edge,
     @ViewBuilder content: @escaping (Store<State, Action>) -> Content
-  ) -> some View
-  where Content: View {
+  ) -> some View {
     WithViewStore(store.scope(state: { $0.wrappedValue != nil })) { viewStore in
       self.popover(
         isPresented: viewStore.binding(send: { $0 ? .present : .dismiss }),
@@ -215,11 +217,10 @@ extension View {
     }
   }
 
-  public func sheet<State, Action, Content>(
+  public func sheet<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<State, Action>>,
     @ViewBuilder content: @escaping (Store<State, Action>) -> Content
-  ) -> some View
-  where Content: View {
+  ) -> some View {
     WithViewStore(store.scope(state: { $0.wrappedValue != nil })) { viewStore in
       self.sheet(isPresented: viewStore.binding(send: { $0 ? .present : .dismiss })) {
         IfLetStore(
@@ -228,6 +229,26 @@ extension View {
             action: PresentationAction.presented
           ),
           then: content
+        )
+      }
+    }
+  }
+
+  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+  public func navigationDestination<State, Action, Destination: View>(
+    store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+    @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination
+  ) -> some View {
+    WithViewStore(store.scope(state: { $0.wrappedValue != nil })) { viewStore in
+      self.navigationDestination(
+        isPresented: viewStore.binding(send: { $0 ? .present : .dismiss })
+      ) {
+        IfLetStore(
+          store.scope(
+            state: returningLastNonNilValue { $0.wrappedValue },
+            action: PresentationAction.presented
+          ),
+          then: destination
         )
       }
     }

@@ -33,7 +33,6 @@ public struct LoginView: View {
     case emailChanged(String)
     case loginButtonTapped
     case passwordChanged(String)
-    case twoFactorDismissed
   }
 
   public init(store: StoreOf<Login>) {
@@ -66,30 +65,15 @@ public struct LoginView: View {
           )
         }
 
-        NavigationLink(
-          destination: IfLetStore(
-            self.store.scope(state: \.twoFactor, action: Login.Action.twoFactor)
-          ) {
-            TwoFactorView(store: $0)
-          },
-          isActive: viewStore.binding(
-            get: \.isTwoFactorActive,
-            send: {
-              // NB: SwiftUI will print errors to the console about "AttributeGraph: cycle detected"
-              //     if you disable a text field while it is focused. This hack will force all
-              //     fields to unfocus before we send the action to the view store.
-              // CF: https://stackoverflow.com/a/69653555
-              UIApplication.shared.sendAction(
-                #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
-              )
-              return $0 ? .loginButtonTapped : .twoFactorDismissed
+        Button {
+          viewStore.send(.loginButtonTapped)
+        } label: {
+          HStack {
+            Text("Log in")
+            if viewStore.isActivityIndicatorVisible {
+              Spacer()
+              ProgressView()
             }
-          )
-        ) {
-          Text("Log in")
-          if viewStore.isActivityIndicatorVisible {
-            Spacer()
-            ProgressView()
           }
         }
         .disabled(viewStore.isLoginButtonDisabled)
@@ -98,6 +82,10 @@ public struct LoginView: View {
       .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
     }
     .navigationTitle("Login")
+    .navigationDestination(
+      store: self.store.scope(state: \.$twoFactor, action: Login.Action.twoFactor),
+      destination: TwoFactorView.init(store:)
+    )
   }
 }
 
@@ -106,12 +94,10 @@ extension Login.Action {
     switch action {
     case .alertDismissed:
       self = .alertDismissed
-    case .twoFactorDismissed:
-      self = .twoFactorDismissed
     case let .emailChanged(email):
       self = .emailChanged(email)
     case .loginButtonTapped:
-      self = .loginButtonTapped
+      self = .twoFactor(.present)
     case let .passwordChanged(password):
       self = .passwordChanged(password)
     }
@@ -120,7 +106,7 @@ extension Login.Action {
 
 struct LoginView_Previews: PreviewProvider {
   static var previews: some View {
-    NavigationView {
+    NavigationStack {
       LoginView(
         store: Store(
           initialState: Login.State(),

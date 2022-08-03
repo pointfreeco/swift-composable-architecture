@@ -3,14 +3,14 @@ import ComposableArchitecture
 import Dispatch
 import TwoFactorCore
 
-public struct Login: ReducerProtocol {
+public struct Login: ReducerProtocol, Sendable {
   public struct State: Equatable {
     public var alert: AlertState<Action>?
     public var email = ""
     public var isFormValid = false
     public var isLoginRequestInFlight = false
     public var password = ""
-    public var twoFactor: TwoFactor.State?
+    @PresentationStateOf<TwoFactor> public var twoFactor
 
     public init() {}
   }
@@ -19,10 +19,8 @@ public struct Login: ReducerProtocol {
     case alertDismissed
     case emailChanged(String)
     case passwordChanged(String)
-    case loginButtonTapped
     case loginResponse(TaskResult<AuthenticationResponse>)
-    case twoFactor(TwoFactor.Action)
-    case twoFactorDismissed
+    case twoFactor(PresentationActionOf<TwoFactor>)
   }
 
   @Dependency(\.authenticationClient) var authenticationClient
@@ -58,7 +56,7 @@ public struct Login: ReducerProtocol {
         state.isFormValid = !state.email.isEmpty && !state.password.isEmpty
         return .none
 
-      case .loginButtonTapped:
+      case .twoFactor(.present):
         state.isLoginRequestInFlight = true
         return .task { [email = state.email, password = state.password] in
           .loginResponse(
@@ -72,13 +70,9 @@ public struct Login: ReducerProtocol {
 
       case .twoFactor:
         return .none
-
-      case .twoFactorDismissed:
-        state.twoFactor = nil
-        return .cancel(id: TwoFactor.TearDownToken.self)
       }
     }
-    .ifLet(state: \.twoFactor, action: /Action.twoFactor) {
+    .presentationDestination(state: \.$twoFactor, action: /Action.twoFactor) {
       TwoFactor()
     }
   }

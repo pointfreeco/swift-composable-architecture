@@ -24,7 +24,6 @@ public struct Game: ReducerProtocol {
   public enum Action: Equatable, Sendable {
     case cellTapped(row: Int, column: Int)
     case playAgainButtonTapped
-    case quitButtonTapped
   }
 
   public init() {}
@@ -47,9 +46,6 @@ public struct Game: ReducerProtocol {
 
     case .playAgainButtonTapped:
       state = Game.State(oPlayerName: state.oPlayerName, xPlayerName: state.xPlayerName)
-      return .none
-
-    case .quitButtonTapped:
       return .none
     }
   }

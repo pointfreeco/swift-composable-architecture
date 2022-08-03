@@ -38,7 +38,7 @@ struct SheetDemo: ReducerProtocol {
         return .none
       }
     }
-    .presents(state: \.$sheet, action: /Action.sheet) {
+    .presentationDestination(state: \.$sheet, action: /Action.sheet) {
       ScopeCase(
         state: /DestinationState.animations,
         action: /DestinationAction.animations

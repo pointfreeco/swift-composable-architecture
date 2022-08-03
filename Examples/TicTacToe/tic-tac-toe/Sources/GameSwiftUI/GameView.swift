@@ -3,6 +3,8 @@ import GameCore
 import SwiftUI
 
 public struct GameView: View {
+  @Environment(\.dismiss) var dismiss
+
   let store: StoreOf<Game>
 
   struct ViewState: Equatable, Sendable {
@@ -54,7 +56,7 @@ public struct GameView: View {
           .disabled(viewStore.isGameDisabled)
         }
         .navigationTitle("Tic-tac-toe")
-        .navigationBarItems(leading: Button("Quit") { viewStore.send(.quitButtonTapped) })
+        .navigationBarItems(leading: Button("Quit") { self.dismiss() })
         .navigationBarBackButtonHidden(true)
       }
     }
@@ -94,7 +96,7 @@ public struct GameView: View {
 
 struct Game_Previews: PreviewProvider {
   static var previews: some View {
-    NavigationView {
+    NavigationStack {
       GameView(
         store: Store(
           initialState: Game.State(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr."),

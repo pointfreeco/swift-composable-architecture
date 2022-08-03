@@ -162,7 +162,7 @@ public final class GameViewController: UIViewController {
   @objc private func gridCell33Tapped() { self.viewStore.send(.cellTapped(row: 2, column: 2)) }
 
   @objc private func quitButtonTapped() {
-    self.viewStore.send(.quitButtonTapped)
+    _ = self.navigationController?.popViewController(animated: true)
   }
 
   @objc private func playAgainButtonTapped() {
