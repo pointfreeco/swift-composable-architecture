@@ -78,7 +78,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
         .map { (output: .setColor($0), duration: 1) },
       scheduler: environment.mainQueue.animation(.linear)
     )
-    .cancellable(id: CancelId.self)
+    .cancellable(id: CancelID.self)
 
   case .resetButtonTapped:
     state.alert = AlertState(
