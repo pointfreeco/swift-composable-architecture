@@ -47,7 +47,7 @@ struct AnimationsState: Equatable {
 
 enum AnimationsAction: Equatable {
   case circleScaleToggleChanged(Bool)
-  case dismissAlert
+  case alertDismissed
   case rainbowButtonTapped
   case resetButtonTapped
   case resetConfirmationButtonTapped
@@ -61,14 +61,14 @@ struct AnimationsEnvironment {
 
 let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnvironment> {
   state, action, environment in
-  enum CancelID {}
+  enum CancelId {}
 
   switch action {
   case let .circleScaleToggleChanged(isScaled):
     state.isCircleScaled = isScaled
     return .none
 
-  case .dismissAlert:
+  case .alertDismissed:
     state.alert = nil
     return .none
 
@@ -78,7 +78,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
         .map { (output: .setColor($0), duration: 1) },
       scheduler: environment.mainQueue.animation(.linear)
     )
-    .cancellable(id: CancelID.self)
+    .cancellable(id: CancelId.self)
 
   case .resetButtonTapped:
     state.alert = AlertState(
@@ -93,7 +93,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
 
   case .resetConfirmationButtonTapped:
     state = AnimationsState()
-    return .cancel(id: CancelID.self)
+    return .cancel(id: CancelId.self)
 
   case let .setColor(color):
     state.circleColor = color
@@ -150,7 +150,7 @@ struct AnimationsView: View {
         Button("Reset") { viewStore.send(.resetButtonTapped) }
           .padding([.horizontal, .bottom])
       }
-      .alert(self.store.scope(state: \.alert), dismiss: .dismissAlert)
+      .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
       .navigationBarTitleDisplayMode(.inline)
     }
   }
