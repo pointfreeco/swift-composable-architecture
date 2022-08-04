@@ -93,7 +93,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
 
   case .resetConfirmationButtonTapped:
     state = AnimationsState()
-    return .cancel(id: CancelId.self)
+    return .cancel(id: CancelID.self)
 
   case let .setColor(color):
     state.circleColor = color
