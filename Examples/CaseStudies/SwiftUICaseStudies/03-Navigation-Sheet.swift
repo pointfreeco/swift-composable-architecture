@@ -19,9 +19,9 @@ struct SheetDemo: ReducerProtocol {
       case .swap:
         switch state.sheet {
         case .some(.animations):
-          state.$sheet.present(.counter(Counter.State()))
+          state.sheet = .counter(Counter.State())
         case .some(.counter):
-          state.$sheet.present(.animations(Animations.State()))
+          state.sheet = .animations(Animations.State())
         case .none:
           break
         }
