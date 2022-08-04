@@ -66,7 +66,7 @@ struct SheetDemoView: View {
 
   var body: some View {
     WithViewStore(self.store.stateless) { viewStore in
-      VStack {
+      Form {
         Button("Animations") {
           viewStore.send(.sheet(.present(.animations(Animations.State()))))
         }
@@ -106,6 +106,7 @@ struct SheetDemoView: View {
         }
       }
     }
+    .navigationTitle("Sheets")
   }
 }
 
