@@ -18,22 +18,22 @@ class NavigationStackTests: XCTestCase {
 
     // Push Screen A, increment and fetch fact.
     let screenAID = store.dependencies.navigationID.next()
-    await store.send(.navigation(.setPath([screenAID: .screenA(.init())]))) {
-      $0.path.append(.init(id: screenAID, element: .screenA(.init())))
+    await store.send(.path(.setPath([screenAID: .screenA(.init())]))) {
+      $0.$path = [screenAID: .screenA(.init())]
     }
-    await store.send(.navigation(.element(id: screenAID, .screenA(.incrementButtonTapped)))) {
-      try CasePath(NavigationDemo.DestinationState.screenA).unwrapModify(&$0.path[id: screenAID]) {
+    await store.send(.path(.element(id: screenAID, .screenA(.incrementButtonTapped)))) {
+      try CasePath(NavigationDemo.Destinations.State.screenA).unwrapModify(&$0.$path[id: screenAID]) {
         $0.count = 1
       }
     }
-    await store.send(.navigation(.element(id: screenAID, .screenA(.factButtonTapped)))) {
-      try CasePath(NavigationDemo.DestinationState.screenA).unwrapModify(&$0.path[id: screenAID]) {
+    await store.send(.path(.element(id: screenAID, .screenA(.factButtonTapped)))) {
+      try CasePath(NavigationDemo.Destinations.State.screenA).unwrapModify(&$0.$path[id: screenAID]) {
         $0.isLoading = true
       }
     }
     await self.scheduler.advance()
-    await store.receive(.navigation(.element(id: screenAID, .screenA(.factResponse(.success("1 is a good number.")))))) {
-      try CasePath(NavigationDemo.DestinationState.screenA).unwrapModify(&$0.path[id: screenAID]) {
+    await store.receive(.path(.element(id: screenAID, .screenA(.factResponse(.success("1 is a good number.")))))) {
+      try CasePath(NavigationDemo.Destinations.State.screenA).unwrapModify(&$0.$path[id: screenAID]) {
         $0.isLoading = false
         $0.fact = "1 is a good number."
       }
@@ -41,30 +41,30 @@ class NavigationStackTests: XCTestCase {
 
     // Push Screen C, start timer, wait 2 seconds
     let screenCID = store.dependencies.navigationID.next()
-    await store.send(.navigation(.setPath(store.state.path + [.init(id: screenCID, element: .screenC(.init()))]))) {
-      $0.path.append(.init(id: screenCID, element: .screenC(.init())))
+    await store.send(.path(.setPath(store.state.$path + [screenCID: .screenC(.init())]))) {
+      $0.$path.append(.init(id: screenCID, element: .screenC(.init())))
     }
-    await store.send(.navigation(.element(id: screenCID, .screenC(.startButtonTapped)))) {
-      try CasePath(NavigationDemo.DestinationState.screenC).unwrapModify(&$0.path[id: screenCID]) {
+    await store.send(.path(.element(id: screenCID, .screenC(.startButtonTapped)))) {
+      try CasePath(NavigationDemo.Destinations.State.screenC).unwrapModify(&$0.$path[id: screenCID]) {
         $0.isTimerRunning = true
       }
     }
     await self.scheduler.advance(by: .seconds(2))
-    await store.receive(.navigation(.element(id: screenCID, .screenC(.timerTick)))) {
-      try CasePath(NavigationDemo.DestinationState.screenC).unwrapModify(&$0.path[id: screenCID]) {
+    await store.receive(.path(.element(id: screenCID, .screenC(.timerTick)))) {
+      try CasePath(NavigationDemo.Destinations.State.screenC).unwrapModify(&$0.$path[id: screenCID]) {
         $0.count = 1
       }
     }
-    await store.receive(.navigation(.element(id: screenCID, .screenC(.timerTick)))) {
-      try CasePath(NavigationDemo.DestinationState.screenC).unwrapModify(&$0.path[id: screenCID]) {
+    await store.receive(.path(.element(id: screenCID, .screenC(.timerTick)))) {
+      try CasePath(NavigationDemo.Destinations.State.screenC).unwrapModify(&$0.$path[id: screenCID]) {
         $0.count = 2
       }
     }
 
     // Pop screen C off stack
-    var path = store.state.path
+    var path = store.state.$path
     path.removeLast()
-    await store.send(.navigation(.setPath(path))) {
+    await store.send(.path(.setPath(path))) {
       $0.path.removeLast()
     }
   }
@@ -79,12 +79,12 @@ class NavigationStackTests: XCTestCase {
     )
 
     let screenBID = store.dependencies.navigationID.next()
-    await store.send(.navigation(.setPath([screenBID: .screenB(.init())]))) {
-      $0.path = [screenBID: .screenB(.init())]
+    await store.send(.path(.setPath([screenBID: .screenB(.init())]))) {
+      $0.$path = [screenBID: .screenB(.init())]
     }
 
-    await store.send(.navigation(.element(id: screenBID, .screenB(.screenAButtonTapped)))) {
-      $0.path.append(.init(id: 1, element: .screenA(.init())))
+    await store.send(.path(.element(id: screenBID, .screenB(.screenAButtonTapped)))) {
+      $0.$path.append(.init(id: 1, element: .screenA(.init())))
     }
   }
 }

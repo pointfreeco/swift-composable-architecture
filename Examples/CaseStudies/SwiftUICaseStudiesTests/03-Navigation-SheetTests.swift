@@ -20,13 +20,13 @@ class NavigationSheetTests: XCTestCase {
     }
     await store.send(.sheet(.presented(.animations(.rainbowButtonTapped))))
     await store.receive(.sheet(.presented(.animations(.setColor(.red))))) {
-      try (/Optional.some).appending(path: /SheetDemo.DestinationState.animations)
+      try (/Optional.some).appending(path: /SheetDemo.Destinations.State.animations)
         .modify(&$0.sheet) { $0.circleColor = .red }
     }
 
     await mainQueue.advance(by: .seconds(1))
     await store.receive(.sheet(.presented(.animations(.setColor(.blue))))) {
-      try (/Optional.some).appending(path: /SheetDemo.DestinationState.animations)
+      try (/Optional.some).appending(path: /SheetDemo.Destinations.State.animations)
         .modify(&$0.sheet) { $0.circleColor = .blue }
     }
 
