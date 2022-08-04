@@ -349,7 +349,7 @@ public final class Store<State, Action> {
       .sink { [weak localStore] newValue in
         guard !isSending else { return }
 
-        let callbackInfo = Instrumentation.CallbackInfo<Self.Type, Any>(storeKind: Self.self, action: nil, file: file, line: line).eraseToAny()
+        let callbackInfo = Instrumentation.CallbackInfo<Store<LocalState, LocalAction>.Type, Any>(storeKind: Store<LocalState, LocalAction>.self, action: nil, file: file, line: line).eraseToAny()
         instrumentation.callback?(callbackInfo, .pre, .storeToLocal)
         let newLocalState = toLocalState(newValue)
         instrumentation.callback?(callbackInfo, .post, .storeToLocal)
