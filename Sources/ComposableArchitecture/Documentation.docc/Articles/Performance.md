@@ -13,9 +13,9 @@ becoming slow to execute, SwiftUI view bodies executing more often than expected
 
 ### View stores
 
-A common performance pitfall in the library comes from constructing ``ViewStore``s. When constructed
-naively, using either view store's initializer ``ViewStore/init(_:)-1pfeq`` or the SwiftUI helper
-``WithViewStore``, it will observe every change to state in the store:
+A common performance pitfall when using the library comes from constructing ``ViewStore``s. When 
+constructed naively, using either view store's initializer ``ViewStore/init(_:)-1pfeq`` or the 
+SwiftUI helper ``WithViewStore``, it will observe every change to state in the store:
 
 ```swift
 WithViewStore(self.store) { viewStore in 

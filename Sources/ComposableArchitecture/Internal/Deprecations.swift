@@ -204,7 +204,7 @@ extension Reducer {
 #if DEBUG
   extension TestStore where LocalState: Equatable, Action: Equatable {
     @available(
-      *, deprecated, message: "Use 'TestStore.send' and 'TestStore.receive' directly, instead"
+      *, deprecated, message: "Use 'TestStore.send' and 'TestStore.receive' directly, instead."
     )
     public func assert(
       _ steps: Step...,
@@ -215,7 +215,7 @@ extension Reducer {
     }
 
     @available(
-      *, deprecated, message: "Use 'TestStore.send' and 'TestStore.receive' directly, instead"
+      *, deprecated, message: "Use 'TestStore.send' and 'TestStore.receive' directly, instead."
     )
     public func assert(
       _ steps: [Step],
@@ -296,7 +296,7 @@ extension Reducer {
         self.line = line
       }
 
-      @available(*, deprecated, message: "Call 'TestStore.send' directly, instead")
+      @available(*, deprecated, message: "Call 'TestStore.send' directly, instead.")
       public static func send(
         _ action: LocalAction,
         file: StaticString = #file,
@@ -306,7 +306,7 @@ extension Reducer {
         Step(.send(action, update), file: file, line: line)
       }
 
-      @available(*, deprecated, message: "Call 'TestStore.receive' directly, instead")
+      @available(*, deprecated, message: "Call 'TestStore.receive' directly, instead.")
       public static func receive(
         _ action: Action,
         file: StaticString = #file,
@@ -316,7 +316,7 @@ extension Reducer {
         Step(.receive(action, update), file: file, line: line)
       }
 
-      @available(*, deprecated, message: "Mutate 'TestStore.environment' directly, instead")
+      @available(*, deprecated, message: "Mutate 'TestStore.environment' directly, instead.")
       public static func environment(
         file: StaticString = #file,
         line: UInt = #line,
@@ -325,7 +325,7 @@ extension Reducer {
         Step(.environment(update), file: file, line: line)
       }
 
-      @available(*, deprecated, message: "Perform this work directly in your test, instead")
+      @available(*, deprecated, message: "Perform this work directly in your test, instead.")
       public static func `do`(
         file: StaticString = #file,
         line: UInt = #line,
@@ -334,7 +334,7 @@ extension Reducer {
         Step(.do(work), file: file, line: line)
       }
 
-      @available(*, deprecated, message: "Perform this work directly in your test, instead")
+      @available(*, deprecated, message: "Perform this work directly in your test, instead.")
       public static func sequence(
         _ steps: [Step],
         file: StaticString = #file,
@@ -343,7 +343,7 @@ extension Reducer {
         Step(.sequence(steps), file: file, line: line)
       }
 
-      @available(*, deprecated, message: "Perform this work directly in your test, instead")
+      @available(*, deprecated, message: "Perform this work directly in your test, instead.")
       public static func sequence(
         _ steps: Step...,
         file: StaticString = #file,
@@ -596,7 +596,7 @@ extension AlertState.Button {
 // NB: Deprecated after 0.20.0:
 
 extension Reducer {
-  @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead")
+  @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead.")
   public func forEach<GlobalState, GlobalAction, GlobalEnvironment>(
     state toLocalState: WritableKeyPath<GlobalState, [State]>,
     action toLocalAction: CasePath<GlobalAction, (Int, Action)>,
@@ -663,7 +663,7 @@ extension Reducer {
 }
 
 extension ForEachStore {
-  @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead")
+  @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead.")
   public init<EachContent>(
     _ store: Store<Data, (Data.Index, EachAction)>,
     id: KeyPath<EachState, ID>,
@@ -691,7 +691,7 @@ extension ForEachStore {
     }
   }
 
-  @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead")
+  @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead.")
   public init<EachContent>(
     _ store: Store<Data, (Data.Index, EachAction)>,
     @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent

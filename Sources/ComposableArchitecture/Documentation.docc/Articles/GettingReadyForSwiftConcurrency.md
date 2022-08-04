@@ -65,7 +65,7 @@ return .task { [count = state.count] in
 
 ### Accessing dependencies in an effect
 
-In the Composable Architecture one designs an environment of dependencies that your feature needs to
+In the Composable Architecture, one designs an environment of dependencies that your feature needs to
 do its job. These are all the clients and objects that interact with the messy, unpredictable
 outside world, but provide an interface that is easy to control so that we can still write tests.
 
