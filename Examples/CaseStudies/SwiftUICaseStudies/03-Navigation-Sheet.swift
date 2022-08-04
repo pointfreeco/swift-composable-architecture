@@ -3,22 +3,12 @@ import SwiftUI
 
 struct SheetDemo: ReducerProtocol {
   struct State: Equatable {
-    @PresentationState var sheet: DestinationState?
+    @PresentationStateOf<Destinations> var sheet
   }
 
   enum Action: Equatable {
-    case sheet(PresentationAction<DestinationState, DestinationAction>)
+    case sheet(PresentationActionOf<Destinations>)
     case swap
-  }
-
-  enum DestinationState: Equatable {
-    case animations(Animations.State)
-    case counter(Counter.State)
-  }
-
-  enum DestinationAction: Equatable {
-    case animations(Animations.Action)
-    case counter(Counter.Action)
   }
 
   var body: some ReducerProtocol<State, Action> {
@@ -39,15 +29,31 @@ struct SheetDemo: ReducerProtocol {
       }
     }
     .presentationDestination(state: \.$sheet, action: /Action.sheet) {
+      Destinations()
+    }
+  }
+
+  struct Destinations: ReducerProtocol {
+    enum State: Equatable {
+      case animations(Animations.State)
+      case counter(Counter.State)
+    }
+
+    enum Action: Equatable {
+      case animations(Animations.Action)
+      case counter(Counter.Action)
+    }
+
+    var body: some ReducerProtocol<State, Action> {
       ScopeCase(
-        state: /DestinationState.animations,
-        action: /DestinationAction.animations
+        state: /State.animations,
+        action: /Action.animations
       ) {
         Animations()
       }
       ScopeCase(
-        state: /DestinationState.counter,
-        action: /DestinationAction.counter
+        state: /State.counter,
+        action: /Action.counter
       ) {
         Counter()
       }
@@ -70,7 +76,7 @@ struct SheetDemoView: View {
       }
       .sheet(
         store: self.store.scope(state: \.$sheet, action: SheetDemo.Action.sheet)
-      ) { destinationStore in
+      ) { store in
         VStack {
           HStack {
             Button("Swap") {
@@ -82,15 +88,15 @@ struct SheetDemoView: View {
           }
           .padding()
 
-          SwitchStore(destinationStore) {
+          SwitchStore(store) {
             CaseLet(
-              state: /SheetDemo.DestinationState.animations,
-              action: SheetDemo.DestinationAction.animations,
+              state: /SheetDemo.Destinations.State.animations,
+              action: SheetDemo.Destinations.Action.animations,
               then: AnimationsView.init(store:)
             )
             CaseLet(
-              state: /SheetDemo.DestinationState.counter,
-              action: SheetDemo.DestinationAction.counter,
+              state: /SheetDemo.Destinations.State.counter,
+              action: SheetDemo.Destinations.Action.counter,
               then: CounterView.init(store:)
             )
           }
