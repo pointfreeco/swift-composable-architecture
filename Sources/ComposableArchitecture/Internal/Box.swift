@@ -1,3 +1,4 @@
+@propertyWrapper
 final class Box<Wrapped> {
   var wrappedValue: Wrapped
 

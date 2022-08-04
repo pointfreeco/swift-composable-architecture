@@ -74,7 +74,7 @@ struct SheetDemoView: View {
         VStack {
           HStack {
             Button("Swap") {
-              viewStore.send(.swap)
+              viewStore.send(.swap, animation: .default)
             }
             Button("Close") {
               viewStore.send(.sheet(.dismiss))
@@ -94,6 +94,9 @@ struct SheetDemoView: View {
               then: CounterView.init(store:)
             )
           }
+          .transition(.slide.combined(with: .opacity))
+
+          Spacer()
         }
       }
     }

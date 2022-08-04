@@ -3,7 +3,8 @@ import SwiftUI
 // TODO: Other names? `NavigationPathState`? `NavigationStatePath`?
 // TODO: Should `NavigationState` flatten to just work on `Identifiable` elements?
 // TODO: `Sendable where Element: Sendable`
-public struct NavigationState<Element>:
+@propertyWrapper
+public struct NavigationState<Element: Hashable>:
   MutableCollection,
   RandomAccessCollection,
   RangeReplaceableCollection
@@ -11,10 +12,10 @@ public struct NavigationState<Element>:
   public typealias ID = AnyHashable
 
   public struct Destination: Identifiable {
-    public var id: ID
+    public let id: ID
     public var element: Element
 
-    public init(id: ID, element: Element) {
+    public init(id: ID = DependencyValues.current.navigationID.next(), element: Element) {
       self.id = id
       self.element = element
     }
@@ -23,32 +24,6 @@ public struct NavigationState<Element>:
   var destinations: [Destination] = []
 
   public init() {}
-
-  public var startIndex: Int {
-    self.destinations.startIndex
-  }
-
-  public var endIndex: Int {
-    self.destinations.endIndex
-  }
-
-  public func index(after i: Int) -> Int {
-    self.destinations.index(after: i)
-  }
-
-  public subscript(position: Int) -> Destination {
-    _read { yield self.destinations[position] }
-    _modify { yield &self.destinations[position] }
-    set { self.destinations[position] = newValue }
-  }
-
-  public mutating func replaceSubrange<C: Collection>(_ subrange: Range<Int>, with newElements: C)
-  where C.Element == Destination {
-    self.destinations.removeSubrange(subrange)
-    for element in newElements.reversed() {
-      self.destinations.insert(element, at: subrange.startIndex)
-    }
-  }
 
   public subscript(id id: ID) -> Element? {
     _read {
@@ -89,11 +64,96 @@ public struct NavigationState<Element>:
 
   @discardableResult
   public mutating func append(_ element: Element) -> ID {
-    let id = DependencyValues.current.navigationID.next()
-    self.destinations.append(Destination(id: id, element: element))
-    return id
+    let destination = Destination(element: element)
+    self.destinations.append(destination)
+    return destination.id
+  }
+
+  public var startIndex: Int {
+    self.destinations.startIndex
+  }
+
+  public var endIndex: Int {
+    self.destinations.endIndex
+  }
+
+  public func index(after i: Int) -> Int {
+    self.destinations.index(after: i)
+  }
+
+  public subscript(position: Int) -> Destination {
+    _read { yield self.destinations[position] }
+    _modify { yield &self.destinations[position] }
+    set { self.destinations[position] = newValue }
+  }
+
+  public mutating func replaceSubrange<C: Collection>(_ subrange: Range<Int>, with newElements: C)
+  where C.Element == Destination {
+    self.destinations.replaceSubrange(subrange, with: newElements)
+  }
+
+  public struct Path:
+    MutableCollection,
+    RandomAccessCollection,
+    RangeReplaceableCollection
+  {
+    var state: NavigationState
+
+    init(state: NavigationState) {
+      self.state = state
+    }
+
+    public init() { self.state = NavigationState() }
+
+    public var startIndex: Int {
+      self.state.startIndex
+    }
+
+    public var endIndex: Int {
+      self.state.endIndex
+    }
+
+    public func index(after i: Int) -> Int {
+      self.state.index(after: i)
+    }
+
+    public subscript(position: Int) -> Element {
+      _read { yield self.state[position].element }
+      _modify { yield &self.state[position].element }
+      set { self.state[position].element = newValue }
+    }
+
+    public mutating func replaceSubrange<C: Collection>(_ subrange: Range<Int>, with newElements: C)
+    where C.Element == Element {
+      self.state.replaceSubrange(subrange, with: newElements.map { Destination(element: $0) })
+    }
+
+    public mutating func swapAt(_ i: Int, _ j: Int) {
+      self.state.swapAt(i, j)
+    }
+  }
+
+  public init(wrappedValue: Path = []) {
+    self = wrappedValue.state
+  }
+
+  public var wrappedValue: Path {
+    _read { yield Path(state: self) }
+    _modify {
+      var path = Path(state: self)
+      yield &path
+      self = path.state
+    }
+  }
+
+  public var projectedValue: Self {
+    _read { yield self }
+    _modify { yield &self }
   }
 }
+
+public typealias NavigationStateOf<R: ReducerProtocol> = NavigationState<R.State>
+where R.State: Hashable
 
 extension NavigationState: ExpressibleByDictionaryLiteral {
   public init(dictionaryLiteral elements: (ID, Element)...) {
@@ -149,49 +209,98 @@ extension NavigationState: Hashable where Element: Hashable {}
 extension NavigationState: Decodable where Element: Decodable {}
 extension NavigationState: Encodable where Element: Encodable {}
 
-extension NavigationState: ExpressibleByArrayLiteral {
+extension NavigationState.Path: ExpressibleByArrayLiteral {
   public init(arrayLiteral elements: Element...) {
-    self.init(
-      elements.map {
-        Destination(id: DependencyValues.current.navigationID.next(), element: $0)
-      }
-    )
+    self.init(elements)
   }
 }
 
-public enum NavigationAction<State, Action> {
+public enum NavigationAction<State: Hashable, Action> {
   case element(id: NavigationState.ID, Action)
   case setPath(NavigationState<State>)
 }
 
-extension NavigationAction: Equatable where State: Equatable, Action: Equatable {}
-extension NavigationAction: Hashable where State: Hashable, Action: Hashable {}
+public typealias NavigationActionOf<R: ReducerProtocol> = NavigationAction<R.State, R.Action>
+where R.State: Hashable
 
-public protocol NavigableState {
-  associatedtype DestinationState: Hashable
-  // TODO: other names? stack?
-  var path: NavigationState<DestinationState> { get set }
+extension NavigationAction: Equatable where Action: Equatable {}
+extension NavigationAction: Hashable where Action: Hashable {}
+
+extension ReducerProtocol {
+  public func navigationDestination<Destinations: ReducerProtocol>(
+    state toNavigationState: WritableKeyPath<State, NavigationStateOf<Destinations>>,
+    action toNavigationAction: CasePath<Action, NavigationActionOf<Destinations>>,
+    @ReducerBuilderOf<Destinations> destinations: () -> Destinations
+  ) -> NavigationDestinationReducer<Self, Destinations> {
+    .init(
+      upstream: self,
+      toNavigationState: toNavigationState,
+      toNavigationAction: toNavigationAction,
+      destinations: destinations()
+    )
+  }
 }
 
-public protocol NavigableAction {
-  associatedtype DestinationState
-  associatedtype DestinationAction
-  static func navigation(_: NavigationAction<DestinationState, DestinationAction>) -> Self
+public struct NavigationDestinationReducer<
+  Upstream: ReducerProtocol,
+  Destinations: ReducerProtocol
+>: ReducerProtocol
+where Destinations.State: Hashable {
+  let upstream: Upstream
+  let toNavigationState: WritableKeyPath<Upstream.State, NavigationStateOf<Destinations>>
+  let toNavigationAction: CasePath<Upstream.Action, NavigationActionOf<Destinations>>
+  let destinations: Destinations
+
+  public var body: some ReducerProtocol<Upstream.State, Upstream.Action> {
+    Reduce { globalState, globalAction in
+      guard let navigationAction = toNavigationAction.extract(from: globalAction)
+      else { return .none }
+
+      switch navigationAction {
+      case let .element(id, localAction):
+        guard let index = globalState[keyPath: toNavigationState].firstIndex(where: { $0.id == id })
+        else {
+          // TODO: runtime warning
+          return .none
+        }
+        return self.destinations
+          .dependency(\.navigationID.current, id)
+          .reduce(
+            into: &globalState[keyPath: toNavigationState][index].element,
+            action: localAction
+          )
+          .map { toNavigationAction.embed(.element(id: id, $0)) }
+          .cancellable(id: id)
+
+      case let .setPath(path):
+        var removedIds: Set<AnyHashable> = []
+        for destination in globalState[keyPath: toNavigationState].destinations {
+          removedIds.insert(destination.id)
+        }
+        for destination in path {
+          removedIds.remove(destination.id)
+        }
+        globalState[keyPath: toNavigationState] = path
+        return .merge(removedIds.map { .cancel(id: $0) })
+      }
+    }
+
+    self.upstream
+
+    // TODO: Run `upstream` before dismissal? See presentation for this behavior.
+  }
 }
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
-public struct NavigationStackStore<
-  State: NavigableState, Action: NavigableAction, Content: View
->: View
-where State.DestinationState == Action.DestinationState {
-  let store: Store<NavigationState<State.DestinationState>, NavigationState<State.DestinationState>>
+public struct NavigationStackStore<Element: Hashable, Content: View>: View {
+  let store: Store<NavigationState<Element>, NavigationState<Element>>
   let content: Content
 
-  public init(
-    store: Store<State, Action>,
+  public init<Action>(
+    _ store: Store<NavigationState<Element>, NavigationAction<Element, Action>>,
     @ViewBuilder content: () -> Content
   ) {
-    self.store = store.scope(state: { $0.path }, action: { .navigation(.setPath($0)) })
+    self.store = store.scope(state: { $0 }, action: { .setPath($0) })
     self.content = content()
   }
 
@@ -204,8 +313,8 @@ where State.DestinationState == Action.DestinationState {
   }
 
   private static func isEqual(
-    lhs: NavigationState<State.DestinationState>,
-    rhs: NavigationState<State.DestinationState>
+    lhs: NavigationState<Element>,
+    rhs: NavigationState<Element>
   ) -> Bool {
     guard lhs.count == rhs.count
     else { return false }
@@ -218,165 +327,238 @@ where State.DestinationState == Action.DestinationState {
   }
 }
 
-public struct NavigationDestinationReducer<
-  Upstream: ReducerProtocol,
-  Destinations: ReducerProtocol
->: ReducerProtocol
-where
-  Upstream.State: NavigableState,
-  Upstream.Action: NavigableAction,
-  Upstream.State.DestinationState == Upstream.Action.DestinationState,
-  Destinations.State == Upstream.Action.DestinationState,
-  Destinations.Action == Upstream.Action.DestinationAction
-{
-  let upstream: Upstream
-  let destinations: Destinations
-
-  public var body: some ReducerProtocol<Upstream.State, Upstream.Action> {
-    Reduce { globalState, globalAction in
-      guard let navigationAction = CasePath(Action.navigation).extract(from: globalAction)
-      else { return .none }
-
-      switch navigationAction {
-      case let .element(id, localAction):
-        guard let index = globalState.path.firstIndex(where: { $0.id == id })
-        else {
-          // TODO: runtime warning
-          return .none
-        }
-        return self.destinations
-          .dependency(\.navigationID.current, id)
-          .reduce(
-            into: &globalState.path[index].element,
-            action: localAction
-          )
-          .map { .navigation(.element(id: id, $0)) }
-          .cancellable(id: id)
-
-      case let .setPath(path):
-        var removedIds: Set<AnyHashable> = []
-        for destination in globalState.path.destinations {
-          removedIds.insert(destination.id)
-        }
-        for destination in path {
-          removedIds.remove(destination.id)
-        }
-        globalState.path = path
-        return .merge(removedIds.map { .cancel(id: $0) })
-      }
-    }
-
-    self.upstream
-
-    // TODO: Run `upstream` before dismissal? See presentation for this behavior.
-  }
-}
-
-extension ReducerProtocol
-where
-  State: NavigableState,
-  Action: NavigableAction,
-  State.DestinationState == Action.DestinationState
-{
-  // TODO: Should this be `navigationDestination(state:action:_:)` to avoid `ScopeCase`?
-  public func navigationDestination<Destinations: ReducerProtocol>(
-    @ReducerBuilder<Destinations.State, Destinations.Action> destinations: () -> Destinations
-  ) -> NavigationDestinationReducer<Self, Destinations> {
-    .init(upstream: self, destinations: destinations())
-  }
-
-  public func navigationDestination<Destination: ReducerProtocol>(
-    state toDestinationState: CasePath<State.DestinationState, Destination.State>,
-    action toDestinationAction: CasePath<Action.DestinationAction, Destination.Action>,
-    @ReducerBuilder<Destination.State, Destination.Action> destination: () -> Destination
-  ) -> NavigationDestinationReducer<
-    Self, ScopeCase<State.DestinationState, Action.DestinationAction, Destination>
-  > {
-    self.navigationDestination {
-      ScopeCase(state: toDestinationState, action: toDestinationAction) {
-        destination()
-      }
-    }
-  }
-}
-
-private class StoreObservableObject<State, Action>: ObservableObject {
-  let id: NavigationState.ID
-  let wrappedValue: Store<State, Action>
-
-  init(id: NavigationState.ID, store: Store<State, Action>) {
-    self.id = id
-    self.wrappedValue = store
-  }
-}
-
-public struct DestinationStore<
-  State,
-  Action,
-  DestinationState,
-  DestinationAction,
-  Destination: View
->: View {
-  @EnvironmentObject private var store:
-    StoreObservableObject<
-      NavigationState<State>,
-      NavigationAction<State, Action>
-    >
-
-  let state: (State) -> DestinationState?
-  let action: (DestinationAction) -> Action
-  let content: (Store<DestinationState, DestinationAction>) -> Destination
-
-  public init(
-    state: @escaping (State) -> DestinationState?,
-    action: @escaping (DestinationAction) -> Action,
-    @ViewBuilder content: @escaping (Store<DestinationState, DestinationAction>) -> Destination
-  ) {
-    self.state = state
-    self.action = action
-    self.content = content
-  }
-
-  public var body: some View {
-    IfLetStore(
-      self.store.wrappedValue.scope(
-        state: returningLastNonNilValue { $0[id: store.id].flatMap(state) },
-        action: { .element(id: store.id, action($0)) }
-      )
-    ) {
-      content($0)
-    }
-  }
-}
-
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension View {
   @ViewBuilder
-  public func navigationDestination<State: NavigableState, Action: NavigableAction, Content>(
-    store: Store<State, Action>,
-    @ViewBuilder destination: @escaping () -> Content
-  )
-    -> some View
-  where
-    Content: View,
-    State.DestinationState == Action.DestinationState
-  {
-    self.navigationDestination(for: NavigationState<State.DestinationState>.Destination.self) {
-      route in
-      if let destinationState = store.state.value.path.last(where: { $0 == route }) {
-        destination()
-          .environmentObject(
-            StoreObservableObject(
-              id: destinationState.id,
-              store: store.scope(state: { $0.path }, action: Action.navigation)
-            )
+  public func navigationDestination<State: Hashable, Action, Content: View>(
+    store: Store<NavigationState<State>, NavigationAction<State, Action>>,
+    @ViewBuilder destination: @escaping (Store<State, Action>) -> Content
+  ) -> some View {
+    self.navigationDestination(for: NavigationState<State>.Destination.self) { state in
+      if let index = store.state.value.lastIndex(where: { $0 == state }) {
+        destination(
+          store.scope(
+            state: { $0.destinations[index].element },
+            action: { .element(id: store.state.value[index].id, $0) }
           )
+        )
       } else {
         // TODO: runtime warning view
       }
     }
   }
 }
+
+//public protocol NavigableState {
+//  associatedtype DestinationState: Hashable
+//  // TODO: other names? stack?
+//  var path: NavigationState<DestinationState> { get set }
+//}
+//
+//public protocol NavigableAction {
+//  associatedtype DestinationState
+//  associatedtype DestinationAction
+//  static func navigation(_: NavigationAction<DestinationState, DestinationAction>) -> Self
+//}
+//
+//@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+//public struct NavigationStackStore<
+//  State: NavigableState, Action: NavigableAction, Content: View
+//>: View
+//where State.DestinationState == Action.DestinationState {
+//  let store: Store<NavigationState<State.DestinationState>, NavigationState<State.DestinationState>>
+//  let content: Content
+//
+//  public init(
+//    _ store: Store<State, Action>,
+//    @ViewBuilder content: () -> Content
+//  ) {
+//    self.store = store.scope(state: { $0.path }, action: { .navigation(.setPath($0)) })
+//    self.content = content()
+//  }
+//
+//  public var body: some View {
+//    WithViewStore(self.store, removeDuplicates: Self.isEqual) { _ in
+//      NavigationStack(path: ViewStore(self.store).binding(send: { $0 })) {
+//        self.content
+//      }
+//    }
+//  }
+//
+//  private static func isEqual(
+//    lhs: NavigationState<State.DestinationState>,
+//    rhs: NavigationState<State.DestinationState>
+//  ) -> Bool {
+//    guard lhs.count == rhs.count
+//    else { return false }
+//
+//    for (lhs, rhs) in zip(lhs, rhs) {
+//      guard lhs.id == rhs.id && enumTag(lhs.element) == enumTag(rhs.element)
+//      else { return false }
+//    }
+//    return true
+//  }
+//}
+//
+//public struct NavigationDestinationReducer<
+//  Upstream: ReducerProtocol,
+//  Destinations: ReducerProtocol
+//>: ReducerProtocol
+//where
+//  Upstream.State: NavigableState,
+//  Upstream.Action: NavigableAction,
+//  Upstream.State.DestinationState == Upstream.Action.DestinationState,
+//  Destinations.State == Upstream.Action.DestinationState,
+//  Destinations.Action == Upstream.Action.DestinationAction
+//{
+//  let upstream: Upstream
+//  let destinations: Destinations
+//
+//  public var body: some ReducerProtocol<Upstream.State, Upstream.Action> {
+//    Reduce { globalState, globalAction in
+//      guard let navigationAction = CasePath(Action.navigation).extract(from: globalAction)
+//      else { return .none }
+//
+//      switch navigationAction {
+//      case let .element(id, localAction):
+//        guard let index = globalState.path.firstIndex(where: { $0.id == id })
+//        else {
+//          // TODO: runtime warning
+//          return .none
+//        }
+//        return self.destinations
+//          .dependency(\.navigationID.current, id)
+//          .reduce(
+//            into: &globalState.path[index].element,
+//            action: localAction
+//          )
+//          .map { .navigation(.element(id: id, $0)) }
+//          .cancellable(id: id)
+//
+//      case let .setPath(path):
+//        var removedIds: Set<AnyHashable> = []
+//        for destination in globalState.path.destinations {
+//          removedIds.insert(destination.id)
+//        }
+//        for destination in path {
+//          removedIds.remove(destination.id)
+//        }
+//        globalState.path = path
+//        return .merge(removedIds.map { .cancel(id: $0) })
+//      }
+//    }
+//
+//    self.upstream
+//
+//    // TODO: Run `upstream` before dismissal? See presentation for this behavior.
+//  }
+//}
+//
+//extension ReducerProtocol
+//where
+//  State: NavigableState,
+//  Action: NavigableAction,
+//  State.DestinationState == Action.DestinationState
+//{
+//  // TODO: Should this be `navigationDestination(state:action:_:)` to avoid `ScopeCase`?
+//  public func navigationDestination<Destinations: ReducerProtocol>(
+//    @ReducerBuilder<Destinations.State, Destinations.Action> destinations: () -> Destinations
+//  ) -> NavigationDestinationReducer<Self, Destinations> {
+//    .init(upstream: self, destinations: destinations())
+//  }
+//
+//  public func navigationDestination<Destination: ReducerProtocol>(
+//    state toDestinationState: CasePath<State.DestinationState, Destination.State>,
+//    action toDestinationAction: CasePath<Action.DestinationAction, Destination.Action>,
+//    @ReducerBuilder<Destination.State, Destination.Action> destination: () -> Destination
+//  ) -> NavigationDestinationReducer<
+//    Self, ScopeCase<State.DestinationState, Action.DestinationAction, Destination>
+//  > {
+//    self.navigationDestination {
+//      ScopeCase(state: toDestinationState, action: toDestinationAction) {
+//        destination()
+//      }
+//    }
+//  }
+//}
+//
+//private class StoreObservableObject<State, Action>: ObservableObject {
+//  let id: NavigationState.ID
+//  let wrappedValue: Store<State, Action>
+//
+//  init(id: NavigationState.ID, store: Store<State, Action>) {
+//    self.id = id
+//    self.wrappedValue = store
+//  }
+//}
+//
+//public struct DestinationStore<
+//  State,
+//  Action,
+//  DestinationState,
+//  DestinationAction,
+//  Destination: View
+//>: View {
+//  @EnvironmentObject private var store:
+//    StoreObservableObject<
+//      NavigationState<State>,
+//      NavigationAction<State, Action>
+//    >
+//
+//  let state: (State) -> DestinationState?
+//  let action: (DestinationAction) -> Action
+//  let content: (Store<DestinationState, DestinationAction>) -> Destination
+//
+//  public init(
+//    state: @escaping (State) -> DestinationState?,
+//    action: @escaping (DestinationAction) -> Action,
+//    @ViewBuilder content: @escaping (Store<DestinationState, DestinationAction>) -> Destination
+//  ) {
+//    self.state = state
+//    self.action = action
+//    self.content = content
+//  }
+//
+//  public var body: some View {
+//    IfLetStore(
+//      self.store.wrappedValue.scope(
+//        state: returningLastNonNilValue { $0[id: store.id].flatMap(state) },
+//        action: { .element(id: store.id, action($0)) }
+//      )
+//    ) {
+//      content($0)
+//    }
+//  }
+//}
+//
+//@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+//extension View {
+//  @ViewBuilder
+//  public func navigationDestination<State: NavigableState, Action: NavigableAction, Content>(
+//    store: Store<State, Action>,
+//    @ViewBuilder destination: @escaping () -> Content
+//  )
+//    -> some View
+//  where
+//    Content: View,
+//    State.DestinationState == Action.DestinationState
+//  {
+//    self.navigationDestination(for: NavigationState<State.DestinationState>.Destination.self) {
+//      route in
+//      if let destinationState = store.state.value.path.last(where: { $0 == route }) {
+//        destination()
+//          .environmentObject(
+//            StoreObservableObject(
+//              id: destinationState.id,
+//              store: store.scope(state: { $0.path }, action: Action.navigation)
+//            )
+//          )
+//      } else {
+//        // TODO: runtime warning view
+//      }
+//    }
+//  }
+//}
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationLink where Destination == Never {
@@ -391,17 +573,5 @@ extension NavigationLink where Destination == Never {
 
   public init<S: StringProtocol, D: Hashable>(_ title: S, state: D?) where Label == Text {
     self.init(title, value: state.map { NavigationState.Destination(id: UUID(), element: $0) })
-  }
-}
-
-// TODO: should we ship these?
-extension NavigationAction {
-  public static var removeAll: Self {
-    .setPath([])
-  }
-}
-extension NavigableAction {
-  public static var popToRoot: Self {
-    .navigation(.setPath([]))
   }
 }
