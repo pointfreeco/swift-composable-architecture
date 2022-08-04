@@ -61,7 +61,7 @@ struct AnimationsEnvironment {
 
 let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnvironment> {
   state, action, environment in
-  enum CancelId {}
+  enum CancelID {}
 
   switch action {
   case let .circleScaleToggleChanged(isScaled):
