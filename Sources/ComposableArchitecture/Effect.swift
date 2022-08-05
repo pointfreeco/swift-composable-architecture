@@ -10,27 +10,28 @@ import XCTestDynamicOverlay
 /// Effects are returned from reducers so that the ``Store`` can perform the effects after the
 /// reducer is done running.
 ///
-/// There are 2 distinct ways to create an `Effect`, one using Apple's Combine framework and the
-/// other using Swift's native concurrency tools:
+/// There are 2 distinct ways to create an `Effect`, one using Swift's native concurrency tools, and
+/// the other using Apple's Combine framework:
 ///
-/// * If using Combine in your application, in particular the dependencies of your feature's
-/// environment, then you can create effects by making use of any of Combine's operators, and then
-/// tacking on `eraseToEffect` or `catchToEffect`. Note that the Combine interface to ``Effect``
-/// is considered soft deprecated, and should be eventually ported to Swift's native concurrency
-/// tools.
 /// * If using Swift's native structured concurrency tools then there are 3 main ways to create an
 /// effect, depending on if you want to emit one single action back into the system, or any number
 /// of actions, or just execute some work without emitting any actions:
 ///   * ``Effect/task(priority:operation:catch:file:fileID:line:)``
 ///   * ``Effect/run(priority:operation:catch:file:fileID:line:)``
 ///   * ``Effect/fireAndForget(priority:_:)``
+/// * If using Combine in your application, in particular the dependencies of your feature's
+/// environment, then you can create effects by making use of any of Combine's operators, and then
+/// tacking on `eraseToEffect` or `catchToEffect`. Note that the Combine interface to ``Effect``
+/// is considered soft deprecated, and should be eventually ported to Swift's native concurrency
+/// tools.
 ///
 /// > Important: ``Store`` is not thread safe, and so all effects must receive values on the same
 /// thread. This is typically the main thread,  **and** if the store is being used to drive UI
 /// then it must receive values on the main thread.
 /// >
-/// > This is only an issue if using the Combine interface of ``Effect`` as mentioned above. If only
-/// using Swift's concurrency tools then the threading is automatically handled for you.
+/// > This is only an issue if using the Combine interface of ``Effect`` as mentioned above. If you
+/// you are only using Swift's concurrency tools and the `.task`, `.run` and `.fireAndForget`
+/// functions on ``Effect``, then the threading is automatically handled for you.
 public struct Effect<Output, Failure: Error> {
   let publisher: AnyPublisher<Output, Failure>
 }

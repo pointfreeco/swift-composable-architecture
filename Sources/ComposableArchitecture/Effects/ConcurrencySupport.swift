@@ -324,14 +324,15 @@ public final actor ActorIsolated<Value: Sendable> {
   }
 }
 
-/// A generic wrapper for turning any non-`Sendable` type into a `Sendable` one.
+/// A generic wrapper for turning any non-`Sendable` type into a `Sendable` one, in an unchecked
+/// manner.
 ///
 /// Sometimes we need to use types that should be sendable but have not yet been audited for
 /// sendability. If we feel confident that the type is truly sendable, and we don't want to blanket
 /// disable concurrency warnings for a module via `@precondition import`, then we can selectively
 /// make that single type sendable by wrapping it in ``UncheckedSendable``.
 ///
-/// Note that by wrapping something in ``UncheckedSendable`` you are asking the compiler to trust
+/// > Note: By wrapping something in ``UncheckedSendable`` you are asking the compiler to trust
 /// you that the type is safe to use from multiple threads, and the compiler cannot help you find
 /// potential race conditions in your code.
 @dynamicMemberLookup
