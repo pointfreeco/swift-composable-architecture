@@ -46,8 +46,8 @@ struct AnimationsState: Equatable {
 }
 
 enum AnimationsAction: Equatable {
-  case circleScaleToggleChanged(Bool)
   case alertDismissed
+  case circleScaleToggleChanged(Bool)
   case rainbowButtonTapped
   case resetButtonTapped
   case resetConfirmationButtonTapped
@@ -64,12 +64,12 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
   enum CancelID {}
 
   switch action {
-  case let .circleScaleToggleChanged(isScaled):
-    state.isCircleScaled = isScaled
-    return .none
-
   case .alertDismissed:
     state.alert = nil
+    return .none
+
+  case let .circleScaleToggleChanged(isScaled):
+    state.isCircleScaled = isScaled
     return .none
 
   case .rainbowButtonTapped:
