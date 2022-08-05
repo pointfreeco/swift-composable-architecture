@@ -149,24 +149,27 @@ public func withTaskCancellation<T: Sendable>(
   cancelInFlight: Bool = false,
   operation: @Sendable @escaping () async throws -> T
 ) async rethrows -> T {
-  cancellablesLock.lock()
-  let id = CancelToken(id: id)
-  if cancelInFlight {
-    cancellationCancellables[id]?.forEach { $0.cancel() }
-  }
-  let task = Task { try await operation() }
-  var cancellable: AnyCancellable!
-  cancellable = AnyCancellable {
-    task.cancel()
-    cancellablesLock.sync {
-      cancellationCancellables[id]?.remove(cancellable)
-      if cancellationCancellables[id]?.isEmpty == .some(true) {
-        cancellationCancellables[id] = nil
+  let task = {
+    cancellablesLock.lock()
+    let id = CancelToken(id: id)
+    if cancelInFlight {
+      cancellationCancellables[id]?.forEach { $0.cancel() }
+    }
+    let task = Task { try await operation() }
+    var cancellable: AnyCancellable!
+    cancellable = AnyCancellable {
+      task.cancel()
+      cancellablesLock.sync {
+        cancellationCancellables[id]?.remove(cancellable)
+        if cancellationCancellables[id]?.isEmpty == .some(true) {
+          cancellationCancellables[id] = nil
+        }
       }
     }
-  }
-  cancellationCancellables[id, default: []].insert(cancellable)
-  cancellablesLock.unlock()
+    cancellationCancellables[id, default: []].insert(cancellable)
+    cancellablesLock.unlock()
+    return task
+  }()
   do {
     return try await task.cancellableValue
   } catch {

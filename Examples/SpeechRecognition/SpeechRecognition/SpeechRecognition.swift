@@ -17,7 +17,7 @@ struct SpeechRecognition: ReducerProtocol {
   }
 
   enum Action: Equatable {
-    case dismissAuthorizationStateAlert
+    case authorizationStateAlertDismissed
     case recordButtonTapped
     case speech(TaskResult<String>)
     case speechRecognizerAuthorizationStatusResponse(SFSpeechRecognizerAuthorizationStatus)
@@ -27,7 +27,7 @@ struct SpeechRecognition: ReducerProtocol {
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {
-    case .dismissAuthorizationStateAlert:
+    case .authorizationStateAlertDismissed:
       state.alert = nil
       return .none
 
@@ -144,7 +144,7 @@ struct SpeechRecognitionView: View {
         }
       }
       .padding()
-      .alert(self.store.scope(state: \.alert), dismiss: .dismissAuthorizationStateAlert)
+      .alert(self.store.scope(state: \.alert), dismiss: .authorizationStateAlertDismissed)
     }
   }
 }

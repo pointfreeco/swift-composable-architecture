@@ -27,6 +27,10 @@
 - ``merge(_:)-3al9f``
 - ``merge(_:)-4n451``
 
+### Concurrency
+
+- ``UncheckedSendable``
+
 ### Testing
 
 - ``unimplemented(_:)``

@@ -21,7 +21,7 @@ import SwiftUI
 ///
 /// ```swift
 /// .sheet(
-///   isActive: viewStore.binding(
+///   isPresented: viewStore.binding(
 ///     get: \.isGameActive,
 ///     send: { $0 ? .startButtonTapped : .detailDismissed }
 ///   )

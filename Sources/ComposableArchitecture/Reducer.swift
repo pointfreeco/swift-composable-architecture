@@ -12,11 +12,15 @@ import Combine
 ///   * `Environment`: A type that holds all dependencies needed in order to produce ``Effect``s,
 ///     such as API clients, analytics clients, random number generators, etc.
 ///
-/// - Note: The thread on which effects output is important. An effect's output is immediately sent
-///   back into the store, and ``Store`` is not thread safe. This means all effects must receive
-///   values on the same thread, **and** if the ``Store`` is being used to drive UI then all output
-///   must be on the main thread. You can use the `Publisher` method `receive(on:)` for make the
-///   effect output its values on the thread of your choice.
+/// > Important: The thread on which effects output is important. An effect's output is immediately
+/// > sent back into the store, and ``Store`` is not thread safe. This means all effects must
+/// > receive values on the same thread, **and** if the ``Store`` is being used to drive UI then all
+/// > output must be on the main thread. You can use the `Publisher` method `receive(on:)` for make
+/// > the effect output its values on the thread of your choice.
+/// > 
+/// > This is only an issue if using the Combine interface of ``Effect`` as mentioned above. If you
+/// > are only using Swift's concurrency tools and the `.task`, `.run` and `.fireAndForget`
+/// > functions on ``Effect``, then the threading is automatically handled for you.
 @available(iOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead")
 @available(macOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead")
 @available(tvOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead")

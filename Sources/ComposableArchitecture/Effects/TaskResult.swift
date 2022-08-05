@@ -186,7 +186,6 @@ public enum TaskResult<Success: Sendable>: Sendable {
   }
 }
 
-// TODO: Should there also be a failable initializer that preserves the `Failure` type?
 extension Result where Success: Sendable, Failure == Error {
   /// Transforms a `TaskResult` into a `Result`.
   ///
@@ -275,7 +274,6 @@ extension TaskResult: Hashable where Success: Hashable {
 }
 
 extension TaskResult {
-  // TODO: Is this worth shipping?
   // NB: For those that try to interface with `TaskResult` using `Result`'s old API.
   @available(*, unavailable, renamed: "value")
   public func get() throws -> Success {

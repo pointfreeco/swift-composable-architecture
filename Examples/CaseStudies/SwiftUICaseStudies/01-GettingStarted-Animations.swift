@@ -28,8 +28,8 @@ struct Animations: ReducerProtocol {
   }
 
   enum Action: Equatable, Sendable {
+    case alertDismissed
     case circleScaleToggleChanged(Bool)
-    case dismissAlert
     case rainbowButtonTapped
     case resetButtonTapped
     case resetConfirmationButtonTapped
@@ -43,12 +43,12 @@ struct Animations: ReducerProtocol {
     enum CancelID {}
 
     switch action {
-    case let .circleScaleToggleChanged(isScaled):
-      state.isCircleScaled = isScaled
+    case .alertDismissed:
+      state.alert = nil
       return .none
 
-    case .dismissAlert:
-      state.alert = nil
+    case let .circleScaleToggleChanged(isScaled):
+      state.isCircleScaled = isScaled
       return .none
 
     case .rainbowButtonTapped:
@@ -131,7 +131,7 @@ struct AnimationsView: View {
         Button("Reset") { viewStore.send(.resetButtonTapped) }
           .padding([.horizontal, .bottom])
       }
-      .alert(self.store.scope(state: \.alert), dismiss: .dismissAlert)
+      .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
       .navigationBarTitleDisplayMode(.inline)
     }
   }
