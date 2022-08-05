@@ -223,8 +223,11 @@ extension Effect {
     //     due to a bug in iOS 13.2 that publisher will never complete. The bug was fixed in
     //     iOS 13.3, but to remain compatible with iOS 13.2 and higher we need to do a little
     //     trickery to make sure the deferred publisher completes.
-    Deferred { () -> Publishers.CompactMap<Result<Output?, Failure>.Publisher, Output> in
-      try? work()
+    let dependencies = DependencyValues.current
+    return Deferred { () -> Publishers.CompactMap<Result<Output?, Failure>.Publisher, Output> in
+      DependencyValues.$current.withValue(dependencies) {
+        try? work()
+      }
       return Just<Output?>(nil)
         .setFailureType(to: Failure.self)
         .compactMap { $0 }

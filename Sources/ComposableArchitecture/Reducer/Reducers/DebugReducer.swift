@@ -99,7 +99,7 @@ where Upstream: ReducerProtocol {
       guard let localAction = toLocalAction(action) else { return effects }
       let nextState = toLocalState(state)
       return .merge(
-        .fireAndForget {
+        .fireAndForget { 
           self.queue.schedule {
             var actionOutput = ""
             if actionFormat == .prettyPrint {
