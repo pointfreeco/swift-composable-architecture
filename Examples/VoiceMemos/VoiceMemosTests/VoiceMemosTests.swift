@@ -13,7 +13,6 @@ class VoiceMemosTests: XCTestCase {
     // NB: Combine's concatenation behavior is different in 13.3
     guard #available(iOS 13.4, *) else { return }
 
-    // TODO: CancellableAsyncValue instead of AsyncStream with first?
     let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
 
     var environment = VoiceMemosEnvironment.unimplemented
