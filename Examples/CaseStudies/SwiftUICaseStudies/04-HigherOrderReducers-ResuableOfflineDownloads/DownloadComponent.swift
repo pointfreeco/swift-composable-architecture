@@ -36,7 +36,7 @@ enum DownloadComponentAction: Equatable {
 
   enum AlertAction: Equatable {
     case deleteButtonTapped
-    case dismiss
+    case dismissed
     case nevermindButtonTapped
     case stopButtonTapped
   }
@@ -63,7 +63,7 @@ extension Reducer {
           return .none
 
         case .alert(.nevermindButtonTapped),
-          .alert(.dismiss):
+          .alert(.dismissed):
           state.alert = nil
           return .none
 
@@ -162,7 +162,7 @@ struct DownloadComponent<ID: Equatable>: View {
       .foregroundStyle(.primary)
       .alert(
         self.store.scope(state: \.alert, action: DownloadComponentAction.alert),
-        dismiss: .dismiss
+        dismiss: .dismissed
       )
     }
   }

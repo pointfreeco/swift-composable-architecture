@@ -16,7 +16,7 @@ struct AppState: Equatable {
 }
 
 enum AppAction: Equatable {
-  case dismissAuthorizationStateAlert
+  case authorizationStateAlertDismissed
   case recordButtonTapped
   case speech(Result<String, SpeechClient.Error>)
   case speechRecognizerAuthorizationStatusResponse(SFSpeechRecognizerAuthorizationStatus)
@@ -29,7 +29,7 @@ struct AppEnvironment {
 
 let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
   switch action {
-  case .dismissAuthorizationStateAlert:
+  case .authorizationStateAlertDismissed:
     state.alert = nil
     return .none
 
@@ -138,7 +138,7 @@ struct SpeechRecognitionView: View {
         }
       }
       .padding()
-      .alert(self.store.scope(state: \.alert), dismiss: .dismissAuthorizationStateAlert)
+      .alert(self.store.scope(state: \.alert), dismiss: .authorizationStateAlertDismissed)
     }
   }
 }
