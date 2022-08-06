@@ -48,9 +48,9 @@ day-to-day when building applications, such as:
 ### Essentials
 
 - <doc:GettingStarted>
-- <doc:Testing>
 - <doc:GettingReadyForSwiftConcurrency>
 - <doc:Performance>
+- <doc:Testing>
 
 ### State Management
 
