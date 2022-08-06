@@ -36,8 +36,6 @@ let longLivingEffectsReducer = Reducer<
 > { state, action, environment in
   switch action {
   case .task:
-    state.screenshotCount += 1
-
     // When the view appears, start the effect that emits when screenshots are taken.
     return .run { send in
       for await _ in await environment.screenshots() {
