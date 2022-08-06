@@ -211,23 +211,18 @@ private let dateFormatter: DateFormatter = {
 
 struct SearchView_Previews: PreviewProvider {
   static var previews: some View {
-    let store = Store(
-      initialState: SearchState(),
-      reducer: searchReducer,
-      environment: SearchEnvironment(
-        weatherClient: WeatherClient(
-          forecast: { _ in .mock },
-          search: { _ in .mock }
-        ),
-        mainQueue: .main
+    SearchView(
+      store: Store(
+        initialState: SearchState(),
+        reducer: searchReducer,
+        environment: SearchEnvironment(
+          weatherClient: WeatherClient(
+            forecast: { _ in .mock },
+            search: { _ in .mock }
+          ),
+          mainQueue: .main
+        )
       )
     )
-
-    return Group {
-      SearchView(store: store)
-
-      SearchView(store: store)
-        .environment(\.colorScheme, .dark)
-    }
   }
 }

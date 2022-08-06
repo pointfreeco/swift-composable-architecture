@@ -68,7 +68,7 @@ class EffectsBasicsTests: XCTestCase {
       environment: .unimplemented
     )
 
-    store.environment.mainQueue = .main
+    store.environment.mainQueue = DispatchQueue.test.eraseToAnyScheduler()
 
     await store.send(.decrementButtonTapped) {
       $0.count = -1

@@ -5,8 +5,8 @@ import Speech
 
 private let readMe = """
   This application demonstrates how to work with a complex dependency in the Composable \
-  Architecture. It uses the SFSpeechRecognizer API from the Speech framework to listen to audio on \
-  the device and live-transcribe it to the UI.
+  Architecture. It uses the `SFSpeechRecognizer` API from the Speech framework to listen to audio \
+  on the device and live-transcribe it to the UI.
   """
 
 struct AppState: Equatable {
@@ -57,9 +57,8 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
       await send(.speech(.failure(error)))
     }
 
-  case
-      .speech(.failure(SpeechClient.Failure.couldntConfigureAudioSession)),
-      .speech(.failure(SpeechClient.Failure.couldntStartAudioEngine)):
+  case .speech(.failure(SpeechClient.Failure.couldntConfigureAudioSession)),
+    .speech(.failure(SpeechClient.Failure.couldntStartAudioEngine)):
     state.alert = AlertState(title: TextState("Problem with audio device. Please try again."))
     return .none
 
@@ -74,13 +73,12 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     return .none
 
   case let .speechRecognizerAuthorizationStatusResponse(status):
-    state.isRecording = status == .authorized
-
     switch status {
     case .authorized:
       return .none
 
     case .denied:
+      state.isRecording = false
       state.alert = AlertState(
         title: TextState(
           """
@@ -91,20 +89,21 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
       return .none
 
     case .notDetermined:
+      state.isRecording = false
       return .none
 
     case .restricted:
+      state.isRecording = false
       state.alert = AlertState(title: TextState("Your device does not allow speech recognition."))
       return .none
 
     @unknown default:
+      state.isRecording = false
       return .none
     }
   }
 }
 .debug()
-
-struct TranscriptionID: Hashable {}
 
 struct SpeechRecognitionView: View {
   let store: Store<AppState, AppAction>
@@ -115,16 +114,12 @@ struct SpeechRecognitionView: View {
         VStack(alignment: .leading) {
           Text(readMe)
             .padding(.bottom, 32)
-        }
 
-        ScrollView {
-          ScrollViewReader { proxy in
-            Text(viewStore.transcribedText)
-              .font(.largeTitle)
-              .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-          }
+          Text(viewStore.transcribedText)
+            .font(.largeTitle)
+            .minimumScaleFactor(0.1)
+            .frame(minHeight: 0, maxHeight: .infinity, alignment: .topLeading)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
         Spacer()
 
@@ -168,12 +163,8 @@ extension SpeechClient {
     let isRecording = ActorIsolated(false)
 
     return Self(
-      finishTask: {
-        await isRecording.setValue(false)
-      },
-      requestAuthorization: {
-        .authorized
-      },
+      finishTask: { await isRecording.setValue(false) },
+      requestAuthorization: { .authorized },
       startTask: { _ in
         .init { c in
           Task {
@@ -191,7 +182,7 @@ extension SpeechClient {
               let word = finalText.prefix { $0 != " " }
               try await Task.sleep(
                 nanoseconds: UInt64(word.count) * NSEC_PER_MSEC * 50
-//                + .random(in: 0 ... (NSEC_PER_MSEC * 200))
+                  + .random(in: 0...(NSEC_PER_MSEC * 200))
               )
               finalText.removeFirst(word.count)
               if finalText.first == " " {

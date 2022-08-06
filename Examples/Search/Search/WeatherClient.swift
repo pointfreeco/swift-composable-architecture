@@ -4,10 +4,10 @@ import XCTestDynamicOverlay
 
 // MARK: - API models
 
-struct Search: Decodable, Equatable, Sendable {
+struct Search: Decodable, Equatable {
   var results: [Result]
 
-  struct Result: Decodable, Equatable, Identifiable, Sendable {
+  struct Result: Decodable, Equatable, Identifiable {
     var country: String
     var latitude: Double
     var longitude: Double
@@ -17,17 +17,17 @@ struct Search: Decodable, Equatable, Sendable {
   }
 }
 
-struct Forecast: Decodable, Equatable, Sendable {
+struct Forecast: Decodable, Equatable {
   var daily: Daily
   var dailyUnits: DailyUnits
 
-  struct Daily: Decodable, Equatable, Sendable {
+  struct Daily: Decodable, Equatable {
     var temperatureMax: [Double]
     var temperatureMin: [Double]
     var time: [Date]
   }
 
-  struct DailyUnits: Decodable, Equatable, Sendable {
+  struct DailyUnits: Decodable, Equatable {
     var temperatureMax: String
     var temperatureMin: String
   }
@@ -38,7 +38,7 @@ struct Forecast: Decodable, Equatable, Sendable {
 // Typically this interface would live in its own module, separate from the live implementation.
 // This allows the search feature to compile faster since it only depends on the interface.
 
-struct WeatherClient: Sendable {
+struct WeatherClient {
   var forecast: @Sendable (Search.Result) async throws -> Forecast
   var search: @Sendable (String) async throws -> Search
 }

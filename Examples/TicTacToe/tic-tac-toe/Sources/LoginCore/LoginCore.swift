@@ -79,8 +79,8 @@ public let loginReducer = Reducer<LoginState, LoginAction, LoginEnvironment>.com
     case .loginButtonTapped:
       state.isLoginRequestInFlight = true
       return .task { [email = state.email, password = state.password] in
-        .loginResponse(
-          await TaskResult {
+        await .loginResponse(
+          TaskResult {
             try await environment.authenticationClient.login(
               .init(email: email, password: password)
             )

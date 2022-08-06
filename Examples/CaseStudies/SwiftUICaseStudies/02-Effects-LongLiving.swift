@@ -4,14 +4,15 @@ import SwiftUI
 
 private let readMe = """
   This application demonstrates how to handle long-living effects, for example notifications from \
-  Notification Center.
+  Notification Center, and how to tie an effect's lifetime to the lifetime of the view.
 
   Run this application in the simulator, and take a few screenshots by going to \
   *Device › Screenshot* in the menu, and observe that the UI counts the number of times that \
   happens.
 
   Then, navigate to another screen and take screenshots there, and observe that this screen does \
-  *not* count those screenshots.
+  *not* count those screenshots. The notifications effect is automatically cancelled when leaving \
+  the screen, and restarted when entering the screen.
   """
 
 // MARK: - Application domain

@@ -66,9 +66,9 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
             switch action {
             case .didOpen:
               group.addTask {
-                while !Task.isCancelled {
+                while true {
                   try await environment.mainQueue.sleep(for: .seconds(10))
-                  try? await environment.webSocket.sendPing(WebSocketID.self)
+                  try await environment.webSocket.sendPing(WebSocketID.self)
                 }
               }
               group.addTask {
@@ -81,6 +81,7 @@ let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnviron
             }
           }
         }
+      } catch: { _, _ in
       }
       .cancellable(id: WebSocketID.self)
     }

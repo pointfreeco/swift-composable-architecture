@@ -41,7 +41,9 @@ struct VoiceMemoEnvironment {
 }
 
 let voiceMemoReducer = Reducer<
-  VoiceMemo, VoiceMemoAction, VoiceMemoEnvironment
+  VoiceMemo,
+  VoiceMemoAction,
+  VoiceMemoEnvironment
 > { memo, action, environment in
   enum PlayID {}
 
