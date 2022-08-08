@@ -1,6 +1,6 @@
 import Combine
 import ComposableArchitecture
-import SwiftUI
+@preconcurrency import SwiftUI  // NB: SwiftUI.Color and SwiftUI.Animation are not Sendable yet.
 
 private let readMe = """
   This screen demonstrates how changes to application state can drive animations. Because the \
@@ -19,25 +19,6 @@ private let readMe = """
   toggle at the bottom of the screen.
   """
 
-extension Effect where Failure == Never {
-  public static func keyFrames<S: Scheduler>(
-    values: [(output: Output, duration: S.SchedulerTimeType.Stride)],
-    scheduler: S
-  ) -> Self {
-    .concatenate(
-      values
-        .enumerated()
-        .map { index, animationState in
-          index == 0
-            ? Effect(value: animationState.output)
-            : Just(animationState.output)
-              .delay(for: values[index - 1].duration, scheduler: scheduler)
-              .eraseToEffect()
-        }
-    )
-  }
-}
-
 struct AnimationsState: Equatable {
   var alert: AlertState<AnimationsAction>?
   var circleCenter: CGPoint?
@@ -45,7 +26,7 @@ struct AnimationsState: Equatable {
   var isCircleScaled = false
 }
 
-enum AnimationsAction: Equatable {
+enum AnimationsAction: Equatable, Sendable {
   case alertDismissed
   case circleScaleToggleChanged(Bool)
   case rainbowButtonTapped
@@ -73,11 +54,12 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
     return .none
 
   case .rainbowButtonTapped:
-    return .keyFrames(
-      values: [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .black]
-        .map { (output: .setColor($0), duration: 1) },
-      scheduler: environment.mainQueue.animation(.linear)
-    )
+    return .run { send in
+      for color in [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .black] {
+        await send(.setColor(color), animation: .linear)
+        try await environment.mainQueue.sleep(for: 1)
+      }
+    }
     .cancellable(id: CancelID.self)
 
   case .resetButtonTapped:

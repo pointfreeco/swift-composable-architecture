@@ -3,62 +3,78 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+@MainActor
 class EffectsBasicsTests: XCTestCase {
-  func testCountUpAndDown() {
+  func testCountDown() async {
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
       environment: .unimplemented
     )
 
-    store.send(.incrementButtonTapped) {
+    store.environment.mainQueue = .immediate
+
+    await store.send(.incrementButtonTapped) {
       $0.count = 1
     }
-    store.send(.decrementButtonTapped) {
+    await store.send(.decrementButtonTapped) {
       $0.count = 0
     }
   }
 
-  func testNumberFact_HappyPath() {
+  func testNumberFact() async {
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
       environment: .unimplemented
     )
 
-    store.environment.fact.fetch = { Effect(value: "\($0) is a good number Brent") }
+    store.environment.fact.fetch = { "\($0) is a good number Brent" }
     store.environment.mainQueue = .immediate
 
-    store.send(.incrementButtonTapped) {
+    await store.send(.incrementButtonTapped) {
       $0.count = 1
     }
-    store.send(.numberFactButtonTapped) {
+    await store.send(.numberFactButtonTapped) {
       $0.isNumberFactRequestInFlight = true
     }
-    store.receive(.numberFactResponse(.success("1 is a good number Brent"))) {
+    await store.receive(.numberFactResponse(.success("1 is a good number Brent"))) {
       $0.isNumberFactRequestInFlight = false
       $0.numberFact = "1 is a good number Brent"
     }
   }
 
-  func testNumberFact_UnhappyPath() {
+  func testDecrement() async {
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
       environment: .unimplemented
     )
 
-    store.environment.fact.fetch = { _ in Effect(error: FactClient.Failure()) }
     store.environment.mainQueue = .immediate
 
-    store.send(.incrementButtonTapped) {
-      $0.count = 1
+    await store.send(.decrementButtonTapped) {
+      $0.count = -1
     }
-    store.send(.numberFactButtonTapped) {
-      $0.isNumberFactRequestInFlight = true
+    await store.receive(.decrementDelayResponse) {
+      $0.count = 0
     }
-    store.receive(.numberFactResponse(.failure(FactClient.Failure()))) {
-      $0.isNumberFactRequestInFlight = false
+  }
+
+  func testDecrementCancellation() async {
+    let store = TestStore(
+      initialState: EffectsBasicsState(),
+      reducer: effectsBasicsReducer,
+      environment: .unimplemented
+    )
+
+    store.environment.mainQueue = DispatchQueue.test.eraseToAnyScheduler()
+
+    await store.send(.decrementButtonTapped) {
+      $0.count = -1
+    }
+    await store.send(.incrementButtonTapped) {
+      $0.count = 0
     }
   }
 }

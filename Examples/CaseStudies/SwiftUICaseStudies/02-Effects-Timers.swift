@@ -1,13 +1,13 @@
 import Combine
 import ComposableArchitecture
-import SwiftUI
+@preconcurrency import SwiftUI  // NB: SwiftUI.Animation is not Sendable yet.
 
 private let readMe = """
   This application demonstrates how to work with timers in the Composable Architecture.
 
-  Although the Combine framework comes with a `Timer.publisher` API, and it is possible to use \
-  that API in the Composable Architecture, it is not easy to test. That is why we have provided an \
-  `Effect.timer` API that works with schedulers and can be tested.
+  It makes use of the `.timer` method on Combine Schedulers, which is a helper provided by the \
+  Combine Schedulers library included with this library. The helper provides an \
+  `AsyncSequence`-friendly API for dealing with timers in asynchronous code.
   """
 
 // MARK: - Timer feature domain
@@ -29,7 +29,7 @@ struct TimersEnvironment {
 let timersReducer = Reducer<TimersState, TimersAction, TimersEnvironment> {
   state, action, environment in
 
-  enum TimerId {}
+  enum TimerID {}
 
   switch action {
   case .timerTicked:
@@ -38,15 +38,13 @@ let timersReducer = Reducer<TimersState, TimersAction, TimersEnvironment> {
 
   case .toggleTimerButtonTapped:
     state.isTimerActive.toggle()
-    return state.isTimerActive
-      ? Effect.timer(
-        id: TimerId.self,
-        every: 1,
-        tolerance: .zero,
-        on: environment.mainQueue.animation(.interpolatingSpring(stiffness: 3000, damping: 40))
-      )
-      .map { _ in TimersAction.timerTicked }
-      : .cancel(id: TimerId.self)
+    return .run { [isTimerActive = state.isTimerActive] send in
+      guard isTimerActive else { return }
+      for await _ in environment.mainQueue.timer(interval: 1) {
+        await send(.timerTicked, animation: .interpolatingSpring(stiffness: 3000, damping: 40))
+      }
+    }
+    .cancellable(id: TimerID.self, cancelInFlight: true)
   }
 }
 

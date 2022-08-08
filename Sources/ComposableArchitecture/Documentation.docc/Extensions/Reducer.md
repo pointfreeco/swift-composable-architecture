@@ -18,10 +18,10 @@
 - ``combine(_:)-1ern2``
 - ``combined(with:)``
 - ``pullback(state:action:environment:)``
-- ``pullback(state:action:environment:file:line:)``
-- ``optional(file:line:)``
-- ``forEach(state:action:environment:file:line:)-gvte``
-- ``forEach(state:action:environment:file:line:)-21wow``
+- ``pullback(state:action:environment:file:fileID:line:)``
+- ``optional(file:fileID:line:)``
+- ``forEach(state:action:environment:file:fileID:line:)-n7qj``
+- ``forEach(state:action:environment:file:fileID:line:)-3m8jy``
 - ``Identified``
 
 ### SwiftUI Integration

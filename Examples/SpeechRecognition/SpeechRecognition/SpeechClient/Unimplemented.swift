@@ -1,13 +1,18 @@
 import Combine
 import ComposableArchitecture
 import Speech
+import XCTestDynamicOverlay
 
 #if DEBUG
   extension SpeechClient {
     static let unimplemented = Self(
-      finishTask: { .unimplemented("\(Self.self).finishTask") },
-      requestAuthorization: { .unimplemented("\(Self.self).requestAuthorization") },
-      startTask: { _ in .unimplemented("\(Self.self).recognitionTask") }
+      finishTask: XCTUnimplemented("\(Self.self).finishTask"),
+      requestAuthorization: XCTUnimplemented(
+        "\(Self.self).requestAuthorization", placeholder: .notDetermined
+      ),
+      startTask: XCTUnimplemented(
+        "\(Self.self).recognitionTask", placeholder: AsyncThrowingStream.never
+      )
     )
   }
 #endif

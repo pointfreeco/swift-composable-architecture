@@ -4,36 +4,36 @@ import LoginCore
 import TwoFactorCore
 import XCTest
 
+@MainActor
 class LoginCoreTests: XCTestCase {
-  func testFlow_Success_TwoFactor_Integration() {
+  func testFlow_Success_TwoFactor_Integration() async {
     var authenticationClient = AuthenticationClient.unimplemented
     authenticationClient.login = { _ in
-      Effect(value: AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true))
+      AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
     }
     authenticationClient.twoFactor = { _ in
-      Effect(value: AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false))
+      AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
     }
 
     let store = TestStore(
       initialState: LoginState(),
       reducer: loginReducer,
       environment: LoginEnvironment(
-        authenticationClient: authenticationClient,
-        mainQueue: .immediate
+        authenticationClient: authenticationClient
       )
     )
 
-    store.send(.emailChanged("2fa@pointfree.co")) {
+    await store.send(.emailChanged("2fa@pointfree.co")) {
       $0.email = "2fa@pointfree.co"
     }
-    store.send(.passwordChanged("password")) {
+    await store.send(.passwordChanged("password")) {
       $0.password = "password"
       $0.isFormValid = true
     }
-    store.send(.loginButtonTapped) {
+    await store.send(.loginButtonTapped) {
       $0.isLoginRequestInFlight = true
     }
-    store.receive(
+    await store.receive(
       .loginResponse(
         .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true))
       )
@@ -41,14 +41,14 @@ class LoginCoreTests: XCTestCase {
       $0.isLoginRequestInFlight = false
       $0.twoFactor = TwoFactorState(token: "deadbeefdeadbeef")
     }
-    store.send(.twoFactor(.codeChanged("1234"))) {
+    await store.send(.twoFactor(.codeChanged("1234"))) {
       $0.twoFactor?.code = "1234"
       $0.twoFactor?.isFormValid = true
     }
-    store.send(.twoFactor(.submitButtonTapped)) {
+    await store.send(.twoFactor(.submitButtonTapped)) {
       $0.twoFactor?.isTwoFactorRequestInFlight = true
     }
-    store.receive(
+    await store.receive(
       .twoFactor(
         .twoFactorResponse(
           .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false))
@@ -59,37 +59,35 @@ class LoginCoreTests: XCTestCase {
     }
   }
 
-  func testFlow_DismissEarly_TwoFactor_Integration() {
+  func testFlow_DismissEarly_TwoFactor_Integration() async {
     var authenticationClient = AuthenticationClient.unimplemented
     authenticationClient.login = { _ in
-      Effect(value: AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true))
+      AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
     }
     authenticationClient.twoFactor = { _ in
-      Effect(value: AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false))
+      try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+      return AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
     }
-    let mainQueue = DispatchQueue.test
 
     let store = TestStore(
       initialState: LoginState(),
       reducer: loginReducer,
       environment: LoginEnvironment(
-        authenticationClient: authenticationClient,
-        mainQueue: mainQueue.eraseToAnyScheduler()
+        authenticationClient: authenticationClient
       )
     )
 
-    store.send(.emailChanged("2fa@pointfree.co")) {
+    await store.send(.emailChanged("2fa@pointfree.co")) {
       $0.email = "2fa@pointfree.co"
     }
-    store.send(.passwordChanged("password")) {
+    await store.send(.passwordChanged("password")) {
       $0.password = "password"
       $0.isFormValid = true
     }
-    store.send(.loginButtonTapped) {
+    await store.send(.loginButtonTapped) {
       $0.isLoginRequestInFlight = true
     }
-    mainQueue.advance()
-    store.receive(
+    await store.receive(
       .loginResponse(
         .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true))
       )
@@ -97,14 +95,14 @@ class LoginCoreTests: XCTestCase {
       $0.isLoginRequestInFlight = false
       $0.twoFactor = TwoFactorState(token: "deadbeefdeadbeef")
     }
-    store.send(.twoFactor(.codeChanged("1234"))) {
+    await store.send(.twoFactor(.codeChanged("1234"))) {
       $0.twoFactor?.code = "1234"
       $0.twoFactor?.isFormValid = true
     }
-    store.send(.twoFactor(.submitButtonTapped)) {
+    await store.send(.twoFactor(.submitButtonTapped)) {
       $0.twoFactor?.isTwoFactorRequestInFlight = true
     }
-    store.send(.twoFactorDismissed) {
+    await store.send(.twoFactorDismissed) {
       $0.twoFactor = nil
     }
   }

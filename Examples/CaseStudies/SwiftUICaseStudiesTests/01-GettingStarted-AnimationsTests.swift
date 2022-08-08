@@ -4,8 +4,9 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+@MainActor
 class AnimationTests: XCTestCase {
-  func testRainbow() {
+  func testRainbow() async {
     let mainQueue = DispatchQueue.test
 
     let store = TestStore(
@@ -16,51 +17,52 @@ class AnimationTests: XCTestCase {
       )
     )
 
-    store.send(.rainbowButtonTapped)
+    await store.send(.rainbowButtonTapped)
 
-    store.receive(.setColor(.red)) {
+    await store.receive(.setColor(.red)) {
       $0.circleColor = .red
     }
 
-    mainQueue.advance(by: .seconds(1))
-    store.receive(.setColor(.blue)) {
+    await mainQueue.advance(by: .seconds(1))
+    await store.receive(.setColor(.blue)) {
       $0.circleColor = .blue
     }
 
-    mainQueue.advance(by: .seconds(1))
-    store.receive(.setColor(.green)) {
+    await mainQueue.advance(by: .seconds(1))
+    await store.receive(.setColor(.green)) {
       $0.circleColor = .green
     }
 
-    mainQueue.advance(by: .seconds(1))
-    store.receive(.setColor(.orange)) {
+    await mainQueue.advance(by: .seconds(1))
+    await store.receive(.setColor(.orange)) {
       $0.circleColor = .orange
     }
 
-    mainQueue.advance(by: .seconds(1))
-    store.receive(.setColor(.pink)) {
+    await mainQueue.advance(by: .seconds(1))
+    await store.receive(.setColor(.pink)) {
       $0.circleColor = .pink
     }
 
-    mainQueue.advance(by: .seconds(1))
-    store.receive(.setColor(.purple)) {
+    await mainQueue.advance(by: .seconds(1))
+    await store.receive(.setColor(.purple)) {
       $0.circleColor = .purple
     }
 
-    mainQueue.advance(by: .seconds(1))
-    store.receive(.setColor(.yellow)) {
+    await mainQueue.advance(by: .seconds(1))
+    await store.receive(.setColor(.yellow)) {
       $0.circleColor = .yellow
     }
 
-    mainQueue.advance(by: .seconds(1))
-    store.receive(.setColor(.black)) {
+    await mainQueue.advance(by: .seconds(1))
+    await store.receive(.setColor(.black)) {
       $0.circleColor = .black
     }
 
-    mainQueue.run()
+
+    await mainQueue.advance(by: .seconds(1))
   }
 
-  func testReset() {
+  func testReset() async {
     let mainQueue = DispatchQueue.test
 
     let store = TestStore(
@@ -71,18 +73,18 @@ class AnimationTests: XCTestCase {
       )
     )
 
-    store.send(.rainbowButtonTapped)
+    await store.send(.rainbowButtonTapped)
 
-    store.receive(.setColor(.red)) {
+    await store.receive(.setColor(.red)) {
       $0.circleColor = .red
     }
 
-    mainQueue.advance(by: .seconds(1))
-    store.receive(.setColor(.blue)) {
+    await mainQueue.advance(by: .seconds(1))
+    await store.receive(.setColor(.blue)) {
       $0.circleColor = .blue
     }
 
-    store.send(.resetButtonTapped) {
+    await store.send(.resetButtonTapped) {
       $0.alert = AlertState(
         title: TextState("Reset state?"),
         primaryButton: .destructive(
@@ -93,10 +95,8 @@ class AnimationTests: XCTestCase {
       )
     }
 
-    store.send(.resetConfirmationButtonTapped) {
+    await store.send(.resetConfirmationButtonTapped) {
       $0 = AnimationsState()
     }
-
-    mainQueue.run()
   }
 }

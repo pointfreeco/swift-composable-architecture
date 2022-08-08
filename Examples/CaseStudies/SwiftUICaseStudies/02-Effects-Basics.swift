@@ -29,9 +29,10 @@ struct EffectsBasicsState: Equatable {
 
 enum EffectsBasicsAction: Equatable {
   case decrementButtonTapped
+  case decrementDelayResponse
   case incrementButtonTapped
   case numberFactButtonTapped
-  case numberFactResponse(Result<String, FactClient.Failure>)
+  case numberFactResponse(TaskResult<String>)
 }
 
 struct EffectsBasicsEnvironment {
@@ -46,25 +47,42 @@ let effectsBasicsReducer = Reducer<
   EffectsBasicsAction,
   EffectsBasicsEnvironment
 > { state, action, environment in
+  enum DelayID {}
+
   switch action {
   case .decrementButtonTapped:
     state.count -= 1
     state.numberFact = nil
+    // Return an effect that re-increments the count after 1 second if the count is negative
+    return state.count >= 0
+    ? .none
+    : .task {
+      try await environment.mainQueue.sleep(for: 1)
+      return .decrementDelayResponse
+    }
+    .cancellable(id: DelayID.self)
+
+  case .decrementDelayResponse:
+    if state.count < 0 {
+      state.count += 1
+    }
     return .none
 
   case .incrementButtonTapped:
     state.count += 1
     state.numberFact = nil
-    return .none
+    return state.count >= 0
+    ? .cancel(id: DelayID.self)
+    : .none
 
   case .numberFactButtonTapped:
     state.isNumberFactRequestInFlight = true
     state.numberFact = nil
     // Return an effect that fetches a number fact from the API and returns the
     // value back to the reducer's `numberFactResponse` action.
-    return environment.fact.fetch(state.count)
-      .receive(on: environment.mainQueue)
-      .catchToEffect(EffectsBasicsAction.numberFactResponse)
+    return .task { [count = state.count] in
+      await .numberFactResponse(TaskResult { try await environment.fact.fetch(count) })
+    }
 
   case let .numberFactResponse(.success(response)):
     state.isNumberFactRequestInFlight = false

@@ -58,11 +58,11 @@ let cityMapReducer = Reducer<CityMapState, CityMapAction, CityMapEnvironment> {
   state, action, environment in
   switch action {
   case let .downloadComponent(.downloadClient(.success(.response(data)))):
-    // TODO: save to disk
+    // NB: This is where you could perform the effect to save the data to a file on disk.
     return .none
 
   case .downloadComponent(.alert(.deleteButtonTapped)):
-    // TODO: delete file from disk
+    // NB: This is where you could perform the effect to delete the data from disk.
     return .none
 
   case .downloadComponent:
@@ -72,12 +72,7 @@ let cityMapReducer = Reducer<CityMapState, CityMapAction, CityMapEnvironment> {
 .downloadable(
   state: \.downloadComponent,
   action: /CityMapAction.downloadComponent,
-  environment: {
-    DownloadComponentEnvironment(
-      downloadClient: $0.downloadClient,
-      mainQueue: $0.mainQueue
-    )
-  }
+  environment: { DownloadComponentEnvironment(downloadClient: $0.downloadClient) }
 )
 
 struct CityMapRowView: View {

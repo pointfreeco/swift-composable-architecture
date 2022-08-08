@@ -95,14 +95,11 @@ struct TwoFactorView_Previews: PreviewProvider {
           reducer: twoFactorReducer,
           environment: TwoFactorEnvironment(
             authenticationClient: AuthenticationClient(
-              login: { _ in
-                Effect(value: AuthenticationResponse(token: "deadbeef", twoFactorRequired: false))
-              },
+              login: { _ in AuthenticationResponse(token: "deadbeef", twoFactorRequired: false) },
               twoFactor: { _ in
-                Effect(value: AuthenticationResponse(token: "deadbeef", twoFactorRequired: false))
+                AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
               }
-            ),
-            mainQueue: .main
+            )
           )
         )
       )

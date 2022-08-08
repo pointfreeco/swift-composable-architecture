@@ -1,52 +1,41 @@
-import AVFoundation
+@preconcurrency import AVFoundation
 import ComposableArchitecture
 
 extension AudioPlayerClient {
-  static var live: Self {
-    var delegate: AudioPlayerClientDelegate?
-    return Self(
-      play: { url in
-        .future { callback in
-          delegate?.player.stop()
-          delegate = nil
-          do {
-            delegate = try AudioPlayerClientDelegate(
-              url: url,
-              didFinishPlaying: { flag in
-                callback(.success(.didFinishPlaying(successfully: flag)))
-                delegate = nil
-              },
-              decodeErrorDidOccur: { _ in
-                callback(.failure(.decodeErrorDidOccur))
-                delegate = nil
-              }
-            )
-
-            delegate?.player.play()
-          } catch {
-            callback(.failure(.couldntCreateAudioPlayer))
+  static let live = Self { url in
+    let stream = AsyncThrowingStream<Bool, Error> { continuation in
+      do {
+        let delegate = try Delegate(
+          url: url,
+          didFinishPlaying: { successful in
+            continuation.yield(successful)
+            continuation.finish()
+          },
+          decodeErrorDidOccur: { error in
+            continuation.finish(throwing: error)
           }
+        )
+        delegate.player.play()
+        continuation.onTermination = { _ in
+          delegate.player.stop()
         }
-      },
-      stop: {
-        .fireAndForget {
-          delegate?.player.stop()
-          delegate = nil
-        }
+      } catch {
+        continuation.finish(throwing: error)
       }
-    )
+    }
+    return try await stream.first(where: { _ in true }) ?? false
   }
 }
 
-private class AudioPlayerClientDelegate: NSObject, AVAudioPlayerDelegate {
-  let didFinishPlaying: (Bool) -> Void
-  let decodeErrorDidOccur: (Error?) -> Void
+private final class Delegate: NSObject, AVAudioPlayerDelegate, Sendable {
+  let didFinishPlaying: @Sendable (Bool) -> Void
+  let decodeErrorDidOccur: @Sendable (Error?) -> Void
   let player: AVAudioPlayer
 
   init(
     url: URL,
-    didFinishPlaying: @escaping (Bool) -> Void,
-    decodeErrorDidOccur: @escaping (Error?) -> Void
+    didFinishPlaying: @escaping @Sendable (Bool) -> Void,
+    decodeErrorDidOccur: @escaping @Sendable (Error?) -> Void
   ) throws {
     self.didFinishPlaying = didFinishPlaying
     self.decodeErrorDidOccur = decodeErrorDidOccur

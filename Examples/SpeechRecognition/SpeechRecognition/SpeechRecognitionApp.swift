@@ -10,7 +10,6 @@ struct SpeechRecognitionApp: App {
           initialState: AppState(),
           reducer: appReducer,
           environment: AppEnvironment(
-            mainQueue: .main,
             speechClient: .live
           )
         )

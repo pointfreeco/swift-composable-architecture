@@ -36,20 +36,21 @@ let presentAndLoadReducer =
       PresentAndLoadState, PresentAndLoadAction, PresentAndLoadEnvironment
     > { state, action, environment in
 
-      enum CancelId {}
+      enum CancelID {}
 
       switch action {
       case .setSheet(isPresented: true):
         state.isSheetPresented = true
-        return Effect(value: .setSheetIsPresentedDelayCompleted)
-          .delay(for: 1, scheduler: environment.mainQueue)
-          .eraseToEffect()
-          .cancellable(id: CancelId.self)
+        return .task {
+          try await environment.mainQueue.sleep(for: 1)
+          return .setSheetIsPresentedDelayCompleted
+        }
+        .cancellable(id: CancelID.self)
 
       case .setSheet(isPresented: false):
         state.isSheetPresented = false
         state.optionalCounter = nil
-        return .cancel(id: CancelId.self)
+        return .cancel(id: CancelID.self)
 
       case .setSheetIsPresentedDelayCompleted:
         state.optionalCounter = CounterState()

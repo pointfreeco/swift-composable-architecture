@@ -239,7 +239,7 @@ private struct NewAlertModifier<Action>: ViewModifier {
       (viewStore.state?.title).map { Text($0) } ?? Text(""),
       isPresented: viewStore.binding(send: dismiss).isPresent(),
       presenting: viewStore.state,
-      actions: { $0.toSwiftUIActions(send: viewStore.send) },
+      actions: { $0.toSwiftUIActions(send: { viewStore.send($0) }) },
       message: { $0.message.map { Text($0) } }
     )
   }
@@ -251,7 +251,7 @@ private struct OldAlertModifier<Action>: ViewModifier {
 
   func body(content: Content) -> some View {
     content.alert(item: viewStore.binding(send: dismiss)) { state in
-      state.toSwiftUIAlert(send: viewStore.send)
+      state.toSwiftUIAlert(send: { viewStore.send($0) })
     }
   }
 }

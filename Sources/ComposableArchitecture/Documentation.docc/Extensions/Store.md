@@ -5,7 +5,6 @@
 ### Creating a Store
 
 - ``init(initialState:reducer:environment:)``
-- ``unchecked(initialState:reducer:environment:)``
 
 ### Scoping Stores
 

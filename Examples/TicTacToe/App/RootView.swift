@@ -32,8 +32,7 @@ struct RootView: View {
     initialState: AppState(),
     reducer: appReducer,
     environment: AppEnvironment(
-      authenticationClient: .live,
-      mainQueue: .main
+      authenticationClient: .live
     )
   )
 

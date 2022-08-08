@@ -5,15 +5,10 @@
 ### Creating an Effect
 
 - ``none``
-- ``init(value:)``
-- ``init(error:)``
-- ``run(_:)``
-- ``future(_:)``
-- ``catching(_:)``
-- ``result(_:)``
-- ``fireAndForget(_:)``
+- ``task(priority:operation:catch:file:fileID:line:)``
+- ``run(priority:operation:catch:file:fileID:line:)``
 - ``fireAndForget(priority:_:)``
-- ``task(priority:operation:)-7lrdd``
+- ``TaskResult``
 
 ### Cancellation
 
@@ -23,25 +18,18 @@
 - ``cancellable(id:cancelInFlight:)-17skv``
 - ``cancel(id:)-iun1``
 - ``cancel(ids:)-dmwy``
+- ``withTaskCancellation(id:cancelInFlight:operation:)-88kxz``
+- ``withTaskCancellation(id:cancelInFlight:operation:)-4dtr6``
 
 ### Composition
 
-<!--NB: DocC bug prevents the following from being resolved-->
-<!--- ``map(_:)``-->
+- ``map(_:)-28ghh``
 - ``merge(_:)-3al9f``
 - ``merge(_:)-4n451``
-- ``concatenate(_:)-3awnj``
-- ``concatenate(_:)-8x6rz``
 
-### Timing
+### Concurrency
 
-- ``deferred(for:scheduler:options:)``
-- ``debounce(id:for:scheduler:options:)-8x633``
-- ``debounce(id:for:scheduler:options:)-76yye``
-- ``throttle(id:for:scheduler:latest:)-9kwd5``
-- ``throttle(id:for:scheduler:latest:)-5jfpx``
-- ``timer(id:every:tolerance:on:options:)-4exe6``
-- ``timer(id:every:tolerance:on:options:)-7po0d``
+- ``UncheckedSendable``
 
 ### Testing
 
@@ -50,14 +38,6 @@
 ### SwiftUI Integration
 
 - ``animation(_:)``
-
-### Combine Integration
-
-- ``receive(subscriber:)``
-- ``init(_:)``
-- ``upstream``
-- ``Subscriber``
-<!--TODO: Can't currently document `Publisher` extensions-->
 
 ### Deprecations
 

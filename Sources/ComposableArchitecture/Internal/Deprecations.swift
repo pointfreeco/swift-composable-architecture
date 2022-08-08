@@ -5,6 +5,45 @@ import XCTestDynamicOverlay
 
 // NB: Deprecated after 0.38.2:
 
+extension Effect {
+  @available(*, deprecated)
+  public var upstream: AnyPublisher<Output, Failure> {
+    self.publisher
+  }
+}
+
+extension Effect where Failure == Error {
+  @_disfavoredOverload
+  @available(
+    *,
+    deprecated,
+    message: "Use the non-failing version of 'Effect.task'"
+  )
+  public static func task(
+    priority: TaskPriority? = nil,
+    operation: @escaping @Sendable () async throws -> Output
+  ) -> Self {
+    Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
+      let subject = PassthroughSubject<Output, Failure>()
+      let task = Task(priority: priority) { @MainActor in
+        do {
+          try Task.checkCancellation()
+          let output = try await operation()
+          try Task.checkCancellation()
+          subject.send(output)
+          subject.send(completion: .finished)
+        } catch is CancellationError {
+          subject.send(completion: .finished)
+        } catch {
+          subject.send(completion: .failure(error))
+        }
+      }
+      return subject.handleEvents(receiveCancel: task.cancel)
+    }
+    .eraseToEffect()
+  }
+}
+
 /// Initializes a store from an initial state, a reducer, and an environment, and the main thread
 /// check is disabled for all interactions with this store.
 ///
@@ -51,6 +90,7 @@ extension Effect {
 
 extension ViewStore {
   @available(*, deprecated, renamed: "yield(while:)")
+  @MainActor
   public func suspend(while predicate: @escaping (State) -> Bool) async {
     await self.yield(while: predicate)
   }
@@ -164,7 +204,7 @@ extension Reducer {
 #if DEBUG
   extension TestStore where LocalState: Equatable, Action: Equatable {
     @available(
-      *, deprecated, message: "Use 'TestStore.send' and 'TestStore.receive' directly, instead"
+      *, deprecated, message: "Use 'TestStore.send' and 'TestStore.receive' directly, instead."
     )
     public func assert(
       _ steps: Step...,
@@ -175,7 +215,7 @@ extension Reducer {
     }
 
     @available(
-      *, deprecated, message: "Use 'TestStore.send' and 'TestStore.receive' directly, instead"
+      *, deprecated, message: "Use 'TestStore.send' and 'TestStore.receive' directly, instead."
     )
     public func assert(
       _ steps: [Step],
@@ -256,7 +296,7 @@ extension Reducer {
         self.line = line
       }
 
-      @available(*, deprecated, message: "Call 'TestStore.send' directly, instead")
+      @available(*, deprecated, message: "Call 'TestStore.send' directly, instead.")
       public static func send(
         _ action: LocalAction,
         file: StaticString = #file,
@@ -266,7 +306,7 @@ extension Reducer {
         Step(.send(action, update), file: file, line: line)
       }
 
-      @available(*, deprecated, message: "Call 'TestStore.receive' directly, instead")
+      @available(*, deprecated, message: "Call 'TestStore.receive' directly, instead.")
       public static func receive(
         _ action: Action,
         file: StaticString = #file,
@@ -276,7 +316,7 @@ extension Reducer {
         Step(.receive(action, update), file: file, line: line)
       }
 
-      @available(*, deprecated, message: "Mutate 'TestStore.environment' directly, instead")
+      @available(*, deprecated, message: "Mutate 'TestStore.environment' directly, instead.")
       public static func environment(
         file: StaticString = #file,
         line: UInt = #line,
@@ -285,7 +325,7 @@ extension Reducer {
         Step(.environment(update), file: file, line: line)
       }
 
-      @available(*, deprecated, message: "Perform this work directly in your test, instead")
+      @available(*, deprecated, message: "Perform this work directly in your test, instead.")
       public static func `do`(
         file: StaticString = #file,
         line: UInt = #line,
@@ -294,7 +334,7 @@ extension Reducer {
         Step(.do(work), file: file, line: line)
       }
 
-      @available(*, deprecated, message: "Perform this work directly in your test, instead")
+      @available(*, deprecated, message: "Perform this work directly in your test, instead.")
       public static func sequence(
         _ steps: [Step],
         file: StaticString = #file,
@@ -303,7 +343,7 @@ extension Reducer {
         Step(.sequence(steps), file: file, line: line)
       }
 
-      @available(*, deprecated, message: "Perform this work directly in your test, instead")
+      @available(*, deprecated, message: "Perform this work directly in your test, instead.")
       public static func sequence(
         _ steps: Step...,
         file: StaticString = #file,
@@ -382,9 +422,13 @@ extension Store {
         let localStore = Store<LocalState, LocalAction>(
           initialState: localState,
           reducer: .init { localState, localAction, _ in
-            self.send(fromLocalAction(localAction))
+            let task = self.send(fromLocalAction(localAction))
             localState = extractLocalState(self.state.value) ?? localState
-            return .none
+            if let task = task {
+              return .fireAndForget { await task.cancellableValue }
+            } else {
+              return .none
+            }
           },
           environment: ()
         )
@@ -552,13 +596,14 @@ extension AlertState.Button {
 // NB: Deprecated after 0.20.0:
 
 extension Reducer {
-  @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead")
+  @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead.")
   public func forEach<GlobalState, GlobalAction, GlobalEnvironment>(
     state toLocalState: WritableKeyPath<GlobalState, [State]>,
     action toLocalAction: CasePath<GlobalAction, (Int, Action)>,
     environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
     breakpointOnNil: Bool = true,
-    file: StaticString = #fileID,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
     .init { globalState, globalAction, globalEnvironment in
@@ -597,11 +642,13 @@ extension Reducer {
           "ForEachStore".
           """,
           [
-            "\(file)",
+            "\(fileID)",
             line,
             debugCaseOutput(localAction),
             index,
-          ]
+          ],
+          file: file,
+          line: line
         )
         return .none
       }
@@ -616,7 +663,7 @@ extension Reducer {
 }
 
 extension ForEachStore {
-  @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead")
+  @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead.")
   public init<EachContent>(
     _ store: Store<Data, (Data.Index, EachAction)>,
     id: KeyPath<EachState, ID>,
@@ -644,7 +691,7 @@ extension ForEachStore {
     }
   }
 
-  @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead")
+  @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead.")
   public init<EachContent>(
     _ store: Store<Data, (Data.Index, EachAction)>,
     @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent

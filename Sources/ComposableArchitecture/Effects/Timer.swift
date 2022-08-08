@@ -36,15 +36,15 @@ extension Effect where Failure == Never {
   /// }
   ///
   /// let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, env in
-  ///   struct TimerId: Hashable {}
+  ///   struct TimerID: Hashable {}
   ///
   ///   switch action {
   ///   case .startButtonTapped:
-  ///     return Effect.timer(id: TimerId(), every: 1, on: env.mainQueue)
+  ///     return Effect.timer(id: TimerID(), every: 1, on: env.mainQueue)
   ///       .map { _ in .timerTicked }
   ///
   ///   case .stopButtonTapped:
-  ///     return .cancel(id: TimerId())
+  ///     return .cancel(id: TimerID())
   ///
   ///   case let .timerTicked:
   ///     state.count += 1
@@ -55,7 +55,8 @@ extension Effect where Failure == Never {
   /// Then to test the timer in this feature you can use a test scheduler to advance time:
   ///
   /// ```swift
-  /// func testTimer() {
+  /// @MainActor
+  /// func testTimer() async {
   ///   let mainQueue = DispatchQueue.test
   ///
   ///   let store = TestStore(
@@ -66,19 +67,19 @@ extension Effect where Failure == Never {
   ///     )
   ///   )
   ///
-  ///   store.send(.startButtonTapped)
+  ///   await store.send(.startButtonTapped)
   ///
-  ///   mainQueue.advance(by: .seconds(1))
-  ///   store.receive(.timerTicked) { $0.count = 1 }
+  ///   await mainQueue.advance(by: .seconds(1))
+  ///   await store.receive(.timerTicked) { $0.count = 1 }
   ///
-  ///   mainQueue.advance(by: .seconds(5))
-  ///   store.receive(.timerTicked) { $0.count = 2 }
-  ///   store.receive(.timerTicked) { $0.count = 3 }
-  ///   store.receive(.timerTicked) { $0.count = 4 }
-  ///   store.receive(.timerTicked) { $0.count = 5 }
-  ///   store.receive(.timerTicked) { $0.count = 6 }
+  ///   await mainQueue.advance(by: .seconds(5))
+  ///   await store.receive(.timerTicked) { $0.count = 2 }
+  ///   await store.receive(.timerTicked) { $0.count = 3 }
+  ///   await store.receive(.timerTicked) { $0.count = 4 }
+  ///   await store.receive(.timerTicked) { $0.count = 5 }
+  ///   await store.receive(.timerTicked) { $0.count = 6 }
   ///
-  ///   store.send(.stopButtonTapped)
+  ///   await store.send(.stopButtonTapped)
   /// }
   /// ```
   ///
@@ -103,7 +104,6 @@ extension Effect where Failure == Never {
     on scheduler: S,
     options: S.SchedulerOptions? = nil
   ) -> Self where S.SchedulerTimeType == Output {
-
     Publishers.Timer(every: interval, tolerance: tolerance, scheduler: scheduler, options: options)
       .autoconnect()
       .setFailureType(to: Failure.self)

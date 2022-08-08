@@ -1,5 +1,5 @@
 import ComposableArchitecture
-import SwiftUI
+@preconcurrency import SwiftUI  // NB: SwiftUI.Animation is not Sendable yet.
 
 struct DownloadComponentState<ID: Equatable>: Equatable {
   var alert: AlertState<DownloadComponentAction.AlertAction>?
@@ -32,7 +32,7 @@ enum Mode: Equatable {
 enum DownloadComponentAction: Equatable {
   case alert(AlertAction)
   case buttonTapped
-  case downloadClient(Result<DownloadClient.Action, DownloadClient.Error>)
+  case downloadClient(TaskResult<DownloadClient.Event>)
 
   enum AlertAction: Equatable {
     case deleteButtonTapped
@@ -44,7 +44,6 @@ enum DownloadComponentAction: Equatable {
 
 struct DownloadComponentEnvironment {
   var downloadClient: DownloadClient
-  var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
 extension Reducer {
@@ -84,11 +83,15 @@ extension Reducer {
 
           case .notDownloaded:
             state.mode = .startingToDownload
-            return environment.downloadClient
-              .download(state.url)
-              .throttle(for: 1, scheduler: environment.mainQueue, latest: true)
-              .catchToEffect(DownloadComponentAction.downloadClient)
-              .cancellable(id: state.id)
+
+            return .run { [url = state.url] send in
+              for try await event in environment.downloadClient.download(url) {
+                await send(.downloadClient(.success(event)), animation: .default)
+              }
+            } catch: { error, send in
+              await send(.downloadClient(.failure(error)), animation: .default)
+            }
+            .cancellable(id: state.id)
 
           case .startingToDownload:
             state.alert = stopAlert
@@ -118,13 +121,19 @@ extension Reducer {
 
 private let deleteAlert = AlertState(
   title: TextState("Do you want to delete this map from your offline storage?"),
-  primaryButton: .destructive(TextState("Delete"), action: .send(.deleteButtonTapped)),
+  primaryButton: .destructive(
+    TextState("Delete"),
+    action: .send(.deleteButtonTapped, animation: .default)
+  ),
   secondaryButton: nevermindButton
 )
 
 private let stopAlert = AlertState(
   title: TextState("Do you want to stop downloading this map?"),
-  primaryButton: .destructive(TextState("Stop"), action: .send(.stopButtonTapped)),
+  primaryButton: .destructive(
+    TextState("Stop"),
+    action: .send(.stopButtonTapped, animation: .default)
+  ),
   secondaryButton: nevermindButton
 )
 

@@ -23,7 +23,7 @@
 import Combine
 import Darwin
 
-final class DemandBuffer<S: Subscriber> {
+final class DemandBuffer<S: Subscriber>: @unchecked Sendable {
   private var buffer = [S.Input]()
   private let subscriber: S
   private var completion: Subscribers.Completion<S.Failure>?
@@ -104,7 +104,9 @@ final class DemandBuffer<S: Subscriber> {
 }
 
 extension AnyPublisher {
-  private init(_ callback: @escaping (Effect<Output, Failure>.Subscriber) -> Cancellable) {
+  private init(
+    _ callback: @escaping (Effect<Output, Failure>.Subscriber) -> Cancellable
+  ) {
     self = Publishers.Create(callback: callback).eraseToAnyPublisher()
   }
 
@@ -130,7 +132,7 @@ extension Publishers {
 }
 
 extension Publishers.Create {
-  fileprivate class Subscription<Downstream: Subscriber>: Combine.Subscription
+  fileprivate final class Subscription<Downstream: Subscriber>: Combine.Subscription
   where Downstream.Input == Output, Downstream.Failure == Failure {
     private let buffer: DemandBuffer<Downstream>
     private var cancellable: Cancellable?

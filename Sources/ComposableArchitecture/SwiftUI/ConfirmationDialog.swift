@@ -264,7 +264,7 @@ private struct NewConfirmationDialogModifier<Action>: ViewModifier {
       isPresented: viewStore.binding(send: dismiss).isPresent(),
       titleVisibility: viewStore.state?.titleVisibility.toSwiftUI ?? .automatic,
       presenting: viewStore.state,
-      actions: { $0.toSwiftUIActions(send: viewStore.send) },
+      actions: { $0.toSwiftUIActions(send: { viewStore.send($0) }) },
       message: { $0.message.map { Text($0) } }
     )
   }
@@ -281,7 +281,7 @@ private struct OldConfirmationDialogModifier<Action>: ViewModifier {
   func body(content: Content) -> some View {
     #if !os(macOS)
       return content.actionSheet(item: viewStore.binding(send: dismiss)) { state in
-        state.toSwiftUIActionSheet(send: viewStore.send)
+        state.toSwiftUIActionSheet(send: { viewStore.send($0) })
       }
     #else
       return EmptyView()

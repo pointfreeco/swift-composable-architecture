@@ -11,7 +11,7 @@ struct TodosApp: App {
           reducer: appReducer,
           environment: AppEnvironment(
             mainQueue: .main,
-            uuid: UUID.init
+            uuid: { UUID() }
           )
         )
       )

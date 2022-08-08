@@ -4,30 +4,32 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+@MainActor
 class LongLivingEffectsTests: XCTestCase {
-  func testReducer() {
-    let notificationCenter = NotificationCenter()
+  func testReducer() async {
+    let (screenshots, takeScreenshot) = AsyncStream<Void>.streamWithContinuation()
 
     let store = TestStore(
       initialState: LongLivingEffectsState(),
       reducer: longLivingEffectsReducer,
       environment: LongLivingEffectsEnvironment(
-        notificationCenter: notificationCenter
+        screenshots: { screenshots }
       )
     )
 
-    store.send(.onAppear)
+    let task = await store.send(.task)
 
     // Simulate a screenshot being taken
-    notificationCenter.post(name: UIApplication.userDidTakeScreenshotNotification, object: nil)
-    store.receive(.userDidTakeScreenshotNotification) {
+    takeScreenshot.yield()
+
+    await store.receive(.userDidTakeScreenshotNotification) {
       $0.screenshotCount = 1
     }
 
-    store.send(.onDisappear)
+    // Simulate screen going away
+    await task.cancel()
 
-    // Simulate a screenshot being taken to show no effects
-    // are executed.
-    notificationCenter.post(name: UIApplication.userDidTakeScreenshotNotification, object: nil)
+    // Simulate a screenshot being taken to show no effects are executed.
+    takeScreenshot.yield()
   }
 }

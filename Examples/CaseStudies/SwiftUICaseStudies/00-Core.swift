@@ -66,25 +66,31 @@ enum RootAction {
 }
 
 struct RootEnvironment {
-  var date: () -> Date
+  var date: @Sendable () -> Date
   var downloadClient: DownloadClient
   var fact: FactClient
-  var favorite: (UUID, Bool) -> Effect<Bool, Error>
-  var fetchNumber: () -> Effect<Int, Never>
+  var favorite: @Sendable (UUID, Bool) async throws -> Bool
+  var fetchNumber: @Sendable () async throws -> Int
   var mainQueue: AnySchedulerOf<DispatchQueue>
-  var notificationCenter: NotificationCenter
-  var uuid: () -> UUID
+  var screenshots: @Sendable () async -> AsyncStream<Void>
+  var uuid: @Sendable () -> UUID
   var webSocket: WebSocketClient
 
   static let live = Self(
-    date: Date.init,
+    date: { Date() },
     downloadClient: .live,
     fact: .live,
     favorite: favorite(id:isFavorite:),
     fetchNumber: liveFetchNumber,
     mainQueue: .main,
-    notificationCenter: .default,
-    uuid: UUID.init,
+    screenshots: { @MainActor in
+      AsyncStream(
+        NotificationCenter.default
+          .notifications(named: UIApplication.userDidTakeScreenshotNotification)
+          .map { _ in }
+      )
+    },
+    uuid: { UUID() },
     webSocket: .live
   )
 }
@@ -146,13 +152,13 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.effectsCancellation,
       action: /RootAction.effectsCancellation,
-      environment: { .init(fact: $0.fact, mainQueue: $0.mainQueue) }
+      environment: { .init(fact: $0.fact) }
     ),
   episodesReducer
     .pullback(
       state: \.episodes,
       action: /RootAction.episodes,
-      environment: { .init(favorite: $0.favorite, mainQueue: $0.mainQueue) }
+      environment: { .init(favorite: $0.favorite) }
     ),
   focusDemoReducer
     .pullback(
@@ -188,7 +194,7 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.longLivingEffects,
       action: /RootAction.longLivingEffects,
-      environment: { .init(notificationCenter: $0.notificationCenter) }
+      environment: { .init(screenshots: $0.screenshots) }
     ),
   mapAppReducer
     .pullback(
@@ -243,9 +249,7 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
     .pullback(
       state: \.refreshable,
       action: /RootAction.refreshable,
-      environment: {
-        .init(fact: $0.fact, mainQueue: $0.mainQueue)
-      }
+      environment: { .init(fact: $0.fact, mainQueue: $0.mainQueue) }
     ),
   sharedStateReducer
     .pullback(
@@ -275,8 +279,7 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
 .debug()
 .signpost()
 
-private func liveFetchNumber() -> Effect<Int, Never> {
-  Deferred { Just(Int.random(in: 1...1_000)) }
-    .delay(for: 1, scheduler: DispatchQueue.main)
-    .eraseToEffect()
+@Sendable private func liveFetchNumber() async throws -> Int {
+  try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+  return Int.random(in: 1...1_000)
 }

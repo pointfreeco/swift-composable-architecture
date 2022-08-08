@@ -12,3 +12,4 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 - ``Store/publisherScope(state:action:)``
 - ``Store/publisherScope(state:)``
+- ``Store/unchecked(initialState:reducer:environment:)``

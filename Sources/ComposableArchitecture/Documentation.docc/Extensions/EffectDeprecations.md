@@ -10,12 +10,39 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ### Creating an Effect
 
-- ``Effect/task(priority:operation:)-2czg0``
+- ``Effect/task(priority:operation:)``
 
 ### Cancellation
 
 - ``Effect/cancel(ids:)-9tnmm``
 
+### Composition
+
+- ``Effect/concatenate(_:)-3awnj``
+- ``Effect/concatenate(_:)-8x6rz``
+
 ### Testing
 
 - ``Effect/failing(_:)``
+
+### Combine Integration
+
+- ``Effect/init(_:)``
+- ``Effect/init(value:)``
+- ``Effect/init(error:)``
+- ``Effect/upstream``
+- ``Effect/catching(_:)``
+- ``Effect/debounce(id:for:scheduler:options:)-8x633``
+- ``Effect/debounce(id:for:scheduler:options:)-76yye``
+- ``Effect/deferred(for:scheduler:options:)``
+- ``Effect/fireAndForget(_:)``
+- ``Effect/future(_:)``
+- ``Effect/receive(subscriber:)``
+- ``Effect/result(_:)``
+- ``Effect/run(_:)``
+- ``Effect/throttle(id:for:scheduler:latest:)-9kwd5``
+- ``Effect/throttle(id:for:scheduler:latest:)-5jfpx``
+- ``Effect/timer(id:every:tolerance:on:options:)-4exe6``
+- ``Effect/timer(id:every:tolerance:on:options:)-7po0d``
+- ``Effect/Subscriber``
+<!--TODO: Can't currently document `Publisher` extensions-->

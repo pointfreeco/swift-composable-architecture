@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-private var readMe = """
+private let readMe = """
   This application demonstrates how to make use of SwiftUI's `refreshable` API in the Composable \
   Architecture. Use the "-" and "+" buttons to count up and down, and then pull down to request \
   a fact about that number.
@@ -14,13 +14,12 @@ private var readMe = """
 struct RefreshableState: Equatable {
   var count = 0
   var fact: String?
-  var isLoading = false
 }
 
 enum RefreshableAction: Equatable {
   case cancelButtonTapped
   case decrementButtonTapped
-  case factResponse(Result<String, FactClient.Failure>)
+  case factResponse(TaskResult<String>)
   case incrementButtonTapped
   case refresh
 }
@@ -36,25 +35,22 @@ let refreshableReducer = Reducer<
   RefreshableEnvironment
 > { state, action, environment in
 
-  enum CancelId {}
+  enum FactRequestID {}
 
   switch action {
   case .cancelButtonTapped:
-    state.isLoading = false
-    return .cancel(id: CancelId.self)
+    return .cancel(id: FactRequestID.self)
 
   case .decrementButtonTapped:
     state.count -= 1
     return .none
 
   case let .factResponse(.success(fact)):
-    state.isLoading = false
     state.fact = fact
     return .none
 
   case .factResponse(.failure):
-    state.isLoading = false
-    // TODO: do some error handling
+    // NB: This is where you could do some error handling.
     return .none
 
   case .incrementButtonTapped:
@@ -63,15 +59,16 @@ let refreshableReducer = Reducer<
 
   case .refresh:
     state.fact = nil
-    state.isLoading = true
-    return environment.fact.fetch(state.count)
-      .delay(for: .seconds(2), scheduler: environment.mainQueue.animation())
-      .catchToEffect(RefreshableAction.factResponse)
-      .cancellable(id: CancelId.self)
+    return .task { [count = state.count] in
+      await .factResponse(TaskResult { try await environment.fact.fetch(count) })
+    }
+    .animation()
+    .cancellable(id: FactRequestID.self)
   }
 }
 
 struct RefreshableView: View {
+  @State var isLoading = false
   let store: Store<RefreshableState, RefreshableAction>
 
   var body: some View {
@@ -104,14 +101,16 @@ struct RefreshableView: View {
           Text(fact)
             .bold()
         }
-        if viewStore.isLoading {
+        if self.isLoading {
           Button("Cancel") {
             viewStore.send(.cancelButtonTapped, animation: .default)
           }
         }
       }
       .refreshable {
-        await viewStore.send(.refresh, while: \.isLoading)
+        self.isLoading = true
+        defer { self.isLoading = false }
+        await viewStore.send(.refresh).finish()
       }
     }
   }

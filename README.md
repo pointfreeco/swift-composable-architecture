@@ -102,18 +102,15 @@ enum AppAction: Equatable {
   case decrementButtonTapped
   case incrementButtonTapped
   case numberFactButtonTapped
-  case numberFactResponse(Result<String, ApiError>)
+  case numberFactResponse(TaskResult<String>)
 }
-
-struct ApiError: Error, Equatable {}
 ```
 
-Next we model the environment of dependencies this feature needs to do its job. In particular, to fetch a number fact we need to construct an `Effect` value that encapsulates the network request. So that dependency is a function from `Int` to `Effect<String, ApiError>`, where `String` represents the response from the request. Further, the effect will typically do its work on a background thread (as is the case with `URLSession`), and so we need a way to receive the effect's values on the main queue. We do this via a main queue scheduler, which is a dependency that is important to control so that we can write tests. We must use an `AnyScheduler` so that we can use a live `DispatchQueue` in production and a test scheduler in tests.
+Next we model the environment of dependencies this feature needs to do its job. In particular, to fetch a number fact we can model an async throwing function from `Int` to `String`:
 
 ```swift
 struct AppEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-  var numberFact: (Int) -> Effect<String, ApiError>
+  var numberFact: (Int) async throws -> String
 }
 ```
 
@@ -135,9 +132,9 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     return .none
 
   case .numberFactButtonTapped:
-    return environment.numberFact(state.count)
-      .receive(on: environment.mainQueue)
-      .catchToEffect(AppAction.numberFactResponse)
+    return .task {
+      await .numberFactResponse(TaskResult { try await environment.numberFact(state.count) })
+    }
 
   case let .numberFactResponse(.success(fact)):
     state.numberFactAlert = fact
@@ -250,38 +247,45 @@ It is also straightforward to have a UIKit controller driven off of this store. 
   ```
 </details>
 
-Once we are ready to display this view, for example in the scene delegate, we can construct a store. This is the moment where we need to supply the dependencies, and for now we can just use an effect that immediately returns a mocked string:
+Once we are ready to display this view, for example in the app's entry point, we can construct a store. This is the moment where we need to supply the dependencies, including the `numberFact` endpoint that actually reaches out into the real world to fetch the fact:
 
 ```swift
-let appView = AppView(
-  store: Store(
-    initialState: AppState(),
-    reducer: appReducer,
-    environment: AppEnvironment(
-      mainQueue: .main,
-      numberFact: { number in Effect(value: "\(number) is a good number Brent") }
+@main
+struct CaseStudiesApp: App {
+var body: some Scene {
+  AppView(
+    store: Store(
+      initialState: AppState(),
+      reducer: appReducer,
+      environment: AppEnvironment(
+        numberFact: { number in 
+          let (data, _) = try await URLSession.shared
+            .data(from: .init(string: "http://numbersapi.com/\(number)")!)
+          return String(decoding: data, using: UTF8.self)
+        }
+      )
     )
   )
-)
+}
 ```
 
 And that is enough to get something on the screen to play around with. It's definitely a few more steps than if you were to do this in a vanilla SwiftUI way, but there are a few benefits. It gives us a consistent manner to apply state mutations, instead of scattering logic in some observable objects and in various action closures of UI components. It also gives us a concise way of expressing side effects. And we can immediately test this logic, including the effects, without doing much additional work.
 
 ### Testing
 
-To test, you first create a `TestStore` with the same information that you would to create a regular `Store`, except this time we can supply test-friendly dependencies. In particular, we use a test scheduler instead of the live `DispatchQueue.main` scheduler because that allows us to control when work is executed, and we don't have to artificially wait for queues to catch up.
+To test, you first create a `TestStore` with the same information that you would to create a regular `Store`, except this time we can supply test-friendly dependencies. In particular, we can now use a `numberFact` implementation that immediately returns a value we control rather than reaching out into the real world:
 
 ```swift
-let mainQueue = DispatchQueue.test
-
-let store = TestStore(
-  initialState: AppState(),
-  reducer: appReducer,
-  environment: AppEnvironment(
-    mainQueue: mainQueue.eraseToAnyScheduler(),
-    numberFact: { number in Effect(value: "\(number) is a good number Brent") }
+@MainActor
+func testFeature() async {
+  let store = TestStore(
+    initialState: AppState(),
+    reducer: appReducer,
+    environment: AppEnvironment(
+      numberFact: { "\($0) is a good number Brent" }
+    )
   )
-)
+}
 ```
 
 Once the test store is created we can use it to make an assertion of an entire user flow of steps. Each step of the way we need to prove that state changed how we expect. Further, if a step causes an effect to be executed, which feeds data back into the store, we must assert that those actions were received properly.
@@ -290,24 +294,24 @@ The test below has the user increment and decrement the count, then they ask for
 
 ```swift
 // Test that tapping on the increment/decrement buttons changes the count
-store.send(.incrementButtonTapped) {
+await store.send(.incrementButtonTapped) {
   $0.count = 1
 }
-store.send(.decrementButtonTapped) {
+await store.send(.decrementButtonTapped) {
   $0.count = 0
 }
 
 // Test that tapping the fact button causes us to receive a response from the effect. Note
-// that we have to advance the scheduler because we used `.receive(on:)` in the reducer.
-store.send(.numberFactButtonTapped)
+// that we have to await the receive because the effect is asynchronous and so takes a small
+// amount of time to emit.
+await store.send(.numberFactButtonTapped)
 
-mainQueue.advance()
-store.receive(.numberFactResponse(.success("0 is a good number Brent"))) {
+await store.receive(.numberFactResponse(.success("0 is a good number Brent"))) {
   $0.numberFactAlert = "0 is a good number Brent"
 }
 
 // And finally dismiss the alert
-store.send(.factAlertDismissed) {
+await store.send(.factAlertDismissed) {
   $0.numberFactAlert = nil
 }
 ```
@@ -366,39 +370,6 @@ If you are interested in contributing a wrapper library for a framework that we 
     And then there are certain things that TCA prioritizes highly that are not points of focus for Redux, Elm, or most other libraries. For example, composition is very important aspect of TCA, which is the process of breaking down large features into smaller units that can be glued together. This is accomplished with the `pullback` and `combine` operators on reducers, and it aids in handling complex features as well as modularization for a better-isolated code base and improved compile times.
   </details>
 
-* Why isn't `Store` thread-safe? <br> Why isn't `send` queued? <br> Why isn't `send` run on the main thread?
-  <details>
-    <summary>Expand to see answer</summary>
-
-    All interactions with an instance of `Store` (including all of its scopes and derived `ViewStore`s) must be done on the same thread. If the store is powering a SwiftUI or UIKit view then, all interactions must be done on the _main_ thread.
-
-    When an action is sent to the `Store`, a reducer is run on the current state, and this process cannot be done from multiple threads. A possible work around is to use a queue in `send`s implementation, but this introduces a few new complications:
-
-    1. If done simply with `DispatchQueue.main.async` you will incur a thread hop even when you are already on the main thread. This can lead to unexpected behavior in UIKit and SwiftUI, where sometimes you are required to do work synchronously, such as in animation blocks.
-
-    2. It is possible to create a scheduler that performs its work immediately when on the main thread and otherwise uses `DispatchQueue.main.async` (_e.g._ see [CombineScheduler](https://github.com/pointfreeco/combine-schedulers)'s [`UIScheduler`](https://github.com/pointfreeco/combine-schedulers/blob/main/Sources/CombineSchedulers/UIScheduler.swift)). This introduces a lot more complexity, and should probably not be adopted without having a very good reason.
-
-    This is why we require all actions be sent from the same thread. This requirement is in the same spirit of how `URLSession` and other Apple APIs are designed. Those APIs tend to deliver their outputs on whatever thread is most convenient for them, and then it is your responsibility to dispatch back to the main queue if that's what you need. The Composable Architecture makes you responsible for making sure to send actions on the main thread. If you are using an effect that may deliver its output on a non-main thread, you must explicitly perform `.receive(on:)` in order to force it back on the main thread.
-
-    This approach makes the fewest number of assumptions about how effects are created and transformed, and prevents unnecessary thread hops and re-dispatching. It also provides some testing benefits. If your effects are not responsible for their own scheduling, then in tests all of the effects would run synchronously and immediately. You would not be able to test how multiple in-flight effects interleave with each other and affect the state of your application. However, by leaving scheduling out of the `Store` we get to test these aspects of our effects if we so desire, or we can ignore if we prefer. We have that flexibility.
-
-    However, if you are still not a fan of our choice, then never fear! The Composable Architecture is flexible enough to allow you to introduce this functionality yourself if you so desire. It is possible to create a higher-order reducer that can force all effects to deliver their output on the main thread, regardless of where the effect does its work:
-
-    ```swift
-    extension Reducer {
-      func receive<S: Scheduler>(on scheduler: S) -> Self {
-        Self { state, action, environment in
-          self(&state, action, environment)
-            .receive(on: scheduler)
-            .eraseToEffect()
-        }
-      }
-    }
-    ```
-
-    You would probably still want something like a `UIScheduler` so that you don't needlessly perform thread hops.
-  </details>
-
 ## Requirements
 
 The Composable Architecture depends on the Combine framework, so it requires minimum deployment targets of iOS 13, macOS 10.15, Mac Catalyst 13, tvOS 13, and watchOS 6. If your application must support older OSes, there are forks for [ReactiveSwift](https://github.com/trading-point/reactiveswift-composable-architecture) and [RxSwift](https://github.com/dannyhertz/rxswift-composable-architecture) that you can adopt!
@@ -418,12 +389,13 @@ You can add ComposableArchitecture to an Xcode project by adding it as a package
 The documentation for releases and `main` are available here:
 
 * [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture)
-* [0.38.0](https://pointfreeco.github.io/swift-composable-architecture/0.38.0/documentation/composablearchitecture/)
+* [0.39.0](https://pointfreeco.github.io/swift-composable-architecture/0.39.0/documentation/composablearchitecture/)
 <details>
   <summary>
   Other versions
   </summary>
 
+  * [0.38.0](https://pointfreeco.github.io/swift-composable-architecture/0.38.0/documentation/composablearchitecture/)
   * [0.37.0](https://pointfreeco.github.io/swift-composable-architecture/0.37.0/documentation/composablearchitecture)
   * [0.36.0](https://pointfreeco.github.io/swift-composable-architecture/0.36.0/documentation/composablearchitecture)
   * [0.35.0](https://pointfreeco.github.io/swift-composable-architecture/0.35.0/documentation/composablearchitecture)

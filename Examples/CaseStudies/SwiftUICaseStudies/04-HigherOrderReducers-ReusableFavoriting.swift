@@ -1,5 +1,6 @@
 import Combine
 import ComposableArchitecture
+import Foundation
 import SwiftUI
 
 private let readMe = """
@@ -29,25 +30,16 @@ struct FavoriteState<ID: Hashable>: Equatable, Identifiable {
 enum FavoriteAction: Equatable {
   case alertDismissed
   case buttonTapped
-  case response(Result<Bool, FavoriteError>)
+  case response(TaskResult<Bool>)
 }
 
-struct FavoriteEnvironment<ID> {
-  var request: (ID, Bool) -> Effect<Bool, Error>
-  var mainQueue: AnySchedulerOf<DispatchQueue>
+struct FavoriteEnvironment<ID: Sendable> {
+  var request: @Sendable (ID, Bool) async throws -> Bool
 }
 
 /// A cancellation token that cancels in-flight favoriting requests.
-struct FavoriteCancelId<ID: Hashable>: Hashable {
+struct FavoriteCancelID<ID: Hashable>: Hashable {
   var id: ID
-}
-
-/// A wrapper for errors that occur when favoriting.
-struct FavoriteError: Equatable, Error, Identifiable {
-  let error: NSError
-  var localizedDescription: String { self.error.localizedDescription }
-  var id: String { self.error.localizedDescription }
-  static func == (lhs: Self, rhs: Self) -> Bool { lhs.id == rhs.id }
 }
 
 extension Reducer {
@@ -70,11 +62,10 @@ extension Reducer {
         case .buttonTapped:
           state.isFavorite.toggle()
 
-          return environment.request(state.id, state.isFavorite)
-            .receive(on: environment.mainQueue)
-            .mapError { FavoriteError(error: $0 as NSError) }
-            .catchToEffect(FavoriteAction.response)
-            .cancellable(id: FavoriteCancelId(id: state.id), cancelInFlight: true)
+          return .task { [id = state.id, isFavorite = state.isFavorite] in
+            await .response(TaskResult { try await environment.request(id, isFavorite) })
+          }
+          .cancellable(id: FavoriteCancelID(id: state.id), cancelInFlight: true)
 
         case let .response(.failure(error)):
           state.alert = AlertState(title: TextState(error.localizedDescription))
@@ -125,8 +116,7 @@ enum EpisodeAction: Equatable {
 }
 
 struct EpisodeEnvironment {
-  var favorite: (EpisodeState.ID, Bool) -> Effect<Bool, Error>
-  var mainQueue: AnySchedulerOf<DispatchQueue>
+  var favorite: @Sendable (EpisodeState.ID, Bool) async throws -> Bool
 }
 
 struct EpisodeView: View {
@@ -149,7 +139,7 @@ struct EpisodeView: View {
 let episodeReducer = Reducer<EpisodeState, EpisodeAction, EpisodeEnvironment>.empty.favorite(
   state: \.favorite,
   action: /EpisodeAction.favorite,
-  environment: { FavoriteEnvironment(request: $0.favorite, mainQueue: $0.mainQueue) }
+  environment: { FavoriteEnvironment(request: $0.favorite) }
 )
 
 struct EpisodesState: Equatable {
@@ -161,15 +151,14 @@ enum EpisodesAction: Equatable {
 }
 
 struct EpisodesEnvironment {
-  var favorite: (UUID, Bool) -> Effect<Bool, Error>
-  var mainQueue: AnySchedulerOf<DispatchQueue>
+  var favorite: @Sendable (UUID, Bool) async throws -> Bool
 }
 
 let episodesReducer: Reducer<EpisodesState, EpisodesAction, EpisodesEnvironment> =
   episodeReducer.forEach(
     state: \EpisodesState.episodes,
     action: /EpisodesAction.episode(id:action:),
-    environment: { EpisodeEnvironment(favorite: $0.favorite, mainQueue: $0.mainQueue) }
+    environment: { EpisodeEnvironment(favorite: $0.favorite) }
   )
 
 struct EpisodesView: View {
@@ -201,8 +190,7 @@ struct EpisodesView_Previews: PreviewProvider {
           ),
           reducer: episodesReducer,
           environment: EpisodesEnvironment(
-            favorite: favorite(id:isFavorite:),
-            mainQueue: .main
+            favorite: favorite(id:isFavorite:)
           )
         )
       )
@@ -210,22 +198,18 @@ struct EpisodesView_Previews: PreviewProvider {
   }
 }
 
-func favorite<ID>(id: ID, isFavorite: Bool) -> Effect<Bool, Error> {
-  Effect.future { callback in
-    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-      if .random(in: 0...1) > 0.25 {
-        callback(.success(isFavorite))
-      } else {
-        callback(
-          .failure(
-            NSError(
-              domain: "co.pointfree", code: -1,
-              userInfo: [NSLocalizedDescriptionKey: "Something went wrong!"]
-            )
-          )
-        )
-      }
-    }
+struct FavoriteError: LocalizedError {
+  var errorDescription: String? {
+    "Favoriting failed."
+  }
+}
+
+@Sendable func favorite<ID>(id: ID, isFavorite: Bool) async throws -> Bool {
+  try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+  if .random(in: 0...1) > 0.25 {
+    return isFavorite
+  } else {
+    throw FavoriteError()
   }
 }
 

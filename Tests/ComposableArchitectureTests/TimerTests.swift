@@ -2,10 +2,11 @@ import Combine
 import ComposableArchitecture
 import XCTest
 
+@MainActor
 final class TimerTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
-  func testTimer() {
+  func testTimer() async {
     let mainQueue = DispatchQueue.test
 
     var count = 0
@@ -14,20 +15,20 @@ final class TimerTests: XCTestCase {
       .sink { _ in count += 1 }
       .store(in: &self.cancellables)
 
-    mainQueue.advance(by: 1)
+    await mainQueue.advance(by: 1)
     XCTAssertNoDifference(count, 1)
 
-    mainQueue.advance(by: 1)
+    await mainQueue.advance(by: 1)
     XCTAssertNoDifference(count, 2)
 
-    mainQueue.advance(by: 1)
+    await mainQueue.advance(by: 1)
     XCTAssertNoDifference(count, 3)
 
-    mainQueue.advance(by: 3)
+    await mainQueue.advance(by: 3)
     XCTAssertNoDifference(count, 6)
   }
 
-  func testInterleavingTimer() {
+  func testInterleavingTimer() async {
     let mainQueue = DispatchQueue.test
 
     var count2 = 0
@@ -44,21 +45,21 @@ final class TimerTests: XCTestCase {
     .sink { _ in }
     .store(in: &self.cancellables)
 
-    mainQueue.advance(by: 1)
+    await mainQueue.advance(by: 1)
     XCTAssertNoDifference(count2, 0)
     XCTAssertNoDifference(count3, 0)
-    mainQueue.advance(by: 1)
+    await mainQueue.advance(by: 1)
     XCTAssertNoDifference(count2, 1)
     XCTAssertNoDifference(count3, 0)
-    mainQueue.advance(by: 1)
+    await mainQueue.advance(by: 1)
     XCTAssertNoDifference(count2, 1)
     XCTAssertNoDifference(count3, 1)
-    mainQueue.advance(by: 1)
+    await mainQueue.advance(by: 1)
     XCTAssertNoDifference(count2, 2)
     XCTAssertNoDifference(count3, 1)
   }
 
-  func testTimerCancellation() {
+  func testTimerCancellation() async {
     let mainQueue = DispatchQueue.test
 
     var firstCount = 0
@@ -72,11 +73,11 @@ final class TimerTests: XCTestCase {
       .sink { _ in }
       .store(in: &self.cancellables)
 
-    mainQueue.advance(by: 2)
+    await mainQueue.advance(by: 2)
 
     XCTAssertNoDifference(firstCount, 1)
 
-    mainQueue.advance(by: 2)
+    await mainQueue.advance(by: 2)
 
     XCTAssertNoDifference(firstCount, 2)
 
@@ -86,18 +87,18 @@ final class TimerTests: XCTestCase {
       .sink { _ in }
       .store(in: &self.cancellables)
 
-    mainQueue.advance(by: 2)
+    await mainQueue.advance(by: 2)
 
     XCTAssertNoDifference(firstCount, 2)
     XCTAssertNoDifference(secondCount, 1)
 
-    mainQueue.advance(by: 2)
+    await mainQueue.advance(by: 2)
 
     XCTAssertNoDifference(firstCount, 2)
     XCTAssertNoDifference(secondCount, 2)
   }
 
-  func testTimerCompletion() {
+  func testTimerCompletion() async {
     let mainQueue = DispatchQueue.test
 
     var count = 0
@@ -107,16 +108,16 @@ final class TimerTests: XCTestCase {
       .sink { _ in count += 1 }
       .store(in: &self.cancellables)
 
-    mainQueue.advance(by: 1)
+    await mainQueue.advance(by: 1)
     XCTAssertNoDifference(count, 1)
 
-    mainQueue.advance(by: 1)
+    await mainQueue.advance(by: 1)
     XCTAssertNoDifference(count, 2)
 
-    mainQueue.advance(by: 1)
+    await mainQueue.advance(by: 1)
     XCTAssertNoDifference(count, 3)
 
-    mainQueue.run()
+    await mainQueue.run()
     XCTAssertNoDifference(count, 3)
   }
 }
