@@ -1,9 +1,9 @@
 # Testing
 
-Learn how to write comprehensive and exhaustive tests for your features built in the Composable 
+Learn how to write comprehensive and exhaustive tests for your features built in the Composable
 Architecture.
 
-The testability of features built in the Composable Architecture is the #1 priority of the library. 
+The testability of features built in the Composable Architecture is the #1 priority of the library.
 We never want to introduce new capabilities to the library that make testing more difficult.
 
 * [Testing state changes][Testing-state-changes]
@@ -13,10 +13,10 @@ We never want to introduce new capabilities to the library that make testing mor
 
 ## Testing state changes
 
-State changes are by far the simplest thing to test in features built with the library. A 
-``Reducer``'s first responsibility is to mutate the current state based on the action received into 
-the system. To test this we can technically run a piece of mutable state through the reducer and then 
-assert on how it changed after, like this:
+State changes are by far the simplest thing to test in features built with the library. A
+``Reducer``'s first responsibility is to mutate the current state based on the action received into
+the system. To test this we can technically run a piece of mutable state through the reducer and
+then assert on how it changed after, like this:
 
 ```swift
 struct State: Equatable { var count = 0 }
@@ -34,7 +34,7 @@ let counter = Reducer<State, Action, Environment> { state, action, environment i
   }
 }
 
-let environemnt = Environment()
+let environment = Environment()
 var currentState = State(count: 0)
 
 _ = reducer(&currentState, .incrementButtonTapped, environment)
@@ -72,12 +72,12 @@ class CounterTests: XCTestCase {
 }
 ```
 
-> Test cases that use ``TestStore`` should be annotated as `@MainActor` and test methods
-> should be marked as `async` since most assertion helpers on ``TestStore`` can suspend.
+> Test cases that use ``TestStore`` should be annotated as `@MainActor` and test methods should be
+> marked as `async` since most assertion helpers on ``TestStore`` can suspend.
 
 Test stores have a ``TestStore/send(_:_:file:line:)-7vwv9`` method, but it behaves differently from
 stores and view stores. You provide an action to send into the system, but then you must also 
-provide a trailing closure to describe how the state of the feature changed after sending the 
+provide a trailing closure to describe how the state of the feature changed after sending the
 action:
 
 ```swift
@@ -112,8 +112,8 @@ await store.send(.incrementButtonTapped) {
 ```
 🛑 testSomething(): A state change does not match expectation: …
 
-− TestStoreTests.State(count: 999)
-+ TestStoreTests.State(count: 1)
+  − TestStoreTests.State(count: 999)
+  + TestStoreTests.State(count: 1)
 
 (Expected: −, Actual: +)
 ```
@@ -526,7 +526,7 @@ bare essentials of endpoints we expect to be called.
 
 For example, if we were testing the flow in the feature where the user denies speech recognition 
 access, then we would not expect the `startTask` or `finishTask` endpoints to ever be called. That
-would probably be a logical error, after all when the user denies permission those endpints can't 
+would probably be a logical error, after all when the user denies permission those endpoints can't 
 do anything useful.
 
 We can prove that this is the case by using the `.unimplemented` speech client in the test, and then
