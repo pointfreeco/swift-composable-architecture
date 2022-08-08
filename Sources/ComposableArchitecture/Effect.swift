@@ -10,7 +10,7 @@ import XCTestDynamicOverlay
 /// Effects are returned from reducers so that the ``Store`` can perform the effects after the
 /// reducer is done running.
 ///
-/// There are 2 distinct ways to create an `Effect`, one using Swift's native concurrency tools, and
+/// There are 2 distinct ways to create an `Effect`: one using Swift's native concurrency tools, and
 /// the other using Apple's Combine framework:
 ///
 /// * If using Swift's native structured concurrency tools then there are 3 main ways to create an
@@ -21,17 +21,17 @@ import XCTestDynamicOverlay
 ///   * ``Effect/fireAndForget(priority:_:)``
 /// * If using Combine in your application, in particular the dependencies of your feature's
 /// environment, then you can create effects by making use of any of Combine's operators, and then
-/// tacking on `eraseToEffect` or `catchToEffect`. Note that the Combine interface to ``Effect``
-/// is considered soft deprecated, and should be eventually ported to Swift's native concurrency
-/// tools.
+/// erasing the publisher type to ``Effect`` with either `eraseToEffect` or `catchToEffect`. Note
+/// that the Combine interface to ``Effect`` is considered soft deprecated, and you should
+/// eventually port to Swift's native concurrency tools.
 ///
 /// > Important: ``Store`` is not thread safe, and so all effects must receive values on the same
-/// thread. This is typically the main thread,  **and** if the store is being used to drive UI
-/// then it must receive values on the main thread.
+/// thread. This is typically the main thread,  **and** if the store is being used to drive UI then
+/// it must receive values on the main thread.
 /// >
 /// > This is only an issue if using the Combine interface of ``Effect`` as mentioned above. If you
-/// you are only using Swift's concurrency tools and the `.task`, `.run` and `.fireAndForget`
-/// functions on ``Effect``, then the threading is automatically handled for you.
+/// you are using Swift's concurrency tools and the `.task`, `.run` and `.fireAndForget` functions
+/// on ``Effect``, then threading is automatically handled for you.
 public struct Effect<Output, Failure: Error> {
   let publisher: AnyPublisher<Output, Failure>
 }
@@ -89,7 +89,8 @@ extension Effect where Failure == Never {
   ///
   /// The closure provided to ``task(priority:operation:catch:file:fileID:line:)`` is allowed to
   /// throw, but any non-cancellation errors thrown will cause a runtime warning when run in the
-  /// simulator or on a device, and will cause a test failure in tests.
+  /// simulator or on a device, and will cause a test failure in tests. To catch non-cancellation
+  /// errors use the `catch` trailing closure.
   ///
   /// - Parameters:
   ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
@@ -182,7 +183,8 @@ extension Effect where Failure == Never {
   ///
   /// The closure provided to ``run(priority:operation:catch:file:fileID:line:)`` is allowed to
   /// throw, but any non-cancellation errors thrown will cause a runtime warning when run in the
-  /// simulator or on a device, and will cause a test failure in tests.
+  /// simulator or on a device, and will cause a test failure in tests. To catch non-cancellation
+  /// errors use the `catch` trailing closure.
   ///
   /// - Parameters:
   ///   - priority: Priority of the underlying task. If `nil`, the priority will come from

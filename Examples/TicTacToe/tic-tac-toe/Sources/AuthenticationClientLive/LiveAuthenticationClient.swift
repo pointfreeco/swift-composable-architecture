@@ -1,5 +1,5 @@
 import AuthenticationClient
-import ComposableArchitecture
+import Dependencies
 import Foundation
 
 extension DependencyValues.AuthenticationClientKey: LiveDependencyKey {

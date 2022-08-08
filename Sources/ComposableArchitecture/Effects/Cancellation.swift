@@ -149,7 +149,7 @@ public func withTaskCancellation<T: Sendable>(
   cancelInFlight: Bool = false,
   operation: @Sendable @escaping () async throws -> T
 ) async rethrows -> T {
-  let task = {
+  let task = { () -> Task<T, Error> in
     cancellablesLock.lock()
     let id = CancelToken(id: id)
     if cancelInFlight {

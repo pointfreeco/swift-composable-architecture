@@ -64,11 +64,12 @@ extension AsyncStream {
         } catch {}
         continuation.finish()
       }
-      continuation.onTermination = { _ in
-        task.cancel()
-      }
-      // NB: This explicit cast is needed to work around a compiler bug in Swift 5.5.2
-      as @Sendable (Continuation.Termination) -> Void
+      continuation.onTermination =
+        { _ in
+          task.cancel()
+        }
+        // NB: This explicit cast is needed to work around a compiler bug in Swift 5.5.2
+        as @Sendable (Continuation.Termination) -> Void
     }
   }
 
@@ -88,8 +89,8 @@ extension AsyncStream {
   /// ```
   ///
   /// This tool is usually used for tests where we need to supply an async sequence to a dependency
-  /// endpoint and get access to its continuation so that we can emulating the dependency
-  /// emitting data. For example, suppose you have a dependency exposes an async sequence for
+  /// endpoint and get access to its continuation so that we can emulate the dependency
+  /// emitting data. For example, suppose you have a dependency exposing an async sequence for
   /// listening to notifications. To test this you can use `streamWithContinuation`:
   ///
   /// ```swift
@@ -161,11 +162,12 @@ extension AsyncThrowingStream where Failure == Error {
           continuation.finish(throwing: error)
         }
       }
-      continuation.onTermination = { _ in
-        task.cancel()
-      }
-      // NB: This explicit cast is needed to work around a compiler bug in Swift 5.5.2
-      as @Sendable (Continuation.Termination) -> Void
+      continuation.onTermination =
+        { _ in
+          task.cancel()
+        }
+        // NB: This explicit cast is needed to work around a compiler bug in Swift 5.5.2
+        as @Sendable (Continuation.Termination) -> Void
     }
   }
 
@@ -185,8 +187,8 @@ extension AsyncThrowingStream where Failure == Error {
   /// ```
   ///
   /// This tool is usually used for tests where we need to supply an async sequence to a dependency
-  /// endpoint and get access to its continuation so that we can emulating the dependency
-  /// emitting data. For example, suppose you have a dependency exposes an async sequence for
+  /// endpoint and get access to its continuation so that we can emulate the dependency
+  /// emitting data. For example, suppose you have a dependency exposing an async sequence for
   /// listening to notifications. To test this you can use `streamWithContinuation`:
   ///
   /// ```swift

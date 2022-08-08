@@ -438,8 +438,8 @@
     /// }
     /// ```
     ///
-    /// It's important to note that the method does not suspend for the duration of the effect. It
-    /// only suspends for the duration until the effect _starts_.
+    /// This method suspends only for the duration until the effect _starts_ from sending the
+    /// action. It does _not_ suspend for the duration of the effect.
     ///
     /// In order to suspend for the duration of the effect you can use its return value, a
     /// ``TestStoreTask``, which represents the lifecycle of the effect started from sending an
@@ -873,8 +873,7 @@
   /// The type returned from ``TestStore/send(_:_:file:line:)-7vwv9`` that represents the lifecycle
   /// of the effect started from sending an action.
   ///
-  /// For example you can use this value in tests to cancel the effect started from sending an
-  /// action:
+  /// You can use this value in tests to cancel the effect started from sending an action:
   ///
   /// ```swift
   /// // Simulate the "task" view modifier invoking some async work
@@ -887,17 +886,17 @@
   /// You can also explicitly wait for an effect to finish:
   ///
   /// ```swift
-  /// store.send(.timerToggleButtonTapped)
+  /// store.send(.startTimerButtonTapped)
   ///
   /// await mainQueue.advance(by: .seconds(1))
   /// await store.receive(.timerTick) { $0.elapsed = 1 }
   ///
   /// // Wait for cleanup effects to finish before completing the test
-  /// await store.send(.timerToggleButtonTapped).finish()
+  /// await store.send(.stopTimerButtonTapped).finish()
   /// ```
   ///
   /// See ``TestStore/finish(timeout:file:line:)-53gi5`` for the ability to await all in-flight
-  /// effects.
+  /// effects in the test store.
   ///
   /// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.
   public struct TestStoreTask: Hashable, Sendable {

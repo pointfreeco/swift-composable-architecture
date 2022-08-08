@@ -50,6 +50,7 @@ day-to-day when building applications, such as:
 - <doc:GettingStarted>
 - <doc:GettingReadyForSwiftConcurrency>
 - <doc:Performance>
+- <doc:Testing>
 
 ### State Management
 

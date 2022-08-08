@@ -214,12 +214,5 @@ struct SearchView_Previews: PreviewProvider {
         .dependency(\.weatherClient.forecast) { _ in .mock }
         .dependency(\.weatherClient.search) { _ in .mock }
     )
-
-    return Group {
-      SearchView(store: store)
-
-      SearchView(store: store)
-        .environment(\.colorScheme, .dark)
-    }
   }
 }
