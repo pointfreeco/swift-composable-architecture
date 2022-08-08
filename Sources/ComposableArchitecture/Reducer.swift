@@ -17,7 +17,7 @@ import Combine
 ///   receive values on the same thread, **and** if the ``Store`` is being used to drive UI then all
 ///   output must be on the main thread. You can use the `Publisher` method `receive(on:)` for make
 ///   the effect output its values on the thread of your choice.
-/// > 
+/// >
 /// > This is only an issue if using the Combine interface of ``Effect`` as mentioned above. If you
 ///   you are only using Swift's concurrency tools and the `.task`, `.run` and `.fireAndForget`
 ///   functions on ``Effect``, then the threading is automatically handled for you.

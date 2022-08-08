@@ -64,11 +64,12 @@ extension AsyncStream {
         } catch {}
         continuation.finish()
       }
-      continuation.onTermination = { _ in
-        task.cancel()
-      }
-      // NB: This explicit cast is needed to work around a compiler bug in Swift 5.5.2
-      as @Sendable (Continuation.Termination) -> Void
+      continuation.onTermination =
+        { _ in
+          task.cancel()
+        }
+        // NB: This explicit cast is needed to work around a compiler bug in Swift 5.5.2
+        as @Sendable (Continuation.Termination) -> Void
     }
   }
 
@@ -161,11 +162,12 @@ extension AsyncThrowingStream where Failure == Error {
           continuation.finish(throwing: error)
         }
       }
-      continuation.onTermination = { _ in
-        task.cancel()
-      }
-      // NB: This explicit cast is needed to work around a compiler bug in Swift 5.5.2
-      as @Sendable (Continuation.Termination) -> Void
+      continuation.onTermination =
+        { _ in
+          task.cancel()
+        }
+        // NB: This explicit cast is needed to work around a compiler bug in Swift 5.5.2
+        as @Sendable (Continuation.Termination) -> Void
     }
   }
 

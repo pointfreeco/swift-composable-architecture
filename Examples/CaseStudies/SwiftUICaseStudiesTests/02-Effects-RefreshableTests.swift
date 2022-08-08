@@ -59,7 +59,7 @@ class RefreshableTests: XCTestCase {
     await store.send(.incrementButtonTapped) {
       $0.count = 1
     }
-    await store.send(.refresh) 
+    await store.send(.refresh)
     await store.send(.cancelButtonTapped)
   }
 }

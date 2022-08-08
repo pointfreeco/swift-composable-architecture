@@ -58,7 +58,6 @@ class AnimationTests: XCTestCase {
       $0.circleColor = .black
     }
 
-
     await mainQueue.advance(by: .seconds(1))
   }
 

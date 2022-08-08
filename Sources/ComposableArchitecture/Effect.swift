@@ -135,7 +135,7 @@ extension Effect where Failure == Never {
                 [
                   "\(fileID)",
                   line,
-                  errorDump
+                  errorDump,
                 ],
                 file: file,
                 line: line
@@ -223,7 +223,7 @@ extension Effect where Failure == Never {
                 [
                   "\(fileID)",
                   line,
-                  errorDump
+                  errorDump,
                 ],
                 file: file,
                 line: line
@@ -377,12 +377,12 @@ extension Effect {
   /// - Returns: A new effect
   public static func concatenate<C: Collection>(_ effects: C) -> Self where C.Element == Effect {
     effects.isEmpty
-    ? .none
-    : effects
-      .dropFirst()
-      .reduce(into: effects[effects.startIndex]) { effects, effect in
-        effects = effects.append(effect).eraseToEffect()
-      }
+      ? .none
+      : effects
+        .dropFirst()
+        .reduce(into: effects[effects.startIndex]) { effects, effect in
+          effects = effects.append(effect).eraseToEffect()
+        }
   }
 
   /// Transforms all elements from the upstream effect with a provided closure.
