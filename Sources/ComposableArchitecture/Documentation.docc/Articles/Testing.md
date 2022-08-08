@@ -524,7 +524,7 @@ extension SpeechClient {
 Then in tests we start the store's environment with the unimplemented client, and override the 
 bare essentials of endpoints we expect to be called.
 
-For example, if we were testing the the flow in the feature of the user deny speech recognition 
+For example, if we were testing the flow in the feature where the user denies speech recognition 
 access, then we would not expect the `startTask` or `finishTask` endpoints to ever be called. That
 would probably be a logical error, after all when the user denies permission those endpints can't 
 do anything useful.
