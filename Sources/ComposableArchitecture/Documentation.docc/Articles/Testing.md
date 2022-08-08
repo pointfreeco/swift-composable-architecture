@@ -412,7 +412,7 @@ struct NumberFactClient {
 ```
 
 This defines the interface to fetching a number fact, and we can create a "live" implementation of
-the interfacing that makes an actual net work request by constructing an instance, like so:
+the interface that makes an actual network request by constructing an instance, like so:
 
 ```swift
 extension NumberFactClient {
