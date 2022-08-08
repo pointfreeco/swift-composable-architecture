@@ -143,7 +143,7 @@ class VoiceMemosTests: XCTestCase {
   func testPlayMemoHappyPath() async {
     var environment = VoiceMemosEnvironment.unimplemented
     environment.audioPlayer.play = { _ in
-      try await self.mainRunLoop.sleep(for: 1)
+      try await self.mainRunLoop.sleep(for: 1.25)
       return true
     }
     environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
