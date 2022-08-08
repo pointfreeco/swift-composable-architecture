@@ -442,7 +442,7 @@ extension NumberFactClient {
 
 This mock implementation is appropriate to use in tests (and sometimes even previews) where you
 do not want to make live network requests since that leaves you open to the vagaries of the outside
-world that you cannot possible predict.
+world that you cannot possibly predict.
 
 For example, if you had a simple feature that allows you to increment and decrement a counter,
 as well as fetch a fact for the current count, then you could test is roughly like so:
