@@ -21,6 +21,7 @@ public struct DependencyKeyWritingReducer<Upstream: ReducerProtocol, Value>: Red
     self.update = update
   }
 
+  @inlinable
   public func reduce(
     into state: inout Upstream.State, action: Upstream.Action
   ) -> Effect<Upstream.Action, Never> {

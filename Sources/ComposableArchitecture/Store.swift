@@ -294,26 +294,15 @@ public final class Store<State, Action> {
     action fromLocalAction: @escaping (LocalAction) -> Action
   ) -> Store<LocalState, LocalAction> {
     self.threadCheck(status: .scope)
-    var isSending = false
+    let reducer = ScopedReducer(store: self, state: toLocalState, action: fromLocalAction)
     let localStore = Store<LocalState, LocalAction>(
       initialState: toLocalState(self.state.value),
-      reducer: .init { localState, localAction, _ in
-        isSending = true
-        defer { isSending = false }
-        let task = self.send(fromLocalAction(localAction))
-        localState = toLocalState(self.state.value)
-        if let task = task {
-          return .fireAndForget { await task.cancellableValue }
-        } else {
-          return .none
-        }
-      },
-      environment: ()
+      reducer: reducer
     )
     localStore.parentCancellable = self.state
       .dropFirst()
       .sink { [weak localStore] newValue in
-        guard !isSending else { return }
+        guard !reducer.isSending else { return }
         localStore?.state.value = toLocalState(newValue)
       }
     return localStore
@@ -542,3 +531,35 @@ public final class Store<State, Action> {
 /// let store: StoreOf<Feature>
 /// ```
 public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
+
+private final class ScopedReducer<State, Action, LocalState, LocalAction>: ReducerProtocol {
+  let store: Store<State, Action>
+  let toLocalState: (State) -> LocalState
+  let fromLocalAction: (LocalAction) -> Action
+  private(set) var isSending = false
+
+  @inlinable
+  init(
+    store: Store<State, Action>,
+    state toLocalState: @escaping (State) -> LocalState,
+    action fromLocalAction: @escaping (LocalAction) -> Action
+  ) {
+    self.store = store
+    self.toLocalState = toLocalState
+    self.fromLocalAction = fromLocalAction
+  }
+
+  @inlinable
+  func reduce(into state: inout LocalState, action: LocalAction) -> Effect<LocalAction, Never> {
+    self.isSending = true
+    defer {
+      state = self.toLocalState(self.store.state.value)
+      self.isSending = false
+    }
+    if let task = self.store.send(self.fromLocalAction(action)) {
+      return .fireAndForget { await task.cancellableValue }
+    } else {
+      return .none
+    }
+  }
+}

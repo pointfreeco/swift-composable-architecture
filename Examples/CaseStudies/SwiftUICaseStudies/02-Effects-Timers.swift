@@ -4,6 +4,10 @@ import ComposableArchitecture
 
 private let readMe = """
   This application demonstrates how to work with timers in the Composable Architecture.
+
+  It makes use of the `.timer` method on Combine Schedulers, which is a helper provided by the \
+  Combine Schedulers library included with this library. The helper provides an \
+  `AsyncSequence`-friendly API for dealing with timers in asynchronous code.
   """
 
 // MARK: - Timer feature domain

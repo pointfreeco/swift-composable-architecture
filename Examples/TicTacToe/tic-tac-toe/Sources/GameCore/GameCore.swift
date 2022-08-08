@@ -70,7 +70,6 @@ public enum Player: Equatable {
   }
 }
 
-
 extension Three where Element == Three<Player?> {
   public static let empty = Self(
     .init(nil, nil, nil),

@@ -158,7 +158,6 @@ class VoiceMemosTests: XCTestCase {
     }
     store.dependencies.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
-
     let task = await store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
     }

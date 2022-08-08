@@ -16,7 +16,6 @@ class AnimationTests: XCTestCase {
     store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
 
     await store.send(.rainbowButtonTapped)
-
     await store.receive(.setColor(.red)) {
       $0.circleColor = .red
     }
@@ -56,8 +55,7 @@ class AnimationTests: XCTestCase {
       $0.circleColor = .black
     }
 
-
-    await mainQueue.advance(by: .seconds(1))
+    await mainQueue.run()
   }
 
   func testReset() async {
@@ -70,7 +68,6 @@ class AnimationTests: XCTestCase {
     store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
 
     await store.send(.rainbowButtonTapped)
-
     await store.receive(.setColor(.red)) {
       $0.circleColor = .red
     }

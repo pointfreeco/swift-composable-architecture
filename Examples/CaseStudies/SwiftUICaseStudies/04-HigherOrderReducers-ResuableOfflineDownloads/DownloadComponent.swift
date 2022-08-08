@@ -17,7 +17,7 @@ struct DownloadComponent: ReducerProtocol {
 
   enum AlertAction: Equatable {
     case deleteButtonTapped
-    case dismiss
+    case dismissed
     case nevermindButtonTapped
     case stopButtonTapped
   }
@@ -32,7 +32,7 @@ struct DownloadComponent: ReducerProtocol {
       return .none
 
     case .alert(.nevermindButtonTapped),
-      .alert(.dismiss):
+      .alert(.dismissed):
       state.alert = nil
       return .none
 
@@ -163,7 +163,7 @@ struct DownloadComponentView: View {
       .foregroundStyle(.primary)
       .alert(
         self.store.scope(state: \.alert, action: DownloadComponent.Action.alert),
-        dismiss: .dismiss
+        dismiss: .dismissed
       )
     }
   }

@@ -64,11 +64,12 @@ extension AsyncStream {
         } catch {}
         continuation.finish()
       }
-      continuation.onTermination = { _ in
-        task.cancel()
-      }
-      // NB: This explicit cast is needed to work around a compiler bug in Swift 5.5.2
-      as @Sendable (Continuation.Termination) -> Void
+      continuation.onTermination =
+        { _ in
+          task.cancel()
+        }
+        // NB: This explicit cast is needed to work around a compiler bug in Swift 5.5.2
+        as @Sendable (Continuation.Termination) -> Void
     }
   }
 
@@ -88,8 +89,8 @@ extension AsyncStream {
   /// ```
   ///
   /// This tool is usually used for tests where we need to supply an async sequence to a dependency
-  /// endpoint and get access to its continuation so that we can emulating the dependency
-  /// emitting data. For example, suppose you have a dependency exposes an async sequence for
+  /// endpoint and get access to its continuation so that we can emulate the dependency
+  /// emitting data. For example, suppose you have a dependency exposing an async sequence for
   /// listening to notifications. To test this you can use `streamWithContinuation`:
   ///
   /// ```swift
@@ -161,11 +162,12 @@ extension AsyncThrowingStream where Failure == Error {
           continuation.finish(throwing: error)
         }
       }
-      continuation.onTermination = { _ in
-        task.cancel()
-      }
-      // NB: This explicit cast is needed to work around a compiler bug in Swift 5.5.2
-      as @Sendable (Continuation.Termination) -> Void
+      continuation.onTermination =
+        { _ in
+          task.cancel()
+        }
+        // NB: This explicit cast is needed to work around a compiler bug in Swift 5.5.2
+        as @Sendable (Continuation.Termination) -> Void
     }
   }
 
@@ -185,8 +187,8 @@ extension AsyncThrowingStream where Failure == Error {
   /// ```
   ///
   /// This tool is usually used for tests where we need to supply an async sequence to a dependency
-  /// endpoint and get access to its continuation so that we can emulating the dependency
-  /// emitting data. For example, suppose you have a dependency exposes an async sequence for
+  /// endpoint and get access to its continuation so that we can emulate the dependency
+  /// emitting data. For example, suppose you have a dependency exposing an async sequence for
   /// listening to notifications. To test this you can use `streamWithContinuation`:
   ///
   /// ```swift
@@ -324,14 +326,15 @@ public final actor ActorIsolated<Value: Sendable> {
   }
 }
 
-/// A generic wrapper for turning any non-`Sendable` type into a `Sendable` one.
+/// A generic wrapper for turning any non-`Sendable` type into a `Sendable` one, in an unchecked
+/// manner.
 ///
 /// Sometimes we need to use types that should be sendable but have not yet been audited for
 /// sendability. If we feel confident that the type is truly sendable, and we don't want to blanket
 /// disable concurrency warnings for a module via `@precondition import`, then we can selectively
 /// make that single type sendable by wrapping it in ``UncheckedSendable``.
 ///
-/// Note that by wrapping something in ``UncheckedSendable`` you are asking the compiler to trust
+/// > Note: By wrapping something in ``UncheckedSendable`` you are asking the compiler to trust
 /// you that the type is safe to use from multiple threads, and the compiler cannot help you find
 /// potential race conditions in your code.
 @dynamicMemberLookup

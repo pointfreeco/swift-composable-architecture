@@ -5,8 +5,8 @@ import Speech
 
 private let readMe = """
   This application demonstrates how to work with a complex dependency in the Composable \
-  Architecture. It uses the SFSpeechRecognizer API from the Speech framework to listen to audio on \
-  the device and live-transcribe it to the UI.
+  Architecture. It uses the `SFSpeechRecognizer` API from the Speech framework to listen to audio \
+  on the device and live-transcribe it to the UI.
   """
 
 struct SpeechRecognition: ReducerProtocol {
@@ -17,7 +17,7 @@ struct SpeechRecognition: ReducerProtocol {
   }
 
   enum Action: Equatable {
-    case dismissAuthorizationStateAlert
+    case authorizationStateAlertDismissed
     case recordButtonTapped
     case speech(TaskResult<String>)
     case speechRecognizerAuthorizationStatusResponse(SFSpeechRecognizerAuthorizationStatus)
@@ -27,7 +27,7 @@ struct SpeechRecognition: ReducerProtocol {
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {
-    case .dismissAuthorizationStateAlert:
+    case .authorizationStateAlertDismissed:
       state.alert = nil
       return .none
 
@@ -104,8 +104,6 @@ struct SpeechRecognition: ReducerProtocol {
   }
 }
 
-struct TranscriptionID: Hashable {}
-
 struct SpeechRecognitionView: View {
   let store: StoreOf<SpeechRecognition>
 
@@ -144,7 +142,7 @@ struct SpeechRecognitionView: View {
         }
       }
       .padding()
-      .alert(self.store.scope(state: \.alert), dismiss: .dismissAuthorizationStateAlert)
+      .alert(self.store.scope(state: \.alert), dismiss: .authorizationStateAlertDismissed)
     }
   }
 }
@@ -166,12 +164,8 @@ extension SpeechClient {
     let isRecording = ActorIsolated(false)
 
     return Self(
-      finishTask: {
-        await isRecording.setValue(false)
-      },
-      requestAuthorization: {
-        .authorized
-      },
+      finishTask: { await isRecording.setValue(false) },
+      requestAuthorization: { .authorized },
       startTask: { _ in
         .init { c in
           Task {
@@ -189,7 +183,7 @@ extension SpeechClient {
               let word = finalText.prefix { $0 != " " }
               try await Task.sleep(
                 nanoseconds: UInt64(word.count) * NSEC_PER_MSEC * 50
-                  //                + .random(in: 0 ... (NSEC_PER_MSEC * 200))
+                  + .random(in: 0...(NSEC_PER_MSEC * 200))
               )
               finalText.removeFirst(word.count)
               if finalText.first == " " {

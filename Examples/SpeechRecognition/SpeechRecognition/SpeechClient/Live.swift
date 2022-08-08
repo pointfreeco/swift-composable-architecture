@@ -79,9 +79,11 @@ private actor Speech {
       }
 
       continuation.onTermination = {
-        [speechRecognizer = UncheckedSendable(speechRecognizer),
-         audioEngine = UncheckedSendable(audioEngine),
-         recognitionTask = UncheckedSendable(recognitionTask)]
+        [
+          speechRecognizer = UncheckedSendable(speechRecognizer),
+          audioEngine = UncheckedSendable(audioEngine),
+          recognitionTask = UncheckedSendable(recognitionTask)
+        ]
         _ in
 
         _ = speechRecognizer

@@ -60,7 +60,6 @@ struct NavigateAndLoadList: ReducerProtocol {
         return .none
       }
     }
-    //
     .ifLet(state: \State.selection, action: .self) {
       EmptyReducer()
         .ifLet(state: \Identified<State.Row.ID, Counter.State?>.value, action: /Action.counter) {
