@@ -113,7 +113,8 @@ final class RuntimeWarningTests: XCTestCase {
   }
 
   @MainActor
-  func testEffectEmitMainThread() async {
+  func testEffectEmitMainThread() async throws {
+    try XCTSkipIf(ProcessInfo.processInfo.environment["CI"] != nil)
     XCTExpectFailure {
       [
         """
