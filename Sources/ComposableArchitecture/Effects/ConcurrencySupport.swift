@@ -186,7 +186,7 @@ extension AsyncThrowingStream where Failure == Error {
   ///
   /// This tool is usually used for tests where we need to supply an async sequence to a dependency
   /// endpoint and get access to its continuation so that we can emulating the dependency
-  /// emitting data. For example, suppose you have a dependency exposes an async sequence for
+  /// emitting data. For example, suppose you have a dependency exposing an async sequence for
   /// listening to notifications. To test this you can use `streamWithContinuation`:
   ///
   /// ```swift
