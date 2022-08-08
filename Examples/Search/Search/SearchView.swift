@@ -33,14 +33,16 @@ struct Search: ReducerProtocol {
   enum Action: Equatable {
     case forecastResponse(GeocodingSearch.Result.ID, TaskResult<Forecast>)
     case searchQueryChanged(String)
+    case searchQueryChangeDebounced
     case searchResponse(TaskResult<GeocodingSearch>)
     case searchResultTapped(GeocodingSearch.Result)
   }
 
-  @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.weatherClient) var weatherClient
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    enum SearchLocationID {}
+
     switch action {
     case .forecastResponse(_, .failure):
       state.weather = nil
@@ -64,8 +66,6 @@ struct Search: ReducerProtocol {
       return .none
 
     case let .searchQueryChanged(query):
-      enum SearchLocationID {}
-
       state.searchQuery = query
 
       // When the query is cleared we can clear the search results, but we have to make sure to cancel
@@ -75,11 +75,16 @@ struct Search: ReducerProtocol {
         state.weather = nil
         return .cancel(id: SearchLocationID.self)
       }
+      return .none
 
-      return .task {
+    case .searchQueryChangeDebounced:
+      guard !state.searchQuery.isEmpty else {
+        return .none
+      }
+      return .task { [query = state.searchQuery] in
         await .searchResponse(TaskResult { try await self.weatherClient.search(query) })
       }
-      .debounce(id: SearchLocationID.self, for: 0.3, scheduler: self.mainQueue)
+      .cancellable(id: SearchLocationID.self)
 
     case .searchResponse(.failure):
       state.results = []
@@ -160,6 +165,12 @@ struct SearchView: View {
         .navigationTitle("Search")
       }
       .navigationViewStyle(.stack)
+      .task(id: viewStore.searchQuery) {
+        do {
+          try await Task.sleep(nanoseconds: NSEC_PER_SEC / 3)
+          await viewStore.send(.searchQueryChangeDebounced).finish()
+        } catch {}
+      }
     }
   }
 

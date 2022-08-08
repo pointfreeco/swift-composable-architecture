@@ -949,11 +949,11 @@
           ? #"try increasing the duration of this assertion's "timeout""#
           : #"configure this assertion with an explicit "timeout""#
         let suggestion = """
-          If this task delivers its action with a scheduler (via "receive(on:)", "delay", \
-          "debounce", etc.), make sure that you wait enough time for the scheduler to perform its \
-          work. If you are using a test scheduler, advance the scheduler so that the effects may \
-          complete, or consider using an immediate scheduler to immediately perform the effect \
-          instead.
+          If this task delivers its action using a scheduler (via "sleep(for:)", \
+          "timer(interval:)", etc.), make sure that you wait enough time for the scheduler to \
+          perform its work. If you are using a test scheduler, advance the scheduler so that the \
+          effects may complete, or consider using an immediate scheduler to immediately perform \
+          the effect instead.
 
           If you are not yet using a scheduler, or can not use a scheduler, \(timeoutMessage).
           """
