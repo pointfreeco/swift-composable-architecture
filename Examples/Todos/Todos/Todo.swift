@@ -2,7 +2,7 @@ import ComposableArchitecture
 import Foundation
 import SwiftUI
 
-struct Todo: Equatable, Identifiable {
+struct TodoState: Equatable, Identifiable {
   var description = ""
   let id: UUID
   var isComplete = false
@@ -15,20 +15,20 @@ enum TodoAction: Equatable {
 
 struct TodoEnvironment {}
 
-let todoReducer = Reducer<Todo, TodoAction, TodoEnvironment> { todo, action, _ in
+let todoReducer = Reducer<TodoState, TodoAction, TodoEnvironment> { state, action, _ in
   switch action {
   case .checkBoxToggled:
-    todo.isComplete.toggle()
+    state.isComplete.toggle()
     return .none
 
   case let .textFieldChanged(description):
-    todo.description = description
+    state.description = description
     return .none
   }
 }
 
 struct TodoView: View {
-  let store: Store<Todo, TodoAction>
+  let store: Store<TodoState, TodoAction>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
