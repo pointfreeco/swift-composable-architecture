@@ -547,7 +547,7 @@ func testDeniedAuthorization() async {
 ```
 
 You can make your tests much stronger by starting all dependencies in an "unimplemented" state, 
-and then only implementing the base essentials of endpoints that your feature needs for the 
+and then only implementing the bare essentials of endpoints that your feature needs for the 
 particular flow you are testing. Then in the future, if your feature starts using new 
 dependency endpoints you will be instantly notified in tests and can figure out if that is expected
 or if a bug has been introduced.
