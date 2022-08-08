@@ -42,7 +42,7 @@ struct FavoriteCancelID<ID: Hashable>: Hashable {
   var id: ID
 }
 
-extension Reducer {
+extension AnyReducer {
   /// Enhances a reducer with favoriting logic.
   func favorite<ID: Hashable>(
     state: WritableKeyPath<State, FavoriteState<ID>>,
@@ -51,7 +51,7 @@ extension Reducer {
   ) -> Self {
     .combine(
       self,
-      Reducer<FavoriteState<ID>, FavoriteAction, FavoriteEnvironment> {
+      AnyReducer<FavoriteState<ID>, FavoriteAction, FavoriteEnvironment> {
         state, action, environment in
         switch action {
         case .alertDismissed:
@@ -136,7 +136,7 @@ struct EpisodeView: View {
   }
 }
 
-let episodeReducer = Reducer<EpisodeState, EpisodeAction, EpisodeEnvironment>.empty.favorite(
+let episodeReducer = AnyReducer<EpisodeState, EpisodeAction, EpisodeEnvironment>.empty.favorite(
   state: \.favorite,
   action: /EpisodeAction.favorite,
   environment: { FavoriteEnvironment(request: $0.favorite) }
@@ -154,7 +154,7 @@ struct EpisodesEnvironment {
   var favorite: @Sendable (UUID, Bool) async throws -> Bool
 }
 
-let episodesReducer: Reducer<EpisodesState, EpisodesAction, EpisodesEnvironment> =
+let episodesReducer: AnyReducer<EpisodesState, EpisodesAction, EpisodesEnvironment> =
   episodeReducer.forEach(
     state: \EpisodesState.episodes,
     action: /EpisodesAction.episode(id:action:),

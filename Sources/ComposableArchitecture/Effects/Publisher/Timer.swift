@@ -35,7 +35,7 @@ extension Effect where Failure == Never {
   ///   var mainQueue: AnySchedulerOf<DispatchQueue>
   /// }
   ///
-  /// let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, env in
+  /// let appReducer = AnyReducer<AppState, AppAction, AppEnvironment> { state, action, env in
   ///   struct TimerID: Hashable {}
   ///
   ///   switch action {

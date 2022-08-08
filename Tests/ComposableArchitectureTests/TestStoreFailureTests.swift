@@ -7,7 +7,7 @@ class TestStoreFailureTests: XCTestCase {
     enum Action { case first, second }
     let store = TestStore(
       initialState: 0,
-      reducer: Reducer<Int, Action, Void> { state, action, _ in
+      reducer: AnyReducer<Int, Action, Void> { state, action, _ in
         switch action {
         case .first: return .init(value: .second)
         case .second: return .none
@@ -43,7 +43,7 @@ class TestStoreFailureTests: XCTestCase {
     struct State: Equatable { var count = 0 }
     let store = TestStore(
       initialState: .init(),
-      reducer: Reducer<State, Void, Void> { state, action, _ in state.count += 1
+      reducer: AnyReducer<State, Void, Void> { state, action, _ in state.count += 1
         return .none
       },
       environment: ()
@@ -67,7 +67,7 @@ class TestStoreFailureTests: XCTestCase {
     struct State: Equatable { var count = 0 }
     let store = TestStore(
       initialState: .init(),
-      reducer: Reducer<State, Void, Void> { state, action, _ in state.count += 1
+      reducer: AnyReducer<State, Void, Void> { state, action, _ in state.count += 1
         return .none
       },
       environment: ()
@@ -92,7 +92,7 @@ class TestStoreFailureTests: XCTestCase {
     enum Action { case first, second }
     let store = TestStore(
       initialState: .init(),
-      reducer: Reducer<State, Action, Void> { state, action, _ in
+      reducer: AnyReducer<State, Action, Void> { state, action, _ in
         switch action {
         case .first: return .init(value: .second)
         case .second:
@@ -124,7 +124,7 @@ class TestStoreFailureTests: XCTestCase {
         enum Action { case first, second }
         let store = TestStore(
           initialState: 0,
-          reducer: Reducer<Int, Action, Void> { state, action, _ in
+          reducer: AnyReducer<Int, Action, Void> { state, action, _ in
             switch action {
             case .first: return .init(value: .second)
             case .second: return .none
@@ -150,7 +150,7 @@ class TestStoreFailureTests: XCTestCase {
       do {
         let store = TestStore(
           initialState: 0,
-          reducer: Reducer<Int, Void, Void> { state, action, _ in
+          reducer: AnyReducer<Int, Void, Void> { state, action, _ in
             .task { try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
           },
           environment: ()
@@ -186,7 +186,7 @@ class TestStoreFailureTests: XCTestCase {
     enum Action { case first, second }
     let store = TestStore(
       initialState: 0,
-      reducer: Reducer<Int, Action, Void> { state, action, _ in
+      reducer: AnyReducer<Int, Action, Void> { state, action, _ in
         switch action {
         case .first: return .init(value: .second)
         case .second: return .none
@@ -215,7 +215,7 @@ class TestStoreFailureTests: XCTestCase {
     enum Action { case action }
     let store = TestStore(
       initialState: 0,
-      reducer: Reducer<Int, Action, Void> { _, _, _ in .none },
+      reducer: AnyReducer<Int, Action, Void> { _, _, _ in .none },
       environment: ()
     )
 
@@ -230,7 +230,7 @@ class TestStoreFailureTests: XCTestCase {
     enum Action { case first, second }
     let store = TestStore(
       initialState: 0,
-      reducer: Reducer<Int, Action, Void> { state, action, _ in
+      reducer: AnyReducer<Int, Action, Void> { state, action, _ in
         switch action {
         case .first: return .init(value: .second)
         case .second: return .none
@@ -257,7 +257,7 @@ class TestStoreFailureTests: XCTestCase {
   func testModifyClosureThrowsErrorFailure() {
     let store = TestStore(
       initialState: 0,
-      reducer: Reducer<Int, Void, Void> { _, _, _ in .none },
+      reducer: AnyReducer<Int, Void, Void> { _, _, _ in .none },
       environment: ()
     )
 

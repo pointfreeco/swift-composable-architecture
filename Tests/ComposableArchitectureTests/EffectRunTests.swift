@@ -8,7 +8,7 @@ final class EffectRunTests: XCTestCase {
   func testRun() async {
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
-    let reducer = Reducer<State, Action, Void> { state, action, _ in
+    let reducer = AnyReducer<State, Action, Void> { state, action, _ in
       switch action {
       case .tapped:
         return .run { send in await send(.response) }
@@ -24,7 +24,7 @@ final class EffectRunTests: XCTestCase {
   func testRunCatch() async {
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
-    let reducer = Reducer<State, Action, Void> { state, action, _ in
+    let reducer = AnyReducer<State, Action, Void> { state, action, _ in
       switch action {
       case .tapped:
         return .run { _ in
@@ -56,7 +56,7 @@ final class EffectRunTests: XCTestCase {
     }
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
-    let reducer = Reducer<State, Action, Void> { state, action, _ in
+    let reducer = AnyReducer<State, Action, Void> { state, action, _ in
       switch action {
       case .tapped:
         return .run { send in
@@ -76,7 +76,7 @@ final class EffectRunTests: XCTestCase {
     enum CancelID {}
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
-    let reducer = Reducer<State, Action, Void> { state, action, _ in
+    let reducer = AnyReducer<State, Action, Void> { state, action, _ in
       switch action {
       case .tapped:
         return .run { send in
@@ -97,7 +97,7 @@ final class EffectRunTests: XCTestCase {
     enum CancelID {}
     struct State: Equatable {}
     enum Action: Equatable { case tapped, responseA, responseB }
-    let reducer = Reducer<State, Action, Void> { state, action, _ in
+    let reducer = AnyReducer<State, Action, Void> { state, action, _ in
       switch action {
       case .tapped:
         return .run { send in

@@ -27,7 +27,7 @@ let eagerNavigationReducer =
     environment: { _ in CounterEnvironment() }
   )
   .combined(
-    with: Reducer<
+    with: AnyReducer<
       EagerNavigationState, EagerNavigationAction, EagerNavigationEnvironment
     > { state, action, environment in
 

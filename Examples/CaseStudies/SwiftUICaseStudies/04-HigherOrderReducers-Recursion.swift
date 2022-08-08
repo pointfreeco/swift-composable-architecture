@@ -13,7 +13,7 @@ private let readMe = """
   rows.
   """
 
-extension Reducer {
+extension AnyReducer {
   static func recurse(
     _ reducer: @escaping (Self, inout State, Action, Environment) -> Effect<Action, Never>
   ) -> Self {

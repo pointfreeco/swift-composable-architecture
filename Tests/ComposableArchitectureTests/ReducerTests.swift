@@ -10,7 +10,7 @@ final class ReducerTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
   func testCallableAsFunction() {
-    let reducer = Reducer<Int, Void, Void> { state, _, _ in
+    let reducer = AnyReducer<Int, Void, Void> { state, _, _ in
       state += 1
       return .none
     }
@@ -27,7 +27,7 @@ final class ReducerTests: XCTestCase {
     }
 
     var fastValue: Int?
-    let fastReducer = Reducer<Int, Action, Scheduler> { state, _, scheduler in
+    let fastReducer = AnyReducer<Int, Action, Scheduler> { state, _, scheduler in
       state += 1
       return Effect.fireAndForget { fastValue = 42 }
         .delay(for: 1, scheduler: scheduler)
@@ -35,7 +35,7 @@ final class ReducerTests: XCTestCase {
     }
 
     var slowValue: Int?
-    let slowReducer = Reducer<Int, Action, Scheduler> { state, _, scheduler in
+    let slowReducer = AnyReducer<Int, Action, Scheduler> { state, _, scheduler in
       state += 1
       return Effect.fireAndForget { slowValue = 1729 }
         .delay(for: 2, scheduler: scheduler)
@@ -67,14 +67,14 @@ final class ReducerTests: XCTestCase {
     }
 
     var childEffectExecuted = false
-    let childReducer = Reducer<Int, Action, Void> { state, _, _ in
+    let childReducer = AnyReducer<Int, Action, Void> { state, _, _ in
       state += 1
       return Effect.fireAndForget { childEffectExecuted = true }
         .eraseToEffect()
     }
 
     var mainEffectExecuted = false
-    let mainReducer = Reducer<Int, Action, Void> { state, _, _ in
+    let mainReducer = AnyReducer<Int, Action, Void> { state, _, _ in
       state += 1
       return Effect.fireAndForget { mainEffectExecuted = true }
         .eraseToEffect()
@@ -100,7 +100,7 @@ final class ReducerTests: XCTestCase {
     let logsExpectation = self.expectation(description: "logs")
     logsExpectation.expectedFulfillmentCount = 2
 
-    let reducer = Reducer<DebugState, DebugAction, Void> { state, action, _ in
+    let reducer = AnyReducer<DebugState, DebugAction, Void> { state, action, _ in
       switch action {
       case .incrWithBool:
         return .none
@@ -154,7 +154,7 @@ final class ReducerTests: XCTestCase {
     var logs: [String] = []
     let logsExpectation = self.expectation(description: "logs")
 
-    let reducer = Reducer<DebugState, DebugAction, Void> { state, action, _ in
+    let reducer = AnyReducer<DebugState, DebugAction, Void> { state, action, _ in
       switch action {
       case let .incrWithBool(bool):
         state.count += bool ? 1 : 0
@@ -198,7 +198,7 @@ final class ReducerTests: XCTestCase {
   }
 
   func testDefaultSignpost() {
-    let reducer = Reducer<Int, Void, Void>.empty.signpost(log: .default)
+    let reducer = AnyReducer<Int, Void, Void>.empty.signpost(log: .default)
     var n = 0
     let effect = reducer.run(&n, (), ())
     let expectation = self.expectation(description: "effect")
@@ -209,7 +209,7 @@ final class ReducerTests: XCTestCase {
   }
 
   func testDisabledSignpost() {
-    let reducer = Reducer<Int, Void, Void>.empty.signpost(log: .disabled)
+    let reducer = AnyReducer<Int, Void, Void>.empty.signpost(log: .disabled)
     var n = 0
     let effect = reducer.run(&n, (), ())
     let expectation = self.expectation(description: "effect")

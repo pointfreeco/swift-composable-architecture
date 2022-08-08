@@ -8,43 +8,45 @@ final class ComposableArchitectureTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
   func testScheduling() async {
-    enum CounterAction: Equatable {
-      case incrAndSquareLater
-      case incrNow
-      case squareNow
-    }
-
-    let counterReducer = Reducer<Int, CounterAction, AnySchedulerOf<DispatchQueue>> {
-      state, action, mainQueue in
-      switch action {
-      case .incrAndSquareLater:
-        return .merge(
-          Effect(value: .incrNow)
-            .delay(for: 2, scheduler: mainQueue)
-            .eraseToEffect(),
-          Effect(value: .squareNow)
-            .delay(for: 1, scheduler: mainQueue)
-            .eraseToEffect(),
-          Effect(value: .squareNow)
-            .delay(for: 2, scheduler: mainQueue)
-            .eraseToEffect()
-        )
-      case .incrNow:
-        state += 1
-        return .none
-      case .squareNow:
-        state *= state
-        return .none
+    struct Counter: ReducerProtocol {
+      typealias State = Int
+      enum Action: Equatable {
+        case incrAndSquareLater
+        case incrNow
+        case squareNow
+      }
+      @Dependency(\.mainQueue) var mainQueue
+      func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+        switch action {
+        case .incrAndSquareLater:
+          return .merge(
+            Effect(value: .incrNow)
+              .delay(for: 2, scheduler: self.mainQueue)
+              .eraseToEffect(),
+            Effect(value: .squareNow)
+              .delay(for: 1, scheduler: self.mainQueue)
+              .eraseToEffect(),
+            Effect(value: .squareNow)
+              .delay(for: 2, scheduler: self.mainQueue)
+              .eraseToEffect()
+          )
+        case .incrNow:
+          state += 1
+          return .none
+        case .squareNow:
+          state *= state
+          return .none
+        }
       }
     }
 
-    let mainQueue = DispatchQueue.test
-
     let store = TestStore(
       initialState: 2,
-      reducer: counterReducer,
-      environment: mainQueue.eraseToAnyScheduler()
+      reducer: Counter()
     )
+
+    let mainQueue = DispatchQueue.test
+    store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
 
     await store.send(.incrAndSquareLater)
     await mainQueue.advance(by: 1)
@@ -84,7 +86,7 @@ final class ComposableArchitectureTests: XCTestCase {
 
     enum Action { case end, incr, start }
 
-    let reducer = Reducer<Int, Action, Environment> { state, action, environment in
+    let reducer = AnyReducer<Int, Action, Environment> { state, action, environment in
       switch action {
       case .end:
         return environment.stopEffect.fireAndForget()
@@ -127,7 +129,7 @@ final class ComposableArchitectureTests: XCTestCase {
       let fetch: (Int) async -> Int
     }
 
-    let reducer = Reducer<Int, Action, Environment> { state, action, environment in
+    let reducer = AnyReducer<Int, Action, Environment> { state, action, environment in
       enum CancelID {}
 
       switch action {

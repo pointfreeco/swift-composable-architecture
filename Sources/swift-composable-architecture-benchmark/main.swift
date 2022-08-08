@@ -1,7 +1,7 @@
 import Benchmark
 import ComposableArchitecture
 
-let counterReducer = Reducer<Int, Bool, Void> { state, action, _ in
+let counterReducer = Reduce<Int, Bool> { state, action in
   if action {
     state += 1
   } else {
@@ -10,7 +10,7 @@ let counterReducer = Reducer<Int, Bool, Void> { state, action, _ in
   return .none
 }
 
-let store1 = Store(initialState: 0, reducer: counterReducer, environment: ())
+let store1 = Store(initialState: 0, reducer: counterReducer)
 let store2 = store1.scope { $0 }
 let store3 = store2.scope { $0 }
 let store4 = store3.scope { $0 }

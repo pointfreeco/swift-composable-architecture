@@ -13,7 +13,7 @@ enum CounterListAction: Equatable {
 
 struct CounterListEnvironment {}
 
-let counterListReducer: Reducer<CounterListState, CounterListAction, CounterListEnvironment> =
+let counterListReducer: AnyReducer<CounterListState, CounterListAction, CounterListEnvironment> =
   counterReducer.forEach(
     state: \CounterListState.counters,
     action: /CounterListAction.counter(id:action:),

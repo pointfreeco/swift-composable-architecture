@@ -3,6 +3,11 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
+// NB: Deprecated after 0.39.0:
+
+@available(*, deprecated, renamed: "AnyReducer")
+public typealias Reducer = AnyReducer
+
 // NB: Deprecated after 0.38.2:
 
 extension Effect {
@@ -62,7 +67,7 @@ extension Effect where Failure == Error {
 extension Store {
   public static func unchecked<Environment>(
     initialState: State,
-    reducer: Reducer<State, Action, Environment>,
+    reducer: AnyReducer<State, Action, Environment>,
     environment: Environment
   ) -> Self {
     self.init(
@@ -115,7 +120,7 @@ extension Effect {
 
 // NB: Deprecated after 0.31.0:
 
-extension Reducer {
+extension AnyReducer {
   @available(
     *,
     deprecated,
@@ -128,7 +133,7 @@ extension Reducer {
     breakpointOnNil: Bool,
     file: StaticString = #fileID,
     line: UInt = #line
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+  ) -> AnyReducer<GlobalState, GlobalAction, GlobalEnvironment> {
     self.pullback(
       state: toLocalState,
       action: toLocalAction,
@@ -147,7 +152,7 @@ extension Reducer {
     breakpointOnNil: Bool,
     file: StaticString = #fileID,
     line: UInt = #line
-  ) -> Reducer<
+  ) -> AnyReducer<
     State?, Action, Environment
   > {
     self.optional(file: file, line: line)
@@ -165,7 +170,7 @@ extension Reducer {
     breakpointOnNil: Bool,
     file: StaticString = #fileID,
     line: UInt = #line
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+  ) -> AnyReducer<GlobalState, GlobalAction, GlobalEnvironment> {
     self.forEach(
       state: toLocalState,
       action: toLocalAction,
@@ -187,7 +192,7 @@ extension Reducer {
     breakpointOnNil: Bool,
     file: StaticString = #fileID,
     line: UInt = #line
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+  ) -> AnyReducer<GlobalState, GlobalAction, GlobalEnvironment> {
     self.forEach(
       state: toLocalState,
       action: toLocalAction,
@@ -520,7 +525,7 @@ extension BindingAction {
   }
 }
 
-extension Reducer {
+extension AnyReducer {
   @available(
     *, deprecated,
     message:
@@ -596,7 +601,7 @@ extension AlertState.Button {
 
 // NB: Deprecated after 0.20.0:
 
-extension Reducer {
+extension AnyReducer {
   @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead.")
   public func forEach<GlobalState, GlobalAction, GlobalEnvironment>(
     state toLocalState: WritableKeyPath<GlobalState, [State]>,
@@ -606,7 +611,7 @@ extension Reducer {
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+  ) -> AnyReducer<GlobalState, GlobalAction, GlobalEnvironment> {
     .init { globalState, globalAction, globalEnvironment in
       guard let (index, localAction) = toLocalAction.extract(from: globalAction) else {
         return .none

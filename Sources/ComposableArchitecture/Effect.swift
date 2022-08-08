@@ -66,7 +66,7 @@ extension Effect where Failure == Never {
   ///   case faceResponse(TaskResult<String>)
   /// }
   ///
-  /// let featureReducer = Reducer<State, Action, Environment> { state, action, environment in
+  /// let featureReducer = AnyReducer<State, Action, Environment> { state, action, environment in
   ///   switch action {
   ///     case .factButtonTapped:
   ///       return .task { [number = state.number] in
@@ -361,7 +361,7 @@ extension Effect {
   ///
   /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
   ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
-  ///   Composable Architecture in functions like ``Reducer/combine(_:)-1ern2``.
+  ///   Composable Architecture in functions like ``AnyReducer/combine(_:)-1ern2``.
   ///
   ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
   ///
@@ -376,7 +376,7 @@ extension Effect {
   ///
   /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
   ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
-  ///   Composable Architecture in functions like ``Reducer/combine(_:)-1ern2``.
+  ///   Composable Architecture in functions like ``AnyReducer/combine(_:)-1ern2``.
   ///
   ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
   ///
@@ -438,7 +438,7 @@ extension Effect {
   /// Now that we've defined the domain, we can describe the logic in a reducer:
   ///
   /// ```swift
-  /// let counterReducer = Reducer<
+  /// let counterReducer = AnyReducer<
   ///   CounterState, CounterAction, CounterEnvironment
   /// > { state, action, environment in
   ///   switch action {

@@ -15,7 +15,7 @@ enum CounterAction: Equatable {
 
 struct CounterEnvironment {}
 
-let counterReducer = Reducer<CounterState, CounterAction, CounterEnvironment> { state, action, _ in
+let counterReducer = AnyReducer<CounterState, CounterAction, CounterEnvironment> { state, action, _ in
   switch action {
   case .decrementButtonTapped:
     state.count -= 1

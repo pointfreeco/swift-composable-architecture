@@ -12,7 +12,7 @@ struct RootEnvironment {
   var focus = FocusEnvironment()
 }
 
-let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
+let rootReducer = AnyReducer<RootState, RootAction, RootEnvironment>.combine(
   focusReducer.pullback(
     state: \.focus,
     action: /RootAction.focus,

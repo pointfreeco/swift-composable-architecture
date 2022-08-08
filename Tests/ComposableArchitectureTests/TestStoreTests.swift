@@ -13,7 +13,7 @@ class TestStoreTests: XCTestCase {
 
     let mainQueue = DispatchQueue.test
 
-    let reducer = Reducer<State, Action, AnySchedulerOf<DispatchQueue>> { _, action, scheduler in
+    let reducer = AnyReducer<State, Action, AnySchedulerOf<DispatchQueue>> { _, action, scheduler in
       switch action {
       case .a:
         return .merge(
@@ -68,7 +68,7 @@ class TestStoreTests: XCTestCase {
     }
     let store = TestStore(
       initialState: 0,
-      reducer: Reducer<Int, Action, Void> { state, action, _ in
+      reducer: AnyReducer<Int, Action, Void> { state, action, _ in
         switch action {
         case .tap:
           return .task { .response(42) }
@@ -97,7 +97,7 @@ class TestStoreTests: XCTestCase {
       case changed(from: Int, to: Int)
     }
 
-    let reducer = Reducer<State, Action, Void> { state, action, scheduler in
+    let reducer = AnyReducer<State, Action, Void> { state, action, scheduler in
       switch action {
       case .increment:
         state.isChanging = true
@@ -147,7 +147,7 @@ class TestStoreTests: XCTestCase {
       case noop, finished
     }
 
-    let reducer = Reducer<State, Action, Void> { state, action, scheduler in
+    let reducer = AnyReducer<State, Action, Void> { state, action, scheduler in
       switch action {
       case .noop:
         return Effect(value: .finished)
@@ -181,7 +181,7 @@ class TestStoreTests: XCTestCase {
     enum Action { case a, b, c, d }
     let store = TestStore(
       initialState: 0,
-      reducer: Reducer<Int, Action, Void> { count, action, _ in
+      reducer: AnyReducer<Int, Action, Void> { count, action, _ in
         switch action {
         case .a:
           count += 1
@@ -225,7 +225,7 @@ class TestStoreTests: XCTestCase {
 //    enum Action { case tap, response1, response2 }
 //    let store = TestStore(
 //      initialState: State(),
-//      reducer: Reducer<State, Action, Void> { state, action, _ in
+//      reducer: AnyReducer<State, Action, Void> { state, action, _ in
 //        switch action {
 //        case .tap:
 //          return .merge(

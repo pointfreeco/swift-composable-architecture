@@ -9,7 +9,7 @@ struct TestApp: App {
 
   let store = Store(
     initialState: 0,
-    reducer: Reducer<Int, Void, Void> { state, _, _ in
+    reducer: AnyReducer<Int, Void, Void> { state, _, _ in
       state += 1
       return .none
     },

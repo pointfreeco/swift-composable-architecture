@@ -12,7 +12,7 @@ final class DeprecatedTests: XCTestCase {
         let viewStore = ViewStore(
           Store.unchecked(
             initialState: 0,
-            reducer: Reducer<Int, Void, XCTestExpectation> { state, _, expectation in
+            reducer: AnyReducer<Int, Void, XCTestExpectation> { state, _, expectation in
               state += 1
               if state == 2 {
                 return .fireAndForget { expectation.fulfill() }

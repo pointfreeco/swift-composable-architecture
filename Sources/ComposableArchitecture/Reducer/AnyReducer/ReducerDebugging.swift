@@ -1,34 +1,7 @@
 import CasePaths
 import Dispatch
 
-/// Determines how the string description of an action should be printed when using the
-/// ``Reducer/debug(_:state:action:actionFormat:environment:)`` higher-order reducer.
-public enum ActionFormat {
-  /// Prints the action in a single line by only specifying the labels of the associated values:
-  ///
-  /// ```swift
-  /// Action.screenA(.row(index:, action: .textChanged(query:)))
-  /// ```
-  ///
-  case labelsOnly
-  /// Prints the action in a multiline, pretty-printed format, including all the labels of
-  /// any associated values, as well as the data held in the associated values:
-  ///
-  /// ```swift
-  /// Action.screenA(
-  ///   ScreenA.row(
-  ///     index: 1,
-  ///     action: RowAction.textChanged(
-  ///       query: "Hi"
-  ///     )
-  ///   )
-  /// )
-  /// ```
-  ///
-  case prettyPrint
-}
-
-extension Reducer {
+extension AnyReducer {
   /// Prints debug messages describing all received actions and state mutations.
   ///
   /// Printing is only done in debug (`#if DEBUG`) builds.

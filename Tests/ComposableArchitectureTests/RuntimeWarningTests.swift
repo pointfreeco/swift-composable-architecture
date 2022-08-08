@@ -38,7 +38,7 @@ final class RuntimeWarningTests: XCTestCase {
     enum Action { case tap, response }
     let store = Store(
       initialState: 0,
-      reducer: Reducer<Int, Action, Void> { state, action, _ in
+      reducer: AnyReducer<Int, Action, Void> { state, action, _ in
         switch action {
         case .tap:
           return Empty()
@@ -105,7 +105,7 @@ final class RuntimeWarningTests: XCTestCase {
       ].contains($0.compactDescription)
     }
 
-    let store = Store(initialState: 0, reducer: Reducer<Int, Void, Void>.empty, environment: ())
+    let store = Store(initialState: 0, reducer: AnyReducer<Int, Void, Void>.empty, environment: ())
     Task {
       ViewStore(store).send(())
     }
@@ -162,7 +162,7 @@ final class RuntimeWarningTests: XCTestCase {
     enum Action { case tap, response }
     let store = Store(
       initialState: 0,
-      reducer: Reducer<Int, Action, Void> { state, action, _ in
+      reducer: AnyReducer<Int, Action, Void> { state, action, _ in
         switch action {
         case .tap:
           return .run { subscriber in
@@ -191,7 +191,7 @@ final class RuntimeWarningTests: XCTestCase {
     }
     let store = Store(
       initialState: .init(),
-      reducer: Reducer<State, Action, ()>.empty,
+      reducer: AnyReducer<State, Action, ()>.empty,
       environment: ()
     )
 
