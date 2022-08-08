@@ -1,19 +1,23 @@
 extension Task where Failure == Error {
   var cancellableValue: Success {
-    try await withTaskCancellationHandler {
-      self.cancel()
-    } operation: {
-      try await self.value
+    get async throws {
+      try await withTaskCancellationHandler {
+        self.cancel()
+      } operation: {
+        try await self.value
+      }
     }
   }
 }
 
 extension Task where Failure == Never {
   var cancellableValue: Success {
-    await withTaskCancellationHandler {
-      self.cancel()
-    } operation: {
-      await self.value
+    get async {
+      await withTaskCancellationHandler {
+        self.cancel()
+      } operation: {
+        await self.value
+      }
     }
   }
 }

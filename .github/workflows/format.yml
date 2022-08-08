@@ -16,7 +16,7 @@ jobs:
       - name: Tap
         run: brew tap pointfreeco/formulae
       - name: Install
-        run: brew install Formulae/swift-format@5.5
+        run: brew install Formulae/swift-format@5.6
       - name: Format
         run: make format
       - uses: stefanzweifel/git-auto-commit-action@v4
