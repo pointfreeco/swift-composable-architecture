@@ -171,7 +171,7 @@ unit of work that runs in the outside world and feeds data back into the system.
 
 Effects form a major part of a feature's logic. They can perform network requests to external 
 services, load and save data to disk, start and stop timers, interact with Apple frameworks 
-(Core Location, Core Motion, Speech Recongition, etc.), and more.
+(Core Location, Core Motion, Speech Recognition, etc.), and more.
 
 As a simple example, suppose we have a feature with a button such that when you tap it it starts
 a timer that counts up until you reach 5, and then stops. This can be accomplished using the 
