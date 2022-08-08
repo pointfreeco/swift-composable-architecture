@@ -480,7 +480,7 @@ implementation for using in the production version of the app, and a "mock" impl
 in tests, but there is another implementation that can be useful.
 
 We call this the "unimplemented" implementation, which constructs an instance of the dependency
-client whose endpoints have all be stubbed to invoke `XCTFail` so that if the endpoint is ever used
+client whose endpoints have all been stubbed to invoke `XCTFail` so that if the endpoint is ever used
 in a test it will trigger a test failure. This allows you to prove what parts of your dependency
 is actually used in a test.
 
