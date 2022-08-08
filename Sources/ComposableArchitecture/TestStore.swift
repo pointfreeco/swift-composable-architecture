@@ -40,23 +40,26 @@
   /// For example, given a simple counter reducer:
   ///
   /// ```swift
-  /// struct CounterState {
-  ///   var count = 0
-  /// }
-  /// enum CounterAction: Equatable {
-  ///   case decrementButtonTapped
-  ///   case incrementButtonTapped
-  /// }
+  /// struct Counter: ReducerProtocol {
+  ///   struct State: Equatable {
+  ///     var count = 0
+  ///   }
   ///
-  /// let counterReducer = Reducer<CounterState, CounterAction, Void> { state, action, _ in
-  ///   switch action {
-  ///   case .decrementButtonTapped:
-  ///     state.count -= 1
-  ///     return .none
+  ///   enum Action {
+  ///     case decrementButtonTapped
+  ///     case incrementButtonTapped
+  ///   }
   ///
-  ///   case .incrementButtonTapped:
-  ///     state.count += 1
-  ///     return .none
+  ///   func reduce(into state: State, action: Action) -> Effect<Action, Never> {
+  ///     switch action {
+  ///     case .decrementButtonTapped:
+  ///       state.count -= 1
+  ///       return .none
+  ///
+  ///     case .incrementButtonTapped:
+  ///       state.count += 1
+  ///       return .none
+  ///     }
   ///   }
   /// }
   /// ```
@@ -68,9 +71,8 @@
   /// class CounterTests: XCTestCase {
   ///   func testCounter() async {
   ///     let store = TestStore(
-  ///       initialState: CounterState(count: 0),     // Given a counter state of 0
-  ///       reducer: counterReducer,
-  ///       environment: ()
+  ///       initialState: Counter.State(count: 0),    // Given a counter state of 0
+  ///       reducer: Counter()
   ///     )
   ///     await store.send(.incrementButtonTapped) {  // When the increment button is tapped
   ///       $0.count = 1                              // Then the count should be 1
@@ -83,62 +85,59 @@
   /// mutable value of the state before the action was sent, and it is our job to mutate the value
   /// to match the state after the action was sent. In this case the `count` field changes to `1`.
   ///
-  /// For a more complex example, consider the following bare-bones search feature that uses the
-  /// ``Effect/debounce(id:for:scheduler:options:)-76yye`` operator to wait for the user to stop
-  /// typing before making a network request:
+  /// For a more complex example, consider the following bare-bones search feature that uses a
+  /// scheduler and cancel token to debounce requests:
   ///
   /// ```swift
-  /// struct SearchState: Equatable {
-  ///   var query = ""
-  ///   var results: [String] = []
-  /// }
+  /// struct Search: ReducerProtocol {
+  ///   struct State: Equatable {
+  ///     var query = ""
+  ///     var results: [String] = []
+  ///   }
   ///
-  /// enum SearchAction: Equatable {
-  ///   case queryChanged(String)
-  ///   case response([String])
-  /// }
+  ///   enum Action: Equatable {
+  ///     case queryChanged(String)
+  ///     case response([String])
+  ///   }
   ///
-  /// struct SearchEnvironment {
-  ///   var mainQueue: AnySchedulerOf<DispatchQueue>
-  ///   var request: (String) async throws -> [String]
-  /// }
+  ///   @Dependency(\.apiClient) var apiClient
+  ///   @Dependency(\.mainQueue) var mainQueue
   ///
-  /// let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
-  ///   state, action, environment in
+  ///   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
   ///     switch action {
   ///     case let .queryChanged(query):
   ///       enum SearchID {}
   ///
   ///       state.query = query
   ///       return .run { send in
-  ///         guard let results = try? await environment.request(query) else { return }
+  ///         try await self.mainQueue.sleep(for: 0.5)
+  ///         guard let results = try? await self.apiClient.search(query) else { return }
   ///         send(.response(results))
   ///       }
-  ///       .debounce(id: SearchID.self, for: 0.5, scheduler: environment.mainQueue)
+  ///       .cancellable(id: SearchID.self, cancelInFlight: true)
   ///
   ///     case let .response(results):
   ///       state.results = results
   ///       return .none
   ///     }
+  ///   }
   /// }
   /// ```
   ///
   /// It can be fully tested by controlling the environment's scheduler and effect:
   ///
   /// ```swift
+  /// let store = TestStore(
+  ///   initialState: Search.State(),
+  ///   reducer: Search
+  /// )
+  ///
   /// // Create a test dispatch scheduler to control the timing of effects
   /// let mainQueue = DispatchQueue.test
+  /// store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
   ///
-  /// let store = TestStore(
-  ///   initialState: SearchState(),
-  ///   reducer: searchReducer,
-  ///   environment: SearchEnvironment(
-  ///     // Wrap the test scheduler in a type-erased scheduler
-  ///     mainQueue: mainQueue.eraseToAnyScheduler(),
-  ///     // Simulate a search response with one item
-  ///     request: { ["Composable Architecture"] }
-  ///   )
-  /// )
+  /// // Simulate a search response with one item
+  /// store.dependencies.mainQueue.apiClient.search = { _ in ["Composable Architecture"] }
   ///
   /// // Change the query
   /// await store.send(.searchFieldChanged("c") {
@@ -169,7 +168,6 @@
   /// This test is proving that the debounced network requests are correctly canceled when we do not
   /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
   /// not expect it would cause a test failure.
-  ///
   public final class TestStore<Reducer: ReducerProtocol, LocalState, LocalAction, Environment> {
     public var dependencies: DependencyValues {
       _read { yield self.reducer.dependencies }
@@ -251,7 +249,7 @@
     // NB: Can't seem to define this as a convenience initializer in 'ReducerCompatibility.swift'.
     public init(
       initialState: LocalState,
-      reducer: ComposableArchitecture.Reducer<LocalState, LocalAction, Environment>,
+      reducer: AnyReducer<LocalState, LocalAction, Environment>,
       environment: Environment,
       file: StaticString = #file,
       line: UInt = #line

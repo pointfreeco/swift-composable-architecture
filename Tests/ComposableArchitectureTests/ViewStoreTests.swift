@@ -15,7 +15,7 @@ final class ViewStoreTests: XCTestCase {
   func testPublisherFirehose() {
     let store = Store(
       initialState: 0,
-      reducer: Reducer<Int, Void, Void>.empty,
+      reducer: AnyReducer<Int, Void, Void>.empty,
       environment: ()
     )
 
@@ -38,7 +38,7 @@ final class ViewStoreTests: XCTestCase {
   func testEqualityChecks() {
     let store = Store(
       initialState: State(),
-      reducer: Reducer<State, Void, Void>.empty,
+      reducer: AnyReducer<State, Void, Void>.empty,
       environment: ()
     )
 
@@ -78,7 +78,7 @@ final class ViewStoreTests: XCTestCase {
   }
 
   func testAccessViewStoreStateInPublisherSink() {
-    let reducer = Reducer<Int, Void, Void> { count, _, _ in
+    let reducer = AnyReducer<Int, Void, Void> { count, _, _ in
       count += 1
       return .none
     }
@@ -100,7 +100,7 @@ final class ViewStoreTests: XCTestCase {
   }
 
   func testWillSet() {
-    let reducer = Reducer<Int, Void, Void> { count, _, _ in
+    let reducer = AnyReducer<Int, Void, Void> { count, _, _ in
       count += 1
       return .none
     }
@@ -122,7 +122,7 @@ final class ViewStoreTests: XCTestCase {
   }
 
   func testPublisherOwnsViewStore() {
-    let reducer = Reducer<Int, Void, Void> { count, _, _ in
+    let reducer = AnyReducer<Int, Void, Void> { count, _, _ in
       count += 1
       return .none
     }
@@ -139,7 +139,7 @@ final class ViewStoreTests: XCTestCase {
   }
 
   func testStorePublisherSubscriptionOrder() {
-    let reducer = Reducer<Int, Void, Void> { count, _, _ in
+    let reducer = AnyReducer<Int, Void, Void> { count, _, _ in
       count += 1
       return .none
     }
@@ -176,7 +176,7 @@ final class ViewStoreTests: XCTestCase {
         case response
         case tapped
       }
-      let reducer = Reducer<Bool, Action, Void> { state, action, environment in
+      let reducer = AnyReducer<Bool, Action, Void> { state, action, environment in
         switch action {
         case .response:
           state = false
@@ -207,7 +207,7 @@ final class ViewStoreTests: XCTestCase {
         case response
         case tapped
       }
-      let reducer = Reducer<Bool, Action, Void> { state, action, environment in
+      let reducer = AnyReducer<Bool, Action, Void> { state, action, environment in
         switch action {
         case .response:
           state = false
@@ -240,7 +240,7 @@ final class ViewStoreTests: XCTestCase {
     }
     let store = Store(
       initialState: 0,
-      reducer: Reducer<Int, Action, Void> { state, action, _ in
+      reducer: AnyReducer<Int, Action, Void> { state, action, _ in
         switch action {
         case .tap:
           return .task {
@@ -268,7 +268,7 @@ final class ViewStoreTests: XCTestCase {
     }
     let store = Store(
       initialState: 0,
-      reducer: Reducer<Int, Action, Void> { state, action, _ in
+      reducer: AnyReducer<Int, Action, Void> { state, action, _ in
         switch action {
         case .tap:
           return .task {

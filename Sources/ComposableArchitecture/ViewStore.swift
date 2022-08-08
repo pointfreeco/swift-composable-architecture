@@ -189,7 +189,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///   var fetch: () async throws -> String
   /// }
   ///
-  /// let reducer = Reducer<State, Action, Environment> { state, action, environment in
+  /// let reducer = AnyReducer<State, Action, Environment> { state, action, environment in
   ///   switch action {
   ///   case .pulledToRefresh:
   ///     state.isLoading = true

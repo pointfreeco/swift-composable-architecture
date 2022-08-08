@@ -15,7 +15,7 @@ final class BindingTests: XCTestCase {
       case binding(BindingAction<State>)
     }
 
-    let reducer = Reducer<State, Action, ()> { state, action, _ in
+    let reducer = Reduce<State, Action> { state, action in
       switch action {
       case .binding(\.$nested.field):
         state.nested.field += "!"
@@ -26,7 +26,7 @@ final class BindingTests: XCTestCase {
     }
     .binding()
 
-    let store = Store(initialState: .init(), reducer: reducer, environment: ())
+    let store = Store(initialState: State(), reducer: reducer)
 
     let viewStore = ViewStore(store)
 

@@ -1,6 +1,6 @@
 extension Reduce {
   public init<Environment>(
-    _ reducer: Reducer<State, Action, Environment>,
+    _ reducer: AnyReducer<State, Action, Environment>,
     environment: Environment
   ) {
     self.init { state, action in
@@ -9,7 +9,7 @@ extension Reduce {
   }
 }
 
-extension Reducer {
+extension AnyReducer {
   public init<R: ReducerProtocol>(_ reducer: R) where R.State == State, R.Action == Action {
     self.init { state, action, _ in reducer.reduce(into: &state, action: action) }
   }
@@ -24,7 +24,7 @@ extension Store {
   ///   - environment: The environment of dependencies for the application.
   public convenience init<Environment>(
     initialState: State,
-    reducer: Reducer<State, Action, Environment>,
+    reducer: AnyReducer<State, Action, Environment>,
     environment: Environment
   ) {
     self.init(

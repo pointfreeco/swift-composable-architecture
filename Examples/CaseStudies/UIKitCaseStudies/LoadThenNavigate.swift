@@ -28,7 +28,7 @@ let lazyNavigationReducer =
     environment: { _ in CounterEnvironment() }
   )
   .combined(
-    with: Reducer<
+    with: AnyReducer<
       LazyNavigationState, LazyNavigationAction, LazyNavigationEnvironment
     > { state, action, environment in
 

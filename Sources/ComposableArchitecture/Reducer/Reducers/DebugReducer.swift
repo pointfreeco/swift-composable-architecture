@@ -22,7 +22,7 @@
 extension ReducerProtocol {
   @inlinable
   public func debug<LocalState, LocalAction>(
-    prefix: String = "",
+    _ prefix: String = "",
     state toLocalState: @escaping (State) -> LocalState,
     action toLocalAction: @escaping (Action) -> LocalAction?,
     actionFormat: ActionFormat = .prettyPrint
@@ -121,6 +121,33 @@ where Upstream: ReducerProtocol {
       return self.upstream.reduce(into: &state, action: action)
     #endif
   }
+}
+
+/// Determines how the string description of an action should be printed when using the
+/// ``ReducerProtocol/debug(_:state:action:actionFormat:)-5s1pa`` higher-order reducer.
+public enum ActionFormat {
+  /// Prints the action in a single line by only specifying the labels of the associated values:
+  ///
+  /// ```swift
+  /// Action.screenA(.row(index:, action: .textChanged(query:)))
+  /// ```
+  ///
+  case labelsOnly
+  /// Prints the action in a multiline, pretty-printed format, including all the labels of
+  /// any associated values, as well as the data held in the associated values:
+  ///
+  /// ```swift
+  /// Action.screenA(
+  ///   ScreenA.row(
+  ///     index: 1,
+  ///     action: RowAction.textChanged(
+  ///       query: "Hi"
+  ///     )
+  ///   )
+  /// )
+  /// ```
+  ///
+  case prettyPrint
 }
 
 extension DependencyValues {

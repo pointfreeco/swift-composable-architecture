@@ -11,7 +11,7 @@ import SwiftUI
 /// For example, a settings screen may model its state with the following struct:
 ///
 /// ```swift
-/// struct SettingsState {
+/// struct State {
 ///   var digest = Digest.daily
 ///   var displayName = ""
 ///   var enableNotifications = false
@@ -27,7 +27,7 @@ import SwiftUI
 /// the store. Typically this comes in the form of an enum with a case per field:
 ///
 /// ```swift
-/// enum SettingsAction {
+/// enum Action {
 ///   case digestChanged(Digest)
 ///   case displayNameChanged(String)
 ///   case enableNotificationsChanged(Bool)
@@ -41,9 +41,7 @@ import SwiftUI
 /// replaces the state at each field with a new value:
 ///
 /// ```swift
-/// let settingsReducer = Reducer<
-///   SettingsState, SettingsAction, SettingsEnvironment
-/// > { state, action, environment in
+/// func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
 ///   switch action {
 ///   case let digestChanged(digest):
 ///     state.digest = digest
@@ -79,7 +77,7 @@ import SwiftUI
 /// wrapper:
 ///
 /// ```swift
-/// struct SettingsState {
+/// struct State {
 ///   @BindableState var digest = Digest.daily
 ///   @BindableState var displayName = ""
 ///   @BindableState var enableNotifications = false
@@ -99,8 +97,8 @@ import SwiftUI
 /// over the reducer's `SettingsState`:
 ///
 /// ```swift
-/// enum SettingsAction: BindableAction {
-///   case binding(BindingAction<SettingsState>)
+/// enum Action: BindableAction {
+///   case binding(BindingAction<State>)
 /// }
 /// ```
 ///
@@ -108,15 +106,12 @@ import SwiftUI
 /// these field mutations for us:
 ///
 /// ```swift
-/// let settingsReducer = Reducer<
-///   SettingsState, SettingsAction, SettingsEnvironment
-/// > {
-///   switch action {
-///   case .binding:
-///     return .none
+/// var body: some ReducerProtocol<State, Action> {
+///   Reduce { state, action in
+///     ...
 ///   }
+///   .binding()
 /// }
-/// .binding()
 /// ```
 ///
 /// Binding actions are constructed and sent to the store by calling
@@ -139,14 +134,13 @@ import SwiftUI
 ///
 /// Binding actions can also be tested in much the same way regular actions are tested. Rather
 /// than send a specific action describing how a binding changed, such as
-/// `.displayNameChanged("Blob")`, you will send a ``Reducer/binding(action:)`` action that
+/// `.displayNameChanged("Blob")`, you will send a ``ReducerProtocol/binding()`` action that
 /// describes which key path is being set to what value, such as `.set(\.$displayName, "Blob")`:
 ///
 /// ```swift
 /// let store = TestStore(
-///   initialState: SettingsState(),
-///   reducer: settingsReducer,
-///   environment: SettingsEnvironment(...)
+///   initialState: Settings.State(),
+///   reducer: Settings()
 /// )
 ///
 /// store.send(.set(\.$displayName, "Blob")) {
@@ -401,7 +395,7 @@ extension BindingAction {
   ///   ...
   /// }
   ///
-  /// let appReducer = Reducer<AppState, AppAction, AppEnvironment> {
+  /// let appReducer = AnyReducer<AppState, AppAction, AppEnvironment> {
   ///   ...
   /// }
   /// .binding()
@@ -515,7 +509,7 @@ extension BindingAction: CustomDumpReflectable {
   }
 }
 
-extension Reducer where Action: BindableAction, State == Action.State {
+extension AnyReducer where Action: BindableAction, State == Action.State {
   /// Returns a reducer that applies ``BindingAction`` mutations to `State` before running this
   /// reducer's logic.
   ///
@@ -533,7 +527,7 @@ extension Reducer where Action: BindableAction, State == Action.State {
   /// on the ``binding()`` method:
   ///
   /// ```swift
-  /// let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvironment> {
+  /// let settingsReducer = AnyReducer<SettingsState, SettingsAction, SettingsEnvironment> {
   ///   ...
   /// }
   /// .binding()

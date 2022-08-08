@@ -113,7 +113,7 @@ extension DependencyValues {
 /// of a ``TestStore``, in which a "failing" dependency will be provided.
 ///
 /// To test a reducer that depends on randomness, you can override its random number generator
-/// using ``Reducer/dependency(_:_:)``. Inject a dependency by calling ``init(_:)`` with a random
+/// using ``ReducerProtocol/dependency(_:_:)``. Inject a dependency by calling ``init(_:)`` with a random
 /// number generator that offers predictable randomness. For example, you could test the
 /// dice-rolling reducer by supplying a seeded random number generator as a dependency:
 ///

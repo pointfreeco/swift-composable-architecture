@@ -22,7 +22,7 @@ struct FocusEnvironment {
   var randomElement: () -> Int = { (1..<11).randomElement()! }
 }
 
-let focusReducer = Reducer<FocusState, FocusAction, FocusEnvironment> {
+let focusReducer = AnyReducer<FocusState, FocusAction, FocusEnvironment> {
   state, action, environment in
   switch action {
   case .randomButtonClicked:

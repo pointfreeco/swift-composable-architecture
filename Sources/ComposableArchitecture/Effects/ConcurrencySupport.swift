@@ -262,10 +262,12 @@ extension Task where Success == Never, Failure == Never {
 /// track some analytics:
 ///
 /// ```swift
-/// let reducer = Reducer<State, Action, Environment> { state, action, environment in
+/// @Dependency(\.analytics) var analytics
+///
+/// func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
 ///   switch action {
 ///   case .buttonTapped:
-///     return .fireAndForget { try await environment.analytics.track("Button Tapped") }
+///     return .fireAndForget { try await self.analytics.track("Button Tapped") }
 ///   }
 /// }
 /// ```
@@ -276,17 +278,13 @@ extension Task where Success == Never, Failure == Never {
 ///
 /// ```swift
 /// func testAnalytics() async {
+///   let store = TestStore(…)
+///
 ///   let events = ActorIsolated<[String]>([])
-///   let analytics = AnalyticsClient(
+///   store.dependencies.analytics = AnalyticsClient(
 ///     track: { event in
 ///       await events.withValue { $0.append(event) }
 ///     }
-///   )
-///
-///   let store = TestStore(
-///     initialState: State(),
-///     reducer: reducer,
-///     environment: Environment(analytics: analytics)
 ///   )
 ///
 ///   await store.send(.buttonTapped)
