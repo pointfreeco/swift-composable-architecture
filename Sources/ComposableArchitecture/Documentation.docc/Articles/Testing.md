@@ -310,7 +310,7 @@ return .run { send in
 }
 ```
 
-This means for our test to run we must actually way for 5 real world seconds to pass so that we
+This means for our test to run we must actually wait for 5 real world seconds to pass so that we
 can receive all of the actions from the timer. This makes our test suite far too slow. What if in 
 the future we need to test a feature that has a timer that emits hundreds or thousands of times?
 We cannot hold up our test suite for minutes or hours just to test that one feature.
