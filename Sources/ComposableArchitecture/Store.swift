@@ -350,21 +350,25 @@ public final class Store<State, Action> {
         guard !isSending else { return }
 
         let callbackInfo = Instrumentation.CallbackInfo<Store<LocalState, LocalAction>.Type, Any>(storeKind: Store<LocalState, LocalAction>.self, action: nil, file: file, line: line).eraseToAny()
-        instrumentation.callback?(callbackInfo, .pre, .storeToLocal)
+        instrumentation.callback?(callbackInfo, .pre, .scopedStoreToLocal)
         let newLocalState = toLocalState(newValue)
-        instrumentation.callback?(callbackInfo, .post, .storeToLocal)
+        instrumentation.callback?(callbackInfo, .post, .scopedStoreToLocal)
 
         guard let previousState = localStore?.state.value, let isDuplicate = isDuplicate else {
+            instrumentation.callback?(callbackInfo, .pre, .scopedStoreChangeState)
             localStore?.state.value = newLocalState
+            instrumentation.callback?(callbackInfo, .post, .scopedStoreChangeState)
             return
         }
 
-        instrumentation.callback?(callbackInfo, .pre, .storeDeduplicate)
+        instrumentation.callback?(callbackInfo, .pre, .scopedStoreDeduplicate)
         let newStateIsDuplicate = isDuplicate(newLocalState, previousState)
-        instrumentation.callback?(callbackInfo, .post, .storeDeduplicate)
+        instrumentation.callback?(callbackInfo, .post, .scopedStoreDeduplicate)
 
         if !newStateIsDuplicate {
+            instrumentation.callback?(callbackInfo, .pre, .scopedStoreChangeState)
             localStore?.state.value = newLocalState
+            instrumentation.callback?(callbackInfo, .post, .scopedStoreChangeState)
         }
       }
     return localStore

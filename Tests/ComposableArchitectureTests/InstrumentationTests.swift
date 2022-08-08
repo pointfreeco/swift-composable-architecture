@@ -20,7 +20,7 @@ final class InstrumentationTests: XCTestCase {
         changeStateCalls += 1
       case (_, .storeProcessEvent):
         processCalls += 1
-      case (_, .storeToLocal), (_, .storeDeduplicate):
+      case (_, .scopedStoreToLocal), (_, .scopedStoreDeduplicate), (_, .scopedStoreChangeState):
         XCTFail("Scope based callbacks should not be called")
       }
     })
@@ -56,7 +56,7 @@ final class InstrumentationTests: XCTestCase {
         dedupCalls_vs += 1
       case (_, .viewStoreChangeState):
         changeCalls_vs += 1
-      case (_, .storeToLocal), (_, .storeDeduplicate):
+      case (_, .scopedStoreToLocal), (_, .scopedStoreDeduplicate), (_, .scopedStoreChangeState):
         XCTFail("Scope based callbacks should not be called")
       }
     })
@@ -94,7 +94,7 @@ final class InstrumentationTests: XCTestCase {
         XCTFail("View store deduplicate callback should not be called")
       case (_, .viewStoreChangeState):
         XCTFail("View store state change callback should not be called")
-      case (_, .storeToLocal), (_, .storeDeduplicate):
+      case (_, .scopedStoreToLocal), (_, .scopedStoreDeduplicate), (_, .scopedStoreChangeState):
         XCTFail("Scope based callbacks should not be called")
       }
     })
@@ -132,7 +132,7 @@ final class InstrumentationTests: XCTestCase {
         dedupCalls_vs += 1
       case (_, .viewStoreChangeState):
         changeCalls_vs += 1
-      case (_, .storeToLocal), (_, .storeDeduplicate):
+      case (_, .scopedStoreToLocal), (_, .scopedStoreDeduplicate), (_, .scopedStoreChangeState):
         XCTFail("Scope based callbacks should not be called")
       }
     })
@@ -179,7 +179,7 @@ final class InstrumentationTests: XCTestCase {
         dedupCalls_vs += 1
       case (_, .viewStoreChangeState):
         changeCalls_vs += 1
-      case (_, .storeToLocal), (_, .storeDeduplicate):
+      case (_, .scopedStoreToLocal), (_, .scopedStoreDeduplicate), (_, .scopedStoreChangeState):
         XCTFail("Scope based callbacks should not be called")
       }
     })
@@ -221,8 +221,9 @@ final class InstrumentationTests: XCTestCase {
     var sendCalls_s = 0
     var changeStateCalls_s = 0
     var processCalls_s = 0
-    var dedupeCalls_s = 0
-    var toLocalCalls_s = 0
+    var scopedDedupeCalls_s = 0
+    var scopedToLocalCalls_s = 0
+    var scopedChangeStateCalls_s: Int = 0
 
     let inst = ComposableArchitecture.Instrumentation(callback: { info, timing, kind in
       switch (timing, kind) {
@@ -238,10 +239,12 @@ final class InstrumentationTests: XCTestCase {
         dedupCalls_vs += 1
       case (_, .viewStoreChangeState):
         changeCalls_vs += 1
-      case (_, .storeToLocal):
-        toLocalCalls_s += 1
-      case (_, .storeDeduplicate):
-        dedupeCalls_s += 1
+      case (_, .scopedStoreToLocal):
+        scopedToLocalCalls_s += 1
+      case (_, .scopedStoreDeduplicate):
+        scopedDedupeCalls_s += 1
+      case (_, .scopedStoreChangeState):
+        scopedChangeStateCalls_s += 1
       }
     })
 
@@ -268,9 +271,10 @@ final class InstrumentationTests: XCTestCase {
     XCTAssertEqual(2, sendCalls_s)
     XCTAssertEqual(2, changeStateCalls_s)
     XCTAssertEqual(2, processCalls_s)
-    XCTAssertEqual(2, toLocalCalls_s)
+    XCTAssertEqual(2, scopedToLocalCalls_s)
     // There was no deduplication function defined
-    XCTAssertEqual(0, dedupeCalls_s)
+    XCTAssertEqual(0, scopedDedupeCalls_s)
+    XCTAssertEqual(2, scopedChangeStateCalls_s)
   }
 
   func testScopedStore_WithDedup() {
@@ -280,8 +284,9 @@ final class InstrumentationTests: XCTestCase {
     var sendCalls_s = 0
     var changeStateCalls_s = 0
     var processCalls_s = 0
-    var dedupeCalls_s = 0
-    var toLocalCalls_s = 0
+    var scopedDedupeCalls_s = 0
+    var scopedToLocalCalls_s = 0
+    var scopedChangeStateCalls_s: Int = 0
 
     let inst = ComposableArchitecture.Instrumentation(callback: { info, timing, kind in
       switch (timing, kind) {
@@ -297,10 +302,12 @@ final class InstrumentationTests: XCTestCase {
         dedupCalls_vs += 1
       case (_, .viewStoreChangeState):
         changeCalls_vs += 1
-      case (_, .storeToLocal):
-        toLocalCalls_s += 1
-      case (_, .storeDeduplicate):
-        dedupeCalls_s += 1
+      case (_, .scopedStoreToLocal):
+        scopedToLocalCalls_s += 1
+      case (_, .scopedStoreDeduplicate):
+        scopedDedupeCalls_s += 1
+      case (_, .scopedStoreChangeState):
+        scopedChangeStateCalls_s += 1
       }
     })
 
@@ -333,8 +340,9 @@ final class InstrumentationTests: XCTestCase {
     XCTAssertEqual(2, changeStateCalls_s)
     XCTAssertEqual(2, processCalls_s)
     // Initial value then update
-    XCTAssertEqual(2, toLocalCalls_s)
-    XCTAssertEqual(2, dedupeCalls_s)
+    XCTAssertEqual(2, scopedToLocalCalls_s)
+    XCTAssertEqual(2, scopedDedupeCalls_s)
+    XCTAssertEqual(2, scopedChangeStateCalls_s)
   }
 
   func test_tracks_viewStore_creation() {
