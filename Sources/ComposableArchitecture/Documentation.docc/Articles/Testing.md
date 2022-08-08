@@ -15,7 +15,7 @@ We never want to introduce new capabilities to the library that make testing mor
 
 State changes are by far the simplest thing to test in features built with the library. A 
 ``Reducer``'s first responsibility is to mutate the current state based on the action received into 
-the system. To test this we can technically run a piece of mutate state through the reducer and then 
+the system. To test this we can technically run a piece of mutable state through the reducer and then 
 assert on how it changed after, like this:
 
 ```swift
