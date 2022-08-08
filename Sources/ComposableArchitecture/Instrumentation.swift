@@ -25,8 +25,8 @@ import Foundation
 ///       The Store updates its state
 ///       For each child Store scoped off the Store using a scoped local state
 ///         The Store computes the scoped local state
-///         .pre, .scopedscopedStoreToLocal
-///         .post, .scopedscopedStoreToLocal
+///         .pre, .scopedStoreToLocal
+///         .post, .scopedStoreToLocal
 ///         The Store determines if the scoped local state is has changed
 ///         .pre, .scopedStoreDeduplicate
 ///         .post, .scopedtoreDeduplicate
