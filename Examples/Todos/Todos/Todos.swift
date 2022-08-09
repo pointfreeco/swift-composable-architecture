@@ -1,12 +1,6 @@
 import ComposableArchitecture
 import SwiftUI
 
-enum Filter: LocalizedStringKey, CaseIterable, Hashable {
-  case all = "All"
-  case active = "Active"
-  case completed = "Completed"
-}
-
 struct Todos: ReducerProtocol {
   struct State: Equatable {
     var editMode: EditMode = .inactive
@@ -31,6 +25,12 @@ struct Todos: ReducerProtocol {
     case move(IndexSet, Int)
     case sortCompletedTodos
     case todo(id: Todo.State.ID, action: Todo.Action)
+  }
+
+  enum Filter: LocalizedStringKey, CaseIterable, Hashable {
+    case all = "All"
+    case active = "Active"
+    case completed = "Completed"
   }
 
   @Dependency(\.mainQueue) var mainQueue
@@ -108,7 +108,7 @@ struct AppView: View {
 
   struct ViewState: Equatable {
     let editMode: EditMode
-    let filter: Filter
+    let filter: Todos.Filter
     let isClearCompletedButtonDisabled: Bool
 
     init(state: Todos.State) {
@@ -129,7 +129,7 @@ struct AppView: View {
           )
           .animation()
         ) {
-          ForEach(Filter.allCases, id: \.self) { filter in
+          ForEach(Todos.Filter.allCases, id: \.self) { filter in
             Text(filter.rawValue).tag(filter)
           }
         }
