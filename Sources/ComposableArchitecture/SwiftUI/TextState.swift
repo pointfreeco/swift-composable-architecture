@@ -1,5 +1,5 @@
 import CustomDump
-@preconcurrency import SwiftUI
+import SwiftUI
 
 /// An equatable description of SwiftUI `Text`. Useful for storing rich text in state for the
 /// purpose of rendering in a view hierarchy.
@@ -53,11 +53,11 @@ import CustomDump
 /// - Note: ``TextState`` does not support _all_ `LocalizedStringKey` permutations at this time
 ///   (interpolated `SwiftUI.Image`s, for example). ``TextState`` also uses reflection to determine
 ///   `LocalizedStringKey` equatability, so be mindful of edge cases.
-public struct TextState: Equatable, Hashable, Sendable {
+public struct TextState: Equatable, Hashable {
   fileprivate var modifiers: [Modifier] = []
   fileprivate let storage: Storage
 
-  fileprivate enum Modifier: Equatable, Hashable, Sendable {
+  fileprivate enum Modifier: Equatable, Hashable {
     case accessibilityHeading(AccessibilityHeadingLevel)
     case accessibilityLabel(TextState)
     case accessibilityTextContentType(AccessibilityTextContentType)
@@ -214,7 +214,7 @@ extension TextState {
 // MARK: Accessibility
 
 extension TextState {
-  public enum AccessibilityTextContentType: String, Equatable, Hashable, Sendable {
+  public enum AccessibilityTextContentType: String, Equatable, Hashable {
     case console, fileSystem, messaging, narrative, plain, sourceCode, spreadsheet, wordProcessing
 
     #if compiler(>=5.5.1)
@@ -234,7 +234,7 @@ extension TextState {
     #endif
   }
 
-  public enum AccessibilityHeadingLevel: String, Equatable, Hashable, Sendable {
+  public enum AccessibilityHeadingLevel: String, Equatable, Hashable {
     case h1, h2, h3, h4, h5, h6, unspecified
 
     #if compiler(>=5.5.1)

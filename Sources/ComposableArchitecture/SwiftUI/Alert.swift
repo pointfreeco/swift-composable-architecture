@@ -1,5 +1,5 @@
 import CustomDump
-@preconcurrency import SwiftUI
+import SwiftUI
 
 /// A data type that describes the state of an alert that can be shown to the user. The `Action`
 /// generic is the type of actions that can be sent from tapping on a button in the alert.
@@ -325,7 +325,6 @@ extension AlertState: Hashable where Action: Hashable {
 }
 
 extension AlertState: Identifiable {}
-extension AlertState: Sendable where Action: Sendable {}
 
 extension AlertState.ButtonAction: Equatable where Action: Equatable {}
 extension AlertState.ButtonAction.ActionType: Equatable where Action: Equatable {}
@@ -349,11 +348,6 @@ extension AlertState.Button: Hashable where Action: Hashable {
     hasher.combine(self.role)
   }
 }
-
-extension AlertState.ButtonAction: Sendable where Action: Sendable {}
-extension AlertState.ButtonAction.ActionType: Sendable where Action: Sendable {}
-extension AlertState.ButtonRole: Sendable {}
-extension AlertState.Button: Sendable where Action: Sendable {}
 
 extension AlertState.Button {
   func toSwiftUIAction(send: @escaping (Action) -> Void) -> () -> Void {
