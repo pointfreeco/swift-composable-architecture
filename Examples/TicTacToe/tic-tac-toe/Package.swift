@@ -180,3 +180,12 @@ let package = Package(
     ),
   ]
 )
+
+for target in package.targets {
+  target.swiftSettings = [
+    .unsafeFlags([
+      "-Xfrontend", "-enable-actor-data-race-checks",
+      "-Xfrontend", "-warn-concurrency",
+    ])
+  ]
+}

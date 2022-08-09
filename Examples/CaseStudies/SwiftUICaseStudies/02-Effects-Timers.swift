@@ -1,13 +1,13 @@
 import Combine
 import ComposableArchitecture
-import SwiftUI
+@preconcurrency import SwiftUI  // NB: SwiftUI.Animation is not Sendable yet.
 
 private let readMe = """
   This application demonstrates how to work with timers in the Composable Architecture.
 
-  Although the Combine framework comes with a `Timer.publisher` API, and it is possible to use \
-  that API in the Composable Architecture, it is not easy to test. That is why we have provided an \
-  `Effect.timer` API that works with schedulers and can be tested.
+  It makes use of the `.timer` method on Combine Schedulers, which is a helper provided by the \
+  Combine Schedulers library included with this library. The helper provides an \
+  `AsyncSequence`-friendly API for dealing with timers in asynchronous code.
   """
 
 // MARK: - Timer feature domain
@@ -29,7 +29,7 @@ struct TimersEnvironment {
 let timersReducer = Reducer<TimersState, TimersAction, TimersEnvironment> {
   state, action, environment in
 
-  enum TimerId {}
+  enum TimerID {}
 
   switch action {
   case .timerTicked:
@@ -38,15 +38,13 @@ let timersReducer = Reducer<TimersState, TimersAction, TimersEnvironment> {
 
   case .toggleTimerButtonTapped:
     state.isTimerActive.toggle()
-    return state.isTimerActive
-      ? Effect.timer(
-        id: TimerId.self,
-        every: 1,
-        tolerance: .zero,
-        on: environment.mainQueue.animation(.interpolatingSpring(stiffness: 3000, damping: 40))
-      )
-      .map { _ in TimersAction.timerTicked }
-      : .cancel(id: TimerId.self)
+    return .run { [isTimerActive = state.isTimerActive] send in
+      guard isTimerActive else { return }
+      for await _ in environment.mainQueue.timer(interval: 1) {
+        await send(.timerTicked, animation: .interpolatingSpring(stiffness: 3000, damping: 40))
+      }
+    }
+    .cancellable(id: TimerID.self, cancelInFlight: true)
   }
 }
 
@@ -57,8 +55,8 @@ struct TimersView: View {
 
   var body: some View {
     WithViewStore(store) { viewStore in
-      VStack {
-        Text(template: readMe, .body)
+      Form {
+        AboutView(readMe: readMe)
 
         ZStack {
           Circle()
@@ -84,33 +82,31 @@ struct TimersView: View {
               )
             )
             .rotationEffect(.degrees(-90))
-
           GeometryReader { proxy in
             Path { path in
               path.move(to: CGPoint(x: proxy.size.width / 2, y: proxy.size.height / 2))
               path.addLine(to: CGPoint(x: proxy.size.width / 2, y: 0))
             }
-            .stroke(Color.black, lineWidth: 3)
+            .stroke(.primary, lineWidth: 3)
             .rotationEffect(.degrees(Double(viewStore.secondsElapsed) * 360 / 60))
           }
         }
-        .frame(width: 280, height: 280)
-        .padding(.bottom, 16)
+        .aspectRatio(1, contentMode: .fit)
+        .frame(maxWidth: 280)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
 
-        Button(action: { viewStore.send(.toggleTimerButtonTapped) }) {
-          HStack {
-            Text(viewStore.isTimerActive ? "Stop" : "Start")
-          }
-          .foregroundColor(.white)
-          .padding()
-          .background(viewStore.isTimerActive ? Color.red : .blue)
-          .cornerRadius(16)
+        Button {
+          viewStore.send(.toggleTimerButtonTapped)
+        } label: {
+          Text(viewStore.isTimerActive ? "Stop" : "Start")
+            .padding(8)
         }
-
-        Spacer()
+        .frame(maxWidth: .infinity)
+        .tint(viewStore.isTimerActive ? Color.red : .accentColor)
+        .buttonStyle(.borderedProminent)
       }
-      .padding()
-      .navigationBarTitle("Timers")
+      .navigationTitle("Timers")
     }
   }
 }

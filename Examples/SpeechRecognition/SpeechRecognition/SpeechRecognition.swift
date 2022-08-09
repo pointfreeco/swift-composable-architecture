@@ -1,84 +1,84 @@
 import Combine
 import ComposableArchitecture
 import Speech
-import SwiftUI
+@preconcurrency import SwiftUI
 
 private let readMe = """
   This application demonstrates how to work with a complex dependency in the Composable \
-  Architecture. It uses the SFSpeechRecognizer API from the Speech framework to listen to audio on \
-  the device and live-transcribe it to the UI.
+  Architecture. It uses the `SFSpeechRecognizer` API from the Speech framework to listen to audio \
+  on the device and live-transcribe it to the UI.
   """
 
 struct AppState: Equatable {
   var alert: AlertState<AppAction>?
   var isRecording = false
-  var speechRecognizerAuthorizationStatus = SFSpeechRecognizerAuthorizationStatus.notDetermined
   var transcribedText = ""
 }
 
 enum AppAction: Equatable {
-  case dismissAuthorizationStateAlert
+  case authorizationStateAlertDismissed
   case recordButtonTapped
-  case speech(Result<SpeechClient.Action, SpeechClient.Error>)
+  case speech(TaskResult<String>)
   case speechRecognizerAuthorizationStatusResponse(SFSpeechRecognizerAuthorizationStatus)
 }
 
 struct AppEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
   var speechClient: SpeechClient
 }
 
 let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
   switch action {
-  case .dismissAuthorizationStateAlert:
+  case .authorizationStateAlertDismissed:
     state.alert = nil
-    return .none
-
-  case .speech(.failure(.couldntConfigureAudioSession)),
-    .speech(.failure(.couldntStartAudioEngine)):
-    state.alert = AlertState(title: TextState("Problem with audio device. Please try again."))
     return .none
 
   case .recordButtonTapped:
     state.isRecording.toggle()
-    if state.isRecording {
-      return environment.speechClient.requestAuthorization()
-        .receive(on: environment.mainQueue)
-        .eraseToEffect(AppAction.speechRecognizerAuthorizationStatusResponse)
-    } else {
-      return environment.speechClient.finishTask()
-        .fireAndForget()
+
+    guard state.isRecording
+    else {
+      return .fireAndForget {
+        await environment.speechClient.finishTask()
+      }
     }
 
-  case let .speech(.success(.availabilityDidChange(isAvailable))):
+    return .run { send in
+      let status = await environment.speechClient.requestAuthorization()
+      await send(.speechRecognizerAuthorizationStatusResponse(status))
+
+      guard status == .authorized
+      else { return }
+
+      let request = SFSpeechAudioBufferRecognitionRequest()
+      for try await result in await environment.speechClient.startTask(request) {
+        await send(.speech(.success(result.bestTranscription.formattedString)), animation: .linear)
+      }
+    } catch: { error, send in
+      await send(.speech(.failure(error)))
+    }
+
+  case .speech(.failure(SpeechClient.Failure.couldntConfigureAudioSession)),
+    .speech(.failure(SpeechClient.Failure.couldntStartAudioEngine)):
+    state.alert = AlertState(title: TextState("Problem with audio device. Please try again."))
     return .none
 
-  case let .speech(.success(.taskResult(result))):
-    state.transcribedText = result.bestTranscription.formattedString
-    if result.isFinal {
-      return environment.speechClient.finishTask()
-        .fireAndForget()
-    } else {
-      return .none
-    }
-
-  case let .speech(.failure(error)):
+  case .speech(.failure):
     state.alert = AlertState(
       title: TextState("An error occurred while transcribing. Please try again.")
     )
-    return environment.speechClient.finishTask()
-      .fireAndForget()
+    return .none
+
+  case let .speech(.success(transcribedText)):
+    state.transcribedText = transcribedText
+    return .none
 
   case let .speechRecognizerAuthorizationStatusResponse(status):
-    state.isRecording = status == .authorized
-    state.speechRecognizerAuthorizationStatus = status
-
     switch status {
-    case .notDetermined:
-      state.alert = AlertState(title: TextState("Try again."))
+    case .authorized:
       return .none
 
     case .denied:
+      state.isRecording = false
       state.alert = AlertState(
         title: TextState(
           """
@@ -88,29 +88,22 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
       )
       return .none
 
+    case .notDetermined:
+      state.isRecording = false
+      return .none
+
     case .restricted:
+      state.isRecording = false
       state.alert = AlertState(title: TextState("Your device does not allow speech recognition."))
       return .none
 
-    case .authorized:
-      let request = SFSpeechAudioBufferRecognitionRequest()
-      request.shouldReportPartialResults = true
-      request.requiresOnDeviceRecognition = false
-      return environment.speechClient.recognitionTask(request)
-        .catchToEffect(AppAction.speech)
-
     @unknown default:
+      state.isRecording = false
       return .none
     }
   }
 }
-.debug(actionFormat: .labelsOnly)
-
-struct AuthorizationStateAlert: Equatable, Identifiable {
-  var title: String
-
-  var id: String { self.title }
-}
+.debug()
 
 struct SpeechRecognitionView: View {
   let store: Store<AppState, AppAction>
@@ -146,7 +139,7 @@ struct SpeechRecognitionView: View {
         }
       }
       .padding()
-      .alert(self.store.scope(state: \.alert), dismiss: .dismissAuthorizationStateAlert)
+      .alert(self.store.scope(state: \.alert), dismiss: .authorizationStateAlertDismissed)
     }
   }
 }
@@ -158,10 +151,58 @@ struct SpeechRecognitionView_Previews: PreviewProvider {
         initialState: AppState(transcribedText: "Test test 123"),
         reducer: appReducer,
         environment: AppEnvironment(
-          mainQueue: .main,
-          speechClient: .live
+          speechClient: .lorem
         )
       )
+    )
+  }
+}
+
+extension SpeechClient {
+  static var lorem: Self {
+    let isRecording = ActorIsolated(false)
+
+    return Self(
+      finishTask: { await isRecording.setValue(false) },
+      requestAuthorization: { .authorized },
+      startTask: { _ in
+        .init { c in
+          Task {
+            await isRecording.setValue(true)
+            var finalText = """
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor \
+              incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud \
+              exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute \
+              irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla \
+              pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui \
+              officia deserunt mollit anim id est laborum.
+              """
+            var text = ""
+            while await isRecording.value {
+              let word = finalText.prefix { $0 != " " }
+              try await Task.sleep(
+                nanoseconds: UInt64(word.count) * NSEC_PER_MSEC * 50
+                  + .random(in: 0...(NSEC_PER_MSEC * 200))
+              )
+              finalText.removeFirst(word.count)
+              if finalText.first == " " {
+                finalText.removeFirst()
+              }
+              text += word + " "
+              c.yield(
+                .init(
+                  bestTranscription: .init(
+                    formattedString: text,
+                    segments: []
+                  ),
+                  isFinal: false,
+                  transcriptions: []
+                )
+              )
+            }
+          }
+        }
+      }
     )
   }
 }

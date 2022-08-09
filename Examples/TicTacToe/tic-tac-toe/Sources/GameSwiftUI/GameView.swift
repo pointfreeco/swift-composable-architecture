@@ -5,7 +5,7 @@ import SwiftUI
 public struct GameView: View {
   let store: Store<GameState, GameAction>
 
-  struct ViewState: Equatable {
+  struct ViewState: Equatable, Sendable {
     var board: [[String]]
     var isGameDisabled: Bool
     var isPlayAgainButtonVisible: Bool
@@ -53,7 +53,7 @@ public struct GameView: View {
           }
           .disabled(viewStore.isGameDisabled)
         }
-        .navigationBarTitle("Tic-tac-toe")
+        .navigationTitle("Tic-tac-toe")
         .navigationBarItems(leading: Button("Quit") { viewStore.send(.quitButtonTapped) })
         .navigationBarBackButtonHidden(true)
       }

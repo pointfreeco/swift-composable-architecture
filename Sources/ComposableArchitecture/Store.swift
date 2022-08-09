@@ -118,20 +118,10 @@ import Foundation
 /// #### Thread safety checks
 ///
 /// The store performs some basic thread safety checks in order to help catch mistakes. Stores
-/// constructed via the initializer ``Store/init(initialState:reducer:environment:)`` are assumed
-/// to run only on the main thread, and so a check is executed immediately to make sure that is the
-/// case. Further, all actions sent to the store and all scopes (see ``Store/scope(state:action:)``)
-/// of the store are also checked to make sure that work is performed on the main thread.
-///
-/// If you need a store that runs on a non-main thread, which should be very rare and you should
-/// have a very good reason to do so, then you can construct a store via the
-/// ``Store/unchecked(initialState:reducer:environment:)`` static method to opt out of all main
-/// thread checks.
-///
-/// ---
-///
-/// See also: ``ViewStore`` to understand how one observes changes to the state in a ``Store`` and
-/// sends user actions.
+/// constructed via the initializer ``init(initialState:reducer:environment:)`` are assumed to run
+/// only on the main thread, and so a check is executed immediately to make sure that is the case.
+/// Further, all actions sent to the store and all scopes (see ``scope(state:action:)``) of the
+/// store are also checked to make sure that work is performed on the main thread.
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
   var effectCancellables: [UUID: AnyCancellable] = [:]
@@ -161,26 +151,6 @@ public final class Store<State, Action> {
       mainThreadChecksEnabled: true
     )
     self.threadCheck(status: .`init`)
-  }
-
-  /// Initializes a store from an initial state, a reducer, and an environment, and the main thread
-  /// check is disabled for all interactions with this store.
-  ///
-  /// - Parameters:
-  ///   - initialState: The state to start the application in.
-  ///   - reducer: The reducer that powers the business logic of the application.
-  ///   - environment: The environment of dependencies for the application.
-  public static func unchecked<Environment>(
-    initialState: State,
-    reducer: Reducer<State, Action, Environment>,
-    environment: Environment
-  ) -> Self {
-    Self(
-      initialState: initialState,
-      reducer: reducer,
-      environment: environment,
-      mainThreadChecksEnabled: false
-    )
   }
 
   /// Scopes the store to one that exposes local state and actions.
@@ -338,9 +308,13 @@ public final class Store<State, Action> {
       reducer: .init { localState, localAction, _ in
         isSending = true
         defer { isSending = false }
-        self.send(fromLocalAction(localAction), file: file, line: line)
+        let task = self.send(fromLocalAction(localAction), file: file, line: line)
         localState = toLocalState(self.state.value)
-        return .none
+        if let task = task {
+          return .fireAndForget { await task.cancellableValue }
+        } else {
+          return .none
+        }
       },
       environment: ()
     )
@@ -389,11 +363,17 @@ public final class Store<State, Action> {
       self.scope(state: toLocalState, action: { $0 }, file: file, line: line, instrumentation: instrumentation)
   }
 
-  func send(_ action: Action, originatingFrom originatingAction: Action? = nil, file: StaticString = #file, line: UInt = #line, instrumentation: Instrumentation = .shared) {
+  func send(
+    _ action: Action,
+    originatingFrom originatingAction: Action? = nil,
+    file: StaticString = #file,
+    line: UInt = #line,
+    instrumentation: Instrumentation = .shared
+  ) -> Task<Void, Never>? {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
     self.bufferedActions.append(action)
-    guard !self.isSending else { return }
+    guard !self.isSending else { return nil }
 
     self.isSending = true
     var currentState = self.state.value
@@ -401,6 +381,8 @@ public final class Store<State, Action> {
     let callbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: action, originatingAction: originatingAction, file: file, line: line).eraseToAny()
     instrumentation.callback?(callbackInfo, .pre, .storeSend)
     defer { instrumentation.callback?(callbackInfo, .post, .storeSend) }
+
+    let tasks = Box<[Task<Void, Never>]>(wrappedValue: [])
 
     defer {
       instrumentation.callback?(callbackInfo, .pre, .storeChangeState)
@@ -412,9 +394,12 @@ public final class Store<State, Action> {
       // as part of state publisher updates,
       // process them now
       if !self.bufferedActions.isEmpty {
-        send(self.bufferedActions.removeLast(), file: file, line: line)
+        if let task = send(self.bufferedActions.removeLast(), file: file, line: line) {
+          tasks.wrappedValue.append(task)
+        }
       }
     }
+
 
     while !self.bufferedActions.isEmpty {
       let action = self.bufferedActions.removeFirst()
@@ -426,20 +411,55 @@ public final class Store<State, Action> {
       let effect = self.reducer(&currentState, action)
 
       var didComplete = false
+      let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
       let uuid = UUID()
-      let effectCancellable = effect.sink(
-        receiveCompletion: { [weak self] _ in
-          self?.threadCheck(status: .effectCompletion(action))
-          didComplete = true
-          self?.effectCancellables[uuid] = nil
-        },
-        receiveValue: { [weak self] effectAction in
-          self?.send(effectAction, originatingFrom: action, file: file, line: line, instrumentation: instrumentation)
-        }
-      )
+      let effectCancellable =
+        effect
+        .handleEvents(
+          receiveCancel: { [weak self] in
+            self?.threadCheck(status: .effectCompletion(action))
+            self?.effectCancellables[uuid] = nil
+          }
+        )
+        .sink(
+          receiveCompletion: { [weak self] _ in
+            self?.threadCheck(status: .effectCompletion(action))
+            boxedTask.wrappedValue?.cancel()
+            didComplete = true
+            self?.effectCancellables[uuid] = nil
+          },
+          receiveValue: { [weak self] effectAction in
+            guard let self = self else { return }
+            if let task = self.send(effectAction, originatingFrom: action, file: file, line: line, instrumentation: instrumentation) {
+              tasks.wrappedValue.append(task)
+            }
+          }
+        )
 
       if !didComplete {
+        let task = Task<Void, Never> { @MainActor in
+          for await _ in AsyncStream<Void>.never {}
+          effectCancellable.cancel()
+        }
+        boxedTask.wrappedValue = task
+        tasks.wrappedValue.append(task)
         self.effectCancellables[uuid] = effectCancellable
+      }
+    }
+
+    return Task {
+      await withTaskCancellationHandler {
+        var index = tasks.wrappedValue.startIndex
+        while index < tasks.wrappedValue.endIndex {
+          defer { index += 1 }
+          tasks.wrappedValue[index].cancel()
+        }
+      } operation: {
+        var index = tasks.wrappedValue.startIndex
+        while index < tasks.wrappedValue.endIndex {
+          defer { index += 1 }
+          await tasks.wrappedValue[index].value
+        }
       }
     }
   }
@@ -478,11 +498,10 @@ public final class Store<State, Action> {
               %@
 
           Make sure to use ".receive(on:)" on any effects that execute on background threads to \
-          receive their output on the main thread, or create your store via "Store.unchecked" to \
-          opt out of the main thread checker.
+          receive their output on the main thread.
 
           The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the same \
+          "Store" (including all of its scopes and derived view stores) must be done on the main \
           thread.
           """,
           [debugCaseOutput(action)]
@@ -493,11 +512,8 @@ public final class Store<State, Action> {
           """
           A store initialized on a non-main thread. …
 
-          If a store is intended to be used on a background thread, create it via \
-          "Store.unchecked" to opt out of the main thread checker.
-
           The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the same \
+          "Store" (including all of its scopes and derived view stores) must be done on the main \
           thread.
           """
         )
@@ -507,11 +523,8 @@ public final class Store<State, Action> {
           """
           "Store.scope" was called on a non-main thread. …
 
-          Make sure to use "Store.scope" on the main thread, or create your store via \
-          "Store.unchecked" to opt out of the main thread checker.
-
           The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the same \
+          "Store" (including all of its scopes and derived view stores) must be done on the main \
           thread.
           """
         )
@@ -521,11 +534,8 @@ public final class Store<State, Action> {
           """
           "ViewStore.send" was called on a non-main thread with: %@ …
 
-          Make sure that "ViewStore.send" is always called on the main thread, or create your \
-          store via "Store.unchecked" to opt out of the main thread checker.
-
           The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the same \
+          "Store" (including all of its scopes and derived view stores) must be done on the main \
           thread.
           """,
           [debugCaseOutput(action)]
@@ -543,11 +553,10 @@ public final class Store<State, Action> {
               %@
 
           Make sure to use ".receive(on:)" on any effects that execute on background threads to \
-          receive their output on the main thread, or create this store via "Store.unchecked" to \
-          disable the main thread checker.
+          receive their output on the main thread.
 
           The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the same \
+          "Store" (including all of its scopes and derived view stores) must be done on the main \
           thread.
           """,
           [
@@ -559,7 +568,7 @@ public final class Store<State, Action> {
     #endif
   }
 
-  private init<Environment>(
+  init<Environment>(
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
     environment: Environment,

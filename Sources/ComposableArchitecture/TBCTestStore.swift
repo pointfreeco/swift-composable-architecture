@@ -65,9 +65,8 @@ public final class TBCTestStore<State, LocalState, Action: Equatable, LocalActio
     /// - note: This isn't allowed with Exhaustive mode and will cause an assertion
     public var state: State {
         switch storeImplementation {
-        case let .exhaustive(store):
-            assertionFailure("Don't use state in Exhaustive Test Stores")
-            return store.snapshotState
+        case .exhaustive:
+            preconditionFailure("Don't use state in Exhaustive Test Stores")
         case let .nonExhaustive(store):
             return store.snapshotState
         }

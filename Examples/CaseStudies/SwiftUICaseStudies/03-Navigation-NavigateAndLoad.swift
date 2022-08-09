@@ -38,20 +38,21 @@ let navigateAndLoadReducer =
       NavigateAndLoadState, NavigateAndLoadAction, NavigateAndLoadEnvironment
     > { state, action, environment in
 
-      enum CancelId {}
+      enum CancelID {}
 
       switch action {
       case .setNavigation(isActive: true):
         state.isNavigationActive = true
-        return Effect(value: .setNavigationIsActiveDelayCompleted)
-          .delay(for: 1, scheduler: environment.mainQueue)
-          .eraseToEffect()
-          .cancellable(id: CancelId.self)
+        return .task {
+          try await environment.mainQueue.sleep(for: 1)
+          return .setNavigationIsActiveDelayCompleted
+        }
+        .cancellable(id: CancelID.self)
 
       case .setNavigation(isActive: false):
         state.isNavigationActive = false
         state.optionalCounter = nil
-        return .cancel(id: CancelId.self)
+        return .cancel(id: CancelID.self)
 
       case .setNavigationIsActiveDelayCompleted:
         state.optionalCounter = CounterState()
@@ -69,31 +70,30 @@ struct NavigateAndLoadView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(readMe)) {
-          NavigationLink(
-            destination: IfLetStore(
-              self.store.scope(
-                state: \.optionalCounter,
-                action: NavigateAndLoadAction.optionalCounter
-              )
-            ) {
-              CounterView(store: $0)
-            } else: {
-              ProgressView()
-            },
-            isActive: viewStore.binding(
-              get: \.isNavigationActive,
-              send: NavigateAndLoadAction.setNavigation(isActive:)
+        Section {
+          AboutView(readMe: readMe)
+        }
+        NavigationLink(
+          destination: IfLetStore(
+            self.store.scope(
+              state: \.optionalCounter,
+              action: NavigateAndLoadAction.optionalCounter
             )
           ) {
-            HStack {
-              Text("Load optional counter")
-            }
-          }
+            CounterView(store: $0)
+          } else: {
+            ProgressView()
+          },
+          isActive: viewStore.binding(
+            get: \.isNavigationActive,
+            send: NavigateAndLoadAction.setNavigation(isActive:)
+          )
+        ) {
+          Text("Load optional counter")
         }
       }
     }
-    .navigationBarTitle("Navigate and load")
+    .navigationTitle("Navigate and load")
   }
 }
 

@@ -6,6 +6,7 @@ extension Binding {
   /// to a binding that may disable the fields.
   ///
   /// See also: https://stackoverflow.com/a/69653555
+  @MainActor
   func resignFirstResponder() -> Self {
     Self(
       get: { self.wrappedValue },

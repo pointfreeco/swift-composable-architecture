@@ -3,70 +3,70 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+@MainActor
 class RefreshableTests: XCTestCase {
-  func testHappyPath() {
+  func testHappyPath() async {
     let store = TestStore(
       initialState: RefreshableState(),
       reducer: refreshableReducer,
-      environment: RefreshableEnvironment(
-        fact: FactClient(fetch: { Effect(value: "\($0) is a good number.") }),
-        mainQueue: .immediate
-      )
+      environment: .unimplemented
     )
 
-    store.send(.incrementButtonTapped) {
+    store.environment.fact.fetch = { "\($0) is a good number." }
+    store.environment.mainQueue = .immediate
+
+    await store.send(.incrementButtonTapped) {
       $0.count = 1
     }
-    store.send(.refresh) {
-      $0.isLoading = true
-    }
-    store.receive(.factResponse(.success("1 is a good number."))) {
-      $0.isLoading = false
+    await store.send(.refresh)
+    await store.receive(.factResponse(.success("1 is a good number."))) {
       $0.fact = "1 is a good number."
     }
   }
 
-  func testUnhappyPath() {
+  func testUnhappyPath() async {
+    struct FactError: Equatable, Error {}
     let store = TestStore(
       initialState: RefreshableState(),
       reducer: refreshableReducer,
-      environment: RefreshableEnvironment(
-        fact: FactClient(fetch: { _ in Effect(error: FactClient.Error()) }),
-        mainQueue: .immediate
-      )
+      environment: .unimplemented
     )
 
-    store.send(.incrementButtonTapped) {
+    store.environment.fact.fetch = { _ in throw FactError() }
+    store.environment.mainQueue = .immediate
+
+    await store.send(.incrementButtonTapped) {
       $0.count = 1
     }
-    store.send(.refresh) {
-      $0.isLoading = true
-    }
-    store.receive(.factResponse(.failure(FactClient.Error()))) {
-      $0.isLoading = false
-    }
+    await store.send(.refresh)
+    await store.receive(.factResponse(.failure(FactError())))
   }
 
-  func testCancellation() {
-    let mainQueue = DispatchQueue.test
-
+  func testCancellation() async {
     let store = TestStore(
       initialState: RefreshableState(),
       reducer: refreshableReducer,
-      environment: RefreshableEnvironment(
-        fact: FactClient(fetch: { Effect(value: "\($0) is a good number.") }),
-        mainQueue: mainQueue.eraseToAnyScheduler()
-      )
+      environment: .unimplemented
     )
 
-    store.send(.incrementButtonTapped) {
+    store.environment.mainQueue = .immediate
+
+    store.environment.fact.fetch = {
+      try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+      return "\($0) is a good number."
+    }
+
+    await store.send(.incrementButtonTapped) {
       $0.count = 1
     }
-    store.send(.refresh) {
-      $0.isLoading = true
-    }
-    store.send(.cancelButtonTapped) {
-      $0.isLoading = false
-    }
+    await store.send(.refresh) 
+    await store.send(.cancelButtonTapped)
   }
+}
+
+extension RefreshableEnvironment {
+  static let unimplemented = Self(
+    fact: .unimplemented,
+    mainQueue: .unimplemented
+  )
 }

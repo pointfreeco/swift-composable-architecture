@@ -79,21 +79,23 @@ struct LifecycleDemoView: View {
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
-      VStack {
+      Form {
+        Section {
+          AboutView(readMe: readMe)
+        }
+
         Button("Toggle Timer") { viewStore.send(.toggleTimerButtonTapped) }
 
         IfLetStore(self.store.scope(state: \.count, action: LifecycleDemoAction.timer)) {
           TimerView(store: $0)
         }
-
-        Spacer()
       }
-      .navigationBarTitle("Lifecycle")
     }
+    .navigationTitle("Lifecycle")
   }
 }
 
-private enum TimerId {}
+private enum TimerID {}
 
 enum TimerAction {
   case decrementButtonTapped
@@ -122,12 +124,16 @@ private let timerReducer = Reducer<Int, TimerAction, TimerEnvironment> {
   }
 }
 .lifecycle(
-  onAppear: {
-    Effect.timer(id: TimerId.self, every: 1, tolerance: 0, on: $0.mainQueue)
-      .map { _ in TimerAction.tick }
+  onAppear: { environment in
+    .run { send in
+      for await _ in environment.mainQueue.timer(interval: 1) {
+        await send(.tick)
+      }
+    }
+    .cancellable(id: TimerID.self)
   },
   onDisappear: { _ in
-    .cancel(id: TimerId.self)
+    .cancel(id: TimerID.self)
   }
 )
 

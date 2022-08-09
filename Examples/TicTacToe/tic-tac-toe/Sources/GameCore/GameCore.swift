@@ -39,7 +39,7 @@ public struct GameState: Equatable {
   }
 }
 
-public enum GameAction: Equatable {
+public enum GameAction: Equatable, Sendable {
   case cellTapped(row: Int, column: Int)
   case playAgainButtonTapped
   case quitButtonTapped

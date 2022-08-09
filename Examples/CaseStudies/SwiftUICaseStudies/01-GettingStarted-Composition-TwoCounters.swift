@@ -39,28 +39,28 @@ struct TwoCountersView: View {
 
   var body: some View {
     Form {
-      Section(header: Text(template: readMe, .caption)) {
-        HStack {
-          Text("Counter 1")
+      Section {
+        AboutView(readMe: readMe)
+      }
 
-          CounterView(
-            store: self.store.scope(state: \.counter1, action: TwoCountersAction.counter1)
-          )
-          .buttonStyle(.borderless)
-          .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
-        }
-        HStack {
-          Text("Counter 2")
+      HStack {
+        Text("Counter 1")
+        Spacer()
+        CounterView(
+          store: self.store.scope(state: \.counter1, action: TwoCountersAction.counter1)
+        )
+      }
 
-          CounterView(
-            store: self.store.scope(state: \.counter2, action: TwoCountersAction.counter2)
-          )
-          .buttonStyle(.borderless)
-          .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
-        }
+      HStack {
+        Text("Counter 2")
+        Spacer()
+        CounterView(
+          store: self.store.scope(state: \.counter2, action: TwoCountersAction.counter2)
+        )
       }
     }
-    .navigationBarTitle("Two counter demo")
+    .buttonStyle(.borderless)
+    .navigationTitle("Two counter demo")
   }
 }
 

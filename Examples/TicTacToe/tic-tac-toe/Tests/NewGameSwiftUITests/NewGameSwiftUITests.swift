@@ -4,6 +4,7 @@ import XCTest
 
 @testable import NewGameSwiftUI
 
+@MainActor
 class NewGameSwiftUITests: XCTestCase {
   let store = TestStore(
     initialState: NewGameState(),
@@ -12,20 +13,20 @@ class NewGameSwiftUITests: XCTestCase {
   )
   .scope(state: NewGameView.ViewState.init, action: NewGameAction.init)
 
-  func testNewGame() {
-    self.store.send(.xPlayerNameChanged("Blob Sr.")) {
+  func testNewGame() async {
+    await self.store.send(.xPlayerNameChanged("Blob Sr.")) {
       $0.xPlayerName = "Blob Sr."
     }
-    self.store.send(.oPlayerNameChanged("Blob Jr.")) {
+    await self.store.send(.oPlayerNameChanged("Blob Jr.")) {
       $0.oPlayerName = "Blob Jr."
       $0.isLetsPlayButtonDisabled = false
     }
-    self.store.send(.letsPlayButtonTapped) {
+    await self.store.send(.letsPlayButtonTapped) {
       $0.isGameActive = true
     }
-    self.store.send(.gameDismissed) {
+    await self.store.send(.gameDismissed) {
       $0.isGameActive = false
     }
-    self.store.send(.logoutButtonTapped)
+    await self.store.send(.logoutButtonTapped)
   }
 }

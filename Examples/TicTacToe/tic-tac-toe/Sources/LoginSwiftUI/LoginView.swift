@@ -97,7 +97,7 @@ public struct LoginView: View {
       .disabled(viewStore.isFormDisabled)
       .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
     }
-    .navigationBarTitle("Login")
+    .navigationTitle("Login")
   }
 }
 
@@ -127,14 +127,11 @@ struct LoginView_Previews: PreviewProvider {
           reducer: loginReducer,
           environment: LoginEnvironment(
             authenticationClient: AuthenticationClient(
-              login: { _ in
-                Effect(value: AuthenticationResponse(token: "deadbeef", twoFactorRequired: false))
-              },
+              login: { _ in AuthenticationResponse(token: "deadbeef", twoFactorRequired: false) },
               twoFactor: { _ in
-                Effect(value: AuthenticationResponse(token: "deadbeef", twoFactorRequired: false))
+                AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
               }
-            ),
-            mainQueue: .main
+            )
           )
         )
       )

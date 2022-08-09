@@ -40,18 +40,19 @@ let loadThenNavigateReducer =
       LoadThenNavigateState, LoadThenNavigateAction, LoadThenNavigateEnvironment
     > { state, action, environment in
 
-      enum CancelId {}
+      enum CancelID {}
 
       switch action {
       case .onDisappear:
-        return .cancel(id: CancelId.self)
+        return .cancel(id: CancelID.self)
 
       case .setNavigation(isActive: true):
         state.isActivityIndicatorVisible = true
-        return Effect(value: .setNavigationIsActiveDelayCompleted)
-          .delay(for: 1, scheduler: environment.mainQueue)
-          .eraseToEffect()
-          .cancellable(id: CancelId.self)
+        return .task {
+          try await environment.mainQueue.sleep(for: 1)
+          return .setNavigationIsActiveDelayCompleted
+        }
+        .cancellable(id: CancelID.self)
 
       case .setNavigation(isActive: false):
         state.optionalCounter = nil
@@ -74,34 +75,35 @@ struct LoadThenNavigateView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(readMe)) {
-          NavigationLink(
-            destination: IfLetStore(
-              self.store.scope(
-                state: \.optionalCounter,
-                action: LoadThenNavigateAction.optionalCounter
-              )
-            ) {
-              CounterView(store: $0)
-            },
-            isActive: viewStore.binding(
-              get: \.isNavigationActive,
-              send: LoadThenNavigateAction.setNavigation(isActive:)
+        Section {
+          AboutView(readMe: readMe)
+        }
+        NavigationLink(
+          destination: IfLetStore(
+            self.store.scope(
+              state: \.optionalCounter,
+              action: LoadThenNavigateAction.optionalCounter
             )
           ) {
-            HStack {
-              Text("Load optional counter")
-              if viewStore.isActivityIndicatorVisible {
-                Spacer()
-                ProgressView()
-              }
+            CounterView(store: $0)
+          },
+          isActive: viewStore.binding(
+            get: \.isNavigationActive,
+            send: LoadThenNavigateAction.setNavigation(isActive:)
+          )
+        ) {
+          HStack {
+            Text("Load optional counter")
+            if viewStore.isActivityIndicatorVisible {
+              Spacer()
+              ProgressView()
             }
           }
         }
       }
       .onDisappear { viewStore.send(.onDisappear) }
     }
-    .navigationBarTitle("Load then navigate")
+    .navigationTitle("Load then navigate")
   }
 }
 

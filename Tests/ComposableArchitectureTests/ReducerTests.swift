@@ -5,6 +5,7 @@ import CustomDump
 import XCTest
 import os.signpost
 
+@MainActor
 final class ReducerTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
@@ -19,7 +20,7 @@ final class ReducerTests: XCTestCase {
     XCTAssertNoDifference(state, 1)
   }
 
-  func testCombine_EffectsAreMerged() {
+  func testCombine_EffectsAreMerged() async {
     typealias Scheduler = AnySchedulerOf<DispatchQueue>
     enum Action: Equatable {
       case increment
@@ -41,26 +42,26 @@ final class ReducerTests: XCTestCase {
         .eraseToEffect()
     }
 
-    let scheduler = DispatchQueue.test
+    let mainQueue = DispatchQueue.test
     let store = TestStore(
       initialState: 0,
       reducer: .combine(fastReducer, slowReducer),
-      environment: scheduler.eraseToAnyScheduler()
+      environment: mainQueue.eraseToAnyScheduler()
     )
 
-    store.send(.increment) {
+    await store.send(.increment) {
       $0 = 2
     }
     // Waiting a second causes the fast effect to fire.
-    scheduler.advance(by: 1)
+    await mainQueue.advance(by: 1)
     XCTAssertNoDifference(fastValue, 42)
     // Waiting one more second causes the slow effect to fire. This proves that the effects
     // are merged together, as opposed to concatenated.
-    scheduler.advance(by: 1)
+    await mainQueue.advance(by: 1)
     XCTAssertNoDifference(slowValue, 1729)
   }
 
-  func testCombine() {
+  func testCombine() async {
     enum Action: Equatable {
       case increment
     }
@@ -86,7 +87,7 @@ final class ReducerTests: XCTestCase {
       environment: ()
     )
 
-    store.send(.increment) {
+    await store.send(.increment) {
       $0 = 2
     }
 
@@ -94,7 +95,7 @@ final class ReducerTests: XCTestCase {
     XCTAssertTrue(mainEffectExecuted)
   }
 
-  func testDebug() {
+  func testDebug() async {
     var logs: [String] = []
     let logsExpectation = self.expectation(description: "logs")
     logsExpectation.expectedFulfillmentCount = 2
@@ -124,10 +125,10 @@ final class ReducerTests: XCTestCase {
       reducer: reducer,
       environment: ()
     )
-    store.send(.incr) { $0.count = 1 }
-    store.send(.noop)
+    await store.send(.incr) { $0.count = 1 }
+    await store.send(.noop)
 
-    self.wait(for: [logsExpectation], timeout: 2)
+    self.wait(for: [logsExpectation], timeout: 5)
 
     XCTAssertNoDifference(
       logs,
@@ -180,7 +181,7 @@ final class ReducerTests: XCTestCase {
     )
     viewStore.send(.incrWithBool(true))
 
-    self.wait(for: [logsExpectation], timeout: 2)
+    self.wait(for: [logsExpectation], timeout: 5)
 
     XCTAssertNoDifference(
       logs,
