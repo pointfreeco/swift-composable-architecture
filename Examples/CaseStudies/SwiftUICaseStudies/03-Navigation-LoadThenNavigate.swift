@@ -11,51 +11,36 @@ private let readMe = """
 
 struct LoadThenNavigate: ReducerProtocol {
   struct State: Equatable {
-    var optionalCounter: Counter.State?
+    @PresentationStateOf<Counter> var counter
     var isActivityIndicatorVisible = false
-
-    var isNavigationActive: Bool { self.optionalCounter != nil }
   }
 
   enum Action: Equatable {
-    case onDisappear
-    case optionalCounter(Counter.Action)
-    case setNavigation(isActive: Bool)
-    case setNavigationIsActiveDelayCompleted
+    case counter(PresentationActionOf<Counter>)
+    case presentationDelayCompleted
   }
 
   @Dependency(\.mainQueue) var mainQueue
 
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
-      enum CancelID {}
-
       switch action {
-      case .onDisappear:
-        return .cancel(id: CancelID.self)
-
-      case .setNavigation(isActive: true):
+      case .counter(.present):
         state.isActivityIndicatorVisible = true
         return .task {
           try await self.mainQueue.sleep(for: 1)
-          return .setNavigationIsActiveDelayCompleted
+          return .presentationDelayCompleted
         }
-        .cancellable(id: CancelID.self)
 
-      case .setNavigation(isActive: false):
-        state.optionalCounter = nil
+      case .counter:
         return .none
 
-      case .setNavigationIsActiveDelayCompleted:
-        state.isActivityIndicatorVisible = false
-        state.optionalCounter = Counter.State()
-        return .none
-
-      case .optionalCounter:
+      case .presentationDelayCompleted:
+        state.counter = Counter.State()
         return .none
       }
     }
-    .ifLet(state: \.optionalCounter, action: /Action.optionalCounter) {
+    .presentationDestination(state: \.$counter, action: /Action.counter) {
       Counter()
     }
   }
@@ -70,20 +55,9 @@ struct LoadThenNavigateView: View {
         Section {
           AboutView(readMe: readMe)
         }
-        NavigationLink(
-          destination: IfLetStore(
-            self.store.scope(
-              state: \.optionalCounter,
-              action: LoadThenNavigate.Action.optionalCounter
-            )
-          ) {
-            CounterView(store: $0)
-          },
-          isActive: viewStore.binding(
-            get: \.isNavigationActive,
-            send: LoadThenNavigate.Action.setNavigation(isActive:)
-          )
-        ) {
+        Button {
+          viewStore.send(.counter(.present))
+        } label: {
           HStack {
             Text("Load optional counter")
             if viewStore.isActivityIndicatorVisible {
@@ -93,7 +67,10 @@ struct LoadThenNavigateView: View {
           }
         }
       }
-      .onDisappear { viewStore.send(.onDisappear) }
+      .navigationDestination(
+        store: self.store.scope(state: \.$counter, action: LoadThenNavigate.Action.counter),
+        destination: CounterView.init(store:)
+      )
     }
     .navigationTitle("Load then navigate")
   }
