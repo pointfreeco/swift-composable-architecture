@@ -362,12 +362,12 @@ extension View {
 
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func navigationDestination<
-    State, Action, DestinationState, DestinationAction, Content: View
+    State, Action, DestinationState, DestinationAction, Destination: View
   >(
     store: Store<PresentationState<State>, PresentationAction<State, Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
-    @ViewBuilder content: @escaping (Store<DestinationState, DestinationAction>) -> Content
+    @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination
   ) -> some View {
     WithViewStore(
       store.scope(state: { $0.wrappedValue.flatMap(toDestinationState) != nil })
@@ -380,7 +380,7 @@ extension View {
             state: returningLastNonNilValue { $0.wrappedValue.flatMap(toDestinationState) },
             action: { .presented(fromDestinationAction($0)) }
           ),
-          then: content
+          then: destination
         )
       }
     }
