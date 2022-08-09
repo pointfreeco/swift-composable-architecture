@@ -36,22 +36,6 @@ public enum ReducerBuilder<State, Action> {
     expression
   }
 
-//  @_disfavoredOverload
-//  @inlinable
-//  public static func buildExpression<State, Action>(
-//    _ expression: Reduce<State, Action>
-//  ) -> Reduce<State, Action> {
-//    expression
-//  }
-//
-////  @_disfavoredOverload
-//  @inlinable
-//  public static func buildExpression<Upstream: ReducerProtocol>(
-//    _ expression: GroupReducer<Upstream>
-//  ) -> GroupReducer<Upstream> {
-//    expression
-//  }
-
   @inlinable
   public static func buildLimitedAvailability<R: ReducerProtocol>(
     _ wrapped: R
