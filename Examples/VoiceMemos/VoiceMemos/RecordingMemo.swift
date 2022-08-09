@@ -2,7 +2,6 @@ import ComposableArchitecture
 import SwiftUI
 
 struct RecordingMemoState: Equatable {
-  var alert: AlertState<RecordingMemoAction>?
   var date: Date
   var duration: TimeInterval = 0
   var mode: Mode = .recording
@@ -12,15 +11,21 @@ struct RecordingMemoState: Equatable {
     case recording
     case encoding
   }
+
+  struct Failed: Equatable, Error {}
 }
 
 enum RecordingMemoAction: Equatable {
-  case alertDismissed
   case audioRecorderDidFinish(TaskResult<Bool>)
+  case delegate(DelegateAction)
   case finalRecordingTime(TimeInterval)
   case task
   case timerUpdated
   case stopButtonTapped
+
+  enum DelegateAction: Equatable {
+    case didFinish(TaskResult<RecordingMemoState>)
+  }
 }
 
 struct RecordingMemoEnvironment {
@@ -33,34 +38,31 @@ let recordingMemoReducer = Reducer<
   RecordingMemoAction,
   RecordingMemoEnvironment
 > { state, action, environment in
-  enum RecordID {}
-
   switch action {
-  case .alertDismissed:
-    state.alert = nil
-    return .none
-    
   case .audioRecorderDidFinish(.success(true)):
-    guard state.mode == .encoding
-    else {
-      assertionFailure()
-      return .none
-    }
-    return .cancel(id: RecordID.self)
+    return .task { [state] in .delegate(.didFinish(.success(state))) }
 
-  case
-      .audioRecorderDidFinish(.success(false)),
-      .audioRecorderDidFinish(.failure):
-    state.alert = AlertState(title: TextState("Voice memo recording failed."))
-    return .cancel(id: RecordID.self)
+  case .audioRecorderDidFinish(.success(false)):
+    return .task { .delegate(.didFinish(.failure(RecordingMemoState.Failed()))) }
 
-  case .timerUpdated:
-    state.duration += 1
+  case let .audioRecorderDidFinish(.failure(error)):
+    return .task { .delegate(.didFinish(.failure(error))) }
+
+  case .delegate:
     return .none
 
   case let .finalRecordingTime(duration):
     state.duration = duration
     return .none
+
+  case .stopButtonTapped:
+    state.mode = .encoding
+    return .run { send in
+      if let currentTime = await environment.audioRecorder.currentTime() {
+        await send(.finalRecordingTime(currentTime))
+      }
+      await environment.audioRecorder.stopRecording()
+    }
 
   case .task:
     return .run { [url = state.url] send in
@@ -74,16 +76,10 @@ let recordingMemoReducer = Reducer<
         await send(.timerUpdated)
       }
     }
-    .cancellable(id: RecordID.self, cancelInFlight: true)
 
-  case .stopButtonTapped:
-    state.mode = .encoding
-    return .run { send in
-      if let currentTime = await environment.audioRecorder.currentTime() {
-        await send(.finalRecordingTime(currentTime))
-      }
-      await environment.audioRecorder.stopRecording()
-    }
+  case .timerUpdated:
+    state.duration += 1
+    return .none
   }
 }
 
@@ -117,10 +113,6 @@ struct RecordingMemoView: View {
           .frame(width: 70, height: 70)
         }
       }
-      .alert(
-        self.store.scope(state: \.alert),
-        dismiss: .alertDismissed
-      )
       .task {
         await viewStore.send(.task).finish()
       }

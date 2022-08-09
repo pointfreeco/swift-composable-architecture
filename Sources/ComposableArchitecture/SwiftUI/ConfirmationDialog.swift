@@ -148,7 +148,7 @@ public struct ConfirmationDialogState<Action> {
 
   public typealias Button = AlertState<Action>.Button
 
-  public enum Visibility {
+  public enum Visibility: Equatable, Hashable, Sendable {
     case automatic
     case hidden
     case visible
@@ -214,6 +214,12 @@ extension ConfirmationDialogState: Hashable where Action: Hashable {
 @available(tvOS 13, *)
 @available(watchOS 6, *)
 extension ConfirmationDialogState: Identifiable {}
+
+@available(iOS 13, *)
+@available(macOS 12, *)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
+extension ConfirmationDialogState: Sendable where Action: Sendable {}
 
 extension View {
   /// Displays a dialog when the store's state becomes non-`nil`, and dismisses it when it becomes

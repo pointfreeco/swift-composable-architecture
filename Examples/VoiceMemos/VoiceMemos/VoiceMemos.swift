@@ -88,17 +88,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
         return .none
       }
 
-    // TODO: Move listening to these actions to a delegate on RecordingMemo?
-
-    case .recordingMemo(.audioRecorderDidFinish(.success(true))):
-      guard
-        let recordingMemo = state.recordingMemo,
-        recordingMemo.mode == .encoding
-      else {
-        assertionFailure()
-        return .none
-      }
-
+    case let .recordingMemo(.delegate(.didFinish(.success(recordingMemo)))):
       state.recordingMemo = nil
       state.voiceMemos.insert(
         VoiceMemoState(
@@ -110,9 +100,8 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       )
       return .none
 
-    case
-        .recordingMemo(.audioRecorderDidFinish(.success(false))),
-        .recordingMemo(.audioRecorderDidFinish(.failure)):
+    case .recordingMemo(.delegate(.didFinish(.failure))):
+      state.alert = AlertState(title: TextState("Voice memo recording failed."))
       state.recordingMemo = nil
       return .none
 
