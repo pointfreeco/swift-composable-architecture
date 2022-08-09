@@ -48,7 +48,7 @@ import Foundation
 /// ```
 public class Instrumentation {
   /// Type indicating the action being taken by the store
-  public enum CallbackKind: CaseIterable, Hashable {
+  public enum CallbackKind: String, CaseIterable, Hashable {
     case storeSend
     case storeChangeState
     case storeProcessEvent
