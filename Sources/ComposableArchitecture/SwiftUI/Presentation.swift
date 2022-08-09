@@ -81,17 +81,18 @@ extension PresentationState: CustomReflectable {
 }
 
 public enum PresentationAction<State, Action> {
-  case present(State?)
+  case present(id: AnyHashable = DependencyValues.current.uuid(), State? = nil)
   case presented(Action)
   case dismiss
 
-  public static var present: Self { .present(nil) }
+  public static var present: Self { .present() }
 }
 
 public typealias PresentationActionOf<R: ReducerProtocol> = PresentationAction<R.State, R.Action>
 
-extension PresentationAction: Decodable where State: Decodable, Action: Decodable {}
-extension PresentationAction: Encodable where State: Encodable, Action: Encodable {}
+// TODO:
+//extension PresentationAction: Decodable where State: Decodable, Action: Decodable {}
+//extension PresentationAction: Encodable where State: Encodable, Action: Encodable {}
 
 extension PresentationAction: Equatable where State: Equatable, Action: Equatable {}
 extension PresentationAction: Hashable where State: Hashable, Action: Hashable {}
@@ -131,8 +132,8 @@ public struct PresentationReducer<
     let presentedAction = toPresentedAction.extract(from: action)
 
     switch toPresentedAction.extract(from: action) {
-    case let .present(.some(presentedState)):
-      state[keyPath: toPresentedState].wrappedValue = presentedState
+    case let .present(id, .some(presentedState)):
+      state[keyPath: toPresentedState] = .presented(id: id, presentedState)
 
     case let .presented(presentedAction):
       if case .presented(let id, var presentedState) = presentedState {
@@ -146,7 +147,7 @@ public struct PresentationReducer<
         )
       }
 
-    case .present(.none), .dismiss, .none:
+    case .present(_, .none), .dismiss, .none:
       break
     }
 

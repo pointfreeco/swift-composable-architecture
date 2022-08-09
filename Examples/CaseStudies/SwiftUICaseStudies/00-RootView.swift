@@ -7,7 +7,7 @@ struct RootView: View {
 
   var body: some View {
     WithViewStore(self.store.stateless) { viewStore in
-      NavigationView {
+      NavigationStack {
         Form {
           Section(header: Text("Getting started")) {
             NavigationLink(
