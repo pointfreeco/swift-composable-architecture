@@ -1,8 +1,8 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct RecordMemoState: Equatable {
-  var alert: AlertState<RecordMemoAction>?
+struct RecordingMemoState: Equatable {
+  var alert: AlertState<RecordingMemoAction>?
   var date: Date
   var duration: TimeInterval = 0
   var mode: Mode = .recording
@@ -14,7 +14,7 @@ struct RecordMemoState: Equatable {
   }
 }
 
-enum RecordMemoAction: Equatable {
+enum RecordingMemoAction: Equatable {
   case alertDismissed
   case audioRecorderDidFinish(TaskResult<Bool>)
   case finalRecordingTime(TimeInterval)
@@ -23,18 +23,15 @@ enum RecordMemoAction: Equatable {
   case stopButtonTapped
 }
 
-struct RecordMemoEnvironment {
+struct RecordingMemoEnvironment {
   var audioRecorder: AudioRecorderClient
   var mainRunLoop: AnySchedulerOf<RunLoop>
-  var openSettings: @Sendable () async -> Void
-  var temporaryDirectory: @Sendable () -> URL
-  var uuid: @Sendable () -> UUID
 }
 
-let recordMemoReducer = Reducer<
-  RecordMemoState,
-  RecordMemoAction,
-  RecordMemoEnvironment
+let recordingMemoReducer = Reducer<
+  RecordingMemoState,
+  RecordingMemoAction,
+  RecordingMemoEnvironment
 > { state, action, environment in
   enum RecordID {}
 
@@ -90,8 +87,8 @@ let recordMemoReducer = Reducer<
   }
 }
 
-struct RecordMemoView: View {
-  let store: Store<RecordMemoState, RecordMemoAction>
+struct RecordingMemoView: View {
+  let store: Store<RecordingMemoState, RecordingMemoAction>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
