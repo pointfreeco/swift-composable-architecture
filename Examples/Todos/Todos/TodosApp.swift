@@ -8,7 +8,7 @@ struct TodosApp: App {
       AppView(
         store: Store(
           initialState: AppState(),
-          reducer: appReducer,
+          reducer: appReducer.debug(),
           environment: AppEnvironment(
             mainQueue: .main,
             uuid: { UUID() }
