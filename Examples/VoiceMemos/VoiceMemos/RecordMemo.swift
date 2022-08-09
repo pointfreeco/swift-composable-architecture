@@ -15,6 +15,7 @@ struct RecordMemoState: Equatable {
 }
 
 enum RecordMemoAction: Equatable {
+  case alertDismissed
   case audioRecorderDidFinish(TaskResult<Bool>)
   case finalRecordingTime(TimeInterval)
   case task
@@ -38,6 +39,10 @@ let recordMemoReducer = Reducer<
   enum RecordID {}
 
   switch action {
+  case .alertDismissed:
+    state.alert = nil
+    return .none
+    
   case .audioRecorderDidFinish(.success(true)):
     guard state.mode == .encoding
     else {
@@ -115,6 +120,10 @@ struct RecordMemoView: View {
           .frame(width: 70, height: 70)
         }
       }
+      .alert(
+        self.store.scope(state: \.alert),
+        dismiss: .alertDismissed
+      )
       .task {
         await viewStore.send(.task).finish()
       }
