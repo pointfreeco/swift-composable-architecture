@@ -175,6 +175,7 @@ public struct PresentationReducer<
 }
 
 extension View {
+  // TODO: How does `onDismiss:` factor in?
   @available(iOS 14, tvOS 14, watchOS 7, *)
   @available(macOS, unavailable)
   public func fullScreenCover<State, Action, Content: View>(
@@ -194,11 +195,48 @@ extension View {
     }
   }
 
+  // TODO: How does `onDismiss:` factor in?
+  @available(iOS 14, tvOS 14, watchOS 7, *)
+  @available(macOS, unavailable)
+  public func fullScreenCover<State, Action, DestinationState, DestinationAction, Content: View>(
+    store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+    state toDestinationState: @escaping (State) -> DestinationState?,
+    action fromDestinationAction: @escaping (DestinationAction) -> Action,
+    @ViewBuilder content: @escaping (Store<DestinationState, DestinationAction>) -> Content
+  ) -> some View {
+    WithViewStore(
+      store.scope(state: { $0.wrappedValue }),
+      removeDuplicates: { lhs, rhs in
+        guard let lhs = lhs, let rhs = rhs else { return true }
+        return enumTag(lhs) == enumTag(rhs)
+      }
+    ) { viewStore in
+      self.fullScreenCover(
+        item: Binding(
+          get: {
+            viewStore.state.flatMap {
+              PresentationItem(destinations: $0, destination: toDestinationState)
+            }
+          },
+          set: { if $0 == nil { viewStore.send(.dismiss) } }
+        )
+      ) { _ in
+        IfLetStore(
+          store.scope(
+            state: returningLastNonNilValue { $0.wrappedValue.flatMap(toDestinationState) },
+            action: { .presented(fromDestinationAction($0)) }
+          ),
+          then: content
+        )
+      }
+    }
+  }
+
   @available(tvOS, unavailable)
   public func popover<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<State, Action>>,
-    attachmentAnchor: PopoverAttachmentAnchor,
-    arrowEdge: Edge,
+    attachmentAnchor: PopoverAttachmentAnchor = .rect(.bounds),
+    arrowEdge: Edge = .top,
     @ViewBuilder content: @escaping (Store<State, Action>) -> Content
   ) -> some View {
     WithViewStore(store.scope(state: { $0.wrappedValue != nil })) { viewStore in
@@ -218,6 +256,46 @@ extension View {
     }
   }
 
+  @available(tvOS, unavailable)
+  public func popover<State, Action, DestinationState, DestinationAction, Content: View>(
+    store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+    state toDestinationState: @escaping (State) -> DestinationState?,
+    action fromDestinationAction: @escaping (DestinationAction) -> Action,
+    attachmentAnchor: PopoverAttachmentAnchor = .rect(.bounds),
+    arrowEdge: Edge = .top,
+    @ViewBuilder content: @escaping (Store<DestinationState, DestinationAction>) -> Content
+  ) -> some View {
+    WithViewStore(
+      store.scope(state: { $0.wrappedValue }),
+      removeDuplicates: { lhs, rhs in
+        guard let lhs = lhs, let rhs = rhs else { return true }
+        return enumTag(lhs) == enumTag(rhs)
+      }
+    ) { viewStore in
+      self.popover(
+        item: Binding(
+          get: {
+            viewStore.state.flatMap {
+              PresentationItem(destinations: $0, destination: toDestinationState)
+            }
+          },
+          set: { if $0 == nil { viewStore.send(.dismiss) } }
+        ),
+        attachmentAnchor: attachmentAnchor,
+        arrowEdge: arrowEdge
+      ) { _ in
+        IfLetStore(
+          store.scope(
+            state: returningLastNonNilValue { $0.wrappedValue.flatMap(toDestinationState) },
+            action: { .presented(fromDestinationAction($0)) }
+          ),
+          then: content
+        )
+      }
+    }
+  }
+
+  // TODO: How does `onDismiss:` factor in?
   public func sheet<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<State, Action>>,
     @ViewBuilder content: @escaping (Store<State, Action>) -> Content
@@ -228,6 +306,41 @@ extension View {
           store.scope(
             state: returningLastNonNilValue { $0.wrappedValue },
             action: PresentationAction.presented
+          ),
+          then: content
+        )
+      }
+    }
+  }
+
+  // TODO: How does `onDismiss:` factor in?
+  public func sheet<State, Action, DestinationState, DestinationAction, Content: View>(
+    store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+    state toDestinationState: @escaping (State) -> DestinationState?,
+    action fromDestinationAction: @escaping (DestinationAction) -> Action,
+    @ViewBuilder content: @escaping (Store<DestinationState, DestinationAction>) -> Content
+  ) -> some View {
+    WithViewStore(
+      store.scope(state: { $0.wrappedValue }),
+      removeDuplicates: { lhs, rhs in
+        guard let lhs = lhs, let rhs = rhs else { return true }
+        return enumTag(lhs) == enumTag(rhs)
+      }
+    ) { viewStore in
+      self.sheet(
+        item: Binding(
+          get: {
+            viewStore.state.flatMap {
+              PresentationItem(destinations: $0, destination: toDestinationState)
+            }
+          },
+          set: { if $0 == nil { viewStore.send(.dismiss) } }
+        )
+      ) { _ in
+        IfLetStore(
+          store.scope(
+            state: returningLastNonNilValue { $0.wrappedValue.flatMap(toDestinationState) },
+            action: { .presented(fromDestinationAction($0)) }
           ),
           then: content
         )
@@ -253,5 +366,51 @@ extension View {
         )
       }
     }
+  }
+
+  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+  public func navigationDestination<
+    State, Action, DestinationState, DestinationAction, Content: View
+  >(
+    store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+    state toDestinationState: @escaping (State) -> DestinationState?,
+    action fromDestinationAction: @escaping (DestinationAction) -> Action,
+    @ViewBuilder content: @escaping (Store<DestinationState, DestinationAction>) -> Content
+  ) -> some View {
+    WithViewStore(
+      store.scope(state: { $0.wrappedValue.flatMap(toDestinationState) != nil })
+    ) { viewStore in
+      self.navigationDestination(
+        isPresented: viewStore.binding(send: { $0 ? .present : .dismiss })
+      ) {
+        IfLetStore(
+          store.scope(
+            state: returningLastNonNilValue { $0.wrappedValue.flatMap(toDestinationState) },
+            action: { .presented(fromDestinationAction($0)) }
+          ),
+          then: content
+        )
+      }
+    }
+  }
+}
+
+private struct PresentationItem: Identifiable {
+  struct ID: Hashable {
+    let tag: UInt32?
+    let discriminator: ObjectIdentifier
+  }
+
+  let id: ID
+
+  init?<Destination, Destinations>(
+    destinations: Destinations,
+    destination toDestination: (Destinations) -> Destination?
+  ) {
+    guard let destination = toDestination(destinations) else { return nil }
+    self.id = ID(
+      tag: enumTag(destinations),
+      discriminator: ObjectIdentifier(type(of: destination))
+    )
   }
 }
