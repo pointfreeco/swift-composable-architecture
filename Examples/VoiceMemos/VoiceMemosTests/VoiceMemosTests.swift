@@ -35,33 +35,35 @@ class VoiceMemosTests: XCTestCase {
       environment: environment
     )
 
-    let recordButtonTappedTask = await store.send(.recordButtonTapped)
+    await store.send(.recordButtonTapped)
     await self.mainRunLoop.advance()
     await store.receive(.recordPermissionResponse(true)) {
       $0.audioRecorderPermission = .allowed
-      $0.currentRecording = VoiceMemosState.CurrentRecording(
+      $0.recordingMemo = RecordingMemoState(
         date: Date(timeIntervalSince1970: 0),
         mode: .recording,
         url: URL(fileURLWithPath: "/tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")
       )
     }
+    let recordingMemoTask = await store.send(.recordingMemo(.task))
     await self.mainRunLoop.advance(by: 1)
-    await store.receive(.currentRecordingTimerUpdated) {
-      $0.currentRecording?.duration = 1
+    await store.receive(.recordingMemo(.timerUpdated)) {
+      $0.recordingMemo?.duration = 1
     }
     await self.mainRunLoop.advance(by: 1)
-    await store.receive(.currentRecordingTimerUpdated) {
-      $0.currentRecording?.duration = 2
+    await store.receive(.recordingMemo(.timerUpdated)) {
+      $0.recordingMemo?.duration = 2
     }
     await self.mainRunLoop.advance(by: 0.5)
-    await store.send(.recordButtonTapped) {
-      $0.currentRecording?.mode = .encoding
+    await store.send(.recordingMemo(.stopButtonTapped)) {
+      $0.recordingMemo?.mode = .encoding
     }
-    await store.receive(.finalRecordingTime(2.5)) {
-      $0.currentRecording?.duration = 2.5
+    await store.receive(.recordingMemo(.finalRecordingTime(2.5))) {
+      $0.recordingMemo?.duration = 2.5
     }
-    await store.receive(.audioRecorderDidFinish(.success(true))) {
-      $0.currentRecording = nil
+    await store.receive(.recordingMemo(.audioRecorderDidFinish(.success(true))))
+    await store.receive(.recordingMemo(.delegate(.didFinish(.success(store.state.recordingMemo!))))) {
+      $0.recordingMemo = nil
       $0.voiceMemos = [
         VoiceMemoState(
           date: Date(timeIntervalSince1970: 0),
@@ -72,7 +74,7 @@ class VoiceMemosTests: XCTestCase {
         )
       ]
     }
-    await recordButtonTappedTask.finish()
+    await recordingMemoTask.cancel()
   }
 
   func testPermissionDenied() async {
@@ -125,19 +127,23 @@ class VoiceMemosTests: XCTestCase {
     await self.mainRunLoop.advance(by: 0.5)
     await store.receive(.recordPermissionResponse(true)) {
       $0.audioRecorderPermission = .allowed
-      $0.currentRecording = VoiceMemosState.CurrentRecording(
+      $0.recordingMemo = RecordingMemoState(
         date: Date(timeIntervalSince1970: 0),
         mode: .recording,
         url: URL(fileURLWithPath: "/tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")
       )
     }
+    let recordingMemoTask = await store.send(.recordingMemo(.task))
 
     didFinish.continuation.finish(throwing: SomeError())
     await self.mainRunLoop.advance(by: 0.5)
-    await store.receive(.audioRecorderDidFinish(.failure(SomeError()))) {
+    await store.receive(.recordingMemo(.audioRecorderDidFinish(.failure(SomeError()))))
+    await store.receive(.recordingMemo(.delegate(.didFinish(.failure(SomeError()))))) {
       $0.alert = AlertState(title: TextState("Voice memo recording failed."))
-      $0.currentRecording = nil
+      $0.recordingMemo = nil
     }
+
+    await recordingMemoTask.cancel()
   }
 
   func testPlayMemoHappyPath() async {
