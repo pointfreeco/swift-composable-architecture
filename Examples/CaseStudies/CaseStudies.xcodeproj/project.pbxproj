@@ -30,6 +30,7 @@
 		CAA9ADC824465D950003A984 /* 02-Effects-CancellationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA9ADC724465D950003A984 /* 02-Effects-CancellationTests.swift */; };
 		CAA9ADCA2446605B0003A984 /* 02-Effects-LongLiving.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA9ADC92446605B0003A984 /* 02-Effects-LongLiving.swift */; };
 		CAA9ADCC2446615B0003A984 /* 02-Effects-LongLivingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA9ADCB2446615B0003A984 /* 02-Effects-LongLivingTests.swift */; };
+		CABAB48E28A2968100122307 /* Exploration.swift in Sources */ = {isa = PBXBuildFile; fileRef = CABAB48D28A2968100122307 /* Exploration.swift */; };
 		CABC4F3926AEE00C00D5FA2C /* 02-Effects-Refreshable.swift in Sources */ = {isa = PBXBuildFile; fileRef = CABC4F3826AEE00C00D5FA2C /* 02-Effects-Refreshable.swift */; };
 		CABC4F3B26AEE20200D5FA2C /* 02-Effects-RefreshableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CABC4F3A26AEE20200D5FA2C /* 02-Effects-RefreshableTests.swift */; };
 		CAE962FD24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndConfirmationDialogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAE962FC24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndConfirmationDialogs.swift */; };
@@ -174,6 +175,7 @@
 		CAA9ADC724465D950003A984 /* 02-Effects-CancellationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-CancellationTests.swift"; sourceTree = "<group>"; };
 		CAA9ADC92446605B0003A984 /* 02-Effects-LongLiving.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-LongLiving.swift"; sourceTree = "<group>"; };
 		CAA9ADCB2446615B0003A984 /* 02-Effects-LongLivingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-LongLivingTests.swift"; sourceTree = "<group>"; };
+		CABAB48D28A2968100122307 /* Exploration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Exploration.swift; sourceTree = "<group>"; };
 		CABC4F3826AEE00C00D5FA2C /* 02-Effects-Refreshable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-Refreshable.swift"; sourceTree = "<group>"; };
 		CABC4F3A26AEE20200D5FA2C /* 02-Effects-RefreshableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-RefreshableTests.swift"; sourceTree = "<group>"; };
 		CAE962FC24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndConfirmationDialogs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-AlertsAndConfirmationDialogs.swift"; sourceTree = "<group>"; };
@@ -426,6 +428,7 @@
 				DC89C41C24460F96006900B9 /* Assets.xcassets */,
 				CA6AC25F2451131C00C71CB3 /* 04-HigherOrderReducers-ResuableOfflineDownloads */,
 				DC89C44524461416006900B9 /* Internal */,
+				CABAB48D28A2968100122307 /* Exploration.swift */,
 			);
 			path = SwiftUICaseStudies;
 			sourceTree = "<group>";
@@ -773,6 +776,7 @@
 				DC89C44D244621A5006900B9 /* 03-Navigation-NavigateAndLoad.swift in Sources */,
 				DC89C4442446111B006900B9 /* 01-GettingStarted-Counter.swift in Sources */,
 				DCE63B71245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift in Sources */,
+				CABAB48E28A2968100122307 /* Exploration.swift in Sources */,
 				CA27C0B7245780CE00CB1E59 /* 02-Effects-SystemEnvironment.swift in Sources */,
 				CAA9ADCA2446605B0003A984 /* 02-Effects-LongLiving.swift in Sources */,
 				DC89C45124462DE7006900B9 /* 03-Navigation-Lists-LoadThenNavigate.swift in Sources */,
