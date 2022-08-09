@@ -62,7 +62,8 @@ class VoiceMemosTests: XCTestCase {
       $0.recordingMemo?.duration = 2.5
     }
     await store.receive(.recordingMemo(.audioRecorderDidFinish(.success(true))))
-    await store.receive(.recordingMemo(.delegate(.didFinish(.success(store.state.recordingMemo!))))) {
+    await store.receive(.recordingMemo(.delegate(.didFinish(.success(store.state.recordingMemo!)))))
+    {
       $0.recordingMemo = nil
       $0.voiceMemos = [
         VoiceMemoState(
