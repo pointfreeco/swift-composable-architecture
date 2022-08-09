@@ -90,15 +90,18 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
 
     case .todo(id: _, action: .checkBoxToggled):
       enum TodoCompletionID {}
-      return .task { .sortCompletedTodos }
-        .debounce(id: TodoCompletionID.self, for: 1, scheduler: environment.mainQueue.animation())
+      return .task {
+        try await environment.mainQueue.sleep(for: .seconds(1))
+        return .sortCompletedTodos
+      }
+      .animation()
+      .cancellable(id: TodoCompletionID.self, cancelInFlight: true)
 
     case .todo:
       return .none
     }
   }
 )
-.debug()
 
 struct AppView: View {
   let store: Store<AppState, AppAction>
