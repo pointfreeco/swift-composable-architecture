@@ -37,6 +37,7 @@ struct LoadThenNavigate: ReducerProtocol {
 
       case .presentationDelayCompleted:
         state.counter = Counter.State()
+        state.isActivityIndicatorVisible = false
         return .none
       }
     }
