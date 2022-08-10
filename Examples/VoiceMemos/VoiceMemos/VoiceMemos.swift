@@ -49,7 +49,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       state: \.voiceMemos,
       action: /VoiceMemosAction.voiceMemo(id:action:),
       environment: {
-        VoiceMemoEnvironment(audioPlayerClient: $0.audioPlayer, mainRunLoop: $0.mainRunLoop)
+        VoiceMemoEnvironment(audioPlayer: $0.audioPlayer, mainRunLoop: $0.mainRunLoop)
       }
     ),
   Reducer { state, action, environment in

@@ -36,7 +36,7 @@ enum VoiceMemoAction: Equatable {
 }
 
 struct VoiceMemoEnvironment {
-  var audioPlayerClient: AudioPlayerClient
+  var audioPlayer: AudioPlayerClient
   var mainRunLoop: AnySchedulerOf<RunLoop>
 }
 
@@ -64,7 +64,7 @@ let voiceMemoReducer = Reducer<
         let start = environment.mainRunLoop.now
 
         async let playAudio: Void = send(
-          .audioPlayerClient(TaskResult { try await environment.audioPlayerClient.play(url) })
+          .audioPlayerClient(TaskResult { try await environment.audioPlayer.play(url) })
         )
 
         for try await tick in environment.mainRunLoop.timer(interval: 0.5) {
