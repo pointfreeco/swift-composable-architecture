@@ -66,7 +66,7 @@ let recordingMemoReducer = Reducer<
 
   case .task:
     return .run { [url = state.url] send in
-      async let startRecording: Void = await send(
+      async let startRecording: Void = send(
         .audioRecorderDidFinish(
           TaskResult { try await environment.audioRecorder.startRecording(url) }
         )
