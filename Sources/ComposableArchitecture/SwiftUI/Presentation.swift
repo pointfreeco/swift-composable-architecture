@@ -7,7 +7,10 @@ public enum PresentationState<State> {
   indirect case presented(id: AnyHashable, State)
 
   public init(wrappedValue: State? = nil) {
-    self = wrappedValue.map { .presented(id: UUID(), $0) } ?? .dismissed
+    self =
+      wrappedValue
+      .map { .presented(id: DependencyValues.current.navigationID.next(), $0) }
+      ?? .dismissed
   }
 
   public var wrappedValue: State? {
@@ -31,7 +34,7 @@ public enum PresentationState<State> {
       }
     }
     set {
-      self = newValue.map { .presented(id: UUID(), $0) } ?? .dismissed
+      self = .init(wrappedValue: newValue)
     }
   }
 
@@ -52,6 +55,7 @@ public enum PresentationState<State> {
 
 public typealias PresentationStateOf<R: ReducerProtocol> = PresentationState<R.State>
 
+// TODO: Should ID be encodable/decodable ever?
 extension PresentationState: Decodable where State: Decodable {
   public init(from decoder: Decoder) throws {
     self.init(wrappedValue: try State?(from: decoder))
@@ -74,6 +78,7 @@ extension PresentationState: Hashable where State: Hashable {
   }
 }
 
+// TODO: Should ID clutter custom dump logs?
 extension PresentationState: CustomReflectable {
   public var customMirror: Mirror {
     Mirror(reflecting: self.wrappedValue as Any)
@@ -99,8 +104,8 @@ extension PresentationAction: Hashable where State: Hashable, Action: Hashable {
 
 extension ReducerProtocol {
   public func presentationDestination<Destination: ReducerProtocol>(
-    state: WritableKeyPath<State, PresentationState<Destination.State>>,
-    action: CasePath<Action, PresentationAction<Destination.State, Destination.Action>>,
+    state: WritableKeyPath<State, PresentationStateOf<Destination>>,
+    action: CasePath<Action, PresentationActionOf<Destination>>,
     @ReducerBuilderOf<Destination> destination: () -> Destination
   ) -> PresentationReducer<Self, Destination> {
     PresentationReducer(
@@ -117,10 +122,10 @@ public struct PresentationReducer<
 >: ReducerProtocol {
   let presenter: Presenter
   let presented: Presented
-  let toPresentedState: WritableKeyPath<Presenter.State, PresentationState<Presented.State>>
+  let toPresentedState: WritableKeyPath<Presenter.State, PresentationStateOf<Presented>>
   let toPresentedAction:
     CasePath<
-      Presenter.Action, PresentationAction<Presented.State, Presented.Action>
+      Presenter.Action, PresentationActionOf<Presented>
     >
 
   public func reduce(
@@ -131,7 +136,7 @@ public struct PresentationReducer<
     let presentedState = state[keyPath: toPresentedState]
     let presentedAction = toPresentedAction.extract(from: action)
 
-    switch toPresentedAction.extract(from: action) {
+    switch presentedAction {
     case let .present(id, .some(presentedState)):
       state[keyPath: toPresentedState] = .presented(id: id, presentedState)
 
@@ -198,19 +203,14 @@ extension View {
   ) -> some View {
     WithViewStore(
       store.scope(state: { $0.wrappedValue }),
-      removeDuplicates: { lhs, rhs in
-        guard let lhs = lhs, let rhs = rhs else { return true }
-        return enumTag(lhs) == enumTag(rhs)
-      }
+      removeDuplicates: { ($0 != nil) == ($1 != nil) && enumTag($0) == enumTag($1) }
     ) { viewStore in
       self.fullScreenCover(
-        item: Binding(
+        item: viewStore.binding(
           get: {
-            viewStore.state.flatMap {
-              PresentationItem(destinations: $0, destination: toDestinationState)
-            }
+            $0.flatMap { PresentationItem(destinations: $0, destination: toDestinationState) }
           },
-          set: { if $0 == nil { viewStore.send(.dismiss) } }
+          send: .dismiss
         )
       ) { _ in
         IfLetStore(
@@ -259,19 +259,14 @@ extension View {
   ) -> some View {
     WithViewStore(
       store.scope(state: { $0.wrappedValue }),
-      removeDuplicates: { lhs, rhs in
-        guard let lhs = lhs, let rhs = rhs else { return true }
-        return enumTag(lhs) == enumTag(rhs)
-      }
+      removeDuplicates: { ($0 != nil) == ($1 != nil) && enumTag($0) == enumTag($1) }
     ) { viewStore in
       self.popover(
-        item: Binding(
+        item: viewStore.binding(
           get: {
-            viewStore.state.flatMap {
-              PresentationItem(destinations: $0, destination: toDestinationState)
-            }
+            $0.flatMap { PresentationItem(destinations: $0, destination: toDestinationState) }
           },
-          set: { if $0 == nil { viewStore.send(.dismiss) } }
+          send: .dismiss
         ),
         attachmentAnchor: attachmentAnchor,
         arrowEdge: arrowEdge
@@ -314,19 +309,14 @@ extension View {
   ) -> some View {
     WithViewStore(
       store.scope(state: { $0.wrappedValue }),
-      removeDuplicates: { lhs, rhs in
-        guard let lhs = lhs, let rhs = rhs else { return true }
-        return enumTag(lhs) == enumTag(rhs)
-      }
+      removeDuplicates: { ($0 != nil) == ($1 != nil) && enumTag($0) == enumTag($1) }
     ) { viewStore in
       self.sheet(
-        item: Binding(
+        item: viewStore.binding(
           get: {
-            viewStore.state.flatMap {
-              PresentationItem(destinations: $0, destination: toDestinationState)
-            }
+            $0.flatMap { PresentationItem(destinations: $0, destination: toDestinationState) }
           },
-          set: { if $0 == nil { viewStore.send(.dismiss) } }
+          send: .dismiss
         )
       ) { _ in
         IfLetStore(
