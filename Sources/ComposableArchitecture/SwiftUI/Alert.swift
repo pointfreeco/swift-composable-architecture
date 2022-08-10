@@ -212,14 +212,53 @@ extension View {
       self.modifier(
         NewAlertModifier(
           viewStore: ViewStore(store, removeDuplicates: { $0?.id == $1?.id }),
-          dismiss: dismiss
+          dismiss: dismiss,
+          fromAlertAction: { $0 }
         )
       )
     } else {
       self.modifier(
         OldAlertModifier(
           viewStore: ViewStore(store, removeDuplicates: { $0?.id == $1?.id }),
-          dismiss: dismiss
+          dismiss: dismiss,
+          fromAlertAction: { $0 }
+        )
+      )
+    }
+  }
+
+  @ViewBuilder public func alert<State, Action, AlertAction>(
+    store: Store<
+      PresentationState<AlertState<AlertAction>>,
+      PresentationAction<AlertState<AlertAction>, AlertAction>
+    >
+  ) -> some View {
+    self.alert(store: store, state: { $0 }, action: { $0 })
+  }
+
+  @ViewBuilder public func alert<State, Action, AlertAction>(
+    store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+    state toAlertState: @escaping (State) -> AlertState<AlertAction>?,
+    action fromAlertAction: @escaping (AlertAction) -> Action
+  ) -> some View {
+    let viewStore = ViewStore(
+      store.scope(state: { $0.wrappedValue.flatMap(toAlertState) }),
+      removeDuplicates: { $0?.id == $1?.id }
+    )
+    if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
+      self.modifier(
+        NewAlertModifier(
+          viewStore: viewStore,
+          dismiss: .dismiss,
+          fromAlertAction: { .presented(fromAlertAction($0)) }
+        )
+      )
+    } else {
+      self.modifier(
+        OldAlertModifier(
+          viewStore: viewStore,
+          dismiss: .dismiss,
+          fromAlertAction: { .presented(fromAlertAction($0)) }
         )
       )
     }
@@ -228,28 +267,30 @@ extension View {
 
 // NB: Workaround for iOS 14 runtime crashes during iOS 15 availability checks.
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-private struct NewAlertModifier<Action>: ViewModifier {
-  @ObservedObject var viewStore: ViewStore<AlertState<Action>?, Action>
+private struct NewAlertModifier<Action, AlertAction>: ViewModifier {
+  @ObservedObject var viewStore: ViewStore<AlertState<AlertAction>?, Action>
   let dismiss: Action
+  let fromAlertAction: (AlertAction) -> Action
 
   func body(content: Content) -> some View {
     content.alert(
       (viewStore.state?.title).map { Text($0) } ?? Text(""),
       isPresented: viewStore.binding(send: dismiss).isPresent(),
       presenting: viewStore.state,
-      actions: { $0.toSwiftUIActions(send: { viewStore.send($0) }) },
+      actions: { $0.toSwiftUIActions(send: { viewStore.send(self.fromAlertAction($0)) }) },
       message: { $0.message.map { Text($0) } }
     )
   }
 }
 
-private struct OldAlertModifier<Action>: ViewModifier {
-  @ObservedObject var viewStore: ViewStore<AlertState<Action>?, Action>
+private struct OldAlertModifier<Action, AlertAction>: ViewModifier {
+  @ObservedObject var viewStore: ViewStore<AlertState<AlertAction>?, Action>
   let dismiss: Action
+  let fromAlertAction: (AlertAction) -> Action
 
   func body(content: Content) -> some View {
     content.alert(item: viewStore.binding(send: dismiss)) { state in
-      state.toSwiftUIAlert(send: { viewStore.send($0) })
+      state.toSwiftUIAlert(send: { viewStore.send(self.fromAlertAction($0)) })
     }
   }
 }
