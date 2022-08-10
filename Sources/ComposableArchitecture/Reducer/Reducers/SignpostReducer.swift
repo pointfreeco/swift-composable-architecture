@@ -4,22 +4,19 @@ extension ReducerProtocol {
   @inlinable
   public func signpost(
     _ prefix: String = "",
+    // TODO: Move log to `DependencyValues`
     log: OSLog = OSLog(
       subsystem: "co.pointfree.ComposableArchitecture",
       category: "Reducer Instrumentation"
     )
   ) -> SignpostReducer<Self> {
-    .init(
-      upstream: self,
-      prefix: prefix,
-      log: log
-    )
+    SignpostReducer(base: self, prefix: prefix, log: log)
   }
 }
 
-public struct SignpostReducer<Upstream>: ReducerProtocol
-where Upstream: ReducerProtocol {
-  public let upstream: Upstream
+public struct SignpostReducer<Base: ReducerProtocol>: ReducerProtocol {
+  @usableFromInline
+  let base: Base
 
   @usableFromInline
   let prefix: String
@@ -29,11 +26,11 @@ where Upstream: ReducerProtocol {
 
   @usableFromInline
   init(
-    upstream: Upstream,
+    base: Base,
     prefix: String,
     log: OSLog
   ) {
-    self.upstream = upstream
+    self.base = base
     // NB: Prevent rendering as "N/A" in Instruments
     let zeroWidthSpace = "\u{200B}"
     self.prefix = prefix.isEmpty ? zeroWidthSpace : "[\(prefix)] "
@@ -42,15 +39,14 @@ where Upstream: ReducerProtocol {
 
   @inlinable
   public func reduce(
-    into state: inout Upstream.State,
-    action: Upstream.Action
-  ) -> Effect<Upstream.Action, Never> {
+    into state: inout Base.State, action: Base.Action
+  ) -> Effect<Base.Action, Never> {
     var actionOutput: String!
     if self.log.signpostsEnabled {
       actionOutput = debugCaseOutput(action)
       os_signpost(.begin, log: log, name: "Action", "%s%s", self.prefix, actionOutput)
     }
-    let effects = self.upstream.reduce(into: &state, action: action)
+    let effects = self.base.reduce(into: &state, action: action)
     if self.log.signpostsEnabled {
       os_signpost(.end, log: self.log, name: "Action")
       return

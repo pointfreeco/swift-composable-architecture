@@ -978,25 +978,25 @@
     }
   }
 
-  class TestReducer<Upstream>: ReducerProtocol where Upstream: ReducerProtocol {
-    let upstream: Upstream
+  class TestReducer<Base: ReducerProtocol>: ReducerProtocol {
+    let base: Base
     var dependencies = DependencyValues(isTesting: true)
     var inFlightEffects: Set<LongLivingEffect> = []
-    var receivedActions: [(action: Upstream.Action, state: Upstream.State)] = []
-    var state: Upstream.State
+    var receivedActions: [(action: Base.Action, state: Base.State)] = []
+    var state: Base.State
 
     init(
-      _ upstream: Upstream,
-      initialState: Upstream.State
+      _ base: Base,
+      initialState: Base.State
     ) {
-      self.upstream = upstream
+      self.base = base
       self.state = initialState
     }
 
-    func reduce(into state: inout Upstream.State, action: Action) -> Effect<Action, Never> {
-      let reducer = self.upstream.dependency(\.self, self.dependencies)
+    func reduce(into state: inout Base.State, action: Action) -> Effect<Action, Never> {
+      let reducer = self.base.dependency(\.self, self.dependencies)
 
-      let effects: Effect<Upstream.Action, Never>
+      let effects: Effect<Base.Action, Never>
       switch action.origin {
       case let .send(action):
         effects = reducer.reduce(into: &state, action: action)
@@ -1039,8 +1039,8 @@
       let line: UInt
 
       enum Origin {
-        case send(Upstream.Action)
-        case receive(Upstream.Action)
+        case send(Base.Action)
+        case receive(Base.Action)
       }
     }
   }

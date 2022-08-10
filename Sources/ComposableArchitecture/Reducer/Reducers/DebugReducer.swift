@@ -28,7 +28,7 @@ extension ReducerProtocol {
     actionFormat: ActionFormat = .prettyPrint
   ) -> DebugReducer<Self, LocalState, LocalAction> {
     .init(
-      upstream: self,
+      base: self,
       prefix: prefix,
       state: toLocalState,
       action: toLocalAction,
@@ -42,7 +42,7 @@ extension ReducerProtocol {
     actionFormat: ActionFormat = .prettyPrint
   ) -> DebugReducer<Self, State, Action> {
     .init(
-      upstream: self,
+      base: self,
       prefix: prefix,
       state: { $0 },
       action: { $0 },
@@ -51,9 +51,9 @@ extension ReducerProtocol {
   }
 }
 
-public struct DebugReducer<Upstream, LocalState, LocalAction>: ReducerProtocol
-where Upstream: ReducerProtocol {
-  public let upstream: Upstream
+public struct DebugReducer<Base: ReducerProtocol, LocalState, LocalAction>: ReducerProtocol {
+  @usableFromInline
+  let base: Base
 
   @usableFromInline
   let prefix: String
@@ -72,13 +72,13 @@ where Upstream: ReducerProtocol {
 
   @usableFromInline
   init(
-    upstream: Upstream,
+    base: Base,
     prefix: String,
     state toLocalState: @escaping (State) -> LocalState,
     action toLocalAction: @escaping (Action) -> LocalAction?,
     actionFormat: ActionFormat
   ) {
-    self.upstream = upstream
+    self.base = base
     self.prefix = prefix
     self.toLocalState = toLocalState
     self.toLocalAction = toLocalAction
@@ -87,12 +87,11 @@ where Upstream: ReducerProtocol {
 
   @inlinable
   public func reduce(
-    into state: inout Upstream.State,
-    action: Upstream.Action
-  ) -> Effect<Upstream.Action, Never> {
+    into state: inout Base.State, action: Base.Action
+  ) -> Effect<Base.Action, Never> {
     #if DEBUG
       let previousState = self.toLocalState(state)
-      let effects = self.upstream.reduce(into: &state, action: action)
+      let effects = self.base.reduce(into: &state, action: action)
       guard let localAction = self.toLocalAction(action) else { return effects }
       let nextState = self.toLocalState(state)
       return .merge(
@@ -118,7 +117,7 @@ where Upstream: ReducerProtocol {
         effects
       )
     #else
-      return self.upstream.reduce(into: &state, action: action)
+      return self.base.reduce(into: &state, action: action)
     #endif
   }
 }

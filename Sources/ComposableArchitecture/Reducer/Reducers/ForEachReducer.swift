@@ -9,7 +9,7 @@ extension ReducerProtocol {
     line: UInt = #line
   ) -> ForEachReducer<Self, ID, Element> {
     .init(
-      upstream: self,
+      parent: self,
       toElementsState: toElementsState,
       toElementAction: toElementAction,
       element: element(),
@@ -21,16 +21,16 @@ extension ReducerProtocol {
 }
 
 public struct ForEachReducer<
-  Upstream: ReducerProtocol, ID: Hashable, Element: ReducerProtocol
+  Parent: ReducerProtocol, ID: Hashable, Element: ReducerProtocol
 >: ReducerProtocol {
   @usableFromInline
-  let upstream: Upstream
+  let parent: Parent
 
   @usableFromInline
-  let toElementsState: WritableKeyPath<Upstream.State, IdentifiedArray<ID, Element.State>>
+  let toElementsState: WritableKeyPath<Parent.State, IdentifiedArray<ID, Element.State>>
 
   @usableFromInline
-  let toElementAction: CasePath<Upstream.Action, (ID, Element.Action)>
+  let toElementAction: CasePath<Parent.Action, (ID, Element.Action)>
 
   @usableFromInline
   let element: Element
@@ -46,15 +46,15 @@ public struct ForEachReducer<
 
   @inlinable
   init(
-    upstream: Upstream,
-    toElementsState: WritableKeyPath<Upstream.State, IdentifiedArray<ID, Element.State>>,
-    toElementAction: CasePath<Upstream.Action, (ID, Element.Action)>,
+    parent: Parent,
+    toElementsState: WritableKeyPath<Parent.State, IdentifiedArray<ID, Element.State>>,
+    toElementAction: CasePath<Parent.Action, (ID, Element.Action)>,
     element: Element,
     file: StaticString,
     fileID: StaticString,
     line: UInt
   ) {
-    self.upstream = upstream
+    self.parent = parent
     self.toElementsState = toElementsState
     self.toElementAction = toElementAction
     self.element = element
@@ -65,18 +65,18 @@ public struct ForEachReducer<
 
   @inlinable
   public func reduce(
-    into state: inout Upstream.State, action: Upstream.Action
-  ) -> Effect<Upstream.Action, Never> {
+    into state: inout Parent.State, action: Parent.Action
+  ) -> Effect<Parent.Action, Never> {
     return .merge(
       self.reduceForEach(into: &state, action: action),
-      self.upstream.reduce(into: &state, action: action)
+      self.parent.reduce(into: &state, action: action)
     )
   }
 
   @inlinable
   func reduceForEach(
-    into state: inout Upstream.State, action: Upstream.Action
-  ) -> Effect<Upstream.Action, Never> {
+    into state: inout Parent.State, action: Parent.Action
+  ) -> Effect<Parent.Action, Never> {
     guard let (id, elementAction) = self.toElementAction.extract(from: action) else { return .none }
     if state[keyPath: self.toElementsState][id: id] == nil {
       // TODO: Update language
