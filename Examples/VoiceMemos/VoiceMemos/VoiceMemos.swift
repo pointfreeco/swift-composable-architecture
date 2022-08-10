@@ -7,20 +7,8 @@ struct VoiceMemos: ReducerProtocol {
   struct State: Equatable {
     var alert: AlertState<Action>?
     var audioRecorderPermission = RecorderPermission.undetermined
-    var currentRecording: CurrentRecording?
+    var recordingMemo: RecordingMemo.State?
     var voiceMemos: IdentifiedArrayOf<VoiceMemo.State> = []
-    
-    struct CurrentRecording: Equatable {
-      var date: Date
-      var duration: TimeInterval = 0
-      var mode: Mode = .recording
-      var url: URL
-      
-      enum Mode {
-        case recording
-        case encoding
-      }
-    }
     
     enum RecorderPermission {
       case allowed
@@ -31,12 +19,10 @@ struct VoiceMemos: ReducerProtocol {
   
   enum Action: Equatable {
     case alertDismissed
-    case audioRecorderDidFinish(TaskResult<Bool>)
-    case currentRecordingTimerUpdated
-    case finalRecordingTime(TimeInterval)
     case openSettingsButtonTapped
     case recordButtonTapped
     case recordPermissionResponse(Bool)
+    case recordingMemo(RecordingMemo.Action)
     case voiceMemo(id: VoiceMemo.State.ID, action: VoiceMemo.Action)
   }
 
@@ -48,67 +34,18 @@ struct VoiceMemos: ReducerProtocol {
 
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
-      enum RecordID {}
-
-      func startRecording() -> Effect<Action, Never> {
-        let url = self.temporaryDirectory()
-          .appendingPathComponent(self.uuid().uuidString)
-          .appendingPathExtension("m4a")
-        state.currentRecording = State.CurrentRecording(
+      var newRecordingMemo: RecordingMemo.State {
+        RecordingMemo.State(
           date: self.mainRunLoop.now.date,
-          url: url
+          url: self.temporaryDirectory()
+            .appendingPathComponent(self.uuid().uuidString)
+            .appendingPathExtension("m4a")
         )
-
-        return .run { send in
-          async let startRecording: Void = await send(
-            .audioRecorderDidFinish(
-              TaskResult { try await self.audioRecorder.startRecording(url) }
-            )
-          )
-
-          for await _ in self.mainRunLoop.timer(interval: .seconds(1)) {
-            await send(.currentRecordingTimerUpdated)
-          }
-        }
-        .cancellable(id: RecordID.self, cancelInFlight: true)
       }
 
       switch action {
       case .alertDismissed:
         state.alert = nil
-        return .none
-
-      case .audioRecorderDidFinish(.success(true)):
-        guard
-          let currentRecording = state.currentRecording,
-          currentRecording.mode == .encoding
-        else {
-          assertionFailure()
-          return .none
-        }
-
-        state.currentRecording = nil
-        state.voiceMemos.insert(
-          VoiceMemo.State(
-            date: currentRecording.date,
-            duration: currentRecording.duration,
-            url: currentRecording.url
-          ),
-          at: 0
-        )
-        return .cancel(id: RecordID.self)
-
-      case .audioRecorderDidFinish(.success(false)), .audioRecorderDidFinish(.failure):
-        state.alert = AlertState(title: TextState("Voice memo recording failed."))
-        state.currentRecording = nil
-        return .cancel(id: RecordID.self)
-
-      case .currentRecordingTimerUpdated:
-        state.currentRecording?.duration += 1
-        return .none
-
-      case let .finalRecordingTime(duration):
-        state.currentRecording?.duration = duration
         return .none
 
       case .openSettingsButtonTapped:
@@ -124,36 +61,45 @@ struct VoiceMemos: ReducerProtocol {
           }
 
         case .denied:
-          state.alert = AlertState(title: TextState("Permission is required to record voice memos."))
+          state.alert = AlertState(
+            title: TextState("Permission is required to record voice memos.")
+          )
           return .none
 
         case .allowed:
-          guard let currentRecording = state.currentRecording else {
-            return startRecording()
-          }
-
-          switch currentRecording.mode {
-          case .encoding:
-            return .none
-
-          case .recording:
-            state.currentRecording?.mode = .encoding
-
-            return .run { send in
-              if let currentTime = await self.audioRecorder.currentTime() {
-                await send(.finalRecordingTime(currentTime))
-              }
-              await self.audioRecorder.stopRecording()
-            }
-          }
+          state.recordingMemo = newRecordingMemo
+          return .none
         }
+
+      case let .recordingMemo(.delegate(.didFinish(.success(recordingMemo)))):
+        state.recordingMemo = nil
+        state.voiceMemos.insert(
+          VoiceMemo.State(
+            date: recordingMemo.date,
+            duration: recordingMemo.duration,
+            url: recordingMemo.url
+          ),
+          at: 0
+        )
+        return .none
+
+      case .recordingMemo(.delegate(.didFinish(.failure))):
+        state.alert = AlertState(title: TextState("Voice memo recording failed."))
+        state.recordingMemo = nil
+        return .none
+
+      case .recordingMemo:
+        return .none
 
       case let .recordPermissionResponse(permission):
         state.audioRecorderPermission = permission ? .allowed : .denied
         if permission {
-          return startRecording()
+          state.recordingMemo = newRecordingMemo
+          return .none
         } else {
-          state.alert = AlertState(title: TextState("Permission is required to record voice memos."))
+          state.alert = AlertState(
+            title: TextState("Permission is required to record voice memos.")
+          )
           return .none
         }
 
@@ -175,6 +121,9 @@ struct VoiceMemos: ReducerProtocol {
         return .none
       }
     }
+    .ifLet(state: \.recordingMemo, action: /Action.recordingMemo) {
+      RecordingMemo()
+    }
     .forEach(state: \.voiceMemos, action: /Action.voiceMemo(id:action:)) {
       VoiceMemo()
     }
@@ -190,9 +139,7 @@ struct VoiceMemosView: View {
         VStack {
           List {
             ForEachStore(
-              self.store.scope(
-                state: \.voiceMemos, action: VoiceMemos.Action.voiceMemo(id:action:)
-              )
+              self.store.scope(state: \.voiceMemos, action: VoiceMemos.Action.voiceMemo(id:action:))
             ) {
               VoiceMemoView(store: $0)
             }
@@ -202,41 +149,21 @@ struct VoiceMemosView: View {
               }
             }
           }
-          VStack {
-            ZStack {
-              Circle()
-                .foregroundColor(Color(.label))
-                .frame(width: 74, height: 74)
 
-              Button(action: { viewStore.send(.recordButtonTapped, animation: .spring()) }) {
-                RoundedRectangle(cornerRadius: viewStore.currentRecording != nil ? 4 : 35)
-                  .foregroundColor(Color(.systemRed))
-                  .padding(viewStore.currentRecording != nil ? 17 : 2)
-              }
-              .frame(width: 70, height: 70)
-
-              if viewStore.state.audioRecorderPermission == .denied {
-                VStack(spacing: 10) {
-                  Text("Recording requires microphone access.")
-                    .multilineTextAlignment(.center)
-                  Button("Open Settings") { viewStore.send(.openSettingsButtonTapped) }
-                }
-                .frame(maxWidth: .infinity, maxHeight: 74)
-                .background(Color.white.opacity(0.9))
-              }
-            }
-
-            if let duration = viewStore.currentRecording?.duration,
-              let formattedDuration = dateComponentsFormatter.string(from: duration)
-            {
-              Text(formattedDuration)
-                .font(.body.monospacedDigit().bold())
-                .foregroundColor(.white)
-                .colorMultiply(Color(Int(duration).isMultiple(of: 2) ? .systemRed : .label))
-                .animation(.easeInOut(duration: 0.5), value: duration)
+          IfLetStore(
+            self.store.scope(state: \.recordingMemo, action: VoiceMemos.Action.recordingMemo)
+          ) { store in
+            RecordingMemoView(store: store)
+          } else: {
+            RecordButton(permission: viewStore.audioRecorderPermission) {
+              viewStore.send(.recordButtonTapped, animation: .spring())
+            } settingsAction: {
+              viewStore.send(.openSettingsButtonTapped)
             }
           }
           .padding()
+          .frame(maxWidth: .infinity)
+          .background(Color.init(white: 0.95))
         }
         .alert(
           self.store.scope(state: \.alert),
@@ -248,6 +175,40 @@ struct VoiceMemosView: View {
     }
   }
 }
+
+struct RecordButton: View {
+  let permission: VoiceMemos.State.RecorderPermission
+  let action: () -> Void
+  let settingsAction: () -> Void
+
+  var body: some View {
+    ZStack {
+      Group {
+        Circle()
+          .foregroundColor(Color(.label))
+          .frame(width: 74, height: 74)
+
+        Button(action: self.action) {
+          RoundedRectangle(cornerRadius: 35)
+            .foregroundColor(Color(.systemRed))
+            .padding(2)
+        }
+        .frame(width: 70, height: 70)
+      }
+      .opacity(self.permission == .denied ? 0.1 : 1)
+
+      if self.permission == .denied {
+        VStack(spacing: 10) {
+          Text("Recording requires microphone access.")
+            .multilineTextAlignment(.center)
+          Button("Open Settings", action: self.settingsAction)
+        }
+        .frame(maxWidth: .infinity, maxHeight: 74)
+      }
+    }
+  }
+}
+
 
 struct VoiceMemos_Previews: PreviewProvider {
   static var previews: some View {

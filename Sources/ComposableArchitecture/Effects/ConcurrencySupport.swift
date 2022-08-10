@@ -329,7 +329,7 @@ public final actor ActorIsolated<Value: Sendable> {
 ///
 /// Sometimes we need to use types that should be sendable but have not yet been audited for
 /// sendability. If we feel confident that the type is truly sendable, and we don't want to blanket
-/// disable concurrency warnings for a module via `@precondition import`, then we can selectively
+/// disable concurrency warnings for a module via `@preconcurrency import`, then we can selectively
 /// make that single type sendable by wrapping it in ``UncheckedSendable``.
 ///
 /// > Note: By wrapping something in ``UncheckedSendable`` you are asking the compiler to trust
