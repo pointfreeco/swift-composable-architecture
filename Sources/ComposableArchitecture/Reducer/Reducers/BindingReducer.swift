@@ -18,31 +18,31 @@ import SwiftUI
   extension ReducerProtocol where Action: BindableAction, State == Action.State {
     @inlinable
     public func binding() -> BindingReducer<Self> {
-      .init(upstream: self)
+      .init(base: self)
     }
   }
 
-  public struct BindingReducer<Upstream: ReducerProtocol>: ReducerProtocol
-  where Upstream.Action: BindableAction, Upstream.State == Upstream.Action.State {
+  public struct BindingReducer<Base: ReducerProtocol>: ReducerProtocol
+  where Base.Action: BindableAction, Base.State == Base.Action.State {
     @usableFromInline
-    let upstream: Upstream
+    let base: Base
 
     @usableFromInline
-    init(upstream: Upstream) {
-      self.upstream = upstream
+    init(base: Base) {
+      self.base = base
     }
 
     @inlinable
     public func reduce(
-      into state: inout Upstream.State, action: Upstream.Action
-    ) -> Effect<Upstream.Action, Never> {
-      guard let bindingAction = (/Upstream.Action.binding).extract(from: action)
+      into state: inout Base.State, action: Base.Action
+    ) -> Effect<Base.Action, Never> {
+      guard let bindingAction = (/Base.Action.binding).extract(from: action)
       else {
-        return self.upstream.reduce(into: &state, action: action)
+        return self.base.reduce(into: &state, action: action)
       }
 
       bindingAction.set(&state)
-      return self.upstream.reduce(into: &state, action: action)
+      return self.base.reduce(into: &state, action: action)
     }
   }
 #endif

@@ -9,10 +9,10 @@ extension ReducerProtocol {
     line: UInt = #line
   ) -> IfLetReducer<Self, Wrapped> {
     .init(
-      upstream: self,
-      wrapped: wrapped(),
-      toWrappedState: toWrappedState,
-      toWrappedAction: toWrappedAction,
+      parent: self,
+      child: wrapped(),
+      toChildState: toWrappedState,
+      toChildAction: toWrappedAction,
       file: file,
       fileID: fileID,
       line: line
@@ -29,10 +29,10 @@ extension ReducerProtocol {
     line: UInt = #line
   ) -> IfCaseLetReducer<Self, Wrapped> {
     .init(
-      upstream: self,
-      wrapped: wrapped(),
-      toWrappedState: toWrappedState,
-      toWrappedAction: toWrappedAction,
+      parent: self,
+      child: wrapped(),
+      toChildState: toWrappedState,
+      toChildAction: toWrappedAction,
       file: file,
       fileID: fileID,
       line: line
@@ -40,18 +40,18 @@ extension ReducerProtocol {
   }
 }
 
-public struct IfLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtocol>: ReducerProtocol {
+public struct IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: ReducerProtocol {
   @usableFromInline
-  let upstream: Upstream
+  let parent: Parent
 
   @usableFromInline
-  let wrapped: Wrapped
+  let child: Child
 
   @usableFromInline
-  let toWrappedState: WritableKeyPath<State, Wrapped.State?>
+  let toChildState: WritableKeyPath<Parent.State, Child.State?>
 
   @usableFromInline
-  let toWrappedAction: CasePath<Action, Wrapped.Action>
+  let toChildAction: CasePath<Parent.Action, Child.Action>
 
   @usableFromInline
   let file: StaticString
@@ -64,18 +64,18 @@ public struct IfLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtocol>:
 
   @inlinable
   init(
-    upstream: Upstream,
-    wrapped: Wrapped,
-    toWrappedState: WritableKeyPath<State, Wrapped.State?>,
-    toWrappedAction: CasePath<Action, Wrapped.Action>,
+    parent: Parent,
+    child: Child,
+    toChildState: WritableKeyPath<Parent.State, Child.State?>,
+    toChildAction: CasePath<Parent.Action, Child.Action>,
     file: StaticString,
     fileID: StaticString,
     line: UInt
   ) {
-    self.upstream = upstream
-    self.wrapped = wrapped
-    self.toWrappedState = toWrappedState
-    self.toWrappedAction = toWrappedAction
+    self.parent = parent
+    self.child = child
+    self.toChildState = toChildState
+    self.toChildAction = toChildAction
     self.file = file
     self.fileID = fileID
     self.line = line
@@ -83,21 +83,21 @@ public struct IfLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtocol>:
 
   @inlinable
   public func reduce(
-    into state: inout Upstream.State, action: Upstream.Action
-  ) -> Effect<Upstream.Action, Never> {
+    into state: inout Parent.State, action: Parent.Action
+  ) -> Effect<Parent.Action, Never> {
     return .merge(
-      self.reduceWrapped(into: &state, action: action),
-      self.upstream.reduce(into: &state, action: action)
+      self.reduceChild(into: &state, action: action),
+      self.parent.reduce(into: &state, action: action)
     )
   }
 
   @inlinable
-  func reduceWrapped(
-    into state: inout Upstream.State, action: Upstream.Action
-  ) -> Effect<Upstream.Action, Never> {
-    guard let wrappedAction = self.toWrappedAction.extract(from: action)
+  func reduceChild(
+    into state: inout Parent.State, action: Parent.Action
+  ) -> Effect<Parent.Action, Never> {
+    guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
-    guard state[keyPath: self.toWrappedState] != nil else {
+    guard state[keyPath: self.toChildState] != nil else {
       // TODO: Update language
       runtimeWarning(
         """
@@ -125,31 +125,30 @@ public struct IfLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtocol>:
           "\(self.fileID)",
           self.line,
           debugCaseOutput(action),
-          typeName(Wrapped.State.self),
+          typeName(Child.State.self),
         ],
         file: self.file,
         line: self.line
       )
       return .none
     }
-    return self.wrapped.reduce(into: &state[keyPath: self.toWrappedState]!, action: wrappedAction)
-      .map(self.toWrappedAction.embed)
+    return self.child.reduce(into: &state[keyPath: self.toChildState]!, action: childAction)
+      .map(self.toChildAction.embed)
   }
 }
 
-public struct IfCaseLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtocol>: ReducerProtocol
-{
+public struct IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: ReducerProtocol {
   @usableFromInline
-  let upstream: Upstream
+  let parent: Parent
 
   @usableFromInline
-  let wrapped: Wrapped
+  let child: Child
 
   @usableFromInline
-  let toWrappedState: CasePath<State, Wrapped.State>
+  let toChildState: CasePath<Parent.State, Child.State>
 
   @usableFromInline
-  let toWrappedAction: CasePath<Action, Wrapped.Action>
+  let toChildAction: CasePath<Parent.Action, Child.Action>
 
   @usableFromInline
   let file: StaticString
@@ -162,18 +161,18 @@ public struct IfCaseLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtoc
 
   @inlinable
   init(
-    upstream: Upstream,
-    wrapped: Wrapped,
-    toWrappedState: CasePath<State, Wrapped.State>,
-    toWrappedAction: CasePath<Action, Wrapped.Action>,
+    parent: Parent,
+    child: Child,
+    toChildState: CasePath<Parent.State, Child.State>,
+    toChildAction: CasePath<Parent.Action, Child.Action>,
     file: StaticString,
     fileID: StaticString,
     line: UInt
   ) {
-    self.upstream = upstream
-    self.wrapped = wrapped
-    self.toWrappedState = toWrappedState
-    self.toWrappedAction = toWrappedAction
+    self.parent = parent
+    self.child = child
+    self.toChildState = toChildState
+    self.toChildAction = toChildAction
     self.file = file
     self.fileID = fileID
     self.line = line
@@ -181,21 +180,21 @@ public struct IfCaseLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtoc
 
   @inlinable
   public func reduce(
-    into state: inout Upstream.State, action: Upstream.Action
-  ) -> Effect<Upstream.Action, Never> {
+    into state: inout Parent.State, action: Parent.Action
+  ) -> Effect<Parent.Action, Never> {
     return .merge(
-      self.reduceWrapped(into: &state, action: action),
-      self.upstream.reduce(into: &state, action: action)
+      self.reduceChild(into: &state, action: action),
+      self.parent.reduce(into: &state, action: action)
     )
   }
 
   @inlinable
-  func reduceWrapped(
-    into state: inout Upstream.State, action: Upstream.Action
-  ) -> Effect<Upstream.Action, Never> {
-    guard let wrappedAction = self.toWrappedAction.extract(from: action)
+  func reduceChild(
+    into state: inout Parent.State, action: Parent.Action
+  ) -> Effect<Parent.Action, Never> {
+    guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
-    guard var wrappedState = self.toWrappedState.extract(from: state) else {
+    guard var childState = self.toChildState.extract(from: state) else {
       // TODO: Update language
       runtimeWarning(
         """
@@ -223,15 +222,15 @@ public struct IfCaseLetReducer<Upstream: ReducerProtocol, Wrapped: ReducerProtoc
           "\(self.fileID)",
           self.line,
           debugCaseOutput(action),
-          typeName(Wrapped.State.self),
+          typeName(Child.State.self),
         ],
         file: self.file,
         line: self.line
       )
       return .none
     }
-    defer { state = self.toWrappedState.embed(wrappedState) }
-    return self.wrapped.reduce(into: &wrappedState, action: wrappedAction)
-      .map(self.toWrappedAction.embed)
+    defer { state = self.toChildState.embed(childState) }
+    return self.child.reduce(into: &childState, action: childAction)
+      .map(self.toChildAction.embed)
   }
 }

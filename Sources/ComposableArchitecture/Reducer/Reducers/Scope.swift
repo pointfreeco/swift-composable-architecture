@@ -1,67 +1,67 @@
-public struct Scope<State, Action, Local: ReducerProtocol>: ReducerProtocol {
+public struct Scope<State, Action, Child: ReducerProtocol>: ReducerProtocol {
   @usableFromInline
-  let toLocalState: WritableKeyPath<State, Local.State>
+  let toChildState: WritableKeyPath<State, Child.State>
 
   @usableFromInline
-  let toLocalAction: CasePath<Action, Local.Action>
+  let toChildAction: CasePath<Action, Child.Action>
 
   @usableFromInline
-  let localReducer: Local
+  let child: Child
 
   @inlinable
   public init(
-    state toLocalState: WritableKeyPath<State, Local.State>,
-    action toLocalAction: CasePath<Action, Local.Action>,
-    @ReducerBuilderOf<Local> _ local: () -> Local
+    state toChildState: WritableKeyPath<State, Child.State>,
+    action toChildAction: CasePath<Action, Child.Action>,
+    @ReducerBuilderOf<Child> _ child: () -> Child
   ) {
-    self.toLocalState = toLocalState
-    self.toLocalAction = toLocalAction
-    self.localReducer = local()
+    self.toChildState = toChildState
+    self.toChildAction = toChildAction
+    self.child = child()
   }
 
   @inlinable
   public func reduce(
     into state: inout State, action: Action
   ) -> Effect<Action, Never> {
-    guard let localAction = self.toLocalAction.extract(from: action)
+    guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
-    return self.localReducer
-      .reduce(into: &state[keyPath: self.toLocalState], action: localAction)
-      .map(self.toLocalAction.embed)
+    return self.child
+      .reduce(into: &state[keyPath: self.toChildState], action: childAction)
+      .map(self.toChildAction.embed)
   }
 }
 
 // TODO: Single interface with `Scope`?
 // TODO: Use `ifLet`, or `ifCaseLet`, or `switch` instead?
-public struct ScopeCase<State, Action, Local: ReducerProtocol>: ReducerProtocol {
+public struct ScopeCase<State, Action, Child: ReducerProtocol>: ReducerProtocol {
   @usableFromInline
-  let toLocalState: CasePath<State, Local.State>
+  let toChildState: CasePath<State, Child.State>
 
   @usableFromInline
-  let toLocalAction: CasePath<Action, Local.Action>
+  let toChildAction: CasePath<Action, Child.Action>
 
   @usableFromInline
-  let localReducer: Local
+  let child: Child
 
   @inlinable
   public init(
-    state toLocalState: CasePath<State, Local.State>,
-    action toLocalAction: CasePath<Action, Local.Action>,
-    @ReducerBuilderOf<Local> _ local: () -> Local
+    state toChildState: CasePath<State, Child.State>,
+    action toChildAction: CasePath<Action, Child.Action>,
+    @ReducerBuilderOf<Child> _ child: () -> Child
   ) {
-    self.toLocalState = toLocalState
-    self.toLocalAction = toLocalAction
-    self.localReducer = local()
+    self.toChildState = toChildState
+    self.toChildAction = toChildAction
+    self.child = child()
   }
 
   @inlinable
   public func reduce(
     into state: inout State, action: Action
   ) -> Effect<Action, Never> {
-    guard let localAction = self.toLocalAction.extract(from: action)
+    guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
 
-    guard var localState = toLocalState.extract(from: state) else {
+    guard var childState = self.toChildState.extract(from: state) else {
       //      runtimeWarning(
       //        """
       //        A reducer pulled back from "%@:%d" received an action when local state was \
@@ -96,10 +96,10 @@ public struct ScopeCase<State, Action, Local: ReducerProtocol>: ReducerProtocol 
       //      )
       return .none
     }
-    defer { state = self.toLocalState.embed(localState) }
+    defer { state = self.toChildState.embed(childState) }
 
-    return self.localReducer
-      .reduce(into: &localState, action: localAction)
-      .map(self.toLocalAction.embed)
+    return self.child
+      .reduce(into: &childState, action: childAction)
+      .map(self.toChildAction.embed)
   }
 }
