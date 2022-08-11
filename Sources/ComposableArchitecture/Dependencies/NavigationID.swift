@@ -13,8 +13,15 @@ extension DependencyValues {
 // TODO: Make `Sendable`
 // TODO: Should this be called `Navigation` with `nextID` and `currentID`?
 public struct NavigationID {
-  public var next: () -> AnyHashable
   public var current: AnyHashable?
+  // TODO: Runtime warn by default? (when not presented)
+  // TODO: Should this be optional? Should it be:
+  // - navigation.current?.id
+  // - navigation.current?.dismiss()
+  // - navigation.nextID()
+  // - navigation.nextID.peek() // requires state
+  public var dismiss: @Sendable () async -> Void = {}
+  public var next: () -> AnyHashable
 
   public static let live = Self { UUID() }
   public static var incrementing: Self {

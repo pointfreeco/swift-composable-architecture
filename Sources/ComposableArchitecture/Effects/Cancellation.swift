@@ -27,9 +27,12 @@ extension Effect {
   ///   - cancelInFlight: Determines if any in-flight effect with the same identifier should be
   ///     canceled before starting this new one.
   /// - Returns: A new effect that is capable of being canceled by an identifier.
-  public func cancellable(id: AnyHashable, cancelInFlight: Bool = false) -> Self {
-    let navigationID = DependencyValues.current.navigationID.current
-    return Deferred {
+  public func cancellable(
+    id: AnyHashable,
+    navigationID: AnyHashable? = DependencyValues.current.navigationID.current,
+    cancelInFlight: Bool = false
+  ) -> Self {
+    Deferred {
       ()
         -> Publishers.HandleEvents<
           Publishers.PrefixUntilOutput<Self, PassthroughSubject<Void, Never>>
@@ -82,8 +85,16 @@ extension Effect {
   ///   - cancelInFlight: Determines if any in-flight effect with the same identifier should be
   ///     canceled before starting this new one.
   /// - Returns: A new effect that is capable of being canceled by an identifier.
-  public func cancellable(id: Any.Type, cancelInFlight: Bool = false) -> Self {
-    self.cancellable(id: ObjectIdentifier(id), cancelInFlight: cancelInFlight)
+  public func cancellable(
+    id: Any.Type,
+    navigationID: AnyHashable? = DependencyValues.current.navigationID.current,
+    cancelInFlight: Bool = false
+  ) -> Self {
+    self.cancellable(
+      id: ObjectIdentifier(id),
+      navigationID: navigationID,
+      cancelInFlight: cancelInFlight
+    )
   }
 
   /// An effect that will cancel any currently in-flight effect with the given identifier.
@@ -208,8 +219,10 @@ extension Task where Success == Never, Failure == Never {
   /// Cancel any currently in-flight operation with the given identifier.
   ///
   /// - Parameter id: An identifier.
-  public static func cancel(id: AnyHashable, navigationID: AnyHashable? = nil) async {
-    let navigationID = navigationID ?? DependencyValues.current.navigationID.current
+  public static func cancel(
+    id: AnyHashable,
+    navigationID: AnyHashable? = DependencyValues.current.navigationID.current
+  ) async {
     await MainActor.run {
       cancellablesLock.sync {
         cancellationCancellables[.init(id: id, navigationID: navigationID)]?
@@ -224,7 +237,10 @@ extension Task where Success == Never, Failure == Never {
   /// identifier.
   ///
   /// - Parameter id: A unique type identifying the operation.
-  public static func cancel(id: Any.Type, navigationID: AnyHashable? = nil) async {
+  public static func cancel(
+    id: Any.Type,
+    navigationID: AnyHashable? = DependencyValues.current.navigationID.current
+  ) async {
     await self.cancel(id: ObjectIdentifier(id), navigationID: navigationID)
   }
 }
