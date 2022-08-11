@@ -1,6 +1,5 @@
 // NB: bug report
-// TODO: name? GroupReducer, ReducerGroup, CombineReducers, etc...
-public func GroupReducers<State, Action>(
+public func CombineReducers<State, Action>(
   @ReducerBuilder<State, Action> build: () -> some ReducerProtocol<State, Action>
 ) -> some ReducerProtocol<State, Action> {
   build()
