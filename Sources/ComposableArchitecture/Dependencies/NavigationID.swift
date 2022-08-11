@@ -35,6 +35,8 @@ public struct DismissEffect: Sendable {
         Dismissed from "%@:%d".
         """,
         [
+          "\(fileID)",
+          line
         ],
         file: file,
         line: line
