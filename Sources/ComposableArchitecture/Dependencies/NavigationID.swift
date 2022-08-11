@@ -1,12 +1,53 @@
 extension DependencyValues {
-  public var navigationID: NavigationID {
+  public var dismiss: DismissEffect {
+    get { self[DismissKey.self] }
+    set { self[DismissKey.self] = newValue }
+  }
+
+  var navigationID: NavigationID {
     get { self[NavigationIDKey.self] }
     set { self[NavigationIDKey.self] = newValue }
   }
 
+  private enum DismissKey: LiveDependencyKey {
+    static let liveValue = DismissEffect()
+    static var testValue = DismissEffect()
+  }
+
   private enum NavigationIDKey: LiveDependencyKey {
     static let liveValue = NavigationID.live
-    static var testValue = NavigationID.live
+    static let testValue = NavigationID.live
+  }
+}
+
+public struct DismissEffect: Sendable {
+  private var dismiss: (@Sendable () async -> Void)?
+
+  public func callAsFunction(
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) async {
+    guard let dismiss = self.dismiss
+    else {
+      runtimeWarning(
+        """
+        Dismissed from "%@:%d".
+        """,
+        [
+        ],
+        file: file,
+        line: line
+      )
+      return
+    }
+    await dismiss()
+  }
+}
+
+extension DismissEffect {
+  public init(_ dismiss: @escaping @Sendable () async -> Void) {
+    self.dismiss = dismiss
   }
 }
 
@@ -20,7 +61,6 @@ public struct NavigationID {
   // - navigation.current?.dismiss()
   // - navigation.nextID()
   // - navigation.nextID.peek() // requires state
-  public var dismiss: @Sendable () async -> Void = {} // .callAsFunction(file:line:)
   public var next: () -> AnyHashable
 
   public static let live = Self { UUID() }

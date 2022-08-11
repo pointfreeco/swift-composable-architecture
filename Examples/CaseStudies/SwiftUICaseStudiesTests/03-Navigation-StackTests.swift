@@ -75,7 +75,6 @@ class NavigationStackTests: XCTestCase {
       reducer: NavigationDemo()
         .dependency(\.factClient.fetch) { "\($0) is a good number." }
         .dependency(\.mainQueue, self.scheduler.eraseToAnyScheduler())
-        .dependency(\.navigationID, .incrementing)
     )
 
     let screenBID = store.dependencies.navigationID.next()

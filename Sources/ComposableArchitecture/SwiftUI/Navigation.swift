@@ -15,8 +15,8 @@ public struct NavigationState<Element: Hashable>:
     public let id: ID
     public var element: Element
 
-    public init(id: ID = DependencyValues.current.navigationID.next(), element: Element) {
-      self.id = id
+    public init(id: ID? = nil, element: Element) {
+      self.id = id ?? DependencyValues.current.navigationID.next()
       self.element = element
     }
   }

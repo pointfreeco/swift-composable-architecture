@@ -148,9 +148,7 @@ public struct PresentationReducer<
         effects.append(
           self.presented
             .dependency(\.navigationID.current, id)
-            .dependency(\.navigationID.dismiss) {
-              await Task.cancel(id: DismissID.self, navigationID: id)
-            }
+            .dependency(\.dismiss, DismissEffect { await Task.cancel(id: DismissID.self) })
             .reduce(into: &presentedState, action: presentedAction)
             .map { toPresentedAction.embed(.presented($0)) }
             .cancellable(id: id)
@@ -177,8 +175,13 @@ public struct PresentationReducer<
     if let id = state[keyPath: toPresentedState].id, id != presentedState.id {
       effects.append(
         .concatenate(
-          .task { try await Task.never() }
-          .cancellable(id: DismissID.self, navigationID: id),
+          .task {
+            try await Dependency.with(\.navigationID.current, id) {
+              try await withTaskCancellation(id: DismissID.self) {
+                try await Task.never()
+              }
+            }
+          },
           Effect(value: self.toPresentedAction.embed(.dismiss))
         )
       )
