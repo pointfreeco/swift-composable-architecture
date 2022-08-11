@@ -223,7 +223,7 @@ extension View {
   ) -> some View {
     WithViewStore(
       store.scope(state: { $0.wrappedValue }),
-      removeDuplicates: { ($0 != nil) == ($1 != nil) && enumTag($0) == enumTag($1) }
+      removeDuplicates: areDestinationsEqual
     ) { viewStore in
       self.fullScreenCover(
         item: viewStore.binding(
@@ -279,7 +279,7 @@ extension View {
   ) -> some View {
     WithViewStore(
       store.scope(state: { $0.wrappedValue }),
-      removeDuplicates: { ($0 != nil) == ($1 != nil) && enumTag($0) == enumTag($1) }
+      removeDuplicates: areDestinationsEqual
     ) { viewStore in
       self.popover(
         item: viewStore.binding(
@@ -329,7 +329,7 @@ extension View {
   ) -> some View {
     WithViewStore(
       store.scope(state: { $0.wrappedValue }),
-      removeDuplicates: { ($0 != nil) == ($1 != nil) && enumTag($0) == enumTag($1) }
+      removeDuplicates: areDestinationsEqual
     ) { viewStore in
       self.sheet(
         item: viewStore.binding(
@@ -395,6 +395,10 @@ extension View {
       }
     }
   }
+}
+
+private func areDestinationsEqual<State>(_ lhs: State?, _ rhs: State?) -> Bool {
+  (lhs != nil) == (rhs != nil) && lhs.flatMap(enumTag) == rhs.flatMap(enumTag)
 }
 
 private struct PresentationItem: Identifiable {
