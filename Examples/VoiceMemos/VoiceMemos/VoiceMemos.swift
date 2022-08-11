@@ -242,8 +242,9 @@ struct VoiceMemos_Previews: PreviewProvider {
         ),
         reducer: voiceMemosReducer,
         environment: VoiceMemosEnvironment(
+          // NB: AVAudioRecorder and AVAudioPlayer doesn't work in previews, so use mocks 
+          //     that simulate their behavior in previews.
           audioPlayer: .mock,
-          // NB: AVAudioRecorder doesn't work in previews, so we stub out the dependency here.
           audioRecorder: .mock,
           mainRunLoop: .main,
           openSettings: {},
