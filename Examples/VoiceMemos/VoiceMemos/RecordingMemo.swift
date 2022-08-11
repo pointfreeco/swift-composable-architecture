@@ -1,94 +1,103 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct RecordingMemoState: Equatable {
-  var date: Date
-  var duration: TimeInterval = 0
-  var mode: Mode = .recording
-  var url: URL
+struct RecordingMemo: ReducerProtocol {
+  struct State: Equatable {
+    var date: Date
+    var duration: TimeInterval = 0
+    var mode: Mode = .recording
+    var url: URL
 
-  enum Mode {
-    case recording
-    case encoding
-  }
-
-  struct Failed: Equatable, Error {}
-}
-
-enum RecordingMemoAction: Equatable {
-  case audioRecorderDidFinish(TaskResult<Bool>)
-  case delegate(DelegateAction)
-  case finalRecordingTime(TimeInterval)
-  case task
-  case timerUpdated
-  case stopButtonTapped
-
-  enum DelegateAction: Equatable {
-    case didFinish(TaskResult<RecordingMemoState>)
-  }
-}
-
-struct RecordingMemoEnvironment {
-  var audioRecorder: AudioRecorderClient
-  var mainRunLoop: AnySchedulerOf<RunLoop>
-}
-
-let recordingMemoReducer = Reducer<
-  RecordingMemoState,
-  RecordingMemoAction,
-  RecordingMemoEnvironment
-> { state, action, environment in
-  switch action {
-  case .audioRecorderDidFinish(.success(true)):
-    return .task { [state] in .delegate(.didFinish(.success(state))) }
-
-  case .audioRecorderDidFinish(.success(false)):
-    return .task { .delegate(.didFinish(.failure(RecordingMemoState.Failed()))) }
-
-  case let .audioRecorderDidFinish(.failure(error)):
-    return .task { .delegate(.didFinish(.failure(error))) }
-
-  case .delegate:
-    return .none
-
-  case let .finalRecordingTime(duration):
-    state.duration = duration
-    return .none
-
-  case .stopButtonTapped:
-    state.mode = .encoding
-    return .run { send in
-      if let currentTime = await environment.audioRecorder.currentTime() {
-        await send(.finalRecordingTime(currentTime))
-      }
-      await environment.audioRecorder.stopRecording()
+    enum Mode {
+      case recording
+      case encoding
     }
 
-  case .task:
-    return .run { [url = state.url] send in
-      async let startRecording: Void = send(
-        .audioRecorderDidFinish(
-          TaskResult { try await environment.audioRecorder.startRecording(url) }
+    struct Failed: Equatable, Error {}
+  }
+  enum Action: Equatable {
+    case audioRecorderDidFinish(TaskResult<Bool>)
+    case delegate(DelegateAction)
+    case finalRecordingTime(TimeInterval)
+    case task
+    case timerUpdated
+    case stopButtonTapped
+
+    enum DelegateAction: Equatable {
+      case didFinish(TaskResult<State>)
+    }
+  }
+
+  @Dependency(\.audioPlayer) var audioPlayer
+  @Dependency(\.audioRecorder) var audioRecorder
+  @Dependency(\.mainRunLoop) var mainRunLoop
+
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    switch action {
+    case .audioRecorderDidFinish(.success(true)):
+      return .task { [state] in .delegate(.didFinish(.success(state))) }
+
+    case .audioRecorderDidFinish(.success(false)):
+      return .task { .delegate(.didFinish(.failure(State.Failed()))) }
+
+    case let .audioRecorderDidFinish(.failure(error)):
+      return .task { .delegate(.didFinish(.failure(error))) }
+
+    case .delegate:
+      return .none
+
+    case let .finalRecordingTime(duration):
+      state.duration = duration
+      return .none
+
+    case .stopButtonTapped:
+      state.mode = .encoding
+      return .run { send in
+        if let currentTime = await self.audioRecorder.currentTime() {
+          await send(.finalRecordingTime(currentTime))
+        }
+        await self.audioRecorder.stopRecording()
+      }
+
+    case .task:
+      return .run { [url = state.url] send in
+        async let startRecording: Void = send(
+          .audioRecorderDidFinish(
+            TaskResult { try await self.audioRecorder.startRecording(url) }
+          )
         )
-      )
 
-      for await _ in environment.mainRunLoop.timer(interval: .seconds(1)) {
-        await send(.timerUpdated)
+        for await _ in self.mainRunLoop.timer(interval: .seconds(1)) {
+          await send(.timerUpdated)
+        }
+
+        await startRecording
       }
-    }
 
-  case .timerUpdated:
-    state.duration += 1
-    return .none
+    case .timerUpdated:
+      state.duration += 1
+      return .none
+    }
   }
 }
 
 struct RecordingMemoView: View {
-  let store: Store<RecordingMemoState, RecordingMemoAction>
+  let store: StoreOf<RecordingMemo>
+
+  @Environment(\.openURL) private var openURL
+  @Environment(\.dismiss) var dismiss
+  @Environment(\.redactionReasons) var redactionReasons
+  @Environment(\.myValue) var myValue
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
       VStack(spacing: 12) {
+        Text("\(self.myValue)")
+
+        Button("Help") {
+          self.openURL(URL(string: "http://pointfree.co/help")!)
+        }
+
         Text("Recording")
           .font(.title)
           .colorMultiply(Color(Int(viewStore.duration).isMultiple(of: 2) ? .systemRed : .label))
@@ -117,5 +126,17 @@ struct RecordingMemoView: View {
         await viewStore.send(.task).finish()
       }
     }
+  }
+}
+
+
+
+private enum MyValue: EnvironmentKey {
+  static let defaultValue = 42
+}
+extension EnvironmentValues {
+  var myValue: Int {
+    get { self[MyValue.self] }
+    set { self[MyValue.self] = newValue }
   }
 }
