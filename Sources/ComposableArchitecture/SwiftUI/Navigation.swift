@@ -21,6 +21,7 @@ public struct NavigationState<Element: Hashable>:
     }
   }
 
+  // TODO: should this be an array of reference boxed values?
   var destinations: [Destination] = []
 
   public init() {}
