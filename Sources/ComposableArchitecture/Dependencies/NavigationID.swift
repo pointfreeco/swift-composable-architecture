@@ -20,7 +20,7 @@ public struct NavigationID {
   // - navigation.current?.dismiss()
   // - navigation.nextID()
   // - navigation.nextID.peek() // requires state
-  public var dismiss: @Sendable () async -> Void = {}
+  public var dismiss: @Sendable () async -> Void = {} // .callAsFunction(file:line:)
   public var next: () -> AnyHashable
 
   public static let live = Self { UUID() }
