@@ -230,25 +230,56 @@ struct VoiceMemos_Previews: PreviewProvider {
             ),
           ]
         ),
-reducer: Reducer(
-  VoiceMemos()
-//  (
-//    audioPlayer: .live,
-//    // NB: AVAudioRecorder doesn't work in previews, so we stub out the dependency here.
-//    audioRecorder: AudioRecorderClient(
-//      currentTime: { 10 },
-//      requestRecordPermission: { true },
-//      startRecording: { _ in try await Task.never() },
-//      stopRecording: {}
-//    ),
-//    mainRunLoop: .main,
-//    openSettings: {},
-//    temporaryDirectory: { URL(fileURLWithPath: NSTemporaryDirectory()) },
-//    uuid: { UUID() }
-//  )
-),
+        reducer: Reducer(
+          VoiceMemos()
+            .dependency(\.audioPlayer, .mock)
+            .dependency(\.audioRecorder, .mock)
+          //  (
+          //    // NB: AVAudioRecorder and AVAudioPlayer doesn't work in previews, so use mocks
+          //    //     that simulate their behavior in previews.
+          //    audioPlayer: .mock,
+          //    audioRecorder: .mock,
+          //    mainRunLoop: .main,
+          //    openSettings: {},
+          //    temporaryDirectory: { URL(fileURLWithPath: NSTemporaryDirectory()) },
+          //    uuid: { UUID() }
+          //  )
+        ),
         environment: ()
       )
     )
   }
 }
+
+extension AudioRecorderClient {
+  static var mock: Self {
+    let isRecording = ActorIsolated(false)
+    let currentTime = ActorIsolated(0.0)
+
+    return Self(
+      currentTime: { await currentTime.value },
+      requestRecordPermission: { true },
+      startRecording: { _ in
+        await isRecording.setValue(true)
+        while await isRecording.value {
+          try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+          await currentTime.withValue { $0 += 1 }
+        }
+        return true
+      },
+      stopRecording: {
+        await isRecording.setValue(false)
+        await currentTime.setValue(0)
+      }
+    )
+  }
+}
+
+extension AudioPlayerClient {
+  static let mock = Self(
+    play: { _ in
+      try await Task.sleep(nanoseconds: NSEC_PER_SEC * 5)
+      return true
+    }
+  )
+  }
