@@ -53,15 +53,6 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       }
     ),
   Reducer { state, action, environment in
-//    var newRecordingMemo: RecordingMemoState {
-//      RecordingMemoState(
-//        date: environment.mainRunLoop.now.date,
-//        url: environment.temporaryDirectory()
-//          .appendingPathComponent(environment.uuid().uuidString)
-//          .appendingPathExtension("m4a")
-//      )
-//    }
-
     switch action {
     case .alertDismissed:
       state.alert = nil
