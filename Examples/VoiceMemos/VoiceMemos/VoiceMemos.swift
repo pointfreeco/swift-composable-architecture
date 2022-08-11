@@ -53,15 +53,6 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
       }
     ),
   Reducer { state, action, environment in
-    var newRecordingMemo: RecordingMemoState {
-      RecordingMemoState(
-        date: environment.mainRunLoop.now.date,
-        url: environment.temporaryDirectory()
-          .appendingPathComponent(environment.uuid().uuidString)
-          .appendingPathExtension("m4a")
-      )
-    }
-
     switch action {
     case .alertDismissed:
       state.alert = nil
@@ -84,7 +75,12 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
         return .none
 
       case .allowed:
-        state.recordingMemo = newRecordingMemo
+        state.recordingMemo = RecordingMemoState(
+          date: environment.mainRunLoop.now.date,
+          url: environment.temporaryDirectory()
+            .appendingPathComponent(environment.uuid().uuidString)
+            .appendingPathExtension("m4a")
+        )
         return .none
       }
 
@@ -111,7 +107,12 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
     case let .recordPermissionResponse(permission):
       state.audioRecorderPermission = permission ? .allowed : .denied
       if permission {
-        state.recordingMemo = newRecordingMemo
+        state.recordingMemo = RecordingMemoState(
+          date: environment.mainRunLoop.now.date,
+          url: environment.temporaryDirectory()
+            .appendingPathComponent(environment.uuid().uuidString)
+            .appendingPathExtension("m4a")
+        )
         return .none
       } else {
         state.alert = AlertState(title: TextState("Permission is required to record voice memos."))
@@ -225,14 +226,14 @@ struct VoiceMemos_Previews: PreviewProvider {
           voiceMemos: [
             VoiceMemoState(
               date: Date(),
-              duration: 30,
-              mode: .playing(progress: 0.3),
+              duration: 5,
+              mode: .notPlaying,
               title: "Functions",
               url: URL(string: "https://www.pointfree.co/functions")!
             ),
             VoiceMemoState(
               date: Date(),
-              duration: 2,
+              duration: 5,
               mode: .notPlaying,
               title: "",
               url: URL(string: "https://www.pointfree.co/untitled")!
@@ -241,14 +242,9 @@ struct VoiceMemos_Previews: PreviewProvider {
         ),
         reducer: voiceMemosReducer,
         environment: VoiceMemosEnvironment(
-          audioPlayer: .live,
+          audioPlayer: .mock,
           // NB: AVAudioRecorder doesn't work in previews, so we stub out the dependency here.
-          audioRecorder: AudioRecorderClient(
-            currentTime: { 10 },
-            requestRecordPermission: { true },
-            startRecording: { _ in try await Task.never() },
-            stopRecording: {}
-          ),
+          audioRecorder: .mock,
           mainRunLoop: .main,
           openSettings: {},
           temporaryDirectory: { URL(fileURLWithPath: NSTemporaryDirectory()) },
@@ -257,4 +253,37 @@ struct VoiceMemos_Previews: PreviewProvider {
       )
     )
   }
+}
+
+extension AudioRecorderClient {
+  static var mock: Self {
+    let isRecording = ActorIsolated(false)
+    let currentTime = ActorIsolated(0.0)
+
+    return Self(
+      currentTime: { await currentTime.value },
+      requestRecordPermission: { true },
+      startRecording: { _ in
+        await isRecording.setValue(true)
+        while await isRecording.value {
+          try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+          await currentTime.withValue { $0 += 1 }
+        }
+        return true
+      },
+      stopRecording: {
+        await isRecording.setValue(false)
+        await currentTime.setValue(0)
+      }
+    )
+  }
+}
+
+extension AudioPlayerClient {
+  static let mock = Self(
+    play: { _ in
+      try await Task.sleep(nanoseconds: NSEC_PER_SEC * 5)
+      return true
+    }
+  )
 }
