@@ -333,7 +333,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///   - localStateToViewAction: A function that transforms the binding's value
   ///     into an action that can be sent to the store.
   /// - Returns: A binding.
-  public func binding<LocalState>(
+  @MainActor public func binding<LocalState>(
     get: @escaping (State) -> LocalState,
     send localStateToViewAction: @escaping (LocalState) -> Action
   ) -> Binding<LocalState> {

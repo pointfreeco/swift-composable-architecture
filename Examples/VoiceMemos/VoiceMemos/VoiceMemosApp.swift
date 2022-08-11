@@ -5,12 +5,17 @@ import SwiftUI
 @main
 struct VoiceMemosApp: App {
   var body: some Scene {
+
+    let _ = print(type(of: Text("").environment(\.font, .title)))
+
     WindowGroup {
 VoiceMemosView(
   store: Store(
     initialState: VoiceMemos.State(),
     reducer: Reducer(
       VoiceMemos()
+        .dependency(\.audioPlayer, .mock)
+        .dependency(\.audioRecorder, .mock)
 //      (
 //        audioPlayer: .live,
 //        audioRecorder: .live,

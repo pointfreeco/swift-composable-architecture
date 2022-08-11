@@ -216,14 +216,14 @@ struct VoiceMemos_Previews: PreviewProvider {
           voiceMemos: [
             VoiceMemo.State(
               date: Date(),
-              duration: 30,
-              mode: .playing(progress: 0.3),
+              duration: 5,
+              mode: .notPlaying,
               title: "Functions",
               url: URL(string: "https://www.pointfree.co/functions")!
             ),
             VoiceMemo.State(
               date: Date(),
-              duration: 2,
+              duration: 5,
               mode: .notPlaying,
               title: "",
               url: URL(string: "https://www.pointfree.co/untitled")!
@@ -234,6 +234,7 @@ struct VoiceMemos_Previews: PreviewProvider {
           VoiceMemos()
             .dependency(\.audioPlayer, .mock)
             .dependency(\.audioRecorder, .mock)
+
           //  (
           //    // NB: AVAudioRecorder and AVAudioPlayer doesn't work in previews, so use mocks
           //    //     that simulate their behavior in previews.
@@ -282,4 +283,4 @@ extension AudioPlayerClient {
       return true
     }
   )
-  }
+}

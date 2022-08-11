@@ -107,13 +107,17 @@ extension Effect where Failure == Never {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {
-    Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
+    let before = DependencyValues.current
+
+    return Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
       let subject = PassthroughSubject<Output, Failure>()
       let task = Task(priority: priority) { @MainActor in
         defer { subject.send(completion: .finished) }
         do {
           try Task.checkCancellation()
-          let output = try await operation()
+          let output = try await DependencyValues.$current.withValue(before) {
+            try await operation()
+          }
           try Task.checkCancellation()
           subject.send(output)
         } catch is CancellationError {
@@ -198,12 +202,16 @@ extension Effect where Failure == Never {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {
-    .run { subscriber in
+    let before = DependencyValues.current
+
+    return .run { subscriber in
       let task = Task(priority: priority) { @MainActor in
         defer { subscriber.send(completion: .finished) }
         let send = Send(send: { subscriber.send($0) })
         do {
-          try await operation(send)
+          try await DependencyValues.$current.withValue(before) {
+            try await operation(send)
+          }
         } catch is CancellationError {
           return
         } catch {
@@ -266,8 +274,13 @@ extension Effect where Failure == Never {
     priority: TaskPriority? = nil,
     _ work: @escaping @Sendable () async throws -> Void
   ) -> Self {
-    Effect<Void, Never>.task(priority: priority) { try? await work() }
-      .fireAndForget()
+    let before = DependencyValues.current
+    return Effect<Void, Never>.task(priority: priority) {
+      await DependencyValues.$current.withValue(before) {
+        try? await work()
+      }
+    }
+    .fireAndForget()
   }
 }
 

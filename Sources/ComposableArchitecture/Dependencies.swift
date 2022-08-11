@@ -1,6 +1,6 @@
 
 public protocol DependencyKey {
-  associatedtype Value
+  associatedtype Value: Sendable
   static var defaultValue: Value { get }
 }
 
@@ -14,17 +14,17 @@ private enum MainDispatchQueueKey: DependencyKey {
   static let defaultValue = AnySchedulerOf<DispatchQueue>.main
 }
 private enum DateKey: DependencyKey {
-  static let defaultValue = { Date() }
+  static let defaultValue = { @Sendable in Date() }
 }
 private enum UUIDKey: DependencyKey {
-  static let defaultValue = { UUID() }
+  static let defaultValue = { @Sendable in UUID() }
 }
 
 
-public struct DependencyValues {
-  static var current = Self()
+public struct DependencyValues: Sendable {
+  @TaskLocal static var current = Self()
 
-  private var storage: [AnyHashable: Any] = [:]
+  private var storage: [ObjectIdentifier: any Sendable] = [:]
 
   public subscript<Key: DependencyKey>(key: Key.Type) -> Key.Value {
     get {
@@ -48,11 +48,11 @@ extension DependencyValues {
     get { self[MainDispatchQueueKey.self] }
     set { self[MainDispatchQueueKey.self] = newValue }
   }
-  public var date: () -> Date {
+  public var date: @Sendable () -> Date {
     get { self[DateKey.self] }
     set { self[DateKey.self] = newValue }
   }
-  public var uuid: () -> UUID {
+  public var uuid: @Sendable () -> UUID {
     get { self[UUIDKey.self] }
     set { self[UUIDKey.self] = newValue }
   }
@@ -70,5 +70,37 @@ public struct Dependency<Value> {
 
   public var wrappedValue: Value {
     DependencyValues.current[keyPath: self.keyPath]
+  }
+}
+
+extension ReducerProtocol {
+  public func dependency<Value>(
+    _ keyPath: WritableKeyPath<DependencyValues, Value>,
+    _ value: Value
+  ) -> some ReducerProtocolOf<Self> {
+    DependencyKeyWritingReducer(base: self) { $0[keyPath: keyPath] = value }
+  }
+}
+
+private struct DependencyKeyWritingReducer<Base: ReducerProtocol>: ReducerProtocol {
+  let base: Base
+  let update: (inout DependencyValues) -> Void
+
+  func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action, Never> {
+    var dependencies = DependencyValues.current
+    self.update(&dependencies)
+    return DependencyValues.$current.withValue(dependencies) {
+      self.base.reduce(into: &state, action: action)
+    }
+  }
+
+  public func dependency<Value>(
+    _ keyPath: WritableKeyPath<DependencyValues, Value>,
+    _ value: Value
+  ) -> some ReducerProtocolOf<Self> {
+    DependencyKeyWritingReducer(base: self.base) { values in
+      self.update(&values)
+      values[keyPath: keyPath] = value
+    }
   }
 }
