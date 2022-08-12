@@ -151,13 +151,13 @@ public enum ActionFormat {
 
 extension DependencyValues {
   // TODO: Should this be `any DebugLogger`?
-  public var debugLogger: (String) async -> Void {
+  public var debugLogger: @Sendable (String) async -> Void {
     get { self[DebugLoggerKey.self] }
     set { self[DebugLoggerKey.self] = newValue }
   }
 
   private enum DebugLoggerKey: LiveDependencyKey {
-    public static let liveValue: (String) async -> Void = { print($0) }
-    public static let testValue: (String) async -> Void = { print($0) }
+    public static let liveValue: @Sendable (String) async -> Void = { print($0) }
+    public static let testValue: @Sendable (String) async -> Void = { print($0) }
   }
 }
