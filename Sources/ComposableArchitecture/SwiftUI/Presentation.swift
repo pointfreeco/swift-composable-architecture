@@ -176,7 +176,9 @@ public struct PresentationReducer<
       effects.append(
         .concatenate(
           .task {
-            try await Dependency.with(\.navigationID.current, id) {
+            var dependencies = DependencyValues.current
+            dependencies.navigationID.current = id
+            return try await DependencyValues.$current.withValue(dependencies) {
               try await withTaskCancellation(id: DismissID.self) {
                 try await Task.never()
               }
