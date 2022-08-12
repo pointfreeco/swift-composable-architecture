@@ -73,6 +73,8 @@ public struct Dependency<Value> {
   }
 }
 
+extension Dependency: @unchecked Sendable where Value: Sendable {}
+
 extension ReducerProtocol {
   public func dependency<Value>(
     _ keyPath: WritableKeyPath<DependencyValues, Value>,
