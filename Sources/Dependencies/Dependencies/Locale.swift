@@ -2,6 +2,7 @@ import Foundation
 import XCTestDynamicOverlay
 
 extension DependencyValues {
+  /// The current locale that reducers should use.
   public var locale: Locale {
     get { self[LocaleKey.self] }
     set { self[LocaleKey.self] = newValue }
