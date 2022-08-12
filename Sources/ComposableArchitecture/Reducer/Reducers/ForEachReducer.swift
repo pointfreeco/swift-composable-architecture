@@ -7,7 +7,7 @@ extension ReducerProtocol {
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> ForEachReducer<Self, ID, Element> {
+  ) -> _ForEachReducer<Self, ID, Element> {
     .init(
       parent: self,
       toElementsState: toElementsState,
@@ -20,7 +20,7 @@ extension ReducerProtocol {
   }
 }
 
-public struct ForEachReducer<
+public struct _ForEachReducer<
   Parent: ReducerProtocol, ID: Hashable, Element: ReducerProtocol
 >: ReducerProtocol {
   @usableFromInline

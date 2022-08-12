@@ -7,7 +7,7 @@ extension ReducerProtocol {
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> IfLetReducer<Self, Wrapped> {
+  ) -> _IfLetReducer<Self, Wrapped> {
     .init(
       parent: self,
       child: wrapped(),
@@ -27,7 +27,7 @@ extension ReducerProtocol {
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> IfCaseLetReducer<Self, Wrapped> {
+  ) -> _IfCaseLetReducer<Self, Wrapped> {
     .init(
       parent: self,
       child: wrapped(),
@@ -40,7 +40,7 @@ extension ReducerProtocol {
   }
 }
 
-public struct IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: ReducerProtocol {
+public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: ReducerProtocol {
   @usableFromInline
   let parent: Parent
 
@@ -137,7 +137,7 @@ public struct IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Red
   }
 }
 
-public struct IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: ReducerProtocol {
+public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: ReducerProtocol {
   @usableFromInline
   let parent: Parent
 

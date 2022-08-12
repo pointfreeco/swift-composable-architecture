@@ -4,17 +4,17 @@ extension ReducerProtocol {
   @inlinable
   public func signpost(
     _ prefix: String = "",
-    // TODO: Move log to `DependencyValues`
+    // TODO: Move log to `DependencyValues`?
     log: OSLog = OSLog(
       subsystem: "co.pointfree.ComposableArchitecture",
       category: "Reducer Instrumentation"
     )
-  ) -> SignpostReducer<Self> {
-    SignpostReducer(base: self, prefix: prefix, log: log)
+  ) -> _SignpostReducer<Self> {
+    _SignpostReducer(base: self, prefix: prefix, log: log)
   }
 }
 
-public struct SignpostReducer<Base: ReducerProtocol>: ReducerProtocol {
+public struct _SignpostReducer<Base: ReducerProtocol>: ReducerProtocol {
   @usableFromInline
   let base: Base
 
