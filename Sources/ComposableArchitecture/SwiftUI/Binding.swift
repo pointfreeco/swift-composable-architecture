@@ -109,9 +109,7 @@ import SwiftUI
 /// var body: some ReducerProtocol<State, Action> {
 ///   BindingReducer()
 ///
-///   Reduce { state, action in
-///     // ...
-///   }
+///   // ...
 /// }
 /// ```
 ///
