@@ -5,7 +5,7 @@ extension ReducerProtocol {
     state toLocalState: @escaping (State) -> LocalState,
     action toLocalAction: @escaping (Action) -> LocalAction?,
     actionFormat: ActionFormat = .prettyPrint
-  ) -> DebugReducer<Self, LocalState, LocalAction> {
+  ) -> _DebugReducer<Self, LocalState, LocalAction> {
     .init(
       base: self,
       prefix: prefix,
@@ -19,7 +19,7 @@ extension ReducerProtocol {
   public func debug(
     _ prefix: String = "",
     actionFormat: ActionFormat = .prettyPrint
-  ) -> DebugReducer<Self, State, Action> {
+  ) -> _DebugReducer<Self, State, Action> {
     .init(
       base: self,
       prefix: prefix,
@@ -30,7 +30,7 @@ extension ReducerProtocol {
   }
 }
 
-public struct DebugReducer<Base: ReducerProtocol, LocalState, LocalAction>: ReducerProtocol {
+public struct _DebugReducer<Base: ReducerProtocol, LocalState, LocalAction>: ReducerProtocol {
   @usableFromInline
   let base: Base
 
