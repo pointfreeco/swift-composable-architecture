@@ -1,4 +1,4 @@
-import ComposableArchitecture
+import Dependencies
 import Foundation
 
 struct AudioRecorderClient {
@@ -9,7 +9,8 @@ struct AudioRecorderClient {
 }
 
 private enum AudioRecorderClientKey: DependencyKey {
-  static let defaultValue = AudioRecorderClient.live
+  static let liveValue = AudioRecorderClient.live
+  static let testValue = AudioRecorderClient.unimplemented
 }
 extension DependencyValues {
   var audioRecorder: AudioRecorderClient {

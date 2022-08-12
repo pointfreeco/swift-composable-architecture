@@ -15,31 +15,30 @@ class VoiceMemosTests: XCTestCase {
 
     let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
 
-    var environment = VoiceMemosEnvironment.unimplemented
-    environment.audioRecorder.currentTime = { 2.5 }
-    environment.audioRecorder.requestRecordPermission = { true }
-    environment.audioRecorder.startRecording = { _ in
+    let store = TestStore(
+      initialState: VoiceMemos.State(),
+      reducer: Reducer(VoiceMemos()),
+      environment: ()
+    )
+
+    store.dependencies.audioRecorder.currentTime = { 2.5 }
+    store.dependencies.audioRecorder.requestRecordPermission = { true }
+    store.dependencies.audioRecorder.startRecording = { _ in
       try await didFinish.stream.first { _ in true }!
     }
-    environment.audioRecorder.stopRecording = {
+    store.dependencies.audioRecorder.stopRecording = {
       didFinish.continuation.yield(true)
       didFinish.continuation.finish()
     }
-    environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
-    environment.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
-    environment.uuid = { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! }
-
-    let store = TestStore(
-      initialState: VoiceMemosState(),
-      reducer: voiceMemosReducer,
-      environment: environment
-    )
+    store.dependencies.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
+    store.dependencies.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
+    store.dependencies.uuid = { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! }
 
     await store.send(.recordButtonTapped)
     await self.mainRunLoop.advance()
     await store.receive(.recordPermissionResponse(true)) {
       $0.audioRecorderPermission = .allowed
-      $0.recordingMemo = RecordingMemoState(
+      $0.recordingMemo = RecordingMemo.State(
         date: Date(timeIntervalSince1970: 0),
         mode: .recording,
         url: URL(fileURLWithPath: "/tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")
@@ -66,7 +65,7 @@ class VoiceMemosTests: XCTestCase {
     {
       $0.recordingMemo = nil
       $0.voiceMemos = [
-        VoiceMemoState(
+        VoiceMemo.State(
           date: Date(timeIntervalSince1970: 0),
           duration: 2.5,
           mode: .notPlaying,
@@ -81,16 +80,15 @@ class VoiceMemosTests: XCTestCase {
   func testPermissionDenied() async {
     let didOpenSettings = ActorIsolated(false)
 
-    var environment = VoiceMemosEnvironment.unimplemented
-    environment.audioRecorder.requestRecordPermission = { false }
-    environment.mainRunLoop = .immediate
-    environment.openSettings = { await didOpenSettings.setValue(true) }
-
     let store = TestStore(
-      initialState: VoiceMemosState(),
-      reducer: voiceMemosReducer,
-      environment: environment
+      initialState: VoiceMemos.State(),
+      reducer: Reducer(VoiceMemos()),
+      environment: ()
     )
+
+    store.dependencies.audioRecorder.requestRecordPermission = { false }
+    store.dependencies.mainRunLoop = .immediate
+    store.dependencies.openSettings = { await didOpenSettings.setValue(true) }
 
     await store.send(.recordButtonTapped)
     await store.receive(.recordPermissionResponse(false)) {
@@ -106,29 +104,28 @@ class VoiceMemosTests: XCTestCase {
 
   func testRecordMemoFailure() async {
     struct SomeError: Error, Equatable {}
-    let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
-
-    var environment = VoiceMemosEnvironment.unimplemented
-    environment.audioRecorder.currentTime = { 2.5 }
-    environment.audioRecorder.requestRecordPermission = { true }
-    environment.audioRecorder.startRecording = { _ in
-      try await didFinish.stream.first { _ in true }!
-    }
-    environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
-    environment.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
-    environment.uuid = { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! }
 
     let store = TestStore(
-      initialState: VoiceMemosState(),
-      reducer: voiceMemosReducer,
-      environment: environment
+      initialState: VoiceMemos.State(),
+      reducer: Reducer(VoiceMemos()),
+      environment: ()
     )
+
+    let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
+
+    store.dependencies.audioRecorder.requestRecordPermission = { true }
+    store.dependencies.audioRecorder.startRecording = { _ in
+      try await didFinish.stream.first { _ in true }!
+    }
+    store.dependencies.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
+    store.dependencies.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
+    store.dependencies.uuid = { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! }
 
     await store.send(.recordButtonTapped)
     await self.mainRunLoop.advance(by: 0.5)
     await store.receive(.recordPermissionResponse(true)) {
       $0.audioRecorderPermission = .allowed
-      $0.recordingMemo = RecordingMemoState(
+      $0.recordingMemo = RecordingMemo.State(
         date: Date(timeIntervalSince1970: 0),
         mode: .recording,
         url: URL(fileURLWithPath: "/tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")
@@ -148,18 +145,11 @@ class VoiceMemosTests: XCTestCase {
   }
 
   func testPlayMemoHappyPath() async {
-    var environment = VoiceMemosEnvironment.unimplemented
-    environment.audioPlayer.play = { _ in
-      try await self.mainRunLoop.sleep(for: 1.25)
-      return true
-    }
-    environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
-
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
-      initialState: VoiceMemosState(
+      initialState: VoiceMemos.State(
         voiceMemos: [
-          VoiceMemoState(
+          VoiceMemo.State(
             date: Date(),
             duration: 1.25,
             mode: .notPlaying,
@@ -168,9 +158,15 @@ class VoiceMemosTests: XCTestCase {
           )
         ]
       ),
-      reducer: voiceMemosReducer,
-      environment: environment
+      reducer: Reducer(VoiceMemos()),
+      environment: ()
     )
+
+    store.dependencies.audioPlayer.play = { _ in
+      try await self.mainRunLoop.sleep(for: 1.25)
+      return true
+    }
+    store.dependencies.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
     let task = await store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
@@ -193,15 +189,11 @@ class VoiceMemosTests: XCTestCase {
   func testPlayMemoFailure() async {
     struct SomeError: Error, Equatable {}
 
-    var environment = VoiceMemosEnvironment.unimplemented
-    environment.audioPlayer.play = { _ in throw SomeError() }
-    environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
-
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
-      initialState: VoiceMemosState(
+      initialState: VoiceMemos.State(
         voiceMemos: [
-          VoiceMemoState(
+          VoiceMemo.State(
             date: Date(),
             duration: 30,
             mode: .notPlaying,
@@ -210,9 +202,12 @@ class VoiceMemosTests: XCTestCase {
           )
         ]
       ),
-      reducer: voiceMemosReducer,
-      environment: environment
+      reducer: Reducer(VoiceMemos()),
+      environment: ()
     )
+
+    store.dependencies.audioPlayer.play = { _ in throw SomeError() }
+    store.dependencies.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
     let task = await store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
@@ -227,9 +222,9 @@ class VoiceMemosTests: XCTestCase {
   func testStopMemo() async {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
-      initialState: VoiceMemosState(
+      initialState: VoiceMemos.State(
         voiceMemos: [
-          VoiceMemoState(
+          VoiceMemo.State(
             date: Date(),
             duration: 30,
             mode: .playing(progress: 0.3),
@@ -238,8 +233,8 @@ class VoiceMemosTests: XCTestCase {
           )
         ]
       ),
-      reducer: voiceMemosReducer,
-      environment: .unimplemented
+      reducer: Reducer(VoiceMemos()),
+      environment: ()
     )
 
     await store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
@@ -250,9 +245,9 @@ class VoiceMemosTests: XCTestCase {
   func testDeleteMemo() async {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
-      initialState: VoiceMemosState(
+      initialState: VoiceMemos.State(
         voiceMemos: [
-          VoiceMemoState(
+          VoiceMemo.State(
             date: Date(),
             duration: 30,
             mode: .playing(progress: 0.3),
@@ -261,8 +256,8 @@ class VoiceMemosTests: XCTestCase {
           )
         ]
       ),
-      reducer: voiceMemosReducer,
-      environment: .unimplemented
+      reducer: Reducer(VoiceMemos()),
+      environment: ()
     )
 
     await store.send(.voiceMemo(id: url, action: .delete)) {
@@ -272,14 +267,11 @@ class VoiceMemosTests: XCTestCase {
 
   func testDeleteMemoWhilePlaying() async {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
-    var environment = VoiceMemosEnvironment.unimplemented
-    environment.audioPlayer.play = { _ in try await Task.never() }
-    environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
     let store = TestStore(
-      initialState: VoiceMemosState(
+      initialState: VoiceMemos.State(
         voiceMemos: [
-          VoiceMemoState(
+          VoiceMemo.State(
             date: Date(),
             duration: 10,
             mode: .notPlaying,
@@ -288,9 +280,12 @@ class VoiceMemosTests: XCTestCase {
           )
         ]
       ),
-      reducer: voiceMemosReducer,
-      environment: environment
+      reducer: Reducer(VoiceMemos()),
+      environment: ()
     )
+
+    store.dependencies.audioPlayer.play = { _ in try await Task.never() }
+    store.dependencies.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
     await store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
@@ -301,16 +296,39 @@ class VoiceMemosTests: XCTestCase {
   }
 }
 
-extension VoiceMemosEnvironment {
-  static let unimplemented = Self(
-    audioPlayer: .unimplemented,
-    audioRecorder: .unimplemented,
-    mainRunLoop: .unimplemented,
-    openSettings: XCTUnimplemented("\(Self.self).openSettings"),
-    temporaryDirectory: XCTUnimplemented(
-      "\(Self.self).temporaryDirectory",
-      placeholder: URL(fileURLWithPath: NSTemporaryDirectory())
-    ),
-    uuid: XCTUnimplemented("\(Self.self).uuid", placeholder: UUID())
-  )
-}
+//extension DependencyValues {
+//  static var unimplementedVoiceMemos: Self {
+//    var dependencies = DependencyValues()
+//    dependencies.audioPlayer = .unimplemented
+//    dependencies.audioRecorder = .unimplemented
+//    dependencies.mainRunLoop = .unimplemented
+//    dependencies.openSettings = XCTUnimplemented()
+//    dependencies.temporaryDirectory = XCTUnimplemented()
+//    dependencies.uuid = XCTUnimplemented()
+//    return dependencies
+//  }
+//}
+
+//          .dependency(\.audioPlayer.play) { _ in try await Task.never() }
+//          .dependency(\.mainRunLoop, self.mainRunLoop.eraseToAnyScheduler())
+
+//          .dependency(\.audioPlayer, .unimplemented)
+//          .dependency(\.audioRecorder, .unimplemented)
+//          .dependency(\.mainRunLoop, .unimplemented)
+//          .dependency(\.openSettings, XCTUnimplemented())
+//          .dependency(\.temporaryDirectory, XCTUnimplemented())
+//          .dependency(\.uuid, XCTUnimplemented())
+
+//extension VoiceMemosEnvironment {
+//  static let unimplemented = Self(
+//    audioPlayer: .unimplemented,
+//    audioRecorder: .unimplemented,
+//    mainRunLoop: .unimplemented,
+//    openSettings: XCTUnimplemented("\(Self.self).openSettings"),
+//    temporaryDirectory: XCTUnimplemented(
+//      "\(Self.self).temporaryDirectory",
+//      placeholder: URL(fileURLWithPath: NSTemporaryDirectory())
+//    ),
+//    uuid: XCTUnimplemented("\(Self.self).uuid", placeholder: UUID())
+//  )
+//}

@@ -1,4 +1,4 @@
-import ComposableArchitecture
+import Dependencies
 import Foundation
 
 struct AudioPlayerClient {
@@ -6,11 +6,16 @@ struct AudioPlayerClient {
 }
 
 private enum AudioPlayerClientKey: DependencyKey {
-  static let defaultValue = AudioPlayerClient.live
+  static let testValue = AudioPlayerClient.unimplemented
 }
+
 extension DependencyValues {
   var audioPlayer: AudioPlayerClient {
     get { self[AudioPlayerClientKey.self] }
     set { self[AudioPlayerClientKey.self] = newValue }
   }
+}
+
+extension AudioPlayerClientKey: LiveDependencyKey {
+  static let liveValue = AudioPlayerClient.live
 }

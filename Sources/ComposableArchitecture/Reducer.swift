@@ -824,3 +824,39 @@ public struct Reducer<State, Action, Environment> {
     self.reducer(&state, action, environment)
   }
 }
+
+
+
+import Dependencies
+extension ReducerProtocol {
+  public func dependency<Value>(
+    _ keyPath: WritableKeyPath<DependencyValues, Value>,
+    _ value: Value
+  ) -> some ReducerProtocolOf<Self> {
+    DependencyKeyWritingReducer(base: self) { $0[keyPath: keyPath] = value }
+  }
+}
+
+private struct DependencyKeyWritingReducer<Base: ReducerProtocol>: ReducerProtocol {
+  let base: Base
+  let update: (inout DependencyValues) -> Void
+
+  func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action, Never> {
+    var dependencies = DependencyValues.current
+    self.update(&dependencies)
+    return DependencyValues.$current.withValue(dependencies) {
+      self.base.reduce(into: &state, action: action)
+    }
+  }
+
+  public func dependency<Value>(
+    _ keyPath: WritableKeyPath<DependencyValues, Value>,
+    _ value: Value
+  ) -> some ReducerProtocolOf<Self> {
+    DependencyKeyWritingReducer(base: self.base) { values in
+      self.update(&values)
+      values[keyPath: keyPath] = value
+    }
+  }
+}
+

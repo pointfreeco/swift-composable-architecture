@@ -35,8 +35,13 @@ VoiceMemosView(
   }
 }
 
+import XCTestDynamicOverlay
 private enum TemporaryDirectoryKey: DependencyKey {
-  static let defaultValue = { @Sendable in URL(fileURLWithPath: NSTemporaryDirectory()) }
+  static let liveValue = { @Sendable in URL(fileURLWithPath: NSTemporaryDirectory()) }
+  static let testValue: @Sendable () -> URL = XCTUnimplemented(
+    #"Unimplemented: @Dependency(\.temporaryDirectory)"#,
+    placeholder: URL(fileURLWithPath: NSTemporaryDirectory())
+  )
 }
 extension DependencyValues {
   var temporaryDirectory: @Sendable () -> URL {
@@ -46,12 +51,15 @@ extension DependencyValues {
 }
 
 private enum OpenSettingsKey: DependencyKey {
-  static let defaultValue = { @Sendable @MainActor in
-    UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+  static let liveValue = { @Sendable in
+    _ = await UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
   }
+  static let testValue: @Sendable () async -> Void = XCTUnimplemented(
+    #"Unimplemented: @Dependency(\.openSettings)"#
+  )
 }
 extension DependencyValues {
-  var openSettings: @Sendable @MainActor () -> Void {
+  var openSettings: @Sendable () async -> Void {
     get { self[OpenSettingsKey.self] }
     set { self[OpenSettingsKey.self] = newValue }
   }

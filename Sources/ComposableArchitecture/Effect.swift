@@ -1,4 +1,5 @@
 import Combine
+import Dependencies
 import Foundation
 import SwiftUI
 import XCTestDynamicOverlay

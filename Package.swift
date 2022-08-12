@@ -26,8 +26,15 @@ let package = Package(
   ],
   targets: [
     .target(
+      name: "Dependencies",
+      dependencies: [
+        .product(name: "CombineSchedulers", package: "combine-schedulers"),
+      ]
+    ),
+    .target(
       name: "ComposableArchitecture",
       dependencies: [
+        "Dependencies",
         .product(name: "CasePaths", package: "swift-case-paths"),
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
         .product(name: "CustomDump", package: "swift-custom-dump"),
