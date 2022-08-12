@@ -1,7 +1,7 @@
 extension ReducerProtocol {
   @inlinable
   public func forEach<ID: Hashable, Element: ReducerProtocol>(
-    state toElementsState: WritableKeyPath<State, IdentifiedArray<ID, Element.State>>,
+    _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, Element.State>>,
     action toElementAction: CasePath<Action, (ID, Element.Action)>,
     @ReducerBuilderOf<Element> _ element: () -> Element,
     file: StaticString = #file,

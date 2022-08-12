@@ -78,7 +78,7 @@ public struct Login: ReducerProtocol {
         return .cancel(id: TwoFactor.TearDownToken.self)
       }
     }
-    .ifLet(state: \.twoFactor, action: /Action.twoFactor) {
+    .ifLet(\.twoFactor, action: /Action.twoFactor) {
       TwoFactor()
     }
   }

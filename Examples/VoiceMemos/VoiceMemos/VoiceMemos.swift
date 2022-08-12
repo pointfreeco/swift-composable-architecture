@@ -121,10 +121,10 @@ struct VoiceMemos: ReducerProtocol {
         return .none
       }
     }
-    .ifLet(state: \.recordingMemo, action: /Action.recordingMemo) {
+    .ifLet(\.recordingMemo, action: /Action.recordingMemo) {
       RecordingMemo()
     }
-    .forEach(state: \.voiceMemos, action: /Action.voiceMemo(id:action:)) {
+    .forEach(\.voiceMemos, action: /Action.voiceMemo(id:action:)) {
       VoiceMemo()
     }
   }

@@ -22,8 +22,11 @@ public struct TicTacToe: ReducerProtocol {
   public var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
-      case let .login(.twoFactor(.twoFactorResponse(.success(response)))),
-        let .login(.loginResponse(.success(response))) where !response.twoFactorRequired:
+      case let .login(.twoFactor(.twoFactorResponse(.success(response)))):
+        state = .newGame(NewGame.State())
+        return .none
+
+      case let .login(.loginResponse(.success(response))) where !response.twoFactorRequired:
         state = .newGame(NewGame.State())
         return .none
 
@@ -38,10 +41,10 @@ public struct TicTacToe: ReducerProtocol {
         return .none
       }
     }
-    .ifLet(state: /State.login, action: /Action.login) {
+    .ifCaseLet(/State.login, action: /Action.login) {
       Login()
     }
-    .ifLet(state: /State.newGame, action: /Action.newGame) {
+    .ifCaseLet(/State.newGame, action: /Action.newGame) {
       NewGame()
     }
   }

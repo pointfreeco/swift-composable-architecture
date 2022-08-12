@@ -8,12 +8,28 @@
 /// dependency values, see the ``DependencyKey`` protocol.
 @propertyWrapper
 public struct Dependency<Value> {
-  public let keyPath: KeyPath<DependencyValues, Value>
+  private let keyPath: KeyPath<DependencyValues, Value>
 
+  /// Creates a dependency property to read the specified key path.
+  ///
+  /// Don’t call this initializer directly. Instead, declare a property with the `Dependency`
+  /// property wrapper, and provide the key path of the dependency value that the property should
+  /// reflect:
+  ///
+  /// ```swift
+  /// struct Feature: ReducerProtocol {
+  ///   @Dependency(\.date) var date
+  ///
+  ///   // ...
+  /// }
+  /// ```
+  ///
+  /// - Parameter keyPath: A key path to a specific resulting value.
   public init(_ keyPath: KeyPath<DependencyValues, Value>) {
     self.keyPath = keyPath
   }
 
+  /// The current value of the dependency property.
   public var wrappedValue: Value {
     DependencyValues.current[keyPath: self.keyPath]
   }

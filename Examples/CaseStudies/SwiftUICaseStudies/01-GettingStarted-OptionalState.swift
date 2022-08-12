@@ -35,7 +35,7 @@ struct OptionalBasics: ReducerProtocol {
         return .none
       }
     }
-    .ifLet(state: \.optionalCounter, action: /Action.optionalCounter) {
+    .ifLet(\.optionalCounter, action: /Action.optionalCounter) {
       Counter()
     }
   }

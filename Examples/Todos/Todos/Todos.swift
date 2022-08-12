@@ -91,7 +91,7 @@ struct Todos: ReducerProtocol {
         return .none
       }
     }
-    .forEach(state: \.todos, action: /Action.todo(id:action:)) {
+    .forEach(\.todos, action: /Action.todo(id:action:)) {
       Todo()
     }
   }

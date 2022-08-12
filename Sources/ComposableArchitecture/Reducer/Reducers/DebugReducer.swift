@@ -1,24 +1,3 @@
-/*
- TODO: Explore more formulations:
-
- var body: some ReducerProtocol<State, Action> {
-   Debug { // like clock.measure { ... }, testCase.measure { ... }
-     R1()
-     R2()
-   }
- }
-
- var body: some ReducerProtocol<State, Action> {
-   DebugAfter()
-   ...
- }
-
- var body: some ReducerProtocol<State, Action> {
-   ...
-   DebugBefore()
- }
- */
-
 extension ReducerProtocol {
   @inlinable
   public func debug<LocalState, LocalAction>(

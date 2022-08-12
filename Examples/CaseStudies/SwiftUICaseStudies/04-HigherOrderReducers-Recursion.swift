@@ -61,7 +61,7 @@ struct Nested: ReducerProtocol {
         return .none
       }
     }
-    .forEach(state: \.children, action: /Action.node(id:action:)) {
+    .forEach(\.children, action: /Action.node(id:action:)) {
       Nested()
     }
   }

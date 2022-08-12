@@ -152,7 +152,7 @@ struct MapApp: ReducerProtocol {
   }
 
   var body: some ReducerProtocol<State, Action> {
-    EmptyReducer().forEach(state: \.cityMaps, action: /Action.cityMaps(id:action:)) {
+    EmptyReducer().forEach(\.cityMaps, action: /Action.cityMaps(id:action:)) {
       CityMap()
     }
   }
