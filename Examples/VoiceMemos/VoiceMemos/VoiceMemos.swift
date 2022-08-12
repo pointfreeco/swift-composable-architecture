@@ -218,14 +218,14 @@ struct VoiceMemos_Previews: PreviewProvider {
           voiceMemos: [
             VoiceMemo.State(
               date: Date(),
-              duration: 30,
-              mode: .playing(progress: 0.3),
+              duration: 5,
+              mode: .notPlaying,
               title: "Functions",
               url: URL(string: "https://www.pointfree.co/functions")!
             ),
             VoiceMemo.State(
               date: Date(),
-              duration: 2,
+              duration: 5,
               mode: .notPlaying,
               title: "",
               url: URL(string: "https://www.pointfree.co/untitled")!
@@ -233,13 +233,44 @@ struct VoiceMemos_Previews: PreviewProvider {
           ]
         ),
         reducer: VoiceMemos()
-          .dependency(\.audioRecorder.currentTime) { 10 }
-          .dependency(\.audioRecorder.requestRecordPermission) { true }
-          .dependency(\.audioRecorder.startRecording) { _ in try await Task.never() }
-          .dependency(\.audioRecorder.stopRecording) {}
+          .dependency(\.audioPlayer, .mock)
+          .dependency(\.audioRecorder, .mock)
           .dependency(\.openSettings) {}
       )
     )
     .environment(\.colorScheme, .dark)
   }
+}
+
+extension AudioRecorderClient {
+  static var mock: Self {
+    let isRecording = ActorIsolated(false)
+    let currentTime = ActorIsolated(0.0)
+
+    return Self(
+      currentTime: { await currentTime.value },
+      requestRecordPermission: { true },
+      startRecording: { _ in
+        await isRecording.setValue(true)
+        while await isRecording.value {
+          try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+          await currentTime.withValue { $0 += 1 }
+        }
+        return true
+      },
+      stopRecording: {
+        await isRecording.setValue(false)
+        await currentTime.setValue(0)
+      }
+    )
+  }
+}
+
+extension AudioPlayerClient {
+  static let mock = Self(
+    play: { _ in
+      try await Task.sleep(nanoseconds: NSEC_PER_SEC * 5)
+      return true
+    }
+  )
 }
