@@ -55,6 +55,7 @@ let package = Package(
     .target(
       name: "Dependencies",
       dependencies: [
+        .product(name: "CombineSchedulers", package: "combine-schedulers"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
       ]
     ),
