@@ -13,27 +13,26 @@ class VoiceMemosTests: XCTestCase {
     // NB: Combine's concatenation behavior is different in 13.3
     guard #available(iOS 13.4, *) else { return }
 
-    let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
-
-    var environment = VoiceMemosEnvironment.unimplemented
-    environment.audioRecorder.currentTime = { 2.5 }
-    environment.audioRecorder.requestRecordPermission = { true }
-    environment.audioRecorder.startRecording = { _ in
-      try await didFinish.stream.first { _ in true }!
-    }
-    environment.audioRecorder.stopRecording = {
-      didFinish.continuation.yield(true)
-      didFinish.continuation.finish()
-    }
-    environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
-    environment.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
-    environment.uuid = { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! }
-
     let store = TestStore(
       initialState: VoiceMemosState(),
       reducer: voiceMemosReducer,
-      environment: environment
+      environment: .unimplemented
     )
+
+    let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
+
+    store.environment.audioRecorder.currentTime = { 2.5 }
+    store.environment.audioRecorder.requestRecordPermission = { true }
+    store.environment.audioRecorder.startRecording = { _ in
+      try await didFinish.stream.first { _ in true }!
+    }
+    store.environment.audioRecorder.stopRecording = {
+      didFinish.continuation.yield(true)
+      didFinish.continuation.finish()
+    }
+    store.environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
+    store.environment.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
+    store.environment.uuid = { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! }
 
     await store.send(.recordButtonTapped)
     await self.mainRunLoop.advance()
@@ -81,16 +80,15 @@ class VoiceMemosTests: XCTestCase {
   func testPermissionDenied() async {
     let didOpenSettings = ActorIsolated(false)
 
-    var environment = VoiceMemosEnvironment.unimplemented
-    environment.audioRecorder.requestRecordPermission = { false }
-    environment.mainRunLoop = .immediate
-    environment.openSettings = { await didOpenSettings.setValue(true) }
-
     let store = TestStore(
       initialState: VoiceMemosState(),
       reducer: voiceMemosReducer,
-      environment: environment
+      environment: .unimplemented
     )
+
+    store.environment.audioRecorder.requestRecordPermission = { false }
+    store.environment.mainRunLoop = .immediate
+    store.environment.openSettings = { await didOpenSettings.setValue(true) }
 
     await store.send(.recordButtonTapped)
     await store.receive(.recordPermissionResponse(false)) {
@@ -106,23 +104,22 @@ class VoiceMemosTests: XCTestCase {
 
   func testRecordMemoFailure() async {
     struct SomeError: Error, Equatable {}
-    let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
-
-    var environment = VoiceMemosEnvironment.unimplemented
-    environment.audioRecorder.currentTime = { 2.5 }
-    environment.audioRecorder.requestRecordPermission = { true }
-    environment.audioRecorder.startRecording = { _ in
-      try await didFinish.stream.first { _ in true }!
-    }
-    environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
-    environment.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
-    environment.uuid = { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! }
 
     let store = TestStore(
       initialState: VoiceMemosState(),
       reducer: voiceMemosReducer,
-      environment: environment
+      environment: .unimplemented
     )
+
+    let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
+
+    store.environment.audioRecorder.requestRecordPermission = { true }
+    store.environment.audioRecorder.startRecording = { _ in
+      try await didFinish.stream.first { _ in true }!
+    }
+    store.environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
+    store.environment.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
+    store.environment.uuid = { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! }
 
     await store.send(.recordButtonTapped)
     await self.mainRunLoop.advance(by: 0.5)
@@ -148,13 +145,6 @@ class VoiceMemosTests: XCTestCase {
   }
 
   func testPlayMemoHappyPath() async {
-    var environment = VoiceMemosEnvironment.unimplemented
-    environment.audioPlayer.play = { _ in
-      try await self.mainRunLoop.sleep(for: 1.25)
-      return true
-    }
-    environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
-
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
       initialState: VoiceMemosState(
@@ -169,8 +159,14 @@ class VoiceMemosTests: XCTestCase {
         ]
       ),
       reducer: voiceMemosReducer,
-      environment: environment
+      environment: .unimplemented
     )
+
+    store.environment.audioPlayer.play = { _ in
+      try await self.mainRunLoop.sleep(for: 1.25)
+      return true
+    }
+    store.environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
     let task = await store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
@@ -193,10 +189,6 @@ class VoiceMemosTests: XCTestCase {
   func testPlayMemoFailure() async {
     struct SomeError: Error, Equatable {}
 
-    var environment = VoiceMemosEnvironment.unimplemented
-    environment.audioPlayer.play = { _ in throw SomeError() }
-    environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
-
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
       initialState: VoiceMemosState(
@@ -211,8 +203,11 @@ class VoiceMemosTests: XCTestCase {
         ]
       ),
       reducer: voiceMemosReducer,
-      environment: environment
+      environment: .unimplemented
     )
+
+    store.environment.audioPlayer.play = { _ in throw SomeError() }
+    store.environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
     let task = await store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
@@ -272,9 +267,6 @@ class VoiceMemosTests: XCTestCase {
 
   func testDeleteMemoWhilePlaying() async {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
-    var environment = VoiceMemosEnvironment.unimplemented
-    environment.audioPlayer.play = { _ in try await Task.never() }
-    environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
     let store = TestStore(
       initialState: VoiceMemosState(
@@ -289,8 +281,11 @@ class VoiceMemosTests: XCTestCase {
         ]
       ),
       reducer: voiceMemosReducer,
-      environment: environment
+      environment: .unimplemented
     )
+
+    store.environment.audioPlayer.play = { _ in try await Task.never() }
+    store.environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
     await store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
