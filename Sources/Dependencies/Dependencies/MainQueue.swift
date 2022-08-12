@@ -1,3 +1,5 @@
+import CombineSchedulers
+
 extension DependencyValues {
   /// The "main" queue.
   ///

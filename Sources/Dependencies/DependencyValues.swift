@@ -1,7 +1,7 @@
-public struct DependencyValues {
+public struct DependencyValues: Sendable {
   @TaskLocal public static var current = Self()
 
-  private var storage: [ObjectIdentifier: Any] = [:]
+  private var storage: [ObjectIdentifier: AnySendable] = [:]
 
   public init() {}
 
@@ -11,16 +11,16 @@ public struct DependencyValues {
 
   public subscript<Key: DependencyKey>(key: Key.Type) -> Key.Value {
     get {
-      guard let dependency = self.storage[ObjectIdentifier(key)] as? Key.Value
+      guard let dependency = self.storage[ObjectIdentifier(key)]?.base as? Key.Value
       else {
-        let isTesting = self.storage[ObjectIdentifier(IsTestingKey.self)] as? Bool ?? false
+        let isTesting = self.storage[ObjectIdentifier(IsTestingKey.self)]?.base as? Bool ?? false
         guard !isTesting else { return Key.testValue }
         return _liveValue(Key.self) as? Key.Value ?? Key.testValue
       }
       return dependency
     }
     set {
-      self.storage[ObjectIdentifier(key)] = newValue
+      self.storage[ObjectIdentifier(key)] = AnySendable(newValue)
     }
   }
 }
@@ -39,5 +39,12 @@ extension DependencyValues {
   private enum IsTestingKey: LiveDependencyKey {
     static let liveValue = false
     static let testValue = true
+  }
+}
+
+private struct AnySendable: @unchecked Sendable {
+  let base: Any
+  init(_ base: some Sendable) {
+    self.base = base
   }
 }

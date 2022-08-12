@@ -14,7 +14,7 @@ extension DependencyValues {
   }
 }
 
-public protocol DateGenerator {
+public protocol DateGenerator: Sendable {
   func callAsFunction() -> Date
 }
 

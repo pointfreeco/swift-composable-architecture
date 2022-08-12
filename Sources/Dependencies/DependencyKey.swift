@@ -1,5 +1,5 @@
 public protocol DependencyKey {
-  associatedtype Value
+  associatedtype Value: Sendable
   static var testValue: Value { get }
 }
 
