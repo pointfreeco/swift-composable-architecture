@@ -3,12 +3,12 @@ extension ReducerProtocol {
   public func dependency<Value>(
     _ keyPath: WritableKeyPath<DependencyValues, Value>,
     _ value: Value
-  ) -> DependencyKeyWritingReducer<Self, Value> {
+  ) -> DependencyKeyWritingReducer<Self> {
     .init(base: self) { $0[keyPath: keyPath] = value }
   }
 }
 
-public struct DependencyKeyWritingReducer<Base: ReducerProtocol, Value>: ReducerProtocol {
+public struct DependencyKeyWritingReducer<Base: ReducerProtocol>: ReducerProtocol {
   @usableFromInline
   let base: Base
 

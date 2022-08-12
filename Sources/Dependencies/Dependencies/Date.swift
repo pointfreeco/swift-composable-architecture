@@ -2,6 +2,7 @@ import Foundation
 import XCTestDynamicOverlay
 
 extension DependencyValues {
+  /// A dependency that returns the current date.
   public var date: any DateGenerator {
     get { self[DateGeneratorKey.self] }
     set { self[DateGeneratorKey.self] = newValue }
@@ -14,7 +15,7 @@ extension DependencyValues {
   }
 }
 
-public protocol DateGenerator {
+public protocol DateGenerator: Sendable {
   func callAsFunction() -> Date
 }
 

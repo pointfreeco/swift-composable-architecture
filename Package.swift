@@ -22,7 +22,7 @@ let package = Package(
   ],
   dependencies: [
     .package(name: "Benchmark", url: "https://github.com/google/swift-benchmark", from: "0.1.0"),
-    .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.7.0"),
+    .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.7.1"),
     .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.8.0"),
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.3.0"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "0.3.2"),
@@ -38,6 +38,12 @@ let package = Package(
         .product(name: "CustomDump", package: "swift-custom-dump"),
         .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
+      ],
+      swiftSettings: [
+        .unsafeFlags([
+          "-Xfrontend", "-warn-concurrency",
+          "-Xfrontend", "-enable-actor-data-race-checks",
+        ])
       ]
     ),
     .testTarget(

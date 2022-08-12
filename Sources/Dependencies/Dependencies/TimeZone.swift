@@ -2,6 +2,7 @@ import Foundation
 import XCTestDynamicOverlay
 
 extension DependencyValues {
+  /// The current time zone that reducers should use when handling dates.
   public var timeZone: TimeZone {
     get { self[TimeZoneKey.self] }
     set { self[TimeZoneKey.self] = newValue }
