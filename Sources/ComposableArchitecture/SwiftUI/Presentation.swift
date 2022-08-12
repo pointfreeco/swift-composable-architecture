@@ -104,20 +104,20 @@ extension PresentationAction: Hashable where State: Hashable, Action: Hashable {
 
 extension ReducerProtocol {
   public func presentationDestination<Destination: ReducerProtocol>(
-    state: WritableKeyPath<State, PresentationStateOf<Destination>>,
-    action: CasePath<Action, PresentationActionOf<Destination>>,
+    _ toPresentedState: WritableKeyPath<State, PresentationStateOf<Destination>>,
+    action toPresentedAction: CasePath<Action, PresentationActionOf<Destination>>,
     @ReducerBuilderOf<Destination> destination: () -> Destination
-  ) -> PresentationReducer<Self, Destination> {
-    PresentationReducer(
+  ) -> _PresentationReducer<Self, Destination> {
+    _PresentationReducer(
       presenter: self,
       presented: destination(),
-      toPresentedState: state,
-      toPresentedAction: action
+      toPresentedState: toPresentedState,
+      toPresentedAction: toPresentedAction
     )
   }
 }
 
-public struct PresentationReducer<
+public struct _PresentationReducer<
   Presenter: ReducerProtocol, Presented: ReducerProtocol
 >: ReducerProtocol {
   let presenter: Presenter

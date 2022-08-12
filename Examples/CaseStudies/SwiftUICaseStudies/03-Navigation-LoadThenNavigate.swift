@@ -41,7 +41,7 @@ struct LoadThenNavigate: ReducerProtocol {
         return .none
       }
     }
-    .presentationDestination(state: \.$counter, action: /Action.counter) {
+    .presentationDestination(\.$counter, action: /Action.counter) {
       Counter()
     }
   }

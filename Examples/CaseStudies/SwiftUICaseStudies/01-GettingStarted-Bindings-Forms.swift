@@ -27,6 +27,7 @@ struct BindingForm: ReducerProtocol {
   }
 
   var body: some ReducerProtocol<State, Action> {
+    BindingReducer()
     Reduce { state, action in
       switch action {
       case .binding(\.$stepCount):
@@ -41,7 +42,6 @@ struct BindingForm: ReducerProtocol {
         return .none
       }
     }
-    .binding()
   }
 }
 

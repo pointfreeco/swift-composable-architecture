@@ -72,7 +72,7 @@ public struct Login: ReducerProtocol, Sendable {
         return .none
       }
     }
-    .presentationDestination(state: \.$twoFactor, action: /Action.twoFactor) {
+    .presentationDestination(\.$twoFactor, action: /Action.twoFactor) {
       TwoFactor()
     }
   }

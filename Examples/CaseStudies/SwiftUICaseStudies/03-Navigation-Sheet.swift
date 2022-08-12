@@ -28,7 +28,7 @@ struct SheetDemo: ReducerProtocol {
         return .none
       }
     }
-    .presentationDestination(state: \.$sheet, action: /Action.sheet) {
+    .presentationDestination(\.$sheet, action: /Action.sheet) {
       Destinations()
     }
   }
@@ -45,13 +45,13 @@ struct SheetDemo: ReducerProtocol {
     }
 
     var body: some ReducerProtocol<State, Action> {
-      ScopeCase(
+      Scope(
         state: /State.animations,
         action: /Action.animations
       ) {
         Animations()
       }
-      ScopeCase(
+      Scope(
         state: /State.counter,
         action: /Action.counter
       ) {

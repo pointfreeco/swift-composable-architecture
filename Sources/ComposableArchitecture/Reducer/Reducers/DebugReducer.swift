@@ -1,24 +1,3 @@
-/*
- TODO: Explore more formulations:
-
- var body: some ReducerProtocol<State, Action> {
-   Debug { // like clock.measure { ... }, testCase.measure { ... }
-     R1()
-     R2()
-   }
- }
-
- var body: some ReducerProtocol<State, Action> {
-   DebugAfter()
-   ...
- }
-
- var body: some ReducerProtocol<State, Action> {
-   ...
-   DebugBefore()
- }
- */
-
 extension ReducerProtocol {
   @inlinable
   public func debug<LocalState, LocalAction>(
@@ -151,13 +130,13 @@ public enum ActionFormat {
 
 extension DependencyValues {
   // TODO: Should this be `any DebugLogger`?
-  public var debugLogger: (String) async -> Void {
+  public var debugLogger: @Sendable (String) async -> Void {
     get { self[DebugLoggerKey.self] }
     set { self[DebugLoggerKey.self] = newValue }
   }
 
   private enum DebugLoggerKey: LiveDependencyKey {
-    public static let liveValue: (String) async -> Void = { print($0) }
-    public static let testValue: (String) async -> Void = { print($0) }
+    public static let liveValue: @Sendable (String) async -> Void = { print($0) }
+    public static let testValue: @Sendable (String) async -> Void = { print($0) }
   }
 }

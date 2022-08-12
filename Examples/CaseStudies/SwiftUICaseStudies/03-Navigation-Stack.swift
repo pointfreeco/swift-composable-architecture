@@ -62,7 +62,7 @@ struct NavigationDemo: ReducerProtocol {
         return .none
       }
     }
-    .navigationDestination(state: \.$path, action: /Action.path) {
+    .navigationDestination(\.$path, action: /Action.path) {
       Destinations()
     }
   }
@@ -81,19 +81,19 @@ struct NavigationDemo: ReducerProtocol {
     }
 
     var body: some ReducerProtocol<State, Action> {
-      ScopeCase(
+      Scope(
         state: /State.screenA,
         action: /Action.screenA
       ) {
         ScreenA()
       }
-      ScopeCase(
+      Scope(
         state: /State.screenB,
         action: /Action.screenB
       ) {
         ScreenB()
       }
-      ScopeCase(
+      Scope(
         state: /State.screenC,
         action: /Action.screenC
       ) {

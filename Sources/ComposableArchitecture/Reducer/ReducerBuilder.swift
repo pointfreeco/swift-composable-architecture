@@ -2,7 +2,7 @@ import Combine
 
 @resultBuilder
 public enum ReducerBuilder<State, Action> {
-  public static func buildArray<R: ReducerProtocol>(_ reducers: [R]) -> SequenceMany<R>
+  public static func buildArray<R: ReducerProtocol>(_ reducers: [R]) -> _SequenceMany<R>
   where R.State == State, R.Action == Action {
     .init(reducers: reducers)
   }
@@ -19,15 +19,19 @@ public enum ReducerBuilder<State, Action> {
   }
 
   @inlinable
-  public static func buildEither<R: ReducerProtocol>(first reducer: R) -> R
-  where R.State == State, R.Action == Action {
-    reducer
+  public static func buildEither<R0: ReducerProtocol, R1: ReducerProtocol>(
+    first reducer: R0
+  ) -> _Conditional<R0, R1>
+  where R0.State == State, R0.Action == Action {
+    .first(reducer)
   }
 
   @inlinable
-  public static func buildEither<R: ReducerProtocol>(second reducer: R) -> R
-  where R.State == State, R.Action == Action {
-    reducer
+  public static func buildEither<R0: ReducerProtocol, R1: ReducerProtocol>(
+    second reducer: R1
+  ) -> _Conditional<R0, R1>
+  where R1.State == State, R1.Action == Action {
+    .second(reducer)
   }
 
   @inlinable
@@ -39,13 +43,13 @@ public enum ReducerBuilder<State, Action> {
   @inlinable
   public static func buildLimitedAvailability<R: ReducerProtocol>(
     _ wrapped: R
-  ) -> OptionalReducer<R>
+  ) -> _Optional<R>
   where R.State == State, R.Action == Action {
     .init(wrapped: wrapped)
   }
 
   @inlinable
-  public static func buildOptional<R: ReducerProtocol>(_ wrapped: R?) -> OptionalReducer<R>
+  public static func buildOptional<R: ReducerProtocol>(_ wrapped: R?) -> _Optional<R>
   where R.State == State, R.Action == Action {
     .init(wrapped: wrapped)
   }
@@ -59,12 +63,33 @@ public enum ReducerBuilder<State, Action> {
   @inlinable
   public static func buildPartialBlock<R0: ReducerProtocol, R1: ReducerProtocol>(
     accumulated: R0, next: R1
-  ) -> Sequence<R0, R1>
+  ) -> _Sequence<R0, R1>
   where R0.State == State, R0.Action == Action {
     .init(r0: accumulated, r1: next)
   }
 
-  public struct OptionalReducer<Wrapped: ReducerProtocol>: ReducerProtocol {
+  public enum _Conditional<First: ReducerProtocol, Second: ReducerProtocol>: ReducerProtocol
+  where
+    First.State == Second.State,
+    First.Action == Second.Action
+  {
+    case first(First)
+    case second(Second)
+
+    public func reduce(into state: inout First.State, action: First.Action) -> Effect<
+      First.Action, Never
+    > {
+      switch self {
+      case let .first(first):
+        return first.reduce(into: &state, action: action)
+
+      case let .second(second):
+        return second.reduce(into: &state, action: action)
+      }
+    }
+  }
+
+  public struct _Optional<Wrapped: ReducerProtocol>: ReducerProtocol {
     @usableFromInline
     let wrapped: Wrapped?
 
@@ -86,7 +111,7 @@ public enum ReducerBuilder<State, Action> {
     }
   }
 
-  public struct Sequence<R0: ReducerProtocol, R1: ReducerProtocol>: ReducerProtocol
+  public struct _Sequence<R0: ReducerProtocol, R1: ReducerProtocol>: ReducerProtocol
   where R0.State == R1.State, R0.Action == R1.Action {
     @usableFromInline
     let r0: R0
@@ -109,7 +134,7 @@ public enum ReducerBuilder<State, Action> {
     }
   }
 
-  public struct SequenceMany<Element: ReducerProtocol>: ReducerProtocol {
+  public struct _SequenceMany<Element: ReducerProtocol>: ReducerProtocol {
     @usableFromInline
     let reducers: [Element]
 

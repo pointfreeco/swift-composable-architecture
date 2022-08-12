@@ -41,10 +41,10 @@ public struct TicTacToe: ReducerProtocol {
         return .none
       }
     }
-    .ifLet(state: /State.login, action: /Action.login) {
+    .ifCaseLet(/State.login, action: /Action.login) {
       Login()
     }
-    .ifLet(state: /State.newGame, action: /Action.newGame) {
+    .ifCaseLet(/State.newGame, action: /Action.newGame) {
       NewGame()
     }
   }

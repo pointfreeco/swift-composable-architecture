@@ -10,9 +10,10 @@ extension DependencyValues {
   }
 }
 
-public struct NavigationID {
+// TODO: Fix Sendability
+public struct NavigationID: @unchecked Sendable {
   public var current: AnyHashable?
-  public var next: () -> AnyHashable
+  public var next: @Sendable () -> AnyHashable
 
   public static let live = Self { UUID() }
   public static var incrementing: Self {

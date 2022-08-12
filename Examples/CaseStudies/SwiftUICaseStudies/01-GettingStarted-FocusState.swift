@@ -23,6 +23,7 @@ struct FocusDemo: ReducerProtocol {
   }
 
   var body: some ReducerProtocol<State, Action> {
+    BindingReducer()
     Reduce { state, action in
       switch action {
       case .binding:
@@ -37,7 +38,6 @@ struct FocusDemo: ReducerProtocol {
         return .none
       }
     }
-    .binding()
   }
 }
 
