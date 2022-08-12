@@ -36,22 +36,22 @@ VoiceMemosView(
 }
 
 private enum TemporaryDirectoryKey: DependencyKey {
-  static let defaultValue = { URL(fileURLWithPath: NSTemporaryDirectory()) }
+  static let defaultValue = { @Sendable in URL(fileURLWithPath: NSTemporaryDirectory()) }
 }
 extension DependencyValues {
-  var temporaryDirectory: () -> URL {
+  var temporaryDirectory: @Sendable () -> URL {
     get { self[TemporaryDirectoryKey.self] }
     set { self[TemporaryDirectoryKey.self] = newValue }
   }
 }
 
 private enum OpenSettingsKey: DependencyKey {
-  static let defaultValue = { @MainActor in
+  static let defaultValue = { @Sendable @MainActor in
     UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
   }
 }
 extension DependencyValues {
-  var openSettings: @MainActor () -> Void {
+  var openSettings: @Sendable @MainActor () -> Void {
     get { self[OpenSettingsKey.self] }
     set { self[OpenSettingsKey.self] = newValue }
   }
