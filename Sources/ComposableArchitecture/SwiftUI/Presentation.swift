@@ -107,8 +107,8 @@ extension ReducerProtocol {
     _ toPresentedState: WritableKeyPath<State, PresentationStateOf<Destination>>,
     action toPresentedAction: CasePath<Action, PresentationActionOf<Destination>>,
     @ReducerBuilderOf<Destination> destination: () -> Destination
-  ) -> _PresentationReducer<Self, Destination> {
-    _PresentationReducer(
+  ) -> _PresentationDestinationReducer<Self, Destination> {
+    _PresentationDestinationReducer(
       presenter: self,
       presented: destination(),
       toPresentedState: toPresentedState,
@@ -117,7 +117,7 @@ extension ReducerProtocol {
   }
 }
 
-public struct _PresentationReducer<
+public struct _PresentationDestinationReducer<
   Presenter: ReducerProtocol, Presented: ReducerProtocol
 >: ReducerProtocol {
   let presenter: Presenter
