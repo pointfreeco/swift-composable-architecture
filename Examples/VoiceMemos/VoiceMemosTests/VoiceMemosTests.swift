@@ -76,7 +76,6 @@ class VoiceMemosTests: XCTestCase {
   }
 
   func testPermissionDenied() async {
-
     let store = TestStore(
       initialState: VoiceMemos.State(),
       reducer: VoiceMemos()
