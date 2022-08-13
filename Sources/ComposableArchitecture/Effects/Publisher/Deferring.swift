@@ -5,8 +5,8 @@ extension Effect {
   ///
   /// ```swift
   /// case let .textChanged(text):
-  ///   return environment.search(text)
-  ///     .deferred(for: 0.5, scheduler: environment.mainQueue)
+  ///   return self.apiClient.search(text)
+  ///     .deferred(for: 0.5, scheduler: self.mainQueue)
   ///     .map(Action.searchResponse)
   /// ```
   ///

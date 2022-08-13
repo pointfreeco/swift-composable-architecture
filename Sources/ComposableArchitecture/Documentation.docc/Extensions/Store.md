@@ -4,7 +4,7 @@
 
 ### Creating a Store
 
-- ``init(initialState:reducer:environment:)``
+- ``init(initialState:reducer:)``
 
 ### Scoping Stores
 

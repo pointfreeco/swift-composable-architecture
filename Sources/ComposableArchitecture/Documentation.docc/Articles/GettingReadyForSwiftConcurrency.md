@@ -28,17 +28,22 @@ Reducers are executed with a mutable, `inout` state variable, and such variables
 from within `@Sendable` closures:
 
 ```swift
-Reducer { state, action, environment in 
-  switch action {
-  case .buttonTapped:
-    return .task {
-      try await Task.sleep(nanoseconds: NSEC_PER_SEC)
-      return .delayed(state.count) 
-      // 🛑 Mutable capture of 'inout' parameter 'state' is 
-      //    not allowed in concurrently-executing code
-    }
+struct Feature: ReducerProtocol {
+  struct State { … }
+  enum Action { … }
 
-    …
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    switch action {
+    case .buttonTapped:
+      return .task {
+        try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+        return .delayed(state.count) 
+        // 🛑 Mutable capture of 'inout' parameter 'state' is 
+        //    not allowed in concurrently-executing code
+      }
+
+      …
+    }
   }
 }
 ```
@@ -65,27 +70,35 @@ return .task { [count = state.count] in
 
 ### Accessing dependencies in an effect
 
-In the Composable Architecture, one designs an environment of dependencies that your feature needs to
-do its job. These are all the clients and objects that interact with the messy, unpredictable
-outside world, but provide an interface that is easy to control so that we can still write tests.
-
-Dependencies are typically accessed inside the effect, which means it must be `Sendable`, otherwise
-we will get the following warning (and error in Swift 6):
+In the Composable Architecture, one provides dependencies to a reducer so that it can interact with
+the outside world in a determinstic and controlled manner. Dependencies are typically accessed 
+inside the effect, which means it must be `Sendable`, otherwise we will get the following warning 
+(and error in Swift 6):
 
 ```swift
-case .numberFactButtonTapped:
-  return .task { [count = state.count] in
-    await .numberFactResponse(
-      TaskResult { try await environment.factClient.fetch(count) }
-    )
-    // ⚠️ Capture of 'environment' with non-sendable type 'AppEnvironment' 
-    //    in a `@Sendable` closure
+struct Feature: ReducerProtocol {
+  struct State { … } 
+  enum Action { … }
+  @Dependency(\.factClient) var factClient
+
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    switch action {
+    case .numberFactButtonTapped:
+      return .task { [count = state.count] in
+        await .numberFactResponse(
+          TaskResult { try await self.factClient.fetch(count) }
+        )
+        // ⚠️ Capture of 'self' with non-sendable type 'Feature' 
+        //    in a `@Sendable` closure
+      }
+    }
   }
+}
 ```
 
-To fix this we need to make each dependency held in the environment `Sendable`. This usually just
-means making sure that the interface type only holds onto `Sendable` data, and in particular, any
-closure-based endpoints should be annotated as `@Sendable`:
+To fix this we need to make each dependency client `Sendable`. This usually just means making sure 
+that the interface type only holds onto `Sendable` data, and in particular, any closure-based 
+endpoints should be annotated as `@Sendable`:
 
 ```swift
 struct FactClient {

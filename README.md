@@ -77,7 +77,6 @@ To build a feature using the Composable Architecture you define some types and v
 
 * **State**: A type that describes the data your feature needs to perform its logic and render its UI.
 * **Action**: A type that represents all of the actions that can happen in your feature, such as user actions, notifications, event sources and more.
-* **Environment**: A type that holds any dependencies the feature needs, such as API clients, analytics clients, etc.
 * **Reducer**: A function that describes how to evolve the current state of the app to the next state given an action. The reducer is also responsible for returning any effects that should be run, such as API requests, which can be done by returning an `Effect` value.
 * **Store**: The runtime that actually drives your feature. You send all user actions to the store so that the store can run the reducer and effects, and you can observe state changes in the store so that you can update UI.
 
@@ -168,7 +167,7 @@ struct Feature: ReducerProtocol {
 And then finally we define the view that displays the feature. It holds onto a `StoreOf<Feature>` so that it can observe all changes to the state and re-render, and we can send all user actions to the store so that state changes. We must also introduce a struct wrapper around the fact alert to make it `Identifiable`, which the `.alert` view modifier requires:
 
 ```swift
-struct AppView: View {
+struct FeatureView: View {
   let store: StoreOf<Feature>
 
   var body: some View {
@@ -205,7 +204,7 @@ It is also straightforward to have a UIKit controller driven off of this store. 
   <summary>Click to expand!</summary>
 
   ```swift
-  class AppViewController: UIViewController {
+  class FeatureViewController: UIViewController {
     let viewStore: ViewStore<AppState, AppAction>
     var cancellables: Set<AnyCancellable> = []
 
@@ -267,14 +266,15 @@ Once we are ready to display this view, for example in the app's entry point, we
 
 ```swift
 @main
-struct CaseStudiesApp: App {
-var body: some Scene {
-  AppView(
-    store: Store(
-      initialState: Feature.State(),
-      reducer: Feature()
+struct MyApp: App {
+  var body: some Scene {
+    FeatureView(
+      store: Store(
+        initialState: Feature.State(),
+        reducer: Feature()
+      )
     )
-  )
+  }
 }
 ```
 
@@ -342,20 +342,21 @@ And in the entry point of the application we can provide a version of the depend
 
 ```swift
 @main
-struct CaseStudiesApp: App {
-var body: some Scene {
-  AppView(
-    store: Store(
-      initialState: Feature.State(),
-      reducer: Feature(
-        numberFact: {
-          let (data, _) = try await URLSession.shared
-            .data(from: .init(string: "http://numbersapi.com/\(number)")!)
-          return String(decoding: data, using: UTF8.self)
-        }
+struct MyApp: App {
+  var body: some Scene {
+    FeatureView(
+      store: Store(
+        initialState: Feature.State(),
+        reducer: Feature(
+          numberFact: {
+            let (data, _) = try await URLSession.shared
+              .data(from: .init(string: "http://numbersapi.com/\(number)")!)
+            return String(decoding: data, using: UTF8.self)
+          }
+        )
       )
     )
-  )
+  }
 }
 ```
 
@@ -385,6 +386,79 @@ await store.receive(.numberFactResponse(.success("0 is a good number Brent"))) {
 await store.send(.factAlertDismissed) {
   $0.numberFactAlert = nil
 }
+```
+
+We can also improve the ergonomics of using the `numberFact` dependency in our application. Over time the application may evolve into many features, and some of those features may also want access to `numberFact`, and explicitly passing it through all layers can get annoying. There is a process you can follow to “register” dependencies with the library, making them instantly available to any layer in the application.
+
+We can start by wrapping the number fact functionality in a new type:
+
+```swift
+struct NumberFactClient {
+  var fetch: (Int) async throws -> String
+}
+```
+
+And then registering that type with the dependency management system, which is quite similar to how SwiftUI's environment values works, except you specify both a live and test implementation of the dependency:
+
+```swift
+private enum NumberFactClientKey: LiveDependencyValue {
+  static let liveValue = NumberFactClient(
+    fetch: {
+      let (data, _) = try await URLSession.shared
+        .data(from: .init(string: "http://numbersapi.com/\(number)")!)
+      return String(decoding: data, using: UTF8.self)
+    }
+  )
+  
+  static let testValue = NumberFactClient(
+    fetch: { "\($0) is a good number Brent" }
+  )
+}
+
+extension DependencyValues {
+  var numberFact: NumberFactClient {
+    get { self[NumberFactClientKey.self] }
+    set { self[NumberFactClientKey.self] = newValue }
+  }
+}
+```
+
+With that little bit of upfront work done you can instantly start making use of the dependency in any feature:
+
+```swift
+struct Feature: ReducerProtocol {
+  struct State { … }
+  enum Action { … }
+  @Dependency(\.numberFact) var numberFact
+  …
+}
+```
+
+This code works exactly as it did before, but you no longer have to explicitly pass the dependency when constructing the feature's reducer. When running the app in previews, the simulator or on a device, the live dependency will be provided to the reducer, and in tests the test dependency will be provided.
+
+This means the entry point to the application no longer needs to construct dependencies:
+
+```swift
+@main
+struct MyApp: App {
+  var body: some Scene {
+    FeatureView(
+      store: Store(
+        initialState: Feature.State(),
+        reducer: Feature()
+      )
+    )
+  }
+}
+```
+
+And the test store can be constructed without specifying any dependencies:
+
+```swift
+let store = TestStore(
+  initialState: Feature.State(),
+  reducer: Feature()
+)
 ```
 
 That is the basics of building and testing a feature in the Composable Architecture. There are _a lot_ more things to be explored, such as composition, modularity, adaptability, and complex effects. The [Examples](./Examples) directory has a bunch of projects to explore to see more advanced usages.

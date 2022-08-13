@@ -26,8 +26,8 @@ import XCTestDynamicOverlay
 /// Then you can model your dependency as using simple `async` and `throws` functionality:
 ///
 /// ```swift
-/// struct FeatureEnvironment {
-///   var numberFact: (Int) async throws -> String
+/// struct NumberFactClient {
+///   var fetch: (Int) async throws -> String
 /// }
 /// ```
 ///
@@ -39,7 +39,7 @@ import XCTestDynamicOverlay
 /// case .factButtonTapped:
 ///   return .task {
 ///     await .factResponse(
-///       TaskResult { try await environment.numberFact(state.number) }
+///       TaskResult { try await self.numberFact.fetch(state.number) }
 ///     )
 ///   }
 ///
@@ -71,7 +71,7 @@ import XCTestDynamicOverlay
 /// ```swift
 /// // Set up a failing dependency
 /// struct RefreshFailure: Error {}
-/// store.environment.apiClient.fetchFeed = { throw RefreshFailure() }
+/// store.dependencies.apiClient.fetchFeed = { throw RefreshFailure() }
 ///
 /// // Simulate pull-to-refresh
 /// store.send(.refresh) { $0.isLoading = true }
@@ -89,7 +89,7 @@ import XCTestDynamicOverlay
 /// ```swift
 /// // Set up a failing dependency
 /// struct RefreshFailure: Error, Equatable {} // 👈
-/// store.environment.apiClient.fetchFeed = { throw RefreshFailure() }
+/// store.dependencies.apiClient.fetchFeed = { throw RefreshFailure() }
 ///
 /// // Simulate pull-to-refresh
 /// store.send(.refresh) { $0.isLoading = true }

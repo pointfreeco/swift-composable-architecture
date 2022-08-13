@@ -13,7 +13,7 @@ extension Effect {
   ///
   /// case .reloadButtonTapped:
   ///   // Start a new effect to load the user
-  ///   return environment.loadUser
+  ///   return self.apiClient.loadUser()
   ///     .map(Action.userResponse)
   ///     .cancellable(id: LoadUserID.self, cancelInFlight: true)
   ///

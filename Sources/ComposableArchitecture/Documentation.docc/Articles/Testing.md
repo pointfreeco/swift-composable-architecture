@@ -19,33 +19,31 @@ the system. To test this we can technically run a piece of mutable state through
 then assert on how it changed after, like this:
 
 ```swift
-struct State: Equatable { var count = 0 }
-enum Action { case incrementButtonTapped, decrementButtonTapped }
-struct Environment {}
+struct Feature: ReducerProtocol {
+  struct State: Equatable { var count = 0 }
+  enum Action { case incrementButtonTapped, decrementButtonTapped }
 
-let counter = Reducer<State, Action, Environment> { state, action, environment in
-  switch action {
-  case .incrementButtonTapped:
-    state.count += 1
-    return .none
-  case .decrementButtonTapped:
-    state.count -= 1
-    return .none
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    switch action {
+    case .incrementButtonTapped:
+      state.count += 1
+      return .none
+    case .decrementButtonTapped:
+      state.count -= 1
+      return .none
+    }
   }
 }
 
-let environment = Environment()
-var currentState = State(count: 0)
-
-_ = reducer(&currentState, .incrementButtonTapped, environment)
-
+let feature = Feature()
+var currentState = Feature.State(count: 0)
+_ = feature.reduce(into: &currentState, action: .incrementButtonTapped)
 XCTAssertEqual(
   currentState,
   State(count: 1)
 )
 
-_ = reducer(&currentState, .decrementButtonTapped, environment)
-
+_ = feature.reduce(into: &currentState, action: .decrementButtonTapped)
 XCTAssertEqual(
   currentState,
   State(count: 0)
@@ -56,17 +54,15 @@ This will technically work, but it's a lot boilerplate for something that should
 
 The library comes with a tool specifically designed to make testing like this much simpler and more
 concise. It's called ``TestStore``, and it is constructed similarly to ``Store`` by providing the
-initial state of the feature, the ``Reducer`` that run's the feature's logic, and an environment of
-dependencies for the feature to use:
+initial state of the feature and the ``Reducer`` that run's the feature's logic:
 
 ```swift
 @MainActor
 class CounterTests: XCTestCase {
   func testBasics() async {
     let store = TestStore(
-      initialState: State(count: 0),
-      reducer: counter,
-      environment: Environment()
+      initialState: Feature.State(count: 0),
+      reducer: Feature()
     )
   }
 }
@@ -75,7 +71,7 @@ class CounterTests: XCTestCase {
 > Test cases that use ``TestStore`` should be annotated as `@MainActor` and test methods should be
 > marked as `async` since most assertion helpers on ``TestStore`` can suspend.
 
-Test stores have a ``TestStore/send(_:_:file:line:)-7vwv9`` method, but it behaves differently from
+Test stores have a ``TestStore/send(_:_:file:line:)-3pf4p`` method, but it behaves differently from
 stores and view stores. You provide an action to send into the system, but then you must also
 provide a trailing closure to describe how the state of the feature changed after sending the
 action:
@@ -179,26 +175,26 @@ a timer that counts up until you reach 5, and then stops. This can be accomplish
 asynchronous context to operate in and can send multiple actions back into the system:
 
 ```swift
-struct State: Equatable { var count = 0 }
-enum Action {  case startTimerButtonTapped, timerTick }
-struct Environment {}
-
-let reducer = Reducer<State, Action, Environment> { state, action, environment in
+struct Feature: ReducerProtocol {
+  struct State: Equatable { var count = 0 }
+  enum Action {  case startTimerButtonTapped, timerTick }
   enum TimerID {}
 
-  switch action {
-  case .startTimerButtonTapped:
-    state.count = 0
-    return .run { send in
-      for _ in 1...5 {
-        try await Task.sleep(nanoseconds: NSEC_PER_SEC)
-        await send(.timerTick)
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    switch action {
+    case .startTimerButtonTapped:
+      state.count = 0
+      return .run { send in
+        for _ in 1...5 {
+          try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+          await send(.timerTick)
+        }
       }
-    }
 
-  case .timerTick:
-    state.count += 1
-    return .none
+    case .timerTick:
+      state.count += 1
+      return .none
+    }
   }
 }
 ```
@@ -211,9 +207,8 @@ when testing state mutations:
 class TimerTests: XCTestCase {
   func testBasics() async {
     let store = TestStore(
-      initialState: State(count: 0),
-      reducer: reducer,
-      environment: Environment()
+      initialState: Feature.State(count: 0),
+      reducer: Feature()
     )
   }
 }
@@ -315,15 +310,17 @@ can receive all of the actions from the timer. This makes our test suite far too
 the future we need to test a feature that has a timer that emits hundreds or thousands of times?
 We cannot hold up our test suite for minutes or hours just to test that one feature.
 
-To fix this we need to hold onto a dependency in the feature's environment that aids in performing
-time-based asynchrony, but in a way that is controllable. One way to do this is to add a Combine
-scheduler to the environment:
+To fix this we need to add a dependency to the reducer that aids in performing time-based 
+asynchrony, but in a way that is controllable. One way to do this is to add a Combine scheduler as a
+`@Dependency` to the reducer:
 
 ```swift
 import CombineSchedulers
 
-struct Environment {
-  var mainQueue: any SchedulerOf<DispatchQueue>
+struct Feature: ReducerProtocol {
+  struct State { … }
+  enum Action { … }
+  @Dependency(\.mainQueue) var mainQueue
 }
 ```
 
@@ -337,7 +334,7 @@ out to the uncontrollable `Task.sleep` method:
 ```swift
 return .run { send in
   for _ in 1...5 {
-    try await environment.mainQueue.sleep(for: .seconds(1))
+    try await self.mainQueue.sleep(for: .seconds(1))
     await send(.timerTick)
   }
 }
@@ -346,15 +343,16 @@ return .run { send in
 > The `sleep(for:)` method on `Scheduler` is provided by the
 [Combine Schedulers][gh-combine-schedulers] library.
 
-By having a scheduler in the environment we can supply a controlled value in tests, such as an
-immediate scheduler that does not suspend at all when you ask it to sleep:
+By having a scheduler as a dependency in the feature we can supply a controlled value in tests, such 
+as an immediate scheduler that does not suspend at all when you ask it to sleep:
 
 ```swift
 let store = TestStore(
-  initialState: State(count: 0),
-  reducer: reducer,
-  environment: Environment(mainQueue: .immediate)
+  initialState: Feature.State(count: 0),
+  reducer: Feature()
 )
+
+store.dependencies.mainQueue = .immediate
 ```
 
 With that small change we can drop the `timeout` arguments from the

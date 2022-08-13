@@ -54,7 +54,7 @@ day-to-day when building applications, such as:
 
 ### State Management
 
-- ``Reducer``
+- ``ReducerProtocol``
 - ``Effect``
 - ``Store``
 - ``ViewStore``

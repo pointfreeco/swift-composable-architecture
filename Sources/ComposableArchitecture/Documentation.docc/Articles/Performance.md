@@ -185,9 +185,9 @@ the progress for literally every step:
 case .startButtonTapped:
   return .run { send in
     var count = 0
-    let max = await environment.eventCount()
+    let max = await self.eventsClient.count()
 
-    for await event in environment.eventSource() {
+    for await event in self.eventsClient.events() {
       defer { count += 1 }
       send(.progress(Double(count) / Double(max)))
     }
@@ -206,10 +206,10 @@ to make it so that you report the progress at most 100 times:
 case .startButtonTapped:
   return .run { send in
     var count = 0
-    let max = await environment.eventCount()
+    let max = await self.eventsClient.count()
     let interval = max / 100
 
-    for await event in environment.eventSource() {
+    for await event in self.eventsClient.events() {
       defer { count += 1 }
       if count.isMultiple(of: interval) {
         send(.progress(Double(count) / Double(max)))

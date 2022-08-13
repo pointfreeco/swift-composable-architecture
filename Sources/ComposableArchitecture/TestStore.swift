@@ -124,7 +124,8 @@
   /// }
   /// ```
   ///
-  /// It can be fully tested by controlling the environment's scheduler and effect:
+  /// It can be fully tested by overriding the `mainQueue` and `apiClient` dependencies with values
+  /// that are fully controlled and deterministic:
   ///
   /// ```swift
   /// let store = TestStore(
@@ -169,6 +170,11 @@
   /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
   /// not expect it would cause a test failure.
   public final class TestStore<Reducer: ReducerProtocol, LocalState, LocalAction, Environment> {
+    /// The current dependencies.
+    ///
+    /// The dependencies define the execution context that your feature runs in. They can be
+    /// modified throughout the test store's lifecycle in order to influence how your feature
+    /// produces effects.
     public var dependencies: DependencyValues {
       _read { yield self.reducer.dependencies }
       _modify { yield &self.reducer.dependencies }

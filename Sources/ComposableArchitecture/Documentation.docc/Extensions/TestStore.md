@@ -4,11 +4,11 @@
 
 ### Creating a Test Store
 
-- ``init(initialState:reducer:environment:file:line:)``
+- ``init(initialState:reducer:file:line:)``
 
 ### Configuring a Test Store
 
-- ``environment``
+- ``dependencies``
 - ``timeout``
 
 ### Testing a Reducer

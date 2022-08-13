@@ -175,32 +175,30 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// gesture is performed on a list. The domain and logic for this feature can be modeled like so:
   ///
   /// ```swift
-  /// struct State: Equatable {
-  ///   var isLoading = false
-  ///   var response: String?
-  /// }
+  /// struct Feature: ReducerProtocol {
+  ///   struct State: Equatable {
+  ///     var isLoading = false
+  ///     var response: String?
+  ///   }
+  ///   enum Action {
+  ///     case pulledToRefresh
+  ///     case receivedResponse(TaskResult<String>)
+  ///   }
+  ///   @Dependency(\.fetch) var fetch
   ///
-  /// enum Action {
-  ///   case pulledToRefresh
-  ///   case receivedResponse(TaskResult<String>)
-  /// }
+  ///   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  ///     switch action {
+  ///     case .pulledToRefresh:
+  ///       state.isLoading = true
+  ///       return .task {
+  ///         await .receivedResponse(TaskResult { try await self.fetch() })
+  ///       }
   ///
-  /// struct Environment {
-  ///   var fetch: () async throws -> String
-  /// }
-  ///
-  /// let reducer = AnyReducer<State, Action, Environment> { state, action, environment in
-  ///   switch action {
-  ///   case .pulledToRefresh:
-  ///     state.isLoading = true
-  ///     return .task {
-  ///       await .receivedResponse(TaskResult { try await environment.fetch() })
+  ///     case let .receivedResponse(result):
+  ///       state.isLoading = false
+  ///       state.response = try? result.value
+  ///       return .none
   ///     }
-  ///
-  ///   case let .receivedResponse(result):
-  ///     state.isLoading = false
-  ///     state.response = try? result.value
-  ///     return .none
   ///   }
   /// }
   /// ```
