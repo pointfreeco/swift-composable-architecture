@@ -1,10 +1,29 @@
 import OSLog
 
 extension ReducerProtocol {
+  /// Instruments a reducer with
+  /// [signposts](https://developer.apple.com/documentation/os/logging/recording_performance_data).
+  ///
+  /// Each invocation of the reducer will be measured by an interval, and the lifecycle of its
+  /// effects will be measured with interval and event signposts.
+  ///
+  /// To use, build your app for profiling, create a blank instrument, and add the signpost
+  /// instrument. Start recording your app you will see timing information for every action sent to
+  /// the store, as well as every effect executed.
+  ///
+  /// Effect instrumentation can be particularly useful for inspecting the lifecycle of long-living
+  /// effects. For example, if you start an effect (_e.g._, a location manager) in `onAppear` and
+  /// forget to tear down the effect in `onDisappear`, the instrument will show that the effect
+  /// never completed.
+  ///
+  /// - Parameters:
+  ///   - prefix: A string to print at the beginning of the formatted message for the signpost.
+  ///   - log: An `OSLog` to use for signposts.
+  /// - Returns: A reducer that has been enhanced with instrumentation.
   @inlinable
   public func signpost(
     _ prefix: String = "",
-    // TODO: Move log to `DependencyValues`?
+    // TODO: Should this be in `DependencyValues`?
     log: OSLog = OSLog(
       subsystem: "co.pointfree.ComposableArchitecture",
       category: "Reducer Instrumentation"

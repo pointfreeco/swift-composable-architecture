@@ -11,7 +11,7 @@ extension ReducerProtocol {
     _ keyPath: WritableKeyPath<DependencyValues, Value>,
     _ value: Value
   )
-  // NB: Can not return `some ReducerProtocol<State, Action>` here. That would prevent the
+  // NB: We should not return `some ReducerProtocol<State, Action>` here. That would prevent the
   //     specialization defined below from being called, which fuses chained calls to `dependency`.
   -> _DependencyKeyWritingReducer<Self> {
     _DependencyKeyWritingReducer(base: self) { $0[keyPath: keyPath] = value }

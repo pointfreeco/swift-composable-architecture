@@ -1,22 +1,20 @@
 import SwiftUI
 
-#if compiler(>=5.4)
-  public struct BindingReducer<State, Action>: ReducerProtocol
-  where Action: BindableAction, State == Action.State {
-    @inlinable
-    public init() {}
+/// A reducer that updates bindable state when it receives binding actions.
+public struct BindingReducer<State, Action>: ReducerProtocol
+where Action: BindableAction, State == Action.State {
+  /// Initializes a reducer that updates bindable state when it receives binding actions.
+  @inlinable
+  public init() {}
 
-    @inlinable
-    public func reduce(
-      into state: inout State, action: Action
-    ) -> Effect<Action, Never> {
-      guard let bindingAction = (/Action.binding).extract(from: action)
-      else {
-        return .none
-      }
+  @inlinable
+  public func reduce(
+    into state: inout State, action: Action
+  ) -> Effect<Action, Never> {
+    guard let bindingAction = (/Action.binding).extract(from: action)
+    else { return .none }
 
-      bindingAction.set(&state)
-      return .none
-    }
+    bindingAction.set(&state)
+    return .none
   }
-#endif
+}
