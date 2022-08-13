@@ -1,8 +1,8 @@
 import CustomDump
 import SwiftUI
 
-/// A property wrapper type that can designate properties of app state that can be directly
-/// bindable in SwiftUI views.
+/// A property wrapper type that can designate properties of app state that can be directly bindable
+/// in SwiftUI views.
 ///
 /// Along with an action type that conforms to the ``BindableAction`` protocol, this type can be
 /// used to safely eliminate the boilerplate that is typically incurred when working with multiple

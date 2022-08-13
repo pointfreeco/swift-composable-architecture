@@ -1,6 +1,10 @@
 import CasePaths
 import Dispatch
 
+@available(iOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead.")
+@available(macOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead.")
+@available(tvOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead.")
+@available(watchOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead.")
 extension AnyReducer {
   /// Prints debug messages describing all received actions and state mutations.
   ///
@@ -117,6 +121,26 @@ extension AnyReducer {
 }
 
 /// An environment for debug-printing reducers.
+@available(
+  iOS,
+  deprecated: 9999.0,
+  message: "Call 'debug()' on a 'ReducerProtocol' conformance, instead."
+)
+@available(
+  macOS,
+  deprecated: 9999.0,
+  message: "Call 'debug()' on a 'ReducerProtocol' conformance, instead."
+)
+@available(
+  tvOS,
+  deprecated: 9999.0,
+  message: "Call 'debug()' on a 'ReducerProtocol' conformance, instead."
+)
+@available(
+  watchOS,
+  deprecated: 9999.0,
+  message: "Call 'debug()' on a 'ReducerProtocol' conformance, instead."
+)
 public struct DebugEnvironment {
   public var printer: (String) -> Void
   public var queue: DispatchQueue

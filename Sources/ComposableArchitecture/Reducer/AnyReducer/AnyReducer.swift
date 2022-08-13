@@ -21,10 +21,10 @@ import Combine
 /// > This is only an issue if using the Combine interface of ``Effect`` as mentioned above. If you
 ///   you are only using Swift's concurrency tools and the `.task`, `.run` and `.fireAndForget`
 ///   functions on ``Effect``, then the threading is automatically handled for you.
-@available(iOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead")
-@available(macOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead")
-@available(tvOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead")
-@available(watchOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead")
+@available(iOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead.")
+@available(macOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead.")
+@available(tvOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead.")
+@available(watchOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead.")
 public struct AnyReducer<State, Action, Environment> {
   private let reducer: (inout State, Action, Environment) -> Effect<Action, Never>
 
