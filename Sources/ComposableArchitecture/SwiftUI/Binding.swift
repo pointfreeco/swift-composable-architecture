@@ -579,7 +579,7 @@ extension AnyReducer where Action: BindableAction, State == Action.State {
             Action:
               %@
 
-          To fix this, invoke "BindingReducer()" from your feature's reducer's "body".
+          To fix this, invoke "BindingReducer()" from your feature reducer's "body".
           """,
           [
             "\(self.fileID)",

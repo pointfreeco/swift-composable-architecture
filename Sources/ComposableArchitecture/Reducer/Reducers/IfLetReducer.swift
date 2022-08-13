@@ -1,5 +1,13 @@
 extension ReducerProtocol {
-  @inlinable
+  /// Embeds a child reducer in a parent domain that works on an optional property of parent state.
+  ///
+  /// - Parameters:
+  ///   - toWrappedState: A writable key path from parent state to a property containing optional
+  ///     child state.
+  ///   - toWrappedAction: A case path from parent action to a case containing child actions.
+  ///   - wrapped: A reducer that will be invoked with child actions against non-optional child
+  ///     state.
+  /// - Returns: A reducer that combines the child reducer with the parent reducer.
   public func ifLet<Wrapped: ReducerProtocol>(
     _ toWrappedState: WritableKeyPath<State, Wrapped.State?>,
     action toWrappedAction: CasePath<Action, Wrapped.Action>,
@@ -20,19 +28,27 @@ extension ReducerProtocol {
   }
 
   @inlinable
-  public func ifCaseLet<Wrapped: ReducerProtocol>(
-    _ toWrappedState: CasePath<State, Wrapped.State>,
-    action toWrappedAction: CasePath<Action, Wrapped.Action>,
-    @ReducerBuilderOf<Wrapped> then wrapped: () -> Wrapped,
+  /// Embeds a child reducer in a parent domain that works on a case of parent state.
+  ///
+  /// - Parameters:
+  ///   - toCaseState: A case path from parent state to a case containing child state.
+  ///   - toCaseAction: A case path from parent action to a case containing child actions.
+  ///   - case: A reducer that will be invoked with child actions against child state when it is
+  ///     present
+  /// - Returns: A reducer that combines the child reducer with the parent reducer.
+  public func ifCaseLet<Case: ReducerProtocol>(
+    _ toCaseState: CasePath<State, Case.State>,
+    action toCaseAction: CasePath<Action, Case.Action>,
+    @ReducerBuilderOf<Case> then case: () -> Case,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _IfCaseLetReducer<Self, Wrapped> {
+  ) -> _IfCaseLetReducer<Self, Case> {
     .init(
       parent: self,
-      child: wrapped(),
-      toChildState: toWrappedState,
-      toChildAction: toWrappedAction,
+      child: `case`(),
+      toChildState: toCaseState,
+      toChildAction: toCaseAction,
       file: file,
       fileID: fileID,
       line: line
