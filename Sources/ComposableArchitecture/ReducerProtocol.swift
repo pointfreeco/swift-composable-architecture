@@ -42,7 +42,7 @@
 /// }
 /// ```
 ///
-/// If you are implementing a custom reduer opreator that transforms an existing reducer,
+/// If you are implementing a custom reduer operator that transforms an existing reducer,
 /// _always_ invoke the ``reduce(into:action:)-4nzr2`` method, never the
 /// ``body-swift.property-5mc0o``. For example, this operator that logs all actions sent to the
 /// reducer:
