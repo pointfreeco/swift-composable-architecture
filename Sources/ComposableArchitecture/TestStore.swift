@@ -50,7 +50,9 @@
   ///     case incrementButtonTapped
   ///   }
   ///
-  ///   func reduce(into state: State, action: Action) -> Effect<Action, Never> {
+  ///   func reduce(
+  ///     into state: inout State, action: Action
+  ///   ) -> Effect<Action, Never> {
   ///     switch action {
   ///     case .decrementButtonTapped:
   ///       state.count -= 1
@@ -71,11 +73,15 @@
   /// class CounterTests: XCTestCase {
   ///   func testCounter() async {
   ///     let store = TestStore(
-  ///       initialState: Counter.State(count: 0),    // Given a counter state of 0
+  ///       // Given a counter state of 0
+  ///       initialState: Counter.State(count: 0),
   ///       reducer: Counter()
   ///     )
-  ///     await store.send(.incrementButtonTapped) {  // When the increment button is tapped
-  ///       $0.count = 1                              // Then the count should be 1
+  ///
+  ///     // When the increment button is tapped
+  ///     await store.send(.incrementButtonTapped) {
+  ///       // Then the count should be 1
+  ///       $0.count = 1
   ///     }
   ///   }
   /// }
@@ -103,7 +109,9 @@
   ///   @Dependency(\.apiClient) var apiClient
   ///   @Dependency(\.mainQueue) var mainQueue
   ///
-  ///   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  ///   func reduce(
+  ///     into state: inout State, action: Action
+  ///   ) -> Effect<Action, Never> {
   ///     switch action {
   ///     case let .queryChanged(query):
   ///       enum SearchID {}
@@ -111,8 +119,11 @@
   ///       state.query = query
   ///       return .run { send in
   ///         try await self.mainQueue.sleep(for: 0.5)
-  ///         guard let results = try? await self.apiClient.search(query) else { return }
-  ///         send(.response(results))
+  ///
+  ///         guard let results = try? await self.apiClient.search(query)
+  ///         else { return }
+  ///
+  ///         await send(.response(results))
   ///       }
   ///       .cancellable(id: SearchID.self, cancelInFlight: true)
   ///
@@ -124,7 +135,8 @@
   /// }
   /// ```
   ///
-  /// It can be fully tested by controlling the environment's scheduler and effect:
+  /// It can be fully tested by overriding the `mainQueue` and `apiClient` dependencies with values
+  /// that are fully controlled and deterministic:
   ///
   /// ```swift
   /// let store = TestStore(
@@ -137,7 +149,9 @@
   /// store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
   ///
   /// // Simulate a search response with one item
-  /// store.dependencies.mainQueue.apiClient.search = { _ in ["Composable Architecture"] }
+  /// store.dependencies.mainQueue.apiClient.search = { _ in
+  ///   ["Composable Architecture"]
+  /// }
   ///
   /// // Change the query
   /// await store.send(.searchFieldChanged("c") {
@@ -169,6 +183,11 @@
   /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
   /// not expect it would cause a test failure.
   public final class TestStore<Reducer: ReducerProtocol, LocalState, LocalAction, Environment> {
+    /// The current dependencies.
+    ///
+    /// The dependencies define the execution context that your feature runs in. They can be
+    /// modified throughout the test store's lifecycle in order to influence how your feature
+    /// produces effects.
     public var dependencies: DependencyValues {
       _read { yield self.reducer.dependencies }
       _modify { yield &self.reducer.dependencies }
@@ -202,8 +221,8 @@
 
     /// The current state.
     ///
-    /// When read from a trailing closure assertion in ``send(_:_:file:line:)-7vwv9`` or
-    /// ``receive(_:timeout:_:file:line:)-88eyr``, it will equal the `inout` state passed to the
+    /// When read from a trailing closure assertion in ``send(_:_:file:line:)-3pf4p`` or
+    /// ``receive(_:timeout:_:file:line:)-1fjua``, it will equal the `inout` state passed to the
     /// closure.
     public var state: Reducer.State {
       self.reducer.state
@@ -212,7 +231,7 @@
     /// The timeout to await for in-flight effects.
     ///
     /// This is the default timeout used in all methods that take an optional timeout, such as
-    /// ``send(_:_:file:line:)-7vwv9``, ``receive(_:timeout:_:file:line:)-88eyr`` and
+    /// ``send(_:_:file:line:)-3pf4p``, ``receive(_:timeout:_:file:line:)-1fjua`` and
     /// ``finish(timeout:file:line:)-53gi5``.
     public var timeout: UInt64
 
@@ -868,7 +887,7 @@
     }
   }
 
-  /// The type returned from ``TestStore/send(_:_:file:line:)-7vwv9`` that represents the lifecycle
+  /// The type returned from ``TestStore/send(_:_:file:line:)-3pf4p`` that represents the lifecycle
   /// of the effect started from sending an action.
   ///
   /// You can use this value in tests to cancel the effect started from sending an action:

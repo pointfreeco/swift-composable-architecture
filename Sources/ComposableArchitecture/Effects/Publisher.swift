@@ -360,7 +360,7 @@ extension Publisher {
   ///
   /// ```swift
   /// case .buttonTapped:
-  ///   return environment.fetchUser(id: 1)
+  ///   return self.apiClient.fetchUser(id: 1)
   ///     .catchToEffect()
   ///     .map(ProfileAction.userResponse)
   /// ```
@@ -395,7 +395,7 @@ extension Publisher {
   ///
   /// ```swift
   /// case .buttonTapped:
-  ///   return environment.fetchUser(id: 1)
+  ///   return self.apiClient.fetchUser(id: 1)
   ///     .catchToEffect(ProfileAction.userResponse)
   /// ```
   ///

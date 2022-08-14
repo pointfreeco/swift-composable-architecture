@@ -8,11 +8,11 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ## Topics
 
-### Interacting with Concurrency
+### Interacting with concurrency
 
 - ``ViewStore/suspend(while:)``
 
-### SwiftUI Integration
+### SwiftUI integration
 
 - ``ViewStore/subscript(dynamicMember:)-7xjrv``
 - ``ViewStore/binding(keyPath:send:)``

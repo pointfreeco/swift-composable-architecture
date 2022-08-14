@@ -1,4 +1,14 @@
 extension ReducerProtocol {
+  /// Embeds a child reducer in a parent domain that works on elements of a collection in parent
+  /// state.
+  ///
+  /// - Parameters:
+  ///   - toElementsState: A writable key path from parent state to an `IdentifiedArray` of child
+  ///     state.
+  ///   - toElementAction: A case path from parent action to child identifier and child actions.
+  ///   - element: A reducer that will be invoked with child actions against elements of child
+  ///     state.
+  /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
   public func forEach<ID: Hashable, Element: ReducerProtocol>(
     _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, Element.State>>,
@@ -8,7 +18,7 @@ extension ReducerProtocol {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> _ForEachReducer<Self, ID, Element> {
-    .init(
+    _ForEachReducer(
       parent: self,
       toElementsState: toElementsState,
       toElementAction: toElementAction,

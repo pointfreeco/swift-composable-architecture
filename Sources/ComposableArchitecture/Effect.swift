@@ -19,11 +19,11 @@ import XCTestDynamicOverlay
 ///   * ``Effect/task(priority:operation:catch:file:fileID:line:)``
 ///   * ``Effect/run(priority:operation:catch:file:fileID:line:)``
 ///   * ``Effect/fireAndForget(priority:_:)``
-/// * If using Combine in your application, in particular the dependencies of your feature's
-/// environment, then you can create effects by making use of any of Combine's operators, and then
-/// erasing the publisher type to ``Effect`` with either `eraseToEffect` or `catchToEffect`. Note
-/// that the Combine interface to ``Effect`` is considered soft deprecated, and you should
-/// eventually port to Swift's native concurrency tools.
+/// * If using Combine in your application, in particular for the dependencies of your feature
+/// then you can create effects by making use of any of Combine's operators, and then erasing the
+/// publisher type to ``Effect`` with either `eraseToEffect` or `catchToEffect`. Note that the
+/// Combine interface to ``Effect`` is considered soft deprecated, and you should eventually port
+/// to Swift's native concurrency tools.
 ///
 /// > Important: ``Store`` is not thread safe, and so all effects must receive values on the same
 /// thread. This is typically the main thread,  **and** if the store is being used to drive UI then
@@ -52,34 +52,34 @@ extension Effect where Failure == Never {
   /// This function is useful for executing work in an asynchronous context and capturing the result
   /// in an ``Effect`` so that the reducer, a non-asynchronous context, can process it.
   ///
-  /// For example, if your environment contains a dependency that exposes an `async` function, you
-  /// can use ``task(priority:operation:catch:file:fileID:line:)`` to provide an asynchronous
-  /// context for invoking that endpoint:
+  /// For example, if your dependency exposes an `async` function, you can use
+  /// ``task(priority:operation:catch:file:fileID:line:)`` to provide an asynchronous context for
+  /// invoking that endpoint:
   ///
   /// ```swift
-  /// struct FeatureEnvironment {
-  ///   var numberFact: (Int) async throws -> String
-  /// }
+  /// struct Feature: ReducerProtocol {
+  ///   struct State { … }
+  ///   enum FeatureAction {
+  ///     case factButtonTapped
+  ///     case faceResponse(TaskResult<String>)
+  ///   }
+  ///   @Dependency(\.numberFact) var numberFact
   ///
-  /// enum FeatureAction {
-  ///   case factButtonTapped
-  ///   case faceResponse(TaskResult<String>)
-  /// }
+  ///   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  ///     switch action {
+  ///       case .factButtonTapped:
+  ///         return .task { [number = state.number] in
+  ///           await .factResponse(TaskResult { try await self.numberFact.fetch(number) })
+  ///         }
   ///
-  /// let featureReducer = AnyReducer<State, Action, Environment> { state, action, environment in
-  ///   switch action {
-  ///     case .factButtonTapped:
-  ///       return .task { [number = state.number] in
-  ///         await .factResponse(TaskResult { try await environment.numberFact(number) })
-  ///       }
+  ///       case .factResponse(.success(fact)):
+  ///         // do something with fact
   ///
-  ///     case .factResponse(.success(fact)):
-  ///       // do something with fact
+  ///       case .factResponse(.failure):
+  ///         // handle error
   ///
-  ///     case .factResponse(.failure):
-  ///       // handle error
-  ///
-  ///     ...
+  ///       ...
+  ///     }
   ///   }
   /// }
   /// ```
@@ -159,10 +159,10 @@ extension Effect where Failure == Never {
   /// This effect is similar to ``task(priority:operation:catch:file:fileID:line:)`` except it is
   /// capable of emitting 0 or more times, not just once.
   ///
-  /// For example, if you had an async stream in your environment:
+  /// For example, if you had an async stream in a dependency client:
   ///
   /// ```swift
-  /// struct FeatureEnvironment {
+  /// struct EventsClient {
   ///   var events: () -> AsyncStream<Event>
   /// }
   /// ```
@@ -173,7 +173,7 @@ extension Effect where Failure == Never {
   /// ```swift
   /// case .startButtonTapped:
   ///   return .run { send in
-  ///     for await event in environment.events() {
+  ///     for await event in self.events() {
   ///       send(.event(event))
   ///     }
   ///   }
@@ -256,7 +256,7 @@ extension Effect where Failure == Never {
   /// ```swift
   /// case .buttonTapped:
   ///   return .fireAndForget {
-  ///     try await environment.analytics.track("Button Tapped")
+  ///     try self.analytics.track("Button Tapped")
   ///   }
   /// ```
   ///
@@ -288,7 +288,7 @@ extension Effect where Failure == Never {
 /// return .run { send in
 ///   send(.started)
 ///   defer { send(.finished) }
-///   for await event in environment.events {
+///   for await event in self.events {
 ///     send(.event(event))
 ///   }
 /// }
@@ -361,7 +361,7 @@ extension Effect {
   ///
   /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
   ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
-  ///   Composable Architecture in functions like ``AnyReducer/combine(_:)-1ern2``.
+  ///   Composable Architecture in functions like ``AnyReducer/combine(_:)-94fzl``.
   ///
   ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
   ///
@@ -376,7 +376,7 @@ extension Effect {
   ///
   /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
   ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
-  ///   Composable Architecture in functions like ``AnyReducer/combine(_:)-1ern2``.
+  ///   Composable Architecture in functions like ``AnyReducer/combine(_:)-94fzl``.
   ///
   ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
   ///

@@ -1,26 +1,26 @@
 extension ReducerProtocol {
-  /// Embeds a child reducer in a parent domain that works on an optional property of parent state.
+  /// Embeds a child reducer in a parent domain that works on a case of parent state.
   ///
   /// - Parameters:
-  ///   - toWrappedState: A writable key path from parent state to a property containing optional
-  ///     child state.
-  ///   - toWrappedAction: A case path from parent action to a case containing child actions.
-  ///   - wrapped: A reducer that will be invoked with child actions against non-optional child
-  ///     state.
+  ///   - toCaseState: A case path from parent state to a case containing child state.
+  ///   - toCaseAction: A case path from parent action to a case containing child actions.
+  ///   - case: A reducer that will be invoked with child actions against child state when it is
+  ///     present
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
-  public func ifLet<Wrapped: ReducerProtocol>(
-    _ toWrappedState: WritableKeyPath<State, Wrapped.State?>,
-    action toWrappedAction: CasePath<Action, Wrapped.Action>,
-    @ReducerBuilderOf<Wrapped> then wrapped: () -> Wrapped,
+  @inlinable
+  public func ifCaseLet<Case: ReducerProtocol>(
+    _ toCaseState: CasePath<State, Case.State>,
+    action toCaseAction: CasePath<Action, Case.Action>,
+    @ReducerBuilderOf<Case> then case: () -> Case,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _IfLetReducer<Self, Wrapped> {
+  ) -> _IfCaseLetReducer<Self, Case> {
     .init(
       parent: self,
-      child: wrapped(),
-      toChildState: toWrappedState,
-      toChildAction: toWrappedAction,
+      child: `case`(),
+      toChildState: toCaseState,
+      toChildAction: toCaseAction,
       file: file,
       fileID: fileID,
       line: line
@@ -28,7 +28,7 @@ extension ReducerProtocol {
   }
 }
 
-public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: ReducerProtocol {
+public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: ReducerProtocol {
   @usableFromInline
   let parent: Parent
 
@@ -36,7 +36,7 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
   let child: Child
 
   @usableFromInline
-  let toChildState: WritableKeyPath<Parent.State, Child.State?>
+  let toChildState: CasePath<Parent.State, Child.State>
 
   @usableFromInline
   let toChildAction: CasePath<Parent.Action, Child.Action>
@@ -54,7 +54,7 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
   init(
     parent: Parent,
     child: Child,
-    toChildState: WritableKeyPath<Parent.State, Child.State?>,
+    toChildState: CasePath<Parent.State, Child.State>,
     toChildAction: CasePath<Parent.Action, Child.Action>,
     file: StaticString,
     fileID: StaticString,
@@ -85,7 +85,7 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
   ) -> Effect<Parent.Action, Never> {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
-    guard state[keyPath: self.toChildState] != nil else {
+    guard var childState = self.toChildState.extract(from: state) else {
       // TODO: Update language
       runtimeWarning(
         """
@@ -120,7 +120,8 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
       )
       return .none
     }
-    return self.child.reduce(into: &state[keyPath: self.toChildState]!, action: childAction)
+    defer { state = self.toChildState.embed(childState) }
+    return self.child.reduce(into: &childState, action: childAction)
       .map(self.toChildAction.embed)
   }
 }

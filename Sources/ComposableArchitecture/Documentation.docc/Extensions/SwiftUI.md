@@ -8,7 +8,7 @@ The Composable Architecture can be used to power applications built in many fram
 
 ## Topics
 
-### View Containers
+### View containers
 
 - ``WithViewStore``
 - ``IfLetStore``
@@ -18,19 +18,16 @@ The Composable Architecture can be used to power applications built in many fram
 ### Bindings
 
 - ``ViewStore/binding(get:send:)-65xes``
-- ``ViewStore/binding(get:send:)-l66r``
-- ``ViewStore/binding(send:)-7nwak``
-- ``ViewStore/binding(send:)-705m7``
 
-### Bindable Domains
+### Bindable domains
 
 - ``BindableState``
 - ``BindableAction``
 - ``BindingAction``
-- ``Reducer/binding()``
+- ``BindingReducer``
 - ``ViewStore/binding(_:file:fileID:line:)``
 
-### View State
+### View state
 
 - ``AlertState``
 - ``ConfirmationDialogState``

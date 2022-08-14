@@ -1,6 +1,10 @@
 import Combine
 import os.signpost
 
+@available(iOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead.")
+@available(macOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead.")
+@available(tvOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead.")
+@available(watchOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead.")
 extension AnyReducer {
   /// Instruments the reducer with
   /// [signposts](https://developer.apple.com/documentation/os/logging/recording_performance_data).

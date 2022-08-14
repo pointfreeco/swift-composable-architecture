@@ -13,8 +13,8 @@ extension Effect {
   /// case let .textChanged(text):
   ///   enum SearchID {}
   ///
-  ///   return environment.search(text)
-  ///     .debounce(id: SearchID.self, for: 0.5, scheduler: environment.mainQueue)
+  ///   return self.apiClient.search(text)
+  ///     .debounce(id: SearchID.self, for: 0.5, scheduler: self.mainQueue)
   ///     .map(Action.searchResponse)
   /// ```
   ///

@@ -1,8 +1,8 @@
 import CustomDump
 import SwiftUI
 
-/// A property wrapper type that can designate properties of app state that can be directly
-/// bindable in SwiftUI views.
+/// A property wrapper type that can designate properties of app state that can be directly bindable
+/// in SwiftUI views.
 ///
 /// Along with an action type that conforms to the ``BindableAction`` protocol, this type can be
 /// used to safely eliminate the boilerplate that is typically incurred when working with multiple
@@ -102,15 +102,14 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// And then, we can simplify the settings reducer by allowing the `binding` method to handle
+/// And then, we can simplify the settings reducer by allowing the ``BindingReducer`` to handle
 /// these field mutations for us:
 ///
 /// ```swift
 /// var body: some ReducerProtocol<State, Action> {
-///   Reduce { state, action in
-///     ...
-///   }
-///   .binding()
+///   BindingReducer()
+///
+///   // ...
 /// }
 /// ```
 ///
@@ -134,8 +133,8 @@ import SwiftUI
 ///
 /// Binding actions can also be tested in much the same way regular actions are tested. Rather
 /// than send a specific action describing how a binding changed, such as
-/// `.displayNameChanged("Blob")`, you will send a ``ReducerProtocol/binding()`` action that
-/// describes which key path is being set to what value, such as `.set(\.$displayName, "Blob")`:
+/// `.displayNameChanged("Blob")`, you will send a ``BindingAction`` action that describes which key
+/// path is being set to what value, such as `.set(\.$displayName, "Blob")`:
 ///
 /// ```swift
 /// let store = TestStore(
@@ -580,7 +579,7 @@ extension AnyReducer where Action: BindableAction, State == Action.State {
             Action:
               %@
 
-          To fix this, invoke the "binding()" method on your feature's reducer.
+          To fix this, invoke "BindingReducer()" from your feature reducer's "body".
           """,
           [
             "\(self.fileID)",

@@ -40,8 +40,6 @@ your domain:
     UI.
 * **Action**: A type that represents all of the actions that can happen in your feature, such as
     user actions, notifications, event sources and more.
-* **Environment**: A type that holds any dependencies the feature needs, such as API clients,
-    analytics clients, etc.
 * **Reducer**: A function that describes how to evolve the current state of the app to the next
     state given an action. The reducer is also responsible for returning any effects that should be
     run, such as API requests, which can be done by returning an `Effect` value.

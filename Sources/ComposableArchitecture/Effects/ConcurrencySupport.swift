@@ -4,44 +4,46 @@ extension AsyncStream {
   /// Useful as a type eraser for live `AsyncSequence`-based dependencies.
   ///
   /// For example, your feature may want to subscribe to screenshot notifications. You can model
-  /// this in your environment as a dependency returning an `AsyncStream`:
+  /// this as a dependency client that returns an `AsyncStream`:
   ///
   /// ```swift
-  /// struct ScreenshotsEnvironment {
+  /// struct ScreenshotsClient {
   ///   var screenshots: () -> AsyncStream<Void>
+  ///   func callAsFunction() -> AsyncStream<Void> { self.screenshots() }
   /// }
   /// ```
   ///
-  /// Your "live" environment can supply a stream by erasing the appropriate
+  /// The "live" implementation of the dependency can supply a stream by erasing the appropriate
   /// `NotificationCenter.Notifications` async sequence:
   ///
   /// ```swift
-  /// ScreenshotsEnvironment(
-  ///   screenshots: {
-  ///     AsyncStream(
-  ///       NotificationCenter.default
-  ///         .notifications(named: UIApplication.userDidTakeScreenshotNotification)
-  ///         .map { _ in }
-  ///     )
-  ///   }
-  /// )
+  /// extension ScreenshotsClient {
+  ///   static let live = Self(
+  ///     screenshots: {
+  ///       AsyncStream(
+  ///         NotificationCenter.default
+  ///           .notifications(named: UIApplication.userDidTakeScreenshotNotification)
+  ///           .map { _ in }
+  ///       )
+  ///     }
+  ///   )
+  /// }
   /// ```
   ///
   /// While your tests can use `AsyncStream.streamWithContinuation` to spin up a controllable stream
   /// for tests:
   ///
   /// ```swift
-  /// let (stream, continuation) = AsyncStream<Void>.streamWithContinuation()
+  /// let screenshots = AsyncStream<Void>.streamWithContinuation()
   ///
   /// let store = TestStore(
-  ///   initialState: ScreenshotsState(),
-  ///   reducer: screenshotsReducer,
-  ///   environment: ScreenshotsEnvironment(
-  ///     screenshots: { stream }
-  ///   )
+  ///   initialState: Feature.State(),
+  ///   reducer: Feature()
   /// )
   ///
-  /// continuation.yield()  // Simulate a screenshot being taken.
+  /// store.dependencies.screenshots.screenshots = { screenshots.stream }
+  ///
+  /// screenshots.continuation.yield()  // Simulate a screenshot being taken.
   ///
   /// await store.receive(.screenshotTaken) { ... }
   /// ```
@@ -97,15 +99,14 @@ extension AsyncStream {
   /// let notifications = AsyncStream<Void>.streamWithContinuation()
   ///
   /// let store = TestStore(
-  ///   initialState: LongLivingEffectsState(),
-  ///   reducer: longLivingEffectsReducer,
-  ///   environment: LongLivingEffectsEnvironment(
-  ///     notifications: { notifications.stream }
-  ///   )
+  ///   initialState: Feature.State(),
+  ///   reducer: Feature()
   /// )
   ///
+  /// store.dependencies.notifications = { notifications.stream }
+  ///
   /// await store.send(.task)
-  /// notifications.continuation.yield("Hello")
+  /// notifications.continuation.yield("Hello")  // Simulate notification being posted
   /// await store.receive(.notification("Hello")) {
   ///   $0.message = "Hello"
   /// }
@@ -195,15 +196,14 @@ extension AsyncThrowingStream where Failure == Error {
   /// let notifications = AsyncThrowingStream<Void>.streamWithContinuation()
   ///
   /// let store = TestStore(
-  ///   initialState: LongLivingEffectsState(),
-  ///   reducer: longLivingEffectsReducer,
-  ///   environment: LongLivingEffectsEnvironment(
-  ///     notifications: { notifications.stream }
-  ///   )
+  ///   initialState: Feature.State(),
+  ///   reducer: Feature()
   /// )
   ///
+  /// store.dependencies.notifications = { notifications.stream }
+  ///
   /// await store.send(.task)
-  /// notifications.continuation.yield("Hello")
+  /// notifications.continuation.yield("Hello")  // Simulate a notification being posted
   /// await store.receive(.notification("Hello")) {
   ///   $0.message = "Hello"
   /// }

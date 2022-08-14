@@ -2,7 +2,7 @@
 
 ## Topics
 
-### Creating an Effect
+### Creating an effect
 
 - ``none``
 - ``task(priority:operation:catch:file:fileID:line:)``
@@ -15,11 +15,7 @@
 - ``cancellable(id:cancelInFlight:)-499iv``
 - ``cancel(id:)-7vmd9``
 - ``cancel(ids:)-8gan2``
-- ``cancellable(id:cancelInFlight:)-17skv``
-- ``cancel(id:)-iun1``
-- ``cancel(ids:)-dmwy``
 - ``withTaskCancellation(id:cancelInFlight:operation:)-88kxz``
-- ``withTaskCancellation(id:cancelInFlight:operation:)-4dtr6``
 
 ### Composition
 
@@ -35,7 +31,7 @@
 
 - ``unimplemented(_:)``
 
-### SwiftUI Integration
+### SwiftUI integration
 
 - ``animation(_:)``
 

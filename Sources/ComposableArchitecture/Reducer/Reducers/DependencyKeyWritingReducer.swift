@@ -2,7 +2,7 @@ extension ReducerProtocol {
   /// Sets the dependency value of the specified key path to the given value.
   ///
   /// - Parameters:
-  ///   - keyPath: A key path that indicates the property of the ``DependencyValues`` structure to
+  ///   - keyPath: A key path that indicates the property of the `DependencyValues` structure to
   ///     update.
   ///   - value: The new value to set for the item specified by `keyPath`.
   /// - Returns: A reducer that has the given value set in its dependencies.
@@ -11,7 +11,7 @@ extension ReducerProtocol {
     _ keyPath: WritableKeyPath<DependencyValues, Value>,
     _ value: Value
   )
-  // NB: Can not return `some ReducerProtocol<State, Action>` here. That would prevent the
+  // NB: We should not return `some ReducerProtocol<State, Action>` here. That would prevent the
   //     specialization defined below from being called, which fuses chained calls to `dependency`.
   -> _DependencyKeyWritingReducer<Self> {
     _DependencyKeyWritingReducer(base: self) { $0[keyPath: keyPath] = value }

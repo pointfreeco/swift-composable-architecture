@@ -4,9 +4,7 @@ import Foundation
 /// A store represents the runtime that powers the application. It is the object that you will pass
 /// around to views that need to interact with the application.
 ///
-/// You will typically construct a single one of these at the root of your application, and then use
-/// the ``scope(state:action:)`` method to derive more focused stores that can be passed to
-/// subviews:
+/// You will typically construct a single one of these at the root of your application:
 ///
 /// ```swift
 /// @main
@@ -15,17 +13,17 @@ import Foundation
 ///     WindowGroup {
 ///       RootView(
 ///         store: Store(
-///           initialState: AppState(),
-///           reducer: appReducer,
-///           environment: AppEnvironment(
-///             ...
-///           )
+///           initialState: AppReducer.State(),
+///           reducer: AppReducer()
 ///         )
 ///       )
 ///     }
 ///   }
 /// }
 /// ```
+///
+/// …and then use the ``scope(state:action:)`` method to derive more focused stores that can be
+/// passed to subviews.
 ///
 /// ### Scoping
 ///
@@ -118,7 +116,7 @@ import Foundation
 /// #### Thread safety checks
 ///
 /// The store performs some basic thread safety checks in order to help catch mistakes. Stores
-/// constructed via the initializer ``init(initialState:reducer:environment:)`` are assumed to run
+/// constructed via the initializer ``init(initialState:reducer:)`` are assumed to run
 /// only on the main thread, and so a check is executed immediately to make sure that is the case.
 /// Further, all actions sent to the store and all scopes (see ``scope(state:action:)``) of the
 /// store are also checked to make sure that work is performed on the main thread.
@@ -161,9 +159,8 @@ public final class Store<State, Action> {
   ///
   /// // A store that runs the entire application.
   /// let store = Store(
-  ///   initialState: AppState(),
-  ///   reducer: appReducer,
-  ///   environment: AppEnvironment()
+  ///   initialState: AppReducer.State(),
+  ///   reducer: AppReducer()
   /// )
   ///
   /// // Construct a login view by scoping the store to one that works with only login domain.

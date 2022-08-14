@@ -23,32 +23,25 @@ extension Effect where Failure == Never {
   /// and then use the ``Effect/cancel(id:)-iun1`` effect to stop the timer:
   ///
   /// ```swift
-  /// struct AppState {
-  ///   var count = 0
-  /// }
-  ///
-  /// enum AppAction {
-  ///   case startButtonTapped, stopButtonTapped, timerTicked
-  /// }
-  ///
-  /// struct AppEnvironment {
-  ///   var mainQueue: AnySchedulerOf<DispatchQueue>
-  /// }
-  ///
-  /// let appReducer = AnyReducer<AppState, AppAction, AppEnvironment> { state, action, env in
+  /// struct Feature: ReducerProtocol {
+  ///   struct State { var count = 0 }
+  ///   enum Action { case startButtonTapped, stopButtonTapped, timerTicked }
+  ///   @Dependency(\.mainQueue) var mainQueue
   ///   struct TimerID: Hashable {}
   ///
-  ///   switch action {
-  ///   case .startButtonTapped:
-  ///     return Effect.timer(id: TimerID(), every: 1, on: env.mainQueue)
-  ///       .map { _ in .timerTicked }
+  ///   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  ///     switch action {
+  ///     case .startButtonTapped:
+  ///       return Effect.timer(id: TimerID(), every: 1, on: self.mainQueue)
+  ///         .map { _ in .timerTicked }
   ///
-  ///   case .stopButtonTapped:
-  ///     return .cancel(id: TimerID())
+  ///     case .stopButtonTapped:
+  ///       return .cancel(id: TimerID())
   ///
-  ///   case let .timerTicked:
-  ///     state.count += 1
-  ///     return .none
+  ///     case let .timerTicked:
+  ///       state.count += 1
+  ///       return .none
+  ///   }
   /// }
   /// ```
   ///
@@ -60,12 +53,11 @@ extension Effect where Failure == Never {
   ///   let mainQueue = DispatchQueue.test
   ///
   ///   let store = TestStore(
-  ///     initialState: .init(),
-  ///     reducer: appReducer,
-  ///     environment: .init(
-  ///       mainQueue: scheduler.eraseToAnyScheduler()
-  ///     )
+  ///     initialState: Feature.State(),
+  ///     reducer: Feature()
   ///   )
+  ///
+  ///   store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
   ///
   ///   await store.send(.startButtonTapped)
   ///
