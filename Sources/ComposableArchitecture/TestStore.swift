@@ -50,7 +50,9 @@
   ///     case incrementButtonTapped
   ///   }
   ///
-  ///   func reduce(into state: State, action: Action) -> Effect<Action, Never> {
+  ///   func reduce(
+  ///     into state: inout State, action: Action
+  ///   ) -> Effect<Action, Never> {
   ///     switch action {
   ///     case .decrementButtonTapped:
   ///       state.count -= 1
@@ -71,11 +73,15 @@
   /// class CounterTests: XCTestCase {
   ///   func testCounter() async {
   ///     let store = TestStore(
-  ///       initialState: Counter.State(count: 0),    // Given a counter state of 0
+  ///       // Given a counter state of 0
+  ///       initialState: Counter.State(count: 0),
   ///       reducer: Counter()
   ///     )
-  ///     await store.send(.incrementButtonTapped) {  // When the increment button is tapped
-  ///       $0.count = 1                              // Then the count should be 1
+  ///
+  ///     // When the increment button is tapped
+  ///     await store.send(.incrementButtonTapped) {
+  ///       // Then the count should be 1
+  ///       $0.count = 1
   ///     }
   ///   }
   /// }
@@ -103,7 +109,9 @@
   ///   @Dependency(\.apiClient) var apiClient
   ///   @Dependency(\.mainQueue) var mainQueue
   ///
-  ///   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  ///   func reduce(
+  ///     into state: inout State, action: Action
+  ///   ) -> Effect<Action, Never> {
   ///     switch action {
   ///     case let .queryChanged(query):
   ///       enum SearchID {}
@@ -111,8 +119,11 @@
   ///       state.query = query
   ///       return .run { send in
   ///         try await self.mainQueue.sleep(for: 0.5)
-  ///         guard let results = try? await self.apiClient.search(query) else { return }
-  ///         send(.response(results))
+  ///
+  ///         guard let results = try? await self.apiClient.search(query)
+  ///         else { return }
+  ///
+  ///         await send(.response(results))
   ///       }
   ///       .cancellable(id: SearchID.self, cancelInFlight: true)
   ///
@@ -138,7 +149,9 @@
   /// store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
   ///
   /// // Simulate a search response with one item
-  /// store.dependencies.mainQueue.apiClient.search = { _ in ["Composable Architecture"] }
+  /// store.dependencies.mainQueue.apiClient.search = { _ in
+  ///   ["Composable Architecture"]
+  /// }
   ///
   /// // Change the query
   /// await store.send(.searchFieldChanged("c") {

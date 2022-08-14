@@ -24,7 +24,7 @@ While the most common way of interacting with a test store's state is via its ``
 
 - ``state``
 
-### Scoping test store
+### Scoping test stores
 
 - ``scope(state:action:)``
 - ``scope(state:)``
