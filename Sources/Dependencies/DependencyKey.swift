@@ -1,5 +1,9 @@
 public protocol DependencyKey {
-  associatedtype Value: Sendable
+  #if swift(>=5.7)
+    associatedtype Value: Sendable
+  #else
+    associatedtype Value
+  #endif
   static var testValue: Value { get }
 }
 

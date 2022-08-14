@@ -476,6 +476,7 @@ extension ViewStore where Action: BindableAction, Action.State == State {
       https://github.com/pointfreeco/swift-composable-architecture/pull/810
       """
   )
+  @MainActor
   public subscript<Value: Equatable>(
     dynamicMember keyPath: WritableKeyPath<State, BindableState<Value>>
   ) -> Binding<Value> {
@@ -553,6 +554,7 @@ extension ViewStore {
       the view store's 'Action' type must also conform to 'BindableAction'.
       """
   )
+  @MainActor
   public func binding<LocalState: Equatable>(
     keyPath: WritableKeyPath<State, LocalState>,
     send action: @escaping (BindingAction<State>) -> Action

@@ -188,6 +188,7 @@ final class RuntimeWarningTests: XCTestCase {
     }
   #endif
 
+  @MainActor
   func testBindingUnhandledAction() {
     struct State: Equatable {
       @BindableState var value = 0
@@ -196,24 +197,22 @@ final class RuntimeWarningTests: XCTestCase {
       case binding(BindingAction<State>)
     }
     let store = Store(
-      initialState: .init(),
-      reducer: AnyReducer<State, Action, ()>.empty,
-      environment: ()
+      initialState: State(),
+      reducer: EmptyReducer<State, Action>()
     )
 
-    var line: UInt!
+    var line: UInt?
     XCTExpectFailure {
-      line = #line
-      ViewStore(store).binding(\.$value).wrappedValue = 42
+      line = #line; ViewStore(store).binding(\.$value).wrappedValue = 42
     } issueMatcher: {
       $0.compactDescription == """
         A binding action sent from a view store at \
-        "ComposableArchitectureTests/RuntimeWarningTests.swift:\(line+1)" was not handled. …
+        "ComposableArchitectureTests/RuntimeWarningTests.swift:\(line ?? 0)" was not handled. …
 
           Action:
             RuntimeWarningTests.Action.binding(.set(_, 42))
 
-        To fix this, invoke the "binding()" method on your feature's reducer.
+        To fix this, invoke "BindingReducer()" from your feature reducer's "body".
         """
     }
   }
