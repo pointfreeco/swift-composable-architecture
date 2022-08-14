@@ -27,7 +27,7 @@ The Composable Architecture can be used to power applications built in many fram
 - ``BindingReducer``
 - ``ViewStore/binding(_:file:fileID:line:)``
 
-### View State
+### View state
 
 - ``AlertState``
 - ``ConfirmationDialogState``
