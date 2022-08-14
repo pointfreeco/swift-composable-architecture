@@ -8,7 +8,7 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ## Topics
 
-### View State
+### View state
 
 - ``ActionSheetState``
 

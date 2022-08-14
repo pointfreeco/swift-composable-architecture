@@ -3,7 +3,7 @@ extension ReducerProtocol {
   /// state.
   ///
   /// - Parameters:
-  ///   - toElementsState: A writable key path from parent state to an ``IdentifiedArray`` of child
+  ///   - toElementsState: A writable key path from parent state to an `IdentifiedArray` of child
   ///     state.
   ///   - toElementAction: A case path from parent action to child identifier and child actions.
   ///   - element: A reducer that will be invoked with child actions against elements of child

@@ -52,7 +52,7 @@ day-to-day when building applications, such as:
 - <doc:Performance>
 - <doc:Testing>
 
-### State Management
+### State management
 
 - ``ReducerProtocol``
 - ``Effect``

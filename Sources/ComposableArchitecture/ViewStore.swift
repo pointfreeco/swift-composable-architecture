@@ -475,10 +475,10 @@ extension ViewStore where State == Void {
 /// .task { await viewStore.send(.task).finish() }
 /// ```
 ///
-/// > Note: Unlike `Task`, ``ViewStoreTask`` automatically sets up a cancellation handler between
-/// > the current async context and the task.
+/// > Note: Unlike Swift's `Task` type, ``ViewStoreTask`` automatically sets up a cancellation
+/// > handler between the current async context and the task.
 ///
-/// See ``TestStoreTask`` for the analog provided to ``TestStore``.
+/// See ``TestStoreTask`` for the analog returned from ``TestStore``.
 public struct ViewStoreTask: Hashable, Sendable {
   fileprivate let rawValue: Task<Void, Never>?
 

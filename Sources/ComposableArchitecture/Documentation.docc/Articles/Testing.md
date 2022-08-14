@@ -92,7 +92,7 @@ await store.send(.incrementButtonTapped) {
 }
 ```
 
-> The ``TestStore/send(_:_:file:line:)-7vwv9`` method is `async` for technical reasons that we do
+> The ``TestStore/send(_:_:file:line:)-3pf4p`` method is `async` for technical reasons that we do
 not have to worry about right now.
 
 If your mutation is incorrect, meaning you perform a mutation that is different from what happened
@@ -143,12 +143,12 @@ await store.send(.decrementButtonTapped) {
 > by one, but we haven't proven we know the precise value of `count` at each step of the way.
 >
 > In general, the less logic you have in the trailing closure of
-> ``TestStore/send(_:_:file:line:)-7vwv9``, the stronger your assertion will be. It is best to use
+> ``TestStore/send(_:_:file:line:)-3pf4p``, the stronger your assertion will be. It is best to use
 > simple, hard coded data for the mutation.
 
 Test stores do expose a ``TestStore/state`` property, which can be useful for performing assertions
 on computed properties you might have defined on your state. However, when inside the trailing
-closure of ``TestStore/send(_:_:file:line:)-7vwv9``, the ``TestStore/state`` property is equal
+closure of ``TestStore/send(_:_:file:line:)-3pf4p``, the ``TestStore/state`` property is equal
 to the state _before_ sending the action, not after. That prevents you from being able to use an
 escape hatch to get around needing to actually describe the state mutation, like so:
 
@@ -238,7 +238,7 @@ supposed to be running, or perhaps the data it feeds into the system later is wr
 requires all effects to finish.
 
 To get this test passing we need to assert on the actions that are sent back into the system
-by the effect. We do this by using the ``TestStore/receive(_:timeout:_:file:line:)-88eyr`` method,
+by the effect. We do this by using the ``TestStore/receive(_:timeout:_:file:line:)-1fjua`` method,
 which allows you to assert which action you expect to receive from an effect, as well as how the
 state changes after receiving that effect:
 
@@ -256,7 +256,7 @@ going to be received, but after waiting around for a small amount of time no act
 ```
 
 This is because our timer is on a 1 second interval, and by default
-``TestStore/receive(_:timeout:_:file:line:)-88eyr`` only waits for a fraction of a second. This is
+``TestStore/receive(_:timeout:_:file:line:)-1fjua`` only waits for a fraction of a second. This is
 because typically you should not be performing real time-based asynchrony in effects, and instead
 using a controlled entity, such as a scheduler or clock, that can be sped up in tests. We will
 demonstrate this in a moment, so for now let's increase the timeout:
@@ -356,7 +356,7 @@ store.dependencies.mainQueue = .immediate
 ```
 
 With that small change we can drop the `timeout` arguments from the
-``TestStore/receive(_:timeout:_:file:line:)-88eyr`` invocations:
+``TestStore/receive(_:timeout:_:file:line:)-1fjua`` invocations:
 
 ```swift
 await store.receive(.timerTick) {

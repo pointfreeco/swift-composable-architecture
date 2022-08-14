@@ -8,7 +8,7 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ## Topics
 
-### Creating an Effect
+### Creating an effect
 
 - ``Effect/task(priority:operation:)``
 
@@ -25,7 +25,7 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 - ``Effect/failing(_:)``
 
-### Combine Integration
+### Combine integration
 
 - ``Effect/init(_:)``
 - ``Effect/init(value:)``

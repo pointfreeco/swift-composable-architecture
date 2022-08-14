@@ -82,7 +82,7 @@ public struct AnyReducer<State, Action, Environment> {
   /// reducer runs before the child reducer, then the child reducer will not be able to react to its
   /// own action.
   ///
-  /// Similar can be said for a ``forEach(state:action:environment:file:fileID:line:)-n7qj``
+  /// Similar can be said for a ``forEach(state:action:environment:file:fileID:line:)-2ypoa``
   /// reducer. If the parent domain modifies the child collection by moving, removing, or modifying
   /// an element before the `forEach` reducer runs, the `forEach` reducer may perform its action
   /// against the wrong element, an element that no longer exists, or an element in an unexpected
@@ -124,9 +124,9 @@ public struct AnyReducer<State, Action, Environment> {
   /// Combines many reducers into a single one by running each one on state in order, and merging
   /// all of the effects.
   ///
-  /// This method is identical to ``AnyReducer/combine(_:)-994ak`` except that it takes an array
+  /// This method is identical to ``AnyReducer/combine(_:)-94fzl`` except that it takes an array
   /// of reducers instead of a variadic list. See the documentation on
-  /// ``AnyReducer/combine(_:)-994ak`` for more information about what this method does.
+  /// ``AnyReducer/combine(_:)-94fzl`` for more information about what this method does.
   ///
   /// - Parameter reducers: An array of reducers.
   /// - Returns: A single reducer.
@@ -139,9 +139,9 @@ public struct AnyReducer<State, Action, Environment> {
   /// Combines the receiving reducer with one other reducer, running the second after the first and
   /// merging all of the effects.
   ///
-  /// This method is identical to ``AnyReducer/combine(_:)-994ak`` except that it combines the
+  /// This method is identical to ``AnyReducer/combine(_:)-94fzl`` except that it combines the
   /// receiver with a single other reducer rather than combining a whole list of reducers. See the
-  /// documentation on ``AnyReducer/combine(_:)-994ak`` for more information about what this method
+  /// documentation on ``AnyReducer/combine(_:)-94fzl`` for more information about what this method
   /// does.
   ///
   /// - Parameter other: Another reducer.
@@ -159,7 +159,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///   * A function that can transform the global environment into a local environment.
   ///
   /// This operation is important for breaking down large reducers into small ones. When used with
-  /// the ``combine(_:)-1ern2`` operator you can define many reducers that work on small pieces of
+  /// the ``combine(_:)-y8ee`` operator you can define many reducers that work on small pieces of
   /// domain, and then _pull them back_ and _combine_ them into one big reducer that works on a
   /// large domain.
   ///
@@ -221,7 +221,7 @@ public struct AnyReducer<State, Action, Environment> {
   /// operator to pullback a reducer that operates on a single case of some state enum to work on
   /// the entire state enum.
   ///
-  /// When used with the ``combine(_:)-994ak`` operator you can define many reducers that work each
+  /// When used with the ``combine(_:)-94fzl`` operator you can define many reducers that work each
   /// case of the state enum, and then _pull them back_ and _combine_ them into one big reducer that
   /// works on a large domain.
   ///

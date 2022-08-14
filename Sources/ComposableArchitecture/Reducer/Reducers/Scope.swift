@@ -53,9 +53,6 @@
 ///
 /// If the parent reducer models its state in an enum, use
 /// ``init(state:action:_:file:fileID:line:)`` with a case path instead of a writable key path.
-///
-/// `Scope` is just one tool for integrating child logic into parent reducers. See
-/// <doc:ReducerComposition> for more.
 public struct Scope<ParentState, ParentAction, Child: ReducerProtocol>: ReducerProtocol {
   @usableFromInline
   enum StatePath {

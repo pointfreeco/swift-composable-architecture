@@ -1,8 +1,6 @@
 extension ReducerProtocol {
   /// Enhances a reducer with debug logging of received actions and state mutations.
   ///
-  /// To customize the logger, override the reducer's ``DependencyValues/debugLogger``.
-  ///
   /// > Note: Printing is only done in `DEBUG` configurations.
   ///
   /// - Parameters:
@@ -24,8 +22,6 @@ extension ReducerProtocol {
   }
 
   /// Enhances a reducer with debug logging of received actions and state mutations.
-  ///
-  /// To customize the logger, override the reducer's ``DependencyValues/debugLogger``.
   ///
   /// > Note: Printing is only done in `DEBUG` configurations.
   ///
@@ -52,7 +48,7 @@ extension ReducerProtocol {
 }
 
 /// Determines how the string description of an action should be printed when using the
-/// ``ReducerProtocol/debug(_:state:action:actionFormat:)-5s1pa`` higher-order reducer.
+/// ``ReducerProtocol/debug(_:state:action:actionFormat:)`` higher-order reducer.
 public enum ActionFormat: Sendable {
   /// Prints the action in a single line by only specifying the labels of the associated values:
   ///

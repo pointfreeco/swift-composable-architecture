@@ -208,8 +208,8 @@
 
     /// The current state.
     ///
-    /// When read from a trailing closure assertion in ``send(_:_:file:line:)-7vwv9`` or
-    /// ``receive(_:timeout:_:file:line:)-88eyr``, it will equal the `inout` state passed to the
+    /// When read from a trailing closure assertion in ``send(_:_:file:line:)-3pf4p`` or
+    /// ``receive(_:timeout:_:file:line:)-1fjua``, it will equal the `inout` state passed to the
     /// closure.
     public var state: Reducer.State {
       self.reducer.state
@@ -218,7 +218,7 @@
     /// The timeout to await for in-flight effects.
     ///
     /// This is the default timeout used in all methods that take an optional timeout, such as
-    /// ``send(_:_:file:line:)-7vwv9``, ``receive(_:timeout:_:file:line:)-88eyr`` and
+    /// ``send(_:_:file:line:)-3pf4p``, ``receive(_:timeout:_:file:line:)-1fjua`` and
     /// ``finish(timeout:file:line:)-53gi5``.
     public var timeout: UInt64
 
@@ -874,7 +874,7 @@
     }
   }
 
-  /// The type returned from ``TestStore/send(_:_:file:line:)-7vwv9`` that represents the lifecycle
+  /// The type returned from ``TestStore/send(_:_:file:line:)-3pf4p`` that represents the lifecycle
   /// of the effect started from sending an action.
   ///
   /// You can use this value in tests to cancel the effect started from sending an action:

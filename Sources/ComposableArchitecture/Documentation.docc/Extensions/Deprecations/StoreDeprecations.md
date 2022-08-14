@@ -8,7 +8,11 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ## Topics
 
-### Scoping Stores
+### Creating a store
+
+- ``Store/init(initialState:reducer:environment:)``
+
+### Scoping stores
 
 - ``Store/publisherScope(state:action:)``
 - ``Store/publisherScope(state:)``
