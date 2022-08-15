@@ -1,3 +1,5 @@
+// TODO: should we have `@Dependency(\.runtimeWarningsEnabled)` and/or `@Dependency(\.treatWarningsAsErrors)`?
+
 /// A collection of dependencies propagated through a reducer hierarchy.
 ///
 /// The Composable Architecture exposes a collection of values to your app's reducers in an
