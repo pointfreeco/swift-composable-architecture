@@ -7,7 +7,7 @@ import XCTest
 @testable import LoginSwiftUI
 
 @MainActor
-class LoginSwiftUITests: XCTestCase {
+final class LoginSwiftUITests: XCTestCase {
   func testFlow_Success() async {
     let store = TestStore(
       initialState: Login.State(),

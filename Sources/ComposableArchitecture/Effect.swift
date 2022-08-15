@@ -408,6 +408,26 @@ extension Effect {
 extension Effect {
   /// An effect that causes a test to fail if it runs.
   ///
+  /// > Important: This Combine-based interface has been soft-deprecated in favor of Swift
+  /// > concurrency. Prefer using async functions and `AsyncStream`s directly in your dependencies,
+  /// > and using `XCTUnimplemented` from the [XCTest Dynamic Overlay](gh-xctest-dynamic-overlay)
+  /// > library to stub in a function that fails when invoked:
+  /// >
+  /// > ```swift
+  /// > struct NumberFactClient {
+  /// >   var fetch: (Int) async throws -> String
+  /// > }
+  /// >
+  /// > extension NumberFactClient {
+  /// >   static let unimplemented = Self(
+  /// >     fetch: XCTUnimplemented(
+  /// >       "\(Self.self).fetch",
+  /// >       placeholder: "Not an interesting number."
+  /// >     )
+  /// >   }
+  /// > }
+  /// > ```
+  ///
   /// This effect can provide an additional layer of certainty that a tested code path does not
   /// execute a particular effect.
   ///
@@ -484,9 +504,23 @@ extension Effect {
   /// made the test easier to understand at the same time. We can see, without consulting the
   /// reducer itself, that this particular action should not access this effect.
   ///
+  /// [gh-xctest-dynamic-overlay]: http://github.com/pointfreeco/xctest-dynamic-overlay
+  ///
   /// - Parameter prefix: A string that identifies this scheduler and will prefix all failure
   ///   messages.
   /// - Returns: An effect that causes a test to fail if it runs.
+  @available(
+    iOS, deprecated: 9999.0, message: "Call 'XCTUnimplemented' from your dependencies, instead."
+  )
+  @available(
+    macOS, deprecated: 9999.0, message: "Call 'XCTUnimplemented' from your dependencies, instead."
+  )
+  @available(
+    tvOS, deprecated: 9999.0, message: "Call 'XCTUnimplemented' from your dependencies, instead."
+  )
+  @available(
+    watchOS, deprecated: 9999.0, message: "Call 'XCTUnimplemented' from your dependencies, instead."
+  )
   public static func unimplemented(_ prefix: String) -> Self {
     .fireAndForget {
       XCTFail("\(prefix.isEmpty ? "" : "\(prefix) - ")An unimplemented effect ran.")

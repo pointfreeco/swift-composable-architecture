@@ -5,7 +5,7 @@ import XCTest
 @testable import SpeechRecognition
 
 @MainActor
-class SpeechRecognitionTests: XCTestCase {
+final class SpeechRecognitionTests: XCTestCase {
   let recognitionTask = AsyncThrowingStream<SpeechRecognitionResult, Error>.streamWithContinuation()
 
   func testDenyAuthorization() async {

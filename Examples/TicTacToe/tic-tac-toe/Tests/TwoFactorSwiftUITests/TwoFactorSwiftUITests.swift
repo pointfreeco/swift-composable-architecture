@@ -7,7 +7,7 @@ import XCTest
 @testable import TwoFactorSwiftUI
 
 @MainActor
-class TwoFactorSwiftUITests: XCTestCase {
+final class TwoFactorSwiftUITests: XCTestCase {
   func testFlow_Success() async {
     let store = TestStore(
       initialState: TwoFactor.State(token: "deadbeefdeadbeef"),
