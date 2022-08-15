@@ -5,7 +5,7 @@ import XCTest
 @testable import GameSwiftUI
 
 @MainActor
-class GameSwiftUITests: XCTestCase {
+final class GameSwiftUITests: XCTestCase {
   let store = TestStore(
     initialState: GameState(
       oPlayerName: "Blob Jr.",
