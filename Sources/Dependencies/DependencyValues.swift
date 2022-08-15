@@ -37,11 +37,6 @@ public struct DependencyValues: Sendable {
   }
 }
 
-// TODO: Why is this needed?
-#if compiler(<5.7)
-  extension DependencyValues: @unchecked Sendable {}
-#endif
-
 extension DependencyValues {
   public var isTesting: Bool {
     _read { yield self[IsTestingKey.self] }
@@ -57,7 +52,7 @@ extension DependencyValues {
 private struct AnySendable: @unchecked Sendable {
   let base: Any
   
-  init(_ base: some Sendable) {
+  init<Base: Sendable>(_ base: Base) {
     self.base = base
   }
 }
