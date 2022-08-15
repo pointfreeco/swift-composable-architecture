@@ -496,6 +496,8 @@ extension Effect {
   /// made the test easier to understand at the same time. We can see, without consulting the
   /// reducer itself, that this particular action should not access this effect.
   ///
+  /// [gh-xctest-dynamic-overlay]: http://github.com/pointfreeco/xctest-dynamic-overlay
+  ///
   /// - Parameter prefix: A string that identifies this scheduler and will prefix all failure
   ///   messages.
   /// - Returns: An effect that causes a test to fail if it runs.
