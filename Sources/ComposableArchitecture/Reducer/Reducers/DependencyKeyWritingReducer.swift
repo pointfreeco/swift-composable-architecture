@@ -48,8 +48,8 @@ public struct _DependencyKeyWritingReducer<Base: ReducerProtocol>: ReducerProtoc
     _ value: Value
   ) -> Self {
     .init(base: self.base) { values in
-      self.update(&values)
       values[keyPath: keyPath] = value
+      self.update(&values)
     }
   }
 }
