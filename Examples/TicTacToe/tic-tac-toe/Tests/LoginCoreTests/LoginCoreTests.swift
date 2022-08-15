@@ -5,7 +5,7 @@ import TwoFactorCore
 import XCTest
 
 @MainActor
-class LoginCoreTests: XCTestCase {
+final class LoginCoreTests: XCTestCase {
   func testFlow_Success_TwoFactor_Integration() async {
     var authenticationClient = AuthenticationClient.unimplemented
     authenticationClient.login = { _ in

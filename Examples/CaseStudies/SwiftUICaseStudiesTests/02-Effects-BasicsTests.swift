@@ -4,7 +4,7 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 @MainActor
-class EffectsBasicsTests: XCTestCase {
+final class EffectsBasicsTests: XCTestCase {
   func testCountDown() async {
     let store = TestStore(
       initialState: EffectsBasicsState(),

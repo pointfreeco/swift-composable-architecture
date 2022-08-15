@@ -5,7 +5,7 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 @MainActor
-class LongLivingEffectsTests: XCTestCase {
+final class LongLivingEffectsTests: XCTestCase {
   func testReducer() async {
     let (screenshots, takeScreenshot) = AsyncStream<Void>.streamWithContinuation()
 

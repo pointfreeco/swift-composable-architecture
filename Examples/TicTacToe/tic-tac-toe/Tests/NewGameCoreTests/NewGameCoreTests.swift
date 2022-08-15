@@ -4,7 +4,7 @@ import NewGameCore
 import XCTest
 
 @MainActor
-class NewGameCoreTests: XCTestCase {
+final class NewGameCoreTests: XCTestCase {
   let store = TestStore(
     initialState: NewGameState(),
     reducer: newGameReducer,

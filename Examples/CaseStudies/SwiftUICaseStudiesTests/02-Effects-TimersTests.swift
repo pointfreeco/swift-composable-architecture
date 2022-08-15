@@ -4,7 +4,7 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 @MainActor
-class TimersTests: XCTestCase {
+final class TimersTests: XCTestCase {
   func testStart() async {
     let mainQueue = DispatchQueue.test
 

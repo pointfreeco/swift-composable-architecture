@@ -6,7 +6,7 @@ import XCTestDynamicOverlay
 @testable import SwiftUICaseStudies
 
 @MainActor
-class ReusableComponentsDownloadComponentTests: XCTestCase {
+final class ReusableComponentsDownloadComponentTests: XCTestCase {
   let download = AsyncThrowingStream<DownloadClient.Event, Error>.streamWithContinuation()
   let reducer = Reducer<
     DownloadComponentState<Int>,
