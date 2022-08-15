@@ -107,6 +107,7 @@ extension Effect where Failure == Never {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {
+    // TODO: avoid withValue if DependencyValues is empty?
     let dependencies = DependencyValues.current
     return Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
       DependencyValues.$current.withValue(dependencies) {
