@@ -28,7 +28,7 @@ import Foundation
 /// ### Scoping
 ///
 /// The most important operation defined on ``Store`` is the ``scope(state:action:)`` method, which
-/// allows you to transform a store into one that deals with local state and actions. This is
+/// allows you to transform a store into one that deals with child state and actions. This is
 /// necessary for passing stores to subviews that only care about a small portion of the entire
 /// application's domain.
 ///
@@ -147,13 +147,13 @@ public final class Store<State, Action> {
     )
   }
 
-  /// Scopes the store to one that exposes local state and actions.
+  /// Scopes the store to one that exposes child state and actions.
   ///
   /// This can be useful for deriving new stores to hand to child views in an application. For
   /// example:
   ///
   /// ```swift
-  /// // Application state made from local states.
+  /// // Application state made from child states.
   /// struct AppState { var login: LoginState, ... }
   /// enum AppAction { case login(LoginAction), ... }
   ///
@@ -283,38 +283,38 @@ public final class Store<State, Action> {
   /// when non-view state changes), and is incapable of sending any actions but view actions.
   ///
   /// - Parameters:
-  ///   - toLocalState: A function that transforms `State` into `LocalState`.
-  ///   - fromLocalAction: A function that transforms `LocalAction` into `Action`.
+  ///   - toChildState: A function that transforms `State` into `ChildState`.
+  ///   - fromChildAction: A function that transforms `ChildAction` into `Action`.
   /// - Returns: A new store with its domain (state and action) transformed.
-  public func scope<LocalState, LocalAction>(
-    state toLocalState: @escaping (State) -> LocalState,
-    action fromLocalAction: @escaping (LocalAction) -> Action
-  ) -> Store<LocalState, LocalAction> {
+  public func scope<ChildState, ChildAction>(
+    state toChildState: @escaping (State) -> ChildState,
+    action fromChildAction: @escaping (ChildAction) -> Action
+  ) -> Store<ChildState, ChildAction> {
     self.threadCheck(status: .scope)
-    let reducer = ScopedReducer(store: self, state: toLocalState, action: fromLocalAction)
-    let localStore = Store<LocalState, LocalAction>(
-      initialState: toLocalState(self.state.value),
+    let reducer = ScopedReducer(store: self, state: toChildState, action: fromChildAction)
+    let childStore = Store<ChildState, ChildAction>(
+      initialState: toChildState(self.state.value),
       reducer: reducer
     )
-    localStore.parentCancellable = self.state
+    childStore.parentCancellable = self.state
       .dropFirst()
-      .sink { [weak localStore] newValue in
+      .sink { [weak childStore] newValue in
         guard !reducer.isSending else { return }
-        localStore?.state.value = toLocalState(newValue)
+        childStore?.state.value = toChildState(newValue)
       }
-    return localStore
+    return childStore
   }
 
-  /// Scopes the store to one that exposes local state.
+  /// Scopes the store to one that exposes child state.
   ///
   /// A version of ``scope(state:action:)`` that leaves the action type unchanged.
   ///
-  /// - Parameter toLocalState: A function that transforms `State` into `LocalState`.
+  /// - Parameter toChildState: A function that transforms `State` into `ChildState`.
   /// - Returns: A new store with its domain (state and action) transformed.
-  public func scope<LocalState>(
-    state toLocalState: @escaping (State) -> LocalState
-  ) -> Store<LocalState, Action> {
-    self.scope(state: toLocalState, action: { $0 })
+  public func scope<ChildState>(
+    state toChildState: @escaping (State) -> ChildState
+  ) -> Store<ChildState, Action> {
+    self.scope(state: toChildState, action: { $0 })
   }
 
   func send(
@@ -529,17 +529,17 @@ public final class Store<State, Action> {
 /// ```
 public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
 
-private final class ScopedReducer<State, Action, LocalState, LocalAction>: ReducerProtocol {
+private final class ScopedReducer<State, Action, ChildState, ChildAction>: ReducerProtocol {
   let store: Store<State, Action>
-  let toLocalState: (State) -> LocalState
-  let fromLocalAction: (LocalAction) -> Action
+  let toLocalState: (State) -> ChildState
+  let fromLocalAction: (ChildAction) -> Action
   private(set) var isSending = false
 
   @inlinable
   init(
     store: Store<State, Action>,
-    state toLocalState: @escaping (State) -> LocalState,
-    action fromLocalAction: @escaping (LocalAction) -> Action
+    state toLocalState: @escaping (State) -> ChildState,
+    action fromLocalAction: @escaping (ChildAction) -> Action
   ) {
     self.store = store
     self.toLocalState = toLocalState
@@ -547,7 +547,7 @@ private final class ScopedReducer<State, Action, LocalState, LocalAction>: Reduc
   }
 
   @inlinable
-  func reduce(into state: inout LocalState, action: LocalAction) -> Effect<LocalAction, Never> {
+  func reduce(into state: inout ChildState, action: ChildAction) -> Effect<ChildAction, Never> {
     self.isSending = true
     defer {
       state = self.toLocalState(self.store.state.value)

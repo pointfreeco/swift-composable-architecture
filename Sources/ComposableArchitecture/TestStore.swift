@@ -182,7 +182,7 @@
   /// This test is proving that the debounced network requests are correctly canceled when we do not
   /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
   /// not expect it would cause a test failure.
-  public final class TestStore<Reducer: ReducerProtocol, LocalState, LocalAction, Environment> {
+  public final class TestStore<Reducer: ReducerProtocol, ScopedState, ScopedAction, Environment> {
     /// The current dependencies.
     ///
     /// The dependencies define the execution context that your feature runs in. They can be
@@ -237,11 +237,11 @@
 
     private var _environment: Box<Environment>
     private let file: StaticString
-    private let fromLocalAction: (LocalAction) -> Reducer.Action
+    private let fromScopedAction: (ScopedAction) -> Reducer.Action
     private var line: UInt
     let reducer: TestReducer<Reducer>
     private var store: Store<Reducer.State, TestReducer<Reducer>.Action>!
-    private let toLocalState: (Reducer.State) -> LocalState
+    private let toScopedState: (Reducer.State) -> ScopedState
 
     public init(
       initialState: Reducer.State,
@@ -250,31 +250,31 @@
       line: UInt = #line
     )
     where
-      Reducer.State == LocalState,
-      Reducer.Action == LocalAction,
+      Reducer.State == ScopedState,
+      Reducer.Action == ScopedAction,
       Environment == Void
     {
       let reducer = TestReducer(reducer, initialState: initialState)
       self._environment = .init(wrappedValue: ())
       self.file = file
-      self.fromLocalAction = { $0 }
+      self.fromScopedAction = { $0 }
       self.line = line
       self.reducer = reducer
       self.store = Store(initialState: initialState, reducer: reducer)
       self.timeout = 100 * NSEC_PER_MSEC
-      self.toLocalState = { $0 }
+      self.toScopedState = { $0 }
     }
 
     // NB: Can't seem to define this as a convenience initializer in 'ReducerCompatibility.swift'.
     public init(
-      initialState: LocalState,
-      reducer: AnyReducer<LocalState, LocalAction, Environment>,
+      initialState: ScopedState,
+      reducer: AnyReducer<ScopedState, ScopedAction, Environment>,
       environment: Environment,
       file: StaticString = #file,
       line: UInt = #line
     )
     where
-      Reducer == Reduce<LocalState, LocalAction>
+      Reducer == Reduce<ScopedState, ScopedAction>
     {
       let environment = Box(wrappedValue: environment)
       let reducer = TestReducer(
@@ -286,32 +286,32 @@
       )
       self._environment = environment
       self.file = file
-      self.fromLocalAction = { $0 }
+      self.fromScopedAction = { $0 }
       self.line = line
       self.reducer = reducer
       self.store = Store(initialState: initialState, reducer: reducer)
       self.timeout = 100 * NSEC_PER_MSEC
-      self.toLocalState = { $0 }
+      self.toScopedState = { $0 }
     }
 
     init(
       _environment: Box<Environment>,
       file: StaticString,
-      fromLocalAction: @escaping (LocalAction) -> Reducer.Action,
+      fromScopedAction: @escaping (ScopedAction) -> Reducer.Action,
       line: UInt,
       reducer: TestReducer<Reducer>,
       store: Store<Reducer.State, TestReducer<Reducer>.Action>,
       timeout: UInt64 = 100 * NSEC_PER_MSEC,
-      toLocalState: @escaping (Reducer.State) -> LocalState
+      toScopedState: @escaping (Reducer.State) -> ScopedState
     ) {
       self._environment = _environment
       self.file = file
-      self.fromLocalAction = fromLocalAction
+      self.fromScopedAction = fromScopedAction
       self.line = line
       self.reducer = reducer
       self.store = store
       self.timeout = timeout
-      self.toLocalState = toLocalState
+      self.toScopedState = toScopedState
     }
 
     #if swift(>=5.7)
@@ -426,7 +426,7 @@
     }
   }
 
-  extension TestStore where LocalState: Equatable {
+  extension TestStore where ScopedState: Equatable {
     /// Sends an action to the store and asserts when state changes.
     ///
     /// This method suspends in order to allow any effects to start. For example, if you
@@ -492,8 +492,8 @@
     @MainActor
     @discardableResult
     public func send(
-      _ action: LocalAction,
-      _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
+      _ action: ScopedAction,
+      _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) async -> TestStoreTask {
@@ -510,10 +510,10 @@
           file: file, line: line
         )
       }
-      var expectedState = self.toLocalState(self.state)
+      var expectedState = self.toScopedState(self.state)
       let previousState = self.reducer.state
       let task = self.store
-        .send(.init(origin: .send(self.fromLocalAction(action)), file: file, line: line))
+        .send(.init(origin: .send(self.fromScopedAction(action)), file: file, line: line))
       await Task.megaYield()
       do {
         let currentState = self.state
@@ -522,7 +522,7 @@
 
         try self.expectedStateShouldMatch(
           expected: &expectedState,
-          actual: self.toLocalState(currentState),
+          actual: self.toScopedState(currentState),
           modify: updateExpectingResult,
           file: file,
           line: line
@@ -574,8 +574,8 @@
     @available(watchOS, deprecated: 9999.0, message: "Call the async-friendly 'send' instead.")
     @discardableResult
     public func send(
-      _ action: LocalAction,
-      _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
+      _ action: ScopedAction,
+      _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) -> TestStoreTask {
@@ -592,10 +592,10 @@
           file: file, line: line
         )
       }
-      var expectedState = self.toLocalState(self.state)
+      var expectedState = self.toScopedState(self.state)
       let previousState = self.state
       let task = self.store
-        .send(.init(origin: .send(self.fromLocalAction(action)), file: file, line: line))
+        .send(.init(origin: .send(self.fromScopedAction(action)), file: file, line: line))
       do {
         let currentState = self.state
         self.reducer.state = previousState
@@ -603,7 +603,7 @@
 
         try self.expectedStateShouldMatch(
           expected: &expectedState,
-          actual: self.toLocalState(currentState),
+          actual: self.toScopedState(currentState),
           modify: updateExpectingResult,
           file: file,
           line: line
@@ -619,9 +619,9 @@
     }
 
     private func expectedStateShouldMatch(
-      expected: inout LocalState,
-      actual: LocalState,
-      modify: ((inout LocalState) throws -> Void)? = nil,
+      expected: inout ScopedState,
+      actual: ScopedState,
+      modify: ((inout ScopedState) throws -> Void)? = nil,
       file: StaticString,
       line: UInt
     ) throws {
@@ -669,7 +669,7 @@
     }
   }
 
-  extension TestStore where LocalState: Equatable, Reducer.Action: Equatable {
+  extension TestStore where ScopedState: Equatable, Reducer.Action: Equatable {
     /// Asserts an action was received from an effect and asserts when state changes.
     ///
     /// - Parameters:
@@ -684,7 +684,7 @@
     @available(watchOS, deprecated: 9999.0, message: "Call the async-friendly 'receive' instead.")
     public func receive(
       _ expectedAction: Reducer.Action,
-      _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
+      _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) {
@@ -720,11 +720,11 @@
           file: file, line: line
         )
       }
-      var expectedState = self.toLocalState(self.state)
+      var expectedState = self.toScopedState(self.state)
       do {
         try expectedStateShouldMatch(
           expected: &expectedState,
-          actual: self.toLocalState(state),
+          actual: self.toScopedState(state),
           modify: updateExpectingResult,
           file: file,
           line: line
@@ -753,7 +753,7 @@
       public func receive(
         _ expectedAction: Reducer.Action,
         timeout duration: Duration,
-        _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
+        _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
         file: StaticString = #file,
         line: UInt = #line
       ) async {
@@ -780,7 +780,7 @@
     public func receive(
       _ expectedAction: Reducer.Action,
       timeout nanoseconds: UInt64? = nil,
-      _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
+      _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
@@ -846,44 +846,44 @@
   }
 
   extension TestStore {
-    /// Scopes a store to assert against more local state and actions.
+    /// Scopes a store to assert against scoped state and actions.
     ///
     /// Useful for testing view store-specific state and actions.
     ///
     /// - Parameters:
-    ///   - toLocalState: A function that transforms the reducer's state into more local state. This
+    ///   - toScopedState: A function that transforms the reducer's state into scoped state. This
     ///     state will be asserted against as it is mutated by the reducer. Useful for testing view
     ///     store state transformations.
-    ///   - fromLocalAction: A function that wraps a more local action in the reducer's action.
-    ///     Local actions can be "sent" to the store, while any reducer action may be received.
+    ///   - fromScopedAction: A function that wraps a more scoped action in the reducer's action.
+    ///     Scoped actions can be "sent" to the store, while any reducer action may be received.
     ///     Useful for testing view store action transformations.
     public func scope<S, A>(
-      state toLocalState: @escaping (LocalState) -> S,
-      action fromLocalAction: @escaping (A) -> LocalAction
+      state toScopedState: @escaping (ScopedState) -> S,
+      action fromScopedAction: @escaping (A) -> ScopedAction
     ) -> TestStore<Reducer, S, A, Environment> {
       .init(
         _environment: self._environment,
         file: self.file,
-        fromLocalAction: { self.fromLocalAction(fromLocalAction($0)) },
+        fromScopedAction: { self.fromScopedAction(fromScopedAction($0)) },
         line: self.line,
         reducer: self.reducer,
         store: self.store,
         timeout: self.timeout,
-        toLocalState: { toLocalState(self.toLocalState($0)) }
+        toScopedState: { toScopedState(self.toScopedState($0)) }
       )
     }
 
-    /// Scopes a store to assert against more local state.
+    /// Scopes a store to assert against scoped state.
     ///
     /// Useful for testing view store-specific state.
     ///
-    /// - Parameter toLocalState: A function that transforms the reducer's state into more local
-    ///   state. This state will be asserted against as it is mutated by the reducer. Useful for
-    ///   testing view store state transformations.
+    /// - Parameter toScopedState: A function that transforms the reducer's state into scoped state.
+    ///   This state will be asserted against as it is mutated by the reducer. Useful for testing
+    ///   view store state transformations.
     public func scope<S>(
-      state toLocalState: @escaping (LocalState) -> S
-    ) -> TestStore<Reducer, S, LocalAction, Environment> {
-      self.scope(state: toLocalState, action: { $0 })
+      state toScopedState: @escaping (ScopedState) -> S
+    ) -> TestStore<Reducer, S, ScopedAction, Environment> {
+      self.scope(state: toScopedState, action: { $0 })
     }
   }
 
