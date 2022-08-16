@@ -19,13 +19,15 @@ extension CaseLet {
   public typealias LocalAction = CaseAction
 }
 
-extension TestStore {
-  @available(*, deprecated, renamed: "ScopedState")
-  public typealias LocalState = ScopedState
+#if DEBUG
+  extension TestStore {
+    @available(*, deprecated, renamed: "ScopedState")
+    public typealias LocalState = ScopedState
 
-  @available(*, deprecated, renamed: "ScopedAction")
-  public typealias LocalAction = ScopedAction
-}
+    @available(*, deprecated, renamed: "ScopedAction")
+    public typealias LocalAction = ScopedAction
+  }
+#endif
 
 // NB: Deprecated after 0.38.2:
 
