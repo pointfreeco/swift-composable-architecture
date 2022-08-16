@@ -88,7 +88,7 @@ extension DependencyValues {
   }
 }
 
-public struct _DebugReducer<Base: ReducerProtocol, LocalState, LocalAction>: ReducerProtocol {
+public struct _DebugReducer<Base: ReducerProtocol, DebugState, DebugAction>: ReducerProtocol {
   @usableFromInline
   let base: Base
 
@@ -96,10 +96,10 @@ public struct _DebugReducer<Base: ReducerProtocol, LocalState, LocalAction>: Red
   let prefix: String
 
   @usableFromInline
-  let toLocalState: (State) -> LocalState
+  let toDebugState: (State) -> DebugState
 
   @usableFromInline
-  let toLocalAction: (Action) -> LocalAction?
+  let toDebugAction: (Action) -> DebugAction?
 
   @usableFromInline
   let actionFormat: ActionFormat
@@ -111,14 +111,14 @@ public struct _DebugReducer<Base: ReducerProtocol, LocalState, LocalAction>: Red
   init(
     base: Base,
     prefix: String,
-    state toLocalState: @escaping (State) -> LocalState,
-    action toLocalAction: @escaping (Action) -> LocalAction?,
+    state toDebugState: @escaping (State) -> DebugState,
+    action toDebugAction: @escaping (Action) -> DebugAction?,
     actionFormat: ActionFormat
   ) {
     self.base = base
     self.prefix = prefix
-    self.toLocalState = toLocalState
-    self.toLocalAction = toLocalAction
+    self.toDebugState = toDebugState
+    self.toDebugAction = toDebugAction
     self.actionFormat = actionFormat
   }
 
@@ -127,20 +127,20 @@ public struct _DebugReducer<Base: ReducerProtocol, LocalState, LocalAction>: Red
     into state: inout Base.State, action: Base.Action
   ) -> Effect<Base.Action, Never> {
     #if DEBUG
-      let previousState = self.toLocalState(state)
+      let previousState = self.toDebugState(state)
       let effects = self.base.reduce(into: &state, action: action)
-      guard let localAction = self.toLocalAction(action) else { return effects }
-      let nextState = self.toLocalState(state)
+      guard let debugAction = self.toDebugAction(action) else { return effects }
+      let nextState = self.toDebugState(state)
       return .merge(
         .fireAndForget { [actionFormat] in
           var actionOutput = ""
           if actionFormat == .prettyPrint {
-            customDump(localAction, to: &actionOutput, indent: 2)
+            customDump(debugAction, to: &actionOutput, indent: 2)
           } else {
-            actionOutput.write(debugCaseOutput(localAction).indent(by: 2))
+            actionOutput.write(debugCaseOutput(debugAction).indent(by: 2))
           }
           let stateOutput =
-          LocalState.self == Void.self
+          DebugState.self == Void.self
           ? ""
           : diff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
           await self.logger(

@@ -531,29 +531,29 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
 
 private final class ScopedReducer<State, Action, ChildState, ChildAction>: ReducerProtocol {
   let store: Store<State, Action>
-  let toLocalState: (State) -> ChildState
-  let fromLocalAction: (ChildAction) -> Action
+  let toChildState: (State) -> ChildState
+  let fromChildAction: (ChildAction) -> Action
   private(set) var isSending = false
 
   @inlinable
   init(
     store: Store<State, Action>,
-    state toLocalState: @escaping (State) -> ChildState,
-    action fromLocalAction: @escaping (ChildAction) -> Action
+    state toChildState: @escaping (State) -> ChildState,
+    action fromChildAction: @escaping (ChildAction) -> Action
   ) {
     self.store = store
-    self.toLocalState = toLocalState
-    self.fromLocalAction = fromLocalAction
+    self.toChildState = toChildState
+    self.fromChildAction = fromChildAction
   }
 
   @inlinable
   func reduce(into state: inout ChildState, action: ChildAction) -> Effect<ChildAction, Never> {
     self.isSending = true
     defer {
-      state = self.toLocalState(self.store.state.value)
+      state = self.toChildState(self.store.state.value)
       self.isSending = false
     }
-    if let task = self.store.send(self.fromLocalAction(action)) {
+    if let task = self.store.send(self.fromChildAction(action)) {
       return .fireAndForget { await task.cancellableValue }
     } else {
       return .none
