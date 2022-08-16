@@ -21,10 +21,10 @@ struct RecordingMemo: ReducerProtocol {
     case task
     case timerUpdated
     case stopButtonTapped
+  }
 
-    enum DelegateAction: Equatable {
-      case didFinish(TaskResult<State>)
-    }
+  enum DelegateAction: Equatable {
+    case didFinish(TaskResult<State>)
   }
 
   struct Failed: Equatable, Error {}

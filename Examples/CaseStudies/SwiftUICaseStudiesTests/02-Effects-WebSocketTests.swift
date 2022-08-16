@@ -5,7 +5,7 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 @MainActor
-class WebSocketTests: XCTestCase {
+final class WebSocketTests: XCTestCase {
   func testWebSocketHappyPath() async {
     let store = TestStore(
       initialState: WebSocket.State(),

@@ -42,14 +42,14 @@ public struct _DependencyKeyWritingReducer<Base: ReducerProtocol>: ReducerProtoc
     }
   }
 
-  @inlinable
-  public func dependency<Value>(
-    _ keyPath: WritableKeyPath<DependencyValues, Value>,
-    _ value: Value
-  ) -> Self {
-    .init(base: self.base) { values in
-      self.update(&values)
-      values[keyPath: keyPath] = value
-    }
-  }
+//  @inlinable
+//  public func dependency<Value>(
+//    _ keyPath: WritableKeyPath<DependencyValues, Value>,
+//    _ value: Value
+//  ) -> Self {
+//    .init(base: self.base) { values in
+//      values[keyPath: keyPath] = value
+//      self.update(&values)
+//    }
+//  }
 }

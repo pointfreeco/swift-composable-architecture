@@ -5,7 +5,7 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 @MainActor
-class ReusableComponentsFavoritingTests: XCTestCase {
+final class ReusableComponentsFavoritingTests: XCTestCase {
   func testFavoriteButton() async {
     let scheduler = DispatchQueue.test
 

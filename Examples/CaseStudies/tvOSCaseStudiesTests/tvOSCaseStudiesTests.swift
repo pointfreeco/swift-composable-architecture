@@ -2,5 +2,5 @@ import XCTest
 
 @testable import tvOSCaseStudies
 
-class tvOSCaseStudiesTests: XCTestCase {
+final class tvOSCaseStudiesTests: XCTestCase {
 }

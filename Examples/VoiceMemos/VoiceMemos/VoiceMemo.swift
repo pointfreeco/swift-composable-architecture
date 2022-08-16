@@ -99,8 +99,7 @@ struct VoiceMemoView: View {
       HStack {
         TextField(
           "Untitled, \(viewStore.date.formatted(date: .numeric, time: .shortened))",
-          text: viewStore.binding(
-            get: \.title, send: VoiceMemo.Action.titleTextFieldChanged)
+          text: viewStore.binding(get: \.title, send: { .titleTextFieldChanged($0) })
         )
 
         Spacer()

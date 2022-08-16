@@ -3,7 +3,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
-class TestStoreTests: XCTestCase {
+final class TestStoreTests: XCTestCase {
   func testEffectConcatenation() async {
     struct State: Equatable {}
 
