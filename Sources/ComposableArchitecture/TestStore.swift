@@ -241,7 +241,8 @@
           let effects: Effect<Action, Never>
           switch action.origin {
           case let .send(scopedAction):
-            effects = self.reducer.run(&state, self.fromScopedAction(scopedAction), self.environment)
+            effects = self.reducer.run(
+              &state, self.fromScopedAction(scopedAction), self.environment)
             self.state = state
 
           case let .receive(action):
