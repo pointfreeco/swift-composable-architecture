@@ -51,6 +51,7 @@ day-to-day when building applications, such as:
 - <doc:GettingReadyForSwiftConcurrency>
 - <doc:Performance>
 - <doc:Testing>
+- <doc:MigratingToReducerProtocols>
 
 ### State management
 
