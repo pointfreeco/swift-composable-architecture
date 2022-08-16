@@ -123,7 +123,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   }
 
   /// Returns the resulting value of a given key path.
-  public subscript<LocalState>(dynamicMember keyPath: KeyPath<State, LocalState>) -> LocalState {
+  public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
     self._state.value[keyPath: keyPath]
   }
 
@@ -328,17 +328,16 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// ```
   ///
   /// - Parameters:
-  ///   - get: A function to get the state for the binding from the view
-  ///     store's full state.
-  ///   - localStateToViewAction: A function that transforms the binding's value
-  ///     into an action that can be sent to the store.
+  ///   - get: A function to get the state for the binding from the view store's full state.
+  ///   - valueToAction: A function that transforms the binding's value into an action that can be
+  ///     sent to the store.
   /// - Returns: A binding.
-  public func binding<LocalState>(
-    get: @escaping (State) -> LocalState,
-    send localStateToViewAction: @escaping (LocalState) -> Action
-  ) -> Binding<LocalState> {
+  public func binding<Value>(
+    get: @escaping (State) -> Value,
+    send valueToAction: @escaping (Value) -> Action
+  ) -> Binding<Value> {
     ObservedObject(wrappedValue: self)
-      .projectedValue[get: .init(rawValue: get), send: .init(rawValue: localStateToViewAction)]
+      .projectedValue[get: .init(rawValue: get), send: .init(rawValue: valueToAction)]
   }
 
   /// Derives a binding from the store that prevents direct writes to state and instead sends
@@ -366,10 +365,10 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///   - get: A function to get the state for the binding from the view store's full state.
   ///   - action: The action to send when the binding is written to.
   /// - Returns: A binding.
-  public func binding<LocalState>(
-    get: @escaping (State) -> LocalState,
+  public func binding<Value>(
+    get: @escaping (State) -> Value,
     send action: Action
-  ) -> Binding<LocalState> {
+  ) -> Binding<Value> {
     self.binding(get: get, send: { _ in action })
   }
 
@@ -395,13 +394,13 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// ```
   ///
   /// - Parameters:
-  ///   - localStateToViewAction: A function that transforms the binding's value
-  ///     into an action that can be sent to the store.
+  ///   - valueToAction: A function that transforms the binding's value into an action that can be
+  ///     sent to the store.
   /// - Returns: A binding.
   public func binding(
-    send localStateToViewAction: @escaping (State) -> Action
+    send valueToAction: @escaping (State) -> Action
   ) -> Binding<State> {
-    self.binding(get: { $0 }, send: localStateToViewAction)
+    self.binding(get: { $0 }, send: valueToAction)
   }
 
   /// Derives a binding from the store that prevents direct writes to state and instead sends
@@ -431,10 +430,10 @@ public final class ViewStore<State, Action>: ObservableObject {
     self.binding(send: { _ in action })
   }
 
-  private subscript<LocalState>(
-    get state: HashableWrapper<(State) -> LocalState>,
-    send action: HashableWrapper<(LocalState) -> Action>
-  ) -> LocalState {
+  private subscript<Value>(
+    get state: HashableWrapper<(State) -> Value>,
+    send action: HashableWrapper<(Value) -> Action>
+  ) -> Value {
     get { state.rawValue(self.state) }
     set { self.send(action.rawValue(newValue)) }
   }
@@ -525,9 +524,9 @@ public struct StorePublisher<State>: Publisher {
   }
 
   /// Returns the resulting publisher of a given key path.
-  public subscript<LocalState: Equatable>(
-    dynamicMember keyPath: KeyPath<State, LocalState>
-  ) -> StorePublisher<LocalState> {
+  public subscript<Value: Equatable>(
+    dynamicMember keyPath: KeyPath<State, Value>
+  ) -> StorePublisher<Value> {
     .init(upstream: self.upstream.map(keyPath).removeDuplicates(), viewStore: self.viewStore)
   }
 }
