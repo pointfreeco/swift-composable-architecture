@@ -25,6 +25,7 @@
 - ``BindingReducer``
 - ``CombineReducers``
 - ``EmptyReducer``
+- ``Observe``
 - ``Reduce``
 
 ### Reducer modifiers
