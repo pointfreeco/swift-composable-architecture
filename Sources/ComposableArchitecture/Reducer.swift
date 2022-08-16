@@ -675,7 +675,7 @@ public struct Reducer<State, Action, Environment> {
     line: UInt = #line
   ) -> Reducer<ParentState, ParentAction, ParentEnvironment> {
     .init { parentState, parentAction, parentEnvironment in
-      guard let (id, elementAction) = toElementAction.extract(from: parentAction)
+      guard let (id, action) = toElementAction.extract(from: parentAction)
       else { return .none }
 
       if parentState[keyPath: toElementsState][id: id] == nil {
@@ -711,7 +711,7 @@ public struct Reducer<State, Action, Environment> {
           [
             "\(fileID)",
             line,
-            debugCaseOutput(elementAction),
+            debugCaseOutput(action),
             "\(id)",
           ],
           file: file,
@@ -723,7 +723,7 @@ public struct Reducer<State, Action, Environment> {
         self
         .reducer(
           &parentState[keyPath: toElementsState][id: id]!,
-          elementAction,
+          action,
           toElementEnvironment(parentEnvironment)
         )
         .map { toElementAction.embed((id, $0)) }
