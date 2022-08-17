@@ -117,3 +117,6 @@ public struct PullbackReducer<ParentState, ParentAction, Child: ReducerProtocol>
       .map(self.toChildAction.embed)
   }
 }
+
+
+public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>

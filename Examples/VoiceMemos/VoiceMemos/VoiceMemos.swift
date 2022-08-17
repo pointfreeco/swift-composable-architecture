@@ -3,11 +3,157 @@ import ComposableArchitecture
 import Foundation
 import SwiftUI
 
+struct VoiceMemos: ReducerProtocol {
+  struct State: Equatable {
+    var alert: AlertState<VoiceMemosAction>?
+    var audioRecorderPermission = RecorderPermission.undetermined
+    var recordingMemo: RecordingMemo.State?
+    var voiceMemos: IdentifiedArrayOf<VoiceMemo.State> = []
+  }
+  enum RecorderPermission {
+    case allowed
+    case denied
+    case undetermined
+  }
+  enum Action: Equatable {
+    case alertDismissed
+    case openSettingsButtonTapped
+    case recordButtonTapped
+    case recordPermissionResponse(Bool)
+    case recordingMemo(RecordingMemo.Action)
+    case voiceMemo(id: VoiceMemo.State.ID, action: VoiceMemo.Action)
+  }
+  var audioPlayer: AudioPlayerClient
+  var audioRecorder: AudioRecorderClient
+  var mainRunLoop: AnySchedulerOf<RunLoop>
+  var openSettings: @Sendable () async -> Void
+  var temporaryDirectory: @Sendable () -> URL
+  var uuid: @Sendable () -> UUID
+
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    Reducer<State, Action, Void>.combine(
+      Reducer { state, action, environment in
+        RecordingMemo(
+          audioRecorder: self.audioRecorder,
+          mainRunLoop: self.mainRunLoop
+        )
+        .reduce(into: &state, action: action)
+      }
+      .optional()
+      .pullback(
+        state: \.recordingMemo,
+        action: /Action.recordingMemo,
+        environment: {}
+      ),
+
+      Reducer { state, action, environment in
+        VoiceMemo(
+          audioPlayer: self.audioPlayer,
+          mainRunLoop: self.mainRunLoop
+        )
+        .reduce(into: &state, action: action)
+      }
+        .forEach(
+          state: \.voiceMemos,
+          action: /Action.voiceMemo(id:action:),
+          environment: {}
+        ),
+
+      Reducer { state, action, environment in
+        switch action {
+        case .alertDismissed:
+          state.alert = nil
+          return .none
+
+        case .openSettingsButtonTapped:
+          return .fireAndForget {
+            await self.openSettings()
+          }
+
+        case .recordButtonTapped:
+          switch state.audioRecorderPermission {
+          case .undetermined:
+            return .task {
+              await .recordPermissionResponse(self.audioRecorder.requestRecordPermission())
+            }
+
+          case .denied:
+            state.alert = AlertState(title: TextState("Permission is required to record voice memos."))
+            return .none
+
+          case .allowed:
+            state.recordingMemo = RecordingMemo.State(
+              date: self.mainRunLoop.now.date,
+              url: self.temporaryDirectory()
+                .appendingPathComponent(self.uuid().uuidString)
+                .appendingPathExtension("m4a")
+            )
+            return .none
+          }
+
+        case let .recordingMemo(.delegate(.didFinish(.success(recordingMemo)))):
+          state.recordingMemo = nil
+          state.voiceMemos.insert(
+            VoiceMemo.State(
+              date: recordingMemo.date,
+              duration: recordingMemo.duration,
+              url: recordingMemo.url
+            ),
+            at: 0
+          )
+          return .none
+
+        case .recordingMemo(.delegate(.didFinish(.failure))):
+          state.alert = AlertState(title: TextState("Voice memo recording failed."))
+          state.recordingMemo = nil
+          return .none
+
+        case .recordingMemo:
+          return .none
+
+        case let .recordPermissionResponse(permission):
+          state.audioRecorderPermission = permission ? .allowed : .denied
+          if permission {
+            state.recordingMemo = RecordingMemo.State(
+              date: self.mainRunLoop.now.date,
+              url: self.temporaryDirectory()
+                .appendingPathComponent(self.uuid().uuidString)
+                .appendingPathExtension("m4a")
+            )
+            return .none
+          } else {
+            state.alert = AlertState(title: TextState("Permission is required to record voice memos."))
+            return .none
+          }
+
+        case .voiceMemo(id: _, action: .audioPlayerClient(.failure)):
+          state.alert = AlertState(title: TextState("Voice memo playback failed."))
+          return .none
+
+        case let .voiceMemo(id: id, action: .delete):
+          state.voiceMemos.remove(id: id)
+          return .none
+
+        case let .voiceMemo(id: tappedId, action: .playButtonTapped):
+          for id in state.voiceMemos.ids where id != tappedId {
+            state.voiceMemos[id: id]?.mode = .notPlaying
+          }
+          return .none
+
+        case .voiceMemo:
+          return .none
+        }
+      }
+    )
+    .run(&state, action, ())
+  }
+}
+
 struct VoiceMemosState: Equatable {
   var alert: AlertState<VoiceMemosAction>?
   var audioRecorderPermission = RecorderPermission.undetermined
-  var recordingMemo: RecordingMemoState?
-  var voiceMemos: IdentifiedArrayOf<VoiceMemoState> = []
+  var recordingMemo: RecordingMemo.State?
+  var voiceMemos: IdentifiedArrayOf<VoiceMemo.State> = []
 
   enum RecorderPermission {
     case allowed
@@ -21,8 +167,8 @@ enum VoiceMemosAction: Equatable {
   case openSettingsButtonTapped
   case recordButtonTapped
   case recordPermissionResponse(Bool)
-  case recordingMemo(RecordingMemoAction)
-  case voiceMemo(id: VoiceMemoState.ID, action: VoiceMemoAction)
+  case recordingMemo(RecordingMemo.Action)
+  case voiceMemo(id: VoiceMemo.State.ID, action: VoiceMemo.Action)
 }
 
 struct VoiceMemosEnvironment {
@@ -35,23 +181,38 @@ struct VoiceMemosEnvironment {
 }
 
 let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnvironment>.combine(
-  recordingMemoReducer
-    .optional()
-    .pullback(
-      state: \.recordingMemo,
-      action: /VoiceMemosAction.recordingMemo,
-      environment: {
-        RecordingMemoEnvironment(audioRecorder: $0.audioRecorder, mainRunLoop: $0.mainRunLoop)
-      }
-    ),
-  voiceMemoReducer
+
+  Reducer { state, action, environment in
+    RecordingMemo(
+      audioRecorder: environment.audioRecorder,
+      mainRunLoop: environment.mainRunLoop
+    )
+    .reduce(into: &state, action: action)
+  }
+  .optional()
+  .pullback(
+    state: \.recordingMemo,
+    action: /VoiceMemosAction.recordingMemo,
+    environment: {
+      (audioRecorder: $0.audioRecorder, mainRunLoop: $0.mainRunLoop)
+    }
+  ),
+
+  Reducer { state, action, environment in
+    VoiceMemo(
+      audioPlayer: environment.audioPlayer,
+      mainRunLoop: environment.mainRunLoop
+    )
+    .reduce(into: &state, action: action)
+  }
     .forEach(
       state: \.voiceMemos,
       action: /VoiceMemosAction.voiceMemo(id:action:),
       environment: {
-        VoiceMemoEnvironment(audioPlayer: $0.audioPlayer, mainRunLoop: $0.mainRunLoop)
+        (audioPlayer: $0.audioPlayer, mainRunLoop: $0.mainRunLoop)
       }
     ),
+
   Reducer { state, action, environment in
     switch action {
     case .alertDismissed:
@@ -75,7 +236,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
         return .none
 
       case .allowed:
-        state.recordingMemo = RecordingMemoState(
+        state.recordingMemo = RecordingMemo.State(
           date: environment.mainRunLoop.now.date,
           url: environment.temporaryDirectory()
             .appendingPathComponent(environment.uuid().uuidString)
@@ -87,7 +248,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
     case let .recordingMemo(.delegate(.didFinish(.success(recordingMemo)))):
       state.recordingMemo = nil
       state.voiceMemos.insert(
-        VoiceMemoState(
+        VoiceMemo.State(
           date: recordingMemo.date,
           duration: recordingMemo.duration,
           url: recordingMemo.url
@@ -107,7 +268,7 @@ let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnv
     case let .recordPermissionResponse(permission):
       state.audioRecorderPermission = permission ? .allowed : .denied
       if permission {
-        state.recordingMemo = RecordingMemoState(
+        state.recordingMemo = RecordingMemo.State(
           date: environment.mainRunLoop.now.date,
           url: environment.temporaryDirectory()
             .appendingPathComponent(environment.uuid().uuidString)
@@ -224,14 +385,14 @@ struct VoiceMemos_Previews: PreviewProvider {
       store: Store(
         initialState: VoiceMemosState(
           voiceMemos: [
-            VoiceMemoState(
+            VoiceMemo.State(
               date: Date(),
               duration: 5,
               mode: .notPlaying,
               title: "Functions",
               url: URL(string: "https://www.pointfree.co/functions")!
             ),
-            VoiceMemoState(
+            VoiceMemo.State(
               date: Date(),
               duration: 5,
               mode: .notPlaying,

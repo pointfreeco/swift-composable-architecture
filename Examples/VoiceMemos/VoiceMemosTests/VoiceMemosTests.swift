@@ -14,7 +14,7 @@ final class VoiceMemosTests: XCTestCase {
     guard #available(iOS 13.4, *) else { return }
 
     let store = TestStore(
-      initialState: VoiceMemosState(),
+      initialState: VoiceMemos.State(),
       reducer: voiceMemosReducer,
       environment: .unimplemented
     )
@@ -38,7 +38,7 @@ final class VoiceMemosTests: XCTestCase {
     await self.mainRunLoop.advance()
     await store.receive(.recordPermissionResponse(true)) {
       $0.audioRecorderPermission = .allowed
-      $0.recordingMemo = RecordingMemoState(
+      $0.recordingMemo = RecordingMemo.State(
         date: Date(timeIntervalSince1970: 0),
         mode: .recording,
         url: URL(fileURLWithPath: "/tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")
@@ -65,7 +65,7 @@ final class VoiceMemosTests: XCTestCase {
     {
       $0.recordingMemo = nil
       $0.voiceMemos = [
-        VoiceMemoState(
+        VoiceMemo.State(
           date: Date(timeIntervalSince1970: 0),
           duration: 2.5,
           mode: .notPlaying,
@@ -81,7 +81,7 @@ final class VoiceMemosTests: XCTestCase {
     let didOpenSettings = ActorIsolated(false)
 
     let store = TestStore(
-      initialState: VoiceMemosState(),
+      initialState: VoiceMemos.State(),
       reducer: voiceMemosReducer,
       environment: .unimplemented
     )
@@ -106,7 +106,7 @@ final class VoiceMemosTests: XCTestCase {
     struct SomeError: Error, Equatable {}
 
     let store = TestStore(
-      initialState: VoiceMemosState(),
+      initialState: VoiceMemos.State(),
       reducer: voiceMemosReducer,
       environment: .unimplemented
     )
@@ -125,7 +125,7 @@ final class VoiceMemosTests: XCTestCase {
     await self.mainRunLoop.advance(by: 0.5)
     await store.receive(.recordPermissionResponse(true)) {
       $0.audioRecorderPermission = .allowed
-      $0.recordingMemo = RecordingMemoState(
+      $0.recordingMemo = RecordingMemo.State(
         date: Date(timeIntervalSince1970: 0),
         mode: .recording,
         url: URL(fileURLWithPath: "/tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")
@@ -147,9 +147,9 @@ final class VoiceMemosTests: XCTestCase {
   func testPlayMemoHappyPath() async {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
-      initialState: VoiceMemosState(
+      initialState: VoiceMemos.State(
         voiceMemos: [
-          VoiceMemoState(
+          VoiceMemo.State(
             date: Date(),
             duration: 1.25,
             mode: .notPlaying,
@@ -191,9 +191,9 @@ final class VoiceMemosTests: XCTestCase {
 
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
-      initialState: VoiceMemosState(
+      initialState: VoiceMemos.State(
         voiceMemos: [
-          VoiceMemoState(
+          VoiceMemo.State(
             date: Date(),
             duration: 30,
             mode: .notPlaying,
@@ -222,9 +222,9 @@ final class VoiceMemosTests: XCTestCase {
   func testStopMemo() async {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
-      initialState: VoiceMemosState(
+      initialState: VoiceMemos.State(
         voiceMemos: [
-          VoiceMemoState(
+          VoiceMemo.State(
             date: Date(),
             duration: 30,
             mode: .playing(progress: 0.3),
@@ -245,9 +245,9 @@ final class VoiceMemosTests: XCTestCase {
   func testDeleteMemo() async {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
-      initialState: VoiceMemosState(
+      initialState: VoiceMemos.State(
         voiceMemos: [
-          VoiceMemoState(
+          VoiceMemo.State(
             date: Date(),
             duration: 30,
             mode: .playing(progress: 0.3),
@@ -269,9 +269,9 @@ final class VoiceMemosTests: XCTestCase {
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
 
     let store = TestStore(
-      initialState: VoiceMemosState(
+      initialState: VoiceMemos.State(
         voiceMemos: [
-          VoiceMemoState(
+          VoiceMemo.State(
             date: Date(),
             duration: 10,
             mode: .notPlaying,
