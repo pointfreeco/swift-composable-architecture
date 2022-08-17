@@ -30,108 +30,109 @@ struct VoiceMemos: ReducerProtocol {
   var temporaryDirectory: @Sendable () -> URL
   var uuid: @Sendable () -> UUID
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    Reduce<State, Action> { state, action in
-      switch action {
-      case .alertDismissed:
-        state.alert = nil
+  var body: some ReducerProtocol<State, Action> {
+    Reduce(self.core)
+      .ifLet(state: \.recordingMemo, action: /Action.recordingMemo) {
+        RecordingMemo(
+          audioRecorder: self.audioRecorder,
+          mainRunLoop: self.mainRunLoop
+        )
+      }
+      .forEach(
+        state: \.voiceMemos,
+        action: /Action.voiceMemo(id:action:)
+      ) {
+        VoiceMemo(
+          audioPlayer: self.audioPlayer,
+          mainRunLoop: self.mainRunLoop
+        )
+      }
+  }
+
+  func core(state: inout State, action: Action) -> Effect<Action, Never> {
+    switch action {
+    case .alertDismissed:
+      state.alert = nil
+      return .none
+
+    case .openSettingsButtonTapped:
+      return .fireAndForget {
+        await self.openSettings()
+      }
+
+    case .recordButtonTapped:
+      switch state.audioRecorderPermission {
+      case .undetermined:
+        return .task {
+          await .recordPermissionResponse(self.audioRecorder.requestRecordPermission())
+        }
+
+      case .denied:
+        state.alert = AlertState(title: TextState("Permission is required to record voice memos."))
         return .none
 
-      case .openSettingsButtonTapped:
-        return .fireAndForget {
-          await self.openSettings()
-        }
-
-      case .recordButtonTapped:
-        switch state.audioRecorderPermission {
-        case .undetermined:
-          return .task {
-            await .recordPermissionResponse(self.audioRecorder.requestRecordPermission())
-          }
-
-        case .denied:
-          state.alert = AlertState(title: TextState("Permission is required to record voice memos."))
-          return .none
-
-        case .allowed:
-          state.recordingMemo = RecordingMemo.State(
-            date: self.mainRunLoop.now.date,
-            url: self.temporaryDirectory()
-              .appendingPathComponent(self.uuid().uuidString)
-              .appendingPathExtension("m4a")
-          )
-          return .none
-        }
-
-      case let .recordingMemo(.delegate(.didFinish(.success(recordingMemo)))):
-        state.recordingMemo = nil
-        state.voiceMemos.insert(
-          VoiceMemo.State(
-            date: recordingMemo.date,
-            duration: recordingMemo.duration,
-            url: recordingMemo.url
-          ),
-          at: 0
+      case .allowed:
+        state.recordingMemo = RecordingMemo.State(
+          date: self.mainRunLoop.now.date,
+          url: self.temporaryDirectory()
+            .appendingPathComponent(self.uuid().uuidString)
+            .appendingPathExtension("m4a")
         )
         return .none
+      }
 
-      case .recordingMemo(.delegate(.didFinish(.failure))):
-        state.alert = AlertState(title: TextState("Voice memo recording failed."))
-        state.recordingMemo = nil
+    case let .recordingMemo(.delegate(.didFinish(.success(recordingMemo)))):
+      state.recordingMemo = nil
+      state.voiceMemos.insert(
+        VoiceMemo.State(
+          date: recordingMemo.date,
+          duration: recordingMemo.duration,
+          url: recordingMemo.url
+        ),
+        at: 0
+      )
+      return .none
+
+    case .recordingMemo(.delegate(.didFinish(.failure))):
+      state.alert = AlertState(title: TextState("Voice memo recording failed."))
+      state.recordingMemo = nil
+      return .none
+
+    case .recordingMemo:
+      return .none
+
+    case let .recordPermissionResponse(permission):
+      state.audioRecorderPermission = permission ? .allowed : .denied
+      if permission {
+        state.recordingMemo = RecordingMemo.State(
+          date: self.mainRunLoop.now.date,
+          url: self.temporaryDirectory()
+            .appendingPathComponent(self.uuid().uuidString)
+            .appendingPathExtension("m4a")
+        )
         return .none
-
-      case .recordingMemo:
-        return .none
-
-      case let .recordPermissionResponse(permission):
-        state.audioRecorderPermission = permission ? .allowed : .denied
-        if permission {
-          state.recordingMemo = RecordingMemo.State(
-            date: self.mainRunLoop.now.date,
-            url: self.temporaryDirectory()
-              .appendingPathComponent(self.uuid().uuidString)
-              .appendingPathExtension("m4a")
-          )
-          return .none
-        } else {
-          state.alert = AlertState(title: TextState("Permission is required to record voice memos."))
-          return .none
-        }
-
-      case .voiceMemo(id: _, action: .audioPlayerClient(.failure)):
-        state.alert = AlertState(title: TextState("Voice memo playback failed."))
-        return .none
-
-      case let .voiceMemo(id: id, action: .delete):
-        state.voiceMemos.remove(id: id)
-        return .none
-
-      case let .voiceMemo(id: tappedId, action: .playButtonTapped):
-        for id in state.voiceMemos.ids where id != tappedId {
-          state.voiceMemos[id: id]?.mode = .notPlaying
-        }
-        return .none
-
-      case .voiceMemo:
+      } else {
+        state.alert = AlertState(title: TextState("Permission is required to record voice memos."))
         return .none
       }
+
+    case .voiceMemo(id: _, action: .audioPlayerClient(.failure)):
+      state.alert = AlertState(title: TextState("Voice memo playback failed."))
+      return .none
+
+    case let .voiceMemo(id: id, action: .delete):
+      state.voiceMemos.remove(id: id)
+      return .none
+
+    case let .voiceMemo(id: tappedId, action: .playButtonTapped):
+      for id in state.voiceMemos.ids where id != tappedId {
+        state.voiceMemos[id: id]?.mode = .notPlaying
+      }
+      return .none
+
+    case .voiceMemo:
+      return .none
     }
-    .ifLet(state: \State.recordingMemo, action: /Action.recordingMemo) {
-      RecordingMemo(
-        audioRecorder: self.audioRecorder,
-        mainRunLoop: self.mainRunLoop
-      )
-    }
-    .forEach(
-      state: \State.voiceMemos,
-      action: /Action.voiceMemo(id:action:)
-    ) {
-      VoiceMemo(
-        audioPlayer: self.audioPlayer,
-        mainRunLoop: self.mainRunLoop
-      )
-    }
-    .reduce(into: &state, action: action)
   }
 }
 

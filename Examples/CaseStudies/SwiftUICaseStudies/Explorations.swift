@@ -124,24 +124,25 @@ struct AppReducer: ReducerProtocol {
     case tabB(TabB.Action)
     case tabC(TabC.Action)
   }
-  var body: some ReducerProtocol {
-    Reduce<State, Action> { _, _ in
+
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { _, _ in
       .none
     }
 
-    Scope(state: \State.tabA, action: /Action.tabA) {
+    Scope(state: \.tabA, action: /Action.tabA) {
       TabA()
     }
 
-    Scope(state: \State.tabB, action: /Action.tabB) {
+    Scope(state: \.tabB, action: /Action.tabB) {
       TabB()
     }
 
-    Scope(state: \State.tabC, action: /Action.tabC) {
+    Scope(state: \.tabC, action: /Action.tabC) {
       TabC()
     }
 
-    Reduce<State, Action> { _, _ in
+    Reduce { _, _ in
       .none
     }
   }
@@ -300,3 +301,10 @@ Parse(User.init(id:name:)) {
    AfterRow()
  }
  */
+
+import Combine
+
+func somePublisher() {
+  let x: some Publisher<Int, Never> = Just(1)
+  x.map { $0 + 1 }
+}

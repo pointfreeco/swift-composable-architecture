@@ -12,7 +12,7 @@ func foo() {
   let tmp = Text._makeView
 }
 
-public protocol ReducerProtocol {
+public protocol ReducerProtocol<State, Action> {
   associatedtype State
   associatedtype Action
   associatedtype Body
