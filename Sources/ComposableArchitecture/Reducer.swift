@@ -117,6 +117,15 @@ public struct Reducer<State, Action, Environment> {
     .combine(reducers)
   }
 
+  /*
+   Reducer.combine(
+     reducerA,
+     reducerB,
+     reducerC
+   )
+   */
+
+
   /// Combines many reducers into a single one by running each one on state in order, and merging
   /// all of the effects.
   ///
@@ -132,6 +141,14 @@ public struct Reducer<State, Action, Environment> {
     }
   }
 
+  /*
+   Reducer.combine([
+     reducerA,
+     reducerB,
+     reducerC
+   ])
+   */
+
   /// Combines the receiving reducer with one other reducer, running the second after the first and
   /// merging all of the effects.
   ///
@@ -145,6 +162,12 @@ public struct Reducer<State, Action, Environment> {
   public func combined(with other: Self) -> Self {
     .combine(self, other)
   }
+
+  /*
+   reducerA
+     .combined(with: reducerB)
+     .combined(with: reducerC)
+   */
 
   /// Transforms a reducer that works on child state, action, and environment into one that works on
   /// parent state, action and environment. It accomplishes this by providing 3 transformations to

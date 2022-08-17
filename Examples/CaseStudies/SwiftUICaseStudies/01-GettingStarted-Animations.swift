@@ -58,6 +58,7 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
     return .none
 
   case .rainbowButtonTapped:
+    let x = 1
     return .run { send in
       let x = 1
 //      environment.mainQueue.slee
