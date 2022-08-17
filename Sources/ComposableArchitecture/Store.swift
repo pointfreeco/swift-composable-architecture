@@ -304,12 +304,15 @@ public final class Store<State, Action> {
     self.threadCheck(status: .scope)
     var isSending = false
     let localStore = Store<LocalState, LocalAction>(
-      initialState: toLocalState(self.state.value),
+      initialState: toLocalState(self.state.value), // we don't track this one but it's only once per scope function so neglible cost
       reducer: .init { localState, localAction, _ in
         isSending = true
         defer { isSending = false }
         let task = self.send(fromLocalAction(localAction), file: file, line: line)
+        let callbackInfo = Instrumentation.CallbackInfo<Store<LocalState, LocalAction>.Type, Any>(storeKind: Store<LocalState, LocalAction>.self, action: localAction, file: file, line: line).eraseToAny()
+        instrumentation.callback?(callbackInfo, .pre, .scopedStoreToLocal)
         localState = toLocalState(self.state.value)
+        instrumentation.callback?(callbackInfo, .post, .scopedStoreToLocal)
         if let task = task {
           return .fireAndForget { await task.cancellableValue }
         } else {
@@ -399,7 +402,6 @@ public final class Store<State, Action> {
         }
       }
     }
-
 
     while !self.bufferedActions.isEmpty {
       let action = self.bufferedActions.removeFirst()
