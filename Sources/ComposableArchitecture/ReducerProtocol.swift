@@ -120,3 +120,88 @@ public struct PullbackReducer<ParentState, ParentAction, Child: ReducerProtocol>
 
 
 public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
+
+extension Reducer {
+  public init<R: ReducerProtocol>(_ reducer: R)
+  where R.State == State, R.Action == Action {
+    self.init { state, action, _ in
+      reducer.reduce(into: &state, action: action)
+    }
+  }
+}
+
+
+extension ReducerProtocol {
+  public func optional() -> OptionalReducer<Self> {
+    OptionalReducer(wrapped: self)
+  }
+}
+
+public struct OptionalReducer<Wrapped: ReducerProtocol>: ReducerProtocol {
+  let wrapped: Wrapped
+  public func reduce(
+    into state: inout Wrapped.State?, action: Wrapped.Action
+  ) -> Effect<Wrapped.Action, Never> {
+    guard state != nil else {
+      runtimeWarning(
+        """
+        An "optional" reducer received an action when state was "nil".
+        """
+      )
+      return .none
+    }
+    return self.wrapped.reduce(into: &state!, action: action)
+  }
+}
+
+
+extension ReducerProtocol {
+  public func forEach<ParentState, ParentAction, ID>(
+    state toElementsState: WritableKeyPath<ParentState, IdentifiedArray<ID, State>>,
+    action toElementAction: CasePath<ParentAction, (ID, Action)>
+  ) -> ForEachReducer<ParentState, ParentAction, ID, Self> {
+    ForEachReducer(
+      toElementsState: toElementsState,
+      toElementAction: toElementAction,
+      element: self
+    )
+  }
+}
+
+public struct ForEachReducer<State, Action, ID: Hashable, Element: ReducerProtocol>: ReducerProtocol
+{
+  let toElementsState: WritableKeyPath<State, IdentifiedArray<ID, Element.State>>
+  let toElementAction: CasePath<Action, (ID, Element.Action)>
+  let element: Element
+
+  public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    guard let (id, elementAction) = toElementAction.extract(from: action) else { return .none }
+    if state[keyPath: toElementsState][id: id] == nil {
+      runtimeWarning(
+        """
+        A "forEach" reducer received an action when state contained no element with that id.
+        """
+      )
+      return .none
+    }
+    return self.element
+      .reduce(
+        into: &state[keyPath: toElementsState][id: id]!,
+        action: elementAction
+      )
+      .map { toElementAction.embed((id, $0)) }
+  }
+}
+
+
+public struct Reduce<State, Action>: ReducerProtocol {
+  let reduce: (inout State, Action) -> Effect<Action, Never>
+
+  public init(_ reduce: @escaping (inout State, Action) -> Effect<Action, Never>) {
+    self.reduce = reduce
+  }
+
+  public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    self.reduce(&state, action)
+  }
+}

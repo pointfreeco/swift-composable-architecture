@@ -5,7 +5,7 @@ import SwiftUI
 
 struct VoiceMemos: ReducerProtocol {
   struct State: Equatable {
-    var alert: AlertState<VoiceMemosAction>?
+    var alert: AlertState<VoiceMemos.Action>?
     var audioRecorderPermission = RecorderPermission.undetermined
     var recordingMemo: RecordingMemo.State?
     var voiceMemos: IdentifiedArrayOf<VoiceMemo.State> = []
@@ -31,35 +31,24 @@ struct VoiceMemos: ReducerProtocol {
   var uuid: @Sendable () -> UUID
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    Reducer<State, Action, Void>.combine(
-      Reducer { state, action, environment in
-        RecordingMemo(
-          audioRecorder: self.audioRecorder,
-          mainRunLoop: self.mainRunLoop
-        )
-        .reduce(into: &state, action: action)
-      }
-      .optional()
-      .pullback(
-        state: \.recordingMemo,
-        action: /Action.recordingMemo,
-        environment: {}
-      ),
-
-      Reducer { state, action, environment in
-        VoiceMemo(
-          audioPlayer: self.audioPlayer,
-          mainRunLoop: self.mainRunLoop
-        )
-        .reduce(into: &state, action: action)
-      }
-        .forEach(
-          state: \.voiceMemos,
-          action: /Action.voiceMemo(id:action:),
-          environment: {}
-        ),
-
-      Reducer { state, action, environment in
+    RecordingMemo(
+      audioRecorder: self.audioRecorder,
+      mainRunLoop: self.mainRunLoop
+    )
+    .optional()
+    .pullback(state: \.recordingMemo, action: /Action.recordingMemo)
+    .combine(
+      with: VoiceMemo(
+        audioPlayer: self.audioPlayer,
+        mainRunLoop: self.mainRunLoop
+      )
+      .forEach(
+        state: \.voiceMemos,
+        action: /Action.voiceMemo(id:action:)
+      )
+    )
+    .combine(
+      with: Reduce { state, action in
         switch action {
         case .alertDismissed:
           state.alert = nil
@@ -145,163 +134,12 @@ struct VoiceMemos: ReducerProtocol {
         }
       }
     )
-    .run(&state, action, ())
-  }
-}
-
-struct VoiceMemosState: Equatable {
-  var alert: AlertState<VoiceMemosAction>?
-  var audioRecorderPermission = RecorderPermission.undetermined
-  var recordingMemo: RecordingMemo.State?
-  var voiceMemos: IdentifiedArrayOf<VoiceMemo.State> = []
-
-  enum RecorderPermission {
-    case allowed
-    case denied
-    case undetermined
-  }
-}
-
-enum VoiceMemosAction: Equatable {
-  case alertDismissed
-  case openSettingsButtonTapped
-  case recordButtonTapped
-  case recordPermissionResponse(Bool)
-  case recordingMemo(RecordingMemo.Action)
-  case voiceMemo(id: VoiceMemo.State.ID, action: VoiceMemo.Action)
-}
-
-struct VoiceMemosEnvironment {
-  var audioPlayer: AudioPlayerClient
-  var audioRecorder: AudioRecorderClient
-  var mainRunLoop: AnySchedulerOf<RunLoop>
-  var openSettings: @Sendable () async -> Void
-  var temporaryDirectory: @Sendable () -> URL
-  var uuid: @Sendable () -> UUID
-}
-
-let voiceMemosReducer = Reducer<VoiceMemosState, VoiceMemosAction, VoiceMemosEnvironment>.combine(
-
-  Reducer { state, action, environment in
-    RecordingMemo(
-      audioRecorder: environment.audioRecorder,
-      mainRunLoop: environment.mainRunLoop
-    )
     .reduce(into: &state, action: action)
   }
-  .optional()
-  .pullback(
-    state: \.recordingMemo,
-    action: /VoiceMemosAction.recordingMemo,
-    environment: {
-      (audioRecorder: $0.audioRecorder, mainRunLoop: $0.mainRunLoop)
-    }
-  ),
-
-  Reducer { state, action, environment in
-    VoiceMemo(
-      audioPlayer: environment.audioPlayer,
-      mainRunLoop: environment.mainRunLoop
-    )
-    .reduce(into: &state, action: action)
-  }
-    .forEach(
-      state: \.voiceMemos,
-      action: /VoiceMemosAction.voiceMemo(id:action:),
-      environment: {
-        (audioPlayer: $0.audioPlayer, mainRunLoop: $0.mainRunLoop)
-      }
-    ),
-
-  Reducer { state, action, environment in
-    switch action {
-    case .alertDismissed:
-      state.alert = nil
-      return .none
-
-    case .openSettingsButtonTapped:
-      return .fireAndForget {
-        await environment.openSettings()
-      }
-
-    case .recordButtonTapped:
-      switch state.audioRecorderPermission {
-      case .undetermined:
-        return .task {
-          await .recordPermissionResponse(environment.audioRecorder.requestRecordPermission())
-        }
-
-      case .denied:
-        state.alert = AlertState(title: TextState("Permission is required to record voice memos."))
-        return .none
-
-      case .allowed:
-        state.recordingMemo = RecordingMemo.State(
-          date: environment.mainRunLoop.now.date,
-          url: environment.temporaryDirectory()
-            .appendingPathComponent(environment.uuid().uuidString)
-            .appendingPathExtension("m4a")
-        )
-        return .none
-      }
-
-    case let .recordingMemo(.delegate(.didFinish(.success(recordingMemo)))):
-      state.recordingMemo = nil
-      state.voiceMemos.insert(
-        VoiceMemo.State(
-          date: recordingMemo.date,
-          duration: recordingMemo.duration,
-          url: recordingMemo.url
-        ),
-        at: 0
-      )
-      return .none
-
-    case .recordingMemo(.delegate(.didFinish(.failure))):
-      state.alert = AlertState(title: TextState("Voice memo recording failed."))
-      state.recordingMemo = nil
-      return .none
-
-    case .recordingMemo:
-      return .none
-
-    case let .recordPermissionResponse(permission):
-      state.audioRecorderPermission = permission ? .allowed : .denied
-      if permission {
-        state.recordingMemo = RecordingMemo.State(
-          date: environment.mainRunLoop.now.date,
-          url: environment.temporaryDirectory()
-            .appendingPathComponent(environment.uuid().uuidString)
-            .appendingPathExtension("m4a")
-        )
-        return .none
-      } else {
-        state.alert = AlertState(title: TextState("Permission is required to record voice memos."))
-        return .none
-      }
-
-    case .voiceMemo(id: _, action: .audioPlayerClient(.failure)):
-      state.alert = AlertState(title: TextState("Voice memo playback failed."))
-      return .none
-
-    case let .voiceMemo(id: id, action: .delete):
-      state.voiceMemos.remove(id: id)
-      return .none
-
-    case let .voiceMemo(id: tappedId, action: .playButtonTapped):
-      for id in state.voiceMemos.ids where id != tappedId {
-        state.voiceMemos[id: id]?.mode = .notPlaying
-      }
-      return .none
-
-    case .voiceMemo:
-      return .none
-    }
-  }
-)
+}
 
 struct VoiceMemosView: View {
-  let store: Store<VoiceMemosState, VoiceMemosAction>
+  let store: StoreOf<VoiceMemos>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -347,7 +185,7 @@ struct VoiceMemosView: View {
 }
 
 struct RecordButton: View {
-  let permission: VoiceMemosState.RecorderPermission
+  let permission: VoiceMemos.RecorderPermission
   let action: () -> Void
   let settingsAction: () -> Void
 
@@ -383,7 +221,7 @@ struct VoiceMemos_Previews: PreviewProvider {
   static var previews: some View {
     VoiceMemosView(
       store: Store(
-        initialState: VoiceMemosState(
+        initialState: VoiceMemos.State(
           voiceMemos: [
             VoiceMemo.State(
               date: Date(),
@@ -401,17 +239,19 @@ struct VoiceMemos_Previews: PreviewProvider {
             ),
           ]
         ),
-        reducer: voiceMemosReducer,
-        environment: VoiceMemosEnvironment(
-          // NB: AVAudioRecorder and AVAudioPlayer doesn't work in previews, so use mocks
-          //     that simulate their behavior in previews.
-          audioPlayer: .mock,
-          audioRecorder: .mock,
-          mainRunLoop: .main,
-          openSettings: {},
-          temporaryDirectory: { URL(fileURLWithPath: NSTemporaryDirectory()) },
-          uuid: { UUID() }
-        )
+        reducer: Reducer(
+          VoiceMemos(
+            // NB: AVAudioRecorder and AVAudioPlayer doesn't work in previews, so use mocks
+            //     that simulate their behavior in previews.
+            audioPlayer: .mock,
+            audioRecorder: .mock,
+            mainRunLoop: .main,
+            openSettings: {},
+            temporaryDirectory: { URL(fileURLWithPath: NSTemporaryDirectory()) },
+            uuid: { UUID() }
+          )
+        ),
+        environment: ()
       )
     )
   }
