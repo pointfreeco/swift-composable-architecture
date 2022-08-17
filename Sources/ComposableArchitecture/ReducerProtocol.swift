@@ -93,19 +93,30 @@ extension ReducerProtocol {
   public func pullback<ParentState, ParentAction>(
     state toChildState: WritableKeyPath<ParentState, State>,
     action toChildAction: CasePath<ParentAction, Action>
-  ) -> PullbackReducer<ParentState, ParentAction, Self> {
-    PullbackReducer(
-      toChildState: toChildState,
-      toChildAction: toChildAction,
-      child: self
-    )
+  ) -> Scope<ParentState, ParentAction, Self> {
+    Scope(
+      state: toChildState,
+      action: toChildAction
+    ) {
+      self
+    }
   }
 }
 
-public struct PullbackReducer<ParentState, ParentAction, Child: ReducerProtocol>: ReducerProtocol {
+public struct Scope<ParentState, ParentAction, Child: ReducerProtocol>: ReducerProtocol {
   let toChildState: WritableKeyPath<ParentState, Child.State>
   let toChildAction: CasePath<ParentAction, Child.Action>
   let child: Child
+
+  public init(
+    state toChildState: WritableKeyPath<ParentState, Child.State>,
+    action toChildAction: CasePath<ParentAction, Child.Action>,
+    @ReducerBuilder child: () -> Child
+  ) {
+    self.toChildState = toChildState
+    self.toChildAction = toChildAction
+    self.child = child()
+  }
 
   public func reduce(
     into state: inout ParentState, action: ParentAction
@@ -155,28 +166,48 @@ public struct OptionalReducer<Wrapped: ReducerProtocol>: ReducerProtocol {
 }
 
 
+
 extension ReducerProtocol {
-  public func forEach<ParentState, ParentAction, ID>(
-    state toElementsState: WritableKeyPath<ParentState, IdentifiedArray<ID, State>>,
-    action toElementAction: CasePath<ParentAction, (ID, Action)>
-  ) -> ForEachReducer<ParentState, ParentAction, ID, Self> {
-    ForEachReducer(
+  public func forEach<ID: Hashable, Element: ReducerProtocol>(
+    state toElementsState: WritableKeyPath<State, IdentifiedArray<ID, Element.State>>,
+    action toElementAction: CasePath<Action, (ID, Element.Action)>,
+    @ReducerBuilder _ element: () -> Element
+  ) -> ForEachReducer<Self, ID, Element> {
+    .init(
+      parent: self,
       toElementsState: toElementsState,
       toElementAction: toElementAction,
-      element: self
+      element: element()
     )
   }
 }
-
-public struct ForEachReducer<State, Action, ID: Hashable, Element: ReducerProtocol>: ReducerProtocol
+public struct ForEachReducer<
+  Parent: ReducerProtocol,
+  ID: Hashable,
+  Element: ReducerProtocol
+>: ReducerProtocol
 {
-  let toElementsState: WritableKeyPath<State, IdentifiedArray<ID, Element.State>>
-  let toElementAction: CasePath<Action, (ID, Element.Action)>
-  let element: Element
+  public let parent: Parent
+  public let toElementsState: WritableKeyPath<Parent.State, IdentifiedArray<ID, Element.State>>
+  public let toElementAction: CasePath<Action, (ID, Element.Action)>
+  public let element: Element
 
-  public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    guard let (id, elementAction) = toElementAction.extract(from: action) else { return .none }
-    if state[keyPath: toElementsState][id: id] == nil {
+  public func reduce(
+    into state: inout Parent.State,
+    action: Parent.Action
+  ) -> Effect<Parent.Action, Never> {
+    return .merge(
+      self.reduceForEach(into: &state, action: action),
+      self.parent.reduce(into: &state, action: action)
+    )
+  }
+
+  func reduceForEach(
+    into state: inout Parent.State, action: Parent.Action
+  ) -> Effect<Parent.Action, Never> {
+    guard let (id, elementAction) = self.toElementAction.extract(from: action) else { return .none }
+    if state[keyPath: self.toElementsState][id: id] == nil {
+      // TODO: Update language
       runtimeWarning(
         """
         A "forEach" reducer received an action when state contained no element with that id.
@@ -185,14 +216,10 @@ public struct ForEachReducer<State, Action, ID: Hashable, Element: ReducerProtoc
       return .none
     }
     return self.element
-      .reduce(
-        into: &state[keyPath: toElementsState][id: id]!,
-        action: elementAction
-      )
-      .map { toElementAction.embed((id, $0)) }
+      .reduce(into: &state[keyPath: self.toElementsState][id: id]!, action: elementAction)
+      .map { self.toElementAction.embed((id, $0)) }
   }
 }
-
 
 public struct Reduce<State, Action>: ReducerProtocol {
   let reduce: (inout State, Action) -> Effect<Action, Never>
@@ -290,3 +317,35 @@ let reducer = CombineReducers {
  )
 
  */
+
+extension ReducerProtocol {
+  public func ifLet<Child: ReducerProtocol>(
+    state toChildState: WritableKeyPath<State, Child.State?>,
+    action toChildAction: CasePath<Action, Child.Action>,
+    @ReducerBuilder child: () -> Child
+  ) -> IfLetReducer<Self, Child> {
+    .init(
+      parent: self,
+      child: child(),
+      toChildState: toChildState,
+      toChildAction: toChildAction
+    )
+  }
+}
+
+public struct IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: ReducerProtocol {
+  let parent: Parent
+  let child: Child
+  let toChildState: WritableKeyPath<Parent.State, Child.State?>
+  let toChildAction: CasePath<Parent.Action, Child.Action>
+
+  public func reduce(into state: inout Parent.State, action: Parent.Action) -> Effect<Parent.Action, Never> {
+    CombineReducers {
+      Scope(state: self.toChildState, action: self.toChildAction) {
+        self.child.optional()
+      }
+      self.parent
+    }
+    .reduce(into: &state, action: action)
+  }
+}

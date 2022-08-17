@@ -124,14 +124,25 @@ struct AppReducer: ReducerProtocol {
     Self.core.reduce(into: &state, action: action)
   }
   static let core = CombineReducers {
-    TabA()
-      .pullback(state: \State.tabA, action: /Action.tabA)
+    Reduce<State, Action> { _, _ in
+      .none
+    }
 
-    TabB()
-      .pullback(state: \State.tabB, action: /Action.tabB)
+    Scope(state: \State.tabA, action: /Action.tabA) {
+      TabA()
+    }
 
-    TabC()
-      .pullback(state: \State.tabC, action: /Action.tabC)
+    Scope(state: \State.tabB, action: /Action.tabB) {
+      TabB()
+    }
+
+    Scope(state: \State.tabC, action: /Action.tabC) {
+      TabC()
+    }
+
+    Reduce<State, Action> { _, _ in
+      .none
+    }
   }
 }
 
