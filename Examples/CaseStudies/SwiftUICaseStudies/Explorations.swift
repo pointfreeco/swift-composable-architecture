@@ -110,10 +110,6 @@ struct TabC: ReducerProtocol {
 }
 
 struct AppReducer: ReducerProtocol {
-//  func reduce(into state: inout State, action: Action) -> ComposableArchitecture.Effect<Action, Never> {
-//    <#code#>
-//  }
-
   struct State {
     var tabA: TabA.State
     var tabB: TabB.State
@@ -126,9 +122,7 @@ struct AppReducer: ReducerProtocol {
   }
 
   var body: some ReducerProtocol<State, Action> {
-    Reduce { _, _ in
-      .none
-    }
+    Reduce { _, _ in .none }
 
     Scope(state: \.tabA, action: /Action.tabA) {
       TabA()
@@ -142,11 +136,20 @@ struct AppReducer: ReducerProtocol {
       TabC()
     }
 
-    Reduce { _, _ in
-      .none
-    }
+    Reduce { _, _ in .none }
   }
 }
+
+let statement1 = ReducerBuilder<AppReducer.State, AppReducer.Action>.buildExpression(Scope(state: \.tabA, action: /AppReducer.Action.tabA) {
+  TabA()
+})
+let block1 = ReducerBuilder<AppReducer.State, AppReducer.Action>.buildPartialBlock(first: statement1)
+
+let statement2 = ReducerBuilder<AppReducer.State, AppReducer.Action>.buildExpression(Scope(state: \.tabB, action: /AppReducer.Action.tabB) {
+  TabB()
+})
+let block2 = ReducerBuilder<AppReducer.State, AppReducer.Action>.buildPartialBlock(accumulated: block1, next: statement2)
+
 
 
 import SwiftUI
@@ -238,17 +241,17 @@ Parse(User.init(id:name:)) {
  )
  */
 
-//let appReducer = Reducer<_, _, AppEnvironment>.combine(
+//let appReducer = Reducer<_, AppAction, _>.combine(
 //  Reducer { _, _, _ in
 //    // additional logic
 //    .none
 //  },
 //  tabAReducer
-//    .pullback(state: \.tabA, action: /AppAction.tabA, environment: { _ in .init() }),
+//    .pullback(state: \AppState.tabA, action: /AppAction.tabA, environment: { (_: AppEnvironment) in .init() }),
 //  tabBReducer
 //    .pullback(state: \.tabB, action: /AppAction.tabB, environment: { _ in .init() }),
 //  tabCReducer
-//    .pullback(state: \AppState.tabC, action: /AppAction.tabC, environment: { _ in .init() }),
+//    .pullback(state: \.tabC, action: /AppAction.tabC, environment: { _ in .init() }),
 //  Reducer { _, _, _ in
 //    // additional logic
 //    .none

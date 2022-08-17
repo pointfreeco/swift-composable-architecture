@@ -17,7 +17,7 @@ public protocol ReducerProtocol<State, Action> {
   associatedtype Action
   associatedtype Body
 
-  @ReducerBuilder
+  @ReducerBuilder<State, Action>
   var body: Body { get }
 
   func reduce(
@@ -134,7 +134,7 @@ public struct Scope<ParentState, ParentAction, Child: ReducerProtocol>: ReducerP
   public init(
     state toChildState: WritableKeyPath<ParentState, Child.State>,
     action toChildAction: CasePath<ParentAction, Child.Action>,
-    @ReducerBuilder child: () -> Child
+    @ReducerBuilderOf<Child> child: () -> Child
   ) {
     self.toChildState = toChildState
     self.toChildAction = toChildAction
@@ -194,7 +194,7 @@ extension ReducerProtocol {
   public func forEach<ID: Hashable, Element: ReducerProtocol>(
     state toElementsState: WritableKeyPath<State, IdentifiedArray<ID, Element.State>>,
     action toElementAction: CasePath<Action, (ID, Element.Action)>,
-    @ReducerBuilder _ element: () -> Element
+    @ReducerBuilderOf<Element> _ element: () -> Element
   ) -> ForEachReducer<Self, ID, Element> {
     .init(
       parent: self,
@@ -258,21 +258,30 @@ public struct Reduce<State, Action>: ReducerProtocol {
 
 
 @resultBuilder
-public enum ReducerBuilder {
-  public static func buildPartialBlock<R: ReducerProtocol>(first: R) -> R {
+public enum ReducerBuilder<State, Action> {
+  public static func buildPartialBlock<R: ReducerProtocol<State, Action>>(first: R) -> R {
     first
   }
-  public static func buildPartialBlock<R0: ReducerProtocol, R1: ReducerProtocol>(
+  public static func buildPartialBlock<
+    R0: ReducerProtocol<State, Action>,
+    R1: ReducerProtocol<State, Action>
+  >(
     accumulated r0: R0,
     next r1: R1
   ) -> CombineReducer<R0, R1> {
     .init(lhs: r0, rhs: r1)
   }
+
+  public static func buildExpression<R: ReducerProtocol<State, Action>>(_ expression: R) -> R {
+    expression
+  }
 }
+
+public typealias ReducerBuilderOf<R: ReducerProtocol> = ReducerBuilder<R.State, R.Action>
 
 public struct CombineReducers<R: ReducerProtocol>: ReducerProtocol {
   let reducer: R
-  public init(@ReducerBuilder build: () -> R) {
+  public init(@ReducerBuilderOf<R> build: () -> R) {
     self.reducer = build()
   }
   public func reduce(into state: inout R.State, action: R.Action) -> Effect<R.Action, Never> {
@@ -345,7 +354,7 @@ extension ReducerProtocol {
   public func ifLet<Child: ReducerProtocol>(
     state toChildState: WritableKeyPath<State, Child.State?>,
     action toChildAction: CasePath<Action, Child.Action>,
-    @ReducerBuilder child: () -> Child
+    @ReducerBuilderOf<Child> child: () -> Child
   ) -> IfLetReducer<Self, Child> {
     .init(
       parent: self,
