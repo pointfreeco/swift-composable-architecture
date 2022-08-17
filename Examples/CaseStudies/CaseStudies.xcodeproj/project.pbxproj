@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2A51CFCC28AD3A0F00D315DA /* Explorations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A51CFCB28AD3A0F00D315DA /* Explorations.swift */; };
 		4F5AC11F24ECC7E4009DC50B /* 01-GettingStarted-SharedStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5AC11E24ECC7E4009DC50B /* 01-GettingStarted-SharedStateTests.swift */; };
 		CA0C0C4724B89BEC00CBDD8A /* 04-HigherOrderReducers-LifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0C0C4624B89BEC00CBDD8A /* 04-HigherOrderReducers-LifecycleTests.swift */; };
 		CA0C51FB245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0C51FA245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift */; };
@@ -151,6 +152,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2A51CFCB28AD3A0F00D315DA /* Explorations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Explorations.swift; sourceTree = "<group>"; };
 		4F5AC11E24ECC7E4009DC50B /* 01-GettingStarted-SharedStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-SharedStateTests.swift"; sourceTree = "<group>"; };
 		CA0C0C4624B89BEC00CBDD8A /* 04-HigherOrderReducers-LifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-LifecycleTests.swift"; sourceTree = "<group>"; };
 		CA0C51FA245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift"; sourceTree = "<group>"; };
@@ -426,6 +428,7 @@
 				DC89C41C24460F96006900B9 /* Assets.xcassets */,
 				CA6AC25F2451131C00C71CB3 /* 04-HigherOrderReducers-ResuableOfflineDownloads */,
 				DC89C44524461416006900B9 /* Internal */,
+				2A51CFCB28AD3A0F00D315DA /* Explorations.swift */,
 			);
 			path = SwiftUICaseStudies;
 			sourceTree = "<group>";
@@ -741,6 +744,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2A51CFCC28AD3A0F00D315DA /* Explorations.swift in Sources */,
 				DC89C449244618D5006900B9 /* 03-Navigation-LoadThenNavigate.swift in Sources */,
 				DCC68EE12447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift in Sources */,
 				DC072322244663B1003A8B65 /* 03-Navigation-Sheet-LoadThenPresent.swift in Sources */,
