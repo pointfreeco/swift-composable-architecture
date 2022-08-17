@@ -13,19 +13,6 @@ private let readMe = """
   rows.
   """
 
-extension AnyReducer {
-  static func recurse(
-    _ reducer: @escaping (Self, inout State, Action, Environment) -> Effect<Action, Never>
-  ) -> Self {
-
-    var `self`: Self!
-    self = Self { state, action, environment in
-      reducer(self, &state, action, environment)
-    }
-    return self
-  }
-}
-
 struct Nested: ReducerProtocol {
   struct State: Equatable, Identifiable {
     var children: IdentifiedArrayOf<State> = []
