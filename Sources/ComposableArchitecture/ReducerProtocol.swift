@@ -6,14 +6,37 @@
  }
  */
 
+import SwiftUI
+func foo() {
+  (Text("") as any View).body
+  let tmp = Text._makeView
+}
+
 public protocol ReducerProtocol {
   associatedtype State
   associatedtype Action
+  associatedtype Body
+
+  @ReducerBuilder
+  var body: Body { get }
 
   func reduce(
     into state: inout State,
     action: Action
   ) -> Effect<Action, Never>
+}
+
+extension ReducerProtocol where Body == Never {
+  public var body: Body {
+    fatalError("Body of \(Self.self) should not be called.")
+  }
+}
+extension ReducerProtocol where
+Body: ReducerProtocol, Body.State == State, Body.Action == Action
+{
+  public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    self.body.reduce(into: &state, action: action)
+  }
 }
 
 public struct EmptyReducer<State, Action>: ReducerProtocol {

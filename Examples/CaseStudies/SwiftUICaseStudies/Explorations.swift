@@ -110,6 +110,10 @@ struct TabC: ReducerProtocol {
 }
 
 struct AppReducer: ReducerProtocol {
+//  func reduce(into state: inout State, action: Action) -> ComposableArchitecture.Effect<Action, Never> {
+//    <#code#>
+//  }
+
   struct State {
     var tabA: TabA.State
     var tabB: TabB.State
@@ -120,10 +124,7 @@ struct AppReducer: ReducerProtocol {
     case tabB(TabB.Action)
     case tabC(TabC.Action)
   }
-  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    Self.core.reduce(into: &state, action: action)
-  }
-  static let core = CombineReducers {
+  var body: some ReducerProtocol {
     Reduce<State, Action> { _, _ in
       .none
     }
@@ -142,6 +143,18 @@ struct AppReducer: ReducerProtocol {
 
     Reduce<State, Action> { _, _ in
       .none
+    }
+  }
+}
+
+
+import SwiftUI
+struct SomeView: View {
+  var body: VStack<TupleView<(Text, TextField<Text>, Button<Text>)>> {
+    VStack {
+      Text("Login")
+      TextField("Email", text: .constant(""))
+      Button("Go") {}
     }
   }
 }
