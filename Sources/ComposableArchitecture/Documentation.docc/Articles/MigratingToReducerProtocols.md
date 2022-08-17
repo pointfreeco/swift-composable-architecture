@@ -1,6 +1,7 @@
 # Migrating to protocol reducers
 
-Learn how to migrate existing applications to use the new `ReducerProtocol`, in both Swift 5.7 and Swift 5.6.
+Learn how to migrate existing applications to use the new `ReducerProtocol`, in both Swift 5.7 and
+Swift 5.6.
 
 The ``ReducerProtocol`` makes use of many new features of Swift 5.7, including primary associated 
 types and constrained opaque types. If you are already using Swift 5.7+, then you can start making 
@@ -10,12 +11,12 @@ use of these features right away. If you are using Swift 5.6 then you can still 
 ## Migration using Swift 5.7
 
 The ``Reducer`` type that allows you to construct a reducer from a closure, and has been around 
-since the very first version of the libray, is now officially considered "soft-deprecated." This 
+since the very first version of the library, is now officially considered "soft-deprecated." This 
 means that it will not show deprecation warnings in your code yet, but some day in the future we 
 will mark it deprecated, and then someday later remove the type from the library. This process will 
 take place over a long period of time, giving everyone enough time to migrate their applications.
 
-There are a few strategies you can follow to slowly convert all usages of ``Reducer`` to the new 
+There are a few strategies you can follow to slowly convert all usages of ``Reducer`` to the new
 protocol-style reducers. It does not need to be done all at once, and instead can be done in a 
 piecemeal fashion.
 
@@ -26,19 +27,26 @@ do not compose multiple reducers at once. For example, suppose you have a featur
 dependencies like this:
 
 ```swift
-struct FeatureAState { … }
-enum FeatureAAction { … }
-struct FeatureAEnvironment {
+struct MyFeatureState {
+  // ...
+}
+
+enum MyFeatureAction {
+  // ...
+}
+
+struct MyFeatureEnvironment {
   var apiClient: APIClient
   var date: () -> Date
 }
-let featureAReducer = Reducer<
-  FeatureAState, 
-  FeatureAAction,
-  FeatureAEnvironment
+
+let myFeatureReducer = Reducer<
+  MyFeatureState,
+  MyFeatureAction,
+  MyFeatureEnvironment
 > { state, action, environment in
   switch action {
-    …
+  // ...
   }
 }
 ```
@@ -56,15 +64,21 @@ method.
 Performing these 4 steps on the feature produces the following:
 
 ```swift
-struct FeatureA: ReducerProtocol {
-  struct State { … }
-  enum Action { … }
+struct MyFeature: ReducerProtocol {
+  struct State {
+    // ...
+  }
+
+  enum Action {
+    // ...
+  }
+
   let apiClient: APIClient
   let date: () -> Date
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {
-      …
+    // ...
     }
   }
 }
@@ -76,20 +90,23 @@ parent feature that embeds this child feature into it:
 
 ```swift
 struct ParentState { 
-  var featureA: FeatureAState
-  …
+  var myFeature: MyFeatureState
+  // ...
 }
+
 enum ParentAction {
-  case featureA(FeatureAAction)
-  …
+  case myFeature(MyFeatureAction)
+  // ...
 }
+
 struct ParentEnvironment {
   var date: () -> Date
   var dependency: Dependency
-  …
+  // ...
 }
+
 let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
-  featureAReducer
+  myFeatureReducer
     .pullback(
       state: \.featureA, 
       action: /ParentAction.featureA, 
@@ -99,7 +116,7 @@ let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combin
     ),
 
   Reducer { state, action, environment in 
-    …
+    // ...
   }
 )
 ```
@@ -109,12 +126,13 @@ the state and action types:
 
 ```swift
 struct ParentState { 
-  var featureA: FeatureA.State
-  …
+  var myFeature: MyFeature.State
+  // ...
 }
+
 enum ParentAction {
-  case featureA(FeatureA.Action)
-  …
+  case myFeature(MyFeature.Action)
+  // ...
 }
 ```
 
@@ -126,7 +144,7 @@ are to return a protocol-style reducer:
 ```swift
 let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
   AnyReducer { 
-    FeatureA(
+    MyFeature(
       apiClient: $0.apiClient,
       date: $0.date
     )
@@ -135,7 +153,7 @@ let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combin
   },
 
   Reducer { state, action, environment in 
-    …
+    // ...
   }
 )
 ```
@@ -153,25 +171,23 @@ Suppose that all of the tab features have already be converted to the protocol-s
 
 ```swift
 struct TabA: ReducerProtocol {
-  struct State { … }
-  enum Action { … }
+  struct State {
+    // ...
+  }
+  enum Action {
+    // ...
+  }
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    …
+    // ...
   }
 }
+
 struct TabB: ReducerProtocol {
-  struct State { … }
-  enum Action { … }
-  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    …
-  }
+  // ...
 }
+
 struct TabC: ReducerProtocol {
-  struct State { … }
-  enum Action { … }
-  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    …
-  }
+  // ...
 }
 ```
 
@@ -184,18 +200,21 @@ struct AppState {
   var tabB: TabBState
   var tabC: TabCState
 }
+
 enum AppAction {
   case tabA(TabAAction)
   case tabB(TabBAction)
   case tabC(TabCAction)
 }
+
 struct AppEnvironment {}
+
 let appReducer = Reducer<
   AppState, 
   AppAction, 
   AppEnvironment
 > { state, action, environment in 
-  …
+  // ...
 }
 ```
 
@@ -207,15 +226,17 @@ protocol to describe how to compose multiple reducers:
 ```swift
 struct AppReducer: ReducerProtocol {
   struct State {
-    var tabA: TabAState
-    var tabB: TabBState
-    var tabC: TabCState
+    var tabA: TabA.State
+    var tabB: TabB.State
+    var tabC: TabC.State
   }
+
   enum Action {
-    case tabA(TabAAction)
-    case tabB(TabBAction)
-    case tabC(TabCAction)
+    case tabA(TabA.Action)
+    case tabB(TabB.Action)
+    case tabC(TabC.Action)
   }
+
   var body: some ReducerProtocol<State, Action> {
     Scope(state: \.tabA, action: /Action.tabA) {
       TabA()
@@ -230,7 +251,7 @@ struct AppReducer: ReducerProtocol {
 }
 ```
 
-With those few small changes we have now converted a composition of many reducres into the new 
+With those few small changes we have now converted a composition of many reducers into the new
 protocol-style.
 
 ### Dependencies
@@ -238,10 +259,10 @@ protocol-style.
 In the previous sections we inlined all dependencies directly into the conforming type:
 
 ```swift
-struct FeatureA: ReducerProtocol {
+struct MyFeature: ReducerProtocol {
   let apiClient: APIClient
   let date: () -> Date
-  …
+  // ...
 }
 ```
 
@@ -249,16 +270,16 @@ But this means that you must explicitly thread all dependencies from the root of
 through to every child feature. This can be arduous and make it difficult to add, remove or change
 dependencies.
 
-The library comes with a tool for managing dependences in a more ergonomic manner, and even comes
+The library comes with a tool for managing dependencies in a more ergonomic manner, and even comes
 with some common dependencies pre-integrated allowing you to access them with no additional work.
 For example, the `date` dependency ships with the library so that you can declare your feature's
 dependence on that functionality in the following way:
 
 ```swift
-struct FeatureA: ReducerProtocol {
+struct MyFeature: ReducerProtocol {
   let apiClient: APIClient
   @Dependency(\.date) var date
-  …
+  // ...
 }
 ```
 
@@ -284,10 +305,10 @@ With that work done you can access the dependency from any feature's reducer usi
 property wrapper:
 
 ```swift
-struct FeatureA: ReducerProtocol {
+struct MyFeature: ReducerProtocol {
   @Dependency(\.apiClient) apiClient
   @Dependency(\.date) var date
-  …
+  // ...
 }
 ```
 
@@ -298,15 +319,13 @@ our <doc:Testing> article.
 
 The migration strategy described above for Swift 5.7 also applies to applications that are still 
 using Xcode 13 and Swift 5.6, but with one small change. When conforming your types to the 
-``ReducerProtocol`` you are not allowed to use the `some ReducerProtocol<State, Action>` sytnax 
-because that is only available in Swift 5.7. Instead, you must specify ``Reduce``​`<State, Action>` 
+``ReducerProtocol`` you are not allowed to use the `some ReducerProtocol<State, Action>` syntax
+because that is only available in Swift 5.7. Instead, you must specify `Reduce<State, Action>`
 as the type of the `body` property:
 
 ```swift
 struct AppReducer: ReducerProtocol {
-  struct State { … }
-  enum Action { … }
-
+  // ...
   var body: Reduce<State, Action> {
     FeatureA()
     FeatureB()
@@ -316,7 +335,7 @@ struct AppReducer: ReducerProtocol {
 ```
 
 The ``Reduce`` type is like a type-erased reducer that allows you to construct a reducer from a 
-closure. In Swift 5.6, the @``ReducerBuilder`` will automatically erase the reducer you build for 
+closure. In Swift 5.6, the ``ReducerBuilder`` will automatically erase the reducer you build for 
 you so that you do not have to worry about specifying its type explicitly. This may come with a 
 slight performance cost compared to using full opaque types for `body`, but should be of comparable 
 performance to reducers using the ``Reducer`` type, which is now soft-deprecated.
