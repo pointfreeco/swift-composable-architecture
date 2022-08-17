@@ -88,3 +88,32 @@ let reducer = Counter()
   .combine(with: Counter())
   .combine(with: Counter())
 // let reducer: CombineReducer<CombineReducer<CombineReducer<Counter, Counter>, Counter>, Counter>
+
+extension ReducerProtocol {
+  public func pullback<ParentState, ParentAction>(
+    state toChildState: WritableKeyPath<ParentState, State>,
+    action toChildAction: CasePath<ParentAction, Action>
+  ) -> PullbackReducer<ParentState, ParentAction, Self> {
+    PullbackReducer(
+      toChildState: toChildState,
+      toChildAction: toChildAction,
+      child: self
+    )
+  }
+}
+
+public struct PullbackReducer<ParentState, ParentAction, Child: ReducerProtocol>: ReducerProtocol {
+  let toChildState: WritableKeyPath<ParentState, Child.State>
+  let toChildAction: CasePath<ParentAction, Child.Action>
+  let child: Child
+
+  public func reduce(
+    into state: inout ParentState, action: ParentAction
+  ) -> Effect<ParentAction, Never> {
+    guard let childAction = self.toChildAction.extract(from: action)
+    else { return .none }
+    return self.child
+      .reduce(into: &state[keyPath: self.toChildState], action: childAction)
+      .map(self.toChildAction.embed)
+  }
+}
