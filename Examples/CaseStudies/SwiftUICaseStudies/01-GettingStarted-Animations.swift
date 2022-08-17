@@ -40,6 +40,10 @@ struct AnimationsEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
+func f() {
+  let x = 1
+}
+
 let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnvironment> {
   state, action, environment in
   enum CancelID {}
@@ -55,6 +59,8 @@ let animationsReducer = Reducer<AnimationsState, AnimationsAction, AnimationsEnv
 
   case .rainbowButtonTapped:
     return .run { send in
+      let x = 1
+//      environment.mainQueue.slee
       for color in [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .black] {
         await send(.setColor(color), animation: .linear)
         try await environment.mainQueue.sleep(for: 1)
