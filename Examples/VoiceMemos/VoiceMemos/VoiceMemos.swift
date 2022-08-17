@@ -31,24 +31,24 @@ struct VoiceMemos: ReducerProtocol {
   var uuid: @Sendable () -> UUID
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    RecordingMemo(
-      audioRecorder: self.audioRecorder,
-      mainRunLoop: self.mainRunLoop
-    )
-    .optional()
-    .pullback(state: \.recordingMemo, action: /Action.recordingMemo)
-    .combine(
-      with: VoiceMemo(
+    CombineReducers {
+      RecordingMemo(
+        audioRecorder: self.audioRecorder,
+        mainRunLoop: self.mainRunLoop
+      )
+      .optional()
+      .pullback(state: \State.recordingMemo, action: /Action.recordingMemo)
+
+      VoiceMemo(
         audioPlayer: self.audioPlayer,
         mainRunLoop: self.mainRunLoop
       )
       .forEach(
-        state: \.voiceMemos,
+        state: \State.voiceMemos,
         action: /Action.voiceMemo(id:action:)
       )
-    )
-    .combine(
-      with: Reduce { state, action in
+
+      Reduce<State, Action> { state, action in
         switch action {
         case .alertDismissed:
           state.alert = nil
@@ -133,7 +133,7 @@ struct VoiceMemos: ReducerProtocol {
           return .none
         }
       }
-    )
+    }
     .reduce(into: &state, action: action)
   }
 }

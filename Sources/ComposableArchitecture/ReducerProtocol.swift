@@ -83,10 +83,10 @@ where LHS.State == RHS.State, LHS.Action == RHS.Action
   }
 }
 
-let reducer = Counter()
-  .combine(with: Counter())
-  .combine(with: Counter())
-  .combine(with: Counter())
+//let reducer = Counter()
+//  .combine(with: Counter())
+//  .combine(with: Counter())
+//  .combine(with: Counter())
 // let reducer: CombineReducer<CombineReducer<CombineReducer<Counter, Counter>, Counter>, Counter>
 
 extension ReducerProtocol {
@@ -205,3 +205,88 @@ public struct Reduce<State, Action>: ReducerProtocol {
     self.reduce(&state, action)
   }
 }
+
+
+@resultBuilder
+public enum ReducerBuilder {
+  public static func buildPartialBlock<R: ReducerProtocol>(first: R) -> R {
+    first
+  }
+  public static func buildPartialBlock<R0: ReducerProtocol, R1: ReducerProtocol>(
+    accumulated r0: R0,
+    next r1: R1
+  ) -> CombineReducer<R0, R1> {
+    .init(lhs: r0, rhs: r1)
+  }
+}
+
+public struct CombineReducers<R: ReducerProtocol>: ReducerProtocol {
+  let reducer: R
+  public init(@ReducerBuilder build: () -> R) {
+    self.reducer = build()
+  }
+  public func reduce(into state: inout R.State, action: R.Action) -> Effect<R.Action, Never> {
+    self.reducer.reduce(into: &state, action: action)
+  }
+}
+
+let reducer = CombineReducers {
+  Counter()
+  Counter()
+  Counter()
+  Counter()
+  Counter()
+  Counter()
+  Counter()
+  Counter()
+  Counter()
+  Counter()
+  Counter()
+  Counter()
+  Counter()
+  Counter()
+  Counter()
+  Counter()
+  Counter()
+}
+
+/*
+
+ a
+ b
+ c
+ buildBlock(a, b, c)
+
+ if condition {
+   a
+ }
+ buildOptional(a)
+
+ if condition {
+   a
+ } else {
+   b
+ }
+ buildEither(first: a)
+ buildEither(second: b)
+
+
+ a
+ buildPartialBlock(first: a)
+ b
+ buildPartialBlock(accumulated: buildPartialBlock(first: a), next: b)
+ c
+ buildPartialBlock(accumulated: buildPartialBlock(accumulated: buildPartialBlock(first: a), next: b), next: c)
+ d
+ buildPartialBlock(
+   accumulated: buildPartialBlock(
+     accumulated: buildPartialBlock(
+       accumulated: buildPartialBlock(first: a),
+       next: b
+     ),
+     next: c
+   ),
+   next: d
+ )
+
+ */

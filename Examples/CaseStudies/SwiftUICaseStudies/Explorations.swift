@@ -123,16 +123,16 @@ struct AppReducer: ReducerProtocol {
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     Self.core.reduce(into: &state, action: action)
   }
-  static let core = TabA()
-    .pullback(state: \State.tabA, action: /Action.tabA)
-    .combine(
-      with: TabB()
-        .pullback(state: \.tabB, action: /Action.tabB)
-    )
-    .combine(
-      with: TabC()
-        .pullback(state: \.tabC, action: /Action.tabC)
-    )
+  static let core = CombineReducers {
+    TabA()
+      .pullback(state: \State.tabA, action: /Action.tabA)
+
+    TabB()
+      .pullback(state: \State.tabB, action: /Action.tabB)
+
+    TabC()
+      .pullback(state: \State.tabC, action: /Action.tabC)
+  }
 }
 
 /*
@@ -143,6 +143,59 @@ struct AppReducer: ReducerProtocol {
   >,
   PullbackReducer<AppState, AppAction, TabC>
  >
+ */
+
+/*
+ CombineReducers(
+   Counter(),
+   Counter(),
+   Counter()
+ )
+*/
+
+//struct Combine3Reducers<R1, R2, R3>: ReducerProtocol {
+//
+//}
+//struct Combine4Reducers<R1, R2, R3>: ReducerProtocol {
+//
+//}
+//struct Combine5Reducers<R1, R2, R3>: ReducerProtocol {
+//
+//}
+//
+//Combine5Reducers(
+//  Counter(),
+//  Counter(),
+//  Counter(),
+//  Counter(),
+//  Counter()
+//)
+
+/*
+
+StartsWith("(")
+  .take(Int.parser())
+  .skip(StartsWith(","))
+  .take(Prefix { $0 != ")")
+  .skip(")")
+  .map(User.init(id:name:))
+
+
+Parse(User.init(id:name:)) {
+  "("
+  Int.parser()
+  ","
+  Prefix { $0 != ")" }
+  ")"
+}
+
+
+ CombineReducers {
+   Counter()
+   Counter()
+   Counter()
+ }
+
  */
 
 //struct CombineReducers<???>: ReducerProtocol {
