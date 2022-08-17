@@ -32,8 +32,7 @@ struct RootView: View {
     initialState: AppState(),
     reducer: appReducer,
     environment: AppEnvironment(
-      authenticationClient: .live,
-      mainQueue: .main
+      authenticationClient: .live
     )
   )
 
@@ -56,7 +55,7 @@ struct RootView: View {
           UIKitAppView(store: self.store)
         }
       }
-      .navigationBarTitle("Tic-Tac-Toe")
+      .navigationTitle("Tic-Tac-Toe")
     }
     .navigationViewStyle(.stack)
   }

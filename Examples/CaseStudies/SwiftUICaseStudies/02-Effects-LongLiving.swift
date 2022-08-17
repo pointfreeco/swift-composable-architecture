@@ -4,14 +4,15 @@ import SwiftUI
 
 private let readMe = """
   This application demonstrates how to handle long-living effects, for example notifications from \
-  Notification Center.
+  Notification Center, and how to tie an effect's lifetime to the lifetime of the view.
 
   Run this application in the simulator, and take a few screenshots by going to \
   *Device › Screenshot* in the menu, and observe that the UI counts the number of times that \
   happens.
 
   Then, navigate to another screen and take screenshots there, and observe that this screen does \
-  *not* count those screenshots.
+  *not* count those screenshots. The notifications effect is automatically cancelled when leaving \
+  the screen, and restarted when entering the screen.
   """
 
 // MARK: - Application domain
@@ -21,13 +22,12 @@ struct LongLivingEffectsState: Equatable {
 }
 
 enum LongLivingEffectsAction {
+  case task
   case userDidTakeScreenshotNotification
-  case onAppear
-  case onDisappear
 }
 
 struct LongLivingEffectsEnvironment {
-  var notificationCenter: NotificationCenter
+  var screenshots: @Sendable () async -> AsyncStream<Void>
 }
 
 // MARK: - Business logic
@@ -35,24 +35,18 @@ struct LongLivingEffectsEnvironment {
 let longLivingEffectsReducer = Reducer<
   LongLivingEffectsState, LongLivingEffectsAction, LongLivingEffectsEnvironment
 > { state, action, environment in
-
-  enum UserDidTakeScreenshotNotificationId {}
-
   switch action {
+  case .task:
+    // When the view appears, start the effect that emits when screenshots are taken.
+    return .run { send in
+      for await _ in await environment.screenshots() {
+        await send(.userDidTakeScreenshotNotification)
+      }
+    }
+
   case .userDidTakeScreenshotNotification:
     state.screenshotCount += 1
     return .none
-
-  case .onAppear:
-    // When the view appears, start the effect that emits when screenshots are taken.
-    return environment.notificationCenter
-      .publisher(for: UIApplication.userDidTakeScreenshotNotification)
-      .eraseToEffect { _ in LongLivingEffectsAction.userDidTakeScreenshotNotification }
-      .cancellable(id: UserDidTakeScreenshotNotificationId.self)
-
-  case .onDisappear:
-    // When view disappears, stop the effect.
-    return .cancel(id: UserDidTakeScreenshotNotificationId.self)
   }
 }
 
@@ -64,10 +58,12 @@ struct LongLivingEffectsView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(template: readMe, .body)) {
-          Text("A screenshot of this screen has been taken \(viewStore.screenshotCount) times.")
-            .font(.headline)
+        Section {
+          AboutView(readMe: readMe)
         }
+
+        Text("A screenshot of this screen has been taken \(viewStore.screenshotCount) times.")
+          .font(.headline)
 
         Section {
           NavigationLink(destination: self.detailView) {
@@ -75,9 +71,8 @@ struct LongLivingEffectsView: View {
           }
         }
       }
-      .navigationBarTitle("Long-living effects")
-      .onAppear { viewStore.send(.onAppear) }
-      .onDisappear { viewStore.send(.onDisappear) }
+      .navigationTitle("Long-living effects")
+      .task { await viewStore.send(.task).finish() }
     }
   }
 
@@ -89,6 +84,7 @@ struct LongLivingEffectsView: View {
       """
     )
     .padding(.horizontal, 64)
+    .navigationBarTitleDisplayMode(.inline)
   }
 }
 
@@ -101,7 +97,7 @@ struct EffectsLongLiving_Previews: PreviewProvider {
         initialState: LongLivingEffectsState(),
         reducer: longLivingEffectsReducer,
         environment: LongLivingEffectsEnvironment(
-          notificationCenter: .default
+          screenshots: { .init { _ in } }
         )
       )
     )

@@ -2,6 +2,7 @@ import Combine
 import ComposableArchitecture
 import XCTest
 
+@MainActor
 final class ViewStoreTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
@@ -168,71 +169,122 @@ final class ViewStoreTests: XCTestCase {
     XCTAssertNoDifference(results, Array(repeating: [0, 1, 2], count: 10).flatMap { $0 })
   }
 
-  #if canImport(_Concurrency) && compiler(>=5.5.2)
-    func testSendWhile() {
-      let expectation = self.expectation(description: "await")
-      Task { @MainActor in
-        enum Action {
-          case response
-          case tapped
-        }
-        let reducer = Reducer<Bool, Action, Void> { state, action, environment in
-          switch action {
-          case .response:
-            state = false
-            return .none
-          case .tapped:
-            state = true
-            return Effect(value: .response)
-              .receive(on: DispatchQueue.main)
-              .eraseToEffect()
-          }
-        }
-
-        let store = Store(initialState: false, reducer: reducer, environment: ())
-        let viewStore = ViewStore(store)
-
-        XCTAssertNoDifference(viewStore.state, false)
-        await viewStore.send(.tapped, while: { $0 })
-        XCTAssertNoDifference(viewStore.state, false)
-        expectation.fulfill()
+  func testSendWhile() {
+    let expectation = self.expectation(description: "await")
+    Task {
+      enum Action {
+        case response
+        case tapped
       }
-      self.wait(for: [expectation], timeout: 1)
-    }
-
-    func testSuspend() {
-      let expectation = self.expectation(description: "await")
-      Task { @MainActor in
-        enum Action {
-          case response
-          case tapped
+      let reducer = Reducer<Bool, Action, Void> { state, action, environment in
+        switch action {
+        case .response:
+          state = false
+          return .none
+        case .tapped:
+          state = true
+          return Effect(value: .response)
+            .receive(on: DispatchQueue.main)
+            .eraseToEffect()
         }
-        let reducer = Reducer<Bool, Action, Void> { state, action, environment in
-          switch action {
-          case .response:
-            state = false
-            return .none
-          case .tapped:
-            state = true
-            return Effect(value: .response)
-              .receive(on: DispatchQueue.main)
-              .eraseToEffect()
-          }
-        }
-
-        let store = Store(initialState: false, reducer: reducer, environment: ())
-        let viewStore = ViewStore(store)
-
-        XCTAssertNoDifference(viewStore.state, false)
-        viewStore.send(.tapped)
-        XCTAssertNoDifference(viewStore.state, true)
-        await viewStore.yield(while: { $0 })
-        XCTAssertNoDifference(viewStore.state, false)
-        expectation.fulfill()
       }
-      self.wait(for: [expectation], timeout: 1)
+
+      let store = Store(initialState: false, reducer: reducer, environment: ())
+      let viewStore = ViewStore(store)
+
+      XCTAssertNoDifference(viewStore.state, false)
+      await viewStore.send(.tapped, while: { $0 })
+      XCTAssertNoDifference(viewStore.state, false)
+      expectation.fulfill()
     }
-  #endif
+    self.wait(for: [expectation], timeout: 1)
+  }
+
+  func testSuspend() {
+    let expectation = self.expectation(description: "await")
+    Task {
+      enum Action {
+        case response
+        case tapped
+      }
+      let reducer = Reducer<Bool, Action, Void> { state, action, environment in
+        switch action {
+        case .response:
+          state = false
+          return .none
+        case .tapped:
+          state = true
+          return Effect(value: .response)
+            .receive(on: DispatchQueue.main)
+            .eraseToEffect()
+        }
+      }
+
+      let store = Store(initialState: false, reducer: reducer, environment: ())
+      let viewStore = ViewStore(store)
+
+      XCTAssertNoDifference(viewStore.state, false)
+      _ = { viewStore.send(.tapped) }()
+      XCTAssertNoDifference(viewStore.state, true)
+      await viewStore.yield(while: { $0 })
+      XCTAssertNoDifference(viewStore.state, false)
+      expectation.fulfill()
+    }
+    self.wait(for: [expectation], timeout: 1)
+  }
+
+  func testAsyncSend() async throws {
+    enum Action { case tap, response(Int) }
+    let store = Store(
+      initialState: 0,
+      reducer: Reducer<Int, Action, Void> { state, action, _ in
+        switch action {
+        case .tap:
+          return .task {
+            return .response(42)
+          }
+        case let .response(value):
+          state = value
+          return .none
+        }
+      },
+      environment: ()
+    )
+
+    let viewStore = ViewStore(store)
+
+    XCTAssertEqual(viewStore.state, 0)
+    await viewStore.send(.tap).finish()
+    XCTAssertEqual(viewStore.state, 42)
+  }
+
+  func testAsyncSendCancellation() async throws {
+    enum Action { case tap, response(Int) }
+    let store = Store(
+      initialState: 0,
+      reducer: Reducer<Int, Action, Void> { state, action, _ in
+        switch action {
+        case .tap:
+          return .task {
+            try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+            return .response(42)
+          }
+        case let .response(value):
+          state = value
+          return .none
+        }
+      },
+      environment: ()
+    )
+
+    let viewStore = ViewStore(store)
+
+    XCTAssertEqual(viewStore.state, 0)
+    let task = viewStore.send(.tap)
+    await task.cancel()
+    try await Task.sleep(nanoseconds: NSEC_PER_MSEC)
+    XCTAssertEqual(viewStore.state, 0)
+  }
 }
 
 private struct State: Equatable {

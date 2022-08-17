@@ -19,21 +19,18 @@ public enum LoginAction: Equatable {
   case emailChanged(String)
   case passwordChanged(String)
   case loginButtonTapped
-  case loginResponse(Result<AuthenticationResponse, AuthenticationError>)
+  case loginResponse(TaskResult<AuthenticationResponse>)
   case twoFactor(TwoFactorAction)
   case twoFactorDismissed
 }
 
-public struct LoginEnvironment {
+public struct LoginEnvironment: Sendable {
   public var authenticationClient: AuthenticationClient
-  public var mainQueue: AnySchedulerOf<DispatchQueue>
 
   public init(
-    authenticationClient: AuthenticationClient,
-    mainQueue: AnySchedulerOf<DispatchQueue>
+    authenticationClient: AuthenticationClient
   ) {
     self.authenticationClient = authenticationClient
-    self.mainQueue = mainQueue
   }
 }
 
@@ -45,8 +42,7 @@ public let loginReducer = Reducer<LoginState, LoginAction, LoginEnvironment>.com
       action: /LoginAction.twoFactor,
       environment: {
         TwoFactorEnvironment(
-          authenticationClient: $0.authenticationClient,
-          mainQueue: $0.mainQueue
+          authenticationClient: $0.authenticationClient
         )
       }
     ),
@@ -82,10 +78,15 @@ public let loginReducer = Reducer<LoginState, LoginAction, LoginEnvironment>.com
 
     case .loginButtonTapped:
       state.isLoginRequestInFlight = true
-      return environment.authenticationClient
-        .login(LoginRequest(email: state.email, password: state.password))
-        .receive(on: environment.mainQueue)
-        .catchToEffect(LoginAction.loginResponse)
+      return .task { [email = state.email, password = state.password] in
+        await .loginResponse(
+          TaskResult {
+            try await environment.authenticationClient.login(
+              .init(email: email, password: password)
+            )
+          }
+        )
+      }
 
     case .twoFactor:
       return .none

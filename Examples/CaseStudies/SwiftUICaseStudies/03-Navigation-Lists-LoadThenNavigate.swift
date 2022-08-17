@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Foundation
 import SwiftUI
 
 private let readMe = """
@@ -53,31 +54,31 @@ let loadThenNavigateListReducer =
       LoadThenNavigateListState, LoadThenNavigateListAction, LoadThenNavigateListEnvironment
     > { state, action, environment in
 
-      enum CancelId {}
+      enum CancelID {}
 
       switch action {
       case .counter:
         return .none
 
       case .onDisappear:
-        return .cancel(id: CancelId.self)
+        return .cancel(id: CancelID.self)
 
       case let .setNavigation(selection: .some(navigatedId)):
         for row in state.rows {
           state.rows[id: row.id]?.isActivityIndicatorVisible = row.id == navigatedId
         }
-
-        return Effect(value: .setNavigationSelectionDelayCompleted(navigatedId))
-          .delay(for: 1, scheduler: environment.mainQueue)
-          .eraseToEffect()
-          .cancellable(id: CancelId.self, cancelInFlight: true)
+        return .task {
+          try await environment.mainQueue.sleep(for: 1)
+          return .setNavigationSelectionDelayCompleted(navigatedId)
+        }
+        .cancellable(id: CancelID.self, cancelInFlight: true)
 
       case .setNavigation(selection: .none):
         if let selection = state.selection {
           state.rows[id: selection.id]?.count = selection.count
         }
         state.selection = nil
-        return .cancel(id: CancelId.self)
+        return .cancel(id: CancelID.self)
 
       case let .setNavigationSelectionDelayCompleted(id):
         state.rows[id: id]?.isActivityIndicatorVisible = false
@@ -96,35 +97,36 @@ struct LoadThenNavigateListView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Section(header: Text(readMe)) {
-          ForEach(viewStore.rows) { row in
-            NavigationLink(
-              destination: IfLetStore(
-                self.store.scope(
-                  state: \.selection?.value,
-                  action: LoadThenNavigateListAction.counter
-                )
-              ) {
-                CounterView(store: $0)
-              },
-              tag: row.id,
-              selection: viewStore.binding(
-                get: \.selection?.id,
-                send: LoadThenNavigateListAction.setNavigation(selection:)
+        Section {
+          AboutView(readMe: readMe)
+        }
+        ForEach(viewStore.rows) { row in
+          NavigationLink(
+            destination: IfLetStore(
+              self.store.scope(
+                state: \.selection?.value,
+                action: LoadThenNavigateListAction.counter
               )
             ) {
-              HStack {
-                Text("Load optional counter that starts from \(row.count)")
-                if row.isActivityIndicatorVisible {
-                  Spacer()
-                  ProgressView()
-                }
+              CounterView(store: $0)
+            },
+            tag: row.id,
+            selection: viewStore.binding(
+              get: \.selection?.id,
+              send: LoadThenNavigateListAction.setNavigation(selection:)
+            )
+          ) {
+            HStack {
+              Text("Load optional counter that starts from \(row.count)")
+              if row.isActivityIndicatorVisible {
+                Spacer()
+                ProgressView()
               }
             }
           }
         }
       }
-      .navigationBarTitle("Load then navigate")
+      .navigationTitle("Load then navigate")
       .onDisappear { viewStore.send(.onDisappear) }
     }
   }

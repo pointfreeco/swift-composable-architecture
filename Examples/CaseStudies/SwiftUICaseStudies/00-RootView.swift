@@ -40,17 +40,15 @@ struct RootView: View {
               )
             )
 
-            #if compiler(>=5.4)
-              NavigationLink(
-                "Form bindings",
-                destination: BindingFormView(
-                  store: self.store.scope(
-                    state: \.bindingForm,
-                    action: RootAction.bindingForm
-                  )
+            NavigationLink(
+              "Form bindings",
+              destination: BindingFormView(
+                store: self.store.scope(
+                  state: \.bindingForm,
+                  action: RootAction.bindingForm
                 )
               )
-            #endif
+            )
 
             NavigationLink(
               "Optional state",
@@ -82,17 +80,15 @@ struct RootView: View {
               )
             )
 
-            #if compiler(>=5.5)
-              NavigationLink(
-                "Focus State",
-                destination: FocusDemoView(
-                  store: self.store.scope(
-                    state: \.focusDemo,
-                    action: RootAction.focusDemo
-                  )
+            NavigationLink(
+              "Focus State",
+              destination: FocusDemoView(
+                store: self.store.scope(
+                  state: \.focusDemo,
+                  action: RootAction.focusDemo
                 )
               )
-            #endif
+            )
 
             NavigationLink(
               "Animations",
@@ -135,17 +131,15 @@ struct RootView: View {
               )
             )
 
-            #if compiler(>=5.5)
-              NavigationLink(
-                "Refreshable",
-                destination: RefreshableView(
-                  store: self.store.scope(
-                    state: \.refreshable,
-                    action: RootAction.refreshable
-                  )
+            NavigationLink(
+              "Refreshable",
+              destination: RefreshableView(
+                store: self.store.scope(
+                  state: \.refreshable,
+                  action: RootAction.refreshable
                 )
               )
-            #endif
+            )
 
             NavigationLink(
               "Timers",
@@ -292,7 +286,7 @@ struct RootView: View {
             )
           }
         }
-        .navigationBarTitle("Case Studies")
+        .navigationTitle("Case Studies")
         .onAppear { viewStore.send(.onAppear) }
       }
     }

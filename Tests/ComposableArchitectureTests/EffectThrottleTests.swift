@@ -3,15 +3,17 @@ import XCTest
 
 @testable import ComposableArchitecture
 
+@MainActor
 final class EffectThrottleTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
-  let scheduler = DispatchQueue.test
+  let mainQueue = DispatchQueue.test
 
-  func testThrottleLatest() {
+  func testThrottleLatest() async {
     var values: [Int] = []
     var effectRuns = 0
 
-    func runThrottledEffect(value: Int) {
+    // NB: Explicit @MainActor is needed for Swift 5.5.2
+    @MainActor func runThrottledEffect(value: Int) {
       enum CancelToken {}
 
       Deferred { () -> Just<Int> in
@@ -20,7 +22,7 @@ final class EffectThrottleTests: XCTestCase {
       }
       .eraseToEffect()
       .throttle(
-        id: CancelToken.self, for: 1, scheduler: scheduler.eraseToAnyScheduler(), latest: true
+        id: CancelToken.self, for: 1, scheduler: mainQueue.eraseToAnyScheduler(), latest: true
       )
       .sink { values.append($0) }
       .store(in: &self.cancellables)
@@ -28,44 +30,45 @@ final class EffectThrottleTests: XCTestCase {
 
     runThrottledEffect(value: 1)
 
-    scheduler.advance()
+    await mainQueue.advance()
 
     // A value emits right away.
     XCTAssertNoDifference(values, [1])
 
     runThrottledEffect(value: 2)
 
-    scheduler.advance()
+    await mainQueue.advance()
 
     // A second value is throttled.
     XCTAssertNoDifference(values, [1])
 
-    scheduler.advance(by: 0.25)
+    await mainQueue.advance(by: 0.25)
 
     runThrottledEffect(value: 3)
 
-    scheduler.advance(by: 0.25)
+    await mainQueue.advance(by: 0.25)
 
     runThrottledEffect(value: 4)
 
-    scheduler.advance(by: 0.25)
+    await mainQueue.advance(by: 0.25)
 
     runThrottledEffect(value: 5)
 
     // A third value is throttled.
     XCTAssertNoDifference(values, [1])
 
-    scheduler.advance(by: 0.25)
+    await mainQueue.advance(by: 0.25)
 
     // The latest value emits.
     XCTAssertNoDifference(values, [1, 5])
   }
 
-  func testThrottleFirst() {
+  func testThrottleFirst() async {
     var values: [Int] = []
     var effectRuns = 0
 
-    func runThrottledEffect(value: Int) {
+    // NB: Explicit @MainActor is needed for Swift 5.5.2
+    @MainActor func runThrottledEffect(value: Int) {
       enum CancelToken {}
 
       Deferred { () -> Just<Int> in
@@ -74,7 +77,7 @@ final class EffectThrottleTests: XCTestCase {
       }
       .eraseToEffect()
       .throttle(
-        id: CancelToken.self, for: 1, scheduler: scheduler.eraseToAnyScheduler(), latest: false
+        id: CancelToken.self, for: 1, scheduler: mainQueue.eraseToAnyScheduler(), latest: false
       )
       .sink { values.append($0) }
       .store(in: &self.cancellables)
@@ -82,57 +85,58 @@ final class EffectThrottleTests: XCTestCase {
 
     runThrottledEffect(value: 1)
 
-    scheduler.advance()
+    await mainQueue.advance()
 
     // A value emits right away.
     XCTAssertNoDifference(values, [1])
 
     runThrottledEffect(value: 2)
 
-    scheduler.advance()
+    await mainQueue.advance()
 
     // A second value is throttled.
     XCTAssertNoDifference(values, [1])
 
-    scheduler.advance(by: 0.25)
+    await mainQueue.advance(by: 0.25)
 
     runThrottledEffect(value: 3)
 
-    scheduler.advance(by: 0.25)
+    await mainQueue.advance(by: 0.25)
 
     runThrottledEffect(value: 4)
 
-    scheduler.advance(by: 0.25)
+    await mainQueue.advance(by: 0.25)
 
     runThrottledEffect(value: 5)
 
-    scheduler.advance(by: 0.25)
+    await mainQueue.advance(by: 0.25)
 
     // The second (throttled) value emits.
     XCTAssertNoDifference(values, [1, 2])
 
-    scheduler.advance(by: 0.25)
+    await mainQueue.advance(by: 0.25)
 
     runThrottledEffect(value: 6)
 
-    scheduler.advance(by: 0.50)
+    await mainQueue.advance(by: 0.50)
 
     // A third value is throttled.
     XCTAssertNoDifference(values, [1, 2])
 
     runThrottledEffect(value: 7)
 
-    scheduler.advance(by: 0.25)
+    await mainQueue.advance(by: 0.25)
 
     // The third (throttled) value emits.
     XCTAssertNoDifference(values, [1, 2, 6])
   }
 
-  func testThrottleAfterInterval() {
+  func testThrottleAfterInterval() async {
     var values: [Int] = []
     var effectRuns = 0
 
-    func runThrottledEffect(value: Int) {
+    // NB: Explicit @MainActor is needed for Swift 5.5.2
+    @MainActor func runThrottledEffect(value: Int) {
       enum CancelToken {}
 
       Deferred { () -> Just<Int> in
@@ -141,7 +145,7 @@ final class EffectThrottleTests: XCTestCase {
       }
       .eraseToEffect()
       .throttle(
-        id: CancelToken.self, for: 1, scheduler: scheduler.eraseToAnyScheduler(), latest: true
+        id: CancelToken.self, for: 1, scheduler: mainQueue.eraseToAnyScheduler(), latest: true
       )
       .sink { values.append($0) }
       .store(in: &self.cancellables)
@@ -149,35 +153,36 @@ final class EffectThrottleTests: XCTestCase {
 
     runThrottledEffect(value: 1)
 
-    scheduler.advance()
+    await mainQueue.advance()
 
     // A value emits right away.
     XCTAssertNoDifference(values, [1])
 
-    scheduler.advance(by: 2)
+    await mainQueue.advance(by: 2)
 
     runThrottledEffect(value: 2)
 
-    scheduler.advance()
+    await mainQueue.advance()
 
     // A second value is emitted right away.
     XCTAssertNoDifference(values, [1, 2])
 
-    scheduler.advance(by: 2)
+    await mainQueue.advance(by: 2)
 
     runThrottledEffect(value: 3)
 
-    scheduler.advance()
+    await mainQueue.advance()
 
     // A third value is emitted right away.
     XCTAssertNoDifference(values, [1, 2, 3])
   }
 
-  func testThrottleEmitsFirstValueOnce() {
+  func testThrottleEmitsFirstValueOnce() async {
     var values: [Int] = []
     var effectRuns = 0
 
-    func runThrottledEffect(value: Int) {
+    // NB: Explicit @MainActor is needed for Swift 5.5.2
+    @MainActor func runThrottledEffect(value: Int) {
       enum CancelToken {}
 
       Deferred { () -> Just<Int> in
@@ -186,7 +191,7 @@ final class EffectThrottleTests: XCTestCase {
       }
       .eraseToEffect()
       .throttle(
-        id: CancelToken.self, for: 1, scheduler: scheduler.eraseToAnyScheduler(), latest: false
+        id: CancelToken.self, for: 1, scheduler: mainQueue.eraseToAnyScheduler(), latest: false
       )
       .sink { values.append($0) }
       .store(in: &self.cancellables)
@@ -194,16 +199,16 @@ final class EffectThrottleTests: XCTestCase {
 
     runThrottledEffect(value: 1)
 
-    scheduler.advance()
+    await mainQueue.advance()
 
     // A value emits right away.
     XCTAssertNoDifference(values, [1])
 
-    scheduler.advance(by: 0.5)
+    await mainQueue.advance(by: 0.5)
 
     runThrottledEffect(value: 2)
 
-    scheduler.advance(by: 0.5)
+    await mainQueue.advance(by: 0.5)
 
     runThrottledEffect(value: 3)
 

@@ -3,47 +3,85 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
+@MainActor
 class EffectsBasicsTests: XCTestCase {
-  func testCountDown() {
+  func testCountDown() async {
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
-      environment: EffectsBasicsEnvironment(
-        fact: .failing,
-        mainQueue: .immediate
-      )
+      environment: .unimplemented
     )
 
-    store.send(.incrementButtonTapped) {
+    store.environment.mainQueue = .immediate
+
+    await store.send(.incrementButtonTapped) {
       $0.count = 1
     }
-    store.send(.decrementButtonTapped) {
+    await store.send(.decrementButtonTapped) {
       $0.count = 0
-    }
-    store.receive(.incrementButtonTapped) {
-      $0.count = 1
     }
   }
 
-  func testNumberFact() {
+  func testNumberFact() async {
     let store = TestStore(
       initialState: EffectsBasicsState(),
       reducer: effectsBasicsReducer,
-      environment: EffectsBasicsEnvironment(
-        fact: FactClient(fetch: { n in Effect(value: "\(n) is a good number Brent") }),
-        mainQueue: .immediate
-      )
+      environment: .unimplemented
     )
 
-    store.send(.incrementButtonTapped) {
+    store.environment.fact.fetch = { "\($0) is a good number Brent" }
+    store.environment.mainQueue = .immediate
+
+    await store.send(.incrementButtonTapped) {
       $0.count = 1
     }
-    store.send(.numberFactButtonTapped) {
+    await store.send(.numberFactButtonTapped) {
       $0.isNumberFactRequestInFlight = true
     }
-    store.receive(.numberFactResponse(.success("1 is a good number Brent"))) {
+    await store.receive(.numberFactResponse(.success("1 is a good number Brent"))) {
       $0.isNumberFactRequestInFlight = false
       $0.numberFact = "1 is a good number Brent"
     }
   }
+
+  func testDecrement() async {
+    let store = TestStore(
+      initialState: EffectsBasicsState(),
+      reducer: effectsBasicsReducer,
+      environment: .unimplemented
+    )
+
+    store.environment.mainQueue = .immediate
+
+    await store.send(.decrementButtonTapped) {
+      $0.count = -1
+    }
+    await store.receive(.decrementDelayResponse) {
+      $0.count = 0
+    }
+  }
+
+  func testDecrementCancellation() async {
+    let store = TestStore(
+      initialState: EffectsBasicsState(),
+      reducer: effectsBasicsReducer,
+      environment: .unimplemented
+    )
+
+    store.environment.mainQueue = DispatchQueue.test.eraseToAnyScheduler()
+
+    await store.send(.decrementButtonTapped) {
+      $0.count = -1
+    }
+    await store.send(.incrementButtonTapped) {
+      $0.count = 0
+    }
+  }
+}
+
+extension EffectsBasicsEnvironment {
+  static let unimplemented = Self(
+    fact: .unimplemented,
+    mainQueue: .unimplemented
+  )
 }

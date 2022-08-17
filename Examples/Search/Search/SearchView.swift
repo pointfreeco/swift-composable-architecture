@@ -30,9 +30,9 @@ struct SearchState: Equatable {
 }
 
 enum SearchAction: Equatable {
-  case forecastResponse(Search.Result.ID, Result<Forecast, WeatherClient.Failure>)
+  case forecastResponse(Search.Result.ID, TaskResult<Forecast>)
   case searchQueryChanged(String)
-  case searchResponse(Result<Search, WeatherClient.Failure>)
+  case searchResponse(TaskResult<Search>)
   case searchResultTapped(Search.Result)
 }
 
@@ -68,7 +68,7 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
     return .none
 
   case let .searchQueryChanged(query):
-    enum SearchLocationId {}
+    enum SearchLocationID {}
 
     state.searchQuery = query
 
@@ -77,13 +77,13 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
     guard !query.isEmpty else {
       state.results = []
       state.weather = nil
-      return .cancel(id: SearchLocationId.self)
+      return .cancel(id: SearchLocationID.self)
     }
 
-    return environment.weatherClient
-      .search(query)
-      .debounce(id: SearchLocationId.self, for: 0.3, scheduler: environment.mainQueue)
-      .catchToEffect(SearchAction.searchResponse)
+    return .task {
+      await .searchResponse(TaskResult { try await environment.weatherClient.search(query) })
+    }
+    .debounce(id: SearchLocationID.self, for: 0.3, scheduler: environment.mainQueue)
 
   case .searchResponse(.failure):
     state.results = []
@@ -94,16 +94,17 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
     return .none
 
   case let .searchResultTapped(location):
-    enum SearchWeatherId {}
+    enum SearchWeatherID {}
 
     state.resultForecastRequestInFlight = location
 
-    return environment.weatherClient
-      .forecast(location)
-      .receive(on: environment.mainQueue)
-      .catchToEffect()
-      .map { .forecastResponse(location.id, $0) }
-      .cancellable(id: SearchWeatherId.self, cancelInFlight: true)
+    return .task {
+      await .forecastResponse(
+        location.id,
+        TaskResult { try await environment.weatherClient.forecast(location) }
+      )
+    }
+    .cancellable(id: SearchWeatherID.self, cancelInFlight: true)
   }
 }
 
@@ -159,7 +160,7 @@ struct SearchView: View {
           .foregroundColor(.gray)
           .padding(.all, 16)
         }
-        .navigationBarTitle("Search")
+        .navigationTitle("Search")
       }
       .navigationViewStyle(.stack)
     }
@@ -210,23 +211,18 @@ private let dateFormatter: DateFormatter = {
 
 struct SearchView_Previews: PreviewProvider {
   static var previews: some View {
-    let store = Store(
-      initialState: SearchState(),
-      reducer: searchReducer,
-      environment: SearchEnvironment(
-        weatherClient: WeatherClient(
-          forecast: { _ in Effect(value: .mock) },
-          search: { _ in Effect(value: .mock) }
-        ),
-        mainQueue: .main
+    SearchView(
+      store: Store(
+        initialState: SearchState(),
+        reducer: searchReducer,
+        environment: SearchEnvironment(
+          weatherClient: WeatherClient(
+            forecast: { _ in .mock },
+            search: { _ in .mock }
+          ),
+          mainQueue: .main
+        )
       )
     )
-
-    return Group {
-      SearchView(store: store)
-
-      SearchView(store: store)
-        .environment(\.colorScheme, .dark)
-    }
   }
 }

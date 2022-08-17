@@ -11,7 +11,6 @@ extension Effect {
   /// ```
   ///
   /// - Parameters:
-  ///   - upstream: the effect you want to defer.
   ///   - dueTime: The duration you want to defer for.
   ///   - scheduler: The scheduler you want to deliver the defer output to.
   ///   - options: Scheduler options that customize the effect's delivery of elements.

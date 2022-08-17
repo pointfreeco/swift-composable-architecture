@@ -153,19 +153,17 @@ public struct ConfirmationDialogState<Action> {
     case hidden
     case visible
 
-    #if compiler(>=5.5)
-      @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-      var toSwiftUI: SwiftUI.Visibility {
-        switch self {
-        case .automatic:
-          return .automatic
-        case .hidden:
-          return .hidden
-        case .visible:
-          return .visible
-        }
+    @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+    var toSwiftUI: SwiftUI.Visibility {
+      switch self {
+      case .automatic:
+        return .automatic
+      case .hidden:
+        return .hidden
+      case .visible:
+        return .visible
       }
-    #endif
+    }
   }
 }
 
@@ -234,54 +232,43 @@ extension View {
     _ store: Store<ConfirmationDialogState<Action>?, Action>,
     dismiss: Action
   ) -> some View {
-    #if compiler(>=5.5)
-      if #available(iOS 15, tvOS 15, watchOS 8, *) {
-        self.modifier(
-          NewConfirmationDialogModifier(
-            viewStore: ViewStore(store, removeDuplicates: { $0?.id == $1?.id }),
-            dismiss: dismiss
-          )
-        )
-      } else {
-        #if !os(macOS)
-          self.modifier(
-            OldConfirmationDialogModifier(
-              viewStore: ViewStore(store, removeDuplicates: { $0?.id == $1?.id }),
-              dismiss: dismiss
-            )
-          )
-        #endif
-      }
-    #elseif !os(macOS)
+    if #available(iOS 15, tvOS 15, watchOS 8, *) {
       self.modifier(
-        OldConfirmationDialogModifier(
+        NewConfirmationDialogModifier(
           viewStore: ViewStore(store, removeDuplicates: { $0?.id == $1?.id }),
           dismiss: dismiss
         )
       )
-    #endif
+    } else {
+      #if !os(macOS)
+        self.modifier(
+          OldConfirmationDialogModifier(
+            viewStore: ViewStore(store, removeDuplicates: { $0?.id == $1?.id }),
+            dismiss: dismiss
+          )
+        )
+      #endif
+    }
   }
 }
 
-#if compiler(>=5.5)
-  // NB: Workaround for iOS 14 runtime crashes during iOS 15 availability checks.
-  @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-  private struct NewConfirmationDialogModifier<Action>: ViewModifier {
-    @ObservedObject var viewStore: ViewStore<ConfirmationDialogState<Action>?, Action>
-    let dismiss: Action
+// NB: Workaround for iOS 14 runtime crashes during iOS 15 availability checks.
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+private struct NewConfirmationDialogModifier<Action>: ViewModifier {
+  @ObservedObject var viewStore: ViewStore<ConfirmationDialogState<Action>?, Action>
+  let dismiss: Action
 
-    func body(content: Content) -> some View {
-      content.confirmationDialog(
-        (viewStore.state?.title).map { Text($0) } ?? Text(""),
-        isPresented: viewStore.binding(send: dismiss).isPresent(),
-        titleVisibility: viewStore.state?.titleVisibility.toSwiftUI ?? .automatic,
-        presenting: viewStore.state,
-        actions: { $0.toSwiftUIActions(send: viewStore.send) },
-        message: { $0.message.map { Text($0) } }
-      )
-    }
+  func body(content: Content) -> some View {
+    content.confirmationDialog(
+      (viewStore.state?.title).map { Text($0) } ?? Text(""),
+      isPresented: viewStore.binding(send: dismiss).isPresent(),
+      titleVisibility: viewStore.state?.titleVisibility.toSwiftUI ?? .automatic,
+      presenting: viewStore.state,
+      actions: { $0.toSwiftUIActions(send: { viewStore.send($0) }) },
+      message: { $0.message.map { Text($0) } }
+    )
   }
-#endif
+}
 
 @available(iOS 13, *)
 @available(macOS 12, *)
@@ -294,7 +281,7 @@ private struct OldConfirmationDialogModifier<Action>: ViewModifier {
   func body(content: Content) -> some View {
     #if !os(macOS)
       return content.actionSheet(item: viewStore.binding(send: dismiss)) { state in
-        state.toSwiftUIActionSheet(send: viewStore.send)
+        state.toSwiftUIActionSheet(send: { viewStore.send($0) })
       }
     #else
       return EmptyView()
@@ -307,15 +294,13 @@ private struct OldConfirmationDialogModifier<Action>: ViewModifier {
 @available(tvOS 13, *)
 @available(watchOS 6, *)
 extension ConfirmationDialogState {
-  #if compiler(>=5.5)
-    @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-    @ViewBuilder
-    fileprivate func toSwiftUIActions(send: @escaping (Action) -> Void) -> some View {
-      ForEach(self.buttons.indices, id: \.self) {
-        self.buttons[$0].toSwiftUIButton(send: send)
-      }
+  @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+  @ViewBuilder
+  fileprivate func toSwiftUIActions(send: @escaping (Action) -> Void) -> some View {
+    ForEach(self.buttons.indices, id: \.self) {
+      self.buttons[$0].toSwiftUIButton(send: send)
     }
-  #endif
+  }
 
   @available(macOS, unavailable)
   fileprivate func toSwiftUIActionSheet(send: @escaping (Action) -> Void) -> SwiftUI.ActionSheet {
