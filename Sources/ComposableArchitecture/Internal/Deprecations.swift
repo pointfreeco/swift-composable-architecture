@@ -430,7 +430,8 @@ extension Store {
               return .none
             }
           },
-          environment: ()
+          environment: (),
+          instrumentation: self.instrumentation
         )
 
         localStore.parentCancellable = self.state

@@ -176,7 +176,8 @@ final class ReducerTests: XCTestCase {
       Store(
         initialState: .init(),
         reducer: reducer,
-        environment: ()
+        environment: (),
+        instrumentation: .noop
       )
     )
     viewStore.send(.incrWithBool(true))

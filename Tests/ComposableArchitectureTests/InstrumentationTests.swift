@@ -25,9 +25,8 @@ final class InstrumentationTests: XCTestCase {
       }
     })
 
-
-    let store = Store(initialState: 0, reducer: Reducer<Int, Void, Void>.empty, environment: ())
-    store.send((), instrumentation: inst)
+    let store = Store(initialState: 0, reducer: Reducer<Int, Void, Void>.empty, environment: (), instrumentation: inst)
+    store.send(())
 
     XCTAssertEqual(2, sendCalls)
     XCTAssertEqual(2, changeStateCalls)
@@ -61,8 +60,8 @@ final class InstrumentationTests: XCTestCase {
       }
     })
 
-    let store = Store(initialState: 0, reducer: Reducer<Int, Void, Void>.empty, environment: ())
-    let viewStore = ViewStore(store, instrumentation: inst)
+    let store = Store(initialState: 0, reducer: Reducer<Int, Void, Void>.empty, environment: (), instrumentation: inst)
+    let viewStore = ViewStore(store)
 
     viewStore.send(())
 
@@ -76,10 +75,12 @@ final class InstrumentationTests: XCTestCase {
 
   func testNoneEffectReducer_StatelessViewStore() {
     var sendCalls_vs = 0
-
+    var dedupCalls_vs = 0
+    var changeCalls_vs = 0
     var sendCalls_s = 0
     var changeStateCalls_s = 0
     var processCalls_s = 0
+
     let inst = ComposableArchitecture.Instrumentation(callback: { info, timing, kind in
       switch (timing, kind) {
       case (_, .storeSend):
@@ -91,20 +92,21 @@ final class InstrumentationTests: XCTestCase {
       case (_, .viewStoreSend):
         sendCalls_vs += 1
       case (_, .viewStoreDeduplicate):
-        XCTFail("View store deduplicate callback should not be called")
+        dedupCalls_vs += 1
       case (_, .viewStoreChangeState):
-        XCTFail("View store state change callback should not be called")
+        changeCalls_vs += 1
       case (_, .scopedStoreToLocal), (_, .scopedStoreDeduplicate), (_, .scopedStoreChangeState):
-        XCTFail("Scope based callbacks should not be called")
+        XCTFail("Scoped store callbacks should not be called")
       }
     })
 
-    let store = Store(initialState: 0, reducer: Reducer<Int, Void, Void>.empty, environment: ())
-    let viewStore = ViewStore(store.stateless, instrumentation: inst)
+    let store = Store(initialState: 0, reducer: Reducer<Int, Void, Void>.empty, environment: (), instrumentation: inst)
+    let viewStore = ViewStore(store)
 
     viewStore.send(())
-
     XCTAssertEqual(2, sendCalls_vs)
+    XCTAssertEqual(2, dedupCalls_vs)
+    XCTAssertEqual(2, changeCalls_vs)
     XCTAssertEqual(2, sendCalls_s)
     XCTAssertEqual(2, changeStateCalls_s)
     XCTAssertEqual(2, processCalls_s)
@@ -143,8 +145,8 @@ final class InstrumentationTests: XCTestCase {
       reducerCount += 1
       return .init(value: ())
     }
-    let store = Store(initialState: 0, reducer: reducer, environment: ())
-    let viewStore = ViewStore(store, instrumentation: inst)
+    let store = Store(initialState: 0, reducer: reducer, environment: (), instrumentation: inst)
+    let viewStore = ViewStore(store)
 
     viewStore.send(())
 
@@ -190,8 +192,8 @@ final class InstrumentationTests: XCTestCase {
       reducerCount += 1
       return .init(value: ())
     }
-    let store = Store(initialState: 0, reducer: reducer, environment: ())
-    let viewStore = ViewStore(store, instrumentation: inst)
+    let store = Store(initialState: 0, reducer: reducer, environment: (), instrumentation: inst)
+    let viewStore = ViewStore(store)
     viewStore.publisher
       .sink { [unowned viewStore] _ in
         viewStore.send(())
@@ -253,9 +255,9 @@ final class InstrumentationTests: XCTestCase {
       return .none
     }
 
-    let parentStore = Store(initialState: 0, reducer: counterReducer, environment: ())
-    let parentViewStore = ViewStore(parentStore, instrumentation: inst)
-    let childStore = parentStore.scope(state: String.init, instrumentation: inst)
+    let parentStore = Store(initialState: 0, reducer: counterReducer, environment: (), instrumentation: inst)
+    let parentViewStore = ViewStore(parentStore)
+    let childStore = parentStore.scope(state: String.init)
 
     var values: [String] = []
     childStore.state
@@ -316,13 +318,12 @@ final class InstrumentationTests: XCTestCase {
       return .none
     }
 
-    let parentStore = Store(initialState: 0, reducer: counterReducer, environment: ())
-    let parentViewStore = ViewStore(parentStore, instrumentation: inst)
+    let parentStore = Store(initialState: 0, reducer: counterReducer, environment: (), instrumentation: inst)
+    let parentViewStore = ViewStore(parentStore)
     let childStore = parentStore.scope(
       state: String.init,
       action: { $0 },
-      removeDuplicates: ==,
-      instrumentation: inst
+      removeDuplicates: ==
     )
 
     var values: [String] = []
@@ -355,8 +356,8 @@ final class InstrumentationTests: XCTestCase {
     let reducer = Reducer<Int, Void, Void> { _, _, _ in
       return .none
     }
-    let parentStore = Store(initialState: 0, reducer: reducer, environment: ())
-    let parentViewStore = ViewStore(parentStore, instrumentation: inst)
+    let parentStore = Store(initialState: 0, reducer: reducer, environment: (), instrumentation: inst)
+    let parentViewStore = ViewStore(parentStore)
 
     XCTAssertIdentical(viewStoreCreated, parentViewStore)
   }

@@ -58,6 +58,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   private let _send: (Action) -> Task<Void, Never>?
   fileprivate let _state: CurrentValueRelay<State>
   private var viewCancellable: AnyCancellable?
+  private let instrumentation: Instrumentation
 
   /// Initializes a view store from a store.
   ///
@@ -68,28 +69,28 @@ public final class ViewStore<State, Action>: ObservableObject {
   public init(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
-    instrumentation: Instrumentation = .shared,
     file: StaticString = #file,
     line: UInt = #line
   ) {
-    self._send = {
+    self.instrumentation = store.instrumentation
+    self._send = { [instrumentation = store.instrumentation] in
       let sendCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: $0, file: file, line: line).eraseToAny()
       instrumentation.callback?(sendCallbackInfo, .pre, .viewStoreSend)
       defer { instrumentation.callback?(sendCallbackInfo, .post, .viewStoreSend) }
 
-      return store.send($0, file: file, line: line, instrumentation: instrumentation)
+      return store.send($0, file: file, line: line)
     }
     self._state = CurrentValueRelay(store.state.value)
 
     let stateChangeCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: nil as Action?, file: file, line: line).eraseToAny()
     self.viewCancellable = store.state
-      .removeDuplicates(by: {
+      .removeDuplicates(by: { [instrumentation = store.instrumentation] in
         instrumentation.callback?(stateChangeCallbackInfo, .pre, .viewStoreDeduplicate)
         defer { instrumentation.callback?(stateChangeCallbackInfo, .post, .viewStoreDeduplicate) }
 
         return isDuplicate($0, $1)
       })
-      .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
+      .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state, instrumentation = store.instrumentation] in
         guard let objectWillChange = objectWillChange, let _state = _state else { return }
 
         instrumentation.callback?(stateChangeCallbackInfo, .pre, .viewStoreChangeState)
@@ -99,7 +100,7 @@ public final class ViewStore<State, Action>: ObservableObject {
         _state.value = $0
       }
 
-      instrumentation.viewStoreCreated?(self as AnyObject, file, line)
+    store.instrumentation.viewStoreCreated?(self as AnyObject, file, line)
   }
 
   /// Initializes a view store from a store that has a state of type void. This special initializer prevents this view
@@ -110,29 +111,30 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///   - instrumentation: Instrumentation instance that may be used to trace behavior of this ViewStore
   public init(
     _ store: Store<State, Action>,
-    instrumentation: Instrumentation = .shared,
     file: StaticString = #file,
     line: UInt = #line
   ) where State == Void {
-    self._send = {
+    self.instrumentation = store.instrumentation
+    self._send = { [instrumentation = store.instrumentation] in
       let sendCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: $0, file: file, line: line).eraseToAny()
       instrumentation.callback?(sendCallbackInfo, .pre, .viewStoreSend)
       defer { instrumentation.callback?(sendCallbackInfo, .post, .viewStoreSend) }
 
-      return store.send($0, file: file, line: line, instrumentation: instrumentation)
+      return store.send($0, file: file, line: line)
     }
     self._state = CurrentValueRelay(())
 
-    instrumentation.viewStoreCreated?(self as AnyObject, file, line)
+    store.instrumentation.viewStoreCreated?(self as AnyObject, file, line)
   }
 
-  internal init(_ viewStore: ViewStore<State, Action>, instrumentation: Instrumentation = .shared, file: StaticString = #file, line: UInt = #line) {
+  internal init(_ viewStore: ViewStore<State, Action>, file: StaticString = #file, line: UInt = #line) {
     self._send = viewStore._send
     self._state = viewStore._state
+    self.instrumentation = viewStore.instrumentation
     self.objectWillChange = viewStore.objectWillChange
     self.viewCancellable = viewStore.viewCancellable
 
-    instrumentation.viewStoreCreated?(self as AnyObject, file, line)
+    self.instrumentation.viewStoreCreated?(self as AnyObject, file, line)
   }
 
   /// A publisher that emits when state changes.
@@ -488,8 +490,8 @@ public final class ViewStore<State, Action>: ObservableObject {
 }
 
 extension ViewStore where State: Equatable {
-  public convenience init(_ store: Store<State, Action>, instrumentation: Instrumentation = .shared, file: StaticString = #file, line: UInt = #line) {
-    self.init(store, removeDuplicates: ==, instrumentation: instrumentation, file: file, line: line)
+  public convenience init(_ store: Store<State, Action>, file: StaticString = #file, line: UInt = #line) {
+    self.init(store, removeDuplicates: ==, file: file, line: line)
   }
 }
 

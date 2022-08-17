@@ -133,6 +133,8 @@ public final class Store<State, Action> {
     private let mainThreadChecksEnabled: Bool
   #endif
 
+  public let instrumentation: Instrumentation
+
   /// Initializes a store from an initial state, a reducer, and an environment.
   ///
   /// - Parameters:
@@ -142,15 +144,39 @@ public final class Store<State, Action> {
   public convenience init<Environment>(
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
-    environment: Environment
+    environment: Environment,
+    instrumentation: Instrumentation = .noop
   ) {
     self.init(
       initialState: initialState,
       reducer: reducer,
       environment: environment,
-      mainThreadChecksEnabled: true
+      mainThreadChecksEnabled: true,
+      instrumentation: instrumentation
     )
     self.threadCheck(status: .`init`)
+  }
+
+  /// Initializes a store from an initial state, a reducer, and an environment, and the main thread
+  /// check is disabled for all interactions with this store.
+  ///
+  /// - Parameters:
+  ///   - initialState: The state to start the application in.
+  ///   - reducer: The reducer that powers the business logic of the application.
+  ///   - environment: The environment of dependencies for the application.
+  public static func unchecked<Environment>(
+    initialState: State,
+    reducer: Reducer<State, Action, Environment>,
+    environment: Environment,
+    instrumentation: Instrumentation = .noop
+  ) -> Self {
+    Self(
+      initialState: initialState,
+      reducer: reducer,
+      environment: environment,
+      mainThreadChecksEnabled: false,
+      instrumentation: instrumentation
+    )
   }
 
   /// Scopes the store to one that exposes local state and actions.
@@ -298,8 +324,7 @@ public final class Store<State, Action> {
     action fromLocalAction: @escaping (LocalAction) -> Action,
     removeDuplicates isDuplicate: ((LocalState, LocalState) -> Bool)? = nil,
     file: StaticString = #file,
-    line: UInt = #line,
-    instrumentation: Instrumentation = .shared
+    line: UInt = #line
   ) -> Store<LocalState, LocalAction> {
     self.threadCheck(status: .scope)
     var isSending = false
@@ -310,20 +335,21 @@ public final class Store<State, Action> {
         defer { isSending = false }
         let task = self.send(fromLocalAction(localAction), file: file, line: line)
         let callbackInfo = Instrumentation.CallbackInfo<Store<LocalState, LocalAction>.Type, Any>(storeKind: Store<LocalState, LocalAction>.self, action: localAction, file: file, line: line).eraseToAny()
-        instrumentation.callback?(callbackInfo, .pre, .scopedStoreToLocal)
+        self.instrumentation.callback?(callbackInfo, .pre, .scopedStoreToLocal)
         localState = toLocalState(self.state.value)
-        instrumentation.callback?(callbackInfo, .post, .scopedStoreToLocal)
+        self.instrumentation.callback?(callbackInfo, .post, .scopedStoreToLocal)
         if let task = task {
           return .fireAndForget { await task.cancellableValue }
         } else {
           return .none
         }
       },
-      environment: ()
+      environment: (),
+      instrumentation: instrumentation
     )
     localStore.parentCancellable = self.state
       .dropFirst()
-      .sink { [weak localStore] newValue in
+      .sink { [weak localStore, instrumentation = instrumentation] newValue in
         guard !isSending else { return }
 
         let callbackInfo = Instrumentation.CallbackInfo<Store<LocalState, LocalAction>.Type, Any>(storeKind: Store<LocalState, LocalAction>.self, action: nil, file: file, line: line).eraseToAny()
@@ -360,18 +386,16 @@ public final class Store<State, Action> {
   public func scope<LocalState>(
     state toLocalState: @escaping (State) -> LocalState,
     file: StaticString = #file,
-    line: UInt = #line,
-    instrumentation: Instrumentation = .shared
+    line: UInt = #line
   ) -> Store<LocalState, Action> {
-      self.scope(state: toLocalState, action: { $0 }, file: file, line: line, instrumentation: instrumentation)
+      self.scope(state: toLocalState, action: { $0 }, file: file, line: line)
   }
 
   func send(
     _ action: Action,
     originatingFrom originatingAction: Action? = nil,
     file: StaticString = #file,
-    line: UInt = #line,
-    instrumentation: Instrumentation = .shared
+    line: UInt = #line
   ) -> Task<Void, Never>? {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
@@ -432,7 +456,7 @@ public final class Store<State, Action> {
           },
           receiveValue: { [weak self] effectAction in
             guard let self = self else { return }
-            if let task = self.send(effectAction, originatingFrom: action, file: file, line: line, instrumentation: instrumentation) {
+            if let task = self.send(effectAction, originatingFrom: action, file: file, line: line) {
               tasks.wrappedValue.append(task)
             }
           }
@@ -574,10 +598,12 @@ public final class Store<State, Action> {
     initialState: State,
     reducer: Reducer<State, Action, Environment>,
     environment: Environment,
-    mainThreadChecksEnabled: Bool
+    mainThreadChecksEnabled: Bool,
+    instrumentation: Instrumentation = .noop
   ) {
     self.state = CurrentValueSubject(initialState)
     self.reducer = { state, action in reducer.run(&state, action, environment) }
+    self.instrumentation = instrumentation
 
     #if DEBUG
       self.mainThreadChecksEnabled = mainThreadChecksEnabled

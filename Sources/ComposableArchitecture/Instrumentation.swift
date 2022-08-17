@@ -72,16 +72,27 @@ public class Instrumentation {
   /// - Parameter timing: When this callback is being invoked (pre|post)
   /// - Parameter kind: The store's activity that to which this callback relates (state update, deduplication, etc)
   public typealias Callback = (_ info: CallbackInfo<Any, Any>, _ timing: CallbackTiming, _ kind: CallbackKind) -> Void
-  let callback: Callback?
+  private(set) var callback: Callback?
 
-  /// Used to track when an instance of a `ViewStore` was created
+  /// Used to track when/where an instance of a `ViewStore` was create
   public typealias ViewStoreCreatedCallback = (_ instance: AnyObject, _ file: StaticString, _ line: UInt) -> Void
-  let viewStoreCreated: ViewStoreCreatedCallback?
+  private(set) var viewStoreCreated: ViewStoreCreatedCallback?
 
   public static let noop = Instrumentation()
-  public static var shared: Instrumentation = .noop
 
   public init(callback: Callback? = nil, viewStoreCreated: ViewStoreCreatedCallback? = nil) {
+    self.callback = callback
+    self.viewStoreCreated = viewStoreCreated
+  }
+
+
+  /// Used to update the instance with new callbacks. This needs to be used _only_ on the same queue as the root ``Store``
+  /// instance.
+  /// - Parameters:
+  ///   - callback: The callback invoked during the "life cycle" of the various stores within the app as an action is
+  ///   acted upon.
+  ///   - viewStoreCreated: Used to track when/where an instance of a ``ViewStore`` was created
+  public func update(callback: Callback? = nil, viewStoreCreated: ViewStoreCreatedCallback? = nil) {
     self.callback = callback
     self.viewStoreCreated = viewStoreCreated
   }

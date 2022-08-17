@@ -63,7 +63,8 @@
             .eraseToEffect()
 
         },
-        environment: ()
+        environment: (),
+        instrumentation: .noop
       )
     }
 
