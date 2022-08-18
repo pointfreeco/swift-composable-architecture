@@ -14,8 +14,13 @@ struct SheetDemo: ReducerProtocol {
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
+      case .sheet(.presented(.counter(.decrementButtonTapped))):
+        state.sheet = .counter(Counter.State())
+        return .none
+
       case .sheet:
         return .none
+
       case .swap:
         switch state.sheet {
         case .some(.animations):

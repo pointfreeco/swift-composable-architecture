@@ -34,7 +34,21 @@ public enum PresentationState<State> {
       }
     }
     set {
-      self = .init(wrappedValue: newValue)
+      // TODO: Do we need similar for the navigation APIs?
+      guard
+        let newValue = newValue,
+        case let .presented(id, oldValue) = self,
+        enumTag(oldValue) == enumTag(newValue)
+      else {
+        self = .init(wrappedValue: newValue)
+        return
+      }
+
+      self = .presented(id: id, newValue)
+
+      // TODO: Should we add state.$destination.present(...) for explicitly re-presenting new ID?
+      // TODO: Should we do the following instead (we used to)?
+      //self = .init(wrappedValue: newValue)
     }
   }
 
@@ -79,11 +93,11 @@ extension PresentationState: Hashable where State: Hashable {
 }
 
 // TODO: Should ID clutter custom dump logs?
-extension PresentationState: CustomReflectable {
-  public var customMirror: Mirror {
-    Mirror(reflecting: self.wrappedValue as Any)
-  }
-}
+//extension PresentationState: CustomReflectable {
+//  public var customMirror: Mirror {
+//    Mirror(reflecting: self.wrappedValue as Any)
+//  }
+//}
 
 public enum PresentationAction<State, Action> {
   case present(id: AnyHashable = DependencyValues.current.uuid(), State? = nil)
@@ -201,17 +215,7 @@ extension View {
     store: Store<PresentationState<State>, PresentationAction<State, Action>>,
     @ViewBuilder content: @escaping (Store<State, Action>) -> Content
   ) -> some View {
-    WithViewStore(store.scope(state: { $0.wrappedValue != nil })) { viewStore in
-      self.fullScreenCover(isPresented: viewStore.binding(send: { $0 ? .present : .dismiss })) {
-        IfLetStore(
-          store.scope(
-            state: returningLastNonNilValue { $0.wrappedValue },
-            action: PresentationAction.presented
-          ),
-          then: content
-        )
-      }
-    }
+    self.fullScreenCover(store: store, state: { $0 }, action: { $0 }, content: content)
   }
 
   // TODO: How does `onDismiss:` factor in?
@@ -223,16 +227,10 @@ extension View {
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     @ViewBuilder content: @escaping (Store<DestinationState, DestinationAction>) -> Content
   ) -> some View {
-    WithViewStore(
-      store.scope(state: { $0.wrappedValue }),
-      removeDuplicates: areDestinationsEqual
-    ) { viewStore in
+    WithViewStore(store, removeDuplicates: { $0.id == $1.id }) { viewStore in
       self.fullScreenCover(
         item: viewStore.binding(
-          get: {
-            $0.flatMap { PresentationItem(destinations: $0, destination: toDestinationState) }
-          },
-          send: .dismiss
+          get: { Item(destinations: $0, destination: toDestinationState) }, send: .dismiss
         )
       ) { _ in
         IfLetStore(
@@ -253,21 +251,14 @@ extension View {
     arrowEdge: Edge = .top,
     @ViewBuilder content: @escaping (Store<State, Action>) -> Content
   ) -> some View {
-    WithViewStore(store.scope(state: { $0.wrappedValue != nil })) { viewStore in
-      self.popover(
-        isPresented: viewStore.binding(send: { $0 ? .present : .dismiss }),
-        attachmentAnchor: attachmentAnchor,
-        arrowEdge: arrowEdge
-      ) {
-        IfLetStore(
-          store.scope(
-            state: returningLastNonNilValue { $0.wrappedValue },
-            action: PresentationAction.presented
-          ),
-          then: content
-        )
-      }
-    }
+    self.popover(
+      store: store,
+      state: { $0 },
+      action: { $0 },
+      attachmentAnchor: attachmentAnchor,
+      arrowEdge: arrowEdge,
+      content: content
+    )
   }
 
   @available(tvOS, unavailable)
@@ -279,19 +270,11 @@ extension View {
     arrowEdge: Edge = .top,
     @ViewBuilder content: @escaping (Store<DestinationState, DestinationAction>) -> Content
   ) -> some View {
-    WithViewStore(
-      store.scope(state: { $0.wrappedValue }),
-      removeDuplicates: areDestinationsEqual
-    ) { viewStore in
+    WithViewStore(store, removeDuplicates: { $0.id == $1.id }) { viewStore in
       self.popover(
         item: viewStore.binding(
-          get: {
-            $0.flatMap { PresentationItem(destinations: $0, destination: toDestinationState) }
-          },
-          send: .dismiss
-        ),
-        attachmentAnchor: attachmentAnchor,
-        arrowEdge: arrowEdge
+          get: { Item(destinations: $0, destination: toDestinationState) }, send: .dismiss
+        )
       ) { _ in
         IfLetStore(
           store.scope(
@@ -309,17 +292,7 @@ extension View {
     store: Store<PresentationState<State>, PresentationAction<State, Action>>,
     @ViewBuilder content: @escaping (Store<State, Action>) -> Content
   ) -> some View {
-    WithViewStore(store.scope(state: { $0.wrappedValue != nil })) { viewStore in
-      self.sheet(isPresented: viewStore.binding(send: { $0 ? .present : .dismiss })) {
-        IfLetStore(
-          store.scope(
-            state: returningLastNonNilValue { $0.wrappedValue },
-            action: PresentationAction.presented
-          ),
-          then: content
-        )
-      }
-    }
+    self.sheet(store: store, state: { $0 }, action: { $0 }, content: content)
   }
 
   // TODO: How does `onDismiss:` factor in?
@@ -329,21 +302,19 @@ extension View {
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     @ViewBuilder content: @escaping (Store<DestinationState, DestinationAction>) -> Content
   ) -> some View {
-    WithViewStore(
-      store.scope(state: { $0.wrappedValue }),
-      removeDuplicates: areDestinationsEqual
-    ) { viewStore in
+    WithViewStore(store, removeDuplicates: { $0.id == $1.id }) { viewStore in
       self.sheet(
         item: viewStore.binding(
-          get: {
-            $0.flatMap { PresentationItem(destinations: $0, destination: toDestinationState) }
-          },
-          send: .dismiss
+          get: { Item(destinations: $0, destination: toDestinationState) }, send: .dismiss
         )
       ) { _ in
         IfLetStore(
           store.scope(
-            state: returningLastNonNilValue { $0.wrappedValue.flatMap(toDestinationState) },
+            state: returningLastNonNilValue {
+              dump($0.wrappedValue)
+              dump($0.wrappedValue.flatMap(toDestinationState))
+              return $0.wrappedValue.flatMap(toDestinationState)
+            },
             action: { .presented(fromDestinationAction($0)) }
           ),
           then: content
@@ -357,19 +328,9 @@ extension View {
     store: Store<PresentationState<State>, PresentationAction<State, Action>>,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination
   ) -> some View {
-    WithViewStore(store.scope(state: { $0.wrappedValue != nil })) { viewStore in
-      self.navigationDestination(
-        isPresented: viewStore.binding(send: { $0 ? .present : .dismiss })
-      ) {
-        IfLetStore(
-          store.scope(
-            state: returningLastNonNilValue { $0.wrappedValue },
-            action: PresentationAction.presented
-          ),
-          then: destination
-        )
-      }
-    }
+    self.navigationDestination(
+      store: store, state: { $0 }, action: { $0 }, destination: destination
+    )
   }
 
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
@@ -399,26 +360,23 @@ extension View {
   }
 }
 
-private func areDestinationsEqual<State>(_ lhs: State?, _ rhs: State?) -> Bool {
-  (lhs != nil) == (rhs != nil) && lhs.flatMap(enumTag) == rhs.flatMap(enumTag)
+private func areDestinationsEqual<State>(
+  _ lhs: PresentationState<State>,
+  _ rhs: PresentationState<State>
+) -> Bool {
+  lhs.id == rhs.id
 }
 
-private struct PresentationItem: Identifiable {
-  struct ID: Hashable {
-    let tag: UInt32?
-    let discriminator: ObjectIdentifier
-  }
-
-  let id: ID
+private struct Item: Identifiable {
+  let id: AnyHashable
 
   init?<Destination, Destinations>(
-    destinations: Destinations,
+    destinations: PresentationState<Destinations>,
     destination toDestination: (Destinations) -> Destination?
   ) {
-    guard let destination = toDestination(destinations) else { return nil }
-    self.id = ID(
-      tag: enumTag(destinations),
-      discriminator: ObjectIdentifier(type(of: destination))
-    )
+    guard case let .presented(id, destinations) = destinations, toDestination(destinations) != nil
+    else { return nil }
+
+    self.id = id
   }
 }
