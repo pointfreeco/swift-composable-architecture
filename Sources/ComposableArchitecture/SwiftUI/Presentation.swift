@@ -35,6 +35,7 @@ public enum PresentationState<State> {
     }
     set {
       // TODO: Do we need similar for the navigation APIs?
+      // TODO: Should we _always_ reuse the `id` when value is non-nil, even when enum tags differ?
       guard
         let newValue = newValue,
         case let .presented(id, oldValue) = self,
