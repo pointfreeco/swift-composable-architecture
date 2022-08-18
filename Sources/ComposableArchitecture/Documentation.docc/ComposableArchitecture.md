@@ -74,10 +74,6 @@ day-to-day when building applications, such as:
 - ``TestStore``
 - ``ActorIsolated``
 
-### Migrating to new versions of the library
-
-- <doc:MigratingToReducerProtocols>
-
 ## See Also
 
 The collection of videos from [Point-Free](https://www.pointfree.co) that dive deep into the
