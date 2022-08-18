@@ -148,7 +148,7 @@ for time-based asynchrony, and a UUID initialiser. All 3 dependencies can be add
 reducer:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Todos: ReducerProtocol {
   struct State { … }
   enum Action { … }
   @Dependency(\.date) var date
@@ -162,10 +162,10 @@ feature:
 
 ```swift
 @MainActor
-func testFeature() async {
+func testTodoso() async {
   let store = TestStore(
-    initialState: Feature.State(),
-    reducer: Feature()
+    initialState: Todos.State(),
+    reducer: Todos()
   )
 
   store.dependencies.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
@@ -227,7 +227,7 @@ With those few steps completed you can instantly access your API client dependen
 feature's reducer by using the [`@Dependency`][dependency-property-wrapper-docs] property wrapper:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Todos: ReducerProtocol {
   @Dependency(\.apiClient) var apiClient
   …
 }
@@ -240,8 +240,8 @@ tests you can override any endpoint of the dependency to return mock data:
 @MainActor
 func testFetchUser() async {
   let store = TestStore(
-    initialState: Feature.State(),
-    reducer: Feature()
+    initialState: Todos.State(),
+    reducer: Todos()
   )
 
   store.dependencies.apiClient.fetchUser = { _ in User(id: 1, name: "Blob") }
