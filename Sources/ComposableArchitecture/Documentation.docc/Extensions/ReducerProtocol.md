@@ -32,6 +32,7 @@
 
 - ``debug(_:state:action:actionFormat:)``
 - ``dependency(_:_:)``
+- ``dependencies(_:)``
 - ``signpost(_:log:)``
 
 ### Deprecations
