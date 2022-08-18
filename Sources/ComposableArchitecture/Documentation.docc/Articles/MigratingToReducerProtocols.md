@@ -317,6 +317,61 @@ struct MyFeature: ReducerProtocol {
 For more information on designing your dependencies and providing live and test dependencies, see
 our <doc:Testing> article.
 
+### Stores
+
+Stores can be initialized from an initial state and an instance of a type conforming to
+``ReducerProtocol``:
+
+```swift
+MyFeatureView(
+  store: Store(
+    initialState: MyFeature.State(),
+    reducer: MyFeature()
+  )
+)
+```
+
+Views that hold onto stores can also employ the ``StoreOf`` type alias to clean up the property
+declaration:
+
+```swift
+let store: StoreOf<MyFeature>
+// Expands to:
+//     let store: Store<MyFeature.State, MyFeature.Action>
+```
+
+### Testing
+
+Test stores can be initialized from an initial state and an instance of a type conforming to
+``ReducerProtocol``.
+
+```swift
+let store = TestStore(
+  initialState: MyFeature.State(),
+  reducer: MyFeature()
+)
+```
+
+Test stores will automatically employ "test" dependencies for any dependency accessed from reducers
+that use the `@Dependency` property wrapper.
+
+To override a dependency, you can update the test store's ``TestStore/dependencies``. For example,
+to install a test scheduler as the main queue dependency:
+
+```swift
+let mainQueue = DispatchQueue.test
+store.dependencies.mainQueue = mainQueue
+
+await store.send(.timerButtonStarted)
+
+await mainQueue.advance(by: .seconds(1))
+await store.receive(.timerTick) {
+  $0.secondsElapsed = 1
+}
+
+await store.send(.timerButtonStopped)
+```
+
 ## Migration using Swift 5.6
 
 The migration strategy described above for Swift 5.7 also applies to applications that are still 
