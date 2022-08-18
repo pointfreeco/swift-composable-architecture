@@ -63,8 +63,7 @@ struct LifecycleDemo: ReducerProtocol {
   }
 
   @Dependency(\.mainQueue) var mainQueue
-
-  enum CancelID {}
+  private enum CancelID {}
 
   var body: some ReducerProtocol<State, Action> {
     // TODO: timerReducer

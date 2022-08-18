@@ -27,10 +27,9 @@ struct Refreshable: ReducerProtocol {
 
   @Dependency(\.factClient) var factClient
   @Dependency(\.mainQueue) var mainQueue
+  private enum FactRequestID {}
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    enum FactRequestID {}
-
     switch action {
     case .cancelButtonTapped:
       return .cancel(id: FactRequestID.self)

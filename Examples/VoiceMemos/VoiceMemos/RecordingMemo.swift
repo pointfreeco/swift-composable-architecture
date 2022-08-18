@@ -69,7 +69,7 @@ struct RecordingMemo: ReducerProtocol {
         for await _ in self.mainRunLoop.timer(interval: .seconds(1)) {
           await send(.timerUpdated)
         }
-        _ = await startRecording
+        await startRecording
       }
 
     case .timerUpdated:

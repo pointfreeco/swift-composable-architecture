@@ -25,11 +25,10 @@ struct LoadThenPresent: ReducerProtocol {
   }
 
   @Dependency(\.mainQueue) var mainQueue
+  private enum CancelID {}
 
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
-      enum CancelID {}
-
       switch action {
       case .onDisappear:
         return .cancel(id: CancelID.self)

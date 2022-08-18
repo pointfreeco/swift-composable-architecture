@@ -38,10 +38,9 @@ struct VoiceMemo: ReducerProtocol {
 
   @Dependency(\.audioPlayer) var audioPlayer
   @Dependency(\.mainRunLoop) var mainRunLoop
+  private enum PlayID {}
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    enum PlayID {}
-
     switch action {
     case .audioPlayerClient:
       state.mode = .notPlaying
@@ -65,6 +64,8 @@ struct VoiceMemo: ReducerProtocol {
           for try await tick in self.mainRunLoop.timer(interval: 0.5) {
             await send(.timerUpdated(tick.date.timeIntervalSince(start.date)))
           }
+
+          await playAudio
         }
         .cancellable(id: PlayID.self, cancelInFlight: true)
 
@@ -77,7 +78,7 @@ struct VoiceMemo: ReducerProtocol {
       switch state.mode {
       case .notPlaying:
         break
-      case let .playing(progress: progress):
+      case .playing:
         state.mode = .playing(progress: time / state.duration)
       }
       return .none

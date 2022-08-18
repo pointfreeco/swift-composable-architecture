@@ -38,10 +38,9 @@ struct EffectsBasics: ReducerProtocol {
 
   @Dependency(\.factClient) var factClient
   @Dependency(\.mainQueue) var mainQueue
+  private enum DelayID {}
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    enum DelayID {}
-
     switch action {
     case .decrementButtonTapped:
       state.count -= 1
