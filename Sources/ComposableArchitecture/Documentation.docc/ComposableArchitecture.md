@@ -50,8 +50,8 @@ day-to-day when building applications, such as:
 - <doc:GettingStarted>
 - <doc:GettingReadyForSwiftConcurrency>
 - <doc:Performance>
+- <doc:Dependencies>
 - <doc:Testing>
-- <doc:MigratingToReducerProtocols>
 
 ### State management
 
@@ -69,6 +69,10 @@ day-to-day when building applications, such as:
 
 - ``TestStore``
 - ``ActorIsolated``
+
+### Migrating to new versions of the library
+
+- <doc:MigratingToReducerProtocols>
 
 ## See Also
 

@@ -42,6 +42,10 @@ public struct ConstantDateGenerator: DateGenerator {
   }
 }
 
+extension DateGenerator where Self == ConstantDateGenerator {
+  public static func constant(_ date: Date) -> Self { .init(date) }
+}
+
 extension DateGenerator where Self == UnimplementedDateGenerator {
   public static var unimplemented: Self { Self() }
 }
