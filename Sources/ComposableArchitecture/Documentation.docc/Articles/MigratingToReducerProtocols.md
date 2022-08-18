@@ -416,7 +416,7 @@ struct AppReducer: ReducerProtocol {
 
   enum Action {
     // ...
-    case tabC: TabCAction
+    case tabC(TabCAction)
   }
 
   @Dependency(\.date) var date
