@@ -39,10 +39,10 @@ struct Search: ReducerProtocol {
   }
 
   @Dependency(\.weatherClient) var weatherClient
+  private enum SearchLocationID {}
+  private enum SearchWeatherID {}
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    enum SearchLocationID {}
-
     switch action {
     case .forecastResponse(_, .failure):
       state.weather = nil
@@ -95,8 +95,6 @@ struct Search: ReducerProtocol {
       return .none
 
     case let .searchResultTapped(location):
-      enum SearchWeatherID {}
-
       state.resultForecastRequestInFlight = location
 
       return .task {

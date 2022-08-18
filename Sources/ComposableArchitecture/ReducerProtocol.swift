@@ -164,35 +164,3 @@ extension ReducerProtocol where Body: ReducerProtocol, Body.State == State, Body
     self.body.reduce(into: &state, action: action)
   }
 }
-
-// TODO: explore ReducerModifier
-//extension OVerrideDemoDependencies: reducerModifier {
-//  @Dep(\.isDemo)
-//
-//  func body(base: R) -> some {
-//    if isDemo {
-//      base.dep(...)
-//    } else {
-//      base
-//    }
-//  }
-//}
-//
-//extension ReducerProtocol {
-//  func overrideDemoDeps(isDemo: Bool) {
-//    if isDemo {
-//      self.dep(...)
-//    } else {
-//      self
-//    }
-//  }
-//}
-//
-//func testDependency_EffectOfEffect() async {
-//  struct Feature: ReducerProtocol {
-//    var body {
-//      CombineReducers {
-//        ...
-//      }
-//      .modifier(OverrideDemoDependencies())
-//    }

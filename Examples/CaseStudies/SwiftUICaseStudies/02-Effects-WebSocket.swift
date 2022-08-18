@@ -37,10 +37,9 @@ struct WebSocket: ReducerProtocol {
 
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.webSocket) var webSocket
+  private enum WebSocketID {}
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    enum WebSocketID {}
-
     switch action {
     case .alertDismissed:
       state.alert = nil

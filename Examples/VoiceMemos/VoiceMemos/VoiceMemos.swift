@@ -34,15 +34,6 @@ struct VoiceMemos: ReducerProtocol {
 
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
-      var newRecordingMemo: RecordingMemo.State {
-        RecordingMemo.State(
-          date: self.mainRunLoop.now.date,
-          url: self.temporaryDirectory()
-            .appendingPathComponent(self.uuid().uuidString)
-            .appendingPathExtension("m4a")
-        )
-      }
-
       switch action {
       case .alertDismissed:
         state.alert = nil
@@ -127,6 +118,15 @@ struct VoiceMemos: ReducerProtocol {
     .forEach(\.voiceMemos, action: /Action.voiceMemo(id:action:)) {
       VoiceMemo()
     }
+  }
+
+  private var newRecordingMemo: RecordingMemo.State {
+    RecordingMemo.State(
+      date: self.mainRunLoop.now.date,
+      url: self.temporaryDirectory()
+        .appendingPathComponent(self.uuid().uuidString)
+        .appendingPathExtension("m4a")
+    )
   }
 }
 

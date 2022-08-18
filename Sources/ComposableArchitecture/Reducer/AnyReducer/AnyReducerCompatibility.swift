@@ -10,8 +10,15 @@ extension Reduce {
 }
 
 extension AnyReducer {
+  public init<R: ReducerProtocol>(@ReducerBuilderOf<R> _ build: @escaping (Environment) -> R)
+  where R.State == State, R.Action == Action {
+    self.init { state, action, environment in
+      build(environment).reduce(into: &state, action: action)
+    }
+  }
+
   public init<R: ReducerProtocol>(_ reducer: R) where R.State == State, R.Action == Action {
-    self.init { state, action, _ in reducer.reduce(into: &state, action: action) }
+    self.init { _ in reducer }
   }
 }
 

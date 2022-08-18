@@ -4,12 +4,12 @@ import Combine
 public enum ReducerBuilder<State, Action> {
   public static func buildArray<R: ReducerProtocol>(_ reducers: [R]) -> _SequenceMany<R>
   where R.State == State, R.Action == Action {
-    .init(reducers: reducers)
+    _SequenceMany(reducers: reducers)
   }
 
   @inlinable
   public static func buildBlock() -> EmptyReducer<State, Action> {
-    .init()
+    EmptyReducer()
   }
 
   @inlinable
@@ -75,13 +75,13 @@ public enum ReducerBuilder<State, Action> {
     _ wrapped: R
   ) -> _Optional<R>
   where R.State == State, R.Action == Action {
-    .init(wrapped: wrapped)
+    _Optional(wrapped: wrapped)
   }
 
   @inlinable
   public static func buildOptional<R: ReducerProtocol>(_ wrapped: R?) -> _Optional<R>
   where R.State == State, R.Action == Action {
-    .init(wrapped: wrapped)
+    _Optional(wrapped: wrapped)
   }
 
   @inlinable
@@ -95,7 +95,7 @@ public enum ReducerBuilder<State, Action> {
     accumulated: R0, next: R1
   ) -> _Sequence<R0, R1>
   where R0.State == State, R0.Action == Action {
-    .init(accumulated, next)
+    _Sequence(accumulated, next)
   }
 
   public enum _Conditional<First: ReducerProtocol, Second: ReducerProtocol>: ReducerProtocol

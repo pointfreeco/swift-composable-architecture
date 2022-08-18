@@ -32,6 +32,7 @@ struct LoadThenNavigateList: ReducerProtocol {
   }
 
   @Dependency(\.mainQueue) var mainQueue
+  private enum CancelID {}
 
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in

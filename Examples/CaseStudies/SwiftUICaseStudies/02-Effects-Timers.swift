@@ -24,10 +24,9 @@ struct Timers: ReducerProtocol {
   }
 
   @Dependency(\.mainQueue) var mainQueue
+  private enum TimerID {}
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    enum TimerID {}
-
     switch action {
     case .timerTicked:
       state.secondsElapsed += 1

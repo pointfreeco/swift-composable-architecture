@@ -1,32 +1,30 @@
 /// Embeds a child reducer in a parent domain.
 ///
-/// `Scope` is a tool for slicing applications and features into smaller and smaller units that are
-/// easier to understand, test, and package into isolated modules. Each scoped unit can then be
-/// assembled into larger and larger domains to form a single reducer that powers a large feature or
-/// even an entire application.
+/// ``Scope`` allows you to transform a parent domain into a child domain, and then run a child
+/// reduce on that subset domain. This is an important tool for breaking down large features into
+/// smaller units and then piecing them together. The smaller units can easier to understand and
+/// test, and can even be packaged into their own isolated modules.
 ///
-/// You hand `Scope` a child reducer that you want to run on a slice of parent domain, as well as
-/// key paths and case paths that describe where to find the child in the parent. When run, it will
-/// intercept and feeds child actions alongside that slice of child state to the child reducer so
-/// that it can be updated in the parent.
+/// You hand ``Scope`` 3 pieces of data for it to do its job:
+///
+/// * A writable key path that identifies the child state inside the parent state.
+/// * A case path that identifies the child actions inside the parent actions.
+/// * A @``ReducerBuilder`` closure that describes the reducer you want to run on the child domain.
+///
+/// When run, it will intercept all child actions sent and feed them to the child reducer so that
+/// it can update the parent state and execute effects.
 ///
 /// For example, given the basic scaffolding of child reducer:
 ///
 /// ```swift
 /// struct Child: ReducerProtocol {
-///   struct State {
-///     // ...
-///   }
-///
-///   enum Action {
-///     // ...
-///   }
-///
-///   // ...
+///   struct State { … }
+///   enum Action { … }
+///   …
 /// }
 /// ```
 ///
-/// A parent reducer with a domain that holds onto child state and child actions can use
+/// A parent reducer with a domain that holds onto the child domain can use
 /// ``init(state:action:_:)`` to embed the child reducer in its
 /// ``ReducerProtocol/body-swift.property-5mc0o``:
 ///
@@ -34,42 +32,79 @@
 /// struct Parent: ReducerProtocol {
 ///   struct State {
 ///     var child: Child.State
-///     // ...
+///     …
 ///   }
 ///
 ///   enum Action {
 ///     case child(Child.Action)
-///     // ...
+///     …
 ///   }
 ///
 ///   var body: some ReducerProtocol<State, Action> {
 ///     Scope(state: \.child, action: /Action.child) {
 ///       Child()
 ///     }
-///     // ...
+///     Reduce { state, action in
+///       // Additional parent logic and behavior
+///     }
 ///   }
 /// }
 /// ```
 ///
-/// If the parent reducer models its state in an enum, use
-/// ``init(state:action:_:file:fileID:line:)`` with a case path instead of a writable key path.
+/// ## Enum state
+///
+/// The ``Scope`` reducer also works when state is modeled as an enum, not just a struct. In that
+/// case you can use ``init(state:action:_:file:fileID:line:)`` to specify a case path that
+/// identifies the case of state you want to scope to.
+///
+/// For example, if your state was modeled as an enum for unloaded/loading/loaded, you could
+/// scope to the loaded case to run a reduce on only that case:
+///
+/// ```swift
+/// struct Feature: ReducerProtocol {
+///   enum State {
+///     case unloaded
+///     case loading
+///     case loaded(Child.State)
+///   }
+///   enum Action {
+///     case child(Child.Action)
+///     …
+///   }
+///
+///   var body: some ReducerProtocol<State, Action> {
+///     Scope(state: /State.loaded, action: /Action.child) {
+///       Child()
+///     }
+///     Reduce { state, action in
+///       // Additional feature logic and behavior
+///     }
+///   }
+/// }
+/// ```
+///
+/// It is important to note that the order of combine ``Scope`` and your additional feature logic
+/// matters. It must be combined before the additional logic. In the other order it would be
+/// possible for the feature to intercept a child action, switch the state to another case, and
+/// then the scoped child reducer would not be able to react to that action. That can cause subtle
+/// bugs, and so we show a runtime warning in that case, and cause test failures.
+///
+/// For an alternative to using ``Scope`` with state case paths that enforces the order, check out
+/// the ``ifCaseLet(_:action:then:file:fileID:line:)`` operator.
 public struct Scope<ParentState, ParentAction, Child: ReducerProtocol>: ReducerProtocol {
-  @usableFromInline
-  enum StatePath {
+  public enum StatePath {
     case casePath(
-      CasePath<ParentState, Child.State>, file: StaticString, fileID: StaticString, line: UInt
+      CasePath<ParentState, Child.State>,
+      file: StaticString,
+      fileID: StaticString,
+      line: UInt
     )
     case keyPath(WritableKeyPath<ParentState, Child.State>)
   }
 
-  @usableFromInline
-  let toChildState: StatePath
-
-  @usableFromInline
-  let toChildAction: CasePath<ParentAction, Child.Action>
-
-  @usableFromInline
-  let child: Child
+  public let toChildState: StatePath
+  public let toChildAction: CasePath<ParentAction, Child.Action>
+  public let child: Child
 
   /// Initializes a reducer that runs the given child reducer against a slice of parent state and
   /// actions.

@@ -35,6 +35,7 @@ struct Todos: ReducerProtocol {
 
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.uuid) var uuid
+  private enum TodoCompletionID {}
 
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
@@ -83,7 +84,6 @@ struct Todos: ReducerProtocol {
         return .none
 
       case .todo(id: _, action: .checkBoxToggled):
-        enum TodoCompletionID {}
         return .task { .sortCompletedTodos }
           .debounce(id: TodoCompletionID.self, for: 1, scheduler: self.mainQueue.animation())
 
