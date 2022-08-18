@@ -145,7 +145,7 @@ are to return a protocol-style reducer:
 
 ```swift
 let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
-  AnyReducer { 
+  AnyReducer {
     MyFeature(
       apiClient: $0.apiClient,
       date: $0.date
@@ -352,11 +352,14 @@ let store = TestStore(
 )
 ```
 
-Test stores will automatically employ "test" dependencies for any dependency accessed from reducers
-that use the `@Dependency` property wrapper.
+By default test stores will employ "test" dependencies wherever a dependency is accessed from a
+reducer via the `@Dependency` property wrapper.
 
-To override a dependency, you can update the test store's ``TestStore/dependencies``. For example,
-to install a test scheduler as the main queue dependency:
+Instead of passing an environment of test dependencies to the store, or mutating the store's
+``TestStore/environment``, you will instead mutate the test store's ``TestStore/dependencies`` to
+override dependencies driving a feature.
+
+For example, to install a test scheduler as the main queue dependency:
 
 ```swift
 let mainQueue = DispatchQueue.test
@@ -370,6 +373,64 @@ await store.receive(.timerTick) {
 }
 
 await store.send(.timerButtonStopped)
+```
+
+### Embedding old reducer values in a new reducer conformance
+
+It may not be feasible to migrate your entire application at once, and you may find yourself
+needing to compose an existing value of ``Reducer`` into a type conforming to ``ReducerProtocol``.
+This can be done by passing the value and its environment of dependencies to
+``Reduce/init(_:environment:)``.
+
+For example, suppose a tab of your application has not yet been converted to the protocol-style of
+reducers, and it has an environment of dependencies:
+
+```swift
+struct TabCState {
+  // ...
+}
+enum TabCAction {
+  // ...
+}
+struct TabCEnvironment {
+  var date: () -> Date
+}
+let tabCReducer = Reducer<
+  TabCState,
+  TabCAction,
+  TabCEnvironment
+} { state, action, environment in
+  // ...
+}
+```
+
+It can still be embedded in `AppReducer` using ``Reduce/init(_:environment:)`` and passing along the
+necessary dependencies.
+
+```swift
+struct AppReducer: ReducerProtocol {
+  struct State {
+    // ...
+    var tabC: TabCState
+  }
+
+  enum Action {
+    // ...
+    case tabC: TabCAction
+  }
+
+  @Dependency(\.date) var date
+
+  var body: some ReducerProtocol<State, Action> {
+    // ...
+    Scope(state: \.tabC, action: /Action.tabC) {
+      Reduce(
+        tabCReducer,
+        environment: TabCEnvironment(date: self.date)
+      )
+    }
+  }
+}
 ```
 
 ## Migration using Swift 5.6
