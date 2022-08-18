@@ -65,6 +65,8 @@
     /// and/or kick off a side ``Effect`` that can communicate with the outside world.
     associatedtype Action
 
+    associatedtype _Body
+
     /// A type representing the body of this reducer.
     ///
     /// When you create a custom reducer by implementing the ``body-swift.property-5mc0o``, Swift
@@ -72,7 +74,7 @@
     ///
     /// If you create a custom reducer by implementing the ``reduce(into:action:)-4nzr2``, Swift
     /// infers this type to be `Never`.
-    associatedtype Body
+    typealias Body = _Body
 
     /// Evolves the current state of an application to the next state.
     ///

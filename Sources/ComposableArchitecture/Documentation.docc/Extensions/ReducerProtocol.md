@@ -12,8 +12,8 @@
 
 ### Reducer composition
 
-- ``body-swift.property-5mc0o``
-- ``Body-swift.associatedtype``
+- ``body-swift.property-97ymy``
+- ``Body-swift.typealias``
 - ``ReducerBuilder``
 - ``Scope``
 - ``ifLet(_:action:then:file:fileID:line:)``
