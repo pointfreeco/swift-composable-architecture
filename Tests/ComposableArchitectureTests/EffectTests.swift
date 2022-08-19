@@ -80,7 +80,7 @@ final class EffectTests: XCTestCase {
   func testConcatenateOneEffect() {
     var values: [Int] = []
 
-    let effect = Effect<Int, Never>.concatenate(
+    let effect: Effect<Int, Never> = Effect.concatenate(
       Effect(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect()
     )
 
@@ -93,6 +93,216 @@ final class EffectTests: XCTestCase {
 
     self.mainQueue.run()
     XCTAssertNoDifference(values, [1])
+  }
+
+  func testConcatenateWithChainingList() {
+    let effect: Effect<Int, Never> = Effect(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect()
+      .concatenate(
+        Effect(value: 2).delay(for: 2, scheduler: mainQueue).eraseToEffect(),
+        Effect(value: 3).delay(for: 3, scheduler: mainQueue).eraseToEffect()
+      )
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1])
+
+    self.mainQueue.advance(by: 2)
+    XCTAssertNoDifference(values, [1, 2])
+
+    self.mainQueue.advance(by: 3)
+    XCTAssertNoDifference(values, [1, 2, 3])
+
+    self.mainQueue.run()
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testConcatenateByChaining() {
+    let effect: Effect<Int, Never> = Effect(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect()
+      .concatenate(Effect(value: 2).delay(for: 2, scheduler: mainQueue).eraseToEffect())
+      .concatenate(Effect(value: 3).delay(for: 3, scheduler: mainQueue).eraseToEffect())
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1])
+
+    self.mainQueue.advance(by: 2)
+    XCTAssertNoDifference(values, [1, 2])
+
+    self.mainQueue.advance(by: 3)
+    XCTAssertNoDifference(values, [1, 2, 3])
+
+    self.mainQueue.run()
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testConcatenateWithArray() {
+    let effect = Effect<Int, Never>.concatenate(
+      [
+        Effect(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect(),
+        Effect(value: 2).delay(for: 2, scheduler: mainQueue).eraseToEffect(),
+        Effect(value: 3).delay(for: 3, scheduler: mainQueue).eraseToEffect()
+      ]
+    )
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1])
+
+    self.mainQueue.advance(by: 2)
+    XCTAssertNoDifference(values, [1, 2])
+
+    self.mainQueue.advance(by: 3)
+    XCTAssertNoDifference(values, [1, 2, 3])
+
+    self.mainQueue.run()
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testConcatenateWithClosure() {
+    let effect = Effect<Int, Never>.concatenate {
+      [
+        Effect(value: 1).delay(for: 1, scheduler: self.mainQueue).eraseToEffect(),
+        Effect(value: 2).delay(for: 2, scheduler: self.mainQueue).eraseToEffect(),
+        Effect(value: 3).delay(for: 3, scheduler: self.mainQueue).eraseToEffect()
+      ]
+    }
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1])
+
+    self.mainQueue.advance(by: 2)
+    XCTAssertNoDifference(values, [1, 2])
+
+    self.mainQueue.advance(by: 3)
+    XCTAssertNoDifference(values, [1, 2, 3])
+
+    self.mainQueue.run()
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testConcatenateWithChainingArray() {
+    let effect: Effect<Int, Never> = Effect(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect()
+      .concatenate(
+        [
+          Effect(value: 2).delay(for: 2, scheduler: mainQueue).eraseToEffect(),
+          Effect(value: 3).delay(for: 3, scheduler: mainQueue).eraseToEffect()
+        ]
+      )
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1])
+
+    self.mainQueue.advance(by: 2)
+    XCTAssertNoDifference(values, [1, 2])
+
+    self.mainQueue.advance(by: 3)
+    XCTAssertNoDifference(values, [1, 2, 3])
+
+    self.mainQueue.run()
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testConcatenateWithChainingClosure() {
+    let effect: Effect<Int, Never> = Effect(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect()
+      .concatenate {
+        [
+          Effect(value: 2).delay(for: 2, scheduler: self.mainQueue).eraseToEffect(),
+          Effect(value: 3).delay(for: 3, scheduler: self.mainQueue).eraseToEffect()
+        ]
+      }
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1])
+
+    self.mainQueue.advance(by: 2)
+    XCTAssertNoDifference(values, [1, 2])
+
+    self.mainQueue.advance(by: 3)
+    XCTAssertNoDifference(values, [1, 2, 3])
+
+    self.mainQueue.run()
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testConcatenateOutputs() {
+    let effect = Effect<Int, Never>.concatenateOutputs(1, 2, 3)
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testConcatenateChainingOutputs() {
+    let effect: Effect<Int, Never> = Effect(value: 1).concatenateOutputs(2, 3)
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testConcatenateWithOutputArray() {
+    let effect: Effect<Int, Never> = Effect.concatenateOutputs([1, 2, 3])
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testConcatenateWithChainingOutputArray() {
+    let effect: Effect<Int, Never> = Effect(value: 1).concatenateOutputs([2, 3])
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testConcatenateWithOutputClosure() {
+    let effect: Effect<Int, Never> = Effect.concatenateOutputs { [1, 2, 3] }
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testConcatenateWithChainingOutputClosure() {
+    let effect: Effect<Int, Never> = Effect(value: 1).concatenateOutputs { [2, 3] }
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [1, 2, 3])
   }
 
   func testMerge() {

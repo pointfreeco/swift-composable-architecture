@@ -463,6 +463,153 @@ extension Effect {
     .concatenate(effects)
   }
 
+  /// Concatenates a variadic list of effects together into a single effect, which runs the effects
+  /// one after the other.
+  ///
+  /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
+  ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
+  ///   Composable Architecture in functions like ``Reducer/combine(_:)-1ern2``.
+  ///
+  ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
+  ///
+  /// - Parameter effects: A variadic list of effects.
+  /// - Returns: A new effect
+  public func concatenate(_ effects: Self...) -> Self {
+    self.concatenate(effects)
+  }
+
+  /// Concatenates another effect together into a single effect, which runs the effects
+  /// one after the other.
+  ///
+  /// - Parameter effect: Another effect.
+  /// - Returns: A new effect
+  public func concatenate(_ effect: Effect) -> Effect {
+    Effect.concatenate(self, effect)
+  }
+
+  /// Concatenates an effect array together into a single effect, which runs the effects
+  /// one after the other.
+  ///
+  /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
+  ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
+  ///   Composable Architecture in functions like ``Reducer/combine(_:)-1ern2``.
+  ///
+  ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
+  ///
+  /// - Parameter effects: An array of effects.
+  /// - Returns: A new effect
+  public func concatenate(_ effects: [Effect]) -> Effect {
+    self.concatenate(Effect.concatenate(effects))
+  }
+
+  /// Concatenates an effect array returned by a closure together into a single effect, which runs the effects
+  /// one after the other.
+  ///
+  /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
+  ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
+  ///   Composable Architecture in functions like ``Reducer/combine(_:)-1ern2``.
+  ///
+  ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
+  ///
+  /// - Parameter effects: A closure returns an effect array.
+  /// - Returns: A new effect
+  public func concatenate(_ effects: @escaping () -> [Effect]) -> Effect {
+    self.concatenate(Effect.concatenate(effects()))
+  }
+
+  /// Concatenates an effect array returned by a closure together into a single effect, which runs the effects
+  /// one after the other.
+  ///
+  /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
+  ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
+  ///   Composable Architecture in functions like ``Reducer/combine(_:)-1ern2``.
+  ///
+  ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
+  ///
+  /// - Parameter effects: A closure returns an effect array.
+  /// - Returns: A new effect
+  public static func concatenate(_ effects: @escaping () -> [Effect]) -> Effect {
+    Effect.concatenate(effects())
+  }
+
+  /// Transfers a variadic list of outputs into effects and concatenates together into a single effect,
+  /// which runs the effects one after the other.
+  ///
+  /// - Parameter effects: A list of outputs.
+  /// - Returns: A new effect
+  public func concatenateOutputs(_ outputs: Output...) -> Effect {
+    self.concatenate(outputs.map(Effect.init(value:)))
+  }
+
+  /// Transfers a variadic list of outputs into effects and concatenates together into a single effect,
+  /// which runs the effects one after the other.
+  ///
+  /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
+  ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
+  ///   Composable Architecture in functions like ``Reducer/combine(_:)-1ern2``.
+  ///
+  ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
+  ///
+  /// - Parameter effects: A list of outputs.
+  /// - Returns: A new effect
+  public static func concatenateOutputs(_ outputs: Output...) -> Effect {
+    .concatenate(outputs.map(Effect.init(value:)))
+  }
+
+  /// Transfers an output array into effects and concatenates together into a single effect,
+  /// which runs the effects one after the other.
+  ///
+  /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
+  ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
+  ///   Composable Architecture in functions like ``Reducer/combine(_:)-1ern2``.
+  ///
+  ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
+  ///
+  /// - Parameter effects: An array of outputs.
+  /// - Returns: A new effect
+  public func concatenateOutputs(_ outputs: [Output]) -> Effect {
+    self.concatenate(outputs.map(Effect.init(value:)))
+  }
+
+  /// Transfers an output array into effects and concatenates together into a single effect,
+  /// which runs the effects one after the other.
+  ///
+  /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
+  ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
+  ///   Composable Architecture in functions like ``Reducer/combine(_:)-1ern2``.
+  ///
+  ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
+  ///
+  /// - Parameter effects: An array of outputs.
+  /// - Returns: A new effect
+  public static func concatenateOutputs(_ outputs: [Output]) -> Effect {
+    .concatenate(outputs.map(Effect.init(value:)))
+  }
+
+  /// Transfers an output array returned by a closure into effects and concatenates together into a single effect,
+  /// which runs the effects one after the other.
+  ///
+  /// - Warning: Combine's `Publishers.Concatenate` operator, which this function uses, can leak
+  ///   when its suffix is a `Publishers.MergeMany` operator, which is used throughout the
+  ///   Composable Architecture in functions like ``Reducer/combine(_:)-1ern2``.
+  ///
+  ///   Feedback filed: <https://gist.github.com/mbrandonw/611c8352e1bd1c22461bd505e320ab58>
+  ///
+  /// - Parameter effects: A closure returns an output array.
+  /// - Returns: A new effect
+  public func concatenateOutputs(_ outputs: @escaping () -> [Output]) -> Effect {
+    self.concatenate(outputs().map(Effect.init(value:)))
+  }
+
+  /// Transfers an output array returned by a closure into effects and concatenates together into a single effect,
+  /// which runs the effects one after the other.
+  ///
+  /// - Parameter effects: A closure returns an output array.
+  /// - Returns: A new effect
+  public static func concatenateOutputs(_ outputs: @escaping () -> [Output]) -> Effect {
+    .merge(outputs().map(Effect.init(value:)))
+  }
+
   /// Concatenates a collection of effects together into a single effect, which runs the effects one
   /// after the other.
   ///
