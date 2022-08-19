@@ -266,7 +266,7 @@ extension ViewStore where Action: BindableAction, Action.State == State {
   ///
   /// - Parameter keyPath: A key path to a specific bindable state.
   /// - Returns: A new binding.
-  @MainActor
+  @MainActor // TODO: Remove
   public func binding<Value: Equatable>(
     _ keyPath: WritableKeyPath<State, BindableState<Value>>,
     file: StaticString = #file,

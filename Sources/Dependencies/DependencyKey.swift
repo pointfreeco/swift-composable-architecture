@@ -1,9 +1,8 @@
 public protocol DependencyKey {
-  #if swift(>=5.7)
-    associatedtype Value: Sendable
-  #else
-    associatedtype Value
-  #endif
+  associatedtype Value
+  // NB: This associated type should be constrained to `Sendable` when this bug is fixed:
+  //     https://github.com/apple/swift/issues/60649
+
   static var testValue: Value { get }
 }
 

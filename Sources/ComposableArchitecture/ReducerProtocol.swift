@@ -103,25 +103,6 @@
     @ReducerBuilder<State, Action>
     var body: Body { get }
   }
-
-  /// A convenience type alias for referring to a reducer of the given reducer's domain.
-  ///
-  /// Instead of specifying two generics:
-  ///
-  /// ```swift
-  /// var body: some ReducerProtocol<Feature.State, Feature.Action> {
-  ///   // ...
-  /// }
-  /// ```
-  ///
-  /// You can specify a single generic:
-  ///
-  /// ```swift
-  /// var body: some ReducerProtocolOf<Feature> {
-  ///   // ...
-  /// }
-  /// ```
-  public typealias ReducerProtocolOf<R: ReducerProtocol> = ReducerProtocol<R.State, R.Action>
 #else
   public protocol ReducerProtocol {
     associatedtype State

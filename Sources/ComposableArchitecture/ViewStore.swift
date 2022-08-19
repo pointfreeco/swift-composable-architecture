@@ -274,7 +274,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///
   /// - Parameter predicate: A predicate on `State` that determines for how long this method should
   ///   suspend.
-  @MainActor
+  @MainActor // TODO: Remove
   public func yield(while predicate: @escaping (State) -> Bool) async {
     if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
       _ = await self.publisher
@@ -330,7 +330,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///   - valueToAction: A function that transforms the binding's value into an action that can be
   ///     sent to the store.
   /// - Returns: A binding.
-  @MainActor
+  @MainActor // TODO: Remove
   public func binding<Value>(
     get: @escaping (State) -> Value,
     send valueToAction: @escaping (Value) -> Action
@@ -364,7 +364,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///   - get: A function to get the state for the binding from the view store's full state.
   ///   - action: The action to send when the binding is written to.
   /// - Returns: A binding.
-  @MainActor
+  @MainActor // TODO: Remove
   public func binding<Value>(
     get: @escaping (State) -> Value,
     send action: Action
@@ -397,7 +397,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///   - valueToAction: A function that transforms the binding's value into an action that can be
   ///     sent to the store.
   /// - Returns: A binding.
-  @MainActor
+  @MainActor // TODO: Remove
   public func binding(
     send valueToAction: @escaping (State) -> Action
   ) -> Binding<State> {
@@ -427,7 +427,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// - Parameters:
   ///   - action: The action to send when the binding is written to.
   /// - Returns: A binding.
-  @MainActor
+  @MainActor // TODO: Remove
   public func binding(send action: Action) -> Binding<State> {
     self.binding(send: { _ in action })
   }

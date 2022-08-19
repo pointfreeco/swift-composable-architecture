@@ -7,8 +7,10 @@
 /// properties of the ``DependencyValues`` structure. For information about creating custom
 /// dependency values, see the ``DependencyKey`` protocol.
 @propertyWrapper
-public struct Dependency<Value>: Sendable {
-  private let keyPath: KeyPath<DependencyValues, Value> & Sendable
+public struct Dependency<Value: Sendable>: @unchecked Sendable {
+  // NB: Key paths do not conform to sendable and are instead diagnosed at the time of forming the
+  //     literal.
+  private let keyPath: KeyPath<DependencyValues, Value>
 
   /// Creates a dependency property to read the specified key path.
   ///
@@ -31,6 +33,6 @@ public struct Dependency<Value>: Sendable {
 
   /// The current value of the dependency property.
   public var wrappedValue: Value {
-    DependencyValues.current[keyPath: self.keyPath as KeyPath<DependencyValues, Value>]
+    DependencyValues.current[keyPath: self.keyPath]
   }
 }

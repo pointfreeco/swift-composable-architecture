@@ -23,7 +23,7 @@ public struct DependencyValues: Sendable {
     self.isTesting = isTesting
   }
 
-  public subscript<Key: DependencyKey>(key: Key.Type) -> Key.Value {
+  public subscript<Key: DependencyKey>(key: Key.Type) -> Key.Value where Key.Value: Sendable {
     get {
       guard let dependency = self.storage[ObjectIdentifier(key)]?.base as? Key.Value
       else {

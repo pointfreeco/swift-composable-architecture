@@ -8,7 +8,6 @@
 - ``State``
 - ``Action``
 - ``Effect``
-- ``ReducerProtocolOf``
 
 ### Reducer composition
 
