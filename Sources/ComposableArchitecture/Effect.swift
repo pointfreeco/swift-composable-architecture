@@ -106,17 +106,17 @@ extension Effect where Failure == Never {
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> Self {
+  ) -> Self where Output: Sendable {
     Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
       let subject = PassthroughSubject<Output, Failure>()
-      let task = Task(priority: priority) { @MainActor in
-        defer { subject.send(completion: .finished) }
+      let task = Task(priority: priority) {
         do {
           try Task.checkCancellation()
           let output = try await operation()
           try Task.checkCancellation()
-          subject.send(output)
+          await MainActor.run { subject.send(output) }
         } catch is CancellationError {
+          await MainActor.run { subject.send(completion: .finished) }
           return
         } catch {
           guard let handler = handler else {
@@ -141,10 +141,13 @@ extension Effect where Failure == Never {
                 line: line
               )
             #endif
+            await MainActor.run { subject.send(completion: .finished) }
             return
           }
-          await subject.send(handler(error))
+          let error = await handler(error)
+          await MainActor.run { subject.send(error) }
         }
+        await MainActor.run { subject.send(completion: .finished) }
       }
       return subject.handleEvents(receiveCancel: task.cancel)
     }
@@ -197,14 +200,14 @@ extension Effect where Failure == Never {
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> Self {
+  ) -> Self where Output: Sendable {
     .run { subscriber in
-      let task = Task(priority: priority) { @MainActor in
-        defer { subscriber.send(completion: .finished) }
+      let task = Task(priority: priority) {
         let send = Send(send: { subscriber.send($0) })
         do {
           try await operation(send)
         } catch is CancellationError {
+          await MainActor.run { subscriber.send(completion: .finished) }
           return
         } catch {
           guard let handler = handler else {
@@ -229,10 +232,12 @@ extension Effect where Failure == Never {
                 line: line
               )
             #endif
+            await MainActor.run { subscriber.send(completion: .finished) }
             return
           }
           await handler(error, send)
         }
+        await MainActor.run { subscriber.send(completion: .finished) }
       }
       return AnyCancellable {
         task.cancel()
@@ -299,17 +304,17 @@ extension Effect where Failure == Never {
 /// context.
 ///
 /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
-@MainActor
 public struct Send<Action> {
-  public let send: (Action) -> Void
+  public let send: @MainActor (Action) -> Void
 
-  public init(send: @escaping (Action) -> Void) {
+  public init(send: @escaping @MainActor (Action) -> Void) {
     self.send = send
   }
 
   /// Sends an action back into the system from an effect.
   ///
   /// - Parameter action: An action.
+  @MainActor
   public func callAsFunction(_ action: Action) {
     guard !Task.isCancelled else { return }
     self.send(action)
@@ -320,6 +325,7 @@ public struct Send<Action> {
   /// - Parameters:
   ///   - action: An action.
   ///   - animation: An animation.
+  @MainActor
   public func callAsFunction(_ action: Action, animation: Animation?) {
     guard !Task.isCancelled else { return }
     withAnimation(animation) {
