@@ -117,6 +117,216 @@ final class EffectTests: XCTestCase {
     XCTAssertNoDifference(values, [1, 2, 3])
   }
 
+  func testMergeOneEffect() {
+    var values: [Int] = []
+
+    let effect: Effect<Int, Never> = Effect.merge(
+      Effect(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect()
+    )
+
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1])
+
+    self.mainQueue.run()
+    XCTAssertNoDifference(values, [1])
+  }
+
+  func testMergeWithChainingList() {
+    let effect: Effect<Int, Never> = Effect(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect()
+      .merge(
+        Effect(value: 2).delay(for: 2, scheduler: mainQueue).eraseToEffect(),
+        Effect(value: 3).delay(for: 3, scheduler: mainQueue).eraseToEffect()
+      )
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1, 2])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testMergeByChaining() {
+    let effect: Effect<Int, Never> = Effect(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect()
+      .merge(Effect(value: 2).delay(for: 2, scheduler: mainQueue).eraseToEffect())
+      .merge(Effect(value: 3).delay(for: 3, scheduler: mainQueue).eraseToEffect())
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1, 2])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testMergeWithArray() {
+    let effect = Effect<Int, Never>.merge(
+      [
+        Effect(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect(),
+        Effect(value: 2).delay(for: 2, scheduler: mainQueue).eraseToEffect(),
+        Effect(value: 3).delay(for: 3, scheduler: mainQueue).eraseToEffect()
+      ]
+    )
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1, 2])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testMergeWithClosure() {
+    let effect = Effect<Int, Never>.merge {
+      [
+        Effect(value: 1).delay(for: 1, scheduler: self.mainQueue).eraseToEffect(),
+        Effect(value: 2).delay(for: 2, scheduler: self.mainQueue).eraseToEffect(),
+        Effect(value: 3).delay(for: 3, scheduler: self.mainQueue).eraseToEffect()
+      ]
+    }
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1, 2])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testMergeWithChainingArray() {
+    let effect: Effect<Int, Never> = Effect(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect()
+      .merge(
+        [
+          Effect(value: 2).delay(for: 2, scheduler: mainQueue).eraseToEffect(),
+          Effect(value: 3).delay(for: 3, scheduler: mainQueue).eraseToEffect()
+        ]
+      )
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1, 2])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testMergeWithChainingClosure() {
+    let effect: Effect<Int, Never> = Effect(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect()
+      .merge {
+        [
+          Effect(value: 2).delay(for: 2, scheduler: self.mainQueue).eraseToEffect(),
+          Effect(value: 3).delay(for: 3, scheduler: self.mainQueue).eraseToEffect()
+        ]
+      }
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1, 2])
+
+    self.mainQueue.advance(by: 1)
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testMergeOutputs() {
+    let effect = Effect<Int, Never>.mergeOutputs(1, 2, 3)
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testMergeChainingOutputs() {
+    let effect: Effect<Int, Never> = Effect(value: 1).mergeOutputs(2, 3)
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testMergeWithOutputArray() {
+    let effect: Effect<Int, Never> = Effect.mergeOutputs([1, 2, 3])
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testMergeWithChainingOutputArray() {
+    let effect: Effect<Int, Never> = Effect(value: 1).mergeOutputs([2, 3])
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testMergeWithOutputClosure() {
+    let effect: Effect<Int, Never> = Effect.mergeOutputs { [1, 2, 3] }
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
+  func testMergeWithChainingOutputClosure() {
+    let effect: Effect<Int, Never> = Effect(value: 1).mergeOutputs { [2, 3] }
+
+    var values: [Int] = []
+    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+
+    XCTAssertNoDifference(values, [1, 2, 3])
+  }
+
   func testEffectSubscriberInitializer() {
     let effect = Effect<Int, Never>.run { subscriber in
       subscriber.send(1)

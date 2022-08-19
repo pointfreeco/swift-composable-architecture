@@ -340,6 +340,105 @@ extension Effect {
     .merge(effects)
   }
 
+  /// Merges a variadic list of effects together into a single effect, which runs the effects at the
+  /// same time.
+  ///
+  /// - Parameter effects: A list of effects.
+  /// - Returns: A new effect
+  public func merge(_ effects: Self...) -> Self {
+    self.merge(effects)
+  }
+
+  /// Merges another effect together into a single effect, which runs the effects at the
+  /// same time.
+  ///
+  /// - Parameter effect: An effect.
+  /// - Returns: A new effect
+  public func merge(_ effect: Effect) -> Effect {
+    .merge(self, effect)
+  }
+
+  /// Merges an effect array together into a single effect, which runs the effects at the
+  /// same time.
+  ///
+  /// - Parameter effects: An array of effects.
+  /// - Returns: A new effect
+  public func merge(_ effects: [Effect]) -> Effect {
+    self.merge(Effect.merge(effects))
+  }
+
+  /// Merges an effect array returned by a closure together into a single effect,
+  /// which runs the effects at the same time.
+  ///
+  /// - Parameter effects: A closure returns an effect array.
+  /// - Returns: A new effect
+  public func merge(_ effects: @escaping () -> [Effect]) -> Effect {
+    self.merge(Effect.merge(effects()))
+  }
+
+  /// Merges an effect array returned by a closure together into a single effect,
+  /// which runs the effects at the same time.
+  ///
+  /// - Parameter effects: A closure returns an effect array.
+  /// - Returns: A new effect
+  public static func merge(_ effects: @escaping () -> [Effect]) -> Effect {
+    .merge(effects())
+  }
+
+  /// Transfers a variadic list of outputs into effects and merges together into a single effect,
+  /// which runs the effects at the same time.
+  ///
+  /// - Parameter outputs: A list of outputs.
+  /// - Returns: A new effect
+  public func mergeOutputs(_ outputs: Output...) -> Effect {
+    self.merge(outputs.map(Effect.init(value:)))
+  }
+
+  /// Transfers a variadic list of outputs into effects and merges together into a single effect,
+  /// which runs the effects at the same time.
+  ///
+  /// - Parameter outputs: A list of outputs.
+  /// - Returns: A new effect
+  public static func mergeOutputs(_ outputs: Output...) -> Effect {
+    .merge(outputs.map(Effect.init(value:)))
+  }
+
+  /// Transfers an output array into effects and merges together into a single effect,
+  /// which runs the effects at the same time.
+  ///
+  /// - Parameter outputs: An array of outputs.
+  /// - Returns: A new effect
+  public func mergeOutputs(_ outputs: [Output]) -> Effect {
+    self.merge(outputs.map(Effect.init(value:)))
+  }
+
+  /// Transfers an output array into effects and merges together into a single effect,
+  /// which runs the effects at the same time.
+  ///
+  /// - Parameter outputs: An array of outputs.
+  /// - Returns: A new effect
+  public static func mergeOutputs(_ outputs: [Output]) -> Effect {
+    .merge(outputs.map(Effect.init(value:)))
+  }
+
+  /// Transfers an output array returned by a closure into effects and merges together into a single effect,
+  /// which runs the effects at the same time.
+  ///
+  /// - Parameter outputs: A closure returns an output array.
+  /// - Returns: A new effect
+  public func mergeOutputs(_ outputs: @escaping () -> [Output]) -> Effect {
+    self.merge(outputs().map(Effect.init(value:)))
+  }
+
+  /// Transfers an output array returned by a closure into effects and merges together into a single effect,
+  /// which runs the effects at the same time.
+  ///
+  /// - Parameter outputs: A closure returns an output array.
+  /// - Returns: A new effect
+  public static func mergeOutputs(_ outputs: @escaping () -> [Output]) -> Effect {
+    .merge(outputs().map(Effect.init(value:)))
+  }
+
   /// Merges a sequence of effects together into a single effect, which runs the effects at the same
   /// time.
   ///
