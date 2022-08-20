@@ -373,38 +373,37 @@ extension BindingAction {
   /// Useful in transforming binding actions on view state into binding actions on reducer state
   /// when the domain contains ``BindableState`` and ``BindableAction``.
   ///
-  /// For example, we can model an app that can bind an integer count to a stepper and make a
+  /// For example, we can model an feature that can bind an integer count to a stepper and make a
   /// network request to fetch a fact about that integer with the following domain:
   ///
   /// ```swift
-  /// struct AppState: Equatable {
-  ///   @BindableState var count = 0
-  ///   var fact: String?
-  ///   ...
+  /// struct MyFeature: ReducerProtocol {
+  ///   struct State: Equatable {
+  ///     @BindableState var count = 0
+  ///     var fact: String?
+  ///     ...
+  ///   }
+  ///
+  ///   enum Action: BindableAction {
+  ///     case binding(BindingAction<State>)
+  ///     case factButtonTapped
+  ///     case factResponse(String?)
+  ///     ...
+  ///   }
+  ///
+  ///   @Dependency(\.numberFact) var numberFact
+  ///
+  ///   var body: some ReducerProtocol<State, Action> {
+  ///     BindingReducer()
+  ///     // ...
+  ///   }
   /// }
   ///
-  /// enum AppAction: BindableAction {
-  ///   case binding(BindingAction<AppState>)
-  ///   case factButtonTapped
-  ///   case factResponse(String?)
-  ///   ...
-  /// }
-  ///
-  /// struct AppEnvironment {
-  ///   var numberFact: (Int) async throws -> String
-  ///   ...
-  /// }
-  ///
-  /// let appReducer = AnyReducer<AppState, AppAction, AppEnvironment> {
-  ///   ...
-  /// }
-  /// .binding()
-  ///
-  /// struct AppView: View {
-  ///   let store: Store
+  /// struct MyFeatureView: View {
+  ///   let store: StoreOf<MyFeature>
   ///
   ///   var view: some View {
-  ///     ...
+  ///     // ...
   ///   }
   /// }
   /// ```
@@ -416,29 +415,30 @@ extension BindingAction {
   /// bindable state and bindable action:
   ///
   /// ```swift
-  /// extension AppView {
+  /// extension MyFeatureView {
   ///   struct ViewState: Equatable {
   ///     @BindableState var count: Int
   ///     let fact: String?
-  ///     // no access to any other state on `AppState`, like child domains
+  ///     // no access to any other state on `MyFeature.State`, like child domains
   ///   }
   ///
   ///   enum ViewAction: BindableAction {
   ///     case binding(BindingAction<ViewState>)
   ///     case factButtonTapped
-  ///     // no access to any other action on `AppAction`, like `factResponse`
+  ///     // no access to any other action on `MyFeature.Action`, like `factResponse`
   ///   }
   /// }
   /// ```
   ///
   /// In order to transform a `BindingAction<ViewState>` sent from the view domain into a
-  /// `BindingAction<AppState>`, we need a writable key path from `AppState` to `ViewState`. We
-  /// can synthesize one by defining a computed property on `AppState` with a getter and a setter.
-  /// The setter should communicate any mutations to bindable state back to the parent state:
+  /// `BindingAction<MyFeature.State>`, we need a writable key path from `MyFeature.State` to
+  /// `ViewState`. We can synthesize one by defining a computed property on `MyFeature.State` with a
+  /// getter and a setter. The setter should communicate any mutations to bindable state back to the
+  /// parent state:
   ///
   /// ```swift
-  /// extension AppState {
-  ///   var view: AppView.ViewState {
+  /// extension MyFeature.State {
+  ///   var view: MyFeatureView.ViewState {
   ///     get { .init(count: self.count, fact: self.fact) }
   ///     set { self.count = newValue.count }
   ///   }
@@ -446,22 +446,22 @@ extension BindingAction {
   /// ```
   ///
   /// With this property defined it is now possible to transform a `BindingAction<ViewState>` into
-  /// a `BindingAction<AppState>`, which means we can transform a `ViewAction` into an
-  /// `AppAction`. This is where `pullback` comes into play: we can unwrap the view action's
-  /// binding action on view state and transform it with `pullback` to work with app state. We can
-  /// define a helper that performs this transformation, as well as route any other view actions
+  /// a `BindingAction<MyFeature.State>`, which means we can transform a `ViewAction` into an
+  /// `MyFeature.Action`. This is where `pullback` comes into play: we can unwrap the view action's
+  /// binding action on view state and transform it with `pullback` to work with feature state. We
+  /// can define a helper that performs this transformation, as well as route any other view actions
   /// to their reducer equivalents:
   ///
   /// ```swift
-  /// extension AppAction {
-  ///   static func view(_ viewAction: AppView.ViewAction) -> Self {
+  /// extension MyFeature.Action {
+  ///   static func view(_ viewAction: MyFeature.View.ViewAction) -> Self {
   ///     switch viewAction {
   ///     case let .binding(action):
-  ///       // transform view binding actions into app binding actions
+  ///       // transform view binding actions into feature binding actions
   ///       return .binding(action.pullback(\.view))
   ///
   ///     case let .factButtonTapped
-  ///       // route `ViewAction.factButtonTapped` to `AppAction.factButtonTapped`
+  ///       // route `ViewAction.factButtonTapped` to `MyFeature.Action.factButtonTapped`
   ///       return .factButtonTapped
   ///     }
   ///   }
@@ -473,7 +473,7 @@ extension BindingAction {
   ///
   /// ```swift
   /// WithViewStore(
-  ///   self.store.scope(state: \.view, action: AppAction.view)
+  ///   self.store.scope(state: \.view, action: MyFeature.Action.view)
   /// ) { viewStore in
   ///   Stepper("\(viewStore.count)", viewStore.binding(\.$count))
   ///   Button("Get number fact") { viewStore.send(.factButtonTapped) }
@@ -506,45 +506,6 @@ extension BindingAction: CustomDumpReflectable {
       ],
       displayStyle: .enum
     )
-  }
-}
-
-extension AnyReducer where Action: BindableAction, State == Action.State {
-  /// Returns a reducer that applies ``BindingAction`` mutations to `State` before running this
-  /// reducer's logic.
-  ///
-  /// For example, a settings screen may gather its binding actions into a single
-  /// ``BindingAction`` case by conforming to ``BindableAction``:
-  ///
-  /// ```swift
-  /// enum SettingsAction: BindableAction {
-  ///   ...
-  ///   case binding(BindingAction<SettingsState>)
-  /// }
-  /// ```
-  ///
-  /// The reducer can then be enhanced to automatically handle these mutations for you by tacking
-  /// on the ``binding()`` method:
-  ///
-  /// ```swift
-  /// let settingsReducer = AnyReducer<SettingsState, SettingsAction, SettingsEnvironment> {
-  ///   ...
-  /// }
-  /// .binding()
-  /// ```
-  ///
-  /// - Returns: A reducer that applies ``BindingAction`` mutations to `State` before running this
-  ///   reducer's logic.
-  public func binding() -> Self {
-    Self { state, action, environment in
-      guard let bindingAction = (/Action.binding).extract(from: action)
-      else {
-        return self.run(&state, action, environment)
-      }
-
-      bindingAction.set(&state)
-      return self.run(&state, action, environment)
-    }
   }
 }
 

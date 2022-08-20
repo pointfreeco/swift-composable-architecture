@@ -50,9 +50,9 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// - See also: ``AnyReducer/pullback(state:action:environment:file:fileID:line:)``, a method that aids
-///   in transforming reducers that operate on each case of an enum into reducers that operate on
-///   the entire enum.
+/// See ``ReducerProtocol/ifCaseLet(_:action:then:file:fileID:line:)`` and
+/// ``Scope/init(state:action:_:file:fileID:line:)`` for embedding reducers that operate on each
+/// case of an enum in reducers that operate on the entire enum.
 public struct SwitchStore<State, Action, Content: View>: View {
   public let store: Store<State, Action>
   public let content: () -> Content
