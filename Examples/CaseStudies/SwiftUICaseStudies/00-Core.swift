@@ -14,7 +14,7 @@ struct Root: ReducerProtocol {
     var effectsBasics = EffectsBasics.State()
     var effectsCancellation = EffectsCancellation.State()
     var effectsTimers = Timers.State()
-    var episodes = EpisodesState(episodes: .mocks)
+    var episodes = Episodes.State(episodes: .mocks)
     var focusDemo = FocusDemo.State()
     var lifecycle = LifecycleDemo.State()
     var loadThenNavigate = LoadThenNavigate.State()
@@ -43,7 +43,7 @@ struct Root: ReducerProtocol {
     case counter(Counter.Action)
     case effectsBasics(EffectsBasics.Action)
     case effectsCancellation(EffectsCancellation.Action)
-    case episodes(EpisodesAction)
+    case episodes(Episodes.Action)
     case focusDemo(FocusDemo.Action)
     case lifecycle(LifecycleDemo.Action)
     case loadThenNavigate(LoadThenNavigate.Action)
@@ -103,10 +103,7 @@ struct Root: ReducerProtocol {
       EffectsCancellation()
     }
     Scope(state: \.episodes, action: /Action.episodes) {
-      Reduce(
-        episodesReducer,
-        environment: EpisodesEnvironment(favorite: favorite(id:isFavorite:))
-      )
+      Episodes(favorite: favorite(id:isFavorite:))
     }
     Scope(state: \.focusDemo, action: /Action.focusDemo) {
       FocusDemo()
