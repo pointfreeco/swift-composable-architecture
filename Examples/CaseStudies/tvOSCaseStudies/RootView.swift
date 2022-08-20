@@ -2,7 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 struct RootView: View {
-  let store: Store<RootState, RootAction>
+  let store: StoreOf<Root>
 
   var body: some View {
     NavigationView {
@@ -21,7 +21,7 @@ struct RootView: View {
           NavigationLink(
             "Focus",
             destination: FocusView(
-              store: self.store.scope(state: \.focus, action: RootAction.focus)
+              store: self.store.scope(state: \.focus, action: Root.Action.focus)
             )
           )
         )
@@ -39,9 +39,8 @@ struct ContentView_Previews: PreviewProvider {
     NavigationView {
       RootView(
         store: Store(
-          initialState: RootState(),
-          reducer: rootReducer,
-          environment: RootEnvironment()
+          initialState: Root.State(),
+          reducer: Root()
         )
       )
     }
