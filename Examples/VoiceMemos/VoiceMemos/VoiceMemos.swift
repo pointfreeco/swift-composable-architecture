@@ -26,7 +26,7 @@ struct VoiceMemos: ReducerProtocol {
     case voiceMemo(id: VoiceMemo.State.ID, action: VoiceMemo.Action)
   }
 
-  @Dependency(\.audioRecorder) var audioRecorder
+  @Dependency(\.audioRecorder.requestRecordPermission) var requestRecordPermission
   @Dependency(\.mainRunLoop) var mainRunLoop
   @Dependency(\.openSettings) var openSettings
   @Dependency(\.temporaryDirectory) var temporaryDirectory
@@ -48,7 +48,7 @@ struct VoiceMemos: ReducerProtocol {
         switch state.audioRecorderPermission {
         case .undetermined:
           return .task {
-            await .recordPermissionResponse(self.audioRecorder.requestRecordPermission())
+            await .recordPermissionResponse(self.requestRecordPermission())
           }
 
         case .denied:

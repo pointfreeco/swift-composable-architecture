@@ -1,5 +1,5 @@
 import AVFoundation
-import ComposableArchitecture
+import ComposableArchitecture  // TODO: Should `UncheckedSendable` live in `Dependencies`?
 import Foundation
 
 extension AudioRecorderClient {

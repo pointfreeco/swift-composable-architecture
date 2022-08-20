@@ -1,5 +1,4 @@
 @preconcurrency import AVFoundation
-import ComposableArchitecture
 
 extension AudioPlayerClient {
   static let live = Self { url in
