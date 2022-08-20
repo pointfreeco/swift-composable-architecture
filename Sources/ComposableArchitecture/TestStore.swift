@@ -266,6 +266,10 @@
     }
 
     // NB: Can't seem to define this as a convenience initializer in 'ReducerCompatibility.swift'.
+    @available(iOS, deprecated: 9999.0, message: "Use 'ReducerProtocol' instead.")
+    @available(macOS, deprecated: 9999.0, message: "Use 'ReducerProtocol' instead.")
+    @available(tvOS, deprecated: 9999.0, message: "Use 'ReducerProtocol' instead.")
+    @available(watchOS, deprecated: 9999.0, message: "Use 'ReducerProtocol' instead.")
     public init(
       initialState: ScopedState,
       reducer: AnyReducer<ScopedState, ScopedAction, Environment>,
