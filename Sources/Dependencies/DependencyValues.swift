@@ -15,7 +15,7 @@ import Foundation
 /// @Dependency(\.date) var date
 /// ```
 public struct DependencyValues: Sendable {
-  public enum Environment {
+  public enum Environment: Sendable {
     case live, preview, test
   }
 

@@ -1,7 +1,7 @@
 import Foundation
 import XCTestDynamicOverlay
 
-#if swift(>=5.7)
+#if swift(>=5.6)
   extension DependencyValues {
     /// A dependency that returns the current date.
     public var date: any DateGenerator {
