@@ -30,7 +30,7 @@
 ///
 /// A parent reducer with a domain that holds onto the child domain can use
 /// ``init(state:action:_:)`` to embed the child reducer in its
-/// ``ReducerProtocol/body-swift.property-5mc0o``:
+/// ``ReducerProtocol/body-swift.property-7foai``:
 ///
 /// ```swift
 /// struct Parent: ReducerProtocol {

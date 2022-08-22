@@ -221,7 +221,7 @@ let appReducer = Reducer<
 
 To convert this to the protocol-style we again introduce a new type that conforms to the 
 ``ReducerProtocol``, we nest the domain types inside the conformance, we inline the environment
-fields, but this time we use the ``ReducerProtocol/body-swift.property-5mc0o`` requirement of the
+fields, but this time we use the ``ReducerProtocol/body-swift.property-7foai`` requirement of the
 protocol to describe how to compose multiple reducers:
 
 ```swift
