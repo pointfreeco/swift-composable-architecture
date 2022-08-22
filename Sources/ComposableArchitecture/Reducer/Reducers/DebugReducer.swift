@@ -5,19 +5,21 @@ extension ReducerProtocol {
   ///
   /// - Parameters:
   ///   - prefix: A string that will prefix all debug messages.
-  ///     function and a background queue.
+  ///   - actionFormat: The format used to print actions.
+  ///   - logger: A function that is used to print debug messages.
   /// - Returns: A reducer that prints debug messages for all received actions.
   @inlinable
   public func debug(
     _ prefix: String = "",
-    actionFormat: ActionFormat = .prettyPrint
+    actionFormat: ActionFormat = .prettyPrint,
+    to logger: @escaping @Sendable (String) async -> Void = { print($0) }
   ) -> _DebugReducer<Self, State, Action> {
-    .init(
-      base: self,
-      prefix: prefix,
+    self.debug(
+      prefix,
       state: { $0 },
       action: { $0 },
-      actionFormat: actionFormat
+      actionFormat: actionFormat,
+      to: logger
     )
   }
 
@@ -29,20 +31,24 @@ extension ReducerProtocol {
   ///   - prefix: A string with which to prefix all debug messages.
   ///   - toChildState: A function that filters state to be printed.
   ///   - toChildAction: A case path that filters actions to be printed.
+  ///   - actionFormat: The format used to print actions.
+  ///   - logger: A function that is used to print debug messages.
   /// - Returns: A reducer that prints debug messages for all received, filtered actions.
   @inlinable
   public func debug<ChildState, ChildAction>(
     _ prefix: String = "",
     state toChildState: @escaping (State) -> ChildState,
     action toChildAction: @escaping (Action) -> ChildAction?,
-    actionFormat: ActionFormat = .prettyPrint
+    actionFormat: ActionFormat = .prettyPrint,
+    to logger: @escaping @Sendable (String) async -> Void = { print($0) }
   ) -> _DebugReducer<Self, ChildState, ChildAction> {
     .init(
       base: self,
       prefix: prefix,
       state: toChildState,
       action: toChildAction,
-      actionFormat: actionFormat
+      actionFormat: actionFormat,
+      logger: logger
     )
   }
 }
@@ -73,21 +79,6 @@ public enum ActionFormat: Sendable {
   case prettyPrint
 }
 
-// TODO: Should this really be a dependency? (Or should it remain configuration?)
-//       If so, should it be a more general `logger` that we expect users to use in their reducers?
-// TODO: Should this dependency be an `any DebugLogger`?
-extension DependencyValues {
-  public var debugLogger: @Sendable (String) async -> Void {
-    get { self[DebugLoggerKey.self] }
-    set { self[DebugLoggerKey.self] = newValue }
-  }
-
-  private enum DebugLoggerKey: LiveDependencyKey {
-    public static let liveValue: @Sendable (String) async -> Void = { print($0) }
-    public static let testValue: @Sendable (String) async -> Void = { print($0) }
-  }
-}
-
 public struct _DebugReducer<Base: ReducerProtocol, DebugState, DebugAction>: ReducerProtocol {
   @usableFromInline
   let base: Base
@@ -105,7 +96,7 @@ public struct _DebugReducer<Base: ReducerProtocol, DebugState, DebugAction>: Red
   let actionFormat: ActionFormat
 
   @usableFromInline
-  @Dependency(\.debugLogger) var logger
+  let logger: @Sendable (String) async -> Void
 
   @usableFromInline
   init(
@@ -113,13 +104,15 @@ public struct _DebugReducer<Base: ReducerProtocol, DebugState, DebugAction>: Red
     prefix: String,
     state toDebugState: @escaping (State) -> DebugState,
     action toDebugAction: @escaping (Action) -> DebugAction?,
-    actionFormat: ActionFormat
+    actionFormat: ActionFormat,
+    logger: @escaping @Sendable (String) async -> Void
   ) {
     self.base = base
     self.prefix = prefix
     self.toDebugState = toDebugState
     self.toDebugAction = toDebugAction
     self.actionFormat = actionFormat
+    self.logger = logger
   }
 
   @inlinable
