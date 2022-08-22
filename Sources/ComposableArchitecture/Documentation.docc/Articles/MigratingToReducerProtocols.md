@@ -297,8 +297,10 @@ private enum APIClientKey: LiveDependencyKey {
   static let testValue = APIClient.unimplemented
 }
 extension DependencyValues {
-  get { self[APIClientKey.self] }
-  set { self[APIClientKey.self] = newValue }
+  var apiClient: APIClient {
+    get { self[APIClientKey.self] }
+    set { self[APIClientKey.self] = newValue }
+  }
 }
 ```
 
@@ -307,7 +309,7 @@ property wrapper:
 
 ```swift
 struct MyFeature: ReducerProtocol {
-  @Dependency(\.apiClient) apiClient
+  @Dependency(\.apiClient) var apiClient
   @Dependency(\.date) var date
   // ...
 }
