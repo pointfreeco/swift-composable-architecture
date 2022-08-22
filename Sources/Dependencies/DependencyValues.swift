@@ -33,12 +33,11 @@ public struct DependencyValues: Sendable {
         let mode =
           self.storage[ObjectIdentifier(EnvironmentKey.self)]?.base as? Environment
           ?? {
-            #if DEBUG
-              if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
-                return Environment.preview
-              }
+            if isPreview {
+              return Environment.preview
+            } else {
               return Environment.live
-            #endif
+            }
           }()
 
         switch mode {
@@ -90,3 +89,14 @@ extension DependencyValues {
     set { self[EnvironmentKey.self] = newValue }
   }
 }
+
+private var isPreview = { () -> Bool in
+  #if DEBUG
+    if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+      return true
+    }
+    return false
+  #else
+    return false
+  #endif
+}()
