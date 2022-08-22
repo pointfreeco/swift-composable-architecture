@@ -54,7 +54,7 @@ extension ReducerProtocol {
 }
 
 /// Determines how the string description of an action should be printed when using the
-/// ``ReducerProtocol/debug(_:state:action:actionFormat:)`` higher-order reducer.
+/// ``ReducerProtocol/debug(_:state:action:actionFormat:to:)`` higher-order reducer.
 public enum ActionFormat: Sendable {
   /// Prints the action in a single line by only specifying the labels of the associated values:
   ///
