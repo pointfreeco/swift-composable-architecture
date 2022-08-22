@@ -41,7 +41,7 @@ extension DependencyValues {
   /// ```
   ///
   /// By default, a ``UUIDGenerator/live`` generator is supplied, which returns a random UUID when
-  /// called by invoking `UUID.init` under the hood.  When used from a ``TestStore``, an
+  /// called by invoking `UUID.init` under the hood.  When used from a `TestStore`, an
   /// ``UUIDGenerator/unimplemented`` generator is supplied, which additionally calls `XCTFail` when
   /// invoked.
   ///
@@ -81,6 +81,9 @@ extension DependencyValues {
   }
 }
 
+/// A dependency that generates a UUID.
+///
+/// See ``DependencyValues/uuid`` for more information.
 public struct UUIDGenerator: Sendable {
   private let generate: @Sendable () -> UUID
 
@@ -107,8 +110,10 @@ public struct UUIDGenerator: Sendable {
     return Self { generator() }
   }
 
+  /// A generator that calls `UUID()` under the hood.
   public static let live = Self { UUID() }
 
+  /// A generator that calls `XCTFail` when it is invoked.
   public static let unimplemented = Self {
     XCTFail(#"Unimplemented: @Dependency(\.uuid)"#)
     return UUID()
