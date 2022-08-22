@@ -2,16 +2,8 @@ import Combine
 import ComposableArchitecture
 import Speech
 
-extension DependencyValues {
-  var speechClient: SpeechClient {
-    get { self[SpeechClientKey.self] }
-    set { self[SpeechClientKey.self] = newValue }
-  }
-
-  private enum SpeechClientKey: LiveDependencyKey {
-    static let liveValue = SpeechClient.live
-    static let testValue = SpeechClient.unimplemented
-  }
+extension SpeechClientKey {
+  static let liveValue = SpeechClient.live
 }
 
 extension SpeechClient {

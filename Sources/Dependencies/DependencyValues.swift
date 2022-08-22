@@ -1,3 +1,5 @@
+import Foundation
+
 // TODO: should we have `@Dependency(\.runtimeWarningsEnabled)` and/or `@Dependency(\.treatWarningsAsErrors)`?
 
 /// A collection of dependencies propagated through a reducer hierarchy.
@@ -13,23 +15,40 @@
 /// @Dependency(\.date) var date
 /// ```
 public struct DependencyValues: Sendable {
+  public enum Environment {
+    case live, preview, test
+  }
+
   @TaskLocal public static var current = Self()
 
   private var storage: [ObjectIdentifier: AnySendable] = [:]
 
   public init() {}
 
-  public init(isTesting: Bool) {
-    self.isTesting = isTesting
-  }
-
   public subscript<Key: DependencyKey>(key: Key.Type) -> Key.Value where Key.Value: Sendable {
     get {
       guard let dependency = self.storage[ObjectIdentifier(key)]?.base as? Key.Value
       else {
-        let isTesting = self.storage[ObjectIdentifier(IsTestingKey.self)]?.base as? Bool ?? false
-        guard !isTesting else { return Key.testValue }
-        return _liveValue(Key.self) as? Key.Value ?? Key.testValue
+
+        let mode =
+          self.storage[ObjectIdentifier(EnvironmentKey.self)]?.base as? Environment
+          ?? {
+            #if DEBUG
+              if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+                return Environment.preview
+              }
+              return Environment.live
+            #endif
+          }()
+
+        switch mode {
+        case .live:
+          return _liveValue(Key.self) as? Key.Value ?? Key.testValue
+        case .preview:
+          return Key.previewValue
+        case .test:
+          return Key.testValue
+        }
       }
       return dependency
     }
@@ -47,14 +66,27 @@ extension DependencyValues {
 
   private enum IsTestingKey: LiveDependencyKey {
     static let liveValue = false
+    static var previewValue = false
     static let testValue = true
   }
 }
 
 private struct AnySendable: @unchecked Sendable {
   let base: Any
-  
+
   init<Base: Sendable>(_ base: Base) {
     self.base = base
+  }
+}
+
+private enum EnvironmentKey: LiveDependencyKey {
+  static var liveValue = DependencyValues.Environment.live
+  static var previewValue = DependencyValues.Environment.preview
+  static var testValue = DependencyValues.Environment.test
+}
+extension DependencyValues {
+  public var environment: DependencyValues.Environment {
+    get { self[EnvironmentKey.self] }
+    set { self[EnvironmentKey.self] = newValue }
   }
 }
