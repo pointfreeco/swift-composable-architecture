@@ -8,6 +8,10 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ## Topics
 
+### Reducer migration
+
+- ``ReducerProtocol/pullback(state:action:)``
+
 ### Reducer structure
 
 - ``AnyReducer``

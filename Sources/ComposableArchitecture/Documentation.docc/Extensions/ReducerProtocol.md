@@ -24,12 +24,11 @@
 - ``BindingReducer``
 - ``CombineReducers``
 - ``EmptyReducer``
-- ``Observe``
 - ``Reduce``
 
 ### Reducer modifiers
 
-- ``debug(_:state:action:actionFormat:)``
+- ``debug(_:state:action:actionFormat:to:)``
 - ``dependency(_:_:)``
 - ``dependencies(_:)``
 - ``signpost(_:log:)``
