@@ -28,7 +28,7 @@
   /// }
   /// ```
   ///
-  /// …or with a separate, dedicated conformance:
+  /// ...or with a separate, dedicated conformance:
   ///
   /// ```swift
   /// var body: some ReducerProtocol<State, Action> {
@@ -108,6 +108,64 @@
     var body: Body { get }
   }
 #else
+  /// A protocol that describes how to evolve the current state of an application to the next state,
+  /// given an action, and describes what ``Effect``s should be executed later by the store, if any.
+  ///
+  /// There are two ways to define a reducer:
+  ///
+  ///   1. You can either implement the ``reduce(into:action:)-4nzr2`` method, which is given direct
+  ///      mutable access to application ``State`` whenever an ``Action`` is fed into the system,
+  ///      and returns an ``Effect`` that can communicate with the outside world and feed additional
+  ///      ``Action``s back into the system.
+  ///
+  ///   2. Or you can implement the ``body-swift.property-7foai`` property, which combines one or
+  ///      more reducers together.
+  ///
+  /// At most one of these requirements should be implemented. If a conformance implements both
+  /// requirements, only ``reduce(into:action:)-4nzr2`` will be called by the ``Store``. If your
+  /// reducer assembles a body from other reducers _and_ has additional business logic it needs to
+  /// layer onto the feature, introduce this logic into the body instead, either with ``Reduce``:
+  ///
+  /// ```swift
+  /// var body: some ReducerProtocol<State, Action> {
+  ///   Reduce { state, action in
+  ///     // extra logic
+  ///   }
+  ///   Activity()
+  ///   Profile()
+  ///   Settings()
+  /// }
+  /// ```
+  ///
+  /// ...or with a separate, dedicated conformance:
+  ///
+  /// ```swift
+  /// var body: some ReducerProtocol<State, Action> {
+  ///   Core()
+  ///   Activity()
+  ///   Profile()
+  ///   Settings()
+  /// }
+  /// struct Core: ReducerProtocol<State, Action> {
+  ///   // extra logic
+  /// }
+  /// ```
+  ///
+  /// If you are implementing a custom reducer operator that transforms an existing reducer,
+  /// _always_ invoke the ``reduce(into:action:)-4nzr2`` method, never the
+  /// ``body-swift.property-7foai``. For example, this operator that logs all actions sent to the
+  /// reducer:
+  ///
+  /// ```swift
+  /// extension ReducerProtocol {
+  ///   func logActions() -> some ReducerProtocol<State, Action> {
+  ///     Reduce { state, action in
+  ///       print("Received action: \(action)")
+  ///       return self.reduce(into: &state, action: action)
+  ///     }
+  ///   }
+  /// }
+  /// ```
   public protocol ReducerProtocol {
     /// A type that holds the current state of the application.
     associatedtype State
