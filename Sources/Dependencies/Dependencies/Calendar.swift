@@ -1,7 +1,7 @@
 import Foundation
 import XCTestDynamicOverlay
 
-#if swift(>=5.7)
+#if swift(>=5.6)
   extension DependencyValues {
     /// The current calendar that reducers should use when handling dates.
     public var calendar: Calendar {

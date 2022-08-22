@@ -15,7 +15,7 @@ import Foundation
 /// @Dependency(\.date) var date
 /// ```
 public struct DependencyValues: Sendable {
-  public enum Environment {
+  public enum Environment: Sendable {
     case live, preview, test
   }
 
@@ -32,14 +32,7 @@ public struct DependencyValues: Sendable {
 
         let mode =
           self.storage[ObjectIdentifier(EnvironmentKey.self)]?.base as? Environment
-          ?? {
-            #if DEBUG
-              if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
-                return Environment.preview
-              }
-            #endif
-            return Environment.live
-          }()
+          ?? (isPreview ? .preview : .live)
 
         switch mode {
         case .live:
@@ -90,3 +83,9 @@ extension DependencyValues {
     set { self[EnvironmentKey.self] = newValue }
   }
 }
+
+#if DEBUG
+  private let isPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+#else
+  private let isPreview = false
+#endif

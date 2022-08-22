@@ -230,7 +230,7 @@ extension AnyReducer {
 // NB: Deprecated after 0.29.0:
 
 #if DEBUG
-  extension TestStore where LocalState: Equatable, Reducer.Action: Equatable {
+  extension TestStore where ScopedState: Equatable, Reducer.Action: Equatable {
     @available(
       *, deprecated, message: "Use 'TestStore.send' and 'TestStore.receive' directly, instead."
     )
