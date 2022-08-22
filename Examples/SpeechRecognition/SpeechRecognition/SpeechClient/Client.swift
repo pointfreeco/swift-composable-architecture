@@ -1,4 +1,5 @@
 import Combine
+import Dependencies
 import Speech
 
 struct SpeechClient {
@@ -14,4 +15,16 @@ struct SpeechClient {
     case couldntStartAudioEngine
     case couldntConfigureAudioSession
   }
+}
+
+extension DependencyValues {
+  var speechClient: SpeechClient {
+    get { self[SpeechClientKey.self] }
+    set { self[SpeechClientKey.self] = newValue }
+  }
+}
+
+enum SpeechClientKey: LiveDependencyKey {
+  static let previewValue = SpeechClient.lorem
+  static let testValue = SpeechClient.unimplemented
 }
