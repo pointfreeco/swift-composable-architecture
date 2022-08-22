@@ -18,9 +18,13 @@
 ///
 /// ```swift
 /// struct Child: ReducerProtocol {
-///   struct State { … }
-///   enum Action { … }
-///   …
+///   struct State {
+///     // ...
+///   }
+///   enum Action {
+///     // ...
+///   }
+///   // ...
 /// }
 /// ```
 ///
@@ -32,12 +36,12 @@
 /// struct Parent: ReducerProtocol {
 ///   struct State {
 ///     var child: Child.State
-///     …
+///     // ...
 ///   }
 ///
 ///   enum Action {
 ///     case child(Child.Action)
-///     …
+///     // ...
 ///   }
 ///
 ///   var body: some ReducerProtocol<State, Action> {
@@ -69,7 +73,7 @@
 ///   }
 ///   enum Action {
 ///     case child(Child.Action)
-///     …
+///     // ...
 ///   }
 ///
 ///   var body: some ReducerProtocol<State, Action> {
