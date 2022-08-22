@@ -13,7 +13,7 @@ extension DependencyValues {
   /// For example, you could introduce controllable UUID generation to a reducer that creates to-dos
   /// with unique identifiers:
   ///
-  /// ```
+  /// ```swift
   /// struct Todo: Identifiable {
   ///   let id: UUID
   ///   var description: String = ""
@@ -40,12 +40,13 @@ extension DependencyValues {
   /// }
   /// ```
   ///
-  /// By default, a ``LiveUUIDGenerator`` is supplied, which returns a random UUID when called by
-  /// invoking `UUID.init` under the hood.  When used from a ``TestStore``, a
-  /// ``FailingUUIDGenerator`` is supplied, which additionally calls `XCTFail` when invoked.
+  /// By default, a ``UUIDGenerator/live`` generator is supplied, which returns a random UUID when
+  /// called by invoking `UUID.init` under the hood.  When used from a ``TestStore``, an
+  /// ``UUIDGenerator/unimplemented`` generator is supplied, which additionally calls `XCTFail` when
+  /// invoked.
   ///
-  /// To test a reducer that depends on UUID generation, you can override its generator using
-  /// ``Reducer/dependency(_:_:)`` to override the underlying ``UUIDGenerator``:
+  /// To test a reducer that depends on UUID generation, you can override its generator using the
+  /// `Reducer/dependency(_:_:)` modifier to override the underlying ``UUIDGenerator``:
   ///
   ///   * ``UUIDGenerator/incrementing`` for reproducible UUIDs that count up from
   ///     `00000000-0000-0000-0000-000000000000`.
@@ -53,14 +54,15 @@ extension DependencyValues {
   ///   * ``UUIDGenerator/constant(_:)`` for a generator that always returns the given UUID.
   ///
   /// For example, you could test the to-do-creating reducer by supplying an
-  /// ``IncrementingUUIDGenerator`` as a dependency:
+  /// ``UUIDGenerator/incrementing`` generator as a dependency:
   ///
-  /// ```
+  /// ```swift
   /// let store = TestStore(
-  ///   initialState: TodosReducer.State()
-  ///   reducer: TodosReducer()
-  ///     .dependency(\.uuid, .incrementing)
+  ///   initialState: Todos.State()
+  ///   reducer: Todos()
   /// )
+  ///
+  /// store.dependencies.uuid = .incrementing
   ///
   /// store.send(.create) {
   ///   $0.todos = [
@@ -82,10 +84,24 @@ extension DependencyValues {
 public struct UUIDGenerator: Sendable {
   private let generate: @Sendable () -> UUID
 
+  /// A generator that returns a constant UUID.
+  ///
+  /// - Parameter uuid: A UUID to return.
+  /// - Returns: A generator that always returns the given UUID.
   public static func constant(_ uuid: UUID) -> Self {
     Self { uuid }
   }
 
+  /// A generator that generates UUIDs in incrementing order.
+  ///
+  /// For example:
+  ///
+  /// ```swift
+  /// let generate = UUIDGenerator.incrementing
+  /// generate()  // UUID(00000000-0000-0000-0000-000000000000)
+  /// generate()  // UUID(00000000-0000-0000-0000-000000000001)
+  /// generate()  // UUID(00000000-0000-0000-0000-000000000002)
+  /// ```
   public static var incrementing: Self {
     let generator = IncrementingUUIDGenerator()
     return Self { generator() }
