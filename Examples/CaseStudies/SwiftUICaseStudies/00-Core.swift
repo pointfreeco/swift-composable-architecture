@@ -13,7 +13,6 @@ struct Root: ReducerProtocol {
     var counter = Counter.State()
     var effectsBasics = EffectsBasics.State()
     var effectsCancellation = EffectsCancellation.State()
-    var effectsTimers = Timers.State()
     var episodes = Episodes.State(episodes: .mocks)
     var focusDemo = FocusDemo.State()
     var lifecycle = LifecycleDemo.State()

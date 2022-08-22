@@ -19,6 +19,7 @@ struct Timers: ReducerProtocol {
   }
 
   enum Action {
+    case onDisappear
     case timerTicked
     case toggleTimerButtonTapped
   }
@@ -28,6 +29,9 @@ struct Timers: ReducerProtocol {
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {
+    case .onDisappear:
+      return .cancel(id: TimerID.self)
+
     case .timerTicked:
       state.secondsElapsed += 1
       return .none
@@ -104,6 +108,9 @@ struct TimersView: View {
         .buttonStyle(.borderedProminent)
       }
       .navigationTitle("Timers")
+      .onDisappear {
+        viewStore.send(.onDisappear)
+      }
     }
   }
 }

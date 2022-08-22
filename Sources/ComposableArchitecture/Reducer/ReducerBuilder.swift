@@ -61,6 +61,11 @@ public enum ReducerBuilder<State, Action> {
     where R.State == State, R.Action == Action {
       Reduce(reducer)
     }
+    @_disfavoredOverload
+    @inlinable
+    public static func buildFinalResult(_ reducer: Reduce<State, Action>) -> Reduce<State, Action> {
+      reducer
+    }
   #else
     @_disfavoredOverload
     @inlinable
