@@ -90,13 +90,8 @@ extension DependencyValues {
   }
 }
 
-private var isPreview = { () -> Bool in
-  #if DEBUG
-    if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
-      return true
-    }
-    return false
-  #else
-    return false
-  #endif
-}()
+#if DEBUG
+  private let isPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+#else
+  private let isPreview = false
+#endif
