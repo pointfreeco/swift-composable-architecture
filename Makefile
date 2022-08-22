@@ -14,10 +14,10 @@ test-library:
 	xcodebuild test \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_MACOS)"
-	xcrun simctl runtime - && xcodebuild test \
+	xcodebuild test \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_TVOS)" || true
-	xcrun -sdk watchos --show-sdk-path && xcodebuild \
+	xcodebuild \
 		-scheme ComposableArchitecture_watchOS \
 		-destination platform="$(PLATFORM_WATCHOS)" || true
 
