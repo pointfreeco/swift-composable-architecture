@@ -523,9 +523,6 @@ public final class Store<State, Action> {
   }
 }
 
-// TODO: Is the following (and `ViewStoreOf` necessary if we have `ReducerOf`?)
-// Store<some ReducerOf<Feature>>
-
 /// A convenience type alias for referring to a store of a given reducer's domain.
 ///
 /// Instead of specifying two generics:

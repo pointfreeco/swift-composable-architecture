@@ -23,7 +23,6 @@ extension ReducerProtocol {
   @inlinable
   public func signpost(
     _ prefix: String = "",
-    // TODO: Should this be in `DependencyValues`?
     log: OSLog = OSLog(
       subsystem: "co.pointfree.ComposableArchitecture",
       category: "Reducer Instrumentation"

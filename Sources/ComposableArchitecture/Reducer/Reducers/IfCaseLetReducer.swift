@@ -89,7 +89,7 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
       // TODO: Update language
       runtimeWarning(
         """
-        An "ifLet" reducer at "%@:%d" received an action when state was "nil". …
+        An "ifCaseLet" reducer at "%@:%d" received an action when state was "nil". …
 
           Action:
             %@

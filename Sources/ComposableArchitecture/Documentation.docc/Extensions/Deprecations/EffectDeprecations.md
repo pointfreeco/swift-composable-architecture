@@ -46,4 +46,4 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 - ``Effect/timer(id:every:tolerance:on:options:)-4exe6``
 - ``Effect/timer(id:every:tolerance:on:options:)-7po0d``
 - ``Effect/Subscriber``
-<!--TODO: Can't currently document `Publisher` extensions-->
+<!--TODO: Can't currently document `Publisher` extensions. -->

@@ -268,3 +268,15 @@ public struct Scope<ParentState, ParentAction, Child: ReducerProtocol>: ReducerP
     }
   }
 }
+
+extension ReducerProtocol {
+  @available(*, deprecated, message: "Wrap this reducer in 'Scope(state:action:)' instead.")
+  public func pullback<ParentState, ParentAction>(
+    state toChildState: WritableKeyPath<ParentState, State>,
+    action toChildAction: CasePath<ParentAction, Action>
+  ) -> Scope<ParentState, ParentAction, Self> {
+    .init(state: toChildState, action: toChildAction) {
+      self
+    }
+  }
+}

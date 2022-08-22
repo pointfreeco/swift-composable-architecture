@@ -15,6 +15,7 @@ extension DependencyValues {
   }
 }
 
+// TODO: use struct instead, and same for UUID
 public protocol DateGenerator: Sendable {
   func callAsFunction() -> Date
 }
@@ -30,7 +31,6 @@ public struct LiveDateGenerator: DateGenerator {
   }
 }
 
-// TODO: add `.constant` static and rethink types? maybe ok to hold closures?
 public struct ConstantDateGenerator: DateGenerator {
   public let constant: Date
   public init(_ constant: Date) {

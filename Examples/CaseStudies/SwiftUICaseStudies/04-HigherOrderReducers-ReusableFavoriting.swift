@@ -83,7 +83,6 @@ struct _FavoritingComponent<Parent: ReducerProtocol, ID: Hashable & Sendable>: R
         }
       }
     }
-    // TODO: fix deprecation warning
     self.parent
   }
 }

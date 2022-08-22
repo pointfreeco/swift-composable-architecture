@@ -124,7 +124,6 @@ extension ReducerProtocol where Body == Never {
   /// > Warning: Do not invoke this property directly. It will trigger a fatal error at runtime.
   @_transparent
   public var body: Body {
-    // TODO: Should this be a `runtimeWarning` and return `Void` instead?
     fatalError(
       """
       '\(Self.self)' has no body. …

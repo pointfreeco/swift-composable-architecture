@@ -150,7 +150,6 @@ let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combin
       apiClient: $0.apiClient,
       date: $0.date
     )
-    // TODO: implement this pullback on ReducerProtocol for ease of migration.
     .pullback(state: \.featureA, action: /ParentAction.featureA)
   },
 
