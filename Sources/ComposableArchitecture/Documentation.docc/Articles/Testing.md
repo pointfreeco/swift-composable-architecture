@@ -555,7 +555,7 @@ introduced.
 [Testing-state-changes]: #Testing-state-changes
 [Testing-effects]: #Testing-effects
 [Designing-dependencies]: #Designing-dependencies
-[Unimplemented-dependencies]: #Designing-dependencies
+[Unimplemented-dependencies]: #Unimplemented-dependencies
 [gh-combine-schedulers]: http://github.com/pointfreeco/combine-schedulers
 [gh-xctest-dynamic-overlay]: http://github.com/pointfreeco/xctest-dynamic-overlay
 [tca-examples]: https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples

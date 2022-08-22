@@ -3,6 +3,32 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
+// NB: Deprecated after 0.39.0:
+
+extension CaseLet {
+  @available(*, deprecated, renamed: "EnumState")
+  public typealias GlobalState = EnumState
+
+  @available(*, deprecated, renamed: "EnumAction")
+  public typealias GlobalAction = EnumAction
+
+  @available(*, deprecated, renamed: "CaseState")
+  public typealias LocalState = CaseState
+
+  @available(*, deprecated, renamed: "CaseAction")
+  public typealias LocalAction = CaseAction
+}
+
+#if DEBUG
+  extension TestStore {
+    @available(*, deprecated, renamed: "ScopedState")
+    public typealias LocalState = ScopedState
+
+    @available(*, deprecated, renamed: "ScopedAction")
+    public typealias LocalAction = ScopedAction
+  }
+#endif
+
 // NB: Deprecated after 0.38.2:
 
 extension Effect {
@@ -122,18 +148,18 @@ extension Reducer {
     deprecated,
     message: "'pullback' no longer takes a 'breakpointOnNil' argument"
   )
-  public func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
-    state toLocalState: CasePath<GlobalState, State>,
-    action toLocalAction: CasePath<GlobalAction, Action>,
-    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+  public func pullback<ParentState, ParentAction, ParentEnvironment>(
+    state toChildState: CasePath<ParentState, State>,
+    action toChildAction: CasePath<ParentAction, Action>,
+    environment toChildEnvironment: @escaping (ParentEnvironment) -> Environment,
     breakpointOnNil: Bool,
     file: StaticString = #fileID,
     line: UInt = #line
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+  ) -> Reducer<ParentState, ParentAction, ParentEnvironment> {
     self.pullback(
-      state: toLocalState,
-      action: toLocalAction,
-      environment: toLocalEnvironment,
+      state: toChildState,
+      action: toChildAction,
+      environment: toChildEnvironment,
       file: file,
       line: line
     )
@@ -159,18 +185,18 @@ extension Reducer {
     deprecated,
     message: "'forEach' no longer takes a 'breakpointOnNil' argument"
   )
-  public func forEach<GlobalState, GlobalAction, GlobalEnvironment, ID>(
-    state toLocalState: WritableKeyPath<GlobalState, IdentifiedArray<ID, State>>,
-    action toLocalAction: CasePath<GlobalAction, (ID, Action)>,
-    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+  public func forEach<ParentState, ParentAction, ParentEnvironment, ID>(
+    state toElementsState: WritableKeyPath<ParentState, IdentifiedArray<ID, State>>,
+    action toElementAction: CasePath<ParentAction, (ID, Action)>,
+    environment toElementEnvironment: @escaping (ParentEnvironment) -> Environment,
     breakpointOnNil: Bool,
     file: StaticString = #fileID,
     line: UInt = #line
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+  ) -> Reducer<ParentState, ParentAction, ParentEnvironment> {
     self.forEach(
-      state: toLocalState,
-      action: toLocalAction,
-      environment: toLocalEnvironment,
+      state: toElementsState,
+      action: toElementAction,
+      environment: toElementEnvironment,
       file: file,
       line: line
     )
@@ -181,18 +207,18 @@ extension Reducer {
     deprecated,
     message: "'forEach' no longer takes a 'breakpointOnNil' argument"
   )
-  public func forEach<GlobalState, GlobalAction, GlobalEnvironment, Key>(
-    state toLocalState: WritableKeyPath<GlobalState, [Key: State]>,
-    action toLocalAction: CasePath<GlobalAction, (Key, Action)>,
-    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+  public func forEach<ParentState, ParentAction, ParentEnvironment, Key>(
+    state toElementsState: WritableKeyPath<ParentState, [Key: State]>,
+    action toElementAction: CasePath<ParentAction, (Key, Action)>,
+    environment toElementEnvironment: @escaping (ParentEnvironment) -> Environment,
     breakpointOnNil: Bool,
     file: StaticString = #fileID,
     line: UInt = #line
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+  ) -> Reducer<ParentState, ParentAction, ParentEnvironment> {
     self.forEach(
-      state: toLocalState,
-      action: toLocalAction,
-      environment: toLocalEnvironment,
+      state: toElementsState,
+      action: toElementAction,
+      environment: toElementEnvironment,
       file: file,
       line: line
     )
@@ -202,7 +228,7 @@ extension Reducer {
 // NB: Deprecated after 0.29.0:
 
 #if DEBUG
-  extension TestStore where LocalState: Equatable, Action: Equatable {
+  extension TestStore where ScopedState: Equatable, Action: Equatable {
     @available(
       *, deprecated, message: "Use 'TestStore.send' and 'TestStore.receive' directly, instead."
     )
@@ -298,10 +324,10 @@ extension Reducer {
 
       @available(*, deprecated, message: "Call 'TestStore.send' directly, instead.")
       public static func send(
-        _ action: LocalAction,
+        _ action: ScopedAction,
         file: StaticString = #file,
         line: UInt = #line,
-        _ update: ((inout LocalState) throws -> Void)? = nil
+        _ update: ((inout ScopedState) throws -> Void)? = nil
       ) -> Step {
         Step(.send(action, update), file: file, line: line)
       }
@@ -311,7 +337,7 @@ extension Reducer {
         _ action: Action,
         file: StaticString = #file,
         line: UInt = #line,
-        _ update: ((inout LocalState) throws -> Void)? = nil
+        _ update: ((inout ScopedState) throws -> Void)? = nil
       ) -> Step {
         Step(.receive(action, update), file: file, line: line)
       }
@@ -353,8 +379,8 @@ extension Reducer {
       }
 
       fileprivate indirect enum StepType {
-        case send(LocalAction, ((inout LocalState) throws -> Void)?)
-        case receive(Action, ((inout LocalState) throws -> Void)?)
+        case send(ScopedAction, ((inout ScopedState) throws -> Void)?)
+        case receive(Action, ((inout ScopedState) throws -> Void)?)
         case environment((inout Environment) throws -> Void)
         case `do`(() throws -> Void)
         case sequence([Step])
@@ -404,26 +430,26 @@ extension Store {
       https://github.com/pointfreeco/swift-composable-architecture/discussions/new
       """
   )
-  public func publisherScope<P: Publisher, LocalState, LocalAction>(
-    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P,
-    action fromLocalAction: @escaping (LocalAction) -> Action
-  ) -> AnyPublisher<Store<LocalState, LocalAction>, Never>
-  where P.Output == LocalState, P.Failure == Never {
+  public func publisherScope<P: Publisher, ChildState, ChildAction>(
+    state toChildState: @escaping (AnyPublisher<State, Never>) -> P,
+    action fromChildAction: @escaping (ChildAction) -> Action
+  ) -> AnyPublisher<Store<ChildState, ChildAction>, Never>
+  where P.Output == ChildState, P.Failure == Never {
 
-    func extractLocalState(_ state: State) -> LocalState? {
-      var localState: LocalState?
-      _ = toLocalState(Just(state).eraseToAnyPublisher())
-        .sink { localState = $0 }
-      return localState
+    func extractChildState(_ state: State) -> ChildState? {
+      var childState: ChildState?
+      _ = toChildState(Just(state).eraseToAnyPublisher())
+        .sink { childState = $0 }
+      return childState
     }
 
-    return toLocalState(self.state.eraseToAnyPublisher())
-      .map { localState in
-        let localStore = Store<LocalState, LocalAction>(
-          initialState: localState,
-          reducer: .init { localState, localAction, _ in
-            let task = self.send(fromLocalAction(localAction))
-            localState = extractLocalState(self.state.value) ?? localState
+    return toChildState(self.state.eraseToAnyPublisher())
+      .map { childState in
+        let childStore = Store<ChildState, ChildAction>(
+          initialState: childState,
+          reducer: .init { childState, childAction, _ in
+            let task = self.send(fromChildAction(childAction))
+            childState = extractChildState(self.state.value) ?? childState
             if let task = task {
               return .fireAndForget { await task.cancellableValue }
             } else {
@@ -433,12 +459,12 @@ extension Store {
           environment: ()
         )
 
-        localStore.parentCancellable = self.state
-          .sink { [weak localStore] state in
-            guard let localStore = localStore else { return }
-            localStore.state.value = extractLocalState(state) ?? localStore.state.value
+        childStore.parentCancellable = self.state
+          .sink { [weak childStore] state in
+            guard let childStore = childStore else { return }
+            childStore.state.value = extractChildState(state) ?? childStore.state.value
           }
-        return localStore
+        return childStore
       }
       .eraseToAnyPublisher()
   }
@@ -451,11 +477,11 @@ extension Store {
       https://github.com/pointfreeco/swift-composable-architecture/discussions/new
       """
   )
-  public func publisherScope<P: Publisher, LocalState>(
-    state toLocalState: @escaping (AnyPublisher<State, Never>) -> P
-  ) -> AnyPublisher<Store<LocalState, Action>, Never>
-  where P.Output == LocalState, P.Failure == Never {
-    self.publisherScope(state: toLocalState, action: { $0 })
+  public func publisherScope<P: Publisher, ChildState>(
+    state toChildState: @escaping (AnyPublisher<State, Never>) -> P
+  ) -> AnyPublisher<Store<ChildState, Action>, Never>
+  where P.Output == ChildState, P.Failure == Never {
+    self.publisherScope(state: toChildState, action: { $0 })
   }
 }
 
@@ -547,10 +573,10 @@ extension ViewStore {
       the view store's 'Action' type must also conform to 'BindableAction'.
       """
   )
-  public func binding<LocalState: Equatable>(
-    keyPath: WritableKeyPath<State, LocalState>,
+  public func binding<Value: Equatable>(
+    keyPath: WritableKeyPath<State, Value>,
     send action: @escaping (BindingAction<State>) -> Action
-  ) -> Binding<LocalState> {
+  ) -> Binding<Value> {
     self.binding(
       get: { $0[keyPath: keyPath] },
       send: { action(.set(keyPath, $0)) }
@@ -597,20 +623,20 @@ extension AlertState.Button {
 
 extension Reducer {
   @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead.")
-  public func forEach<GlobalState, GlobalAction, GlobalEnvironment>(
-    state toLocalState: WritableKeyPath<GlobalState, [State]>,
-    action toLocalAction: CasePath<GlobalAction, (Int, Action)>,
-    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+  public func forEach<ParentState, ParentAction, ParentEnvironment>(
+    state toElementsState: WritableKeyPath<ParentState, [State]>,
+    action toElementAction: CasePath<ParentAction, (Int, Action)>,
+    environment toElementEnvironment: @escaping (ParentEnvironment) -> Environment,
     breakpointOnNil: Bool = true,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
-    .init { globalState, globalAction, globalEnvironment in
-      guard let (index, localAction) = toLocalAction.extract(from: globalAction) else {
+  ) -> Reducer<ParentState, ParentAction, ParentEnvironment> {
+    .init { parentState, parentAction, parentEnvironment in
+      guard let (index, action) = toElementAction.extract(from: parentAction) else {
         return .none
       }
-      if index >= globalState[keyPath: toLocalState].endIndex {
+      if index >= parentState[keyPath: toElementsState].endIndex {
         runtimeWarning(
           """
           A "forEach" reducer at "%@:%d" received an action when state contained no element at \
@@ -644,7 +670,7 @@ extension Reducer {
           [
             "\(fileID)",
             line,
-            debugCaseOutput(localAction),
+            debugCaseOutput(action),
             index,
           ],
           file: file,
@@ -653,11 +679,11 @@ extension Reducer {
         return .none
       }
       return self.run(
-        &globalState[keyPath: toLocalState][index],
-        localAction,
-        toLocalEnvironment(globalEnvironment)
+        &parentState[keyPath: toElementsState][index],
+        action,
+        toElementEnvironment(parentEnvironment)
       )
-      .map { toLocalAction.embed((index, $0)) }
+      .map { toElementAction.embed((index, $0)) }
     }
   }
 }

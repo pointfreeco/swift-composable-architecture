@@ -252,20 +252,21 @@ Once we are ready to display this view, for example in the app's entry point, we
 ```swift
 @main
 struct CaseStudiesApp: App {
-var body: some Scene {
-  AppView(
-    store: Store(
-      initialState: AppState(),
-      reducer: appReducer,
-      environment: AppEnvironment(
-        numberFact: { number in 
-          let (data, _) = try await URLSession.shared
-            .data(from: .init(string: "http://numbersapi.com/\(number)")!)
-          return String(decoding: data, using: UTF8.self)
-        }
+  var body: some Scene {
+    AppView(
+      store: Store(
+        initialState: AppState(),
+        reducer: appReducer,
+        environment: AppEnvironment(
+          numberFact: { number in 
+            let (data, _) = try await URLSession.shared
+              .data(from: .init(string: "http://numbersapi.com/\(number)")!)
+            return String(decoding: data, using: UTF8.self)
+          }
+        )
       )
     )
-  )
+  }
 }
 ```
 

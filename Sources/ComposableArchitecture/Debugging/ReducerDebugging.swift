@@ -83,23 +83,23 @@ extension Reducer {
     )
   }
 
-  /// Prints debug messages describing all received local actions and local state mutations.
+  /// Prints debug messages describing all received actions and state mutations.
   ///
   /// Printing is only done in debug (`#if DEBUG`) builds.
   ///
   /// - Parameters:
   ///   - prefix: A string with which to prefix all debug messages.
-  ///   - toLocalState: A function that filters state to be printed.
-  ///   - toLocalAction: A case path that filters actions that are printed.
+  ///   - toDebugState: A function that filters state to be printed.
+  ///   - toDebugAction: A case path that filters actions that are printed.
   ///   - toDebugEnvironment: A function that transforms an environment into a debug environment by
   ///     describing a print function and a queue to print from. Defaults to a function that ignores
   ///     the environment and returns a default ``DebugEnvironment`` that uses Swift's `print`
   ///     function and a background queue.
   /// - Returns: A reducer that prints debug messages for all received actions.
-  public func debug<LocalState, LocalAction>(
+  public func debug<DebugState, DebugAction>(
     _ prefix: String = "",
-    state toLocalState: @escaping (State) -> LocalState,
-    action toLocalAction: CasePath<Action, LocalAction>,
+    state toDebugState: @escaping (State) -> DebugState,
+    action toDebugAction: CasePath<Action, DebugAction>,
     actionFormat: ActionFormat = .prettyPrint,
     environment toDebugEnvironment: @escaping (Environment) -> DebugEnvironment = { _ in
       DebugEnvironment()
@@ -107,22 +107,22 @@ extension Reducer {
   ) -> Self {
     #if DEBUG
       return .init { state, action, environment in
-        let previousState = toLocalState(state)
+        let previousState = toDebugState(state)
         let effects = self.run(&state, action, environment)
-        guard let localAction = toLocalAction.extract(from: action) else { return effects }
-        let nextState = toLocalState(state)
+        guard let debugAction = toDebugAction.extract(from: action) else { return effects }
+        let nextState = toDebugState(state)
         let debugEnvironment = toDebugEnvironment(environment)
         return .merge(
           .fireAndForget {
             debugEnvironment.queue.async {
               var actionOutput = ""
               if actionFormat == .prettyPrint {
-                customDump(localAction, to: &actionOutput, indent: 2)
+                customDump(debugAction, to: &actionOutput, indent: 2)
               } else {
-                actionOutput.write(debugCaseOutput(localAction).indent(by: 2))
+                actionOutput.write(debugCaseOutput(debugAction).indent(by: 2))
               }
               let stateOutput =
-                LocalState.self == Void.self
+                DebugState.self == Void.self
                 ? ""
                 : diff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
               debugEnvironment.printer(

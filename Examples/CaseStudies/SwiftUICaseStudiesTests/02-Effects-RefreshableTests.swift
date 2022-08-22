@@ -4,7 +4,7 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 @MainActor
-class RefreshableTests: XCTestCase {
+final class RefreshableTests: XCTestCase {
   func testHappyPath() async {
     let store = TestStore(
       initialState: RefreshableState(),

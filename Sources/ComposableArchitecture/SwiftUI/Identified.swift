@@ -43,9 +43,9 @@ public struct Identified<ID: Hashable, Value>: Identifiable {
     self.init(value, id: value[keyPath: id])
   }
 
-  public subscript<LocalValue>(
-    dynamicMember keyPath: WritableKeyPath<Value, LocalValue>
-  ) -> LocalValue {
+  public subscript<Subject>(
+    dynamicMember keyPath: WritableKeyPath<Value, Subject>
+  ) -> Subject {
     get { self.value[keyPath: keyPath] }
     set { self.value[keyPath: keyPath] = newValue }
   }

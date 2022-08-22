@@ -7,7 +7,7 @@ import XCTest
 @testable import LoginSwiftUI
 
 @MainActor
-class LoginSwiftUITests: XCTestCase {
+final class LoginSwiftUITests: XCTestCase {
   func testFlow_Success() async {
     var authenticationClient = AuthenticationClient.unimplemented
     authenticationClient.login = { _ in

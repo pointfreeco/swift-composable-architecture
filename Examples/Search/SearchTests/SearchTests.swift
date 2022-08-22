@@ -5,7 +5,7 @@ import XCTest
 @testable import Search
 
 @MainActor
-class SearchTests: XCTestCase {
+final class SearchTests: XCTestCase {
   func testSearchAndClearQuery() async {
     let store = TestStore(
       initialState: SearchState(),

@@ -6,7 +6,7 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 @MainActor
-class AlertsAndConfirmationDialogsTests: XCTestCase {
+final class AlertsAndConfirmationDialogsTests: XCTestCase {
   func testAlert() async {
     let store = TestStore(
       initialState: AlertAndConfirmationDialogState(),

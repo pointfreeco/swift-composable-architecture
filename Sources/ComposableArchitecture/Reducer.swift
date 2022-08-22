@@ -146,13 +146,13 @@ public struct Reducer<State, Action, Environment> {
     .combine(self, other)
   }
 
-  /// Transforms a reducer that works on local state, action, and environment into one that works on
-  /// global state, action and environment. It accomplishes this by providing 3 transformations to
+  /// Transforms a reducer that works on child state, action, and environment into one that works on
+  /// parent state, action and environment. It accomplishes this by providing 3 transformations to
   /// the method:
   ///
-  ///   * A writable key path that can get/set a piece of local state from the global state.
-  ///   * A case path that can extract/embed a local action into a global action.
-  ///   * A function that can transform the global environment into a local environment.
+  ///   * A writable key path that can get/set a piece of child state from the parent state.
+  ///   * A case path that can extract/embed a child action into a parent action.
+  ///   * A function that can transform the parent environment into a child environment.
   ///
   /// This operation is important for breaking down large reducers into small ones. When used with
   /// the ``combine(_:)-1ern2`` operator you can define many reducers that work on small pieces of
@@ -160,12 +160,12 @@ public struct Reducer<State, Action, Environment> {
   /// large domain.
   ///
   ///    ```swift
-  ///     // Global domain that holds a local domain:
+  ///     // Parent domain that holds a child domain:
   ///     struct AppState { var settings: SettingsState, /* rest of state */ }
   ///     enum AppAction { case settings(SettingsAction), /* other actions */ }
   ///     struct AppEnvironment { var settings: SettingsEnvironment, /* rest of dependencies */ }
   ///
-  ///     // A reducer that works on the local domain:
+  ///     // A reducer that works on the child domain:
   ///     let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvironment> { ... }
   ///
   ///     // Pullback the settings reducer so that it works on all of the app domain:
@@ -181,35 +181,35 @@ public struct Reducer<State, Action, Environment> {
   ///    ```
   ///
   /// - Parameters:
-  ///   - toLocalState: A key path that can get/set `State` inside `GlobalState`.
-  ///   - toLocalAction: A case path that can extract/embed `Action` from `GlobalAction`.
-  ///   - toLocalEnvironment: A function that transforms `GlobalEnvironment` into `Environment`.
-  /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
-  public func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
-    state toLocalState: WritableKeyPath<GlobalState, State>,
-    action toLocalAction: CasePath<GlobalAction, Action>,
-    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
-    .init { globalState, globalAction, globalEnvironment in
-      guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
+  ///   - toChildState: A key path that can get/set `State` inside `ParentState`.
+  ///   - toChildAction: A case path that can extract/embed `Action` from `ParentAction`.
+  ///   - toChildEnvironment: A function that transforms `ParentEnvironment` into `Environment`.
+  /// - Returns: A reducer that works on `ParentState`, `ParentAction`, `ParentEnvironment`.
+  public func pullback<ParentState, ParentAction, ParentEnvironment>(
+    state toChildState: WritableKeyPath<ParentState, State>,
+    action toChildAction: CasePath<ParentAction, Action>,
+    environment toChildEnvironment: @escaping (ParentEnvironment) -> Environment
+  ) -> Reducer<ParentState, ParentAction, ParentEnvironment> {
+    .init { parentState, parentAction, parentEnvironment in
+      guard let childAction = toChildAction.extract(from: parentAction) else { return .none }
       return self.reducer(
-        &globalState[keyPath: toLocalState],
-        localAction,
-        toLocalEnvironment(globalEnvironment)
+        &parentState[keyPath: toChildState],
+        childAction,
+        toChildEnvironment(parentEnvironment)
       )
-      .map(toLocalAction.embed)
+      .map(toChildAction.embed)
     }
   }
 
-  /// Transforms a reducer that works on local state, action, and environment into one that works on
-  /// global state, action and environment.
+  /// Transforms a reducer that works on child state, action, and environment into one that works on
+  /// parent state, action and environment.
   ///
   /// It accomplishes this by providing 3 transformations to the method:
   ///
-  ///   * A case path that can extract/embed a piece of local state from the global state, which is
+  ///   * A case path that can extract/embed a piece of child state from the parent state, which is
   ///     typically an enum.
-  ///   * A case path that can extract/embed a local action into a global action.
-  ///   * A function that can transform the global environment into a local environment.
+  ///   * A case path that can extract/embed a child action into a parent action.
+  ///   * A function that can transform the parent environment into a child environment.
   ///
   /// This overload of ``pullback(state:action:environment:)`` differs from the other in that it
   /// takes a `CasePath` transformation for the state instead of a `WritableKeyPath`. This makes it
@@ -222,12 +222,12 @@ public struct Reducer<State, Action, Environment> {
   /// works on a large domain.
   ///
   /// ```swift
-  /// // Global domain that holds a local domain:
+  /// // Parent domain that holds a child domain:
   /// enum AppState { case loggedIn(LoggedInState), /* rest of state */ }
   /// enum AppAction { case loggedIn(LoggedInAction), /* other actions */ }
   /// struct AppEnvironment { var loggedIn: LoggedInEnvironment, /* rest of dependencies */ }
   ///
-  /// // A reducer that works on the local domain:
+  /// // A reducer that works on the child domain:
   /// let loggedInReducer = Reducer<LoggedInState, LoggedInAction, LoggedInEnvironment> { ... }
   ///
   /// // Pullback the logged-in reducer so that it works on all of the app domain:
@@ -366,25 +366,25 @@ public struct Reducer<State, Action, Environment> {
   ///   stores on each case of the enum.
   ///
   /// - Parameters:
-  ///   - toLocalState: A case path that can extract/embed `State` from `GlobalState`.
-  ///   - toLocalAction: A case path that can extract/embed `Action` from `GlobalAction`.
-  ///   - toLocalEnvironment: A function that transforms `GlobalEnvironment` into `Environment`.
-  /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
-  public func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
-    state toLocalState: CasePath<GlobalState, State>,
-    action toLocalAction: CasePath<GlobalAction, Action>,
-    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+  ///   - toChildState: A case path that can extract/embed `State` from `ParentState`.
+  ///   - toChildAction: A case path that can extract/embed `Action` from `ParentAction`.
+  ///   - toChildEnvironment: A function that transforms `ParentEnvironment` into `Environment`.
+  /// - Returns: A reducer that works on `ParentState`, `ParentAction`, `ParentEnvironment`.
+  public func pullback<ParentState, ParentAction, ParentEnvironment>(
+    state toChildState: CasePath<ParentState, State>,
+    action toChildAction: CasePath<ParentAction, Action>,
+    environment toChildEnvironment: @escaping (ParentEnvironment) -> Environment,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
-    .init { globalState, globalAction, globalEnvironment in
-      guard let localAction = toLocalAction.extract(from: globalAction) else { return .none }
+  ) -> Reducer<ParentState, ParentAction, ParentEnvironment> {
+    .init { parentState, parentAction, parentEnvironment in
+      guard let childAction = toChildAction.extract(from: parentAction) else { return .none }
 
-      guard var localState = toLocalState.extract(from: globalState) else {
+      guard var childState = toChildState.extract(from: parentState) else {
         runtimeWarning(
           """
-          A reducer pulled back from "%@:%d" received an action when local state was \
+          A reducer pulled back from "%@:%d" received an action when child state was \
           unavailable. …
 
             Action:
@@ -410,7 +410,7 @@ public struct Reducer<State, Action, Environment> {
           [
             "\(fileID)",
             line,
-            debugCaseOutput(localAction),
+            debugCaseOutput(childAction),
             "\(State.self)",
           ],
           file: file,
@@ -418,14 +418,14 @@ public struct Reducer<State, Action, Environment> {
         )
         return .none
       }
-      defer { globalState = toLocalState.embed(localState) }
+      defer { parentState = toChildState.embed(childState) }
 
       let effects = self.run(
-        &localState,
-        localAction,
-        toLocalEnvironment(globalEnvironment)
+        &childState,
+        childAction,
+        toChildEnvironment(parentEnvironment)
       )
-      .map(toLocalAction.embed)
+      .map(toChildAction.embed)
 
       return effects
     }
@@ -439,15 +439,15 @@ public struct Reducer<State, Action, Environment> {
   /// domain that contains some optional child domain:
   ///
   /// ```swift
-  /// // Global domain that holds an optional local domain:
+  /// // Parent domain that holds an optional child domain:
   /// struct AppState { var modal: ModalState? }
   /// enum AppAction { case modal(ModalAction) }
   /// struct AppEnvironment { var mainQueue: AnySchedulerOf<DispatchQueue> }
   ///
-  /// // A reducer that works on the non-optional local domain:
+  /// // A reducer that works on the non-optional child domain:
   /// let modalReducer = Reducer<ModalState, ModalAction, ModalEnvironment { ... }
   ///
-  /// // Pullback the local modal reducer so that it works on all of the app domain:
+  /// // Pullback the modal reducer so that it works on all of the app domain:
   /// let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
   ///   modalReducer.optional().pullback(
   ///     state: \.modal,
@@ -636,15 +636,15 @@ public struct Reducer<State, Action, Environment> {
   /// an element into one that works on an identified array of elements.
   ///
   /// ```swift
-  /// // Global domain that holds a collection of local domains:
+  /// // Parent domain that holds a collection of child domains:
   /// struct AppState { var todos: IdentifiedArrayOf<Todo> }
   /// enum AppAction { case todo(id: Todo.ID, action: TodoAction) }
   /// struct AppEnvironment { var mainQueue: AnySchedulerOf<DispatchQueue> }
   ///
-  /// // A reducer that works on a local domain:
+  /// // A reducer that works on an element's domain:
   /// let todoReducer = Reducer<Todo, TodoAction, TodoEnvironment> { ... }
   ///
-  /// // Pullback the local todo reducer so that it works on all of the app domain:
+  /// // Pullback the todo reducer so that it works on all of the app domain:
   /// let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
   ///   todoReducer.forEach(
   ///     state: \.todos,
@@ -661,23 +661,24 @@ public struct Reducer<State, Action, Environment> {
   /// combine `forEach` reducers _before_ parent reducers that can modify the collection.
   ///
   /// - Parameters:
-  ///   - toLocalState: A key path that can get/set a collection of `State` elements inside
-  ///     `GlobalState`.
-  ///   - toLocalAction: A case path that can extract/embed `(Collection.Index, Action)` from
-  ///     `GlobalAction`.
-  ///   - toLocalEnvironment: A function that transforms `GlobalEnvironment` into `Environment`.
-  /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
-  public func forEach<GlobalState, GlobalAction, GlobalEnvironment, ID>(
-    state toLocalState: WritableKeyPath<GlobalState, IdentifiedArray<ID, State>>,
-    action toLocalAction: CasePath<GlobalAction, (ID, Action)>,
-    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+  ///   - toElementsState: A key path that can get/set a collection of `State` elements inside
+  ///     `ParentState`.
+  ///   - toElementAction: A case path that can extract/embed `(ID, Action)` from `ParentAction`.
+  ///   - toElementEnvironment: A function that transforms `ParentEnvironment` into `Environment`.
+  /// - Returns: A reducer that works on `ParentState`, `ParentAction`, `ParentEnvironment`.
+  public func forEach<ParentState, ParentAction, ParentEnvironment, ID>(
+    state toElementsState: WritableKeyPath<ParentState, IdentifiedArray<ID, State>>,
+    action toElementAction: CasePath<ParentAction, (ID, Action)>,
+    environment toElementEnvironment: @escaping (ParentEnvironment) -> Environment,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
-    .init { globalState, globalAction, globalEnvironment in
-      guard let (id, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
-      if globalState[keyPath: toLocalState][id: id] == nil {
+  ) -> Reducer<ParentState, ParentAction, ParentEnvironment> {
+    .init { parentState, parentAction, parentEnvironment in
+      guard let (id, action) = toElementAction.extract(from: parentAction)
+      else { return .none }
+
+      if parentState[keyPath: toElementsState][id: id] == nil {
         runtimeWarning(
           """
           A "forEach" reducer at "%@:%d" received an action when state contained no element with \
@@ -710,7 +711,7 @@ public struct Reducer<State, Action, Environment> {
           [
             "\(fileID)",
             line,
-            debugCaseOutput(localAction),
+            debugCaseOutput(action),
             "\(id)",
           ],
           file: file,
@@ -721,11 +722,11 @@ public struct Reducer<State, Action, Environment> {
       return
         self
         .reducer(
-          &globalState[keyPath: toLocalState][id: id]!,
-          localAction,
-          toLocalEnvironment(globalEnvironment)
+          &parentState[keyPath: toElementsState][id: id]!,
+          action,
+          toElementEnvironment(parentEnvironment)
         )
-        .map { toLocalAction.embed((id, $0)) }
+        .map { toElementAction.embed((id, $0)) }
     }
   }
 
@@ -736,23 +737,23 @@ public struct Reducer<State, Action, Environment> {
   /// combine `forEach`` reducers _before_ parent reducers that can modify the dictionary.
   ///
   /// - Parameters:
-  ///   - toLocalState: A key path that can get/set a dictionary of `State` values inside
-  ///     `GlobalState`.
-  ///   - toLocalAction: A case path that can extract/embed `(Key, Action)` from `GlobalAction`.
-  ///   - toLocalEnvironment: A function that transforms `GlobalEnvironment` into `Environment`.
-  /// - Returns: A reducer that works on `GlobalState`, `GlobalAction`, `GlobalEnvironment`.
-  public func forEach<GlobalState, GlobalAction, GlobalEnvironment, Key>(
-    state toLocalState: WritableKeyPath<GlobalState, [Key: State]>,
-    action toLocalAction: CasePath<GlobalAction, (Key, Action)>,
-    environment toLocalEnvironment: @escaping (GlobalEnvironment) -> Environment,
+  ///   - toDictionaryState: A key path that can get/set a dictionary of `State` values inside
+  ///     `ParentState`.
+  ///   - toKeyedAction: A case path that can extract/embed `(Key, Action)` from `ParentAction`.
+  ///   - toValueEnvironment: A function that transforms `ParentEnvironment` into `Environment`.
+  /// - Returns: A reducer that works on `ParentState`, `ParentAction`, `ParentEnvironment`.
+  public func forEach<ParentState, ParentAction, ParentEnvironment, Key>(
+    state toDictionaryState: WritableKeyPath<ParentState, [Key: State]>,
+    action toKeyedAction: CasePath<ParentAction, (Key, Action)>,
+    environment toValueEnvironment: @escaping (ParentEnvironment) -> Environment,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
-    .init { globalState, globalAction, globalEnvironment in
-      guard let (key, localAction) = toLocalAction.extract(from: globalAction) else { return .none }
+  ) -> Reducer<ParentState, ParentAction, ParentEnvironment> {
+    .init { parentState, parentAction, parentEnvironment in
+      guard let (key, action) = toKeyedAction.extract(from: parentAction) else { return .none }
 
-      if globalState[keyPath: toLocalState][key] == nil {
+      if parentState[keyPath: toDictionaryState][key] == nil {
         runtimeWarning(
           """
           A "forEach" reducer at "%@:%d" received an action when state contained no value at \
@@ -784,7 +785,7 @@ public struct Reducer<State, Action, Environment> {
           [
             "\(fileID)",
             line,
-            debugCaseOutput(localAction),
+            debugCaseOutput(action),
             "\(key)",
           ],
           file: file,
@@ -793,11 +794,11 @@ public struct Reducer<State, Action, Environment> {
         return .none
       }
       return self.reducer(
-        &globalState[keyPath: toLocalState][key]!,
-        localAction,
-        toLocalEnvironment(globalEnvironment)
+        &parentState[keyPath: toDictionaryState][key]!,
+        action,
+        toValueEnvironment(parentEnvironment)
       )
-      .map { toLocalAction.embed((key, $0)) }
+      .map { toKeyedAction.embed((key, $0)) }
     }
   }
 
