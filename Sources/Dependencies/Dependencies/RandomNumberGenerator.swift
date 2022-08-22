@@ -130,10 +130,10 @@ extension DependencyValues {
 /// }
 /// ```
 public final class WithRandomNumberGenerator: @unchecked Sendable {
-  private var generator: any RandomNumberGenerator
+  private var generator: RandomNumberGenerator
   private let lock: os_unfair_lock_t
 
-  public init<T: RandomNumberGenerator>(_ generator: T) {
+  public init<T: RandomNumberGenerator & Sendable>(_ generator: T) {
     self.generator = generator
     self.lock = os_unfair_lock_t.allocate(capacity: 1)
     self.lock.initialize(to: os_unfair_lock())
@@ -144,7 +144,7 @@ public final class WithRandomNumberGenerator: @unchecked Sendable {
     self.lock.deallocate()
   }
 
-  public func callAsFunction<R>(_ work: (inout any RandomNumberGenerator) -> R) -> R {
+  public func callAsFunction<R>(_ work: (inout RandomNumberGenerator) -> R) -> R {
     os_unfair_lock_lock(self.lock)
     defer { os_unfair_lock_unlock(self.lock) }
     return work(&self.generator)
