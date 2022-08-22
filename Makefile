@@ -14,6 +14,12 @@ test-library:
 	xcodebuild test \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_MACOS)"
+	xcrun -sdk appletvos --show-sdk-path && xcodebuild test \
+		-scheme ComposableArchitecture \
+		-destination platform="$(PLATFORM_TVOS)"
+	xcrun -sdk watchos --show-sdk-path && xcodebuild \
+		-scheme ComposableArchitecture_watchOS \
+		-destination platform="$(PLATFORM_WATCHOS)"
 
 DOC_WARNINGS := $(shell xcodebuild clean docbuild \
 	-scheme ComposableArchitecture \
