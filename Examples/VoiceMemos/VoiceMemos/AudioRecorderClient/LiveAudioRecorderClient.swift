@@ -2,6 +2,10 @@ import AVFoundation
 import ComposableArchitecture  // TODO: Should `UncheckedSendable` live in `Dependencies`?
 import Foundation
 
+extension AudioRecorderClientKey: LiveDependencyKey {
+  static let liveValue = AudioRecorderClient.live
+}
+
 extension AudioRecorderClient {
   static var live: Self {
     let audioRecorder = AudioRecorder()

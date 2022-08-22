@@ -9,7 +9,7 @@ import XCTestDynamicOverlay
 final class VoiceMemosTests: XCTestCase {
   let mainRunLoop = RunLoop.test
 
-  func testRecordMemoHappyPath() async {
+  func testRecordMemoHappyPath() async throws {
     // NB: Combine's concatenation behavior is different in 13.3
     guard #available(iOS 13.4, *) else { return }
 
@@ -59,7 +59,9 @@ final class VoiceMemosTests: XCTestCase {
       $0.recordingMemo?.duration = 2.5
     }
     await store.receive(.recordingMemo(.audioRecorderDidFinish(.success(true))))
-    await store.receive(.recordingMemo(.delegate(.didFinish(.success(store.state.recordingMemo!)))))
+    try await store.receive(
+      .recordingMemo(.delegate(.didFinish(.success(XCTUnwrap(store.state.recordingMemo)))))
+    )
     {
       $0.recordingMemo = nil
       $0.voiceMemos = [

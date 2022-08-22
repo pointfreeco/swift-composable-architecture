@@ -1003,7 +1003,11 @@
 
   class TestReducer<Base: ReducerProtocol>: ReducerProtocol {
     let base: Base
-    var dependencies = DependencyValues(isTesting: true)
+    var dependencies = { () -> DependencyValues in
+      var dependencies = DependencyValues()
+      dependencies.environment = .test
+      return dependencies
+    }()
     var inFlightEffects: Set<LongLivingEffect> = []
     var receivedActions: [(action: Base.Action, state: Base.State)] = []
     var state: Base.State
