@@ -68,51 +68,46 @@ extension DependencyValues {
   ///   ]
   /// }
   /// ```
-  public var uuid: any UUIDGenerator {
+  public var uuid: UUIDGenerator {
     get { self[UUIDGeneratorKey.self] }
     set { self[UUIDGeneratorKey.self] = newValue }
   }
 
   private enum UUIDGeneratorKey: LiveDependencyKey {
-    static let liveValue: any UUIDGenerator = LiveUUIDGenerator()
-    static let testValue: any UUIDGenerator = UnimplementedUUIDGenerator()
+    static let liveValue: UUIDGenerator = .live
+    static let testValue: UUIDGenerator = .unimplemented
   }
 }
 
-public protocol UUIDGenerator: Sendable {
-  func callAsFunction() -> UUID
-}
+public struct UUIDGenerator: Sendable {
+  private let generate: @Sendable () -> UUID
 
-public struct LiveUUIDGenerator: UUIDGenerator {
-  public init() {}
-
-  public func callAsFunction() -> UUID {
-    UUID()
+  public static func constant(_ uuid: UUID) -> Self {
+    Self { uuid }
   }
-}
 
-extension UUIDGenerator where Self == LiveUUIDGenerator {
-  public static var live: Self { Self() }
-}
+  public static var incrementing: Self {
+    let generator = IncrementingUUIDGenerator()
+    return Self { generator() }
+  }
 
-public struct UnimplementedUUIDGenerator: UUIDGenerator {
-  public init() {}
+  public static let live = Self { UUID() }
 
-  public func callAsFunction() -> UUID {
+  public static let unimplemented = Self {
     XCTFail(#"Unimplemented: @Dependency(\.uuid)"#)
     return UUID()
   }
+
+  public func callAsFunction() -> UUID {
+    self.generate()
+  }
 }
 
-extension UUIDGenerator where Self == UnimplementedUUIDGenerator {
-  public static var unimplemented: Self { Self() }
-}
-
-public final class IncrementingUUIDGenerator: UUIDGenerator, @unchecked Sendable {
+private final class IncrementingUUIDGenerator: @unchecked Sendable {
   private let lock: os_unfair_lock_t
   private var sequence = 0
 
-  public init() {
+  init() {
     self.lock = os_unfair_lock_t.allocate(capacity: 1)
     self.lock.initialize(to: os_unfair_lock())
   }
@@ -122,7 +117,7 @@ public final class IncrementingUUIDGenerator: UUIDGenerator, @unchecked Sendable
     self.lock.deallocate()
   }
 
-  public func callAsFunction() -> UUID {
+  func callAsFunction() -> UUID {
     os_unfair_lock_lock(self.lock)
     defer {
       self.sequence += 1
@@ -130,24 +125,4 @@ public final class IncrementingUUIDGenerator: UUIDGenerator, @unchecked Sendable
     }
     return UUID(uuidString: "00000000-0000-0000-0000-\(String(format: "%012x", self.sequence))")!
   }
-}
-
-extension UUIDGenerator where Self == IncrementingUUIDGenerator {
-  public static var incrementing: Self { Self() }
-}
-
-public struct ConstantUUIDGenerator: UUIDGenerator {
-  public let value: UUID
-
-  public init(_ value: UUID) {
-    self.value = value
-  }
-
-  public func callAsFunction() -> UUID {
-    self.value
-  }
-}
-
-extension UUIDGenerator where Self == ConstantUUIDGenerator {
-  public static func constant(_ uuid: UUID) -> Self { Self(uuid) }
 }

@@ -37,8 +37,8 @@ public struct DependencyValues: Sendable {
               if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
                 return Environment.preview
               }
-              return Environment.live
             #endif
+            return Environment.live
           }()
 
         switch mode {

@@ -4,58 +4,33 @@ import XCTestDynamicOverlay
 #if swift(>=5.7)
   extension DependencyValues {
     /// A dependency that returns the current date.
-    public var date: any DateGenerator {
+    public var date: DateGenerator {
       get { self[DateGeneratorKey.self] }
       set { self[DateGeneratorKey.self] = newValue }
     }
 
     private enum DateGeneratorKey: LiveDependencyKey {
-      // TODO: Benchmark difference between existential overhead vs. struct with non-inlined closures.
-      static let liveValue: any DateGenerator = LiveDateGenerator()
-      static let testValue: any DateGenerator = UnimplementedDateGenerator()
+      static let liveValue: DateGenerator = .live
+      static let testValue: DateGenerator = .unimplemented
     }
   }
 
-  // TODO: use struct instead, and same for UUID
-  public protocol DateGenerator: Sendable {
-    func callAsFunction() -> Date
-  }
+  public struct DateGenerator: Sendable {
+    private let generate: @Sendable () -> Date
 
-  extension DateGenerator where Self == LiveDateGenerator {
-    public static var live: Self { Self() }
-  }
-
-  public struct LiveDateGenerator: DateGenerator {
-    @inlinable
-    public func callAsFunction() -> Date {
-      Date()
+    public static func constant(_ now: Date) -> Self {
+      Self { now }
     }
-  }
 
-  public struct ConstantDateGenerator: DateGenerator {
-    public let constant: Date
-    public init(_ constant: Date) {
-      self.constant = constant
-    }
-    @inlinable
-    public func callAsFunction() -> Date {
-      self.constant
-    }
-  }
+    public static let live = Self { Date() }
 
-  extension DateGenerator where Self == ConstantDateGenerator {
-    public static func constant(_ date: Date) -> Self { .init(date) }
-  }
-
-  extension DateGenerator where Self == UnimplementedDateGenerator {
-    public static var unimplemented: Self { Self() }
-  }
-
-  public struct UnimplementedDateGenerator: DateGenerator {
-    @inlinable
-    public func callAsFunction() -> Date {
+    public static let unimplemented = Self {
       XCTFail(#"Unimplemented: @Dependency(\.date)"#)
       return Date()
+    }
+
+    public func callAsFunction() -> Date {
+      self.generate()
     }
   }
 #endif
