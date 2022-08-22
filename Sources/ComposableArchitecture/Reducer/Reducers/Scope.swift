@@ -220,35 +220,39 @@ public struct Scope<ParentState, ParentAction, Child: ReducerProtocol>: ReducerP
     switch self.toChildState {
     case let .casePath(toChildState, file, fileID, line):
       guard var childState = toChildState.extract(from: state) else {
-        // TODO: Update language
         runtimeWarning(
           """
-          A reducer scoped at "%@:%d" received an action when child state was unavailable. …
+          A "Scope" at "%@:%d" received a child action when child state was set to a different \
+          case. …
 
             Action:
+              %@
+            State:
               %@
 
           This is generally considered an application logic error, and can happen for a few \
           reasons:
 
-          • Another reducer set "%@" to a different case before this reducer ran. Combine or run \
-          case-specific reducers before reducers that may set their state to another case. This \
-          ensures that case-specific reducers can handle their actions while their state is \
-          available.
+          • A parent reducer set "%@" to a different case before the scoped reducer ran. Child \
+          reducers must run before any parent reducer sets child state to a different case. This \
+          ensures that child reducers can handle their actions while their state is still \
+          available. Consider using "ReducerProtocol.ifCaseLet" to embed this child reducer in the \
+          parent reducer that change its state to ensure the child reducer runs first.
 
-          • An in-flight effect emitted this action when state was unavailable. While it may be \
-          perfectly reasonable to ignore this action, you may want to cancel the associated \
-          effect before state is set to another case, especially if it is a long-living effect.
+          • An in-flight effect emitted this action when child state was unavailable. While it may \
+          be perfectly reasonable to ignore this action, consider canceling the associated effect \
+          before child state changes to another case, especially if it is a long-living effect.
 
-          • This action was sent to the store while state was another case. Make sure that \
-          actions for this reducer can only be sent to a view store when state is non-"nil". \
-          In SwiftUI applications, use "SwitchStore".
+          • This action was sent to the store while state was another case. Make sure that actions \
+          for this reducer can only be sent from a view store when state is set to the appropriate \
+          case. In SwiftUI applications, use "SwitchStore".
           """,
           [
             "\(fileID)",
             line,
-            debugCaseOutput(childAction),
-            "\(ParentState.self)",
+            debugCaseOutput(action),
+            debugCaseOutput(state),
+            typeName(ParentState.self),
           ],
           file: file,
           line: line

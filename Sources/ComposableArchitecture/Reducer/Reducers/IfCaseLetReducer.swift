@@ -86,34 +86,36 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     guard var childState = self.toChildState.extract(from: state) else {
-      // TODO: Update language
       runtimeWarning(
         """
-        An "ifCaseLet" reducer at "%@:%d" received an action when state was "nil". …
+        An "ifCaseLet" at "%@:%d" received a child action when child state was set to a different \
+        case. …
 
           Action:
+            %@
+          State:
             %@
 
         This is generally considered an application logic error, and can happen for a few reasons:
 
-        • The optional reducer was combined with or run from another reducer that set "%@" to \
-        "nil" before the optional reducer ran. Combine or run optional reducers before reducers \
-        that can set their state to "nil". This ensures that optional reducers can handle their \
-        actions while their state is still non-"nil".
+        • A parent reducer set "%@" to a different case before this reducer ran. This reducer must \
+        run before any other reducer sets child state to a different case. This ensures that child \
+        reducers can handle their actions while their state is still available.
 
-        • An in-flight effect emitted this action while state was "nil". While it may be perfectly \
-        reasonable to ignore this action, you may want to cancel the associated effect before \
-        state is set to "nil", especially if it is a long-living effect.
+        • An in-flight effect emitted this action when child state was unavailable. While it may \
+        be perfectly reasonable to ignore this action, consider canceling the associated effect \
+        before child state changes to another case, especially if it is a long-living effect.
 
-        • This action was sent to the store while state was "nil". Make sure that actions for this \
-        reducer can only be sent to a view store when state is non-"nil". In SwiftUI applications, \
-        use "IfLetStore".
+        • This action was sent to the store while state was another case. Make sure that actions \
+        for this reducer can only be sent from a view store when state is set to the appropriate \
+        case. In SwiftUI applications, use "SwitchStore".
         """,
         [
           "\(self.fileID)",
           self.line,
           debugCaseOutput(action),
-          typeName(Child.State.self),
+          debugCaseOutput(state),
+          typeName(Parent.State.self),
         ],
         file: self.file,
         line: self.line
