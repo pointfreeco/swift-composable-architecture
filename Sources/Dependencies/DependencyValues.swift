@@ -32,7 +32,7 @@ public struct DependencyValues: Sendable {
 
         let mode =
           self.storage[ObjectIdentifier(EnvironmentKey.self)]?.base as? Environment
-          ?? {
+           ?? {
             if isPreview {
               return Environment.preview
             } else {
