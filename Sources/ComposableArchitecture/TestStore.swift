@@ -1005,7 +1005,7 @@
     let base: Base
     var dependencies = { () -> DependencyValues in
       var dependencies = DependencyValues()
-      dependencies.environment = .test
+      dependencies.context = .test
       return dependencies
     }()
     var inFlightEffects: Set<LongLivingEffect> = []
