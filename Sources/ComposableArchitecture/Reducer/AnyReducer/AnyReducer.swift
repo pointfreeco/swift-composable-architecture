@@ -828,18 +828,4 @@ public struct AnyReducer<State, Action, Environment> {
   ) -> Effect<Action, Never> {
     self.reducer(&state, action, environment)
   }
-
-  /// A typealias that helps with type inference in the compiler.
-  ///
-  /// Without this typealias, something like this failes to compile:
-  ///
-  /// ```swift
-  /// extension AnyReducer {
-  ///              // 🛑 Reference to generic type 'Reducer' requires arguments in <...>
-  ///   func operation() -> Reducer {
-  ///     // ...
-  ///   }
-  /// }
-  /// ```
-  public typealias Reducer = AnyReducer
 }
