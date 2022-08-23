@@ -58,11 +58,11 @@ public struct DependencyValues: Sendable {
     get {
       guard let dependency = self.storage[ObjectIdentifier(key)]?.base as? Key.Value
       else {
-        let mode =
+        let context =
           self.storage[ObjectIdentifier(DependencyContextKey.self)]?.base as? DependencyContext
           ?? (isPreview ? .preview : .live)
 
-        switch mode {
+        switch context {
         case .live:
           guard let value = _liveValue(Key.self) as? Key.Value
           else {
