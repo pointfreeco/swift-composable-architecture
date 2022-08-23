@@ -10,13 +10,13 @@ final class ReducerTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
   func testCallableAsFunction() {
-    let reducer = AnyReducer<Int, Void, Void> { state, _, _ in
+    let reducer = Reduce<Int, Void> { state, _ in
       state += 1
       return .none
     }
 
     var state = 0
-    _ = reducer.run(&state, (), ())
+    _ = reducer.reduce(into: &state, action: ())
     XCTAssertNoDifference(state, 1)
   }
 
@@ -26,39 +26,47 @@ final class ReducerTests: XCTestCase {
       case increment
     }
 
-    var fastValue: Int?
-    let fastReducer = AnyReducer<Int, Action, Scheduler> { state, _, scheduler in
-      state += 1
-      return Effect.fireAndForget { fastValue = 42 }
-        .delay(for: 1, scheduler: scheduler)
-        .eraseToEffect()
+    struct Delayed: ReducerProtocol {
+      typealias State = Int
+
+      @Dependency(\.mainQueue) var mainQueue
+
+      let delay: DispatchQueue.SchedulerTimeType.Stride
+      let setValue: @Sendable () async -> Void
+
+      func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+        state += 1
+        return .fireAndForget {
+          try await self.mainQueue.sleep(for: self.delay)
+          await self.setValue()
+        }
+      }
     }
 
-    var slowValue: Int?
-    let slowReducer = AnyReducer<Int, Action, Scheduler> { state, _, scheduler in
-      state += 1
-      return Effect.fireAndForget { slowValue = 1729 }
-        .delay(for: 2, scheduler: scheduler)
-        .eraseToEffect()
-    }
+    let fastValue = ActorIsolated<Int?>(nil)
+    let slowValue = ActorIsolated<Int?>(nil)
 
-    let mainQueue = DispatchQueue.test
     let store = TestStore(
       initialState: 0,
-      reducer: .combine(fastReducer, slowReducer),
-      environment: mainQueue.eraseToAnyScheduler()
+      reducer: CombineReducers {
+        Delayed(delay: 1, setValue: { await fastValue.setValue(42) })
+        Delayed(delay: 2, setValue: { await slowValue.setValue(1729) })
+      }
     )
+
+    let mainQueue = DispatchQueue.test
+    store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
 
     await store.send(.increment) {
       $0 = 2
     }
     // Waiting a second causes the fast effect to fire.
     await mainQueue.advance(by: 1)
-    XCTAssertNoDifference(fastValue, 42)
+    await fastValue.withValue { XCTAssertEqual($0, 42) }
     // Waiting one more second causes the slow effect to fire. This proves that the effects
     // are merged together, as opposed to concatenated.
     await mainQueue.advance(by: 1)
-    XCTAssertNoDifference(slowValue, 1729)
+    await slowValue.withValue { XCTAssertEqual($0, 1729) }
   }
 
   func testCombine() async {
@@ -66,36 +74,43 @@ final class ReducerTests: XCTestCase {
       case increment
     }
 
-    var childEffectExecuted = false
-    let childReducer = AnyReducer<Int, Action, Void> { state, _, _ in
-      state += 1
-      return Effect.fireAndForget { childEffectExecuted = true }
-        .eraseToEffect()
+    struct One: ReducerProtocol {
+      typealias State = Int
+      let effect: @Sendable () async -> Void
+      func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+        state += 1
+        return .fireAndForget {
+          await self.effect()
+        }
+      }
     }
 
-    var mainEffectExecuted = false
-    let mainReducer = AnyReducer<Int, Action, Void> { state, _, _ in
-      state += 1
-      return Effect.fireAndForget { mainEffectExecuted = true }
-        .eraseToEffect()
-    }
-    .combined(with: childReducer)
+    let first = ActorIsolated(false)
+    let second = ActorIsolated(false)
 
     let store = TestStore(
       initialState: 0,
-      reducer: mainReducer,
-      environment: ()
+      reducer: CombineReducers {
+        One(effect: { await first.setValue(true) })
+        One(effect: { await second.setValue(true) })
+      }
     )
 
     await store.send(.increment) {
       $0 = 2
     }
 
-    XCTAssertTrue(childEffectExecuted)
-    XCTAssertTrue(mainEffectExecuted)
+    await first.withValue { XCTAssertTrue($0) }
+    await second.withValue { XCTAssertTrue($0) }
   }
 
   func testDebug() async {
+    enum DebugAction: Equatable {
+      case incrWithBool(Bool)
+      case incr, noop
+    }
+    struct DebugState: Equatable { var count = 0 }
+
     var logs: [String] = []
     let logsExpectation = self.expectation(description: "logs")
     logsExpectation.expectedFulfillmentCount = 2
@@ -135,14 +150,14 @@ final class ReducerTests: XCTestCase {
       [
         #"""
         [prefix]: received action:
-          DebugAction.incr
-        - DebugState(count: 0)
-        + DebugState(count: 1)
+          ReducerTests.DebugAction.incr
+        - ReducerTests.DebugState(count: 0)
+        + ReducerTests.DebugState(count: 1)
 
         """#,
         #"""
         [prefix]: received action:
-          DebugAction.noop
+          ReducerTests.DebugAction.noop
           (No state changes)
 
         """#,
@@ -151,6 +166,12 @@ final class ReducerTests: XCTestCase {
   }
 
   func testDebug_ActionFormat_OnlyLabels() {
+    enum DebugAction: Equatable {
+      case incrWithBool(Bool)
+      case incr, noop
+    }
+    struct DebugState: Equatable { var count = 0 }
+
     var logs: [String] = []
     let logsExpectation = self.expectation(description: "logs")
 
@@ -188,9 +209,9 @@ final class ReducerTests: XCTestCase {
       [
         #"""
         [prefix]: received action:
-          DebugAction.incrWithBool
-        - DebugState(count: 0)
-        + DebugState(count: 1)
+          ReducerTests.DebugAction.incrWithBool
+        - ReducerTests.DebugState(count: 0)
+        + ReducerTests.DebugState(count: 1)
 
         """#
       ]
@@ -198,9 +219,9 @@ final class ReducerTests: XCTestCase {
   }
 
   func testDefaultSignpost() {
-    let reducer = AnyReducer<Int, Void, Void>.empty.signpost(log: .default)
+    let reducer = EmptyReducer<Int, Void>().signpost(log: .default)
     var n = 0
-    let effect = reducer.run(&n, (), ())
+    let effect = reducer.reduce(into: &n, action: ())
     let expectation = self.expectation(description: "effect")
     effect
       .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
@@ -209,9 +230,9 @@ final class ReducerTests: XCTestCase {
   }
 
   func testDisabledSignpost() {
-    let reducer = AnyReducer<Int, Void, Void>.empty.signpost(log: .disabled)
+    let reducer = EmptyReducer<Int, Void>().signpost(log: .disabled)
     var n = 0
-    let effect = reducer.run(&n, (), ())
+    let effect = reducer.reduce(into: &n, action: ())
     let expectation = self.expectation(description: "effect")
     effect
       .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
@@ -219,9 +240,3 @@ final class ReducerTests: XCTestCase {
     self.wait(for: [expectation], timeout: 0.1)
   }
 }
-
-enum DebugAction: Equatable {
-  case incrWithBool(Bool)
-  case incr, noop
-}
-struct DebugState: Equatable { var count = 0 }

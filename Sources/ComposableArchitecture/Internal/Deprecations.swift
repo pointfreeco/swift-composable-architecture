@@ -5,7 +5,7 @@ import XCTestDynamicOverlay
 
 // NB: Deprecated after 0.39.0:
 
-@available(*, deprecated, renamed: "AnyReducer")
+@available(*, deprecated: 9999.0, renamed: "AnyReducer")
 public typealias Reducer = AnyReducer
 
 extension CaseLet {
@@ -230,7 +230,7 @@ extension AnyReducer {
 // NB: Deprecated after 0.29.0:
 
 #if DEBUG
-  extension TestStore where LocalState: Equatable, Reducer.Action: Equatable {
+  extension TestStore where ScopedState: Equatable, Reducer.Action: Equatable {
     @available(
       *, deprecated, message: "Use 'TestStore.send' and 'TestStore.receive' directly, instead."
     )

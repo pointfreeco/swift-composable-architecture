@@ -21,6 +21,7 @@ public struct CombineReducers<Reducers: ReducerProtocol>: ReducerProtocol {
   ///
   /// - Parameter build: A reducer builder.
   @inlinable
+  // NB: Generics required to work around https://github.com/apple/swift/issues/60445
   public init<State, Action>(
     @ReducerBuilder<State, Action> _ build: () -> Reducers
   ) where Reducers.State == State, Reducers.Action == Action {

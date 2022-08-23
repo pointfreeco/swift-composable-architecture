@@ -125,7 +125,11 @@ public final class Store<State, Action> {
   var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
   var parentCancellable: AnyCancellable?
-  private let reducer: (inout State, Action) -> Effect<Action, Never>
+  #if swift(>=5.7) && !DEBUG
+    private let reducer: any ReducerProtocol<State, Action>
+  #else
+    private let reducer: (inout State, Action) -> Effect<Action, Never>
+  #endif
   var state: CurrentValueSubject<State, Never>
   #if DEBUG
     private let mainThreadChecksEnabled: Bool
@@ -337,7 +341,11 @@ public final class Store<State, Action> {
 
     while !self.bufferedActions.isEmpty {
       let action = self.bufferedActions.removeFirst()
-      let effect = self.reducer(&currentState, action)
+      #if swift(>=5.7) && !DEBUG
+        let effect = self.reducer.reduce(into: &currentState, action: action)
+      #else
+        let effect = self.reducer(&currentState, action)
+      #endif
 
       var didComplete = false
       let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
@@ -503,16 +511,17 @@ public final class Store<State, Action> {
     mainThreadChecksEnabled: Bool
   ) where R.State == State, R.Action == Action {
     self.state = CurrentValueSubject(initialState)
-    self.reducer = reducer.reduce
+    #if swift(>=5.7) && !DEBUG
+      self.reducer = reducer
+    #else
+      self.reducer = reducer.reduce
+    #endif
     #if DEBUG
       self.mainThreadChecksEnabled = mainThreadChecksEnabled
     #endif
     self.threadCheck(status: .`init`)
   }
 }
-
-// TODO: Is the following (and `ViewStoreOf` necessary if we have `ReducerOf`?)
-// Store<some ReducerOf<Feature>>
 
 /// A convenience type alias for referring to a store of a given reducer's domain.
 ///

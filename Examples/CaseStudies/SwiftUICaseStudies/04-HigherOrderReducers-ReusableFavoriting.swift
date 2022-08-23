@@ -21,38 +21,44 @@ private let readMe = """
 
 // MARK: - Favorite domain
 
-struct FavoriteState<ID: Hashable>: Equatable, Identifiable {
-  var alert: AlertState<FavoriteAction>?
+// TODO: can we get rid of ID and just use AnyHashable? But how do we handle Sendable? AnyHashableSendable?
+struct FavoritingState<ID: Hashable & Sendable>: Equatable {
+  var alert: AlertState<FavoritingAction>?
   let id: ID
   var isFavorite: Bool
 }
-
-enum FavoriteAction: Equatable {
+enum FavoritingAction: Equatable {
   case alertDismissed
   case buttonTapped
   case response(TaskResult<Bool>)
 }
-
-struct FavoriteEnvironment<ID: Sendable> {
-  var request: @Sendable (ID, Bool) async throws -> Bool
-}
-
-/// A cancellation token that cancels in-flight favoriting requests.
-struct FavoriteCancelID<ID: Hashable>: Hashable {
-  var id: ID
-}
-
-extension AnyReducer {
-  /// Enhances a reducer with favoriting logic.
+extension ReducerProtocol {
   func favorite<ID: Hashable>(
-    state: WritableKeyPath<State, FavoriteState<ID>>,
-    action: CasePath<Action, FavoriteAction>,
-    environment: @escaping (Environment) -> FavoriteEnvironment<ID>
-  ) -> Self {
-    .combine(
-      self,
-      AnyReducer<FavoriteState<ID>, FavoriteAction, FavoriteEnvironment> {
-        state, action, environment in
+    favorite: @escaping @Sendable (ID, Bool) async throws -> Bool,
+    state toFavoriteState: WritableKeyPath<State, FavoritingState<ID>>,
+    action toFavoriteAction: CasePath<Action, FavoritingAction>
+  ) -> _FavoritingComponent<Self, ID> {
+    .init(
+      parent: self,
+      favorite: favorite,
+      toFavoriteState: toFavoriteState,
+      toFavoriteAction: toFavoriteAction
+    )
+  }
+}
+struct _FavoritingComponent<Parent: ReducerProtocol, ID: Hashable & Sendable>: ReducerProtocol {
+  let parent: Parent
+  let favorite: @Sendable (ID, Bool) async throws -> Bool
+  let toFavoriteState: WritableKeyPath<Parent.State, FavoritingState<ID>>
+  let toFavoriteAction: CasePath<Parent.Action, FavoritingAction>
+
+  private struct CancelID: Hashable {
+    let id: AnyHashable
+  }
+
+  var body: some ReducerProtocol<Parent.State, Parent.Action> {
+    Scope(state: self.toFavoriteState, action: self.toFavoriteAction) {
+      Reduce { state, action in
         switch action {
         case .alertDismissed:
           state.alert = nil
@@ -62,10 +68,10 @@ extension AnyReducer {
         case .buttonTapped:
           state.isFavorite.toggle()
 
-          return .task { [id = state.id, isFavorite = state.isFavorite] in
-            await .response(TaskResult { try await environment.request(id, isFavorite) })
+          return .task { [id = state.id, isFavorite = state.isFavorite, favorite] in
+            await .response(TaskResult { try await favorite(id, isFavorite) })
           }
-          .cancellable(id: FavoriteCancelID(id: state.id), cancelInFlight: true)
+          .cancellable(id: CancelID(id: state.id), cancelInFlight: true)
 
         case let .response(.failure(error)):
           state.alert = AlertState(title: TextState(error.localizedDescription))
@@ -76,13 +82,13 @@ extension AnyReducer {
           return .none
         }
       }
-      .pullback(state: state, action: action, environment: environment)
-    )
+    }
+    self.parent
   }
 }
 
-struct FavoriteButton<ID: Hashable>: View {
-  let store: Store<FavoriteState<ID>, FavoriteAction>
+struct FavoriteButton<ID: Hashable & Sendable>: View {
+  let store: Store<FavoritingState<ID>, FavoritingAction>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -99,28 +105,37 @@ struct FavoriteButton<ID: Hashable>: View {
 
 // MARK: Feature domain -
 
-struct EpisodeState: Equatable, Identifiable {
-  var alert: AlertState<FavoriteAction>?
-  let id: UUID
-  var isFavorite: Bool
-  let title: String
+struct Episode: ReducerProtocol {
+  struct State: Equatable, Identifiable {
+    var alert: AlertState<FavoritingAction>?
+    let id: UUID
+    var isFavorite: Bool
+    let title: String
 
-  var favorite: FavoriteState<ID> {
-    get { .init(alert: self.alert, id: self.id, isFavorite: self.isFavorite) }
-    set { (self.alert, self.isFavorite) = (newValue.alert, newValue.isFavorite) }
+    var favorite: FavoritingState<ID> {
+      get { .init(alert: self.alert, id: self.id, isFavorite: self.isFavorite) }
+      set { (self.alert, self.isFavorite) = (newValue.alert, newValue.isFavorite) }
+    }
+  }
+  enum Action: Equatable {
+    case favorite(FavoritingAction)
+  }
+  let favorite: @Sendable (UUID, Bool) async throws -> Bool
+
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
+      .none
+    }
+    .favorite(
+      favorite: self.favorite,
+      state: \.favorite,
+      action: /Action.favorite
+    )
   }
 }
 
-enum EpisodeAction: Equatable {
-  case favorite(FavoriteAction)
-}
-
-struct EpisodeEnvironment {
-  var favorite: @Sendable (EpisodeState.ID, Bool) async throws -> Bool
-}
-
 struct EpisodeView: View {
-  let store: Store<EpisodeState, EpisodeAction>
+  let store: StoreOf<Episode>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
@@ -130,39 +145,37 @@ struct EpisodeView: View {
         Spacer()
 
         FavoriteButton(
-          store: self.store.scope(state: \.favorite, action: EpisodeAction.favorite))
+          store: self.store.scope(
+            state: \.favorite,
+            action: Episode.Action.favorite
+          )
+        )
       }
     }
   }
 }
 
-let episodeReducer = AnyReducer<EpisodeState, EpisodeAction, EpisodeEnvironment>.empty.favorite(
-  state: \.favorite,
-  action: /EpisodeAction.favorite,
-  environment: { FavoriteEnvironment(request: $0.favorite) }
-)
+struct Episodes: ReducerProtocol {
+  struct State: Equatable {
+    var episodes: IdentifiedArrayOf<Episode.State> = []
+  }
+  enum Action: Equatable {
+    case episode(id: Episode.State.ID, action: Episode.Action)
+  }
+  let favorite: @Sendable (UUID, Bool) async throws -> Bool
 
-struct EpisodesState: Equatable {
-  var episodes: IdentifiedArrayOf<EpisodeState> = []
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
+      .none
+    }
+    .forEach(\.episodes, action: /Action.episode) {
+      Episode(favorite: self.favorite)
+    }
+  }
 }
-
-enum EpisodesAction: Equatable {
-  case episode(id: EpisodeState.ID, action: EpisodeAction)
-}
-
-struct EpisodesEnvironment {
-  var favorite: @Sendable (UUID, Bool) async throws -> Bool
-}
-
-let episodesReducer: AnyReducer<EpisodesState, EpisodesAction, EpisodesEnvironment> =
-  episodeReducer.forEach(
-    state: \EpisodesState.episodes,
-    action: /EpisodesAction.episode(id:action:),
-    environment: { EpisodeEnvironment(favorite: $0.favorite) }
-  )
 
 struct EpisodesView: View {
-  let store: Store<EpisodesState, EpisodesAction>
+  let store: StoreOf<Episodes>
 
   var body: some View {
     Form {
@@ -170,7 +183,10 @@ struct EpisodesView: View {
         AboutView(readMe: readMe)
       }
       ForEachStore(
-        self.store.scope(state: \.episodes, action: EpisodesAction.episode(id:action:))
+        self.store.scope(
+          state: \.episodes,
+          action: Episodes.Action.episode(id:action:)
+        )
       ) { rowStore in
         EpisodeView(store: rowStore)
       }
@@ -185,13 +201,10 @@ struct EpisodesView_Previews: PreviewProvider {
     NavigationView {
       EpisodesView(
         store: Store(
-          initialState: EpisodesState(
+          initialState: Episodes.State(
             episodes: .mocks
           ),
-          reducer: episodesReducer,
-          environment: EpisodesEnvironment(
-            favorite: favorite(id:isFavorite:)
-          )
+          reducer: Episodes(favorite: favorite(id:isFavorite:))
         )
       )
     }
@@ -213,13 +226,13 @@ struct FavoriteError: LocalizedError {
   }
 }
 
-extension IdentifiedArray where ID == EpisodeState.ID, Element == EpisodeState {
+extension IdentifiedArray where ID == Episode.State.ID, Element == Episode.State {
   static let mocks: Self = [
-    EpisodeState(id: UUID(), isFavorite: false, title: "Functions"),
-    EpisodeState(id: UUID(), isFavorite: false, title: "Side Effects"),
-    EpisodeState(id: UUID(), isFavorite: false, title: "Algebraic Data Types"),
-    EpisodeState(id: UUID(), isFavorite: false, title: "DSLs"),
-    EpisodeState(id: UUID(), isFavorite: false, title: "Parsers"),
-    EpisodeState(id: UUID(), isFavorite: false, title: "Composable Architecture"),
+    Episode.State(id: UUID(), isFavorite: false, title: "Functions"),
+    Episode.State(id: UUID(), isFavorite: false, title: "Side Effects"),
+    Episode.State(id: UUID(), isFavorite: false, title: "Algebraic Data Types"),
+    Episode.State(id: UUID(), isFavorite: false, title: "DSLs"),
+    Episode.State(id: UUID(), isFavorite: false, title: "Parsers"),
+    Episode.State(id: UUID(), isFavorite: false, title: "Composable Architecture"),
   ]
 }

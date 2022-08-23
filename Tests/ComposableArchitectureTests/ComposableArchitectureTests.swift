@@ -86,32 +86,31 @@ final class ComposableArchitectureTests: XCTestCase {
 
     enum Action { case end, incr, start }
 
-    let reducer = AnyReducer<Int, Action, Environment> { state, action, environment in
+    let effect = AsyncStream<Void>.streamWithContinuation()
+
+    let reducer = Reduce<Int, Action> { state, action in
       switch action {
       case .end:
-        return environment.stopEffect.fireAndForget()
+        return .fireAndForget {
+          effect.continuation.finish()
+        }
       case .incr:
         state += 1
         return .none
       case .start:
-        return environment.startEffect.map { Action.incr }
+        return .run { send in
+          for await _ in effect.stream {
+            await send(.incr)
+          }
+        }
       }
     }
 
-    let subject = PassthroughSubject<Void, Never>()
-
-    let store = TestStore(
-      initialState: 0,
-      reducer: reducer,
-      environment: (
-        startEffect: subject.eraseToEffect(),
-        stopEffect: .fireAndForget { subject.send(completion: .finished) }
-      )
-    )
+    let store = TestStore(initialState: 0, reducer: reducer)
 
     await store.send(.start)
     await store.send(.incr) { $0 = 1 }
-    subject.send()
+    effect.continuation.yield()
     await store.receive(.incr) { $0 = 2 }
     await store.send(.end)
   }

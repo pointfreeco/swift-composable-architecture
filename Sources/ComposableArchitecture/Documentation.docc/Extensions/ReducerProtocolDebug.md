@@ -1,8 +1,8 @@
-# ``ComposableArchitecture/ReducerProtocol/debug(_:state:action:actionFormat:)``
+# ``ComposableArchitecture/ReducerProtocol/debug(_:state:action:actionFormat:to:)``
 
 ## Topics
 
 ### Overloads
 
-- ``ReducerProtocol/debug(_:actionFormat:)``
+- ``ReducerProtocol/debug(_:actionFormat:to:)``
 - ``ActionFormat``

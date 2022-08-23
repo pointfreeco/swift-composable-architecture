@@ -2,29 +2,24 @@ import ComposableArchitecture
 import SwiftUI
 
 private let readMe = """
-  This screen demonstrates how the `Reducer` struct can be extended to enhance reducers with extra \
-  functionality.
-
-  In it we introduce an interface for constructing reducers that need to be called recursively in \
-  order to handle nested state and actions. It is handed itself as its first argument.
+  This screen demonstrates how `ReducerProtocol` bodies can recursively nest themselves.
 
   Tap "Add row" to add a row to the current screen's list. Tap the left-hand side of a row to edit \
-  its description, or tap the right-hand side of a row to navigate to its own associated list of \
-  rows.
+  its name, or tap the right-hand side of a row to navigate to its own associated list of rows.
   """
 
 struct Nested: ReducerProtocol {
   struct State: Equatable, Identifiable {
-    var children: IdentifiedArrayOf<State> = []
     let id: UUID
-    var description: String = ""
+    var name: String = ""
+    var rows: IdentifiedArrayOf<State> = []
   }
 
   enum Action: Equatable {
-    case append
-    indirect case node(id: State.ID, action: Action)
-    case remove(IndexSet)
-    case rename(String)
+    case addRowButtonTapped
+    case nameTextFieldChanged(String)
+    case onDelete(IndexSet)
+    indirect case row(id: State.ID, action: Action)
   }
 
   @Dependency(\.uuid) var uuid
@@ -32,23 +27,23 @@ struct Nested: ReducerProtocol {
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
-      case .append:
-        state.children.append(State(id: self.uuid()))
+      case .addRowButtonTapped:
+        state.rows.append(State(id: self.uuid()))
         return .none
 
-      case .node:
+      case let .nameTextFieldChanged(name):
+        state.name = name
         return .none
 
-      case let .remove(indexSet):
-        state.children.remove(atOffsets: indexSet)
+      case let .onDelete(indexSet):
+        state.rows.remove(atOffsets: indexSet)
         return .none
 
-      case let .rename(name):
-        state.description = name
+      case .row:
         return .none
       }
     }
-    .forEach(\.children, action: /Action.node(id:action:)) {
+    .forEach(\.rows, action: /Action.row(id:action:)) {
       Nested()
     }
   }
@@ -58,23 +53,25 @@ struct NestedView: View {
   let store: StoreOf<Nested>
 
   var body: some View {
-    WithViewStore(self.store.scope(state: \.description)) { viewStore in
+    WithViewStore(self.store.scope(state: \.name)) { viewStore in
       Form {
         Section {
           AboutView(readMe: readMe)
         }
 
         ForEachStore(
-          self.store.scope(state: \.children, action: Nested.Action.node(id:action:))
-        ) { childStore in
-          WithViewStore(childStore) { childViewStore in
+          self.store.scope(state: \.rows, action: Nested.Action.row(id:action:))
+        ) { rowStore in
+          WithViewStore(rowStore) { rowViewStore in
             NavigationLink(
-              destination: NestedView(store: childStore)
+              destination: NestedView(store: rowStore)
             ) {
               HStack {
                 TextField(
                   "Untitled",
-                  text: childViewStore.binding(get: \.description, send: Nested.Action.rename)
+                  text:
+                    rowViewStore
+                    .binding(get: \.name, send: Nested.Action.nameTextFieldChanged)
                 )
                 Text("Next")
                   .font(.callout)
@@ -83,12 +80,12 @@ struct NestedView: View {
             }
           }
         }
-        .onDelete { viewStore.send(.remove($0)) }
+        .onDelete { viewStore.send(.onDelete($0)) }
       }
       .navigationTitle(viewStore.state.isEmpty ? "Untitled" : viewStore.state)
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {
-          Button("Add row") { viewStore.send(.append) }
+          Button("Add row") { viewStore.send(.addRowButtonTapped) }
         }
       }
     }
@@ -97,42 +94,26 @@ struct NestedView: View {
 
 extension Nested.State {
   static let mock = Nested.State(
-    children: [
-      Nested.State(
-        children: [
-          Nested.State(
-            children: [],
-            id: UUID(),
-            description: ""
-          )
-        ],
-        id: UUID(),
-        description: "Bar"
-      ),
-      Nested.State(
-        children: [
-          Nested.State(
-            children: [],
-            id: UUID(),
-            description: "Fizz"
-          ),
-          Nested.State(
-            children: [],
-            id: UUID(),
-            description: "Buzz"
-          ),
-        ],
-        id: UUID(),
-        description: "Baz"
-      ),
-      Nested.State(
-        children: [],
-        id: UUID(),
-        description: ""
-      ),
-    ],
     id: UUID(),
-    description: "Foo"
+    name: "Foo",
+    rows: [
+      Nested.State(
+        id: UUID(),
+        name: "Bar",
+        rows: [
+          Nested.State(id: UUID(), name: "", rows: []),
+        ]
+      ),
+      Nested.State(
+        id: UUID(),
+        name: "Baz",
+        rows: [
+          Nested.State(id: UUID(), name: "Fizz", rows: []),
+          Nested.State(id: UUID(), name: "Buzz", rows: []),
+        ]
+      ),
+      Nested.State(id: UUID(), name: "", rows: []),
+    ]
   )
 }
 

@@ -26,7 +26,7 @@ struct VoiceMemos: ReducerProtocol {
     case voiceMemo(id: VoiceMemo.State.ID, action: VoiceMemo.Action)
   }
 
-  @Dependency(\.audioRecorder) var audioRecorder
+  @Dependency(\.audioRecorder.requestRecordPermission) var requestRecordPermission
   @Dependency(\.mainRunLoop) var mainRunLoop
   @Dependency(\.openSettings) var openSettings
   @Dependency(\.temporaryDirectory) var temporaryDirectory
@@ -48,7 +48,7 @@ struct VoiceMemos: ReducerProtocol {
         switch state.audioRecorderPermission {
         case .undetermined:
           return .task {
-            await .recordPermissionResponse(self.audioRecorder.requestRecordPermission())
+            await .recordPermissionResponse(self.requestRecordPermission())
           }
 
         case .denied:
@@ -233,44 +233,7 @@ struct VoiceMemos_Previews: PreviewProvider {
           ]
         ),
         reducer: VoiceMemos()
-          .dependency(\.audioPlayer, .mock)
-          .dependency(\.audioRecorder, .mock)
-          .dependency(\.openSettings) {}
       )
     )
-    .environment(\.colorScheme, .dark)
   }
-}
-
-extension AudioRecorderClient {
-  static var mock: Self {
-    let isRecording = ActorIsolated(false)
-    let currentTime = ActorIsolated(0.0)
-
-    return Self(
-      currentTime: { await currentTime.value },
-      requestRecordPermission: { true },
-      startRecording: { _ in
-        await isRecording.setValue(true)
-        while await isRecording.value {
-          try await Task.sleep(nanoseconds: NSEC_PER_SEC)
-          await currentTime.withValue { $0 += 1 }
-        }
-        return true
-      },
-      stopRecording: {
-        await isRecording.setValue(false)
-        await currentTime.setValue(0)
-      }
-    )
-  }
-}
-
-extension AudioPlayerClient {
-  static let mock = Self(
-    play: { _ in
-      try await Task.sleep(nanoseconds: NSEC_PER_SEC * 5)
-      return true
-    }
-  )
 }

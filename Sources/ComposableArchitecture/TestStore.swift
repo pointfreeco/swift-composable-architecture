@@ -266,6 +266,10 @@
     }
 
     // NB: Can't seem to define this as a convenience initializer in 'ReducerCompatibility.swift'.
+    @available(iOS, deprecated: 9999.0, message: "Use 'ReducerProtocol' instead.")
+    @available(macOS, deprecated: 9999.0, message: "Use 'ReducerProtocol' instead.")
+    @available(tvOS, deprecated: 9999.0, message: "Use 'ReducerProtocol' instead.")
+    @available(watchOS, deprecated: 9999.0, message: "Use 'ReducerProtocol' instead.")
     public init(
       initialState: ScopedState,
       reducer: AnyReducer<ScopedState, ScopedAction, Environment>,
@@ -999,7 +1003,11 @@
 
   class TestReducer<Base: ReducerProtocol>: ReducerProtocol {
     let base: Base
-    var dependencies = DependencyValues(isTesting: true)
+    var dependencies = { () -> DependencyValues in
+      var dependencies = DependencyValues()
+      dependencies.environment = .test
+      return dependencies
+    }()
     var inFlightEffects: Set<LongLivingEffect> = []
     var receivedActions: [(action: Base.Action, state: Base.State)] = []
     var state: Base.State

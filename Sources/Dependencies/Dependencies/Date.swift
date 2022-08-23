@@ -3,57 +3,54 @@ import XCTestDynamicOverlay
 
 extension DependencyValues {
   /// A dependency that returns the current date.
-  public var date: any DateGenerator {
+  ///
+  /// By default, a ``DateGenerator/live`` generator is supplied. When used from a `TestStore`, an
+  /// ``DateGenerator/unimplemented`` generator is supplied, unless explicitly overridden, for
+  /// example using a ``DateGenerator/constant(_:)`` generator:
+  ///
+  /// ```swift
+  /// let store = TestStore(
+  ///   initialState: MyFeature.State()
+  ///   reducer: My.Feature()
+  /// )
+  ///
+  /// store.dependencies.date = .constant(Date(timeIntervalSince1970: 0))
+  /// ```
+  public var date: DateGenerator {
     get { self[DateGeneratorKey.self] }
     set { self[DateGeneratorKey.self] = newValue }
   }
 
   private enum DateGeneratorKey: LiveDependencyKey {
-    // TODO: Benchmark difference between existential overhead vs. struct with non-inlined closures.
-    static let liveValue: any DateGenerator = LiveDateGenerator()
-    static let testValue: any DateGenerator = UnimplementedDateGenerator()
+    static let liveValue: DateGenerator = .live
+    static let testValue: DateGenerator = .unimplemented
   }
 }
 
-public protocol DateGenerator: Sendable {
-  func callAsFunction() -> Date
-}
+/// A dependency that generates a date.
+///
+/// See ``DependencyValues/date`` for more information.
+public struct DateGenerator: Sendable {
+  private let generate: @Sendable () -> Date
 
-extension DateGenerator where Self == LiveDateGenerator {
-  public static var live: Self { Self() }
-}
-
-public struct LiveDateGenerator: DateGenerator {
-  @inlinable
-  public func callAsFunction() -> Date {
-    Date()
+  /// A generator that returns a constant date.
+  ///
+  /// - Parameter now: A date to return.
+  /// - Returns: A generator that always returns the given date.
+  public static func constant(_ now: Date) -> Self {
+    Self { now }
   }
-}
 
-// TODO: add `.constant` static and rethink types? maybe ok to hold closures?
-public struct ConstantDateGenerator: DateGenerator {
-  public let constant: Date
-  public init(_ constant: Date) {
-    self.constant = constant
-  }
-  @inlinable
-  public func callAsFunction() -> Date {
-    self.constant
-  }
-}
+  /// A generator that calls `Date()` under the hood.
+  public static let live = Self { Date() }
 
-extension DateGenerator where Self == ConstantDateGenerator {
-  public static func constant(_ date: Date) -> Self { .init(date) }
-}
-
-extension DateGenerator where Self == UnimplementedDateGenerator {
-  public static var unimplemented: Self { Self() }
-}
-
-public struct UnimplementedDateGenerator: DateGenerator {
-  @inlinable
-  public func callAsFunction() -> Date {
+  /// A generator that calls `XCTFail` when it is invoked.
+  public static let unimplemented = Self {
     XCTFail(#"Unimplemented: @Dependency(\.date)"#)
     return Date()
+  }
+
+  public func callAsFunction() -> Date {
+    self.generate()
   }
 }

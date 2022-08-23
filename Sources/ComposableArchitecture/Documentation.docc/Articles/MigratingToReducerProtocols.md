@@ -145,12 +145,11 @@ are to return a protocol-style reducer:
 
 ```swift
 let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
-  AnyReducer { 
+  AnyReducer {
     MyFeature(
       apiClient: $0.apiClient,
       date: $0.date
     )
-    // TODO: implement this pullback on ReducerProtocol for ease of migration.
     .pullback(state: \.featureA, action: /ParentAction.featureA)
   },
 
@@ -222,7 +221,7 @@ let appReducer = Reducer<
 
 To convert this to the protocol-style we again introduce a new type that conforms to the 
 ``ReducerProtocol``, we nest the domain types inside the conformance, we inline the environment
-fields, but this time we use the ``ReducerProtocol/body-swift.property-5mc0o`` requirement of the
+fields, but this time we use the ``ReducerProtocol/body-swift.property-7foai`` requirement of the
 protocol to describe how to compose multiple reducers:
 
 ```swift
@@ -316,6 +315,122 @@ struct MyFeature: ReducerProtocol {
 
 For more information on designing your dependencies and providing live and test dependencies, see
 our <doc:Testing> article.
+
+### Stores
+
+Stores can be initialized from an initial state and an instance of a type conforming to
+``ReducerProtocol``:
+
+```swift
+MyFeatureView(
+  store: Store(
+    initialState: MyFeature.State(),
+    reducer: MyFeature()
+  )
+)
+```
+
+Views that hold onto stores can also employ the ``StoreOf`` type alias to clean up the property
+declaration:
+
+```swift
+let store: StoreOf<MyFeature>
+// Expands to:
+//     let store: Store<MyFeature.State, MyFeature.Action>
+```
+
+### Testing
+
+Test stores can be initialized from an initial state and an instance of a type conforming to
+``ReducerProtocol``.
+
+```swift
+let store = TestStore(
+  initialState: MyFeature.State(),
+  reducer: MyFeature()
+)
+```
+
+By default test stores will employ "test" dependencies wherever a dependency is accessed from a
+reducer via the `@Dependency` property wrapper.
+
+Instead of passing an environment of test dependencies to the store, or mutating the store's
+``TestStore/environment``, you will instead mutate the test store's ``TestStore/dependencies`` to
+override dependencies driving a feature.
+
+For example, to install a test scheduler as the main queue dependency:
+
+```swift
+let mainQueue = DispatchQueue.test
+store.dependencies.mainQueue = mainQueue
+
+await store.send(.timerButtonStarted)
+
+await mainQueue.advance(by: .seconds(1))
+await store.receive(.timerTick) {
+  $0.secondsElapsed = 1
+}
+
+await store.send(.timerButtonStopped)
+```
+
+### Embedding old reducer values in a new reducer conformance
+
+It may not be feasible to migrate your entire application at once, and you may find yourself
+needing to compose an existing value of ``Reducer`` into a type conforming to ``ReducerProtocol``.
+This can be done by passing the value and its environment of dependencies to
+``Reduce/init(_:environment:)``.
+
+For example, suppose a tab of your application has not yet been converted to the protocol-style of
+reducers, and it has an environment of dependencies:
+
+```swift
+struct TabCState {
+  // ...
+}
+enum TabCAction {
+  // ...
+}
+struct TabCEnvironment {
+  var date: () -> Date
+}
+let tabCReducer = Reducer<
+  TabCState,
+  TabCAction,
+  TabCEnvironment
+} { state, action, environment in
+  // ...
+}
+```
+
+It can still be embedded in `AppReducer` using ``Reduce/init(_:environment:)`` and passing along the
+necessary dependencies.
+
+```swift
+struct AppReducer: ReducerProtocol {
+  struct State {
+    // ...
+    var tabC: TabCState
+  }
+
+  enum Action {
+    // ...
+    case tabC(TabCAction)
+  }
+
+  @Dependency(\.date) var date
+
+  var body: some ReducerProtocol<State, Action> {
+    // ...
+    Scope(state: \.tabC, action: /Action.tabC) {
+      Reduce(
+        tabCReducer,
+        environment: TabCEnvironment(date: self.date)
+      )
+    }
+  }
+}
+```
 
 ## Migration using Swift 5.6
 

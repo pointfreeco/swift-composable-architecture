@@ -8,12 +8,11 @@
 - ``State``
 - ``Action``
 - ``Effect``
-- ``ReducerProtocolOf``
 
 ### Reducer composition
 
-- ``body-swift.property-5mc0o``
-- ``Body-swift.associatedtype``
+- ``body-swift.property-7foai``
+- ``Body-swift.typealias``
 - ``ReducerBuilder``
 - ``Scope``
 - ``ifLet(_:action:then:file:fileID:line:)``
@@ -25,13 +24,13 @@
 - ``BindingReducer``
 - ``CombineReducers``
 - ``EmptyReducer``
-- ``Observe``
 - ``Reduce``
 
 ### Reducer modifiers
 
-- ``debug(_:state:action:actionFormat:)``
+- ``debug(_:state:action:actionFormat:to:)``
 - ``dependency(_:_:)``
+- ``dependencies(_:)``
 - ``signpost(_:log:)``
 
 ### Deprecations

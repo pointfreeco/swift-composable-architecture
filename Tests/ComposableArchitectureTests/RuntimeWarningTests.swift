@@ -14,7 +14,7 @@ final class RuntimeWarningTests: XCTestCase {
     }
 
     Task {
-      _ = Store<Int, Void>(initialState: 0, reducer: .empty, environment: ())
+      _ = Store<Int, Void>(initialState: 0, reducer: EmptyReducer())
     }
     _ = XCTWaiter.wait(for: [.init()], timeout: 2)
   }
@@ -38,7 +38,7 @@ final class RuntimeWarningTests: XCTestCase {
     enum Action { case tap, response }
     let store = Store(
       initialState: 0,
-      reducer: AnyReducer<Int, Action, Void> { state, action, _ in
+      reducer: Reduce<Int, Action> { state, action in
         switch action {
         case .tap:
           return Empty()
@@ -47,8 +47,7 @@ final class RuntimeWarningTests: XCTestCase {
         case .response:
           return .none
         }
-      },
-      environment: ()
+      }
     )
     ViewStore(store).send(.tap)
     _ = XCTWaiter.wait(for: [.init()], timeout: 2)
@@ -73,7 +72,7 @@ final class RuntimeWarningTests: XCTestCase {
       ].contains($0.compactDescription)
     }
 
-    let store = Store<Int, Void>(initialState: 0, reducer: .empty, environment: ())
+    let store = Store<Int, Void>(initialState: 0, reducer: EmptyReducer())
     Task {
       _ = store.scope(state: { $0 })
     }
@@ -105,7 +104,7 @@ final class RuntimeWarningTests: XCTestCase {
       ].contains($0.compactDescription)
     }
 
-    let store = Store(initialState: 0, reducer: AnyReducer<Int, Void, Void>.empty, environment: ())
+    let store = Store<Int, Void>(initialState: 0, reducer: EmptyReducer())
     Task {
       ViewStore(store).send(())
     }
@@ -167,7 +166,7 @@ final class RuntimeWarningTests: XCTestCase {
       enum Action { case tap, response }
       let store = Store(
         initialState: 0,
-        reducer: AnyReducer<Int, Action, Void> { state, action, _ in
+        reducer: Reduce<Int, Action> { state, action in
           switch action {
           case .tap:
             return .run { subscriber in
@@ -181,8 +180,7 @@ final class RuntimeWarningTests: XCTestCase {
           case .response:
             return .none
           }
-        },
-        environment: ()
+        }
       )
       await ViewStore(store).send(.tap).finish()
     }

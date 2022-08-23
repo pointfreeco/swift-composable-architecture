@@ -8,7 +8,7 @@ final class EffectRunTests: XCTestCase {
   func testRun() async {
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
-    let reducer = AnyReducer<State, Action, Void> { state, action, _ in
+    let reducer = Reduce<State, Action> { state, action in
       switch action {
       case .tapped:
         return .run { send in await send(.response) }
@@ -16,7 +16,7 @@ final class EffectRunTests: XCTestCase {
         return .none
       }
     }
-    let store = TestStore(initialState: State(), reducer: reducer, environment: ())
+    let store = TestStore(initialState: State(), reducer: reducer)
     await store.send(.tapped)
     await store.receive(.response)
   }
@@ -24,7 +24,7 @@ final class EffectRunTests: XCTestCase {
   func testRunCatch() async {
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
-    let reducer = AnyReducer<State, Action, Void> { state, action, _ in
+    let reducer = Reduce<State, Action> { state, action in
       switch action {
       case .tapped:
         return .run { _ in
@@ -37,7 +37,7 @@ final class EffectRunTests: XCTestCase {
         return .none
       }
     }
-    let store = TestStore(initialState: State(), reducer: reducer, environment: ())
+    let store = TestStore(initialState: State(), reducer: reducer)
     await store.send(.tapped)
     await store.receive(.response)
   }
@@ -56,7 +56,7 @@ final class EffectRunTests: XCTestCase {
     }
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
-    let reducer = AnyReducer<State, Action, Void> { state, action, _ in
+    let reducer = Reduce<State, Action> { state, action in
       switch action {
       case .tapped:
         return .run { send in
@@ -67,7 +67,7 @@ final class EffectRunTests: XCTestCase {
         return .none
       }
     }
-    let store = TestStore(initialState: State(), reducer: reducer, environment: ())
+    let store = TestStore(initialState: State(), reducer: reducer)
     // NB: We wait a long time here because XCTest failures take a long time to generate
     await store.send(.tapped).finish(timeout: 5 * NSEC_PER_SEC)
   }
@@ -76,7 +76,7 @@ final class EffectRunTests: XCTestCase {
     enum CancelID {}
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
-    let reducer = AnyReducer<State, Action, Void> { state, action, _ in
+    let reducer = Reduce<State, Action> { state, action in
       switch action {
       case .tapped:
         return .run { send in
@@ -89,7 +89,7 @@ final class EffectRunTests: XCTestCase {
         return .none
       }
     }
-    let store = TestStore(initialState: State(), reducer: reducer, environment: ())
+    let store = TestStore(initialState: State(), reducer: reducer)
     await store.send(.tapped).finish()
   }
 
@@ -97,7 +97,7 @@ final class EffectRunTests: XCTestCase {
     enum CancelID {}
     struct State: Equatable {}
     enum Action: Equatable { case tapped, responseA, responseB }
-    let reducer = AnyReducer<State, Action, Void> { state, action, _ in
+    let reducer = Reduce<State, Action> { state, action in
       switch action {
       case .tapped:
         return .run { send in
@@ -112,7 +112,7 @@ final class EffectRunTests: XCTestCase {
         return .none
       }
     }
-    let store = TestStore(initialState: State(), reducer: reducer, environment: ())
+    let store = TestStore(initialState: State(), reducer: reducer)
     await store.send(.tapped).finish()
   }
 }

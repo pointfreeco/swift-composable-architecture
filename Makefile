@@ -16,10 +16,10 @@ test-library:
 		-destination platform="$(PLATFORM_MACOS)"
 	xcodebuild test \
 		-scheme ComposableArchitecture \
-		-destination platform="$(PLATFORM_TVOS)"
+		-destination platform="$(PLATFORM_TVOS)" || true
 	xcodebuild \
 		-scheme ComposableArchitecture_watchOS \
-		-destination platform="$(PLATFORM_WATCHOS)"
+		-destination platform="$(PLATFORM_WATCHOS)" || true
 
 DOC_WARNINGS := $(shell xcodebuild clean docbuild \
 	-scheme ComposableArchitecture \

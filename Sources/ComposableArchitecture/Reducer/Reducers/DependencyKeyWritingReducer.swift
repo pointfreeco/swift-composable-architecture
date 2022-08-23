@@ -17,6 +17,9 @@ extension ReducerProtocol {
     _DependencyKeyWritingReducer(base: self) { $0[keyPath: keyPath] = value }
   }
 
+  /// Modifies a reducer's dependencies with a closure.
+  ///
+  /// - Parameter update: A closure that is handed a mutable instance of dependency values.
   @inlinable
   public func dependencies(_ update: @escaping (inout DependencyValues) -> Void)
   // NB: We should not return `some ReducerProtocol<State, Action>` here. That would prevent the
@@ -50,14 +53,14 @@ public struct _DependencyKeyWritingReducer<Base: ReducerProtocol>: ReducerProtoc
     }
   }
 
-//  @inlinable
-//  public func dependency<Value>(
-//    _ keyPath: WritableKeyPath<DependencyValues, Value>,
-//    _ value: Value
-//  ) -> Self {
-//    .init(base: self.base) { values in
-//      values[keyPath: keyPath] = value
-//      self.update(&values)
-//    }
-//  }
+  @inlinable
+  public func dependency<Value>(
+    _ keyPath: WritableKeyPath<DependencyValues, Value>,
+    _ value: Value
+  ) -> Self {
+    .init(base: self.base) { values in
+      values[keyPath: keyPath] = value
+      self.update(&values)
+    }
+  }
 }

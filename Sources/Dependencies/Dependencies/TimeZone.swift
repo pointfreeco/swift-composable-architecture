@@ -1,18 +1,33 @@
 import Foundation
 import XCTestDynamicOverlay
 
-extension DependencyValues {
-  /// The current time zone that reducers should use when handling dates.
-  public var timeZone: TimeZone {
-    get { self[TimeZoneKey.self] }
-    set { self[TimeZoneKey.self] = newValue }
-  }
+#if swift(>=5.6)
+  extension DependencyValues {
+    /// The current time zone that reducers should use when handling dates.
+    ///
+    /// By default, the time zone returned from `TimeZone.autoupdatingCurrent` is supplied. When
+    /// used from a ``TestStore``, access will call to `XCTFail` when invoked, unless explicitly
+    /// overridden:
+    ///
+    /// ```swift
+    /// let store = TestStore(
+    ///   initialState: MyFeature.State()
+    ///   reducer: My.Feature()
+    /// )
+    ///
+    /// store.dependencies.timeZone = TimeZone(secondsFromGMT: 0)
+    /// ```
+    public var timeZone: TimeZone {
+      get { self[TimeZoneKey.self] }
+      set { self[TimeZoneKey.self] = newValue }
+    }
 
-  private enum TimeZoneKey: LiveDependencyKey {
-    static let liveValue = TimeZone.autoupdatingCurrent
-    static var testValue: TimeZone {
-      XCTFail(#"Unimplemented: @Dependency(\.timeZone)"#)
-      return .autoupdatingCurrent
+    private enum TimeZoneKey: LiveDependencyKey {
+      static let liveValue = TimeZone.autoupdatingCurrent
+      static var testValue: TimeZone {
+        XCTFail(#"Unimplemented: @Dependency(\.timeZone)"#)
+        return .autoupdatingCurrent
+      }
     }
   }
-}
+#endif

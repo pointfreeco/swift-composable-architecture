@@ -13,12 +13,12 @@ final class TestStoreTests: XCTestCase {
 
     let mainQueue = DispatchQueue.test
 
-    let reducer = AnyReducer<State, Action, AnySchedulerOf<DispatchQueue>> { _, action, scheduler in
+    let reducer = Reduce<State, Action> { _, action in
       switch action {
       case .a:
         return .merge(
           Effect.concatenate(.init(value: .b1), .init(value: .c1))
-            .delay(for: 1, scheduler: scheduler)
+            .delay(for: 1, scheduler: mainQueue)
             .eraseToEffect(),
           Empty(completeImmediately: false)
             .eraseToEffect()
@@ -42,8 +42,7 @@ final class TestStoreTests: XCTestCase {
 
     let store = TestStore(
       initialState: State(),
-      reducer: reducer,
-      environment: mainQueue.eraseToAnyScheduler()
+      reducer: reducer
     )
 
     await store.send(.a)
@@ -68,7 +67,7 @@ final class TestStoreTests: XCTestCase {
     }
     let store = TestStore(
       initialState: 0,
-      reducer: AnyReducer<Int, Action, Void> { state, action, _ in
+      reducer: Reduce<Int, Action> { state, action in
         switch action {
         case .tap:
           return .task { .response(42) }
@@ -76,8 +75,7 @@ final class TestStoreTests: XCTestCase {
           state = number
           return .none
         }
-      },
-      environment: ()
+      }
     )
 
     await store.send(.tap)
@@ -97,7 +95,7 @@ final class TestStoreTests: XCTestCase {
       case changed(from: Int, to: Int)
     }
 
-    let reducer = AnyReducer<State, Action, Void> { state, action, scheduler in
+    let reducer = Reduce<State, Action> { state, action in
       switch action {
       case .increment:
         state.isChanging = true
@@ -111,11 +109,7 @@ final class TestStoreTests: XCTestCase {
       }
     }
 
-    let store = TestStore(
-      initialState: State(),
-      reducer: reducer,
-      environment: ()
-    )
+    let store = TestStore(initialState: State(), reducer: reducer)
 
     await store.send(.increment) {
       $0.isChanging = true
@@ -147,7 +141,7 @@ final class TestStoreTests: XCTestCase {
       case noop, finished
     }
 
-    let reducer = AnyReducer<State, Action, Void> { state, action, scheduler in
+    let reducer = Reduce<State, Action> { state, action in
       switch action {
       case .noop:
         return Effect(value: .finished)
@@ -156,11 +150,7 @@ final class TestStoreTests: XCTestCase {
       }
     }
 
-    let store = TestStore(
-      initialState: State(),
-      reducer: reducer,
-      environment: ()
-    )
+    let store = TestStore(initialState: State(), reducer: reducer)
 
     await store.send(.noop)
     await store.receive(.finished)
@@ -181,7 +171,7 @@ final class TestStoreTests: XCTestCase {
     enum Action { case a, b, c, d }
     let store = TestStore(
       initialState: 0,
-      reducer: AnyReducer<Int, Action, Void> { count, action, _ in
+      reducer: Reduce<Int, Action> { count, action in
         switch action {
         case .a:
           count += 1
@@ -190,8 +180,7 @@ final class TestStoreTests: XCTestCase {
           count += 1
           return .none
         }
-      },
-      environment: ()
+      }
     )
 
     await store.send(.a) {
@@ -215,89 +204,4 @@ final class TestStoreTests: XCTestCase {
     }
     XCTAssertEqual(store.state, 4)
   }
-
-//  @MainActor
-//  func testNonDeterministicActions() async {
-//    struct State: Equatable {
-//      var count1 = 0
-//      var count2 = 0
-//    }
-//    enum Action { case tap, response1, response2 }
-//    let store = TestStore(
-//      initialState: State(),
-//      reducer: AnyReducer<State, Action, Void> { state, action, _ in
-//        switch action {
-//        case .tap:
-//          return .merge(
-//            .task { .response1 },
-//            .task { .response2 }
-//          )
-//        case .response1:
-//          state.count1 = 1
-//          return .none
-//        case .response2:
-//          state.count2 = 2
-//          return .none
-//        }
-//      },
-//      environment: ()
-//    )
-//
-//    store.send(.tap)
-//    await store.receive(.response1) {
-//      $0.count1 = 1
-//    }
-//    await store.receive(.response2) {
-//      $0.count2 = 2
-//    }
-//  }
-
-//  @MainActor
-//  func testSerialExecutor() async {
-//    struct State: Equatable {
-//      var count = 0
-//    }
-//    enum Action: Equatable {
-//      case tap
-//      case response(Int)
-//    }
-//    let store = TestStore(
-//      initialState: State(),
-//      reducer: Reducer<State, Action, Void> { state, action, _ in
-//        switch action {
-//        case .tap:
-//          return .run { send in
-//            await withTaskGroup(of: Void.self) { group in
-//              for index in 1...5 {
-//                group.addTask {
-//                  await send(.response(index))
-//                }
-//              }
-//            }
-//          }
-//        case let .response(value):
-//          state.count += value
-//          return .none
-//        }
-//      },
-//      environment: ()
-//    )
-//
-//    store.send(.tap)
-//    await store.receive(.response(1)) {
-//      $0.count = 1
-//    }
-//    await store.receive(.response(2)) {
-//      $0.count = 3
-//    }
-//    await store.receive(.response(3)) {
-//      $0.count = 6
-//    }
-//    await store.receive(.response(4)) {
-//      $0.count = 10
-//    }
-//    await store.receive(.response(5)) {
-//      $0.count = 15
-//    }
-//  }
 }

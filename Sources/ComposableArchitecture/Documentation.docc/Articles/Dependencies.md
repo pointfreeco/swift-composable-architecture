@@ -1,12 +1,13 @@
 # Dependencies
 
-Learn how to register dependencies with the library so that they can be immediately accessibly from any reducer.
+Learn how to register dependencies with the library so that they can be immediately accessibly from
+any reducer.
 
 ## Overview
 
 Dependencies in an application are the types and functions that need to interact with outside 
 systems that you do not control. Classic examples of this are API clients that make network requests
-to servers, but also seemingly innocous things such as `UUID` and `Date` initializers, and even
+to servers, but also seemingly innocuous things such as `UUID` and `Date` initializers, and even
 schedulers and clocks, can be thought of as dependencies.
 
 By controlling the dependencies our features need to do their job we gain the ability to completely
@@ -33,11 +34,11 @@ which appends a new todo to the end of the array:
 struct Todos: ReducerProtocol {
   struct State {
     var todos: IdentifiedArrayOf<Todo> = []
-    …
+    // ...
   }
   enum Action {
     case addButtonTapped
-    …
+    // ...
   }
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
@@ -46,7 +47,7 @@ struct Todos: ReducerProtocol {
       state.todos.append(Todo(id: UUID())
       return .none
 
-      …
+    // ...
     }
   }
 }
@@ -60,8 +61,8 @@ In the reducer we are using the uncontrolled `UUID` initializer from Foundation.
 of the initial produces a fully random UUID. That may seem like what we want, but unfortunately
 it wreaks havoc on our ability to test.
 
-If we tried writing a test for the add todo functionality we wil quickly find that we can't possibly
-predict what UUID will be produced for the new todo:
+If we tried writing a test for the add todo functionality we will quickly find that we can't
+possibly predict what UUID will be produced for the new todo:
 
 ```swift
 @MainActor
@@ -79,13 +80,13 @@ func testAddTodo() async {
 }
 ```
 
-> Note: Read the <doc:Testing> article to learn how to write tests for state mutations and effect 
-execution in your features.
+> Tip: Read the <doc:Testing> article to learn how to write tests for state mutations and effect 
+> execution in your features.
 
 There is no way to get this test to pass.
 
-This is why controllable dependencies are important. It allows us to substitute a UUID generator
-that is deterministic in tests, such as one that simply increments by 1 every time it is invoked.
+This is why controlling dependencies is important. It allows us to substitute a UUID generator that
+is deterministic in tests, such as one that simply increments by 1 every time it is invoked.
 
 The library comes with a controller UUID generator and can be accessed by using the 
 [`@Dependency`][dependency-property-wrapper-docs] property wrapper to add a dependency to the 
@@ -94,7 +95,7 @@ The library comes with a controller UUID generator and can be accessed by using 
 ```swift
 struct Todos: ReducerProtocol {
   @Dependency(\.uuid) var uuid
-  …
+  // ...
 }
 ```
 
@@ -108,13 +109,13 @@ func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     state.todos.append(Todo(id: self.uuid()) // ⬅️
     return .none
 
-    …
+  // ...
   }
 }
 ```
 
 If you do this little bit of upfront work you instantly unlock the ability to test the feature by
-providing a controlled, determinstic version of the UUID generator in tests. The library even comes
+providing a controlled, deterministic version of the UUID generator in tests. The library even comes
 with such a version for the UUID generator, and it is called `incrementing`:
 
 ```swift
@@ -144,16 +145,22 @@ The library comes with many common dependencies that can be used in a controllab
 list can be seen in the documentation for [`DependencyValues`][dependency-values-docs].
 
 For example, suppose you have a feature that needs access to a date initializer, the main queue
-for time-based asynchrony, and a UUID initialiser. All 3 dependencies can be added to your feature's
+for time-based asynchrony, and a UUID initializer. All 3 dependencies can be added to your feature's
 reducer:
 
 ```swift
-struct Feature: ReducerProtocol {
-  struct State { … }
-  enum Action { … }
+struct Todos: ReducerProtocol {
+  struct State {
+    // ...
+  }
+  enum Action {
+    // ...
+  }
   @Dependency(\.date) var date
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.uuid) var uuid
+
+  // ...
 }
 ```
 
@@ -162,17 +169,17 @@ feature:
 
 ```swift
 @MainActor
-func testFeature() async {
+func testTodos() async {
   let store = TestStore(
-    initialState: Feature.State(),
-    reducer: Feature()
+    initialState: Todos.State(),
+    reducer: Todos()
   )
 
   store.dependencies.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
   store.dependencies.mainQueue = .immediate
   store.dependencies.uuid = .incrementing
 
-  …
+  // ...
 }
 ```
 
@@ -195,7 +202,7 @@ private enum APIClientKey: DependencyKey {
 
 We recommend having an "unimplemented" version of your dependency, that is, an implementation
 that triggers an `XCTFail` anytime one of its endpoints is invoked. This makes it so that you can
-stub the bare minimum of the dependency's' interface, allowing you to prove that your test flow
+stub the bare minimum of the dependency's interface, allowing you to prove that your test flow
 doesn't interact with any other endpoints.
 
 Next you extend the key to also conform to the [`LiveDependencyKey`][live-dependency-key-docs] 
@@ -227,9 +234,9 @@ With those few steps completed you can instantly access your API client dependen
 feature's reducer by using the [`@Dependency`][dependency-property-wrapper-docs] property wrapper:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Todos: ReducerProtocol {
   @Dependency(\.apiClient) var apiClient
-  …
+  // ...
 }
 ```
 
@@ -240,8 +247,8 @@ tests you can override any endpoint of the dependency to return mock data:
 @MainActor
 func testFetchUser() async {
   let store = TestStore(
-    initialState: Feature.State(),
-    reducer: Feature()
+    initialState: Todos.State(),
+    reducer: Todos()
   )
 
   store.dependencies.apiClient.fetchUser = { _ in User(id: 1, name: "Blob") }
