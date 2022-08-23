@@ -8,6 +8,8 @@
 /// default value suitable for Xcode previews.
 ///
 /// See ``LiveDependencyKey`` to define a static, default value for the live application.
+///
+/// TODO: rename to TestDependencyKey
 public protocol DependencyKey {
   /// The associated type representing the type of the dependency key's value.
   associatedtype Value
@@ -42,6 +44,8 @@ extension DependencyKey {
 }
 
 /// A key for accessing live dependencies.
+///
+/// TODO: rename DependencyKey
 public protocol LiveDependencyKey: DependencyKey {
   static var liveValue: Value { get }
 }
