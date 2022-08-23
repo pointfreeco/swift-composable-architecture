@@ -15,25 +15,6 @@ import Foundation
 /// @Dependency(\.date) var date
 /// ```
 public struct DependencyValues: Sendable {
-  // TODO: Should this be a top-level `DependencyContext` type?
-  /// A context for a collection of dependency values.
-  public enum Context: Sendable {
-    /// A "live" set of dependencies.
-    ///
-    /// This context is the default for live stores.
-    case live
-
-    /// A "preview" set of dependencies.
-    ///
-    /// This context is the default for stores running in Xcode previews.
-    case preview
-
-    /// A "test" set of dependencies.
-    ///
-    /// This context is the default for test stores.
-    case test
-  }
-
   @TaskLocal public static var current = Self()
 
   private var storage: [ObjectIdentifier: AnySendable] = [:]
@@ -78,7 +59,7 @@ public struct DependencyValues: Sendable {
       guard let dependency = self.storage[ObjectIdentifier(key)]?.base as? Key.Value
       else {
         let mode =
-          self.storage[ObjectIdentifier(DependencyContextKey.self)]?.base as? Context
+          self.storage[ObjectIdentifier(DependencyContextKey.self)]?.base as? DependencyContext
           ?? (isPreview ? .preview : .live)
 
         switch mode {
@@ -129,35 +110,11 @@ public struct DependencyValues: Sendable {
   }
 }
 
-extension DependencyValues {
-  public var context: DependencyValues.Context {
-    _read { yield self[DependencyContextKey.self] }
-    _modify { yield &self[DependencyContextKey.self] }
-  }
-}
-
 private struct AnySendable: @unchecked Sendable {
   let base: Any
 
   init<Base: Sendable>(_ base: Base) {
     self.base = base
-  }
-}
-
-private enum DependencyContextKey: DependencyKey {
-  static var liveValue = DependencyValues.Context.live
-  static var previewValue = DependencyValues.Context.preview
-  static var testValue = DependencyValues.Context.test
-}
-
-extension DependencyValues {
-  // TODO: Should we reconsider this name?
-  // Using and mentioning our own "dependency environment" and also mentioning SwiftUI's environment
-  // in the same documentation is confusing, so maybe we can come up with something more unique. We
-  // discussed "mode," but do we like `.dependency(\.mode, .test)`? Can we come up with better?
-  public var environment: DependencyValues.Context {
-    get { self[DependencyContextKey.self] }
-    set { self[DependencyContextKey.self] = newValue }
   }
 }
 
