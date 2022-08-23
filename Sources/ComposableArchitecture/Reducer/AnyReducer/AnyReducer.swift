@@ -1,6 +1,12 @@
 import CasePaths
 import Combine
 
+@available(iOS, deprecated: 9999.0, renamed: "AnyReducer")
+@available(macOS, deprecated: 9999.0, renamed: "AnyReducer")
+@available(tvOS, deprecated: 9999.0, renamed: "AnyReducer")
+@available(watchOS, deprecated: 9999.0, renamed: "AnyReducer")
+public typealias Reducer = AnyReducer
+
 /// A reducer describes how to evolve the current state of an application to the next state, given
 /// an action, and describes what ``Effect``s should be executed later by the store, if any.
 ///

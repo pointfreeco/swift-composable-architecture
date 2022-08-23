@@ -182,7 +182,7 @@
   /// This test is proving that the debounced network requests are correctly canceled when we do not
   /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
   /// not expect it would cause a test failure.
-  public final class TestStore<Reducer: ReducerProtocol, ScopedState, ScopedAction, Environment> {
+  public final class TestStore<Reducer: ReducerProtocol, ScopedState, ScopedAction, Context> {
     /// The current dependencies.
     ///
     /// The dependencies define the execution context that your feature runs in. They can be
@@ -214,7 +214,7 @@
     ///   …
     /// }
     /// ```
-    public var environment: Environment {
+    public var environment: Context {
       _read { yield self._environment.wrappedValue }
       _modify { yield &self._environment.wrappedValue }
     }
@@ -235,7 +235,7 @@
     /// ``finish(timeout:file:line:)-53gi5``.
     public var timeout: UInt64
 
-    private var _environment: Box<Environment>
+    private var _environment: Box<Context>
     private let file: StaticString
     private let fromScopedAction: (ScopedAction) -> Reducer.Action
     private var line: UInt
@@ -252,7 +252,7 @@
     where
       Reducer.State == ScopedState,
       Reducer.Action == ScopedAction,
-      Environment == Void
+      Context == Void
     {
       let reducer = TestReducer(reducer, initialState: initialState)
       self._environment = .init(wrappedValue: ())
@@ -272,8 +272,8 @@
     @available(watchOS, deprecated: 9999.0, message: "Use 'ReducerProtocol' instead.")
     public init(
       initialState: ScopedState,
-      reducer: AnyReducer<ScopedState, ScopedAction, Environment>,
-      environment: Environment,
+      reducer: AnyReducer<ScopedState, ScopedAction, Context>,
+      environment: Context,
       file: StaticString = #file,
       line: UInt = #line
     )
@@ -299,7 +299,7 @@
     }
 
     init(
-      _environment: Box<Environment>,
+      _environment: Box<Context>,
       file: StaticString,
       fromScopedAction: @escaping (ScopedAction) -> Reducer.Action,
       line: UInt,
@@ -864,7 +864,7 @@
     public func scope<S, A>(
       state toScopedState: @escaping (ScopedState) -> S,
       action fromScopedAction: @escaping (A) -> ScopedAction
-    ) -> TestStore<Reducer, S, A, Environment> {
+    ) -> TestStore<Reducer, S, A, Context> {
       .init(
         _environment: self._environment,
         file: self.file,
@@ -886,7 +886,7 @@
     ///   view store state transformations.
     public func scope<S>(
       state toScopedState: @escaping (ScopedState) -> S
-    ) -> TestStore<Reducer, S, ScopedAction, Environment> {
+    ) -> TestStore<Reducer, S, ScopedAction, Context> {
       self.scope(state: toScopedState, action: { $0 })
     }
   }

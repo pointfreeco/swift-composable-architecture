@@ -5,9 +5,6 @@ import XCTestDynamicOverlay
 
 // NB: Deprecated after 0.39.0:
 
-@available(*, deprecated: 9999.0, renamed: "AnyReducer")
-public typealias Reducer = AnyReducer
-
 extension CaseLet {
   @available(*, deprecated, renamed: "EnumState")
   public typealias GlobalState = EnumState
@@ -350,7 +347,7 @@ extension AnyReducer {
       public static func environment(
         file: StaticString = #file,
         line: UInt = #line,
-        _ update: @escaping (inout Environment) throws -> Void
+        _ update: @escaping (inout Context) throws -> Void
       ) -> Step {
         Step(.environment(update), file: file, line: line)
       }
@@ -385,7 +382,7 @@ extension AnyReducer {
       fileprivate indirect enum StepType {
         case send(ScopedAction, ((inout ScopedState) throws -> Void)?)
         case receive(Reducer.Action, ((inout ScopedState) throws -> Void)?)
-        case environment((inout Environment) throws -> Void)
+        case environment((inout Context) throws -> Void)
         case `do`(() throws -> Void)
         case sequence([Step])
       }
