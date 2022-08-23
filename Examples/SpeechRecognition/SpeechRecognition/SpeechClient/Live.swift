@@ -2,9 +2,9 @@ import Combine
 import ComposableArchitecture
 import Speech
 
-extension SpeechClientKey {
-  static let liveValue = SpeechClient.live
-}
+//extension SpeechClientKey: LiveDependencyKey {
+//  static let liveValue = SpeechClient.live
+//}
 
 extension SpeechClient {
   static var live: Self {
