@@ -34,7 +34,7 @@ import XCTestDynamicOverlay
       set { self[DateGeneratorKey.self] = newValue }
     }
 
-    private enum DateGeneratorKey: LiveDependencyKey {
+    private enum DateGeneratorKey: DependencyKey {
       static let liveValue: DateGenerator = .live
       static let testValue: DateGenerator = .unimplemented
     }

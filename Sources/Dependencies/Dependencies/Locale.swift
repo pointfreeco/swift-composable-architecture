@@ -6,7 +6,7 @@ import XCTestDynamicOverlay
     /// The current locale that reducers should use.
     ///
     /// By default, the locale returned from `Locale.autoupdatingCurrent` is supplied. When used
-    /// from a ``TestStore``, access will call to `XCTFail` when invoked, unless explicitly
+    /// from a `TestStore`, access will call to `XCTFail` when invoked, unless explicitly
     /// overridden:
     ///
     /// ```swift
@@ -22,7 +22,7 @@ import XCTestDynamicOverlay
       set { self[LocaleKey.self] = newValue }
     }
 
-    private enum LocaleKey: LiveDependencyKey {
+    private enum LocaleKey: DependencyKey {
       static let liveValue = Locale.autoupdatingCurrent
       static var testValue: Locale {
         XCTFail(#"Unimplemented: @Dependency(\.locale)"#)

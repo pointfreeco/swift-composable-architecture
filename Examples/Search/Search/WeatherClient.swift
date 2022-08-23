@@ -49,7 +49,7 @@ extension DependencyValues {
     set { self[WeatherClientKey.self] = newValue }
   }
 
-  private enum WeatherClientKey: LiveDependencyKey {
+  private enum WeatherClientKey: DependencyKey {
     static let liveValue = WeatherClient.live
     static let testValue = WeatherClient.unimplemented
   }

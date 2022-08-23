@@ -190,12 +190,12 @@ times when you want to register your own dependencies with the library so that y
 `@Dependency` property wrapper. Doing this is quite similar to registering an environment value
 in SwiftUI (see [docs][environment-values-docs]).
 
-First you create a type that conforms to the [`DependencyKey`][dependency-key-docs] protocol.
-The only requirement is that you provide a `testValue`, which will be the version of the dependency
-used when your feature is run in a ``TestStore``:
+First you create a type that conforms to the [`TestDependencyKey`][test-dependency-key-docs]
+protocol. The only requirement is that you provide a `testValue`, which will be the version of the
+dependency used when your feature is run in a ``TestStore``:
 
 ```swift
-private enum APIClientKey: DependencyKey {
+private enum APIClientKey: TestDependencyKey {
   static let testValue = APIClient.unimplemented
 }
 ```
@@ -205,15 +205,17 @@ that triggers an `XCTFail` anytime one of its endpoints is invoked. This makes i
 stub the bare minimum of the dependency's interface, allowing you to prove that your test flow
 doesn't interact with any other endpoints.
 
-Next you extend the key to also conform to the [`LiveDependencyKey`][live-dependency-key-docs] 
-protocol, which will be the version of the dependency used when your feature is run in an Xcode
-preview, in the simulator, or on a device:
+Next you extend the key to also conform to the [`DependencyKey`][dependency-key-docs] protocol,
+which will be the version of the dependency used when your feature is run in an Xcode preview, in
+the simulator, or on a device:
 
 ```swift
-extension APIClientKey: LiveDependencyKey {
+extension APIClientKey: DependencyKey {
   static let liveValue = APIClient.live
 }
 ```
+
+<!-- TODO: Document `previewValue` -->
 
 This is the version of the dependency that can actually interact with outside systems. In this
 case it means the API client can actually make network requests to an external server.
@@ -270,5 +272,5 @@ func testFetchUser() async {
 [swift-identified-collections]: https://github.com/pointfreeco/swift-identified-collections
 [dependency-property-wrapper-docs]: todo: get url
 [environment-values-docs]: https://developer.apple.com/documentation/swiftui/environmentvalues
+[test-dependency-key-docs]: todo: get url
 [dependency-key-docs]: todo: get url
-[live-dependency-key-docs]: todo: get url

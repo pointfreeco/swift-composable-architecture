@@ -56,7 +56,7 @@ public struct DependencyValues: Sendable {
   /// You use custom dependency values the same way you use system-provided values, setting a value
   /// with the `ReducerProtocol/dependency(_:_:)` modifier, and reading values with the
   /// ``Dependency`` property wrapper.
-  public subscript<Key: DependencyKey>(
+  public subscript<Key: TestDependencyKey>(
     key: Key.Type,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
@@ -83,10 +83,10 @@ public struct DependencyValues: Sendable {
                 Dependency:
                   %4$@
 
-              Every dependency registered with the library must conform to 'LiveDependencyKey', \
+              Every dependency registered with the library must conform to 'DependencyKey', \
               and that conformance must be visible to the running application.
 
-              To fix, make sure that '%3$@' conforms to 'LiveDependencyKey' by providing a live \
+              To fix, make sure that '%3$@' conforms to 'DependencyKey' by providing a live \
               implementation of your dependency, and make sure that the conformance is linked \
               with this current application.
               """,
@@ -123,7 +123,7 @@ extension DependencyValues {
     _modify { yield &self[IsTestingKey.self] }
   }
 
-  private enum IsTestingKey: LiveDependencyKey {
+  private enum IsTestingKey: DependencyKey {
     static let liveValue = false
     static var previewValue = false
     static let testValue = true
@@ -138,7 +138,7 @@ private struct AnySendable: @unchecked Sendable {
   }
 }
 
-private enum EnvironmentKey: LiveDependencyKey {
+private enum EnvironmentKey: DependencyKey {
   static var liveValue = DependencyValues.Environment.live
   static var previewValue = DependencyValues.Environment.preview
   static var testValue = DependencyValues.Environment.test

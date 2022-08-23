@@ -67,7 +67,7 @@ extension DependencyValues {
     set { self[WithRandomNumberGeneratorKey.self] = newValue }
   }
 
-  private enum WithRandomNumberGeneratorKey: LiveDependencyKey {
+  private enum WithRandomNumberGeneratorKey: DependencyKey {
     static let liveValue = WithRandomNumberGenerator(SystemRandomNumberGenerator())
     static let testValue = WithRandomNumberGenerator(UnimplementedRandomNumberGenerator())
   }

@@ -75,7 +75,7 @@ extension DependencyValues {
     set { self[UUIDGeneratorKey.self] = newValue }
   }
 
-  private enum UUIDGeneratorKey: LiveDependencyKey {
+  private enum UUIDGeneratorKey: DependencyKey {
     static let liveValue: UUIDGenerator = .live
     static let testValue: UUIDGenerator = .unimplemented
   }
