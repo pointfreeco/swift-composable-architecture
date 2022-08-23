@@ -79,23 +79,23 @@ public struct DependencyValues: Sendable {
               implementation:
 
                 Key:
-                  %@
+                  %3$@
                 Dependency:
-                  %@
+                  %4$@
 
               Every dependency registered with the library must conform to 'LiveDependencyKey', \
               and that conformance must be visible to the running application.
 
-              To fix, make sure that '%@' conforms to 'LiveDependencyKey' by providing a live \
+              To fix, make sure that '%3$@' conforms to 'LiveDependencyKey' by providing a live \
               implementation of your dependency, and make sure that the conformance is linked \
               with this current application.
               """,
               [
                 "\(fileID)",
                 line,
-                "\(typeName(Key.self))",
-                "\(typeName(Key.Value.self))",
-                "\(typeName(Key.self))"
+                typeName(Key.self),
+                typeName(Key.Value.self),
+                typeName(Key.self),
               ],
               file: file,
               line: line
