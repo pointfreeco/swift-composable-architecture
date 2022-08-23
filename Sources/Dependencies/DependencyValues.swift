@@ -15,6 +15,7 @@ import Foundation
 /// @Dependency(\.date) var date
 /// ```
 public struct DependencyValues: Sendable {
+  // TODO: rename `Context`
   public enum Environment: Sendable {
     case live
     case preview
