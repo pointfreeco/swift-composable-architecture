@@ -3,6 +3,13 @@ import XCTest
 
 @MainActor
 final class DependencyKeyWritingReducerTests: XCTestCase {
+  func testWritingFusion() async {
+    let reducer: _DependencyKeyWritingReducer<Feature> = Feature()
+      .dependency(\.myValue, 42)
+    let _: _DependencyKeyWritingReducer<Feature> = reducer
+      .dependency(\.myValue, 1729)
+  }
+
   func testWritingFusionOrder() async {
     let reducer = Feature()
       .dependency(\.myValue, 42)
