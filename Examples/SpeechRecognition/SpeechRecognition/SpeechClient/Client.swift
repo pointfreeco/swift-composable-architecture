@@ -24,7 +24,7 @@ extension DependencyValues {
   }
 }
 
-enum SpeechClientKey: LiveDependencyKey {
+enum SpeechClientKey: DependencyKey {
   static let previewValue = SpeechClient.lorem
   static let testValue = SpeechClient.unimplemented
 }

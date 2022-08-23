@@ -25,11 +25,15 @@ public struct DependencyValues: Sendable {
 
   public init() {}
 
-  public subscript<Key: DependencyKey>(key: Key.Type) -> Key.Value where Key.Value: Sendable {
+  public subscript<Key: DependencyKey>(
+    key: Key.Type,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> Key.Value where Key.Value: Sendable {
     get {
       guard let dependency = self.storage[ObjectIdentifier(key)]?.base as? Key.Value
       else {
-
         let mode =
           self.storage[ObjectIdentifier(EnvironmentKey.self)]?.base as? Environment
            ?? {
@@ -42,7 +46,38 @@ public struct DependencyValues: Sendable {
 
         switch mode {
         case .live:
-          return _liveValue(Key.self) as? Key.Value ?? Key.testValue
+          guard let value = _liveValue(Key.self) as? Key.Value
+          else {
+            runtimeWarning(
+              """
+              A dependency at %@:%d is being used in a live environment without providing a live \
+              implementation:
+
+                Key:
+                  %@
+                Dependency:
+                  %@
+
+              Every dependency registered with the library must conform to 'LiveDependencyKey', \
+              and that conformance must be visible to the running application.
+
+              To fix, make sure that '%@' conforms to 'LiveDependencyKey' by providing a live \
+              implementation of your dependency, and make sure that the conformance is linked \
+              with this current application.
+              """,
+              [
+                "\(fileID)",
+                line,
+                "\(typeName(Key.self))",
+                "\(typeName(Key.Value.self))",
+                "\(typeName(Key.self))"
+              ],
+              file: file,
+              line: line
+            )
+            return Key.testValue
+          }
+          return value
         case .preview:
           return Key.previewValue
         case .test:
