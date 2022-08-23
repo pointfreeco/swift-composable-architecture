@@ -6,7 +6,7 @@ import XCTestDynamicOverlay
     /// The current time zone that reducers should use when handling dates.
     ///
     /// By default, the time zone returned from `TimeZone.autoupdatingCurrent` is supplied. When
-    /// used from a ``TestStore``, access will call to `XCTFail` when invoked, unless explicitly
+    /// used from a `TestStore`, access will call to `XCTFail` when invoked, unless explicitly
     /// overridden:
     ///
     /// ```swift
@@ -22,7 +22,7 @@ import XCTestDynamicOverlay
       set { self[TimeZoneKey.self] = newValue }
     }
 
-    private enum TimeZoneKey: LiveDependencyKey {
+    private enum TimeZoneKey: DependencyKey {
       static let liveValue = TimeZone.autoupdatingCurrent
       static var testValue: TimeZone {
         XCTFail(#"Unimplemented: @Dependency(\.timeZone)"#)

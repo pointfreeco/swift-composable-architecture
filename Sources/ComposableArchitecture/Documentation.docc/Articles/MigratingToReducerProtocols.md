@@ -292,7 +292,7 @@ dependency with the system, and then it will be automatically available to every
 application:
 
 ```swift
-private enum APIClientKey: LiveDependencyKey {
+private enum APIClientKey: DependencyKey {
   static let liveValue = APIClient.live
   static let testValue = APIClient.unimplemented
 }

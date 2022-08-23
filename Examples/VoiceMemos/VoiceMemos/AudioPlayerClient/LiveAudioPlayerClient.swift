@@ -1,7 +1,7 @@
 @preconcurrency import AVFoundation
 import Dependencies
 
-extension AudioPlayerClientKey: LiveDependencyKey {
+extension AudioPlayerClientKey: DependencyKey {
   static let liveValue = AudioPlayerClient.live
 }
 

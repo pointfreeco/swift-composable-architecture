@@ -5,7 +5,7 @@ struct AudioPlayerClient {
   var play: @Sendable (URL) async throws -> Bool
 }
 
-enum AudioPlayerClientKey: DependencyKey {
+enum AudioPlayerClientKey: TestDependencyKey {
   static var previewValue = AudioPlayerClient.mock
   static let testValue = AudioPlayerClient.unimplemented
 }

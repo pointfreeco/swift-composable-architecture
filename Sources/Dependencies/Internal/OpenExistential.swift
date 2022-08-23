@@ -2,10 +2,10 @@
   // MARK: swift(>=5.7)
   // MARK: Equatable
 
-  // MARK: LiveDependencyKey
+  // MARK: DependencyKey
 
   func _liveValue(_ key: Any.Type) -> Any? {
-    (key as? any LiveDependencyKey.Type)?.liveValue
+    (key as? any DependencyKey.Type)?.liveValue
   }
 #else
   // MARK: -
@@ -13,20 +13,20 @@
 
   private enum Witness<T> {}
 
-  // MARK: LiveDependencyKey
+  // MARK: DependencyKey
 
   func _liveValue(_ key: Any.Type) -> Any? {
     func open<T>(_: T.Type) -> Any? {
-      (Witness<T>.self as? AnyLiveDependencyKey.Type)?.liveValue
+      (Witness<T>.self as? AnyDependencyKey.Type)?.liveValue
     }
     return _openExistential(key, do: open)
   }
 
-  protocol AnyLiveDependencyKey {
+  protocol AnyDependencyKey {
     static var liveValue: Any { get }
   }
 
-  extension Witness: AnyLiveDependencyKey where T: LiveDependencyKey {
+  extension Witness: AnyDependencyKey where T: DependencyKey {
     static var liveValue: Any { T.liveValue }
   }
 #endif

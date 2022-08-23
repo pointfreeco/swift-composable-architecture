@@ -181,7 +181,7 @@ extension DependencyValues {
     set { self[WebSocketKey.self] = newValue }
   }
 
-  private enum WebSocketKey: LiveDependencyKey {
+  private enum WebSocketKey: DependencyKey {
     static let liveValue = WebSocketClient.live
     static let testValue = WebSocketClient.unimplemented
   }

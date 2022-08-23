@@ -7,7 +7,8 @@ extension DependencyValues {
     get { self[AuthenticationClientKey.self] }
     set { self[AuthenticationClientKey.self] = newValue }
   }
-  public enum AuthenticationClientKey: DependencyKey {
+
+  public enum AuthenticationClientKey: TestDependencyKey {
     public static var testValue = AuthenticationClient.unimplemented
   }
 }

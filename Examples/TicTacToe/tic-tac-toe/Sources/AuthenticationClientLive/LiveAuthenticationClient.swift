@@ -2,7 +2,7 @@ import AuthenticationClient
 import Dependencies
 import Foundation
 
-extension DependencyValues.AuthenticationClientKey: LiveDependencyKey {
+extension DependencyValues.AuthenticationClientKey: DependencyKey {
   public static let liveValue = AuthenticationClient.live
 }
 

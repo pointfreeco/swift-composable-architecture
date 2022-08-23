@@ -8,7 +8,7 @@ struct AudioRecorderClient {
   var stopRecording: @Sendable () async -> Void
 }
 
-enum AudioRecorderClientKey: DependencyKey {
+enum AudioRecorderClientKey: TestDependencyKey {
   static var previewValue = AudioRecorderClient.mock
   static let testValue = AudioRecorderClient.unimplemented
 }

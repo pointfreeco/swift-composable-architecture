@@ -53,7 +53,7 @@ extension DependencyValues {
     set { self[ScreenshotsKeys.self] = newValue }
   }
 
-  private enum ScreenshotsKeys: LiveDependencyKey {
+  private enum ScreenshotsKeys: DependencyKey {
     static let liveValue: @Sendable () async -> AsyncStream<Void> = {
       await AsyncStream(
         NotificationCenter.default

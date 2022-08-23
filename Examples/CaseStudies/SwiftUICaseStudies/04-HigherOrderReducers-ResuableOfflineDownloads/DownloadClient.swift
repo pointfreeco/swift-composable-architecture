@@ -18,7 +18,7 @@ extension DependencyValues {
     set { self[DownloadClientKey.self] = newValue }
   }
 
-  private enum DownloadClientKey: LiveDependencyKey {
+  private enum DownloadClientKey: DependencyKey {
     static let liveValue = DownloadClient.live
     static let testValue = DownloadClient.unimplemented
   }

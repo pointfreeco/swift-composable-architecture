@@ -70,7 +70,7 @@
       set { self[MainRunLoopKey.self] = newValue }
     }
 
-    private enum MainRunLoopKey: LiveDependencyKey {
+    private enum MainRunLoopKey: DependencyKey {
       static let liveValue = AnySchedulerOf<RunLoop>.main
       static let testValue = AnySchedulerOf<RunLoop>.unimplemented(#"@Dependency(\.mainRunLoop)"#)
     }
