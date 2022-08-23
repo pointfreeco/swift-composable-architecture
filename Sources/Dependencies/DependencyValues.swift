@@ -15,6 +15,11 @@ import Foundation
 /// @Dependency(\.date) var date
 /// ```
 public struct DependencyValues: Sendable {
+  /// The current task's dependencies.
+  ///
+  /// You don't typically access dependencies directly, but the task local value provides a means of
+  /// performing an operation with overridden dependencies. If you want to access a particular
+  /// dependency, use the ``Dependency`` property wrapper.
   @TaskLocal public static var current = Self()
 
   private var storage: [ObjectIdentifier: AnySendable] = [:]
