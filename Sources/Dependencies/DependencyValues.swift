@@ -129,17 +129,10 @@ public struct DependencyValues: Sendable {
   }
 }
 
-// TODO: Remove this?
 extension DependencyValues {
   public var context: DependencyValues.Context {
     _read { yield self[DependencyContextKey.self] }
     _modify { yield &self[DependencyContextKey.self] }
-  }
-
-  private enum IsTestingKey: DependencyKey {
-    static let liveValue = false
-    static var previewValue = false
-    static let testValue = true
   }
 }
 
