@@ -36,13 +36,7 @@ public struct DependencyValues: Sendable {
       else {
         let mode =
           self.storage[ObjectIdentifier(EnvironmentKey.self)]?.base as? Environment
-           ?? {
-            if isPreview {
-              return Environment.preview
-            } else {
-              return Environment.live
-            }
-          }()
+          ?? (isPreview ? .preview : .live)
 
         switch mode {
         case .live:
@@ -70,7 +64,7 @@ public struct DependencyValues: Sendable {
                 line,
                 "\(typeName(Key.self))",
                 "\(typeName(Key.Value.self))",
-                "\(typeName(Key.self))"
+                "\(typeName(Key.self))",
               ],
               file: file,
               line: line
