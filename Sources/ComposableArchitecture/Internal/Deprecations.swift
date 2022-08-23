@@ -5,7 +5,7 @@ import XCTestDynamicOverlay
 
 // NB: Deprecated after 0.39.0:
 
-@available(*, deprecated, renamed: "AnyReducer")
+@available(*, deprecated: 9999.0, renamed: "AnyReducer")
 public typealias Reducer = AnyReducer
 
 extension CaseLet {
