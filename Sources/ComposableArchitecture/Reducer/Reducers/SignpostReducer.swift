@@ -70,7 +70,6 @@ public struct _SignpostReducer<Base: ReducerProtocol>: ReducerProtocol {
       return
         effects
         .effectSignpost(self.prefix, log: self.log, actionOutput: actionOutput)
-        .eraseToEffect()
     }
     return effects
   }

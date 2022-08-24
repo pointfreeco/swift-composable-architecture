@@ -58,37 +58,67 @@ extension AnyReducer {
   }
 }
 
-extension Publisher where Failure == Never {
+extension Effect where Failure == Never {
   @usableFromInline
   func effectSignpost(
     _ prefix: String,
     log: OSLog,
     actionOutput: String
-  ) -> Publishers.HandleEvents<Self> {
+  ) -> Self {
     let sid = OSSignpostID(log: log)
 
-    return
-      self
-      .handleEvents(
-        receiveSubscription: { _ in
+    switch self.operation {
+    case .none:
+      return .none
+
+    case let .publisher(publisher):
+      return .init(
+        operation: .publisher(
+          publisher
+            .handleEvents(
+              receiveSubscription: { _ in
+                os_signpost(
+                  .begin, log: log, name: "Effect", signpostID: sid, "%sStarted from %s", prefix,
+                  actionOutput)
+              },
+              receiveOutput: { value in
+                os_signpost(
+                  .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput)
+              },
+              receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                  os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sFinished", prefix)
+                }
+              },
+              receiveCancel: {
+                os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sCancelled", prefix)
+              }
+            )
+            .eraseToAnyPublisher()
+        )
+      )
+
+    case let .run(priority: priority, operation):
+      return .init(
+        operation: .run(priority: priority) { @MainActor send in
           os_signpost(
             .begin, log: log, name: "Effect", signpostID: sid, "%sStarted from %s", prefix,
             actionOutput)
-        },
-        receiveOutput: { value in
-          os_signpost(
-            .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput)
-        },
-        receiveCompletion: { completion in
-          switch completion {
-          case .finished:
-            os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sFinished", prefix)
+
+          await operation(Send { output in
+            send(output)
+            os_signpost(
+              .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput)
+          })
+
+          if Task.isCancelled {
+            os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sCancelled", prefix)
           }
-        },
-        receiveCancel: {
-          os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sCancelled", prefix)
+          os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sFinished", prefix)
         }
       )
+    }
   }
 }
 
