@@ -59,9 +59,9 @@ struct NavigateAndLoadList: ReducerProtocol {
         return .none
       }
     }
-    .ifLet(\State.selection, action: .self) {
+    .ifLet(\State.selection, action: /Action.counter) {
       EmptyReducer()
-        .ifLet(\Identified<State.Row.ID, Counter.State?>.value, action: /Action.counter) {
+        .ifLet(\Identified<State.Row.ID, Counter.State?>.value, action: .self) {
           Counter()
         }
     }

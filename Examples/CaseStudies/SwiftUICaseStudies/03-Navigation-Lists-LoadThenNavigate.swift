@@ -71,8 +71,8 @@ struct LoadThenNavigateList: ReducerProtocol {
         return .none
       }
     }
-    .ifLet(\.selection, action: .self) {
-      Scope(state: \Identified<State.Row.ID, Counter.State>.value, action: /Action.counter) {
+    .ifLet(\.selection, action: /Action.counter) {
+      Scope(state: \Identified<State.Row.ID, Counter.State>.value, action: /.self) {
         Counter()
       }
     }
