@@ -8,18 +8,9 @@ final class EffectFailureTests: XCTestCase {
 
   func testTaskUnexpectedThrows() {
     XCTExpectFailure {
-      Effect<Void, Never>.task {
-        struct Unexpected: Error {}
-        throw Unexpected()
-      }
-      .sink { _ in }
-      .store(in: &self.cancellables)
-
-      _ = XCTWaiter.wait(for: [.init()], timeout: 0.1)
-    } issueMatcher: {
       $0.compactDescription == """
-        An 'Effect.task' returned from "ComposableArchitectureTests/EffectFailureTests.swift:11" \
-        threw an unhandled error. …
+        An 'Effect.task' returned from "ComposableArchitectureTests/EffectFailureTests.swift:22" \
+        threw an unhandled error:
 
             EffectFailureTests.Unexpected()
 
@@ -27,22 +18,22 @@ final class EffectFailureTests: XCTestCase {
         'Effect.task', or via a 'do' block.
         """
     }
+
+    Effect<Void, Never>.task {
+      struct Unexpected: Error {}
+      throw Unexpected()
+    }
+    .sink { _ in }
+    .store(in: &self.cancellables)
+
+    _ = XCTWaiter.wait(for: [.init()], timeout: 2)
   }
 
   func testRunUnexpectedThrows() {
     XCTExpectFailure {
-      Effect<Void, Never>.run { _ in
-        struct Unexpected: Error {}
-        throw Unexpected()
-      }
-      .sink { _ in }
-      .store(in: &self.cancellables)
-
-      _ = XCTWaiter.wait(for: [.init()], timeout: 0.1)
-    } issueMatcher: {
       $0.compactDescription == """
-        An 'Effect.run' returned from "ComposableArchitectureTests/EffectFailureTests.swift:34" \
-        threw an unhandled error. …
+        An 'Effect.run' returned from "ComposableArchitectureTests/EffectFailureTests.swift:45" \
+        threw an unhandled error:
 
             EffectFailureTests.Unexpected()
 
@@ -50,5 +41,14 @@ final class EffectFailureTests: XCTestCase {
         'Effect.run', or via a 'do' block.
         """
     }
+
+    Effect<Void, Never>.run { _ in
+      struct Unexpected: Error {}
+      throw Unexpected()
+    }
+    .sink { _ in }
+    .store(in: &self.cancellables)
+
+    _ = XCTWaiter.wait(for: [.init()], timeout: 2)
   }
 }

@@ -224,15 +224,11 @@ final class EffectTests: XCTestCase {
   }
 
   func testTask() {
-    let expectation = self.expectation(description: "Complete")
     var result: Int?
-    Effect<Int, Never>.task { @MainActor in
-      expectation.fulfill()
-      return 42
-    }
-    .sink(receiveValue: { result = $0 })
-    .store(in: &self.cancellables)
-    self.wait(for: [expectation], timeout: 1)
+    Effect<Int, Never>.task { 42 }
+      .sink(receiveValue: { result = $0 })
+      .store(in: &self.cancellables)
+    _ = XCTWaiter.wait(for: [.init()], timeout: 0.1)
     XCTAssertNoDifference(result, 42)
   }
 

@@ -28,47 +28,69 @@ extension Effect {
   ///     canceled before starting this new one.
   /// - Returns: A new effect that is capable of being canceled by an identifier.
   public func cancellable(id: AnyHashable, cancelInFlight: Bool = false) -> Self {
-    Deferred {
-      ()
-        -> Publishers.HandleEvents<
-          Publishers.PrefixUntilOutput<Self, PassthroughSubject<Void, Never>>
-        > in
-      cancellablesLock.lock()
-      defer { cancellablesLock.unlock() }
 
-      let id = CancelToken(id: id)
-      if cancelInFlight {
-        cancellationCancellables[id]?.forEach { $0.cancel() }
-      }
+    switch self.operation {
+    case .none:
+      return .none
 
-      let cancellationSubject = PassthroughSubject<Void, Never>()
+    case let .publisher(publisher):
+      return .init(
+        operation: .publisher(
+          Deferred {
+            ()
+              -> Publishers.HandleEvents<
+                Publishers.PrefixUntilOutput<
+                  AnyPublisher<Output, Failure>, PassthroughSubject<Void, Never>
+                >
+              > in
+            cancellablesLock.lock()
+            defer { cancellablesLock.unlock() }
 
-      var cancellationCancellable: AnyCancellable!
-      cancellationCancellable = AnyCancellable {
-        cancellablesLock.sync {
-          cancellationSubject.send(())
-          cancellationSubject.send(completion: .finished)
-          cancellationCancellables[id]?.remove(cancellationCancellable)
-          if cancellationCancellables[id]?.isEmpty == .some(true) {
-            cancellationCancellables[id] = nil
+            let id = CancelToken(id: id)
+            if cancelInFlight {
+              cancellationCancellables[id]?.forEach { $0.cancel() }
+            }
+
+            let cancellationSubject = PassthroughSubject<Void, Never>()
+
+            var cancellationCancellable: AnyCancellable!
+            cancellationCancellable = AnyCancellable {
+              cancellablesLock.sync {
+                cancellationSubject.send(())
+                cancellationSubject.send(completion: .finished)
+                cancellationCancellables[id]?.remove(cancellationCancellable)
+                if cancellationCancellables[id]?.isEmpty == .some(true) {
+                  cancellationCancellables[id] = nil
+                }
+              }
+            }
+
+            return publisher.prefix(untilOutputFrom: cancellationSubject)
+              .handleEvents(
+                receiveSubscription: { _ in
+                  _ = cancellablesLock.sync {
+                    cancellationCancellables[id, default: []].insert(
+                      cancellationCancellable
+                    )
+                  }
+                },
+                receiveCompletion: { _ in cancellationCancellable.cancel() },
+                receiveCancel: cancellationCancellable.cancel
+              )
+          }
+          .eraseToAnyPublisher()
+        )
+      )
+
+    case let .run(priority: priority, operation):
+      return .init(
+        operation: .run(priority: priority) { send in
+          await withTaskCancellation(id: id) {
+            await operation(send)
           }
         }
-      }
-
-      return self.prefix(untilOutputFrom: cancellationSubject)
-        .handleEvents(
-          receiveSubscription: { _ in
-            _ = cancellablesLock.sync {
-              cancellationCancellables[id, default: []].insert(
-                cancellationCancellable
-              )
-            }
-          },
-          receiveCompletion: { _ in cancellationCancellable.cancel() },
-          receiveCancel: cancellationCancellable.cancel
-        )
+      )
     }
-    .eraseToEffect()
   }
 
   /// Turns an effect into one that is capable of being canceled.

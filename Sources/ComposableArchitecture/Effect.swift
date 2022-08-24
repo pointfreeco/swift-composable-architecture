@@ -33,7 +33,22 @@ import XCTestDynamicOverlay
 /// you are using Swift's concurrency tools and the `.task`, `.run` and `.fireAndForget`
 /// functions on ``Effect``, then threading is automatically handled for you.
 public struct Effect<Output, Failure: Error> {
-  let publisher: AnyPublisher<Output, Failure>
+  let operation: Operation
+
+  enum Operation {
+    case none
+    case publisher(AnyPublisher<Output, Failure>)
+    case run(priority: TaskPriority?, @Sendable (Send<Output>) async -> Void)
+
+    // { send in { send in { send in { f }}}
+
+    //static func merge([Self])
+    // case merge2(Self, Self)
+
+    //case merge([Self])
+
+    // TODO: should we have `case cancel(id:)` so that using Effect.cancel doesn't default to the publisher world?
+  }
 }
 
 // MARK: - Creating Effects
@@ -42,7 +57,7 @@ extension Effect {
   /// An effect that does nothing and completes immediately. Useful for situations where you must
   /// return an effect, but you don't need to do anything.
   public static var none: Self {
-    Empty(completeImmediately: true).eraseToEffect()
+    Self(operation: .none)
   }
 }
 
@@ -107,48 +122,37 @@ extension Effect where Failure == Never {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {
-    Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
-      let subject = PassthroughSubject<Output, Failure>()
-      let task = Task(priority: priority) { @MainActor in
-        defer { subject.send(completion: .finished) }
-        do {
-          try Task.checkCancellation()
-          let output = try await operation()
-          try Task.checkCancellation()
-          subject.send(output)
-        } catch is CancellationError {
-          return
-        } catch {
-          guard let handler = handler else {
-            #if DEBUG
-              var errorDump = ""
-              customDump(error, to: &errorDump, indent: 4)
-              runtimeWarning(
-                """
-                An 'Effect.task' returned from "%@:%d" threw an unhandled error. …
+    .run(priority: priority) { send in
+      try await send(operation())
+    } catch: { error, send in
+      guard let handler = handler
+      else {
+        #if DEBUG
+          var errorDump = ""
+          customDump(error, to: &errorDump, indent: 4)
+          runtimeWarning(
+            """
+            An 'Effect.task' returned from "%@:%d" threw an unhandled error. …
 
-                %@
+            %@
 
-                All non-cancellation errors must be explicitly handled via the 'catch' parameter \
-                on 'Effect.task', or via a 'do' block.
-                """,
-                [
-                  "\(fileID)",
-                  line,
-                  errorDump,
-                ],
-                file: file,
-                line: line
-              )
-            #endif
-            return
-          }
-          await subject.send(handler(error))
-        }
+            All non-cancellation errors must be explicitly handled via the 'catch' parameter \
+            on 'Effect.task', or via a 'do' block.
+            """,
+            [
+              "\(fileID)",
+              line,
+              errorDump,
+            ],
+            file: file,
+            line: line
+          )
+        #endif
+        return
       }
-      return subject.handleEvents(receiveCancel: task.cancel)
+
+      await send(handler(error))
     }
-    .eraseToEffect()
   }
 
   /// Wraps an asynchronous unit of work that can emit any number of times in an effect.
@@ -198,10 +202,8 @@ extension Effect where Failure == Never {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {
-    .run { subscriber in
-      let task = Task(priority: priority) { @MainActor in
-        defer { subscriber.send(completion: .finished) }
-        let send = Send(send: { subscriber.send($0) })
+    return Self(
+      operation: .run(priority: priority) { send in
         do {
           try await operation(send)
         } catch is CancellationError {
@@ -234,10 +236,7 @@ extension Effect where Failure == Never {
           await handler(error, send)
         }
       }
-      return AnyCancellable {
-        task.cancel()
-      }
-    }
+    )
   }
 
   /// Creates an effect that executes some work in the real world that doesn't need to feed data
@@ -266,8 +265,7 @@ extension Effect where Failure == Never {
     priority: TaskPriority? = nil,
     _ work: @escaping @Sendable () async throws -> Void
   ) -> Self {
-    Effect<Void, Never>.task(priority: priority) { try? await work() }
-      .fireAndForget()
+    .run(priority: priority) { _ in try? await work() }
   }
 }
 
@@ -345,9 +343,49 @@ extension Effect {
   ///
   /// - Parameter effects: A sequence of effects.
   /// - Returns: A new effect
+  @_disfavoredOverload
   public static func merge<S: Sequence>(_ effects: S) -> Self where S.Element == Effect {
     Publishers.MergeMany(effects).eraseToEffect()
   }
+
+  private mutating func merge(with other: Effect) {
+
+  }
+
+
+  /*
+
+
+
+   */
+
+  //  public static func _merge<S: Sequence>(_ effects: S) -> Self where S.Element == Effect, Failure == Never {
+  //    .run { send in
+  //      await withTaskGroup(of: Void.self) { group in
+  //        for effect in effects {
+  //          switch effect.operation {
+  //          case .none:
+  //            break
+  //
+  //          case let .publisher(publisher):
+  //            group.addTask {
+  //              if #available(iOS 15.0, *) {
+  //                // TODO: use AsyncStream to backport
+  //                for await output in publisher.values {
+  //                  await send(output)
+  //                }
+  //              }
+  //            }
+  //
+  //          case let .run(operation):
+  //            group.addTask {
+  //              await operation(send)
+  //            }
+  //          }
+  //        }
+  //      }
+  //    }
+  //  }
 
   /// Concatenates a variadic list of effects together into a single effect, which runs the effects
   /// one after the other.
@@ -375,6 +413,7 @@ extension Effect {
   ///
   /// - Parameter effects: A collection of effects.
   /// - Returns: A new effect
+  @_disfavoredOverload
   public static func concatenate<C: Collection>(_ effects: C) -> Self where C.Element == Effect {
     effects.isEmpty
       ? .none
@@ -385,6 +424,27 @@ extension Effect {
         }
   }
 
+  //  public static func concatenate<S: Sequence>(_ effects: S) -> Self where S.Element == Effect, Failure == Never {
+  //    .run { send in
+  //      for effect in effects {
+  //        switch effect.operation {
+  //        case .none:
+  //          continue
+  //
+  //        case let .publisher(publisher):
+  //          if #available(iOS 15.0, *) {
+  //            for await output in publisher.values {
+  //              await send(output)
+  //            }
+  //          }
+  //
+  //        case let .run(operation):
+  //          await operation(send)
+  //        }
+  //      }
+  //    }
+  //  }
+
   /// Transforms all elements from the upstream effect with a provided closure.
   ///
   /// - Parameter transform: A closure that transforms the upstream effect's output to a new output.
@@ -392,6 +452,29 @@ extension Effect {
   ///   to new elements that it then publishes.
   public func map<T>(_ transform: @escaping (Output) -> T) -> Effect<T, Failure> {
     .init(self.map(transform) as Publishers.Map<Self, T>)
+
+    //    switch self.operation {
+    //    case .none:
+    //      return .none
+    //
+    //    case let .publisher(publisher):
+    //      return .init(
+    //        operation: .publisher(publisher.map(transform).eraseToAnyPublisher())
+    //      )
+    //
+    //    case let .run(operation):
+    //      return .init(
+    //        operation: .run { @MainActor send in
+    //          await operation(
+    //            .init(
+    //              send: { output in
+    //                send(transform(output))
+    //              }
+    //            )
+    //          )
+    //        }
+    //      )
+    //    }
   }
 }
 
