@@ -82,7 +82,7 @@ extension Effect {
     case let .run(priority: priority, operation):
       return .init(
         operation: .run(priority: priority) { send in
-          await withTaskCancellation(id: id) {
+          await withTaskCancellation(id: id, cancelInFlight: cancelInFlight) {
             await operation(send)
           }
         }
