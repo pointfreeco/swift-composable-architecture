@@ -275,7 +275,7 @@ struct FeatureAction {
   // ...
 }
 struct FeatureEnvironment { 
-  // ...
+  var date: () -> Date
 }
 
 let featureReducer = Reducer<
@@ -299,7 +299,7 @@ enum ParentAction {
   // ...
 }
 struct ParentEnvironment {
-  // ...
+  var date: () -> Date
 }
 ```
 
@@ -319,7 +319,11 @@ let parentReducer = Reducer<
 >.combine( 
   featureReducer
     .optional()
-    .pullback(state: \.feature, action: /ParentAction.feature, environment: { ... }),
+    .pullback(
+      state: \.feature, 
+      action: /ParentAction.feature, 
+      environment: { FeatureEnvironment(date: $0.date) }
+    ),
 
   Reducer { state, action, environment in
     // Parent logic
@@ -341,10 +345,14 @@ let parentReducer = Reducer<
   ParentEnvironment
 >.combine( 
   AnyReducer { environment in
-    Feature()
+    Feature(date: environment.date)
   }
   .optional()
-  .pullback(state: \.feature, action: /ParentAction.feature, environment: { ... }),
+  .pullback(
+    state: \.feature, 
+    action: /ParentAction.feature, 
+    environment: { FeatureEnvironment(date: $0.date) }
+  ),
 
   Reducer { state, action, environment in
     // Parent logic
@@ -379,12 +387,14 @@ struct Parent: ReducerProtocol {
     // ...
   }
 
+  let date: () -> Date
+
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       // Parent logic
     }
     .ifLet(\.feature, action: /Action.feature) {
-      Feature()
+      Feature(date: self.date)
     }
   }
 }
@@ -412,20 +422,22 @@ each element:
 ```swift
 struct Parent: ReducerProtocol {
   struct State {
-    var features: IdentifiedArrayOf<Feature.State>
+    var rows: IdentifiedArrayOf<Feature.State>
     // ...
   }
   enum Action {
-    case feature(id: Feature.State.ID, action: Feature.Action)
+    case row(id: Feature.State.ID, action: Feature.Action)
     // ...
   }
+
+  let date: () -> Date
 
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       // Parent logic
     }
-    .forEach(\.features, action: /Action.feature) {
-      Feature()
+    .forEach(\.rows, action: /Action.row) {
+      Feature(date: self.date)
     }
   }
 }
