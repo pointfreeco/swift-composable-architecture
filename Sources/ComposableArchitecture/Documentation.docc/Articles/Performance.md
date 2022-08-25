@@ -34,10 +34,10 @@ For example, if the root of our application was a tab view, then we could model 
 struct that holds each tab's state as a property:
 
 ```swift
-struct AppState {
-  var activity: ActivityState
-  var search: SearchState
-  var profile: ProfileState
+struct State {
+  var activity: Activity.State
+  var search: Search.State
+  var profile: Profile.State
 }
 ```
 
@@ -46,7 +46,7 @@ because we can pass scoped stores to each child feature view:
 
 ```swift
 struct AppView: View {
-  let store: Store<AppState, AppAction>
+  let store: StoreOf<AppReducer>
 
   var body: some View {
     // No need to observe state changes because the view does
@@ -81,11 +81,11 @@ unread activities. Then we could observe changes to only that piece of state lik
 
 ```swift
 struct AppView: View {
-  let store: Store<AppState, AppAction>
+  let store: StoreOf<AppReducer>
   
   struct ViewState {
     let unreadActivityCount: Int
-    init(state: AppState) {
+    init(state: AppReducer.State) {
       self.unreadActivityCount = state.activity.unreadCount
     }
   }
@@ -153,10 +153,10 @@ case .buttonTapped:
         await Task.yield()
       }
     }
-    return .response(result)
+    return .computationResponse(result)
   }
 
-case let .response(result):
+case let .computationResponse(result):
   state.result = result
 ```
 
