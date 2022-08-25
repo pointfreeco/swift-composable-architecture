@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Foundation
 
 extension SpeechClient {
   static var lorem: Self {
