@@ -150,9 +150,7 @@ let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combin
   .pullback(
     state: \.feature, 
     action: /ParentAction.feature, 
-    environment: {  
-      FeatureEnvironment(date: $0.date)
-    }
+    environment: { $0 }
   ),
 
   Reducer { state, action, environment in 
