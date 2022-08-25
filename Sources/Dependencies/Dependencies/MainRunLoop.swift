@@ -1,5 +1,6 @@
 #if canImport(Combine)
   import CombineSchedulers
+  import Foundation
 
   extension DependencyValues {
     /// The "main" run loop.

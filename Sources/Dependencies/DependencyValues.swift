@@ -17,9 +17,11 @@ import Foundation
 public struct DependencyValues: Sendable {
   /// The current task's dependencies.
   ///
-  /// You don't typically access dependencies directly, but the task local value provides a means of
-  /// performing an operation with overridden dependencies. If you want to access a particular
-  /// dependency, use the ``Dependency`` property wrapper.
+  /// You don't typically access dependencies directly, and instead will use the ``Dependency``
+  /// property from your reducer conformance.
+  ///
+  /// This task local value provides a means of performing a scoped operation with certain
+  /// dependency values overridden.
   @TaskLocal public static var current = Self()
 
   private var storage: [ObjectIdentifier: AnySendable] = [:]

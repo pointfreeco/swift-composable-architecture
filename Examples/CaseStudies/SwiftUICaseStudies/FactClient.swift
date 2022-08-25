@@ -1,5 +1,6 @@
 import Combine
 import ComposableArchitecture
+import Foundation
 import XCTestDynamicOverlay
 
 struct FactClient {

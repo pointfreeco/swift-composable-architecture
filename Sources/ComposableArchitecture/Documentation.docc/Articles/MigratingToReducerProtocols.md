@@ -25,27 +25,24 @@ piecemeal fashion.
 ### Leaf node features
 
 The simplest parts of an application to convert to ``ReducerProtocol`` are leaf node features that 
-do not compose multiple reducers at once. For example, suppose you have a feature domain with some 
-dependencies like this:
+do not compose multiple reducers at once. For example, suppose you have a feature domain with a 
+dependency like this:
 
 ```swift
-struct MyFeatureState {
+struct FeatureState {
   // ...
 }
-
-enum MyFeatureAction {
+enum FeatureAction {
   // ...
 }
-
-struct MyFeatureEnvironment {
-  var apiClient: APIClient
+struct FeatureEnvironment {
   var date: () -> Date
 }
 
-let myFeatureReducer = Reducer<
-  MyFeatureState,
-  MyFeatureAction,
-  MyFeatureEnvironment
+let featureReducer = Reducer<
+  FeatureState,
+  FeatureAction,
+  FeatureEnvironment
 > { state, action, environment in
   switch action {
   // ...
@@ -66,7 +63,7 @@ method.
 Performing these 4 steps on the feature produces the following:
 
 ```swift
-struct MyFeature: ReducerProtocol {
+struct Feature: ReducerProtocol {
   struct State {
     // ...
   }
@@ -75,7 +72,6 @@ struct MyFeature: ReducerProtocol {
     // ...
   }
 
-  let apiClient: APIClient
   let date: () -> Date
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
@@ -86,18 +82,19 @@ struct MyFeature: ReducerProtocol {
 }
 ```
 
-Once this feature's domain and reducer is converted to the new style you will invariably have 
+Once this feature's domain and reducer is converted to the protocol-style you will invariably have 
 compiler errors wherever you were referring to the old types. For example, suppose you have a 
-parent feature that embeds this child feature into it:
+parent feature that is currently trying to embed the old-style domain and reducer into its domain
+and reducer:
 
 ```swift
 struct ParentState { 
-  var myFeature: MyFeatureState
+  var feature: FeatureState
   // ...
 }
 
 enum ParentAction {
-  case myFeature(MyFeatureAction)
+  case feature(FeatureAction)
   // ...
 }
 
@@ -108,12 +105,12 @@ struct ParentEnvironment {
 }
 
 let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
-  myFeatureReducer
+  featureReducer
     .pullback(
-      state: \.featureA, 
-      action: /ParentAction.featureA, 
+      state: \.feature, 
+      action: /ParentAction.feature, 
       environment: {  
-        FeatureAEnvironment(date: $0.date, dependency: $0.dependency)
+        FeatureAEnvironment(date: $0.date)
       }
     ),
 
@@ -123,17 +120,17 @@ let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combin
 )
 ```
 
-This can be updated to work with the new `FeatureA` reducer type by first fixing any references to 
-the state and action types:
+This can be updated to work with the new `Feature` reducer conformance by first fixing any 
+references to the state and action types:
 
 ```swift
 struct ParentState { 
-  var myFeature: MyFeature.State
+  var feature: Feature.State
   // ...
 }
 
 enum ParentAction {
-  case myFeature(MyFeature.Action)
+  case feature(Feature.Action)
   // ...
 }
 ```
@@ -145,13 +142,16 @@ are to return a protocol-style reducer:
 
 ```swift
 let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
-  AnyReducer {
-    MyFeature(
-      apiClient: $0.apiClient,
-      date: $0.date
+  AnyReducer { environment in
+    Feature(
+      date: environment.date
     )
-    .pullback(state: \.featureA, action: /ParentAction.featureA)
-  },
+  }
+  .pullback(
+    state: \.feature, 
+    action: /ParentAction.feature, 
+    environment: { $0 }
+  ),
 
   Reducer { state, action, environment in 
     // ...
@@ -159,8 +159,12 @@ let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combin
 )
 ```
 
+Note that the ``AnyReducer``'s only purpose is to convert the protocol-style reducer to the 
+old-style so that it can be plugged into existing old-style reducers. You can then chain on the 
+operators you were using before to the end of the ``AnyReducer`` usage.
+
 With those few changes your application should now build, and you have successfully converted one
-leaf node feature to the new style of ``ReducerProtocol``.
+leaf node feature to the new ``ReducerProtocol``-style of doing things.
 
 ### Composition of features
 
@@ -255,12 +259,194 @@ struct AppReducer: ReducerProtocol {
 With those few small changes we have now converted a composition of many reducers into the new
 protocol-style.
 
+### Optional and pullback reducers
+
+A common pattern in the Composable Architecture is to model a feature that can be presented and 
+dismissed as optional state. For example, suppose you have the feature's domain and reducer modeled
+like so:
+
+```swift
+struct FeatureState { 
+  // ...
+}
+struct FeatureAction { 
+  // ...
+}
+struct FeatureEnvironment { 
+  var date: () -> Date
+}
+
+let featureReducer = Reducer<
+  FeatureState, 
+  FeatureAction, 
+  FeatureEnvironment
+> { state, action, environment in
+  // Feature logic
+}
+```
+
+Then, the parent feature can embed this child feature as an optional in its state:
+
+```swift
+struct ParentState {
+  var feature: Feature?
+  // ...
+}
+enum ParentAction {
+  case feature(FeatureAction)
+  // ...
+}
+struct ParentEnvironment {
+  var date: () -> Date
+}
+```
+
+A non-`nil` value for `feature` indicates that the feature view is being presented, and when it 
+switches to `nil` the view should be dismissed.
+
+In order to construct a single reducer that can handle the logic for the parent domain as well as
+allow the feature to run its logic on the `feature` state when non-`nil`, we can make use the
+``AnyReducer/optional(file:fileID:line:)`` and ``AnyReducer/pullback(state:action:environment:)``
+operators:
+
+```swift
+let parentReducer = Reducer<
+  ParentState,
+  ParentAction,
+  ParentEnvironment
+>.combine( 
+  featureReducer
+    .optional()
+    .pullback(
+      state: \.feature, 
+      action: /ParentAction.feature, 
+      environment: { FeatureEnvironment(date: $0.date) }
+    ),
+
+  Reducer { state, action, environment in
+    // Parent logic
+  }
+)
+```
+
+It seems complex, but we have now combined the logic for the parent feature and child feature into
+one package, and the child feature will only run when the state is non-`nil`.
+
+Migrating the `featureReducer` to the protocol by following the earlier instructions will
+yield a new `Feature` type that conforms to ``ReducerProtocol``, and the `parentReducer` will
+look something like this:
+
+```swift
+let parentReducer = Reducer<
+  ParentState,
+  ParentAction,
+  ParentEnvironment
+>.combine( 
+  AnyReducer { environment in
+    Feature(date: environment.date)
+  }
+  .optional()
+  .pullback(
+    state: \.feature, 
+    action: /ParentAction.feature, 
+    environment: { FeatureEnvironment(date: $0.date) }
+  ),
+
+  Reducer { state, action, environment in
+    // Parent logic
+  }
+)
+```
+
+Now the question is, how do we migrate `parentReducer` to a protocol conformance?
+
+This gives us an opportunity to improve the correctness of this code. It turns out there is a gotcha 
+with the `optional` operator: it must be run _before_ the parent logic runs. If it is  not, then it 
+is possible for a child action to come into the system, the parent observe the action  and decide to 
+`nil` out the child state, and then the child  reducer will not get a chance to react to the action. 
+This can cause subtle bugs, and so we have documentation advising you to order things  the correct 
+way, and if we detect a child action while state is `nil` we display a runtime warning.
+
+A `Parent` reducer conformances can be made by implementing the 
+``ReducerProtocol/body-swift.property-7foai`` property of the ``ReducerProtocol``, which allows you
+to express the parent's logic as a composition of multiple reducers. In particular, you can use
+the ``Reduce`` entry point to implement the core parent logic, and then chain on the 
+``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)`` operator to identify the optional child
+state that you want to run the `Feature` reducer on when non-`nil`:
+
+```swift
+struct Parent: ReducerProtocol {
+  struct State {
+    var feature: Feature.State?
+    // ...
+  }
+  enum Action {
+    case feature(Feature.Action)
+    // ...
+  }
+
+  let date: () -> Date
+
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
+      // Parent logic
+    }
+    .ifLet(\.feature, action: /Action.feature) {
+      Feature(date: self.date)
+    }
+  }
+}
+```
+
+Because the `ifLet` operator has knowledge of both the parent and child reducers it can enforce the
+order to add an additional layer of correctness.
+
+If you are using an enum to model your state, then there is a corresponding 
+``ReducerProtocol/ifCaseLet(_:action:then:file:fileID:line:)`` operator that can help you run a
+reducer on just one case of the enum.
+
+### For-each reducers
+
+Similar to `optional` reducers, another common pattern in applications is the use of the 
+``AnyReducer/forEach(state:action:environment:file:fileID:line:)-2ypoa`` to allow running a reducer
+on each element of a collection. Converting such child and parent reducers will look nearly
+identical to what we did above for optional reducers, but it will make use of the new
+``ReducerProtocol/forEach(_:action:_:file:fileID:line:)`` operator instead.
+
+In particular, the new `forEach` method operates on the parent reducer by specifying the collection
+sub-state you want to work on, and providing the element reducer you want to be able to run on
+each element:
+
+```swift
+struct Parent: ReducerProtocol {
+  struct State {
+    var rows: IdentifiedArrayOf<Feature.State>
+    // ...
+  }
+  enum Action {
+    case row(id: Feature.State.ID, action: Feature.Action)
+    // ...
+  }
+
+  let date: () -> Date
+
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
+      // Parent logic
+    }
+    .forEach(\.rows, action: /Action.row) {
+      Feature(date: self.date)
+    }
+  }
+}
+```
+
 ### Dependencies
 
 In the previous sections we inlined all dependencies directly into the conforming type:
 
 ```swift
-struct MyFeature: ReducerProtocol {
+struct Feature: ReducerProtocol {
   let apiClient: APIClient
   let date: () -> Date
   // ...
@@ -277,7 +463,7 @@ For example, the `date` dependency ships with the library so that you can declar
 dependence on that functionality in the following way:
 
 ```swift
-struct MyFeature: ReducerProtocol {
+struct Feature: ReducerProtocol {
   let apiClient: APIClient
   @Dependency(\.date) var date
   // ...
@@ -308,7 +494,7 @@ With that work done you can access the dependency from any feature's reducer usi
 property wrapper:
 
 ```swift
-struct MyFeature: ReducerProtocol {
+struct Feature: ReducerProtocol {
   @Dependency(\.apiClient) var apiClient
   @Dependency(\.date) var date
   // ...
@@ -324,10 +510,10 @@ Stores can be initialized from an initial state and an instance of a type confor
 ``ReducerProtocol``:
 
 ```swift
-MyFeatureView(
+FeatureView(
   store: Store(
-    initialState: MyFeature.State(),
-    reducer: MyFeature()
+    initialState: Feature.State(),
+    reducer: Feature()
   )
 )
 ```
@@ -336,9 +522,9 @@ Views that hold onto stores can also employ the ``StoreOf`` type alias to clean 
 declaration:
 
 ```swift
-let store: StoreOf<MyFeature>
+let store: StoreOf<Feature>
 // Expands to:
-//     let store: Store<MyFeature.State, MyFeature.Action>
+//     let store: Store<Feature.State, Feature.Action>
 ```
 
 ### Testing
@@ -348,8 +534,8 @@ Test stores can be initialized from an initial state and an instance of a type c
 
 ```swift
 let store = TestStore(
-  initialState: MyFeature.State(),
-  reducer: MyFeature()
+  initialState: Feature.State(),
+  reducer: Feature()
 )
 ```
 
@@ -438,7 +624,7 @@ struct AppReducer: ReducerProtocol {
 
 The migration strategy described above for Swift 5.7 also applies to applications that are still 
 using Xcode 13 and Swift 5.6, but with one small change. When conforming your types to the 
-``ReducerProtocol`` you are not allowed to use the `some ReducerProtocol<State, Action>` syntax
+``ReducerProtocol`` you are not allowed to use the syntax `some ReducerProtocol<State, Action>` 
 because that is only available in Swift 5.7. Instead, you must specify `Reduce<State, Action>`
 as the type of the `body` property:
 
