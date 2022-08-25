@@ -352,7 +352,7 @@ let parentReducer = Reducer<
 )
 ```
 
-Now the question is, how do migrate `parentReducer` to a protocol conformance?
+Now the question is, how do we migrate `parentReducer` to a protocol conformance?
 
 This gives us an opportunity to improve the correctness of this code. It turns out there is a gotcha 
 with the `optional` operator: it must be run _before_ the parent logic runs. If it is  not, then it 
