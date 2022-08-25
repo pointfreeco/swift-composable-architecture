@@ -82,7 +82,7 @@ struct Feature: ReducerProtocol {
 }
 ```
 
-Once this feature's domain and reducer is converted to the new style you will invariably have 
+Once this feature's domain and reducer is converted to the protocol-style you will invariably have 
 compiler errors wherever you were referring to the old types. For example, suppose you have a 
 parent feature that is currently trying to embed the old-style domain and reducer into its domain
 and reducer:
@@ -159,12 +159,12 @@ let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combin
 )
 ```
 
-Note that the ``AnyReducer``'s only purpose is to convert the new-style reducer to the old-style
-so that it can be plugged into existing old-style reducers. You can then chain on the operators
-you were using before to the end of the ``AnyReducer`` usage.
+Note that the ``AnyReducer``'s only purpose is to convert the protocol-style reducer to the 
+old-style so that it can be plugged into existing old-style reducers. You can then chain on the 
+operators you were using before to the end of the ``AnyReducer`` usage.
 
 With those few changes your application should now build, and you have successfully converted one
-leaf node feature to the new style of ``ReducerProtocol``.
+leaf node feature to the new ``ReducerProtocol``-style of doing things.
 
 ### Composition of features
 
