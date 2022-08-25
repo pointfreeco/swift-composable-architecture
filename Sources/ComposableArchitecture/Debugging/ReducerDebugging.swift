@@ -112,30 +112,38 @@ extension Reducer {
         guard let debugAction = toDebugAction.extract(from: action) else { return effects }
         let nextState = toDebugState(state)
         let debugEnvironment = toDebugEnvironment(environment)
-        return .merge(
-          .fireAndForget {
-            debugEnvironment.queue.async {
-              var actionOutput = ""
-              if actionFormat == .prettyPrint {
-                customDump(debugAction, to: &actionOutput, indent: 2)
-              } else {
-                actionOutput.write(debugCaseOutput(debugAction).indent(by: 2))
-              }
-              let stateOutput =
-                DebugState.self == Void.self
-                ? ""
-                : diff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
-              debugEnvironment.printer(
-                """
-                \(prefix.isEmpty ? "" : "\(prefix): ")received action:
-                \(actionOutput)
-                \(stateOutput)
-                """
-              )
+
+        @Sendable
+        func print() {
+          debugEnvironment.queue.async {
+            var actionOutput = ""
+            if actionFormat == .prettyPrint {
+              customDump(debugAction, to: &actionOutput, indent: 2)
+            } else {
+              actionOutput.write(debugCaseOutput(debugAction).indent(by: 2))
             }
-          },
-          effects
-        )
+            let stateOutput =
+              DebugState.self == Void.self
+              ? ""
+              : diff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
+            debugEnvironment.printer(
+              """
+              \(prefix.isEmpty ? "" : "\(prefix): ")received action:
+              \(actionOutput)
+              \(stateOutput)
+              """
+            )
+          }
+        }
+
+        switch effects.operation {
+        case .none:
+          return .fireAndForget { print() }
+        case .publisher:
+          return .fireAndForget { print() }.merge(with: effects)
+        case .run:
+          return .fireAndForget { () async in print() }.merge(with: effects)
+        }
       }
     #else
       return self

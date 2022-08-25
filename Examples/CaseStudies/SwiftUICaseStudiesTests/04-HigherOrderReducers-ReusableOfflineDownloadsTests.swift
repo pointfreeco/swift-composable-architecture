@@ -1,7 +1,6 @@
 import Combine
 import ComposableArchitecture
 import XCTest
-import XCTestDynamicOverlay
 
 @testable import SwiftUICaseStudies
 
@@ -160,10 +159,4 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
       $0.mode = .notDownloaded
     }
   }
-}
-
-extension DownloadClient {
-  static let unimplemented = Self(
-    download: XCTUnimplemented("\(Self.self).asyncDownload")
-  )
 }

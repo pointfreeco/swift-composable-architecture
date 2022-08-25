@@ -1,6 +1,7 @@
 import Combine
 import ComposableArchitecture
 import Foundation
+import XCTestDynamicOverlay
 
 struct DownloadClient {
   var download: @Sendable (URL) -> AsyncThrowingStream<Event, Error>
@@ -37,5 +38,9 @@ extension DownloadClient {
         }
       }
     }
+  )
+
+  static let unimplemented = Self(
+    download: XCTUnimplemented("\(Self.self).asyncDownload")
   )
 }
