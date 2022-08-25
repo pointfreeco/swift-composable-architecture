@@ -289,7 +289,7 @@ Then, the parent feature can embed this child feature as an optional in its stat
 
 ```swift
 struct ParentState {
-  var feature: Feature?
+  var feature: FeatureState?
   // ...
 }
 enum ParentAction {
