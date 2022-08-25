@@ -247,6 +247,7 @@ extension ReducerProtocol where Body: ReducerProtocol, Body.State == State, Body
 
 
 
+import Foundation
 
 struct MyFeatureState {
   // ...
@@ -258,7 +259,7 @@ enum MyFeatureAction {
 
 struct MyFeatureEnvironment {
 //  var apiClient: APIClient
-//  var date: () -> Date
+  var date: () -> Date
 }
 
 let myFeatureReducer = Reducer<
@@ -268,3 +269,49 @@ let myFeatureReducer = Reducer<
 > { state, action, environment in
     .none
 }
+struct MyFeature: ReducerProtocol {
+  struct State {
+    // ...
+  }
+
+  enum Action {
+    // ...
+  }
+
+//  let apiClient: APIClient
+  let date: () -> Date
+
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    .none
+  }
+}
+
+struct ParentState {
+  var myFeature: MyFeature.State
+  // ...
+}
+
+enum ParentAction {
+  case myFeature(MyFeature.Action)
+  // ...
+}
+struct ParentEnvironment {
+  var date: () -> Date
+}
+let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
+  AnyReducer { environment in
+    MyFeature(
+      date: environment.date
+    )
+  }
+//    .optional()
+    .pullback(
+      state: \.myFeature,
+      action: /ParentAction.myFeature,
+      environment: { MyFeatureEnvironment(date: $0.date) }
+    ),
+
+  Reducer { state, action, environment in
+      .none
+  }
+)
