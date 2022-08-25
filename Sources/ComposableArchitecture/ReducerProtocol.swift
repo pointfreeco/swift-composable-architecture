@@ -244,3 +244,27 @@ extension ReducerProtocol where Body: ReducerProtocol, Body.State == State, Body
     self.body.reduce(into: &state, action: action)
   }
 }
+
+
+
+
+struct MyFeatureState {
+  // ...
+}
+
+enum MyFeatureAction {
+  // ...
+}
+
+struct MyFeatureEnvironment {
+//  var apiClient: APIClient
+//  var date: () -> Date
+}
+
+let myFeatureReducer = Reducer<
+  MyFeatureState,
+  MyFeatureAction,
+  MyFeatureEnvironment
+> { state, action, environment in
+    .none
+}

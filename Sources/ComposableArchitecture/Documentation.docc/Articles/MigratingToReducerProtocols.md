@@ -255,6 +255,132 @@ struct AppReducer: ReducerProtocol {
 With those few small changes we have now converted a composition of many reducers into the new
 protocol-style.
 
+### Advanced reducers
+
+
+
+#### Optional and pullback reducers
+
+A common pattern in the Composable Architecture is to model a feature that can be presented and 
+dismissed as optional state. For example, suppose you have the feature's domain and reducer modeled
+like so:
+
+```swift
+struct FeatureState { 
+  // ...
+}
+struct FeatureAction { 
+// ...
+}
+struct FeatureEnvironment { 
+// ...
+}
+
+let featureReducer = Reducer<
+  FeatureState, 
+  FeatureAction, 
+  FeatureEnvironment
+> { state, action, environment in
+  // Feature logic
+}
+```
+
+Then, the parent feature can embed this child feature as an optional in its state:
+
+```swift
+struct ParentState {
+  var feature: Feature?
+  // ...
+}
+enum ParentAction {
+  case feature(FeatureAction)
+  // ...
+}
+struct ParentEnvironment {
+  // ...
+}
+```
+
+A non-`nil` value for `feature` indicates that the feature view is being presented, and when it 
+switches to `nil` the view should be dismissed.
+
+In order to construct a single reducer that can handle the logic for the parent domain as well as
+allow the feature to run its logic on the `feature` state when non-`nil`, we can make use the
+``AnyReducer/optional(file:fileID:line:)`` and ``AnyReducer/pullback(state:action:environment:)``
+operators:
+
+```swift
+let parentReducer = Reducer<
+  ParentState,
+  ParentAction,
+  ParentEnvironment
+>.combine( 
+  featureReducer
+    .optional()
+    .pullback(state: \.feature, action: /ParentAction.feature, environment: { ... }),
+
+  Reducer { state, action, environment in
+    // Parent logic
+  }
+)
+```
+
+It seems complex, but we have now combined the logic for the parent feature and child feature into
+one package, and the child feature will only run when the state is non-`nil`.
+
+However, there is a gotcha with the `optional` operator, and that is it must be run _before_ the
+parent logic runs. If it is not, then it is possible for a child action to come into the system,
+the parent observe the action and decide to `nil` out the child state, and then the child 
+reducer will not get a chance to react to the action. This can cause subtle bugs, and so we have
+documentation advising you to order things the correct way, and if we detect a child action while
+state is `nil` we display a runtime warning.
+
+Converting these features to use the ``ReducerProtocol`` is straightforward, and we can even improve
+things by using the new ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)`` operator, which
+is aware of both the parent and child reducers so that it can enforce the ordering.
+
+First, suppose you have already converted 
+
+
+```swift
+struct Feature: ReducerProtocol {
+  struct State {
+    // ...
+  }
+  enum Action {
+    // ...
+  }
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    // Feature logic
+  }
+}
+```
+
+
+```swift
+struct Parent: ReducerProtocol {
+  struct State {
+    var feature: Feature.State?
+    // ...
+  }
+  enum Action {
+    case feature(Feature.Action)
+    // ...
+  }
+
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
+      // Parent logic
+    }
+    .ifLet(\.feature, action: /Action.feature) {
+      Feature()
+    }
+  }
+}
+```
+
+
+
 ### Dependencies
 
 In the previous sections we inlined all dependencies directly into the conforming type:
