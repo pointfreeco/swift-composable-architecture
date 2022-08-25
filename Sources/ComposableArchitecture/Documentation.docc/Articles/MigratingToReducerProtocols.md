@@ -110,7 +110,7 @@ let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combin
       state: \.feature, 
       action: /ParentAction.feature, 
       environment: {  
-        FeatureAEnvironment(date: $0.date, dependency: $0.dependency)
+        FeatureAEnvironment(date: $0.date)
       }
     ),
 
@@ -142,9 +142,9 @@ are to return a protocol-style reducer:
 
 ```swift
 let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
-  AnyReducer {
+  AnyReducer { environment in
     Feature(
-      date: $0.date
+      date: environment.date
     )
   }
   .pullback(
