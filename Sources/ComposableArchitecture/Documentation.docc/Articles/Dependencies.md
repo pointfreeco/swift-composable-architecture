@@ -268,9 +268,11 @@ func testFetchUser() async {
 
 ## Unimplemented dependencies
 
-[dependency-values-docs]: todo: get url
+TODO: get urls
+
+[dependency-values-docs]: get-url
 [swift-identified-collections]: https://github.com/pointfreeco/swift-identified-collections
-[dependency-property-wrapper-docs]: todo: get url
+[dependency-property-wrapper-docs]: get-url
 [environment-values-docs]: https://developer.apple.com/documentation/swiftui/environmentvalues
-[test-dependency-key-docs]: todo: get url
-[dependency-key-docs]: todo: get url
+[test-dependency-key-docs]: get-url
+[dependency-key-docs]: get-url

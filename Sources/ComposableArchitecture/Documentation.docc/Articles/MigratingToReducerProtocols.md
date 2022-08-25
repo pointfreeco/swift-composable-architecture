@@ -1,28 +1,34 @@
 # Migrating to protocol reducers
 
-Learn how to migrate existing applications to use the new `ReducerProtocol`, in both Swift 5.7 and
+Learn how to migrate existing applications to use the new ``ReducerProtocol``, in both Swift 5.7 and
 Swift 5.6.
 
 ## Overview
 
-The ``ReducerProtocol`` makes use of many new features of Swift 5.7, including primary associated 
-types and constrained opaque types. If you are already using Swift 5.7+, then you can start making 
-use of these features right away. If you are using Swift 5.6 then you can still make use of 
-``ReducerProtocol``, but with a few minor tweaks.
+Migrating an application that uses the ``Reducer`` type over to the new ``ReducerProtocol`` can be
+done slowly and incrementally. The library provides the tools to convert one reducer at a time,
+allowing you to plug protocol-style reducers into old-style reducers, and vice-versa.
 
-## Migration using Swift 5.7
+Although we recommend migrating your code when you have time, the newest version of the library
+is still 100% backwards compatible with all previous versions. The ``Reducer`` type is now
+"soft" deprecated, which means we consider it deprecated but you will not get any warnings about it.
+Some time in the future we will officially deprecate it, and then sometime even later we will remove
+it so that we can rename the protocol to `Reducer`.
 
-The ``Reducer`` type that allows you to construct a reducer from a closure, and has been around 
-since the very first version of the library, is now officially considered "soft-deprecated." This 
-means that it will not show deprecation warnings in your code yet, but some day in the future we 
-will mark it deprecated, and then someday later remove the type from the library. This process will 
-take place over a long period of time, giving everyone enough time to migrate their applications.
+This article outlines a number of strategies you can employ to convert your reducers to the protocol
+when you are ready:
 
-There are a few strategies you can follow to slowly convert all usages of ``Reducer`` to the new
-protocol-style reducers. It does not need to be done all at once, and instead can be done in a 
-piecemeal fashion.
+* [Leaf node features](#Leaf-node-features)
+* [Composition of features](#Composition-of-features)
+* [Optional and pullback reducers](#Optional-and-pullback-reducers)
+* [For-each reducers](#For-each-reducers)
+* [Dependencies](#Dependencies)
+* [Stores](#Stores)
+* [Testing](#Testing)
+* [Embedding old reducer values in a new reducer conformance](#Embedding-old-reducer-values-in-a-new-reducer-conformance)
+* [Migration using Swift 5.6](#Migration-using-Swift-5-.-6)
 
-### Leaf node features
+## Leaf node features
 
 The simplest parts of an application to convert to ``ReducerProtocol`` are leaf node features that 
 do not compose multiple reducers at once. For example, suppose you have a feature domain with a 
@@ -143,9 +149,7 @@ are to return a protocol-style reducer:
 ```swift
 let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
   AnyReducer { environment in
-    Feature(
-      date: environment.date
-    )
+    Feature(date: environment.date)
   }
   .pullback(
     state: \.feature, 
@@ -166,7 +170,7 @@ operators you were using before to the end of the ``AnyReducer`` usage.
 With those few changes your application should now build, and you have successfully converted one
 leaf node feature to the new ``ReducerProtocol``-style of doing things.
 
-### Composition of features
+## Composition of features
 
 Some features in your application are an amalgamation of other features. For example, a tab-based
 application may have a separate domain and reducer for each tab, and then a app-level domain and
@@ -259,7 +263,7 @@ struct AppReducer: ReducerProtocol {
 With those few small changes we have now converted a composition of many reducers into the new
 protocol-style.
 
-### Optional and pullback reducers
+## Optional and pullback reducers
 
 A common pattern in the Composable Architecture is to model a feature that can be presented and 
 dismissed as optional state. For example, suppose you have the feature's domain and reducer modeled
@@ -302,10 +306,11 @@ struct ParentEnvironment {
 ```
 
 A non-`nil` value for `feature` indicates that the feature view is being presented, and when it 
-switches to `nil` the view should be dismissed.
+switches to `nil` the view should be dismissed. The actual showing and hiding of the view can be
+done using the ``IfLetStore`` SwiftUI view.
 
 In order to construct a single reducer that can handle the logic for the parent domain as well as
-allow the feature to run its logic on the `feature` state when non-`nil`, we can make use the
+allow the child feature to run its logic on the `feature` state when non-`nil`, we can make use the
 ``AnyReducer/optional(file:fileID:line:)`` and ``AnyReducer/pullback(state:action:environment:)``
 operators:
 
@@ -405,7 +410,7 @@ If you are using an enum to model your state, then there is a corresponding
 ``ReducerProtocol/ifCaseLet(_:action:then:file:fileID:line:)`` operator that can help you run a
 reducer on just one case of the enum.
 
-### For-each reducers
+## For-each reducers
 
 Similar to `optional` reducers, another common pattern in applications is the use of the 
 ``AnyReducer/forEach(state:action:environment:file:fileID:line:)-2ypoa`` to allow running a reducer
@@ -441,7 +446,7 @@ struct Parent: ReducerProtocol {
 }
 ```
 
-### Dependencies
+## Dependencies
 
 In the previous sections we inlined all dependencies directly into the conforming type:
 
@@ -504,7 +509,7 @@ struct Feature: ReducerProtocol {
 For more information on designing your dependencies and providing live and test dependencies, see
 our <doc:Testing> article.
 
-### Stores
+## Stores
 
 Stores can be initialized from an initial state and an instance of a type conforming to
 ``ReducerProtocol``:
@@ -527,7 +532,7 @@ let store: StoreOf<Feature>
 //     let store: Store<Feature.State, Feature.Action>
 ```
 
-### Testing
+## Testing
 
 Test stores can be initialized from an initial state and an instance of a type conforming to
 ``ReducerProtocol``.
@@ -562,7 +567,7 @@ await store.receive(.timerTick) {
 await store.send(.timerButtonStopped)
 ```
 
-### Embedding old reducer values in a new reducer conformance
+## Embedding old reducer values in a new reducer conformance
 
 It may not be feasible to migrate your entire application at once, and you may find yourself
 needing to compose an existing value of ``Reducer`` into a type conforming to ``ReducerProtocol``.
