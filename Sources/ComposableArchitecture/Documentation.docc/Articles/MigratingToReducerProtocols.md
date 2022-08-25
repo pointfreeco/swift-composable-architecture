@@ -624,7 +624,7 @@ struct AppReducer: ReducerProtocol {
 
 The migration strategy described above for Swift 5.7 also applies to applications that are still 
 using Xcode 13 and Swift 5.6, but with one small change. When conforming your types to the 
-``ReducerProtocol`` you are not allowed to use the `some ReducerProtocol<State, Action>` syntax
+``ReducerProtocol`` you are not allowed to use the syntax `some ReducerProtocol<State, Action>` 
 because that is only available in Swift 5.7. Instead, you must specify `Reduce<State, Action>`
 as the type of the `body` property:
 
