@@ -42,7 +42,7 @@ public struct _SignpostReducer<Base: ReducerProtocol>: ReducerProtocol {
   @usableFromInline
   let log: OSLog
 
-  @usableFromInline
+  @inlinable
   init(
     base: Base,
     prefix: String,

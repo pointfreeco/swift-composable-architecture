@@ -98,7 +98,7 @@ public struct _DebugReducer<Base: ReducerProtocol, DebugState, DebugAction>: Red
   @usableFromInline
   let logger: @Sendable (String) async -> Void
 
-  @usableFromInline
+  @inlinable
   init(
     base: Base,
     prefix: String,

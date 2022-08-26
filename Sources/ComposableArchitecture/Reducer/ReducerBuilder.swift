@@ -2,6 +2,7 @@ import Combine
 
 @resultBuilder
 public enum ReducerBuilder<State, Action> {
+  @inlinable
   public static func buildArray<R: ReducerProtocol>(_ reducers: [R]) -> _SequenceMany<R>
   where R.State == State, R.Action == Action {
     _SequenceMany(reducers: reducers)
@@ -111,6 +112,7 @@ public enum ReducerBuilder<State, Action> {
     case first(First)
     case second(Second)
 
+    @inlinable
     public func reduce(into state: inout First.State, action: First.Action) -> Effect<
       First.Action, Never
     > {
@@ -128,7 +130,7 @@ public enum ReducerBuilder<State, Action> {
     @usableFromInline
     let wrapped: Wrapped?
 
-    @usableFromInline
+    @inlinable
     init(wrapped: Wrapped?) {
       self.wrapped = wrapped
     }
@@ -154,7 +156,7 @@ public enum ReducerBuilder<State, Action> {
     @usableFromInline
     let r1: R1
 
-    @usableFromInline
+    @inlinable
     init(_ r0: R0, _ r1: R1) {
       self.r0 = r0
       self.r1 = r1
@@ -171,7 +173,7 @@ public enum ReducerBuilder<State, Action> {
     @usableFromInline
     let reducers: [Element]
 
-    @usableFromInline
+    @inlinable
     init(reducers: [Element]) {
       self.reducers = reducers
     }

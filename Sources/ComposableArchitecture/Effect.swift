@@ -43,7 +43,7 @@ public struct Effect<Output, Failure: Error> {
   @usableFromInline
   let operation: Operation
 
-  @usableFromInline
+  @inlinable
   init(operation: Operation) {
     self.operation = operation
   }
