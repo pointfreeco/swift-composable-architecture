@@ -205,7 +205,7 @@ It is also straightforward to have a UIKit controller driven off of this store. 
 
   ```swift
   class FeatureViewController: UIViewController {
-    let viewStore: ViewStore<AppState, AppAction>
+    let viewStore: ViewStoreOf<Feature>
     var cancellables: Set<AnyCancellable> = []
 
     init(store: StoreOf<Feature>) {
@@ -472,7 +472,7 @@ The Composable Architecture comes with a number of tools to aid in debugging.
     ``` diff
     received action:
       AppAction.todoCheckboxTapped(id: UUID(5834811A-83B4-4E5E-BCD3-8A38F6BDCA90))
-      AppState(
+      Todos.State(
         todos: [
           Todo(
     -       isComplete: false,

@@ -36,16 +36,16 @@ import Foundation
 /// profile, then we can model the domain like this:
 ///
 /// ```swift
-/// struct AppState {
-///   var activity: ActivityState
-///   var profile: ProfileState
-///   var search: SearchState
+/// struct State {
+///   var activity: Activity.State
+///   var profile: Profile.State
+///   var search: Search.State
 /// }
 ///
-/// enum AppAction {
-///   case activity(ActivityAction)
-///   case profile(ProfileAction)
-///   case search(SearchAction)
+/// enum Action {
+///   case activity(Activity.Action)
+///   case profile(Profile.Action)
+///   case search(Search.Action)
 /// }
 /// ```
 ///
@@ -55,17 +55,17 @@ import Foundation
 ///
 /// ```swift
 /// struct AppView: View {
-///   let store: Store<AppState, AppAction>
+///   let store: StoreOf<AppReducer>
 ///
 ///   var body: some View {
 ///     TabView {
-///       ActivityView(store: self.store.scope(state: \.activity, action: AppAction.activity))
+///       ActivityView(store: self.store.scope(state: \.activity, action: App.Action.activity))
 ///         .tabItem { Text("Activity") }
 ///
-///       SearchView(store: self.store.scope(state: \.search, action: AppAction.search))
+///       SearchView(store: self.store.scope(state: \.search, action: App.Action.search))
 ///         .tabItem { Text("Search") }
 ///
-///       ProfileView(store: self.store.scope(state: \.profile, action: AppAction.profile))
+///       ProfileView(store: self.store.scope(state: \.profile, action: App.Action.profile))
 ///         .tabItem { Text("Profile") }
 ///     }
 ///   }
@@ -158,8 +158,8 @@ public final class Store<State, Action> {
   ///
   /// ```swift
   /// // Application state made from child states.
-  /// struct AppState { var login: LoginState, ... }
-  /// enum AppAction { case login(LoginAction), ... }
+  /// struct State { var login: LoginState, ... }
+  /// enum Action { case login(LoginAction), ... }
   ///
   /// // A store that runs the entire application.
   /// let store = Store(
@@ -171,13 +171,13 @@ public final class Store<State, Action> {
   /// LoginView(
   ///   store: store.scope(
   ///     state: \.login,
-  ///     action: AppAction.login
+  ///     action: AppReducer.Action.login
   ///   )
   /// )
   /// ```
   ///
   /// Scoping in this fashion allows you to better modularize your application. In this case,
-  /// `LoginView` could be extracted to a module that has no access to `AppState` or `AppAction`.
+  /// `LoginView` could be extracted to a module that has no access to `App.State` or `App.Action`.
   ///
   /// Scoping also gives a view the opportunity to focus on just the state and actions it cares
   /// about, even if its feature domain is larger.
