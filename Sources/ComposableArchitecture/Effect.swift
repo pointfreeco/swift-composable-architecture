@@ -121,38 +121,41 @@ extension Effect where Failure == Never {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {
-    Self(
+    let dependencies = DependencyValues.current
+    return Self(
       operation: .run(priority) { send in
-        do {
-          try await send(operation())
-        } catch is CancellationError {
-          return
-        } catch {
-          guard let handler = handler else {
-            #if DEBUG
-              var errorDump = ""
-              customDump(error, to: &errorDump, indent: 4)
-              runtimeWarning(
-                """
-                An 'Effect.task' returned from "%@:%d" threw an unhandled error. …
-
-                %@
-
-                All non-cancellation errors must be explicitly handled via the 'catch' parameter \
-                on 'Effect.task', or via a 'do' block.
-                """,
-                [
-                  "\(fileID)",
-                  line,
-                  errorDump,
-                ],
-                file: file,
-                line: line
-              )
-            #endif
+        await DependencyValues.$current.withValue(dependencies) {
+          do {
+            try await send(operation())
+          } catch is CancellationError {
             return
+          } catch {
+            guard let handler = handler else {
+              #if DEBUG
+                var errorDump = ""
+                customDump(error, to: &errorDump, indent: 4)
+                runtimeWarning(
+                  """
+                  An 'Effect.task' returned from "%@:%d" threw an unhandled error. …
+
+                  %@
+
+                  All non-cancellation errors must be explicitly handled via the 'catch' parameter \
+                  on 'Effect.task', or via a 'do' block.
+                  """,
+                  [
+                    "\(fileID)",
+                    line,
+                    errorDump,
+                  ],
+                  file: file,
+                  line: line
+                )
+              #endif
+              return
+            }
+            await send(handler(error))
           }
-          await send(handler(error))
         }
       }
     )
@@ -205,38 +208,41 @@ extension Effect where Failure == Never {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {
-    Self(
+    let dependencies = DependencyValues.current
+    return Self(
       operation: .run(priority) { send in
-        do {
-          try await operation(send)
-        } catch is CancellationError {
-          return
-        } catch {
-          guard let handler = handler else {
-            #if DEBUG
-              var errorDump = ""
-              customDump(error, to: &errorDump, indent: 4)
-              runtimeWarning(
-                """
-                An 'Effect.run' returned from "%@:%d" threw an unhandled error. …
-
-                %@
-
-                All non-cancellation errors must be explicitly handled via the 'catch' parameter \
-                on 'Effect.run', or via a 'do' block.
-                """,
-                [
-                  "\(fileID)",
-                  line,
-                  errorDump,
-                ],
-                file: file,
-                line: line
-              )
-            #endif
+        await DependencyValues.$current.withValue(dependencies) {
+          do {
+            try await operation(send)
+          } catch is CancellationError {
             return
+          } catch {
+            guard let handler = handler else {
+              #if DEBUG
+                var errorDump = ""
+                customDump(error, to: &errorDump, indent: 4)
+                runtimeWarning(
+                  """
+                  An 'Effect.run' returned from "%@:%d" threw an unhandled error. …
+
+                  %@
+
+                  All non-cancellation errors must be explicitly handled via the 'catch' parameter \
+                  on 'Effect.run', or via a 'do' block.
+                  """,
+                  [
+                    "\(fileID)",
+                    line,
+                    errorDump,
+                  ],
+                  file: file,
+                  line: line
+                )
+              #endif
+              return
+            }
+            await handler(error, send)
           }
-          await handler(error, send)
         }
       }
     )
