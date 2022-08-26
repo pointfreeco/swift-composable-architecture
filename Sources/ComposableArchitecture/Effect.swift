@@ -408,7 +408,7 @@ extension Effect {
   /// - Parameter effects: A collection of effects.
   /// - Returns: A new effect
   @inlinable
-  public static func concatenate<C: Collection>(_ effects: C) -> Self where C.Element == Effect {
+  public static func concatenate<C: Collection>(_ effects: C) -> Self where C.Element == Self {
     effects.reduce(.none) { $0.concatenate(with: $1) }
   }
 
@@ -419,6 +419,7 @@ extension Effect {
   /// - Returns: An effect that runs this effect, and after it completes or is cancelled, runs the
   ///   other.
   @inlinable
+  @_disfavoredOverload  // TODO: Why is this needed?
   public func concatenate(with other: Self) -> Self {
     switch (self.operation, other.operation) {
     case (_, .none):
