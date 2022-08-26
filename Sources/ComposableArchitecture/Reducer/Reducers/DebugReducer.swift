@@ -124,28 +124,25 @@ public struct _DebugReducer<Base: ReducerProtocol, DebugState, DebugAction>: Red
       let effects = self.base.reduce(into: &state, action: action)
       guard let debugAction = self.toDebugAction(action) else { return effects }
       let nextState = self.toDebugState(state)
-      return .merge(
-        .fireAndForget { [actionFormat] in
-          var actionOutput = ""
-          if actionFormat == .prettyPrint {
-            customDump(debugAction, to: &actionOutput, indent: 2)
-          } else {
-            actionOutput.write(debugCaseOutput(debugAction).indent(by: 2))
-          }
-          let stateOutput =
-          DebugState.self == Void.self
-          ? ""
-          : diff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
-          await self.logger(
+      return effects.merge(with: .fireAndForget { [actionFormat] in
+        var actionOutput = ""
+        if actionFormat == .prettyPrint {
+          customDump(debugAction, to: &actionOutput, indent: 2)
+        } else {
+          actionOutput.write(debugCaseOutput(debugAction).indent(by: 2))
+        }
+        let stateOutput =
+        DebugState.self == Void.self
+        ? ""
+        : diff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
+        await self.logger(
             """
             \(self.prefix.isEmpty ? "" : "\(self.prefix): ")received action:
             \(actionOutput)
             \(stateOutput)
             """
-          )
-        },
-        effects
-      )
+        )
+      })
     #else
       return self.base.reduce(into: &state, action: action)
     #endif

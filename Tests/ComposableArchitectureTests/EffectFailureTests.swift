@@ -6,19 +6,12 @@ import XCTest
 final class EffectFailureTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
-  func testTaskUnexpectedThrows() {
-    XCTExpectFailure {
-      Effect<Void, Never>.task {
-        struct Unexpected: Error {}
-        throw Unexpected()
-      }
-      .sink { _ in }
-      .store(in: &self.cancellables)
+  func testTaskUnexpectedThrows() async {
+    guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
 
-      _ = XCTWaiter.wait(for: [.init()], timeout: 0.1)
-    } issueMatcher: {
+    XCTExpectFailure {
       $0.compactDescription == """
-        An 'Effect.task' returned from "ComposableArchitectureTests/EffectFailureTests.swift:11" \
+        An 'Effect.task' returned from "ComposableArchitectureTests/EffectFailureTests.swift:24" \
         threw an unhandled error. …
 
             EffectFailureTests.Unexpected()
@@ -27,21 +20,21 @@ final class EffectFailureTests: XCTestCase {
         'Effect.task', or via a 'do' block.
         """
     }
+
+    let effect = Effect<Void, Never>.task {
+      struct Unexpected: Error {}
+      throw Unexpected()
+    }
+
+    for await _ in effect.values {}
   }
 
-  func testRunUnexpectedThrows() {
-    XCTExpectFailure {
-      Effect<Void, Never>.run { _ in
-        struct Unexpected: Error {}
-        throw Unexpected()
-      }
-      .sink { _ in }
-      .store(in: &self.cancellables)
+  func testRunUnexpectedThrows() async {
+    guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
 
-      _ = XCTWaiter.wait(for: [.init()], timeout: 0.1)
-    } issueMatcher: {
+    XCTExpectFailure {
       $0.compactDescription == """
-        An 'Effect.run' returned from "ComposableArchitectureTests/EffectFailureTests.swift:34" \
+        An 'Effect.run' returned from "ComposableArchitectureTests/EffectFailureTests.swift:47" \
         threw an unhandled error. …
 
             EffectFailureTests.Unexpected()
@@ -50,5 +43,12 @@ final class EffectFailureTests: XCTestCase {
         'Effect.run', or via a 'do' block.
         """
     }
+
+    let effect = Effect<Void, Never>.run { _ in
+      struct Unexpected: Error {}
+      throw Unexpected()
+    }
+
+    for await _ in effect.values {}
   }
 }
