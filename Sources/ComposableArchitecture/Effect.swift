@@ -54,6 +54,7 @@ public struct Effect<Output, Failure: Error> {
 extension Effect {
   /// An effect that does nothing and completes immediately. Useful for situations where you must
   /// return an effect, but you don't need to do anything.
+  @inlinable
   public static var none: Self {
     Self(operation: .none)
   }
