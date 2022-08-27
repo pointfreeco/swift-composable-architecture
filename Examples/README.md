@@ -6,7 +6,7 @@ This directory holds many case studies and applications to demonstrate solving v
   <br> Demonstrates how to solve some common application problems in an isolated environment, in both SwiftUI and UIKit. Things like bindings, navigation, effects, and reusable components.
 
 * **Search**
-  <br> Demonstrates how to build a search feature, with debouncing of typing events, and comes with a full test suite to performs end-to-end testing from user actions to running side effects.
+  <br> Demonstrates how to build a search feature, with debouncing of typing events, and comes with a full test suite to perform end-to-end testing from user actions to running side effects.
 
 * **Speech Recognition**
   <br> This application uses Apple's Speech framework to demonstrate how to wrap complex dependencies in the `Effect` type of the Composable Architecture. Doing a little bit of upfront work allows you to interact with the dependencies in a controlled, understandable way, and you can write tests on how the dependency interacts with your application logic.

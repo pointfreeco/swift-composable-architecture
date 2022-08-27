@@ -76,12 +76,12 @@ Looking for something more substantial? Check out the source code for [isowords]
 To build a feature using the Composable Architecture you define some types and values that model your domain:
 
 * **State**: A type that describes the data your feature needs to perform its logic and render its UI.
-* **Action**: A type that represents all of the actions that can happen in your feature, such as user actions, notifications, event sources and more.
+* **Action**: A type that represents all of the actions that can happen in your feature, such as user actions, notifications, event sources, and more.
 * **Environment**: A type that holds any dependencies the feature needs, such as API clients, analytics clients, etc.
 * **Reducer**: A function that describes how to evolve the current state of the app to the next state given an action. The reducer is also responsible for returning any effects that should be run, such as API requests, which can be done by returning an `Effect` value.
 * **Store**: The runtime that actually drives your feature. You send all user actions to the store so that the store can run the reducer and effects, and you can observe state changes in the store so that you can update UI.
 
-The benefits of doing this is that you will instantly unlock testability of your feature, and you will be able to break large, complex features into smaller domains that can be glued together.
+The benefits of doing this are that you will instantly unlock testability of your feature, and you will be able to break large, complex features into smaller domains that can be glued together.
 
 As a basic example, consider a UI that shows a number along with "+" and "−" buttons that increment and decrement the number. To make things interesting, suppose there is also a button that when tapped makes an API request to fetch a random fact about that number and then displays the fact in an alert.
 
@@ -94,7 +94,7 @@ struct AppState: Equatable {
 }
 ```
 
-Next we have the actions in the feature. There are the obvious actions, such as tapping the decrement button, increment button, or fact button. But there are also some slightly non-obvious ones, such as the action of the user dismissing the alert, and the action that occurs when we receive a response from the fact API request:
+Next, we have the actions in the feature. There are the obvious actions, such as tapping the decrement button, increment button, or fact button. But there are also some slightly non-obvious ones, such as the action of the user dismissing the alert, and the action that occurs when we receive a response from the fact API request:
 
 ```swift
 enum AppAction: Equatable {
@@ -106,7 +106,7 @@ enum AppAction: Equatable {
 }
 ```
 
-Next we model the environment of dependencies this feature needs to do its job. In particular, to fetch a number fact we can model an async throwing function from `Int` to `String`:
+Next, we model the environment of dependencies this feature needs to do its job. In particular, to fetch a number fact we can model an async throwing function from `Int` to `String`:
 
 ```swift
 struct AppEnvironment {
