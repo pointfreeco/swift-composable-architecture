@@ -8,6 +8,7 @@ extension ReducerProtocol {
   ///   - wrapped: A reducer that will be invoked with child actions against non-optional child
   ///     state.
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
+  @inlinable
   public func ifLet<Wrapped: ReducerProtocol>(
     _ toWrappedState: WritableKeyPath<State, Wrapped.State?>,
     action toWrappedAction: CasePath<Action, Wrapped.Action>,
