@@ -19,32 +19,6 @@ private struct Root: ReducerProtocol {
 
   #if swift(>=5.7)
     var body: some ReducerProtocol<State, Action> {
-      self.core
-        .ifLet(\.optionalFeature, action: /Action.optionalFeature) {
-          Feature()
-          Feature()
-        }
-        .ifLet(\.enumFeature, action: /Action.enumFeature) {
-          EmptyReducer()
-            .ifCaseLet(/Features.State.featureA, action: /Features.Action.featureA) {
-              Feature()
-              Feature()
-            }
-            .ifCaseLet(/Features.State.featureB, action: /Features.Action.featureB) {
-              Feature()
-              Feature()
-            }
-
-          Features()
-        }
-        .forEach(\.features, action: /Action.features) {
-          Feature()
-          Feature()
-        }
-    }
-
-    @ReducerBuilder<State, Action>
-    var core: some ReducerProtocol<State, Action> {
       CombineReducers {
         Scope(state: \.feature, action: /Action.feature) {
           Feature()
@@ -54,6 +28,27 @@ private struct Root: ReducerProtocol {
           Feature()
           Feature()
         }
+      }
+      .ifLet(\.optionalFeature, action: /Action.optionalFeature) {
+        Feature()
+        Feature()
+      }
+      .ifLet(\.enumFeature, action: /Action.enumFeature) {
+        EmptyReducer()
+          .ifCaseLet(/Features.State.featureA, action: /Features.Action.featureA) {
+            Feature()
+            Feature()
+          }
+          .ifCaseLet(/Features.State.featureB, action: /Features.Action.featureB) {
+            Feature()
+            Feature()
+          }
+
+        Features()
+      }
+      .forEach(\.features, action: /Action.features) {
+        Feature()
+        Feature()
       }
     }
 
