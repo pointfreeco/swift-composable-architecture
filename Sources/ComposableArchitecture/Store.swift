@@ -128,6 +128,7 @@ public final class Store<State, Action> {
   private var isSending = false
   var parentCancellable: AnyCancellable?
   private let reducer: (inout State, Action) -> Effect<Action, Never>
+  var scope: Any?
   var state: CurrentValueSubject<State, Never>
   #if DEBUG
     private let mainThreadChecksEnabled: Bool
@@ -298,6 +299,12 @@ public final class Store<State, Action> {
     action fromChildAction: @escaping (ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
     self.threadCheck(status: .scope)
+    if
+      let scope = self.scope as? AnyScope,
+      let childStore = scope.rescope(self, state: toChildState, action: fromChildAction)
+    {
+      return childStore
+    }
     var isSending = false
     let childStore = Store<ChildState, ChildAction>(
       initialState: toChildState(self.state.value),
@@ -320,6 +327,12 @@ public final class Store<State, Action> {
         guard !isSending else { return }
         childStore?.state.value = toChildState(newValue)
       }
+    childStore.scope = Scope<State, Action, ChildState, ChildAction>(
+      parent: self,
+      child: childStore,
+      toChildState: toChildState,
+      fromChildAction: fromChildAction
+    )
     return childStore
   }
 
@@ -527,5 +540,65 @@ public final class Store<State, Action> {
     #if DEBUG
       self.mainThreadChecksEnabled = mainThreadChecksEnabled
     #endif
+  }
+}
+
+protocol AnyScope {
+  func rescope<ChildState, ChildAction, NewChildState, NewChildAction>(
+    _ store: Store<ChildState, ChildAction>,
+    state toNewChildState: @escaping (ChildState) -> NewChildState,
+    action fromNewChildAction: @escaping (NewChildAction) -> ChildAction
+  ) -> Store<NewChildState, NewChildAction>?
+}
+
+struct Scope<ParentState, ParentAction, ChildState, ChildAction>: AnyScope {
+  weak var parent: Store<ParentState, ParentAction>?
+  let child: Store<ChildState, ChildAction>
+  let toChildState: (ParentState) -> ChildState
+  let fromChildAction: (ChildAction) -> ParentAction
+
+  func rescope<ChildState, ChildAction, NewChildState, NewChildAction>(
+    _ store: Store<ChildState, ChildAction>,
+    state toNewChildState: @escaping (ChildState) -> NewChildState,
+    action fromNewChildAction: @escaping (NewChildAction) -> ChildAction
+  ) -> Store<NewChildState, NewChildAction>? {
+    guard
+      let parent = parent,
+      let toChildState = self.toChildState as? (ParentState) -> ChildState,
+      let fromChildAction = self.fromChildAction as? (ChildAction) -> ParentAction
+    else { return nil }
+
+    var isSending = false
+    let childStore = Store<NewChildState, NewChildAction>(
+      initialState: toNewChildState(store.state.value),
+      reducer: .init { [weak parent] childState, childAction, _ in
+        guard let parent = parent else { return .none }
+        isSending = true
+        defer { isSending = false }
+        let task = parent.send(fromChildAction(fromNewChildAction(childAction)))
+        childState = toNewChildState(toChildState(parent.state.value))
+        if let task = task {
+          return .fireAndForget { await task.cancellableValue }
+        } else {
+          return .none
+        }
+      },
+      environment: ()
+    )
+    
+    childStore.parentCancellable = store.state
+      .dropFirst()
+      .sink { [weak childStore] newValue in
+        guard !isSending else { return }
+        childStore?.state.value = toNewChildState(newValue)
+      }
+
+    childStore.scope = Scope<ParentState, ParentAction, NewChildState, NewChildAction>(
+      parent: parent,
+      child: childStore,
+      toChildState: { toNewChildState(toChildState($0)) },
+      fromChildAction: { fromChildAction(fromNewChildAction($0)) }
+    )
+    return childStore
   }
 }
