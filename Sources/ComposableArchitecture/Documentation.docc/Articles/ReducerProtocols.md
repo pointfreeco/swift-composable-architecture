@@ -1,4 +1,4 @@
-# Migrating to protocol reducers
+# Reducer protocol
 
 Learn how to migrate existing applications to use the new ``ReducerProtocol``, in both Swift 5.7 and
 Swift 5.6.

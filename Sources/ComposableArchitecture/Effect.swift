@@ -3,9 +3,10 @@ import Foundation
 import SwiftUI
 import XCTestDynamicOverlay
 
-/// The ``Effect`` type encapsulates a unit of work that can be run in the outside world, and can
-/// feed data back to the ``Store``. It is the perfect place to do side effects, such as network
-/// requests, saving/loading from disk, creating timers, interacting with dependencies, and more.
+/// The ``Effect`` type encapsulates a unit of work that can be kicked off from the reducer into the
+/// outside world, and can feed data back to the ``Store`` and into the reducer. It is the perfect
+/// place to do side effects, such as network requests, saving/loading from disk, creating timers,
+/// interacting with dependencies, and more.
 ///
 /// Effects are returned from reducers so that the ``Store`` can perform the effects after the
 /// reducer is done running.
