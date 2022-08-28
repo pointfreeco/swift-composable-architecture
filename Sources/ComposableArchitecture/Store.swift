@@ -329,7 +329,6 @@ public final class Store<State, Action> {
       }
     childStore.scope = Scope<State, Action, ChildState, ChildAction>(
       parent: self,
-      child: childStore,
       toChildState: toChildState,
       fromChildAction: fromChildAction
     )
@@ -553,7 +552,6 @@ protocol AnyScope {
 
 struct Scope<ParentState, ParentAction, ChildState, ChildAction>: AnyScope {
   weak var parent: Store<ParentState, ParentAction>?
-  let child: Store<ChildState, ChildAction>
   let toChildState: (ParentState) -> ChildState
   let fromChildAction: (ChildAction) -> ParentAction
 
@@ -576,7 +574,7 @@ struct Scope<ParentState, ParentAction, ChildState, ChildAction>: AnyScope {
         isSending = true
         defer { isSending = false }
         let task = parent.send(fromChildAction(fromNewChildAction(childAction)))
-        childState = toNewChildState(toChildState(parent.state.value))
+        childState = toNewChildState(store.state.value)
         if let task = task {
           return .fireAndForget { await task.cancellableValue }
         } else {
@@ -585,17 +583,14 @@ struct Scope<ParentState, ParentAction, ChildState, ChildAction>: AnyScope {
       },
       environment: ()
     )
-    
     childStore.parentCancellable = store.state
       .dropFirst()
       .sink { [weak childStore] newValue in
         guard !isSending else { return }
         childStore?.state.value = toNewChildState(newValue)
       }
-
     childStore.scope = Scope<ParentState, ParentAction, NewChildState, NewChildAction>(
       parent: parent,
-      child: childStore,
       toChildState: { toNewChildState(toChildState($0)) },
       fromChildAction: { fromChildAction(fromNewChildAction($0)) }
     )
