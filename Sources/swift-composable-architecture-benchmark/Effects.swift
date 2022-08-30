@@ -5,7 +5,7 @@ import Foundation
 
 let effectSuite = BenchmarkSuite(name: "Effects") {
   $0.benchmark("Merged Effect.none (create, flat)") {
-    let effect = Effect<Int, Never>.merge((1...100).map { _ in .none })
+    doNotOptimizeAway(Effect<Int, Never>.merge((1...100).map { _ in .none }))
   }
 
   $0.benchmark("Merged Effect.none (create, nested)") {
@@ -13,12 +13,15 @@ let effectSuite = BenchmarkSuite(name: "Effects") {
     for _ in 1...100 {
       effect = .merge(effect, .none)
     }
+    doNotOptimizeAway(effect)
   }
 
   let effect = Effect<Int, Never>.merge((1...100).map { _ in .none })
   var didComplete = false
   $0.benchmark("Merged Effect.none (sink)") {
-    _ = effect.sink(receiveCompletion: { _ in didComplete = true }, receiveValue: { _ in })
+    doNotOptimizeAway(
+      effect.sink(receiveCompletion: { _ in didComplete = true }, receiveValue: { _ in })
+    )
   } tearDown: {
     precondition(didComplete)
   }
