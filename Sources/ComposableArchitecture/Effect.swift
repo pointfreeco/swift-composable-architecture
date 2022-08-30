@@ -435,8 +435,16 @@ extension Effect {
     case let (.run(lhsPriority, lhsOperation), .run(rhsPriority, rhsOperation)):
       return Self(
         operation: .run { send in
-          await Task(priority: lhsPriority) { await lhsOperation(send) }.cancellableValue
-          await Task(priority: rhsPriority) { await rhsOperation(send) }.cancellableValue
+          if let lhsPriority = lhsPriority {
+            await Task(priority: lhsPriority) { await lhsOperation(send) }.cancellableValue
+          } else {
+            await lhsOperation(send)
+          }
+          if let rhsPriority = rhsPriority {
+            await Task(priority: rhsPriority) { await rhsOperation(send) }.cancellableValue
+          } else {
+            await rhsOperation(send)
+          }
         }
       )
     }
