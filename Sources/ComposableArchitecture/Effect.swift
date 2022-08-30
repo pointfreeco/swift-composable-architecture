@@ -301,9 +301,9 @@ extension Effect where Failure == Never {
 /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
 @MainActor
 public struct Send<Action> {
-  public let send: (Action) -> Void
+  public let send: @MainActor (Action) -> Void
 
-  public init(send: @escaping (Action) -> Void) {
+  public init(send: @escaping @MainActor (Action) -> Void) {
     self.send = send
   }
 
