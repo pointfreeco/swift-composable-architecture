@@ -11,7 +11,7 @@ let effectSuite = BenchmarkSuite(name: "Effects") {
   $0.benchmark("Merged Effect.none (create, nested)") {
     var effect = Effect<Int, Never>.none
     for _ in 1...100 {
-      effect = .merge(effect, .none)
+      effect = effect.merge(with: .none)
     }
     doNotOptimizeAway(effect)
   }
