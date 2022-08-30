@@ -47,8 +47,11 @@ extension Effect {
     case let .run(priority, operation):
       return Self(
         operation: .run(priority) { send in
-          await withTaskCancellation(id: id) {
-            await operation(send)
+          await withTaskCancellation(id: id, cancelInFlight: true) {
+            do {
+              try await scheduler.sleep(for: dueTime, options: options)
+              await operation(send)
+            } catch {}
           }
         }
       )

@@ -419,7 +419,7 @@ extension Effect {
   /// - Returns: An effect that runs this effect, and after it completes or is cancelled, runs the
   ///   other.
   @inlinable
-  @_disfavoredOverload  // TODO: Why is this needed?
+  @_disfavoredOverload
   public func concatenate(with other: Self) -> Self {
     switch (self.operation, other.operation) {
     case (_, .none):
@@ -434,9 +434,9 @@ extension Effect {
       )
     case let (.run(lhsPriority, lhsOperation), .run(rhsPriority, rhsOperation)):
       return Self(
-        operation: .run(Swift.max(lhsPriority ?? .medium, rhsPriority ?? .medium)) { send in
-          await lhsOperation(send)
-          await rhsOperation(send)
+        operation: .run { send in
+          await Task(priority: lhsPriority) { await lhsOperation(send) }.cancellableValue
+          await Task(priority: rhsPriority) { await rhsOperation(send) }.cancellableValue
         }
       )
     }
