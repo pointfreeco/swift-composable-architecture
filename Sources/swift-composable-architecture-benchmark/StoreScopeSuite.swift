@@ -50,12 +50,12 @@ let storeScopeSuite = BenchmarkSuite(name: "Store scoping") { suite in
       return .none
     }
   }
-  for _ in 1...10 {
+  for _ in 1...100 {
     counterReducer = counterReducer.pullback(state: \.self, action: /.self, environment: { $0 })
   }
   var store = Store(initialState: 0, reducer: counterReducer, environment: ())
   var viewStores: [ViewStore<Int, Bool>] = []
-  for _ in 1...10 {
+  for _ in 1...100 {
     store = store.scope(state: { $0 })
     viewStores.append(ViewStore(store))
   }
