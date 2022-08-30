@@ -128,7 +128,7 @@ public final class Store<State, Action> {
   private var isSending = false
   var parentCancellable: AnyCancellable?
   private let reducer: (inout State, Action) -> Effect<Action, Never>
-  var scope: Any?
+  fileprivate var scope: AnyScope?
   var state: CurrentValueSubject<State, Never>
   #if DEBUG
     private let mainThreadChecksEnabled: Bool
@@ -299,14 +299,9 @@ public final class Store<State, Action> {
     action fromChildAction: @escaping (ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
     self.threadCheck(status: .scope)
-    guard
-      let scope = self.scope as? AnyScope,
-      let childStore = scope.rescope(self, state: toChildState, action: fromChildAction)
-    else {
-      return Scope(parent: self, toChildState: { $0 }, fromChildAction: { $0 })
-        .rescope(self, state: toChildState, action: fromChildAction)!
-    }
-    return childStore
+
+    return (self.scope ?? Scope(root: self))
+      .rescope(self, state: toChildState, action: fromChildAction)
   }
 
   /// Scopes the store to one that exposes child state.
@@ -517,36 +512,48 @@ public final class Store<State, Action> {
 }
 
 private protocol AnyScope {
-  func rescope<ChildState, ChildAction, NewChildState, NewChildAction>(
-    _ store: Store<ChildState, ChildAction>,
-    state toNewChildState: @escaping (ChildState) -> NewChildState,
-    action fromNewChildAction: @escaping (NewChildAction) -> ChildAction
-  ) -> Store<NewChildState, NewChildAction>?
+  func rescope<State, Action, ChildState, ChildAction>(
+    _ store: Store<State, Action>,
+    state toNewChildState: @escaping (State) -> ChildState,
+    action fromNewChildAction: @escaping (ChildAction) -> Action
+  ) -> Store<ChildState, ChildAction>
 }
 
-private struct Scope<ParentState, ParentAction, ChildState, ChildAction>: AnyScope {
-  let parent: Store<ParentState, ParentAction>
-  let toChildState: (ParentState) -> ChildState
-  let fromChildAction: (ChildAction) -> ParentAction
+private struct Scope<RootState, RootAction>: AnyScope {
+  let root: Store<RootState, RootAction>
+  let toChildState: Any
+  let fromChildAction: Any
 
-  func rescope<ChildState, ChildAction, NewChildState, NewChildAction>(
-    _ store: Store<ChildState, ChildAction>,
-    state toNewChildState: @escaping (ChildState) -> NewChildState,
-    action fromNewChildAction: @escaping (NewChildAction) -> ChildAction
-  ) -> Store<NewChildState, NewChildAction>? {
-    guard
-      let toChildState = self.toChildState as? (ParentState) -> ChildState,
-      let fromChildAction = self.fromChildAction as? (ChildAction) -> ParentAction
-    else { return nil }
+  init(root: Store<RootState, RootAction>) {
+    self.init(root: root, toChildState: { $0 }, fromChildAction: { $0 })
+  }
+
+  private init<State, Action>(
+    root: Store<RootState, RootAction>,
+    toChildState: @escaping (RootState) -> State,
+    fromChildAction: @escaping (Action) -> RootAction
+  ) {
+    self.root = root
+    self.toChildState = toChildState
+    self.fromChildAction = fromChildAction
+  }
+
+  func rescope<State, Action, ChildState, ChildAction>(
+    _ store: Store<State, Action>,
+    state toChildState: @escaping (State) -> ChildState,
+    action fromChildAction: @escaping (ChildAction) -> Action
+  ) -> Store<ChildState, ChildAction> {
+    let toState = self.toChildState as! (RootState) -> State
+    let fromAction = self.fromChildAction as! (Action) -> RootAction
 
     var isSending = false
-    let childStore = Store<NewChildState, NewChildAction>(
-      initialState: toNewChildState(store.state.value),
+    let childStore = Store<ChildState, ChildAction>(
+      initialState: toChildState(store.state.value),
       reducer: .init { childState, childAction, _ in
         isSending = true
         defer { isSending = false }
-        let task = self.parent.send(fromChildAction(fromNewChildAction(childAction)))
-        childState = toNewChildState(store.state.value)
+        let task = self.root.send(fromAction(fromChildAction(childAction)))
+        childState = toChildState(store.state.value)
         if let task = task {
           return .fireAndForget { await task.cancellableValue }
         } else {
@@ -559,12 +566,12 @@ private struct Scope<ParentState, ParentAction, ChildState, ChildAction>: AnySco
       .dropFirst()
       .sink { [weak childStore] newValue in
         guard !isSending else { return }
-        childStore?.state.value = toNewChildState(newValue)
+        childStore?.state.value = toChildState(newValue)
       }
-    childStore.scope = Scope<ParentState, ParentAction, NewChildState, NewChildAction>(
-      parent: self.parent,
-      toChildState: { toNewChildState(toChildState($0)) },
-      fromChildAction: { fromChildAction(fromNewChildAction($0)) }
+    childStore.scope = Scope<RootState, RootAction>(
+      root: self.root,
+      toChildState: { toChildState(toState($0)) },
+      fromChildAction: { fromAction(fromChildAction($0)) }
     )
     return childStore
   }
