@@ -15,11 +15,11 @@ let effectSuite = BenchmarkSuite(name: "Effects") {
     }
   }
 
-  var effect = Effect<Int, Never>.none
-  for _ in 1...100 {
-    effect = .merge(effect, .none)
-  }
+  let effect = Effect<Int, Never>.merge((1...100).map { _ in .none })
+  var didComplete = false
   $0.benchmark("Merged Effect.none (sink)") {
-    _ = effect.sink(receiveCompletion: { _ in }, receiveValue: { _ in })
+    _ = effect.sink(receiveCompletion: { _ in didComplete = true }, receiveValue: { _ in })
+  } tearDown: {
+    precondition(didComplete)
   }
 }
