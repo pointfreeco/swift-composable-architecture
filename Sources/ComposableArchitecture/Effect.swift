@@ -303,7 +303,7 @@ extension Effect where Failure == Never {
 public struct Send<Action> {
   public let send: @MainActor (Action) -> Void
 
-  public init(send: @MainActor @escaping (Action) -> Void) {
+  public init(send: @escaping @MainActor (Action) -> Void) {
     self.send = send
   }
 
