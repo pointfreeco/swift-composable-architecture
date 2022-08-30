@@ -17,8 +17,9 @@ let storeScopeSuite = BenchmarkSuite(name: "Store scoping") { suite in
     store = store.scope(state: { $0 })
     viewStores.append(ViewStore(store))
   }
+  let lastViewStore = viewStores.last!
 
   suite.benchmark("Nested store") {
-    viewStores.last!.send(true)
+    lastViewStore.send(true)
   }
 }
