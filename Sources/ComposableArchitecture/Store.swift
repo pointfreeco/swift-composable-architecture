@@ -542,7 +542,7 @@ public final class Store<State, Action> {
   }
 }
 
-protocol AnyScope {
+private protocol AnyScope {
   func rescope<ChildState, ChildAction, NewChildState, NewChildAction>(
     _ store: Store<ChildState, ChildAction>,
     state toNewChildState: @escaping (ChildState) -> NewChildState,
@@ -550,7 +550,7 @@ protocol AnyScope {
   ) -> Store<NewChildState, NewChildAction>?
 }
 
-struct Scope<ParentState, ParentAction, ChildState, ChildAction>: AnyScope {
+private struct Scope<ParentState, ParentAction, ChildState, ChildAction>: AnyScope {
   weak var parent: Store<ParentState, ParentAction>?
   let toChildState: (ParentState) -> ChildState
   let fromChildAction: (ChildAction) -> ParentAction
@@ -561,7 +561,7 @@ struct Scope<ParentState, ParentAction, ChildState, ChildAction>: AnyScope {
     action fromNewChildAction: @escaping (NewChildAction) -> ChildAction
   ) -> Store<NewChildState, NewChildAction>? {
     guard
-      let parent = parent,
+      let parent = self.parent,
       let toChildState = self.toChildState as? (ParentState) -> ChildState,
       let fromChildAction = self.fromChildAction as? (ChildAction) -> ParentAction
     else { return nil }
