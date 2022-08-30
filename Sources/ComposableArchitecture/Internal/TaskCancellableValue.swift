@@ -11,6 +11,7 @@ extension Task where Failure == Error {
 }
 
 extension Task where Failure == Never {
+  @usableFromInline
   var cancellableValue: Success {
     get async {
       await withTaskCancellationHandler {

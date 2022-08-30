@@ -357,40 +357,57 @@ public final class Store<State, Action> {
       let action = self.bufferedActions.removeFirst()
       let effect = self.reducer(&currentState, action)
 
-      var didComplete = false
-      let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
-      let uuid = UUID()
-      let effectCancellable =
-        effect
-        .handleEvents(
-          receiveCancel: { [weak self] in
-            self?.threadCheck(status: .effectCompletion(action))
-            self?.effectCancellables[uuid] = nil
-          }
-        )
-        .sink(
-          receiveCompletion: { [weak self] _ in
-            self?.threadCheck(status: .effectCompletion(action))
-            boxedTask.wrappedValue?.cancel()
-            didComplete = true
-            self?.effectCancellables[uuid] = nil
-          },
-          receiveValue: { [weak self] effectAction in
-            guard let self = self else { return }
-            if let task = self.send(effectAction, originatingFrom: action) {
-              tasks.wrappedValue.append(task)
+      switch effect.operation {
+      case .none:
+        break
+      case let .publisher(publisher):
+        var didComplete = false
+        let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
+        let uuid = UUID()
+        let effectCancellable =
+          publisher
+          .handleEvents(
+            receiveCancel: { [weak self] in
+              self?.threadCheck(status: .effectCompletion(action))
+              self?.effectCancellables[uuid] = nil
             }
+          )
+          .sink(
+            receiveCompletion: { [weak self] _ in
+              self?.threadCheck(status: .effectCompletion(action))
+              boxedTask.wrappedValue?.cancel()
+              didComplete = true
+              self?.effectCancellables[uuid] = nil
+            },
+            receiveValue: { [weak self] effectAction in
+              guard let self = self else { return }
+              if let task = self.send(effectAction, originatingFrom: action) {
+                tasks.wrappedValue.append(task)
+              }
+            }
+          )
+
+        if !didComplete {
+          let task = Task<Void, Never> { @MainActor in
+            for await _ in AsyncStream<Void>.never {}
+            effectCancellable.cancel()
+          }
+          boxedTask.wrappedValue = task
+          tasks.wrappedValue.append(task)
+          self.effectCancellables[uuid] = effectCancellable
+        }
+      case let .run(priority, operation):
+        tasks.wrappedValue.append(
+          Task(priority: priority) {
+            await operation(
+              Send {
+                if let task = self.send($0, originatingFrom: action) {
+                  tasks.wrappedValue.append(task)
+                }
+              }
+            )
           }
         )
-
-      if !didComplete {
-        let task = Task<Void, Never> { @MainActor in
-          for await _ in AsyncStream<Void>.never {}
-          effectCancellable.cancel()
-        }
-        boxedTask.wrappedValue = task
-        tasks.wrappedValue.append(task)
-        self.effectCancellables[uuid] = effectCancellable
       }
     }
 
