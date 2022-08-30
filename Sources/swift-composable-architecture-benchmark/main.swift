@@ -4,5 +4,5 @@ import ComposableArchitecture
 Benchmark.main([
   defaultBenchmarkSuite,
   effectSuite,
-  storeScopeSuite
+  storeScopeSuite,
 ])
