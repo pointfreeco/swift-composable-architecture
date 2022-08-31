@@ -1,5 +1,87 @@
 import SwiftUI
 
+#if swift(>=5.7)
+  @resultBuilder
+  public enum SwitchStoreBuilder<State, Action> {
+    public static func buildPartialBlock<CaseState, CaseAction, CaseContent: View>(
+      first: CaseLet<State, Action, CaseState, CaseAction, CaseContent>
+    ) -> _Case<State, Action, CaseLet<State, Action, CaseState, CaseAction, CaseContent>, some View> {
+      _Case(case: first)
+    }
+
+    public static func buildPartialBlock<
+      CaseState, CaseAction, CaseContent: View
+    >(
+      accumulated: _Case<State, Action, some View, some View>,
+      next: CaseLet<State, Action, CaseState, CaseAction, CaseContent>
+    ) -> _Case<State, Action, CaseLet<State, Action, CaseState, CaseAction, CaseContent>, some View> {
+      _Case(case: next) {
+        accumulated
+      }
+    }
+
+    @ViewBuilder
+    public static func buildPartialBlock(
+      accumulated: _Case<State, Action, some View, some View>,
+      next: Default<some View>
+    ) -> some View {
+      _Case(case: next) {
+        accumulated
+      }
+
+//      accumulated
+//      if !accumulated.isCase {
+//        next
+//      }
+    }
+
+    @ViewBuilder
+    public static func buildFinalResult(
+      _ component: some View,
+      file: StaticString = #file,
+      fileID: StaticString = #fileID,
+      line: UInt = #line
+    ) -> some View {
+      component
+      Default {
+        _ExhaustivityCheckView<State, Action>(file: file, fileID: fileID, line: line)
+      }
+    }
+
+    public struct _Case<State, Action, CaseContent: View, Rest: View>: View {
+      @EnvironmentObject fileprivate var store: StoreObservableObject<State, Action>
+      let rest: Rest
+      let `case`: CaseContent
+      let isMatch: (State) -> Bool
+      init<CaseState, CaseAction, _CaseContent>(
+        `case`: CaseContent,
+        @ViewBuilder rest: () -> Rest = { EmptyView() }
+      ) where CaseContent == CaseLet<State, Action, CaseState, CaseAction, _CaseContent> {
+        self.case = `case`
+        self.rest = rest()
+        self.isMatch = { `case`.toCaseState($0) != nil }
+      }
+      init>(
+        `case`: CaseContent,
+        @ViewBuilder rest: () -> Rest = { EmptyView() }
+      ) where CaseContent == CaseLet<State, Action, CaseState, CaseAction, _CaseContent> {
+        self.case = `case`
+        self.rest = rest()
+        self.isMatch = { `case`.toCaseState($0) != nil }
+      }
+      public var body: some View {
+        WithViewStore(self.store.wrappedValue, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
+          if self.isMatch(viewStore.state) {
+            self.case
+          } else {
+            self.rest
+          }
+        }
+      }
+    }
+  }
+#endif
+
 /// A view that can switch over a store of enum state and handle each case.
 ///
 /// An application may model parts of its state with enums. For example, app state may differ if a
@@ -57,13 +139,23 @@ public struct SwitchStore<State, Action, Content: View>: View {
   public let store: Store<State, Action>
   public let content: () -> Content
 
-  init(
-    store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> Content
-  ) {
-    self.store = store
-    self.content = content
-  }
+  #if swift(>=5.7)
+    public init(
+      _ store: Store<State, Action>,
+      @SwitchStoreBuilder<State, Action> content: @escaping () -> Content
+    ) {
+      self.store = store
+      self.content = content
+    }
+  #else
+    init(
+      store: Store<State, Action>,
+      @ViewBuilder content: () -> Content
+    ) {
+      self.store = store
+      self.content = content()
+    }
+  #endif
 
   public var body: some View {
     self.content()
@@ -73,10 +165,14 @@ public struct SwitchStore<State, Action, Content: View>: View {
 
 /// A view that handles a specific case of enum state in a ``SwitchStore``.
 public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: View>: View {
-  @EnvironmentObject private var store: StoreObservableObject<EnumState, EnumAction>
+  @EnvironmentObject fileprivate var store: StoreObservableObject<EnumState, EnumAction>
   public let toCaseState: (EnumState) -> CaseState?
   public let fromCaseAction: (CaseAction) -> EnumAction
   public let content: (Store<CaseState, CaseAction>) -> Content
+
+  var isCase: Bool {
+    self.toCaseState(self.store.wrappedValue.state.value) != nil
+  }
 
   /// Initializes a ``CaseLet`` view that computes content depending on if a store of enum state
   /// matches a particular case.
@@ -151,6 +247,7 @@ public struct Default<Content: View>: View {
   }
 }
 
+#if swift(<5.7)
 extension SwitchStore {
   public init<State1, Action1, Content1, DefaultContent>(
     _ store: Store<State, Action>,
@@ -1175,6 +1272,7 @@ extension SwitchStore {
     }
   }
 }
+#endif
 
 public struct _ExhaustivityCheckView<State, Action>: View {
   @EnvironmentObject private var store: StoreObservableObject<State, Action>
