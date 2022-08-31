@@ -46,33 +46,6 @@ public struct WithViewStore<State, Action, Content> {
   }
 
   public var body: Content {
-    #if DEBUG
-      if let prefix = self.prefix {
-        var stateDump = ""
-        customDump(self.store.state.value, to: &stateDump, indent: 2)
-        let difference =
-          self.previousState(self.store.state.value)
-          .map {
-            diff($0, self.store.state.value).map { "(Changed state)\n\($0)" }
-              ?? "(No difference in state detected)"
-          }
-          ?? "(Initial state)\n\(stateDump)"
-        func typeName(_ type: Any.Type) -> String {
-          var name = String(reflecting: type)
-          if let index = name.firstIndex(of: ".") {
-            name.removeSubrange(...index)
-          }
-          return name
-        }
-        print(
-          """
-          \(prefix.isEmpty ? "" : "\(prefix): ")\
-          WithViewStore<\(typeName(State.self)), \(typeName(Action.self)), _>\
-          @\(self.file):\(self.line) \(difference)
-          """
-        )
-      }
-    #endif
     return self.content(self.store)
   }
 }
@@ -301,7 +274,7 @@ where Content: AccessibilityRotorContent {
 
 // MARK: - Commands
 
-@available(iOS 14, macOS 11, *)
+@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension WithViewStore: Commands where Content: Commands {
@@ -334,7 +307,7 @@ extension WithViewStore: Commands where Content: Commands {
   }
 }
 
-@available(iOS 14, macOS 11, *)
+@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension WithViewStore where State: Equatable, Content: Commands {
@@ -354,7 +327,7 @@ extension WithViewStore where State: Equatable, Content: Commands {
   }
 }
 
-@available(iOS 14, macOS 11, *)
+@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension WithViewStore where State == Void, Content: Commands {
@@ -375,6 +348,8 @@ extension WithViewStore where State == Void, Content: Commands {
 }
 
 @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 extension _StateObjectViewStore: Commands where Content: Commands {
   init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
@@ -386,6 +361,8 @@ extension _StateObjectViewStore: Commands where Content: Commands {
 }
 
 @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 extension _ObservedObjectViewStore: Commands where Content: Commands {
   init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
@@ -577,3 +554,40 @@ extension _ObservedObjectViewStore: ToolbarContent where Content: ToolbarContent
     self.content = content
   }
 }
+
+#if DEBUG
+  private func debugPrint<State, Action>(
+    prefix: String?,
+    state: State,
+    previousState: State?,
+    action: Action.Type,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) {
+    if let prefix = prefix {
+      var stateDump = ""
+      customDump(state, to: &stateDump, indent: 2)
+      let difference =
+        previousState
+        .map {
+          diff($0, state).map { "(Changed state)\n\($0)" }
+            ?? "(No difference in state detected)"
+        }
+        ?? "(Initial state)\n\(stateDump)"
+      func typeName(_ type: Any.Type) -> String {
+        var name = String(reflecting: type)
+        if let index = name.firstIndex(of: ".") {
+          name.removeSubrange(...index)
+        }
+        return name
+      }
+      print(
+        """
+        \(prefix.isEmpty ? "" : "\(prefix): ")\
+        WithViewStore<\(typeName(State.self)), \(typeName(Action.self)), _>\
+        @\(file):\(line) \(difference)
+        """
+      )
+    }
+  }
+#endif
