@@ -43,9 +43,9 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// > **Note:** `WithViewStore` expressions are more complex than views that observe view stores
-/// > using `@ObservedObject`, and can lead to a degraded build experience. For large, complex
-/// > views, consider manually observing the store, instead.
+/// > Note: `WithViewStore` expressions are more complex than views that observe view stores using
+/// > `@ObservedObject`, and can lead to a degraded compiler performance. For large, complex view,
+/// > consider manually observing the store using `@ObservedObject`, instead.
 public struct WithViewStore<State, Action, Content> {
   private let content: (ViewStore<State, Action>) -> Content
   #if DEBUG
@@ -383,6 +383,14 @@ extension WithViewStore: Scene where Content: Scene {
   ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
   ///     equal, repeat view computations are removed,
   ///   - content: A function that can generate content from a view store.
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      For compiler performance, using "WithViewStore" from a scene builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+      """
+  )
   public init(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
@@ -408,6 +416,14 @@ extension WithViewStore where State: Equatable, Content: Scene {
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      For compiler performance, using "WithViewStore" from a scene builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+      """
+  )
   public init(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
@@ -426,6 +442,14 @@ extension WithViewStore where State == Void, Content: Scene {
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      For compiler performance, using "WithViewStore" from a scene builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+      """
+  )
   public init(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,

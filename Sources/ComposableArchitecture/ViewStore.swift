@@ -20,7 +20,18 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// In UIKit applications a ``ViewStore`` can be created from a ``Store`` and then subscribed to for
+/// It can also be observed directly by views, scenes, commands, and other contexts that support the
+/// `@ObservedObject` property wrapper:
+///
+/// ```swift
+/// @ObservedObject var viewStore: ViewStore<State, Action>
+/// ```
+///
+/// > Tip: If you experience compile-time issues with views that use ``WithViewStore``, try
+/// > observing the view store directly using an `@ObservedObject`, instead, which is easier on the
+/// > compiler.
+///
+/// In UIKit applications a `ViewStore` can be created from a ``Store`` and then subscribed to for
 /// state updates:
 ///
 /// ```swift
@@ -45,7 +56,7 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// > Important: The ``ViewStore`` class is not thread-safe, and all interactions with it (and the
+/// > Important: The `ViewStore` class is not thread-safe, and all interactions with it (and the
 /// > store it was derived from) must happen on the same thread. Further, for SwiftUI applications,
 /// > all interactions must happen on the _main_ thread. See the documentation of the ``Store``
 /// > class for more information as to why this decision was made.
