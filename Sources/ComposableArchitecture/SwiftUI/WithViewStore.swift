@@ -46,7 +46,7 @@ public struct WithViewStore<State, Action, Content> {
     return view
   }
 
-  fileprivate var _body: Content {
+  public var body: Content {
     #if DEBUG
       if let prefix = self.prefix {
         var stateDump = ""
@@ -102,10 +102,6 @@ extension WithViewStore: View where Content: View {
       line: line,
       content: content
     )
-  }
-
-  public var body: Content {
-    self._body
   }
 }
 
@@ -164,10 +160,10 @@ extension WithViewStore: AccessibilityRotorContent where Content: AccessibilityR
   ///   - content: A function that can generate content from a view store.
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       """
-      WithViewStore for accessibility rotor content is deprecated. To fix, wrap the parent view in 
+      For compiler performance, using "WithViewStore" from an accessibility rotor content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
       """
   )
   public init(
@@ -185,9 +181,6 @@ extension WithViewStore: AccessibilityRotorContent where Content: AccessibilityR
       content: content
     )
   }
-  public var body: some AccessibilityRotorContent {
-    self._body
-  }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -198,6 +191,14 @@ extension WithViewStore where State: Equatable, Content: AccessibilityRotorConte
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      For compiler performance, using "WithViewStore" from an accessibility rotor content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+      """
+  )
   public init(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
@@ -216,6 +217,14 @@ extension WithViewStore where State == Void, Content: AccessibilityRotorContent 
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      For compiler performance, using "WithViewStore" from an accessibility rotor content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+      """
+  )
   public init(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
@@ -227,6 +236,7 @@ extension WithViewStore where State == Void, Content: AccessibilityRotorContent 
 }
 
 // MARK: - Commands
+
 @available(iOS 14.0, macOS 11.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
@@ -239,6 +249,14 @@ extension WithViewStore: Commands where Content: Commands {
   ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
   ///     equal, repeat view computations are removed,
   ///   - content: A function that can generate content from a view store.
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      For compiler performance, using "WithViewStore" from a command builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+      """
+  )
   public init(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
@@ -254,9 +272,6 @@ extension WithViewStore: Commands where Content: Commands {
       content: content
     )
   }
-  public var body: some Commands {
-    self._body
-  }
 }
 
 @available(iOS 14.0, macOS 11.0, *)
@@ -269,6 +284,14 @@ extension WithViewStore where State: Equatable, Content: Commands {
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      For compiler performance, using "WithViewStore" from a command builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+      """
+  )
   public init(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
@@ -289,6 +312,14 @@ extension WithViewStore where State == Void, Content: Commands {
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      For compiler performance, using "WithViewStore" from a command builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+      """
+  )
   public init(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
@@ -324,10 +355,6 @@ extension WithViewStore: Scene where Content: Scene {
       line: line,
       content: content
     )
-  }
-
-  public var body: Content {
-    self._body
   }
 }
 
@@ -368,6 +395,7 @@ extension WithViewStore where State == Void, Content: Scene {
 }
 
 // MARK: - ToolbarContent
+
 @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
 extension WithViewStore: ToolbarContent where Content: ToolbarContent {
   /// Initializes a structure that transforms a store into an observable view store in order to
@@ -378,6 +406,14 @@ extension WithViewStore: ToolbarContent where Content: ToolbarContent {
   ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
   ///     equal, repeat view computations are removed,
   ///   - content: A function that can generate content from a view store.
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      For compiler performance, using "WithViewStore" from a toolbar content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+      """
+  )
   public init(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
@@ -393,9 +429,6 @@ extension WithViewStore: ToolbarContent where Content: ToolbarContent {
       content: content
     )
   }
-  public var body: some ToolbarContent {
-    self._body
-  }
 }
 
 @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
@@ -406,6 +439,14 @@ extension WithViewStore where State: Equatable, Content: ToolbarContent {
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      For compiler performance, using "WithViewStore" from a toolbar content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+      """
+  )
   public init(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
@@ -424,6 +465,14 @@ extension WithViewStore where State == Void, Content: ToolbarContent {
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      For compiler performance, using "WithViewStore" from a toolbar content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+      """
+  )
   public init(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
