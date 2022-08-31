@@ -1,5 +1,6 @@
 import ComposableArchitecture
 import XCTest
+import XCTestDynamicOverlay
 
 @testable import Todos
 
@@ -11,11 +12,10 @@ final class TodosTests: XCTestCase {
     let store = TestStore(
       initialState: AppState(),
       reducer: appReducer,
-      environment: AppEnvironment(
-        mainQueue: self.mainQueue.eraseToAnyScheduler(),
-        uuid: { UUID.incrementing() }
-      )
+      environment: .unimplemented
     )
+
+    store.environment.uuid = UUID.incrementing
 
     await store.send(.addTodoButtonTapped) {
       $0.todos.insert(
@@ -42,11 +42,10 @@ final class TodosTests: XCTestCase {
     let store = TestStore(
       initialState: state,
       reducer: appReducer,
-      environment: AppEnvironment(
-        mainQueue: self.mainQueue.eraseToAnyScheduler(),
-        uuid: { UUID.incrementing() }
-      )
+      environment: .unimplemented
     )
+
+    store.environment.uuid = UUID.incrementing
 
     await store.send(
       .todo(id: state.todos[0].id, action: .textFieldChanged("Learn Composable Architecture"))
@@ -73,11 +72,11 @@ final class TodosTests: XCTestCase {
     let store = TestStore(
       initialState: state,
       reducer: appReducer,
-      environment: AppEnvironment(
-        mainQueue: self.mainQueue.eraseToAnyScheduler(),
-        uuid: { UUID.incrementing() }
-      )
+      environment: .unimplemented
     )
+
+    store.environment.mainQueue = self.mainQueue.eraseToAnyScheduler()
+    store.environment.uuid = UUID.incrementing
 
     await store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
       $0.todos[id: state.todos[0].id]?.isComplete = true
@@ -109,11 +108,11 @@ final class TodosTests: XCTestCase {
     let store = TestStore(
       initialState: state,
       reducer: appReducer,
-      environment: AppEnvironment(
-        mainQueue: self.mainQueue.eraseToAnyScheduler(),
-        uuid: { UUID.incrementing() }
-      )
+      environment: .unimplemented
     )
+
+    store.environment.mainQueue = self.mainQueue.eraseToAnyScheduler()
+    store.environment.uuid = UUID.incrementing
 
     await store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
       $0.todos[id: state.todos[0].id]?.isComplete = true
@@ -144,10 +143,7 @@ final class TodosTests: XCTestCase {
     let store = TestStore(
       initialState: state,
       reducer: appReducer,
-      environment: AppEnvironment(
-        mainQueue: self.mainQueue.eraseToAnyScheduler(),
-        uuid: { UUID.incrementing() }
-      )
+      environment: .unimplemented
     )
 
     await store.send(.clearCompletedButtonTapped) {
@@ -180,10 +176,7 @@ final class TodosTests: XCTestCase {
     let store = TestStore(
       initialState: state,
       reducer: appReducer,
-      environment: AppEnvironment(
-        mainQueue: self.mainQueue.eraseToAnyScheduler(),
-        uuid: { UUID.incrementing() }
-      )
+      environment: .unimplemented
     )
 
     await store.send(.delete([1])) {
@@ -217,11 +210,10 @@ final class TodosTests: XCTestCase {
     let store = TestStore(
       initialState: state,
       reducer: appReducer,
-      environment: AppEnvironment(
-        mainQueue: self.mainQueue.eraseToAnyScheduler(),
-        uuid: { UUID.incrementing() }
-      )
+      environment: .unimplemented
     )
+
+    store.environment.mainQueue = self.mainQueue.eraseToAnyScheduler()
 
     await store.send(.editModeChanged(.active)) {
       $0.editMode = .active
@@ -265,11 +257,10 @@ final class TodosTests: XCTestCase {
     let store = TestStore(
       initialState: state,
       reducer: appReducer,
-      environment: AppEnvironment(
-        mainQueue: self.mainQueue.eraseToAnyScheduler(),
-        uuid: { UUID.incrementing() }
-      )
+      environment: .unimplemented
     )
+
+    store.environment.mainQueue = self.mainQueue.eraseToAnyScheduler()
 
     await store.send(.editModeChanged(.active)) {
       $0.editMode = .active
@@ -307,11 +298,11 @@ final class TodosTests: XCTestCase {
     let store = TestStore(
       initialState: state,
       reducer: appReducer,
-      environment: AppEnvironment(
-        mainQueue: self.mainQueue.eraseToAnyScheduler(),
-        uuid: { UUID.incrementing() }
-      )
+      environment: .unimplemented
     )
+
+    store.environment.mainQueue = self.mainQueue.eraseToAnyScheduler()
+    store.environment.uuid = UUID.incrementing
 
     await store.send(.filterPicked(.completed)) {
       $0.filter = .completed
@@ -322,9 +313,19 @@ final class TodosTests: XCTestCase {
   }
 }
 
+extension AppEnvironment {
+  static let unimplemented = Self(
+    mainQueue: .unimplemented,
+    uuid: XCTUnimplemented(
+      "\(Self.self).uuid",
+      placeholder: UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
+    )
+  )
+}
+
 extension UUID {
   // A deterministic, auto-incrementing "UUID" generator for testing.
-  static var incrementing: () -> UUID {
+  static var incrementing: @Sendable () -> UUID {
     var uuid = 0
     return {
       defer { uuid += 1 }
