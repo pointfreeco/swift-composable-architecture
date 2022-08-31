@@ -28,7 +28,7 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// Can be written more simply using `WithViewStore`:
+/// …can be written more simply using `WithViewStore`:
 ///
 /// ```swift
 /// struct ProfileView: View {
@@ -43,9 +43,61 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// > Note: `WithViewStore` expressions are more complex than views that observe view stores using
-/// > `@ObservedObject`, and can lead to a degraded compiler performance. For large, complex view,
-/// > consider manually observing the store using `@ObservedObject`, instead.
+/// There may be times where the slightly more verbose style of observing a store is preferred
+/// instead of using ``WithViewStore``:
+///
+/// 1. When ``WithViewStore`` wraps complex views the Swift compiler can quickly become bogged down,
+/// leading to degraded compiler performance and diagnostics. If you are experience such instability
+/// you should consider manually setting up observation with an `@ObservedObject` property as
+/// described above.
+///
+/// 2. Sometimes you may want to observe the state in a store in a context that is not a view
+/// builder. In such cases ``WithViewStore`` will not work since it is intended only for SwiftUI
+/// views.
+///
+///    An example of this is interfacing with SwiftUI's `App` protocol, which uses a separate
+///    `@SceneBuilder` instead of `@ViewBuilder`. In this case you must use an `@ObservedObject`:
+///
+///    ```swift
+///    @main
+///    struct MyApp: App {
+///      let store = Store<AppState, AppAction>(...)
+///      @ObservedObject var viewStore: ViewStore<SceneState, AppAction>
+///
+///      struct SceneState: Equatable {
+///        // ...
+///        init(state: AppState) {
+///          // ...
+///        }
+///      }
+///
+///      init() {
+///        self.viewStore = ViewStore(self.store.scope(state: SceneState.init)
+///      }
+///
+///      var body: some Scene {
+///        WindowGroup {
+///          MyRootView()
+///        }
+///      }
+///    }
+///    ```
+///
+///    Note that it is highly discouraged for you to observe _all_ of your root store's state.
+///    It is almost never needed and will cause many view recomputations leading to poor
+///    performance. This is why we construct a separate `SceneState` type that holds onto only the
+///    state that the view needs for rendering. See <doc:Performance> for more information on this
+///    topic.
+///
+/// If your view does not need access to any state in the store and only needs to be able to send
+/// actions, then you should consider not using ``WithViewStore`` at all. Instead, you can send
+/// actions to a ``Store`` in a lightweight way like so:
+///
+/// ```swift
+/// Button("Tap me") {
+///   ViewStore(self.store).send(.buttonTapped)
+/// }
+/// ```
 public struct WithViewStore<State, Action, Content> {
   private let content: (ViewStore<State, Action>) -> Content
   #if DEBUG
