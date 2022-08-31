@@ -54,7 +54,7 @@ public struct WithViewStore<State, Action, Content> {
     private var prefix: String?
     private var previousState: (State) -> State?
   #endif
-//  @ObservedObject private var viewStore: ViewStore<State, Action>
+  //  @ObservedObject private var viewStore: ViewStore<State, Action>
   let store: Store<State, Action>
 
   fileprivate init(
@@ -73,7 +73,7 @@ public struct WithViewStore<State, Action, Content> {
         return previousState
       }
     #endif
-//    self.viewStore = ViewStore(store, removeDuplicates: isDuplicate)
+    //    self.viewStore = ViewStore(store, removeDuplicates: isDuplicate)
     self.store = store
   }
 
@@ -90,35 +90,33 @@ public struct WithViewStore<State, Action, Content> {
   }
 
   public var body: Content {
-//    #if DEBUG
-//      if let prefix = self.prefix {
-//        var stateDump = ""
-//        customDump(self.viewStore.state, to: &stateDump, indent: 2)
-//        let difference =
-//          self.previousState(self.viewStore.state)
-//          .map {
-//            diff($0, self.viewStore.state).map { "(Changed state)\n\($0)" }
-//              ?? "(No difference in state detected)"
-//          }
-//          ?? "(Initial state)\n\(stateDump)"
-//        func typeName(_ type: Any.Type) -> String {
-//          var name = String(reflecting: type)
-//          if let index = name.firstIndex(of: ".") {
-//            name.removeSubrange(...index)
-//          }
-//          return name
-//        }
-//        print(
-//          """
-//          \(prefix.isEmpty ? "" : "\(prefix): ")\
-//          WithViewStore<\(typeName(State.self)), \(typeName(Action.self)), _>\
-//          @\(self.file):\(self.line) \(difference)
-//          """
-//        )
-//      }
-//    #endif
-
-
+    //    #if DEBUG
+    //      if let prefix = self.prefix {
+    //        var stateDump = ""
+    //        customDump(self.viewStore.state, to: &stateDump, indent: 2)
+    //        let difference =
+    //          self.previousState(self.viewStore.state)
+    //          .map {
+    //            diff($0, self.viewStore.state).map { "(Changed state)\n\($0)" }
+    //              ?? "(No difference in state detected)"
+    //          }
+    //          ?? "(Initial state)\n\(stateDump)"
+    //        func typeName(_ type: Any.Type) -> String {
+    //          var name = String(reflecting: type)
+    //          if let index = name.firstIndex(of: ".") {
+    //            name.removeSubrange(...index)
+    //          }
+    //          return name
+    //        }
+    //        print(
+    //          """
+    //          \(prefix.isEmpty ? "" : "\(prefix): ")\
+    //          WithViewStore<\(typeName(State.self)), \(typeName(Action.self)), _>\
+    //          @\(self.file):\(self.line) \(difference)
+    //          """
+    //        )
+    //      }
+    //    #endif
 
     return self.content(self.store)
   }
@@ -140,7 +138,8 @@ extension WithViewStore: View where Content: View {
     file: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: @escaping (ViewStore<State, Action>) -> _Content
-  ) where Content == _ConditionalContent<AnyView, _ObservedObjectViewStore<State, Action, _Content>> {
+  )
+  where Content == _ConditionalContent<AnyView, _ObservedObjectViewStore<State, Action, _Content>> {
     self.init(
       store: store,
       file: file,
@@ -180,7 +179,8 @@ extension WithViewStore where State: Equatable, Content: View {
     file: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: @escaping (ViewStore<State, Action>) -> _Content
-  ) where Content == _ConditionalContent<AnyView, _ObservedObjectViewStore<State, Action, _Content>> {
+  )
+  where Content == _ConditionalContent<AnyView, _ObservedObjectViewStore<State, Action, _Content>> {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
@@ -197,7 +197,8 @@ extension WithViewStore where State == Void, Content: View {
     file: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: @escaping (ViewStore<State, Action>) -> _Content
-  ) where Content == _ConditionalContent<AnyView, _ObservedObjectViewStore<State, Action, _Content>> {
+  )
+  where Content == _ConditionalContent<AnyView, _ObservedObjectViewStore<State, Action, _Content>> {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
@@ -221,14 +222,6 @@ extension WithViewStore: AccessibilityRotorContent where Content: AccessibilityR
   ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
   ///     equal, repeat view computations are removed,
   ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from an accessibility rotor content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-      """
-  )
   public init<_Content>(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
@@ -258,14 +251,6 @@ extension WithViewStore where State: Equatable, Content: AccessibilityRotorConte
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from an accessibility rotor content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-      """
-  )
   public init<_Content>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
@@ -284,14 +269,6 @@ extension WithViewStore where State == Void, Content: AccessibilityRotorContent 
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from an accessibility rotor content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-      """
-  )
   public init<_Content>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
@@ -316,14 +293,6 @@ extension WithViewStore: Commands where Content: Commands {
   ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
   ///     equal, repeat view computations are removed,
   ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from a command builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-      """
-  )
   public init<_Content>(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
@@ -355,14 +324,6 @@ extension WithViewStore where State: Equatable, Content: Commands {
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from a command builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-      """
-  )
   public init<_Content>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
@@ -383,14 +344,6 @@ extension WithViewStore where State == Void, Content: Commands {
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from a command builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-      """
-  )
   public init<_Content>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
@@ -412,14 +365,6 @@ extension WithViewStore: Scene where Content: Scene {
   ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
   ///     equal, repeat view computations are removed,
   ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from a scene builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-      """
-  )
   public init<_Content>(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
@@ -449,14 +394,6 @@ extension WithViewStore where State: Equatable, Content: Scene {
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from a scene builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-      """
-  )
   public init<_Content>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
@@ -475,14 +412,6 @@ extension WithViewStore where State == Void, Content: Scene {
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from a scene builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-      """
-  )
   public init<_Content>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
@@ -505,14 +434,6 @@ extension WithViewStore: ToolbarContent where Content: ToolbarContent {
   ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
   ///     equal, repeat view computations are removed,
   ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from a toolbar content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-      """
-  )
   public init<_Content>(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
@@ -542,14 +463,6 @@ extension WithViewStore where State: Equatable, Content: ToolbarContent {
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from a toolbar content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-      """
-  )
   public init<_Content>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
@@ -568,14 +481,6 @@ extension WithViewStore where State == Void, Content: ToolbarContent {
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from a toolbar content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-      """
-  )
   public init<_Content>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
@@ -585,9 +490,6 @@ extension WithViewStore where State == Void, Content: ToolbarContent {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
-
-
-
 
 @available(iOS 14.0, *)
 public struct _StateObjectViewStore<State, Action, Content> {
@@ -620,7 +522,8 @@ extension _StateObjectViewStore: Scene where Content: Scene {
   }
 }
 @available(iOS 15.0, *)
-extension _StateObjectViewStore: AccessibilityRotorContent where Content: AccessibilityRotorContent {
+extension _StateObjectViewStore: AccessibilityRotorContent
+where Content: AccessibilityRotorContent {
   init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
     @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
@@ -650,7 +553,6 @@ extension _StateObjectViewStore: ToolbarContent where Content: ToolbarContent {
   }
 }
 
-
 public struct _ObservedObjectViewStore<State, Action, Content> {
   @ObservedObject var viewStore: ViewStore<State, Action>
   let content: (ViewStore<State, Action>) -> Content
@@ -678,7 +580,8 @@ extension _ObservedObjectViewStore: Scene where Content: Scene {
   }
 }
 @available(iOS 15.0, *)
-extension _ObservedObjectViewStore: AccessibilityRotorContent where Content: AccessibilityRotorContent {
+extension _ObservedObjectViewStore: AccessibilityRotorContent
+where Content: AccessibilityRotorContent {
   init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
     @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
