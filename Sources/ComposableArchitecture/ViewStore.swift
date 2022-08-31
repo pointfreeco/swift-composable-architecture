@@ -80,6 +80,8 @@ public final class ViewStore<State, Action>: ObservableObject {
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool
   ) {
+    instrument(&viewStoreInitCount, message: "ViewStore.init")
+
     self._send = { store.send($0) }
     self._state = CurrentValueRelay(store.state.value)
 
@@ -89,6 +91,8 @@ public final class ViewStore<State, Action>: ObservableObject {
         guard let objectWillChange = objectWillChange, let _state = _state else { return }
         objectWillChange.send()
         _state.value = $0
+        instrument(&viewStoreObjectWillChangeCount, message: "ViewStore.objectWillChange")
+
       }
   }
 

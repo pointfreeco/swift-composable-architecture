@@ -47,21 +47,21 @@ import SwiftUI
 /// > `@ObservedObject`, and can lead to a degraded compiler performance. For large, complex view,
 /// > consider manually observing the store using `@ObservedObject`, instead.
 public struct WithViewStore<State, Action, Content> {
-  private let content: (ViewStore<State, Action>) -> Content
+  private let content: (Store<State, Action>) -> Content
   #if DEBUG
     private let file: StaticString
     private let line: UInt
     private var prefix: String?
     private var previousState: (State) -> State?
   #endif
-  @ObservedObject private var viewStore: ViewStore<State, Action>
+//  @ObservedObject private var viewStore: ViewStore<State, Action>
+  let store: Store<State, Action>
 
   fileprivate init(
     store: Store<State, Action>,
-    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
     file: StaticString = #fileID,
     line: UInt = #line,
-    content: @escaping (ViewStore<State, Action>) -> Content
+    content: @escaping (Store<State, Action>) -> Content
   ) {
     self.content = content
     #if DEBUG
@@ -73,7 +73,8 @@ public struct WithViewStore<State, Action, Content> {
         return previousState
       }
     #endif
-    self.viewStore = ViewStore(store, removeDuplicates: isDuplicate)
+//    self.viewStore = ViewStore(store, removeDuplicates: isDuplicate)
+    self.store = store
   }
 
   /// Prints debug information to the console whenever the view is computed.
@@ -89,34 +90,37 @@ public struct WithViewStore<State, Action, Content> {
   }
 
   public var body: Content {
-    #if DEBUG
-      if let prefix = self.prefix {
-        var stateDump = ""
-        customDump(self.viewStore.state, to: &stateDump, indent: 2)
-        let difference =
-          self.previousState(self.viewStore.state)
-          .map {
-            diff($0, self.viewStore.state).map { "(Changed state)\n\($0)" }
-              ?? "(No difference in state detected)"
-          }
-          ?? "(Initial state)\n\(stateDump)"
-        func typeName(_ type: Any.Type) -> String {
-          var name = String(reflecting: type)
-          if let index = name.firstIndex(of: ".") {
-            name.removeSubrange(...index)
-          }
-          return name
-        }
-        print(
-          """
-          \(prefix.isEmpty ? "" : "\(prefix): ")\
-          WithViewStore<\(typeName(State.self)), \(typeName(Action.self)), _>\
-          @\(self.file):\(self.line) \(difference)
-          """
-        )
-      }
-    #endif
-    return self.content(ViewStore(self.viewStore))
+//    #if DEBUG
+//      if let prefix = self.prefix {
+//        var stateDump = ""
+//        customDump(self.viewStore.state, to: &stateDump, indent: 2)
+//        let difference =
+//          self.previousState(self.viewStore.state)
+//          .map {
+//            diff($0, self.viewStore.state).map { "(Changed state)\n\($0)" }
+//              ?? "(No difference in state detected)"
+//          }
+//          ?? "(Initial state)\n\(stateDump)"
+//        func typeName(_ type: Any.Type) -> String {
+//          var name = String(reflecting: type)
+//          if let index = name.firstIndex(of: ".") {
+//            name.removeSubrange(...index)
+//          }
+//          return name
+//        }
+//        print(
+//          """
+//          \(prefix.isEmpty ? "" : "\(prefix): ")\
+//          WithViewStore<\(typeName(State.self)), \(typeName(Action.self)), _>\
+//          @\(self.file):\(self.line) \(difference)
+//          """
+//        )
+//      }
+//    #endif
+
+
+
+    return self.content(self.store)
   }
 }
 
@@ -130,19 +134,36 @@ extension WithViewStore: View where Content: View {
   ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
   ///     equal, repeat view computations are removed,
   ///   - content: A function that can generate content from a view store.
-  public init(
+  public init<_Content>(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
+    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> _Content
+  ) where Content == _ConditionalContent<AnyView, _ObservedObjectViewStore<State, Action, _Content>> {
     self.init(
       store: store,
-      removeDuplicates: isDuplicate,
       file: file,
       line: line,
-      content: content
+      content: { store in
+        if #available(iOS 14, *) {
+          return ViewBuilder.buildEither(
+            first: AnyView(
+              _StateObjectViewStore(
+                viewStore: ViewStore(store, removeDuplicates: isDuplicate),
+                content: content
+              )
+            )
+          )
+        } else {
+          return ViewBuilder.buildEither(
+            second: _ObservedObjectViewStore(
+              viewStore: ViewStore(store, removeDuplicates: isDuplicate),
+              content: content
+            )
+          )
+        }
+      }
     )
   }
 }
@@ -154,12 +175,12 @@ extension WithViewStore where State: Equatable, Content: View {
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
-  public init(
+  public init<_Content>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
+    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> _Content
+  ) where Content == _ConditionalContent<AnyView, _ObservedObjectViewStore<State, Action, _Content>> {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
@@ -171,12 +192,12 @@ extension WithViewStore where State == Void, Content: View {
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
-  public init(
+  public init<_Content>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
+    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> _Content
+  ) where Content == _ConditionalContent<AnyView, _ObservedObjectViewStore<State, Action, _Content>> {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
@@ -185,7 +206,7 @@ extension WithViewStore: DynamicViewContent where State: Collection, Content: Dy
   public typealias Data = State
 
   public var data: State {
-    self.viewStore.state
+    self.store.state.value
   }
 }
 
@@ -208,19 +229,23 @@ extension WithViewStore: AccessibilityRotorContent where Content: AccessibilityR
       For compiler performance, using "WithViewStore" from an accessibility rotor content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
       """
   )
-  public init(
+  public init<_Content>(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
+    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> _Content
+  ) where Content == _StateObjectViewStore<State, Action, _Content> {
     self.init(
       store: store,
-      removeDuplicates: isDuplicate,
       file: file,
       line: line,
-      content: content
+      content: { store in
+        _StateObjectViewStore(
+          viewStore: ViewStore(store, removeDuplicates: isDuplicate),
+          content: content
+        )
+      }
     )
   }
 }
@@ -241,12 +266,12 @@ extension WithViewStore where State: Equatable, Content: AccessibilityRotorConte
       For compiler performance, using "WithViewStore" from an accessibility rotor content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
       """
   )
-  public init(
+  public init<_Content>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
+    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> _Content
+  ) where Content == _StateObjectViewStore<State, Action, _Content> {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
@@ -267,12 +292,12 @@ extension WithViewStore where State == Void, Content: AccessibilityRotorContent 
       For compiler performance, using "WithViewStore" from an accessibility rotor content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
       """
   )
-  public init(
+  public init<_Content>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
+    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> _Content
+  ) where Content == _StateObjectViewStore<State, Action, _Content> {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
@@ -299,19 +324,23 @@ extension WithViewStore: Commands where Content: Commands {
       For compiler performance, using "WithViewStore" from a command builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
       """
   )
-  public init(
+  public init<_Content>(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
+    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> _Content
+  ) where Content == _StateObjectViewStore<State, Action, _Content> {
     self.init(
       store: store,
-      removeDuplicates: isDuplicate,
       file: file,
       line: line,
-      content: content
+      content: { store in
+        _StateObjectViewStore(
+          viewStore: ViewStore(store, removeDuplicates: isDuplicate),
+          content: content
+        )
+      }
     )
   }
 }
@@ -334,12 +363,12 @@ extension WithViewStore where State: Equatable, Content: Commands {
       For compiler performance, using "WithViewStore" from a command builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
       """
   )
-  public init(
+  public init<_Content>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
+    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> _Content
+  ) where Content == _StateObjectViewStore<State, Action, _Content> {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
@@ -362,12 +391,12 @@ extension WithViewStore where State == Void, Content: Commands {
       For compiler performance, using "WithViewStore" from a command builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
       """
   )
-  public init(
+  public init<_Content>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
+    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> _Content
+  ) where Content == _StateObjectViewStore<State, Action, _Content> {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
@@ -391,19 +420,23 @@ extension WithViewStore: Scene where Content: Scene {
       For compiler performance, using "WithViewStore" from a scene builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
       """
   )
-  public init(
+  public init<_Content>(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
+    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> _Content
+  ) where Content == _StateObjectViewStore<State, Action, _Content> {
     self.init(
       store: store,
-      removeDuplicates: isDuplicate,
       file: file,
       line: line,
-      content: content
+      content: { store in
+        _StateObjectViewStore(
+          viewStore: ViewStore(store, removeDuplicates: isDuplicate),
+          content: content
+        )
+      }
     )
   }
 }
@@ -424,12 +457,12 @@ extension WithViewStore where State: Equatable, Content: Scene {
       For compiler performance, using "WithViewStore" from a scene builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
       """
   )
-  public init(
+  public init<_Content>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
+    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> _Content
+  ) where Content == _StateObjectViewStore<State, Action, _Content> {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
@@ -450,12 +483,12 @@ extension WithViewStore where State == Void, Content: Scene {
       For compiler performance, using "WithViewStore" from a scene builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
       """
   )
-  public init(
+  public init<_Content>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
+    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> _Content
+  ) where Content == _StateObjectViewStore<State, Action, _Content> {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
@@ -480,19 +513,23 @@ extension WithViewStore: ToolbarContent where Content: ToolbarContent {
       For compiler performance, using "WithViewStore" from a toolbar content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
       """
   )
-  public init(
+  public init<_Content>(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
+    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> _Content
+  ) where Content == _StateObjectViewStore<State, Action, _Content> {
     self.init(
       store: store,
-      removeDuplicates: isDuplicate,
       file: file,
       line: line,
-      content: content
+      content: { store in
+        _StateObjectViewStore(
+          viewStore: ViewStore(store, removeDuplicates: isDuplicate),
+          content: content
+        )
+      }
     )
   }
 }
@@ -513,12 +550,12 @@ extension WithViewStore where State: Equatable, Content: ToolbarContent {
       For compiler performance, using "WithViewStore" from a toolbar content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
       """
   )
-  public init(
+  public init<_Content>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
+    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> _Content
+  ) where Content == _StateObjectViewStore<State, Action, _Content> {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
@@ -539,12 +576,134 @@ extension WithViewStore where State == Void, Content: ToolbarContent {
       For compiler performance, using "WithViewStore" from a toolbar content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
       """
   )
-  public init(
+  public init<_Content>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
+    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> _Content
+  ) where Content == _StateObjectViewStore<State, Action, _Content> {
+    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+  }
+}
+
+
+
+
+@available(iOS 14.0, *)
+public struct _StateObjectViewStore<State, Action, Content> {
+  @StateObject var viewStore: ViewStore<State, Action>
+  let content: (ViewStore<State, Action>) -> Content
+
+  public var body: Content {
+    self.content(ViewStore(self.viewStore))
+  }
+}
+
+@available(iOS 14.0, *)
+extension _StateObjectViewStore: View where Content: View {
+  init(
+    viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
+    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self._viewStore = .init(wrappedValue: viewStore())
+    self.content = content
+  }
+}
+@available(iOS 14.0, *)
+extension _StateObjectViewStore: Scene where Content: Scene {
+  init(
+    viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
+    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self._viewStore = .init(wrappedValue: viewStore())
+    self.content = content
+  }
+}
+@available(iOS 15.0, *)
+extension _StateObjectViewStore: AccessibilityRotorContent where Content: AccessibilityRotorContent {
+  init(
+    viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
+    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self._viewStore = .init(wrappedValue: viewStore())
+    self.content = content
+  }
+}
+@available(iOS 14.0, *)
+extension _StateObjectViewStore: Commands where Content: Commands {
+  init(
+    viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
+    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self._viewStore = .init(wrappedValue: viewStore())
+    self.content = content
+  }
+}
+@available(iOS 14.0, *)
+extension _StateObjectViewStore: ToolbarContent where Content: ToolbarContent {
+  init(
+    viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
     @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
   ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+    self._viewStore = .init(wrappedValue: viewStore())
+    self.content = content
+  }
+}
+
+
+public struct _ObservedObjectViewStore<State, Action, Content> {
+  @ObservedObject var viewStore: ViewStore<State, Action>
+  let content: (ViewStore<State, Action>) -> Content
+  public var body: Content {
+    self.content(ViewStore(self.viewStore))
+  }
+}
+extension _ObservedObjectViewStore: View where Content: View {
+  init(
+    viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
+    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self._viewStore = .init(wrappedValue: viewStore())
+    self.content = content
+  }
+}
+@available(iOS 14.0, *)
+extension _ObservedObjectViewStore: Scene where Content: Scene {
+  init(
+    viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
+    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self._viewStore = .init(wrappedValue: viewStore())
+    self.content = content
+  }
+}
+@available(iOS 15.0, *)
+extension _ObservedObjectViewStore: AccessibilityRotorContent where Content: AccessibilityRotorContent {
+  init(
+    viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
+    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self._viewStore = .init(wrappedValue: viewStore())
+    self.content = content
+  }
+}
+@available(iOS 14.0, *)
+extension _ObservedObjectViewStore: Commands where Content: Commands {
+  init(
+    viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
+    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self._viewStore = .init(wrappedValue: viewStore())
+    self.content = content
+  }
+}
+@available(iOS 14.0, *)
+extension _ObservedObjectViewStore: ToolbarContent where Content: ToolbarContent {
+  init(
+    viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
+    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
+  ) {
+    self._viewStore = .init(wrappedValue: viewStore())
+    self.content = content
   }
 }
