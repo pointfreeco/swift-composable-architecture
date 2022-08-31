@@ -162,6 +162,14 @@ extension WithViewStore: AccessibilityRotorContent where Content: AccessibilityR
   ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
   ///     equal, repeat view computations are removed,
   ///   - content: A function that can generate content from a view store.
+  @available(
+    *,
+     deprecated,
+     message:
+      """
+      WithViewStore for accessibility rotor content is deprecated. To fix, wrap the parent view in 
+      """
+  )
   public init(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
