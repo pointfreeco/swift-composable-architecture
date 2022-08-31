@@ -12,7 +12,6 @@ public struct WithViewStore<State, Action, Content> {
     private var prefix: String?
     private var previousState: (State) -> State?
   #endif
-  //  @ObservedObject private var viewStore: ViewStore<State, Action>
   let store: Store<State, Action>
 
   fileprivate init(
@@ -31,7 +30,6 @@ public struct WithViewStore<State, Action, Content> {
         return previousState
       }
     #endif
-    //    self.viewStore = ViewStore(store, removeDuplicates: isDuplicate)
     self.store = store
   }
 
