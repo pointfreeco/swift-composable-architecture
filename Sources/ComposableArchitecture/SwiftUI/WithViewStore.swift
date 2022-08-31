@@ -61,8 +61,8 @@ import SwiftUI
 ///    ```swift
 ///    @main
 ///    struct MyApp: App {
-///      let store = Store<AppState, AppAction>(...)
-///      @ObservedObject var viewStore: ViewStore<SceneState, AppAction>
+///      let store = Store<AppState, AppAction>(/* ... */)
+///      @ObservedObject var viewStore: ViewStore<SceneState, CommandAction>
 ///
 ///      struct SceneState: Equatable {
 ///        // ...
@@ -72,12 +72,24 @@ import SwiftUI
 ///      }
 ///
 ///      init() {
-///        self.viewStore = ViewStore(self.store.scope(state: SceneState.init)
+///        self.viewStore = ViewStore(
+///          self.store.scope(
+///            state: SceneState.init(state:)
+///            action: AppAction.scene
+///          )
+///        )
 ///      }
 ///
 ///      var body: some Scene {
 ///        WindowGroup {
 ///          MyRootView()
+///        }
+///        .commands {
+///          CommandMenu("Help") {
+///            Button("About \(self.viewStore.appName)") {
+///              self.viewStore.send(.aboutButtonTapped)
+///            }
+///          }
 ///        }
 ///      }
 ///    }

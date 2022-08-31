@@ -37,6 +37,7 @@ import SwiftUI
 /// ```swift
 /// let store: Store<State, Action>
 /// let viewStore: ViewStore<State, Action>
+/// private var cancellables: Set<AnyCancellable> = []
 ///
 /// init(store: Store<State, Action>) {
 ///   self.store = store
