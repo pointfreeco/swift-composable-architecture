@@ -2,8 +2,50 @@ import Combine
 import CustomDump
 import SwiftUI
 
-/// A structure that transforms a store into an observable view store in order to compute views from
-/// store state.
+/// A view helper that transforms a ``Store`` into a ``ViewStore`` so that its state can be observed
+/// by a view builder.
+///
+/// This helper is an alternative to observing the view store manually on your view, which requires
+/// the boilerplate of a custom initializer.
+///
+/// For example, the following view, which manually observes the store it is handed by constructing
+/// a view store in its initializer:
+///
+/// ```swift
+/// struct ProfileView: View {
+///   let store: Store<ProfileState, ProfileAction>
+///   @ObservedObject var viewStore: ViewStore<ProfileState, ProfileAction>
+///
+///   init(store: Store<ProfileState, ProfileAction>) {
+///     self.store = store
+///     self.viewStore = ViewStore(store)
+///   }
+///
+///   var body: some View {
+///     Text("\(self.viewStore.username)")
+///     // ...
+///   }
+/// }
+/// ```
+///
+/// Can be written more simply using `WithViewStore`:
+///
+/// ```swift
+/// struct ProfileView: View {
+///   let store: Store<ProfileState, ProfileAction>
+///
+///   var body: some View {
+///     WithViewStore(self.store) { viewStore in
+///       Text("\(viewStore.username)")
+///       // ...
+///     }
+///   }
+/// }
+/// ```
+///
+/// > **Note:** `WithViewStore` expressions are more complex than views that observe view stores
+/// > using `@ObservedObject`, and can lead to a degraded build experience. For large, complex
+/// > views, consider manually observing the store, instead.
 public struct WithViewStore<State, Action, Content> {
   private let content: (ViewStore<State, Action>) -> Content
   #if DEBUG
