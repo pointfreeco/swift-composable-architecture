@@ -237,7 +237,8 @@ extension SwitchStore {
             _ConditionalContent<
               CaseLet<State, Action, State1, Action1, Content1>,
               CaseLet<State, Action, State2, Action2, Content2>
-            >, Default<DefaultContent>
+            >,
+            Default<DefaultContent>
           >
         >
       >
@@ -274,11 +275,17 @@ extension SwitchStore {
       State,
       Action,
       _ConditionalContent<
-        _ConditionalContent<
-          CaseLet<State, Action, State1, Action1, Content1>,
-          CaseLet<State, Action, State2, Action2, Content2>
-        >,
-        Default<_ExhaustivityCheckView<State, Action>>
+        AnyView,
+        _ObservedObjectViewStore<
+          State, Action,
+          _ConditionalContent<
+            _ConditionalContent<
+              CaseLet<State, Action, State1, Action1, Content1>,
+              CaseLet<State, Action, State2, Action2, Content2>
+            >,
+            Default<_ExhaustivityCheckView<State, Action>>
+          >
+        >
       >
     >
   {
@@ -360,13 +367,19 @@ extension SwitchStore {
       State,
       Action,
       _ConditionalContent<
-        _ConditionalContent<
-          CaseLet<State, Action, State1, Action1, Content1>,
-          CaseLet<State, Action, State2, Action2, Content2>
-        >,
-        _ConditionalContent<
-          CaseLet<State, Action, State3, Action3, Content3>,
-          Default<_ExhaustivityCheckView<State, Action>>
+        AnyView,
+        _ObservedObjectViewStore<
+          State, Action,
+          _ConditionalContent<
+            _ConditionalContent<
+              CaseLet<State, Action, State1, Action1, Content1>,
+              CaseLet<State, Action, State2, Action2, Content2>
+            >,
+            _ConditionalContent<
+              CaseLet<State, Action, State3, Action3, Content3>,
+              Default<_ExhaustivityCheckView<State, Action>>
+            >
+          >
         >
       >
     >
@@ -463,17 +476,23 @@ extension SwitchStore {
       State,
       Action,
       _ConditionalContent<
-        _ConditionalContent<
+        AnyView,
+        _ObservedObjectViewStore<
+          State, Action,
           _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
+            _ConditionalContent<
+              _ConditionalContent<
+                CaseLet<State, Action, State1, Action1, Content1>,
+                CaseLet<State, Action, State2, Action2, Content2>
+              >,
+              _ConditionalContent<
+                CaseLet<State, Action, State3, Action3, Content3>,
+                CaseLet<State, Action, State4, Action4, Content4>
+              >
+            >,
+            Default<_ExhaustivityCheckView<State, Action>>
           >
-        >,
-        Default<_ExhaustivityCheckView<State, Action>>
+        >
       >
     >
   {
@@ -579,19 +598,25 @@ extension SwitchStore {
       State,
       Action,
       _ConditionalContent<
-        _ConditionalContent<
+        AnyView,
+        _ObservedObjectViewStore<
+          State, Action,
           _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
+            _ConditionalContent<
+              _ConditionalContent<
+                CaseLet<State, Action, State1, Action1, Content1>,
+                CaseLet<State, Action, State2, Action2, Content2>
+              >,
+              _ConditionalContent<
+                CaseLet<State, Action, State3, Action3, Content3>,
+                CaseLet<State, Action, State4, Action4, Content4>
+              >
+            >,
+            _ConditionalContent<
+              CaseLet<State, Action, State5, Action5, Content5>,
+              Default<_ExhaustivityCheckView<State, Action>>
+            >
           >
-        >,
-        _ConditionalContent<
-          CaseLet<State, Action, State5, Action5, Content5>,
-          Default<_ExhaustivityCheckView<State, Action>>
         >
       >
     >
@@ -708,22 +733,28 @@ extension SwitchStore {
       State,
       Action,
       _ConditionalContent<
-        _ConditionalContent<
+        AnyView,
+        _ObservedObjectViewStore<
+          State, Action,
           _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
+            _ConditionalContent<
+              _ConditionalContent<
+                CaseLet<State, Action, State1, Action1, Content1>,
+                CaseLet<State, Action, State2, Action2, Content2>
+              >,
+              _ConditionalContent<
+                CaseLet<State, Action, State3, Action3, Content3>,
+                CaseLet<State, Action, State4, Action4, Content4>
+              >
+            >,
+            _ConditionalContent<
+              _ConditionalContent<
+                CaseLet<State, Action, State5, Action5, Content5>,
+                CaseLet<State, Action, State6, Action6, Content6>
+              >,
+              Default<_ExhaustivityCheckView<State, Action>>
+            >
           >
-        >,
-        _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State5, Action5, Content5>,
-            CaseLet<State, Action, State6, Action6, Content6>
-          >,
-          Default<_ExhaustivityCheckView<State, Action>>
         >
       >
     >
@@ -850,24 +881,30 @@ extension SwitchStore {
       State,
       Action,
       _ConditionalContent<
-        _ConditionalContent<
+        AnyView,
+        _ObservedObjectViewStore<
+          State, Action,
           _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
-          >
-        >,
-        _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State5, Action5, Content5>,
-            CaseLet<State, Action, State6, Action6, Content6>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State7, Action7, Content7>,
-            Default<_ExhaustivityCheckView<State, Action>>
+            _ConditionalContent<
+              _ConditionalContent<
+                CaseLet<State, Action, State1, Action1, Content1>,
+                CaseLet<State, Action, State2, Action2, Content2>
+              >,
+              _ConditionalContent<
+                CaseLet<State, Action, State3, Action3, Content3>,
+                CaseLet<State, Action, State4, Action4, Content4>
+              >
+            >,
+            _ConditionalContent<
+              _ConditionalContent<
+                CaseLet<State, Action, State5, Action5, Content5>,
+                CaseLet<State, Action, State6, Action6, Content6>
+              >,
+              _ConditionalContent<
+                CaseLet<State, Action, State7, Action7, Content7>,
+                Default<_ExhaustivityCheckView<State, Action>>
+              >
+            >
           >
         >
       >
@@ -1005,29 +1042,35 @@ extension SwitchStore {
       State,
       Action,
       _ConditionalContent<
-        _ConditionalContent<
+        AnyView,
+        _ObservedObjectViewStore<
+          State, Action,
           _ConditionalContent<
             _ConditionalContent<
-              CaseLet<State, Action, State1, Action1, Content1>,
-              CaseLet<State, Action, State2, Action2, Content2>
+              _ConditionalContent<
+                _ConditionalContent<
+                  CaseLet<State, Action, State1, Action1, Content1>,
+                  CaseLet<State, Action, State2, Action2, Content2>
+                >,
+                _ConditionalContent<
+                  CaseLet<State, Action, State3, Action3, Content3>,
+                  CaseLet<State, Action, State4, Action4, Content4>
+                >
+              >,
+              _ConditionalContent<
+                _ConditionalContent<
+                  CaseLet<State, Action, State5, Action5, Content5>,
+                  CaseLet<State, Action, State6, Action6, Content6>
+                >,
+                _ConditionalContent<
+                  CaseLet<State, Action, State7, Action7, Content7>,
+                  CaseLet<State, Action, State8, Action8, Content8>
+                >
+              >
             >,
-            _ConditionalContent<
-              CaseLet<State, Action, State3, Action3, Content3>,
-              CaseLet<State, Action, State4, Action4, Content4>
-            >
-          >,
-          _ConditionalContent<
-            _ConditionalContent<
-              CaseLet<State, Action, State5, Action5, Content5>,
-              CaseLet<State, Action, State6, Action6, Content6>
-            >,
-            _ConditionalContent<
-              CaseLet<State, Action, State7, Action7, Content7>,
-              CaseLet<State, Action, State8, Action8, Content8>
-            >
+            Default<_ExhaustivityCheckView<State, Action>>
           >
-        >,
-        Default<_ExhaustivityCheckView<State, Action>>
+        >
       >
     >
   {
@@ -1173,31 +1216,37 @@ extension SwitchStore {
       State,
       Action,
       _ConditionalContent<
-        _ConditionalContent<
+        AnyView,
+        _ObservedObjectViewStore<
+          State, Action,
           _ConditionalContent<
             _ConditionalContent<
-              CaseLet<State, Action, State1, Action1, Content1>,
-              CaseLet<State, Action, State2, Action2, Content2>
+              _ConditionalContent<
+                _ConditionalContent<
+                  CaseLet<State, Action, State1, Action1, Content1>,
+                  CaseLet<State, Action, State2, Action2, Content2>
+                >,
+                _ConditionalContent<
+                  CaseLet<State, Action, State3, Action3, Content3>,
+                  CaseLet<State, Action, State4, Action4, Content4>
+                >
+              >,
+              _ConditionalContent<
+                _ConditionalContent<
+                  CaseLet<State, Action, State5, Action5, Content5>,
+                  CaseLet<State, Action, State6, Action6, Content6>
+                >,
+                _ConditionalContent<
+                  CaseLet<State, Action, State7, Action7, Content7>,
+                  CaseLet<State, Action, State8, Action8, Content8>
+                >
+              >
             >,
             _ConditionalContent<
-              CaseLet<State, Action, State3, Action3, Content3>,
-              CaseLet<State, Action, State4, Action4, Content4>
-            >
-          >,
-          _ConditionalContent<
-            _ConditionalContent<
-              CaseLet<State, Action, State5, Action5, Content5>,
-              CaseLet<State, Action, State6, Action6, Content6>
-            >,
-            _ConditionalContent<
-              CaseLet<State, Action, State7, Action7, Content7>,
-              CaseLet<State, Action, State8, Action8, Content8>
+              CaseLet<State, Action, State9, Action9, Content9>,
+              Default<_ExhaustivityCheckView<State, Action>>
             >
           >
-        >,
-        _ConditionalContent<
-          CaseLet<State, Action, State9, Action9, Content9>,
-          Default<_ExhaustivityCheckView<State, Action>>
         >
       >
     >

@@ -145,7 +145,7 @@ extension WithViewStore: View where Content: View {
       file: file,
       line: line,
       content: { store in
-        if #available(iOS 14, *) {
+        if #available(iOS 14, macOS 11, tvOS 14, watchOS 7, *) {
           return ViewBuilder.buildEither(
             first: AnyView(
               _StateObjectViewStore(
@@ -491,7 +491,7 @@ extension WithViewStore where State == Void, Content: ToolbarContent {
   }
 }
 
-@available(iOS 14.0, *)
+@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 public struct _StateObjectViewStore<State, Action, Content> {
   @StateObject var viewStore: ViewStore<State, Action>
   let content: (ViewStore<State, Action>) -> Content
@@ -501,7 +501,7 @@ public struct _StateObjectViewStore<State, Action, Content> {
   }
 }
 
-@available(iOS 14.0, *)
+@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension _StateObjectViewStore: View where Content: View {
   init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
@@ -511,7 +511,7 @@ extension _StateObjectViewStore: View where Content: View {
     self.content = content
   }
 }
-@available(iOS 14.0, *)
+@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension _StateObjectViewStore: Scene where Content: Scene {
   init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
@@ -521,7 +521,7 @@ extension _StateObjectViewStore: Scene where Content: Scene {
     self.content = content
   }
 }
-@available(iOS 15.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 extension _StateObjectViewStore: AccessibilityRotorContent
 where Content: AccessibilityRotorContent {
   init(
@@ -532,7 +532,7 @@ where Content: AccessibilityRotorContent {
     self.content = content
   }
 }
-@available(iOS 14.0, *)
+@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension _StateObjectViewStore: Commands where Content: Commands {
   init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
@@ -542,7 +542,7 @@ extension _StateObjectViewStore: Commands where Content: Commands {
     self.content = content
   }
 }
-@available(iOS 14.0, *)
+@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension _StateObjectViewStore: ToolbarContent where Content: ToolbarContent {
   init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
@@ -569,7 +569,7 @@ extension _ObservedObjectViewStore: View where Content: View {
     self.content = content
   }
 }
-@available(iOS 14.0, *)
+@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension _ObservedObjectViewStore: Scene where Content: Scene {
   init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
@@ -579,7 +579,7 @@ extension _ObservedObjectViewStore: Scene where Content: Scene {
     self.content = content
   }
 }
-@available(iOS 15.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 extension _ObservedObjectViewStore: AccessibilityRotorContent
 where Content: AccessibilityRotorContent {
   init(
@@ -590,7 +590,7 @@ where Content: AccessibilityRotorContent {
     self.content = content
   }
 }
-@available(iOS 14.0, *)
+@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension _ObservedObjectViewStore: Commands where Content: Commands {
   init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
@@ -600,7 +600,7 @@ extension _ObservedObjectViewStore: Commands where Content: Commands {
     self.content = content
   }
 }
-@available(iOS 14.0, *)
+@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension _ObservedObjectViewStore: ToolbarContent where Content: ToolbarContent {
   init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
