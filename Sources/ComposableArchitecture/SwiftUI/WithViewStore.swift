@@ -190,7 +190,7 @@ extension WithViewStore: DynamicViewContent where State: Collection, Content: Dy
 }
 
 // MARK: - AccessibilityRotorContent
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 extension WithViewStore: AccessibilityRotorContent where Content: AccessibilityRotorContent {
   /// Initializes a structure that transforms a store into an observable view store in order to
   /// compute accessibility rotor content from store state.
@@ -225,7 +225,7 @@ extension WithViewStore: AccessibilityRotorContent where Content: AccessibilityR
   }
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 extension WithViewStore where State: Equatable, Content: AccessibilityRotorContent {
   /// Initializes a structure that transforms a store into an observable view store in order to
   /// compute accessibility rotor content from equatable store state.
@@ -251,7 +251,7 @@ extension WithViewStore where State: Equatable, Content: AccessibilityRotorConte
   }
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 extension WithViewStore where State == Void, Content: AccessibilityRotorContent {
   /// Initializes a structure that transforms a store into an observable view store in order to
   /// compute accessibility rotor content from void store state.
@@ -279,7 +279,7 @@ extension WithViewStore where State == Void, Content: AccessibilityRotorContent 
 
 // MARK: - Commands
 
-@available(iOS 14.0, macOS 11.0, *)
+@available(iOS 14, macOS 11, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension WithViewStore: Commands where Content: Commands {
@@ -316,7 +316,7 @@ extension WithViewStore: Commands where Content: Commands {
   }
 }
 
-@available(iOS 14.0, macOS 11.0, *)
+@available(iOS 14, macOS 11, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension WithViewStore where State: Equatable, Content: Commands {
@@ -344,7 +344,7 @@ extension WithViewStore where State: Equatable, Content: Commands {
   }
 }
 
-@available(iOS 14.0, macOS 11.0, *)
+@available(iOS 14, macOS 11, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension WithViewStore where State == Void, Content: Commands {
@@ -462,7 +462,7 @@ extension WithViewStore where State == Void, Content: Scene {
 
 // MARK: - ToolbarContent
 
-@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension WithViewStore: ToolbarContent where Content: ToolbarContent {
   /// Initializes a structure that transforms a store into an observable view store in order to
   /// compute toolbar content from store state.
@@ -497,7 +497,7 @@ extension WithViewStore: ToolbarContent where Content: ToolbarContent {
   }
 }
 
-@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension WithViewStore where State: Equatable, Content: ToolbarContent {
   /// Initializes a structure that transforms a store into an observable view store in order to
   /// compute toolbar content from equatable store state.
@@ -523,7 +523,7 @@ extension WithViewStore where State: Equatable, Content: ToolbarContent {
   }
 }
 
-@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension WithViewStore where State == Void, Content: ToolbarContent {
   /// Initializes a structure that transforms a store into an observable view store in order to
   /// compute toolbar content from void store state.
