@@ -15,14 +15,40 @@ import Foundation
 /// @Dependency(\.date) var date
 /// ```
 public struct DependencyValues: Sendable {
-  /// The current task's dependencies.
-  ///
-  /// You don't typically access dependencies directly, and instead will use the ``Dependency``
-  /// property from your reducer conformance.
-  ///
-  /// This task local value provides a means of performing a scoped operation with certain
-  /// dependency values overridden.
+  // TODO: Can this be internal?
   @TaskLocal public static var current = Self()
+
+  @TaskLocal static var isSetting = false
+
+  public static func withValue<R>(
+    _ valueDuringOperation: (inout Self) throws -> Void,
+    operation: () throws -> R,
+    file: String = #fileID,
+    line: UInt = #line
+  ) rethrows -> R {
+    try Self.$isSetting.withValue(true) {
+      var dependencies = Self.current
+      try valueDuringOperation(&dependencies)
+      return try Self.$current.withValue(dependencies) {
+        try operation()
+      }
+    }
+  }
+
+  public static func withValue<R>(
+    _ valueDuringOperation: (inout Self) async throws -> Void,
+    operation: () async throws -> R,
+    file: String = #fileID,
+    line: UInt = #line
+  ) async rethrows -> R {
+    try await Self.$isSetting.withValue(true) {
+      var dependencies = Self.current
+      try await valueDuringOperation(&dependencies)
+      return try await Self.$current.withValue(dependencies) {
+        try await operation()
+      }
+    }
+  }
 
   private var storage: [ObjectIdentifier: AnySendable] = [:]
 
@@ -73,33 +99,35 @@ public struct DependencyValues: Sendable {
         case .live:
           guard let value = _liveValue(Key.self) as? Key.Value
           else {
-            runtimeWarning(
-              """
-              A dependency at %@:%d is being used in a live environment without providing a live \
-              implementation:
+            if !Self.isSetting {
+              runtimeWarning(
+                """
+                A dependency at %@:%d is being used in a live environment without providing a live \
+                implementation:
 
-                Key:
-                  %3$@
-                Dependency:
-                  %4$@
+                  Key:
+                    %@
+                  Dependency:
+                    %@
 
-              Every dependency registered with the library must conform to 'DependencyKey', \
-              and that conformance must be visible to the running application.
+                Every dependency registered with the library must conform to 'DependencyKey', and \
+                that conformance must be visible to the running application.
 
-              To fix, make sure that '%3$@' conforms to 'DependencyKey' by providing a live \
-              implementation of your dependency, and make sure that the conformance is linked \
-              with this current application.
-              """,
-              [
-                "\(fileID)",
-                line,
-                typeName(Key.self),
-                typeName(Key.Value.self),
-                typeName(Key.self),
-              ],
-              file: file,
-              line: line
-            )
+                To fix, make sure that '%@' conforms to 'DependencyKey' by providing a live \
+                implementation of your dependency, and make sure that the conformance is linked with \
+                this current application.
+                """,
+                [
+                  "\(fileID)",
+                  line,
+                  typeName(Key.self),
+                  typeName(Key.Value.self),
+                  typeName(Key.self),
+                ],
+                file: file,
+                line: line
+              )
+            }
             return Key.testValue
           }
           return value
