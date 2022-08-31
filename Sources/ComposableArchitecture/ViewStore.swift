@@ -1,13 +1,13 @@
 import Combine
 import SwiftUI
 
-/// A ``ViewStore`` is an object that can observe state changes and send actions. They are most
-/// commonly used in views, such as SwiftUI views, UIView or UIViewController, but they can be
-/// used anywhere it makes sense to observe state and send actions.
+/// A `ViewStore` is an object that can observe state changes and send actions. They are most
+/// commonly used in views, such as SwiftUI views, UIView or UIViewController, but they can be used
+/// anywhere it makes sense to observe state or send actions.
 ///
-/// In SwiftUI applications, a ``ViewStore`` is accessed most commonly using the ``WithViewStore``
-/// view. It can be initialized with a store and a closure that is handed a view store and must
-/// return a view to be rendered:
+/// In SwiftUI applications, a `ViewStore` is accessed most commonly using the ``WithViewStore``
+/// view. It can be initialized with a store and a closure that is handed a view store and returns a
+/// view:
 ///
 /// ```swift
 /// var body: some View {
@@ -20,16 +20,16 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// It can also be observed directly by views, scenes, commands, and other contexts that support the
-/// `@ObservedObject` property wrapper:
+/// View stores can also be observed directly by views, scenes, commands, and other contexts that
+/// support the `@ObservedObject` property wrapper:
 ///
 /// ```swift
 /// @ObservedObject var viewStore: ViewStore<State, Action>
 /// ```
 ///
 /// > Tip: If you experience compile-time issues with views that use ``WithViewStore``, try
-/// > observing the view store directly using an `@ObservedObject`, instead, which is easier on the
-/// > compiler.
+/// > observing the view store directly using the `@ObservedObject` property wrapper, instead, which
+/// > is easier on the compiler.
 ///
 /// In UIKit applications a `ViewStore` can be created from a ``Store`` and then subscribed to for
 /// state updates:
