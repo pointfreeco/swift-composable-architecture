@@ -54,7 +54,7 @@ public struct _StateObjectViewStore<State, Action, Content> {
   #endif
 
   init(
-    viewStore: @autoclosure @escaping () -> ViewStore<State, Action>,
+    _ viewStore: @autoclosure @escaping () -> ViewStore<State, Action>,
     content: @escaping (ViewStore<State, Action>) -> Content,
     file: StaticString,
     line: UInt,
@@ -99,7 +99,7 @@ public struct _ObservedObjectViewStore<State, Action, Content> {
   #endif
 
   init(
-    viewStore: ViewStore<State, Action>,
+    _ viewStore: ViewStore<State, Action>,
     content: @escaping (ViewStore<State, Action>) -> Content,
     file: StaticString,
     line: UInt,
@@ -228,7 +228,6 @@ extension WithViewStore: DynamicViewContent where State: Collection, Content: Dy
 
 @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension _StateObjectViewStore: View where Content: View {
-  @_disfavoredOverload
   fileprivate init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
     @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content,
@@ -237,7 +236,7 @@ extension _StateObjectViewStore: View where Content: View {
     prefix: String?
   ) {
     self.init(
-      viewStore: viewStore(),
+      viewStore(),
       content: content,
       file: file,
       line: line,
@@ -247,7 +246,6 @@ extension _StateObjectViewStore: View where Content: View {
 }
 
 extension _ObservedObjectViewStore: View where Content: View {
-  @_disfavoredOverload
   init(
     viewStore: ViewStore<State, Action>,
     @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content,
@@ -256,7 +254,7 @@ extension _ObservedObjectViewStore: View where Content: View {
     prefix: String?
   ) {
     self.init(
-      viewStore: viewStore,
+      viewStore,
       content: content,
       file: file,
       line: line,
@@ -338,7 +336,6 @@ extension WithViewStore where State == Void, Content: AccessibilityRotorContent 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 extension _StateObjectViewStore: AccessibilityRotorContent
 where Content: AccessibilityRotorContent {
-  @_disfavoredOverload
   fileprivate init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
     @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> Content,
@@ -347,28 +344,7 @@ where Content: AccessibilityRotorContent {
     prefix: String?
   ) {
     self.init(
-      viewStore: viewStore(),
-      content: content,
-      file: file,
-      line: line,
-      prefix: prefix
-    )
-  }
-}
-
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-extension _ObservedObjectViewStore: AccessibilityRotorContent
-where Content: AccessibilityRotorContent {
-  @_disfavoredOverload
-  fileprivate init(
-    viewStore: ViewStore<State, Action>,
-    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    prefix: String?
-  ) {
-    self.init(
-      viewStore: viewStore,
+      viewStore(),
       content: content,
       file: file,
       line: line,
@@ -457,7 +433,6 @@ extension WithViewStore where State == Void, Content: Commands {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension _StateObjectViewStore: Commands where Content: Commands {
-  @_disfavoredOverload
   fileprivate init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
     @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> Content,
@@ -466,29 +441,7 @@ extension _StateObjectViewStore: Commands where Content: Commands {
     prefix: String?
   ) {
     self.init(
-      viewStore: viewStore(),
-      content: content,
-      file: file,
-      line: line,
-      prefix: prefix
-    )
-  }
-}
-
-@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-extension _ObservedObjectViewStore: Commands where Content: Commands {
-  @_disfavoredOverload
-  fileprivate init(
-    viewStore: ViewStore<State, Action>,
-    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    prefix: String?
-  ) {
-    self.init(
-      viewStore: viewStore,
+      viewStore(),
       content: content,
       file: file,
       line: line,
@@ -569,7 +522,6 @@ extension WithViewStore where State == Void, Content: Scene {
 
 @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension _StateObjectViewStore: Scene where Content: Scene {
-  @_disfavoredOverload
   fileprivate init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
     @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content,
@@ -578,27 +530,7 @@ extension _StateObjectViewStore: Scene where Content: Scene {
     prefix: String?
   ) {
     self.init(
-      viewStore: viewStore(),
-      content: content,
-      file: file,
-      line: line,
-      prefix: prefix
-    )
-  }
-}
-
-@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
-extension _ObservedObjectViewStore: Scene where Content: Scene {
-  @_disfavoredOverload
-  fileprivate init(
-    viewStore: ViewStore<State, Action>,
-    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    prefix: String?
-  ) {
-    self.init(
-      viewStore: viewStore,
+      viewStore(),
       content: content,
       file: file,
       line: line,
@@ -679,7 +611,6 @@ extension WithViewStore where State == Void, Content: ToolbarContent {
 
 @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension _StateObjectViewStore: ToolbarContent where Content: ToolbarContent {
-  @_disfavoredOverload
   fileprivate init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
     @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content,
@@ -688,27 +619,7 @@ extension _StateObjectViewStore: ToolbarContent where Content: ToolbarContent {
     prefix: String?
   ) {
     self.init(
-      viewStore: viewStore(),
-      content: content,
-      file: file,
-      line: line,
-      prefix: prefix
-    )
-  }
-}
-
-@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
-extension _ObservedObjectViewStore: ToolbarContent where Content: ToolbarContent {
-  @_disfavoredOverload
-  fileprivate init(
-    viewStore: ViewStore<State, Action>,
-    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    prefix: String?
-  ) {
-    self.init(
-      viewStore: viewStore,
+      viewStore(),
       content: content,
       file: file,
       line: line,
