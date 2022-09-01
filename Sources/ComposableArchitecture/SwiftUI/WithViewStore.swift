@@ -185,6 +185,7 @@ public struct WithViewStore<State, Action, Content> {
 }
 
 // MARK: - View
+
 extension WithViewStore: View where Content: View {
   /// Initializes a structure that transforms a store into an observable view store in order to
   /// compute views from store state.
@@ -254,6 +255,7 @@ extension WithViewStore: DynamicViewContent where State: Collection, Content: Dy
 }
 
 // MARK: - AccessibilityRotorContent
+
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 extension WithViewStore: AccessibilityRotorContent where Content: AccessibilityRotorContent {
   /// Initializes a structure that transforms a store into an observable view store in order to
@@ -270,6 +272,8 @@ extension WithViewStore: AccessibilityRotorContent where Content: AccessibilityR
     message:
       """
       For compiler performance, using "WithViewStore" from an accessibility rotor content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+
+      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
       """
   )
   public init(
@@ -303,6 +307,8 @@ extension WithViewStore where State: Equatable, Content: AccessibilityRotorConte
     message:
       """
       For compiler performance, using "WithViewStore" from an accessibility rotor content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+
+      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
       """
   )
   public init(
@@ -329,6 +335,8 @@ extension WithViewStore where State == Void, Content: AccessibilityRotorContent 
     message:
       """
       For compiler performance, using "WithViewStore" from an accessibility rotor content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+
+      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
       """
   )
   public init(
@@ -361,6 +369,8 @@ extension WithViewStore: Commands where Content: Commands {
     message:
       """
       For compiler performance, using "WithViewStore" from a command builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+
+      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
       """
   )
   public init(
@@ -396,6 +406,8 @@ extension WithViewStore where State: Equatable, Content: Commands {
     message:
       """
       For compiler performance, using "WithViewStore" from a command builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+
+      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
       """
   )
   public init(
@@ -424,6 +436,8 @@ extension WithViewStore where State == Void, Content: Commands {
     message:
       """
       For compiler performance, using "WithViewStore" from a command builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+
+      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
       """
   )
   public init(
@@ -437,6 +451,7 @@ extension WithViewStore where State == Void, Content: Commands {
 }
 
 // MARK: - Scene
+
 @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension WithViewStore: Scene where Content: Scene {
   /// Initializes a structure that transforms a store into an observable view store in order to
@@ -453,6 +468,8 @@ extension WithViewStore: Scene where Content: Scene {
     message:
       """
       For compiler performance, using "WithViewStore" from a scene builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+
+      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
       """
   )
   public init(
@@ -486,6 +503,8 @@ extension WithViewStore where State: Equatable, Content: Scene {
     message:
       """
       For compiler performance, using "WithViewStore" from a scene builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+
+      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
       """
   )
   public init(
@@ -512,6 +531,8 @@ extension WithViewStore where State == Void, Content: Scene {
     message:
       """
       For compiler performance, using "WithViewStore" from a scene builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+
+      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
       """
   )
   public init(
@@ -542,6 +563,8 @@ extension WithViewStore: ToolbarContent where Content: ToolbarContent {
     message:
       """
       For compiler performance, using "WithViewStore" from a toolbar content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+
+      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
       """
   )
   public init(
@@ -575,6 +598,8 @@ extension WithViewStore where State: Equatable, Content: ToolbarContent {
     message:
       """
       For compiler performance, using "WithViewStore" from a toolbar content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+
+      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
       """
   )
   public init(
@@ -601,6 +626,8 @@ extension WithViewStore where State == Void, Content: ToolbarContent {
     message:
       """
       For compiler performance, using "WithViewStore" from a toolbar content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
+
+      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
       """
   )
   public init(
