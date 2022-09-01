@@ -10,8 +10,7 @@ struct TodosApp: App {
           initialState: AppState(),
           reducer:
             appReducer
-//            .debug()
-          ,
+            .debug(),
           environment: AppEnvironment(
             mainQueue: .main,
             uuid: { UUID() }
