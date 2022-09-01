@@ -33,13 +33,13 @@ extension Effect {
     switch self.operation {
     case .none:
       return .none
-    case let .publisher(publisher):
+    case .publisher:
       return Self(
         operation: .publisher(
           Just(())
             .setFailureType(to: Failure.self)
             .delay(for: dueTime, scheduler: scheduler, options: options)
-            .flatMap { publisher.receive(on: scheduler) }
+            .flatMap { self.publisher.receive(on: scheduler) }
             .eraseToAnyPublisher()
         )
       )
@@ -50,7 +50,13 @@ extension Effect {
           await withTaskCancellation(id: id, cancelInFlight: true) {
             do {
               try await scheduler.sleep(for: dueTime, options: options)
-              await operation(send)
+              await operation(
+                Send { output in
+                  scheduler.schedule {
+                    send(output)
+                  }
+                }
+              )
             } catch {}
           }
         }
