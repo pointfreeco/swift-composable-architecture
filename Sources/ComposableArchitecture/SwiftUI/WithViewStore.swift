@@ -5,7 +5,7 @@ import SwiftUI
 /// A structure that transforms a store into an observable view store in order to compute views from
 /// store state.
 public struct WithViewStore<State, Action, Content> {
-  private let content: (Store<State, Action>, String?) -> Content
+  private let content: (Store<State, Action>, _ prefix: String?) -> Content
   let store: Store<State, Action>
 
   #if DEBUG
@@ -14,7 +14,7 @@ public struct WithViewStore<State, Action, Content> {
 
   fileprivate init(
     store: Store<State, Action>,
-    content: @escaping (Store<State, Action>, String?) -> Content
+    content: @escaping (Store<State, Action>, _ prefix: String?) -> Content
   ) {
     self.content = content
     self.store = store
@@ -146,7 +146,7 @@ extension WithViewStore: View where Content: View {
     self.init(
       store: store,
       content: { store, prefix in
-        if false, #available(iOS 14, macOS 11, tvOS 14, watchOS 7, *) {
+        if #available(iOS 14, macOS 11, tvOS 14, watchOS 7, *) {
           return ViewBuilder.buildEither(
             first: AnyView(
               _StateObjectViewStore(
