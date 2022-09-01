@@ -76,12 +76,12 @@ Looking for something more substantial? Check out the source code for [isowords]
 To build a feature using the Composable Architecture you define some types and values that model your domain:
 
 * **State**: A type that describes the data your feature needs to perform its logic and render its UI.
-* **Action**: A type that represents all of the actions that can happen in your feature, such as user actions, notifications, event sources and more.
+* **Action**: A type that represents all of the actions that can happen in your feature, such as user actions, notifications, event sources, and more.
 * **Environment**: A type that holds any dependencies the feature needs, such as API clients, analytics clients, etc.
 * **Reducer**: A function that describes how to evolve the current state of the app to the next state given an action. The reducer is also responsible for returning any effects that should be run, such as API requests, which can be done by returning an `Effect` value.
 * **Store**: The runtime that actually drives your feature. You send all user actions to the store so that the store can run the reducer and effects, and you can observe state changes in the store so that you can update UI.
 
-The benefits of doing this is that you will instantly unlock testability of your feature, and you will be able to break large, complex features into smaller domains that can be glued together.
+The benefits of doing this are that you will instantly unlock testability of your feature, and you will be able to break large, complex features into smaller domains that can be glued together.
 
 As a basic example, consider a UI that shows a number along with "+" and "−" buttons that increment and decrement the number. To make things interesting, suppose there is also a button that when tapped makes an API request to fetch a random fact about that number and then displays the fact in an alert.
 
@@ -94,7 +94,7 @@ struct AppState: Equatable {
 }
 ```
 
-Next we have the actions in the feature. There are the obvious actions, such as tapping the decrement button, increment button, or fact button. But there are also some slightly non-obvious ones, such as the action of the user dismissing the alert, and the action that occurs when we receive a response from the fact API request:
+Next, we have the actions in the feature. There are the obvious actions, such as tapping the decrement button, increment button, or fact button. But there are also some slightly non-obvious ones, such as the action of the user dismissing the alert, and the action that occurs when we receive a response from the fact API request:
 
 ```swift
 enum AppAction: Equatable {
@@ -106,7 +106,7 @@ enum AppAction: Equatable {
 }
 ```
 
-Next we model the environment of dependencies this feature needs to do its job. In particular, to fetch a number fact we can model an async throwing function from `Int` to `String`:
+Next, we model the environment of dependencies this feature needs to do its job. In particular, to fetch a number fact we can model an async throwing function from `Int` to `String`:
 
 ```swift
 struct AppEnvironment {
@@ -252,20 +252,21 @@ Once we are ready to display this view, for example in the app's entry point, we
 ```swift
 @main
 struct CaseStudiesApp: App {
-var body: some Scene {
-  AppView(
-    store: Store(
-      initialState: AppState(),
-      reducer: appReducer,
-      environment: AppEnvironment(
-        numberFact: { number in 
-          let (data, _) = try await URLSession.shared
-            .data(from: .init(string: "http://numbersapi.com/\(number)")!)
-          return String(decoding: data, using: UTF8.self)
-        }
+  var body: some Scene {
+    AppView(
+      store: Store(
+        initialState: AppState(),
+        reducer: appReducer,
+        environment: AppEnvironment(
+          numberFact: { number in 
+            let (data, _) = try await URLSession.shared
+              .data(from: .init(string: "http://numbersapi.com/\(number)")!)
+            return String(decoding: data, using: UTF8.self)
+          }
+        )
       )
     )
-  )
+  }
 }
 ```
 
@@ -458,7 +459,9 @@ The following translations of this README have been contributed by members of th
 * [Italian](https://gist.github.com/Bellaposa/5114e6d4d55fdb1388e8186886d48958)
 * [Japanese](https://gist.github.com/kalupas226/bdf577e4a7066377ea0a8aaeebcad428)
 * [Korean](https://gist.github.com/pilgwon/ea05e2207ab68bdd1f49dff97b293b17)
+* [Portuguese](https://gist.github.com/SevioCorrea/2bbf337cd084a58c89f2f7f370626dc8)
 * [Simplified Chinese](https://gist.github.com/sh3l6orrr/10c8f7c634a892a9c37214f3211242ad)
+* [Spanish](https://gist.github.com/pitt500/f5e32fccb575ce112ffea2827c7bf942)
 
 If you'd like to contribute a translation, please [open a PR](https://github.com/pointfreeco/swift-composable-architecture/edit/main/README.md) with a link to a [Gist](https://gist.github.com)!
 

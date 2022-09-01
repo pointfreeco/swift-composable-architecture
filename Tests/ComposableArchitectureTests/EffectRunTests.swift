@@ -69,7 +69,7 @@ final class EffectRunTests: XCTestCase {
     }
     let store = TestStore(initialState: State(), reducer: reducer, environment: ())
     // NB: We wait a long time here because XCTest failures take a long time to generate
-    await store.send(.tapped).finish(timeout: 5*NSEC_PER_SEC)
+    await store.send(.tapped).finish(timeout: 5 * NSEC_PER_SEC)
   }
 
   func testRunCancellation() async {

@@ -4,7 +4,7 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 @MainActor
-class RefreshableTests: XCTestCase {
+final class RefreshableTests: XCTestCase {
   func testHappyPath() async {
     let store = TestStore(
       initialState: RefreshableState(),
@@ -59,7 +59,7 @@ class RefreshableTests: XCTestCase {
     await store.send(.incrementButtonTapped) {
       $0.count = 1
     }
-    await store.send(.refresh) 
+    await store.send(.refresh)
     await store.send(.cancelButtonTapped)
   }
 }

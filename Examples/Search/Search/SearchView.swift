@@ -32,19 +32,21 @@ struct SearchState: Equatable {
 enum SearchAction: Equatable {
   case forecastResponse(Search.Result.ID, TaskResult<Forecast>)
   case searchQueryChanged(String)
+  case searchQueryChangeDebounced
   case searchResponse(TaskResult<Search>)
   case searchResultTapped(Search.Result)
 }
 
 struct SearchEnvironment {
   var weatherClient: WeatherClient
-  var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
 // MARK: - Search feature reducer
 
 let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
   state, action, environment in
+  enum SearchLocationID {}
+
   switch action {
   case .forecastResponse(_, .failure):
     state.weather = nil
@@ -68,8 +70,6 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
     return .none
 
   case let .searchQueryChanged(query):
-    enum SearchLocationID {}
-
     state.searchQuery = query
 
     // When the query is cleared we can clear the search results, but we have to make sure to cancel
@@ -79,11 +79,16 @@ let searchReducer = Reducer<SearchState, SearchAction, SearchEnvironment> {
       state.weather = nil
       return .cancel(id: SearchLocationID.self)
     }
+    return .none
 
-    return .task {
+  case .searchQueryChangeDebounced:
+    guard !state.searchQuery.isEmpty else {
+      return .none
+    }
+    return .task { [query = state.searchQuery] in
       await .searchResponse(TaskResult { try await environment.weatherClient.search(query) })
     }
-    .debounce(id: SearchLocationID.self, for: 0.3, scheduler: environment.mainQueue)
+    .cancellable(id: SearchLocationID.self)
 
   case .searchResponse(.failure):
     state.results = []
@@ -163,6 +168,12 @@ struct SearchView: View {
         .navigationTitle("Search")
       }
       .navigationViewStyle(.stack)
+      .task(id: viewStore.searchQuery) {
+        do {
+          try await Task.sleep(nanoseconds: NSEC_PER_SEC / 3)
+          await viewStore.send(.searchQueryChangeDebounced).finish()
+        } catch {}
+      }
     }
   }
 
@@ -219,8 +230,7 @@ struct SearchView_Previews: PreviewProvider {
           weatherClient: WeatherClient(
             forecast: { _ in .mock },
             search: { _ in .mock }
-          ),
-          mainQueue: .main
+          )
         )
       )
     )

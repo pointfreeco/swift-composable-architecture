@@ -101,7 +101,7 @@ struct AppView: View {
         )
         .badge("\(viewStore.unreadActivityCount)")
 
-        …
+        // ...
       }
     }
   }
@@ -131,7 +131,7 @@ So, instead of performing intense work like this in your reducer:
 
 ```swift
 case .buttonTapped:
-  var result = …
+  var result = // ...
   for value in someLargeCollection {
     // Some intense computation with value
   }
@@ -144,7 +144,7 @@ and then delivering the result in an action:
 ```swift
 case .buttonTapped:
   return .task {
-    var result = …
+    var result = // ...
     for (index, value) in someLargeCollection.enumerated() {
       // Some intense computation with value
 
@@ -223,3 +223,45 @@ This greatly reduces the bandwidth of actions being sent into the system so that
 incurring unnecessary costs for sending actions.
 
 <!--### Memory usage-->
+
+### Compiler performance
+
+In very large SwiftUI applications you may experience degraded compiler performance causing long
+compile times, and possibly even compiler failures due to "complex expressions." The
+``WithViewStore``  helpers that comes with the library can exacerbate that problem for very complex
+views. If you are running into issues using ``WithViewStore`` you can make a small change to your
+view to use an `@ObservedObject` directly.
+
+For example, if your view looks like this:
+
+```swift
+struct FeatureView: View {
+  let store: Store<FeatureState, FeatureAction>
+
+  var body: some View {
+    WithViewStore(self.store) { viewStore in
+      // A large, complex view inside here...
+    }
+  }
+}
+```
+
+...and you start running into compiler troubles, then you can refactor to the following:
+
+```swift
+struct FeatureView: View {
+  let store: Store<FeatureState, FeatureAction>
+  @ObservedObject var viewStore: ViewStore<FeatureState, FeatureAction>
+
+  init(store: Store<FeatureState, FeatureAction>) {
+    self.store = store
+    self.viewStore = ViewStore(self.store))
+  }
+
+  var body: some View {
+    // A large, complex view inside here...
+  }
+}
+```
+
+That should greatly improve the compiler's ability to type-check your view.

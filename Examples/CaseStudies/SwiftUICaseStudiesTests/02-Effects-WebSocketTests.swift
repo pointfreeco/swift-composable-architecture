@@ -5,7 +5,7 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 @MainActor
-class WebSocketTests: XCTestCase {
+final class WebSocketTests: XCTestCase {
   func testWebSocketHappyPath() async {
     let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
     let messages = AsyncStream<TaskResult<WebSocketClient.Message>>.streamWithContinuation()

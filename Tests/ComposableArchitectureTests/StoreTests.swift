@@ -500,7 +500,7 @@ final class StoreTests: XCTestCase {
 
     await store.send(.task).cancel()
   }
-  
+
   func testScopeCancellation() async throws {
     let neverEndingTask = Task<Void, Error> { try await Task.never() }
 

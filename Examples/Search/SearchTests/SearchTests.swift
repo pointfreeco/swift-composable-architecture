@@ -5,16 +5,13 @@ import XCTest
 @testable import Search
 
 @MainActor
-class SearchTests: XCTestCase {
-  let mainQueue = DispatchQueue.test
-
+final class SearchTests: XCTestCase {
   func testSearchAndClearQuery() async {
     let store = TestStore(
       initialState: SearchState(),
       reducer: searchReducer,
       environment: SearchEnvironment(
-        weatherClient: .unimplemented,
-        mainQueue: self.mainQueue.eraseToAnyScheduler()
+        weatherClient: .unimplemented
       )
     )
     store.environment.weatherClient.search = { _ in .mock }
@@ -22,7 +19,7 @@ class SearchTests: XCTestCase {
     await store.send(.searchQueryChanged("S")) {
       $0.searchQuery = "S"
     }
-    await self.mainQueue.advance(by: 0.3)
+    await store.send(.searchQueryChangeDebounced)
     await store.receive(.searchResponse(.success(.mock))) {
       $0.results = Search.mock.results
     }
@@ -37,8 +34,7 @@ class SearchTests: XCTestCase {
       initialState: SearchState(),
       reducer: searchReducer,
       environment: SearchEnvironment(
-        weatherClient: .unimplemented,
-        mainQueue: self.mainQueue.eraseToAnyScheduler()
+        weatherClient: .unimplemented
       )
     )
 
@@ -46,7 +42,7 @@ class SearchTests: XCTestCase {
     await store.send(.searchQueryChanged("S")) {
       $0.searchQuery = "S"
     }
-    await self.mainQueue.advance(by: 0.3)
+    await store.send(.searchQueryChangeDebounced)
     await store.receive(.searchResponse(.failure(SomethingWentWrong())))
   }
 
@@ -58,19 +54,17 @@ class SearchTests: XCTestCase {
       initialState: SearchState(),
       reducer: searchReducer,
       environment: SearchEnvironment(
-        weatherClient: weatherClient,
-        mainQueue: self.mainQueue.eraseToAnyScheduler()
+        weatherClient: weatherClient
       )
     )
 
-    await store.send(.searchQueryChanged("S")) {
+    let searchQueryChanged = await store.send(.searchQueryChanged("S")) {
       $0.searchQuery = "S"
     }
-    await self.mainQueue.advance(by: 0.2)
+    await searchQueryChanged.cancel()
     await store.send(.searchQueryChanged("")) {
       $0.searchQuery = ""
     }
-    await self.mainQueue.run()
   }
 
   func testTapOnLocation() async {
@@ -92,15 +86,13 @@ class SearchTests: XCTestCase {
       initialState: SearchState(results: results),
       reducer: searchReducer,
       environment: SearchEnvironment(
-        weatherClient: weatherClient,
-        mainQueue: self.mainQueue.eraseToAnyScheduler()
+        weatherClient: weatherClient
       )
     )
 
     await store.send(.searchResultTapped(specialResult)) {
       $0.resultForecastRequestInFlight = specialResult
     }
-    await self.mainQueue.advance()
     await store.receive(.forecastResponse(42, .success(.mock))) {
       $0.resultForecastRequestInFlight = nil
       $0.weather = SearchState.Weather(
@@ -133,6 +125,8 @@ class SearchTests: XCTestCase {
   }
 
   func testTapOnLocationCancelsInFlightRequest() async {
+    let scheduler = DispatchQueue.test
+
     let specialResult = Search.Result(
       country: "Special Country",
       latitude: 0,
@@ -146,7 +140,7 @@ class SearchTests: XCTestCase {
 
     var weatherClient = WeatherClient.unimplemented
     weatherClient.forecast = { _ in
-      try await self.mainQueue.sleep(for: .seconds(0))
+      try await scheduler.sleep(for: .seconds(0))
       return .mock
     }
 
@@ -154,8 +148,7 @@ class SearchTests: XCTestCase {
       initialState: SearchState(results: results),
       reducer: searchReducer,
       environment: SearchEnvironment(
-        weatherClient: weatherClient,
-        mainQueue: self.mainQueue.eraseToAnyScheduler()
+        weatherClient: weatherClient
       )
     )
 
@@ -165,7 +158,7 @@ class SearchTests: XCTestCase {
     await store.send(.searchResultTapped(specialResult)) {
       $0.resultForecastRequestInFlight = specialResult
     }
-    await self.mainQueue.advance()
+    await scheduler.advance()
     await store.receive(.forecastResponse(42, .success(.mock))) {
       $0.resultForecastRequestInFlight = nil
       $0.weather = SearchState.Weather(
@@ -207,15 +200,13 @@ class SearchTests: XCTestCase {
       initialState: SearchState(results: results),
       reducer: searchReducer,
       environment: SearchEnvironment(
-        weatherClient: weatherClient,
-        mainQueue: self.mainQueue.eraseToAnyScheduler()
+        weatherClient: weatherClient
       )
     )
 
     await store.send(.searchResultTapped(results.first!)) {
       $0.resultForecastRequestInFlight = results.first!
     }
-    await self.mainQueue.advance()
     await store.receive(.forecastResponse(1, .failure(SomethingWentWrong()))) {
       $0.resultForecastRequestInFlight = nil
     }

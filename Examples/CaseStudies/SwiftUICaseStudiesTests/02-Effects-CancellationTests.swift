@@ -5,7 +5,7 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 @MainActor
-class EffectsCancellationTests: XCTestCase {
+final class EffectsCancellationTests: XCTestCase {
   func testTrivia_SuccessfulRequest() async {
     let store = TestStore(
       initialState: EffectsCancellationState(),

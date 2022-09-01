@@ -55,12 +55,12 @@ let effectsBasicsReducer = Reducer<
     state.numberFact = nil
     // Return an effect that re-increments the count after 1 second if the count is negative
     return state.count >= 0
-    ? .none
-    : .task {
-      try await environment.mainQueue.sleep(for: 1)
-      return .decrementDelayResponse
-    }
-    .cancellable(id: DelayID.self)
+      ? .none
+      : .task {
+        try await environment.mainQueue.sleep(for: 1)
+        return .decrementDelayResponse
+      }
+      .cancellable(id: DelayID.self)
 
   case .decrementDelayResponse:
     if state.count < 0 {
@@ -72,8 +72,8 @@ let effectsBasicsReducer = Reducer<
     state.count += 1
     state.numberFact = nil
     return state.count >= 0
-    ? .cancel(id: DelayID.self)
-    : .none
+      ? .cancel(id: DelayID.self)
+      : .none
 
   case .numberFactButtonTapped:
     state.isNumberFactRequestInFlight = true

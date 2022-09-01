@@ -5,7 +5,7 @@ import XCTest
 @testable import NewGameSwiftUI
 
 @MainActor
-class NewGameSwiftUITests: XCTestCase {
+final class NewGameSwiftUITests: XCTestCase {
   let store = TestStore(
     initialState: NewGameState(),
     reducer: newGameReducer,

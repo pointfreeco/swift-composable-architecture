@@ -5,7 +5,7 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 @MainActor
-class AnimationTests: XCTestCase {
+final class AnimationTests: XCTestCase {
   func testRainbow() async {
     let mainQueue = DispatchQueue.test
 
@@ -57,7 +57,6 @@ class AnimationTests: XCTestCase {
     await store.receive(.setColor(.black)) {
       $0.circleColor = .black
     }
-
 
     await mainQueue.advance(by: .seconds(1))
   }

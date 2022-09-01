@@ -5,7 +5,7 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 @MainActor
-class LifecycleTests: XCTestCase {
+final class LifecycleTests: XCTestCase {
   func testLifecycle() async {
     let mainQueue = DispatchQueue.test
 

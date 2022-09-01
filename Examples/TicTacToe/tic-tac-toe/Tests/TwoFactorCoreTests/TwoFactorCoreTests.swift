@@ -4,7 +4,7 @@ import TwoFactorCore
 import XCTest
 
 @MainActor
-class TwoFactorCoreTests: XCTestCase {
+final class TwoFactorCoreTests: XCTestCase {
   func testFlow_Success() async {
     let store = TestStore(
       initialState: TwoFactorState(token: "deadbeefdeadbeef"),

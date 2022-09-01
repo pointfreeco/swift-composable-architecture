@@ -276,8 +276,6 @@ let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
       environment: { .init(mainQueue: $0.mainQueue, webSocket: $0.webSocket) }
     )
 )
-.debug()
-.signpost()
 
 @Sendable private func liveFetchNumber() async throws -> Int {
   try await Task.sleep(nanoseconds: NSEC_PER_SEC)

@@ -1,6 +1,7 @@
 import Combine
 import ComposableArchitecture
 import Foundation
+import XCTestDynamicOverlay
 
 struct DownloadClient {
   var download: @Sendable (URL) -> AsyncThrowingStream<Event, Error>
@@ -22,7 +23,8 @@ extension DownloadClient {
             var progress = 0
             for try await byte in bytes {
               data.append(byte)
-              let newProgress = Int(Double(data.count) / Double(response.expectedContentLength) * 100)
+              let newProgress = Int(
+                Double(data.count) / Double(response.expectedContentLength) * 100)
               if newProgress != progress {
                 progress = newProgress
                 continuation.yield(.updateProgress(Double(progress) / 100))
@@ -36,5 +38,9 @@ extension DownloadClient {
         }
       }
     }
+  )
+
+  static let unimplemented = Self(
+    download: XCTUnimplemented("\(Self.self).asyncDownload")
   )
 }

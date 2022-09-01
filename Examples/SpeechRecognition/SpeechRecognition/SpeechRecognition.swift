@@ -103,7 +103,6 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, e
     }
   }
 }
-.debug()
 
 struct SpeechRecognitionView: View {
   let store: Store<AppState, AppAction>
