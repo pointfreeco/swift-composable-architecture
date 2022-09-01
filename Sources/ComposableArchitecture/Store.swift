@@ -414,11 +414,13 @@ public final class Store<State, Action> {
     }
   }
 
+  // TODO: move docs for this into overloads of scope
   /// Returns a "stateless" store by erasing state to `Void`.
   public var stateless: Store<Void, Action> {
     self.scope(state: { _ in () })
   }
 
+  // TODO: move docs for this into overloads of scope
   /// Returns an "actionless" store by erasing action to `Never`.
   public var actionless: Store<State, Never> {
     func absurd<A>(_ never: Never) -> A {}
