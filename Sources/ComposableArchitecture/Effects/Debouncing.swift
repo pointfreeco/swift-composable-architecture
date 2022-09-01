@@ -33,7 +33,7 @@ extension Effect {
     switch self.operation {
     case .none:
       return .none
-    case .publisher, .run:
+    case .publisher:
       return Self(
         operation: .publisher(
           Just(())
@@ -44,6 +44,23 @@ extension Effect {
         )
       )
       .cancellable(id: id, cancelInFlight: true)
+    case let .run(priority, operation):
+      return Self(
+        operation: .run(priority) { send in
+          await withTaskCancellation(id: id, cancelInFlight: true) {
+            do {
+              try await scheduler.sleep(for: dueTime, options: options)
+              await operation(
+                Send { output in
+                  scheduler.schedule {
+                    send(output)
+                  }
+                }
+              )
+            } catch {}
+          }
+        }
+      )
     }
   }
 
