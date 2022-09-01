@@ -334,8 +334,11 @@ public final class Store<State, Action> {
 
     let tasks = Box<[Task<Void, Never>]>(wrappedValue: [])
 
-    while !self.bufferedActions.isEmpty {
-      let action = self.bufferedActions.removeFirst()
+    var index = self.bufferedActions.startIndex
+    defer { self.bufferedActions = [] }
+    while index < self.bufferedActions.endIndex {
+      defer { index += 1 }
+      let action = self.bufferedActions[index]
       let effect = self.reducer(&currentState, action)
 
       switch effect.operation {
