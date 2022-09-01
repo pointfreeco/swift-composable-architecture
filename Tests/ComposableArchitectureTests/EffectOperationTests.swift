@@ -105,12 +105,12 @@ class EffectOperationTests: XCTestCase {
       try await Task.sleep(nanoseconds: NSEC_PER_SEC / 10)
       return 42
     }
-      .merge(
-        with: .task {
-          try await Task.sleep(nanoseconds: NSEC_PER_SEC / 5)
-          return 1729
-        }
-      )
+    .merge(
+      with: .task {
+        try await Task.sleep(nanoseconds: NSEC_PER_SEC / 5)
+        return 1729
+      }
+    )
     switch effect.operation {
     case let .run(_, send):
       await send(.init(send: { values.append($0) }))
