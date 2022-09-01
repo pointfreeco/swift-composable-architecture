@@ -101,8 +101,16 @@ class EffectOperationTests: XCTestCase {
   func testMergeFuses() async {
     var values = [Int]()
 
-    let effect = Effect<Int, Never>.task { 42 }
-      .merge(with: .task { 1729 })
+    let effect = Effect<Int, Never>.task {
+      try await Task.sleep(nanoseconds: NSEC_PER_SEC / 10)
+      return 42
+    }
+      .merge(
+        with: .task {
+          try await Task.sleep(nanoseconds: NSEC_PER_SEC / 5)
+          return 1729
+        }
+      )
     switch effect.operation {
     case let .run(_, send):
       await send(.init(send: { values.append($0) }))
