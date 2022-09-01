@@ -117,15 +117,16 @@
   }
 
   extension NonExhaustiveTestStore where LocalState: Equatable {
+    @discardableResult
     internal func send(
       _ action: LocalAction,
       file: StaticString = #file,
       line: UInt = #line,
       _ update: ((inout LocalState) throws -> Void)? = nil
-    ) {
+    ) -> ViewStoreTask {
       receivedActions.removeAll() // When developer explicitly sends an action, reset all recorded ones so we can compare from this point in time
       
-      verifyUpdateBlockMatchesState(
+      let task = verifyUpdateBlockMatchesState(
           actionToSend: action,
           file: file,
           line: line,
@@ -135,8 +136,9 @@
       if "\(self.file)" == "\(file)" {
         self.line = line
       }
+      return task!
     }
-      
+    
     internal func receive(
       _ action: Action,
       file: StaticString = #file,
@@ -153,7 +155,7 @@
           return
       }
         
-      verifyUpdateBlockMatchesState(
+      _ = verifyUpdateBlockMatchesState(
           actionToSend: .none,
           file: file,
           line: line,
@@ -170,16 +172,16 @@
         file: StaticString = #file,
         line: UInt = #line,
         _ update: ((inout LocalState) throws -> Void)? = nil
-    ) {
+    ) -> ViewStoreTask? {
         let viewStore = ViewStore(
           self.store.scope(
             state: self.toLocalState,
             action: { .init(origin: .send($0), file: file, line: line) }
           )
         )
-
+        var task: ViewStoreTask?
         if let action = actionToSend {
-            viewStore.send(action)
+            task = viewStore.send(action)
         }
 
         // We are only asserting that update block doesn't cause state change that would NOT equal actual state change, thus ignoring any additional changes that actually happen
@@ -199,6 +201,7 @@
         } catch {
           XCTFail("Threw error: \(error)", file: file, line: line)
         }
+        return task
     }
   }
 
