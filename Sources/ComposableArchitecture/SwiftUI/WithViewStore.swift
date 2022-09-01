@@ -33,7 +33,11 @@ public struct WithViewStore<State, Action, Content> {
   }
 
   public var body: Content {
-    return self.content(self.store, self.prefix)
+    #if DEBUG
+      return self.content(self.store, self.prefix)
+    #else
+      return self.content(self.store, nil)
+    #endif
   }
 }
 
@@ -58,14 +62,16 @@ public struct _StateObjectViewStore<State, Action, Content> {
   ) {
     self._viewStore = .init(wrappedValue: viewStore())
     self.content = content
-    self.file = file
-    self.line = line
-    self.prefix = prefix
-    var previousState: State? = nil
-    self.previousState = { currentState in
-      defer { previousState = currentState }
-      return previousState
-    }
+    #if DEBUG
+      self.file = file
+      self.line = line
+      self.prefix = prefix
+      var previousState: State? = nil
+      self.previousState = { currentState in
+        defer { previousState = currentState }
+        return previousState
+      }
+    #endif
   }
 
   public var body: Content {
@@ -101,14 +107,16 @@ public struct _ObservedObjectViewStore<State, Action, Content> {
   ) {
     self.viewStore = viewStore
     self.content = content
-    self.file = file
-    self.line = line
-    self.prefix = prefix
-    var previousState: State? = nil
-    self.previousState = { currentState in
-      defer { previousState = currentState }
-      return previousState
-    }
+    #if DEBUG
+      self.file = file
+      self.line = line
+      self.prefix = prefix
+      var previousState: State? = nil
+      self.previousState = { currentState in
+        defer { previousState = currentState }
+        return previousState
+      }
+    #endif
   }
 
   public var body: Content {
