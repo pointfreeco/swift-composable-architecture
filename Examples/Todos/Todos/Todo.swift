@@ -45,6 +45,6 @@ struct TodoView: View {
       }
       .foregroundColor(viewStore.isComplete ? .gray : nil)
     }
-    .debug()
+    .debug("HELLO")
   }
 }
