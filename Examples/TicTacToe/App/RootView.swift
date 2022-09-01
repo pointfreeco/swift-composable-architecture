@@ -30,7 +30,7 @@ enum GameType: Identifiable {
 struct RootView: View {
   let store = Store(
     initialState: TicTacToe.State(),
-    reducer: TicTacToe()
+    reducer: TicTacToe().debug()
   )
 
   @State var showGame: GameType?

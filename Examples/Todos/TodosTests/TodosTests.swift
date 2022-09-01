@@ -9,8 +9,17 @@ final class TodosTests: XCTestCase {
 
   func testAddTodo() async {
     let store = TestStore(
+<<<<<<< HEAD
       initialState: Todos.State(),
       reducer: Todos()
+=======
+      initialState: AppState(),
+      reducer: appReducer,
+      environment: AppEnvironment(
+        mainQueue: self.mainQueue.eraseToAnyScheduler(),
+        uuid: UUID.incrementing
+      )
+>>>>>>> main
     )
 
     store.dependencies.mainQueue = self.mainQueue.eraseToAnyScheduler()
@@ -25,6 +34,21 @@ final class TodosTests: XCTestCase {
         ),
         at: 0
       )
+    }
+
+    await store.send(.addTodoButtonTapped) {
+      $0.todos = [
+        TodoState(
+          description: "",
+          id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+          isComplete: false
+        ),
+        TodoState(
+          description: "",
+          id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+          isComplete: false
+        ),
+      ]
     }
   }
 
@@ -41,7 +65,15 @@ final class TodosTests: XCTestCase {
 
     let store = TestStore(
       initialState: state,
+<<<<<<< HEAD
       reducer: Todos()
+=======
+      reducer: appReducer,
+      environment: AppEnvironment(
+        mainQueue: self.mainQueue.eraseToAnyScheduler(),
+        uuid: UUID.incrementing
+      )
+>>>>>>> main
     )
 
     store.dependencies.mainQueue = self.mainQueue.eraseToAnyScheduler()
@@ -72,7 +104,15 @@ final class TodosTests: XCTestCase {
 
     let store = TestStore(
       initialState: state,
+<<<<<<< HEAD
       reducer: Todos()
+=======
+      reducer: appReducer,
+      environment: AppEnvironment(
+        mainQueue: self.mainQueue.eraseToAnyScheduler(),
+        uuid: UUID.incrementing
+      )
+>>>>>>> main
     )
 
     store.dependencies.mainQueue = self.mainQueue.eraseToAnyScheduler()
@@ -108,7 +148,15 @@ final class TodosTests: XCTestCase {
 
     let store = TestStore(
       initialState: state,
+<<<<<<< HEAD
       reducer: Todos()
+=======
+      reducer: appReducer,
+      environment: AppEnvironment(
+        mainQueue: self.mainQueue.eraseToAnyScheduler(),
+        uuid: UUID.incrementing
+      )
+>>>>>>> main
     )
 
     store.dependencies.mainQueue = self.mainQueue.eraseToAnyScheduler()
@@ -143,7 +191,15 @@ final class TodosTests: XCTestCase {
 
     let store = TestStore(
       initialState: state,
+<<<<<<< HEAD
       reducer: Todos()
+=======
+      reducer: appReducer,
+      environment: AppEnvironment(
+        mainQueue: self.mainQueue.eraseToAnyScheduler(),
+        uuid: UUID.incrementing
+      )
+>>>>>>> main
     )
 
     store.dependencies.mainQueue = self.mainQueue.eraseToAnyScheduler()
@@ -179,7 +235,15 @@ final class TodosTests: XCTestCase {
 
     let store = TestStore(
       initialState: state,
+<<<<<<< HEAD
       reducer: Todos()
+=======
+      reducer: appReducer,
+      environment: AppEnvironment(
+        mainQueue: self.mainQueue.eraseToAnyScheduler(),
+        uuid: UUID.incrementing
+      )
+>>>>>>> main
     )
 
     store.dependencies.mainQueue = self.mainQueue.eraseToAnyScheduler()
@@ -216,7 +280,15 @@ final class TodosTests: XCTestCase {
 
     let store = TestStore(
       initialState: state,
+<<<<<<< HEAD
       reducer: Todos()
+=======
+      reducer: appReducer,
+      environment: AppEnvironment(
+        mainQueue: self.mainQueue.eraseToAnyScheduler(),
+        uuid: UUID.incrementing
+      )
+>>>>>>> main
     )
 
     store.dependencies.mainQueue = self.mainQueue.eraseToAnyScheduler()
@@ -264,7 +336,15 @@ final class TodosTests: XCTestCase {
 
     let store = TestStore(
       initialState: state,
+<<<<<<< HEAD
       reducer: Todos()
+=======
+      reducer: appReducer,
+      environment: AppEnvironment(
+        mainQueue: self.mainQueue.eraseToAnyScheduler(),
+        uuid: UUID.incrementing
+      )
+>>>>>>> main
     )
 
     store.dependencies.mainQueue = self.mainQueue.eraseToAnyScheduler()
@@ -306,7 +386,15 @@ final class TodosTests: XCTestCase {
 
     let store = TestStore(
       initialState: state,
+<<<<<<< HEAD
       reducer: Todos()
+=======
+      reducer: appReducer,
+      environment: AppEnvironment(
+        mainQueue: self.mainQueue.eraseToAnyScheduler(),
+        uuid: UUID.incrementing
+      )
+>>>>>>> main
     )
 
     store.dependencies.mainQueue = self.mainQueue.eraseToAnyScheduler()
@@ -320,3 +408,21 @@ final class TodosTests: XCTestCase {
     }
   }
 }
+<<<<<<< HEAD
+=======
+
+extension UUID {
+  // A deterministic, auto-incrementing "UUID" generator for testing.
+  static var incrementing: @Sendable () -> UUID {
+    class UncheckedCount: @unchecked Sendable {
+      var value = 0
+      func increment() { self.value += 1 }
+    }
+    let count = UncheckedCount()
+    return {
+      defer { count.increment() }
+      return UUID(uuidString: "00000000-0000-0000-0000-\(String(format: "%012x", count.value))")!
+    }
+  }
+}
+>>>>>>> main

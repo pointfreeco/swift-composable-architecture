@@ -124,8 +124,8 @@ public struct _DebugReducer<Base: ReducerProtocol, DebugState, DebugAction>: Red
       let effects = self.base.reduce(into: &state, action: action)
       guard let debugAction = self.toDebugAction(action) else { return effects }
       let nextState = self.toDebugState(state)
-      return .merge(
-        .fireAndForget { [actionFormat] in
+      return effects.merge(
+        with: .fireAndForget { [actionFormat] in
           var actionOutput = ""
           if actionFormat == .prettyPrint {
             customDump(debugAction, to: &actionOutput, indent: 2)
@@ -143,8 +143,7 @@ public struct _DebugReducer<Base: ReducerProtocol, DebugState, DebugAction>: Red
             \(stateOutput)
             """
           )
-        },
-        effects
+        }
       )
     #else
       return self.base.reduce(into: &state, action: action)

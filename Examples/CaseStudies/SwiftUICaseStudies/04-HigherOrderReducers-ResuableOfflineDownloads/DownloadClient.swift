@@ -52,7 +52,7 @@ extension DownloadClient {
     }
   )
 
-  static let unimplemented = DownloadClient(
+  static let unimplemented = Self(
     download: XCTUnimplemented("\(Self.self).download")
   )
 }

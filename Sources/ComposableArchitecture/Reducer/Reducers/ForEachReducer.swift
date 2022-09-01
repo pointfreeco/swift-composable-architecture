@@ -77,10 +77,8 @@ public struct _ForEachReducer<
   public func reduce(
     into state: inout Parent.State, action: Parent.Action
   ) -> Effect<Parent.Action, Never> {
-    return .merge(
-      self.reduceForEach(into: &state, action: action),
-      self.parent.reduce(into: &state, action: action)
-    )
+    self.reduceForEach(into: &state, action: action)
+      .merge(with: self.parent.reduce(into: &state, action: action))
   }
 
   @inlinable

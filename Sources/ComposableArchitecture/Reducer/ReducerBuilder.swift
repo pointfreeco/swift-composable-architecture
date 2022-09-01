@@ -163,10 +163,8 @@ public enum ReducerBuilder<State, Action> {
 
     @inlinable
     public func reduce(into state: inout R0.State, action: R0.Action) -> Effect<R0.Action, Never> {
-      .merge(
-        self.r0.reduce(into: &state, action: action),
-        self.r1.reduce(into: &state, action: action)
-      )
+      self.r0.reduce(into: &state, action: action)
+        .merge(with: self.r1.reduce(into: &state, action: action))
     }
   }
 
@@ -183,7 +181,7 @@ public enum ReducerBuilder<State, Action> {
     public func reduce(
       into state: inout Element.State, action: Element.Action
     ) -> Effect<Element.Action, Never> {
-      .merge(self.reducers.map { $0.reduce(into: &state, action: action) })
+      self.reducers.reduce(.none) { $0.merge(with: $1.reduce(into: &state, action: action)) }
     }
   }
 }

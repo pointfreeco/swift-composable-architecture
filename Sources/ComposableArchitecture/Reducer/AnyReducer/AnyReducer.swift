@@ -137,8 +137,8 @@ public struct AnyReducer<State, Action, Environment> {
   /// - Parameter reducers: An array of reducers.
   /// - Returns: A single reducer.
   public static func combine(_ reducers: [Self]) -> Self {
-    Self { value, action, environment in
-      .merge(reducers.map { $0.reducer(&value, action, environment) })
+    Self { state, action, environment in
+      reducers.reduce(.none) { $0.merge(with: $1(&state, action, environment)) }
     }
   }
 
@@ -153,7 +153,9 @@ public struct AnyReducer<State, Action, Environment> {
   /// - Parameter other: Another reducer.
   /// - Returns: A single reducer.
   public func combined(with other: Self) -> Self {
-    .combine(self, other)
+    Self { state, action, environment in
+      self(&state, action, environment).merge(with: other(&state, action, environment))
+    }
   }
 
   /// Transforms a reducer that works on child state, action, and environment into one that works on
