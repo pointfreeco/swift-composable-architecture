@@ -249,14 +249,18 @@ extension WithViewStore: View where Content: View {
   ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
   ///     equal, repeat view computations are removed,
   ///   - content: A function that can generate content from a view store.
-  public init<_Content>(
+  public init<ObservedContent>(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> _Content
+    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> ObservedContent
   )
-  where Content == _ConditionalContent<AnyView, _ObservedObjectViewStore<State, Action, _Content>> {
+  where
+    Content == _ConditionalContent<
+      AnyView, _ObservedObjectViewStore<State, Action, ObservedContent>
+    >
+  {
     self.init(
       store: store,
       content: { store, prefix in
@@ -295,13 +299,17 @@ extension WithViewStore where State: Equatable, Content: View {
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
-  public init<_Content>(
+  public init<ObservedContent>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> _Content
+    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> ObservedContent
   )
-  where Content == _ConditionalContent<AnyView, _ObservedObjectViewStore<State, Action, _Content>> {
+  where
+    Content == _ConditionalContent<
+      AnyView, _ObservedObjectViewStore<State, Action, ObservedContent>
+    >
+  {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
@@ -313,13 +321,17 @@ extension WithViewStore where State == Void, Content: View {
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
-  public init<_Content>(
+  public init<ObservedContent>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> _Content
+    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> ObservedContent
   )
-  where Content == _ConditionalContent<AnyView, _ObservedObjectViewStore<State, Action, _Content>> {
+  where
+    Content == _ConditionalContent<
+      AnyView, _ObservedObjectViewStore<State, Action, ObservedContent>
+    >
+  {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
@@ -391,13 +403,14 @@ extension WithViewStore: AccessibilityRotorContent where Content: AccessibilityR
      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
      """
   )
-  public init<_Content>(
+  public init<ObservedContent>(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> _Content
-  ) where Content == _StateObjectViewStore<State, Action, _Content> {
+    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) ->
+      ObservedContent
+  ) where Content == _StateObjectViewStore<State, Action, ObservedContent> {
     self.init(
       store: store,
       content: { store, prefix in
@@ -431,12 +444,13 @@ extension WithViewStore where State: Equatable, Content: AccessibilityRotorConte
      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
      """
   )
-  public init<_Content>(
+  public init<ObservedContent>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> _Content
-  ) where Content == _StateObjectViewStore<State, Action, _Content> {
+    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) ->
+      ObservedContent
+  ) where Content == _StateObjectViewStore<State, Action, ObservedContent> {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
@@ -459,12 +473,13 @@ extension WithViewStore where State == Void, Content: AccessibilityRotorContent 
      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
      """
   )
-  public init<_Content>(
+  public init<ObservedContent>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> _Content
-  ) where Content == _StateObjectViewStore<State, Action, _Content> {
+    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) ->
+      ObservedContent
+  ) where Content == _StateObjectViewStore<State, Action, ObservedContent> {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
@@ -513,13 +528,13 @@ extension WithViewStore: Commands where Content: Commands {
        See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
        """
   )
-  public init<_Content>(
+  public init<ObservedContent>(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> _Content
-  ) where Content == _StateObjectViewStore<State, Action, _Content> {
+    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> ObservedContent
+  ) where Content == _StateObjectViewStore<State, Action, ObservedContent> {
     self.init(
       store: store,
       content: { store, prefix in
@@ -555,12 +570,12 @@ extension WithViewStore where State: Equatable, Content: Commands {
        See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
        """
   )
-  public init<_Content>(
+  public init<ObservedContent>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> _Content
-  ) where Content == _StateObjectViewStore<State, Action, _Content> {
+    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> ObservedContent
+  ) where Content == _StateObjectViewStore<State, Action, ObservedContent> {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
@@ -585,12 +600,12 @@ extension WithViewStore where State == Void, Content: Commands {
        See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
        """
   )
-  public init<_Content>(
+  public init<ObservedContent>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> _Content
-  ) where Content == _StateObjectViewStore<State, Action, _Content> {
+    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> ObservedContent
+  ) where Content == _StateObjectViewStore<State, Action, ObservedContent> {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
@@ -638,13 +653,13 @@ extension WithViewStore: Scene where Content: Scene {
        See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
        """
   )
-  public init<_Content>(
+  public init<ObservedContent>(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> _Content
-  ) where Content == _StateObjectViewStore<State, Action, _Content> {
+    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> ObservedContent
+  ) where Content == _StateObjectViewStore<State, Action, ObservedContent> {
     self.init(
       store: store,
       content: { store, prefix in
@@ -678,12 +693,12 @@ extension WithViewStore where State: Equatable, Content: Scene {
        See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
        """
   )
-  public init<_Content>(
+  public init<ObservedContent>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> _Content
-  ) where Content == _StateObjectViewStore<State, Action, _Content> {
+    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> ObservedContent
+  ) where Content == _StateObjectViewStore<State, Action, ObservedContent> {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
@@ -706,12 +721,12 @@ extension WithViewStore where State == Void, Content: Scene {
        See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
        """
   )
-  public init<_Content>(
+  public init<ObservedContent>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> _Content
-  ) where Content == _StateObjectViewStore<State, Action, _Content> {
+    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> ObservedContent
+  ) where Content == _StateObjectViewStore<State, Action, ObservedContent> {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
@@ -757,13 +772,13 @@ extension WithViewStore: ToolbarContent where Content: ToolbarContent {
        See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
        """
   )
-  public init<_Content>(
+  public init<ObservedContent>(
     _ store: Store<State, Action>,
     removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> _Content
-  ) where Content == _StateObjectViewStore<State, Action, _Content> {
+    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> ObservedContent
+  ) where Content == _StateObjectViewStore<State, Action, ObservedContent> {
     self.init(
       store: store,
       content: { store, prefix in
@@ -797,12 +812,12 @@ extension WithViewStore where State: Equatable, Content: ToolbarContent {
        See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
        """
   )
-  public init<_Content>(
+  public init<ObservedContent>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> _Content
-  ) where Content == _StateObjectViewStore<State, Action, _Content> {
+    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> ObservedContent
+  ) where Content == _StateObjectViewStore<State, Action, ObservedContent> {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
@@ -825,12 +840,12 @@ extension WithViewStore where State == Void, Content: ToolbarContent {
        See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
        """
   )
-  public init<_Content>(
+  public init<ObservedContent>(
     _ store: Store<State, Action>,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> _Content
-  ) where Content == _StateObjectViewStore<State, Action, _Content> {
+    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> ObservedContent
+  ) where Content == _StateObjectViewStore<State, Action, ObservedContent> {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
