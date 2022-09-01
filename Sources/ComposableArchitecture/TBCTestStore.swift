@@ -116,6 +116,56 @@ extension TBCTestStore where LocalState: Equatable {
             store.send(action, file: file, line: line, update)
         }
     }
+
+    @MainActor
+    @discardableResult
+    public func send(
+        _ action: LocalAction,
+        file: StaticString = #file,
+        line: UInt = #line,
+        _ update: ((inout LocalState) throws -> Void)? = nil
+    ) async -> TBCTestStoreTask {
+        switch storeImplementation {
+        case let .exhaustive(store):
+            return await TBCTestStoreTask(store.send(action, update, file: file, line: line))
+        case let .nonExhaustive(store):
+            return TBCTestStoreTask(store.send(action, file: file, line: line, update))
+        }
+    }
+
+    @MainActor
+    public func finish(
+        timeout nanoseconds: UInt64? = nil,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) async {
+        switch storeImplementation {
+        case let .exhaustive(store):
+            return await store.finish(timeout: nanoseconds, file: file, line: line)
+        case .nonExhaustive:
+            return
+        }
+    }
+}
+
+/// Wrapper around the currently internal `TestStoreTask`
+/// can be removed with us removing our custom TestStore implementations
+public struct TBCTestStoreTask: Sendable {
+    var _cancel: @Sendable () async -> Void
+    var _finish: @Sendable () async -> Void
+
+    public func cancel() async { await _cancel() }
+    public func finish() async { await _finish() }
+
+    init(_ task: ViewStoreTask) {
+        _cancel = { await task.cancel() }
+        _finish =  { await task.finish() }
+    }
+
+    init(_ task: TestStoreTask) {
+        _cancel = { await task.cancel() }
+        _finish =  { await task.finish() }
+    }
 }
 
 extension TBCTestStore where LocalState: Equatable, Action: Equatable {
@@ -128,6 +178,21 @@ extension TBCTestStore where LocalState: Equatable, Action: Equatable {
         switch storeImplementation {
         case let .exhaustive(store):
             store.receive(expectedAction, update, file: file, line: line)
+        case let .nonExhaustive(store):
+            store.receive(expectedAction, file: file, line: line, update)
+        }
+    }
+
+    @MainActor
+    public func receive(
+        _ expectedAction: Action,
+        file: StaticString = #file,
+        line: UInt = #line,
+        _ update: ((inout LocalState) throws -> Void)? = nil
+    ) async {
+        switch storeImplementation {
+        case let .exhaustive(store):
+            return await store.receive(expectedAction, update, file: file, line: line)
         case let .nonExhaustive(store):
             store.receive(expectedAction, file: file, line: line, update)
         }
