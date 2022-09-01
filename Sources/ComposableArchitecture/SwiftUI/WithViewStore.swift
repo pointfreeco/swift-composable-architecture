@@ -6,13 +6,13 @@ import SwiftUI
 /// store state.
 public struct WithViewStore<State, Action, Content> {
   private let content: (Store<State, Action>) -> Content
+  let store: Store<State, Action>
+
   #if DEBUG
     private let file: StaticString
     private let line: UInt
     private var prefix: String?
-    private var previousState: (State) -> State?
   #endif
-  let store: Store<State, Action>
 
   fileprivate init(
     store: Store<State, Action>,
@@ -24,11 +24,6 @@ public struct WithViewStore<State, Action, Content> {
     #if DEBUG
       self.file = file
       self.line = line
-      var previousState: State? = nil
-      self.previousState = { currentState in
-        defer { previousState = currentState }
-        return previousState
-      }
     #endif
     self.store = store
   }
@@ -55,8 +50,42 @@ public struct _StateObjectViewStore<State, Action, Content> {
   @StateObject var viewStore: ViewStore<State, Action>
   let content: (ViewStore<State, Action>) -> Content
 
+  #if DEBUG
+    private let file: StaticString
+    private let line: UInt
+    private var prefix: String?
+    private var previousState: (State) -> State?
+  #endif
+
+  init(
+    viewStore: @autoclosure @escaping () -> ViewStore<State, Action>,
+    content: @escaping (ViewStore<State, Action>) -> Content,
+    file: StaticString,
+    line: UInt,
+    prefix: String? = nil
+  ) {
+    self._viewStore = .init(wrappedValue: viewStore())
+    self.content = content
+    self.file = file
+    self.line = line
+    self.prefix = prefix
+    var previousState: State? = nil
+    self.previousState = { currentState in
+      defer { previousState = currentState }
+      return previousState
+    }
+  }
+
   public var body: Content {
-    self.content(ViewStore(self.viewStore))
+    #if DEBUG
+      debugPrint(
+        prefix: self.prefix,
+        state: self.viewStore.state,
+        previousState: self.previousState(self.viewStore.state),
+        action: Action.self
+      )
+    #endif
+    return self.content(ViewStore(self.viewStore))
   }
 }
 
@@ -97,7 +126,10 @@ extension WithViewStore: View where Content: View {
             first: AnyView(
               _StateObjectViewStore(
                 viewStore: ViewStore(store, removeDuplicates: isDuplicate),
-                content: content
+                content: content,
+                file: file,
+                line: line,
+                prefix: nil
               )
             )
           )
@@ -160,12 +192,21 @@ extension WithViewStore: DynamicViewContent where State: Collection, Content: Dy
 
 @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension _StateObjectViewStore: View where Content: View {
-  init(
+  @_disfavoredOverload
+  fileprivate init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
-    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
+    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content,
+    file: StaticString = #file,
+    line: UInt = #line,
+    prefix: String?
   ) {
-    self._viewStore = .init(wrappedValue: viewStore())
-    self.content = content
+    self.init(
+      viewStore: viewStore(),
+      content: content,
+      file: file,
+      line: line,
+      prefix: prefix
+    )
   }
 }
 
@@ -205,7 +246,10 @@ extension WithViewStore: AccessibilityRotorContent where Content: AccessibilityR
       content: { store in
         _StateObjectViewStore(
           viewStore: ViewStore(store, removeDuplicates: isDuplicate),
-          content: content
+          content: content,
+          file: file,
+          line: line,
+          prefix: ""
         )
       }
     )
@@ -251,19 +295,28 @@ extension WithViewStore where State == Void, Content: AccessibilityRotorContent 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 extension _StateObjectViewStore: AccessibilityRotorContent
 where Content: AccessibilityRotorContent {
-  init(
+  @_disfavoredOverload
+  fileprivate init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
-    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
+    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> Content,
+    file: StaticString = #file,
+    line: UInt = #line,
+    prefix: String?
   ) {
-    self._viewStore = .init(wrappedValue: viewStore())
-    self.content = content
+    self.init(
+      viewStore: viewStore(),
+      content: content,
+      file: file,
+      line: line,
+      prefix: prefix
+    )
   }
 }
 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 extension _ObservedObjectViewStore: AccessibilityRotorContent
 where Content: AccessibilityRotorContent {
-  init(
+  fileprivate init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
     @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
   ) {
@@ -300,7 +353,10 @@ extension WithViewStore: Commands where Content: Commands {
       content: { store in
         _StateObjectViewStore(
           viewStore: ViewStore(store, removeDuplicates: isDuplicate),
-          content: content
+          content: content,
+          file: file,
+          line: line,
+          prefix: nil
         )
       }
     )
@@ -351,12 +407,21 @@ extension WithViewStore where State == Void, Content: Commands {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension _StateObjectViewStore: Commands where Content: Commands {
-  init(
+  @_disfavoredOverload
+  fileprivate init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
-    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> Content
+    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> Content,
+    file: StaticString = #file,
+    line: UInt = #line,
+    prefix: String?
   ) {
-    self._viewStore = .init(wrappedValue: viewStore())
-    self.content = content
+    self.init(
+      viewStore: viewStore(),
+      content: content,
+      file: file,
+      line: line,
+      prefix: prefix
+    )
   }
 }
 
@@ -364,7 +429,7 @@ extension _StateObjectViewStore: Commands where Content: Commands {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension _ObservedObjectViewStore: Commands where Content: Commands {
-  init(
+  fileprivate init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
     @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> Content
   ) {
@@ -399,7 +464,10 @@ extension WithViewStore: Scene where Content: Scene {
       content: { store in
         _StateObjectViewStore(
           viewStore: ViewStore(store, removeDuplicates: isDuplicate),
-          content: content
+          content: content,
+          file: file,
+          line: line,
+          prefix: nil
         )
       }
     )
@@ -444,18 +512,27 @@ extension WithViewStore where State == Void, Content: Scene {
 
 @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension _StateObjectViewStore: Scene where Content: Scene {
-  init(
+  @_disfavoredOverload
+  fileprivate init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
-    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content
+    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content,
+    file: StaticString = #file,
+    line: UInt = #line,
+    prefix: String?
   ) {
-    self._viewStore = .init(wrappedValue: viewStore())
-    self.content = content
+    self.init(
+      viewStore: viewStore(),
+      content: content,
+      file: file,
+      line: line,
+      prefix: prefix
+    )
   }
 }
 
 @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension _ObservedObjectViewStore: Scene where Content: Scene {
-  init(
+  fileprivate init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
     @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content
   ) {
@@ -490,7 +567,10 @@ extension WithViewStore: ToolbarContent where Content: ToolbarContent {
       content: { store in
         _StateObjectViewStore(
           viewStore: ViewStore(store, removeDuplicates: isDuplicate),
-          content: content
+          content: content,
+          file: file,
+          line: line,
+          prefix: nil
         )
       }
     )
@@ -535,18 +615,27 @@ extension WithViewStore where State == Void, Content: ToolbarContent {
 
 @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension _StateObjectViewStore: ToolbarContent where Content: ToolbarContent {
-  init(
+  @_disfavoredOverload
+  fileprivate init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
-    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
+    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content,
+    file: StaticString = #file,
+    line: UInt = #line,
+    prefix: String?
   ) {
-    self._viewStore = .init(wrappedValue: viewStore())
-    self.content = content
+    self.init(
+      viewStore: viewStore(),
+      content: content,
+      file: file,
+      line: line,
+      prefix: prefix
+    )
   }
 }
 
 @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension _ObservedObjectViewStore: ToolbarContent where Content: ToolbarContent {
-  init(
+  fileprivate init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,
     @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
   ) {
