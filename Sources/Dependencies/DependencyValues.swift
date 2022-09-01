@@ -15,35 +15,51 @@ import Foundation
 /// @Dependency(\.date) var date
 /// ```
 public struct DependencyValues: Sendable {
-  // TODO: Can this be internal?
+  // TODO: Can this be internal or should it be underscored?
   @TaskLocal public static var current = Self()
 
   @TaskLocal static var isSetting = false
 
-  public static func withValue<R>(
-    _ valueDuringOperation: (inout Self) throws -> Void,
+  /// Binds the task-local dependencies to the updated value for the duration of the synchronous
+  /// operation.
+  ///
+  /// - Parameters:
+  ///   - updateForOperation: A closure for updating the current dependency values for the duration
+  ///     of the operation.
+  ///   - operation: An operation to perform wherein dependencies have been overridden.
+  /// - Returns: The result returned from `operation`.
+  public static func withValues<R>(
+    _ updateValuesForOperation: (inout Self) throws -> Void,
     operation: () throws -> R,
     file: String = #fileID,
     line: UInt = #line
   ) rethrows -> R {
     try Self.$isSetting.withValue(true) {
       var dependencies = Self.current
-      try valueDuringOperation(&dependencies)
+      try updateValuesForOperation(&dependencies)
       return try Self.$current.withValue(dependencies) {
         try operation()
       }
     }
   }
 
-  public static func withValue<R>(
-    _ valueDuringOperation: (inout Self) async throws -> Void,
+  /// Binds the task-local dependencies to the updated value for the duration of the asynchronous
+  /// operation.
+  ///
+  /// - Parameters:
+  ///   - updateForOperation: A closure for updating the current dependency values for the duration
+  ///     of the operation.
+  ///   - operation: An operation to perform wherein dependencies have been overridden.
+  /// - Returns: The result returned from `operation`.
+  public static func withValues<R>(
+    _ updateValuesForOperation: (inout Self) async throws -> Void,
     operation: () async throws -> R,
     file: String = #fileID,
     line: UInt = #line
   ) async rethrows -> R {
     try await Self.$isSetting.withValue(true) {
       var dependencies = Self.current
-      try await valueDuringOperation(&dependencies)
+      try await updateValuesForOperation(&dependencies)
       return try await Self.$current.withValue(dependencies) {
         try await operation()
       }
