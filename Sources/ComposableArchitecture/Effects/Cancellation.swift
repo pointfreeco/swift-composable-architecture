@@ -154,8 +154,35 @@ extension Effect {
 
 /// Execute an operation with a cancellation identifier.
 ///
-/// If the operation is in-flight when `Task.cancel(id:)` is called with the same identifier, the
+/// If the operation is in-flight when `Task.cancel(id:)` is called with the same identifier, or
 /// operation will be cancelled.
+///
+/// ```
+/// enum CancelID.self {}
+///
+/// await withTaskCancellation(id: CancelID.self) {
+///   // ...
+/// }
+/// ```
+///
+/// ### Debouncing tasks
+///
+/// When paired with a scheduler, this function can be used to debounce a unit of async work by
+/// specifying the `cancelInFlight`, which will automatically cancel any in-flight work with the
+/// same identifier:
+///
+/// ```swift
+/// enum CancelID {}
+///
+/// return .task {
+///   await withTaskCancellation(id: CancelID.self, cancelInFlight: true) {
+///     try await environment.scheduler.sleep(for: .seconds(0.3))
+///     return await .debouncedResponse(
+///       TaskResult { try await environment.request() }
+///     )
+///   }
+/// }
+/// ```
 ///
 /// - Parameters:
 ///   - id: A unique identifier for the operation.

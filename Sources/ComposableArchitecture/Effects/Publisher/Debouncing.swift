@@ -24,6 +24,26 @@ extension Effect {
   ///   - scheduler: The scheduler you want to deliver the debounced output to.
   ///   - options: Scheduler options that customize the effect's delivery of elements.
   /// - Returns: An effect that publishes events only after a specified time elapses.
+  @available(
+    iOS,
+    deprecated: 9999.0,
+    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'Effect.run', instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999.0,
+    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'Effect.run', instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999.0,
+    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'Effect.run', instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999.0,
+    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'Effect.run', instead."
+  )
   public func debounce<S: Scheduler>(
     id: AnyHashable,
     for dueTime: S.SchedulerTimeType.Stride,
@@ -33,7 +53,7 @@ extension Effect {
     switch self.operation {
     case .none:
       return .none
-    case .publisher:
+    case .publisher, .run:
       return Self(
         operation: .publisher(
           Just(())
@@ -44,23 +64,6 @@ extension Effect {
         )
       )
       .cancellable(id: id, cancelInFlight: true)
-    case let .run(priority, operation):
-      return Self(
-        operation: .run(priority) { send in
-          await withTaskCancellation(id: id, cancelInFlight: true) {
-            do {
-              try await scheduler.sleep(for: dueTime, options: options)
-              await operation(
-                Send { output in
-                  scheduler.schedule {
-                    send(output)
-                  }
-                }
-              )
-            } catch {}
-          }
-        }
-      )
     }
   }
 
