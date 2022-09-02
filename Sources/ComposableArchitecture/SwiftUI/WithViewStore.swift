@@ -147,9 +147,46 @@ public struct WithViewStore<State, Action, Content> {
   }
 }
 
-@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
+
+@propertyWrapper
+struct _StateObject<Object: ObservableObject>: DynamicProperty {
+  private final class Observed: ObservableObject {
+    var object: Object?
+    var subscription: AnyCancellable?
+    func install(_ object: Object) {
+      self.object = object
+      self.subscription = object.objectWillChange
+        .sink { [unowned self] _ in self.objectWillChange.send() }
+    }
+    init() {}
+  }
+  
+  private final class Storage: ObservableObject {
+    lazy var object: Object = makeObject()
+    var makeObject: (() -> Object)!
+    init() {}
+  }
+  
+  @ObservedObject private var observed = Observed()
+  @State private var storage = Storage()
+  
+  init(wrappedValue: @autoclosure @escaping () -> Object) {
+    self.storage.makeObject = wrappedValue
+  }
+  
+  var wrappedValue: Object {
+    get {
+      if observed.object == nil {
+        observed.install(storage.object)
+      }
+      return observed.object!
+    }
+  }
+}
+
+//@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 public struct _StateObjectViewStore<State, Action, Content> {
-  @StateObject var viewStore: ViewStore<State, Action>
+  @_StateObject var viewStore: ViewStore<State, Action>
   let content: (ViewStore<State, Action>) -> Content
 
   #if DEBUG
@@ -257,36 +294,18 @@ extension WithViewStore: View where Content: View {
     @ViewBuilder content: @escaping (ViewStore<State, Action>) -> ObservedContent
   )
   where
-    Content == _ConditionalContent<
-      AnyView, _ObservedObjectViewStore<State, Action, ObservedContent>
-    >
+    Content == _StateObjectViewStore<State, Action, ObservedContent>
   {
     self.init(
       store: store,
       content: { store, prefix in
-        if #available(iOS 14, macOS 11, tvOS 14, watchOS 7, *) {
-          return ViewBuilder.buildEither(
-            first: AnyView(
-              _StateObjectViewStore(
-                viewStore: ViewStore(store, removeDuplicates: isDuplicate),
-                content: content,
-                file: file,
-                line: line,
-                prefix: prefix
-              )
-            )
-          )
-        } else {
-          return ViewBuilder.buildEither(
-            second: _ObservedObjectViewStore(
-              viewStore: ViewStore(store, removeDuplicates: isDuplicate),
-              content: content,
-              file: file,
-              line: line,
-              prefix: prefix
-            )
-          )
-        }
+        _StateObjectViewStore(
+          viewStore: ViewStore(store, removeDuplicates: isDuplicate),
+          content: content,
+          file: file,
+          line: line,
+          prefix: prefix
+        )
       }
     )
   }
@@ -306,9 +325,7 @@ extension WithViewStore where State: Equatable, Content: View {
     @ViewBuilder content: @escaping (ViewStore<State, Action>) -> ObservedContent
   )
   where
-    Content == _ConditionalContent<
-      AnyView, _ObservedObjectViewStore<State, Action, ObservedContent>
-    >
+    Content == _StateObjectViewStore<State, Action, ObservedContent>
   {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
@@ -328,9 +345,7 @@ extension WithViewStore where State == Void, Content: View {
     @ViewBuilder content: @escaping (ViewStore<State, Action>) -> ObservedContent
   )
   where
-    Content == _ConditionalContent<
-      AnyView, _ObservedObjectViewStore<State, Action, ObservedContent>
-    >
+    Content == _StateObjectViewStore<State, Action, ObservedContent>
   {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
@@ -344,7 +359,7 @@ extension WithViewStore: DynamicViewContent where State: Collection, Content: Dy
   }
 }
 
-@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
+//@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 extension _StateObjectViewStore: View where Content: View {
   fileprivate init(
     viewStore: @escaping @autoclosure () -> ViewStore<State, Action>,

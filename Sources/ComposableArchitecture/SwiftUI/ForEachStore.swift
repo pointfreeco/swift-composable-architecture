@@ -90,11 +90,8 @@ public struct ForEachStore<
     Data == IdentifiedArray<ID, EachState>,
     Content == WithViewStore<
       OrderedSet<ID>, (ID, EachAction),
-      _ConditionalContent<
-        AnyView,
-        _ObservedObjectViewStore<
-          OrderedSet<ID>, (ID, EachAction), ForEach<OrderedSet<ID>, ID, EachContent>
-        >
+      _StateObjectViewStore<
+        OrderedSet<ID>, (ID, EachAction), ForEach<OrderedSet<ID>, ID, EachContent>
       >
     >
   {
