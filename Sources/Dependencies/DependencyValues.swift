@@ -15,14 +15,56 @@ import Foundation
 /// @Dependency(\.date) var date
 /// ```
 public struct DependencyValues: Sendable {
-  /// The current task's dependencies.
-  ///
-  /// You don't typically access dependencies directly, and instead will use the ``Dependency``
-  /// property from your reducer conformance.
-  ///
-  /// This task local value provides a means of performing a scoped operation with certain
-  /// dependency values overridden.
+  // TODO: Can this be internal or should it be underscored?
   @TaskLocal public static var current = Self()
+
+  @TaskLocal static var isSetting = false
+
+  /// Binds the task-local dependencies to the updated value for the duration of the synchronous
+  /// operation.
+  ///
+  /// - Parameters:
+  ///   - updateForOperation: A closure for updating the current dependency values for the duration
+  ///     of the operation.
+  ///   - operation: An operation to perform wherein dependencies have been overridden.
+  /// - Returns: The result returned from `operation`.
+  public static func withValues<R>(
+    _ updateValuesForOperation: (inout Self) throws -> Void,
+    operation: () throws -> R,
+    file: String = #fileID,
+    line: UInt = #line
+  ) rethrows -> R {
+    try Self.$isSetting.withValue(true) {
+      var dependencies = Self.current
+      try updateValuesForOperation(&dependencies)
+      return try Self.$current.withValue(dependencies) {
+        try operation()
+      }
+    }
+  }
+
+  /// Binds the task-local dependencies to the updated value for the duration of the asynchronous
+  /// operation.
+  ///
+  /// - Parameters:
+  ///   - updateForOperation: A closure for updating the current dependency values for the duration
+  ///     of the operation.
+  ///   - operation: An operation to perform wherein dependencies have been overridden.
+  /// - Returns: The result returned from `operation`.
+  public static func withValues<R>(
+    _ updateValuesForOperation: (inout Self) async throws -> Void,
+    operation: () async throws -> R,
+    file: String = #fileID,
+    line: UInt = #line
+  ) async rethrows -> R {
+    try await Self.$isSetting.withValue(true) {
+      var dependencies = Self.current
+      try await updateValuesForOperation(&dependencies)
+      return try await Self.$current.withValue(dependencies) {
+        try await operation()
+      }
+    }
+  }
 
   private var storage: [ObjectIdentifier: AnySendable] = [:]
 
@@ -73,33 +115,35 @@ public struct DependencyValues: Sendable {
         case .live:
           guard let value = _liveValue(Key.self) as? Key.Value
           else {
-            runtimeWarning(
-              """
-              A dependency at %@:%d is being used in a live environment without providing a live \
-              implementation:
+            if !Self.isSetting {
+              runtimeWarning(
+                """
+                A dependency at %@:%d is being used in a live environment without providing a live \
+                implementation:
 
-                Key:
-                  %3$@
-                Dependency:
-                  %4$@
+                  Key:
+                    %@
+                  Dependency:
+                    %@
 
-              Every dependency registered with the library must conform to 'DependencyKey', \
-              and that conformance must be visible to the running application.
+                Every dependency registered with the library must conform to 'DependencyKey', and \
+                that conformance must be visible to the running application.
 
-              To fix, make sure that '%3$@' conforms to 'DependencyKey' by providing a live \
-              implementation of your dependency, and make sure that the conformance is linked \
-              with this current application.
-              """,
-              [
-                "\(fileID)",
-                line,
-                typeName(Key.self),
-                typeName(Key.Value.self),
-                typeName(Key.self),
-              ],
-              file: file,
-              line: line
-            )
+                To fix, make sure that '%@' conforms to 'DependencyKey' by providing a live \
+                implementation of your dependency, and make sure that the conformance is linked with \
+                this current application.
+                """,
+                [
+                  "\(fileID)",
+                  line,
+                  typeName(Key.self),
+                  typeName(Key.Value.self),
+                  typeName(Key.self),
+                ],
+                file: file,
+                line: line
+              )
+            }
             return Key.testValue
           }
           return value
