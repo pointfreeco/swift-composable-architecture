@@ -29,7 +29,7 @@ extension Effect {
     switch self.operation {
     case .none:
       return .none
-    case .publisher:
+    case .publisher, .run:
       return Self(
         operation: .publisher(
           Just(())
@@ -38,21 +38,6 @@ extension Effect {
             .flatMap { self.publisher.receive(on: scheduler) }
             .eraseToAnyPublisher()
         )
-      )
-    case let .run(priority, operation):
-      return Self(
-        operation: .run(priority) { send in
-          do {
-            try await scheduler.sleep(for: dueTime)
-            await operation(
-              Send { output in
-                scheduler.schedule {
-                  send(output)
-                }
-              }
-            )
-          } catch {}
-        }
       )
     }
   }
