@@ -160,7 +160,7 @@ struct _StateObject<Object: ObservableObject>: DynamicProperty {
     init() {}
   }
 
-  private final class Storage: ObservableObject {
+  private final class Storage {
     lazy var object: Object = makeObject()
     var makeObject: (() -> Object)!
     init() {}
