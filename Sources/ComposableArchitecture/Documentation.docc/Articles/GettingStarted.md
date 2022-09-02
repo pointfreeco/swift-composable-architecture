@@ -116,9 +116,9 @@ let appReducer = Reducer<
     return .none
 
   case .numberFactButtonTapped:
-    return .task {
+    return .task { [count = state.count] in
       await .numberFactResponse(
-        TaskResult { try await environment.numberFact(state.count) }
+        TaskResult { try await environment.numberFact(count) }
       )
     }
 
