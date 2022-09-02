@@ -147,7 +147,6 @@ public struct WithViewStore<State, Action, Content> {
   }
 }
 
-
 @propertyWrapper
 struct _StateObject<Object: ObservableObject>: DynamicProperty {
   private final class Observed: ObservableObject {
@@ -160,27 +159,25 @@ struct _StateObject<Object: ObservableObject>: DynamicProperty {
     }
     init() {}
   }
-  
+
   private final class Storage: ObservableObject {
     lazy var object: Object = makeObject()
     var makeObject: (() -> Object)!
     init() {}
   }
-  
+
   @ObservedObject private var observed = Observed()
   @State private var storage = Storage()
-  
+
   init(wrappedValue: @autoclosure @escaping () -> Object) {
     self.storage.makeObject = wrappedValue
   }
   
   var wrappedValue: Object {
-    get {
-      if observed.object == nil {
-        observed.install(storage.object)
-      }
-      return observed.object!
+    if observed.object == nil {
+      observed.install(storage.object)
     }
+    return observed.object!
   }
 }
 
