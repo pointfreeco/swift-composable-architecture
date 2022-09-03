@@ -149,36 +149,44 @@ public struct WithViewStore<State, Action, Content> {
 
 @propertyWrapper
 struct _StateObject<Object: ObservableObject>: DynamicProperty {
-  private final class Observed: ObservableObject {
-    var object: Object?
+  private final class Storage: ObservableObject {
+    lazy var object: Object = thunk()
+    var thunk: (() -> Object)!
     var subscription: AnyCancellable?
-    func install(_ object: Object) {
+    
+    // Magic line. Without it, it performs much slower, even if
+    // it isn't used, like when we trigger `objectWillChange` manually.
+    // I know there are internal stuff around this, but I don't know
+    // why it affects soo much the performance.
+    @Published var token: Void = ()
+
+    func subscribeTo(_ object: Object) {
       self.object = object
+      // Both approaches are working. But both need the magic line, even
+      // the following one that doesn't use it!
       self.subscription = object.objectWillChange
-        .sink { [unowned self] _ in self.objectWillChange.send() }
+        .sink { [weak self] _ in self?.objectWillChange.send() }
     }
     init() {}
   }
 
-  private final class Storage {
-    lazy var object: Object = makeObject()
-    var makeObject: (() -> Object)!
-    init() {}
-  }
-
-  @ObservedObject private var observed = Observed()
+  @ObservedObject private var observedObject = Storage()
   @State private var storage = Storage()
 
   init(wrappedValue: @autoclosure @escaping () -> Object) {
-    self.storage.makeObject = wrappedValue
+    self.storage.thunk = wrappedValue
   }
-  
+
   var wrappedValue: Object {
-    if observed.object == nil {
-      observed.install(storage.object)
+    if observedObject.subscription == nil {
+      observedObject.subscribeTo(storage.object)
     }
-    return observed.object!
+    return observedObject.object
   }
+  // This is probably not a good idea, as we don't know what it does.
+//  var _propertyBehaviors: UInt32 {
+//    ObservedObject<Object>._propertyBehaviors
+//  }
 }
 
 //@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
