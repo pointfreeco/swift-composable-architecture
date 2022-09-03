@@ -148,48 +148,51 @@ public struct WithViewStore<State, Action, Content> {
 }
 
 @propertyWrapper
-struct _StateObject<Object: ObservableObject>: DynamicProperty {
-  private final class Storage: ObservableObject {
+struct _StateObject<Object: ObservableObject>: DynamicProperty
+where Object.ObjectWillChangePublisher.Output == Void {
+  private final class Storage {
     lazy var object: Object = thunk()
     var thunk: (() -> Object)!
-    var subscription: AnyCancellable?
-    
-    // Magic line. Without it, it performs much slower, even if
-    // it isn't used, like when we trigger `objectWillChange` manually.
-    // I know there are internal stuff around this, but I don't know
-    // why it affects soo much the performance.
-    @Published var token: Void = ()
-
-    func subscribeTo(_ object: Object) {
-      self.object = object
-      // Both approaches are working. But both need the magic line, even
-      // the following one that doesn't use it!
-      self.subscription = object.objectWillChange
-        .sink { [weak self] _ in self?.objectWillChange.send() }
-    }
     init() {}
   }
 
-  @ObservedObject private var observedObject = Storage()
+  private final class ObjectWillChange: ObservableObject {
+    var subscription: AnyCancellable?
+    var isRelayed: Bool = false
+    @Published var token: Void = ()
+    init() {}
+    func relay(from object: Object) {
+      defer { isRelayed = true }
+      if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
+        // Assigning the token with this method seems faster than
+        // sending `objectWillChange` manually.
+        object.objectWillChange.assign(to: &$token)
+      } else {
+        // Sending `objectWillChange` manually seems faster than
+        // assigning the token in a `sink` that doesn't capture
+        // self
+        self.subscription = object.objectWillChange
+          .sink { [weak self] _ in self?.objectWillChange.send() }
+      }
+    }
+  }
+
+  @ObservedObject private var objectWillChange = ObjectWillChange()
   @State private var storage = Storage()
 
   init(wrappedValue: @autoclosure @escaping () -> Object) {
     self.storage.thunk = wrappedValue
   }
-  
+
   func update() {
-    if observedObject.subscription == nil {
-      observedObject.subscribeTo(storage.object)
+    if !objectWillChange.isRelayed {
+      objectWillChange.relay(from: storage.object)
     }
   }
 
   var wrappedValue: Object {
-    observedObject.object
+    storage.object
   }
-  // This is probably not a good idea, as we don't know what it does.
-//  var _propertyBehaviors: UInt32 {
-//    ObservedObject<Object>._propertyBehaviors
-//  }
 }
 
 //@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
