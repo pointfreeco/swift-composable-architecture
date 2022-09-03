@@ -176,12 +176,15 @@ struct _StateObject<Object: ObservableObject>: DynamicProperty {
   init(wrappedValue: @autoclosure @escaping () -> Object) {
     self.storage.thunk = wrappedValue
   }
-
-  var wrappedValue: Object {
+  
+  func update() {
     if observedObject.subscription == nil {
       observedObject.subscribeTo(storage.object)
     }
-    return observedObject.object
+  }
+
+  var wrappedValue: Object {
+    observedObject.object
   }
   // This is probably not a good idea, as we don't know what it does.
 //  var _propertyBehaviors: UInt32 {
