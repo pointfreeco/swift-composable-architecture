@@ -150,19 +150,21 @@ public struct WithViewStore<State, Action, Content> {
 @propertyWrapper
 struct _StateObject<Object: ObservableObject>: DynamicProperty
 where Object.ObjectWillChangePublisher.Output == Void {
-  private final class Storage {
-    lazy var object: Object = thunk()
-    var thunk: (() -> Object)!
-    init() {}
-  }
-
   private final class ObjectWillChange: ObservableObject {
     var subscription: AnyCancellable?
-    var isRelayed: Bool = false
+    // Magic `@Published` property, makes this `ObservableObject`
+    // more performant for some reason. This property must stay
+    // here even if one chooses to directly send to `objectWillChange`
+    // instead of assigning it.
     @Published var token: Void = ()
     init() {}
-    func relay(from object: Object) {
-      defer { isRelayed = true }
+    func relay(from storage: Storage) {
+      let object = storage.object
+      // We store the fact that we subscribed in `storage`, because
+      // it is the only value that'll persist.
+      defer { storage.objectWillSendIsRelayed = true }
+      // The following branching would need proper benchmarks do
+      // decide if the difference is real and measurable.
       if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
         // Assigning the token with this method seems faster than
         // sending `objectWillChange` manually.
@@ -171,10 +173,20 @@ where Object.ObjectWillChangePublisher.Output == Void {
         // Sending `objectWillChange` manually seems faster than
         // assigning the token in a `sink` that doesn't capture
         // self
-        self.subscription = object.objectWillChange
-          .sink { [weak self] _ in self?.objectWillChange.send() }
+        self.subscription = object.objectWillChange.sink {
+          [weak objectWillChange = self.objectWillChange] _ in
+          guard let objectWillChange = objectWillChange else { return }
+          objectWillChange.send()
+        }
       }
     }
+  }
+
+  private final class Storage {
+    lazy var object: Object = thunk()
+    var objectWillSendIsRelayed: Bool = false
+    var thunk: (() -> Object)!
+    init() {}
   }
 
   @ObservedObject private var objectWillChange = ObjectWillChange()
@@ -182,11 +194,17 @@ where Object.ObjectWillChangePublisher.Output == Void {
 
   init(wrappedValue: @autoclosure @escaping () -> Object) {
     self.storage.thunk = wrappedValue
+    // Unfortunately, `self.storage` doesn't have the correct value
+    // at this point, so we can't rely on this to retrieve an `ObservableObject`
+    // instance from it.
   }
 
   func update() {
-    if !objectWillChange.isRelayed {
-      objectWillChange.relay(from: storage.object)
+    if !storage.objectWillSendIsRelayed {
+      // Some `ObjectWillChange` instance will be captured at this point
+      // It will be partly captured by the subscription, but its instance
+      // will change during next updates.
+      objectWillChange.relay(from: storage)
     }
   }
 
