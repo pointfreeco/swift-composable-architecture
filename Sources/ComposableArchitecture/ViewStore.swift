@@ -61,9 +61,6 @@ import SwiftUI
 /// > store it was derived from) must happen on the same thread. Further, for SwiftUI applications,
 /// > all interactions must happen on the _main_ thread. See the documentation of the ``Store``
 /// > class for more information as to why this decision was made.
-///
-var initializationsCount = 0
-var objectWillChangesCount = 0
 @dynamicMemberLookup
 public final class ViewStore<State, Action>: ObservableObject {
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
@@ -86,14 +83,10 @@ public final class ViewStore<State, Action>: ObservableObject {
   ) {
     self._send = { store.send($0) }
     self._state = CurrentValueRelay(store.state.value)
-    initializationsCount += 1
-    print("initializations", initializationsCount)
     self.viewCancellable = store.state
       .removeDuplicates(by: isDuplicate)
       .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
         guard let objectWillChange = objectWillChange, let _state = _state else { return }
-        objectWillChangesCount += 1
-        print("objectWillChanges", objectWillChangesCount)
         objectWillChange.send()
         _state.value = $0
       }
