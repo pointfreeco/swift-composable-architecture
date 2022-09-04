@@ -152,15 +152,13 @@ struct _StateObject<Object: ObservableObject>: DynamicProperty
 where Object.ObjectWillChangePublisher.Output == Void {
   private final class ObjectWillChange: ObservableObject {
     private var subscription: AnyCancellable?
-    // Manually defining this property allows to keep it `lazy` and improve
-    // performance, as we ultimately need this publisher only once in the
+    // Manually defining this property allows to keep it `lazy` and improves
+    // performance, as we ultimately only need this publisher once in the
     // lifetime of the view.
     lazy var objectWillChange = ObservableObjectPublisher()
 
     init() {}
     func relay(from storage: Storage) {
-      // We store the fact that we subscribed in `storage`, because
-      // it is the only value that persists accross updates.
       defer { storage.objectWillSendIsRelayed = true }
       self.subscription = storage.object.objectWillChange.sink {
         [weak objectWillChange = self.objectWillChange] _ in
@@ -182,16 +180,16 @@ where Object.ObjectWillChangePublisher.Output == Void {
 
   init(wrappedValue: @autoclosure @escaping () -> Object) {
     self.storage.thunk = wrappedValue
-    // Unfortunately, `self.storage` doesn't have the correct value
-    // at this point, so we can't rely on this to retrieve an `ObservableObject`
-    // instance from it.
   }
 
   func update() {
     if !storage.objectWillSendIsRelayed {
-      // Some `ObjectWillChange` instance will be captured at this point
-      // It will be partly captured by the subscription, but its instance
-      // will change during next updates.
+      // We're capturing an `ObjectWillSend` instance through its
+      // `objectWillChange` publisher here. `View` invalidation still
+      // seems to be effective even if the `objectWillChange` publisher
+      // is issued from another `@ObservedObject` instance than the current
+      // one. It is likely that these publishers are bound to the `View`'s
+      // identity.
       objectWillChange.relay(from: storage)
     }
   }
