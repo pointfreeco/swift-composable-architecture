@@ -4,11 +4,11 @@ import SwiftUI
 @propertyWrapper
 struct _StateObject<Object: ObservableObject>: DynamicProperty {
   private final class ObjectWillChange: ObservableObject {
-    private var subscription: AnyCancellable?
     // Manually defining this property allows to keep it `lazy` and improves
     // performance, as we ultimately only need this publisher once in the
     // lifetime of the view.
     lazy var objectWillChange = ObservableObjectPublisher()
+    private var subscription: AnyCancellable?
 
     init() {}
     func relay(from storage: Storage) {
