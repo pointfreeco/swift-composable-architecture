@@ -37,7 +37,7 @@ struct _StateObject<Object: ObservableObject>: DynamicProperty {
 
   func update() {
     if !storage.objectWillSendIsRelayed {
-      // We're capturing an `ObjectWillSend` instance through its
+      // We're capturing an `ObjectWillChange` instance through its
       // `objectWillChange` publisher here. `View` invalidation still
       // seems to be effective even if the `objectWillChange` publisher
       // is issued from another `@ObservedObject` instance than the current
