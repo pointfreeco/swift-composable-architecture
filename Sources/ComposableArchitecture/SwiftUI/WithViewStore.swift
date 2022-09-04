@@ -148,8 +148,7 @@ public struct WithViewStore<State, Action, Content> {
 }
 
 @propertyWrapper
-struct _StateObject<Object: ObservableObject>: DynamicProperty
-where Object.ObjectWillChangePublisher.Output == Void {
+struct _StateObject<Object: ObservableObject>: DynamicProperty {
   private final class ObjectWillChange: ObservableObject {
     private var subscription: AnyCancellable?
     // Manually defining this property allows to keep it `lazy` and improves
