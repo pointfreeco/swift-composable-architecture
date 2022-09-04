@@ -151,33 +151,21 @@ public struct WithViewStore<State, Action, Content> {
 struct _StateObject<Object: ObservableObject>: DynamicProperty
 where Object.ObjectWillChangePublisher.Output == Void {
   private final class ObjectWillChange: ObservableObject {
-    var subscription: AnyCancellable?
-    // Magic `@Published` property, makes this `ObservableObject`
-    // more performant for some reason. This property must stay
-    // here even if one chooses to directly send to `objectWillChange`
-    // instead of assigning it.
-    @Published var token: Void = ()
+    private var subscription: AnyCancellable?
+    // Manually defining this property allows to keep it `lazy` and improve
+    // performance, as we ultimately need this publisher only once in the
+    // lifetime of the view.
+    lazy var objectWillChange = ObservableObjectPublisher()
+
     init() {}
     func relay(from storage: Storage) {
-      let object = storage.object
       // We store the fact that we subscribed in `storage`, because
       // it is the only value that'll persist.
       defer { storage.objectWillSendIsRelayed = true }
-      // The following branching would need proper benchmarks do
-      // decide if the difference is real and measurable.
-      if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
-        // Assigning the token with this method seems faster than
-        // sending `objectWillChange` manually.
-        object.objectWillChange.assign(to: &$token)
-      } else {
-        // Sending `objectWillChange` manually seems faster than
-        // assigning the token in a `sink` that doesn't capture
-        // self
-        self.subscription = object.objectWillChange.sink {
-          [weak objectWillChange = self.objectWillChange] _ in
-          guard let objectWillChange = objectWillChange else { return }
-          objectWillChange.send()
-        }
+      self.subscription = storage.object.objectWillChange.sink {
+        [weak objectWillChange = self.objectWillChange] _ in
+        guard let objectWillChange = objectWillChange else { return }
+        objectWillChange.send()
       }
     }
   }
