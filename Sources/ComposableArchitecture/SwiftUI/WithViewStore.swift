@@ -160,7 +160,7 @@ where Object.ObjectWillChangePublisher.Output == Void {
     init() {}
     func relay(from storage: Storage) {
       // We store the fact that we subscribed in `storage`, because
-      // it is the only value that'll persist.
+      // it is the only value that persists accross updates.
       defer { storage.objectWillSendIsRelayed = true }
       self.subscription = storage.object.objectWillChange.sink {
         [weak objectWillChange = self.objectWillChange] _ in
@@ -201,7 +201,6 @@ where Object.ObjectWillChangePublisher.Output == Void {
   }
 }
 
-//@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
 public struct _StateObjectViewStore<State, Action, Content> {
   @_StateObject var viewStore: ViewStore<State, Action>
   let content: (ViewStore<State, Action>) -> Content
@@ -221,51 +220,6 @@ public struct _StateObjectViewStore<State, Action, Content> {
     prefix: String? = nil
   ) {
     self._viewStore = .init(wrappedValue: viewStore())
-    self.content = content
-    #if DEBUG
-      self.file = file
-      self.line = line
-      self.prefix = prefix
-      var previousState: State? = nil
-      self.previousState = { currentState in
-        defer { previousState = currentState }
-        return previousState
-      }
-    #endif
-  }
-
-  public var body: Content {
-    #if DEBUG
-      debugPrint(
-        prefix: self.prefix,
-        state: self.viewStore.state,
-        previousState: self.previousState(self.viewStore.state),
-        action: Action.self
-      )
-    #endif
-    return self.content(ViewStore(self.viewStore))
-  }
-}
-
-public struct _ObservedObjectViewStore<State, Action, Content> {
-  @ObservedObject var viewStore: ViewStore<State, Action>
-  let content: (ViewStore<State, Action>) -> Content
-
-  #if DEBUG
-    private let file: StaticString
-    private let line: UInt
-    private var prefix: String?
-    private var previousState: (State) -> State?
-  #endif
-
-  init(
-    _ viewStore: ViewStore<State, Action>,
-    content: @escaping (ViewStore<State, Action>) -> Content,
-    file: StaticString,
-    line: UInt,
-    prefix: String? = nil
-  ) {
-    self.viewStore = viewStore
     self.content = content
     #if DEBUG
       self.file = file
@@ -395,23 +349,6 @@ extension _StateObjectViewStore: View where Content: View {
   }
 }
 
-extension _ObservedObjectViewStore: View where Content: View {
-  init(
-    viewStore: ViewStore<State, Action>,
-    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    prefix: String?
-  ) {
-    self.init(
-      viewStore,
-      content: content,
-      file: file,
-      line: line,
-      prefix: prefix
-    )
-  }
-}
 
 // MARK: - AccessibilityRotorContent
 
