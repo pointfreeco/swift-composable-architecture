@@ -395,6 +395,7 @@ public final class Store<State, Action> {
       }
     }
 
+    guard !tasks.wrappedValue.isEmpty else { return nil }
     return Task {
       await withTaskCancellationHandler {
         var index = tasks.wrappedValue.startIndex
