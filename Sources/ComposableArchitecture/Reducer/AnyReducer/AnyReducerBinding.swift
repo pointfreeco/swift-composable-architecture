@@ -30,28 +30,32 @@ extension AnyReducer where Action: BindableAction, State == Action.State {
   @available(
     iOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'BindingReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
       """
   )
   @available(
     macOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'BindingReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
       """
   )
   @available(
     tvOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'BindingReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
       """
   )
   @available(
     watchOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'BindingReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
       """
   )
