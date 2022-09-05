@@ -12,7 +12,7 @@ import XCTestDynamicOverlay
     /// ```swift
     /// let store = TestStore(
     ///   initialState: MyFeature.State()
-    ///   reducer: My.Feature()
+    ///   reducer: MyFeature()
     /// )
     ///
     /// store.dependencies.locale = Locale(identifier: "en_US")
