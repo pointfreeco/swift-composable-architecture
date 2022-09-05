@@ -411,7 +411,11 @@ extension WithViewStore where ViewState == Void, Content: View {
   }
 }
 
-extension WithViewStore: DynamicViewContent where ViewState: Collection, Content: DynamicViewContent {
+extension WithViewStore: DynamicViewContent
+where
+  ViewState: Collection,
+  Content: DynamicViewContent
+{
   public typealias Data = ViewState
 
   public var data: ViewState {
@@ -444,7 +448,8 @@ extension WithViewStore: AccessibilityRotorContent where Content: AccessibilityR
   public init(
     _ store: Store<ViewState, ViewAction>,
     removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
-    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
+    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<ViewState, ViewAction>) ->
+      Content,
     file: StaticString = #fileID,
     line: UInt = #line
   ) {
@@ -478,7 +483,8 @@ extension WithViewStore where ViewState: Equatable, Content: AccessibilityRotorC
   )
   public init(
     _ store: Store<ViewState, ViewAction>,
-    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
+    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<ViewState, ViewAction>) ->
+      Content,
     file: StaticString = #fileID,
     line: UInt = #line
   ) {
@@ -508,7 +514,8 @@ extension WithViewStore where ViewState == Void, Content: AccessibilityRotorCont
     _ store: Store<ViewState, ViewAction>,
     file: StaticString = #fileID,
     line: UInt = #line,
-    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content
+    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<ViewState, ViewAction>) ->
+      Content
   ) {
     self.init(store, removeDuplicates: ==, content: content, file: file, line: line)
   }
