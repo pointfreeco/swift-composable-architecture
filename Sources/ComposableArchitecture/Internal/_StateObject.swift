@@ -22,9 +22,9 @@ struct _StateObject<Object: ObservableObject>: DynamicProperty {
   }
 
   private final class Storage {
-    lazy var object: Object = thunk()
+    lazy var object: Object = initially()
     var objectWillSendIsRelayed: Bool = false
-    var thunk: (() -> Object)!
+    var initially: (() -> Object)!
     init() {}
   }
 
@@ -32,7 +32,7 @@ struct _StateObject<Object: ObservableObject>: DynamicProperty {
   @State private var storage = Storage()
 
   init(wrappedValue: @autoclosure @escaping () -> Object) {
-    storage.thunk = wrappedValue
+    storage.initially = wrappedValue
   }
 
   func update() {
