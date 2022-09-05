@@ -1,4 +1,4 @@
-# Swift concurrency
+# Adopting Swift concurrency
 
 Learn how to write safe, concurrent effects using Swift's structured concurrency.
 

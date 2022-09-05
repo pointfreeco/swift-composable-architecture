@@ -6,12 +6,14 @@
 /// Useful for grouping reducers together and applying reducer modifiers to the result.
 ///
 /// ```swift
-/// CombineReducers {
-///   ReducerA()
-///   ReducerB()
-///   ReducerC()
+/// var body: some ReducerProtocol<State, Action> {
+///   CombineReducers {
+///     ReducerA()
+///     ReducerB()
+///     ReducerC()
+///   }
+///   .ifLet(state: \.child, action: /Action.child)
 /// }
-/// .ifLet(state: \.child, action: /Action.child)
 /// ```
 public struct CombineReducers<Reducers: ReducerProtocol>: ReducerProtocol {
   @usableFromInline

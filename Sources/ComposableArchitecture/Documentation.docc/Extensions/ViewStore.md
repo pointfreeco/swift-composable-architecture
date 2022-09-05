@@ -25,7 +25,7 @@
 
 - ``send(_:animation:)``
 - ``send(_:animation:while:)``
-- ``binding(get:send:)-65xes``
+- <doc:Bindings>
 - ``objectWillChange-5oies``
 
 ### Deprecations

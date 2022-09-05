@@ -1,3 +1,10 @@
+/// A result builder for combining reducers into a single reducer by running each, one after the
+/// other, and returning their merged effects.
+///
+/// It is most common to encounter a reducer builder context when conforming a type to
+/// ``ReducerProtocol`` and implementing its ``ReducerProtocol/body-swift.property-97ymy`` property.
+///
+/// See ``CombineReducers`` for an entry point into a reducer builder context.
 @resultBuilder
 public enum ReducerBuilder<State, Action> {
   @inlinable
