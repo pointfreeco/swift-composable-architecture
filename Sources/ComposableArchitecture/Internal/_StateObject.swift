@@ -15,8 +15,8 @@ struct _StateObject<Object: ObservableObject>: DynamicProperty {
       defer { storage.objectWillSendIsRelayed = true }
       subscription = storage.object.objectWillChange.sink {
         [weak objectWillChange = self.objectWillChange] _ in
-          guard let objectWillChange = objectWillChange else { return }
-          objectWillChange.send()
+        guard let objectWillChange = objectWillChange else { return }
+        objectWillChange.send()
       }
     }
   }
