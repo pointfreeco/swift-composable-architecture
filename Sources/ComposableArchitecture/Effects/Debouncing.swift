@@ -30,12 +30,38 @@ extension Effect {
     scheduler: S,
     options: S.SchedulerOptions? = nil
   ) -> Self {
-    Just(())
-      .setFailureType(to: Failure.self)
-      .delay(for: dueTime, scheduler: scheduler, options: options)
-      .flatMap { self.receive(on: scheduler) }
-      .eraseToEffect()
+    switch self.operation {
+    case .none:
+      return .none
+    case .publisher:
+      return Self(
+        operation: .publisher(
+          Just(())
+            .setFailureType(to: Failure.self)
+            .delay(for: dueTime, scheduler: scheduler, options: options)
+            .flatMap { self.publisher.receive(on: scheduler) }
+            .eraseToAnyPublisher()
+        )
+      )
       .cancellable(id: id, cancelInFlight: true)
+    case let .run(priority, operation):
+      return Self(
+        operation: .run(priority) { send in
+          await withTaskCancellation(id: id, cancelInFlight: true) {
+            do {
+              try await scheduler.sleep(for: dueTime, options: options)
+              await operation(
+                Send { output in
+                  scheduler.schedule {
+                    send(output)
+                  }
+                }
+              )
+            } catch {}
+          }
+        }
+      )
+    }
   }
 
   /// Turns an effect into one that can be debounced.

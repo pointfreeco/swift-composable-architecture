@@ -8,10 +8,11 @@ struct SearchApp: App {
       SearchView(
         store: Store(
           initialState: SearchState(),
-          reducer: searchReducer.debug(),
+          reducer:
+            searchReducer
+            .debug(),
           environment: SearchEnvironment(
-            weatherClient: WeatherClient.live,
-            mainQueue: .main
+            weatherClient: WeatherClient.live
           )
         )
       )

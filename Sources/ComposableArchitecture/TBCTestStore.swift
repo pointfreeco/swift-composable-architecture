@@ -25,7 +25,7 @@ public final class TBCTestStore<State, LocalState, Action: Equatable, LocalActio
         kind: TestStoreKind = .exhaustive,
         environment: Environment,
         file: StaticString,
-        fromLocalAction: @escaping (LocalAction) -> Action,
+        fromScopedAction: @escaping (LocalAction) -> Action,
         initialState: State,
         line: UInt,
         reducer: Reducer<State, Action, Environment>,
@@ -33,9 +33,9 @@ public final class TBCTestStore<State, LocalState, Action: Equatable, LocalActio
     ) {
         switch kind {
         case .exhaustive:
-            storeImplementation = .exhaustive(.init(environment: environment, file: file, fromLocalAction: fromLocalAction, initialState: initialState, line: line, reducer: reducer, toLocalState: toLocalState))
+            storeImplementation = .exhaustive(.init(environment: environment, file: file, fromScopedAction: fromScopedAction, initialState: initialState, line: line, reducer: reducer, toScopedState: toLocalState))
         case .nonExhaustive:
-            storeImplementation = .nonExhaustive(.init(environment: environment, file: file, fromLocalAction: fromLocalAction, initialState: initialState, line: line, reducer: reducer, toLocalState: toLocalState))
+            storeImplementation = .nonExhaustive(.init(environment: environment, file: file, fromLocalAction: fromScopedAction, initialState: initialState, line: line, reducer: reducer, toLocalState: toLocalState))
         }
     }
     
@@ -93,7 +93,7 @@ extension TBCTestStore where State == LocalState, Action == LocalAction {
             kind: kind,
             environment: environment,
             file: file,
-            fromLocalAction: { $0 },
+            fromScopedAction: { $0 },
             initialState: initialState,
             line: line,
             reducer: reducer,
@@ -213,13 +213,13 @@ extension TBCTestStore {
     ///     Useful for testing view store action transformations.
     public func scope<S, A>(
         state toLocalState: @escaping (LocalState) -> S,
-        action fromLocalAction: @escaping (A) -> LocalAction
+        action fromScopedAction: @escaping (A) -> LocalAction
     ) -> TBCTestStore<State, S, Action, A, Environment> {
         switch storeImplementation {
         case let .exhaustive(store):
-            return .init(storeImplementation: .exhaustive(store.scope(state: toLocalState, action: fromLocalAction)))
+            return .init(storeImplementation: .exhaustive(store.scope(state: toLocalState, action: fromScopedAction)))
         case let .nonExhaustive(store):
-            return .init(storeImplementation: .nonExhaustive(store.scope(state: toLocalState, action: fromLocalAction)))
+            return .init(storeImplementation: .nonExhaustive(store.scope(state: toLocalState, action: fromScopedAction)))
         }
     }
     

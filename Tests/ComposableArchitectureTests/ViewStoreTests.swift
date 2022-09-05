@@ -234,7 +234,10 @@ final class ViewStoreTests: XCTestCase {
   }
 
   func testAsyncSend() async throws {
-    enum Action { case tap, response(Int) }
+    enum Action {
+      case tap
+      case response(Int)
+    }
     let store = Store(
       initialState: 0,
       reducer: Reducer<Int, Action, Void> { state, action, _ in
@@ -259,7 +262,10 @@ final class ViewStoreTests: XCTestCase {
   }
 
   func testAsyncSendCancellation() async throws {
-    enum Action { case tap, response(Int) }
+    enum Action {
+      case tap
+      case response(Int)
+    }
     let store = Store(
       initialState: 0,
       reducer: Reducer<Int, Action, Void> { state, action, _ in

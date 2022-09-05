@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - main
-      - concurrency-updates
-      - concurrency-updates-proto
+      - protocol
   pull_request:
     branches:
       - '*'

@@ -10,9 +10,9 @@ enum Filter: LocalizedStringKey, CaseIterable, Hashable {
 struct AppState: Equatable {
   var editMode: EditMode = .inactive
   var filter: Filter = .all
-  var todos: IdentifiedArrayOf<Todo> = []
+  var todos: IdentifiedArrayOf<TodoState> = []
 
-  var filteredTodos: IdentifiedArrayOf<Todo> {
+  var filteredTodos: IdentifiedArrayOf<TodoState> {
     switch filter {
     case .active: return self.todos.filter { !$0.isComplete }
     case .all: return self.todos
@@ -29,7 +29,7 @@ enum AppAction: Equatable {
   case filterPicked(Filter)
   case move(IndexSet, Int)
   case sortCompletedTodos
-  case todo(id: Todo.ID, action: TodoAction)
+  case todo(id: TodoState.ID, action: TodoAction)
 }
 
 struct AppEnvironment {
@@ -46,7 +46,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
   Reducer { state, action, environment in
     switch action {
     case .addTodoButtonTapped:
-      state.todos.insert(Todo(id: environment.uuid()), at: 0)
+      state.todos.insert(TodoState(id: environment.uuid()), at: 0)
       return .none
 
     case .clearCompletedButtonTapped:
@@ -90,15 +90,18 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
 
     case .todo(id: _, action: .checkBoxToggled):
       enum TodoCompletionID {}
-      return .task { .sortCompletedTodos }
-        .debounce(id: TodoCompletionID.self, for: 1, scheduler: environment.mainQueue.animation())
+      return .task {
+        try await environment.mainQueue.sleep(for: .seconds(1))
+        return .sortCompletedTodos
+      }
+      .animation()
+      .cancellable(id: TodoCompletionID.self, cancelInFlight: true)
 
     case .todo:
       return .none
     }
   }
 )
-.debug()
 
 struct AppView: View {
   let store: Store<AppState, AppAction>
@@ -165,19 +168,19 @@ struct AppView: View {
   }
 }
 
-extension IdentifiedArray where ID == Todo.ID, Element == Todo {
+extension IdentifiedArray where ID == TodoState.ID, Element == TodoState {
   static let mock: Self = [
-    Todo(
+    TodoState(
       description: "Check Mail",
       id: UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEDDEADBEEF")!,
       isComplete: false
     ),
-    Todo(
+    TodoState(
       description: "Buy Milk",
       id: UUID(uuidString: "CAFEBEEF-CAFE-BEEF-CAFE-BEEFCAFEBEEF")!,
       isComplete: false
     ),
-    Todo(
+    TodoState(
       description: "Call Mom",
       id: UUID(uuidString: "D00DCAFE-D00D-CAFE-D00D-CAFED00DCAFE")!,
       isComplete: true

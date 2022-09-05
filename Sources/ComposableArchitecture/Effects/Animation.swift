@@ -15,8 +15,28 @@ extension Effect {
   /// - Parameter animation: An animation.
   /// - Returns: A publisher.
   public func animation(_ animation: Animation? = .default) -> Self {
-    AnimatedPublisher(upstream: self, animation: animation)
-      .eraseToEffect()
+    switch self.operation {
+    case .none:
+      return .none
+    case let .publisher(publisher):
+      return Self(
+        operation: .publisher(
+          AnimatedPublisher(upstream: publisher, animation: animation).eraseToAnyPublisher()
+        )
+      )
+    case let .run(priority, operation):
+      return Self(
+        operation: .run(priority) { send in
+          await operation(
+            Send { value in
+              withAnimation(animation) {
+                send(value)
+              }
+            }
+          )
+        }
+      )
+    }
   }
 }
 

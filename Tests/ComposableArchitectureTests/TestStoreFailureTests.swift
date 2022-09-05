@@ -2,7 +2,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
-class TestStoreFailureTests: XCTestCase {
+final class TestStoreFailureTests: XCTestCase {
   func testNoStateChangeFailure() {
     enum Action { case first, second }
     let store = TestStore(

@@ -223,17 +223,12 @@ final class EffectTests: XCTestCase {
     }
   }
 
-  func testTask() {
-    let expectation = self.expectation(description: "Complete")
-    var result: Int?
-    Effect<Int, Never>.task { @MainActor in
-      expectation.fulfill()
-      return 42
+  func testTask() async {
+    guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
+    let effect = Effect<Int, Never>.task { 42 }
+    for await result in effect.values {
+      XCTAssertNoDifference(result, 42)
     }
-    .sink(receiveValue: { result = $0 })
-    .store(in: &self.cancellables)
-    self.wait(for: [expectation], timeout: 1)
-    XCTAssertNoDifference(result, 42)
   }
 
   func testCancellingTask_Infallible() {

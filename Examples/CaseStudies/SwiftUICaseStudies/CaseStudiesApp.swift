@@ -8,7 +8,10 @@ struct CaseStudiesApp: App {
       RootView(
         store: Store(
           initialState: RootState(),
-          reducer: rootReducer,
+          reducer:
+            rootReducer
+            .debug()
+            .signpost(),
           environment: .live
         )
       )

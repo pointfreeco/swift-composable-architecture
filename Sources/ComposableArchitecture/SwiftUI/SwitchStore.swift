@@ -72,57 +72,57 @@ public struct SwitchStore<State, Action, Content: View>: View {
 }
 
 /// A view that handles a specific case of enum state in a ``SwitchStore``.
-public struct CaseLet<GlobalState, GlobalAction, LocalState, LocalAction, Content: View>: View {
-  @EnvironmentObject private var store: StoreObservableObject<GlobalState, GlobalAction>
-  public let toLocalState: (GlobalState) -> LocalState?
-  public let fromLocalAction: (LocalAction) -> GlobalAction
-  public let content: (Store<LocalState, LocalAction>) -> Content
+public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: View>: View {
+  @EnvironmentObject private var store: StoreObservableObject<EnumState, EnumAction>
+  public let toCaseState: (EnumState) -> CaseState?
+  public let fromCaseAction: (CaseAction) -> EnumAction
+  public let content: (Store<CaseState, CaseAction>) -> Content
 
   /// Initializes a ``CaseLet`` view that computes content depending on if a store of enum state
   /// matches a particular case.
   ///
   /// - Parameters:
-  ///   - toLocalState: A function that can extract a case of switch store state, which can be
+  ///   - toCaseState: A function that can extract a case of switch store state, which can be
   ///     specified using case path literal syntax, _e.g._ `/State.case`.
-  ///   - fromLocalAction: A function that can embed a case action in a switch store action.
+  ///   - fromCaseAction: A function that can embed a case action in a switch store action.
   ///   - content: A function that is given a store of the given case's state and returns a view
   ///     that is visible only when the switch store's state matches.
   public init(
-    state toLocalState: @escaping (GlobalState) -> LocalState?,
-    action fromLocalAction: @escaping (LocalAction) -> GlobalAction,
-    @ViewBuilder then content: @escaping (Store<LocalState, LocalAction>) -> Content
+    state toCaseState: @escaping (EnumState) -> CaseState?,
+    action fromCaseAction: @escaping (CaseAction) -> EnumAction,
+    @ViewBuilder then content: @escaping (Store<CaseState, CaseAction>) -> Content
   ) {
-    self.toLocalState = toLocalState
-    self.fromLocalAction = fromLocalAction
+    self.toCaseState = toCaseState
+    self.fromCaseAction = fromCaseAction
     self.content = content
   }
 
   public var body: some View {
     IfLetStore(
       self.store.wrappedValue.scope(
-        state: self.toLocalState,
-        action: self.fromLocalAction
+        state: self.toCaseState,
+        action: self.fromCaseAction
       ),
       then: self.content
     )
   }
 }
 
-extension CaseLet where GlobalAction == LocalAction {
+extension CaseLet where EnumAction == CaseAction {
   /// Initializes a ``CaseLet`` view that computes content depending on if a store of enum state
   /// matches a particular case.
   ///
   /// - Parameters:
-  ///   - toLocalState: A function that can extract a case of switch store state, which can be
+  ///   - toCaseState: A function that can extract a case of switch store state, which can be
   ///     specified using case path literal syntax, _e.g._ `/State.case`.
   ///   - content: A function that is given a store of the given case's state and returns a view
   ///     that is visible only when the switch store's state matches.
   public init(
-    state toLocalState: @escaping (GlobalState) -> LocalState?,
-    @ViewBuilder then content: @escaping (Store<LocalState, LocalAction>) -> Content
+    state toCaseState: @escaping (EnumState) -> CaseState?,
+    @ViewBuilder then content: @escaping (Store<CaseState, CaseAction>) -> Content
   ) {
     self.init(
-      state: toLocalState,
+      state: toCaseState,
       action: { $0 },
       then: content
     )
@@ -174,7 +174,7 @@ extension SwitchStore {
     self.init(store: store) {
       let content = content().value
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toLocalState(viewStore.state) != nil {
+        if content.0.toCaseState(viewStore.state) != nil {
           content.0
         } else {
           content.1
@@ -232,9 +232,9 @@ extension SwitchStore {
     self.init(store: store) {
       let content = content().value
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toLocalState(viewStore.state) != nil {
+        if content.0.toCaseState(viewStore.state) != nil {
           content.0
-        } else if content.1.toLocalState(viewStore.state) != nil {
+        } else if content.1.toCaseState(viewStore.state) != nil {
           content.1
         } else {
           content.2
@@ -311,11 +311,11 @@ extension SwitchStore {
     self.init(store: store) {
       let content = content().value
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toLocalState(viewStore.state) != nil {
+        if content.0.toCaseState(viewStore.state) != nil {
           content.0
-        } else if content.1.toLocalState(viewStore.state) != nil {
+        } else if content.1.toCaseState(viewStore.state) != nil {
           content.1
-        } else if content.2.toLocalState(viewStore.state) != nil {
+        } else if content.2.toCaseState(viewStore.state) != nil {
           content.2
         } else {
           content.3
@@ -402,13 +402,13 @@ extension SwitchStore {
     self.init(store: store) {
       let content = content().value
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toLocalState(viewStore.state) != nil {
+        if content.0.toCaseState(viewStore.state) != nil {
           content.0
-        } else if content.1.toLocalState(viewStore.state) != nil {
+        } else if content.1.toCaseState(viewStore.state) != nil {
           content.1
-        } else if content.2.toLocalState(viewStore.state) != nil {
+        } else if content.2.toCaseState(viewStore.state) != nil {
           content.2
-        } else if content.3.toLocalState(viewStore.state) != nil {
+        } else if content.3.toCaseState(viewStore.state) != nil {
           content.3
         } else {
           content.4
@@ -510,15 +510,15 @@ extension SwitchStore {
     self.init(store: store) {
       let content = content().value
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toLocalState(viewStore.state) != nil {
+        if content.0.toCaseState(viewStore.state) != nil {
           content.0
-        } else if content.1.toLocalState(viewStore.state) != nil {
+        } else if content.1.toCaseState(viewStore.state) != nil {
           content.1
-        } else if content.2.toLocalState(viewStore.state) != nil {
+        } else if content.2.toCaseState(viewStore.state) != nil {
           content.2
-        } else if content.3.toLocalState(viewStore.state) != nil {
+        } else if content.3.toCaseState(viewStore.state) != nil {
           content.3
-        } else if content.4.toLocalState(viewStore.state) != nil {
+        } else if content.4.toCaseState(viewStore.state) != nil {
           content.4
         } else {
           content.5
@@ -631,17 +631,17 @@ extension SwitchStore {
     self.init(store: store) {
       let content = content().value
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toLocalState(viewStore.state) != nil {
+        if content.0.toCaseState(viewStore.state) != nil {
           content.0
-        } else if content.1.toLocalState(viewStore.state) != nil {
+        } else if content.1.toCaseState(viewStore.state) != nil {
           content.1
-        } else if content.2.toLocalState(viewStore.state) != nil {
+        } else if content.2.toCaseState(viewStore.state) != nil {
           content.2
-        } else if content.3.toLocalState(viewStore.state) != nil {
+        } else if content.3.toCaseState(viewStore.state) != nil {
           content.3
-        } else if content.4.toLocalState(viewStore.state) != nil {
+        } else if content.4.toCaseState(viewStore.state) != nil {
           content.4
-        } else if content.5.toLocalState(viewStore.state) != nil {
+        } else if content.5.toCaseState(viewStore.state) != nil {
           content.5
         } else {
           content.6
@@ -765,19 +765,19 @@ extension SwitchStore {
     self.init(store: store) {
       let content = content().value
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toLocalState(viewStore.state) != nil {
+        if content.0.toCaseState(viewStore.state) != nil {
           content.0
-        } else if content.1.toLocalState(viewStore.state) != nil {
+        } else if content.1.toCaseState(viewStore.state) != nil {
           content.1
-        } else if content.2.toLocalState(viewStore.state) != nil {
+        } else if content.2.toCaseState(viewStore.state) != nil {
           content.2
-        } else if content.3.toLocalState(viewStore.state) != nil {
+        } else if content.3.toCaseState(viewStore.state) != nil {
           content.3
-        } else if content.4.toLocalState(viewStore.state) != nil {
+        } else if content.4.toCaseState(viewStore.state) != nil {
           content.4
-        } else if content.5.toLocalState(viewStore.state) != nil {
+        } else if content.5.toCaseState(viewStore.state) != nil {
           content.5
-        } else if content.6.toLocalState(viewStore.state) != nil {
+        } else if content.6.toCaseState(viewStore.state) != nil {
           content.6
         } else {
           content.7
@@ -912,21 +912,21 @@ extension SwitchStore {
     self.init(store: store) {
       let content = content().value
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toLocalState(viewStore.state) != nil {
+        if content.0.toCaseState(viewStore.state) != nil {
           content.0
-        } else if content.1.toLocalState(viewStore.state) != nil {
+        } else if content.1.toCaseState(viewStore.state) != nil {
           content.1
-        } else if content.2.toLocalState(viewStore.state) != nil {
+        } else if content.2.toCaseState(viewStore.state) != nil {
           content.2
-        } else if content.3.toLocalState(viewStore.state) != nil {
+        } else if content.3.toCaseState(viewStore.state) != nil {
           content.3
-        } else if content.4.toLocalState(viewStore.state) != nil {
+        } else if content.4.toCaseState(viewStore.state) != nil {
           content.4
-        } else if content.5.toLocalState(viewStore.state) != nil {
+        } else if content.5.toCaseState(viewStore.state) != nil {
           content.5
-        } else if content.6.toLocalState(viewStore.state) != nil {
+        } else if content.6.toCaseState(viewStore.state) != nil {
           content.6
-        } else if content.7.toLocalState(viewStore.state) != nil {
+        } else if content.7.toCaseState(viewStore.state) != nil {
           content.7
         } else {
           content.8
@@ -1072,23 +1072,23 @@ extension SwitchStore {
     self.init(store: store) {
       let content = content().value
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toLocalState(viewStore.state) != nil {
+        if content.0.toCaseState(viewStore.state) != nil {
           content.0
-        } else if content.1.toLocalState(viewStore.state) != nil {
+        } else if content.1.toCaseState(viewStore.state) != nil {
           content.1
-        } else if content.2.toLocalState(viewStore.state) != nil {
+        } else if content.2.toCaseState(viewStore.state) != nil {
           content.2
-        } else if content.3.toLocalState(viewStore.state) != nil {
+        } else if content.3.toCaseState(viewStore.state) != nil {
           content.3
-        } else if content.4.toLocalState(viewStore.state) != nil {
+        } else if content.4.toCaseState(viewStore.state) != nil {
           content.4
-        } else if content.5.toLocalState(viewStore.state) != nil {
+        } else if content.5.toCaseState(viewStore.state) != nil {
           content.5
-        } else if content.6.toLocalState(viewStore.state) != nil {
+        } else if content.6.toCaseState(viewStore.state) != nil {
           content.6
-        } else if content.7.toLocalState(viewStore.state) != nil {
+        } else if content.7.toCaseState(viewStore.state) != nil {
           content.7
-        } else if content.8.toLocalState(viewStore.state) != nil {
+        } else if content.8.toCaseState(viewStore.state) != nil {
           content.8
         } else {
           content.9

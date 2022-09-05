@@ -30,7 +30,7 @@ import Foundation
 /// ### Scoping
 ///
 /// The most important operation defined on ``Store`` is the ``scope(state:action:)`` method, which
-/// allows you to transform a store into one that deals with local state and actions. This is
+/// allows you to transform a store into one that deals with child state and actions. This is
 /// necessary for passing stores to subviews that only care about a small portion of the entire
 /// application's domain.
 ///
@@ -128,6 +128,7 @@ public final class Store<State, Action> {
   private var isSending = false
   var parentCancellable: AnyCancellable?
   private let reducer: (inout State, Action) -> Effect<Action, Never>
+  fileprivate var scope: AnyScope?
   var state: CurrentValueSubject<State, Never>
   #if DEBUG
     private let mainThreadChecksEnabled: Bool
@@ -157,35 +158,13 @@ public final class Store<State, Action> {
     self.threadCheck(status: .`init`)
   }
 
-  /// Initializes a store from an initial state, a reducer, and an environment, and the main thread
-  /// check is disabled for all interactions with this store.
-  ///
-  /// - Parameters:
-  ///   - initialState: The state to start the application in.
-  ///   - reducer: The reducer that powers the business logic of the application.
-  ///   - environment: The environment of dependencies for the application.
-  public static func unchecked<Environment>(
-    initialState: State,
-    reducer: Reducer<State, Action, Environment>,
-    environment: Environment,
-    instrumentation: Instrumentation = .noop
-  ) -> Self {
-    Self(
-      initialState: initialState,
-      reducer: reducer,
-      environment: environment,
-      mainThreadChecksEnabled: false,
-      instrumentation: instrumentation
-    )
-  }
-
-  /// Scopes the store to one that exposes local state and actions.
+  /// Scopes the store to one that exposes child state and actions.
   ///
   /// This can be useful for deriving new stores to hand to child views in an application. For
   /// example:
   ///
   /// ```swift
-  /// // Application state made from local states.
+  /// // Application state made from child states.
   /// struct AppState { var login: LoginState, ... }
   /// enum AppAction { case login(LoginAction), ... }
   ///
@@ -316,79 +295,42 @@ public final class Store<State, Action> {
   /// when non-view state changes), and is incapable of sending any actions but view actions.
   ///
   /// - Parameters:
-  ///   - toLocalState: A function that transforms `State` into `LocalState`.
-  ///   - fromLocalAction: A function that transforms `LocalAction` into `Action`.
+  ///   - toChildState: A function that transforms `State` into `ChildState`.
+  ///   - fromChildAction: A function that transforms `ChildAction` into `Action`.
   /// - Returns: A new store with its domain (state and action) transformed.
-  public func scope<LocalState, LocalAction>(
-    state toLocalState: @escaping (State) -> LocalState,
-    action fromLocalAction: @escaping (LocalAction) -> Action,
-    removeDuplicates isDuplicate: ((LocalState, LocalState) -> Bool)? = nil,
+  public func scope<ChildState, ChildAction>(
+    state toChildState: @escaping (State) -> ChildState,
+    action fromChildAction: @escaping (ChildAction) -> Action,
+    removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)? = nil,
     file: StaticString = #file,
     line: UInt = #line
-  ) -> Store<LocalState, LocalAction> {
+  ) -> Store<ChildState, ChildAction> {
     self.threadCheck(status: .scope)
-    var isSending = false
-    let localStore = Store<LocalState, LocalAction>(
-      initialState: toLocalState(self.state.value), // we don't track this one but it's only once per scope function so neglible cost
-      reducer: .init { localState, localAction, _ in
-        isSending = true
-        defer { isSending = false }
-        let task = self.send(fromLocalAction(localAction), file: file, line: line)
-        let callbackInfo = Instrumentation.CallbackInfo<Store<LocalState, LocalAction>.Type, Any>(storeKind: Store<LocalState, LocalAction>.self, action: localAction, file: file, line: line).eraseToAny()
-        self.instrumentation.callback?(callbackInfo, .pre, .scopedStoreToLocal)
-        localState = toLocalState(self.state.value)
-        self.instrumentation.callback?(callbackInfo, .post, .scopedStoreToLocal)
-        if let task = task {
-          return .fireAndForget { await task.cancellableValue }
-        } else {
-          return .none
-        }
-      },
-      environment: (),
-      instrumentation: instrumentation
-    )
-    localStore.parentCancellable = self.state
-      .dropFirst()
-      .sink { [weak localStore, instrumentation = instrumentation] newValue in
-        guard !isSending else { return }
 
-        let callbackInfo = Instrumentation.CallbackInfo<Store<LocalState, LocalAction>.Type, Any>(storeKind: Store<LocalState, LocalAction>.self, action: nil, file: file, line: line).eraseToAny()
-        instrumentation.callback?(callbackInfo, .pre, .scopedStoreToLocal)
-        let newLocalState = toLocalState(newValue)
-        instrumentation.callback?(callbackInfo, .post, .scopedStoreToLocal)
-
-        guard let previousState = localStore?.state.value, let isDuplicate = isDuplicate else {
-            instrumentation.callback?(callbackInfo, .pre, .scopedStoreChangeState)
-            localStore?.state.value = newLocalState
-            instrumentation.callback?(callbackInfo, .post, .scopedStoreChangeState)
-            return
-        }
-
-        instrumentation.callback?(callbackInfo, .pre, .scopedStoreDeduplicate)
-        let newStateIsDuplicate = isDuplicate(newLocalState, previousState)
-        instrumentation.callback?(callbackInfo, .post, .scopedStoreDeduplicate)
-
-        if !newStateIsDuplicate {
-            instrumentation.callback?(callbackInfo, .pre, .scopedStoreChangeState)
-            localStore?.state.value = newLocalState
-            instrumentation.callback?(callbackInfo, .post, .scopedStoreChangeState)
-        }
-      }
-    return localStore
+    return (self.scope ?? Scope(root: self))!
+      .rescope(
+        self,
+        state: toChildState,
+        action: fromChildAction,
+        removeDuplicates: isDuplicate,
+        instrumentation: instrumentation,
+        file: file,
+        line: line
+      )
   }
 
-  /// Scopes the store to one that exposes local state.
+  /// Scopes the store to one that exposes child state.
   ///
   /// A version of ``scope(state:action:)`` that leaves the action type unchanged.
   ///
-  /// - Parameter toLocalState: A function that transforms `State` into `LocalState`.
+  /// - Parameter toChildState: A function that transforms `State` into `ChildState`.
   /// - Returns: A new store with its domain (state and action) transformed.
-  public func scope<LocalState>(
-    state toLocalState: @escaping (State) -> LocalState,
+  public func scope<ChildState>(
+    state toChildState: @escaping (State) -> ChildState,
     file: StaticString = #file,
     line: UInt = #line
-  ) -> Store<LocalState, Action> {
-      self.scope(state: toLocalState, action: { $0 }, file: file, line: line)
+  ) -> Store<ChildState, Action> {
+      self.scope(state: toChildState, action: { $0 }, file: file, line: line)
   }
 
   func send(
@@ -398,18 +340,20 @@ public final class Store<State, Action> {
     line: UInt = #line
   ) -> Task<Void, Never>? {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
-
+    
     self.bufferedActions.append(action)
     guard !self.isSending else { return nil }
-
-    self.isSending = true
-    var currentState = self.state.value
 
     let callbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: action, originatingAction: originatingAction, file: file, line: line).eraseToAny()
     instrumentation.callback?(callbackInfo, .pre, .storeSend)
     defer { instrumentation.callback?(callbackInfo, .post, .storeSend) }
 
+    self.isSending = true
+    var currentState = self.state.value
+
     let tasks = Box<[Task<Void, Never>]>(wrappedValue: [])
+
+    var currentIndex = self.bufferedActions.startIndex
 
     defer {
       instrumentation.callback?(callbackInfo, .pre, .storeChangeState)
@@ -420,15 +364,20 @@ public final class Store<State, Action> {
       // if new actions were added synchronously
       // as part of state publisher updates,
       // process them now
-      if !self.bufferedActions.isEmpty {
-        if let task = send(self.bufferedActions.removeLast(), file: file, line: line) {
+      if currentIndex < bufferedActions.endIndex {
+        let action = self.bufferedActions[currentIndex]
+        self.bufferedActions.removeFirst(currentIndex.advanced(by: 1))
+        if let task = send(action, file: file, line: line) {
           tasks.wrappedValue.append(task)
         }
+      } else {
+        self.bufferedActions = []
       }
     }
 
-    while !self.bufferedActions.isEmpty {
-      let action = self.bufferedActions.removeFirst()
+    while currentIndex < self.bufferedActions.endIndex {
+      defer { currentIndex += 1 }
+      let action = self.bufferedActions[currentIndex]
 
       let processCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: action, originatingAction: nil, file: file, line: line).eraseToAny()
       instrumentation.callback?(processCallbackInfo, .pre, .storeProcessEvent)
@@ -436,43 +385,60 @@ public final class Store<State, Action> {
 
       let effect = self.reducer(&currentState, action)
 
-      var didComplete = false
-      let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
-      let uuid = UUID()
-      let effectCancellable =
-        effect
-        .handleEvents(
-          receiveCancel: { [weak self] in
-            self?.threadCheck(status: .effectCompletion(action))
-            self?.effectCancellables[uuid] = nil
-          }
-        )
-        .sink(
-          receiveCompletion: { [weak self] _ in
-            self?.threadCheck(status: .effectCompletion(action))
-            boxedTask.wrappedValue?.cancel()
-            didComplete = true
-            self?.effectCancellables[uuid] = nil
-          },
-          receiveValue: { [weak self] effectAction in
-            guard let self = self else { return }
-            if let task = self.send(effectAction, originatingFrom: action, file: file, line: line) {
-              tasks.wrappedValue.append(task)
+      switch effect.operation {
+      case .none:
+        break
+      case let .publisher(publisher):
+        var didComplete = false
+        let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
+        let uuid = UUID()
+        let effectCancellable =
+        publisher
+          .handleEvents(
+            receiveCancel: { [weak self] in
+              self?.threadCheck(status: .effectCompletion(action))
+              self?.effectCancellables[uuid] = nil
             }
+          )
+          .sink(
+            receiveCompletion: { [weak self] _ in
+              self?.threadCheck(status: .effectCompletion(action))
+              boxedTask.wrappedValue?.cancel()
+              didComplete = true
+              self?.effectCancellables[uuid] = nil
+            },
+            receiveValue: { [weak self] effectAction in
+              guard let self = self else { return }
+              if let task = self.send(effectAction, originatingFrom: action) {
+                tasks.wrappedValue.append(task)
+              }
+            }
+          )
+        
+        if !didComplete {
+          let task = Task<Void, Never> { @MainActor in
+            for await _ in AsyncStream<Void>.never {}
+            effectCancellable.cancel()
+          }
+          boxedTask.wrappedValue = task
+          tasks.wrappedValue.append(task)
+          self.effectCancellables[uuid] = effectCancellable
+        }
+      case let .run(priority, operation):
+        tasks.wrappedValue.append(
+          Task(priority: priority) {
+            await operation(
+              Send {
+                if let task = self.send($0, originatingFrom: action) {
+                  tasks.wrappedValue.append(task)
+                }
+              }
+            )
           }
         )
-
-      if !didComplete {
-        let task = Task<Void, Never> { @MainActor in
-          for await _ in AsyncStream<Void>.never {}
-          effectCancellable.cancel()
-        }
-        boxedTask.wrappedValue = task
-        tasks.wrappedValue.append(task)
-        self.effectCancellables[uuid] = effectCancellable
       }
     }
-
+    
     return Task {
       await withTaskCancellationHandler {
         var index = tasks.wrappedValue.startIndex
@@ -608,5 +574,97 @@ public final class Store<State, Action> {
     #if DEBUG
       self.mainThreadChecksEnabled = mainThreadChecksEnabled
     #endif
+  }
+}
+
+private protocol AnyScope {
+  func rescope<ScopedState, ScopedAction, RescopedState, RescopedAction>(
+    _ store: Store<ScopedState, ScopedAction>,
+    state toRescopedState: @escaping (ScopedState) -> RescopedState,
+    action fromRescopedAction: @escaping (RescopedAction) -> ScopedAction,
+    removeDuplicates isDuplicate: ((RescopedState, RescopedState) -> Bool)?,
+    instrumentation: Instrumentation,
+    file: StaticString,
+    line: UInt
+  ) -> Store<RescopedState, RescopedAction>
+}
+
+private struct Scope<RootState, RootAction>: AnyScope {
+  let root: Store<RootState, RootAction>
+  let fromScopedAction: Any
+
+  init(root: Store<RootState, RootAction>) {
+    self.init(root: root, fromScopedAction: { $0 })
+  }
+
+  private init<ScopedAction>(
+    root: Store<RootState, RootAction>,
+    fromScopedAction: @escaping (ScopedAction) -> RootAction
+  ) {
+    self.root = root
+    self.fromScopedAction = fromScopedAction
+  }
+
+  func rescope<ScopedState, ScopedAction, RescopedState, RescopedAction>(
+    _ scopedStore: Store<ScopedState, ScopedAction>,
+    state toRescopedState: @escaping (ScopedState) -> RescopedState,
+    action fromRescopedAction: @escaping (RescopedAction) -> ScopedAction,
+    removeDuplicates isDuplicate: ((RescopedState, RescopedState) -> Bool)? = nil,
+    instrumentation: Instrumentation,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) -> Store<RescopedState, RescopedAction> {
+    let fromScopedAction = self.fromScopedAction as! (ScopedAction) -> RootAction
+
+    var isSending = false
+    let rescopedStore = Store<RescopedState, RescopedAction>(
+      initialState: toRescopedState(scopedStore.state.value),
+      reducer: .init { rescopedState, rescopedAction, _ in
+        isSending = true
+        defer { isSending = false }
+        let task = self.root.send(fromScopedAction(fromRescopedAction(rescopedAction)))
+        let callbackInfo = Instrumentation.CallbackInfo<Store<RescopedState, RescopedAction>.Type, Any>(storeKind: Store<RescopedState, RescopedAction>.self, action: rescopedAction, file: file, line: line).eraseToAny()
+        instrumentation.callback?(callbackInfo, .pre, .scopedStoreToLocal)
+        rescopedState = toRescopedState(scopedStore.state.value)
+        instrumentation.callback?(callbackInfo, .post, .scopedStoreToLocal)
+        if let task = task {
+          return .fireAndForget { await task.cancellableValue }
+        } else {
+          return .none
+        }
+      },
+      environment: ()
+    )
+    rescopedStore.parentCancellable = scopedStore.state
+      .dropFirst()
+      .sink { [weak rescopedStore] newValue in
+        guard !isSending else { return }
+        let callbackInfo = Instrumentation.CallbackInfo<Store<RescopedState, RescopedAction>.Type, Any>(storeKind: Store<RescopedState, RescopedAction>.self, action: nil, file: file, line: line).eraseToAny()
+        instrumentation.callback?(callbackInfo, .pre, .scopedStoreToLocal)
+        let newRescopedState = toRescopedState(newValue)
+        instrumentation.callback?(callbackInfo, .post, .scopedStoreToLocal)
+
+        guard let previousState = rescopedStore?.state.value, let isDuplicate = isDuplicate else {
+          instrumentation.callback?(callbackInfo, .pre, .scopedStoreChangeState)
+          rescopedStore?.state.value = newRescopedState
+          instrumentation.callback?(callbackInfo, .post, .scopedStoreChangeState)
+          return
+        }
+
+        instrumentation.callback?(callbackInfo, .pre, .scopedStoreDeduplicate)
+        let newStateIsDuplicate = isDuplicate(newRescopedState, previousState)
+        instrumentation.callback?(callbackInfo, .post, .scopedStoreDeduplicate)
+
+        if !newStateIsDuplicate {
+          instrumentation.callback?(callbackInfo, .pre, .scopedStoreChangeState)
+          rescopedStore?.state.value = newRescopedState
+          instrumentation.callback?(callbackInfo, .post, .scopedStoreChangeState)
+        }
+      }
+    rescopedStore.scope = Scope<RootState, RootAction>(
+      root: self.root,
+      fromScopedAction: { fromScopedAction(fromRescopedAction($0)) }
+    )
+    return rescopedStore
   }
 }

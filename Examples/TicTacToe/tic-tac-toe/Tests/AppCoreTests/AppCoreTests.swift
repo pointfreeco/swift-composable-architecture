@@ -7,7 +7,7 @@ import TwoFactorCore
 import XCTest
 
 @MainActor
-class AppCoreTests: XCTestCase {
+final class AppCoreTests: XCTestCase {
   func testIntegration() async {
     var authenticationClient = AuthenticationClient.unimplemented
     authenticationClient.login = { _ in
