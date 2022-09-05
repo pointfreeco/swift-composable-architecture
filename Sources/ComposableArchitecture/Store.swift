@@ -280,7 +280,7 @@ public final class Store<State, Action> {
   /// ```swift
   ///  var body: some View {
   ///    WithViewStore(
-  ///      self.store.scope(state: \.view, action: \.feature)
+  ///      self.store, observe: \.view, send: \.feature
   ///    ) { viewStore in
   ///      ...
   ///    }
