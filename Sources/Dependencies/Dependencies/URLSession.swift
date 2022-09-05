@@ -83,7 +83,7 @@ extension DependencyValues {
   }
 }
 
-private class UnimplementedURLProtocol: URLProtocol {
+private final class UnimplementedURLProtocol: URLProtocol {
   override class func canInit(with request: URLRequest) -> Bool {
     true
   }
