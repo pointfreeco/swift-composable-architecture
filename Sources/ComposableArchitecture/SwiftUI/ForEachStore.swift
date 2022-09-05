@@ -89,10 +89,7 @@ public struct ForEachStore<
   where
     Data == IdentifiedArray<ID, EachState>,
     Content == WithViewStore<
-      OrderedSet<ID>, (ID, EachAction),
-      _StateObjectViewStore<
-        OrderedSet<ID>, (ID, EachAction), ForEach<OrderedSet<ID>, ID, EachContent>
-      >
+      OrderedSet<ID>, (ID, EachAction), ForEach<OrderedSet<ID>, ID, EachContent>
     >
   {
     self.data = store.state.value

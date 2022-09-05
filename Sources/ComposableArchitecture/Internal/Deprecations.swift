@@ -698,10 +698,7 @@ extension ForEachStore {
   where
     Data == [EachState],
     Content == WithViewStore<
-      [ID], (Data.Index, EachAction),
-      _StateObjectViewStore<
-        [ID], (Int, EachAction), ForEach<[(offset: Int, element: ID)], ID, EachContent>
-      >
+      [ID], (Data.Index, EachAction), ForEach<[(offset: Int, element: ID)], ID, EachContent>
     >
   {
     let data = store.state.value
@@ -728,10 +725,7 @@ extension ForEachStore {
   where
     Data == [EachState],
     Content == WithViewStore<
-      [ID], (Data.Index, EachAction),
-      _StateObjectViewStore<
-        [ID], (Int, EachAction), ForEach<[(offset: Int, element: ID)], ID, EachContent>
-      >
+      [ID], (Data.Index, EachAction), ForEach<[(offset: Int, element: ID)], ID, EachContent>
     >,
     EachState: Identifiable,
     EachState.ID == ID
