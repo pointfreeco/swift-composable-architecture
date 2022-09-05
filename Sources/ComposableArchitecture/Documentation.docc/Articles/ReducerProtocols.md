@@ -22,6 +22,7 @@ when you are ready:
 * [Composition of features](#Composition-of-features)
 * [Optional and pullback reducers](#Optional-and-pullback-reducers)
 * [For-each reducers](#For-each-reducers)
+* [Binding reducers](#Binding-reducers)
 * [Dependencies](#Dependencies)
 * [Stores](#Stores)
 * [Testing](#Testing)
@@ -63,7 +64,7 @@ You can convert this to the protocol style by:
 `Action`.
 1. Move the fields on the environment to be fields on this new reducer type, and delete the 
 environment type.
-1. Move the reducer's closure implementation to the ``ReducerProtocol/reduce(into:action:)-76g02`` 
+1. Move the reducer's closure implementation to the ``ReducerProtocol/reduce(into:action:)-4nzr2`` 
 method.
 
 Performing these 4 steps on the feature produces the following:
@@ -442,6 +443,35 @@ struct Parent: ReducerProtocol {
     .forEach(\.rows, action: /Action.row) {
       Feature(date: self.date)
     }
+  }
+}
+```
+
+## Binding reducers
+
+Previously, reducers with bindable state and a binding action used the `Reducer.binding()` method
+to automatically make mutations to state before running the main logic of a reducer.
+
+```swift
+Reducer { state, action, environment in
+  // Logic to run after bindable state mutations are applied
+}
+.binding()
+```
+
+In reducer builders, use the new top-level ``BindingReducer`` type to specify when to apply
+mutations to bindable state:
+
+```swift
+var body: some ReducerProtocol<State, Action> {
+  Reduce { state, action in
+    // Logic to run before bindable state mutations are applied
+  }
+
+  BindingReducer()  // Apply bindable state mutations
+
+  Reducer { state, action in
+    // Logic to run after bindable state mutations are applied
   }
 }
 ```
