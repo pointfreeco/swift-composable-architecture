@@ -470,7 +470,7 @@ var body: some ReducerProtocol<State, Action> {
 
   BindingReducer()  // Apply bindable state mutations
 
-  Reducer { state, action in
+  Reduce { state, action in
     // Logic to run after bindable state mutations are applied
   }
 }
