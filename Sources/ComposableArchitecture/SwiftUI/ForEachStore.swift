@@ -95,6 +95,7 @@ public struct ForEachStore<
     self.data = store.state.value
     self.content = {
       WithViewStore(
+        store,
         observe: { $0.ids },
         removeDuplicates: areOrderedSetsDuplicates
       ) { viewStore in
