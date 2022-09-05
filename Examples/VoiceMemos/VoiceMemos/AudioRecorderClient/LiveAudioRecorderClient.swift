@@ -70,7 +70,7 @@ private actor AudioRecorder {
           recorder.wrappedValue.stop()
         }
 
-        try AVAudioSession.sharedInstance().setCategory(.record, mode: .default)
+        try AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: .defaultToSpeaker)
         try AVAudioSession.sharedInstance().setActive(true)
         self.recorder?.record()
       } catch {
