@@ -1,4 +1,3 @@
-import Combine
 import CustomDump
 import SwiftUI
 
@@ -118,11 +117,11 @@ public struct WithViewStore<State, Action, Content> {
     private var prefix: String?
     private var previousState: (State) -> State?
   #endif
-  @ObservedObject private var viewStore: ViewStore<State, Action>
+  @_StateObject private var viewStore: ViewStore<State, Action>
 
   fileprivate init(
     store: Store<State, Action>,
-    viewStore: ViewStore<State, Action>,
+    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
     file: StaticString = #fileID,
     line: UInt = #line,
     content: @escaping (ViewStore<State, Action>) -> Content
@@ -137,22 +136,7 @@ public struct WithViewStore<State, Action, Content> {
         return previousState
       }
     #endif
-    self.viewStore = viewStore
-  }
-
-  fileprivate init(
-    store: Store<State, Action>,
-    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
-    self.init(
-      store: store,
-      viewStore: ViewStore(store, removeDuplicates: isDuplicate, file: file, line: line),
-      file: file,
-      line: line,
-      content: content)
+    self._viewStore = .init(wrappedValue: ViewStore(store, removeDuplicates: isDuplicate))
   }
 
   /// Prints debug information to the console whenever the view is computed.
@@ -257,12 +241,7 @@ extension WithViewStore where State == Void, Content: View {
     line: UInt = #line,
     @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
   ) {
-    self.init(
-      store: store,
-      viewStore: ViewStore(store, file: file, line: line),
-      file: file,
-      line: line,
-      content: content)
+    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
 
