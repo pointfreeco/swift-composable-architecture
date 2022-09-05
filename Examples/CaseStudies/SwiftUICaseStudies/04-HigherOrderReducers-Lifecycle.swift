@@ -78,7 +78,7 @@ struct LifecycleDemoView: View {
   let store: Store<LifecycleDemoState, LifecycleDemoAction>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
         Section {
           AboutView(readMe: readMe)
@@ -141,7 +141,7 @@ private struct TimerView: View {
   let store: Store<Int, LifecycleAction<TimerAction>>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       Section {
         Text("Count: \(viewStore.state)")
           .onAppear { viewStore.send(.onAppear) }

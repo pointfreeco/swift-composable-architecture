@@ -34,7 +34,7 @@ import SwiftUI
 ///   let store: Store<ProfileState, ProfileAction>
 ///
 ///   var body: some View {
-///     WithViewStore(self.store) { viewStore in
+///     WithViewStore(self.store, observe: { $0 }) { viewStore in
 ///       Text("\(viewStore.username)")
 ///       // ...
 ///     }

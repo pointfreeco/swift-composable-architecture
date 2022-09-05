@@ -79,7 +79,7 @@ struct CityMapRowView: View {
   let store: Store<CityMapState, CityMapAction>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       HStack {
         NavigationLink(
           destination: CityMapDetailView(store: self.store)
@@ -109,7 +109,7 @@ struct CityMapDetailView: View {
   let store: Store<CityMapState, CityMapAction>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       VStack(spacing: 32) {
         Text(viewStore.cityMap.blurb)
 
@@ -140,7 +140,7 @@ struct CityMapDetailView: View {
   }
 }
 
-struct MapAppState {
+struct MapAppState: Equatable {
   var cityMaps: IdentifiedArrayOf<CityMapState>
 }
 

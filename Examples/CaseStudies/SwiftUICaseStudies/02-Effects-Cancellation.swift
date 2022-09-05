@@ -77,7 +77,7 @@ struct EffectsCancellationView: View {
   let store: Store<EffectsCancellationState, EffectsCancellationAction>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
         Section {
           AboutView(readMe: readMe)

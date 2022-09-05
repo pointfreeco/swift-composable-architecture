@@ -68,7 +68,7 @@ struct NavigateAndLoadView: View {
   let store: Store<NavigateAndLoadState, NavigateAndLoadAction>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
         Section {
           AboutView(readMe: readMe)
