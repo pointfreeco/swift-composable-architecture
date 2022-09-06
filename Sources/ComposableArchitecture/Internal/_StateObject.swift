@@ -3,32 +3,32 @@ import SwiftUI
 
 @propertyWrapper
 struct _StateObject<Object: ObservableObject>: DynamicProperty {
-  private final class ObjectWillChange: ObservableObject {
-    // Manually defining this property allows to keep it `lazy` and improves
-    // performance, as we ultimately only need this publisher once in the
-    // lifetime of the view.
+  private final class Observed: ObservableObject {
     lazy var objectWillChange = ObservableObjectPublisher()
-    private var subscription: AnyCancellable?
-
     init() {}
-    func relay(from storage: Storage) {
-      defer { storage.objectWillSendIsRelayed = true }
-      subscription = storage.object.objectWillChange.sink {
-        [weak objectWillChange = self.objectWillChange] _ in
-        guard let objectWillChange = objectWillChange else { return }
-        objectWillChange.send()
-      }
-    }
   }
 
   private final class Storage {
-    lazy var object: Object = initially()
-    var objectWillSendIsRelayed: Bool = false
     var initially: (() -> Object)!
+    lazy var object: Object = initially()
+    private var objectWillChange: ObservableObjectPublisher?
+    private var subscription: AnyCancellable?
+
+    func forwardObjectWillChange(to objectWillChange: ObservableObjectPublisher) {
+      self.objectWillChange = objectWillChange
+
+      if subscription == nil {
+        subscription = object.objectWillChange.sink { [weak self] _ in
+          guard let objectWillChange = self?.objectWillChange else { return }
+          objectWillChange.send()
+        }
+      }
+    }
+
     init() {}
   }
 
-  @ObservedObject private var objectWillChange = ObjectWillChange()
+  @ObservedObject private var observedObject = Observed()
   @State private var storage = Storage()
 
   init(wrappedValue: @autoclosure @escaping () -> Object) {
@@ -36,12 +36,7 @@ struct _StateObject<Object: ObservableObject>: DynamicProperty {
   }
 
   func update() {
-    if !storage.objectWillSendIsRelayed {
-      // `View` invalidation still seems to be effective even if the `objectWillChange`
-      // publisher is issued from another `@ObservedObject` instance than the current
-      // one. It is likely that these publishers are bound to the `View`'s identity.
-      objectWillChange.relay(from: storage)
-    }
+    storage.forwardObjectWillChange(to: observedObject.objectWillChange)
   }
 
   var wrappedValue: Object {
