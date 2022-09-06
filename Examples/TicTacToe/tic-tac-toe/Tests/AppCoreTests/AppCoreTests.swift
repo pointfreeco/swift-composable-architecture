@@ -54,6 +54,8 @@ final class AppCoreTests: XCTestCase {
     await store.send(.newGame(.logoutButtonTapped)) {
       $0 = .login(LoginState())
     }
+
+    await store.finish()
   }
 
   func testIntegration_TwoFactor() async {
@@ -124,5 +126,7 @@ final class AppCoreTests: XCTestCase {
     ) {
       $0 = .newGame(NewGameState())
     }
+
+    await store.finish()
   }
 }
