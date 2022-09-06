@@ -852,7 +852,7 @@
       else { return }
 
       { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
-      await Task.megaYield(count: 6)
+      await Task.megaYield()
     }
   }
 
@@ -1009,7 +1009,7 @@
   }
 
   extension Task where Success == Never, Failure == Never {
-    static func megaYield(count: Int = 3) async {
+    static func megaYield(count: Int = 6) async {
       for _ in 1...count {
         await Task<Void, Never>.detached(priority: .low) { await Task.yield() }.value
       }
