@@ -851,7 +851,7 @@
       else { return }
 
       { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
-      await Task.megaYield()
+      await Task.megaYield(count: 6)
     }
   }
 

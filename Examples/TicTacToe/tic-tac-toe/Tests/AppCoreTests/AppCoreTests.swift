@@ -124,7 +124,5 @@ final class AppCoreTests: XCTestCase {
     ) {
       $0 = .newGame(NewGameState())
     }
-
-    await store.finish()
   }
 }
