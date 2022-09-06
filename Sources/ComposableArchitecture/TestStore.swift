@@ -171,6 +171,8 @@
   /// not expect it would cause a test failure.
   ///
   public final class TestStore<State, ScopedState, Action, ScopedAction, Environment> {
+    public var dependencies = DependencyValues()
+
     /// The current environment.
     ///
     /// The environment can be modified throughout a test store's lifecycle in order to influence
@@ -238,28 +240,30 @@
       self.store = Store(
         initialState: initialState,
         reducer: Reducer<State, TestAction, Void> { [unowned self] state, action, _ in
-          let effects: Effect<Action, Never>
-          switch action.origin {
-          case let .send(scopedAction):
-            effects = self.reducer.run(
-              &state, self.fromScopedAction(scopedAction), self.environment)
-            self.state = state
+          DependencyValues.$current.withValue(self.dependencies) {
+            let effects: Effect<Action, Never>
+            switch action.origin {
+            case let .send(scopedAction):
+              effects = self.reducer.run(
+                &state, self.fromScopedAction(scopedAction), self.environment)
+              self.state = state
 
-          case let .receive(action):
-            effects = self.reducer.run(&state, action, self.environment)
-            self.receivedActions.append((action, state))
+            case let .receive(action):
+              effects = self.reducer.run(&state, action, self.environment)
+              self.receivedActions.append((action, state))
+            }
+
+            let effect = LongLivingEffect(file: action.file, line: action.line)
+            return
+              effects
+              .handleEvents(
+                receiveSubscription: { [weak self] _ in self?.inFlightEffects.insert(effect) },
+                receiveCompletion: { [weak self] _ in self?.inFlightEffects.remove(effect) },
+                receiveCancel: { [weak self] in self?.inFlightEffects.remove(effect) }
+              )
+              .eraseToEffect { .init(origin: .receive($0), file: action.file, line: action.line) }
+
           }
-
-          let effect = LongLivingEffect(file: action.file, line: action.line)
-          return
-            effects
-            .handleEvents(
-              receiveSubscription: { [weak self] _ in self?.inFlightEffects.insert(effect) },
-              receiveCompletion: { [weak self] _ in self?.inFlightEffects.remove(effect) },
-              receiveCancel: { [weak self] in self?.inFlightEffects.remove(effect) }
-            )
-            .eraseToEffect { .init(origin: .receive($0), file: action.file, line: action.line) }
-
         },
         environment: ()
       )

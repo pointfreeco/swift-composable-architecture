@@ -15,24 +15,24 @@ final class VoiceMemosTests: XCTestCase {
 
     let store = TestStore(
       initialState: VoiceMemos.State(),
-      reducer: voiceMemosReducer,
-      environment: .unimplemented
+      reducer: Reducer(VoiceMemos()),
+      environment: ()
     )
 
     let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
 
-    store.environment.audioRecorder.currentTime = { 2.5 }
-    store.environment.audioRecorder.requestRecordPermission = { true }
-    store.environment.audioRecorder.startRecording = { _ in
+    store.dependencies.audioRecorder.currentTime = { 2.5 }
+    store.dependencies.audioRecorder.requestRecordPermission = { true }
+    store.dependencies.audioRecorder.startRecording = { _ in
       try await didFinish.stream.first { _ in true }!
     }
-    store.environment.audioRecorder.stopRecording = {
+    store.dependencies.audioRecorder.stopRecording = {
       didFinish.continuation.yield(true)
       didFinish.continuation.finish()
     }
-    store.environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
-    store.environment.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
-    store.environment.uuid = { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! }
+    store.dependencies.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
+    store.dependencies.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
+    store.dependencies.uuid = { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! }
 
     await store.send(.recordButtonTapped)
     await self.mainRunLoop.advance()
@@ -82,13 +82,13 @@ final class VoiceMemosTests: XCTestCase {
 
     let store = TestStore(
       initialState: VoiceMemos.State(),
-      reducer: voiceMemosReducer,
-      environment: .unimplemented
+      reducer: Reducer(VoiceMemos()),
+      environment: ()
     )
 
-    store.environment.audioRecorder.requestRecordPermission = { false }
-    store.environment.mainRunLoop = .immediate
-    store.environment.openSettings = { await didOpenSettings.setValue(true) }
+    store.dependencies.audioRecorder.requestRecordPermission = { false }
+    store.dependencies.mainRunLoop = .immediate
+    store.dependencies.openSettings = { await didOpenSettings.setValue(true) }
 
     await store.send(.recordButtonTapped)
     await store.receive(.recordPermissionResponse(false)) {
@@ -107,19 +107,19 @@ final class VoiceMemosTests: XCTestCase {
 
     let store = TestStore(
       initialState: VoiceMemos.State(),
-      reducer: voiceMemosReducer,
-      environment: .unimplemented
+      reducer: Reducer(VoiceMemos()),
+      environment: ()
     )
 
     let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
 
-    store.environment.audioRecorder.requestRecordPermission = { true }
-    store.environment.audioRecorder.startRecording = { _ in
+    store.dependencies.audioRecorder.requestRecordPermission = { true }
+    store.dependencies.audioRecorder.startRecording = { _ in
       try await didFinish.stream.first { _ in true }!
     }
-    store.environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
-    store.environment.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
-    store.environment.uuid = { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! }
+    store.dependencies.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
+    store.dependencies.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
+    store.dependencies.uuid = { UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")! }
 
     await store.send(.recordButtonTapped)
     await self.mainRunLoop.advance(by: 0.5)
@@ -158,15 +158,15 @@ final class VoiceMemosTests: XCTestCase {
           )
         ]
       ),
-      reducer: voiceMemosReducer,
-      environment: .unimplemented
+      reducer: Reducer(VoiceMemos()),
+      environment: ()
     )
 
-    store.environment.audioPlayer.play = { _ in
+    store.dependencies.audioPlayer.play = { _ in
       try await self.mainRunLoop.sleep(for: 1.25)
       return true
     }
-    store.environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
+    store.dependencies.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
     let task = await store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
@@ -202,12 +202,12 @@ final class VoiceMemosTests: XCTestCase {
           )
         ]
       ),
-      reducer: voiceMemosReducer,
-      environment: .unimplemented
+      reducer: Reducer(VoiceMemos()),
+      environment: ()
     )
 
-    store.environment.audioPlayer.play = { _ in throw SomeError() }
-    store.environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
+    store.dependencies.audioPlayer.play = { _ in throw SomeError() }
+    store.dependencies.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
     let task = await store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
@@ -233,8 +233,8 @@ final class VoiceMemosTests: XCTestCase {
           )
         ]
       ),
-      reducer: voiceMemosReducer,
-      environment: .unimplemented
+      reducer: Reducer(VoiceMemos()),
+      environment: ()
     )
 
     await store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
@@ -256,8 +256,8 @@ final class VoiceMemosTests: XCTestCase {
           )
         ]
       ),
-      reducer: voiceMemosReducer,
-      environment: .unimplemented
+      reducer: Reducer(VoiceMemos()),
+      environment: ()
     )
 
     await store.send(.voiceMemo(id: url, action: .delete)) {
@@ -280,12 +280,12 @@ final class VoiceMemosTests: XCTestCase {
           )
         ]
       ),
-      reducer: voiceMemosReducer,
-      environment: .unimplemented
+      reducer: Reducer(VoiceMemos()),
+      environment: ()
     )
 
-    store.environment.audioPlayer.play = { _ in try await Task.never() }
-    store.environment.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
+    store.dependencies.audioPlayer.play = { _ in try await Task.never() }
+    store.dependencies.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
     await store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
@@ -296,16 +296,16 @@ final class VoiceMemosTests: XCTestCase {
   }
 }
 
-extension VoiceMemosEnvironment {
-  static let unimplemented = Self(
-    audioPlayer: .unimplemented,
-    audioRecorder: .unimplemented,
-    mainRunLoop: .unimplemented,
-    openSettings: XCTUnimplemented("\(Self.self).openSettings"),
-    temporaryDirectory: XCTUnimplemented(
-      "\(Self.self).temporaryDirectory",
-      placeholder: URL(fileURLWithPath: NSTemporaryDirectory())
-    ),
-    uuid: XCTUnimplemented("\(Self.self).uuid", placeholder: UUID())
-  )
-}
+//extension VoiceMemosEnvironment {
+//  static let unimplemented = Self(
+//    audioPlayer: .unimplemented,
+//    audioRecorder: .unimplemented,
+//    mainRunLoop: .unimplemented,
+//    openSettings: XCTUnimplemented("\(Self.self).openSettings"),
+//    temporaryDirectory: XCTUnimplemented(
+//      "\(Self.self).temporaryDirectory",
+//      placeholder: URL(fileURLWithPath: NSTemporaryDirectory())
+//    ),
+//    uuid: XCTUnimplemented("\(Self.self).uuid", placeholder: UUID())
+//  )
+//}
