@@ -5,7 +5,6 @@ import SwiftUI
 struct _StateObject<Object: ObservableObject>: DynamicProperty {
   private final class Observed: ObservableObject {
     lazy var objectWillChange = ObservableObjectPublisher()
-    init() {}
   }
 
   private final class Storage {
@@ -17,29 +16,26 @@ struct _StateObject<Object: ObservableObject>: DynamicProperty {
     func forwardObjectWillChange(to objectWillChange: ObservableObjectPublisher) {
       self.objectWillChange = objectWillChange
 
-      if subscription == nil {
-        subscription = object.objectWillChange.sink { [weak self] _ in
-          guard let objectWillChange = self?.objectWillChange else { return }
-          objectWillChange.send()
+      if self.subscription == nil {
+        self.subscription = self.object.objectWillChange.sink { [weak self] _ in
+          self?.objectWillChange?.send()
         }
       }
     }
-
-    init() {}
   }
 
   @ObservedObject private var observedObject = Observed()
   @State private var storage = Storage()
 
   init(wrappedValue: @autoclosure @escaping () -> Object) {
-    storage.initially = wrappedValue
+    self.storage.initially = wrappedValue
   }
 
   func update() {
-    storage.forwardObjectWillChange(to: observedObject.objectWillChange)
+    self.storage.forwardObjectWillChange(to: self.observedObject.objectWillChange)
   }
 
   var wrappedValue: Object {
-    storage.object
+    self.storage.object
   }
 }
