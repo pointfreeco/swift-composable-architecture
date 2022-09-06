@@ -76,12 +76,33 @@ struct RecordingMemo: ReducerProtocol {
   }
 }
 
+private enum MyKey: EnvironmentKey {
+  static let defaultValue = 42
+}
+
+extension EnvironmentValues {
+  var myValue: Int {
+    get { self[MyKey.self] }
+    set { self[MyKey.self] = newValue }
+  }
+}
+
 struct RecordingMemoView: View {
+  @Environment(\.myValue) private var myValue
+  @Environment(\.openURL) private var openURL
+  @Environment(\.dismiss) private var dismiss
+  @Environment(\.redactionReasons) private var redactionReasons
   let store: StoreOf<RecordingMemo>
 
   var body: some View {
     WithViewStore(self.store) { viewStore in
       VStack(spacing: 12) {
+        Text("\(self.myValue)")
+
+        Button("Help") {
+          self.openURL(URL(string: "https://www.pointfree.co/")!)
+        }
+
         Text("Recording")
           .font(.title)
           .colorMultiply(Color(Int(viewStore.duration).isMultiple(of: 2) ? .systemRed : .label))

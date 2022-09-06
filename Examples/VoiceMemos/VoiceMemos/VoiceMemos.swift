@@ -160,6 +160,7 @@ struct VoiceMemosView: View {
             self.store.scope(state: \.recordingMemo, action: { .recordingMemo($0) })
           ) { store in
             RecordingMemoView(store: store)
+              .environment(\.myValue, 1729)
           } else: {
             RecordButton(permission: viewStore.audioRecorderPermission) {
               viewStore.send(.recordButtonTapped, animation: .spring())
