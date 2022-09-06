@@ -1,10 +1,12 @@
 import CombineSchedulers
 import Foundation
 
-public protocol DependencyKey {
+public protocol TestDependencyKey {
   associatedtype Value: Sendable
-  static var liveValue: Value { get }
   static var testValue: Value { get }
+}
+public protocol DependencyKey: TestDependencyKey {
+  static var liveValue: Value { get }
 }
 
 //extension DependencyKey {
@@ -80,11 +82,11 @@ private enum TemporaryDirectoryKey: DependencyKey {
 
 public struct DependencyValues: Sendable {
   private var storage: [ObjectIdentifier: any Sendable] = [:]
-  @TaskLocal static var current = Self()
+  @TaskLocal public static var current = Self()
 
   public init() {}
 
-  public subscript<Key: DependencyKey>(key: Key.Type) -> Key.Value {
+  public subscript<Key: TestDependencyKey>(key: Key.Type) -> Key.Value {
     get {
       guard let dependency = self.storage[ObjectIdentifier(key)] as? Key.Value
       else {
@@ -92,7 +94,8 @@ public struct DependencyValues: Sendable {
 
         guard isTesting
         else {
-          return Key.liveValue
+          return (key as? any DependencyKey.Type)?.liveValue as? Key.Value
+          ?? Key.testValue
         }
         return Key.testValue
       }
@@ -109,7 +112,7 @@ enum IsTestingKey: DependencyKey {
   static let testValue = true
 }
 extension DependencyValues {
-  var isTesting: Bool {
+  public var isTesting: Bool {
     get { self[IsTestingKey.self] }
     set { self[IsTestingKey.self] = newValue }
   }
