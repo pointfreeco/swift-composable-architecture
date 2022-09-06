@@ -3,11 +3,17 @@ import Foundation
 
 public protocol DependencyKey {
   associatedtype Value: Sendable
-  static var defaultValue: Value { get }
+  static var liveValue: Value { get }
+  static var testValue: Value { get }
 }
 
+//extension DependencyKey {
+//  public static var testValue: Value { Self.liveValue }
+//}
+
 private enum MainRunLoopKey: DependencyKey {
-  static let defaultValue = AnySchedulerOf<RunLoop>.main
+  static let liveValue = AnySchedulerOf<RunLoop>.main
+  static let testValue = AnySchedulerOf<RunLoop>.unimplemented
 }
 extension DependencyValues {
   public var mainRunLoop: AnySchedulerOf<RunLoop> {
@@ -39,41 +45,56 @@ extension DependencyValues {
 }
 
 private enum MainQueueKey: DependencyKey {
-  static let defaultValue = AnySchedulerOf<DispatchQueue>.main
+  static let liveValue = AnySchedulerOf<DispatchQueue>.main
+  static let testValue = AnySchedulerOf<DispatchQueue>.unimplemented
 }
 
+import XCTestDynamicOverlay
+
 private enum DateKey: DependencyKey {
-  static let defaultValue = { @Sendable in Date() }
+  static let liveValue = { @Sendable in Date() }
+  static let testValue: @Sendable () -> Date = XCTUnimplemented(#"@Dependency(\.date)"#, placeholder: Date())
 }
 
 private enum UUIDKey: DependencyKey {
-  static let defaultValue = { @Sendable in UUID() }
+  static let liveValue = { @Sendable in UUID() }
+  static let testValue: @Sendable () -> UUID = XCTUnimplemented(#"@Dependency(\.uuid)"#, placeholder: UUID())
 }
 
 import SwiftUI
 
 #if canImport(UIKit)
 private enum OpenSettingsKey: DependencyKey {
-  static let defaultValue = { @Sendable in
+  static let liveValue = { @Sendable in
     await MainActor.run {
       UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
     }
   }
+  static let testValue: @Sendable () async -> Void = XCTUnimplemented(#"@Dependency(\.openSettings)"#)
 }
 #endif
 private enum TemporaryDirectoryKey: DependencyKey {
-  static let defaultValue = { @Sendable in URL(fileURLWithPath: NSTemporaryDirectory()) }
+  static let liveValue = { @Sendable in URL(fileURLWithPath: NSTemporaryDirectory()) }
+  static let testValue: @Sendable () -> URL = XCTUnimplemented(#"@Dependency(\.temporaryDirectory)"#, placeholder: URL(fileURLWithPath: NSTemporaryDirectory()))
 }
 
 public struct DependencyValues: Sendable {
   private var storage: [ObjectIdentifier: any Sendable] = [:]
   @TaskLocal static var current = Self()
 
+  public init() {}
+
   public subscript<Key: DependencyKey>(key: Key.Type) -> Key.Value {
     get {
       guard let dependency = self.storage[ObjectIdentifier(key)] as? Key.Value
       else {
-        return Key.defaultValue
+        let isTesting = self.storage[ObjectIdentifier(IsTestingKey.self)] as? Bool ?? false
+
+        guard isTesting
+        else {
+          return Key.liveValue
+        }
+        return Key.testValue
       }
       return dependency
     }
@@ -81,7 +102,17 @@ public struct DependencyValues: Sendable {
       self.storage[ObjectIdentifier(key)] = newValue
     }
   }
+}
 
+enum IsTestingKey: DependencyKey {
+  static let liveValue = false
+  static let testValue = true
+}
+extension DependencyValues {
+  var isTesting: Bool {
+    get { self[IsTestingKey.self] }
+    set { self[IsTestingKey.self] = newValue }
+  }
 }
 
 

@@ -171,7 +171,11 @@
   /// not expect it would cause a test failure.
   ///
   public final class TestStore<State, ScopedState, Action, ScopedAction, Environment> {
-    public var dependencies = DependencyValues()
+    public var dependencies = {
+      var dependencies = DependencyValues()
+      dependencies.isTesting = true
+      return dependencies
+    }()
 
     /// The current environment.
     ///

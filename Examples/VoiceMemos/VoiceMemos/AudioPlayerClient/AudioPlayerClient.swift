@@ -6,7 +6,8 @@ struct AudioPlayerClient {
 }
 
 private enum AudioPlayerClientKey: DependencyKey {
-  static let defaultValue = AudioPlayerClient.live
+  static let liveValue = AudioPlayerClient.live
+  static let testValue = AudioPlayerClient.unimplemented
 }
 extension DependencyValues {
   var audioPlayer: AudioPlayerClient {

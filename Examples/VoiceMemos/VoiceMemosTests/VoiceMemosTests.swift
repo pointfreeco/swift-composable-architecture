@@ -284,8 +284,9 @@ final class VoiceMemosTests: XCTestCase {
       environment: ()
     )
 
+//    store.dependencies = .unimplementedVoiceMemos
     store.dependencies.audioPlayer.play = { _ in try await Task.never() }
-    store.dependencies.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
+//    store.dependencies.mainRunLoop = self.mainRunLoop.eraseToAnyScheduler()
 
     await store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
@@ -295,6 +296,19 @@ final class VoiceMemosTests: XCTestCase {
     }
   }
 }
+
+//extension DependencyValues {
+//  static var unimplementedVoiceMemos: Self {
+//    var dependencies = DependencyValues()
+//    dependencies.audioPlayer = .unimplemented
+//    dependencies.audioRecorder = .unimplemented
+//    dependencies.mainRunLoop = .unimplemented
+//    dependencies.openSettings = XCTUnimplemented()
+//    dependencies.temporaryDirectory = XCTUnimplemented()
+//    dependencies.uuid = XCTUnimplemented()
+//    return dependencies
+//  }
+//}
 
 //extension VoiceMemosEnvironment {
 //  static let unimplemented = Self(
