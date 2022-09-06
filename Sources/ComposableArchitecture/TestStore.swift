@@ -274,11 +274,11 @@
       @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
       @MainActor
       public func finish(
-        timeout duration: Duration,
+        timeout duration: Duration? = nil,
         file: StaticString = #file,
         line: UInt = #line
       ) async {
-        await self.finish(timeout: duration.nanoseconds, file: file, line: line)
+        await self.finish(timeout: duration?.nanoseconds, file: file, line: line)
       }
     #endif
 
@@ -287,6 +287,7 @@
     /// Can be used to assert that all effects have finished.
     ///
     /// - Parameter nanoseconds: The amount of time to wait before asserting.
+    @_disfavoredOverload
     @MainActor
     public func finish(
       timeout nanoseconds: UInt64? = nil,
@@ -936,22 +937,23 @@
     }
 
     #if swift(>=5.7)
-      @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
       /// Asserts the underlying task finished.
       ///
       /// - Parameter duration: The amount of time to wait before asserting.
+      @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
       public func finish(
-        timeout duration: Duration,
+        timeout duration: Duration? = nil,
         file: StaticString = #file,
         line: UInt = #line
       ) async {
-        await self.finish(timeout: duration.nanoseconds, file: file, line: line)
+        await self.finish(timeout: duration?.nanoseconds, file: file, line: line)
       }
     #endif
 
     /// Asserts the underlying task finished.
     ///
     /// - Parameter nanoseconds: The amount of time to wait before asserting.
+    @_disfavoredOverload
     public func finish(
       timeout nanoseconds: UInt64? = nil,
       file: StaticString = #file,
