@@ -26,10 +26,12 @@ extension DependencyValues {
     get { self[UUIDKey.self] }
     set { self[UUIDKey.self] = newValue }
   }
+  #if canImport(UIKit)
   public var openSettings: @Sendable () async -> Void {
     get { self[OpenSettingsKey.self] }
     set { self[OpenSettingsKey.self] = newValue }
   }
+  #endif
   public var temporaryDirectory: @Sendable () -> URL {
     get { self[TemporaryDirectoryKey.self] }
     set { self[TemporaryDirectoryKey.self] = newValue }
@@ -50,6 +52,7 @@ private enum UUIDKey: DependencyKey {
 
 import SwiftUI
 
+#if canImport(UIKit)
 private enum OpenSettingsKey: DependencyKey {
   static let defaultValue = { @Sendable in
     await MainActor.run {
@@ -57,6 +60,7 @@ private enum OpenSettingsKey: DependencyKey {
     }
   }
 }
+#endif
 private enum TemporaryDirectoryKey: DependencyKey {
   static let defaultValue = { @Sendable in URL(fileURLWithPath: NSTemporaryDirectory()) }
 }

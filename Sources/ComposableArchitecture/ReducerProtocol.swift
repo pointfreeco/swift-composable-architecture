@@ -25,6 +25,26 @@ public protocol ReducerProtocol<State, Action> {
     action: Action
   ) -> Effect<Action, Never>
 }
+/*
+ DependencyValues.$current.withValue(...) {
+   Child().reduce(...)
+ }
+
+ EnvironmentValues.$current.withValue(...) {
+   ChildView().body
+ }
+
+ DependencyValues.$current.withValue(...) {
+   let model = Model()
+   let vc = ViewController()
+ }
+ */
+
+class Model: ObservableObject {
+  func recordButtonTapped() {}
+  func deleteButtonTapped() {}
+  ///...
+}
 
 extension ReducerProtocol where Body == Never {
   public var body: Body {
@@ -386,21 +406,35 @@ extension ReducerProtocol {
   public func dependency<Value>(
     _ keyPath: WritableKeyPath<DependencyValues, Value>,
     _ value: Value
-  ) -> some ReducerProtocol<State, Action> {
-    DependencyKeyWritingReducer(base: self, keyPath: keyPath, value: value)
+  ) -> _DependencyKeyWritingReducer<Self> {
+    _DependencyKeyWritingReducer(base: self) { values in
+      values[keyPath: keyPath] = value
+    }
   }
 }
 
-private struct DependencyKeyWritingReducer<Base: ReducerProtocol, Value>: ReducerProtocol {
+public struct _DependencyKeyWritingReducer<Base: ReducerProtocol>: ReducerProtocol {
   let base: Base
-  let keyPath: WritableKeyPath<DependencyValues, Value>
-  let value: Value
+//  let keyPath: WritableKeyPath<DependencyValues, Value>
+//  let value: Value
+  let update: (inout DependencyValues) -> Void
 
-  func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action, Never> {
+  public func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action, Never> {
     var dependencies = DependencyValues.current
-    dependencies[keyPath: self.keyPath] = self.value
+    //dependencies[keyPath: self.keyPath] = self.value
+    self.update(&dependencies)
     return DependencyValues.$current.withValue(dependencies) {
       self.base.reduce(into: &state, action: action)
+    }
+  }
+
+  public func dependency<Value>(
+    _ keyPath: WritableKeyPath<DependencyValues, Value>,
+    _ value: Value
+  ) -> Self {
+    _DependencyKeyWritingReducer(base: self.base) { values in
+      values[keyPath: keyPath] = value
+      self.update(&values)
     }
   }
 }

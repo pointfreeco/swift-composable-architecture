@@ -214,8 +214,10 @@ struct RecordButton: View {
           Text("Recording requires microphone access.")
             .multilineTextAlignment(.center)
           Button("Open Settings", action: self.settingsAction)
+            .font(.title)
         }
         .frame(maxWidth: .infinity, maxHeight: 74)
+        .font(.callout)
       }
     }
   }
@@ -247,6 +249,19 @@ struct VoiceMemos_Previews: PreviewProvider {
           VoiceMemos()
             .dependency(\.audioPlayer, .mock)
             .dependency(\.audioRecorder, .mock)
+            .dependency(\.audioRecorder, AudioRecorderClient.live)
+          /*
+
+           DependencyValues.$current.withValue(...) {
+             DependencyValues.$current.withValue(...) {
+               DependencyValues.$current.withValue(...) {
+                 ...
+               }
+             }
+           }
+
+           */
+
 //          (
 //            // NB: AVAudioRecorder and AVAudioPlayer doesn't work in previews, so use mocks
 //            //     that simulate their behavior in previews.
@@ -312,3 +327,4 @@ extension AudioPlayerClient {
 //
 //let kp5: any Sendable = \Foo.value
 //let kp6: any Sendable = \Foo.void
+
