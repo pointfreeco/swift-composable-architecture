@@ -332,7 +332,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///   - valueToAction: A function that transforms the binding's value into an action that can be
   ///     sent to the store.
   /// - Returns: A binding.
-  public func binding<Value>(
+  @MainActor public func binding<Value>(
     get: @escaping (State) -> Value,
     send valueToAction: @escaping (Value) -> Action
   ) -> Binding<Value> {

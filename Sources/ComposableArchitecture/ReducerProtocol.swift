@@ -6,11 +6,11 @@
  }
  */
 
-import SwiftUI
-func foo() {
-  (Text("") as any View).body
-  let tmp = Text._makeView
-}
+//import SwiftUI
+//func foo() {
+//  (Text("") as any View).body
+//  let tmp = Text._makeView
+//}
 
 public protocol ReducerProtocol<State, Action> {
   associatedtype State
@@ -379,5 +379,28 @@ public struct IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Red
       self.parent
     }
     .reduce(into: &state, action: action)
+  }
+}
+
+extension ReducerProtocol {
+  public func dependency<Value>(
+    _ keyPath: WritableKeyPath<DependencyValues, Value>,
+    _ value: Value
+  ) -> some ReducerProtocol<State, Action> {
+    DependencyKeyWritingReducer(base: self, keyPath: keyPath, value: value)
+  }
+}
+
+private struct DependencyKeyWritingReducer<Base: ReducerProtocol, Value>: ReducerProtocol {
+  let base: Base
+  let keyPath: WritableKeyPath<DependencyValues, Value>
+  let value: Value
+
+  func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action, Never> {
+    var dependencies = DependencyValues.current
+    dependencies[keyPath: self.keyPath] = self.value
+    return DependencyValues.$current.withValue(dependencies) {
+      self.base.reduce(into: &state, action: action)
+    }
   }
 }

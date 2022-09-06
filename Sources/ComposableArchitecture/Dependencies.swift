@@ -2,7 +2,7 @@ import CombineSchedulers
 import Foundation
 
 public protocol DependencyKey {
-  associatedtype Value
+  associatedtype Value: Sendable
   static var defaultValue: Value { get }
 }
 
@@ -18,19 +18,19 @@ extension DependencyValues {
     get { self[MainQueueKey.self] }
     set { self[MainQueueKey.self] = newValue }
   }
-  public var date: () -> Date {
+  public var date: @Sendable () -> Date {
     get { self[DateKey.self] }
     set { self[DateKey.self] = newValue }
   }
-  public var uuid: () -> UUID {
+  public var uuid: @Sendable () -> UUID {
     get { self[UUIDKey.self] }
     set { self[UUIDKey.self] = newValue }
   }
-  public var openSettings: () async -> Void {
+  public var openSettings: @Sendable () async -> Void {
     get { self[OpenSettingsKey.self] }
     set { self[OpenSettingsKey.self] = newValue }
   }
-  public var temporaryDirectory: () -> URL {
+  public var temporaryDirectory: @Sendable () -> URL {
     get { self[TemporaryDirectoryKey.self] }
     set { self[TemporaryDirectoryKey.self] = newValue }
   }
@@ -41,29 +41,29 @@ private enum MainQueueKey: DependencyKey {
 }
 
 private enum DateKey: DependencyKey {
-  static let defaultValue = { Date() }
+  static let defaultValue = { @Sendable in Date() }
 }
 
 private enum UUIDKey: DependencyKey {
-  static let defaultValue = { UUID() }
+  static let defaultValue = { @Sendable in UUID() }
 }
 
 import SwiftUI
 
 private enum OpenSettingsKey: DependencyKey {
-  static let defaultValue = {
+  static let defaultValue = { @Sendable in
     await MainActor.run {
       UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
     }
   }
 }
 private enum TemporaryDirectoryKey: DependencyKey {
-  static let defaultValue = { URL(fileURLWithPath: NSTemporaryDirectory()) }
+  static let defaultValue = { @Sendable in URL(fileURLWithPath: NSTemporaryDirectory()) }
 }
 
-public struct DependencyValues {
-  private var storage: [AnyHashable: Any] = [:]
-  static var current = Self()
+public struct DependencyValues: Sendable {
+  private var storage: [ObjectIdentifier: any Sendable] = [:]
+  @TaskLocal static var current = Self()
 
   public subscript<Key: DependencyKey>(key: Key.Type) -> Key.Value {
     get {

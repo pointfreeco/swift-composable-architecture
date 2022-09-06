@@ -245,6 +245,8 @@ struct VoiceMemos_Previews: PreviewProvider {
         ),
         reducer: Reducer(
           VoiceMemos()
+            .dependency(\.audioPlayer, .mock)
+            .dependency(\.audioRecorder, .mock)
 //          (
 //            // NB: AVAudioRecorder and AVAudioPlayer doesn't work in previews, so use mocks
 //            //     that simulate their behavior in previews.
