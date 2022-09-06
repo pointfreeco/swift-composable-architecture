@@ -362,11 +362,13 @@ public final class Store<State, Action> {
       self.state.value = currentState
       self.isSending = false
       // if new actions were added synchronously
-      // as part of state publisher updates,
-      // process them now
+      // as part of state publisher updates, process them now
       if currentIndex < bufferedActions.endIndex {
-        let action = self.bufferedActions[currentIndex]
-        self.bufferedActions.removeFirst(currentIndex.advanced(by: 1))
+        // pick out the last item, as this get re-queued once we hit `send(...)`
+        // (send *then* processes the bufferedActions from the beginning)
+        let lastItemIndex = bufferedActions.endIndex.advanced(by: -1)
+        let action = self.bufferedActions[lastItemIndex]
+        self.bufferedActions = Array(self.bufferedActions[currentIndex..<lastItemIndex])
         if let task = send(action, file: file, line: line) {
           tasks.wrappedValue.append(task)
         }

@@ -619,4 +619,53 @@ final class StoreTests: XCTestCase {
     
     XCTAssertEqual(seenCountries, ["USA", "UK"])
   }
+
+  func testBufferedActionsFixProcessesInCorrectOrder() {
+    struct State: Equatable {
+      var city: String
+    }
+
+    enum Action: Equatable {
+      case updateCity(String)
+    }
+
+    var processedActions = [Action]()
+
+    let reducer = Reducer<State, Action, Void> { state, action, _ in
+      switch action {
+      case .updateCity(let city):
+        state.city = city
+        processedActions.append(action)
+        return .none
+      }
+    }
+
+    let store = Store(
+      initialState: .init(city: "New York"),
+      reducer: reducer,
+      environment: ()
+    )
+    let viewStore = ViewStore(store)
+
+    viewStore.publisher.city
+      .sink { city in
+        // After we get the first update, let's update the country to "UK"
+        if city == "London" {
+          viewStore.send(.updateCity("UK"))
+          viewStore.send(.updateCity("USA"))
+        }
+      }
+      .store(in: &cancellables)
+
+    // Send the initial update to make city "London"
+    // and trigger effects
+    viewStore.send(.updateCity("London"))
+
+    // Test that we see actions in the correct order
+    XCTAssertEqual(processedActions, [
+      .updateCity("London"),
+      .updateCity("UK"),
+      .updateCity("USA")
+    ], "Failed to process actions in order.")
+  }
 }
