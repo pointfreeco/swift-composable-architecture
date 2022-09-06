@@ -33,8 +33,13 @@ struct VoiceMemo: ReducerProtocol {
     case timerUpdated(TimeInterval)
     case titleTextFieldChanged(String)
   }
-  var audioPlayer: AudioPlayerClient
-  var mainRunLoop: AnySchedulerOf<RunLoop>
+
+//  var audioPlayer: AudioPlayerClient
+//  var mainRunLoop: AnySchedulerOf<RunLoop>
+
+  @Dependency(\.audioPlayer) private var audioPlayer
+  @Dependency(\.mainRunLoop) private var mainRunLoop
+
   private enum PlayID {}
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {

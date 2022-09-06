@@ -24,8 +24,14 @@ struct RecordingMemo: ReducerProtocol {
   enum DelegateAction: Equatable {
     case didFinish(TaskResult<State>)
   }
-  var audioRecorder: AudioRecorderClient
-  var mainRunLoop: AnySchedulerOf<RunLoop>
+
+//  var audioRecorder: AudioRecorderClient
+//  var mainRunLoop: AnySchedulerOf<RunLoop>
+
+  @Dependency(\.audioRecorder) private var audioRecorder
+  // Dependency<AudioRecorderClient>
+  @Dependency(\.mainRunLoop) private var mainRunLoop
+  @Dependency(\.date) private var date
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {

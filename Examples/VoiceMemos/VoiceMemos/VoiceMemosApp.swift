@@ -10,18 +10,19 @@ struct VoiceMemosApp: App {
         store: Store(
           initialState: VoiceMemos.State(),
           reducer: Reducer(
-            VoiceMemos(
-              audioPlayer: .live,
-              audioRecorder: .live,
-              mainRunLoop: .main,
-              openSettings: {
-                await MainActor.run {
-                  UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
-                }
-              },
-              temporaryDirectory: { URL(fileURLWithPath: NSTemporaryDirectory()) },
-              uuid: { UUID() }
-            )
+            VoiceMemos()
+//            (
+//              audioPlayer: .live,
+//              audioRecorder: .live,
+//              mainRunLoop: .main,
+//              openSettings: {
+//                await MainActor.run {
+//                  UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+//                }
+//              },
+//              temporaryDirectory: { URL(fileURLWithPath: NSTemporaryDirectory()) },
+//              uuid: { UUID() }
+//            )
           ).debug(),
           environment: ()
         )

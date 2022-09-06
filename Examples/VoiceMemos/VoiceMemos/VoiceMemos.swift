@@ -23,29 +23,34 @@ struct VoiceMemos: ReducerProtocol {
     case recordingMemo(RecordingMemo.Action)
     case voiceMemo(id: VoiceMemo.State.ID, action: VoiceMemo.Action)
   }
-  var audioPlayer: AudioPlayerClient
-  var audioRecorder: AudioRecorderClient
-  var mainRunLoop: AnySchedulerOf<RunLoop>
-  var openSettings: @Sendable () async -> Void
-  var temporaryDirectory: @Sendable () -> URL
-  var uuid: @Sendable () -> UUID
+
+//  var audioPlayer: AudioPlayerClient
+//  var audioRecorder: AudioRecorderClient
+//  var mainRunLoop: AnySchedulerOf<RunLoop>
+//  var openSettings: @Sendable () async -> Void
+//  var temporaryDirectory: @Sendable () -> URL
+//  var uuid: @Sendable () -> UUID
+
+//  @Dependency(\.audioPlayer) private var audioPlayer
+  @Dependency(\.audioRecorder.requestRecordPermission) private var requestRecordPermission
+  @Dependency(\.mainRunLoop) private var mainRunLoop
+  @Dependency(\.openSettings) private var openSettings
+  @Dependency(\.temporaryDirectory) private var temporaryDirectory
+  @Dependency(\.uuid) private var uuid
+
+  public init() {}
 
   var body: some ReducerProtocol<State, Action> {
     Reduce(self.core)
       .ifLet(state: \.recordingMemo, action: /Action.recordingMemo) {
-        RecordingMemo(
-          audioRecorder: self.audioRecorder,
-          mainRunLoop: self.mainRunLoop
-        )
+        RecordingMemo()
+          //.dependency(\.audioRecorder, .onboarding)
       }
       .forEach(
         state: \.voiceMemos,
         action: /Action.voiceMemo(id:action:)
       ) {
-        VoiceMemo(
-          audioPlayer: self.audioPlayer,
-          mainRunLoop: self.mainRunLoop
-        )
+        VoiceMemo()
       }
   }
 
@@ -64,7 +69,7 @@ struct VoiceMemos: ReducerProtocol {
       switch state.audioRecorderPermission {
       case .undetermined:
         return .task {
-          await .recordPermissionResponse(self.audioRecorder.requestRecordPermission())
+          await .recordPermissionResponse(self.requestRecordPermission())
         }
 
       case .denied:
@@ -239,16 +244,17 @@ struct VoiceMemos_Previews: PreviewProvider {
           ]
         ),
         reducer: Reducer(
-          VoiceMemos(
-            // NB: AVAudioRecorder and AVAudioPlayer doesn't work in previews, so use mocks
-            //     that simulate their behavior in previews.
-            audioPlayer: .mock,
-            audioRecorder: .mock,
-            mainRunLoop: .main,
-            openSettings: {},
-            temporaryDirectory: { URL(fileURLWithPath: NSTemporaryDirectory()) },
-            uuid: { UUID() }
-          )
+          VoiceMemos()
+//          (
+//            // NB: AVAudioRecorder and AVAudioPlayer doesn't work in previews, so use mocks
+//            //     that simulate their behavior in previews.
+//            audioPlayer: .mock,
+//            audioRecorder: .mock,
+//            mainRunLoop: .main,
+//            openSettings: {},
+//            temporaryDirectory: { URL(fileURLWithPath: NSTemporaryDirectory()) },
+//            uuid: { UUID() }
+//          )
         ),
         environment: ()
       )
@@ -288,3 +294,19 @@ extension AudioPlayerClient {
     }
   )
 }
+
+
+
+//struct Foo {
+//  var value = 42
+//  var void = ()
+//  subscript(hashable value: Int) -> Int { value }
+//  subscript(void value: Void) -> Void { value }
+//}
+//let kp1: any Hashable = \Foo.value
+//let kp2: any Hashable = \Foo.void
+//let kp3: any Hashable = \Foo.[hashable: 1]
+////let kp4 = \Foo.[void: ()]
+//
+//let kp5: any Sendable = \Foo.value
+//let kp6: any Sendable = \Foo.void
