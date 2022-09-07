@@ -158,7 +158,7 @@ final class ComposableArchitectureTests: XCTestCase {
 
     await store.send(.incr) { $0 = 1 }
     await mainQueue.advance(by: .seconds(1))
-    await store.receive(.response(1))
+    await store.receive(.response(1), timeout: NSEC_PER_MSEC * 500)
 
     await store.send(.incr) { $0 = 2 }
     await store.send(.cancel)
