@@ -208,6 +208,7 @@
     /// ``finish(timeout:file:line:)-53gi5``.
     public var timeout: UInt64
 
+    private let effectDidSubscribe = AsyncStream<Void>.streamWithContinuation()
     private let file: StaticString
     private let fromScopedAction: (ScopedAction) -> Action
     private var line: UInt
@@ -254,7 +255,10 @@
           return
             effects
             .handleEvents(
-              receiveSubscription: { [weak self] _ in self?.inFlightEffects.insert(effect) },
+              receiveSubscription: { [weak self] _ in
+                self?.inFlightEffects.insert(effect)
+                self?.effectDidSubscribe.continuation.yield()
+              },
               receiveCompletion: { [weak self] _ in self?.inFlightEffects.remove(effect) },
               receiveCancel: { [weak self] in self?.inFlightEffects.remove(effect) }
             )
@@ -526,7 +530,7 @@
       var expectedState = self.toScopedState(self.state)
       let previousState = self.state
       let task = self.store.send(.init(origin: .send(action), file: file, line: line))
-      await Task.megaYield()
+      await self.effectDidSubscribe.stream.first(where: { _ in true })
       do {
         let currentState = self.state
         self.state = previousState
