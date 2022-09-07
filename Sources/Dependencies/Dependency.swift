@@ -7,7 +7,7 @@
 /// properties of the ``DependencyValues`` structure. For information about creating custom
 /// dependency values, see the ``DependencyKey`` protocol.
 @propertyWrapper
-public struct Dependency<Value: Sendable>: @unchecked Sendable {
+public struct Dependency<Value>: @unchecked Sendable {
   // NB: Key paths do not conform to sendable and are instead diagnosed at the time of forming the
   //     literal.
   private let keyPath: KeyPath<DependencyValues, Value>
