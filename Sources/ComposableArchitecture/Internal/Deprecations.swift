@@ -17,8 +17,8 @@ extension WithViewStore: AccessibilityRotorContent where Content: AccessibilityR
   ///   - content: A function that can generate content from a view store.
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       """
       For compiler performance, using "WithViewStore" from an accessibility rotor content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
 
@@ -29,7 +29,7 @@ extension WithViewStore: AccessibilityRotorContent where Content: AccessibilityR
     _ store: Store<ViewState, ViewAction>,
     removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
     @AccessibilityRotorContentBuilder content: @escaping (ViewStore<ViewState, ViewAction>) ->
-    Content,
+      Content,
     file: StaticString = #fileID,
     line: UInt = #line
   ) {
@@ -53,8 +53,8 @@ extension WithViewStore where ViewState: Equatable, Content: AccessibilityRotorC
   ///   - content: A function that can generate content from a view store.
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       """
       For compiler performance, using "WithViewStore" from an accessibility rotor content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
 
@@ -64,7 +64,7 @@ extension WithViewStore where ViewState: Equatable, Content: AccessibilityRotorC
   public init(
     _ store: Store<ViewState, ViewAction>,
     @AccessibilityRotorContentBuilder content: @escaping (ViewStore<ViewState, ViewAction>) ->
-    Content,
+      Content,
     file: StaticString = #fileID,
     line: UInt = #line
   ) {
@@ -82,8 +82,8 @@ extension WithViewStore where ViewState == Void, Content: AccessibilityRotorCont
   ///   - content: A function that can generate content from a view store.
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       """
       For compiler performance, using "WithViewStore" from an accessibility rotor content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
 
@@ -95,7 +95,7 @@ extension WithViewStore where ViewState == Void, Content: AccessibilityRotorCont
     file: StaticString = #fileID,
     line: UInt = #line,
     @AccessibilityRotorContentBuilder content: @escaping (ViewStore<ViewState, ViewAction>) ->
-    Content
+      Content
   ) {
     self.init(store, removeDuplicates: ==, content: content, file: file, line: line)
   }
@@ -115,8 +115,8 @@ extension WithViewStore: Commands where Content: Commands {
   ///   - content: A function that can generate content from a view store.
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       """
       For compiler performance, using "WithViewStore" from a command builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
 
@@ -152,8 +152,8 @@ extension WithViewStore where ViewState: Equatable, Content: Commands {
   ///   - content: A function that can generate content from a view store.
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       """
       For compiler performance, using "WithViewStore" from a command builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
 
@@ -182,8 +182,8 @@ extension WithViewStore where ViewState == Void, Content: Commands {
   ///   - content: A function that can generate content from a view store.
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       """
       For compiler performance, using "WithViewStore" from a command builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
 
@@ -212,8 +212,8 @@ extension WithViewStore: Scene where Content: Scene {
   ///   - content: A function that can generate content from a view store.
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       """
       For compiler performance, using "WithViewStore" from a scene builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
 
@@ -247,8 +247,8 @@ extension WithViewStore where ViewState: Equatable, Content: Scene {
   ///   - content: A function that can generate content from a view store.
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       """
       For compiler performance, using "WithViewStore" from a scene builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
 
@@ -275,8 +275,8 @@ extension WithViewStore where ViewState == Void, Content: Scene {
   ///   - content: A function that can generate content from a view store.
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       """
       For compiler performance, using "WithViewStore" from a scene builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
 
@@ -305,8 +305,8 @@ extension WithViewStore: ToolbarContent where Content: ToolbarContent {
   ///   - content: A function that can generate content from a view store.
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       """
       For compiler performance, using "WithViewStore" from a toolbar content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
 
@@ -340,8 +340,8 @@ extension WithViewStore where ViewState: Equatable, Content: ToolbarContent {
   ///   - content: A function that can generate content from a view store.
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       """
       For compiler performance, using "WithViewStore" from a toolbar content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
 
@@ -368,8 +368,8 @@ extension WithViewStore where ViewState == Void, Content: ToolbarContent {
   ///   - content: A function that can generate content from a view store.
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       """
       For compiler performance, using "WithViewStore" from a toolbar content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
 
@@ -385,7 +385,6 @@ extension WithViewStore where ViewState == Void, Content: ToolbarContent {
     self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }
-
 
 // MARK: - Deprecated after 0.39.1:
 
