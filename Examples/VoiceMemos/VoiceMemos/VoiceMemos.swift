@@ -143,7 +143,7 @@ struct VoiceMemosView: View {
   let store: Store<VoiceMemosState, VoiceMemosAction>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       NavigationView {
         VStack {
           List {

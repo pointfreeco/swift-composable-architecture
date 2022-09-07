@@ -73,7 +73,7 @@ struct NestedView: View {
   let store: Store<NestedState, NestedAction>
 
   var body: some View {
-    WithViewStore(self.store.scope(state: \.description)) { viewStore in
+    WithViewStore(self.store, observe: \.description) { viewStore in
       Form {
         Section {
           AboutView(readMe: readMe)
@@ -82,14 +82,14 @@ struct NestedView: View {
         ForEachStore(
           self.store.scope(state: \.children, action: NestedAction.node(id:action:))
         ) { childStore in
-          WithViewStore(childStore) { childViewStore in
+          WithViewStore(childStore, observe: \.description) { childViewStore in
             NavigationLink(
               destination: NestedView(store: childStore)
             ) {
               HStack {
                 TextField(
                   "Untitled",
-                  text: childViewStore.binding(get: \.description, send: NestedAction.rename)
+                  text: childViewStore.binding(send: NestedAction.rename)
                 )
                 Text("Next")
                   .font(.callout)

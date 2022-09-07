@@ -41,7 +41,7 @@ public struct LoginView: View {
   }
 
   public var body: some View {
-    WithViewStore(self.store.scope(state: ViewState.init, action: LoginAction.init)) { viewStore in
+    WithViewStore(self.store, observe: ViewState.init, send: LoginAction.init) { viewStore in
       Form {
         Text(
           """
@@ -79,7 +79,7 @@ public struct LoginView: View {
               //     if you disable a text field while it is focused. This hack will force all
               //     fields to unfocus before we send the action to the view store.
               // CF: https://stackoverflow.com/a/69653555
-              UIApplication.shared.sendAction(
+              _ = UIApplication.shared.sendAction(
                 #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
               )
               return $0 ? .loginButtonTapped : .twoFactorDismissed

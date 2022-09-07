@@ -152,7 +152,7 @@ struct SharedStateView: View {
   let store: Store<SharedState, SharedStateAction>
 
   var body: some View {
-    WithViewStore(self.store.scope(state: \.currentTab)) { viewStore in
+    WithViewStore(self.store, observe: \.currentTab) { viewStore in
       VStack {
         Picker(
           "Tab",
@@ -187,7 +187,7 @@ struct SharedStateCounterView: View {
   let store: Store<SharedState.CounterState, SharedStateAction.CounterAction>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       VStack(spacing: 64) {
         Text(template: readMe, .caption)
 
@@ -223,7 +223,7 @@ struct SharedStateProfileView: View {
   let store: Store<SharedState.ProfileState, SharedStateAction.ProfileAction>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       VStack(spacing: 64) {
         Text(
           template: """

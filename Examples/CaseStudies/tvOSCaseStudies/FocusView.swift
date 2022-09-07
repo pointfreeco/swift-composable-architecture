@@ -40,7 +40,7 @@ let focusReducer = Reducer<FocusState, FocusAction, FocusEnvironment> {
     @Namespace private var namespace
 
     var body: some View {
-      WithViewStore(self.store) { viewStore in
+      WithViewStore(self.store, observe: { $0 }) { viewStore in
         VStack(spacing: 100) {
           Text(readMe)
             .font(.headline)

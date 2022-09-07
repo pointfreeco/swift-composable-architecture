@@ -18,7 +18,7 @@ constructed naively, using either view store's initializer ``ViewStore/init(_:)-
 SwiftUI helper ``WithViewStore``, it will observe every change to state in the store:
 
 ```swift
-WithViewStore(self.store) { viewStore in 
+WithViewStore(self.store, observe: { $0 }) { viewStore in 
   // This is executed for every action sent into the system 
   // that causes self.store.state to change. 
 }
@@ -91,9 +91,7 @@ struct AppView: View {
   }
 
   var body: some View {
-    WithViewStore(
-      self.store.scope(state: ViewState.init)
-    ) { viewStore in 
+    WithViewStore(self.store, observe: ViewState.init) { viewStore in 
       TabView {
         ActivityView(
           store: self.store
@@ -239,7 +237,7 @@ struct FeatureView: View {
   let store: Store<FeatureState, FeatureAction>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       // A large, complex view inside here...
     }
   }

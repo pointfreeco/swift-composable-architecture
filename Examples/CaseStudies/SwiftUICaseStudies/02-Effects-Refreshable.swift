@@ -72,7 +72,7 @@ struct RefreshableView: View {
   let store: Store<RefreshableState, RefreshableAction>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       List {
         Section {
           AboutView(readMe: readMe)

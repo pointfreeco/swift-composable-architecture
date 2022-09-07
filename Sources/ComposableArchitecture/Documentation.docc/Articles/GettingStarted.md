@@ -143,7 +143,7 @@ struct AppView: View {
   let store: Store<AppState, AppAction>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       VStack {
         HStack {
           Button("−") { viewStore.send(.decrementButtonTapped) }
