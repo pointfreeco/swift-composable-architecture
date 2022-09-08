@@ -117,7 +117,7 @@ public struct WithViewStore<ViewState, ViewAction, Content> {
     private var prefix: String?
     private var previousState: (ViewState) -> ViewState?
   #endif
-  @_StateObject private var viewStore: ViewStore<ViewState, ViewAction>
+  @ObservedObject private var viewStore: ViewStore<ViewState, ViewAction>
 
   init(
     store: @autoclosure @escaping () -> Store<ViewState, ViewAction>,
