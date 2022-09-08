@@ -239,11 +239,18 @@
       self.store = Store(
         initialState: initialState,
         reducer: Reducer<State, TestAction, Void> { [weak self] state, action, _ in
-          guard let self = self else {
-            XCTFail("An effect sent an action after store deallocated.", file: file, line: line)
+          guard let self = self
+          else {
+            XCTFail(
+              """
+              An effect sent an action to the store after the store was deallocated.
+              """,
+              file: file,
+              line: line
+            )
             return .none
           }
-          
+
           let effects: Effect<Action, Never>
           switch action.origin {
           case let .send(scopedAction):

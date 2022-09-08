@@ -6,6 +6,8 @@ import XCTest
 @MainActor
 final class CompatibilityTests: XCTestCase {
   func testBrowserCaseStudy_ReentrantEffect() {
+    let cancelID = UUID()
+
     struct State: Equatable {}
     enum Action: Equatable {
       case start
@@ -13,33 +15,35 @@ final class CompatibilityTests: XCTestCase {
       case actionSender(OnDeinit)
       case stop
     }
-    struct Environment {
-      var longRunningEffect: () -> Effect<Action, Never>
-    }
     let passThroughSubject = PassthroughSubject<Action, Never>()
 
-    let reducer = Reducer<State, Action, Environment> { state, action, env in
+    let reducer = Reducer<State, Action, Void> { state, action, env in
       switch action {
       case .start:
-        return env.longRunningEffect().cancellable(id: 1)
+        return passThroughSubject
+          .eraseToEffect()
+          .cancellable(id: cancelID)
+
       case .kickOffAction:
-        return .init(value: .actionSender(.init(onDeinit: { passThroughSubject.send(.stop)})))
+        return Effect(value: .actionSender(.init(onDeinit: { passThroughSubject.send(.stop)})))
+
       case .actionSender:
         return .none
+
       case .stop:
-        return .cancel(id: 1)
+        return .cancel(id: cancelID)
       }
     }
 
     let store = TestStore(
       initialState: .init(),
       reducer: reducer,
-      environment: .init(longRunningEffect: { passThroughSubject.eraseToEffect() })
+      environment: ()
     )
 
     store.send(.start)
     store.send(.kickOffAction)
-    store.receive(.actionSender(OnDeinit { }))
+    store.receive(.actionSender(OnDeinit {}))
     store.receive(.stop)
   }
 }
