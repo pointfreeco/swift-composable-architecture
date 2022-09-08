@@ -83,17 +83,21 @@ extension Reducer {
 
 struct FavoriteButton<ID: Hashable>: View {
   let store: Store<FavoriteState<ID>, FavoriteAction>
+  @ObservedObject var viewStore: ViewStore<Bool, FavoriteAction>
+
+  init(store: Store<FavoriteState<ID>, FavoriteAction>) {
+    self.store = store
+    self.viewStore = ViewStore(self.store.scope(state: \.isFavorite))
+  }
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Button {
-        viewStore.send(.buttonTapped)
-      } label: {
-        Image(systemName: "heart")
-          .symbolVariant(viewStore.isFavorite ? .fill : .none)
-      }
-      .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
+    Button {
+      self.viewStore.send(.buttonTapped)
+    } label: {
+      Image(systemName: "heart")
+        .symbolVariant(self.viewStore.state ? .fill : .none)
     }
+    .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
   }
 }
 

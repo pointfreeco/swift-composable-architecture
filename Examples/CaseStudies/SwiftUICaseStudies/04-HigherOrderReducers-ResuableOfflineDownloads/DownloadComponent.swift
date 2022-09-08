@@ -142,38 +142,42 @@ let nevermindButton = AlertState<DownloadComponentAction.AlertAction>.Button
 
 struct DownloadComponent<ID: Equatable>: View {
   let store: Store<DownloadComponentState<ID>, DownloadComponentAction>
+  @ObservedObject var viewStore: ViewStore<DownloadComponentState<ID>, DownloadComponentAction>
+
+  init(store: Store<DownloadComponentState<ID>, DownloadComponentAction>) {
+    self.store = store
+    self.viewStore = ViewStore(self.store)
+  }
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Button {
-        viewStore.send(.buttonTapped)
-      } label: {
-        if viewStore.mode == .downloaded {
-          Image(systemName: "checkmark.circle")
-            .tint(.accentColor)
-        } else if viewStore.mode.progress > 0 {
-          ZStack {
-            CircularProgressView(value: viewStore.mode.progress)
-              .frame(width: 16, height: 16)
-            Rectangle()
-              .frame(width: 6, height: 6)
-          }
-        } else if viewStore.mode == .notDownloaded {
-          Image(systemName: "icloud.and.arrow.down")
-        } else if viewStore.mode == .startingToDownload {
-          ZStack {
-            ProgressView()
-            Rectangle()
-              .frame(width: 6, height: 6)
-          }
+    Button {
+      self.viewStore.send(.buttonTapped)
+    } label: {
+      if self.viewStore.mode == .downloaded {
+        Image(systemName: "checkmark.circle")
+          .tint(.accentColor)
+      } else if self.viewStore.mode.progress > 0 {
+        ZStack {
+          CircularProgressView(value: self.viewStore.mode.progress)
+            .frame(width: 16, height: 16)
+          Rectangle()
+            .frame(width: 6, height: 6)
+        }
+      } else if self.viewStore.mode == .notDownloaded {
+        Image(systemName: "icloud.and.arrow.down")
+      } else if self.viewStore.mode == .startingToDownload {
+        ZStack {
+          ProgressView()
+          Rectangle()
+            .frame(width: 6, height: 6)
         }
       }
-      .foregroundStyle(.primary)
-      .alert(
-        self.store.scope(state: \.alert, action: DownloadComponentAction.alert),
-        dismiss: .dismissed
-      )
     }
+    .foregroundStyle(.primary)
+    .alert(
+      self.store.scope(state: \.alert, action: DownloadComponentAction.alert),
+      dismiss: .dismissed
+    )
   }
 }
 
