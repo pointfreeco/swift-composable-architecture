@@ -278,7 +278,7 @@
       @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
       @MainActor
       public func finish(
-        timeout duration: Duration? = nil,
+        timeout duration: TimeInterval? = nil,
         file: StaticString = #file,
         line: UInt = #line
       ) async {
@@ -767,7 +767,7 @@
       @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
       public func receive(
         _ expectedAction: Action,
-        timeout duration: Duration,
+        timeout duration: TimeInterval,
         _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
         file: StaticString = #file,
         line: UInt = #line
@@ -946,7 +946,7 @@
       /// - Parameter duration: The amount of time to wait before asserting.
       @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
       public func finish(
-        timeout duration: Duration? = nil,
+        timeout duration: TimeInterval? = nil,
         file: StaticString = #file,
         line: UInt = #line
       ) async {
@@ -1021,11 +1021,9 @@
   }
 
   #if swift(>=5.7)
-    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
-    extension Duration {
+    extension TimeInterval {
       fileprivate var nanoseconds: UInt64 {
-        UInt64(self.components.seconds) * NSEC_PER_SEC
-          + UInt64(self.components.attoseconds) / 1_000_000_000
+        UInt64(self) * NSEC_PER_SEC
       }
     }
   #endif
