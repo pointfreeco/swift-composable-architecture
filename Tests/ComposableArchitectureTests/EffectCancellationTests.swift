@@ -197,10 +197,11 @@ final class EffectCancellationTests: XCTestCase {
       DispatchQueue.global(qos: .userInteractive),
       DispatchQueue.global(qos: .utility),
     ]
+    let ids = (1...10).map { _ in UUID() }
 
     let effect = Effect.merge(
       (1...1_000).map { idx -> Effect<Int, Never> in
-        let id = idx % 10
+        let id = ids[idx % 10]
 
         return Effect.merge(
           Just(idx)
@@ -226,7 +227,12 @@ final class EffectCancellationTests: XCTestCase {
       .store(in: &self.cancellables)
     self.wait(for: [expectation], timeout: 999)
 
-    XCTAssertTrue(cancellationCancellables.isEmpty)
+    for id in ids {
+      XCTAssertNil(
+        cancellationCancellables[CancelToken(id: id)],
+        "cancellationCancellables should not contain id \(id)"
+      )
+    }
   }
 
   func testNestedCancels() {
