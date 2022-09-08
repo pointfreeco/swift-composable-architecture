@@ -53,7 +53,7 @@ struct NestedView: View {
   let store: StoreOf<Nested>
 
   var body: some View {
-    WithViewStore(self.store, observe: \.name)) { viewStore in
+    WithViewStore(self.store, observe: \.name) { viewStore in
       Form {
         Section {
           AboutView(readMe: readMe)
