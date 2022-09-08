@@ -5,7 +5,7 @@ import XCTest
 
 @MainActor
 final class CompatibilityTests: XCTestCase {
-  func testBrowserCaseStudy_ReentrantEffect() {
+  func testCaseStudy_ReentrantEffect() {
     let cancelID = UUID()
 
     struct State: Equatable {}
