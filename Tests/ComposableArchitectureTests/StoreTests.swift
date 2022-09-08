@@ -522,4 +522,62 @@ final class StoreTests: XCTestCase {
     XCTAssertEqual(store.effectCancellables.count, 0)
     XCTAssertEqual(scopedStore.effectCancellables.count, 0)
   }
+
+  func testBufferedActionsReentrance() {
+    struct State: Equatable {}
+    enum Action: Equatable {
+      case start
+      case kickOffAction
+      case actionSender(OnDeinit)
+      case stop
+    }
+    struct Environment {
+      var longRunningEffect: () -> Effect<Action, Never>
+    }
+    let passThroughSubject = PassthroughSubject<Action, Never>()
+
+    let reducer = Reducer<State, Action, Environment> { state, action, env in
+      switch action {
+      case .start:
+        return env.longRunningEffect().cancellable(id: 1)
+      case .kickOffAction:
+        return .init(value: .actionSender(.init(completion: { passThroughSubject.send(.stop)})))
+      case .actionSender:
+        return .none
+      case .stop:
+        return .cancel(id: 1)
+      }
+    }
+
+    let store = TestStore(
+      initialState: .init(),
+      reducer: reducer,
+      environment: .init(longRunningEffect: { passThroughSubject.eraseToEffect() })
+    )
+
+    store.send(.start)
+    store.send(.kickOffAction)
+//    store.receive(.actionSender(OnDeinit { }))
+//    store.receive(.stop)
+
+//    let viewStore = ViewStore(store)
+//    // Starts a long living effect
+//    viewStore.send(.start)
+//    // Kicks off an action that send something into the store
+//    // via its environment on deinit
+//    viewStore.send(.kickOffAction)
+  }
+}
+
+final class OnDeinit: Equatable {
+  static func == (lhs: OnDeinit, rhs: OnDeinit) -> Bool { true }
+  private let completion: () -> ()
+
+  init(completion: @escaping () -> ()) {
+    self.completion = completion
+  }
+
+  deinit {
+    completion()
+  }
 }

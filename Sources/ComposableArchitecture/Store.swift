@@ -335,7 +335,11 @@ public final class Store<State, Action> {
     let tasks = Box<[Task<Void, Never>]>(wrappedValue: [])
 
     var index = self.bufferedActions.startIndex
-    defer { self.bufferedActions = [] }
+    defer {
+      withExtendedLifetime(self.bufferedActions) {
+        self.bufferedActions = []
+      }
+    }
     while index < self.bufferedActions.endIndex {
       defer { index += 1 }
       let action = self.bufferedActions[index]
