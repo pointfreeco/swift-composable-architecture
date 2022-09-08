@@ -269,7 +269,7 @@
       )
     }
 
-    #if swift(>=5.7)
+    #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
       /// Suspends until all in-flight effects have finished, or until it times out.
       ///
       /// Can be used to assert that all effects have finished.
@@ -753,7 +753,7 @@
       }
     }
 
-    #if swift(>=5.7)
+    #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
       /// Asserts an action was received from an effect and asserts how the state changes.
       ///
       /// - Parameters:
@@ -940,7 +940,7 @@
       await self.rawValue?.cancellableValue
     }
 
-    #if swift(>=5.7)
+    #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
       /// Asserts the underlying task finished.
       ///
       /// - Parameter duration: The amount of time to wait before asserting.
@@ -1020,7 +1020,7 @@
     }
   }
 
-  #if swift(>=5.7)
+  #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
     @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
     extension Duration {
       fileprivate var nanoseconds: UInt64 {
