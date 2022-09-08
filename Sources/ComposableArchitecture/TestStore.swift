@@ -236,7 +236,6 @@
     public var timeout: UInt64
 
     private var _environment: Box<Context>
-    private let effectDidSubscribe = AsyncStream<Void>.streamWithContinuation()
     private let file: StaticString
     private let fromScopedAction: (ScopedAction) -> Reducer.Action
     private var line: UInt
@@ -522,7 +521,7 @@
       let previousState = self.reducer.state
       let task = self.store
         .send(.init(origin: .send(self.fromScopedAction(action)), file: file, line: line))
-      await self.effectDidSubscribe.stream.first(where: { _ in true })
+      await self.reducer.effectDidSubscribe.stream.first(where: { _ in true })
       do {
         let currentState = self.state
         self.reducer.state = previousState
@@ -1017,6 +1016,7 @@
       dependencies.context = .test
       return dependencies
     }()
+    let effectDidSubscribe = AsyncStream<Void>.streamWithContinuation()
     var inFlightEffects: Set<LongLivingEffect> = []
     var receivedActions: [(action: Base.Action, state: Base.State)] = []
     var state: Base.State
