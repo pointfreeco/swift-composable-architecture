@@ -14,10 +14,27 @@ final class CompatibilityTests: XCTestCase {
       case kickOffAction
       case actionSender(OnDeinit)
       case stop
+
+      var description: String {
+        switch self {
+        case .start:
+          return "start"
+        case .kickOffAction:
+          return "kickOffAction"
+        case .actionSender(_):
+          return "actionSender"
+        case .stop:
+          return "stop"
+        }
+      }
     }
     let passThroughSubject = PassthroughSubject<Action, Never>()
 
+    var handledActions: [String] = []
+
     let reducer = Reducer<State, Action, Void> { state, action, env in
+      handledActions.append(action.description)
+
       switch action {
       case .start:
         return passThroughSubject
@@ -25,7 +42,7 @@ final class CompatibilityTests: XCTestCase {
           .cancellable(id: cancelID)
 
       case .kickOffAction:
-        return Effect(value: .actionSender(.init(onDeinit: { passThroughSubject.send(.stop)})))
+        return Effect(value: .actionSender(OnDeinit { passThroughSubject.send(.stop) })))
 
       case .actionSender:
         return .none
@@ -35,16 +52,26 @@ final class CompatibilityTests: XCTestCase {
       }
     }
 
-    let store = TestStore(
+    let store = Store(
       initialState: .init(),
       reducer: reducer,
       environment: ()
     )
 
-    store.send(.start)
-    store.send(.kickOffAction)
-    store.receive(.actionSender(OnDeinit {}))
-    store.receive(.stop)
+    let viewStore = ViewStore(store)
+
+    viewStore.send(.start)
+    viewStore.send(.kickOffAction)
+
+    XCTAssertNoDifference(
+      handledActions,
+      [
+        "start",
+        "kickOffAction",
+        "actionSender",
+        "stop",
+      ]
+    )
   }
 }
 

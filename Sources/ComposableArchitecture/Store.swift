@@ -327,19 +327,24 @@ public final class Store<State, Action> {
 
     self.isSending = true
     var currentState = self.state.value
-    defer {
-      self.isSending = false
-      self.state.value = currentState
-    }
-
     let tasks = Box<[Task<Void, Never>]>(wrappedValue: [])
-
-    var index = self.bufferedActions.startIndex
     defer {
       withExtendedLifetime(self.bufferedActions) {
-        self.bufferedActions = []
+        self.bufferedActions.removeAll()
+      }
+      self.isSending = false
+      self.state.value = currentState
+      // NB: Handle any re-entrant actions
+      if !self.bufferedActions.isEmpty {
+        if let task = self.send(
+          self.bufferedActions.removeLast(), originatingFrom: originatingAction
+        ) {
+          tasks.wrappedValue.append(task)
+        }
       }
     }
+
+    var index = self.bufferedActions.startIndex
     while index < self.bufferedActions.endIndex {
       defer { index += 1 }
       let action = self.bufferedActions[index]
