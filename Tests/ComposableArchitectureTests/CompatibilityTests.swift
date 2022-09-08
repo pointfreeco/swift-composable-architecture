@@ -21,7 +21,7 @@ final class CompatibilityTests: XCTestCase {
           return "start"
         case .kickOffAction:
           return "kickOffAction"
-        case .actionSender(_):
+        case .actionSender:
           return "actionSender"
         case .stop:
           return "stop"
