@@ -117,10 +117,10 @@ public struct WithViewStore<ViewState, ViewAction, Content> {
     private var prefix: String?
     private var previousState: (ViewState) -> ViewState?
   #endif
-  @_StateObject private var viewStore: ViewStore<ViewState, ViewAction>
+  @ObservedObject private var viewStore: ViewStore<ViewState, ViewAction>
 
   init(
-    store: @autoclosure @escaping () -> Store<ViewState, ViewAction>,
+    store: Store<ViewState, ViewAction>,
     removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
     content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
@@ -136,7 +136,7 @@ public struct WithViewStore<ViewState, ViewAction, Content> {
         return previousState
       }
     #endif
-    self._viewStore = .init(wrappedValue: ViewStore(store(), removeDuplicates: isDuplicate))
+    self.viewStore = ViewStore(store, removeDuplicates: isDuplicate)
   }
 
   /// Prints debug information to the console whenever the view is computed.
