@@ -29,7 +29,7 @@ public struct GameView: View {
   }
 
   public var body: some View {
-    WithViewStore(self.store.scope(state: ViewState.init)) { viewStore in
+    WithViewStore(self.store, observe: ViewState.init) { viewStore in
       GeometryReader { proxy in
         VStack(spacing: 0.0) {
           VStack {

@@ -108,7 +108,7 @@ struct SpeechRecognitionView: View {
   let store: StoreOf<SpeechRecognition>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       VStack {
         VStack(alignment: .leading) {
           Text(readMe)

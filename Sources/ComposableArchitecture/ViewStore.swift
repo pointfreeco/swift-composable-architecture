@@ -11,7 +11,7 @@ import SwiftUI
 ///
 /// ```swift
 /// var body: some View {
-///   WithViewStore(self.store) { viewStore in
+///   WithViewStore(self.store, observe: { $0 }) { viewStore in
 ///     VStack {
 ///       Text("Current count: \(viewStore.count)")
 ///       Button("Increment") { viewStore.send(.incrementButtonTapped) }
@@ -225,7 +225,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///   let store: Store<State, Action>
   ///
   ///   var body: some View {
-  ///     WithViewStore(self.store) { viewStore in
+  ///     WithViewStore(self.store, observe: { $0 }) { viewStore in
   ///       List {
   ///         if let response = viewStore.response {
   ///           Text(response)

@@ -81,7 +81,7 @@ struct CityMapRowView: View {
   let store: StoreOf<CityMap>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       HStack {
         NavigationLink(
           destination: CityMapDetailView(store: self.store)
@@ -111,7 +111,7 @@ struct CityMapDetailView: View {
   let store: StoreOf<CityMap>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       VStack(spacing: 32) {
         Text(viewStore.download.blurb)
 
@@ -143,7 +143,7 @@ struct CityMapDetailView: View {
 }
 
 struct MapApp: ReducerProtocol {
-  struct State {
+  struct State: Equatable {
     var cityMaps: IdentifiedArrayOf<CityMap.State>
   }
 

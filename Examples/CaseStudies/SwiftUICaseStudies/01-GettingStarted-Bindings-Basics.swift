@@ -59,7 +59,7 @@ struct BindingBasicsView: View {
   let store: StoreOf<BindingBasics>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
         Section {
           AboutView(readMe: readMe)

@@ -4,7 +4,7 @@ import UIKit
 import XCTestDynamicOverlay
 
 struct Root: ReducerProtocol {
-  struct State {
+  struct State: Equatable {
     var alertAndConfirmationDialog = AlertAndConfirmationDialog.State()
     var animation = Animations.State()
     var bindingBasics = BindingBasics.State()

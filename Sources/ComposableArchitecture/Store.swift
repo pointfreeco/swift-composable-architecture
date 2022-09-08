@@ -277,7 +277,7 @@ public final class Store<State, Action> {
   /// ```swift
   ///  var body: some View {
   ///    WithViewStore(
-  ///      self.store.scope(state: \.view, action: \.feature)
+  ///      self.store, observe: \.view, send: \.feature
   ///    ) { viewStore in
   ///      ...
   ///    }
@@ -328,15 +328,24 @@ public final class Store<State, Action> {
 
     self.isSending = true
     var currentState = self.state.value
+    let tasks = Box<[Task<Void, Never>]>(wrappedValue: [])
     defer {
+      withExtendedLifetime(self.bufferedActions) {
+        self.bufferedActions.removeAll()
+      }
       self.isSending = false
       self.state.value = currentState
+      // NB: Handle any re-entrant actions
+      if !self.bufferedActions.isEmpty {
+        if let task = self.send(
+          self.bufferedActions.removeLast(), originatingFrom: originatingAction
+        ) {
+          tasks.wrappedValue.append(task)
+        }
+      }
     }
 
-    let tasks = Box<[Task<Void, Never>]>(wrappedValue: [])
-
     var index = self.bufferedActions.startIndex
-    defer { self.bufferedActions = [] }
     while index < self.bufferedActions.endIndex {
       defer { index += 1 }
       let action = self.bufferedActions[index]
@@ -400,6 +409,7 @@ public final class Store<State, Action> {
       }
     }
 
+    guard !tasks.wrappedValue.isEmpty else { return nil }
     return Task {
       await withTaskCancellationHandler {
         var index = tasks.wrappedValue.startIndex
