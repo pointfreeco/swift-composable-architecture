@@ -332,9 +332,10 @@ public final class Store<State, Action> {
       withExtendedLifetime(self.bufferedActions) {
         self.bufferedActions.removeAll()
       }
-      self.isSending = false
       self.state.value = currentState
-      // NB: Handle any re-entrant actions
+      self.isSending = false
+      // NB: Handle any re-entrant actions resulting from
+      // the state update above.
       if !self.bufferedActions.isEmpty {
         if let task = self.send(
           self.bufferedActions.removeLast(), originatingFrom: originatingAction
