@@ -5,7 +5,10 @@ import XCTest
 
 @MainActor
 final class CompatibilityTests: XCTestCase {
-  func testCaseStudy_ReentrantActionsFromBuffer() {
+  // Actions can be re-entrantly sent into the store if an action is sent that holds an object
+  // which sends an action on deinit. In order to prevent a simultaneous access exception for this
+  // case we need to use `withExtendedLifetime` on the buffered actions when clearing them out.
+  func testCaseStudy_ReentrantActionsOnDeinitFromClearingBuffer() {
     let cancelID = UUID()
 
     struct State: Equatable {}
