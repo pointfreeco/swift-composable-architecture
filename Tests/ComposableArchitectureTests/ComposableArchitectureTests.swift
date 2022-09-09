@@ -123,8 +123,6 @@ final class ComposableArchitectureTests: XCTestCase {
       case response(Int)
     }
 
-    let didStart = AsyncStream<Void>.streamWithContinuation()
-
     let reducer = Reducer<Int, Action, Void> { state, action, _ in
       enum CancelID {}
 
@@ -135,7 +133,6 @@ final class ComposableArchitectureTests: XCTestCase {
       case .incr:
         state += 1
         return .task { [state] in
-          didStart.continuation.yield()
           try await mainQueue.sleep(for: .seconds(1))
           return .response(state * state)
         }
@@ -158,7 +155,6 @@ final class ComposableArchitectureTests: XCTestCase {
     await store.receive(.response(1))
 
     await store.send(.incr) { $0 = 2 }
-    await didStart.stream.first(where: { _ in true })
     await store.send(.cancel)
     await store.finish()
   }

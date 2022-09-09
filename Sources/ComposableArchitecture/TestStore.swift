@@ -267,9 +267,12 @@
           return
             effects
             .handleEvents(
-              receiveSubscription: { [weak self] _ in
+              receiveSubscription: { [effectDidSubscribe = self.effectDidSubscribe, weak self] _ in
                 self?.inFlightEffects.insert(effect)
-                self?.effectDidSubscribe.continuation.yield()
+                Task {
+                  await Task.megaYield()
+                  effectDidSubscribe.continuation.yield()
+                }
               },
               receiveCompletion: { [weak self] _ in self?.inFlightEffects.remove(effect) },
               receiveCancel: { [weak self] in self?.inFlightEffects.remove(effect) }
