@@ -4,7 +4,7 @@ import SwiftUI
 import XCTestDynamicOverlay
 
 /// The ``Effect`` type encapsulates a unit of work that can be run in the outside world, and can
-/// feed data back to the ``Store``. It is the perfect place to do side effects, such as network
+/// feed actions back to the ``Store``. It is the perfect place to do side effects, such as network
 /// requests, saving/loading from disk, creating timers, interacting with dependencies, and more.
 ///
 /// Effects are returned from reducers so that the ``Store`` can perform the effects after the
@@ -32,12 +32,12 @@ import XCTestDynamicOverlay
 /// > This is only an issue if using the Combine interface of ``Effect`` as mentioned above. If you
 /// you are using Swift's concurrency tools and the `.task`, `.run` and `.fireAndForget`
 /// functions on ``Effect``, then threading is automatically handled for you.
-public struct Effect<Output, Failure: Error> {
+public struct Effect<Action, Failure: Error> {
   @usableFromInline
   enum Operation {
     case none
-    case publisher(AnyPublisher<Output, Failure>)
-    case run(TaskPriority? = nil, @Sendable (Send<Output>) async -> Void)
+    case publisher(AnyPublisher<Action, Failure>)
+    case run(TaskPriority? = nil, @Sendable (Send<Action>) async -> Void)
   }
 
   @usableFromInline
@@ -115,8 +115,8 @@ extension Effect where Failure == Never {
   /// - Returns: An effect wrapping the given asynchronous work.
   public static func task(
     priority: TaskPriority? = nil,
-    operation: @escaping @Sendable () async throws -> Output,
-    catch handler: (@Sendable (Error) async -> Output)? = nil,
+    operation: @escaping @Sendable () async throws -> Action,
+    catch handler: (@Sendable (Error) async -> Action)? = nil,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -171,7 +171,7 @@ extension Effect where Failure == Never {
   /// }
   /// ```
   ///
-  /// Then you could attach to it in a `run` effect by using `for await` and sending each output of
+  /// Then you could attach to it in a `run` effect by using `for await` and sending each action of
   /// the stream back into the system:
   ///
   /// ```swift
@@ -199,8 +199,8 @@ extension Effect where Failure == Never {
   /// - Returns: An effect wrapping the given asynchronous work.
   public static func run(
     priority: TaskPriority? = nil,
-    operation: @escaping @Sendable (Send<Output>) async throws -> Void,
-    catch handler: (@Sendable (Error, Send<Output>) async -> Void)? = nil,
+    operation: @escaping @Sendable (Send<Action>) async throws -> Void,
+    catch handler: (@Sendable (Error, Send<Action>) async -> Void)? = nil,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -441,11 +441,11 @@ extension Effect {
 
   /// Transforms all elements from the upstream effect with a provided closure.
   ///
-  /// - Parameter transform: A closure that transforms the upstream effect's output to a new output.
+  /// - Parameter transform: A closure that transforms the upstream effect's action to a new action.
   /// - Returns: A publisher that uses the provided closure to map elements from the upstream effect
   ///   to new elements that it then publishes.
   @inlinable
-  public func map<T>(_ transform: @escaping (Output) -> T) -> Effect<T, Failure> {
+  public func map<T>(_ transform: @escaping (Action) -> T) -> Effect<T, Failure> {
     switch self.operation {
     case .none:
       return .none
@@ -455,11 +455,9 @@ extension Effect {
       return .init(
         operation: .run(priority) { send in
           await operation(
-            .init(
-              send: { output in
-                send(transform(output))
-              }
-            )
+            Send { action in
+              send(transform(action))
+            }
           )
         }
       )
