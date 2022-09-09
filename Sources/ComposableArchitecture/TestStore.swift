@@ -263,22 +263,27 @@
             self.receivedActions.append((action, state))
           }
 
-          let effect = LongLivingEffect(file: action.file, line: action.line)
-          return
-            effects
-            .handleEvents(
-              receiveSubscription: { [effectDidSubscribe = self.effectDidSubscribe, weak self] _ in
-                self?.inFlightEffects.insert(effect)
-                Task {
-                  await Task.megaYield()
-                  effectDidSubscribe.continuation.yield()
-                }
-              },
-              receiveCompletion: { [weak self] _ in self?.inFlightEffects.remove(effect) },
-              receiveCancel: { [weak self] in self?.inFlightEffects.remove(effect) }
-            )
-            .eraseToEffect { .init(origin: .receive($0), file: action.file, line: action.line) }
-
+          switch effects.operation {
+          case .none:
+            return .none
+          case .publisher, .run:
+            let effect = LongLivingEffect(file: action.file, line: action.line)
+            return
+              effects
+              .handleEvents(
+                receiveSubscription: {
+                  [effectDidSubscribe = self.effectDidSubscribe, weak self] _ in
+                  self?.inFlightEffects.insert(effect)
+                  Task {
+                    await Task.megaYield()
+                    effectDidSubscribe.continuation.yield()
+                  }
+                },
+                receiveCompletion: { [weak self] _ in self?.inFlightEffects.remove(effect) },
+                receiveCancel: { [weak self] in self?.inFlightEffects.remove(effect) }
+              )
+              .eraseToEffect { .init(origin: .receive($0), file: action.file, line: action.line) }
+          }
         },
         environment: ()
       )
