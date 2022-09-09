@@ -5,7 +5,7 @@ import XCTest
 
 @MainActor
 final class CompatibilityTests: XCTestCase {
-  func testCaseStudy_ReentrantEffect() {
+  func testCaseStudy_ReentrantActionsFromBuffer() {
     let cancelID = UUID()
 
     struct State: Equatable {}
@@ -73,6 +73,57 @@ final class CompatibilityTests: XCTestCase {
         "stop",
       ]
     )
+  }
+
+  func testCaseStudy_ReentrantActionsFromPublisher() {
+    struct State: Equatable {
+      var city: String
+      var country: String
+    }
+
+    enum Action: Equatable {
+      case updateCity(String)
+      case updateCountry(String)
+    }
+
+    let reducer = Reducer<State, Action, Void> { state, action, _ in
+      switch action {
+      case let .updateCity(city):
+        state.city = city
+        return .none
+      case let .updateCountry(country):
+        state.country = country
+        return .none
+      }
+    }
+
+    let store = Store(
+      initialState: State(city: "New York", country: "USA"),
+      reducer: reducer,
+      environment: ()
+    )
+    let viewStore = ViewStore(store)
+
+    var cancellables: Set<AnyCancellable> = []
+
+    viewStore.publisher.city
+      .sink { city in
+        if city == "London" {
+          viewStore.send(.updateCountry("UK"))
+        }
+      }
+      .store(in: &cancellables)
+
+    var countryUpdates = [String]()
+    viewStore.publisher.country
+      .sink { country in
+        countryUpdates.append(country)
+      }
+      .store(in: &cancellables)
+
+    viewStore.send(.updateCity("London"))
+
+    XCTAssertEqual(countryUpdates, ["USA", "UK"])
   }
 }
 
