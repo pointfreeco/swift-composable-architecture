@@ -34,7 +34,7 @@ public struct TwoFactorView: View {
 
   public var body: some View {
     WithViewStore(
-      self.store.scope(state: ViewState.init, action: TwoFactorAction.init)
+      self.store, observe: ViewState.init, send: TwoFactorAction.init
     ) { viewStore in
       Form {
         Text(#"To confirm the second factor enter "1234" into the form."#)

@@ -131,7 +131,7 @@ struct WebSocketView: View {
   let store: Store<WebSocketState, WebSocketAction>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       VStack(alignment: .leading) {
         AboutView(readMe: readMe)
           .padding(.bottom)
