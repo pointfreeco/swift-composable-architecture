@@ -1043,22 +1043,27 @@
         self.receivedActions.append((action, state))
       }
 
-      let effect = LongLivingEffect(file: action.file, line: action.line)
-      return
-        effects
-        .handleEvents(
-          receiveSubscription: { [effectDidSubscribe, weak self] _ in
-            self?.inFlightEffects.insert(effect)
-            Task {
-              await Task.megaYield()
-              effectDidSubscribe.continuation.yield()
-            }
-          },
-          receiveCompletion: { [weak self] _ in self?.inFlightEffects.remove(effect) },
-          receiveCancel: { [weak self] in self?.inFlightEffects.remove(effect) }
-        )
-        .map { .init(origin: .receive($0), file: action.file, line: action.line) }
-        .eraseToEffect()
+      switch effects.operation {
+      case .none:
+        return .none
+      case .publisher, .run:
+        let effect = LongLivingEffect(file: action.file, line: action.line)
+        return
+          effects
+          .handleEvents(
+            receiveSubscription: { [effectDidSubscribe, weak self] _ in
+              self?.inFlightEffects.insert(effect)
+              Task {
+                await Task.megaYield()
+                effectDidSubscribe.continuation.yield()
+              }
+            },
+            receiveCompletion: { [weak self] _ in self?.inFlightEffects.remove(effect) },
+            receiveCancel: { [weak self] in self?.inFlightEffects.remove(effect) }
+          )
+          .map { .init(origin: .receive($0), file: action.file, line: action.line) }
+          .eraseToEffect()
+      }
     }
 
     struct LongLivingEffect: Hashable {
