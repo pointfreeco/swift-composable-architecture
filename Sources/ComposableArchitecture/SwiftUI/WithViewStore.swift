@@ -611,8 +611,6 @@ extension WithViewStore where ViewState: Equatable, Content: View {
 }
 
 extension WithViewStore where ViewState == Void, Content: View {
-  // TODO: move docs for this init under overloads for WithViewStore
-
   /// Initializes a structure that transforms a store into an observable view store in order to
   /// compute views from void store state.
   ///

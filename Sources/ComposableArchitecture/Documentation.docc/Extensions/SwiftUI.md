@@ -31,7 +31,7 @@ The Composable Architecture can be used to power applications built in many fram
 - ``ConfirmationDialogState``
 - ``TextState``
 
-<!--TODO: Can't currently document `View` extensions-->
+<!--DocC: Can't currently document `View` extensions-->
 <!--### View Modifiers-->
 
 ### Deprecations

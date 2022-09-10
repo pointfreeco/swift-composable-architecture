@@ -206,16 +206,13 @@ final class DebugTests: XCTestCase {
     struct DebuggedReducer: ReducerProtocol {
       typealias State = Int
       typealias Action = Bool
-      var body: some ReducerProtocol<State, Action> {
-        Reduce { state, action in
-          state += action ? 1 : -1
-          return .none
-        }
-        .debug()
+      func reduce(into state: inout Int, action: Bool) -> Effect<Bool, Never> {
+        state += action ? 1 : -1
+        return .none
       }
     }
 
-    let store = TestStore(initialState: 0, reducer: DebuggedReducer())
+    let store = TestStore(initialState: 0, reducer: DebuggedReducer().debug())
     await store.send(true) { $0 = 1 }
   }
 }

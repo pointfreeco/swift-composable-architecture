@@ -5,3 +5,5 @@
 ### Overloads
 
 - ``scope(state:)``
+- ``stateless``
+- ``actionless``

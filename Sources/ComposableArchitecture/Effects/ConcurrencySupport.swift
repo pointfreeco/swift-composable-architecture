@@ -294,8 +294,12 @@ extension Task where Success == Never, Failure == Never {
 /// ```
 @dynamicMemberLookup
 public final actor ActorIsolated<Value: Sendable> {
+  /// The actor-isolated value.
   public var value: Value
 
+  /// Initializes actor-isolated state around a value.
+  ///
+  /// - Parameter value: A value to isolate in an actor.
   public init(_ value: Value) {
     self.value = value
   }
@@ -305,6 +309,17 @@ public final actor ActorIsolated<Value: Sendable> {
   }
 
   /// Perform an operation with isolated access to the underlying value.
+  ///
+  /// Useful for inspecting an actor-isolated value for a test assertion:
+  ///
+  /// ```swift
+  /// let didOpenSettings = ActorIsolated(false)
+  /// store.dependencies.openSettings = { await didOpenSettings.setValue(true) }
+  ///
+  /// await store.send(.settingsButtonTapped)
+  ///
+  /// await didOpenSettings.withValue { XCTAssertTrue($0) }
+  /// ```
   ///
   /// - Parameters: operation: An operation to be performed on the actor with the underlying value.
   /// - Returns: The result of the operation.
@@ -317,6 +332,17 @@ public final actor ActorIsolated<Value: Sendable> {
   }
 
   /// Overwrite the isolated value with a new value.
+  ///
+  /// Useful for setting an actor-isolated value when a tested dependency runs.
+  ///
+  /// ```swift
+  /// let didOpenSettings = ActorIsolated(false)
+  /// store.dependencies.openSettings = { await didOpenSettings.setValue(true) }
+  ///
+  /// await store.send(.settingsButtonTapped)
+  ///
+  /// await didOpenSettings.withValue { XCTAssertTrue($0) }
+  /// ```
   ///
   /// - Parameter newValue: The value to replace the current isolated value with.
   public func setValue(_ newValue: Value) {
@@ -338,6 +364,7 @@ public final actor ActorIsolated<Value: Sendable> {
 @dynamicMemberLookup
 @propertyWrapper
 public struct UncheckedSendable<Value>: @unchecked Sendable {
+  /// The unchecked value.
   public var value: Value
 
   public init(_ value: Value) {

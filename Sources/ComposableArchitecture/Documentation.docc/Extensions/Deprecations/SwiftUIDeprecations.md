@@ -8,7 +8,12 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ## Topics
 
-### `WithViewStore`
+### ForEachStore
+
+- ``ForEachStore/init(_:content:)-34mtj``
+- ``ForEachStore/init(_:id:content:)``
+
+### WithViewStore
 
 - ``WithViewStore/init(_:content:file:line:)-1gjbi``
 - ``WithViewStore/init(_:content:file:line:)-2uj44``
@@ -28,9 +33,9 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 - ``WithViewStore/Action``
 - ``WithViewStore/State``
 
-### View State
+### View state
 
 - ``ActionSheetState``
 
-<!--TODO: Can't currently document `View` extensions-->
+<!--DocC: Can't currently document `View` extensions-->
 <!--### View Modifiers-->

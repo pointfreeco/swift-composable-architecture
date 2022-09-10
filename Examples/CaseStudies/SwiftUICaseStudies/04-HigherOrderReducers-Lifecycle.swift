@@ -66,7 +66,6 @@ struct LifecycleDemo: ReducerProtocol {
   private enum CancelID {}
 
   var body: some ReducerProtocol<State, Action> {
-    // TODO: timerReducer
     Reduce { state, action in
       switch action {
       case .timer:
