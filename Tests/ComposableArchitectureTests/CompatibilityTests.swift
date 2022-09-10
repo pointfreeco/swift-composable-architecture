@@ -8,7 +8,7 @@ final class CompatibilityTests: XCTestCase {
   // Actions can be re-entrantly sent into the store if an action is sent that holds an object
   // which sends an action on deinit. In order to prevent a simultaneous access exception for this
   // case we need to use `withExtendedLifetime` on the buffered actions when clearing them out.
-  func testCaseStudy_ReentrantActionsOnDeinitFromClearingBuffer() {
+  func testCaseStudy_ActionReentranceFromClearedBufferCausingDeinitAction() {
     let cancelID = UUID()
 
     struct State: Equatable {}
@@ -85,7 +85,7 @@ final class CompatibilityTests: XCTestCase {
   // In particular, this means that in the implementation of `Store.send` we need to flip
   // `isSending` to false _after_ the store's state mutation is made so that re-entrant actions
   // are buffered rather than immediately handled.
-  func testActionReentranceFromStateObservation() {
+  func testCaseStudy_ActionReentranceFromStateObservation() {
     let store = Store<Int, Int>(
       initialState: 0,
       reducer: .init { state, action, _ in

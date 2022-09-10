@@ -332,8 +332,8 @@ public final class Store<State, Action> {
       withExtendedLifetime(self.bufferedActions) {
         self.bufferedActions.removeAll()
       }
-      self.isSending = false
       self.state.value = currentState
+      self.isSending = false
       if !self.bufferedActions.isEmpty {
         if let task = self.send(
           self.bufferedActions.removeLast(), originatingFrom: originatingAction
