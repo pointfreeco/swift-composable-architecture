@@ -186,12 +186,71 @@ public struct WithViewStore<ViewState, ViewAction, Content> {
 // MARK: - View
 
 extension WithViewStore: View where Content: View {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute views from state.
+  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
+  /// to compute views from state.
+  ///
+  /// ``WithViewStore`` will re-compute its body for _any_ change to the state it holds. Often the
+  /// ``Store`` that we want to observe holds onto a lot more state than is necessary to render a
+  /// view. It may hold onto the state of child features, or internal state for its logic.
+  ///
+  /// It can be important to transform the ``Store``'s state into something smaller for observation.
+  /// This will help minimize the number of times your view re-computes its body, and can even avoid
+  /// certain SwiftUI bugs that happen due to over-rendering.
+  ///
+  /// The way to do this is to use the `observe` argument of this initializer. It allows you to
+  /// turn the full state into a smaller data type, and only changes to that data type will trigger
+  /// a body re-computation.
+  ///
+  /// For example, if your application uses a tab view, then the root state may hold the state
+  /// for each tab as well as the currently selected tab:
+  ///
+  /// ```swift
+  /// struct AppState {
+  ///   var activity: ActivityState
+  ///   var search: SearchState
+  ///   var profile: ProfileState
+  ///   var selectedTab: Tab
+  ///   enum Tab { case activity, search, profile }
+  /// }
+  /// ```
+  ///
+  /// In order to construct a tab view you need to observe this state because changes to
+  /// `selectedTab` need to make SwiftUI update the visual state of the UI. However, you do not
+  /// need to observe changes to `activity`, `search` and `profile`. Those are only necessary for
+  /// those child features, and changes to that state should not cause our tab view to re-compute
+  /// itself.
+  ///
+  /// ```swift
+  /// struct AppView: View {
+  ///   let store: Store<AppState, AppAction>
+  ///
+  ///   var body: some View {
+  ///     WithViewStore(self.store, observe: \.selectedTab) { viewStore in
+  ///       TabView(selection: viewStore.binding(send: AppAction.tabSelected) {
+  ///         ActivityView(
+  ///           store: self.store.scope(state: \.activity, action: AppAction.activity)
+  ///         )
+  ///         .tag(AppState.Tab.activity)
+  ///         SearchView(
+  ///           store: self.store.scope(state: \.search, action: AppAction.search)
+  ///         )
+  ///         .tag(AppState.Tab.search)
+  ///         ProfileView(
+  ///           store: self.store.scope(state: \.profile, action: AppAction.profile)
+  ///         )
+  ///         .tag(AppState.Tab.profile)
+  ///       }
+  ///     }
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// To read more about this performance technique, read the <doc:Performance> article.
   ///
   /// - Parameters:
   ///   - store: A store.
-  ///   - toViewState: A function that transforms store state into observable view state.
+  ///   - toViewState: A function that transforms store state into observable view state. All
+  ///   changes to the view state will cause the `WithViewStore` to re-compute its view.
   ///   - fromViewAction: A function that transforms view actions into store action.
   ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
   ///     are equal, repeat view computations are removed,
@@ -214,8 +273,66 @@ extension WithViewStore: View where Content: View {
     )
   }
 
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute views from state.
+  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
+  /// to compute views from state.
+  ///
+  /// ``WithViewStore`` will re-compute its body for _any_ change to the state it holds. Often the
+  /// ``Store`` that we want to observe holds onto a lot more state than is necessary to render a
+  /// view. It may hold onto the state of child features, or internal state for its logic.
+  ///
+  /// It can be important to transform the ``Store``'s state into something smaller for observation.
+  /// This will help minimize the number of times your view re-computes its body, and can even avoid
+  /// certain SwiftUI bugs that happen due to over-rendering.
+  ///
+  /// The way to do this is to use the `observe` argument of this initializer. It allows you to
+  /// turn the full state into a smaller data type, and only changes to that data type will trigger
+  /// a body re-computation.
+  ///
+  /// For example, if your application uses a tab view, then the root state may hold the state
+  /// for each tab as well as the currently selected tab:
+  ///
+  /// ```swift
+  /// struct AppState {
+  ///   var activity: ActivityState
+  ///   var search: SearchState
+  ///   var profile: ProfileState
+  ///   var selectedTab: Tab
+  ///   enum Tab { case activity, search, profile }
+  /// }
+  /// ```
+  ///
+  /// In order to construct a tab view you need to observe this state because changes to
+  /// `selectedTab` need to make SwiftUI update the visual state of the UI. However, you do not
+  /// need to observe changes to `activity`, `search` and `profile`. Those are only necessary for
+  /// those child features, and changes to that state should not cause our tab view to re-compute
+  /// itself.
+  ///
+  /// ```swift
+  /// struct AppView: View {
+  ///   let store: Store<AppState, AppAction>
+  ///
+  ///   var body: some View {
+  ///     WithViewStore(self.store, observe: \.selectedTab) { viewStore in
+  ///       TabView(selection: viewStore.binding(send: AppAction.tabSelected) {
+  ///         ActivityView(
+  ///           store: self.store.scope(state: \.activity, action: AppAction.activity)
+  ///         )
+  ///         .tag(AppState.Tab.activity)
+  ///         SearchView(
+  ///           store: self.store.scope(state: \.search, action: AppAction.search)
+  ///         )
+  ///         .tag(AppState.Tab.search)
+  ///         ProfileView(
+  ///           store: self.store.scope(state: \.profile, action: AppAction.profile)
+  ///         )
+  ///         .tag(AppState.Tab.profile)
+  ///       }
+  ///     }
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// To read more about this performance technique, read the <doc:Performance> article.
   ///
   /// - Parameters:
   ///   - store: A store.
@@ -286,8 +403,66 @@ extension WithViewStore: View where Content: View {
 }
 
 extension WithViewStore where ViewState: Equatable, Content: View {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute views from equatable state.
+  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
+  /// to compute views from state.
+  ///
+  /// ``WithViewStore`` will re-compute its body for _any_ change to the state it holds. Often the
+  /// ``Store`` that we want to observe holds onto a lot more state than is necessary to render a
+  /// view. It may hold onto the state of child features, or internal state for its logic.
+  ///
+  /// It can be important to transform the ``Store``'s state into something smaller for observation.
+  /// This will help minimize the number of times your view re-computes its body, and can even avoid
+  /// certain SwiftUI bugs that happen due to over-rendering.
+  ///
+  /// The way to do this is to use the `observe` argument of this initializer. It allows you to
+  /// turn the full state into a smaller data type, and only changes to that data type will trigger
+  /// a body re-computation.
+  ///
+  /// For example, if your application uses a tab view, then the root state may hold the state
+  /// for each tab as well as the currently selected tab:
+  ///
+  /// ```swift
+  /// struct AppState {
+  ///   var activity: ActivityState
+  ///   var search: SearchState
+  ///   var profile: ProfileState
+  ///   var selectedTab: Tab
+  ///   enum Tab { case activity, search, profile }
+  /// }
+  /// ```
+  ///
+  /// In order to construct a tab view you need to observe this state because changes to
+  /// `selectedTab` need to make SwiftUI update the visual state of the UI. However, you do not
+  /// need to observe changes to `activity`, `search` and `profile`. Those are only necessary for
+  /// those child features, and changes to that state should not cause our tab view to re-compute
+  /// itself.
+  ///
+  /// ```swift
+  /// struct AppView: View {
+  ///   let store: Store<AppState, AppAction>
+  ///
+  ///   var body: some View {
+  ///     WithViewStore(self.store, observe: \.selectedTab) { viewStore in
+  ///       TabView(selection: viewStore.binding(send: AppAction.tabSelected) {
+  ///         ActivityView(
+  ///           store: self.store.scope(state: \.activity, action: AppAction.activity)
+  ///         )
+  ///         .tag(AppState.Tab.activity)
+  ///         SearchView(
+  ///           store: self.store.scope(state: \.search, action: AppAction.search)
+  ///         )
+  ///         .tag(AppState.Tab.search)
+  ///         ProfileView(
+  ///           store: self.store.scope(state: \.profile, action: AppAction.profile)
+  ///         )
+  ///         .tag(AppState.Tab.profile)
+  ///       }
+  ///     }
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// To read more about this performance technique, read the <doc:Performance> article.
   ///
   /// - Parameters:
   ///   - store: A store.
@@ -313,8 +488,66 @@ extension WithViewStore where ViewState: Equatable, Content: View {
     )
   }
 
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute views from equatable state.
+  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
+  /// to compute views from state.
+  ///
+  /// ``WithViewStore`` will re-compute its body for _any_ change to the state it holds. Often the
+  /// ``Store`` that we want to observe holds onto a lot more state than is necessary to render a
+  /// view. It may hold onto the state of child features, or internal state for its logic.
+  ///
+  /// It can be important to transform the ``Store``'s state into something smaller for observation.
+  /// This will help minimize the number of times your view re-computes its body, and can even avoid
+  /// certain SwiftUI bugs that happen due to over-rendering.
+  ///
+  /// The way to do this is to use the `observe` argument of this initializer. It allows you to
+  /// turn the full state into a smaller data type, and only changes to that data type will trigger
+  /// a body re-computation.
+  ///
+  /// For example, if your application uses a tab view, then the root state may hold the state
+  /// for each tab as well as the currently selected tab:
+  ///
+  /// ```swift
+  /// struct AppState {
+  ///   var activity: ActivityState
+  ///   var search: SearchState
+  ///   var profile: ProfileState
+  ///   var selectedTab: Tab
+  ///   enum Tab { case activity, search, profile }
+  /// }
+  /// ```
+  ///
+  /// In order to construct a tab view you need to observe this state because changes to
+  /// `selectedTab` need to make SwiftUI update the visual state of the UI. However, you do not
+  /// need to observe changes to `activity`, `search` and `profile`. Those are only necessary for
+  /// those child features, and changes to that state should not cause our tab view to re-compute
+  /// itself.
+  ///
+  /// ```swift
+  /// struct AppView: View {
+  ///   let store: Store<AppState, AppAction>
+  ///
+  ///   var body: some View {
+  ///     WithViewStore(self.store, observe: \.selectedTab) { viewStore in
+  ///       TabView(selection: viewStore.binding(send: AppAction.tabSelected) {
+  ///         ActivityView(
+  ///           store: self.store.scope(state: \.activity, action: AppAction.activity)
+  ///         )
+  ///         .tag(AppState.Tab.activity)
+  ///         SearchView(
+  ///           store: self.store.scope(state: \.search, action: AppAction.search)
+  ///         )
+  ///         .tag(AppState.Tab.search)
+  ///         ProfileView(
+  ///           store: self.store.scope(state: \.profile, action: AppAction.profile)
+  ///         )
+  ///         .tag(AppState.Tab.profile)
+  ///       }
+  ///     }
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// To read more about this performance technique, read the <doc:Performance> article.
   ///
   /// - Parameters:
   ///   - store: A store.

@@ -8,6 +8,26 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ## Topics
 
+### `WithViewStore`
+
+- ``WithViewStore/init(_:content:file:line:)-1gjbi``
+- ``WithViewStore/init(_:content:file:line:)-2uj44``
+- ``WithViewStore/init(_:content:file:line:)-5vj3w``
+- ``WithViewStore/init(_:content:file:line:)-5zsmz``
+- ``WithViewStore/init(_:content:file:line:)-7kai``
+- ``WithViewStore/init(_:file:line:content:)-4xog0``
+- ``WithViewStore/init(_:file:line:content:)-55smh``
+- ``WithViewStore/init(_:file:line:content:)-7qkc1``
+- ``WithViewStore/init(_:file:line:content:)-8b21b``
+- ``WithViewStore/init(_:file:line:content:)-9b6e2``
+- ``WithViewStore/init(_:removeDuplicates:content:file:line:)-1lyhl``
+- ``WithViewStore/init(_:removeDuplicates:content:file:line:)-35xje``
+- ``WithViewStore/init(_:removeDuplicates:content:file:line:)-8zzun``
+- ``WithViewStore/init(_:removeDuplicates:content:file:line:)-9atby``
+- ``WithViewStore/init(_:removeDuplicates:file:line:content:)``
+- ``WithViewStore/Action``
+- ``WithViewStore/State``
+
 ### View State
 
 - ``ActionSheetState``
