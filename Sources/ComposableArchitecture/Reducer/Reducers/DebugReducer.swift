@@ -115,38 +115,42 @@ public struct _DebugReducer<Base: ReducerProtocol, DebugState, DebugAction>: Red
     self.logger = logger
   }
 
+  @usableFromInline
+  @Dependency(\.context) var context
+
   @inlinable
   public func reduce(
     into state: inout Base.State, action: Base.Action
   ) -> Effect<Base.Action, Never> {
     #if DEBUG
-      let previousState = self.toDebugState(state)
-      let effects = self.base.reduce(into: &state, action: action)
-      guard let debugAction = self.toDebugAction(action) else { return effects }
-      let nextState = self.toDebugState(state)
-      return effects.merge(
-        with: .fireAndForget { [actionFormat] in
-          var actionOutput = ""
-          if actionFormat == .prettyPrint {
-            customDump(debugAction, to: &actionOutput, indent: 2)
-          } else {
-            actionOutput.write(debugCaseOutput(debugAction).indent(by: 2))
+      if self.context != .test {
+        let previousState = self.toDebugState(state)
+        let effects = self.base.reduce(into: &state, action: action)
+        guard let debugAction = self.toDebugAction(action) else { return effects }
+        let nextState = self.toDebugState(state)
+        return effects.merge(
+          with: .fireAndForget { [actionFormat] in
+            var actionOutput = ""
+            if actionFormat == .prettyPrint {
+              customDump(debugAction, to: &actionOutput, indent: 2)
+            } else {
+              actionOutput.write(debugCaseOutput(debugAction).indent(by: 2))
+            }
+            let stateOutput =
+            DebugState.self == Void.self
+            ? ""
+            : diff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
+            await self.logger(
+              """
+              \(self.prefix.isEmpty ? "" : "\(self.prefix): ")received action:
+              \(actionOutput)
+              \(stateOutput)
+              """
+            )
           }
-          let stateOutput =
-          DebugState.self == Void.self
-          ? ""
-          : diff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
-          await self.logger(
-            """
-            \(self.prefix.isEmpty ? "" : "\(self.prefix): ")received action:
-            \(actionOutput)
-            \(stateOutput)
-            """
-          )
-        }
-      )
-    #else
-      return self.base.reduce(into: &state, action: action)
+        )
+      }
     #endif
+    return self.base.reduce(into: &state, action: action)
   }
 }
