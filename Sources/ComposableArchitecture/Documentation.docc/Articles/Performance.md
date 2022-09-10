@@ -205,10 +205,10 @@ store.
 
 Reducers are run on the main thread and so they are not appropriate for performing intense CPU
 work. If you need to perform lots of CPU-bound work, then it is more appropriate to use an
-``Effect``, which will operate in the cooperative thread pool, and then send it's output back into
-the system via an action. You should also make sure to perform your CPU intensive work in a
-cooperative manner by periodically suspending with `Task.yield()` so that you do not block a thread
-in the cooperative pool for too long.
+``Effect``, which will operate in the cooperative thread pool, and then send actions back into the
+system. You should also make sure to perform your CPU intensive work in a cooperative manner by
+periodically suspending with `Task.yield()` so that you do not block a thread in the cooperative
+pool for too long.
 
 So, instead of performing intense work like this in your reducer:
 
