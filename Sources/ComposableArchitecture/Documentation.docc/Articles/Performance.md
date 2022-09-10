@@ -157,15 +157,15 @@ WithViewStore(
 }
 ```
 
-Alternatively, and recommended, you can introduce a lightweight `ViewState` struct nested inside
-your view whose purpose is to transform the `Store`'s full state into the bare essentials of what
-the view needs:
+Alternatively, and recommended, you can introduce a lightweight, equatable `ViewState` struct
+nested inside your view whose purpose is to transform the `Store`'s full state into the bare
+essentials of what the view needs:
 
 ```swift
 struct AppView: View {
   let store: Store<AppState, AppAction>
   
-  struct ViewState {
+  struct ViewState: Equatable {
     let selectedTab: AppState.Tab
     let unreadActivityCount: Int
     init(state: AppState) {
