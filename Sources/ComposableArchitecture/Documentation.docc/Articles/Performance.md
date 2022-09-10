@@ -197,7 +197,9 @@ This technique for reducing view re-computations is most effective towards the r
 hierarchy and least effective towards the leaf nodes of your app. Root features tend to hold lots
 of state that its view does not need, such as child features, and leaf features tend to only hold
 what's necessary. If you are going to employ this technique you will get the most benefit by
-applying it to views closer to the root.
+applying it to views closer to the root. At leaf features and views that need access to most
+of the state, it is fine to continue using `observe { $0 }` to observe all of the state in the 
+store.
 
 ### CPU intensive calculations
 
