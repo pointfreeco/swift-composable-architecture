@@ -336,7 +336,8 @@ extension WithViewStore: View where Content: View {
   ///
   /// - Parameters:
   ///   - store: A store.
-  ///   - toViewState: A function that transforms store state into observable view state.
+  ///   - toViewState: A function that transforms store state into observable view state. All
+  ///   changes to the view state will cause the `WithViewStore` to re-compute its view.
   ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
   ///     are equal, repeat view computations are removed,
   ///   - content: A function that can generate content from a view store.
@@ -466,7 +467,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ///
   /// - Parameters:
   ///   - store: A store.
-  ///   - toViewState: A function that transforms store state into observable view state.
+  ///   - toViewState: A function that transforms store state into observable view state. All
+  ///   changes to the view state will cause the `WithViewStore` to re-compute its view.
   ///   - fromViewAction: A function that transforms view actions into store action.
   ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
   ///     are equal, repeat view computations are removed,
@@ -551,7 +553,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ///
   /// - Parameters:
   ///   - store: A store.
-  ///   - toViewState: A function that transforms store state into observable view state.
+  ///   - toViewState: A function that transforms store state into observable view state. All
+  ///   changes to the view state will cause the `WithViewStore` to re-compute its view.
   ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
   ///     are equal, repeat view computations are removed,
   ///   - content: A function that can generate content from a view store.
