@@ -118,7 +118,7 @@ struct AppView: View {
 However, this style of state observation is terribly inefficient since _every_ change to `AppState`
 will cause the view to re-compute even though the only piece of state we actually care about is
 the `selectedTab`. The reason we are observing too much state is because we use `observe: { $0 }`
-in the construct of the ``WithViewStore``, which means the view store will observe all of state.
+in the construction of the ``WithViewStore``, which means the view store will observe all of state.
 
 To chisel away at the observed state you can provide a closure for that argument that plucks out
 the state the view needs. In this case the view only needs a single field:
