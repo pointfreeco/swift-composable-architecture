@@ -166,8 +166,10 @@ struct AppView: View {
   let store: Store<AppState, AppAction>
   
   struct ViewState {
+    let selectedTab: AppState.Tab
     let unreadActivityCount: Int
     init(state: AppState) {
+      self.selectedTab = state.selectedTab
       self.unreadActivityCount = state.activity.unreadCount
     }
   }
