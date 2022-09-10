@@ -329,26 +329,11 @@ public final class Store<State, Action> {
     var currentState = self.state.value
     let tasks = Box<[Task<Void, Never>]>(wrappedValue: [])
     defer {
-      // NB: Handle any potential re-entrant actions.
-      //
-      // 1. After all buffered actions have been processed, we clear them out, but this can lead to
-      //    re-entrant actions if a cleared action holds onto an object that sends an additional
-      //    action during "deinit".
-      //
-      //    We use "withExtendedLifetime" to prevent simultaneous access exceptions for this case,
-      //    which otherwise would try to append an action while removal is still in-process.
       withExtendedLifetime(self.bufferedActions) {
         self.bufferedActions.removeAll()
       }
-      // 2. Updating state can also lead to re-entrant actions if the emission of a downstream store
-      //    publisher sends an action back into the store.
-      //
-      //    We update "state" _before_ flipping "isSending" to false to ensure these actions are
-      //    appended to the buffer and not processed immediately.
       self.state.value = currentState
       self.isSending = false
-      // Should either of the above steps send re-entrant actions back into the store, we handle
-      // them recursively.
       if !self.bufferedActions.isEmpty {
         if let task = self.send(
           self.bufferedActions.removeLast(), originatingFrom: originatingAction
