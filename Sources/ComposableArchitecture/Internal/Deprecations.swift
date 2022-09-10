@@ -426,7 +426,7 @@ extension CaseLet {
 
 extension Effect {
   @available(*, deprecated)
-  public var upstream: AnyPublisher<Output, Failure> {
+  public var upstream: AnyPublisher<Action, Failure> {
     self.publisher
   }
 }
@@ -440,10 +440,10 @@ extension Effect where Failure == Error {
   )
   public static func task(
     priority: TaskPriority? = nil,
-    operation: @escaping @Sendable () async throws -> Output
+    operation: @escaping @Sendable () async throws -> Action
   ) -> Self {
-    Deferred<Publishers.HandleEvents<PassthroughSubject<Output, Failure>>> {
-      let subject = PassthroughSubject<Output, Failure>()
+    Deferred<Publishers.HandleEvents<PassthroughSubject<Action, Failure>>> {
+      let subject = PassthroughSubject<Action, Failure>()
       let task = Task(priority: priority) { @MainActor in
         do {
           try Task.checkCancellation()

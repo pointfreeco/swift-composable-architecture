@@ -25,7 +25,7 @@ extension Effect {
       return .none
     case .publisher, .run:
       return self.receive(on: scheduler)
-        .flatMap { value -> AnyPublisher<Output, Failure> in
+        .flatMap { value -> AnyPublisher<Action, Failure> in
           throttleLock.lock()
           defer { throttleLock.unlock() }
 
@@ -35,7 +35,7 @@ extension Effect {
             return Just(value).setFailureType(to: Failure.self).eraseToAnyPublisher()
           }
 
-          let value = latest ? value : (throttleValues[id] as! Output? ?? value)
+          let value = latest ? value : (throttleValues[id] as! Action? ?? value)
           throttleValues[id] = value
 
           guard throttleTime.distance(to: scheduler.now) < interval else {

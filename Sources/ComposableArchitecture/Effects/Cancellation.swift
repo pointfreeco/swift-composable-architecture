@@ -39,7 +39,7 @@ extension Effect {
             ()
               -> Publishers.HandleEvents<
                 Publishers.PrefixUntilOutput<
-                  AnyPublisher<Output, Failure>, PassthroughSubject<Void, Never>
+                  AnyPublisher<Action, Failure>, PassthroughSubject<Void, Never>
                 >
               > in
             cancellablesLock.lock()

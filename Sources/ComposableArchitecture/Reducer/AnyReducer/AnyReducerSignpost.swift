@@ -127,11 +127,11 @@ extension Effect where Failure == Never {
             actionOutput
           )
           await operation(
-            Send { output in
+            Send { action in
               os_signpost(
                 .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput
               )
-              send(output)
+              send(action)
             }
           )
           if Task.isCancelled {
