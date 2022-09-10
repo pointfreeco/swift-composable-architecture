@@ -222,6 +222,60 @@ extension AnyReducer {
   }
 }
 
+/// Determines how the string description of an action should be printed when using the
+/// ``ReducerProtocol/debug(_:state:action:actionFormat:to:)`` higher-order reducer.
+@available(
+  iOS,
+  deprecated: 9999.0,
+  message: """
+    This API that used this type has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+    """
+)
+@available(
+  macOS,
+  deprecated: 9999.0,
+  message: """
+    This API that used this type has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+    """
+)
+@available(
+  tvOS,
+  deprecated: 9999.0,
+  message: """
+    This API that used this type has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+    """
+)
+@available(
+  watchOS,
+  deprecated: 9999.0,
+  message: """
+    This API that used this type has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+    """
+)
+public enum ActionFormat: Sendable {
+  /// Prints the action in a single line by only specifying the labels of the associated values:
+  ///
+  /// ```swift
+  /// Action.screenA(.row(index:, action: .textChanged(query:)))
+  /// ```
+  case labelsOnly
+
+  /// Prints the action in a multiline, pretty-printed format, including all the labels of
+  /// any associated values, as well as the data held in the associated values:
+  ///
+  /// ```swift
+  /// Action.screenA(
+  ///   ScreenA.row(
+  ///     index: 1,
+  ///     action: RowAction.textChanged(
+  ///       query: "Hi"
+  ///     )
+  ///   )
+  /// )
+  /// ```
+  case prettyPrint
+}
+
 /// The API that used this type has been soft-deprecated in favor of
 /// ``ReducerProtocol/debug(_:state:action:actionFormat:to:)`` Read <doc:ReducerProtocols> for more
 /// information.
