@@ -5,7 +5,7 @@ extension ReducerProtocol {
   ///
   /// - Returns: A reducer that prints debug messages for all received actions.
   @inlinable
-  public func debug() -> _DebugReducer<Self, CustomDumpStrategy> {
+  public func debug() -> _DebugReducer<Self, CustomDumpDebugStrategy> {
     .init(base: self, strategy: .customDump)
   }
 
@@ -28,11 +28,11 @@ public protocol DebugStrategy {
   func debug<Action, State>(receivedAction: Action, oldState: State, newState: State)
 }
 
-extension DebugStrategy where Self == CustomDumpStrategy {
+extension DebugStrategy where Self == CustomDumpDebugStrategy {
   public static var customDump: Self { Self() }
 }
 
-public struct CustomDumpStrategy: DebugStrategy {
+public struct CustomDumpDebugStrategy: DebugStrategy {
   public func debug<Action, State>(receivedAction: Action, oldState: State, newState: State) {
     var target = ""
     target.write("received action:\n")
@@ -43,11 +43,11 @@ public struct CustomDumpStrategy: DebugStrategy {
   }
 }
 
-extension DebugStrategy where Self == ActionLabelsStrategy {
+extension DebugStrategy where Self == ActionLabelsDebugStrategy {
   public static var actionLabels: Self { Self() }
 }
 
-public struct ActionLabelsStrategy: DebugStrategy {
+public struct ActionLabelsDebugStrategy: DebugStrategy {
   public func debug<Action, State>(receivedAction: Action, oldState: State, newState: State) {
     print("received action: \(debugCaseOutput(receivedAction))")
   }

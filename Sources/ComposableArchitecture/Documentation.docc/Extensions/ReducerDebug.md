@@ -6,5 +6,5 @@
 
 - ``ReducerProtocol/debug(_:)``
 - ``DebugStrategy``
-- ``CustomDumpStrategy``
-- ``ActionLabelsStrategy``
+- ``CustomDumpDebugStrategy``
+- ``ActionLabelsDebugStrategy``
