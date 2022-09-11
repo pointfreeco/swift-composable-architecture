@@ -66,7 +66,7 @@ extension DependencyValues {
   ///
   /// store.send(.create) {
   ///   $0.todos = [
-  ///     Todo(id: UUID(string: "00000000-000-0000-0000-000000000000")!)
+  ///     Todo(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
   ///   ]
   /// }
   /// ```
