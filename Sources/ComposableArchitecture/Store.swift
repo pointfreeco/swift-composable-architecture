@@ -284,7 +284,7 @@ public final class Store<State, Action> {
   /// ```swift
   ///  var body: some View {
   ///    WithViewStore(
-  ///      self.store.scope(state: \.view, action: \.feature)
+  ///      self.store, observe: \.view, send: \.feature
   ///    ) { viewStore in
   ///      ...
   ///    }
@@ -353,33 +353,44 @@ public final class Store<State, Action> {
 
     let tasks = Box<[Task<Void, Never>]>(wrappedValue: [])
 
-    var currentIndex = self.bufferedActions.startIndex
-
     defer {
       instrumentation.callback?(callbackInfo, .pre, .storeChangeState)
       defer { instrumentation.callback?(callbackInfo, .post, .storeChangeState) }
 
+      // NB: Handle any potential re-entrant actions.
+      //
+      // 1. After all buffered actions have been processed, we clear them out, but this can lead to
+      //    re-entrant actions if a cleared action holds onto an object that sends an additional
+      //    action during "deinit".
+      //
+      //    We use "withExtendedLifetime" to prevent simultaneous access exceptions for this case,
+      //    which otherwise would try to append an action while removal is still in-process.
+      withExtendedLifetime(self.bufferedActions) {
+        self.bufferedActions.removeAll()
+      }
+      // 2. Updating state can also lead to re-entrant actions if the emission of a downstream store
+      //    publisher sends an action back into the store.
+      //
+      //    We update "state" _before_ flipping "isSending" to false to ensure these actions are
+      //    appended to the buffer and not processed immediately.
       self.state.value = currentState
       self.isSending = false
-      // if new actions were added synchronously
-      // as part of state publisher updates, process them now
-      if currentIndex < bufferedActions.endIndex {
-        // pick out the last item, as this get re-queued once we hit `send(...)`
-        // (send *then* processes the bufferedActions from the beginning)
-        let lastItemIndex = bufferedActions.endIndex.advanced(by: -1)
-        let action = self.bufferedActions[lastItemIndex]
-        self.bufferedActions = Array(self.bufferedActions[currentIndex..<lastItemIndex])
-        if let task = send(action, file: file, line: line) {
+      // Should either of the above steps send re-entrant actions back into the store, we handle
+      // them recursively.
+      if !self.bufferedActions.isEmpty {
+        if let task = self.send(
+          self.bufferedActions.removeLast(), originatingFrom: originatingAction,
+          file: file, line: line
+        ) {
           tasks.wrappedValue.append(task)
         }
-      } else {
-        self.bufferedActions = []
       }
     }
 
-    while currentIndex < self.bufferedActions.endIndex {
-      defer { currentIndex += 1 }
-      let action = self.bufferedActions[currentIndex]
+    var index = self.bufferedActions.startIndex
+    while index < self.bufferedActions.endIndex {
+      defer { index += 1 }
+      let action = self.bufferedActions[index]
 
       let processCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: action, originatingAction: nil, file: file, line: line).eraseToAny()
       instrumentation.callback?(processCallbackInfo, .pre, .storeProcessEvent)
@@ -395,7 +406,7 @@ public final class Store<State, Action> {
         let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
         let uuid = UUID()
         let effectCancellable =
-        publisher
+          publisher
           .handleEvents(
             receiveCancel: { [weak self] in
               self?.threadCheck(status: .effectCompletion(action))
@@ -416,7 +427,7 @@ public final class Store<State, Action> {
               }
             }
           )
-        
+
         if !didComplete {
           let task = Task<Void, Never> { @MainActor in
             for await _ in AsyncStream<Void>.never {}

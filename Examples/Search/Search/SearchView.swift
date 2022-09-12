@@ -119,7 +119,7 @@ struct SearchView: View {
   let store: Store<SearchState, SearchAction>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       NavigationView {
         VStack(alignment: .leading) {
           Text(readMe)

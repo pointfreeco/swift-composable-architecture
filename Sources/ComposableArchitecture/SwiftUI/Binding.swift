@@ -478,7 +478,7 @@ extension BindingAction {
   ///
   /// ```swift
   /// WithViewStore(
-  ///   self.store.scope(state: \.view, action: AppAction.view)
+  ///   self.store, observe: \.view, send: AppAction.view
   /// ) { viewStore in
   ///   Stepper("\(viewStore.count)", viewStore.binding(\.$count))
   ///   Button("Get number fact") { viewStore.send(.factButtonTapped) }

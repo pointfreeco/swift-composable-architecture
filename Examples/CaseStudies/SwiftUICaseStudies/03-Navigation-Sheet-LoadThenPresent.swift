@@ -73,7 +73,7 @@ struct LoadThenPresentView: View {
   let store: Store<LoadThenPresentState, LoadThenPresentAction>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
         Section {
           AboutView(readMe: readMe)
