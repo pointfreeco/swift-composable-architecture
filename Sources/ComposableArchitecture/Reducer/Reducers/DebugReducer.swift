@@ -6,7 +6,7 @@ extension ReducerProtocol {
   /// - Returns: A reducer that prints debug messages for all received actions.
   @inlinable
   public func debug() -> _DebugReducer<Self, CustomDumpDebugStrategy> {
-    .init(base: self, strategy: .customDump)
+    _DebugReducer(base: self, strategy: .customDump)
   }
 
   /// Enhances a reducer with debug logging of received actions and state mutations for the given
@@ -18,9 +18,9 @@ extension ReducerProtocol {
   /// - Returns: A reducer that prints debug messages for all received actions.
   @inlinable
   public func debug<Strategy: DebugStrategy>(
-    _ strategy: Strategy
-  ) -> _DebugReducer<Self, Strategy> {
-    .init(base: self, strategy: strategy)
+    _ strategy: Strategy?
+  ) -> ReducerBuilder<State, Action>._Conditional<_DebugReducer<Self, Strategy>, Self> {
+    strategy.map { .first(_DebugReducer(base: self, strategy: $0)) } ?? .second(self)
   }
 }
 
