@@ -18,7 +18,7 @@ test-library:
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_TVOS)"
 	xcodebuild \
-		-scheme ComposableArchitecture_watchOS \
+		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_WATCHOS)"
 
 DOC_WARNINGS := $(shell xcodebuild clean docbuild \
