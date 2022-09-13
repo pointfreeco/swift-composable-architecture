@@ -9,16 +9,20 @@ test-all: test-library test-examples
 
 test-library:
 	xcodebuild test \
+		-workspace ComposableArchitecture.xcworkspace \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_IOS)"
 	xcodebuild test \
+		-workspace ComposableArchitecture.xcworkspace \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_MACOS)"
 	xcodebuild test \
+		-workspace ComposableArchitecture.xcworkspace \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_TVOS)"
 	xcodebuild \
-		-scheme ComposableArchitecture_watchOS \
+		-workspace ComposableArchitecture.xcworkspace \
+		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_WATCHOS)"
 
 DOC_WARNINGS := $(shell xcodebuild clean docbuild \
