@@ -8,5 +8,5 @@ builder:
   - platform: tvos
     scheme: ComposableArchitecture
   - platform: watchos
-    scheme: ComposableArchitecture_watchOS
+    scheme: ComposableArchitecture
   - documentation_targets: [ComposableArchitecture]
