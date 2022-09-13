@@ -9,15 +9,19 @@ test-all: test-library test-examples
 
 test-library:
 	xcodebuild test \
+		-workspace ComposableArchitecture.workspace \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_IOS)"
 	xcodebuild test \
+		-workspace ComposableArchitecture.workspace \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_MACOS)"
 	xcodebuild test \
+		-workspace ComposableArchitecture.workspace \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_TVOS)"
 	xcodebuild \
+		-workspace ComposableArchitecture.workspace \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_WATCHOS)"
 
