@@ -150,7 +150,7 @@ WithViewStore(
       store: self.store.scope(state: \.activity, action: AppAction.activity)
     )
     .tag(AppState.Tab.activity)
-    .badge("\(viewStore.state)")
+    .badge("\(viewStore.unreadActivityCount)")
 
     // ...
   }
