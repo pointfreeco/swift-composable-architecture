@@ -71,5 +71,6 @@ final class TwoFactorCoreTests: XCTestCase {
     await store.send(.alertDismissed) {
       $0.alert = nil
     }
+    await store.finish()
   }
 }
