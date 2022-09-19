@@ -409,13 +409,13 @@ public final class Store<State, Action> {
         var index = tasks.wrappedValue.startIndex
         while index < tasks.wrappedValue.endIndex {
           defer { index += 1 }
-          tasks.wrappedValue[index].cancel()
+          await tasks.wrappedValue[index].value
         }
-      } operation: {
+      } onCancel: {
         var index = tasks.wrappedValue.startIndex
         while index < tasks.wrappedValue.endIndex {
           defer { index += 1 }
-          await tasks.wrappedValue[index].value
+          tasks.wrappedValue[index].cancel()
         }
       }
     }
