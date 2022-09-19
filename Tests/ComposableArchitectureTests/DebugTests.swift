@@ -200,4 +200,19 @@ final class DebugTests: XCTestCase {
       """#
     )
   }
+
+  @MainActor
+  func testDebugReducer() async {
+    struct DebuggedReducer: ReducerProtocol {
+      typealias State = Int
+      typealias Action = Bool
+      func reduce(into state: inout Int, action: Bool) -> Effect<Bool, Never> {
+        state += action ? 1 : -1
+        return .none
+      }
+    }
+
+    let store = TestStore(initialState: 0, reducer: DebuggedReducer().debug())
+    await store.send(true) { $0 = 1 }
+  }
 }

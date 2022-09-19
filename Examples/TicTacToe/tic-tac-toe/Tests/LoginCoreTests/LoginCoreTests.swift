@@ -99,5 +99,6 @@ final class LoginCoreTests: XCTestCase {
     await store.send(.twoFactor(.dismiss)) {
       $0.twoFactor = nil
     }
+    await store.finish()
   }
 }

@@ -31,7 +31,7 @@ struct TodoView: View {
   let store: StoreOf<Todo>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       HStack {
         Button(action: { viewStore.send(.checkBoxToggled) }) {
           Image(systemName: viewStore.isComplete ? "checkmark.square" : "square")

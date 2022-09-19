@@ -1,31 +1,136 @@
-import Combine
 import CustomDump
 import SwiftUI
 
-/// A structure that transforms a store into an observable view store in order to compute views from
-/// store state.
-public struct WithViewStore<State, Action, Content> {
-  private let content: (ViewStore<State, Action>) -> Content
+/// A view helper that transforms a ``Store`` into a ``ViewStore`` so that its state can be observed
+/// by a view builder.
+///
+/// This helper is an alternative to observing the view store manually on your view, which requires
+/// the boilerplate of a custom initializer.
+///
+/// For example, the following view, which manually observes the store it is handed by constructing
+/// a view store in its initializer:
+///
+/// ```swift
+/// struct ProfileView: View {
+///   let store: Store<ProfileState, ProfileAction>
+///   @ObservedObject var viewStore: ViewStore<ProfileState, ProfileAction>
+///
+///   init(store: Store<ProfileState, ProfileAction>) {
+///     self.store = store
+///     self.viewStore = ViewStore(store)
+///   }
+///
+///   var body: some View {
+///     Text("\(self.viewStore.username)")
+///     // ...
+///   }
+/// }
+/// ```
+///
+/// …can be written more simply using `WithViewStore`:
+///
+/// ```swift
+/// struct ProfileView: View {
+///   let store: Store<ProfileState, ProfileAction>
+///
+///   var body: some View {
+///     WithViewStore(self.store, observe: { $0 }) { viewStore in
+///       Text("\(viewStore.username)")
+///       // ...
+///     }
+///   }
+/// }
+/// ```
+///
+/// There may be times where the slightly more verbose style of observing a store is preferred
+/// instead of using ``WithViewStore``:
+///
+/// 1. When ``WithViewStore`` wraps complex views the Swift compiler can quickly become bogged down,
+/// leading to degraded compiler performance and diagnostics. If you are experience such instability
+/// you should consider manually setting up observation with an `@ObservedObject` property as
+/// described above.
+///
+/// 2. Sometimes you may want to observe the state in a store in a context that is not a view
+/// builder. In such cases ``WithViewStore`` will not work since it is intended only for SwiftUI
+/// views.
+///
+///    An example of this is interfacing with SwiftUI's `App` protocol, which uses a separate
+///    `@SceneBuilder` instead of `@ViewBuilder`. In this case you must use an `@ObservedObject`:
+///
+///    ```swift
+///    @main
+///    struct MyApp: App {
+///      let store = Store<AppState, AppAction>(/* ... */)
+///      @ObservedObject var viewStore: ViewStore<SceneState, CommandAction>
+///
+///      struct SceneState: Equatable {
+///        // ...
+///        init(state: AppState) {
+///          // ...
+///        }
+///      }
+///
+///      init() {
+///        self.viewStore = ViewStore(
+///          self.store.scope(
+///            state: SceneState.init(state:)
+///            action: AppAction.scene
+///          )
+///        )
+///      }
+///
+///      var body: some Scene {
+///        WindowGroup {
+///          MyRootView()
+///        }
+///        .commands {
+///          CommandMenu("Help") {
+///            Button("About \(self.viewStore.appName)") {
+///              self.viewStore.send(.aboutButtonTapped)
+///            }
+///          }
+///        }
+///      }
+///    }
+///    ```
+///
+///    Note that it is highly discouraged for you to observe _all_ of your root store's state.
+///    It is almost never needed and will cause many view recomputations leading to poor
+///    performance. This is why we construct a separate `SceneState` type that holds onto only the
+///    state that the view needs for rendering. See <doc:Performance> for more information on this
+///    topic.
+///
+/// If your view does not need access to any state in the store and only needs to be able to send
+/// actions, then you should consider not using ``WithViewStore`` at all. Instead, you can send
+/// actions to a ``Store`` in a lightweight way like so:
+///
+/// ```swift
+/// Button("Tap me") {
+///   ViewStore(self.store).send(.buttonTapped)
+/// }
+/// ```
+public struct WithViewStore<ViewState, ViewAction, Content> {
+  private let content: (ViewStore<ViewState, ViewAction>) -> Content
   #if DEBUG
     private let file: StaticString
     private let line: UInt
     private var prefix: String?
-    private var previousState: (State) -> State?
+    private var previousState: (ViewState) -> ViewState?
   #endif
-  @ObservedObject private var viewStore: ViewStore<State, Action>
+  @ObservedObject private var viewStore: ViewStore<ViewState, ViewAction>
 
-  fileprivate init(
-    store: Store<State, Action>,
-    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
+  init(
+    store: Store<ViewState, ViewAction>,
+    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
+    content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
-    line: UInt = #line,
-    content: @escaping (ViewStore<State, Action>) -> Content
+    line: UInt = #line
   ) {
     self.content = content
     #if DEBUG
       self.file = file
       self.line = line
-      var previousState: State? = nil
+      var previousState: ViewState? = nil
       self.previousState = { currentState in
         defer { previousState = currentState }
         return previousState
@@ -46,7 +151,7 @@ public struct WithViewStore<State, Action, Content> {
     return view
   }
 
-  fileprivate var _body: Content {
+  public var body: Content {
     #if DEBUG
       if let prefix = self.prefix {
         var stateDump = ""
@@ -58,10 +163,17 @@ public struct WithViewStore<State, Action, Content> {
               ?? "(No difference in state detected)"
           }
           ?? "(Initial state)\n\(stateDump)"
+        func typeName(_ type: Any.Type) -> String {
+          var name = String(reflecting: type)
+          if let index = name.firstIndex(of: ".") {
+            name.removeSubrange(...index)
+          }
+          return name
+        }
         print(
           """
           \(prefix.isEmpty ? "" : "\(prefix): ")\
-          WithViewStore<\(typeName(State.self)), \(typeName(Action.self)), _>\
+          WithViewStore<\(typeName(ViewState.self)), \(typeName(ViewAction.self)), _>\
           @\(self.file):\(self.line) \(difference)
           """
         )
@@ -72,349 +184,477 @@ public struct WithViewStore<State, Action, Content> {
 }
 
 // MARK: - View
+
 extension WithViewStore: View where Content: View {
+  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
+  /// to compute views from state.
+  ///
+  /// ``WithViewStore`` will re-compute its body for _any_ change to the state it holds. Often the
+  /// ``Store`` that we want to observe holds onto a lot more state than is necessary to render a
+  /// view. It may hold onto the state of child features, or internal state for its logic.
+  ///
+  /// It can be important to transform the ``Store``'s state into something smaller for observation.
+  /// This will help minimize the number of times your view re-computes its body, and can even avoid
+  /// certain SwiftUI bugs that happen due to over-rendering.
+  ///
+  /// The way to do this is to use the `observe` argument of this initializer. It allows you to
+  /// turn the full state into a smaller data type, and only changes to that data type will trigger
+  /// a body re-computation.
+  ///
+  /// For example, if your application uses a tab view, then the root state may hold the state
+  /// for each tab as well as the currently selected tab:
+  ///
+  /// ```swift
+  /// struct AppState {
+  ///   var activity: ActivityState
+  ///   var search: SearchState
+  ///   var profile: ProfileState
+  ///   var selectedTab: Tab
+  ///   enum Tab { case activity, search, profile }
+  /// }
+  /// ```
+  ///
+  /// In order to construct a tab view you need to observe this state because changes to
+  /// `selectedTab` need to make SwiftUI update the visual state of the UI. However, you do not
+  /// need to observe changes to `activity`, `search` and `profile`. Those are only necessary for
+  /// those child features, and changes to that state should not cause our tab view to re-compute
+  /// itself.
+  ///
+  /// ```swift
+  /// struct AppView: View {
+  ///   let store: Store<AppState, AppAction>
+  ///
+  ///   var body: some View {
+  ///     WithViewStore(self.store, observe: \.selectedTab) { viewStore in
+  ///       TabView(selection: viewStore.binding(send: AppAction.tabSelected) {
+  ///         ActivityView(
+  ///           store: self.store.scope(state: \.activity, action: AppAction.activity)
+  ///         )
+  ///         .tag(AppState.Tab.activity)
+  ///         SearchView(
+  ///           store: self.store.scope(state: \.search, action: AppAction.search)
+  ///         )
+  ///         .tag(AppState.Tab.search)
+  ///         ProfileView(
+  ///           store: self.store.scope(state: \.profile, action: AppAction.profile)
+  ///         )
+  ///         .tag(AppState.Tab.profile)
+  ///       }
+  ///     }
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// To read more about this performance technique, read the <doc:Performance> article.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A function that transforms store state into observable view state. All
+  ///   changes to the view state will cause the `WithViewStore` to re-compute its view.
+  ///   - fromViewAction: A function that transforms view actions into store action.
+  ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
+  ///     are equal, repeat view computations are removed,
+  ///   - content: A function that can generate content from a view store.
+  public init<State, Action>(
+    _ store: Store<State, Action>,
+    observe toViewState: @escaping (State) -> ViewState,
+    send fromViewAction: @escaping (ViewAction) -> Action,
+    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
+    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  ) {
+    self.init(
+      store: store.scope(state: toViewState, action: fromViewAction),
+      removeDuplicates: isDuplicate,
+      content: content,
+      file: file,
+      line: line
+    )
+  }
+
+  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
+  /// to compute views from state.
+  ///
+  /// ``WithViewStore`` will re-compute its body for _any_ change to the state it holds. Often the
+  /// ``Store`` that we want to observe holds onto a lot more state than is necessary to render a
+  /// view. It may hold onto the state of child features, or internal state for its logic.
+  ///
+  /// It can be important to transform the ``Store``'s state into something smaller for observation.
+  /// This will help minimize the number of times your view re-computes its body, and can even avoid
+  /// certain SwiftUI bugs that happen due to over-rendering.
+  ///
+  /// The way to do this is to use the `observe` argument of this initializer. It allows you to
+  /// turn the full state into a smaller data type, and only changes to that data type will trigger
+  /// a body re-computation.
+  ///
+  /// For example, if your application uses a tab view, then the root state may hold the state
+  /// for each tab as well as the currently selected tab:
+  ///
+  /// ```swift
+  /// struct AppState {
+  ///   var activity: ActivityState
+  ///   var search: SearchState
+  ///   var profile: ProfileState
+  ///   var selectedTab: Tab
+  ///   enum Tab { case activity, search, profile }
+  /// }
+  /// ```
+  ///
+  /// In order to construct a tab view you need to observe this state because changes to
+  /// `selectedTab` need to make SwiftUI update the visual state of the UI. However, you do not
+  /// need to observe changes to `activity`, `search` and `profile`. Those are only necessary for
+  /// those child features, and changes to that state should not cause our tab view to re-compute
+  /// itself.
+  ///
+  /// ```swift
+  /// struct AppView: View {
+  ///   let store: Store<AppState, AppAction>
+  ///
+  ///   var body: some View {
+  ///     WithViewStore(self.store, observe: \.selectedTab) { viewStore in
+  ///       TabView(selection: viewStore.binding(send: AppAction.tabSelected) {
+  ///         ActivityView(
+  ///           store: self.store.scope(state: \.activity, action: AppAction.activity)
+  ///         )
+  ///         .tag(AppState.Tab.activity)
+  ///         SearchView(
+  ///           store: self.store.scope(state: \.search, action: AppAction.search)
+  ///         )
+  ///         .tag(AppState.Tab.search)
+  ///         ProfileView(
+  ///           store: self.store.scope(state: \.profile, action: AppAction.profile)
+  ///         )
+  ///         .tag(AppState.Tab.profile)
+  ///       }
+  ///     }
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// To read more about this performance technique, read the <doc:Performance> article.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A function that transforms store state into observable view state. All
+  ///   changes to the view state will cause the `WithViewStore` to re-compute its view.
+  ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
+  ///     are equal, repeat view computations are removed,
+  ///   - content: A function that can generate content from a view store.
+  public init<State>(
+    _ store: Store<State, ViewAction>,
+    observe toViewState: @escaping (State) -> ViewState,
+    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
+    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  ) {
+    self.init(
+      store: store.scope(state: toViewState),
+      removeDuplicates: isDuplicate,
+      content: content,
+      file: file,
+      line: line
+    )
+  }
+
   /// Initializes a structure that transforms a store into an observable view store in order to
   /// compute views from store state.
   ///
   /// - Parameters:
   ///   - store: A store.
-  ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
-  ///     equal, repeat view computations are removed,
+  ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
+  ///     are equal, repeat view computations are removed,
   ///   - content: A function that can generate content from a view store.
+  @available(
+    iOS,
+    deprecated: 9999.0,
+    message: "Use 'init(_:observe:removeDuplicates:content:)' to make state observation explicit."
+  )
+  @available(
+    macOS,
+    deprecated: 9999.0,
+    message: "Use 'init(_:observe:removeDuplicates:content:)' to make state observation explicit."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999.0,
+    message: "Use 'init(_:observe:removeDuplicates:content:)' to make state observation explicit."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999.0,
+    message: "Use 'init(_:observe:removeDuplicates:content:)' to make state observation explicit."
+  )
   public init(
-    _ store: Store<State, Action>,
-    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
+    _ store: Store<ViewState, ViewAction>,
+    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
+    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
-    line: UInt = #line,
-    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
+    line: UInt = #line
   ) {
     self.init(
       store: store,
       removeDuplicates: isDuplicate,
+      content: content,
       file: file,
-      line: line,
-      content: content
+      line: line
     )
-  }
-
-  public var body: Content {
-    self._body
   }
 }
 
-extension WithViewStore where State: Equatable, Content: View {
+extension WithViewStore where ViewState: Equatable, Content: View {
+  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
+  /// to compute views from state.
+  ///
+  /// ``WithViewStore`` will re-compute its body for _any_ change to the state it holds. Often the
+  /// ``Store`` that we want to observe holds onto a lot more state than is necessary to render a
+  /// view. It may hold onto the state of child features, or internal state for its logic.
+  ///
+  /// It can be important to transform the ``Store``'s state into something smaller for observation.
+  /// This will help minimize the number of times your view re-computes its body, and can even avoid
+  /// certain SwiftUI bugs that happen due to over-rendering.
+  ///
+  /// The way to do this is to use the `observe` argument of this initializer. It allows you to
+  /// turn the full state into a smaller data type, and only changes to that data type will trigger
+  /// a body re-computation.
+  ///
+  /// For example, if your application uses a tab view, then the root state may hold the state
+  /// for each tab as well as the currently selected tab:
+  ///
+  /// ```swift
+  /// struct AppState {
+  ///   var activity: ActivityState
+  ///   var search: SearchState
+  ///   var profile: ProfileState
+  ///   var selectedTab: Tab
+  ///   enum Tab { case activity, search, profile }
+  /// }
+  /// ```
+  ///
+  /// In order to construct a tab view you need to observe this state because changes to
+  /// `selectedTab` need to make SwiftUI update the visual state of the UI. However, you do not
+  /// need to observe changes to `activity`, `search` and `profile`. Those are only necessary for
+  /// those child features, and changes to that state should not cause our tab view to re-compute
+  /// itself.
+  ///
+  /// ```swift
+  /// struct AppView: View {
+  ///   let store: Store<AppState, AppAction>
+  ///
+  ///   var body: some View {
+  ///     WithViewStore(self.store, observe: \.selectedTab) { viewStore in
+  ///       TabView(selection: viewStore.binding(send: AppAction.tabSelected) {
+  ///         ActivityView(
+  ///           store: self.store.scope(state: \.activity, action: AppAction.activity)
+  ///         )
+  ///         .tag(AppState.Tab.activity)
+  ///         SearchView(
+  ///           store: self.store.scope(state: \.search, action: AppAction.search)
+  ///         )
+  ///         .tag(AppState.Tab.search)
+  ///         ProfileView(
+  ///           store: self.store.scope(state: \.profile, action: AppAction.profile)
+  ///         )
+  ///         .tag(AppState.Tab.profile)
+  ///       }
+  ///     }
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// To read more about this performance technique, read the <doc:Performance> article.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A function that transforms store state into observable view state. All
+  ///   changes to the view state will cause the `WithViewStore` to re-compute its view.
+  ///   - fromViewAction: A function that transforms view actions into store action.
+  ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
+  ///     are equal, repeat view computations are removed,
+  ///   - content: A function that can generate content from a view store.
+  public init<State, Action>(
+    _ store: Store<State, Action>,
+    observe toViewState: @escaping (State) -> ViewState,
+    send fromViewAction: @escaping (ViewAction) -> Action,
+    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  ) {
+    self.init(
+      store: store.scope(state: toViewState, action: fromViewAction),
+      removeDuplicates: ==,
+      content: content,
+      file: file,
+      line: line
+    )
+  }
+
+  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
+  /// to compute views from state.
+  ///
+  /// ``WithViewStore`` will re-compute its body for _any_ change to the state it holds. Often the
+  /// ``Store`` that we want to observe holds onto a lot more state than is necessary to render a
+  /// view. It may hold onto the state of child features, or internal state for its logic.
+  ///
+  /// It can be important to transform the ``Store``'s state into something smaller for observation.
+  /// This will help minimize the number of times your view re-computes its body, and can even avoid
+  /// certain SwiftUI bugs that happen due to over-rendering.
+  ///
+  /// The way to do this is to use the `observe` argument of this initializer. It allows you to
+  /// turn the full state into a smaller data type, and only changes to that data type will trigger
+  /// a body re-computation.
+  ///
+  /// For example, if your application uses a tab view, then the root state may hold the state
+  /// for each tab as well as the currently selected tab:
+  ///
+  /// ```swift
+  /// struct AppState {
+  ///   var activity: ActivityState
+  ///   var search: SearchState
+  ///   var profile: ProfileState
+  ///   var selectedTab: Tab
+  ///   enum Tab { case activity, search, profile }
+  /// }
+  /// ```
+  ///
+  /// In order to construct a tab view you need to observe this state because changes to
+  /// `selectedTab` need to make SwiftUI update the visual state of the UI. However, you do not
+  /// need to observe changes to `activity`, `search` and `profile`. Those are only necessary for
+  /// those child features, and changes to that state should not cause our tab view to re-compute
+  /// itself.
+  ///
+  /// ```swift
+  /// struct AppView: View {
+  ///   let store: Store<AppState, AppAction>
+  ///
+  ///   var body: some View {
+  ///     WithViewStore(self.store, observe: \.selectedTab) { viewStore in
+  ///       TabView(selection: viewStore.binding(send: AppAction.tabSelected) {
+  ///         ActivityView(
+  ///           store: self.store.scope(state: \.activity, action: AppAction.activity)
+  ///         )
+  ///         .tag(AppState.Tab.activity)
+  ///         SearchView(
+  ///           store: self.store.scope(state: \.search, action: AppAction.search)
+  ///         )
+  ///         .tag(AppState.Tab.search)
+  ///         ProfileView(
+  ///           store: self.store.scope(state: \.profile, action: AppAction.profile)
+  ///         )
+  ///         .tag(AppState.Tab.profile)
+  ///       }
+  ///     }
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// To read more about this performance technique, read the <doc:Performance> article.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A function that transforms store state into observable view state. All
+  ///   changes to the view state will cause the `WithViewStore` to re-compute its view.
+  ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
+  ///     are equal, repeat view computations are removed,
+  ///   - content: A function that can generate content from a view store.
+  public init<State>(
+    _ store: Store<State, ViewAction>,
+    observe toViewState: @escaping (State) -> ViewState,
+    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  ) {
+    self.init(
+      store: store.scope(state: toViewState),
+      removeDuplicates: ==,
+      content: content,
+      file: file,
+      line: line
+    )
+  }
+
   /// Initializes a structure that transforms a store into an observable view store in order to
   /// compute views from equatable store state.
   ///
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
+  @available(
+    iOS,
+    deprecated: 9999.0,
+    message: "Use 'init(_:observe:content:)' to make state observation explicit."
+  )
+  @available(
+    macOS,
+    deprecated: 9999.0,
+    message: "Use 'init(_:observe:content:)' to make state observation explicit."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999.0,
+    message: "Use 'init(_:observe:content:)' to make state observation explicit."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999.0,
+    message: "Use 'init(_:observe:content:)' to make state observation explicit."
+  )
   public init(
-    _ store: Store<State, Action>,
+    _ store: Store<ViewState, ViewAction>,
+    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
-    line: UInt = #line,
-    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
+    line: UInt = #line
   ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+    self.init(store, removeDuplicates: ==, content: content, file: file, line: line)
   }
 }
 
-extension WithViewStore where State == Void, Content: View {
+extension WithViewStore where ViewState == Void, Content: View {
   /// Initializes a structure that transforms a store into an observable view store in order to
   /// compute views from void store state.
   ///
   /// - Parameters:
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
+  @available(
+    iOS,
+    deprecated: 9999.0,
+    message: "Use 'ViewStore(store).send(action)' instead of observing stateless stores."
+  )
+  @available(
+    macOS,
+    deprecated: 9999.0,
+    message: "Use 'ViewStore(store).send(action)' instead of observing stateless stores."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999.0,
+    message: "Use 'ViewStore(store).send(action)' instead of observing stateless stores."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999.0,
+    message: "Use 'ViewStore(store).send(action)' instead of observing stateless stores."
+  )
   public init(
-    _ store: Store<State, Action>,
+    _ store: Store<ViewState, ViewAction>,
+    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
-    line: UInt = #line,
-    @ViewBuilder content: @escaping (ViewStore<State, Action>) -> Content
+    line: UInt = #line
   ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+    self.init(store, removeDuplicates: ==, content: content, file: file, line: line)
   }
 }
 
-extension WithViewStore: DynamicViewContent where State: Collection, Content: DynamicViewContent {
-  public typealias Data = State
+extension WithViewStore: DynamicViewContent
+where
+  ViewState: Collection,
+  Content: DynamicViewContent
+{
+  public typealias Data = ViewState
 
-  public var data: State {
+  public var data: ViewState {
     self.viewStore.state
-  }
-}
-
-// MARK: - AccessibilityRotorContent
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension WithViewStore: AccessibilityRotorContent where Content: AccessibilityRotorContent {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute accessibility rotor content from store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store.
-  ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
-  ///     equal, repeat view computations are removed,
-  ///   - content: A function that can generate content from a view store.
-  public init(
-    _ store: Store<State, Action>,
-    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
-    self.init(
-      store: store,
-      removeDuplicates: isDuplicate,
-      file: file,
-      line: line,
-      content: content
-    )
-  }
-  public var body: some AccessibilityRotorContent {
-    self._body
-  }
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension WithViewStore where State: Equatable, Content: AccessibilityRotorContent {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute accessibility rotor content from equatable store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  public init(
-    _ store: Store<State, Action>,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
-  }
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension WithViewStore where State == Void, Content: AccessibilityRotorContent {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute accessibility rotor content from void store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  public init(
-    _ store: Store<State, Action>,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
-  }
-}
-
-// MARK: - Commands
-@available(iOS 14.0, macOS 11.0, *)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-extension WithViewStore: Commands where Content: Commands {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute commands from store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store.
-  ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
-  ///     equal, repeat view computations are removed,
-  ///   - content: A function that can generate content from a view store.
-  public init(
-    _ store: Store<State, Action>,
-    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
-    self.init(
-      store: store,
-      removeDuplicates: isDuplicate,
-      file: file,
-      line: line,
-      content: content
-    )
-  }
-  public var body: some Commands {
-    self._body
-  }
-}
-
-@available(iOS 14.0, macOS 11.0, *)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-extension WithViewStore where State: Equatable, Content: Commands {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute commands from equatable store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  public init(
-    _ store: Store<State, Action>,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
-  }
-}
-
-@available(iOS 14.0, macOS 11.0, *)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-extension WithViewStore where State == Void, Content: Commands {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute commands from void store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  public init(
-    _ store: Store<State, Action>,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @CommandsBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
-  }
-}
-
-// MARK: - Scene
-@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
-extension WithViewStore: Scene where Content: Scene {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute scenes from store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store.
-  ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
-  ///     equal, repeat view computations are removed,
-  ///   - content: A function that can generate content from a view store.
-  public init(
-    _ store: Store<State, Action>,
-    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
-    self.init(
-      store: store,
-      removeDuplicates: isDuplicate,
-      file: file,
-      line: line,
-      content: content
-    )
-  }
-
-  public var body: Content {
-    self._body
-  }
-}
-
-@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
-extension WithViewStore where State: Equatable, Content: Scene {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute scenes from equatable store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  public init(
-    _ store: Store<State, Action>,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
-  }
-}
-
-@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
-extension WithViewStore where State == Void, Content: Scene {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute scenes from void store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  public init(
-    _ store: Store<State, Action>,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @SceneBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
-  }
-}
-
-// MARK: - ToolbarContent
-@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
-extension WithViewStore: ToolbarContent where Content: ToolbarContent {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute toolbar content from store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store.
-  ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
-  ///     equal, repeat view computations are removed,
-  ///   - content: A function that can generate content from a view store.
-  public init(
-    _ store: Store<State, Action>,
-    removeDuplicates isDuplicate: @escaping (State, State) -> Bool,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
-    self.init(
-      store: store,
-      removeDuplicates: isDuplicate,
-      file: file,
-      line: line,
-      content: content
-    )
-  }
-  public var body: some ToolbarContent {
-    self._body
-  }
-}
-
-@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
-extension WithViewStore where State: Equatable, Content: ToolbarContent {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute toolbar content from equatable store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  public init(
-    _ store: Store<State, Action>,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
-  }
-}
-
-@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
-extension WithViewStore where State == Void, Content: ToolbarContent {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute toolbar content from void store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  public init(
-    _ store: Store<State, Action>,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @ToolbarContentBuilder content: @escaping (ViewStore<State, Action>) -> Content
-  ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
   }
 }

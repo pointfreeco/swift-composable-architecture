@@ -136,7 +136,7 @@ struct DownloadComponentView: View {
   let store: StoreOf<DownloadComponent>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       Button {
         viewStore.send(.buttonTapped)
       } label: {

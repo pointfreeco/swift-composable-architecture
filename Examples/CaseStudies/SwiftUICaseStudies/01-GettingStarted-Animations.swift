@@ -90,7 +90,7 @@ struct AnimationsView: View {
   let store: StoreOf<Animations>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       VStack(alignment: .leading) {
         Text(template: readMe, .body)
           .padding()

@@ -33,7 +33,7 @@ public struct NewGameView: View {
   }
 
   public var body: some View {
-    WithViewStore(self.store.scope(state: ViewState.init, action: NewGame.Action.init)) {
+    WithViewStore(self.store, observe: ViewState.init, send: NewGame.Action.init) {
       viewStore in
       Form {
         Section {

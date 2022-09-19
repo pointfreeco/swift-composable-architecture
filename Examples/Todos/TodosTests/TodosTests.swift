@@ -26,6 +26,21 @@ final class TodosTests: XCTestCase {
         at: 0
       )
     }
+
+    await store.send(.addTodoButtonTapped) {
+      $0.todos = [
+        Todo.State(
+          description: "",
+          id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+          isComplete: false
+        ),
+        Todo.State(
+          description: "",
+          id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+          isComplete: false
+        ),
+      ]
+    }
   }
 
   func testEditTodo() async {

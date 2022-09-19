@@ -53,7 +53,7 @@ extension DependencyValues {
     set { self[ScreenshotsKeys.self] = newValue }
   }
 
-  private enum ScreenshotsKeys: LiveDependencyKey {
+  private enum ScreenshotsKeys: DependencyKey {
     static let liveValue: @Sendable () async -> AsyncStream<Void> = {
       await AsyncStream(
         NotificationCenter.default
@@ -73,7 +73,7 @@ struct LongLivingEffectsView: View {
   let store: StoreOf<LongLivingEffects>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
         Section {
           AboutView(readMe: readMe)

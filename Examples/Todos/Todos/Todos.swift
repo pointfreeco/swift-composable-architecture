@@ -1,5 +1,5 @@
 import ComposableArchitecture
-import SwiftUI
+@preconcurrency import SwiftUI
 
 struct Todos: ReducerProtocol {
   struct State: Equatable {
@@ -84,8 +84,11 @@ struct Todos: ReducerProtocol {
         return .none
 
       case .todo(id: _, action: .checkBoxToggled):
-        return .task { .sortCompletedTodos }
-          .debounce(id: TodoCompletionID.self, for: 1, scheduler: self.mainQueue.animation())
+        return .run { send in
+          try await self.mainQueue.sleep(for: 1)
+          await send(.sortCompletedTodos, animation: .default)
+        }
+        .cancellable(id: TodoCompletionID.self, cancelInFlight: true)
 
       case .todo:
         return .none

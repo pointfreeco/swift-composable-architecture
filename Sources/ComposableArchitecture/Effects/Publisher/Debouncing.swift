@@ -24,18 +24,47 @@ extension Effect {
   ///   - scheduler: The scheduler you want to deliver the debounced output to.
   ///   - options: Scheduler options that customize the effect's delivery of elements.
   /// - Returns: An effect that publishes events only after a specified time elapses.
+  @available(
+    iOS,
+    deprecated: 9999.0,
+    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'Effect.run', instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999.0,
+    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'Effect.run', instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999.0,
+    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'Effect.run', instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999.0,
+    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'Effect.run', instead."
+  )
   public func debounce<S: Scheduler>(
     id: AnyHashable,
     for dueTime: S.SchedulerTimeType.Stride,
     scheduler: S,
     options: S.SchedulerOptions? = nil
   ) -> Self {
-    Just(())
-      .setFailureType(to: Failure.self)
-      .delay(for: dueTime, scheduler: scheduler, options: options)
-      .flatMap { self.receive(on: scheduler) }
-      .eraseToEffect()
+    switch self.operation {
+    case .none:
+      return .none
+    case .publisher, .run:
+      return Self(
+        operation: .publisher(
+          Just(())
+            .setFailureType(to: Failure.self)
+            .delay(for: dueTime, scheduler: scheduler, options: options)
+            .flatMap { self.publisher.receive(on: scheduler) }
+            .eraseToAnyPublisher()
+        )
+      )
       .cancellable(id: id, cancelInFlight: true)
+    }
   }
 
   /// Turns an effect into one that can be debounced.

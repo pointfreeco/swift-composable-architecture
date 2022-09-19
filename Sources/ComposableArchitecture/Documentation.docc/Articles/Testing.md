@@ -503,11 +503,13 @@ struct SpeechClient {
 We can construct an instance of this client that stubs each endpoint as a function that simply
 calls `XCTFail` under the hood:
 
+<!-- TODO: Explain more about (test) dependency keys and how they related to unimplemented -->
+
 ```swift
 import XCTestDynamicOverlay
 
-extension SpeechClient {
-  static let unimplemented = Self(
+extension SpeechClient: TestDependencyKey {
+  static let testValue = Self(
     finishTask: XCTUnimplemented("\(Self.self).finishTask"),
     requestAuthorization: XCTUnimplemented("\(Self.self).requestAuthorization"),
     startTask: XCTUnimplemented("\(Self.self).recognitionTask")

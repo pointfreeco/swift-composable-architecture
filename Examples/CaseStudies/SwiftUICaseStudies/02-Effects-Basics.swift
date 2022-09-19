@@ -95,7 +95,7 @@ struct EffectsBasicsView: View {
   let store: StoreOf<EffectsBasics>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
         Section {
           AboutView(readMe: readMe)

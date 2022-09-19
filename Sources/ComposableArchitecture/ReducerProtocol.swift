@@ -58,10 +58,10 @@
   /// }
   /// ```
   public protocol ReducerProtocol<State, Action> {
-    /// A type that holds the current state of the application.
+    /// A type that holds the current state of the reducer.
     associatedtype State
 
-    /// A type that holds all possible actions that cause the ``State`` of the application to change
+    /// A type that holds all possible actions that cause the ``State`` of the reducer to change
     /// and/or kick off a side ``Effect`` that can communicate with the outside world.
     associatedtype Action
 
@@ -78,16 +78,16 @@
     /// infers this type to be `Never`.
     typealias Body = _Body
 
-    /// Evolves the current state of an application to the next state.
+    /// Evolves the current state of the reducer to the next state.
     ///
     /// Implement this requirement for "primitive" reducers, or reducers that work on leaf node
     /// features. To define a reducer by combining the logic of other reducers together, implement
     /// the ``body-swift.property-7foai`` requirement instead.
     ///
     /// - Parameters:
-    ///   - state: The current state of the application.
-    ///   - action: An action that can cause the state of the application to change, and/or kick off
-    ///     a side effect that can communicate with the outside world.
+    ///   - state: The current state of the reducer.
+    ///   - action: An action that can cause the state of the reducer to change, and/or kick off a
+    ///     side effect that can communicate with the outside world.
     /// - Returns: An effect that can communicate with the outside world and feed actions back into
     ///   the system.
     func reduce(into state: inout State, action: Action) -> Effect<Action, Never>
@@ -167,10 +167,10 @@
   /// }
   /// ```
   public protocol ReducerProtocol {
-    /// A type that holds the current state of the application.
+    /// A type that holds the current state of the reducer.
     associatedtype State
 
-    /// A type that holds all possible actions that cause the ``State`` of the application to change
+    /// A type that holds all possible actions that cause the ``State`` of the reducer to change
     /// and/or kick off a side ``Effect`` that can communicate with the outside world.
     associatedtype Action
 
@@ -187,15 +187,15 @@
     /// infers this type to be `Never`.
     typealias Body = _Body
 
-    /// Evolves the current state of an application to the next state.
+    /// Evolves the current state of an reducer to the next state.
     ///
     /// Implement this requirement for "primitive" reducers, or reducers that work on leaf node
     /// features. To define a reducer by combining the logic of other reducers together, implement
     /// the ``body-swift.property-7foai`` requirement instead.
     ///
     /// - Parameters:
-    ///   - state: The current state of the application.
-    ///   - action: An action that can cause the state of the application to change, and/or kick off
+    ///   - state: The current state of the reducer.
+    ///   - action: An action that can cause the state of the reducer to change, and/or kick off
     ///     a side effect that can communicate with the outside world.
     /// - Returns: An effect that can communicate with the outside world and feed actions back into
     ///   the system.

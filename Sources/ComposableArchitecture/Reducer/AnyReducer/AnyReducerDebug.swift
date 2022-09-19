@@ -1,11 +1,11 @@
 import CasePaths
 import Dispatch
 
-@available(iOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead.")
-@available(macOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead.")
-@available(tvOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead.")
-@available(watchOS, deprecated: 9999.0, message: "Use a 'ReducerProtocol' conformance, instead.")
 extension AnyReducer {
+  /// This API has been soft-deprecated in favor of
+  /// ``ReducerProtocol/debug(_:state:action:actionFormat:to:)``. Read <doc:ReducerProtocols>
+  /// for more information.
+  ///
   /// Prints debug messages describing all received actions and state mutations.
   ///
   /// Printing is only done in debug (`#if DEBUG`) builds.
@@ -17,6 +17,34 @@ extension AnyReducer {
   ///     the environment and returns a default ``DebugEnvironment`` that uses Swift's `print`
   ///     function and a background queue.
   /// - Returns: A reducer that prints debug messages for all received actions.
+  @available(
+    iOS,
+    deprecated: 9999.0,
+    message: """
+      This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+      """
+  )
+  @available(
+    macOS,
+    deprecated: 9999.0,
+    message: """
+      This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+      """
+  )
+  @available(
+    tvOS,
+    deprecated: 9999.0,
+    message: """
+      This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+      """
+  )
+  @available(
+    watchOS,
+    deprecated: 9999.0,
+    message: """
+      This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+      """
+  )
   public func debug(
     _ prefix: String = "",
     actionFormat: ActionFormat = .prettyPrint,
@@ -33,6 +61,12 @@ extension AnyReducer {
     )
   }
 
+  // TODO: Add protocol support for this API.
+
+  /// The API that used this type has been soft-deprecated in favor of
+  /// ``ReducerProtocol/debug(_:state:action:actionFormat:to:)`` Read <doc:ReducerProtocols> for more
+  /// information.
+  ///
   /// Prints debug messages describing all received actions.
   ///
   /// Printing is only done in debug (`#if DEBUG`) builds.
@@ -44,6 +78,34 @@ extension AnyReducer {
   ///     the environment and returns a default ``DebugEnvironment`` that uses Swift's `print`
   ///     function and a background queue.
   /// - Returns: A reducer that prints debug messages for all received actions.
+  @available(
+    iOS,
+    deprecated: 9999.0,
+    message: """
+      This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+      """
+  )
+  @available(
+    macOS,
+    deprecated: 9999.0,
+    message: """
+      This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+      """
+  )
+  @available(
+    tvOS,
+    deprecated: 9999.0,
+    message: """
+      This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+      """
+  )
+  @available(
+    watchOS,
+    deprecated: 9999.0,
+    message: """
+      This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+      """
+  )
   public func debugActions(
     _ prefix: String = "",
     actionFormat: ActionFormat = .prettyPrint,
@@ -60,6 +122,10 @@ extension AnyReducer {
     )
   }
 
+  /// This API has been soft-deprecated in favor of
+  /// ``ReducerProtocol/debug(_:state:action:actionFormat:to:)``. Read <doc:ReducerProtocols>
+  /// for more information.
+  ///
   /// Prints debug messages describing all received actions and state mutations.
   ///
   /// Printing is only done in debug (`#if DEBUG`) builds.
@@ -73,6 +139,34 @@ extension AnyReducer {
   ///     the environment and returns a default ``DebugEnvironment`` that uses Swift's `print`
   ///     function and a background queue.
   /// - Returns: A reducer that prints debug messages for all received actions.
+  @available(
+    iOS,
+    deprecated: 9999.0,
+    message: """
+      This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+      """
+  )
+  @available(
+    macOS,
+    deprecated: 9999.0,
+    message: """
+      This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+      """
+  )
+  @available(
+    tvOS,
+    deprecated: 9999.0,
+    message: """
+      This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+      """
+  )
+  @available(
+    watchOS,
+    deprecated: 9999.0,
+    message: """
+      This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+      """
+  )
   public func debug<DebugState, DebugAction>(
     _ prefix: String = "",
     state toDebugState: @escaping (State) -> DebugState,
@@ -89,30 +183,38 @@ extension AnyReducer {
         guard let debugAction = toDebugAction.extract(from: action) else { return effects }
         let nextState = toDebugState(state)
         let debugEnvironment = toDebugEnvironment(environment)
-        return .merge(
-          .fireAndForget {
-            debugEnvironment.queue.async {
-              var actionOutput = ""
-              if actionFormat == .prettyPrint {
-                customDump(debugAction, to: &actionOutput, indent: 2)
-              } else {
-                actionOutput.write(debugCaseOutput(debugAction).indent(by: 2))
-              }
-              let stateOutput =
-                DebugState.self == Void.self
-                ? ""
-                : diff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
-              debugEnvironment.printer(
-                """
-                \(prefix.isEmpty ? "" : "\(prefix): ")received action:
-                \(actionOutput)
-                \(stateOutput)
-                """
-              )
+
+        @Sendable
+        func print() {
+          debugEnvironment.queue.async {
+            var actionOutput = ""
+            if actionFormat == .prettyPrint {
+              customDump(debugAction, to: &actionOutput, indent: 2)
+            } else {
+              actionOutput.write(debugCaseOutput(debugAction).indent(by: 2))
             }
-          },
-          effects
-        )
+            let stateOutput =
+              DebugState.self == Void.self
+              ? ""
+              : diff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
+            debugEnvironment.printer(
+              """
+              \(prefix.isEmpty ? "" : "\(prefix): ")received action:
+              \(actionOutput)
+              \(stateOutput)
+              """
+            )
+          }
+        }
+
+        switch effects.operation {
+        case .none:
+          return .fireAndForget { print() }
+        case .publisher:
+          return .fireAndForget { print() }.merge(with: effects)
+        case .run:
+          return .fireAndForget { () async in print() }.merge(with: effects)
+        }
       }
     #else
       return self
@@ -120,26 +222,92 @@ extension AnyReducer {
   }
 }
 
-/// An environment for debug-printing reducers.
+/// Determines how the string description of an action should be printed when using the
+/// ``ReducerProtocol/debug(_:state:action:actionFormat:to:)`` higher-order reducer.
 @available(
   iOS,
   deprecated: 9999.0,
-  message: "Call 'debug()' on a 'ReducerProtocol' conformance, instead."
+  message: """
+    This API that used this type has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+    """
 )
 @available(
   macOS,
   deprecated: 9999.0,
-  message: "Call 'debug()' on a 'ReducerProtocol' conformance, instead."
+  message: """
+    This API that used this type has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+    """
 )
 @available(
   tvOS,
   deprecated: 9999.0,
-  message: "Call 'debug()' on a 'ReducerProtocol' conformance, instead."
+  message: """
+    This API that used this type has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+    """
 )
 @available(
   watchOS,
   deprecated: 9999.0,
-  message: "Call 'debug()' on a 'ReducerProtocol' conformance, instead."
+  message: """
+    This API that used this type has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+    """
+)
+public enum ActionFormat: Sendable {
+  /// Prints the action in a single line by only specifying the labels of the associated values:
+  ///
+  /// ```swift
+  /// Action.screenA(.row(index:, action: .textChanged(query:)))
+  /// ```
+  case labelsOnly
+
+  /// Prints the action in a multiline, pretty-printed format, including all the labels of
+  /// any associated values, as well as the data held in the associated values:
+  ///
+  /// ```swift
+  /// Action.screenA(
+  ///   ScreenA.row(
+  ///     index: 1,
+  ///     action: RowAction.textChanged(
+  ///       query: "Hi"
+  ///     )
+  ///   )
+  /// )
+  /// ```
+  case prettyPrint
+}
+
+/// The API that used this type has been soft-deprecated in favor of
+/// ``ReducerProtocol/debug(_:state:action:actionFormat:to:)`` Read <doc:ReducerProtocols> for more
+/// information.
+///
+/// An environment for debug-printing reducers.
+@available(
+  iOS,
+  deprecated: 9999.0,
+  message: """
+    This API that used this type has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+    """
+)
+@available(
+  macOS,
+  deprecated: 9999.0,
+  message: """
+    This API that used this type has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+    """
+)
+@available(
+  tvOS,
+  deprecated: 9999.0,
+  message: """
+    This API that used this type has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+    """
+)
+@available(
+  watchOS,
+  deprecated: 9999.0,
+  message: """
+    This API that used this type has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+    """
 )
 public struct DebugEnvironment {
   public var printer: (String) -> Void

@@ -24,7 +24,7 @@ import XCTestDynamicOverlay
     /// ```swift
     /// let store = TestStore(
     ///   initialState: MyFeature.State()
-    ///   reducer: My.Feature()
+    ///   reducer: MyFeature()
     /// )
     ///
     /// store.dependencies.date.now = Date(timeIntervalSince1970: 0)
@@ -34,7 +34,7 @@ import XCTestDynamicOverlay
       set { self[DateGeneratorKey.self] = newValue }
     }
 
-    private enum DateGeneratorKey: LiveDependencyKey {
+    private enum DateGeneratorKey: DependencyKey {
       static let liveValue: DateGenerator = .live
       static let testValue: DateGenerator = .unimplemented
     }

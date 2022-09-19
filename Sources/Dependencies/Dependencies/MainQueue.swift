@@ -1,5 +1,6 @@
 #if canImport(Combine)
   import CombineSchedulers
+  import Foundation
 
   extension DependencyValues {
     /// The "main" queue.
@@ -70,7 +71,7 @@
       set { self[MainQueueKey.self] = newValue }
     }
 
-    private enum MainQueueKey: LiveDependencyKey {
+    private enum MainQueueKey: DependencyKey {
       static let liveValue = AnySchedulerOf<DispatchQueue>.main
       static let testValue = AnySchedulerOf<DispatchQueue>
         .unimplemented(#"@Dependency(\.mainQueue)"#)

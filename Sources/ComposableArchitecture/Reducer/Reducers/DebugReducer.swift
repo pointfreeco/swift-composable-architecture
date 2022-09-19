@@ -3,151 +3,87 @@ extension ReducerProtocol {
   ///
   /// > Note: Printing is only done in `DEBUG` configurations.
   ///
-  /// - Parameters:
-  ///   - prefix: A string that will prefix all debug messages.
-  ///   - actionFormat: The format used to print actions.
-  ///   - logger: A function that is used to print debug messages.
   /// - Returns: A reducer that prints debug messages for all received actions.
   @inlinable
-  public func debug(
-    _ prefix: String = "",
-    actionFormat: ActionFormat = .prettyPrint,
-    to logger: @escaping @Sendable (String) async -> Void = { print($0) }
-  ) -> _DebugReducer<Self, State, Action> {
-    self.debug(
-      prefix,
-      state: { $0 },
-      action: { $0 },
-      actionFormat: actionFormat,
-      to: logger
-    )
+  public func debug() -> _DebugReducer<Self, CustomDumpDebugStrategy> {
+    _DebugReducer(base: self, strategy: .customDump)
   }
 
-  /// Enhances a reducer with debug logging of received actions and state mutations.
+  /// Enhances a reducer with debug logging of received actions and state mutations for the given
+  /// ``DebugStrategy``.
   ///
   /// > Note: Printing is only done in `DEBUG` configurations.
   ///
-  /// - Parameters:
-  ///   - prefix: A string with which to prefix all debug messages.
-  ///   - toChildState: A function that filters state to be printed.
-  ///   - toChildAction: A case path that filters actions to be printed.
-  ///   - actionFormat: The format used to print actions.
-  ///   - logger: A function that is used to print debug messages.
-  /// - Returns: A reducer that prints debug messages for all received, filtered actions.
+  /// - Parameter strategy: A strategy for printing debug messages.
+  /// - Returns: A reducer that prints debug messages for all received actions.
   @inlinable
-  public func debug<ChildState, ChildAction>(
-    _ prefix: String = "",
-    state toChildState: @escaping (State) -> ChildState,
-    action toChildAction: @escaping (Action) -> ChildAction?,
-    actionFormat: ActionFormat = .prettyPrint,
-    to logger: @escaping @Sendable (String) async -> Void = { print($0) }
-  ) -> _DebugReducer<Self, ChildState, ChildAction> {
-    .init(
-      base: self,
-      prefix: prefix,
-      state: toChildState,
-      action: toChildAction,
-      actionFormat: actionFormat,
-      logger: logger
-    )
+  public func debug<Strategy: DebugStrategy>(
+    _ strategy: Strategy?
+  ) -> ReducerBuilder<State, Action>._Conditional<_DebugReducer<Self, Strategy>, Self> {
+    strategy.map { .first(_DebugReducer(base: self, strategy: $0)) } ?? .second(self)
   }
 }
 
-/// Determines how the string description of an action should be printed when using the
-/// ``ReducerProtocol/debug(_:state:action:actionFormat:to:)`` higher-order reducer.
-public enum ActionFormat: Sendable {
-  /// Prints the action in a single line by only specifying the labels of the associated values:
-  ///
-  /// ```swift
-  /// Action.screenA(.row(index:, action: .textChanged(query:)))
-  /// ```
-  case labelsOnly
-
-  /// Prints the action in a multiline, pretty-printed format, including all the labels of
-  /// any associated values, as well as the data held in the associated values:
-  ///
-  /// ```swift
-  /// Action.screenA(
-  ///   ScreenA.row(
-  ///     index: 1,
-  ///     action: RowAction.textChanged(
-  ///       query: "Hi"
-  ///     )
-  ///   )
-  /// )
-  /// ```
-  case prettyPrint
+public protocol DebugStrategy {
+  func debug<Action, State>(receivedAction: Action, oldState: State, newState: State)
 }
 
-public struct _DebugReducer<Base: ReducerProtocol, DebugState, DebugAction>: ReducerProtocol {
+extension DebugStrategy where Self == CustomDumpDebugStrategy {
+  public static var customDump: Self { Self() }
+}
+
+public struct CustomDumpDebugStrategy: DebugStrategy {
+  public func debug<Action, State>(receivedAction: Action, oldState: State, newState: State) {
+    var target = ""
+    target.write("received action:\n")
+    CustomDump.customDump(receivedAction, to: &target, indent: 2)
+    target.write("\n")
+    target.write(diff(oldState, newState).map { "\($0)\n" } ?? "  (No state changes)\n")
+    print(target)
+  }
+}
+
+extension DebugStrategy where Self == ActionLabelsDebugStrategy {
+  public static var actionLabels: Self { Self() }
+}
+
+public struct ActionLabelsDebugStrategy: DebugStrategy {
+  public func debug<Action, State>(receivedAction: Action, oldState: State, newState: State) {
+    print("received action: \(debugCaseOutput(receivedAction))")
+  }
+}
+
+public struct _DebugReducer<Base: ReducerProtocol, Strategy: DebugStrategy>: ReducerProtocol {
   @usableFromInline
   let base: Base
 
   @usableFromInline
-  let prefix: String
+  let strategy: Strategy
 
-  @usableFromInline
-  let toDebugState: (State) -> DebugState
-
-  @usableFromInline
-  let toDebugAction: (Action) -> DebugAction?
-
-  @usableFromInline
-  let actionFormat: ActionFormat
-
-  @usableFromInline
-  let logger: @Sendable (String) async -> Void
-
-  @usableFromInline
-  init(
-    base: Base,
-    prefix: String,
-    state toDebugState: @escaping (State) -> DebugState,
-    action toDebugAction: @escaping (Action) -> DebugAction?,
-    actionFormat: ActionFormat,
-    logger: @escaping @Sendable (String) async -> Void
-  ) {
+  @inlinable
+  init(base: Base, strategy: Strategy) {
     self.base = base
-    self.prefix = prefix
-    self.toDebugState = toDebugState
-    self.toDebugAction = toDebugAction
-    self.actionFormat = actionFormat
-    self.logger = logger
+    self.strategy = strategy
   }
+
+  @usableFromInline
+  @Dependency(\.context) var context
 
   @inlinable
   public func reduce(
     into state: inout Base.State, action: Base.Action
   ) -> Effect<Base.Action, Never> {
     #if DEBUG
-      let previousState = self.toDebugState(state)
-      let effects = self.base.reduce(into: &state, action: action)
-      guard let debugAction = self.toDebugAction(action) else { return effects }
-      let nextState = self.toDebugState(state)
-      return .merge(
-        .fireAndForget { [actionFormat] in
-          var actionOutput = ""
-          if actionFormat == .prettyPrint {
-            customDump(debugAction, to: &actionOutput, indent: 2)
-          } else {
-            actionOutput.write(debugCaseOutput(debugAction).indent(by: 2))
+      if self.context != .test {
+        let oldState = state
+        let effects = self.base.reduce(into: &state, action: action)
+        return effects.merge(
+          with: .fireAndForget { [newState = state] in
+            self.strategy.debug(receivedAction: action, oldState: oldState, newState: newState)
           }
-          let stateOutput =
-          DebugState.self == Void.self
-          ? ""
-          : diff(previousState, nextState).map { "\($0)\n" } ?? "  (No state changes)\n"
-          await self.logger(
-            """
-            \(self.prefix.isEmpty ? "" : "\(self.prefix): ")received action:
-            \(actionOutput)
-            \(stateOutput)
-            """
-          )
-        },
-        effects
-      )
-    #else
-      return self.base.reduce(into: &state, action: action)
+        )
+      }
     #endif
+    return self.base.reduce(into: &state, action: action)
   }
 }

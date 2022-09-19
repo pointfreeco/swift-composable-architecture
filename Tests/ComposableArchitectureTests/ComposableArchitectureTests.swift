@@ -124,11 +124,7 @@ final class ComposableArchitectureTests: XCTestCase {
       case response(Int)
     }
 
-    struct Environment {
-      let fetch: (Int) async -> Int
-    }
-
-    let reducer = AnyReducer<Int, Action, Environment> { state, action, environment in
+    let reducer = Reducer<Int, Action, Void> { state, action, _ in
       enum CancelID {}
 
       switch action {
@@ -139,7 +135,7 @@ final class ComposableArchitectureTests: XCTestCase {
         state += 1
         return .task { [state] in
           try await mainQueue.sleep(for: .seconds(1))
-          return .response(await environment.fetch(state))
+          return .response(state * state)
         }
         .cancellable(id: CancelID.self)
 
@@ -152,9 +148,7 @@ final class ComposableArchitectureTests: XCTestCase {
     let store = TestStore(
       initialState: 0,
       reducer: reducer,
-      environment: Environment(
-        fetch: { value in value * value }
-      )
+      environment: ()
     )
 
     await store.send(.incr) { $0 = 1 }
@@ -163,5 +157,6 @@ final class ComposableArchitectureTests: XCTestCase {
 
     await store.send(.incr) { $0 = 2 }
     await store.send(.cancel)
+    await store.finish()
   }
 }

@@ -36,7 +36,7 @@ public struct _DependencyKeyWritingReducer<Base: ReducerProtocol>: ReducerProtoc
   @usableFromInline
   let update: (inout DependencyValues) -> Void
 
-  @usableFromInline
+  @inlinable
   init(base: Base, update: @escaping (inout DependencyValues) -> Void) {
     self.base = base
     self.update = update
@@ -46,9 +46,9 @@ public struct _DependencyKeyWritingReducer<Base: ReducerProtocol>: ReducerProtoc
   public func reduce(
     into state: inout Base.State, action: Base.Action
   ) -> Effect<Base.Action, Never> {
-    var values = DependencyValues.current
-    self.update(&values)
-    return DependencyValues.$current.withValue(values) {
+    return DependencyValues.withValues {
+      self.update(&$0)
+    } operation: {
       self.base.reduce(into: &state, action: action)
     }
   }

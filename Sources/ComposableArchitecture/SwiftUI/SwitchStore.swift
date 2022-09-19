@@ -6,7 +6,7 @@ import SwiftUI
 /// user is logged-in or not:
 ///
 /// ```swift
-/// enum AppState {
+/// enum State {
 ///   case loggedIn(LoggedInState)
 ///   case loggedOut(LoggedOutState)
 /// }
@@ -17,14 +17,14 @@ import SwiftUI
 ///
 /// ```swift
 /// struct AppView: View {
-///   let store: Store<AppState, AppAction>
+///   let store: StoreOf<App>
 ///
 ///   var body: some View {
 ///     SwitchStore(self.store) {
-///       CaseLet(state: /AppState.loggedIn, action: AppAction.loggedIn) { loggedInStore in
+///       CaseLet(state: /App.State.loggedIn, action: App.Action.loggedIn) { loggedInStore in
 ///         LoggedInView(store: loggedInStore)
 ///       }
-///       CaseLet(state: /AppState.loggedOut, action: AppAction.loggedOut) { loggedOutStore in
+///       CaseLet(state: /App.State.loggedOut, action: App.Action.loggedOut) { loggedOutStore in
 ///         LoggedOutView(store: loggedOutStore)
 ///       }
 ///     }

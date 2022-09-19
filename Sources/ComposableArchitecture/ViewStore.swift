@@ -1,17 +1,17 @@
 import Combine
 import SwiftUI
 
-/// A ``ViewStore`` is an object that can observe state changes and send actions. They are most
-/// commonly used in views, such as SwiftUI views, UIView or UIViewController, but they can be
-/// used anywhere it makes sense to observe state and send actions.
+/// A `ViewStore` is an object that can observe state changes and send actions. They are most
+/// commonly used in views, such as SwiftUI views, UIView or UIViewController, but they can be used
+/// anywhere it makes sense to observe state or send actions.
 ///
-/// In SwiftUI applications, a ``ViewStore`` is accessed most commonly using the ``WithViewStore``
-/// view. It can be initialized with a store and a closure that is handed a view store and must
-/// return a view to be rendered:
+/// In SwiftUI applications, a `ViewStore` is accessed most commonly using the ``WithViewStore``
+/// view. It can be initialized with a store and a closure that is handed a view store and returns a
+/// view:
 ///
 /// ```swift
 /// var body: some View {
-///   WithViewStore(self.store) { viewStore in
+///   WithViewStore(self.store, observe: { $0 }) { viewStore in
 ///     VStack {
 ///       Text("Current count: \(viewStore.count)")
 ///       Button("Increment") { viewStore.send(.incrementButtonTapped) }
@@ -20,12 +20,24 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// In UIKit applications a ``ViewStore`` can be created from a ``Store`` and then subscribed to for
+/// View stores can also be observed directly by views, scenes, commands, and other contexts that
+/// support the `@ObservedObject` property wrapper:
+///
+/// ```swift
+/// @ObservedObject var viewStore: ViewStore<State, Action>
+/// ```
+///
+/// > Tip: If you experience compile-time issues with views that use ``WithViewStore``, try
+/// > observing the view store directly using the `@ObservedObject` property wrapper, instead, which
+/// > is easier on the compiler.
+///
+/// In UIKit applications a `ViewStore` can be created from a ``Store`` and then subscribed to for
 /// state updates:
 ///
 /// ```swift
 /// let store: Store<State, Action>
 /// let viewStore: ViewStore<State, Action>
+/// private var cancellables: Set<AnyCancellable> = []
 ///
 /// init(store: Store<State, Action>) {
 ///   self.store = store
@@ -45,7 +57,7 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// > Important: The ``ViewStore`` class is not thread-safe, and all interactions with it (and the
+/// > Important: The `ViewStore` class is not thread-safe, and all interactions with it (and the
 /// > store it was derived from) must happen on the same thread. Further, for SwiftUI applications,
 /// > all interactions must happen on the _main_ thread. See the documentation of the ``Store``
 /// > class for more information as to why this decision was made.
@@ -71,7 +83,6 @@ public final class ViewStore<State, Action>: ObservableObject {
   ) {
     self._send = { store.send($0) }
     self._state = CurrentValueRelay(store.state.value)
-
     self.viewCancellable = store.state
       .removeDuplicates(by: isDuplicate)
       .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
@@ -214,7 +225,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///   let store: Store<State, Action>
   ///
   ///   var body: some View {
-  ///     WithViewStore(self.store) { viewStore in
+  ///     WithViewStore(self.store, observe: { $0 }) { viewStore in
   ///       List {
   ///         if let response = viewStore.response {
   ///           Text(response)
@@ -239,9 +250,9 @@ public final class ViewStore<State, Action>: ObservableObject {
   public func send(_ action: Action, while predicate: @escaping (State) -> Bool) async {
     let task = self.send(action)
     await withTaskCancellationHandler {
-      task.rawValue?.cancel()
-    } operation: {
       await self.yield(while: predicate)
+    } onCancel: {
+      task.rawValue?.cancel()
     }
   }
 
@@ -261,9 +272,9 @@ public final class ViewStore<State, Action>: ObservableObject {
   ) async {
     let task = withAnimation(animation) { self.send(action) }
     await withTaskCancellationHandler {
-      task.rawValue?.cancel()
-    } operation: {
       await self.yield(while: predicate)
+    } onCancel: {
+      task.rawValue?.cancel()
     }
   }
 
@@ -282,8 +293,6 @@ public final class ViewStore<State, Action>: ObservableObject {
     } else {
       let cancellable = Box<AnyCancellable?>(wrappedValue: nil)
       try? await withTaskCancellationHandler {
-        cancellable.wrappedValue?.cancel()
-      } operation: {
         try Task.checkCancellation()
         try await withUnsafeThrowingContinuation {
           (continuation: UnsafeContinuation<Void, Error>) in
@@ -299,6 +308,8 @@ public final class ViewStore<State, Action>: ObservableObject {
               _ = cancellable
             }
         }
+      } onCancel: {
+        cancellable.wrappedValue?.cancel()
       }
     }
   }

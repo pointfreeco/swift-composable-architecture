@@ -2,12 +2,8 @@ import AuthenticationClient
 import Dependencies
 import Foundation
 
-extension DependencyValues.AuthenticationClientKey: LiveDependencyKey {
-  public static let liveValue = AuthenticationClient.live
-}
-
-extension AuthenticationClient {
-  public static let live = AuthenticationClient(
+extension AuthenticationClient: DependencyKey {
+  public static let liveValue = Self(
     login: { request in
       guard request.email.contains("@") && request.password == "password"
       else { throw AuthenticationError.invalidUserPassword }

@@ -6,12 +6,14 @@
 /// Useful for grouping reducers together and applying reducer modifiers to the result.
 ///
 /// ```swift
-/// CombineReducers {
-///   ReducerA()
-///   ReducerB()
-///   ReducerC()
+/// var body: some ReducerProtocol<State, Action> {
+///   CombineReducers {
+///     ReducerA()
+///     ReducerB()
+///     ReducerC()
+///   }
+///   .ifLet(state: \.child, action: /Action.child)
 /// }
-/// .ifLet(state: \.child, action: /Action.child)
 /// ```
 public struct CombineReducers<Reducers: ReducerProtocol>: ReducerProtocol {
   @usableFromInline
@@ -21,10 +23,9 @@ public struct CombineReducers<Reducers: ReducerProtocol>: ReducerProtocol {
   ///
   /// - Parameter build: A reducer builder.
   @inlinable
-  // NB: Generics required to work around https://github.com/apple/swift/issues/60445
-  public init<State, Action>(
-    @ReducerBuilder<State, Action> _ build: () -> Reducers
-  ) where Reducers.State == State, Reducers.Action == Action {
+  public init(
+    @ReducerBuilderOf<Reducers> _ build: () -> Reducers
+  ) {
     self.reducers = build()
   }
 
@@ -35,3 +36,15 @@ public struct CombineReducers<Reducers: ReducerProtocol>: ReducerProtocol {
     self.reducers.reduce(into: &state, action: action)
   }
 }
+
+#if swift(>=5.7)
+  extension ReducerProtocol {
+    // NB: This overload is provided to work around https://github.com/apple/swift/issues/60445
+    /// Combines multiple reducers into a single reducer.
+    public func CombineReducers<State, Action>(
+      @ReducerBuilder<State, Action> _ build: () -> some ReducerProtocol<State, Action>
+    ) -> some ReducerProtocol<State, Action> {
+      ComposableArchitecture.CombineReducers(build)
+    }
+  }
+#endif

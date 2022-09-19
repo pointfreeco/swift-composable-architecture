@@ -43,22 +43,29 @@ struct WeatherClient: Sendable {
   var search: @Sendable (String) async throws -> GeocodingSearch
 }
 
+extension WeatherClient: TestDependencyKey {
+  static let previewValue = Self(
+    forecast: { _ in .mock },
+    search: { _ in .mock }
+  )
+
+  static let testValue = Self(
+    forecast: XCTUnimplemented("\(Self.self).forecast"),
+    search: XCTUnimplemented("\(Self.self).search")
+  )
+}
+
 extension DependencyValues {
   var weatherClient: WeatherClient {
-    get { self[WeatherClientKey.self] }
-    set { self[WeatherClientKey.self] = newValue }
-  }
-
-  private enum WeatherClientKey: LiveDependencyKey {
-    static let liveValue = WeatherClient.live
-    static let testValue = WeatherClient.unimplemented
+    get { self[WeatherClient.self] }
+    set { self[WeatherClient.self] = newValue }
   }
 }
 
 // MARK: - Live API implementation
 
-extension WeatherClient {
-  static let live = WeatherClient(
+extension WeatherClient: DependencyKey {
+  static let liveValue = WeatherClient(
     forecast: { result in
       var components = URLComponents(string: "https://api.open-meteo.com/v1/forecast")!
       components.queryItems = [
@@ -81,14 +88,7 @@ extension WeatherClient {
   )
 }
 
-// MARK: - Mock API implementations
-
-extension WeatherClient {
-  static let unimplemented = Self(
-    forecast: XCTUnimplemented("\(Self.self).forecast"),
-    search: XCTUnimplemented("\(Self.self).search")
-  )
-}
+// MARK: - Mock data
 
 extension Forecast {
   static let mock = Self(

@@ -59,9 +59,9 @@ struct NavigateAndLoadList: ReducerProtocol {
         return .none
       }
     }
-    .ifLet(\State.selection, action: .self) {
+    .ifLet(\State.selection, action: /Action.counter) {
       EmptyReducer()
-        .ifLet(\Identified<State.Row.ID, Counter.State?>.value, action: /Action.counter) {
+        .ifLet(\Identified<State.Row.ID, Counter.State?>.value, action: .self) {
           Counter()
         }
     }
@@ -72,7 +72,7 @@ struct NavigateAndLoadListView: View {
   let store: StoreOf<NavigateAndLoadList>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
         Section {
           AboutView(readMe: readMe)

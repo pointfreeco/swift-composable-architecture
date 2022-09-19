@@ -91,7 +91,7 @@ struct FavoriteButton<ID: Hashable & Sendable>: View {
   let store: Store<FavoritingState<ID>, FavoritingAction>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       Button {
         viewStore.send(.buttonTapped)
       } label: {
@@ -138,7 +138,7 @@ struct EpisodeView: View {
   let store: StoreOf<Episode>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       HStack(alignment: .firstTextBaseline) {
         Text(viewStore.title)
 

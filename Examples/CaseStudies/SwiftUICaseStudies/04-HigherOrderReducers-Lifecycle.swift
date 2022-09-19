@@ -66,7 +66,6 @@ struct LifecycleDemo: ReducerProtocol {
   private enum CancelID {}
 
   var body: some ReducerProtocol<State, Action> {
-    // TODO: timerReducer
     Reduce { state, action in
       switch action {
       case .timer:
@@ -97,7 +96,7 @@ struct LifecycleDemoView: View {
   let store: StoreOf<LifecycleDemo>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
         Section {
           AboutView(readMe: readMe)
@@ -146,7 +145,7 @@ private struct TimerView: View {
   let store: Store<Int, LifecycleReducer<Timer>.Action>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       Section {
         Text("Count: \(viewStore.state)")
           .onAppear { viewStore.send(.onAppear) }

@@ -8,147 +8,7 @@ import SwiftUI
 /// used to safely eliminate the boilerplate that is typically incurred when working with multiple
 /// mutable fields on state.
 ///
-/// For example, a settings screen may model its state with the following struct:
-///
-/// ```swift
-/// struct State {
-///   var digest = Digest.daily
-///   var displayName = ""
-///   var enableNotifications = false
-///   var isLoading = false
-///   var protectMyPosts = false
-///   var sendEmailNotifications = false
-///   var sendMobileNotifications = false
-/// }
-/// ```
-///
-/// The majority of these fields should be editable by the view, and in the Composable
-/// Architecture this means that each field requires a corresponding action that can be sent to
-/// the store. Typically this comes in the form of an enum with a case per field:
-///
-/// ```swift
-/// enum Action {
-///   case digestChanged(Digest)
-///   case displayNameChanged(String)
-///   case enableNotificationsChanged(Bool)
-///   case protectMyPostsChanged(Bool)
-///   case sendEmailNotificationsChanged(Bool)
-///   case sendMobileNotificationsChanged(Bool)
-/// }
-/// ```
-///
-/// And we're not even done yet. In the reducer we must now handle each action, which simply
-/// replaces the state at each field with a new value:
-///
-/// ```swift
-/// func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-///   switch action {
-///   case let digestChanged(digest):
-///     state.digest = digest
-///     return .none
-///
-///   case let displayNameChanged(displayName):
-///     state.displayName = displayName
-///     return .none
-///
-///   case let enableNotificationsChanged(isOn):
-///     state.enableNotifications = isOn
-///     return .none
-///
-///   case let protectMyPostsChanged(isOn):
-///     state.protectMyPosts = isOn
-///     return .none
-///
-///   case let sendEmailNotificationsChanged(isOn):
-///     state.sendEmailNotifications = isOn
-///     return .none
-///
-///   case let sendMobileNotificationsChanged(isOn):
-///     state.sendMobileNotifications = isOn
-///     return .none
-///   }
-/// }
-/// ```
-///
-/// This is a _lot_ of boilerplate for something that should be simple. Luckily, we can
-/// dramatically eliminate this boilerplate using `BindableState` and ``BindableAction``.
-///
-/// First, we can annotate each bindable value of state with the `@BindableState` property
-/// wrapper:
-///
-/// ```swift
-/// struct State {
-///   @BindableState var digest = Digest.daily
-///   @BindableState var displayName = ""
-///   @BindableState var enableNotifications = false
-///   var isLoading = false
-///   @BindableState var protectMyPosts = false
-///   @BindableState var sendEmailNotifications = false
-///   @BindableState var sendMobileNotifications = false
-/// }
-/// ```
-///
-/// Each annotated field is directly to bindable to SwiftUI controls, like pickers, toggles, and
-/// text fields. Notably, the `isLoading` property is _not_ annotated as being bindable, which
-/// prevents the view from mutating this value directly.
-///
-/// Next, we can conform the action type to ``BindableAction`` by collapsing all of the
-/// individual, field-mutating actions into a single case that holds a ``BindingAction`` generic
-/// over the reducer's `SettingsState`:
-///
-/// ```swift
-/// enum Action: BindableAction {
-///   case binding(BindingAction<State>)
-/// }
-/// ```
-///
-/// And then, we can simplify the settings reducer by allowing the ``BindingReducer`` to handle
-/// these field mutations for us:
-///
-/// ```swift
-/// var body: some ReducerProtocol<State, Action> {
-///   BindingReducer()
-///
-///   // ...
-/// }
-/// ```
-///
-/// Binding actions are constructed and sent to the store by calling
-/// ``ViewStore/binding(_:file:fileID:line:)`` with a key path to the bindable state:
-///
-/// ```swift
-/// TextField("Display name", text: viewStore.binding(\.$displayName))
-/// ```
-///
-/// Should you need to layer additional functionality over these bindings, your reducer can
-/// pattern match the action for a given key path:
-///
-/// ```swift
-/// case .binding(\.$displayName):
-///   // Validate display name
-///
-/// case .binding(\.$enableNotifications):
-///   // Return an authorization request effect
-/// ```
-///
-/// Binding actions can also be tested in much the same way regular actions are tested. Rather
-/// than send a specific action describing how a binding changed, such as
-/// `.displayNameChanged("Blob")`, you will send a ``BindingAction`` action that describes which key
-/// path is being set to what value, such as `.set(\.$displayName, "Blob")`:
-///
-/// ```swift
-/// let store = TestStore(
-///   initialState: Settings.State(),
-///   reducer: Settings()
-/// )
-///
-/// store.send(.set(\.$displayName, "Blob")) {
-///   $0.displayName = "Blob"
-/// }
-/// store.send(.set(\.$protectMyPosts, true)) {
-///   $0.protectMyPosts = true
-/// )
-/// ```
+/// Read <doc:Bindings> for more information.
 @dynamicMemberLookup
 @propertyWrapper
 public struct BindableState<Value> {
@@ -236,7 +96,7 @@ extension BindableState: CustomDebugStringConvertible where Value: CustomDebugSt
 /// Used in conjunction with ``BindableState`` to safely eliminate the boilerplate typically
 /// associated with mutating multiple fields in state.
 ///
-/// See the documentation for ``BindableState`` for more details.
+/// Read <doc:Bindings> for more information.
 public protocol BindableAction {
   /// The root state type that contains bindable fields.
   associatedtype State
@@ -297,7 +157,7 @@ extension ViewStore where Action: BindableAction, Action.State == State {
 /// Used in conjunction with ``BindableState`` and ``BindableAction`` to safely eliminate the
 /// boilerplate typically associated with mutating multiple fields in state.
 ///
-/// See the documentation for ``BindableState`` for more details.
+/// Read <doc:Bindings> for more information.
 public struct BindingAction<Root>: Equatable {
   public let keyPath: PartialKeyPath<Root>
 
@@ -472,7 +332,7 @@ extension BindingAction {
   ///
   /// ```swift
   /// WithViewStore(
-  ///   self.store.scope(state: \.view, action: MyFeature.Action.view)
+  ///   self.store, observe: \.view, send: MyFeature.Action.view
   /// ) { viewStore in
   ///   Stepper("\(viewStore.count)", viewStore.binding(\.$count))
   ///   Button("Get number fact") { viewStore.send(.factButtonTapped) }
@@ -498,7 +358,7 @@ extension BindingAction {
 
 extension BindingAction: CustomDumpReflectable {
   public var customDumpMirror: Mirror {
-    .init(
+    Mirror(
       self,
       children: [
         "set": (self.keyPath, self.value)

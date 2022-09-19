@@ -14,18 +14,13 @@ struct DownloadClient {
 
 extension DependencyValues {
   var downloadClient: DownloadClient {
-    get { self[DownloadClientKey.self] }
-    set { self[DownloadClientKey.self] = newValue }
-  }
-
-  private enum DownloadClientKey: LiveDependencyKey {
-    static let liveValue = DownloadClient.live
-    static let testValue = DownloadClient.unimplemented
+    get { self[DownloadClient.self] }
+    set { self[DownloadClient.self] = newValue }
   }
 }
 
-extension DownloadClient {
-  static let live = DownloadClient(
+extension DownloadClient: DependencyKey {
+  static let liveValue = Self(
     download: { url in
       .init { continuation in
         Task {
@@ -52,7 +47,7 @@ extension DownloadClient {
     }
   )
 
-  static let unimplemented = DownloadClient(
+  static let testValue = Self(
     download: XCTUnimplemented("\(Self.self).download")
   )
 }

@@ -1,5 +1,6 @@
 import Combine
 import Dispatch
+import Foundation
 
 extension Effect {
   /// Throttles an effect so that it only publishes one output per given interval.
@@ -19,44 +20,49 @@ extension Effect {
     scheduler: S,
     latest: Bool
   ) -> Self {
-    self.receive(on: scheduler)
-      .flatMap { value -> AnyPublisher<Output, Failure> in
-        throttleLock.lock()
-        defer { throttleLock.unlock() }
+    switch self.operation {
+    case .none:
+      return .none
+    case .publisher, .run:
+      return self.receive(on: scheduler)
+        .flatMap { value -> AnyPublisher<Action, Failure> in
+          throttleLock.lock()
+          defer { throttleLock.unlock() }
 
-        guard let throttleTime = throttleTimes[id] as! S.SchedulerTimeType? else {
-          throttleTimes[id] = scheduler.now
-          throttleValues[id] = nil
-          return Just(value).setFailureType(to: Failure.self).eraseToAnyPublisher()
-        }
+          guard let throttleTime = throttleTimes[id] as! S.SchedulerTimeType? else {
+            throttleTimes[id] = scheduler.now
+            throttleValues[id] = nil
+            return Just(value).setFailureType(to: Failure.self).eraseToAnyPublisher()
+          }
 
-        let value = latest ? value : (throttleValues[id] as! Output? ?? value)
-        throttleValues[id] = value
+          let value = latest ? value : (throttleValues[id] as! Action? ?? value)
+          throttleValues[id] = value
 
-        guard throttleTime.distance(to: scheduler.now) < interval else {
-          throttleTimes[id] = scheduler.now
-          throttleValues[id] = nil
-          return Just(value).setFailureType(to: Failure.self).eraseToAnyPublisher()
-        }
+          guard throttleTime.distance(to: scheduler.now) < interval else {
+            throttleTimes[id] = scheduler.now
+            throttleValues[id] = nil
+            return Just(value).setFailureType(to: Failure.self).eraseToAnyPublisher()
+          }
 
-        return Just(value)
-          .delay(
-            for: scheduler.now.distance(to: throttleTime.advanced(by: interval)),
-            scheduler: scheduler
-          )
-          .handleEvents(
-            receiveOutput: { _ in
-              throttleLock.sync {
-                throttleTimes[id] = scheduler.now
-                throttleValues[id] = nil
+          return Just(value)
+            .delay(
+              for: scheduler.now.distance(to: throttleTime.advanced(by: interval)),
+              scheduler: scheduler
+            )
+            .handleEvents(
+              receiveOutput: { _ in
+                throttleLock.sync {
+                  throttleTimes[id] = scheduler.now
+                  throttleValues[id] = nil
+                }
               }
-            }
-          )
-          .setFailureType(to: Failure.self)
-          .eraseToAnyPublisher()
-      }
-      .eraseToEffect()
-      .cancellable(id: id, cancelInFlight: true)
+            )
+            .setFailureType(to: Failure.self)
+            .eraseToAnyPublisher()
+        }
+        .eraseToEffect()
+        .cancellable(id: id, cancelInFlight: true)
+    }
   }
 
   /// Throttles an effect so that it only publishes one output per given interval.

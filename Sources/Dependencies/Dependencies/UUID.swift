@@ -66,7 +66,7 @@ extension DependencyValues {
   ///
   /// store.send(.create) {
   ///   $0.todos = [
-  ///     Todo(id: UUID(string: "00000000-000-0000-0000-000000000000")!)
+  ///     Todo(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
   ///   ]
   /// }
   /// ```
@@ -75,7 +75,7 @@ extension DependencyValues {
     set { self[UUIDGeneratorKey.self] = newValue }
   }
 
-  private enum UUIDGeneratorKey: LiveDependencyKey {
+  private enum UUIDGeneratorKey: DependencyKey {
     static let liveValue: UUIDGenerator = .live
     static let testValue: UUIDGenerator = .unimplemented
   }
@@ -124,7 +124,7 @@ public struct UUIDGenerator: Sendable {
   }
 }
 
-private final class IncrementingUUIDGenerator: @unchecked Sendable {
+final class IncrementingUUIDGenerator: @unchecked Sendable {
   private let lock: os_unfair_lock_t
   private var sequence = 0
 

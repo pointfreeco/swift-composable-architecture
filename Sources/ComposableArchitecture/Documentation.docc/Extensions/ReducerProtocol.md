@@ -11,7 +11,7 @@
 
 ### Reducer composition
 
-- ``body-swift.property-7foai``
+- ``body-swift.property-97ymy``
 - ``Body-swift.typealias``
 - ``ReducerBuilder``
 - ``Scope``
@@ -28,7 +28,7 @@
 
 ### Reducer modifiers
 
-- ``debug(_:state:action:actionFormat:to:)``
+- ``debug()``
 - ``dependency(_:_:)``
 - ``dependencies(_:)``
 - ``signpost(_:log:)``

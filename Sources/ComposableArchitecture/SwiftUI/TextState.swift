@@ -15,7 +15,7 @@ import SwiftUI
 /// ``TextState``:
 ///
 /// ```swift
-/// struct AppState: Equatable {
+/// struct State: Equatable {
 ///   var label: TextState
 /// }
 /// ```
@@ -31,7 +31,7 @@ import SwiftUI
 ///
 /// ```swift
 /// var body: some View {
-///   WithViewStore(self.store) { viewStore in
+///   WithViewStore(self.store, observe: { $0 }) { viewStore in
 ///     viewStore.label
 ///   }
 /// }

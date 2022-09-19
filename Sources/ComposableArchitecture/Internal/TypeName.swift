@@ -4,11 +4,12 @@ func typeName(_ type: Any.Type) -> String {
   if let index = name.firstIndex(of: ".") {
     name.removeSubrange(...index)
   }
-  return
+  let sanitizedName =
     name
     .replacingOccurrences(
       of: #"<.+>|\(unknown context at \$[[:xdigit:]]+\)\."#,
       with: "",
       options: .regularExpression
     )
+  return sanitizedName
 }

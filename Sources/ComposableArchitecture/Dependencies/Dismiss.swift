@@ -4,7 +4,7 @@ extension DependencyValues {
     set { self[DismissKey.self] = newValue }
   }
 
-  private enum DismissKey: LiveDependencyKey {
+  private enum DismissKey: DependencyKey {
     static let liveValue = DismissEffect()
     static var testValue = DismissEffect()
   }

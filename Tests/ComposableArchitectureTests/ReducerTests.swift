@@ -96,9 +96,9 @@ final class ReducerTests: XCTestCase {
       }
     )
 
-    await store.send(.increment) {
-      $0 = 2
-    }
+    await store
+      .send(.increment) { $0 = 2 }
+      .finish()
 
     await first.withValue { XCTAssertTrue($0) }
     await second.withValue { XCTAssertTrue($0) }

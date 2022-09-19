@@ -10,8 +10,6 @@
 ### Scoping stores
 
 - ``scope(state:action:)``
-- ``stateless``
-- ``actionless``
 
 ### Combine integration
 

@@ -28,6 +28,7 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ### Combine integration
 
+- ``Effect/Output``
 - ``Effect/init(_:)``
 - ``Effect/init(value:)``
 - ``Effect/init(error:)``
@@ -46,4 +47,4 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 - ``Effect/timer(id:every:tolerance:on:options:)-4exe6``
 - ``Effect/timer(id:every:tolerance:on:options:)-7po0d``
 - ``Effect/Subscriber``
-<!--TODO: Can't currently document `Publisher` extensions. -->
+<!--DocC: Can't currently document `Publisher` extensions. -->

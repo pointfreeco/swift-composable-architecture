@@ -6,13 +6,13 @@ import XCTestDynamicOverlay
     /// The current calendar that reducers should use when handling dates.
     ///
     /// By default, the calendar returned from `Calendar.autoupdatingCurrent` is supplied. When used
-    /// from a ``TestStore``, access will call to `XCTFail` when invoked, unless explicitly
+    /// from a `TestStore`, access will call to `XCTFail` when invoked, unless explicitly
     /// overridden:
     ///
     /// ```swift
     /// let store = TestStore(
     ///   initialState: MyFeature.State()
-    ///   reducer: My.Feature()
+    ///   reducer: MyFeature()
     /// )
     ///
     /// store.dependencies.calendar = Calendar(identifier: .gregorian)
@@ -22,7 +22,7 @@ import XCTestDynamicOverlay
       set { self[CalendarKey.self] = newValue }
     }
 
-    private enum CalendarKey: LiveDependencyKey {
+    private enum CalendarKey: DependencyKey {
       static let liveValue = Calendar.autoupdatingCurrent
       static var testValue: Calendar {
         XCTFail(#"Unimplemented: @Dependency(\.calendar)"#)

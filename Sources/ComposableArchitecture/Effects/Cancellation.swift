@@ -1,4 +1,5 @@
 import Combine
+import Foundation
 
 extension Effect {
   /// Turns an effect into one that is capable of being canceled.
@@ -27,52 +28,68 @@ extension Effect {
   ///   - cancelInFlight: Determines if any in-flight effect with the same identifier should be
   ///     canceled before starting this new one.
   /// - Returns: A new effect that is capable of being canceled by an identifier.
-  public func cancellable(
-    id: AnyHashable,
-    cancelInFlight: Bool = false
-  ) -> Self {
-    let navigationID = DependencyValues.current.navigationID.current
-    return Deferred {
-      ()
-        -> Publishers.HandleEvents<
-          Publishers.PrefixUntilOutput<Self, PassthroughSubject<Void, Never>>
-        > in
-      cancellablesLock.lock()
-      defer { cancellablesLock.unlock() }
+  public func cancellable(id: AnyHashable, cancelInFlight: Bool = false) -> Self {
+    switch self.operation {
+    case .none:
+      return .none
+    case let .publisher(publisher):
+      let navigationID = DependencyValues.current.navigationID.current
+      return Self(
+        operation: .publisher(
+          Deferred {
+            ()
+              -> Publishers.HandleEvents<
+                Publishers.PrefixUntilOutput<
+                  AnyPublisher<Action, Failure>, PassthroughSubject<Void, Never>
+                >
+              > in
+            cancellablesLock.lock()
+            defer { cancellablesLock.unlock() }
 
-      let id = CancelToken(id: id, navigationID: navigationID)
-      if cancelInFlight {
-        cancellationCancellables[id]?.forEach { $0.cancel() }
-      }
+            let id = CancelToken(id: id, navigationID: navigationID)
+            if cancelInFlight {
+              cancellationCancellables[id]?.forEach { $0.cancel() }
+            }
 
-      let cancellationSubject = PassthroughSubject<Void, Never>()
+            let cancellationSubject = PassthroughSubject<Void, Never>()
 
-      var cancellationCancellable: AnyCancellable!
-      cancellationCancellable = AnyCancellable {
-        cancellablesLock.sync {
-          cancellationSubject.send(())
-          cancellationSubject.send(completion: .finished)
-          cancellationCancellables[id]?.remove(cancellationCancellable)
-          if cancellationCancellables[id]?.isEmpty == .some(true) {
-            cancellationCancellables[id] = nil
+            var cancellationCancellable: AnyCancellable!
+            cancellationCancellable = AnyCancellable {
+              cancellablesLock.sync {
+                cancellationSubject.send(())
+                cancellationSubject.send(completion: .finished)
+                cancellationCancellables[id]?.remove(cancellationCancellable)
+                if cancellationCancellables[id]?.isEmpty == .some(true) {
+                  cancellationCancellables[id] = nil
+                }
+              }
+            }
+
+            return publisher.prefix(untilOutputFrom: cancellationSubject)
+              .handleEvents(
+                receiveSubscription: { _ in
+                  _ = cancellablesLock.sync {
+                    cancellationCancellables[id, default: []].insert(
+                      cancellationCancellable
+                    )
+                  }
+                },
+                receiveCompletion: { _ in cancellationCancellable.cancel() },
+                receiveCancel: cancellationCancellable.cancel
+              )
+          }
+          .eraseToAnyPublisher()
+        )
+      )
+    case let .run(priority, operation):
+      return Self(
+        operation: .run(priority) { send in
+          await withTaskCancellation(id: id, cancelInFlight: cancelInFlight) {
+            await operation(send)
           }
         }
-      }
-
-      return self.prefix(untilOutputFrom: cancellationSubject)
-        .handleEvents(
-          receiveSubscription: { _ in
-            _ = cancellablesLock.sync {
-              cancellationCancellables[id, default: []].insert(
-                cancellationCancellable
-              )
-            }
-          },
-          receiveCompletion: { _ in cancellationCancellable.cancel() },
-          receiveCancel: cancellationCancellable.cancel
-        )
+      )
     }
-    .eraseToEffect()
   }
 
   /// Turns an effect into one that is capable of being canceled.
@@ -145,8 +162,35 @@ extension Effect {
 
 /// Execute an operation with a cancellation identifier.
 ///
-/// If the operation is in-flight when `Task.cancel(id:)` is called with the same identifier, the
+/// If the operation is in-flight when `Task.cancel(id:)` is called with the same identifier, or
 /// operation will be cancelled.
+///
+/// ```
+/// enum CancelID.self {}
+///
+/// await withTaskCancellation(id: CancelID.self) {
+///   // ...
+/// }
+/// ```
+///
+/// ### Debouncing tasks
+///
+/// When paired with a scheduler, this function can be used to debounce a unit of async work by
+/// specifying the `cancelInFlight`, which will automatically cancel any in-flight work with the
+/// same identifier:
+///
+/// ```swift
+/// enum CancelID {}
+///
+/// return .task {
+///   await withTaskCancellation(id: CancelID.self, cancelInFlight: true) {
+///     try await environment.scheduler.sleep(for: .seconds(0.3))
+///     return await .debouncedResponse(
+///       TaskResult { try await environment.request() }
+///     )
+///   }
+/// }
+/// ```
 ///
 /// - Parameters:
 ///   - id: A unique identifier for the operation.

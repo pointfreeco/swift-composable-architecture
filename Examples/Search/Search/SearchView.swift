@@ -114,7 +114,7 @@ struct SearchView: View {
   let store: StoreOf<Search>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       NavigationView {
         VStack(alignment: .leading) {
           Text(readMe)
@@ -220,8 +220,6 @@ struct SearchView_Previews: PreviewProvider {
     let store = Store(
       initialState: Search.State(),
       reducer: Search()
-        .dependency(\.weatherClient.forecast) { _ in .mock }
-        .dependency(\.weatherClient.search) { _ in .mock }
     )
   }
 }

@@ -4,13 +4,10 @@ Review unsupported reducer APIs and their replacements.
 
 ## Overview
 
-Avoid using deprecated APIs in your app. Select a method to see the replacement that you should use instead.
+Avoid using deprecated APIs in your app. Select an API to see the replacement that you should use
+instead.
 
 ## Topics
-
-### Reducer migration
-
-- ``ReducerProtocol/pullback(state:action:)``
 
 ### Reducer structure
 

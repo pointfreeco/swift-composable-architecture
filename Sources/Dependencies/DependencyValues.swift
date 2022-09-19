@@ -15,14 +15,56 @@ import Foundation
 /// @Dependency(\.date) var date
 /// ```
 public struct DependencyValues: Sendable {
-  // TODO: rename `Context`
-  public enum Environment: Sendable {
-    case live
-    case preview
-    case test
+  // TODO: Can this be internal or should it be underscored?
+  @TaskLocal public static var current = Self()
+
+  @TaskLocal static var isSetting = false
+
+  /// Binds the task-local dependencies to the updated value for the duration of the synchronous
+  /// operation.
+  ///
+  /// - Parameters:
+  ///   - updateForOperation: A closure for updating the current dependency values for the duration
+  ///     of the operation.
+  ///   - operation: An operation to perform wherein dependencies have been overridden.
+  /// - Returns: The result returned from `operation`.
+  public static func withValues<R>(
+    _ updateValuesForOperation: (inout Self) throws -> Void,
+    operation: () throws -> R,
+    file: String = #fileID,
+    line: UInt = #line
+  ) rethrows -> R {
+    try Self.$isSetting.withValue(true) {
+      var dependencies = Self.current
+      try updateValuesForOperation(&dependencies)
+      return try Self.$current.withValue(dependencies) {
+        try operation()
+      }
+    }
   }
 
-  @TaskLocal public static var current = Self()
+  /// Binds the task-local dependencies to the updated value for the duration of the asynchronous
+  /// operation.
+  ///
+  /// - Parameters:
+  ///   - updateForOperation: A closure for updating the current dependency values for the duration
+  ///     of the operation.
+  ///   - operation: An operation to perform wherein dependencies have been overridden.
+  /// - Returns: The result returned from `operation`.
+  public static func withValues<R>(
+    _ updateValuesForOperation: (inout Self) async throws -> Void,
+    operation: () async throws -> R,
+    file: String = #fileID,
+    line: UInt = #line
+  ) async rethrows -> R {
+    try await Self.$isSetting.withValue(true) {
+      var dependencies = Self.current
+      try await updateValuesForOperation(&dependencies)
+      return try await Self.$current.withValue(dependencies) {
+        try await operation()
+      }
+    }
+  }
 
   private var storage: [ObjectIdentifier: AnySendable] = [:]
 
@@ -56,7 +98,7 @@ public struct DependencyValues: Sendable {
   /// You use custom dependency values the same way you use system-provided values, setting a value
   /// with the `ReducerProtocol/dependency(_:_:)` modifier, and reading values with the
   /// ``Dependency`` property wrapper.
-  public subscript<Key: DependencyKey>(
+  public subscript<Key: TestDependencyKey>(
     key: Key.Type,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
@@ -65,41 +107,43 @@ public struct DependencyValues: Sendable {
     get {
       guard let dependency = self.storage[ObjectIdentifier(key)]?.base as? Key.Value
       else {
-        let mode =
-          self.storage[ObjectIdentifier(EnvironmentKey.self)]?.base as? Environment
+        let context =
+          self.storage[ObjectIdentifier(DependencyContextKey.self)]?.base as? DependencyContext
           ?? (isPreview ? .preview : .live)
 
-        switch mode {
+        switch context {
         case .live:
           guard let value = _liveValue(Key.self) as? Key.Value
           else {
-            runtimeWarning(
-              """
-              A dependency at %@:%d is being used in a live environment without providing a live \
-              implementation:
+            if !Self.isSetting {
+              runtimeWarning(
+                """
+                A dependency at %@:%d is being used in a live environment without providing a live \
+                implementation:
 
-                Key:
-                  %3$@
-                Dependency:
-                  %4$@
+                  Key:
+                    %@
+                  Dependency:
+                    %@
 
-              Every dependency registered with the library must conform to 'LiveDependencyKey', \
-              and that conformance must be visible to the running application.
+                Every dependency registered with the library must conform to 'DependencyKey', and \
+                that conformance must be visible to the running application.
 
-              To fix, make sure that '%3$@' conforms to 'LiveDependencyKey' by providing a live \
-              implementation of your dependency, and make sure that the conformance is linked \
-              with this current application.
-              """,
-              [
-                "\(fileID)",
-                line,
-                typeName(Key.self),
-                typeName(Key.Value.self),
-                typeName(Key.self),
-              ],
-              file: file,
-              line: line
-            )
+                To fix, make sure that '%@' conforms to 'DependencyKey' by providing a live \
+                implementation of your dependency, and make sure that the conformance is linked with \
+                this current application.
+                """,
+                [
+                  "\(fileID)",
+                  line,
+                  typeName(Key.self),
+                  typeName(Key.Value.self),
+                  typeName(Key.self),
+                ],
+                file: file,
+                line: line
+              )
+            }
             return Key.testValue
           }
           return value
@@ -117,41 +161,11 @@ public struct DependencyValues: Sendable {
   }
 }
 
-extension DependencyValues {
-  public var isTesting: Bool {
-    _read { yield self[IsTestingKey.self] }
-    _modify { yield &self[IsTestingKey.self] }
-  }
-
-  private enum IsTestingKey: LiveDependencyKey {
-    static let liveValue = false
-    static var previewValue = false
-    static let testValue = true
-  }
-}
-
 private struct AnySendable: @unchecked Sendable {
   let base: Any
 
   init<Base: Sendable>(_ base: Base) {
     self.base = base
-  }
-}
-
-private enum EnvironmentKey: LiveDependencyKey {
-  static var liveValue = DependencyValues.Environment.live
-  static var previewValue = DependencyValues.Environment.preview
-  static var testValue = DependencyValues.Environment.test
-}
-
-extension DependencyValues {
-  // TODO: Should we reconsider this name?
-  // Using and mentioning our own "dependency environment" and also mentioning SwiftUI's environment
-  // in the same documentation is confusing, so maybe we can come up with something more unique. We
-  // discussed "mode," but do we like `.dependency(\.mode, .test)`? Can we come up with better?
-  public var environment: DependencyValues.Environment {
-    get { self[EnvironmentKey.self] }
-    set { self[EnvironmentKey.self] = newValue }
   }
 }
 

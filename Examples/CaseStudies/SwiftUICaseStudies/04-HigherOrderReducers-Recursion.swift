@@ -53,7 +53,7 @@ struct NestedView: View {
   let store: StoreOf<Nested>
 
   var body: some View {
-    WithViewStore(self.store.scope(state: \.name)) { viewStore in
+    WithViewStore(self.store, observe: \.name) { viewStore in
       Form {
         Section {
           AboutView(readMe: readMe)
@@ -62,16 +62,14 @@ struct NestedView: View {
         ForEachStore(
           self.store.scope(state: \.rows, action: Nested.Action.row(id:action:))
         ) { rowStore in
-          WithViewStore(rowStore) { rowViewStore in
+          WithViewStore(rowStore, observe: \.name) { rowViewStore in
             NavigationLink(
               destination: NestedView(store: rowStore)
             ) {
               HStack {
                 TextField(
                   "Untitled",
-                  text:
-                    rowViewStore
-                    .binding(get: \.name, send: Nested.Action.nameTextFieldChanged)
+                  text: rowViewStore.binding(send: Nested.Action.nameTextFieldChanged)
                 )
                 Text("Next")
                   .font(.callout)

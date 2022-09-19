@@ -5,10 +5,32 @@ import Combine
 @available(tvOS, deprecated: 9999.0)
 @available(watchOS, deprecated: 9999.0)
 extension Effect: Publisher {
+  public typealias Output = Action
+
   public func receive<S: Combine.Subscriber>(
     subscriber: S
-  ) where S.Input == Output, S.Failure == Failure {
+  ) where S.Input == Action, S.Failure == Failure {
     self.publisher.subscribe(subscriber)
+  }
+
+  var publisher: AnyPublisher<Action, Failure> {
+    switch self.operation {
+    case .none:
+      return Empty().eraseToAnyPublisher()
+    case let .publisher(publisher):
+      return publisher
+    case let .run(priority, operation):
+      return .create { subscriber in
+        let task = Task(priority: priority) { @MainActor in
+          defer { subscriber.send(completion: .finished) }
+          let send = Send { subscriber.send($0) }
+          await operation(send)
+        }
+        return AnyCancellable {
+          task.cancel()
+        }
+      }
+    }
   }
 }
 
@@ -45,7 +67,7 @@ extension Effect {
     message: "Iterate over 'Publisher.values' in an 'Effect.run', instead."
   )
   public init<P: Publisher>(_ publisher: P) where P.Output == Output, P.Failure == Failure {
-    self.publisher = publisher.eraseToAnyPublisher()
+    self.operation = .publisher(publisher.eraseToAnyPublisher())
   }
 
   /// Initializes an effect that immediately emits the value passed in.
@@ -55,7 +77,7 @@ extension Effect {
   @available(macOS, deprecated: 9999.0, message: "Wrap the value in 'Effect.task', instead.")
   @available(tvOS, deprecated: 9999.0, message: "Wrap the value in 'Effect.task', instead.")
   @available(watchOS, deprecated: 9999.0, message: "Wrap the value in 'Effect.task', instead.")
-  public init(value: Output) {
+  public init(value: Action) {
     self.init(Just(value).setFailureType(to: Failure.self))
   }
 
@@ -127,7 +149,7 @@ extension Effect {
   @available(tvOS, deprecated: 9999.0, message: "Use 'Effect.task', instead.")
   @available(watchOS, deprecated: 9999.0, message: "Use 'Effect.task', instead.")
   public static func future(
-    _ attemptToFulfill: @escaping (@escaping (Result<Output, Failure>) -> Void) -> Void
+    _ attemptToFulfill: @escaping (@escaping (Result<Action, Failure>) -> Void) -> Void
   ) -> Self {
     Deferred { Future(attemptToFulfill) }.eraseToEffect()
   }
@@ -161,7 +183,7 @@ extension Effect {
   @available(macOS, deprecated: 9999.0, message: "Use 'Effect.task', instead.")
   @available(tvOS, deprecated: 9999.0, message: "Use 'Effect.task', instead.")
   @available(watchOS, deprecated: 9999.0, message: "Use 'Effect.task', instead.")
-  public static func result(_ attemptToFulfill: @escaping () -> Result<Output, Failure>) -> Self {
+  public static func result(_ attemptToFulfill: @escaping () -> Result<Action, Failure>) -> Self {
     Deferred { Future { $0(attemptToFulfill()) } }.eraseToEffect()
   }
 
@@ -227,7 +249,7 @@ extension Effect {
     //     iOS 13.3, but to remain compatible with iOS 13.2 and higher we need to do a little
     //     trickery to make sure the deferred publisher completes.
     let dependencies = DependencyValues.current
-    return Deferred { () -> Publishers.CompactMap<Result<Output?, Failure>.Publisher, Output> in
+    return Deferred { () -> Publishers.CompactMap<Result<Action?, Failure>.Publisher, Action> in
       DependencyValues.$current.withValue(dependencies) {
         try? work()
       }
@@ -277,7 +299,7 @@ extension Effect where Failure == Error {
     watchOS, deprecated: 9999.0,
     message: "Throw and catch errors directly in 'Effect.task' and 'Effect.run', instead."
   )
-  public static func catching(_ work: @escaping () throws -> Output) -> Self {
+  public static func catching(_ work: @escaping () throws -> Action) -> Self {
     .future { $0(Result { try work() }) }
   }
 }

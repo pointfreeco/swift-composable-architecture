@@ -94,7 +94,7 @@ private struct Feature: ReducerProtocol {
   }
 }
 
-private enum MyValue: LiveDependencyKey {
+private enum MyValue: DependencyKey {
   static let liveValue = 0
   static let testValue = 0
 }

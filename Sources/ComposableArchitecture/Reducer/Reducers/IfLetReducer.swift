@@ -8,6 +8,7 @@ extension ReducerProtocol {
   ///   - wrapped: A reducer that will be invoked with child actions against non-optional child
   ///     state.
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
+  @inlinable
   public func ifLet<Wrapped: ReducerProtocol>(
     _ toWrappedState: WritableKeyPath<State, Wrapped.State?>,
     action toWrappedAction: CasePath<Action, Wrapped.Action>,
@@ -73,10 +74,8 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
   public func reduce(
     into state: inout Parent.State, action: Parent.Action
   ) -> Effect<Parent.Action, Never> {
-    return .merge(
-      self.reduceChild(into: &state, action: action),
-      self.parent.reduce(into: &state, action: action)
-    )
+    self.reduceChild(into: &state, action: action)
+      .merge(with:  self.parent.reduce(into: &state, action: action))
   }
 
   @inlinable

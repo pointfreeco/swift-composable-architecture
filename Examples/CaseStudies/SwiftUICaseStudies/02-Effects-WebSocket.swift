@@ -131,7 +131,7 @@ struct WebSocketView: View {
   let store: StoreOf<WebSocket>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       VStack(alignment: .leading) {
         AboutView(readMe: readMe)
           .padding(.bottom)
@@ -175,18 +175,6 @@ struct WebSocketView: View {
 
 // MARK: - WebSocketClient
 
-extension DependencyValues {
-  var webSocket: WebSocketClient {
-    get { self[WebSocketKey.self] }
-    set { self[WebSocketKey.self] = newValue }
-  }
-
-  private enum WebSocketKey: LiveDependencyKey {
-    static let liveValue = WebSocketClient.live
-    static let testValue = WebSocketClient.unimplemented
-  }
-}
-
 struct WebSocketClient {
   enum Action: Equatable {
     case didOpen(protocol: String?)
@@ -214,8 +202,8 @@ struct WebSocketClient {
   var sendPing: @Sendable (Any.Type) async throws -> Void
 }
 
-extension WebSocketClient {
-  static var live: Self {
+extension WebSocketClient: DependencyKey {
+  static let liveValue: Self = {
     final actor WebSocketActor: GlobalActor {
       final class Delegate: NSObject, URLSessionWebSocketDelegate {
         var continuation: AsyncStream<Action>.Continuation?
@@ -321,16 +309,21 @@ extension WebSocketClient {
       send: { try await WebSocketActor.shared.send(id: $0, message: $1) },
       sendPing: { try await WebSocketActor.shared.sendPing(id: $0) }
     )
-  }
-}
+  }()
 
-extension WebSocketClient {
-  static let unimplemented = Self(
+  static let testValue = Self(
     open: XCTUnimplemented("\(Self.self).open", placeholder: AsyncStream.never),
     receive: XCTUnimplemented("\(Self.self).receive"),
     send: XCTUnimplemented("\(Self.self).send"),
     sendPing: XCTUnimplemented("\(Self.self).sendPing")
   )
+}
+
+extension DependencyValues {
+  var webSocket: WebSocketClient {
+    get { self[WebSocketClient.self] }
+    set { self[WebSocketClient.self] = newValue }
+  }
 }
 
 // MARK: - SwiftUI previews

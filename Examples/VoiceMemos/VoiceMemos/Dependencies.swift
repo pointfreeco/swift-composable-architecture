@@ -8,7 +8,7 @@ extension DependencyValues {
     set { self[OpenSettingsKey.self] = newValue }
   }
 
-  private enum OpenSettingsKey: LiveDependencyKey {
+  private enum OpenSettingsKey: DependencyKey {
     typealias Value = @Sendable () async -> Void
 
     static let liveValue: @Sendable () async -> Void = {
@@ -26,7 +26,7 @@ extension DependencyValues {
     set { self[TemporaryDirectoryKey.self] = newValue }
   }
 
-  private enum TemporaryDirectoryKey: LiveDependencyKey {
+  private enum TemporaryDirectoryKey: DependencyKey {
     static let liveValue: @Sendable () -> URL = { URL(fileURLWithPath: NSTemporaryDirectory()) }
     static let testValue: @Sendable () -> URL = XCTUnimplemented(
       #"@Dependency(\.temporaryDirectory"#,

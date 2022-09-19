@@ -22,7 +22,7 @@ let package = Package(
   ],
   dependencies: [
     .package(name: "Benchmark", url: "https://github.com/google/swift-benchmark", from: "0.1.0"),
-    .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.7.1"),
+    .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.7.4"),
     .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.8.0"),
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.3.0"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "0.3.2"),

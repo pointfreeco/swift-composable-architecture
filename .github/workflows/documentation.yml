@@ -57,8 +57,9 @@ jobs:
         run: >
           rm -rf docs-out/.git;
           rm -rf docs-out/main;
+          rm -rf docs-out/protocol;
 
-          for tag in $(echo "main"; git tag);
+          for tag in $(echo "main"; echo "protocol"; git tag);
           do
             echo "⏳ Generating documentation for "$tag" release.";
 
