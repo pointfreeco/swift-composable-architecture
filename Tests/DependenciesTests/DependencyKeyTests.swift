@@ -13,7 +13,6 @@ final class DependencyKeyTests: XCTestCase {
 
   func testDependencyKeyCascading_ImplementOnlyLiveValue() {
     enum Key: DependencyKey {
-      typealias Value = Int
       static let liveValue = 42
     }
 
@@ -42,7 +41,6 @@ final class DependencyKeyTests: XCTestCase {
 
   func testDependencyKeyCascading_ImplementOnlyLiveAndPreviewValue() {
     enum Key: DependencyKey {
-      typealias Value = Int
       static let liveValue = 42
       static let previewValue = 1729
     }
