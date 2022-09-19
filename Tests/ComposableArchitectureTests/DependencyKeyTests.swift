@@ -30,4 +30,17 @@ final class DependencyKeyTests: XCTestCase {
 
     XCTAssertEqual(42, Key.previewValue)
   }
+  
+  //TODO: intentionally long naming. I think we don't need this test. Its just there to prove that the improved TestDependencyKey protocol now compiles without a typealias when `Value == Self`
+  func testDependencyKeyThatsItsOwnValueDefaultValues() {
+    struct Key: DependencyKey {
+//      typealias Value = Int
+      static let liveValue = Self()
+      var intValue: Int = 42
+    }
+
+    XCTAssertEqual(42, Key.previewValue.intValue)
+    XCTAssertEqual(42, Key.testValue.intValue)
+  }
+
 }
