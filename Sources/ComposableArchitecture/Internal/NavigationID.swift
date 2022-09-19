@@ -1,5 +1,3 @@
-import Foundation
-
 extension DependencyValues {
   var navigationID: NavigationID {
     get { self[NavigationID.self] }
