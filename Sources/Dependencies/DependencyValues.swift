@@ -130,8 +130,8 @@ public struct DependencyValues: Sendable {
                 that conformance must be visible to the running application.
 
                 To fix, make sure that '%@' conforms to 'DependencyKey' by providing a live \
-                implementation of your dependency, and make sure that the conformance is linked with \
-                this current application.
+                implementation of your dependency, and make sure that the conformance is linked \
+                with this current application.
                 """,
                 [
                   "\(fileID)",

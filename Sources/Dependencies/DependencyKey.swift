@@ -1,3 +1,5 @@
+import XCTestDynamicOverlay
+
 /// A key for accessing dependencies.
 ///
 /// Similar to SwiftUI's `EnvironmentKey` protocol, which is used to extend `EnvironmentValues` with
@@ -18,14 +20,6 @@
 public protocol DependencyKey: TestDependencyKey {
   /// The live value for the dependency key.
   static var liveValue: Value { get }
-}
-
-extension DependencyKey {
-  /// A default implementation that provides the ``liveValue`` to Xcode previews.
-  public static var previewValue: Value { Self.liveValue }
-
-  /// A default implementation that provides the ``liveValue`` to tests.
-  public static var testValue: Value { Self.liveValue }
 }
 
 /// A "test" key for accessing dependencies.
@@ -65,6 +59,43 @@ public protocol TestDependencyKey {
   ///   .dependency(\.environment, .test)
   /// ```
   static var testValue: Value { get }
+}
+
+extension DependencyKey {
+  /// A default implementation that provides the ``liveValue`` to Xcode previews.
+  public static var previewValue: Value { Self.liveValue }
+
+  /// A default implementation that provides the ``liveValue`` to tests.
+  public static var testValue: Value {
+
+    let dependencyDescription: String
+    if Self.self == Value.self {
+      dependencyDescription = """
+          Dependency:
+            \(typeName(Value.self))
+        """
+    } else {
+      dependencyDescription = """
+          Key:
+            \(typeName(Self.self))
+          Dependency:
+            \(typeName(Value.self))
+        """
+    }
+
+    XCTFail("""
+      A dependency is being used in a test environment without providing a test implementation:
+
+      \(dependencyDescription)
+
+      Dependencies registered with the library are not allowed to use their live implementations \
+      when run in a 'TestStore'.
+
+      To fix, make sure that \(typeName(Self.self)) provides an implementation of 'testValue' \
+      in its conformance to the 'DependencyKey` protocol.
+      """)
+    return Self.previewValue
+  }
 }
 
 extension TestDependencyKey {

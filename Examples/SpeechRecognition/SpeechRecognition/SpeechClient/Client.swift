@@ -19,12 +19,12 @@ struct SpeechClient {
 
 extension DependencyValues {
   var speechClient: SpeechClient {
-    get { self[SpeechClientKey.self] }
-    set { self[SpeechClientKey.self] = newValue }
+    get { self[SpeechClient.self] }
+    set { self[SpeechClient.self] = newValue }
   }
 }
 
-enum SpeechClientKey: TestDependencyKey {
+extension SpeechClient: TestDependencyKey {
   static let previewValue = SpeechClient.lorem
   static let testValue = SpeechClient.unimplemented
 }

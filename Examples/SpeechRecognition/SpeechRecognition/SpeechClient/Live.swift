@@ -2,7 +2,7 @@ import Combine
 import ComposableArchitecture
 import Speech
 
-extension SpeechClientKey: DependencyKey {
+extension SpeechClient: DependencyKey {
   static let liveValue = SpeechClient.live
 }
 
