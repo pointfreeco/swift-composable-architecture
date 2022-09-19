@@ -220,8 +220,6 @@ struct SearchView_Previews: PreviewProvider {
     let store = Store(
       initialState: Search.State(),
       reducer: Search()
-        .dependency(\.weatherClient.forecast) { _ in .mock }
-        .dependency(\.weatherClient.search) { _ in .mock }
     )
   }
 }

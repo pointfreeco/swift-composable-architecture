@@ -28,7 +28,7 @@ extension DependencyKey {
   public static var testValue: Value { Self.liveValue }
 }
 
-/// A "test" key for accessing dependencies.
+/// A key for accessing test dependencies.
 ///
 /// This protocol lives one layer below ``DependencyKey`` and allows you to separate a dependency's
 /// interface from its live implementation.
@@ -41,6 +41,7 @@ extension DependencyKey {
 public protocol TestDependencyKey {
   /// The associated type representing the type of the dependency key's value.
   associatedtype Value = Self
+
   // NB: This associated type should be constrained to `Sendable` when this bug is fixed:
   //     https://github.com/apple/swift/issues/60649
 
