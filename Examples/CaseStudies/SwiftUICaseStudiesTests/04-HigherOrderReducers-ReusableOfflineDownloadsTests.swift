@@ -9,9 +9,6 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
   let download = AsyncThrowingStream<DownloadClient.Event, Error>.streamWithContinuation()
 
   func testDownloadFlow() async {
-    var downloadClient = DownloadClient.unimplemented
-    downloadClient.download = { _ in self.download.stream }
-
     let store = TestStore(
       initialState: DownloadComponent.State(
         id: 1,
