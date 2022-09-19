@@ -67,7 +67,6 @@ extension DependencyKey {
 
   /// A default implementation that provides the ``liveValue`` to tests.
   public static var testValue: Value {
-
     let dependencyDescription: String
     if Self.self == Value.self {
       dependencyDescription = """

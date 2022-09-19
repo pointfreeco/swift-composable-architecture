@@ -116,15 +116,27 @@ public struct DependencyValues: Sendable {
           guard let value = _liveValue(Key.self) as? Key.Value
           else {
             if !Self.isSetting {
+              let dependencyDescription: String
+              if Key.self == Key.Value.self {
+                dependencyDescription = """
+                    Dependency:
+                      \(typeName(Key.Value.self))
+                  """
+              } else {
+                dependencyDescription = """
+                  Key:
+                    \(typeName(Key.self))
+                  Dependency:
+                    \(typeName(Key.Value.self))
+                """
+              }
+
               runtimeWarning(
                 """
                 A dependency at %@:%d is being used in a live environment without providing a live \
                 implementation:
 
-                  Key:
-                    %@
-                  Dependency:
-                    %@
+                %@
 
                 Every dependency registered with the library must conform to 'DependencyKey', and \
                 that conformance must be visible to the running application.
@@ -136,9 +148,9 @@ public struct DependencyValues: Sendable {
                 [
                   "\(fileID)",
                   line,
+                  dependencyDescription,
                   typeName(Key.self),
                   typeName(Key.Value.self),
-                  typeName(Key.self),
                 ],
                 file: file,
                 line: line
