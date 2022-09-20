@@ -292,11 +292,6 @@ final class TodosTests: XCTestCase {
     await store.send(.filterPicked(.completed)) {
       $0.filter = .completed
     }
-//    xxx before source [0]
-//    xxx after source [2]
-//    xxx before dest 2
-//    xxx after dest 2
-
     await store.send(.move([0], 2)) {
       $0.todos = [
         $0.todos[0],
