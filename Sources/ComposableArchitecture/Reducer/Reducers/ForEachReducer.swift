@@ -106,7 +106,7 @@ public struct _ForEachReducer<
 
         • This action was sent to the store while its state contained no element at this ID. To \
         fix this make sure that actions for this reducer can only be sent from a view store when \
-        its state contains an element at this id. In SwiftUI applications, use "ForEachStore".
+        its state contains an element at this ID. In SwiftUI applications, use "ForEachStore".
         """,
         [
           "\(self.fileID)",

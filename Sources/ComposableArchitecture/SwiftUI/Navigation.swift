@@ -22,6 +22,7 @@ public struct NavigationState<Element: Hashable>:
   }
 
   // TODO: should this be an array of reference boxed values?
+  @usableFromInline
   var destinations: [Destination] = []
 
   public init() {}
@@ -231,13 +232,19 @@ extension ReducerProtocol {
   public func navigationDestination<Destinations: ReducerProtocol>(
     _ toNavigationState: WritableKeyPath<State, NavigationStateOf<Destinations>>,
     action toNavigationAction: CasePath<Action, NavigationActionOf<Destinations>>,
-    @ReducerBuilderOf<Destinations> destinations: () -> Destinations
+    @ReducerBuilderOf<Destinations> destinations: () -> Destinations,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
   ) -> _NavigationDestinationReducer<Self, Destinations> {
     .init(
       upstream: self,
       toNavigationState: toNavigationState,
       toNavigationAction: toNavigationAction,
-      destinations: destinations()
+      destinations: destinations(),
+      file: file,
+      fileID: fileID,
+      line: line
     )
   }
 }
@@ -247,27 +254,73 @@ public struct _NavigationDestinationReducer<
   Destinations: ReducerProtocol
 >: ReducerProtocol
 where Destinations.State: Hashable {
+  @usableFromInline
   let upstream: Upstream
+
+  @usableFromInline
   let toNavigationState: WritableKeyPath<Upstream.State, NavigationStateOf<Destinations>>
+
+  @usableFromInline
   let toNavigationAction: CasePath<Upstream.Action, NavigationActionOf<Destinations>>
+
+  @usableFromInline
   let destinations: Destinations
 
+  @usableFromInline
+  let file: StaticString
+
+  @usableFromInline
+  let fileID: StaticString
+
+  @usableFromInline
+  let line: UInt
+
+  @inlinable
   public var body: some ReducerProtocol<Upstream.State, Upstream.Action> {
-    Reduce { globalState, globalAction in
-      guard let navigationAction = toNavigationAction.extract(from: globalAction)
+    Reduce { state, action in
+      guard let navigationAction = toNavigationAction.extract(from: action)
       else { return .none }
 
       switch navigationAction {
       case let .element(id, localAction):
-        guard let index = globalState[keyPath: toNavigationState].firstIndex(where: { $0.id == id })
+        guard let index = state[keyPath: toNavigationState].firstIndex(where: { $0.id == id })
         else {
-          // TODO: runtime warning
+          runtimeWarning(
+            """
+            A "navigationDestination" at "%@:%d" received an action for a missing element.
+
+              Action:
+                %@
+
+            This is generally considered an application logic error, and can happen for a few \
+            reasons:
+
+            • A parent reducer removed an element with this ID before this reducer ran. This \
+            reducer must run before any other reducer removes an element, which ensures that \
+            element reducers can handle their actions while their state is still available.
+
+            • An in-flight effect emitted this action when state contained no element at this ID. \
+            While it may be perfectly reasonable to ignore this action, consider canceling the \
+            associated effect before an element is removed, especially if it is a long-living effect.
+
+            • This action was sent to the store while its state contained no element at this ID. To \
+            fix this make sure that actions for this reducer can only be sent from a view store when \
+            its state contains an element at this id. In SwiftUI applications, use "ForEachStore".
+            """,
+            [
+              "\(self.fileID)",
+              line,
+              debugCaseOutput(action),
+            ],
+            file: self.file,
+            line: self.line
+          )
           return .none
         }
         return self.destinations
           .dependency(\.navigationID.current, id)
           .reduce(
-            into: &globalState[keyPath: toNavigationState][index].element,
+            into: &state[keyPath: toNavigationState][index].element,
             action: localAction
           )
           .map { toNavigationAction.embed(.element(id: id, $0)) }
@@ -275,13 +328,13 @@ where Destinations.State: Hashable {
 
       case let .setPath(path):
         var removedIds: Set<AnyHashable> = []
-        for destination in globalState[keyPath: toNavigationState].destinations {
+        for destination in state[keyPath: toNavigationState].destinations {
           removedIds.insert(destination.id)
         }
         for destination in path {
           removedIds.remove(destination.id)
         }
-        globalState[keyPath: toNavigationState] = path
+        state[keyPath: toNavigationState] = path
         return .merge(removedIds.map { .cancel(id: $0) })
       }
     }

@@ -1,11 +1,12 @@
 extension DependencyValues {
+  @usableFromInline
   var navigationID: NavigationID {
     get { self[NavigationID.self] }
     set { self[NavigationID.self] = newValue }
   }
 }
 
-// TODO: Fix sendability
+// TODO: Fix sendability of (`AnyHashable`)
 public struct NavigationID: @unchecked Sendable {
   public var current: AnyHashable?
   public var next: @Sendable () -> AnyHashable

@@ -102,8 +102,8 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
         perfectly reasonable to ignore this action, consider canceling the associated effect \
         before child state becomes "nil", especially if it is a long-living effect.
 
-        • This action was sent to the store while state was "nil". Make sure that actions for this \
-        reducer can only be sent from a view store when state is non-"nil". In SwiftUI \
+        • This action was sent to the store while child state was "nil". Make sure that actions \
+        for this reducer can only be sent from a view store when state is non-"nil". In SwiftUI \
         applications, use "IfLetStore".
         """,
         [

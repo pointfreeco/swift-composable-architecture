@@ -118,16 +118,23 @@ extension PresentationAction: Equatable where State: Equatable, Action: Equatabl
 extension PresentationAction: Hashable where State: Hashable, Action: Hashable {}
 
 extension ReducerProtocol {
+  @inlinable
   public func presentationDestination<Destination: ReducerProtocol>(
     _ toPresentedState: WritableKeyPath<State, PresentationStateOf<Destination>>,
     action toPresentedAction: CasePath<Action, PresentationActionOf<Destination>>,
-    @ReducerBuilderOf<Destination> destination: () -> Destination
+    @ReducerBuilderOf<Destination> destination: () -> Destination,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
   ) -> _PresentationDestinationReducer<Self, Destination> {
     _PresentationDestinationReducer(
       presenter: self,
       presented: destination(),
       toPresentedState: toPresentedState,
-      toPresentedAction: toPresentedAction
+      toPresentedAction: toPresentedAction,
+      file: file,
+      fileID: fileID,
+      line: line
     )
   }
 }
@@ -135,20 +142,57 @@ extension ReducerProtocol {
 public struct _PresentationDestinationReducer<
   Presenter: ReducerProtocol, Presented: ReducerProtocol
 >: ReducerProtocol {
+  @usableFromInline
   let presenter: Presenter
+
+  @usableFromInline
   let presented: Presented
+
+  @usableFromInline
   let toPresentedState: WritableKeyPath<Presenter.State, PresentationStateOf<Presented>>
+
+  @usableFromInline
   let toPresentedAction:
     CasePath<
       Presenter.Action, PresentationActionOf<Presented>
     >
 
-  private enum DismissID {}
+  @usableFromInline
+  let file: StaticString
 
+  @usableFromInline
+  let fileID: StaticString
+
+  @usableFromInline
+  let line: UInt
+
+  @usableFromInline
+  enum DismissID {}
+
+  @inlinable
+  init(
+    presenter: Presenter,
+    presented: Presented,
+    toPresentedState: WritableKeyPath<Presenter.State, PresentationStateOf<Presented>>,
+    toPresentedAction: CasePath<Presenter.Action, PresentationActionOf<Presented>>,
+    file: StaticString,
+    fileID: StaticString,
+    line: UInt
+  ) {
+    self.presenter = presenter
+    self.presented = presented
+    self.toPresentedState = toPresentedState
+    self.toPresentedAction = toPresentedAction
+    self.file = file
+    self.fileID = fileID
+    self.line = line
+  }
+
+  @inlinable
   public func reduce(
     into state: inout Presenter.State, action: Presenter.Action
   ) -> Effect<Presenter.Action, Never> {
-    var effects: [Effect<Presenter.Action, Never>] = []
+    var effect: Effect<Presenter.Action, Never> = .none
 
     let presentedState = state[keyPath: toPresentedState]
     let presentedAction = toPresentedAction.extract(from: action)
@@ -160,8 +204,8 @@ public struct _PresentationDestinationReducer<
     case let .presented(presentedAction):
       if case .presented(let id, var presentedState) = presentedState {
         defer { state[keyPath: toPresentedState] = .presented(id: id, presentedState) }
-        effects.append(
-          self.presented
+        effect = effect.merge(
+          with: self.presented
             .dependency(\.navigationID.current, id)
             .dependency(\.dismiss, DismissEffect { await Task.cancel(id: DismissID.self) })
             .reduce(into: &presentedState, action: presentedAction)
@@ -169,47 +213,72 @@ public struct _PresentationDestinationReducer<
             .cancellable(id: id)
         )
       } else {
-        // TODO: runtimeWarning
+        runtimeWarning(
+          """
+          A "presentationDestination" at "%@:%d" received a destination action when destination \
+          state was absent. …
+          
+            Action:
+              %@
+
+          This is generally considered an application logic error, and can happen for a few \
+          reasons:
+
+          • A parent reducer set destination state to "nil" before this reducer ran. This reducer \
+          must run before any other reducer sets destination state to "nil". This ensures that \
+          destination reducers can handle their actions while their state is still present.
+
+          • This action was sent to the store while destination state was "nil". Make sure that \
+          actions for this reducer can only be sent from a view store when state is present, or \
+          from effects that start from this reducer. In SwiftUI applications, use a Composable \
+          Architecture view modifier like "sheet(store:…)".
+          """,
+          [
+            "\(self.fileID)",
+            self.line,
+            debugCaseOutput(action),
+          ],
+          file: self.file,
+          line: self.line
+        )
+        return .none
       }
 
     case .present(_, .none), .dismiss, .none:
       break
     }
 
-    effects.append(self.presenter.reduce(into: &state, action: action))
+    effect = effect.merge(with: self.presenter.reduce(into: &state, action: action))
 
     if case .dismiss = presentedAction, case let .presented(id, _) = presentedState {
       state[keyPath: toPresentedState].wrappedValue = nil
-      effects.append(.cancel(id: id))
+      effect = effect.merge(with: .cancel(id: id))
     } else if case let .presented(id, _) = presentedState,
       state[keyPath: toPresentedState].id != id
     {
-      effects.append(.cancel(id: id))
+      effect = effect.merge(with: .cancel(id: id))
     }
 
     if let id = state[keyPath: toPresentedState].id, id != presentedState.id {
-      effects.append(
-        .concatenate(
-          .task {
-            var dependencies = DependencyValues.current
-            dependencies.navigationID.current = id
-            return try await DependencyValues.$current.withValue(dependencies) {
-              try await withTaskCancellation(id: DismissID.self) {
-                try await Task.never()
-              }
+      effect = effect.merge(
+        with: .task {
+          var dependencies = DependencyValues.current
+          dependencies.navigationID.current = id
+          return try await DependencyValues.$current.withValue(dependencies) {
+            try await withTaskCancellation(id: DismissID.self) {
+              try await Task.never()
             }
-          },
-          Effect(value: self.toPresentedAction.embed(.dismiss))
-        )
+          }
+        }
+        .concatenate(with: Effect(value: self.toPresentedAction.embed(.dismiss)))
       )
     }
 
-    return .merge(effects)
+    return effect
   }
 }
 
 extension View {
-  // TODO: How does `onDismiss:` factor in?
   @available(iOS 14, tvOS 14, watchOS 7, *)
   @available(macOS, unavailable)
   public func fullScreenCover<State, Action, Content: View>(
@@ -219,7 +288,6 @@ extension View {
     self.fullScreenCover(store: store, state: { $0 }, action: { $0 }, content: content)
   }
 
-  // TODO: How does `onDismiss:` factor in?
   @available(iOS 14, tvOS 14, watchOS 7, *)
   @available(macOS, unavailable)
   public func fullScreenCover<State, Action, DestinationState, DestinationAction, Content: View>(
@@ -288,7 +356,6 @@ extension View {
     }
   }
 
-  // TODO: How does `onDismiss:` factor in?
   public func sheet<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<State, Action>>,
     @ViewBuilder content: @escaping (Store<State, Action>) -> Content
@@ -296,7 +363,6 @@ extension View {
     self.sheet(store: store, state: { $0 }, action: { $0 }, content: content)
   }
 
-  // TODO: How does `onDismiss:` factor in?
   public func sheet<State, Action, DestinationState, DestinationAction, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<State, Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
