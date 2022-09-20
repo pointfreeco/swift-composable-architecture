@@ -119,7 +119,7 @@ extension NestedState {
         id: UUID(),
         name: "Bar",
         rows: [
-          NestedState(id: UUID(), name: "", rows: []),
+          NestedState(id: UUID(), name: "", rows: [])
         ]
       ),
       NestedState(
