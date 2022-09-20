@@ -27,16 +27,16 @@ extension Reducer {
 }
 
 struct NestedState: Equatable, Identifiable {
-  var children: IdentifiedArrayOf<NestedState> = []
   let id: UUID
-  var description: String = ""
+  var name: String = ""
+  var rows: IdentifiedArrayOf<NestedState> = []
 }
 
-indirect enum NestedAction: Equatable {
-  case append
-  case node(id: NestedState.ID, action: NestedAction)
-  case remove(IndexSet)
-  case rename(String)
+enum NestedAction: Equatable {
+  case addRowButtonTapped
+  case nameTextFieldChanged(String)
+  case onDelete(IndexSet)
+  indirect case row(id: NestedState.ID, action: NestedAction)
 }
 
 struct NestedEnvironment {
@@ -47,25 +47,25 @@ let nestedReducer = Reducer<
   NestedState, NestedAction, NestedEnvironment
 >.recurse { `self`, state, action, environment in
   switch action {
-  case .append:
-    state.children.append(NestedState(id: environment.uuid()))
+  case .addRowButtonTapped:
+    state.rows.append(NestedState(id: environment.uuid()))
     return .none
 
-  case .node:
+  case let .nameTextFieldChanged(name):
+    state.name = name
+    return .none
+
+  case let .onDelete(indexSet):
+    state.rows.remove(atOffsets: indexSet)
+    return .none
+
+  case .row:
     return self.forEach(
-      state: \.children,
-      action: /NestedAction.node(id:action:),
+      state: \.rows,
+      action: /NestedAction.row(id:action:),
       environment: { $0 }
     )
     .run(&state, action, environment)
-
-  case let .remove(indexSet):
-    state.children.remove(atOffsets: indexSet)
-    return .none
-
-  case let .rename(name):
-    state.description = name
-    return .none
   }
 }
 
@@ -73,23 +73,23 @@ struct NestedView: View {
   let store: Store<NestedState, NestedAction>
 
   var body: some View {
-    WithViewStore(self.store, observe: \.description) { viewStore in
+    WithViewStore(self.store, observe: \.name) { viewStore in
       Form {
         Section {
           AboutView(readMe: readMe)
         }
 
         ForEachStore(
-          self.store.scope(state: \.children, action: NestedAction.node(id:action:))
+          self.store.scope(state: \.rows, action: NestedAction.row(id:action:))
         ) { childStore in
-          WithViewStore(childStore, observe: \.description) { childViewStore in
+          WithViewStore(childStore, observe: \.name) { childViewStore in
             NavigationLink(
               destination: NestedView(store: childStore)
             ) {
               HStack {
                 TextField(
                   "Untitled",
-                  text: childViewStore.binding(send: NestedAction.rename)
+                  text: childViewStore.binding(send: NestedAction.nameTextFieldChanged)
                 )
                 Text("Next")
                   .font(.callout)
@@ -98,12 +98,12 @@ struct NestedView: View {
             }
           }
         }
-        .onDelete { viewStore.send(.remove($0)) }
+        .onDelete { viewStore.send(.onDelete($0)) }
       }
       .navigationTitle(viewStore.state.isEmpty ? "Untitled" : viewStore.state)
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {
-          Button("Add row") { viewStore.send(.append) }
+          Button("Add row") { viewStore.send(.addRowButtonTapped) }
         }
       }
     }
@@ -112,42 +112,26 @@ struct NestedView: View {
 
 extension NestedState {
   static let mock = NestedState(
-    children: [
-      NestedState(
-        children: [
-          NestedState(
-            children: [],
-            id: UUID(),
-            description: ""
-          )
-        ],
-        id: UUID(),
-        description: "Bar"
-      ),
-      NestedState(
-        children: [
-          NestedState(
-            children: [],
-            id: UUID(),
-            description: "Fizz"
-          ),
-          NestedState(
-            children: [],
-            id: UUID(),
-            description: "Buzz"
-          ),
-        ],
-        id: UUID(),
-        description: "Baz"
-      ),
-      NestedState(
-        children: [],
-        id: UUID(),
-        description: ""
-      ),
-    ],
     id: UUID(),
-    description: "Foo"
+    name: "Foo",
+    rows: [
+      NestedState(
+        id: UUID(),
+        name: "Bar",
+        rows: [
+          NestedState(id: UUID(), name: "", rows: []),
+        ]
+      ),
+      NestedState(
+        id: UUID(),
+        name: "Baz",
+        rows: [
+          NestedState(id: UUID(), name: "Fizz", rows: []),
+          NestedState(id: UUID(), name: "Buzz", rows: []),
+        ]
+      ),
+      NestedState(id: UUID(), name: "", rows: []),
+    ]
   )
 }
 
