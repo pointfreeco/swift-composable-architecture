@@ -28,7 +28,7 @@
 
 ### Reducer modifiers
 
-- ``debug(_:state:action:actionFormat:to:)``
+- ``debug()``
 - ``dependency(_:_:)``
 - ``dependencies(_:)``
 - ``signpost(_:log:)``
