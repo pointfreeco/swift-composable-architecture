@@ -66,7 +66,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
       return .none
 
     case var .move(source, destination):
-      if state.filter != .all {
+      if state.filter == .completed {
         source = IndexSet(
           source
             .map { state.filteredTodos[$0] }
@@ -75,7 +75,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
         destination =
           (destination < state.filteredTodos.endIndex
             ? state.todos.index(id: state.filteredTodos[destination].id)
-            : destination)
+            : state.todos.endIndex)
           ?? destination
       }
 
