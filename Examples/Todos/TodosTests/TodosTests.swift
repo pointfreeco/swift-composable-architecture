@@ -262,12 +262,12 @@ final class TodosTests: XCTestCase {
         Todo.State(
           description: "",
           id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
-          isComplete: true
+          isComplete: false
         ),
         Todo.State(
           description: "",
           id: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!,
-          isComplete: false
+          isComplete: true
         ),
         Todo.State(
           description: "",
@@ -291,12 +291,12 @@ final class TodosTests: XCTestCase {
     await store.send(.filterPicked(.completed)) {
       $0.filter = .completed
     }
-    await store.send(.move([0], 1)) {
+    await store.send(.move([0], 2)) {
       $0.todos = [
         $0.todos[0],
-        $0.todos[2],
         $0.todos[1],
         $0.todos[3],
+        $0.todos[2],
       ]
     }
     await self.mainQueue.advance(by: .milliseconds(100))
