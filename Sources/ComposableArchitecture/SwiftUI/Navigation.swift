@@ -296,38 +296,39 @@ where Destinations.State: Hashable {
   }
 
   @inlinable
-  public var body: some ReducerProtocol<Base.State, Base.Action> {
-    Reduce { state, action in
-      guard let navigationAction = toNavigationAction.extract(from: action)
-      else { return .none }
+  public func reduce(
+    into state: inout Base.State, action: Base.Action
+  ) -> Effect<Base.Action, Never> {
+    var effect: Effect<Base.Action, Never> = .none
 
-      switch navigationAction {
-      case let .element(id, localAction):
-        guard let index = state[keyPath: toNavigationState].firstIndex(where: { $0.id == id })
-        else {
-          runtimeWarning(
-            """
-            A "navigationDestination" at "%@:%d" received an action for a missing element.
+    switch self.toNavigationAction.extract(from: action) {
+    case let .element(id, localAction):
+      guard let index = state[keyPath: toNavigationState].firstIndex(where: { $0.id == id })
+      else {
+        runtimeWarning(
+          """
+          A "navigationDestination" at "%@:%d" received an action for a missing element.
 
-              Action:
-                %@
+            Action:
+              %@
 
-            This is generally considered an application logic error, and can happen for a few \
-            reasons:
+          This is generally considered an application logic error, and can happen for a few \
+          reasons:
 
-            • TODO
-            """,
-            [
-              "\(self.fileID)",
-              line,
-              debugCaseOutput(action),
-            ],
-            file: self.file,
-            line: self.line
-          )
-          return .none
-        }
-        return self.destinations
+          • TODO
+          """,
+          [
+            "\(self.fileID)",
+            line,
+            debugCaseOutput(action),
+          ],
+          file: self.file,
+          line: self.line
+        )
+        return .none
+      }
+      effect = effect.merge(
+        with: self.destinations
           .dependency(\.navigationID.current, id)
           .reduce(
             into: &state[keyPath: toNavigationState][index].element,
@@ -335,23 +336,31 @@ where Destinations.State: Hashable {
           )
           .map { toNavigationAction.embed(.element(id: id, $0)) }
           .cancellable(id: id)
+      )
 
-      case let .setPath(path):
-        var removedIds: Set<AnyHashable> = []
-        for destination in state[keyPath: toNavigationState].destinations {
-          removedIds.insert(destination.id)
-        }
-        for destination in path {
-          removedIds.remove(destination.id)
-        }
-        state[keyPath: toNavigationState] = path
-        return .merge(removedIds.map { .cancel(id: $0) })
+    case let .setPath(path):
+      // TODO: Track inserts, removals, and run `self.base` _before_ removals.
+      var removedIds: Set<AnyHashable> = []
+      for destination in state[keyPath: toNavigationState].destinations {
+        removedIds.insert(destination.id)
       }
+      for destination in path {
+        removedIds.remove(destination.id)
+      }
+      state[keyPath: toNavigationState] = path
+      for id in removedIds {
+        effect = effect.merge(with: .cancel(id: id))
+      }
+
+    case .none:
+      break
     }
 
-    self.base
+    effect = effect.merge(
+      with: self.base.reduce(into: &state, action: action)
+    )
 
-    // TODO: Run `base` before dismissal? See presentation for this behavior.
+    return effect
   }
 }
 
