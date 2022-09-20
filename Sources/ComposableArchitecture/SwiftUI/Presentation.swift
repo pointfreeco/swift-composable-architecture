@@ -194,22 +194,22 @@ public struct _PresentationDestinationReducer<
   ) -> Effect<Presenter.Action, Never> {
     var effect: Effect<Presenter.Action, Never> = .none
 
-    let presentedState = state[keyPath: toPresentedState]
-    let presentedAction = toPresentedAction.extract(from: action)
+    let presentedState = state[keyPath: self.toPresentedState]
+    let presentedAction = self.toPresentedAction.extract(from: action)
 
     switch presentedAction {
     case let .present(id, .some(presentedState)):
-      state[keyPath: toPresentedState] = .presented(id: id, presentedState)
+      state[keyPath: self.toPresentedState] = .presented(id: id, presentedState)
 
     case let .presented(presentedAction):
       if case .presented(let id, var presentedState) = presentedState {
-        defer { state[keyPath: toPresentedState] = .presented(id: id, presentedState) }
+        defer { state[keyPath: self.toPresentedState] = .presented(id: id, presentedState) }
         effect = effect.merge(
           with: self.presented
             .dependency(\.navigationID.current, id)
             .dependency(\.dismiss, DismissEffect { await Task.cancel(id: DismissID.self) })
             .reduce(into: &presentedState, action: presentedAction)
-            .map { toPresentedAction.embed(.presented($0)) }
+            .map { self.toPresentedAction.embed(.presented($0)) }
             .cancellable(id: id)
         )
       } else {
@@ -251,15 +251,15 @@ public struct _PresentationDestinationReducer<
     effect = effect.merge(with: self.presenter.reduce(into: &state, action: action))
 
     if case .dismiss = presentedAction, case let .presented(id, _) = presentedState {
-      state[keyPath: toPresentedState].wrappedValue = nil
+      state[keyPath: self.toPresentedState].wrappedValue = nil
       effect = effect.merge(with: .cancel(id: id))
     } else if case let .presented(id, _) = presentedState,
-      state[keyPath: toPresentedState].id != id
+      state[keyPath: self.toPresentedState].id != id
     {
       effect = effect.merge(with: .cancel(id: id))
     }
 
-    if let id = state[keyPath: toPresentedState].id, id != presentedState.id {
+    if let id = state[keyPath: self.toPresentedState].id, id != presentedState.id {
       effect = effect.merge(
         with: .task {
           var dependencies = DependencyValues.current

@@ -229,6 +229,7 @@ extension NavigationAction: Equatable where Action: Equatable {}
 extension NavigationAction: Hashable where Action: Hashable {}
 
 extension ReducerProtocol {
+  @inlinable
   public func navigationDestination<Destinations: ReducerProtocol>(
     _ toNavigationState: WritableKeyPath<State, NavigationStateOf<Destinations>>,
     action toNavigationAction: CasePath<Action, NavigationActionOf<Destinations>>,
@@ -238,7 +239,7 @@ extension ReducerProtocol {
     line: UInt = #line
   ) -> _NavigationDestinationReducer<Self, Destinations> {
     .init(
-      upstream: self,
+      base: self,
       toNavigationState: toNavigationState,
       toNavigationAction: toNavigationAction,
       destinations: destinations(),
@@ -250,18 +251,18 @@ extension ReducerProtocol {
 }
 
 public struct _NavigationDestinationReducer<
-  Upstream: ReducerProtocol,
+  Base: ReducerProtocol,
   Destinations: ReducerProtocol
 >: ReducerProtocol
 where Destinations.State: Hashable {
   @usableFromInline
-  let upstream: Upstream
+  let base: Base
 
   @usableFromInline
-  let toNavigationState: WritableKeyPath<Upstream.State, NavigationStateOf<Destinations>>
+  let toNavigationState: WritableKeyPath<Base.State, NavigationStateOf<Destinations>>
 
   @usableFromInline
-  let toNavigationAction: CasePath<Upstream.Action, NavigationActionOf<Destinations>>
+  let toNavigationAction: CasePath<Base.Action, NavigationActionOf<Destinations>>
 
   @usableFromInline
   let destinations: Destinations
@@ -276,7 +277,26 @@ where Destinations.State: Hashable {
   let line: UInt
 
   @inlinable
-  public var body: some ReducerProtocol<Upstream.State, Upstream.Action> {
+  init(
+    base: Base,
+    toNavigationState: WritableKeyPath<Base.State, NavigationStateOf<Destinations>>,
+    toNavigationAction: CasePath<Base.Action, NavigationActionOf<Destinations>>,
+    destinations: Destinations,
+    file: StaticString,
+    fileID: StaticString,
+    line: UInt
+  ) {
+    self.base = base
+    self.toNavigationState = toNavigationState
+    self.toNavigationAction = toNavigationAction
+    self.destinations = destinations
+    self.file = file
+    self.fileID = fileID
+    self.line = line
+  }
+
+  @inlinable
+  public var body: some ReducerProtocol<Base.State, Base.Action> {
     Reduce { state, action in
       guard let navigationAction = toNavigationAction.extract(from: action)
       else { return .none }
@@ -295,17 +315,7 @@ where Destinations.State: Hashable {
             This is generally considered an application logic error, and can happen for a few \
             reasons:
 
-            • A parent reducer removed an element with this ID before this reducer ran. This \
-            reducer must run before any other reducer removes an element, which ensures that \
-            element reducers can handle their actions while their state is still available.
-
-            • An in-flight effect emitted this action when state contained no element at this ID. \
-            While it may be perfectly reasonable to ignore this action, consider canceling the \
-            associated effect before an element is removed, especially if it is a long-living effect.
-
-            • This action was sent to the store while its state contained no element at this ID. To \
-            fix this make sure that actions for this reducer can only be sent from a view store when \
-            its state contains an element at this id. In SwiftUI applications, use "ForEachStore".
+            • TODO
             """,
             [
               "\(self.fileID)",
@@ -339,9 +349,9 @@ where Destinations.State: Hashable {
       }
     }
 
-    self.upstream
+    self.base
 
-    // TODO: Run `upstream` before dismissal? See presentation for this behavior.
+    // TODO: Run `base` before dismissal? See presentation for this behavior.
   }
 }
 
