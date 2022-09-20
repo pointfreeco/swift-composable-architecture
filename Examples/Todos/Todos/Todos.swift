@@ -73,7 +73,9 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
             .compactMap { state.todos.index(id: $0.id) }
         )
         destination =
-          state.todos.index(id: state.filteredTodos[destination].id)
+          (destination < state.filteredTodos.endIndex
+            ? state.todos.index(id: state.filteredTodos[destination].id)
+            : destination)
           ?? destination
       }
 
