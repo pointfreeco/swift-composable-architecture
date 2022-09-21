@@ -387,7 +387,7 @@ struct ScreenC: ReducerProtocol {
   @Dependency(\.mainQueue) var mainQueue
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    enum TimerId {}
+    enum TimerID {}
 
     switch action {
     case .startButtonTapped:
@@ -397,10 +397,11 @@ struct ScreenC: ReducerProtocol {
           await send(.timerTick)
         }
       }
+      .cancellable(id: TimerID.self)
 
     case .stopButtonTapped:
       state.isTimerRunning = false
-      return .cancel(id: TimerId.self)
+      return .cancel(id: TimerID.self)
 
     case .timerTick:
       state.count += 1

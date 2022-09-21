@@ -82,10 +82,15 @@ extension Effect {
         )
       )
     case let .run(priority, operation):
+      let navigationID = DependencyValues.current.navigationID.current
       return Self(
         operation: .run(priority) { send in
-          await withTaskCancellation(id: id, cancelInFlight: cancelInFlight) {
-            await operation(send)
+          await DependencyValues.withValues {
+            $0.navigationID.current = navigationID
+          } operation: {
+            await withTaskCancellation(id: id, cancelInFlight: cancelInFlight) {
+              await operation(send)
+            }
           }
         }
       )
