@@ -302,9 +302,9 @@ public final class ViewStore<State, Action>: ObservableObject {
   public func send(_ action: Action, while predicate: @escaping (State) -> Bool) async {
     let task = self.send(action)
     await withTaskCancellationHandler {
-      task.rawValue?.cancel()
-    } operation: {
       await self.yield(while: predicate)
+    } onCancel: {
+      task.rawValue?.cancel()
     }
   }
 
@@ -324,9 +324,9 @@ public final class ViewStore<State, Action>: ObservableObject {
   ) async {
     let task = withAnimation(animation) { self.send(action) }
     await withTaskCancellationHandler {
-      task.rawValue?.cancel()
-    } operation: {
       await self.yield(while: predicate)
+    } onCancel: {
+      task.rawValue?.cancel()
     }
   }
 
@@ -346,8 +346,6 @@ public final class ViewStore<State, Action>: ObservableObject {
     } else {
       let cancellable = Box<AnyCancellable?>(wrappedValue: nil)
       try? await withTaskCancellationHandler {
-        cancellable.wrappedValue?.cancel()
-      } operation: {
         try Task.checkCancellation()
         try await withUnsafeThrowingContinuation {
           (continuation: UnsafeContinuation<Void, Error>) in
@@ -363,6 +361,8 @@ public final class ViewStore<State, Action>: ObservableObject {
               _ = cancellable
             }
         }
+      } onCancel: {
+        cancellable.wrappedValue?.cancel()
       }
     }
   }

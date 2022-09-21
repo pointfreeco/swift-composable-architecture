@@ -263,19 +263,29 @@
             self.receivedActions.append((action, state))
           }
 
-          let effect = LongLivingEffect(file: action.file, line: action.line)
-          return
-            effects
-            .handleEvents(
-              receiveSubscription: { [weak self] _ in
-                self?.inFlightEffects.insert(effect)
-                self?.effectDidSubscribe.continuation.yield()
-              },
-              receiveCompletion: { [weak self] _ in self?.inFlightEffects.remove(effect) },
-              receiveCancel: { [weak self] in self?.inFlightEffects.remove(effect) }
-            )
-            .eraseToEffect { .init(origin: .receive($0), file: action.file, line: action.line) }
+          switch effects.operation {
+          case .none:
+            self.effectDidSubscribe.continuation.yield()
+            return .none
 
+          case .publisher, .run:
+            let effect = LongLivingEffect(file: action.file, line: action.line)
+            return
+              effects
+              .handleEvents(
+                receiveSubscription: {
+                  [effectDidSubscribe = self.effectDidSubscribe, weak self] _ in
+                  self?.inFlightEffects.insert(effect)
+                  Task {
+                    await Task.megaYield()
+                    effectDidSubscribe.continuation.yield()
+                  }
+                },
+                receiveCompletion: { [weak self] _ in self?.inFlightEffects.remove(effect) },
+                receiveCancel: { [weak self] in self?.inFlightEffects.remove(effect) }
+              )
+              .eraseToEffect { .init(origin: .receive($0), file: action.file, line: action.line) }
+          }
         },
         environment: ()
       )
@@ -563,7 +573,9 @@
       if "\(self.file)" == "\(file)" {
         self.line = line
       }
-      await Task.megaYield()
+      // NB: Give concurrency runtime more time to kick off effects so users don't need to manually
+      //     instrument their effects.
+      await Task.megaYield(count: 20)
       return .init(rawValue: task, timeout: self.timeout)
     }
 
@@ -1031,7 +1043,7 @@
   }
 
   extension Task where Success == Never, Failure == Never {
-    static func megaYield(count: Int = 6) async {
+    static func megaYield(count: Int = 10) async {
       for _ in 1...count {
         await Task<Void, Never>.detached(priority: .low) { await Task.yield() }.value
       }

@@ -28,6 +28,7 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ### Combine Integration
 
+- ``Effect/Output``
 - ``Effect/init(_:)``
 - ``Effect/init(value:)``
 - ``Effect/init(error:)``

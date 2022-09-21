@@ -171,18 +171,18 @@ extension Publishers.Create.Subscription: CustomStringConvertible {
 
 extension Effect {
   public struct Subscriber {
-    private let _send: (Output) -> Void
+    private let _send: (Action) -> Void
     private let _complete: (Subscribers.Completion<Failure>) -> Void
 
     init(
-      send: @escaping (Output) -> Void,
+      send: @escaping (Action) -> Void,
       complete: @escaping (Subscribers.Completion<Failure>) -> Void
     ) {
       self._send = send
       self._complete = complete
     }
 
-    public func send(_ value: Output) {
+    public func send(_ value: Action) {
       self._send(value)
     }
 

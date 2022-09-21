@@ -368,15 +368,8 @@ public final class Store<State, Action> {
       withExtendedLifetime(self.bufferedActions) {
         self.bufferedActions.removeAll()
       }
-      // 2. Updating state can also lead to re-entrant actions if the emission of a downstream store
-      //    publisher sends an action back into the store.
-      //
-      //    We update "state" _before_ flipping "isSending" to false to ensure these actions are
-      //    appended to the buffer and not processed immediately.
       self.state.value = currentState
       self.isSending = false
-      // Should either of the above steps send re-entrant actions back into the store, we handle
-      // them recursively.
       if !self.bufferedActions.isEmpty {
         if let task = self.send(
           self.bufferedActions.removeLast(), originatingFrom: originatingAction,
@@ -458,13 +451,13 @@ public final class Store<State, Action> {
         var index = tasks.wrappedValue.startIndex
         while index < tasks.wrappedValue.endIndex {
           defer { index += 1 }
-          tasks.wrappedValue[index].cancel()
+          await tasks.wrappedValue[index].value
         }
-      } operation: {
+      } onCancel: {
         var index = tasks.wrappedValue.startIndex
         while index < tasks.wrappedValue.endIndex {
           defer { index += 1 }
-          await tasks.wrappedValue[index].value
+          tasks.wrappedValue[index].cancel()
         }
       }
     }

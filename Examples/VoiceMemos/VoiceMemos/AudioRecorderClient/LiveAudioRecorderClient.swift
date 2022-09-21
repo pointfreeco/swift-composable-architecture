@@ -79,9 +79,10 @@ private actor AudioRecorder {
       }
     }
 
-    guard let action = try await stream.first(where: { @Sendable _ in true })
-    else { throw CancellationError() }
-    return action
+    for try await didFinish in stream {
+      return didFinish
+    }
+    throw CancellationError()
   }
 }
 
