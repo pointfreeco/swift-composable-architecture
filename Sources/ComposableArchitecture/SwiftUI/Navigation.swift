@@ -4,6 +4,7 @@ import SwiftUI
 // TODO: Other names? `NavigationPathState`? `NavigationStatePath`?
 // TODO: Should `NavigationState` flatten to just work on `Identifiable` elements?
 // TODO: `Sendable where Element: Sendable`
+// TODO: Get a better handle on how explicit `ID`s are handled for various navigation scenarios.
 @propertyWrapper
 public struct NavigationState<Element: Hashable>:
   MutableCollection,
@@ -23,6 +24,7 @@ public struct NavigationState<Element: Hashable>:
   }
 
   // TODO: should this be an array of reference boxed values?
+  // TODO: should this be publicly exposed?
   @usableFromInline
   var destinations: OrderedDictionary<ID, Element> = [:]
 
@@ -87,7 +89,9 @@ public struct NavigationState<Element: Hashable>:
       yield &destination
       self.destinations[destination.id] = destination.element
     }
-    set { self.destinations[newValue.id] = newValue.element }
+    set {
+      self.destinations[newValue.id] = newValue.element
+    }
   }
 
   @inlinable
@@ -253,6 +257,8 @@ extension NavigationState.Path: ExpressibleByArrayLiteral {
 }
 
 public enum NavigationAction<State: Hashable, Action> {
+  // TODO: Does it make sense to fold `dismiss` into `element`?
+  case dismiss(id: NavigationState.ID)
   case element(id: NavigationState.ID, Action)
   case setPath(NavigationState<State>)
 }
@@ -262,6 +268,8 @@ where R.State: Hashable
 
 extension NavigationAction: Equatable where Action: Equatable {}
 extension NavigationAction: Hashable where Action: Hashable {}
+
+// TODO: Decodable, Encodable, Sendable, ...?
 
 extension ReducerProtocol {
   @inlinable
@@ -311,6 +319,9 @@ where Destinations.State: Hashable {
   @usableFromInline
   let line: UInt
 
+  @usableFromInline
+  enum DismissID {}
+
   @inlinable
   init(
     base: Base,
@@ -337,8 +348,43 @@ where Destinations.State: Hashable {
     var effect: Effect<Base.Action, Never> = .none
 
     switch self.toNavigationAction.extract(from: action) {
+    case let .dismiss(id):
+      guard let index = state[keyPath: self.toNavigationState].destinations.index(forKey: id)
+      else {
+        runtimeWarning(
+          """
+          A "navigationDestination" at "%@:%d" requested dismissal of a missing element.
+
+            ID:
+              %@
+
+          This is generally considered an application logic error, and can happen for a few \
+          reasons:
+
+          • TODO
+          """,
+          [
+            "\(self.fileID)",
+            self.line,
+            "\(id)",
+          ],
+          file: self.file,
+          line: self.line
+        )
+        break
+      }
+
+      // TODO:
+      //   Or should dismiss simply remove the element?
+      //   Or should dismiss warn/no-op if the element isn't _the_ presented element?
+      //     (Closest to SwiftUI behavior, which doesn't warn but ignores dismissal)
+      // TODO: Should this delegate to `setPath` instead for parents to listen to?
+      //   Or should parents have to listen to both of these actions or just have the option?
+      state[keyPath: self.toNavigationState].removeSubrange(index...)
+      break
+
     case let .element(id, localAction):
-      guard let index = state[keyPath: toNavigationState].firstIndex(where: { $0.id == id })
+      guard let index = state[keyPath: self.toNavigationState].firstIndex(where: { $0.id == id })
       else {
         runtimeWarning(
           """
@@ -354,36 +400,50 @@ where Destinations.State: Hashable {
           """,
           [
             "\(self.fileID)",
-            line,
+            self.line,
             debugCaseOutput(action),
           ],
           file: self.file,
           line: self.line
         )
-        return .none
+        break
       }
       effect = effect.merge(
         with: self.destinations
           .dependency(\.navigationID.current, id)
+          .dependency(\.dismiss, DismissEffect { await Task.cancel(id: DismissID.self) })
           .reduce(
-            into: &state[keyPath: toNavigationState][index].element,
+            into: &state[keyPath: self.toNavigationState][index].element,
             action: localAction
           )
-          .map { toNavigationAction.embed(.element(id: id, $0)) }
+          .map { self.toNavigationAction.embed(.element(id: id, $0)) }
           .cancellable(id: id)
       )
 
-    case let .setPath(path):
-      // TODO: Track inserts, removals, and run `self.base` _before_ removals.
-      var removedIds: Set<AnyHashable> = []
-      for destination in state[keyPath: toNavigationState] {
-        removedIds.insert(destination.id)
+    // TODO: Track insertions, removals in action for parent to listen to?
+    // .setPath(PathUpdate { newPath: Path, presented: [Element], dismissed: [Element] })
+    case let .setPath(newPath):
+      let oldPath = state[keyPath: self.toNavigationState]
+      let presentedIDs = newPath.ids.subtracting(oldPath.ids)
+      let dismissedIDs = oldPath.ids.subtracting(newPath.ids)
+
+      state[keyPath: self.toNavigationState] = newPath
+
+      for id in presentedIDs {
+        effect = effect.merge(
+          with: .task {
+            var dependencies = DependencyValues.current
+            dependencies.navigationID.current = id
+            return try await DependencyValues.$current.withValue(dependencies) {
+              try await withTaskCancellation(id: DismissID.self) {
+                try await Task.never()
+              }
+            }
+          }
+          .concatenate(with: Effect(value: self.toNavigationAction.embed(.dismiss(id: id))))
+        )
       }
-      for destination in path {
-        removedIds.remove(destination.id)
-      }
-      state[keyPath: toNavigationState] = path
-      for id in removedIds {
+      for id in dismissedIDs {
         effect = effect.merge(with: .cancel(id: id))
       }
 

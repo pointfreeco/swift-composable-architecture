@@ -377,11 +377,7 @@ extension View {
       ) { _ in
         IfLetStore(
           store.scope(
-            state: returningLastNonNilValue {
-              dump($0.wrappedValue)
-              dump($0.wrappedValue.flatMap(toDestinationState))
-              return $0.wrappedValue.flatMap(toDestinationState)
-            },
+            state: returningLastNonNilValue { $0.wrappedValue.flatMap(toDestinationState) },
             action: { .presented(fromDestinationAction($0)) }
           ),
           then: content
