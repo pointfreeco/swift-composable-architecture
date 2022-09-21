@@ -17,7 +17,8 @@ public struct NavigationState<Element: Hashable>:
     public let id: ID
     public var element: Element
 
-    public init(id: ID? = nil, element: Element) {
+    @usableFromInline
+    init(id: ID? = nil, element: Element) {
       self.id = id ?? DependencyValues.current.navigationID.next()
       self.element = element
     }
@@ -90,7 +91,11 @@ public struct NavigationState<Element: Hashable>:
       self.destinations[destination.id] = destination.element
     }
     set {
-      self.destinations[newValue.id] = newValue.element
+      let (_, index) = self.destinations.updateValue(
+        newValue.element, forKey: newValue.id, insertingAt: position
+      )
+      // TODO: Runtime warning finesse?
+      assert(index == position)
     }
   }
 
@@ -212,7 +217,7 @@ extension NavigationState.Destination: Decodable where Element: Decodable {
     {
       self.id = id
     } else {
-      self.id = UUID()
+      self.id = DependencyValues.current.navigationID.next()
     }
     self.element = try container.decode(Element.self, forKey: .element)
   }
