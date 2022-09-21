@@ -1,3 +1,4 @@
+import OrderedCollections
 import SwiftUI
 
 // TODO: Other names? `NavigationPathState`? `NavigationStatePath`?
@@ -23,75 +24,86 @@ public struct NavigationState<Element: Hashable>:
 
   // TODO: should this be an array of reference boxed values?
   @usableFromInline
-  var destinations: [Destination] = []
+  var destinations: OrderedDictionary<ID, Element> = [:]
 
+  @inlinable
+  @inline(__always)
+  public var ids: OrderedSet<ID> {
+    self.destinations.keys
+  }
+
+  @inlinable
+  @inline(__always)
+  public var elements: [Element] {
+    self.destinations.values.elements
+  }
+
+  @inlinable
   public init() {}
 
+  @inlinable
   public subscript(id id: ID) -> Element? {
-    _read {
-      guard let index = self.destinations.firstIndex(where: { $0.id == id })
-      else {
-        yield nil
-        return
-      }
-      yield self.destinations[index].element
-    }
-    _modify {
-      guard let index = self.destinations.firstIndex(where: { $0.id == id })
-      else {
-        var element: Element? = nil
-        yield &element
-        return
-      }
-      var element: Element! = self.destinations[index].element
-      yield &element
-      self.destinations[index].element = element
-    }
-    set {
-      switch (self.destinations.firstIndex(where: { $0.id == id }), newValue) {
-      case let (.some(index), .some(newValue)):
-        self.destinations[index].element = newValue
-
-      case let (.some(index), .none):
-        self.destinations.remove(at: index)
-
-      case let (.none, .some(newValue)):
-        self.append(newValue)
-
-      case (.none, .none):
-        break
-      }
-    }
+    _read { yield self.destinations[id] }
+    _modify { yield &self.destinations[id] }
   }
 
   @discardableResult
+  @inlinable
   public mutating func append(_ element: Element) -> ID {
     let destination = Destination(element: element)
-    self.destinations.append(destination)
+    self.destinations[destination.id] = destination.element
     return destination.id
   }
 
+  @inlinable
+  @inline(__always)
   public var startIndex: Int {
-    self.destinations.startIndex
+    self.destinations.elements.startIndex
   }
 
+  @inlinable
+  @inline(__always)
   public var endIndex: Int {
-    self.destinations.endIndex
+    self.destinations.elements.endIndex
   }
 
+  @inlinable
+  @inline(__always)
   public func index(after i: Int) -> Int {
-    self.destinations.index(after: i)
+    self.destinations.elements.index(after: i)
   }
 
+  @inlinable
   public subscript(position: Int) -> Destination {
-    _read { yield self.destinations[position] }
-    _modify { yield &self.destinations[position] }
-    set { self.destinations[position] = newValue }
+    _read {
+      yield Destination(
+        id: self.destinations.keys[position], element: self.destinations.values[position]
+      )
+    }
+    _modify {
+      var destination = Destination(
+        id: self.destinations.keys[position], element: self.destinations.values[position]
+      )
+      yield &destination
+      self.destinations[destination.id] = destination.element
+    }
+    set { self.destinations[newValue.id] = newValue.element }
   }
 
+  @inlinable
   public mutating func replaceSubrange<C: Collection>(_ subrange: Range<Int>, with newElements: C)
   where C.Element == Destination {
-    self.destinations.replaceSubrange(subrange, with: newElements)
+    self.destinations.removeSubrange(subrange)
+    for destination in newElements.reversed() {
+      self.destinations.updateValue(
+        destination.element, forKey: destination.id, insertingAt: subrange.startIndex
+      )
+    }
+  }
+
+  @inlinable
+  public mutating func swapAt(_ i: Int, _ j: Int) {
+    self.destinations.swapAt(i, j)
   }
 
   public struct Path:
@@ -99,46 +111,60 @@ public struct NavigationState<Element: Hashable>:
     RandomAccessCollection,
     RangeReplaceableCollection
   {
+    @usableFromInline
     var state: NavigationState
 
+    @inlinable
     init(state: NavigationState) {
       self.state = state
     }
 
+    @inlinable
     public init() { self.state = NavigationState() }
 
+    @inlinable
+    @inline(__always)
     public var startIndex: Int {
       self.state.startIndex
     }
 
+    @inlinable
+    @inline(__always)
     public var endIndex: Int {
       self.state.endIndex
     }
 
+    @inlinable
+    @inline(__always)
     public func index(after i: Int) -> Int {
       self.state.index(after: i)
     }
 
+    @inlinable
     public subscript(position: Int) -> Element {
       _read { yield self.state[position].element }
       _modify { yield &self.state[position].element }
       set { self.state[position].element = newValue }
     }
 
+    @inlinable
     public mutating func replaceSubrange<C: Collection>(_ subrange: Range<Int>, with newElements: C)
     where C.Element == Element {
       self.state.replaceSubrange(subrange, with: newElements.map { Destination(element: $0) })
     }
 
+    @inlinable
     public mutating func swapAt(_ i: Int, _ j: Int) {
       self.state.swapAt(i, j)
     }
   }
 
+  @inlinable
   public init(wrappedValue: Path = []) {
     self = wrappedValue.state
   }
 
+  @inlinable
   public var wrappedValue: Path {
     _read { yield Path(state: self) }
     _modify {
@@ -148,6 +174,7 @@ public struct NavigationState<Element: Hashable>:
     }
   }
 
+  @inlinable
   public var projectedValue: Self {
     _read { yield self }
     _modify { yield &self }
@@ -159,7 +186,7 @@ where R.State: Hashable
 
 extension NavigationState: ExpressibleByDictionaryLiteral {
   public init(dictionaryLiteral elements: (ID, Element)...) {
-    self.destinations = .init(elements.map(Destination.init(id:element:)))
+    self.destinations = .init(uniqueKeysWithValues: elements)
   }
 }
 
@@ -208,8 +235,16 @@ extension NavigationState.Destination: Hashable where Element: Hashable {}
 extension NavigationState: Equatable where Element: Equatable {}
 extension NavigationState: Hashable where Element: Hashable {}
 
-extension NavigationState: Decodable where Element: Decodable {}
-extension NavigationState: Encodable where Element: Encodable {}
+extension NavigationState: Decodable where Element: Decodable {
+  public init(from decoder: Decoder) throws {
+    try self.init([Destination](from: decoder))
+  }
+}
+extension NavigationState: Encodable where Element: Encodable {
+  public func encode(to encoder: Encoder) throws {
+    try Array(self).encode(to: encoder)
+  }
+}
 
 extension NavigationState.Path: ExpressibleByArrayLiteral {
   public init(arrayLiteral elements: Element...) {
@@ -341,7 +376,7 @@ where Destinations.State: Hashable {
     case let .setPath(path):
       // TODO: Track inserts, removals, and run `self.base` _before_ removals.
       var removedIds: Set<AnyHashable> = []
-      for destination in state[keyPath: toNavigationState].destinations {
+      for destination in state[keyPath: toNavigationState] {
         removedIds.insert(destination.id)
       }
       for destination in path {
