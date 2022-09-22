@@ -9,6 +9,7 @@ becoming slow to execute, SwiftUI view bodies executing more often than expected
 * [View stores](#View-stores)
 * [CPU-intensive calculations](#CPU-intensive-calculations)
 * [High-frequency actions](#High-frequency-actions)
+* [Compiler performance](#Compiler-performance)
 <!--* [Memory usage](#Memory-usage)-->
 
 ### View stores
@@ -304,8 +305,6 @@ case .startButtonTapped:
 
 This greatly reduces the bandwidth of actions being sent into the system so that you are not 
 incurring unnecessary costs for sending actions.
-
-<!--### Memory usage-->
 
 ### Compiler performance
 
