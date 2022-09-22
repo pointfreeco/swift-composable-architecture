@@ -40,11 +40,6 @@ test-library-release:
 		-workspace ComposableArchitecture.xcworkspace \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_TVOS)"
-	xcodebuild \
-		-configuration release \
-		-workspace ComposableArchitecture.xcworkspace \
-		-scheme ComposableArchitecture \
-		-destination platform="$(PLATFORM_WATCHOS)"
 
 DOC_WARNINGS := $(shell xcodebuild clean docbuild \
 	-scheme ComposableArchitecture \
