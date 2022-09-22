@@ -7,7 +7,7 @@
 /// ```swift
 /// final class FeatureModel: ObservableObject {
 ///   @Dependency(\.apiClient) var apiClient
-///   @Dependency(\.mainQueue) var mainQueue
+///   @Dependency(\.continuousClock) var clock
 ///   @Dependency(\.uuid) var uuid
 ///
 ///   // ...
@@ -19,7 +19,7 @@
 /// ```swift
 /// struct Feature: ReducerProtocol {
 ///   @Dependency(\.apiClient) var apiClient
-///   @Dependency(\.mainQueue) var mainQueue
+///   @Dependency(\.continuousClock) var clock
 ///   @Dependency(\.uuid) var uuid
 ///
 ///   // ...
@@ -32,7 +32,7 @@
 /// ```swift
 /// func sharedEffect() async throws -> Action {
 ///   @Dependency(\.apiClient) var apiClient
-///   @Dependency(\.mainQueue) var mainQueue
+///   @Dependency(\.continuousClock) var clock
 ///
 ///   // ...
 /// }

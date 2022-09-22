@@ -284,7 +284,7 @@ final class StoreTests: XCTestCase {
           state? += 1
           return .none
         } else {
-          return Just(true).receive(on: DispatchQueue.main).eraseToEffect()
+          return .task { true }
         }
       })
     )

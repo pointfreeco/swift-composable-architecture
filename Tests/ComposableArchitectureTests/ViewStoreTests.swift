@@ -181,9 +181,7 @@ final class ViewStoreTests: XCTestCase {
           return .none
         case .tapped:
           state = true
-          return Effect(value: .response)
-            .receive(on: DispatchQueue.main)
-            .eraseToEffect()
+          return .task { .response }
         }
       }
 
@@ -212,9 +210,7 @@ final class ViewStoreTests: XCTestCase {
           return .none
         case .tapped:
           state = true
-          return Effect(value: .response)
-            .receive(on: DispatchQueue.main)
-            .eraseToEffect()
+          return .task { .response }
         }
       }
 

@@ -5,7 +5,7 @@ import XCTest
 
 @MainActor
 final class TodosTests: XCTestCase {
-  let mainQueue = DispatchQueue.test
+  let clock = TestClock()
 
   func testAddTodo() async {
     let store = TestStore(
@@ -13,7 +13,6 @@ final class TodosTests: XCTestCase {
       reducer: Todos()
     )
 
-    store.dependencies.mainQueue = self.mainQueue.eraseToAnyScheduler()
     store.dependencies.uuid = .incrementing
 
     await store.send(.addTodoButtonTapped) {
@@ -59,9 +58,6 @@ final class TodosTests: XCTestCase {
       reducer: Todos()
     )
 
-    store.dependencies.mainQueue = self.mainQueue.eraseToAnyScheduler()
-    store.dependencies.uuid = .incrementing
-
     await store.send(
       .todo(id: state.todos[0].id, action: .textFieldChanged("Learn Composable Architecture"))
     ) {
@@ -90,13 +86,12 @@ final class TodosTests: XCTestCase {
       reducer: Todos()
     )
 
-    store.dependencies.mainQueue = self.mainQueue.eraseToAnyScheduler()
-    store.dependencies.uuid = .incrementing
+    store.dependencies.continuousClock = self.clock
 
     await store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
       $0.todos[id: state.todos[0].id]?.isComplete = true
     }
-    await self.mainQueue.advance(by: 1)
+    await self.clock.advance(by: .seconds(1))
     await store.receive(.sortCompletedTodos) {
       $0.todos = [
         $0.todos[1],
@@ -126,17 +121,16 @@ final class TodosTests: XCTestCase {
       reducer: Todos()
     )
 
-    store.dependencies.mainQueue = self.mainQueue.eraseToAnyScheduler()
-    store.dependencies.uuid = .incrementing
+    store.dependencies.continuousClock = self.clock
 
     await store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
       $0.todos[id: state.todos[0].id]?.isComplete = true
     }
-    await self.mainQueue.advance(by: 0.5)
+    await self.clock.advance(by: .milliseconds(500))
     await store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
       $0.todos[id: state.todos[0].id]?.isComplete = false
     }
-    await self.mainQueue.advance(by: 1)
+    await self.clock.advance(by: .seconds(1))
     await store.receive(.sortCompletedTodos)
   }
 
@@ -160,9 +154,6 @@ final class TodosTests: XCTestCase {
       initialState: state,
       reducer: Todos()
     )
-
-    store.dependencies.mainQueue = self.mainQueue.eraseToAnyScheduler()
-    store.dependencies.uuid = .incrementing
 
     await store.send(.clearCompletedButtonTapped) {
       $0.todos = [
@@ -196,9 +187,6 @@ final class TodosTests: XCTestCase {
       initialState: state,
       reducer: Todos()
     )
-
-    store.dependencies.mainQueue = self.mainQueue.eraseToAnyScheduler()
-    store.dependencies.uuid = .incrementing
 
     await store.send(.delete([1])) {
       $0.todos = [
@@ -234,8 +222,7 @@ final class TodosTests: XCTestCase {
       reducer: Todos()
     )
 
-    store.dependencies.mainQueue = self.mainQueue.eraseToAnyScheduler()
-    store.dependencies.uuid = .incrementing
+    store.dependencies.continuousClock = self.clock
 
     await store.send(.editModeChanged(.active)) {
       $0.editMode = .active
@@ -247,7 +234,7 @@ final class TodosTests: XCTestCase {
         $0.todos[2],
       ]
     }
-    await self.mainQueue.advance(by: .milliseconds(100))
+    await self.clock.advance(by: .milliseconds(100))
     await store.receive(.sortCompletedTodos)
   }
 
@@ -282,7 +269,7 @@ final class TodosTests: XCTestCase {
       reducer: Todos()
     )
 
-    store.dependencies.mainQueue = self.mainQueue.eraseToAnyScheduler()
+    store.dependencies.continuousClock = self.clock
     store.dependencies.uuid = .incrementing
 
     await store.send(.editModeChanged(.active)) {
@@ -299,7 +286,7 @@ final class TodosTests: XCTestCase {
         $0.todos[2],
       ]
     }
-    await self.mainQueue.advance(by: .milliseconds(100))
+    await self.clock.advance(by: .milliseconds(100))
     await store.receive(.sortCompletedTodos)
   }
 
@@ -323,9 +310,6 @@ final class TodosTests: XCTestCase {
       initialState: state,
       reducer: Todos()
     )
-
-    store.dependencies.mainQueue = self.mainQueue.eraseToAnyScheduler()
-    store.dependencies.uuid = .incrementing
 
     await store.send(.filterPicked(.completed)) {
       $0.filter = .completed

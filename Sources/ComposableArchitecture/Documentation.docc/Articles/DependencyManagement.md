@@ -145,12 +145,12 @@ control dependencies that interact with outside systems.
 ## Using library dependencies
 
 The library comes with many common dependencies that can be used in a controllable manner, such as
-date generators, schedulers, random number generators, UUID generators, and more. A full
+date generators, clocks, random number generators, UUID generators, and more. A full
 list can be seen in the documentation for [`DependencyValues`][dependency-values-docs].
 
-For example, suppose you have a feature that needs access to a date initializer, the main queue
-for time-based asynchrony, and a UUID initializer. All 3 dependencies can be added to your feature's
-reducer:
+For example, suppose you have a feature that needs access to a date initializer, the continuous
+clock for time-based asynchrony, and a UUID initializer. All 3 dependencies can be added to your 
+feature's reducer:
 
 ```swift
 struct Todos: ReducerProtocol {
@@ -161,7 +161,7 @@ struct Todos: ReducerProtocol {
     // ...
   }
   @Dependency(\.date) var date
-  @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.continuousClock) var clock
   @Dependency(\.uuid) var uuid
 
   // ...
@@ -180,7 +180,7 @@ func testTodos() async {
   )
 
   store.dependencies.date = .constant(Date(timeIntervalSinceReferenceDate: 1234567890))
-  store.dependencies.mainQueue = .immediate
+  store.dependencies.continuousClock = ImmediateClock()
   store.dependencies.uuid = .incrementing
 
   // ...
