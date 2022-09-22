@@ -7,13 +7,8 @@ default: test-all
 
 test-all: test-library test-examples
 
-test-library:
+test-library-debug:
 	xcodebuild test \
-		-workspace ComposableArchitecture.xcworkspace \
-		-scheme ComposableArchitecture \
-		-destination platform="$(PLATFORM_IOS)"
-	xcodebuild test \
-		-configuration release \
 		-workspace ComposableArchitecture.xcworkspace \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_IOS)"
@@ -22,29 +17,34 @@ test-library:
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_MACOS)"
 	xcodebuild test \
+		-workspace ComposableArchitecture.xcworkspace \
+		-scheme ComposableArchitecture \
+		-destination platform="$(PLATFORM_TVOS)"
+	xcodebuild \
+		-workspace ComposableArchitecture.xcworkspace \
+		-scheme ComposableArchitecture \
+		-destination platform="$(PLATFORM_WATCHOS)"
+test-library-release:
+	xcodebuild test \
+		-configuration release \
+		-workspace ComposableArchitecture.xcworkspace \
+		-scheme ComposableArchitecture \
+		-destination platform="$(PLATFORM_IOS)"
+	xcodebuild test \
 		-configuration release \
 		-workspace ComposableArchitecture.xcworkspace \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_MACOS)"
 	xcodebuild test \
-		-workspace ComposableArchitecture.xcworkspace \
-		-scheme ComposableArchitecture \
-		-destination platform="$(PLATFORM_TVOS)"
-	xcodebuild test \
 		-configuration release \
 		-workspace ComposableArchitecture.xcworkspace \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_TVOS)"
 	xcodebuild \
-		-workspace ComposableArchitecture.xcworkspace \
-		-scheme ComposableArchitecture \
-		-destination platform="$(PLATFORM_WATCHOS)"
-	xcodebuild \
 		-configuration release \
 		-workspace ComposableArchitecture.xcworkspace \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_WATCHOS)"
-
 
 DOC_WARNINGS := $(shell xcodebuild clean docbuild \
 	-scheme ComposableArchitecture \
