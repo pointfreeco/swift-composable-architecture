@@ -200,14 +200,14 @@
         reducer: EmptyReducer<State, Action>()
       )
 
-      var line: UInt?
+      var line: UInt = 0
       XCTExpectFailure {
         line = #line
         ViewStore(store).binding(\.$value).wrappedValue = 42
       } issueMatcher: {
         $0.compactDescription == """
           A binding action sent from a view store at \
-          "ComposableArchitectureTests/RuntimeWarningTests.swift:\(line ?? 0)" was not handled. …
+          "ComposableArchitectureTests/RuntimeWarningTests.swift:\(line + 1)" was not handled. …
 
             Action:
               RuntimeWarningTests.Action.binding(.set(_, 42))

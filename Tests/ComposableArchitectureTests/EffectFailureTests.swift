@@ -12,7 +12,7 @@
 
       XCTExpectFailure {
         $0.compactDescription == """
-          An 'Effect.task' returned from "ComposableArchitectureTests/EffectFailureTests.swift:24" \
+          An 'Effect.task' returned from "ComposableArchitectureTests/EffectFailureTests.swift:25" \
           threw an unhandled error. …
 
               EffectFailureTests.Unexpected()
@@ -35,7 +35,7 @@
 
       XCTExpectFailure {
         $0.compactDescription == """
-          An 'Effect.run' returned from "ComposableArchitectureTests/EffectFailureTests.swift:47" \
+          An 'Effect.run' returned from "ComposableArchitectureTests/EffectFailureTests.swift:48" \
           threw an unhandled error. …
 
               EffectFailureTests.Unexpected()
