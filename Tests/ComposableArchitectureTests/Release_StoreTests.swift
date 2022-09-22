@@ -7,7 +7,7 @@ final class Release_StoreTests: XCTestCase {
 
   func testMultipleScopes() {
     let expectation = self.expectation(description: "")
-
+ 
     enum Action { case tap, response }
     let store = Store(
       initialState: false,
