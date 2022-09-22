@@ -581,7 +581,7 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
   >: ReducerProtocol {
     let rootStore: Store<RootState, RootAction>
     let toScopedState: (RootState) -> ScopedState
-    private var parentStores: [Any]
+    private let parentStores: [Any]
     let fromScopedAction: (ScopedAction) -> RootAction
     private(set) var isSending = false
 
