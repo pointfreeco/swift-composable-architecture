@@ -104,119 +104,121 @@ final class ReducerTests: XCTestCase {
     await second.withValue { XCTAssertTrue($0) }
   }
 
-  func testDebug() async {
-    enum DebugAction: Equatable {
-      case incrWithBool(Bool)
-      case incr, noop
-    }
-    struct DebugState: Equatable { var count = 0 }
-
-    var logs: [String] = []
-    let logsExpectation = self.expectation(description: "logs")
-    logsExpectation.expectedFulfillmentCount = 2
-
-    let reducer = AnyReducer<DebugState, DebugAction, Void> { state, action, _ in
-      switch action {
-      case .incrWithBool:
-        return .none
-      case .incr:
-        state.count += 1
-        return .none
-      case .noop:
-        return .none
+  #if DEBUG
+    func testDebug() async {
+      enum DebugAction: Equatable {
+        case incrWithBool(Bool)
+        case incr, noop
       }
-    }
-    .debug("[prefix]") { _ in
-      DebugEnvironment(
-        printer: {
-          logs.append($0)
-          logsExpectation.fulfill()
+      struct DebugState: Equatable { var count = 0 }
+
+      var logs: [String] = []
+      let logsExpectation = self.expectation(description: "logs")
+      logsExpectation.expectedFulfillmentCount = 2
+
+      let reducer = AnyReducer<DebugState, DebugAction, Void> { state, action, _ in
+        switch action {
+        case .incrWithBool:
+          return .none
+        case .incr:
+          state.count += 1
+          return .none
+        case .noop:
+          return .none
         }
-      )
-    }
-
-    let store = TestStore(
-      initialState: .init(),
-      reducer: reducer,
-      environment: ()
-    )
-    await store.send(.incr) { $0.count = 1 }
-    await store.send(.noop)
-
-    self.wait(for: [logsExpectation], timeout: 5)
-
-    XCTAssertNoDifference(
-      logs,
-      [
-        #"""
-        [prefix]: received action:
-          ReducerTests.DebugAction.incr
-        - ReducerTests.DebugState(count: 0)
-        + ReducerTests.DebugState(count: 1)
-
-        """#,
-        #"""
-        [prefix]: received action:
-          ReducerTests.DebugAction.noop
-          (No state changes)
-
-        """#,
-      ]
-    )
-  }
-
-  func testDebug_ActionFormat_OnlyLabels() {
-    enum DebugAction: Equatable {
-      case incrWithBool(Bool)
-      case incr, noop
-    }
-    struct DebugState: Equatable { var count = 0 }
-
-    var logs: [String] = []
-    let logsExpectation = self.expectation(description: "logs")
-
-    let reducer = AnyReducer<DebugState, DebugAction, Void> { state, action, _ in
-      switch action {
-      case let .incrWithBool(bool):
-        state.count += bool ? 1 : 0
-        return .none
-      default:
-        return .none
       }
-    }
-    .debug("[prefix]", actionFormat: .labelsOnly) { _ in
-      DebugEnvironment(
-        printer: {
-          logs.append($0)
-          logsExpectation.fulfill()
-        }
-      )
-    }
+      .debug("[prefix]") { _ in
+        DebugEnvironment(
+          printer: {
+            logs.append($0)
+            logsExpectation.fulfill()
+          }
+        )
+      }
 
-    let viewStore = ViewStore(
-      Store(
+      let store = TestStore(
         initialState: .init(),
         reducer: reducer,
         environment: ()
       )
-    )
-    viewStore.send(.incrWithBool(true))
+      await store.send(.incr) { $0.count = 1 }
+      await store.send(.noop)
 
-    self.wait(for: [logsExpectation], timeout: 5)
+      self.wait(for: [logsExpectation], timeout: 5)
 
-    XCTAssertNoDifference(
-      logs,
-      [
-        #"""
-        [prefix]: received action:
-          ReducerTests.DebugAction.incrWithBool
-        - ReducerTests.DebugState(count: 0)
-        + ReducerTests.DebugState(count: 1)
+      XCTAssertNoDifference(
+        logs,
+        [
+          #"""
+          [prefix]: received action:
+            ReducerTests.DebugAction.incr
+          - ReducerTests.DebugState(count: 0)
+          + ReducerTests.DebugState(count: 1)
 
-        """#
-      ]
-    )
-  }
+          """#,
+          #"""
+          [prefix]: received action:
+            ReducerTests.DebugAction.noop
+            (No state changes)
+
+          """#,
+        ]
+      )
+    }
+
+    func testDebug_ActionFormat_OnlyLabels() {
+      enum DebugAction: Equatable {
+        case incrWithBool(Bool)
+        case incr, noop
+      }
+      struct DebugState: Equatable { var count = 0 }
+
+      var logs: [String] = []
+      let logsExpectation = self.expectation(description: "logs")
+
+      let reducer = AnyReducer<DebugState, DebugAction, Void> { state, action, _ in
+        switch action {
+        case let .incrWithBool(bool):
+          state.count += bool ? 1 : 0
+          return .none
+        default:
+          return .none
+        }
+      }
+      .debug("[prefix]", actionFormat: .labelsOnly) { _ in
+        DebugEnvironment(
+          printer: {
+            logs.append($0)
+            logsExpectation.fulfill()
+          }
+        )
+      }
+
+      let viewStore = ViewStore(
+        Store(
+          initialState: .init(),
+          reducer: reducer,
+          environment: ()
+        )
+      )
+      viewStore.send(.incrWithBool(true))
+
+      self.wait(for: [logsExpectation], timeout: 5)
+
+      XCTAssertNoDifference(
+        logs,
+        [
+          #"""
+          [prefix]: received action:
+            ReducerTests.DebugAction.incrWithBool
+          - ReducerTests.DebugState(count: 0)
+          + ReducerTests.DebugState(count: 1)
+
+          """#
+        ]
+      )
+    }
+  #endif
 
   func testDefaultSignpost() {
     let reducer = EmptyReducer<Int, Void>().signpost(log: .default)

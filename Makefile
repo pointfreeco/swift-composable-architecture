@@ -13,6 +13,16 @@ test-library:
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_IOS)"
 	xcodebuild test \
+		-configuration release \
+		-workspace ComposableArchitecture.xcworkspace \
+		-scheme ComposableArchitecture \
+		-destination platform="$(PLATFORM_IOS)"
+	xcodebuild test \
+		-workspace ComposableArchitecture.xcworkspace \
+		-scheme ComposableArchitecture \
+		-destination platform="$(PLATFORM_MACOS)"
+	xcodebuild test \
+		-configuration release \
 		-workspace ComposableArchitecture.xcworkspace \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_MACOS)"
@@ -20,10 +30,21 @@ test-library:
 		-workspace ComposableArchitecture.xcworkspace \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_TVOS)"
+	xcodebuild test \
+		-configuration release \
+		-workspace ComposableArchitecture.xcworkspace \
+		-scheme ComposableArchitecture \
+		-destination platform="$(PLATFORM_TVOS)"
 	xcodebuild \
 		-workspace ComposableArchitecture.xcworkspace \
 		-scheme ComposableArchitecture \
 		-destination platform="$(PLATFORM_WATCHOS)"
+	xcodebuild \
+		-configuration release \
+		-workspace ComposableArchitecture.xcworkspace \
+		-scheme ComposableArchitecture \
+		-destination platform="$(PLATFORM_WATCHOS)"
+
 
 DOC_WARNINGS := $(shell xcodebuild clean docbuild \
 	-scheme ComposableArchitecture \

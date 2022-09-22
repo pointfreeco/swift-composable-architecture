@@ -1,7 +1,6 @@
 import Combine
+import ComposableArchitecture
 import XCTest
-
-@testable import ComposableArchitecture
 
 @MainActor
 final class EffectTests: XCTestCase {
@@ -212,16 +211,18 @@ final class EffectTests: XCTestCase {
     XCTAssertEqual(result, 42)
   }
 
-  func testUnimplemented() {
-    let effect = Effect<Never, Never>.unimplemented("unimplemented")
-    XCTExpectFailure {
-      effect
-        .sink(receiveValue: { _ in })
-        .store(in: &self.cancellables)
-    } issueMatcher: { issue in
-      issue.compactDescription == "unimplemented - An unimplemented effect ran."
+  #if DEBUG
+    func testUnimplemented() {
+      let effect = Effect<Never, Never>.unimplemented("unimplemented")
+      XCTExpectFailure {
+        effect
+          .sink(receiveValue: { _ in })
+          .store(in: &self.cancellables)
+      } issueMatcher: { issue in
+        issue.compactDescription == "unimplemented - An unimplemented effect ran."
+      }
     }
-  }
+  #endif
 
   func testTask() async {
     guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
