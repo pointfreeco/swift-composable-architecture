@@ -1,7 +1,6 @@
 import Combine
+import ComposableArchitecture
 import XCTest
-
-@testable import ComposableArchitecture
 
 @MainActor
 final class EffectThrottleTests: XCTestCase {
