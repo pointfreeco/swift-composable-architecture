@@ -19,9 +19,8 @@ private let readMe = """
   favorite state and rendering an alert.
   """
 
-// MARK: - Favorite domain
+// MARK: - Reusable favorite component
 
-// TODO: can we get rid of ID and just use AnyHashable? But how do we handle Sendable? AnyHashableSendable?
 struct FavoritingState<ID: Hashable & Sendable>: Equatable {
   var alert: AlertState<FavoritingAction>?
   let id: ID
@@ -39,24 +38,24 @@ extension ReducerProtocol {
     action toFavoriteAction: CasePath<Action, FavoritingAction>
   ) -> _FavoritingComponent<Self, ID> {
     .init(
-      parent: self,
+      base: self,
       favorite: favorite,
       toFavoriteState: toFavoriteState,
       toFavoriteAction: toFavoriteAction
     )
   }
 }
-struct _FavoritingComponent<Parent: ReducerProtocol, ID: Hashable & Sendable>: ReducerProtocol {
-  let parent: Parent
+struct _FavoritingComponent<Base: ReducerProtocol, ID: Hashable & Sendable>: ReducerProtocol {
+  let base: Base
   let favorite: @Sendable (ID, Bool) async throws -> Bool
-  let toFavoriteState: WritableKeyPath<Parent.State, FavoritingState<ID>>
-  let toFavoriteAction: CasePath<Parent.Action, FavoritingAction>
+  let toFavoriteState: WritableKeyPath<Base.State, FavoritingState<ID>>
+  let toFavoriteAction: CasePath<Base.Action, FavoritingAction>
 
   private struct CancelID: Hashable {
     let id: AnyHashable
   }
 
-  var body: some ReducerProtocol<Parent.State, Parent.Action> {
+  var body: some ReducerProtocol<Base.State, Base.Action> {
     Scope(state: self.toFavoriteState, action: self.toFavoriteAction) {
       Reduce { state, action in
         switch action {
@@ -83,7 +82,7 @@ struct _FavoritingComponent<Parent: ReducerProtocol, ID: Hashable & Sendable>: R
         }
       }
     }
-    self.parent
+    self.base
   }
 }
 
