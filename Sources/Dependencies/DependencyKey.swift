@@ -18,8 +18,15 @@ import XCTestDynamicOverlay
 /// ``TestDependencyKey`` in your interface module, and extend this conformance to `DependencyKey`
 /// in your implementation module.
 public protocol DependencyKey: TestDependencyKey {
+  associatedtype Value = Self
+
   /// The live value for the dependency key.
   static var liveValue: Value { get }
+
+  // NB: https://github.com/apple/swift/issues/61077
+  // TODO: copy-paste docs?
+  static var previewValue: Value { get }
+  static var testValue: Value { get }
 }
 
 /// A key for accessing test dependencies.

@@ -190,42 +190,21 @@ times when you want to register your own dependencies with the library so that y
 `@Dependency` property wrapper. Doing this is quite similar to registering an environment value
 in SwiftUI (see [docs][environment-values-docs]).
 
-First you create a type that conforms to the [`TestDependencyKey`][test-dependency-key-docs]
-protocol. The only requirement is that you provide a `testValue`, which will be the version of the
-dependency used when your feature is run in a ``TestStore``:
+First you create a type that conforms to the [`DependencyKey`][dependency-key-docs]
+protocol. The minimum implementation you must provide is a `liveValue`, which is the value used
+when running the app in a simulator or on device, and so it's appropriate for it to actually make
+network requests to an external server:
 
 ```swift
-private enum APIClientKey: TestDependencyKey {
-  static let testValue = APIClient.unimplemented
-}
-```
-
-We recommend having an "unimplemented" version of your dependency, that is, an implementation
-that triggers an `XCTFail` anytime one of its endpoints is invoked. This makes it so that you can
-stub the bare minimum of the dependency's interface, allowing you to prove that your test flow
-doesn't interact with any other endpoints.
-
-> Tip: To use a different, default version when your feature is run in an Xcode preview, use the
-> optional `previewValue` requirement.
->
-> ```swift
-> extension APIClientKey {
->   static let previewValue = APIClient.mock(.loggedIn)
-> }
-> ```
-
-Next you extend the key to also conform to the [`DependencyKey`][dependency-key-docs] protocol,
-which will be the version of the dependency used when your feature is run in an Xcode preview, in
-the simulator, or on a device:
-
-```swift
-extension APIClientKey: DependencyKey {
+private enum APIClientKey: DependencyKey {
   static let liveValue = APIClient.live
 }
 ```
 
-This is the version of the dependency that can actually interact with outside systems. In this
-case it means the API client can actually make network requests to an external server.
+> Tip: There are two other values you can provide for a dependency. If you implement `testValue`
+it will be used when testing features in a ``TestStore``, and if you implement `previewValue` it 
+will be used while running features in an Xcode preview. You don't need to worry about those
+values when you are just getting started, and instead can add them later.
 
 Finally, an extension must be made to [`DependencyValues`][dependency-values-docs] to expose a
 computed property for the dependency:
@@ -281,5 +260,4 @@ TODO: get urls
 [swift-identified-collections]: https://github.com/pointfreeco/swift-identified-collections
 [dependency-property-wrapper-docs]: get-url
 [environment-values-docs]: https://developer.apple.com/documentation/swiftui/environmentvalues
-[test-dependency-key-docs]: get-url
 [dependency-key-docs]: get-url

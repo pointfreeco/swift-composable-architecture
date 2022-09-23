@@ -7,7 +7,7 @@ default: test-all
 
 test-all: test-library test-examples
 
-test-library:
+test-library-debug:
 	xcodebuild test \
 		-workspace ComposableArchitecture.xcworkspace \
 		-scheme ComposableArchitecture \
@@ -23,7 +23,28 @@ test-library:
 	xcodebuild \
 		-workspace ComposableArchitecture.xcworkspace \
 		-scheme ComposableArchitecture \
-		-destination platform="$(PLATFORM_WATCHOS)"
+		-destination generic/platform=watchOS
+test-library-release:
+	xcodebuild test \
+		-configuration release \
+		-workspace ComposableArchitecture.xcworkspace \
+		-scheme ComposableArchitecture \
+		-destination platform="$(PLATFORM_IOS)"
+	xcodebuild test \
+		-configuration release \
+		-workspace ComposableArchitecture.xcworkspace \
+		-scheme ComposableArchitecture \
+		-destination platform="$(PLATFORM_MACOS)"
+	xcodebuild test \
+		-configuration release \
+		-workspace ComposableArchitecture.xcworkspace \
+		-scheme ComposableArchitecture \
+		-destination platform="$(PLATFORM_TVOS)"
+	xcodebuild \
+		-configuration release \
+		-workspace ComposableArchitecture.xcworkspace \
+		-scheme ComposableArchitecture \
+		-destination generic/platform=watchOS
 
 DOC_WARNINGS := $(shell xcodebuild clean docbuild \
 	-scheme ComposableArchitecture \

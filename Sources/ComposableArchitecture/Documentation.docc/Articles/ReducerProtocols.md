@@ -515,7 +515,6 @@ application:
 ```swift
 private enum APIClientKey: DependencyKey {
   static let liveValue = APIClient.live
-  static let testValue = APIClient.unimplemented
 }
 extension DependencyValues {
   var apiClient: APIClient {

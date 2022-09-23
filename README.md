@@ -398,20 +398,16 @@ struct NumberFactClient {
 }
 ```
 
-And then registering that type with the dependency management system, which is quite similar to how SwiftUI's environment values works, except you specify both a live and test implementation of the dependency:
+And then registering that type with the dependency management system, which is quite similar to how SwiftUI's environment values works, except you specify the live implementation of the dependency to be used by default:
 
 ```swift
-private enum NumberFactClientKey: LiveDependencyValue {
+private enum NumberFactClientKey: DependencyKey {
   static let liveValue = NumberFactClient(
     fetch: {
       let (data, _) = try await URLSession.shared
         .data(from: .init(string: "http://numbersapi.com/\(number)")!)
       return String(decoding: data, using: UTF8.self)
     }
-  )
-  
-  static let testValue = NumberFactClient(
-    fetch: { "\($0) is a good number Brent" }
   )
 }
 
@@ -452,13 +448,17 @@ struct MyApp: App {
 }
 ```
 
-And the test store can be constructed without specifying any dependencies:
+And the test store can be constructed without specifying any dependencies, but you can still override any dependency you need to for the purpose of the test:
 
 ```swift
 let store = TestStore(
   initialState: Feature.State(),
   reducer: Feature()
 )
+
+store.dependencies.numberFact.fetch = { "\($0) is a good number Brent" }
+
+…
 ```
 
 That is the basics of building and testing a feature in the Composable Architecture. There are _a lot_ more things to be explored, such as composition, modularity, adaptability, and complex effects. The [Examples](./Examples) directory has a bunch of projects to explore to see more advanced usages.

@@ -19,9 +19,8 @@ private let readMe = """
   favorite state and rendering an alert.
   """
 
-// MARK: - Favorite domain
+// MARK: - Reusable favorite component
 
-// TODO: can we get rid of ID and just use AnyHashable? But how do we handle Sendable? AnyHashableSendable?
 struct FavoritingState<ID: Hashable & Sendable>: Equatable {
   var alert: AlertState<FavoritingAction>?
   let id: ID
