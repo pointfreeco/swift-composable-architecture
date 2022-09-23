@@ -38,6 +38,36 @@ final class DependencyKeyTests: XCTestCase {
     }
   }
 
+  // TODO: get test coverage on `enum Key: DependencyKey { static let liveValue = 42 }`
+
+  func testDependencyKeyCascading_ImplementOnlyLive() {
+    enum Key: DependencyKey {
+      static let liveValue = 42
+    }
+
+    XCTAssertEqual(42, Key.liveValue)
+    XCTAssertEqual(42, Key.previewValue)
+
+    XCTExpectFailure {
+      XCTAssertEqual(42, Key.testValue)
+    } issueMatcher: { issue in
+      issue.compactDescription == """
+        A dependency is being used in a test environment without providing a test implementation:
+
+          Key:
+            DependencyKeyTests.Key
+          Dependency:
+            Int
+
+        Dependencies registered with the library are not allowed to use their live implementations \
+        when run in a 'TestStore'.
+
+        To fix, make sure that DependencyKeyTests.Key provides an implementation of 'testValue' in \
+        its conformance to the 'DependencyKey` protocol.
+        """
+    }
+  }
+
   func testDependencyKeyCascading_ImplementOnlyLiveAndPreviewValue() {
     enum Key: DependencyKey {
       static let liveValue = 42
