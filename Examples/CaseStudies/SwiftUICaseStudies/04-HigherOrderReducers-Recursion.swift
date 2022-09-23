@@ -44,7 +44,7 @@ struct Nested: ReducerProtocol {
       }
     }
     .forEach(\.rows, action: /Action.row(id:action:)) {
-      Nested()
+      Self()
     }
   }
 }
