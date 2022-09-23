@@ -19,6 +19,7 @@ public struct DependencyValues: Sendable {
   @TaskLocal public static var current = Self()
 
   @TaskLocal static var isSetting = false
+  @TaskLocal static var currentDependencyName: StaticString?
 
   /// Binds the task-local dependencies to the updated value for the duration of the synchronous
   /// operation.
@@ -101,7 +102,7 @@ public struct DependencyValues: Sendable {
   public subscript<Key: TestDependencyKey>(
     key: Key.Type,
     file: StaticString = #file,
-    fileID: StaticString = #fileID,
+    function: StaticString = #function,
     line: UInt = #line
   ) -> Key.Value where Key.Value: Sendable {
     get {
@@ -126,15 +127,14 @@ public struct DependencyValues: Sendable {
                 dependencyDescription = """
                   Key:
                     \(typeName(Key.self))
-                  Dependency:
+                  Value:
                     \(typeName(Key.Value.self))
                 """
               }
 
               runtimeWarning(
                 """
-                A dependency at %@:%d is being used in a live environment without providing a live \
-                implementation:
+                @Dependency(\\.%@) has no live implementation, but was accessed from a live context.
 
                 %@
 
@@ -146,11 +146,9 @@ public struct DependencyValues: Sendable {
                 with this current application.
                 """,
                 [
-                  "\(fileID)",
-                  line,
+                  "\(function)",
                   dependencyDescription,
                   typeName(Key.self),
-                  typeName(Key.Value.self),
                 ],
                 file: file,
                 line: line
@@ -162,7 +160,9 @@ public struct DependencyValues: Sendable {
         case .preview:
           return Key.previewValue
         case .test:
-          return Key.testValue
+          return Self.$currentDependencyName.withValue(function) {
+            Key.testValue
+          }
         }
       }
       return dependency

@@ -75,6 +75,9 @@ extension DependencyKey {
 
   /// A default implementation that provides the ``liveValue`` to tests.
   public static var testValue: Value {
+    let dependencyName = DependencyValues.currentDependencyName
+      .map { "@Dependency(\\.\($0))" }
+      ?? "A dependency"
     let dependencyDescription: String
     if Self.self == Value.self {
       dependencyDescription = """
@@ -85,13 +88,13 @@ extension DependencyKey {
       dependencyDescription = """
           Key:
             \(typeName(Self.self))
-          Dependency:
+          Value:
             \(typeName(Value.self))
         """
     }
 
     XCTFail("""
-      A dependency is being used in a test environment without providing a test implementation:
+      \(dependencyName) has no test implementation, but was accessed from a test context:
 
       \(dependencyDescription)
 
@@ -99,7 +102,7 @@ extension DependencyKey {
       when run in a 'TestStore'.
 
       To fix, make sure that \(typeName(Self.self)) provides an implementation of 'testValue' \
-      in its conformance to the 'DependencyKey` protocol.
+      in its conformance to the 'DependencyKey' protocol.
       """)
     return Self.previewValue
   }
