@@ -99,7 +99,8 @@ final class DependencyKeyTests: XCTestCase {
     DependencyValues.withValues {
       $0.context = .test
     } operation: {
-      @Dependency(\.missingTestDependency) var missingTestDependency; let line = #line
+      @Dependency(\.missingTestDependency) var missingTestDependency: Int
+      let line = #line - 1
       XCTExpectFailure {
         XCTAssertEqual(42, missingTestDependency)
       } issueMatcher: { issue in

@@ -37,7 +37,8 @@ final class DependencyValuesTests: XCTestCase {
         """
     }
 
-    @Dependency(\.missingLiveDependency) var missingLiveDependency; line = #line
+    line = #line + 1
+    @Dependency(\.missingLiveDependency) var missingLiveDependency: Int
     _ = missingLiveDependency
   }
 }
