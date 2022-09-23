@@ -104,7 +104,8 @@ extension DependencyKey {
             \(typeName(Value.self))
         """
     )
-    let message = """
+    XCTFail(
+      """
       \(dependencyName) has no test implementation, but was accessed from a test context:
 
       \(dependencyDescription)
@@ -115,15 +116,7 @@ extension DependencyKey {
       To fix, make sure that \(typeName(Self.self)) provides an implementation of 'testValue' \
       in its conformance to the 'DependencyKey' protocol.
       """
-
-    if
-      let file = DependencyValues.currentDependency.file,
-      let line = DependencyValues.currentDependency.line
-    {
-      XCTFail(message, file: file, line: line)
-    } else {
-      XCTFail(message)
-    }
+    )
     return Self.previewValue
   }
 }
