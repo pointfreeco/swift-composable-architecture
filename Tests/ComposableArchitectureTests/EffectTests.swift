@@ -253,4 +253,41 @@ final class EffectTests: XCTestCase {
 
     _ = XCTWaiter.wait(for: [.init()], timeout: 1.1)
   }
+
+  func testDependenciesTransferredToEffects() async {
+    struct Feature: ReducerProtocol {
+      enum Action: Equatable {
+        case tap
+        case response(Int)
+      }
+      @Dependency(\.date) var date
+      func reduce(into state: inout Int, action: Action) -> Effect<Action, Never> {
+        switch action {
+        case .tap:
+          return .merge(
+            .task {
+              .response(Int(self.date.now.timeIntervalSinceReferenceDate))
+            },
+            .run { send in
+              await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
+            }
+          )
+        case let .response(value):
+          state = value
+          return .none
+        }
+      }
+    }
+    let store = TestStore(
+      initialState: 0,
+      reducer: Feature()
+        .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1234567890)))
+    )
+
+    await store.send(.tap)
+    await store.receive(.response(1234567890)) {
+      $0 = 1234567890
+    }
+    await store.receive(.response(1234567890))
+  }
 }
