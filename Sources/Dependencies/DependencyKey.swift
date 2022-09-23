@@ -75,25 +75,36 @@ extension DependencyKey {
 
   /// A default implementation that provides the ``liveValue`` to tests.
   public static var testValue: Value {
-    let dependencyName = DependencyValues.currentDependencyName
+    let dependencyName = DependencyValues.currentDependency.name
       .map { "@Dependency(\\.\($0))" }
       ?? "A dependency"
-    let dependencyDescription: String
-    if Self.self == Value.self {
-      dependencyDescription = """
+    var dependencyDescription = ""
+    if
+      let fileID = DependencyValues.currentDependency.fileID,
+      let line = DependencyValues.currentDependency.line
+    {
+      dependencyDescription.append(
+        """
+          Location:
+            \(fileID):\(line)
+
+        """
+      )
+    }
+    dependencyDescription.append(
+      Self.self == Value.self
+        ? """
           Dependency:
             \(typeName(Value.self))
         """
-    } else {
-      dependencyDescription = """
+        : """
           Key:
             \(typeName(Self.self))
           Value:
             \(typeName(Value.self))
         """
-    }
-
-    XCTFail("""
+    )
+    let message = """
       \(dependencyName) has no test implementation, but was accessed from a test context:
 
       \(dependencyDescription)
@@ -103,7 +114,16 @@ extension DependencyKey {
 
       To fix, make sure that \(typeName(Self.self)) provides an implementation of 'testValue' \
       in its conformance to the 'DependencyKey' protocol.
-      """)
+      """
+
+    if
+      let file = DependencyValues.currentDependency.file,
+      let line = DependencyValues.currentDependency.line
+    {
+      XCTFail(message, file: file, line: line)
+    } else {
+      XCTFail(message)
+    }
     return Self.previewValue
   }
 }

@@ -14,12 +14,15 @@ private enum TestKey: TestDependencyKey {
 
 final class DependencyValuesTests: XCTestCase {
   func testMissingLiveValue() {
+    var line: UInt = 0
 
     XCTExpectFailure {
       $0.compactDescription == """
         @Dependency(\\.missingLiveDependency) has no live implementation, but was accessed from a \
         live context.
 
+          Location:
+            DependenciesTests/DependencyValuesTests.swift:\(line)
           Key:
             TestKey
           Value:
@@ -34,6 +37,7 @@ final class DependencyValuesTests: XCTestCase {
         """
     }
 
-    _ = DependencyValues.current.missingLiveDependency
+    @Dependency(\.missingLiveDependency) var missingLiveDependency; line = #line
+    _ = missingLiveDependency
   }
 }

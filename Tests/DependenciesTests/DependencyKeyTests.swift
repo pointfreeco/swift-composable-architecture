@@ -99,13 +99,16 @@ final class DependencyKeyTests: XCTestCase {
     DependencyValues.withValues {
       $0.context = .test
     } operation: {
+      @Dependency(\.missingTestDependency) var missingTestDependency; let line = #line
       XCTExpectFailure {
-        XCTAssertEqual(42, DependencyValues.current.missingTestDependency)
+        XCTAssertEqual(42, missingTestDependency)
       } issueMatcher: { issue in
         issue.compactDescription == """
           @Dependency(\\.missingTestDependency) has no test implementation, but was accessed from \
           a test context:
 
+            Location:
+              DependenciesTests/DependencyKeyTests.swift:\(line)
             Key:
               LiveKey
             Value:

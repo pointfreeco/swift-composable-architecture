@@ -19,7 +19,7 @@ public struct DependencyValues: Sendable {
   @TaskLocal public static var current = Self()
 
   @TaskLocal static var isSetting = false
-  @TaskLocal static var currentDependencyName: StaticString?
+  @TaskLocal static var currentDependency = CurrentDependency()
 
   /// Binds the task-local dependencies to the updated value for the duration of the synchronous
   /// operation.
@@ -117,20 +117,32 @@ public struct DependencyValues: Sendable {
           guard let value = _liveValue(Key.self) as? Key.Value
           else {
             if !Self.isSetting {
-              let dependencyDescription: String
-              if Key.self == Key.Value.self {
-                dependencyDescription = """
+              var dependencyDescription = ""
+              if
+                let fileID = Self.currentDependency.fileID,
+                let line = Self.currentDependency.line
+              {
+                dependencyDescription.append(
+                  """
+                    Location:
+                      \(fileID):\(line)
+
+                  """
+                )
+              }
+              dependencyDescription.append(
+                Key.self == Key.Value.self
+                  ? """
                     Dependency:
                       \(typeName(Key.Value.self))
                   """
-              } else {
-                dependencyDescription = """
-                  Key:
-                    \(typeName(Key.self))
-                  Value:
-                    \(typeName(Key.Value.self))
-                """
-              }
+                  : """
+                    Key:
+                      \(typeName(Key.self))
+                    Value:
+                      \(typeName(Key.Value.self))
+                  """
+              )
 
               runtimeWarning(
                 """
@@ -150,8 +162,8 @@ public struct DependencyValues: Sendable {
                   dependencyDescription,
                   typeName(Key.self),
                 ],
-                file: file,
-                line: line
+                file: Self.currentDependency.file ?? file,
+                line: Self.currentDependency.line ?? line
               )
             }
             return Key.testValue
@@ -160,7 +172,9 @@ public struct DependencyValues: Sendable {
         case .preview:
           return Key.previewValue
         case .test:
-          return Self.$currentDependencyName.withValue(function) {
+          var currentDependency = Self.currentDependency
+          currentDependency.name = function
+          return Self.$currentDependency.withValue(currentDependency) {
             Key.testValue
           }
         }
@@ -179,6 +193,13 @@ private struct AnySendable: @unchecked Sendable {
   init<Base: Sendable>(_ base: Base) {
     self.base = base
   }
+}
+
+struct CurrentDependency {
+  var name: StaticString?
+  var file: StaticString?
+  var fileID: StaticString?
+  var line: UInt?
 }
 
 #if DEBUG

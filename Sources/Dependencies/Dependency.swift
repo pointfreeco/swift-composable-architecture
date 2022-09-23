@@ -13,6 +13,9 @@ public struct Dependency<Value>: @unchecked Sendable {
   // NB: Key paths do not conform to sendable and are instead diagnosed at the time of forming the
   //     literal.
   private let keyPath: KeyPath<DependencyValues, Value>
+  private let file: StaticString
+  private let fileID: StaticString
+  private let line: UInt
 
   /// Creates a dependency property to read the specified key path.
   ///
@@ -29,12 +32,30 @@ public struct Dependency<Value>: @unchecked Sendable {
   /// ```
   ///
   /// - Parameter keyPath: A key path to a specific resulting value.
-  public init(_ keyPath: KeyPath<DependencyValues, Value>) {
+  public init(
+    _ keyPath: KeyPath<DependencyValues, Value>,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) {
     self.keyPath = keyPath
+    self.file = file
+    self.fileID = fileID
+    self.line = line
   }
 
   /// The current value of the dependency property.
   public var wrappedValue: Value {
-    DependencyValues.current[keyPath: self.keyPath]
+    #if DEBUG
+      var currentDependency = DependencyValues.currentDependency
+      currentDependency.file = self.file
+      currentDependency.fileID = self.fileID
+      currentDependency.line = self.line
+      return DependencyValues.$currentDependency.withValue(currentDependency) {
+        DependencyValues.current[keyPath: self.keyPath]
+      }
+    #else
+      return DependencyValues.current[keyPath: self.keyPath]
+    #endif
   }
 }
