@@ -8,43 +8,24 @@ default: test-all
 test-all: test-library test-examples
 
 test-library-debug:
-	xcodebuild test \
-		-workspace ComposableArchitecture.xcworkspace \
-		-scheme ComposableArchitecture \
-		-destination platform="$(PLATFORM_IOS)"
-	xcodebuild test \
-		-workspace ComposableArchitecture.xcworkspace \
-		-scheme ComposableArchitecture \
-		-destination platform="$(PLATFORM_MACOS)"
-	xcodebuild test \
-		-workspace ComposableArchitecture.xcworkspace \
-		-scheme ComposableArchitecture \
-		-destination platform="$(PLATFORM_TVOS)"
-	xcodebuild \
-		-workspace ComposableArchitecture.xcworkspace \
-		-scheme ComposableArchitecture \
-		-destination generic/platform=watchOS
+	for scheme in ComposableArchitecture Dependencies; do \
+	  for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_TVOS)" "generic/platform=watchOS"; do \
+			xcodebuild test \
+				-workspace ComposableArchitecture.xcworkspace \
+				-scheme $$scheme \
+				-destination platform="$$platform"; \
+	  done; \
+	done
 test-library-release:
-	xcodebuild test \
-		-configuration release \
-		-workspace ComposableArchitecture.xcworkspace \
-		-scheme ComposableArchitecture \
-		-destination platform="$(PLATFORM_IOS)"
-	xcodebuild test \
-		-configuration release \
-		-workspace ComposableArchitecture.xcworkspace \
-		-scheme ComposableArchitecture \
-		-destination platform="$(PLATFORM_MACOS)"
-	xcodebuild test \
-		-configuration release \
-		-workspace ComposableArchitecture.xcworkspace \
-		-scheme ComposableArchitecture \
-		-destination platform="$(PLATFORM_TVOS)"
-	xcodebuild \
-		-configuration release \
-		-workspace ComposableArchitecture.xcworkspace \
-		-scheme ComposableArchitecture \
-		-destination generic/platform=watchOS
+	for scheme in ComposableArchitecture Dependencies; do \
+	  for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_TVOS)" "generic/platform=watchOS"; do \
+			xcodebuild test \
+				-configuration release \
+				-workspace ComposableArchitecture.xcworkspace \
+				-scheme $$scheme \
+				-destination platform="$$platform"; \
+	  done; \
+	done
 
 DOC_WARNINGS := $(shell xcodebuild clean docbuild \
 	-scheme ComposableArchitecture \
@@ -60,27 +41,11 @@ test-docs:
 		&& exit 1)
 
 test-examples:
-	xcodebuild test \
-		-scheme "CaseStudies (SwiftUI)" \
-		-destination platform="$(PLATFORM_IOS)"
-	xcodebuild test \
-		-scheme "CaseStudies (UIKit)" \
-		-destination platform="$(PLATFORM_IOS)"
-	xcodebuild test \
-		-scheme Search \
-		-destination platform="$(PLATFORM_IOS)"
-	xcodebuild test \
-		-scheme SpeechRecognition \
-		-destination platform="$(PLATFORM_IOS)"
-	xcodebuild test \
-		-scheme TicTacToe \
-		-destination platform="$(PLATFORM_IOS)"
-	xcodebuild test \
-		-scheme Todos \
-		-destination platform="$(PLATFORM_IOS)"
-	xcodebuild test \
-		-scheme VoiceMemos \
-		-destination platform="$(PLATFORM_IOS)"
+	for scheme in "CaseStudies (SwiftUI)" "CaseStudies (UIKit)" Search SpeechRecognition TicTacToe Todos VoiceMemos; do \
+		xcodebuild test \
+			-scheme $$scheme \
+			-destination platform="$(PLATFORM_IOS)"; \
+	done
 
 benchmark:
 	swift run --configuration release \
