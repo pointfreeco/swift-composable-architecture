@@ -1,3 +1,5 @@
+// TODO: add dependencies to CI
+
 /// A property wrapper that exposes dependencies to reducers.
 ///
 /// Similar to SwiftUI's `Environment` property wrapper, which provides dependencies to views, the
