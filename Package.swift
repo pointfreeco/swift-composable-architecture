@@ -60,6 +60,13 @@ let package = Package(
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
       ]
     ),
+    .testTarget(
+      name: "DependenciesTests",
+      dependencies: [
+        "ComposableArchitecture",
+        "Dependencies"
+      ]
+    ),
     .executableTarget(
       name: "swift-composable-architecture-benchmark",
       dependencies: [
