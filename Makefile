@@ -1,24 +1,25 @@
 PLATFORM_IOS = iOS Simulator,name=iPhone 11 Pro Max
 PLATFORM_MACOS = macOS
 PLATFORM_TVOS = tvOS Simulator,name=Apple TV
-PLATFORM_WATCHOS = watchOS Simulator,name=Apple Watch Series 5 - 44mm
+PLATFORM_WATCHOS = watchOS Simulator,name=Apple Watch Series 8 (45mm)
 
 default: test-all
 
-test-all: test-library test-examples
+test-all: test-library-debug test-library-release test-examples
 
 test-library-debug:
-	for scheme in ComposableArchitecture Dependencies; do \
-	  for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_TVOS)" "generic/platform=watchOS"; do \
+	for scheme in Dependencies ComposableArchitecture; do \
+	  for platform in "$(PLATFORM_WATCHOS)" "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_TVOS)"; do \
 			xcodebuild test \
 				-workspace ComposableArchitecture.xcworkspace \
 				-scheme $$scheme \
 				-destination platform="$$platform"; \
 	  done; \
 	done
+
 test-library-release:
 	for scheme in ComposableArchitecture Dependencies; do \
-	  for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_TVOS)" "generic/platform=watchOS"; do \
+	  for platform in "$(PLATFORM_WATCHOS)" "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_TVOS)"; do \
 			xcodebuild test \
 				-configuration release \
 				-workspace ComposableArchitecture.xcworkspace \
