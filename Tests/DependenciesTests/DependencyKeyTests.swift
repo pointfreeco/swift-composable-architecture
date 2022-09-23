@@ -24,7 +24,7 @@ final class DependencyKeyTests: XCTestCase {
       XCTAssertEqual(42, Dependency.testValue.value)
     } issueMatcher: { issue in
       issue.compactDescription == """
-        A dependency is being used in a test environment without providing a test implementation:
+        A dependency has no test implementation, but was accessed from a test context:
 
           Dependency:
             DependencyKeyTests.Dependency
@@ -33,12 +33,10 @@ final class DependencyKeyTests: XCTestCase {
         when run in a 'TestStore'.
 
         To fix, make sure that DependencyKeyTests.Dependency provides an implementation of \
-        'testValue' in its conformance to the 'DependencyKey` protocol.
+        'testValue' in its conformance to the 'DependencyKey' protocol.
         """
     }
   }
-
-  // TODO: get test coverage on `enum Key: DependencyKey { static let liveValue = 42 }`
 
   func testDependencyKeyCascading_ImplementOnlyLive() {
     enum Key: DependencyKey {
@@ -52,18 +50,18 @@ final class DependencyKeyTests: XCTestCase {
       XCTAssertEqual(42, Key.testValue)
     } issueMatcher: { issue in
       issue.compactDescription == """
-        A dependency is being used in a test environment without providing a test implementation:
+        A dependency has no test implementation, but was accessed from a test context:
 
           Key:
             DependencyKeyTests.Key
-          Dependency:
+          Value:
             Int
 
         Dependencies registered with the library are not allowed to use their live implementations \
         when run in a 'TestStore'.
 
         To fix, make sure that DependencyKeyTests.Key provides an implementation of 'testValue' in \
-        its conformance to the 'DependencyKey` protocol.
+        its conformance to the 'DependencyKey' protocol.
         """
     }
   }
@@ -81,19 +79,56 @@ final class DependencyKeyTests: XCTestCase {
       XCTAssertEqual(1729, Key.testValue)
     } issueMatcher: { issue in
       issue.compactDescription == """
-        A dependency is being used in a test environment without providing a test implementation:
+        A dependency has no test implementation, but was accessed from a test context:
 
           Key:
             DependencyKeyTests.Key
-          Dependency:
+          Value:
             Int
 
         Dependencies registered with the library are not allowed to use their live implementations \
         when run in a 'TestStore'.
 
         To fix, make sure that DependencyKeyTests.Key provides an implementation of 'testValue' in \
-        its conformance to the 'DependencyKey` protocol.
+        its conformance to the 'DependencyKey' protocol.
         """
     }
+  }
+
+  func testDependencyKeyCascading_ImplementOnlyLive_Named() {
+    DependencyValues.withValues {
+      $0.context = .test
+    } operation: {
+      XCTExpectFailure {
+        XCTAssertEqual(42, DependencyValues.current.missingTestDependency)
+      } issueMatcher: { issue in
+        issue.compactDescription == """
+          @Dependency(\\.missingTestDependency) has no test implementation, but was accessed from \
+          a test context:
+
+            Key:
+              LiveKey
+            Value:
+              Int
+
+          Dependencies registered with the library are not allowed to use their live \
+          implementations when run in a 'TestStore'.
+
+          To fix, make sure that LiveKey provides an implementation of 'testValue' in its \
+          conformance to the 'DependencyKey' protocol.
+          """
+      }
+    }
+  }
+}
+
+private enum LiveKey: DependencyKey {
+  static let liveValue = 42
+}
+
+private extension DependencyValues {
+  var missingTestDependency: Int {
+    get { self[LiveKey.self] }
+    set { self[LiveKey.self] = newValue }
   }
 }
