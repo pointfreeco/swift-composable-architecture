@@ -276,43 +276,41 @@ in each endpoint so that if it is ever invoked in tests it will cause a test fai
 you to be more explicit about what dependencies are actually needed to test a particular user
 flow in you feature.
 
-For example, suppose you have an audio player dependency with endpoints for playing a audio file
-and stopping the currently playing audio:
-
-<!-- todo: maybe an APIClient example is better -->
+For example, suppose you have an API client with endpoints for fetching a list of users or fetching
+a particular user by id:
 
 ```swift
-struct AudioPlayerClient {
-  var play: (URL) async throws -> Bool
-  var stop: () async -> Void
+struct APIClient {
+  var fetchUser: (User.ID) async throws -> User
+  var fetchUsers: () async throws -> [User]
 }
 ```
 
-Then we can construct an unimplemented version of this dependency that invokes `XCTFail` when
-`play` or `stop` are invoked:
+Then we can construct an "unimplemented" version of this dependency that invokes `XCTFail` when
+any endpoint is invoked
 
 ```swift
-extension AudioPlayerClient {
+extension APIClient {
   static let unimplemented = Self(
-    play: { _ in XCTFail("AudioPlayerClient.play unimplemented"); return false }
-    stop: { XCTFail("AudioPlayerClient.stop unimplemented") }
+    fetchUser: { _ in XCTFail("APIClient.fetchUser unimplemented") }
+    fetchUsers: { XCTFail("APIClient.fetchUsers unimplemented") }
   )
 }
 ```
 
 Unfortunately, `XCTFail` cannot be used in non-test targets, and so this instance cannot be defined
 in the same file where your dependency is registered. To work around this you can use our 
-[XCTestDynamicOverlay][xctest-dynamic-overlay-gh] libray that dynamically accesses `XCTFail`, and
+[XCTestDynamicOverlay][xctest-dynamic-overlay-gh] library that dynamically invokes `XCTFail`, and
 it is automatically accessibly when using the Composable Architecture. It also comes with some
 helpers to make constructing these unimplemented values more easily:
 
 ```swift
 import XCTestDynamicOverlay
 
-extension AudioPlayerClient {
+extension APIClient {
   static let unimplemented = Self(
-    play: XCTUnimplemented("AudioPlayerClient.play", placeholder: false)
-    stop: XCTUnimplemented("AudioPlayerClient.stop")
+    fetchUser: XCTUnimplemented("APIClient.fetchUser")
+    fetchUsers: XCTUnimplemented("APIClient.fetchUsers")
   )
 }
 ```
@@ -320,8 +318,8 @@ extension AudioPlayerClient {
 This is now the value that is most appropriate to use as the `testValue` of your dependency:
 
 ```swift
-extension AudioPlayerClient: TestDependencyKey {
-  static let testValue = AudioPlayerClient.unimplemented
+extension APIClient: TestDependencyKey {
+  static let testValue = APIClient.unimplemented
 }
 ```
 
@@ -336,8 +334,7 @@ However, previews are dissimilar to tests in that it's fine for dependencies to 
 data. There's no need to deal with "unimplemented" clients for proving which dependencies are 
 actually used.
 
-For example, an API client with endpoints for fetching a list of users and for fetching a particular
-user might define its `previewValue` like so:
+For the `APIClient` example from above, we might define its `previewValue` like so:
 
 ```swift
 extension APIClient: TestDependencyKey {
