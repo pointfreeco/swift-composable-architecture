@@ -1,4 +1,4 @@
-# Dependencies
+# Dependency Management
 
 Learn how to register dependencies with the library so that they can be immediately accessibly from
 any reducer.

@@ -48,7 +48,7 @@ day-to-day when building applications, such as:
 ### Essentials
 
 - <doc:GettingStarted>
-- <doc:Dependencies>
+- <doc:DependencyManagement>
 - <doc:Testing>
 - <doc:Performance>
 
