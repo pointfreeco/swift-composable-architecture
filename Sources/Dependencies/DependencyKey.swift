@@ -141,8 +141,12 @@ extension DependencyKey {
       Dependencies registered with the library are not allowed to use their live implementations \
       when run in a 'TestStore'.
 
-      To fix, make sure that \(typeName(Self.self)) provides an implementation of 'testValue' \
-      in its conformance to the 'DependencyKey' protocol.
+      There are two ways to fix:
+
+      * Make \(typeName(Self.self)) provide an implementation of 'testValue' in its conformance to \
+      the 'DependencyKey' protocol.
+      * Override \(DependencyValues.currentDependency.name.map { "'\($0)'" } ?? "the dependency") \
+      with a mock in your test by mutating the 'dependencies' property on your 'TestStore'.
       """
     )
     return Self.previewValue
