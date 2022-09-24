@@ -51,11 +51,12 @@ day-to-day when building applications, such as:
 - <doc:Performance>
 - <doc:Dependencies>
 - <doc:Testing>
+- <doc:Bindings>
 
 ### Upgrade guides
 
 - <doc:SwiftConcurrency>
-- <doc:ReducerProtocols>
+- <doc:ReducerProtocol>
 
 ### State management
 

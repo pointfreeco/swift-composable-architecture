@@ -1,5 +1,5 @@
 extension AnyReducer where Action: BindableAction, State == Action.State {
-  /// This API has been soft-deprecated in favor of ``BindingReducer``. Read <doc:ReducerProtocols>
+  /// This API has been soft-deprecated in favor of ``BindingReducer``. Read <doc:ReducerProtocol>
   /// for more information.
   ///
   /// Returns a reducer that applies ``BindingAction`` mutations to `State` before running this
@@ -32,7 +32,7 @@ extension AnyReducer where Action: BindableAction, State == Action.State {
     deprecated: 9999.0,
     message:
       """
-      This API has been soft-deprecated in favor of 'BindingReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+      This API has been soft-deprecated in favor of 'BindingReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
@@ -40,7 +40,7 @@ extension AnyReducer where Action: BindableAction, State == Action.State {
     deprecated: 9999.0,
     message:
       """
-      This API has been soft-deprecated in favor of 'BindingReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+      This API has been soft-deprecated in favor of 'BindingReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
@@ -48,7 +48,7 @@ extension AnyReducer where Action: BindableAction, State == Action.State {
     deprecated: 9999.0,
     message:
       """
-      This API has been soft-deprecated in favor of 'BindingReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+      This API has been soft-deprecated in favor of 'BindingReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
@@ -56,7 +56,7 @@ extension AnyReducer where Action: BindableAction, State == Action.State {
     deprecated: 9999.0,
     message:
       """
-      This API has been soft-deprecated in favor of 'BindingReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/protocol/documentation/composablearchitecture/reducerprotocols
+      This API has been soft-deprecated in favor of 'BindingReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   public func binding() -> Self {

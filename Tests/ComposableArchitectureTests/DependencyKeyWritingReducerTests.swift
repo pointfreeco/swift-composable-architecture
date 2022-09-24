@@ -8,6 +8,9 @@ final class DependencyKeyWritingReducerTests: XCTestCase {
       .dependency(\.myValue, 42)
     let _: _DependencyKeyWritingReducer<Feature> = reducer
       .dependency(\.myValue, 1729)
+      .dependency(\.myValue, 1)
+      .dependency(\.myValue, 2)
+      .dependency(\.myValue, 3)
   }
 
   func testWritingFusionOrder() async {
@@ -80,7 +83,7 @@ final class DependencyKeyWritingReducerTests: XCTestCase {
     await store.receive(.otherResponse(42))
   }
 }
-
+ 
 private struct Feature: ReducerProtocol {
   @Dependency(\.myValue) var myValue
   struct State: Equatable { var value = 0 }

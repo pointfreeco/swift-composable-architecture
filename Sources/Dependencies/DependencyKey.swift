@@ -2,15 +2,16 @@ import XCTestDynamicOverlay
 
 /// A key for accessing dependencies.
 ///
-/// Similar to SwiftUI's `EnvironmentKey` protocol, which is used to extend `EnvironmentValues` with
-/// custom dependencies, `DependencyKey` can be used to extend ``DependencyValues``.
+/// Types conform to this protocol to extend ``DependencyValues`` with custom dependencies. It is
+/// similar to SwiftUI's `EnvironmentKey` protocol, which is used to add values to
+/// `EnvironmentValues`.
 ///
 /// `DependencyKey` has one main requirement, ``liveValue``, which must return a default value for
-/// use in your live application.
+/// your dependency that is used when the application is run in a simulator or device.
 ///
 /// `DependencyKey` inherits two overridable requirements from ``TestDependencyKey``:
 /// ``TestDependencyKey/testValue``, which should return a default value for the purpose of
-/// testing, and ``TestDependencyKey/previewValue-416hu``, which can return a default value suitable
+/// testing, and ``TestDependencyKey/previewValue-8u2sy``, which can return a default value suitable
 /// for Xcode previews. When left unimplemented, these endpoints will return the ``liveValue``,
 /// instead.
 ///
