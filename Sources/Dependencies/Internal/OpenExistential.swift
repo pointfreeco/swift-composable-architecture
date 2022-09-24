@@ -1,6 +1,5 @@
 #if swift(>=5.7)
   // MARK: swift(>=5.7)
-  // MARK: Equatable
 
   // MARK: DependencyKey
 

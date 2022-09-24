@@ -2,6 +2,8 @@ import ComposableArchitecture
 import SwiftUI
 import XCTestDynamicOverlay
 
+// TODO: move these to Dependencies?
+
 extension DependencyValues {
   var openSettings: @Sendable () async -> Void {
     get { self[OpenSettingsKey.self] }

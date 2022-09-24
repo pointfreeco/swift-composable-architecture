@@ -28,16 +28,17 @@
   /// }
   /// ```
   ///
-  /// ...or with a separate, dedicated conformance:
+  /// …or moving the extra logic to a method that is wrapped in ``Reduce``:
   ///
   /// ```swift
   /// var body: some ReducerProtocol<State, Action> {
-  ///   Core()
+  ///   Reduce(self.core)
   ///   Activity()
   ///   Profile()
   ///   Settings()
   /// }
-  /// struct Core: ReducerProtocol<State, Action> {
+  ///
+  /// func core(state: inout State, action: Action) -> Effect<Action, Never> {
   ///   // extra logic
   /// }
   /// ```

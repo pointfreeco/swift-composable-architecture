@@ -55,7 +55,7 @@ day-to-day when building applications, such as:
 ### Upgrade guides
 
 - <doc:SwiftConcurrency>
-- <doc:ReducerProtocols>
+- <doc:ReducerProtocol>
 
 ### State management
 
