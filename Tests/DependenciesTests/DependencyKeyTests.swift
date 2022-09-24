@@ -2,7 +2,7 @@ import ComposableArchitecture
 import XCTest
 
 final class DependencyKeyTests: XCTestCase {
-  func testTestDependencyKeyCascading() {
+  func testTestDependencyKey_ImplementOnlyTestValue() {
     enum Key: TestDependencyKey {
       static let testValue = 42
     }
@@ -11,7 +11,7 @@ final class DependencyKeyTests: XCTestCase {
     XCTAssertEqual(42, Key.testValue)
   }
 
-  func testDependencyKeyCascading_ValueIsSelf_ImplementOnlyLive() {
+  func testDependencyKeyCascading_ValueIsSelf_ImplementOnlyLiveValue() {
     struct Dependency: DependencyKey {
       let value: Int
       static let liveValue = Self(value: 42)
@@ -40,7 +40,7 @@ final class DependencyKeyTests: XCTestCase {
     #endif
   }
 
-  func testDependencyKeyCascading_ImplementOnlyLive() {
+  func testDependencyKeyCascading_ImplementOnlyLiveValue() {
     enum Key: DependencyKey {
       static let liveValue = 42
     }
