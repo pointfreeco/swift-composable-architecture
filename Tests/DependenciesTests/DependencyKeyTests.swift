@@ -35,9 +35,9 @@ final class DependencyKeyTests: XCTestCase {
 
           There are two ways to fix:
 
-          * Make DependencyKeyTests.Dependency provide an implementation of 'testValue' in its \
+          • Make DependencyKeyTests.Dependency provide an implementation of 'testValue' in its \
           conformance to the 'DependencyKey' protocol.
-          * Override the dependency with a mock in your test by mutating the 'dependencies' \
+          • Override the dependency with a mock in your test by mutating the 'dependencies' \
           property on your 'TestStore'.
           """
       }
@@ -69,9 +69,9 @@ final class DependencyKeyTests: XCTestCase {
 
           There are two ways to fix:
 
-          * Make DependencyKeyTests.Key provide an implementation of 'testValue' in its \
+          • Make DependencyKeyTests.Key provide an implementation of 'testValue' in its \
           conformance to the 'DependencyKey' protocol.
-          * Override the dependency with a mock in your test by mutating the 'dependencies' \
+          • Override the dependency with a mock in your test by mutating the 'dependencies' \
           property on your 'TestStore'.
           """
       }
@@ -104,9 +104,9 @@ final class DependencyKeyTests: XCTestCase {
 
           There are two ways to fix:
 
-          * Make DependencyKeyTests.Key provide an implementation of 'testValue' in its \
+          • Make DependencyKeyTests.Key provide an implementation of 'testValue' in its \
           conformance to the 'DependencyKey' protocol.
-          * Override the dependency with a mock in your test by mutating the 'dependencies' \
+          • Override the dependency with a mock in your test by mutating the 'dependencies' \
           property on your 'TestStore'.
           """
       }
@@ -139,9 +139,9 @@ final class DependencyKeyTests: XCTestCase {
 
             There are two ways to fix:
 
-            * Make LiveKey provide an implementation of 'testValue' in its \
+            • Make LiveKey provide an implementation of 'testValue' in its \
             conformance to the 'DependencyKey' protocol.
-            * Override 'missingTestDependency' with a mock in your test by mutating the \
+            • Override 'missingTestDependency' with a mock in your test by mutating the \
             'dependencies' property on your 'TestStore'.
             """
         }

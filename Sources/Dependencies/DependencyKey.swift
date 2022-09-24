@@ -103,9 +103,6 @@ extension DependencyKey {
   /// if the dependency is accessed in a test. To fix, override the dependency on the test store
   /// to use a mock or provide a `testValue` in your conformance to ``TestDependencyKey``.
   public static var testValue: Value {
-    let dependencyName = DependencyValues.currentDependency.name
-      .map { "@Dependency(\\.\($0))" }
-      ?? "A dependency"
     var dependencyDescription = ""
     if
       let fileID = DependencyValues.currentDependency.fileID,
@@ -134,7 +131,8 @@ extension DependencyKey {
     )
     XCTFail(
       """
-      \(dependencyName) has no test implementation, but was accessed from a test context:
+      \(DependencyValues.currentDependency.name.map { "@Dependency(\\.\($0))" } ?? "A dependency") \
+      has no test implementation, but was accessed from a test context:
 
       \(dependencyDescription)
 
@@ -143,9 +141,9 @@ extension DependencyKey {
 
       There are two ways to fix:
 
-      * Make \(typeName(Self.self)) provide an implementation of 'testValue' in its conformance to \
+      • Make \(typeName(Self.self)) provide an implementation of 'testValue' in its conformance to \
       the 'DependencyKey' protocol.
-      * Override \(DependencyValues.currentDependency.name.map { "'\($0)'" } ?? "the dependency") \
+      • Override \(DependencyValues.currentDependency.name.map { "'\($0)'" } ?? "the dependency") \
       with a mock in your test by mutating the 'dependencies' property on your 'TestStore'.
       """
     )
