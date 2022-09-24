@@ -9,7 +9,8 @@ import Combine
   iOS,
   deprecated: 9999.0,
   renamed: "AnyReducer",
-  message: """
+  message:
+    """
     'Reducer' has been deprecated in favor of 'ReducerProtocol'.
 
     See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -19,7 +20,8 @@ import Combine
   macOS,
   deprecated: 9999.0,
   renamed: "AnyReducer",
-  message: """
+  message:
+    """
     'Reducer' has been deprecated in favor of 'ReducerProtocol'.
 
     See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -29,7 +31,8 @@ import Combine
   tvOS,
   deprecated: 9999.0,
   renamed: "AnyReducer",
-  message: """
+  message:
+    """
     'Reducer' has been deprecated in favor of 'ReducerProtocol'.
 
     See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -39,7 +42,8 @@ import Combine
   watchOS,
   deprecated: 9999.0,
   renamed: "AnyReducer",
-  message: """
+  message:
+    """
     'Reducer' has been deprecated in favor of 'ReducerProtocol'.
 
     See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -73,35 +77,39 @@ public typealias Reducer = AnyReducer
 @available(
   iOS,
   deprecated: 9999.0,
-  message: """
+  message:
+    """
     This API has been soft-deprecated in favor of 'ReducerProtocol'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
     """
 )
 @available(
   macOS,
   deprecated: 9999.0,
-  message: """
+  message:
+    """
     This API has been soft-deprecated in favor of 'ReducerProtocol'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
     """
 )
 @available(
   tvOS,
   deprecated: 9999.0,
-  message: """
+  message:
+    """
     This API has been soft-deprecated in favor of 'ReducerProtocol'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
     """
 )
 @available(
   watchOS,
   deprecated: 9999.0,
-  message: """
+  message:
+    """
     This API has been soft-deprecated in favor of 'ReducerProtocol'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
     """
 )
 public struct AnyReducer<State, Action, Environment> {
   private let reducer: (inout State, Action, Environment) -> Effect<Action, Never>
 
-  /// This API has been soft-deprecated in favor of ``ReducerProtocol``. Read <doc:ReducerProtocol>
+  /// > This API has been soft-deprecated in favor of ``ReducerProtocol``. Read <doc:ReducerProtocol>
   /// for more information.
   ///
   /// Initializes a reducer from a simple reducer function signature.
@@ -136,28 +144,32 @@ public struct AnyReducer<State, Action, Environment> {
   @available(
     iOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     macOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     tvOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     watchOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
@@ -172,28 +184,32 @@ public struct AnyReducer<State, Action, Environment> {
   @available(
     iOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'EmptyReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     macOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'EmptyReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     tvOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'EmptyReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     watchOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'EmptyReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
@@ -258,28 +274,32 @@ public struct AnyReducer<State, Action, Environment> {
   @available(
     iOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     macOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     tvOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     watchOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
@@ -302,28 +322,32 @@ public struct AnyReducer<State, Action, Environment> {
   @available(
     iOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     macOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     tvOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     watchOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
@@ -349,28 +373,32 @@ public struct AnyReducer<State, Action, Environment> {
   @available(
     iOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     macOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     tvOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     watchOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
@@ -425,28 +453,32 @@ public struct AnyReducer<State, Action, Environment> {
   @available(
     iOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     macOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     tvOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     watchOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
@@ -643,28 +675,32 @@ public struct AnyReducer<State, Action, Environment> {
   @available(
     iOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.ifCaseLet' and 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     macOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.ifCaseLet' and 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     tvOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.ifCaseLet' and 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     watchOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.ifCaseLet' and 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
@@ -890,28 +926,32 @@ public struct AnyReducer<State, Action, Environment> {
   @available(
     iOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.ifLet'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     macOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.ifLet'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     tvOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.ifLet'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     watchOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.ifLet'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
@@ -1003,28 +1043,32 @@ public struct AnyReducer<State, Action, Environment> {
   @available(
     iOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.forEach'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     macOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.forEach'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     tvOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.forEach'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     watchOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.forEach'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
@@ -1177,28 +1221,32 @@ public struct AnyReducer<State, Action, Environment> {
   @available(
     iOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.reduce(into:action:)'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     macOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.reduce(into:action:)'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     tvOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.reduce(into:action:)'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     watchOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.reduce(into:action:)'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
@@ -1215,28 +1263,32 @@ public struct AnyReducer<State, Action, Environment> {
   @available(
     iOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.reduce(into:action:)'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     macOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.reduce(into:action:)'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     tvOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.reduce(into:action:)'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     watchOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.reduce(into:action:)'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
