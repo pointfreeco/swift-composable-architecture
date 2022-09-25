@@ -48,14 +48,14 @@ day-to-day when building applications, such as:
 ### Essentials
 
 - <doc:GettingStarted>
-- <doc:Dependencies>
+- <doc:DependencyManagement>
 - <doc:Testing>
 - <doc:Performance>
 
 ### Upgrade guides
 
 - <doc:SwiftConcurrency>
-- <doc:ReducerProtocol>
+- <doc:MigratingToTheReducerProtocol>
 
 ### State management
 
