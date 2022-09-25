@@ -12,7 +12,7 @@
 ///     ReducerB()
 ///     ReducerC()
 ///   }
-///   .ifLet(state: \.child, action: /Action.child)
+///   .ifLet(\.child, action: /Action.child)
 /// }
 /// ```
 public struct CombineReducers<Reducers: ReducerProtocol>: ReducerProtocol {
