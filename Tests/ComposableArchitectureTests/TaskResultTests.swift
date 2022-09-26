@@ -41,7 +41,7 @@ final class TaskResultTests: XCTestCase {
         )
       } issueMatcher: {
         $0.compactDescription == """
-          XCTAssertEqual failed: …
+          XCTAssertNoDifference failed: …
 
               TaskResult.failure(
             −   TaskResultTests.Failure1(message: "Something went wrong")
