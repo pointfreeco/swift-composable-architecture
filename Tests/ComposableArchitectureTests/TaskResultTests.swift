@@ -35,7 +35,7 @@ final class TaskResultTests: XCTestCase {
       }
 
       XCTExpectFailure {
-        XCTAssertEqual(
+        XCTAssertNoDifference(
           TaskResult<Never>.failure(Failure1(message: "Something went wrong")),
           TaskResult<Never>.failure(Failure2(message: "Something went wrong"))
         )
