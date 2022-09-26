@@ -1,6 +1,6 @@
 # Dependencies
 
-Learn how to register dependencies with the library so that they can be immediately accessibly from
+Learn how to register dependencies with the library so that they can be immediately accessible from
 any reducer.
 
 ## Overview
