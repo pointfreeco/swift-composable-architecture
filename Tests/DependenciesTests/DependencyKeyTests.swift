@@ -30,15 +30,12 @@ final class DependencyKeyTests: XCTestCase {
             Dependency:
               DependencyKeyTests.Dependency
 
-          Dependencies registered with the library are not allowed to use their live \
+          Dependencies registered with the library are not allowed to use their default, live \
           implementations when run in a 'TestStore'.
 
-          There are two ways to fix:
-
-          • Make DependencyKeyTests.Dependency provide an implementation of 'testValue' in its \
-          conformance to the 'DependencyKey' protocol.
-          • Override the dependency with a mock in your test by mutating the 'dependencies' \
-          property on your 'TestStore'.
+          To fix, override the dependency with a mock value in your test by mutating the \
+          'dependencies' property on your 'TestStore'. Or, if you'd like to provide a default test \
+          value, implement the 'testValue' requirement of the 'DependencyKey' protocol.
           """
       }
     #endif
@@ -64,15 +61,12 @@ final class DependencyKeyTests: XCTestCase {
             Value:
               Int
 
-          Dependencies registered with the library are not allowed to use their live \
+          Dependencies registered with the library are not allowed to use their default, live \
           implementations when run in a 'TestStore'.
 
-          There are two ways to fix:
-
-          • Make DependencyKeyTests.Key provide an implementation of 'testValue' in its \
-          conformance to the 'DependencyKey' protocol.
-          • Override the dependency with a mock in your test by mutating the 'dependencies' \
-          property on your 'TestStore'.
+          To fix, override the dependency with a mock value in your test by mutating the \
+          'dependencies' property on your 'TestStore'. Or, if you'd like to provide a default test \
+          value, implement the 'testValue' requirement of the 'DependencyKey' protocol.
           """
       }
     #endif
@@ -99,15 +93,12 @@ final class DependencyKeyTests: XCTestCase {
             Value:
               Int
 
-          Dependencies registered with the library are not allowed to use their live implementations \
-          when run in a 'TestStore'.
+          Dependencies registered with the library are not allowed to use their default, live \
+          implementations when run in a 'TestStore'.
 
-          There are two ways to fix:
-
-          • Make DependencyKeyTests.Key provide an implementation of 'testValue' in its \
-          conformance to the 'DependencyKey' protocol.
-          • Override the dependency with a mock in your test by mutating the 'dependencies' \
-          property on your 'TestStore'.
+          To fix, override the dependency with a mock value in your test by mutating the \
+          'dependencies' property on your 'TestStore'. Or, if you'd like to provide a default test \
+          value, implement the 'testValue' requirement of the 'DependencyKey' protocol.
           """
       }
     #endif
@@ -134,15 +125,13 @@ final class DependencyKeyTests: XCTestCase {
               Value:
                 Int
 
-            Dependencies registered with the library are not allowed to use their live \
+            Dependencies registered with the library are not allowed to use their default, live \
             implementations when run in a 'TestStore'.
 
-            There are two ways to fix:
-
-            • Make LiveKey provide an implementation of 'testValue' in its \
-            conformance to the 'DependencyKey' protocol.
-            • Override 'missingTestDependency' with a mock in your test by mutating the \
-            'dependencies' property on your 'TestStore'.
+            To fix, override 'missingTestDependency' with a mock value in your test by mutating \
+            the 'dependencies' property on your 'TestStore'. Or, if you'd like to provide a \
+            default test value, implement the 'testValue' requirement of the 'DependencyKey' \
+            protocol.
             """
         }
     }
