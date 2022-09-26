@@ -36,19 +36,21 @@ struct Feature: ReducerProtocol {
   }
 }
 
-let feature = Feature()
-var currentState = Feature.State(count: 0)
-_ = feature.reduce(into: &currentState, action: .incrementButtonTapped)
-XCTAssertEqual(
-  currentState,
-  State(count: 1)
-)
+func testBasics() {
+  let feature = Feature()
+  var currentState = Feature.State(count: 0)
+  _ = feature.reduce(into: &currentState, action: .incrementButtonTapped)
+  XCTAssertEqual(
+    currentState,
+    State(count: 1)
+  )
 
-_ = feature.reduce(into: &currentState, action: .decrementButtonTapped)
-XCTAssertEqual(
-  currentState,
-  State(count: 0)
-)
+  _ = feature.reduce(into: &currentState, action: .decrementButtonTapped)
+  XCTAssertEqual(
+    currentState,
+    State(count: 0)
+  )
+}
 ```
 
 This will technically work, but it's a lot boilerplate for something that should be quite simple.
@@ -69,8 +71,8 @@ class CounterTests: XCTestCase {
 }
 ```
 
-> Test cases that use ``TestStore`` should be annotated as `@MainActor` and test methods should be
-> marked as `async` since most assertion helpers on ``TestStore`` can suspend.
+> Tip: Test cases that use ``TestStore`` should be annotated as `@MainActor` and test methods should 
+be marked as `async` since most assertion helpers on ``TestStore`` can suspend.
 
 Test stores have a ``TestStore/send(_:_:file:line:)-3pf4p`` method, but it behaves differently from
 stores and view stores. You provide an action to send into the system, but then you must also
@@ -130,7 +132,7 @@ await store.send(.decrementButtonTapped) {
 }
 ```
 
-> Note: Technically we could have written the mutation block in the following manner:
+> Tip: Technically we could have written the mutation block in the following manner:
 >
 > ```swift
 > await store.send(.incrementButtonTapped) {
@@ -148,10 +150,20 @@ await store.send(.decrementButtonTapped) {
 > simple, hard coded data for the mutation.
 
 Test stores do expose a ``TestStore/state`` property, which can be useful for performing assertions
-on computed properties you might have defined on your state. However, when inside the trailing
-closure of ``TestStore/send(_:_:file:line:)-3pf4p``, the ``TestStore/state`` property is equal
-to the state _before_ sending the action, not after. That prevents you from being able to use an
-escape hatch to get around needing to actually describe the state mutation, like so:
+on computed properties you might have defined on your state. For example, if `State` had a 
+computed property for checking if `count` was prime, we could test it like so:
+
+```swift
+store.send(.incrementButtonTapped) {
+  $0.count = 3
+}
+XCTAssertTrue(store.state.isPrime)
+```
+
+However, when inside the trailing closure of ``TestStore/send(_:_:file:line:)-3pf4p``, the 
+``TestStore/state`` property is equal to the state _before_ sending the action, not after. That 
+prevents you from being able to use an escape hatch to get around needing to actually describe the 
+state mutation, like so:
 
 ```swift
 store.send(.incrementButtonTapped) {
@@ -187,7 +199,7 @@ struct Feature: ReducerProtocol {
       state.count = 0
       return .run { send in
         for _ in 1...5 {
-          try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+          try await Task.sleep(for: .seconds(1))
           await send(.timerTick)
         }
       }
@@ -263,7 +275,7 @@ using a controlled entity, such as a scheduler or clock, that can be sped up in 
 demonstrate this in a moment, so for now let's increase the timeout:
 
 ```swift
-await store.receive(.timerTick, timeout: 2*NSEC_PER_SEC) {
+await store.receive(.timerTick, timeout: .seconds(2)) {
   $0.count = 1
 }
 ```
@@ -272,27 +284,27 @@ This assertion now passes, but the overall test is still failing because there a
 actions to receive. The timer should tick 5 times in total, so we need five `receive` assertions:
 
 ```swift
-await store.receive(.timerTick, timeout: 2*NSEC_PER_SEC) {
+await store.receive(.timerTick, timeout: .seconds(2)) {
   $0.count = 1
 }
-await store.receive(.timerTick, timeout: 2*NSEC_PER_SEC) {
+await store.receive(.timerTick, timeout: .seconds(2)) {
   $0.count = 2
 }
-await store.receive(.timerTick, timeout: 2*NSEC_PER_SEC) {
+await store.receive(.timerTick, timeout: .seconds(2)) {
   $0.count = 3
 }
-await store.receive(.timerTick, timeout: 2*NSEC_PER_SEC) {
+await store.receive(.timerTick, timeout: .seconds(2)) {
   $0.count = 4
 }
-await store.receive(.timerTick, timeout: 2*NSEC_PER_SEC) {
+await store.receive(.timerTick, timeout: .seconds(2)) {
   $0.count = 5
 }
 ```
 
 Now the full test suite passes, and we have exhaustively proven how effects are executed in this
-feature. If in the future we tweak the logic of the effect, like say have it emit some number of
-times different from 5, then we will immediately get a test failure letting us know that we have
-not properly asserted on how the features evolves over time.
+feature. If in the future we tweak the logic of the effect, like say have it emit 10 times instead 
+of 5, then we will immediately get a test failure letting us know that we have not properly 
+asserted on how the features evolves over time.
 
 However, there is something not ideal about how this feature is structured, and that is the fact
 that we are doing actual, uncontrolled time-based asynchrony in the effect:
@@ -300,7 +312,7 @@ that we are doing actual, uncontrolled time-based asynchrony in the effect:
 ```swift
 return .run { send in
   for _ in 1...5 {
-    try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+    try await Task.sleep(for: .seconds(1)) // ⬅️
     await send(.timerTick)
   }
 }
@@ -325,7 +337,7 @@ struct Feature: ReducerProtocol {
 }
 ```
 
-> To make use of controllable schedulers you must use the
+> Tip: To make use of controllable schedulers you must use the
 [Combine Schedulers][gh-combine-schedulers] library, which is automatically included with the
 Composable Architecture.
 
@@ -384,7 +396,7 @@ await store.receive(.timerTick) {
 
 The more time you take to control the dependencies your features use, the easier it will be to
 write tests for your features. To learn more about designing dependencies and how to best leverage 
-dependencies, read the <doc:Dependencies> article.
+dependencies, read the <doc:DependencyManagement> article.
 
 [Testing-state-changes]: #Testing-state-changes
 [Testing-effects]: #Testing-effects
