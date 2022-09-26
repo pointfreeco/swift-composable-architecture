@@ -52,6 +52,13 @@ let package = Package(
       dependencies: [
         "ComposableArchitecture"
       ]
+      //      ,
+      //      swiftSettings: [
+      //        .unsafeFlags([
+      //          "-Xfrontend", "-warn-concurrency",
+      //          "-Xfrontend", "-enable-actor-data-race-checks",
+      //        ])
+      //      ]
     ),
     .target(
       name: "Dependencies",

@@ -83,11 +83,11 @@ final class VoiceMemosTests: XCTestCase {
       reducer: VoiceMemos()
     )
 
-    let didOpenSettings = ActorIsolated(false)
+    var didOpenSettings = false
 
     store.dependencies.audioRecorder.requestRecordPermission = { false }
     store.dependencies.mainRunLoop = .immediate
-    store.dependencies.openSettings = { await didOpenSettings.setValue(true) }
+    store.dependencies.openSettings = { @MainActor in didOpenSettings = true }
 
     await store.send(.recordButtonTapped)
     await store.receive(.recordPermissionResponse(false)) {
@@ -98,7 +98,7 @@ final class VoiceMemosTests: XCTestCase {
       $0.alert = nil
     }
     await store.send(.openSettingsButtonTapped).finish()
-    await didOpenSettings.withValue { XCTAssert($0) }
+    XCTAssert(didOpenSettings)
   }
 
   func testRecordMemoFailure() async {

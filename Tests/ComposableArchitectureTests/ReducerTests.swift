@@ -43,14 +43,14 @@ final class ReducerTests: XCTestCase {
       }
     }
 
-    let fastValue = ActorIsolated<Int?>(nil)
-    let slowValue = ActorIsolated<Int?>(nil)
+    var fastValue: Int? = nil
+    var slowValue: Int? = nil
 
     let store = TestStore(
       initialState: 0,
       reducer: CombineReducers {
-        Delayed(delay: 1, setValue: { await fastValue.setValue(42) })
-        Delayed(delay: 2, setValue: { await slowValue.setValue(1729) })
+        Delayed(delay: 1, setValue: { @MainActor in fastValue = 42 })
+        Delayed(delay: 2, setValue: { @MainActor in slowValue = 1729 })
       }
     )
 
@@ -62,11 +62,13 @@ final class ReducerTests: XCTestCase {
     }
     // Waiting a second causes the fast effect to fire.
     await mainQueue.advance(by: 1)
-    await fastValue.withValue { XCTAssertEqual($0, 42) }
+    XCTAssertEqual(fastValue, 42)
+    XCTAssertEqual(slowValue, nil)
     // Waiting one more second causes the slow effect to fire. This proves that the effects
     // are merged together, as opposed to concatenated.
     await mainQueue.advance(by: 1)
-    await slowValue.withValue { XCTAssertEqual($0, 1729) }
+    XCTAssertEqual(fastValue, 42)
+    XCTAssertEqual(slowValue, 1729)
   }
 
   func testCombine() async {
@@ -85,14 +87,14 @@ final class ReducerTests: XCTestCase {
       }
     }
 
-    let first = ActorIsolated(false)
-    let second = ActorIsolated(false)
+    var first = false
+    var second = false
 
     let store = TestStore(
       initialState: 0,
       reducer: CombineReducers {
-        One(effect: { await first.setValue(true) })
-        One(effect: { await second.setValue(true) })
+        One(effect: { @MainActor in first = true })
+        One(effect: { @MainActor in second = true })
       }
     )
 
@@ -100,8 +102,8 @@ final class ReducerTests: XCTestCase {
       .send(.increment) { $0 = 2 }
       .finish()
 
-    await first.withValue { XCTAssertTrue($0) }
-    await second.withValue { XCTAssertTrue($0) }
+    XCTAssertTrue(first)
+    XCTAssertTrue(second)
   }
 
   #if DEBUG
