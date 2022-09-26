@@ -1,4 +1,5 @@
 import Foundation
+import XCTestDynamicOverlay
 
 // TODO: should we have `@Dependency(\.runtimeWarningsEnabled)` and/or `@Dependency(\.treatWarningsAsErrors)`?
 
@@ -110,7 +111,7 @@ public struct DependencyValues: Sendable {
       else {
         let context =
           self.storage[ObjectIdentifier(DependencyContextKey.self)]?.base as? DependencyContext
-          ?? (isPreview ? .preview : .live)
+          ?? defaultContext
 
         switch context {
         case .live:
@@ -202,8 +203,12 @@ struct CurrentDependency {
   var line: UInt?
 }
 
-#if DEBUG
-  private let isPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
-#else
-  private let isPreview = false
-#endif
+private let defaultContext: DependencyContext = {
+  if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+    return .preview
+  } else if _XCTIsTesting {
+    return .test
+  } else {
+    return .live
+  }
+}()
