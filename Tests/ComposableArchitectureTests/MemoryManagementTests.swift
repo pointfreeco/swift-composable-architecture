@@ -18,9 +18,9 @@ final class MemoryManagementTests: XCTestCase {
     var count = 0
     viewStore.publisher.sink { count = $0 }.store(in: &self.cancellables)
 
-    XCTAssertNoDifference(count, 0)
+    XCTAssertEqual(count, 0)
     viewStore.send(())
-    XCTAssertNoDifference(count, 1)
+    XCTAssertEqual(count, 1)
   }
 
   func testOwnership_ViewStoreHoldsOntoStore() {
@@ -33,9 +33,9 @@ final class MemoryManagementTests: XCTestCase {
     var count = 0
     viewStore.publisher.sink { count = $0 }.store(in: &self.cancellables)
 
-    XCTAssertNoDifference(count, 0)
+    XCTAssertEqual(count, 0)
     viewStore.send(())
-    XCTAssertNoDifference(count, 1)
+    XCTAssertEqual(count, 1)
   }
 
   func testEffectWithMultipleScopes() {

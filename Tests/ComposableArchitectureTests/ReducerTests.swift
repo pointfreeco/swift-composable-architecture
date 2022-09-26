@@ -17,7 +17,7 @@ final class ReducerTests: XCTestCase {
 
     var state = 0
     _ = reducer.reduce(into: &state, action: ())
-    XCTAssertNoDifference(state, 1)
+    XCTAssertEqual(state, 1)
   }
 
   func testCombine_EffectsAreMerged() async {
@@ -146,7 +146,7 @@ final class ReducerTests: XCTestCase {
 
       self.wait(for: [logsExpectation], timeout: 5)
 
-      XCTAssertNoDifference(
+      XCTAssertEqual(
         logs,
         [
           #"""
@@ -205,7 +205,7 @@ final class ReducerTests: XCTestCase {
 
       self.wait(for: [logsExpectation], timeout: 5)
 
-      XCTAssertNoDifference(
+      XCTAssertEqual(
         logs,
         [
           #"""

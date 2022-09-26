@@ -71,11 +71,11 @@ final class ComposableArchitectureTests: XCTestCase {
     mainQueue.schedule(after: mainQueue.now, interval: 2) { values.append(42) }
       .store(in: &self.cancellables)
 
-    XCTAssertNoDifference(values, [])
+    XCTAssertEqual(values, [])
     mainQueue.advance()
-    XCTAssertNoDifference(values, [1, 42])
+    XCTAssertEqual(values, [1, 42])
     mainQueue.advance(by: 2)
-    XCTAssertNoDifference(values, [1, 42, 1, 1, 42])
+    XCTAssertEqual(values, [1, 42, 1, 1, 42])
   }
 
   func testLongLivingEffects() async {

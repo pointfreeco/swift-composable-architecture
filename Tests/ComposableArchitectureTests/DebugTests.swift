@@ -17,7 +17,7 @@
         ),
         to: &dump
       )
-      XCTAssertNoDifference(
+      XCTAssertEqual(
         dump,
         """
         AlertState(
@@ -53,7 +53,7 @@
           ),
           to: &dump
         )
-        XCTAssertNoDifference(
+        XCTAssertEqual(
           dump,
           """
           ConfirmationDialogState(
@@ -81,7 +81,7 @@
     func testTextState() {
       var dump = ""
       customDump(TextState("Hello, world!"), to: &dump)
-      XCTAssertNoDifference(
+      XCTAssertEqual(
         dump,
         """
         "Hello, world!"
@@ -95,7 +95,7 @@
           + TextState("!"),
         to: &dump
       )
-      XCTAssertNoDifference(
+      XCTAssertEqual(
         dump,
         """
         "Hello, _**world**_!"
@@ -122,7 +122,7 @@
           + TextState("\n") + TextState("Not underlined purple").underline(false, color: .pink),
         to: &dump
       )
-      XCTAssertNoDifference(
+      XCTAssertEqual(
         dump,
         #"""
         """
@@ -163,22 +163,22 @@
         }
       }
 
-      XCTAssertNoDifference(
+      XCTAssertEqual(
         debugCaseOutput(Action.action1(true, label: "Blob")),
         "DebugTests.Action.action1(_:, label:)"
       )
 
-      XCTAssertNoDifference(
+      XCTAssertEqual(
         debugCaseOutput(Action.action2(true, 1, "Blob")),
         "DebugTests.Action.action2(_:, _:, _:)"
       )
 
-      XCTAssertNoDifference(
+      XCTAssertEqual(
         debugCaseOutput(Action.screenA(.row(index: 1, action: .tapped))),
         "DebugTests.Action.screenA(.row(index:, action: .tapped))"
       )
 
-      XCTAssertNoDifference(
+      XCTAssertEqual(
         debugCaseOutput(Action.screenA(.row(index: 1, action: .textChanged(query: "Hi")))),
         "DebugTests.Action.screenA(.row(index:, action: .textChanged(query:)))"
       )
@@ -191,7 +191,7 @@
       let action = BindingAction.set(\State.$width, 50)
       var dump = ""
       customDump(action, to: &dump)
-      XCTAssertNoDifference(
+      XCTAssertEqual(
         dump,
         #"""
         BindingAction.set(

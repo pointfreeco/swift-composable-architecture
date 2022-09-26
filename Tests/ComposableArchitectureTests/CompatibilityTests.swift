@@ -69,7 +69,7 @@ final class CompatibilityTests: XCTestCase {
     viewStore.send(.start)
     viewStore.send(.kickOffAction)
 
-    XCTAssertNoDifference(
+    XCTAssertEqual(
       handledActions,
       [
         "start",

@@ -27,18 +27,18 @@ final class EffectCancellationTests: XCTestCase {
       .sink { values.append($0) }
       .store(in: &self.cancellables)
 
-    XCTAssertNoDifference(values, [])
+    XCTAssertEqual(values, [])
     subject.send(1)
-    XCTAssertNoDifference(values, [1])
+    XCTAssertEqual(values, [1])
     subject.send(2)
-    XCTAssertNoDifference(values, [1, 2])
+    XCTAssertEqual(values, [1, 2])
 
     Effect<Never, Never>.cancel(id: CancelID())
       .sink { _ in }
       .store(in: &self.cancellables)
 
     subject.send(3)
-    XCTAssertNoDifference(values, [1, 2])
+    XCTAssertEqual(values, [1, 2])
   }
 
   func testCancelInFlight() {
@@ -50,11 +50,11 @@ final class EffectCancellationTests: XCTestCase {
       .sink { values.append($0) }
       .store(in: &self.cancellables)
 
-    XCTAssertNoDifference(values, [])
+    XCTAssertEqual(values, [])
     subject.send(1)
-    XCTAssertNoDifference(values, [1])
+    XCTAssertEqual(values, [1])
     subject.send(2)
-    XCTAssertNoDifference(values, [1, 2])
+    XCTAssertEqual(values, [1, 2])
 
     Effect(subject)
       .cancellable(id: CancelID(), cancelInFlight: true)
@@ -62,9 +62,9 @@ final class EffectCancellationTests: XCTestCase {
       .store(in: &self.cancellables)
 
     subject.send(3)
-    XCTAssertNoDifference(values, [1, 2, 3])
+    XCTAssertEqual(values, [1, 2, 3])
     subject.send(4)
-    XCTAssertNoDifference(values, [1, 2, 3, 4])
+    XCTAssertEqual(values, [1, 2, 3, 4])
   }
 
   func testCancellationAfterDelay() {
@@ -77,7 +77,7 @@ final class EffectCancellationTests: XCTestCase {
       .sink { value = $0 }
       .store(in: &self.cancellables)
 
-    XCTAssertNoDifference(value, nil)
+    XCTAssertEqual(value, nil)
 
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
       Effect<Never, Never>.cancel(id: CancelID())
@@ -87,7 +87,7 @@ final class EffectCancellationTests: XCTestCase {
 
     _ = XCTWaiter.wait(for: [self.expectation(description: "")], timeout: 0.3)
 
-    XCTAssertNoDifference(value, nil)
+    XCTAssertEqual(value, nil)
   }
 
   func testCancellationAfterDelay_WithTestScheduler() {
@@ -101,7 +101,7 @@ final class EffectCancellationTests: XCTestCase {
       .sink { value = $0 }
       .store(in: &self.cancellables)
 
-    XCTAssertNoDifference(value, nil)
+    XCTAssertEqual(value, nil)
 
     mainQueue.advance(by: 1)
     Effect<Never, Never>.cancel(id: CancelID())
@@ -110,7 +110,7 @@ final class EffectCancellationTests: XCTestCase {
 
     mainQueue.run()
 
-    XCTAssertNoDifference(value, nil)
+    XCTAssertEqual(value, nil)
   }
 
   #if DEBUG
@@ -159,16 +159,16 @@ final class EffectCancellationTests: XCTestCase {
       .sink { values.append($0) }
       .store(in: &self.cancellables)
 
-    XCTAssertNoDifference(values, [])
+    XCTAssertEqual(values, [])
     subject.send(1)
-    XCTAssertNoDifference(values, [1])
+    XCTAssertEqual(values, [1])
 
     Effect<Never, Never>.cancel(id: CancelID())
       .sink { _ in }
       .store(in: &self.cancellables)
 
     subject.send(2)
-    XCTAssertNoDifference(values, [1])
+    XCTAssertEqual(values, [1])
   }
 
   func testCompleteBeforeCancellation() {
@@ -183,16 +183,16 @@ final class EffectCancellationTests: XCTestCase {
       .store(in: &self.cancellables)
 
     subject.send(1)
-    XCTAssertNoDifference(values, [1])
+    XCTAssertEqual(values, [1])
 
     subject.send(completion: .finished)
-    XCTAssertNoDifference(values, [1])
+    XCTAssertEqual(values, [1])
 
     Effect<Never, Never>.cancel(id: CancelID())
       .sink { _ in }
       .store(in: &self.cancellables)
 
-    XCTAssertNoDifference(values, [1])
+    XCTAssertEqual(values, [1])
   }
 
   #if DEBUG
@@ -288,11 +288,11 @@ final class EffectCancellationTests: XCTestCase {
       .sink { expectedOutput.append($0) }
       .store(in: &cancellables)
 
-    XCTAssertNoDifference(expectedOutput, [])
+    XCTAssertEqual(expectedOutput, [])
     mainQueue.advance(by: 1)
-    XCTAssertNoDifference(expectedOutput, [1])
+    XCTAssertEqual(expectedOutput, [1])
     mainQueue.advance(by: 1)
-    XCTAssertNoDifference(expectedOutput, [1, 2])
+    XCTAssertEqual(expectedOutput, [1, 2])
   }
 
   func testImmediateCancellation() {
@@ -306,9 +306,9 @@ final class EffectCancellationTests: XCTestCase {
       .cancellable(id: "id")
       .sink { expectedOutput.append($0) }
 
-    XCTAssertNoDifference(expectedOutput, [])
+    XCTAssertEqual(expectedOutput, [])
     mainQueue.advance(by: 1)
-    XCTAssertNoDifference(expectedOutput, [])
+    XCTAssertEqual(expectedOutput, [])
   }
 
   func testNestedMergeCancellation() {
@@ -353,6 +353,6 @@ final class EffectCancellationTests: XCTestCase {
       .store(in: &self.cancellables)
 
     mainQueue.advance(by: 1)
-    XCTAssertNoDifference(output, [B()])
+    XCTAssertEqual(output, [B()])
   }
 }
