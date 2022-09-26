@@ -136,15 +136,14 @@ extension DependencyKey {
 
       \(dependencyDescription)
 
-      Dependencies registered with the library are not allowed to use their live implementations \
-      when run in a 'TestStore'.
+      Dependencies registered with the library are not allowed to use their default, live \
+      implementations when run in a 'TestStore'.
 
-      There are two ways to fix:
-
-      • Make \(typeName(Self.self)) provide an implementation of 'testValue' in its conformance to \
-      the 'DependencyKey' protocol.
-      • Override \(DependencyValues.currentDependency.name.map { "'\($0)'" } ?? "the dependency") \
-      with a mock in your test by mutating the 'dependencies' property on your 'TestStore'.
+      To fix, override \
+      \(DependencyValues.currentDependency.name.map { "'\($0)'" } ?? "the dependency") with a mock \
+      value in your test by mutating the 'dependencies' property on your 'TestStore'. Or, if you'd \
+      like to provide a default test value, implement the 'testValue' requirement of the \
+      'DependencyKey' protocol.
       """
     )
     return Self.previewValue
