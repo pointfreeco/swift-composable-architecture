@@ -12,6 +12,10 @@ on:
       - protocol-beta
   workflow_dispatch:
 
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: macos-12

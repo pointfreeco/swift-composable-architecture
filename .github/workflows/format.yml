@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: format-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   swift_format:
     name: swift-format
