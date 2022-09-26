@@ -60,12 +60,12 @@ struct Todos: ReducerProtocol {
 }
 ```
 
-> Note: We are using `IdentifiedArray` from our 
+> Tip: We are using `IdentifiedArray` from our 
 [Identified Collections][swift-identified-collections] library because it provides a safe and
 ergonomic API for accessing elements from a stable ID rather than positional indices.
 
 In the reducer we are using the uncontrolled `UUID` initializer from Foundation. Every invocation
-of the initial produces a fully random UUID. That may seem like what we want, but unfortunately
+of the initializer produces a fully random UUID. That may seem like what we want, but unfortunately
 it wreaks havoc on our ability to test.
 
 If we tried writing a test for the add todo functionality we will quickly find that we can't
@@ -110,20 +110,16 @@ Then when you need a new UUID you should reach for the dependency rather than re
 uncontrollable UUID initializer:
 
 ```swift
-func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-  switch action {
-  case .addButtonTapped:
-    state.todos.append(Todo(id: self.uuid()) // ⬅️
-    return .none
-
-  // ...
-  }
-}
+case .addButtonTapped:
+  state.todos.append(Todo(id: self.uuid()) // ⬅️
+  return .none
 ```
 
 If you do this little bit of upfront work you instantly unlock the ability to test the feature by
 providing a controlled, deterministic version of the UUID generator in tests. The library even comes
-with such a version for the UUID generator, and it is called `incrementing`:
+with such a version for the UUID generator, and it is called `incrementing`. You can override
+the dependency directly on the ``TestStore`` so that your feature's reducer uses that version
+instead of the live one:
 
 ```swift
 @MainActor
@@ -183,7 +179,7 @@ func testTodos() async {
     reducer: Todos()
   )
 
-  store.dependencies.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
+  store.dependencies.date.now = Date(timeIntervalSinceReferenceDate: 1234567890)
   store.dependencies.mainQueue = .immediate
   store.dependencies.uuid = .incrementing
 
@@ -196,7 +192,7 @@ func testTodos() async {
 Although the library comes with many controllable dependencies out of the box, there are still 
 times when you want to register your own dependencies with the library so that you can use the
 [`@Dependency`][dependency-property-wrapper-docs] property wrapper. Doing this is quite similar to 
-registering an environment value in SwiftUI (see [docs][environment-values-docs]).
+registering an [environment value][environment-values-docs] in SwiftUI.
 
 First you create a type that conforms to the [`DependencyKey`][dependency-key-docs]
 protocol. The minimum implementation you must provide is a `liveValue`, which is the value used
@@ -212,7 +208,8 @@ private enum APIClientKey: DependencyKey {
 > Tip: There are two other values you can provide for a dependency. If you implement `testValue`
 it will be used when testing features in a ``TestStore``, and if you implement `previewValue` it 
 will be used while running features in an Xcode preview. You don't need to worry about those
-values when you are just getting started, and instead can add them later.
+values when you are just getting started, and instead can 
+[add them later](#Live-preview-and-test-dependencies).
 
 Finally, an extension must be made to [`DependencyValues`][dependency-values-docs] to expose a
 computed property for the dependency:
@@ -379,6 +376,8 @@ Then you are free to make as many conformances of this protocol as you want, suc
 `LiveAudioPlayer` that actually interacts with AVFoundation, or a `MockAudioPlayer` that doesn't
 play any sounds, but does suspend in order to simulate that something is playing. You could even
 have an `UnimplementedAudioPlayer` conformance that invokes `XCTFail` when any method is invoked.
+And all of those conformances can be used to specify the live, preview and test values for the
+dependency:
 
 ```swift
 private enum AudioPlayerKey: DependencyKey {
@@ -477,6 +476,9 @@ struct Onboarding: ReducerProtocol {
   }
 }
 ```
+
+This will cause the `Feature` reducer to use a mock user defaults and database dependency, as well
+as any reducer `Feature` uses under the hood, _and_ any effects produced by `Feature`.
 
 [dependency-values-docs]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/dependencies/dependencyvalues
 [swift-identified-collections]: https://github.com/pointfreeco/swift-identified-collections
