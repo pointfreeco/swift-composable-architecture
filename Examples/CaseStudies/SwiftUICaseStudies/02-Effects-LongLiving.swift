@@ -39,7 +39,7 @@ let longLivingEffectsReducer = Reducer<
   case .task:
     // When the view appears, start the effect that emits when screenshots are taken.
     return .run { send in
-      await withTaskCancellation(id: 0) {
+      await withTaskCancellation(id: 0) { // Temporary code just to show the leak
         for await _ in await environment.screenshots() {
           await send(.userDidTakeScreenshotNotification)
         }
