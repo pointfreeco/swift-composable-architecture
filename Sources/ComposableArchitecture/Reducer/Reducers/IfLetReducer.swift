@@ -1,6 +1,40 @@
 extension ReducerProtocol {
   /// Embeds a child reducer in a parent domain that works on an optional property of parent state.
   ///
+  /// For example, if a parent feature holds onto a piece of optional child state, then it can
+  /// perform its core logic _and_ the child's logic by using the `ifLet` operator:
+  ///
+  /// ```swift
+  /// struct Parent: ReducerProtocol {
+  ///   struct State {
+  ///     var child: Child.State?
+  ///     // ...
+  ///   }
+  ///   enum Action {
+  ///     case child(Child.Action)
+  ///     // ...
+  ///   }
+  ///
+  ///   var body: some ReducerProtocol<State, Action> {
+  ///     Reduce { state, action in
+  ///       // Core logic for parent feature
+  ///     }
+  ///     .ifLet(\.child, action: /Action.child) {
+  ///       Child()
+  ///     }
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// The `ifLet` forces a specific order of operations for the child and parent features. It runs
+  /// the child first, and then the parent. If the order was reversed, then it would be possible for
+  /// the parent feature to `nil` out the child state, in which case the child feature would not be
+  /// able to react to that action. That can cause subtle bugs.
+  ///
+  /// It is still possible for a parent feature higher up in the application to `nil` out child
+  /// state before the child has a chance to react to the action. In such cases a runtime warning
+  /// is shown in Xcode to let you know that there's a potential problem 
+  ///
   /// - Parameters:
   ///   - toWrappedState: A writable key path from parent state to a property containing optional
   ///     child state.
