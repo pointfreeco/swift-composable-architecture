@@ -196,16 +196,17 @@ public func withTaskCancellation<T: Sendable>(
   cancelInFlight: Bool = false,
   operation: @Sendable @escaping () async throws -> T
 ) async rethrows -> T {
-  let task = { () -> Task<T, Error> in
+  let id = CancelToken(id: id)
+  let (cancellable, task) = { () -> (AnyCancellable, Task<T, Error>) in
     cancellablesLock.lock()
-    let id = CancelToken(id: id)
     if cancelInFlight {
       cancellationCancellables[id]?.forEach { $0.cancel() }
     }
     let task = Task { try await operation() }
     var cancellable: AnyCancellable!
-    cancellable = AnyCancellable {
+    cancellable = AnyCancellable { [weak cancellable] in
       task.cancel()
+      guard let cancellable = cancellable else { return }
       cancellablesLock.sync {
         cancellationCancellables[id]?.remove(cancellable)
         if cancellationCancellables[id]?.isEmpty == .some(true) {
@@ -215,8 +216,16 @@ public func withTaskCancellation<T: Sendable>(
     }
     cancellationCancellables[id, default: []].insert(cancellable)
     cancellablesLock.unlock()
-    return task
+    return (cancellable, task)
   }()
+  defer {
+    cancellablesLock.sync {
+      cancellationCancellables[id]?.remove(cancellable)
+      if cancellationCancellables[id]?.isEmpty == .some(true) {
+        cancellationCancellables[id] = nil
+      }
+    }
+  }
   do {
     return try await task.cancellableValue
   } catch {
@@ -224,15 +233,7 @@ public func withTaskCancellation<T: Sendable>(
   }
 }
 
-/// Execute an operation with a cancellation identifier.
-///
-/// A convenience for calling ``withTaskCancellation(id:cancelInFlight:operation:)-4dtr6`` with a
-/// static type as the operation's unique identifier.
-///
-/// - Parameters:
-///   - id: A unique type identifying the operation.
-///   - cancelInFlight: Determines if any in-flight operation with the same identifier should be
-///     canceled before starting this new one.
+//     canceled before starting this new one.
 ///   - operation: An async operation.
 /// - Throws: An error thrown by the operation.
 /// - Returns: A value produced by operation.
