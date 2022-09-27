@@ -1,8 +1,8 @@
 import ComposableArchitecture
 import XCTest
 
-private extension DependencyValues {
-  var missingLiveDependency: Int {
+extension DependencyValues {
+  fileprivate var missingLiveDependency: Int {
     get { self[TestKey.self] }
     set { self[TestKey.self] = newValue }
   }
@@ -17,6 +17,14 @@ final class DependencyValuesTests: XCTestCase {
     #if DEBUG
       var line = 0
       XCTExpectFailure {
+        var values = DependencyValues.current
+        values.context = .live
+        DependencyValues.$current.withValue(values) {
+          line = #line + 1
+          @Dependency(\.missingLiveDependency) var missingLiveDependency: Int
+          _ = missingLiveDependency
+        }
+      } issueMatcher: {
         $0.compactDescription == """
           @Dependency(\\.missingLiveDependency) has no live implementation, but was accessed from \
           a live context.
@@ -36,9 +44,6 @@ final class DependencyValuesTests: XCTestCase {
           this current application.
           """
       }
-      line = #line + 1
-      @Dependency(\.missingLiveDependency) var missingLiveDependency: Int
-      _ = missingLiveDependency
     #endif
   }
 }
