@@ -233,7 +233,15 @@ public func withTaskCancellation<T: Sendable>(
   }
 }
 
-//     canceled before starting this new one.
+/// Execute an operation with a cancellation identifier.
+///
+/// A convenience for calling ``withTaskCancellation(id:cancelInFlight:operation:)-4dtr6`` with a
+/// static type as the operation's unique identifier.
+///
+/// - Parameters:
+///   - id: A unique type identifying the operation.
+///   - cancelInFlight: Determines if any in-flight operation with the same identifier should be
+///     canceled before starting this new one.
 ///   - operation: An async operation.
 /// - Throws: An error thrown by the operation.
 /// - Returns: A value produced by operation.
