@@ -33,7 +33,7 @@ extension ReducerProtocol {
   ///
   /// It is still possible for a parent feature higher up in the application to `nil` out child
   /// state before the child has a chance to react to the action. In such cases a runtime warning
-  /// is shown in Xcode to let you know that there's a potential problem 
+  /// is shown in Xcode to let you know that there's a potential problem.
   ///
   /// - Parameters:
   ///   - toWrappedState: A writable key path from parent state to a property containing optional
