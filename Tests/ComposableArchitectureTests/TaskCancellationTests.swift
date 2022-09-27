@@ -19,7 +19,7 @@ final class TaskCancellationTests: XCTestCase {
     }
     await stream.first(where: { true })
     Task.cancel(id: ID.self)
-    await Task.megaYield()
+    await Task.megaYield(count: 20)
     XCTAssertEqual(cancellablesLock.sync { cancellationCancellables }, [:])
     do {
       try await task.cancellableValue
