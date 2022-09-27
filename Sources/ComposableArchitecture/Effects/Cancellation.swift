@@ -205,16 +205,7 @@ public func withTaskCancellation<T: Sendable>(
       cancellationCancellables[id]?.forEach { $0.cancel() }
     }
     task = Task { try await operation() }
-    cancellable = AnyCancellable { [weak cancellable] in
-      task.cancel()
-      guard let cancellable = cancellable else { return }
-      cancellablesLock.sync {
-        cancellationCancellables[id]?.remove(cancellable)
-        if cancellationCancellables[id]?.isEmpty == .some(true) {
-          cancellationCancellables[id] = nil
-        }
-      }
-    }
+    cancellable = AnyCancellable { task.cancel() }
     cancellationCancellables[id, default: []].insert(cancellable)
     cancellablesLock.unlock()
   }()
@@ -261,10 +252,8 @@ extension Task where Success == Never, Failure == Never {
   /// Cancel any currently in-flight operation with the given identifier.
   ///
   /// - Parameter id: An identifier.
-  public static func cancel<ID: Hashable & Sendable>(id: ID) async {
-    await MainActor.run {
-      cancellablesLock.sync { cancellationCancellables[.init(id: id)]?.forEach { $0.cancel() } }
-    }
+  public static func cancel<ID: Hashable & Sendable>(id: ID) {
+    cancellablesLock.sync { cancellationCancellables[.init(id: id)]?.forEach { $0.cancel() } }
   }
 
   /// Cancel any currently in-flight operation with the given identifier.
@@ -273,8 +262,8 @@ extension Task where Success == Never, Failure == Never {
   /// identifier.
   ///
   /// - Parameter id: A unique type identifying the operation.
-  public static func cancel(id: Any.Type) async {
-    await self.cancel(id: ObjectIdentifier(id))
+  public static func cancel(id: Any.Type) {
+    self.cancel(id: ObjectIdentifier(id))
   }
 }
 

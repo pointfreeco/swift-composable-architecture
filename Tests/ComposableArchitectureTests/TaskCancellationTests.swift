@@ -5,7 +5,9 @@ import XCTest
 
 final class TaskCancellationTests: XCTestCase {
   func testCancellation() async throws {
-    cancellationCancellables.removeAll()
+    cancellablesLock.sync {
+      cancellationCancellables.removeAll()
+    }
     enum ID {}
     let (stream, continuation) = AsyncStream<Void>.streamWithContinuation()
     let task = Task {
@@ -16,9 +18,9 @@ final class TaskCancellationTests: XCTestCase {
       }
     }
     await stream.first(where: { true })
-    await Task.cancel(id: ID.self)
+    Task.cancel(id: ID.self)
     await Task.megaYield()
-    XCTAssertEqual(cancellationCancellables, [:])
+    XCTAssertEqual(cancellablesLock.sync { cancellationCancellables }, [:])
     do {
       try await task.cancellableValue
       XCTFail()
