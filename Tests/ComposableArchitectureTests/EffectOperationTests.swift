@@ -107,7 +107,7 @@ class EffectOperationTests: XCTestCase {
     }
     .merge(
       with: .task {
-        try await Task.sleep(nanoseconds: NSEC_PER_SEC / 5)
+        try await Task.sleep(nanoseconds: NSEC_PER_SEC / 2)
         return 1729
       }
     )
