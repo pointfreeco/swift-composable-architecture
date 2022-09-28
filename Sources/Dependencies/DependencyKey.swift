@@ -35,22 +35,23 @@ public protocol DependencyKey: TestDependencyKey {
   /// The preview value for the dependency key.
   ///
   /// This value is automatically installed into stores running in Xcode previews, as well as
-  /// reducer hierarchies that set their dependency environment to `preview`:
+  /// reducer hierarchies that set their dependency ``DependencyValues/context`` to
+  /// ``DependencyContext/preview``:
   ///
   /// ```swift
   /// MyFeature()
-  ///   .dependency(\.environment, .preview)
+  ///   .dependency(\.context, .preview)
   /// ```
   static var previewValue: Value { get }
 
   /// The test value for the dependency key.
   ///
   /// This value is automatically installed into test stores and reducer hierarchies that set their
-  /// dependency environment to `test`:
+  /// dependency ``DependencyValues/context`` to ``DependencyContext/test``:
   ///
   /// ```swift
   /// MyFeature()
-  ///   .dependency(\.environment, .test)
+  ///   .dependency(\.context, .test)
   /// ```
   static var testValue: Value { get }
 }
@@ -75,22 +76,23 @@ public protocol TestDependencyKey {
   /// The preview value for the dependency key.
   ///
   /// This value is automatically installed into stores running in Xcode previews, as well as
-  /// reducer hierarchies that set their dependency environment to `preview`:
+  /// reducer hierarchies that set their dependency ``DependencyValues/context`` to
+  /// ``DependencyContext/preview``:
   ///
   /// ```swift
   /// MyFeature()
-  ///   .dependency(\.environment, .preview)
+  ///   .dependency(\.context, .preview)
   /// ```
   static var previewValue: Value { get }
 
   /// The test value for the dependency key.
   ///
   /// This value is automatically installed into test stores and reducer hierarchies that set their
-  /// dependency environment to `test`:
+  /// dependency ``DependencyValues/context`` to ``DependencyContext/test``:
   ///
   /// ```swift
   /// MyFeature()
-  ///   .dependency(\.environment, .test)
+  ///   .dependency(\.context, .test)
   /// ```
   static var testValue: Value { get }
 }
