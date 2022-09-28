@@ -7,7 +7,9 @@ import XCTestDynamicOverlay
 /// `EnvironmentValues`.
 ///
 /// `DependencyKey` has one main requirement, ``liveValue``, which must return a default value for
-/// your dependency that is used when the application is run in a simulator or device.
+/// your dependency that is used when the application is run in a simulator or device. If the
+/// ``liveValue`` is accessed while your feature runs in a `TestStore` a test failure will be
+/// triggered.
 ///
 /// `DependencyKey` inherits two overridable requirements from ``TestDependencyKey``:
 /// ``TestDependencyKey/testValue``, which should return a default value for the purpose of
@@ -18,8 +20,6 @@ import XCTestDynamicOverlay
 /// If you plan on separating your interface from your live implementation, conform to
 /// ``TestDependencyKey`` in your interface module, and extend this conformance to `DependencyKey`
 /// in your implementation module.
-///
-///
 public protocol DependencyKey: TestDependencyKey {
   /// The live value for the dependency key.
   static var liveValue: Value { get }

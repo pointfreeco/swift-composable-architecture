@@ -9,11 +9,30 @@ import XCTestDynamicOverlay
 /// ``DependencyValues`` structure. This is similar to the `EnvironmentValues` structure SwiftUI
 /// exposes to views.
 ///
-/// To read a value from the structure, declare a property using the ``Dependency`` property wrapper
-/// and specify the value's key path. For example, you can read the current date:
+/// To register a dependency with this storage, you first conform a type to ``DependencyKey``:
 ///
 /// ```swift
-/// @Dependency(\.date) var date
+/// private enum MyValueKey: DependencyKey {
+///   static let liveValue = 42
+/// }
+/// ```
+///
+/// And then extend ``DependencyValues`` with a computed property that uses the key to read and
+/// write to ``DependencyValues``:
+///
+/// ```swift
+/// extension DependencyValues {
+///   get { self[MyValueKey.self] }
+///   set { self[MyValueKey.self] = newValue }
+/// }
+/// ```
+///
+/// To access a dependency from ``DependencyValues`` you declare a variable using the ``Dependency``
+/// property wrapper:
+///
+/// ```swift
+/// @Dependency(\.myValue) var myValue
+/// myValue // 42
 /// ```
 public struct DependencyValues: Sendable {
   // TODO: Can this be internal or should it be underscored?
