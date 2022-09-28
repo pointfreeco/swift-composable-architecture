@@ -138,8 +138,8 @@ extension DependencyKey {
 
       \(dependencyDescription)
 
-      Dependencies registered with the library are not allowed to use their default, live \
-      implementations when run in a 'TestStore'.
+      Dependencies registered with the library are not allowed to use their live implementations \
+      when run in a 'TestStore'.
 
       To fix, override \
       \(DependencyValues.currentDependency.name.map { "'\($0)'" } ?? "the dependency") with a mock \
