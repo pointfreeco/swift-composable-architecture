@@ -4,7 +4,7 @@ import ComposableArchitecture
 import Dependencies
 import Foundation
 
-let dependenciesSuite = BenchmarkSuite(name: "Dependencies") {
+let dependenciesSuite = BenchmarkSuite(name: "Dependencies") { suite in
   #if swift(>=5.7)
     let reducer: some ReducerProtocol<Int, Void> = EmptyReducer()
       .dependency(\.calendar, .autoupdatingCurrent)
@@ -15,7 +15,7 @@ let dependenciesSuite = BenchmarkSuite(name: "Dependencies") {
       .dependency(\.timeZone, .autoupdatingCurrent)
       .dependency(\.uuid, .live)
 
-    $0.benchmark("Dependency key writing") {
+    suite.benchmark("Dependency key writing") {
       var state = 0
       _ = reducer.reduce(into: &state, action: ())
       precondition(state == 0)
