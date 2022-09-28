@@ -1,7 +1,29 @@
-/// A property wrapper that exposes dependencies to reducers.
+/// A property wrapper for accessing dependencies.
 ///
-/// Similar to SwiftUI's `Environment` property wrapper, which provides dependencies to views, the
-/// `Dependency` property wrapper provides dependencies to reducers.
+/// All dependencies are stored in ``DependencyValues`` and one uses this property wrapper to
+/// gain access to a particular dependency. Typically it used to provide dependencies to reducers:
+///
+/// ```swift
+/// struct Feature: ReducerProtocol {
+///   @Dependency(\.apiClient) var apiClient
+///   @Dependency(\.mainQueue) var mainQueue
+///   @Dependency(\.uuid) var uuid
+///
+///   // ...
+/// }
+/// ```
+///
+/// But it can be used in other situations too, such as a shared helper function of constructing
+/// an effect that can be used from multiple reducers:
+///
+/// ```swift
+/// func sharedEffect() async throws -> Action {
+///   @Dependency(\.apiClient) var apiClient
+///   @Dependency(\.mainQueue) var mainQueue
+///
+///   // ...
+/// }
+/// ```
 ///
 /// For the complete list of dependency values provided by the Composable Architecture, see the
 /// properties of the ``DependencyValues`` structure. For information about creating custom
