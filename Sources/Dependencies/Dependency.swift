@@ -39,7 +39,7 @@ public struct Dependency<Value>: @unchecked Sendable {
 
   /// Creates a dependency property to read the specified key path.
   ///
-  /// Don’t call this initializer directly. Instead, declare a property with the `Dependency`
+  /// Don't call this initializer directly. Instead, declare a property with the `Dependency`
   /// property wrapper, and provide the key path of the dependency value that the property should
   /// reflect:
   ///

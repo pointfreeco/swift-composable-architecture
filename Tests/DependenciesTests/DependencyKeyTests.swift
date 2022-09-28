@@ -31,11 +31,13 @@ final class DependencyKeyTests: XCTestCase {
               DependencyKeyTests.Dependency
 
           Dependencies registered with the library are not allowed to use their default, live \
-          implementations when run in a 'TestStore'.
+          implementations when run from tests.
 
-          To fix, override the dependency with a mock value in your test by mutating the \
-          'dependencies' property on your 'TestStore'. Or, if you'd like to provide a default test \
-          value, implement the 'testValue' requirement of the 'DependencyKey' protocol.
+          To fix, override the dependency with a mock value in your test. If you are using the \
+          Composable Architecture, mutate the 'dependencies' property on your 'TestStore'. \
+          Otherwise, use 'DependencyValues.withValues' to define a scope for the override. If \
+          you'd like to provide a default value for all tests, implement the 'testValue' \
+          requirement of the 'DependencyKey' protocol.
           """
       }
     #endif
@@ -62,11 +64,13 @@ final class DependencyKeyTests: XCTestCase {
               Int
 
           Dependencies registered with the library are not allowed to use their default, live \
-          implementations when run in a 'TestStore'.
+          implementations when run from tests.
 
-          To fix, override the dependency with a mock value in your test by mutating the \
-          'dependencies' property on your 'TestStore'. Or, if you'd like to provide a default test \
-          value, implement the 'testValue' requirement of the 'DependencyKey' protocol.
+          To fix, override the dependency with a mock value in your test. If you are using the \
+          Composable Architecture, mutate the 'dependencies' property on your 'TestStore'. \
+          Otherwise, use 'DependencyValues.withValues' to define a scope for the override. If \
+          you'd like to provide a default value for all tests, implement the 'testValue' \
+          requirement of the 'DependencyKey' protocol.
           """
       }
     #endif
@@ -83,7 +87,7 @@ final class DependencyKeyTests: XCTestCase {
 
     #if DEBUG
       XCTExpectFailure {
-        XCTAssertEqual(1729, Key.testValue)
+        XCTAssertEqual(42, Key.testValue)
       } issueMatcher: { issue in
         issue.compactDescription == """
           A dependency has no test implementation, but was accessed from a test context:
@@ -94,11 +98,13 @@ final class DependencyKeyTests: XCTestCase {
               Int
 
           Dependencies registered with the library are not allowed to use their default, live \
-          implementations when run in a 'TestStore'.
+          implementations when run from tests.
 
-          To fix, override the dependency with a mock value in your test by mutating the \
-          'dependencies' property on your 'TestStore'. Or, if you'd like to provide a default test \
-          value, implement the 'testValue' requirement of the 'DependencyKey' protocol.
+          To fix, override the dependency with a mock value in your test. If you are using the \
+          Composable Architecture, mutate the 'dependencies' property on your 'TestStore'. \
+          Otherwise, use 'DependencyValues.withValues' to define a scope for the override. If \
+          you'd like to provide a default value for all tests, implement the 'testValue' \
+          requirement of the 'DependencyKey' protocol.
           """
       }
     #endif
@@ -126,12 +132,13 @@ final class DependencyKeyTests: XCTestCase {
                 Int
 
             Dependencies registered with the library are not allowed to use their default, live \
-            implementations when run in a 'TestStore'.
+            implementations when run from tests.
 
-            To fix, override 'missingTestDependency' with a mock value in your test by mutating \
-            the 'dependencies' property on your 'TestStore'. Or, if you'd like to provide a \
-            default test value, implement the 'testValue' requirement of the 'DependencyKey' \
-            protocol.
+            To fix, override 'missingTestDependency' with a mock value in your test. If you are \
+            using the Composable Architecture, mutate the 'dependencies' property on your \
+            'TestStore'. Otherwise, use 'DependencyValues.withValues' to define a scope for the \
+            override. If you'd like to provide a default value for all tests, implement the \
+            'testValue' requirement of the 'DependencyKey' protocol.
             """
         }
     }

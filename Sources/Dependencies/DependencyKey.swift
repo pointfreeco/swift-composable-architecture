@@ -34,24 +34,31 @@ public protocol DependencyKey: TestDependencyKey {
 
   /// The preview value for the dependency key.
   ///
-  /// This value is automatically installed into stores running in Xcode previews, as well as
-  /// reducer hierarchies that set their dependency ``DependencyValues/context`` to
+  /// This value is automatically used when the associated dependency value is accessed from an
+  /// Xcode preview, as well as when the current ``DependencyValues/context`` is set to
   /// ``DependencyContext/preview``:
   ///
   /// ```swift
-  /// MyFeature()
-  ///   .dependency(\.context, .preview)
+  /// DependencyValues.withValues {
+  ///   $0.context = .preview
+  /// } operation: {
+  ///   // Dependencies accessed here default to their "preview" value
+  /// }
   /// ```
   static var previewValue: Value { get }
 
   /// The test value for the dependency key.
   ///
-  /// This value is automatically installed into test stores and reducer hierarchies that set their
-  /// dependency ``DependencyValues/context`` to ``DependencyContext/test``:
+  /// This value is automatically used when the associated dependency value is accessed from an
+  /// XCTest run, as well as when the current ``DependencyValues/context`` is set to
+  /// ``DependencyContext/test``:
   ///
   /// ```swift
-  /// MyFeature()
-  ///   .dependency(\.context, .test)
+  /// DependencyValues.withValues {
+  ///   $0.context = .test
+  /// } operation: {
+  ///   // Dependencies accessed here default to their "test" value
+  /// }
   /// ```
   static var testValue: Value { get }
 }
@@ -75,35 +82,60 @@ public protocol TestDependencyKey {
 
   /// The preview value for the dependency key.
   ///
-  /// This value is automatically installed into stores running in Xcode previews, as well as
-  /// reducer hierarchies that set their dependency ``DependencyValues/context`` to
+  /// This value is automatically used when the associated dependency value is accessed from an
+  /// Xcode preview, as well as when the current ``DependencyValues/context`` is set to
   /// ``DependencyContext/preview``:
   ///
   /// ```swift
-  /// MyFeature()
-  ///   .dependency(\.context, .preview)
+  /// DependencyValues.withValues {
+  ///   $0.context = .preview
+  /// } operation: {
+  ///   // Dependencies accessed here default to their "preview" value
+  /// }
   /// ```
   static var previewValue: Value { get }
 
   /// The test value for the dependency key.
   ///
-  /// This value is automatically installed into test stores and reducer hierarchies that set their
-  /// dependency ``DependencyValues/context`` to ``DependencyContext/test``:
+  /// This value is automatically used when the associated dependency value is accessed from an
+  /// XCTest run, as well as when the current ``DependencyValues/context`` is set to
+  /// ``DependencyContext/test``:
   ///
   /// ```swift
-  /// MyFeature()
-  ///   .dependency(\.context, .test)
+  /// DependencyValues.withValues {
+  ///   $0.context = .test
+  /// } operation: {
+  ///   // Dependencies accessed here default to their "test" value
+  /// }
   /// ```
   static var testValue: Value { get }
 }
 
 extension DependencyKey {
   /// A default implementation that provides the ``liveValue`` to Xcode previews.
+  ///
+  /// You may provide your own default `previewValue` in your conformance to ``TestDependencyKey``,
+  /// which will take precedence over this implementation.
   public static var previewValue: Value { Self.liveValue }
 
-  /// A default implementation that provides the ``liveValue`` to tests. A test failure will occur
-  /// if the dependency is accessed in a test. To fix, override the dependency on the test store
-  /// to use a mock or provide a `testValue` in your conformance to ``TestDependencyKey``.
+  /// A default implementation that provides the ``liveValue`` to XCTest runs, but will trigger test
+  /// failure to occur if accessed.
+  ///
+  /// To prevent test failures, explicitly override the dependency in any tests in which it is
+  /// accessed:
+  ///
+  /// ```swift
+  /// func testFeatureThatUsesMyDependency() {
+  ///   DependencyValues.withValues {
+  ///     $0.myDependency = .mock // Override dependency
+  ///   } operation: {
+  ///     // Test feature with dependency overridden
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// You may provide your own default `testValue` in your conformance to ``TestDependencyKey``,
+  /// which will take precedence over this implementation.
   public static var testValue: Value {
     var dependencyDescription = ""
     if
@@ -131,6 +163,7 @@ extension DependencyKey {
             \(typeName(Value.self))
         """
     )
+    // TODO: Make this error message configurable to avoid TCA-specific language outside of TCA?
     XCTFail(
       """
       \(DependencyValues.currentDependency.name.map { "@Dependency(\\.\($0))" } ?? "A dependency") \
@@ -138,21 +171,25 @@ extension DependencyKey {
 
       \(dependencyDescription)
 
-      Dependencies registered with the library are not allowed to use their live implementations \
-      when run in a 'TestStore'.
+      Dependencies registered with the library are not allowed to use their default, live \
+      implementations when run from tests.
 
       To fix, override \
       \(DependencyValues.currentDependency.name.map { "'\($0)'" } ?? "the dependency") with a mock \
-      value in your test by mutating the 'dependencies' property on your 'TestStore'. Or, if you'd \
-      like to provide a default test value, implement the 'testValue' requirement of the \
-      'DependencyKey' protocol.
+      value in your test. If you are using the Composable Architecture, mutate the 'dependencies' \
+      property on your 'TestStore'. Otherwise, use 'DependencyValues.withValues' to define a scope \
+      for the override. If you'd like to provide a default value for all tests, implement the \
+      'testValue' requirement of the 'DependencyKey' protocol.
       """
     )
-    return Self.previewValue
+    return Self.liveValue
   }
 }
 
 extension TestDependencyKey {
   /// A default implementation that provides the ``testValue`` to Xcode previews.
+  ///
+  /// You may provide your own default `previewValue` in your conformance to ``TestDependencyKey``,
+  /// which will take precedence over this implementation.
   public static var previewValue: Value { Self.testValue }
 }
