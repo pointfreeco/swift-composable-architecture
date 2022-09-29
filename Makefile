@@ -18,7 +18,7 @@ test-library-debug:
 	done
 
 test-library-release:
-	for scheme in ComposableArchitecture Dependencies; do \
+	for scheme in Dependencies ComposableArchitecture; do \
 	  for platform in "$(PLATFORM_WATCHOS)" "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_TVOS)"; do \
 			xcodebuild test \
 				-configuration release \
