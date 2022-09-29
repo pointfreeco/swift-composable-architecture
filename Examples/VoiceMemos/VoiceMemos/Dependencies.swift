@@ -3,23 +3,18 @@ import SwiftUI
 import XCTestDynamicOverlay
 
 extension DependencyValues {
-  // TODO: move this do Dependencies but leave temporaryDirectory
   var openSettings: @Sendable () async -> Void {
-    get { self[OpenSettingsKey.self] }
-    set { self[OpenSettingsKey.self] = newValue }
-  }
-
-  private enum OpenSettingsKey: DependencyKey {
-    typealias Value = @Sendable () async -> Void
-
-    static let liveValue: @Sendable () async -> Void = {
-      await MainActor.run {
-        UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+    get {
+      return {
+        await self.openURL(URL(string: UIApplication.openSettingsURLString)!)
       }
     }
-    static let testValue: @Sendable () async -> Void = XCTUnimplemented(
-      #"@Dependency(\.openSettings)"#
-    )
+    set {
+      self.openURL = .init { _ in
+        await newValue()
+        return true
+      }
+    }
   }
 
   var temporaryDirectory: @Sendable () -> URL {
@@ -29,9 +24,5 @@ extension DependencyValues {
 
   private enum TemporaryDirectoryKey: DependencyKey {
     static let liveValue: @Sendable () -> URL = { URL(fileURLWithPath: NSTemporaryDirectory()) }
-    static let testValue: @Sendable () -> URL = XCTUnimplemented(
-      #"@Dependency(\.temporaryDirectory)"#,
-      placeholder: URL(fileURLWithPath: NSTemporaryDirectory())
-    )
   }
 }
