@@ -29,6 +29,7 @@ extension DependencyValues {
               continuation.finish()
             }
           #endif
+          // TODO: Make sure `tvOS` and `watchOS` behave like `EnvironmentValues.openURL`?
         }
         continuation.onTermination = { _ in
           task.cancel()
