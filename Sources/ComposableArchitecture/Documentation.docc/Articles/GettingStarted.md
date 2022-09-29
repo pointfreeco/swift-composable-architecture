@@ -14,7 +14,7 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/pointfreeco/swift-composable-architecture",
-      from: "0.39.0"
+      from: "0.41.0"
     ),
   ],
   targets: [
@@ -183,7 +183,7 @@ struct FactAlert: Identifiable {
 
 It is also straightforward to have a UIKit controller driven off of this store. You subscribe to the 
 store in `viewDidLoad` in order to update the UI and show alerts. The code is a bit longer than the 
-SwiftUI version, so we have collapsed it here:
+SwiftUI version:
 
 ```swift
 class FeatureViewController: UIViewController {
@@ -476,6 +476,8 @@ await store.receive(.numberFactResponse(.success("0 is a good number Brent"))) {
 ```
 
 That is the basics of building and testing a feature in the Composable Architecture. There are 
-_a lot_ more things to be explored, such as composition, modularity, adaptability, and complex 
-effects. The [Examples](./Examples) directory has a bunch of projects to explore to see more 
-advanced usages.
+_a lot_ more things to be explored, such as <doc:DependencyManagement>, <doc:Performance>,
+<doc:SwiftConcurrency> and more about <doc:Testing>. Also, the [Examples][examples] directory has 
+a bunch of projects to explore to see more  advanced usages.
+
+[examples]: https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples
