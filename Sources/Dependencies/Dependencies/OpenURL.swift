@@ -1,3 +1,4 @@
+#if !os(watchOS)
 import XCTestDynamicOverlay
 
 #if canImport(AppKit)
@@ -56,3 +57,4 @@ public struct OpenURLEffect: Sendable {
     await self.handler(url)
   }
 }
+#endif
