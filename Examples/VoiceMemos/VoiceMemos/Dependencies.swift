@@ -10,7 +10,7 @@ extension DependencyValues {
       }
     }
     set {
-      self.openURL = .init { _ in
+      self.openURL = OpenURLEffect { _ in
         await newValue()
         return true
       }
