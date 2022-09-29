@@ -23,8 +23,8 @@ private enum OpenURLKey: DependencyKey {
     let stream = AsyncStream<Bool> { continuation in
       let task = Task { @MainActor in
         #if canImport(AppKit)
-          NSWorkspace.shared.open(url, configuration: .init()) { _, error in
-            continuation.yield(error == nil)
+          NSWorkspace.shared.open(url, configuration: .init()) { app, error in
+            continuation.yield(app != nil && error == nil)
             continuation.finish()
           }
         #elseif canImport(UIKit) && !os(watchOS)
