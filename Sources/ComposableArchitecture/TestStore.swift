@@ -264,11 +264,46 @@ public final class TestStore<Reducer: ReducerProtocol, ScopedState, ScopedAction
     self.toScopedState = { $0 }
   }
 
-  // NB: Can't seem to define this as a convenience initializer in 'ReducerCompatibility.swift'.
-  @available(iOS, deprecated: 9999.0, message: "Use 'ReducerProtocol' instead.")
-  @available(macOS, deprecated: 9999.0, message: "Use 'ReducerProtocol' instead.")
-  @available(tvOS, deprecated: 9999.0, message: "Use 'ReducerProtocol' instead.")
-  @available(watchOS, deprecated: 9999.0, message: "Use 'ReducerProtocol' instead.")
+  @available(
+    iOS,
+    deprecated: 9999.0,
+    message:
+      """
+      'Reducer' has been deprecated in favor of 'ReducerProtocol'.
+
+      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+      """
+  )
+  @available(
+    macOS,
+    deprecated: 9999.0,
+    message:
+      """
+      'Reducer' has been deprecated in favor of 'ReducerProtocol'.
+
+      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+      """
+  )
+  @available(
+    tvOS,
+    deprecated: 9999.0,
+    message:
+      """
+      'Reducer' has been deprecated in favor of 'ReducerProtocol'.
+
+      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+      """
+  )
+  @available(
+    watchOS,
+    deprecated: 9999.0,
+    message:
+      """
+      'Reducer' has been deprecated in favor of 'ReducerProtocol'.
+
+      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+      """
+  )
   public init(
     initialState: ScopedState,
     reducer: AnyReducer<ScopedState, ScopedAction, Context>,
