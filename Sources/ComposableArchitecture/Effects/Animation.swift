@@ -53,7 +53,7 @@ private struct AnimatedPublisher<Upstream: Publisher>: Publisher {
     self.upstream.receive(subscriber: conduit)
   }
 
-  private class Subscriber<Downstream: Combine.Subscriber>: Combine.Subscriber {
+  private final class Subscriber<Downstream: Combine.Subscriber>: Combine.Subscriber {
     typealias Input = Downstream.Input
     typealias Failure = Downstream.Failure
 

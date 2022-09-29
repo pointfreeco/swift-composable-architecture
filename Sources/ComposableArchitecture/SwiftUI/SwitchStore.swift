@@ -1233,7 +1233,7 @@ public struct _ExhaustivityCheckView<State, Action>: View {
   }
 }
 
-private class StoreObservableObject<State, Action>: ObservableObject {
+private final class StoreObservableObject<State, Action>: ObservableObject {
   let wrappedValue: Store<State, Action>
 
   init(store: Store<State, Action>) {
