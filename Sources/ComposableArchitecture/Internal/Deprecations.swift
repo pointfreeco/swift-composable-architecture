@@ -3,6 +3,33 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
+// MARK: - Deprecated after 0.41.0:
+
+#if swift(>=5.7)
+  extension ReducerBuilder {
+    @_disfavoredOverload
+    @available(
+      *,
+      deprecated,
+      message:
+        """
+        Reducer bodies should return 'some ReducerProtocol<State, Action>' instead of 'Reduce<State, Action>'.
+        """
+    )
+    @inlinable
+    public static func buildFinalResult<R: ReducerProtocol>(_ reducer: R) -> Reduce<State, Action>
+    where R.State == State, R.Action == Action {
+      Reduce(reducer)
+    }
+
+    @_disfavoredOverload
+    @inlinable
+    public static func buildFinalResult(_ reducer: Reduce<State, Action>) -> Reduce<State, Action> {
+      reducer
+    }
+  }
+#endif
+
 // MARK: - Deprecated after 0.40.0:
 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
