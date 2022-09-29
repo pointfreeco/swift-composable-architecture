@@ -41,6 +41,9 @@ private enum OpenURLKey: DependencyKey {
             continuation.yield(false)
             continuation.finish()
           }
+        #else
+          continuation.yield(false)
+          continuation.finish()
         #endif
       }
       continuation.onTermination = { _ in
