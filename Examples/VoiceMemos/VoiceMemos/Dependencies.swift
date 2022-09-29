@@ -4,17 +4,21 @@ import XCTestDynamicOverlay
 
 extension DependencyValues {
   var openSettings: @Sendable () async -> Void {
-    get {
-      return {
-        await self.openURL(URL(string: UIApplication.openSettingsURLString)!)
+    get { self[OpenSettingsKey.self] }
+    set { self[OpenSettingsKey.self] = newValue }
+  }
+
+  private enum OpenSettingsKey: DependencyKey {
+    typealias Value = @Sendable () async -> Void
+
+    static let liveValue: @Sendable () async -> Void = {
+      await MainActor.run {
+        UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
       }
     }
-    set {
-      self.openURL = OpenURLEffect { _ in
-        await newValue()
-        return true
-      }
-    }
+    static let testValue: @Sendable () async -> Void = XCTUnimplemented(
+      #"@Dependency(\.openSettings)"#
+    )
   }
 
   var temporaryDirectory: @Sendable () -> URL {
@@ -24,5 +28,8 @@ extension DependencyValues {
 
   private enum TemporaryDirectoryKey: DependencyKey {
     static let liveValue: @Sendable () -> URL = { URL(fileURLWithPath: NSTemporaryDirectory()) }
+    static let testValue: @Sendable () -> URL = XCTUnimplemented(
+      #"@Dependency(\.temporaryDirectory)"#
+    )
   }
 }
