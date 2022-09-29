@@ -3,7 +3,8 @@
 /// There are three distinct contexts that dependencies can be loaded from and registered to:
 ///
 /// * ``live``: The default context.
-/// * ``test``: A context 
+/// * ``preview``: A context for Xcode previews.
+/// * ``test``: A context for tests.
 public enum DependencyContext: Sendable {
   /// The default, "live" context for dependencies.
   ///
