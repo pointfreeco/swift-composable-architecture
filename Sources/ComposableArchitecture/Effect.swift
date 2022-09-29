@@ -4,7 +4,8 @@ import SwiftUI
 import XCTestDynamicOverlay
 
 /// A type encapsulates a unit of work that can be run in the outside world, and can feed actions
-/// back to the ``Store``. It is the perfect place to do side effects, such as network requests, saving/loading from disk, creating timers, interacting with dependencies, and more.
+/// back to the ``Store``. It is the perfect place to do side effects, such as network requests,
+/// saving/loading from disk, creating timers, interacting with dependencies, and more.
 ///
 /// Effects are returned from reducers so that the ``Store`` can perform the effects after the
 /// reducer is done running.
