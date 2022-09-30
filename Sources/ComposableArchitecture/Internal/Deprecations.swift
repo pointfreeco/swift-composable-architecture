@@ -5,6 +5,13 @@ import XCTestDynamicOverlay
 
 // MARK: - Deprecated after 0.41.0:
 
+extension ReducerProtocol {
+  @available(*, deprecated, renamed: "_printChanges")
+  public func debug() -> _PrintChangesReducer<Self, _CustomDumpPrinter> {
+    _PrintChangesReducer(base: self, printer: .customDump)
+  }
+}
+
 #if swift(>=5.7)
   extension ReducerBuilder {
     @_disfavoredOverload
