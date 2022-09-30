@@ -8,7 +8,7 @@ struct TodosApp: App {
       AppView(
         store: Store(
           initialState: Todos.State(),
-          reducer: Todos().debug()
+          reducer: Todos()._printChanges()
         )
       )
     }

@@ -213,7 +213,7 @@
         }
       }
 
-      let store = TestStore(initialState: 0, reducer: DebuggedReducer().debug())
+      let store = TestStore(initialState: 0, reducer: DebuggedReducer().printChange())
       await store.send(true) { $0 = 1 }
     }
   }

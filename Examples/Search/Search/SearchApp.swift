@@ -8,7 +8,7 @@ struct SearchApp: App {
       SearchView(
         store: Store(
           initialState: Search.State(),
-          reducer: Search().debug()
+          reducer: Search()._printChanges()
         )
       )
     }

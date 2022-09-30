@@ -9,7 +9,7 @@ struct VoiceMemosApp: App {
       VoiceMemosView(
         store: Store(
           initialState: VoiceMemos.State(),
-          reducer: VoiceMemos().debug()
+          reducer: VoiceMemos()._printChanges()
         )
       )
     }
