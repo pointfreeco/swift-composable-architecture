@@ -67,6 +67,7 @@ jobs:
             then 
                 echo "✅ Documentation for "$tag" already exists.";
             else 
+                git checkout .;
                 git checkout "$tag";
                 mkdir -p Sources/ComposableArchitecture/Documentation.docc;
                 export DOCC_HTML_DIR="$(pwd)/swift-docc-render/dist";
