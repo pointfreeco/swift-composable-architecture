@@ -10,7 +10,7 @@ test-all: test-library-debug test-library-release test-examples
 
 test-library-debug:
 	for scheme in Dependencies ComposableArchitecture; do \
-	  for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_MAC_CATALYST)" "$(PLATFORM_TVOS)" "$(PLATFORM_WATCHOS); do \
+	  for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_MAC_CATALYST)" "$(PLATFORM_TVOS)" "$(PLATFORM_WATCHOS)"; do \
 			xcodebuild test \
 				-workspace ComposableArchitecture.xcworkspace \
 				-scheme $$scheme \
@@ -20,7 +20,7 @@ test-library-debug:
 
 test-library-release:
 	for scheme in Dependencies ComposableArchitecture; do \
-	  for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_MAC_CATALYST)" "$(PLATFORM_TVOS)" "$(PLATFORM_WATCHOS); do \
+	  for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_MAC_CATALYST)" "$(PLATFORM_TVOS)" "$(PLATFORM_WATCHOS)"; do \
 			xcodebuild test \
 				-configuration release \
 				-workspace ComposableArchitecture.xcworkspace \
