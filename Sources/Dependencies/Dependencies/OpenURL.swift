@@ -22,7 +22,7 @@ private enum OpenURLKey: DependencyKey {
   static let liveValue = OpenURLEffect { url in
     let stream = AsyncStream<Bool> { continuation in
       let task = Task { @MainActor in
-        #if canImport(AppKit)
+        #if canImport(AppKit) && !targetEnvironment(macCatalyst)
           NSWorkspace.shared.open(url, configuration: .init()) { app, error in
             continuation.yield(app != nil && error == nil)
             continuation.finish()
