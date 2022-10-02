@@ -74,6 +74,7 @@ jobs:
             else 
               for target in ComposableArchitecture Dependencies;
               do 
+                git checkout .;
                 git checkout "$tag";
                 mkdir -p Sources/"$target"/Documentation.docc;
                 export DOCC_HTML_DIR="$(pwd)/swift-docc-render/dist";
