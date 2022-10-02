@@ -121,10 +121,10 @@ extension Effect where Failure == Never {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {
-    let dependencies = DependencyValues.current
+    let dependencies = DependencyValues._current
     return Self(
       operation: .run(priority) { send in
-        await DependencyValues.$current.withValue(dependencies) {
+        await DependencyValues.$_current.withValue(dependencies) {
           do {
             try await send(operation())
           } catch is CancellationError {
@@ -208,10 +208,10 @@ extension Effect where Failure == Never {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {
-    let dependencies = DependencyValues.current
+    let dependencies = DependencyValues._current
     return Self(
       operation: .run(priority) { send in
-        await DependencyValues.$current.withValue(dependencies) {
+        await DependencyValues.$_current.withValue(dependencies) {
           do {
             try await operation(send)
           } catch is CancellationError {

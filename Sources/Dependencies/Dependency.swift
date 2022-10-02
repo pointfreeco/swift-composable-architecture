@@ -72,10 +72,10 @@ public struct Dependency<Value>: @unchecked Sendable {
       currentDependency.fileID = self.fileID
       currentDependency.line = self.line
       return DependencyValues.$currentDependency.withValue(currentDependency) {
-        DependencyValues.current[keyPath: self.keyPath]
+        DependencyValues._current[keyPath: self.keyPath]
       }
     #else
-      return DependencyValues.current[keyPath: self.keyPath]
+      return DependencyValues._current[keyPath: self.keyPath]
     #endif
   }
 }

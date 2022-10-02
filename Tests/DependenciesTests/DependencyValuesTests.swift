@@ -17,9 +17,9 @@ final class DependencyValuesTests: XCTestCase {
     #if DEBUG
       var line = 0
       XCTExpectFailure {
-        var values = DependencyValues.current
+        var values = DependencyValues._current
         values.context = .live
-        DependencyValues.$current.withValue(values) {
+        DependencyValues.$_current.withValue(values) {
           line = #line + 1
           @Dependency(\.missingLiveDependency) var missingLiveDependency: Int
           _ = missingLiveDependency

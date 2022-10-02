@@ -35,8 +35,7 @@ import XCTestDynamicOverlay
 /// myValue // 42
 /// ```
 public struct DependencyValues: Sendable {
-  // TODO: Can this be internal or should it be underscored?
-  @TaskLocal public static var current = Self()
+  @TaskLocal public static var _current = Self()
 
   @TaskLocal static var isSetting = false
   @TaskLocal static var currentDependency = CurrentDependency()
@@ -56,9 +55,9 @@ public struct DependencyValues: Sendable {
     line: UInt = #line
   ) rethrows -> R {
     try Self.$isSetting.withValue(true) {
-      var dependencies = Self.current
+      var dependencies = Self._current
       try updateValuesForOperation(&dependencies)
-      return try Self.$current.withValue(dependencies) {
+      return try Self.$_current.withValue(dependencies) {
         try operation()
       }
     }
@@ -79,9 +78,9 @@ public struct DependencyValues: Sendable {
     line: UInt = #line
   ) async rethrows -> R {
     try await Self.$isSetting.withValue(true) {
-      var dependencies = Self.current
+      var dependencies = Self._current
       try await updateValuesForOperation(&dependencies)
-      return try await Self.$current.withValue(dependencies) {
+      return try await Self.$_current.withValue(dependencies) {
         try await operation()
       }
     }
