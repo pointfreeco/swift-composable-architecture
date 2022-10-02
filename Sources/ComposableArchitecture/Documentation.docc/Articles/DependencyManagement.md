@@ -395,7 +395,7 @@ than designing the audio player as a protocol, we can use a struct with closure 
 represent the interface:
 
 ```swift
-protocol AudioPlayerClient {
+struct AudioPlayerClient {
   var loop: (_ url: URL) async throws -> Void
   var play: (_ url: URL) async throws -> Void
   var setVolume: (_ volume: Float) async -> Void
