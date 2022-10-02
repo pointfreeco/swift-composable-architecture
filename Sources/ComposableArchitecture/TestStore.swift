@@ -221,8 +221,7 @@ public final class TestStore<Reducer: ReducerProtocol, ScopedState, ScopedAction
   /// The current state.
   ///
   /// When read from a trailing closure assertion in ``send(_:_:file:line:)-3pf4p`` or
-  /// ``receive(_:timeout:_:file:line:)-1fjua``, it will equal the `inout` state passed to the
-  /// closure.
+  /// ``receive(_:timeout:_:file:line:)``, it will equal the `inout` state passed to the closure.
   public var state: Reducer.State {
     self.reducer.state
   }
@@ -230,8 +229,8 @@ public final class TestStore<Reducer: ReducerProtocol, ScopedState, ScopedAction
   /// The timeout to await for in-flight effects.
   ///
   /// This is the default timeout used in all methods that take an optional timeout, such as
-  /// ``send(_:_:file:line:)-3pf4p``, ``receive(_:timeout:_:file:line:)-1fjua`` and
-  /// ``finish(timeout:file:line:)-53gi5``.
+  /// ``send(_:_:file:line:)-3pf4p``, ``receive(_:timeout:_:file:line:)`` and
+  /// ``finish(timeout:file:line:)``.
   public var timeout: UInt64
 
   private var _environment: Box<Context>
@@ -957,8 +956,8 @@ extension TestStore {
 /// await store.send(.stopTimerButtonTapped).finish()
 /// ```
 ///
-/// See ``TestStore/finish(timeout:file:line:)-53gi5`` for the ability to await all in-flight
-/// effects in the test store.
+/// See ``TestStore/finish(timeout:file:line:)`` for the ability to await all in-flight effects in
+/// the test store.
 ///
 /// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.
 public struct TestStoreTask: Hashable, Sendable {

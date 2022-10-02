@@ -2,9 +2,8 @@ import CasePaths
 import Dispatch
 
 extension AnyReducer {
-  /// This API has been soft-deprecated in favor of
-  /// ``ReducerProtocol/debug(_:state:action:actionFormat:to:)``. Read <doc:ReducerProtocol>
-  /// for more information.
+  /// This API has been soft-deprecated in favor of ``ReducerProtocol/debug()``. Read
+  /// <doc:ReducerProtocol> for more information.
   ///
   /// Prints debug messages describing all received actions and state mutations.
   ///
@@ -63,9 +62,8 @@ extension AnyReducer {
 
   // TODO: Add protocol support for this API.
 
-  /// The API that used this type has been soft-deprecated in favor of
-  /// ``ReducerProtocol/debug(_:state:action:actionFormat:to:)`` Read <doc:ReducerProtocol> for more
-  /// information.
+  /// The API that used this type has been soft-deprecated in favor of ``ReducerProtocol/debug()``.
+  /// Read <doc:ReducerProtocol> for more information.
   ///
   /// Prints debug messages describing all received actions.
   ///
@@ -122,9 +120,8 @@ extension AnyReducer {
     )
   }
 
-  /// This API has been soft-deprecated in favor of
-  /// ``ReducerProtocol/debug(_:state:action:actionFormat:to:)``. Read <doc:ReducerProtocol>
-  /// for more information.
+  /// This API has been soft-deprecated in favor of ``ReducerProtocol/debug()``. Read
+  /// <doc:ReducerProtocol> for more information.
   ///
   /// Prints debug messages describing all received actions and state mutations.
   ///
@@ -223,7 +220,7 @@ extension AnyReducer {
 }
 
 /// Determines how the string description of an action should be printed when using the
-/// ``ReducerProtocol/debug(_:state:action:actionFormat:to:)`` higher-order reducer.
+/// ``AnyReducer/debug(_:state:action:actionFormat:environment:)`` higher-order reducer.
 @available(
   iOS,
   deprecated: 9999.0,
@@ -277,7 +274,7 @@ public enum ActionFormat: Sendable {
 }
 
 /// The API that used this type has been soft-deprecated in favor of
-/// ``ReducerProtocol/debug(_:state:action:actionFormat:to:)`` Read <doc:ReducerProtocol> for more
+/// ``ReducerProtocol/debug()`` Read <doc:ReducerProtocol> for more
 /// information.
 ///
 /// An environment for debug-printing reducers.

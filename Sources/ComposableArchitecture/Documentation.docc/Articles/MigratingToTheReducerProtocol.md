@@ -142,10 +142,10 @@ enum ParentAction {
 }
 ```
 
-And then the `parentReducer` can be fixed by making use of the helper ``AnyReducer/init(_:)`` which
-aids in converting protocol-style reducers into old-style reducers. It is initialized with a closure 
-that is passed an environment, which is the one thing protocol-style reducers don't have, and you 
-are to return a protocol-style reducer:
+And then the `parentReducer` can be fixed by making use of the helper ``AnyReducer/init(_:)-42p1a``
+which aids in converting protocol-style reducers into old-style reducers. It is initialized with a
+closure  that is passed an environment, which is the one thing protocol-style reducers don't have,
+and you  are to return a protocol-style reducer:
 
 ```swift
 let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(

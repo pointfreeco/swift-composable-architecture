@@ -28,10 +28,10 @@
 
 ### Reducer modifiers
 
-- ``debug()``
 - ``dependency(_:_:)``
 - ``dependencies(_:)``
 - ``signpost(_:log:)``
+- ``debug()``
 
 ### Deprecations
 
